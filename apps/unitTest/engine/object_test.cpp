@@ -17,9 +17,14 @@
 #include "engine/Engine.h"
 #include "engine/Object.h"
 
+#include "common_engine_test.h"
+
 // Tests size_t getEngineId();
-TEST(objecttest, getEngineIdTest) {
-    engine::Engine::init();
+TEST(objecttest, getEngineIdTest) 
+{
+
+    init_engine_test();
+
     engine::Object object1("engine");
     engine::Object object2;
     engine::Object object3;
@@ -33,6 +38,9 @@ TEST(objecttest, getEngineIdTest) {
     EXPECT_TRUE(id1 != id2);
     EXPECT_TRUE(id1 != id3);
     EXPECT_TRUE(id2 != id3);
+
+    close_engine_test();
+
     
 }
 

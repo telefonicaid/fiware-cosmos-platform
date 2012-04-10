@@ -5,7 +5,7 @@
 #include <string.h>                 // strcmp
 #include <signal.h>                 // signal(.)
 
-#include "au/LockDebugger.h"            // au::LockDebugger
+#include "au/mutex/LockDebugger.h"            // au::LockDebugger
 #include "au/ThreadManager.h"
 
 #include "engine/Engine.h"                 // engine::Engine

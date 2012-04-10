@@ -9,7 +9,7 @@
 #include <sys/time.h>
 
 #include "au/Descriptors.h"                         // au::Descriptors
-#include "au/TokenTaker.h"                          // au::TokenTake
+#include "au/mutex/TokenTaker.h"                          // au::TokenTake
 #include "au/xml.h"         // au::xml...
 #include "au/ThreadManager.h"
 

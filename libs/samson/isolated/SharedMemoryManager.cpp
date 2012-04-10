@@ -14,7 +14,7 @@
 #include "logMsg/traceLevels.h"        // Trace Levels
 
 #include "au/string.h"             // au::Format
-#include "au/TokenTaker.h"                          // au::TokenTake
+#include "au/mutex/TokenTaker.h"                          // au::TokenTake
 #include "au/file.h"                    // au::sizeOfFile
 
 #include "engine/Buffer.h"				// samson::Buffer

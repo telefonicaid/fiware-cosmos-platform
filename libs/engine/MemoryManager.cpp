@@ -11,7 +11,7 @@
 #include "logMsg/logMsg.h"                   // LM_*
 #include "logMsg/traceLevels.h"               
 
-#include "au/TokenTaker.h"                  // au::TokenTaker
+#include "au/mutex/TokenTaker.h"                  // au::TokenTaker
 #include "au/xml.h"         // au::xml...
 
 #include "engine/Buffer.h"		              // samson::Buffer

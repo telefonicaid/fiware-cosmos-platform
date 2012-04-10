@@ -153,9 +153,9 @@ debug: prepare_debug
 coverage: prepare_coverage
 	make -C BUILD_DEBUG -j $(CPU_COUNT)
 	lcov -d BUILD_DEBUG -z	
-	BUILD_COVERAGE/apps/unitTest/unitTest  --gtest_output=xml:samson_test.xml
+	BUILD_DEBUG/apps/unitTest/unitTest  --gtest_output=xml:samson_test.xml
 	mkdir -p coverage
-	lcov -d BUILD_COVERAGE --capture --output-file coverage/samson.info
+	lcov -d BUILD_DEBUG --capture --output-file coverage/samson.info
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/usr/local/include/*" -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info

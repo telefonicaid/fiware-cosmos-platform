@@ -3,7 +3,7 @@
 #ifndef _H_AU_SOCKET_CONNECTION
 #define _H_AU_SOCKET_CONNECTION
 
-#include "au/Token.h"
+#include "au/mutex/Token.h"
 #include "au/string.h"
 #include "au/Status.h"
 #include "au/Cronometer.h"

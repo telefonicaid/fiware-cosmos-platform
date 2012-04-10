@@ -49,6 +49,7 @@ bool check_string_ends_with( std::string txt , std::string end_txt );
 
 // Working with paths
 std::string path_remove_last_component( std::string path );
+// Extract directory from path ( example /dir/dir2/file --> /dir/dir2 )
 std::string get_directory_from_path( std::string path );
 
 NAMESPACE_END

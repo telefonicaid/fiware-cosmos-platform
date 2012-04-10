@@ -5,7 +5,7 @@
 #include "logMsg/logMsg.h"              // LM_M()
 
 #include "LockDebugger.h"               // LockDebugger
-#include "au/Token.h"                   // au::Token
+#include "au/mutex/Token.h"                   // au::Token
 #include "au/Cronometer.h"              // au::Cronometer
 #include "TokenTaker.h"				    // Own interface
 

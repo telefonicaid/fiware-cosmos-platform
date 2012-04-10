@@ -31,7 +31,6 @@ DiskOperation* DiskOperation::newReadOperation( char *data , std::string fileNam
     o->read_buffer = data;
     o->size = size;
     o->offset = offset;
-    o->setDevice();
     o->addListener( _listenerId );
     
     o->environment.set("type","read");
@@ -49,7 +48,6 @@ DiskOperation * DiskOperation::newReadOperation( std::string fileName , size_t o
     o->read_buffer = simpleBuffer.getData();
     o->size = size;
     o->offset = offset;
-    o->setDevice();
     o->addListener( _listenerId );
     
     o->environment.set("type","read");
@@ -68,7 +66,6 @@ DiskOperation* DiskOperation::newWriteOperation( Buffer* buffer ,  std::string f
     o->buffer = buffer;
     o->size = buffer->getSize();
     o->offset = 0;
-    o->setDevice();
     o->addListener( _listenerId );
     
     o->environment.set("type","write");
@@ -86,7 +83,6 @@ DiskOperation* DiskOperation::newAppendOperation( Buffer* buffer ,  std::string 
     o->buffer = buffer;
     o->size = buffer->getSize();
     o->offset = 0;
-    o->setDevice();
     o->addListener( _listenerId );
     
     o->environment.set("type","append");
@@ -100,7 +96,6 @@ DiskOperation* DiskOperation::newRemoveOperation( std::string fileName , size_t 
     
     o->fileName = fileName;
     o->type = DiskOperation::remove;
-    o->setDevice();
     o->size = 0;
     o->addListener( _listenerId );
     
@@ -108,53 +103,6 @@ DiskOperation* DiskOperation::newRemoveOperation( std::string fileName , size_t 
     
     return o;
 }
-
-
-std::string DiskOperation::directoryPath( std::string path )
-{
-    size_t pos = path.find_last_of("/");
-    
-    if ( pos == std::string::npos)
-        return ".";
-    else
-        return path.substr( 0 , pos );
-}
-
-bool DiskOperation::setDevice( )
-{
-    // Make sure we only use one device
-    st_dev = 0;
-    return true;
-    
-    
-    struct ::stat info;
-    stat(fileName.c_str(), &info);
-    
-    if( S_ISREG(info.st_mode) )
-    {
-        st_dev = info.st_dev;   // Get the devide of the inode 
-        return true;
-    }
-    
-    // File currently does not exist ( it wil be writed )
-    if( type != DiskOperation::write )
-        return false;
-    
-    // Get the path of the directory
-    std::string directory = directoryPath( fileName );
-    stat(directory.c_str(), &info);
-    
-    if( S_ISDIR(info.st_mode) )
-    {
-        st_dev = info.st_dev;   // Get the devide of the inode 
-        st_dev = 0;// Force all files to be process as the same inode
-        return true;
-    }
-    
-    // Something wrong...
-    return false;
-}
-
 
 std::string DiskOperation::getDescription()
 {

@@ -7,7 +7,7 @@
  *
  */
 
-#include "au/TokenTaker.h"      // au::TokenTaker
+#include "au/mutex/TokenTaker.h"      // au::TokenTaker
 #include "au/xml.h"             // au::xml...
 #include "au/StringVector.h"
 

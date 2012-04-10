@@ -20,7 +20,7 @@
 
 #include "logMsg/logMsg.h"				
 
-#include "au/TokenTaker.h"                  // au::TokenTake
+#include "au/mutex/TokenTaker.h"                  // au::TokenTake
 #include "au/console/Console.h"                     // au::Console
 #include "au/console/ConsoleAutoComplete.h"
 

@@ -36,8 +36,6 @@
 #include <time.h>			// clock(.)
 #include <set>           // std::set
 
-#include "au/Lock.h"			// au::Lock
-#include "au/StopLock.h"		// au::StopLock
 #include "au/string.h"			// au::Format
 #include "au/ErrorManager.h"			// samson::Error
 #include "au/Environment.h"     // au::Environment
@@ -76,7 +74,6 @@ private:
     char *read_buffer;					// Buffer used when reading from disk	
     size_t size;						// Size to read/write
     size_t offset;						// Offset inside the file ( only for read operations )
-    dev_t st_dev;						// Device where this file is stored
     
     std::set<size_t> listeners;      // Collection of Ids of the listener to notify when operation is completed
     
@@ -107,7 +104,6 @@ public:
     static DiskOperation * newReadOperation( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer simpleBuffer , size_t _listenerId );
     
     
-    static std::string directoryPath( std::string path );
     void setError( std::string message );
     
     std::string getDescription();
@@ -131,8 +127,6 @@ public:
     void run();			
     
 private:
-    
-    bool setDevice( );
     
     friend class DiskOperationGroup;
     

@@ -13,8 +13,8 @@
 
 #include "logMsg/logMsg.h"             // lmInit, LM_*
 
-#include "au/Token.h"				// au::Token
-#include "au/TokenTaker.h"			// au::TokenTaker
+#include "au/mutex/Token.h"				// au::Token
+#include "au/mutex/TokenTaker.h"			// au::TokenTaker
 #include "au/containers/map.h"				// au::map
 #include "au/CommandLine.h"				// au::CommandLine
 #include "au/Cronometer.h"      // au::Cronometer

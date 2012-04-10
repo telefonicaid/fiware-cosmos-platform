@@ -28,8 +28,8 @@
 
 #include "au/string.h"
 #include "au/Cronometer.h"
-#include "au/Token.h"
-#include "au/TokenTaker.h"
+#include "au/mutex/Token.h"
+#include "au/mutex/TokenTaker.h"
 
 #include "logMsg/logMsg.h"					 // LM_M()
 
@@ -98,6 +98,7 @@ namespace au {
         ThreadManager();
         
         static ThreadManager * shared();
+        static void wait_all_threads();
         
         // Add a thread to the manager
         int addThread( 

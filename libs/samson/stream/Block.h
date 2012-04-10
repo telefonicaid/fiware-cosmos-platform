@@ -11,8 +11,8 @@
  * A block is a unit of data possibly in memory with replication of disk
  *
  */
-#include "au/Token.h"
-#include "au/TokenTaker.h"
+#include "au/mutex/Token.h"
+#include "au/mutex/TokenTaker.h"
 
 #include "au/containers/simple_map.h"                         // au::simple_map
 

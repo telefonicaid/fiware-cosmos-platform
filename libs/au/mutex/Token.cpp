@@ -6,7 +6,7 @@
 #include "LockDebugger.h"		// LockDebugger
 #include "logMsg/logMsg.h"		// LM_M()
 
-#include "au/Token.h"				// Own interface
+#include "au/mutex/Token.h"				// Own interface
 
 #include <assert.h>
 

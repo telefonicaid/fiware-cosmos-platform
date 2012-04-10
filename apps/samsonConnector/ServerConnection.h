@@ -3,8 +3,8 @@
 
 #include <string>
 
-#include "au/Token.h"
-#include "au/TokenTaker.h"
+#include "au/mutex/Token.h"
+#include "au/mutex/TokenTaker.h"
 
 #include "common.h" 
 

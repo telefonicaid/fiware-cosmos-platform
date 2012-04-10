@@ -16,7 +16,7 @@
 #include "parseArgs/parseArgs.h"
 
 #include "au/string.h"
-#include "au/LockDebugger.h"            // au::LockDebugger
+#include "au/mutex/LockDebugger.h"            // au::LockDebugger
 #include "au/ThreadManager.h"
 #include "au/log/LogToServer.h"
 

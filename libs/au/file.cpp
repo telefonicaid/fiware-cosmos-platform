@@ -186,5 +186,4 @@ std::string get_directory_from_path( std::string path )
     
 }
 
-
 NAMESPACE_END

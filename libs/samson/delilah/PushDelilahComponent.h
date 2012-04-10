@@ -11,7 +11,6 @@
 #include "au/string.h"			// au::Format
 #include "au/ErrorManager.h"			// au::ErrorManager
 #include "au/Cronometer.h"      // au::Cronometer
-#include "au/Lock.h"				// au::Lock
 
 #include "engine/Engine.h"          // engine::Object
 #include "engine/Object.h"          // engine::Object

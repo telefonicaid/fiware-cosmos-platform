@@ -8,7 +8,7 @@
 
 #include "au/CommandLine.h"		// CommandLine
 #include "au/Cronometer.h"      // au::Cronometer
-#include "au/TokenTaker.h"                          // au::TokenTake
+#include "au/mutex/TokenTaker.h"                          // au::TokenTake
 
 #include "au/tables/Table.h"
 

@@ -19,7 +19,7 @@
 
 #include "parseArgs/parseArgs.h"
 
-#include "au/LockDebugger.h"            // au::LockDebugger
+#include "au/mutex/LockDebugger.h"            // au::LockDebugger
 
 #include "samson/common/coding.h"					// samson::FormatHeader
 #include "samson/common/SamsonSetup.h"              // samson::SamsonSetup

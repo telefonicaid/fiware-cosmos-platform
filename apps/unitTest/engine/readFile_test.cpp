@@ -22,7 +22,8 @@
 
 
 //Test ReadFile( std::string _fileName );
-TEST(readfileTest, openTest) {
+TEST(readfileTest, openTest) 
+{
     engine::ReadFile file1("badfile");
     EXPECT_TRUE(file1.isValid() == false);
        

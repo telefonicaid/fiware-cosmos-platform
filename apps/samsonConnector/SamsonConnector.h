@@ -7,7 +7,7 @@
 
 #include "au/containers/map.h"
 #include "au/containers/vector.h"
-#include "au/Token.h"
+#include "au/mutex/Token.h"
 #include "au/string.h"
 #include "au/console/Console.h"
 

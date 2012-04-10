@@ -1,3 +1,18 @@
+
+
+SET( MUTEX_FILES
+mutex/Lock.h
+mutex/StopLock.h
+mutex/LockDebugger.h
+mutex/Token.h
+mutex/TokenTaker.h
+
+mutex/Lock.cpp
+mutex/LockDebugger.cpp
+mutex/Token.cpp
+mutex/TokenTaker.cpp
+)
+
 SET (HEADERS
 Status.h
 
@@ -9,6 +24,8 @@ Descriptors.h
 gpb.h
 Environment.h
 CommandLine.h
+
+${MUTEX_FILES}
 
 containers/map.h
 containers/simple_map.h
@@ -50,11 +67,6 @@ log/LogToServer.h
 log/log_server_common.h
 
 ErrorManager.h
-Lock.h
-LockDebugger.h
-StopLock.h
-Token.h
-TokenTaker.h
 varint.h
 Cronometer.h
 Rate.h
@@ -124,10 +136,6 @@ log/LogToServer.cpp
 log/Logserver.cpp
 
 ErrorManager.cpp
-Lock.cpp
-LockDebugger.cpp
-Token.cpp
-TokenTaker.cpp
 Cronometer.cpp
 Rate.cpp
 CounterCollection.cpp
@@ -156,6 +164,8 @@ OnOffMonitor.cpp
 
 # Source groups to organize Xcode project
 # -----------------------------------------------------------------
+
+SOURCE_GROUP( mutex FILES ${MUTEX_FILES} )
 
 SOURCE_GROUP( containers FILES
 containers/map.h
@@ -259,7 +269,6 @@ SET (LIBAU ${PROJECT_BINARY_DIR}/libs/au/libau.a CACHE INTERNAL "")
 #ADD_EXECUTABLE(au_sleep_test au_sleep_test_main.cpp )
 #TARGET_LINK_LIBRARIES(au_sleep_test ${LIBS} au lm pa )
 #INSTALL(TARGETS au_sleep_test        RUNTIME DESTINATION   bin)
-
 
 
 

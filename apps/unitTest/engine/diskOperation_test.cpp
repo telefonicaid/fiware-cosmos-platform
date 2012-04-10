@@ -15,156 +15,87 @@
 #include "gtest/gtest.h"
 
 #include "engine/DiskManager.h"
-
+#include "engine/DiskOperation.h"
 #include "xmlparser/xmlParser.h"
 
+#include "common_engine_test.h"
+
+
 //Test void getInfo( std::ostringstream& output);
-TEST(diskOperationTest, getInfoTest) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
+TEST(diskOperationTest, getInfoTest) 
+{
+    init_engine_test();
+    
     char charBuffer[1024*1024];
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( charBuffer , "test_data/test_data.txt" , 3 , 5, 0 );
-    
-    std::ostringstream info;
-    operation->getInfo( info );
-    
-    //parse and check xml
-    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
-    EXPECT_EQ(std::string(xMainNode.getChildNode("type").getText()), "read") << "Error writing read tag";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_data/test_data.txt") << "Error writing file_name tag";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "5") << "Error writing size tag";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "3") << "Error writing offset tag";
-}
-
-//Test static DiskOperation* newReadOperation( char *data , std::string fileName , size_t offset , size_t size , size_t _listenerId  );
-TEST(diskOperationTest, newReadOperationTest) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
-    char buffer[1024*1024];
-    engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_data/test_data.txt" , 3 , 6, 2 );
-    
-    
     EXPECT_EQ(operation->getType(), engine::DiskOperation::read) << "Wrong type value";
 
-    //parse and check xml for the rest of values
-    std::ostringstream info;
-    operation->getInfo( info );
-    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
-    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_data/test_data.txt") << "Wrong file_name in constructor";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "6") << "Wrong size in constructor";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "3") << "Wrong offset in constructor";
+    close_engine_test();
+    
 }
 
 //Test static DiskOperation* newWriteOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId  );
-TEST(diskOperationTest, newWriteOperationTest) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
-    engine::MemoryManager::init(1000);
-    engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
+TEST(diskOperationTest, newWriteOperationTest) 
+{
+    init_engine_test();
+    
+    engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" , "test" , 15 , 1 );
     engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer , "test_data/test_data.txt" , 2 );
     
-    
     EXPECT_EQ(operation->getType(), engine::DiskOperation::write) << "Wrong type value";
-
-    //parse and check xml for the rest of values
-    std::ostringstream info;
-    operation->getInfo( info );
-    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
-    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_data/test_data.txt") << "Wrong file_name in constructor";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "0") << "Wrong size in constructor";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "0") << "Wrong offset in constructor";
     
-    engine::MemoryManager::destroy();
+    close_engine_test();
+
 }
 
 //Test static DiskOperation* newAppendOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId  );
-TEST(diskOperationTest, newAppendOperationTest) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
-    engine::MemoryManager::init(1000);
-    engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
+TEST(diskOperationTest, newAppendOperationTest) 
+{
+    init_engine_test();
+
+    engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" , "test",  15 , 1 );
     engine::DiskOperation* operation = engine::DiskOperation::newAppendOperation( buffer , "test_filename.txt" , 2 );
-    
     
     EXPECT_EQ(operation->getType(), engine::DiskOperation::append) << "Wrong type value";
 
-    //parse and check xml for the rest of values
-    std::ostringstream info;
-    operation->getInfo( info );
-    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
-    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Wrong file_name in constructor";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "0") << "Wrong size in constructor";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "0") << "Wrong offset in constructor";
+    close_engine_test();
 }
 
 //Test static DiskOperation* newRemoveOperation( std::string fileName, size_t _listenerId );
-TEST(diskOperationTest, newRemoveOperationTest) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
-    engine::DiskOperation* operation = engine::DiskOperation::newRemoveOperation( "test_filename.txt" , 2 );
+TEST(diskOperationTest, newRemoveOperationTest) 
+{
+    init_engine_test();
+    
+    engine::DiskOperation* operation = engine::DiskOperation::newRemoveOperation( "test_data/test_data.txt", 1 );
     
     EXPECT_EQ(operation->getType(), engine::DiskOperation::remove) << "Wrong type value";
 
-    //parse and check xml for the rest of values
-    std::ostringstream info;
-    operation->getInfo( info );
-    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
-    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Wrong file_name in constructor";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "0") << "Wrong size in constructor";
-    
-    engine::MemoryManager::destroy();
+    close_engine_test();
 }
 
 //Test static DiskOperation * newReadOperation( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer simpleBuffer , size_t _listenerId );
-TEST(diskOperationTest, newReadOperation2Test) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
-    engine::MemoryManager::init(1000);
+TEST(diskOperationTest, newReadOperation2Test) 
+{
+    init_engine_test();
+    
     char data[100];
     engine::SimpleBuffer buffer(data, 100);
     engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( "test_filename.txt" , 3 , 6, buffer, 2 );
     
-    
     EXPECT_EQ(operation->getType(), engine::DiskOperation::read) << "Wrong type value";
 
-    //parse and check xml for the rest of values
-    std::ostringstream info;
-    operation->getInfo( info );
-    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"disk_operation");
-    EXPECT_EQ(std::string(xMainNode.getChildNode("file_name").getText()), "test_filename.txt") << "Wrong file_name in constructor";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getText()), "6") << "Wrong size in constructor";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getText()), "3") << "Wrong offset in constructor";
-    
-    engine::MemoryManager::destroy();
-}
-    
-    
-//Test static std::string directoryPath( std::string path );
-TEST(diskOperationTest, directoryPathTest) {
-    EXPECT_EQ(engine::DiskOperation::directoryPath("/dirname1/dirname2/filename.txt"), "/dirname1/dirname2") << "Bad path extraction";
-    EXPECT_EQ(engine::DiskOperation::directoryPath("dirname1/filename.txt"), "dirname1") << "Bad path extraction";
-    EXPECT_EQ(engine::DiskOperation::directoryPath("filename.txt"), ".") << "No path specified, should return \".\"";
-
-}
-
-//Test void setError( std::string message );
-TEST(diskOperationTest, setErrorTest) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
-    char buffer[1024*1024];
-    engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 3 , 6, 2 );
-
-    operation->setError("Error test");
-    EXPECT_EQ(operation->error.getMessage(), "Error test ( Read from file: 'test_filename.txt' Size:   6 B [6B] Offset:3 )");
+    close_engine_test();
 }
     
 //Test std::string getDescription();
-TEST(diskOperationTest, getDescriptionTest) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
+TEST(diskOperationTest, getDescriptionTest) 
+{
+    
+    init_engine_test();
+    
     char charBuffer[1024*1024];
     engine::MemoryManager::init(1000);
-    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
+    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" , "test",  15 , 1 );
     
     engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 6, 2 );
     engine::DiskOperation* operation2 = engine::DiskOperation::newWriteOperation( engineBuffer , "test_filename.txt" , 2 );
@@ -176,16 +107,17 @@ TEST(diskOperationTest, getDescriptionTest) {
     EXPECT_EQ(operation3->getDescription(), "Append to file: 'test_filename.txt' Size:   0 B") << "Description error";
     EXPECT_EQ(operation4->getDescription(), "Remove file: 'test_filename.txt'") << "Description error";
     
-    engine::MemoryManager::destroy();
+    close_engine_test();
 }
 
 //Test std::string getShortDescription();
-TEST(diskOperationTest, getShortDescriptionTest) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
+TEST(diskOperationTest, getShortDescriptionTest) 
+{
+    init_engine_test();
+    
     char charBuffer[1024*1024];
     engine::MemoryManager::init(1000);
-    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
+    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" , "test", 15 , 1 );
     
     engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 6, 2 );
     engine::DiskOperation* operation2 = engine::DiskOperation::newWriteOperation( engineBuffer , "test_filename.txt" , 2 );
@@ -197,37 +129,19 @@ TEST(diskOperationTest, getShortDescriptionTest) {
     EXPECT_EQ(operation3->getShortDescription(), "A:   0 ") << "Description error";
     EXPECT_EQ(operation4->getShortDescription(), "X") << "Description error";
     
-    engine::MemoryManager::destroy();
+    close_engine_test();
 } 
   
-//Test DiskOperationType getType()
-TEST(diskOperationTest, getTypeTest) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
-    char charBuffer[1024*1024];
-    engine::MemoryManager::init(1000);
-    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
-    
-    engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 6, 2 );
-    engine::DiskOperation* operation2 = engine::DiskOperation::newWriteOperation( engineBuffer , "test_filename.txt" , 2 );
-    engine::DiskOperation* operation3 = engine::DiskOperation::newAppendOperation( engineBuffer , "test_filename.txt" , 2 );
-    engine::DiskOperation* operation4 = engine::DiskOperation::newRemoveOperation( "test_filename.txt" , 2 );
-    
-    EXPECT_EQ(operation1->getType(), engine::DiskOperation::read) << "Wrong type value";
-    EXPECT_EQ(operation2->getType(), engine::DiskOperation::write) << "Wrong type value";
-    EXPECT_EQ(operation3->getType(), engine::DiskOperation::append) << "Wrong type value";
-    EXPECT_EQ(operation4->getType(), engine::DiskOperation::remove) << "Wrong type value";
-
-    engine::MemoryManager::destroy();
-}
 
 //Test size_t getSize()
-TEST(diskOperationTest, getSizeTest) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
+TEST(diskOperationTest, getSizeTest) 
+{
+    
+    init_engine_test();
+    
     char charBuffer[1024*1024];
     engine::MemoryManager::init(1000);
-    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
+    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,"test",  15 , 1 );
     
     engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 5, 2 );
     engine::DiskOperation* operation2 = engine::DiskOperation::newWriteOperation( engineBuffer , "test_filename.txt" , 2 );
@@ -235,31 +149,18 @@ TEST(diskOperationTest, getSizeTest) {
     EXPECT_EQ(operation1->getSize(), 5) << "Error in getSize()";
     EXPECT_EQ(operation2->getSize(), 0) << "Error in getSize()";
 
-    engine::MemoryManager::destroy();
-}
-
-//Test void destroyBuffer();
-TEST(diskOperationTest, destroyBufferTest) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
-    engine::MemoryManager::init(1000);
-    engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
-    engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer , "test_filename.txt" , 2 );
-  
-    operation->destroyBuffer();
-
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 0) << "Buffer was not destroyed";
-
-    engine::MemoryManager::destroy();
+    close_engine_test();
 }
 
 //Test bool compare( DiskOperation *operation );
-TEST(diskOperationTest, compareTest) {
-    engine::Engine::init();
-    engine::DiskManager::init(10);
+TEST(diskOperationTest, compareTest) 
+{
+    
+    init_engine_test();
+    
      char charBuffer[1024*1024];
     engine::MemoryManager::init(1000);
-    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  15 , 1 );
+    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->newBuffer( "buffer1" ,"test",  15 , 1 );
     
     engine::DiskOperation* operationRead1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 5, 2 );
     engine::DiskOperation* operationRead2 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 5, 2 );
@@ -277,8 +178,9 @@ TEST(diskOperationTest, compareTest) {
     EXPECT_TRUE(operationWrite1->compare(operationWrite2) == false); 
     EXPECT_TRUE(operationWrite1->compare(operationAppend) == false); 
     EXPECT_TRUE(operationAppend->compare(operationWrite1) == false); 
-
-    engine::MemoryManager::destroy();
+    
+    close_engine_test();
+    
 }    
 
 //Test void addListener( size_t id )

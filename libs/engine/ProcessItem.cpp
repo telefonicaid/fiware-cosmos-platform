@@ -1,7 +1,7 @@
 
 #include "au/ErrorManager.h"                  // au::ErrorManager
 #include "au/xml.h"                         // au::xml...
-#include "au/TokenTaker.h"                          // au::TokenTake
+#include "au/mutex/TokenTaker.h"                          // au::TokenTake
 #include "au/ThreadManager.h"
 
 #include "engine/Engine.h"					// engine::Engine

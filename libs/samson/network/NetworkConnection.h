@@ -5,8 +5,8 @@
 
 #include <string>
 
-#include "au/Token.h"
-#include "au/TokenTaker.h"
+#include "au/mutex/Token.h"
+#include "au/mutex/TokenTaker.h"
 #include "au/Rate.h"
 
 #include "au/network/SocketConnection.h"

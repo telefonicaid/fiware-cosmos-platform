@@ -2,7 +2,7 @@
 #define _H_SamsonPushBuffer_SamsonClient
 
 #include <string>
-#include "au/Token.h"
+#include "au/mutex/Token.h"
 #include "au/Rate.h"
 
 #include "engine/Notification.h"

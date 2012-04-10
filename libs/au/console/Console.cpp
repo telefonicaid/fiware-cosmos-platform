@@ -10,7 +10,7 @@
 #include "au/utils.h"
 #include "au/ThreadManager.h"
 
-#include "au/TokenTaker.h"
+#include "au/mutex/TokenTaker.h"
 
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/console/ConsoleCommand.h"

@@ -7,7 +7,7 @@
 #include <termios.h>                // termios
 
 #include "au/console/ConsoleCode.h"
-#include "au/Token.h"
+#include "au/mutex/Token.h"
 #include "au/namespace.h"
 #include "au/console/ConsoleEntry.h"
 

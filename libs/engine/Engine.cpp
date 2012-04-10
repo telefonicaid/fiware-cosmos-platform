@@ -8,9 +8,9 @@
 #include "logMsg/logMsg.h"                          // LM_X
 
 #include "au/string.h"                             // au::xml_...
-#include "au/TokenTaker.h"                          // au::TokenTake
+#include "au/mutex/TokenTaker.h"                          // au::TokenTake
 #include "au/ErrorManager.h"                       // au::ErrorManager
-#include "au/Token.h"                       // au::Token
+#include "au/mutex/Token.h"                       // au::Token
 #include "au/xml.h"         // au::xml...
 #include "au/ThreadManager.h"
 

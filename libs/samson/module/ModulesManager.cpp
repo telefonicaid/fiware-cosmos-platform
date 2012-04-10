@@ -16,7 +16,7 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"			// Lmt...
 
-#include "au/TokenTaker.h"                          // au::TokenTake
+#include "au/mutex/TokenTaker.h"                          // au::TokenTake
 
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/samsonDirectories.h"		/* SAMSON_MODULES_DIRECTORY                 */

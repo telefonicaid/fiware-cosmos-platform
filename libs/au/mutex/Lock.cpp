@@ -6,7 +6,8 @@
 
 #include "StopLock.h"            // StopLock
 #include "LockDebugger.h"		// au:;:LockDebugger
-#include "au/Lock.h"                // Own interface
+
+#include "Lock.h"                // Own interface
 
 //#define DEBUG_SS_THREADS
 

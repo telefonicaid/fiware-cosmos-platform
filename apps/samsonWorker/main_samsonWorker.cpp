@@ -22,7 +22,7 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
-#include "au/LockDebugger.h"            // au::LockDebugger
+#include "au/mutex/LockDebugger.h"            // au::LockDebugger
 #include "au/ThreadManager.h"
 #include "au/log/LogToServer.h"
 #include "au/log/Log.h"

@@ -6,8 +6,8 @@
 #include <list>					// std::list
 #include <iostream>				// std::cout
 
-#include "au/Token.h"				// au::Token
-#include "au/TokenTaker.h"                          // au::TokenTake
+#include "au/mutex/Token.h"				// au::Token
+#include "au/mutex/TokenTaker.h"                          // au::TokenTake
 
 #include "samson/network/Packet.h"				// samson::Packet
 #include "samson/delilah/Delilah.h"			// ss:Delilah

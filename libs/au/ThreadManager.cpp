@@ -12,6 +12,12 @@ namespace au {
         return &thread_manager;
     }
     
+    void ThreadManager::wait_all_threads()
+    {
+        thread_manager.wait();
+    }
+
+    
     ThreadManager::ThreadManager() : token("ThreadManager")
     {
         

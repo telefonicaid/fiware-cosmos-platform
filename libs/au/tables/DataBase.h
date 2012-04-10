@@ -10,7 +10,7 @@
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"        // au::ErrorManager
 #include "au/containers/map.h"                 // au::map
-#include "au/Token.h"
+#include "au/mutex/Token.h"
 #include "au/string.h"              // au::str(...)
 #include "au/console/ConsoleAutoComplete.h"
 

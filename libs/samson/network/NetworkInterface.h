@@ -13,10 +13,9 @@
 #include "logMsg/logMsg.h"             // LM_*
 #include "logMsg/traceLevels.h"        // LmtNetworkInterface, ...
 
-#include "au/Lock.h"                   // au::Lock
 #include "au/string.h"
-#include "au/Token.h"     
-#include "au/TokenTaker.h"
+#include "au/mutex/Token.h"     
+#include "au/mutex/TokenTaker.h"
 #include "au/ErrorManager.h"
 
 #include "samson/common/SamsonSetup.h"

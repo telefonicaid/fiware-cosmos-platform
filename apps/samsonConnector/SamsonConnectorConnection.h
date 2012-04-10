@@ -1,7 +1,7 @@
 #ifndef _H_SAMSON_CONNECTOR_CONNECTION
 #define _H_SAMSON_CONNECTOR_CONNECTION
 
-#include "au/TokenTaker.h"
+#include "au/mutex/TokenTaker.h"
 
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"

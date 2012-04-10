@@ -23,91 +23,41 @@
 #include "logMsg/logMsg.h"
 
 /* ****************************************************************************
-*
-* initLog() 
-* Initialise log
-*/
-
-LmStatus initLog(char* pname)
+ *
+ * parse arguments
+ */
+PaArgument paArgs[] =
 {
-    LmStatus s;
-    int      i2;
-    char w[512];
+    PA_END_OF_ARGS
+};
 
-    //
-    // 1. create the progName variable, removing path etc.
-    //    progName is used to create the logfile among other things
-    /*if ((progName = lmProgName(pname, 1, false)) == NULL)
-        return LmsPrognameError;
-        */
-	progName = (char*)malloc(512);
-	strcpy(progName, "unitTest");
-        
-
-    //
-    // 2. Register fd 1 (stdout) so that I get traces on the console (fourth parameter is just a name)
-    //    If you don't want traces to stdout /or any file descriptor), don't use this call ...
-    /*int      i1;
-    if ((s = lmFdRegister(1, "TYPE:EXEC/FUNC: TEXT", "DEF", "nul", &i1)) != LmsOk)
-    {
-       sprintf(w, "lmInit: %s", lmStrerror(s));
-        std::cerr << w << std::endl;
-         return s;
-    }
-    */
-
-    //
-    // 3. Register a log file, first parameter is the directory. The name of the log file uses progName and 'Log' is appended
-    //
-    if ((s = lmPathRegister("/tmp", "DEF", "DEF", &i2)) != LmsOk)
-    {
-       sprintf(w, "lmInit: %s", lmStrerror(s));
-        std::cerr << w << std::endl;
-        return s;
-    }
-
-    //
-    // 4. Start the whole thing ...
-    //
-    if ((s = lmInit()) != LmsOk)
-    {
-       sprintf(w, "lmInit: %s", lmStrerror(s));
-        std::cerr << w << std::endl;
-        return s;
-    }
-
-    //
-    // set the trace level, according to the variable tLevel
-    //
-    if ((s = lmTraceSet(0)) != LmsOk)
-    {
-       sprintf(w, "lmInit: %s", lmStrerror(s));
-        std::cerr << w << std::endl;
-        return s;
-    }
-   
-    return LmsOk;
-}
+/* ****************************************************************************
+ *
+ * global variables
+ */
+int                           logFd             = -1;
 
 /* ****************************************************************************
 *
 * main - 
 */
 
-int main(int argc, char **argv) {
+int main(int argC, char **argV) {
 
-  /*	paConfig("usage and exit on any warning", (void*) false);
-	paConfig("log to screen",                 (void*) true);
-	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
-	paConfig("screen line format",            (void*) "TYPE: TEXT");
-	paConfig("log to file",                   (void*) false);
+    paConfig("usage and exit on any warning", (void*) true);
+    paConfig("log to screen",                 (void*) "only errors");
+    paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+    paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
+    paConfig("log to file",                   (void*) true);
+    paConfig("log dir",                       (void*) "/var/log/samson/");
+    
+    paConfig("man author",                    "Samson team");
 
-    samson::SamsonSetup::init("","");
-*/    //char* pname = (char*)malloc(255);
-    initLog(argv[0]);
-    //int logfdp;
-    //samson::samsonInitTrace(argc, const_cast<const char**>(argv), &logfdp, true, false);
-    ::testing::InitGoogleTest(&argc, argv);
+    // Avoid parsing any argument
+    paParse(paArgs, 1, (char**) argV, 1, false);
+
+    // Run all tests
+    ::testing::InitGoogleTest(&argC, argV);
     return RUN_ALL_TESTS();
 }
 

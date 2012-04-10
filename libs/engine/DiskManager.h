@@ -23,7 +23,7 @@
 #include <set>                      // std::set
 
 #include "au/containers/list.h"                 // au::list
-#include "au/Token.h"                 // au::Token
+#include "au/mutex/Token.h"                 // au::Token
 #include "au/containers/ListMap.h"              // au::ListMap
 #include "au/namespace.h"
 #include "au/Rate.h"

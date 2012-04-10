@@ -2,17 +2,20 @@ SET (SOURCES
     main_UnitTest.cpp
 
     #engine
-    engine/readFile_test.cpp
+	engine/common_engine_test.h
+	engine/common_engine_test.cpp
+
     engine/object_test.cpp
-    engine/objectsManager_test.cpp
-    #engine/processManager_test.cpp
+
+    engine/engine_test.cpp
+    engine/memoryManager_test.cpp
+    engine/diskOperation_test.cpp
+    engine/diskManager_test.cpp
+	engine/processManager_test.cpp
     engine/processItem_test.cpp
     engine/buffer_test.cpp
-    #engine/diskStatistics_test.cpp
-    #engine/diskOperation_test.cpp
-    #engine/diskManager_test.cpp
-    engine/memoryManager_test.cpp
-    engine/engine_test.cpp
+    engine/readFile_test.cpp
+
 )
 
 

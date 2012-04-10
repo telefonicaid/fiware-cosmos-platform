@@ -11,7 +11,7 @@
 #include <fcntl.h>              // fcntl, F_SETFD
 #include <errno.h>
 
-#include "au/TokenTaker.h"
+#include "au/mutex/TokenTaker.h"
 
 #include "SocketConnection.h" // Own interface
 

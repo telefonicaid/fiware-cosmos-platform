@@ -5,7 +5,7 @@
 #include <string>				/* std::string */
 
 
-#include "au/Token.h"                /* Lock                            */
+#include "au/mutex/Token.h"                /* Lock                            */
 #include "au/string.h"              // au::xml_...
 #include "au/ErrorManager.h"                /* Lock                            */
 #include "au/CommandLine.h"			/* AUCommandLine                            */

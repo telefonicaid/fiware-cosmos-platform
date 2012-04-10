@@ -3,7 +3,7 @@
 #ifndef _H_SAMSONPUSH_CONNECTIONS_MANAGER
 #define _H_SAMSONPUSH_CONNECTIONS_MANAGER
 
-#include "au/TokenTaker.h"
+#include "au/mutex/TokenTaker.h"
 
 #include "au/network/NetworkListener.h"
 #include "samson/client/SamsonClient.h"

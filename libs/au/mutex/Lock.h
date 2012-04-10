@@ -24,8 +24,7 @@
 #include <pthread.h>             /* pthread_mutex_t                          */
 #include <string>                /* std::string                              */
 
-#include "au/StopLock.h"            /* StopLock                                 */
-
+#include "au/mutex/StopLock.h"            /* StopLock                                 */
 #include "au/namespace.h"
 
 

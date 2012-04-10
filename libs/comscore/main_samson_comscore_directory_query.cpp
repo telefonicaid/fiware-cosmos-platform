@@ -15,7 +15,7 @@
 #include <signal.h>
 
 
-#include "au/LockDebugger.h"            // au::LockDebugger
+#include "au/mutex/LockDebugger.h"            // au::LockDebugger
 #include "au/ThreadManager.h"
 
 #include "comscore/common.h"

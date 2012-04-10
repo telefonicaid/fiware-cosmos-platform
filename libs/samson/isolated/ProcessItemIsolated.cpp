@@ -10,8 +10,8 @@
 
 #include "au/gpb.h"                     // au::readGPB & au::writeGPB
 #include "au/ErrorManager.h"
-#include "au/Token.h"
-#include "au/TokenTaker.h"
+#include "au/mutex/Token.h"
+#include "au/mutex/TokenTaker.h"
 #include "au/ThreadManager.h"
 
 #include "engine/MemoryManager.h"			// engine::MemoryManager

@@ -30,7 +30,7 @@
 
 #include "engine/Buffer.h"                  // samson::Buffer
 #include "engine/Engine.h"                  // samson::Buffer
-#include "au/Token.h"                       // au::Token
+#include "au/mutex/Token.h"                       // au::Token
 #include "au/containers/map.h"                         // au::map
 #include "au/containers/list.h"                        // au::list
 #include "au/string.h"                      // au::Format
@@ -148,9 +148,6 @@ private:
     size_t _getUsedMemory();
     
 public:
-    
-    // Function for the main thread of memory
-    void runThread();        
     
     // get xml information
     void getInfo( std::ostringstream& output);

@@ -5,7 +5,7 @@
 
 #include "au/Rate.h"
 #include "au/Status.h"
-#include "au/Token.h"
+#include "au/mutex/Token.h"
 #include "au/string.h"
 
 namespace au 

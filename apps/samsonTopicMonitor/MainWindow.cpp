@@ -10,9 +10,9 @@
 
 #include "au/containers/map.h"
 #include "au/RRT.h"             // au::ValueCollection 
-#include "au/Token.h"
+#include "au/mutex/Token.h"
 #include "au/string.h"              // au::str()
-#include "au/TokenTaker.h"             
+#include "au/mutex/TokenTaker.h"             
 
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
 

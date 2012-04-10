@@ -24,7 +24,7 @@
 
 #include "au/containers/map.h"                 // au::list
 #include "au/containers/set.h"                 // au::set
-#include "au/Token.h"               // au::Token
+#include "au/mutex/Token.h"               // au::Token
 #include "au/namespace.h"
 
 #include "engine/Engine.h"     // engine::Engine

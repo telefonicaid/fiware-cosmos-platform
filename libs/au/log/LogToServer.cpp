@@ -16,8 +16,8 @@
 
 #include "au/network/SocketConnection.h"
 #include "au/string.h"
-#include "au/Token.h"
-#include "au/TokenTaker.h"
+#include "au/mutex/Token.h"
+#include "au/mutex/TokenTaker.h"
 
 #include "au/log/Log.h"
 #include "LogToServer.h" // Own interface

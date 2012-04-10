@@ -1,7 +1,7 @@
 #ifndef _H_SAMSON_CONNECTOR_SAMSON_CONNECTION
 #define _H_SAMSON_CONNECTOR_SAMSON_CONNECTION
 
-#include "au/Token.h"
+#include "au/mutex/Token.h"
 
 #include "common.h"
 

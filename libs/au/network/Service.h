@@ -3,8 +3,8 @@
 #define _H_AU_NETWORK_SERVICE
 
 #include "au/Status.h"
-#include "au/Token.h"
-#include "au/TokenTaker.h"
+#include "au/mutex/Token.h"
+#include "au/mutex/TokenTaker.h"
 #include "au/containers/set.h"
 
 #include "au/tables/Table.h"

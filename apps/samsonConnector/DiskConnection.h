@@ -3,9 +3,9 @@
 
 #include <string>
 
-#include "au/Token.h"
+#include "au/mutex/Token.h"
 #include "au/ErrorManager.h"
-#include "au/TokenTaker.h"
+#include "au/mutex/TokenTaker.h"
 
 #include "common.h" 
 #include "BufferProcessor.h"

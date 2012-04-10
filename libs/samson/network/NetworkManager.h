@@ -4,8 +4,8 @@
 #ifndef _H_SAMSON_NETWORK_MANAGER
 #define _H_SAMSON_NETWORK_MANAGER
 
-#include "au/Token.h"
-#include "au/TokenTaker.h"
+#include "au/mutex/Token.h"
+#include "au/mutex/TokenTaker.h"
 
 #include "au/containers/map.h"
 #include "au/tables/Table.h"

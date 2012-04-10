@@ -23,7 +23,7 @@
 
 #include "au/Cronometer.h"              // au::CronometerSystem
 #include "au/Environment.h"            // au::Environment
-#include "au/Token.h"                  // au::Token
+#include "au/mutex/Token.h"                  // au::Token
 #include "au/ErrorManager.h"           // au::ErrorManager
 #include "au/namespace.h"
 

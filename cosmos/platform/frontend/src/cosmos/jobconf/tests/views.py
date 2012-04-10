@@ -3,7 +3,7 @@ Views tests
 
 """
 from django.conf import settings
-from django.contrib import messages
+import django.contrib.messages as msg
 from django.contrib.auth.models import User
 from django.utils import unittest
 import django.test as djangotest
@@ -34,7 +34,7 @@ class ViewTestCase(djangotest.TestCase):
 
            Optionally, error message should include submsg content."""
 
-        reported = response.context['messages']
+        messages = response.context['messages']
         explanation = "Should have a message of level>=%d" % level
         if submsg is not None:
             explanation = explanation + " and text '%s'" % submsg
@@ -42,7 +42,7 @@ class ViewTestCase(djangotest.TestCase):
             (m.level >= level) and ((submsg is None) or
                                     (m.message.lower().find(submsg.lower())
                                      >= 0)))
-        self.assertTrue(any(filter(matches_assertion, reported)),
+        self.assertTrue(any(filter(matches_assertion, messages)),
                         msg=explanation)
 
 
@@ -84,18 +84,18 @@ class JobStartTestCase(ViewTestCase):
         self.assertMessage(response, expected_level, expected_message)
 
     def test_job_start_failure(self):
-        self.expect_job_failure(1234, messages.WARNING, "not found")
-        self.expect_job_failure(   8, messages.WARNING, "not found")
-        self.expect_job_failure(   2, messages.WARNING, "unconfigured")
-        self.expect_job_failure(   3, messages.WARNING, "no data for running")
-        self.expect_job_failure(   5, messages.WARNING, "running")
-        self.expect_job_failure(   6, messages.WARNING, "failed")
-        self.expect_job_failure(   7, messages.WARNING, "successful")
+        self.expect_job_failure(1234, msg.WARNING, "not found")
+        self.expect_job_failure(   8, msg.WARNING, "not found")
+        self.expect_job_failure(   2, msg.WARNING, "unconfigured")
+        self.expect_job_failure(   3, msg.WARNING, "no data for running")
+        self.expect_job_failure(   5, msg.WARNING, "running")
+        self.expect_job_failure(   6, msg.WARNING, "failed")
+        self.expect_job_failure(   7, msg.WARNING, "successful")
 
     def test_job_start_success(self):
         response = self.client.get('/?run_job=4')
         self.assertEquals(response.status_code, 200)
-        self.assertMessage(response, messages.INFO, 'was started')
+        self.assertMessage(response, msg.INFO, 'was started')
 
 
 class JobResultsTestCase(ViewTestCase):

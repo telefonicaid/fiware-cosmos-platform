@@ -13,6 +13,7 @@
 */
 #include "parseArgs/paBuiltin.h"        // paLsHost, paLsPort
 #include "parseArgs/paConfig.h"         // paConfig()
+#include "parseArgs/paIsSet.h"
 #include "parseArgs/parseArgs.h"
 
 #include "au/string.h"
@@ -190,7 +191,6 @@ int main(int argC, const char *argV[])
     paConfig("log to screen",                 (void*) true);
     paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
     paConfig("screen line format",            (void*) "TYPE: TEXT");
-    paConfig("log to file",                   (void*) true);
     paConfig("log to stderr",                 (void*) true);
 
     paConfig("man synopsis",                  (void*) manSynopsis);
@@ -205,6 +205,7 @@ int main(int argC, const char *argV[])
     paConfig("default value", "-logDir", (void*) "/var/log/samson");
     paConfig("default value", "-lsHost", (void*) "NO");
     paConfig("default value", "-lsPort", (void*) 6001);
+    paConfig("if hook active, no traces to file", (void*) true);
 
     // Random initialization
     struct timeval tp;
@@ -216,6 +217,23 @@ int main(int argC, const char *argV[])
     delilah_random_code = au::code64_rand();
     paProgName = strdup( au::str("delilah_%s" , au::code64_str( delilah_random_code ).c_str() ).c_str() );
     
+    const char* xxhost = paIsSetSoGet(argC, (char**) argV, "-lsHost");
+    if (xxhost != NULL)
+    {
+        if (strcmp(xxhost, "NO") == 0) // No Log Server wanted - turn on log file ...
+        {
+            paConfig("log to file",                       (void*) true);
+            // printf("logging to file\n");
+        }
+        // else
+        //    printf("NOT logging to file\n");
+    }
+    else // '-lsHost' not set - turn on log file ...
+    {
+        paConfig("log to file",                       (void*) true);
+        // printf("Logging to file\n");
+    }
+
     paParse(paArgs, argC, (char**) argV, 1, true);
     lmAux((char*) "father");
     logFd = lmFirstDiskFileDescriptor();

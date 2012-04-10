@@ -20,6 +20,8 @@
 #include <stdlib.h>				/* free()									 */
 #include <time.h>
 
+
+
 /******************************************************************************
 *
 * globals
@@ -1141,6 +1143,7 @@ extern bool lmBuf;
 extern bool lmReads;
 extern bool lmWrites;
 extern bool lmAssertAtExit;
+extern bool lmNoTracesToFileIfHookActive;
 
 
 

@@ -56,7 +56,7 @@ int paLogSetup(void)
 
     // printf("In paLogSetup. paLogToFile == %s\n", (paLogToFile == true)? "true" : "false");
 
-	if (paLogToFile)
+	if (paLogToFile == true)
 	{
         // printf("paLogDir == '%s'\n", paLogDir);
         if (paLogDir[0] != 0)
@@ -94,7 +94,7 @@ int paLogSetup(void)
 		}
 	}
 
-	if (paLogToFile || paLogToScreen)
+	if (paLogToFile || paLogToScreen || lmNoTracesToFileIfHookActive)
 	{
 		if ((s = lmInit()) != LmsOk)
 		{

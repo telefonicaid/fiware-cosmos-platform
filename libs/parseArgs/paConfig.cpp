@@ -98,6 +98,7 @@ bool       paDoubt               = false;
 bool       paMsgsToStdout        = true;
 bool       paMsgsToStderr        = false;
 char       paPid[16];
+bool       paNoTracesToFileIfHookActive = false;
 
 
 
@@ -634,6 +635,10 @@ int paConfig(const char* item, const void* value, const void* value2)
 	}
 	else if (strcmp(item, "make sure paConfigInit is called") == 0)
 		;
+	else if (strcmp(item, "if hook active, no traces to file") == 0)
+        lmNoTracesToFileIfHookActive = true;
+	else if (strcmp(item, "even if hook active, no traces to file") == 0)
+        lmNoTracesToFileIfHookActive = false;
 	else
 	{
 		char w[256];

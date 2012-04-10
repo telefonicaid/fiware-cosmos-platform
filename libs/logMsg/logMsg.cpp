@@ -245,22 +245,23 @@ static int               lmSd                   = -1;
 *
 * Global variables
 */
-bool  lmDebug         = false;
-bool  lmHidden        = false;
-bool  lmVerbose       = false;
-bool  lmVerbose2      = false;
-bool  lmVerbose3      = false;
-bool  lmVerbose4      = false;
-bool  lmVerbose5      = false;
-bool  lmToDo          = false;
-bool  lmDoubt         = false;
-bool  lmReads         = false;
-bool  lmWrites        = false;
-bool  lmBug           = false;
-bool  lmBuf           = false;
-bool  lmFix           = false;
-bool  lmAssertAtExit  = false;
-LmxFp lmxFp           = NULL;
+bool  lmDebug                      = false;
+bool  lmHidden                     = false;
+bool  lmVerbose                    = false;
+bool  lmVerbose2                   = false;
+bool  lmVerbose3                   = false;
+bool  lmVerbose4                   = false;
+bool  lmVerbose5                   = false;
+bool  lmToDo                       = false;
+bool  lmDoubt                      = false;
+bool  lmReads                      = false;
+bool  lmWrites                     = false;
+bool  lmBug                        = false;
+bool  lmBuf                        = false;
+bool  lmFix                        = false;
+bool  lmAssertAtExit               = false;
+LmxFp lmxFp                        = NULL;
+bool  lmNoTracesToFileIfHookActive = false;
 
 
 
@@ -1705,7 +1706,7 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
     if ((type != 'H') && lmOutHook && lmOutHookActive == true)
     {
         time_t secondsNow = time(NULL);
-        if( use_hook )
+        if (use_hook)
             lmOutHook(lmOutHookParam, text, type, secondsNow, 0, 0, file, lineNo, fName, tLev, stre);
     }
 
@@ -1750,7 +1751,6 @@ LmStatus lmOut(char* text, char type, const char* file, int lineNo, const char* 
         }
         if (stre != NULL)
             strncat(line, stre, sizeof(line) - 1);
-
 
         sz = strlen(line);
         

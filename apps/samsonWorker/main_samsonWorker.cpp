@@ -232,29 +232,36 @@ unsigned short lsPort;
 
 int main(int argC, const char *argV[])
 {
-    paConfig("builtin prefix",                (void*) "SS_WORKER_");
-    paConfig("usage and exit on any warning", (void*) true);
+    paConfig("builtin prefix",                    (void*) "SS_WORKER_");
+    paConfig("usage and exit on any warning",     (void*) true);
 
     // Andreu: samsonWorker is not a console in foreground (debug) mode (to ask to status with commands)
-    paConfig("log to screen",                 (void*) "only errors");
-    //paConfig("log to screen",                 (void*) (void*) false);
+    paConfig("log to screen",                     (void*) "only errors");
+    //paConfig("log to screen",                   (void*) (void*) false);
 
-    paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-    paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
-    paConfig("log to file",                   (void*) true);
+    paConfig("log file line format",              (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+    paConfig("screen line format",                (void*) "TYPE@TIME  EXEC: TEXT");
 
-    paConfig("default value", "-logDir", (void*) "/var/log/samson");
-    paConfig("default value", "-lsHost", (void*) "localhost");
-    paConfig("default value", "-lsPort", (void*) 6001);
+    paConfig("default value", "-logDir",          (void*) "/var/log/samson");
+    paConfig("default value", "-lsHost",          (void*) "localhost");
+    paConfig("default value", "-lsPort",          (void*) 6001);
+    paConfig("if hook active, no traces to file", (void*) true);
 
-    paConfig("man synopsis",                  (void*) manSynopsis);
-    paConfig("man shortdescription",          (void*) manShortDescription);
-    paConfig("man description",               (void*) manDescription);
-    paConfig("man exitstatus",                (void*) manExitStatus);
-    paConfig("man author",                    (void*) manAuthor);
-    paConfig("man reportingbugs",             (void*) manReportingBugs);
-    paConfig("man copyright",                 (void*) manCopyright);
-    paConfig("man version",                   (void*) manVersion);
+    paConfig("man synopsis",                      (void*) manSynopsis);
+    paConfig("man shortdescription",              (void*) manShortDescription);
+    paConfig("man description",                   (void*) manDescription);
+    paConfig("man exitstatus",                    (void*) manExitStatus);
+    paConfig("man author",                        (void*) manAuthor);
+    paConfig("man reportingbugs",                 (void*) manReportingBugs);
+    paConfig("man copyright",                     (void*) manCopyright);
+    paConfig("man version",                       (void*) manVersion);
+
+    const char* xxhost = paIsSetSoGet(argC, (char**) argV, "-lsHost");
+    if (xxhost != NULL)
+    {
+        if (strcmp(xxhost, "NO") == 0) // No Log Server wanted - turn on log file ...
+            paConfig("log to file",                       (void*) true);
+    }
 
     const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
@@ -264,12 +271,12 @@ int main(int argC, const char *argV[])
     strcpy(lsHost, paLsHost);
     if ((paLsPort != 0) && (strcmp(paLsHost, "NO") != 0))
         au::start_log_to_server();
+    else
+       paConfig("even if hook active, no traces to file", (void*) true);
 
     // Only add in foreground to avoid warning / error messages at the stdout
     if (fg)
         atexit(cleanup);
-
-    valgrindExit(1);
 
     lmAux((char*) "father");
 

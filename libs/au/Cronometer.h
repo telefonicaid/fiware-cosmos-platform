@@ -11,8 +11,8 @@
  *
  * DESCRIPTION
  *
- *      Easy to use class to cound how much seconds something happened.
- *      Used in situations where time-precision is not required ( seconds are ok)
+ *      Easy to use class to count how much seconds something happened.
+ *      Used in situations where time-precision is not required ( seconds are ok )
  *
  * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
  *
@@ -123,56 +123,6 @@ public:
                   ));
         }
         
-    }
-    
-};
-
-
-class CronometerNotifier
-{
-    bool first_time;
-    au::Cronometer cronometer;
-
-    double initial_time;
-    double period_time;
-    
-public:
-    
-    CronometerNotifier( double _period_time )
-    {
-        period_time = _period_time;
-        first_time = false; // No initial time requirement
-    }
-
-    CronometerNotifier( double _initial_time ,  double _period_time )
-    {
-        initial_time = _initial_time;
-        period_time = _period_time;
-        first_time = true; // No initial time requirement
-    }
-    
-    bool touch()
-    {
-        
-        
-        if ( first_time )
-        {
-            if ( cronometer.diffTime() > initial_time )
-            {
-                first_time = false;
-                cronometer.reset();
-                return true;
-            }
-            
-            return false;
-        }
-        
-        if ( cronometer.diffTime() > period_time )
-        {
-            cronometer.reset();
-            return true;
-        }
-        return false;
     }
     
 };

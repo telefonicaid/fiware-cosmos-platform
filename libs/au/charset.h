@@ -1,4 +1,25 @@
 
+
+
+
+/* ****************************************************************************
+ *
+ * FILE            charser.h
+ *
+ * AUTHOR          Andreu Urruela & Gregorio Escalada
+ *
+ * PROJECT         au library
+ *
+ * DATE            April 2012
+ *
+ * DESCRIPTION
+ *
+ * Handy functions to work with different charsets
+ *
+ * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
+ *
+ * ****************************************************************************/
+
 #ifndef _H_AU_CHARSET
 #define _H_AU_CHARSET
 
@@ -6,7 +27,6 @@
 
 namespace au
 {
-    
     
     // Get the number of screen characters of a UTF-8 string
     size_t strlenUTF8( const char *cad_utf );

@@ -10,7 +10,7 @@
 #include "au/CommandLine.h"		// au::CommandLine
 #include "au/ErrorManager.h"           // au::ErrorManager
 
-#include "au/StringVector.h"
+#include "au/containers/StringVector.h"
 #include "au/tables/Table.h"
 
 #include "status.h"                         // Status codes

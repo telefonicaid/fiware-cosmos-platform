@@ -2,15 +2,13 @@
 
 
 #include "au/CommandLine.h"            // samson::CommandLine
+#include "au/containers/Uint64Vector.h"
 
 #include "engine/Buffer.h"            // engine::Buffer
 
-
 #include "samson/common/EnvironmentOperations.h"	// copyEnviroment()
 #include "samson/common/MessagesOperations.h"
-
 #include "samson/network/Packet.h"					// samson::Packet
-
 #include "samson/delilah/Delilah.h"				// samson::Delilah
 #include "DelilahComponent.h"                   
 #include "WorkerCommandDelilahComponent.h"      // Own interface

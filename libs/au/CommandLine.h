@@ -17,7 +17,7 @@
  * The advantadge of this class is that is supports running-time definiton of possible flags.
  *
  * 
- * Example: command arg1 -f input.ttx -g 2 arg2
+ * Example: command arg1 -f input.txt -g 2 arg2
  * 
  * Depending on how you define flags "f" and "g" this will parse in a different way
  *

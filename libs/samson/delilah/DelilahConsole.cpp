@@ -16,7 +16,7 @@
 #include "au/string.h"					// au::Format
 #include "au/Descriptors.h"             // au::Descriptors
 #include "au/ThreadManager.h"
-#include "au/StringVector.h"
+#include "au/containers/StringVector.h"
 
 #include "au/tables/Tree.h"                    // au::tables::TreeItem
 #include "au/tables/Table.h"

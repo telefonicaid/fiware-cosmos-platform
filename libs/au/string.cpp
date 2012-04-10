@@ -575,11 +575,19 @@ bool string_begins( std::string& str , std::string prefix )
 
 bool string_ends( std::string& str , std::string postfix )
 {
+    if( postfix.length() > str.length() )
+        return false;
     return str.substr( str.length()-postfix.length() ) == postfix;
 }
 
 bool string_begins_and_ends( std::string& str , std::string prefix , std::string postfix )
 {
+    if( postfix.length() > str.length() )
+        return false;
+
+    if( prefix.length() > str.length() )
+        return false;
+    
     if( str.substr( 0 , prefix.length() ) != prefix )
         return false;
     if( str.substr( str.length()-postfix.length() ) != postfix )

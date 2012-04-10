@@ -4,6 +4,8 @@
 
 #include "au/log/log_server_common.h"
 #include "au/log/LogServer.h"
+#include "au/log/LogFormatter.h"
+#include "au/log/LogFile.h"
 
 #define DEF_FORMAT "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT"
 

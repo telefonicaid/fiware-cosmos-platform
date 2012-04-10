@@ -13,7 +13,7 @@
  * DESCRIPTION
  *
  *      Descriptors solves the situation where you have a list of strings where some
- *      of them are the same. This helps you to group equal strings to display a unified message
+ *      of them are repeated. This helps you to group equal strings to display a unified message
  *
  * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
  *

@@ -7,7 +7,7 @@
 #include <sys/time.h>           // struct timeval
 #include <sstream>              // std::ostringstream
 #include "logMsg/logMsg.h"             // LM_W
-#include "au/StringVector.h"
+#include "au/containers/StringVector.h"
 #include "au/CommandLine.h"
 #include "au/containers/simple_map.h"
 #include "au/ErrorManager.h"        // au::ErrorManager

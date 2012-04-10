@@ -158,7 +158,7 @@ void ConsoleAutoComplete::auto_complete_files( std::string file_selector )
         
         if( S_ISREG(info.st_mode) )
         {
-            if ( check_string_ends_with( path , file_selector ) )
+            if ( string_ends( path , file_selector ) )
             {
                 // Final string to show
                 size_t size = info.st_size;

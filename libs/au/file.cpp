@@ -88,17 +88,6 @@ void removeDirectory( std::string fileName , au::ErrorManager & error )
     
 }
 
-bool check_string_ends_with( std::string txt , std::string end_txt )
-{
-    
-    if( txt.length() < end_txt.length() )
-        return false;
-    
-    for ( size_t i=0 ; i < end_txt.length() ; i++ )
-        if ( end_txt[ end_txt.length() - 1 - i] != txt[ txt.length() - 1 - i ] )
-            return false;
-    return true;
-}
 
 std::string path_remove_last_component( std::string path )
 {

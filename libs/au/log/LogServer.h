@@ -40,7 +40,6 @@ namespace au {
         // Add a service to attent queries of this port
         bool add_query_channel( int port );
         
-        
         // Add a log channel on this port to receive connections with new logs
         void add_channel( std::string name , int port ,  std::string directory , ErrorManager *error  );
         

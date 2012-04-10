@@ -13,11 +13,6 @@
 
 #include "au/mutex/TokenTaker.h"
 
-#include "samson/common/MemoryTags.h"
-#include "samson/common/status.h"
-
-#include "samson/network/Packet.h"
-
 #include "FileDescriptor.h" // Own interface
 
 namespace au {

@@ -34,7 +34,7 @@
 #include "logMsg/logMsg.h"					 // LM_M()
 
 #include "au/containers/map.h"
-#include "au/StringVector.h"
+#include "au/containers/StringVector.h"
 
 namespace au {
 

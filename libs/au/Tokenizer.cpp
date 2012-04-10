@@ -17,6 +17,53 @@ namespace au {
             return content == _content;
         }
         
+        bool Token::isLiteral()
+        {
+            return (type == literal);
+        }
+        
+        bool Token::isSeparator()
+        {
+            return (type == separator);
+        }
+        
+        bool Token::isNormal()
+        {
+            return (type == normal);
+        }
+        
+        bool Token::isOperation()
+        {
+            if( content == "+" )
+                return true;
+            if( content == "-" )
+                return true;
+            if( content == "*" )
+                return true;
+            if( content == "/" )
+                return true;
+            return false;
+        }
+        
+        bool Token::isComparator()
+        {
+            if( content == "==" )
+                return true;
+            if( content == "!=" )
+                return true;
+            if( content == "<=" )
+                return true;
+            if( content == ">=" )
+                return true;
+            if( content == "<" )
+                return true;
+            if( content == ">" )
+                return true;
+            
+            return false;
+        }
+
+        
         bool Token::isNumber()
         {
             const char* data = content.c_str();

@@ -19,7 +19,7 @@
 #include "au/console/Console.h"
 #include "au/console/ConsoleAutoComplete.h"
 
-#include "au/StringVector.h"
+#include "au/containers/StringVector.h"
 #include "au/tables/Table.h"
 #include "au/tables/Select.h"
 

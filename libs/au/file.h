@@ -34,18 +34,19 @@
 
 NAMESPACE_BEGIN(au)
 
+// Get sie of a particular file ( 0 if error )
 size_t sizeOfFile( std::string fileName );
 
+// Remove a directory ( get a string error if something happens )
 void removeDirectory( std::string fileName , au::ErrorManager & error ); 
 
-
+// Check type of file
 bool isDirectory(char path[]);
 bool isRegularFile(char path[]);
 
-
+// Get the list of regular files contained in a directory
 std::vector<std::string> getRegularFilesFromDirectory( std::string directory );
 
-bool check_string_ends_with( std::string txt , std::string end_txt );
 
 // Working with paths
 std::string path_remove_last_component( std::string path );

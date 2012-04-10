@@ -58,68 +58,28 @@ namespace au
             
             // Check if this token is a numerical value
             bool isNumber();            
-            
+
+            // Check type
+            bool isNormal();
+            bool isSeparator();
+            bool isLiteral();
+
             // Debug str
             std::string str();
             
-            bool isLiteral()
-            {
-                return (type == literal);
-            }
-
-            bool isSeparator()
-            {
-                return (type == separator);
-            }
-            
-            bool isNormal()
-            {
-                return (type == normal);
-            }
-            
-            bool isOperation()
-            {
-                if( content == "+" )
-                    return true;
-                if( content == "-" )
-                    return true;
-                if( content == "*" )
-                    return true;
-                if( content == "/" )
-                    return true;
-                return false;
-            }
-            
-            bool isComparator()
-            {
-                if( content == "==" )
-                    return true;
-                if( content == "!=" )
-                    return true;
-                if( content == "<=" )
-                    return true;
-                if( content == ">=" )
-                    return true;
-                if( content == "<" )
-                    return true;
-                if( content == ">" )
-                    return true;
-                
-                return false;
-            }
-
+            // Other interesting informations
+            bool isOperation();
+            bool isComparator();
             
         };
         
         
         class TokenVector : public std::vector<Token>
         {
-            size_t position;                  // Position inside the vector
-            
+            size_t position;                  // Position inside the vector ( when retriving for using... )
             std::vector<std::string> tokens;  // Vector with the considered tokens
             
         public:
-            
             
             // Add spetial tokens
             void addSingleCharTokens( std::string tokens ); 
@@ -131,7 +91,6 @@ namespace au
             void parse( std::string command );
             
             // Functions to deserialize the provided command
-
             Token* getNextToken();
             Token* popToken();
                         
@@ -150,12 +109,8 @@ namespace au
             
             // Auxiliar function to set the error.
             void set_error( au::ErrorManager *error , std::string error_message );
-            
-            
            
         };
-        
-
         
     }
 }

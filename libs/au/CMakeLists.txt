@@ -1,4 +1,7 @@
 
+# ---------------------------------------------------
+# mutex directory
+# ---------------------------------------------------
 
 SET( MUTEX_FILES
 mutex/Lock.h
@@ -6,26 +9,43 @@ mutex/StopLock.h
 mutex/LockDebugger.h
 mutex/Token.h
 mutex/TokenTaker.h
-
 mutex/Lock.cpp
 mutex/LockDebugger.cpp
 mutex/Token.cpp
 mutex/TokenTaker.cpp
 )
 
-SET (HEADERS
-Status.h
+# ---------------------------------------------------
+# log directory
+# ---------------------------------------------------
 
-Object.h
-namespace.h
-charset.h
-utils.h
-Descriptors.h
-gpb.h
-Environment.h
-CommandLine.h
+SET( LOG_FILES
+log/log_server_common.h
 
-${MUTEX_FILES}
+log/Log.h
+log/LogServer.h
+log/LogServerChannel.h
+log/LogServerQuery.h
+log/LogToServer.h
+log/LogFile.h
+log/LogFormatter.h
+log/TableLogFormatter.h
+
+log/Log.cpp
+log/LogServer.cpp
+log/LogServerChannel.cpp
+log/LogServerQuery.cpp
+log/LogToServer.cpp
+log/LogFile.cpp
+log/LogFormatter.cpp
+log/TableLogFormatter.cpp
+)
+
+# ---------------------------------------------------
+# containers directory
+# ---------------------------------------------------
+
+SET( CONTAINERS_FILES
 
 containers/map.h
 containers/simple_map.h
@@ -34,22 +54,17 @@ containers/set.h
 containers/vector.h
 containers/ListMap.h
 
-console/Console.h
-console/ConsoleEntry.h
-console/ConsoleCommand.h
-console/ConsoleCommandHistory.h
-console/ConsoleEscapeSequence.h
-console/ConsoleCode.h
-console/ConsoleAutoComplete.h
+containers/StringVector.h
+containers/Uint64Vector.h
+containers/StringVector.cpp
+containers/Uint64Vector.cpp
+)
 
-string/split.h
+# ---------------------------------------------------
+# tables directory
+# ---------------------------------------------------
 
-network/misc.h
-network/FileDescriptor.h
-network/NetworkListener.h
-network/SocketConnection.h
-network/Service.h
-
+SET( TABLES_FILES
 tables/Select.h
 tables/Table.h
 tables/Tree.h
@@ -59,12 +74,87 @@ tables/pugi.h
 tables/pugixml.hpp
 tables/pugiconfig.hpp
 
-log/Log.h
-log/LogServer.h
-log/LogServerChannel.h
-log/LogServerQuery.h
-log/LogToServer.h
-log/log_server_common.h
+tables/Select.cpp
+tables/Table.cpp
+tables/Tree.cpp
+tables/Collection.cpp
+tables/DataBase.cpp
+tables/pugi.cpp
+tables/pugixml.cpp
+)
+
+# ---------------------------------------------------
+# network directory
+# ---------------------------------------------------
+
+SET( NETWORK_FILES
+network/FileDescriptor.cpp
+network/FileDescriptor.h
+network/NetworkListener.cpp
+network/NetworkListener.h
+network/Service.cpp
+network/Service.h
+network/SocketConnection.cpp
+network/SocketConnection.h
+network/misc.cpp
+network/misc.h
+)
+
+# ---------------------------------------------------
+# console directory
+# ---------------------------------------------------
+
+SET( CONSOLE_FILES
+console/Console.h
+console/ConsoleEntry.h
+console/ConsoleCommand.h
+console/ConsoleCommandHistory.h
+console/ConsoleEscapeSequence.h
+console/ConsoleCode.h
+console/ConsoleAutoComplete.h
+
+console/Console.cpp
+console/ConsoleEntry.cpp
+console/ConsoleCommand.cpp
+console/ConsoleCommandHistory.cpp
+console/ConsoleEscapeSequence.cpp
+console/ConsoleCode.cpp
+console/ConsoleAutoComplete.cpp
+)
+
+
+# ---------------------------------------------------
+# string directory
+# ---------------------------------------------------
+
+SET( STRING_FILES
+string/split.h
+string/split.cpp
+)
+
+# ---------------------------------------------------
+# HEADERS & SOURCES
+# ---------------------------------------------------
+
+SET (HEADERS
+Status.h
+
+${MUTEX_FILES}
+${LOG_FILES}
+${CONTAINERS_FILES}
+${TABLES_FILES}
+${NETWORK_FILES}
+${CONSOLE_FILES}
+${STRING_FILES}
+
+TemporalBuffer.h
+namespace.h
+charset.h
+utils.h
+Descriptors.h
+gpb.h
+Environment.h
+CommandLine.h
 
 ErrorManager.h
 varint.h
@@ -74,9 +164,7 @@ CounterCollection.h
 file.h
 time.h
 string.h
-StringVector.h
 xml.h
-Table.h
 RRT.h
 cpu.h
 ProcessStats.h
@@ -97,7 +185,7 @@ OnOffMonitor.h
 SET (SOURCES
 Status.cpp
 
-Object.cpp
+TemporalBuffer.cpp
 charset.cpp
 utils.cpp
 
@@ -105,35 +193,6 @@ Descriptors.cpp
 CommandLine.cpp
 Environment.cpp
 
-console/Console.cpp
-console/ConsoleEntry.cpp
-console/ConsoleCommand.cpp
-console/ConsoleCommandHistory.cpp
-console/ConsoleEscapeSequence.cpp
-console/ConsoleCode.cpp
-console/ConsoleAutoComplete.cpp
-
-string/split.cpp
-
-network/misc.cpp
-network/FileDescriptor.cpp
-network/NetworkListener.cpp
-network/SocketConnection.cpp
-network/Service.cpp
-
-tables/Select.cpp
-tables/Table.cpp
-tables/Tree.cpp
-tables/Collection.cpp
-tables/DataBase.cpp
-tables/pugi.cpp
-tables/pugixml.cpp
-
-log/Log.cpp
-log/LogServerChannel.cpp
-log/LogServerQuery.cpp
-log/LogToServer.cpp
-log/Logserver.cpp
 
 ErrorManager.cpp
 Cronometer.cpp
@@ -142,9 +201,7 @@ CounterCollection.cpp
 file.cpp
 time.cpp
 string.cpp
-StringVector.cpp
 xml.cpp
-Table.cpp
 RRT.cpp
 cpu.cpp
 ProcessStats.cpp
@@ -165,87 +222,13 @@ OnOffMonitor.cpp
 # Source groups to organize Xcode project
 # -----------------------------------------------------------------
 
-SOURCE_GROUP( mutex FILES ${MUTEX_FILES} )
-
-SOURCE_GROUP( containers FILES
-containers/map.h
-containers/simple_map.h
-containers/list.h
-containers/set.h
-containers/vector.h
-containers/ListMap.h
-)
-
-SOURCE_GROUP( console FILES
-   console/Console.h
-   console/ConsoleEntry.h
-   console/ConsoleCommand.h
-   console/ConsoleCommandHistory.h
-   console/ConsoleEscapeSequence.h
-   console/ConsoleCode.h
-   console/ConsoleAutoComplete.h
-   console/Console.cpp
-   console/ConsoleEntry.cpp
-   console/ConsoleCommand.cpp
-   console/ConsoleCommandHistory.cpp
-   console/ConsoleEscapeSequence.cpp
-   console/ConsoleCode.cpp
-   console/ConsoleAutoComplete.cpp
-)
-
-
-SOURCE_GROUP( string FILES
-   string/split.h 
-   string/split.cpp
-)
-
-SOURCE_GROUP( log FILES
-   log/Log.h
-   log/LogServer.h
-   log/LogServerChannel.h
-   log/LogServerQuery.h
-   log/LogToServer.h
-   log/log_server_common.h
-   log/Log.cpp
-   log/LogServer.cpp
-   log/LogServerChannel.cpp
-   log/LogServerQuery.cpp
-   log/LogToServer.cpp
-   log/log_server_common.cpp
-)
-
-SOURCE_GROUP( network FILES
-   network/misc.h
-   network/FileDescriptor.h
-   network/NetworkListener.h
-   network/SocketConnection.h 
-   network/Service.h
-
-   network/misc.cpp
-   network/FileDescriptor.cpp
-   network/NetworkListener.cpp
-   network/SocketConnection.cpp 
-   network/Servie.cpp
-)
-
-
-SOURCE_GROUP( tables FILES
-	tables/Select.cpp
-	tables/Table.cpp
-	tables/Tree.cpp
-	tables/Collection.cpp
-	tables/DataBase.cpp
-	tables/pugi.cpp
-	tables/pugixml.cpp
-	tables/Select.h
-	tables/Table.h
-	tables/Tree.h
-	tables/Collection.h
-	tables/DataBase.h
-	tables/pugi.h
-	tables/pugixml.h
-)
-
+SOURCE_GROUP( mutex      FILES ${MUTEX_FILES} )
+SOURCE_GROUP( log        FILES ${LOG_FILES} )
+SOURCE_GROUP( containers FILES ${CONTAINERS_FILES} )
+SOURCE_GROUP( tables     FILES ${TABLES_FILES} )
+SOURCE_GROUP( network    FILES ${NETWORK_FILES} )
+SOURCE_GROUP( console    FILES ${CONSOLE_FILES} )
+SOURCE_GROUP( string     FILES ${STRING_FILES} )
 
 
 # Include directories
@@ -269,6 +252,7 @@ SET (LIBAU ${PROJECT_BINARY_DIR}/libs/au/libau.a CACHE INTERNAL "")
 #ADD_EXECUTABLE(au_sleep_test au_sleep_test_main.cpp )
 #TARGET_LINK_LIBRARIES(au_sleep_test ${LIBS} au lm pa )
 #INSTALL(TARGETS au_sleep_test        RUNTIME DESTINATION   bin)
+
 
 
 

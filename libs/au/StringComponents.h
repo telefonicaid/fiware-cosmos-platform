@@ -11,7 +11,8 @@
  *
  * DESCRIPTION
  *
- *  Class used as a a pool of instances of particular class
+ *  Class used to parse a string into components in a non-intrusive way
+ *  Original string is never modified
  *
  * COPYRIGTH       Copyright 2012 Andreu Urruela. All rights reserved.
  *

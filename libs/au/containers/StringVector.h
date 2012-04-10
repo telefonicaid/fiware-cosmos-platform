@@ -25,6 +25,7 @@ class StringVector : public std::vector<std::string>
 {
 public:
     
+    // Quick Constructor
     StringVector();
     StringVector( std::string value );
     StringVector( std::string value , std::string value2 );
@@ -35,69 +36,30 @@ public:
     StringVector( std::string value , std::string value2 , std::string value3 , std::string value4 , std::string value5 , std::string value6 , std::string value7 );
     StringVector( std::set<std::string>& values );
 
-    
+    // Parsing lines to get component
     static StringVector parseFromString( std::string line , char separator );
     static StringVector parseFromString( std::string line );
-    
+
+    // Copy from another vector
     void copyFrom( StringVector& values );
-    std::string get(size_t pos);
     
+    // Get position at a particular pos ( "" returned if out of limits )
+    std::string get(size_t pos);
+
+    // Remove duplicated values in the vector
     void unique();
     
-    // Add different values
-    
-    void push( size_t v )
+    // Add different types of values value
+    template <typename T>
+    void push( T v )
     {
-        push_back( au::str("%lu",v ) );
-    }
-
-    void push( char v )
-    {
-        push_back( au::str("%c",v ) );
+        std::ostringstream output;
+        output << v;
+        push_back( output.str() );
     }
     
     std::string str();
     std::string str_vector();
-};
-
-class Uint64Vector : public std::vector<size_t>
-{
-
-public:
-  
-    Uint64Vector()
-    {
-    }
-    
-    Uint64Vector(  std::vector<size_t> v )
-    {
-        copyFrom(v);
-    }
-    
-    size_t getNumberOfTimes( size_t t )
-    {
-        size_t num = 0;
-        for ( size_t i = 0 ; i < size() ; i++)
-            if( (*this)[i] == t )
-                num++;
-        return num;
-    }
-    
-    std::set<size_t> getSet()
-    {
-        std::set<size_t> set;
-        for ( size_t i = 0 ; i < size() ; i++)
-            set.insert( (*this)[i] );
-        return set;
-    }
-
-    void copyFrom(  std::vector<size_t> &v)
-    {
-        std::set<size_t> set;
-        for ( size_t i = 0 ; i < v.size() ; i++)
-            push_back( v[i] );
-    }
-
 };
 
 NAMESPACE_END

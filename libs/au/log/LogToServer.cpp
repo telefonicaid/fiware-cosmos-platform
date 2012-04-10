@@ -18,6 +18,7 @@
 #include "au/string.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
+#include "au/containers/list.h"
 
 #include "au/log/Log.h"
 #include "LogToServer.h" // Own interface
@@ -30,9 +31,13 @@ namespace au {
     
     class LogConnection
     {
+        // Connection information
         std::string host;
         int port;
         int time_reconnect;
+        
+        // List of logs to be sent to the server when connected
+        au::list<Log> logs;
         
         SocketConnection * socket_connection;
         au::Cronometer time_since_last_try;
@@ -64,17 +69,46 @@ namespace au {
             if( !socket_connection && ( time_since_last_try.diffTimeInSeconds() >= time_reconnect ) )
                 try_connect();
             
+            // Push into the in memory queue
+            logs.push_back(log);
+            
             // Write the lock
             if( socket_connection )
             {
-                if( !log->write( socket_connection ) )
+                au::Cronometer c;
+                while( logs.size() > 0 )
                 {
-                    // Close if not possible to write the log
-                    socket_connection->close();
-                    delete socket_connection;
-                    socket_connection = NULL;
-                    time_since_last_try.reset();
+                    if( c.diffTimeInSeconds() > 1 )
+                        return; // Never spent more than one second sending traces...
+                    
+                    Log* tmp_log = logs.extractFront();
+                    if( !tmp_log->write( socket_connection ) )
+                    {
+                        // Puhs back into the queue
+                        logs.push_front(tmp_log);
+                        
+                        // Close if not possible to write the log
+                        socket_connection->close();
+                        delete socket_connection;
+                        socket_connection = NULL;
+                        time_since_last_try.reset();
+                        return;
+                    }
+                    
+                    delete tmp_log;
+                    
                 }
+                
+            }
+            else
+            {
+
+                // Keep a maximum of 100K logs
+                while( logs.size() > 100000 )
+                {
+                    delete logs.extractFront();
+                }
+                
             }
         }
         
@@ -151,35 +185,35 @@ namespace au {
     {
         
         // Create the log to be sent
-        Log log; 
+        Log* log = new Log();
         
         // Add "string" fields
         if( progName )
-            log.add_field("progName", progName);
+            log->add_field("progName", progName);
         if( text )
-            log.add_field("text", text);
+            log->add_field("text", text);
         if ( file )
-            log.add_field("file", file);
+            log->add_field("file", file);
         if( fName )
-            log.add_field("fName", fName);
+            log->add_field("fName", fName);
         if( stre )
-            log.add_field("stre", stre);
+            log->add_field("stre", stre);
         
         
-        log.log_data.lineNo      = lineNo;
-        log.log_data.traceLevel  = tLev;
-        log.log_data.type        = type;
-        log.log_data.timezone    = timezone;
-        log.log_data.dst         = dst;
-        log.log_data.pid         = getpid();
+        log->log_data.lineNo      = lineNo;
+        log->log_data.traceLevel  = tLev;
+        log->log_data.type        = type;
+        log->log_data.timezone    = timezone;
+        log->log_data.dst         = dst;
+        log->log_data.pid         = getpid();
         //log.log_data.tid         = gettid();
-        log.log_data.tid         = 0; // Not possible to obtain this in mac OS. Pending to be fixed
+        log->log_data.tid         = 0; // Not possible to obtain this in mac OS. Pending to be fixed
 
         // Fill log_data.tv
-        gettimeofday(&log.log_data.tv,NULL);
+        gettimeofday(&log->log_data.tv,NULL);
         
         // Write over the log_server_connection
-        log_connection->write( &log );
+        log_connection->write( log );
         
     }
     

@@ -53,6 +53,8 @@ namespace au {
      
      Formats:
      ---------------------------------------------------------------------------
+
+     HOST     ( part of the logServer information )
      
      TYPE     ( in LogData )
      PID      ( in LogData ) 
@@ -189,6 +191,8 @@ namespace au {
         // Get information from this log
         std::string get( std::string  name )
         {
+            if( name == "HOST" )
+                return getField( "host" , "" ); 
             
             if( name == "TYPE" )
                 return au::str("%c" , log_data.type ); 
@@ -202,7 +206,7 @@ namespace au {
                 struct tm tmP;
                 gmtime_r(&log_data.tv.tv_sec, &tmP);
                 strftime(line_tmp, 80, DATE_FORMAT, &tmP);
-                return std::string( line_tmp ) + au::str("(%d)" , log_data.tv.tv_usec );
+                return std::string( line_tmp );
             }
             if( name == "date" )
             {
@@ -221,7 +225,13 @@ namespace au {
                 return std::string( buffer_time );
             }
             if( name == "TIME" )
-                return au::str_timestamp( log_data.tv.tv_sec ); 
+            {
+                struct tm timeinfo;
+                char buffer_time[1024];
+                localtime_r ( &log_data.tv.tv_sec , &timeinfo );
+                strftime (buffer_time,1024,"%X",&timeinfo);
+                return std::string( buffer_time ) + au::str("(%d)" , log_data.tv.tv_usec ) ;
+            }
             if( name == "LINE" )
                 return au::str("%d" , log_data.lineNo );
             if( name == "TLEV" )
@@ -393,6 +403,8 @@ namespace au {
             //LM_V(("Log formatter defined with '%s'" , definition.c_str() ));
             
             au::token::TokenVector token_vector;
+            token_vector.addToken("HOST");
+            token_vector.addToken("TYPE");
             token_vector.addToken("TYPE");
             token_vector.addToken("PID");
             token_vector.addToken("TID");
@@ -458,7 +470,10 @@ namespace au {
                 
                 std::string table_definition;
                 for ( size_t i = 0 ; i < table_fields.size() ; i++ )
-                    table_definition.append(  au::str("%s,left|", table_fields[i].c_str() ) );
+                {
+                    if( table_fields[i].length() > 0 )
+                        table_definition.append(  au::str("%s,left|", table_fields[i].c_str() ) );
+                }
                 
                 table = new au::tables::Table( table_definition );
                 log_formatter = NULL;

@@ -224,7 +224,7 @@ namespace au
                 }
                 
                 tmp_file_counter--;
-                if( tmp_file_counter <= 0 )
+                if( tmp_file_counter < 0 )
                     return table_log_formater.str();
                 
             }

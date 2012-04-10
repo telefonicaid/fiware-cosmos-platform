@@ -57,8 +57,6 @@ bool            noLog;
 int             valgrind;
 int             port;
 int             web_port;
-char            lsHost[64];
-unsigned short  lsPort;
 
 
 #define LOG_PORT LOG_SERVER_DEFAULT_CHANNEL_PORT
@@ -76,8 +74,6 @@ PaArgument paArgs[] =
     { "-web_port",  &web_port,  "",                         PaInt,    PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive web connections"   },
     { "-nolog",     &noLog,     "SAMSON_WORKER_NO_LOG",     PaBool,   PaOpt, false,                  false,  true,  "no logging"                        },
     { "-valgrind",  &valgrind,  "SAMSON_WORKER_VALGRIND",   PaInt,    PaOpt, 0,                      0,        20,  "help valgrind debug process"       },
-    { "-lsHost",    &lsHost,    "SAMSON_WORKER_LS_HOST",    PaString, PaOpt, _i "localhost",         PaNL,   PaNL,  "Host for Log Server"               },
-    { "-lsPort",    &lsPort,    "SAMSON_WORKER_LS_PORT",    PaUShort, PaOpt, LOG_PORT,               0,      9999,  "Port for Log Server"               },
 
     PA_END_OF_ARGS
 };
@@ -231,19 +227,25 @@ static void valgrindExit(int v)
 *
 * main - 
 */
+char           lsHost[64];
+unsigned short lsPort;
+
 int main(int argC, const char *argV[])
 {
     paConfig("builtin prefix",                (void*) "SS_WORKER_");
     paConfig("usage and exit on any warning", (void*) true);
 
-    // Andreu: samsonWorker is not a console in foreground (debug) mode ( to ask to status with commands )
+    // Andreu: samsonWorker is not a console in foreground (debug) mode (to ask to status with commands)
     paConfig("log to screen",                 (void*) "only errors");
     //paConfig("log to screen",                 (void*) (void*) false);
-    
+
     paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
     paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
     paConfig("log to file",                   (void*) true);
-    paConfig("log dir",                       (void*) "/var/log/samson/");
+
+    paConfig("default value", "-logDir", (void*) "/var/log/samson");
+    paConfig("default value", "-lsHost", (void*) "NONE");
+    paConfig("default value", "-lsPort", (void*) 0);
 
     paConfig("man synopsis",                  (void*) manSynopsis);
     paConfig("man shortdescription",          (void*) manShortDescription);
@@ -258,7 +260,9 @@ int main(int argC, const char *argV[])
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
 
     // Start log to server
-    if ((lsPort != 0) || (strcmp(lsHost, "NONE") != 0))
+    lsPort = paLsPort;
+    strcpy(lsHost, paLsHost);
+    if ((paLsPort != 0) && (strcmp(paLsHost, "NONE") != 0))
         au::start_log_to_server();
 
     // Only add in foreground to avoid warning / error messages at the stdout

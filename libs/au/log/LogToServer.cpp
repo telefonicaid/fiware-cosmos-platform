@@ -135,7 +135,7 @@ namespace au {
         LM_LV(("Logging to log server"));
         
         // Create the permanent connection ( reconnect if necessary )
-        log_connection = new LogConnection( lsHost , lsPort ); // Reconect if necessary...
+        log_connection = new LogConnection( lsHost , lsPort ); // Reconnect if necessary...
         
         // Set this function as the hook function of the log library
         lmOutHookSet(logToLogServer, NULL);

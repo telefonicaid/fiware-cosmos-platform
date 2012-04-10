@@ -360,7 +360,10 @@ static void paConfigInit(void)
 	else
 		paLogFilePath         = strdup("/var/log/samson/");
 
-	if (paLogDir[0] == '\0')
+    //
+    // This must be changed, cannot have Samson dependencies in this library ...
+    //
+	if (paLogDir[0] == 0)
 	{
 	    strcpy(paLogDir, "/var/log/samson/");
 	}
@@ -564,10 +567,18 @@ int paConfig(const char* item, const void* value, const void* value2)
 
         if (argP->type == PaString)
         {
+            // extern char paLsHost[64];
+            // printf("varP for option '%s' at %p. value: '%s' (paLsHost at %p)\n", argP->name, argP->varP, (char*) val, paLsHost);
+            strcpy(paLsHost, "PRUEBA");
+            // printf("varP for option '%s' at %p. value: '%s' (paLsHost at %p)\n", argP->name, argP->varP, (char*) val, paLsHost);
             strcpy((char*) argP->varP, val);
             argP->def = (long long) argP->varP;
         }
         else if (argP->type == PaInt)
+        {
+            argP->def = (long long) val;
+        }
+        else if (argP->type == PaUShort)
         {
             argP->def = (long long) val;
         }

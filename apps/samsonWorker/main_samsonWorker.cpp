@@ -16,7 +16,7 @@
 #include <signal.h>
 
 #include "parseArgs/parseArgs.h"
-#include "parseArgs/paBuiltin.h"
+#include "parseArgs/paBuiltin.h"  // paLsHost, paLsPort
 #include "parseArgs/paIsSet.h"
 #include "parseArgs/paConfig.h"
 #include "logMsg/logMsg.h"
@@ -244,8 +244,8 @@ int main(int argC, const char *argV[])
     paConfig("log to file",                   (void*) true);
 
     paConfig("default value", "-logDir", (void*) "/var/log/samson");
-    paConfig("default value", "-lsHost", (void*) "NONE");
-    paConfig("default value", "-lsPort", (void*) 0);
+    paConfig("default value", "-lsHost", (void*) "localhost");
+    paConfig("default value", "-lsPort", (void*) 6001);
 
     paConfig("man synopsis",                  (void*) manSynopsis);
     paConfig("man shortdescription",          (void*) manShortDescription);
@@ -262,7 +262,7 @@ int main(int argC, const char *argV[])
     // Start log to server
     lsPort = paLsPort;
     strcpy(lsHost, paLsHost);
-    if ((paLsPort != 0) && (strcmp(paLsHost, "NONE") != 0))
+    if ((paLsPort != 0) && (strcmp(paLsHost, "NO") != 0))
         au::start_log_to_server();
 
     // Only add in foreground to avoid warning / error messages at the stdout

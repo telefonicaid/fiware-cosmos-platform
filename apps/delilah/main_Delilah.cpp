@@ -11,11 +11,14 @@
 * Main file for the "delilah" console app
 *
 */
+#include "parseArgs/paBuiltin.h"        // paLsHost, paLsPort
+#include "parseArgs/paConfig.h"         // paConfig()
 #include "parseArgs/parseArgs.h"
 
 #include "au/string.h"
 #include "au/LockDebugger.h"            // au::LockDebugger
 #include "au/ThreadManager.h"
+#include "au/log/LogToServer.h"
 
 
 #include "engine/MemoryManager.h"
@@ -175,6 +178,8 @@ size_t delilah_random_code;
 *
 * main - 
 */
+char           lsHost[64];
+unsigned short lsPort;
 int main(int argC, const char *argV[])
 {
     atexit(cleanup);
@@ -197,6 +202,10 @@ int main(int argC, const char *argV[])
     paConfig("man copyright",                 (void*) manCopyright);
     paConfig("man version",                   (void*) manVersion);
 
+    paConfig("default value", "-logDir", (void*) "/var/log/samson");
+    paConfig("default value", "-lsHost", (void*) "NO");
+    paConfig("default value", "-lsPort", (void*) 6001);
+
     // Random initialization
     struct timeval tp;
     gettimeofday(&tp, NULL);
@@ -210,6 +219,12 @@ int main(int argC, const char *argV[])
     paParse(paArgs, argC, (char**) argV, 1, true);
     lmAux((char*) "father");
     logFd = lmFirstDiskFileDescriptor();
+
+    // Start log to server
+    lsPort = paLsPort;
+    strcpy(lsHost, paLsHost);
+    if ((paLsPort != 0) && (strcmp(paLsHost, "NO") != 0))
+        au::start_log_to_server();
 
     if ((strcmp(target_host, "localhost") == 0) || (strcmp(target_host, "127.0.0.1") == 0))
     {

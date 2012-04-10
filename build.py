@@ -7,7 +7,7 @@ import os
 import subprocess, shlex
 from optparse import OptionParser
 
-PYPROJECTS = 'platform/frontend'
+PYPROJECTS = 'cosmos/platform/frontend'
 
 class BuildOut(object):
     """

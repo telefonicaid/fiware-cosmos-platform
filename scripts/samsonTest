@@ -123,7 +123,15 @@ function execute_test
     # Execute delilah script
     # ------------------------------------------------
     if [ $HAVE_SCRIPT -eq 1 ]; then
-        delilah ${SAMSON_TEST_HOST} -f  $TEST_DELILAH_SCRIPT > $TEST_OUTPUT 2>/dev/null
+        if [ -f  $TEST_OUTPUT ]; then
+            rm -f  $TEST_OUTPUT
+        fi
+        IFS="
+"
+        for command in $(awk '{print $0}' $TEST_DELILAH_SCRIPT)
+        do
+            delilah ${SAMSON_TEST_HOST} -command "${command}" >> $TEST_OUTPUT 2>/dev/null
+        done
     fi
 
     # ------------------------------------------------

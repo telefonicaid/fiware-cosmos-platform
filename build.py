@@ -30,8 +30,8 @@ class BuildOut(object):
             print "The project %s does not exist from here: %s" %\
                   (project, projects_root)
             return False
-        self.__run_subproc('python bootstrap.py', 'bootstrapping')
-        self.__run_subproc('bin/buildout', 'building out')
+        self.__run_subproc('python bootstrap.py -c buildout.dev.cfg', 'bootstrapping')
+        self.__run_subproc('bin/buildout -c buildout.dev.cfg', 'building out')
         os.chdir(projects_root)
 
     def __run_subproc(self, command_string, desc):

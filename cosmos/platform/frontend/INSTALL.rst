@@ -21,7 +21,7 @@ Build instructions
 
 - Generate thrift sources
 
-    cd src/bdp_fe/jobconf/cluster/
+    cd src/cosmos/jobconf/cluster/
     ./gen-code.sh
 
 - Generate distributable package in dist/

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% load url from future %}
+
+{% block extrahead %}
+    <script type="text/javascript" src={{ STATIC_URL }}jquery-1.7.2.min.js></script>
+    <script type="text/javascript">
+        var reloadTemp;
+        function reloadPage() {
+            window.location = "{% url 'list_jobs' %}?reload_period=" +
+                $('#reload-input')[0].value;
+        }
+        function resetTemp() {
+            clearTimeout(reloadTemp);
+            reloadTemp = setTimeout(reloadPage, $('#reload-input')[0].value * 1000);
+        }
+        $(document).ready(function () {
+            reloadTemp = setTimeout(reloadPage, {{ reload_period }} * 1000);
+            $('#reload-input').change(resetTemp);
+            $('#reload-input').keyup(resetTemp);
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+<p>Reload every <input id="reload-input" type="number"
+                       value="{{ reload_period}}" maxlength="2"
+                       style="width: 3em"/> seconds.
+   <a href="javascript:reloadPage()">Reload now</a></p>
+
+{% if jobs %}
+    <table id="jobs-table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td class="result-name">{{ job.name }}</td>
+                <td class="result-status">{{ job.get_status_display }}</td>
+                <td>
+                    {% if job.is_runnable %}
+                    <a href="{% url 'list_jobs' %}?run_job={{ job.id }}"
+                       class="jobaction run">Run</a>
+                    {% else %}
+                        {% if job.status == 0 %}
+                        <a href="{% url 'upload_data' job.id %}"
+                        class="jobaction upload-data">Upload data</a>
+                        {% endif %}
+                    {% endif %}
+                    {% if job.status > 1 %}
+                    <a href="{% url 'view_results' job.id %}"
+                       class="jobaction results">View results</a>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No jobs</p>
+    {% endif %}
+
+    <ul>
+        <li><a href="{% url 'new_job' %}"
+               id="create-job">Create new job</a></li>
+    </ul>
+{% endblock %}
+{# vim:set syntax=htmldjango: #}

@@ -17,6 +17,7 @@ ADD_SUBDIRECTORY(passiveLocationPush)
 ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
 ADD_SUBDIRECTORY(samsonConnector)
+ADD_SUBDIRECTORY(samsonPushLogs)
 ADD_SUBDIRECTORY(samsonMemCheck)
 
 ADD_SUBDIRECTORY(logServer)
@@ -34,7 +35,7 @@ if (HAVE_QT)
         #ADD_SUBDIRECTORY(delilahQt)
         #ADD_SUBDIRECTORY(samsonLevelMonitor)
     endif (HAVE_KDCHART)
-    ADD_SUBDIRECTORY(samsonTopicMonitor)
+#    ADD_SUBDIRECTORY(samsonTopicMonitor)
 endif (HAVE_QT)
 
 # Extra apps

@@ -95,6 +95,39 @@ class JobStartTestCase(ViewTestCase):
         self.assertMessage(response, messages.INFO, 'was started')
 
 
+class JobResultsTestCase(ViewTestCase):
+    fixtures = ['sample_jobs']
+
+    def setUp(self):
+        self.client.login(username='user1', password='user1')
+
+    def expect_status(self, job_id, expected_status):
+        response = self.client.get('/job/%d/results/' % job_id)
+        self.assertEquals(response.status_code, expected_status)
+
+    def test_for_unexisting_job(self):
+        self.expect_status(1234, 404)
+
+    def test_403_for_not_owned_job(self):
+        self.expect_status(8, 403)
+
+    def test_404_for_unfinished_job(self):
+        self.expect_status(2, 404) # unconfigured
+        self.expect_status(3, 404) # no data
+        self.expect_status(4, 404) # ready to run
+        self.expect_status(5, 404) # running
+
+    def test_failure_report(self):
+        response = self.client.get('/job/6/results/')
+        self.assertEquals(response.status_code, 200)
+        self.assertTrue(response.context['title'].startswith('Error report'))
+
+    def test_success_report(self):
+        response = self.client.get('/job/7/results/')
+        self.assertEquals(response.status_code, 200)
+        self.assertTrue(response.context['title'].startswith('Results of job'))
+
+
 class RetrieveFromMongo(djangotest.TestCase):
     """
     RetrieveFromMongo is a test where some records are written to a test

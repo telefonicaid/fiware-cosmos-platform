@@ -25,7 +25,7 @@ public class FrontEnd {
     public static final String PRODUCTION_CONFIG_FILE = "/production.properties";
     public static final String CREATE_JOB_ID = "create-job";
     public static final String TASK_STATUS_TABLE_ID = "jobs-table";
-    public static final String RESULT_LINK_CLASS = "result-link";
+    public static final String RESULT_LINK_CLASS = "jobaction";
     public static final String RESULT_NAME_CLASS = "result-name";
     public static final String RESULT_STATUS_CLASS = "result-status";
     public static final String USERNAME_INPUT_ID = "id_username";

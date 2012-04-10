@@ -31,7 +31,7 @@ char *fgetsFromFd( char * str, int line_max_size, int fd )
     size_t nbytes_to_read = 1;
     ssize_t bytes_read = 0;
 
-    if ((bytes_read = read(fd, (void *) p_str,  nbytes_to_read)) != nbytes_to_read)
+    if ((bytes_read = read(fd, (void *) p_str,  nbytes_to_read)) != (ssize_t)  nbytes_to_read)
     {
       return NULL;
     }

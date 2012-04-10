@@ -3,7 +3,7 @@
 #ifndef _H_SAMSONPUSHLOGS_CONNECTIONS_MANAGER
 #define _H_SAMSONPUSHLOGS_CONNECTIONS_MANAGER
 
-#include "au/TokenTaker.h"
+#include "au/mutex/TokenTaker.h"
 
 #include "samson/client/SamsonClient.h"
 #include "samson/client/SamsonPushBuffer.h"

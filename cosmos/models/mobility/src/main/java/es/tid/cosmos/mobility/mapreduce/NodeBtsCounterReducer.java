@@ -18,6 +18,13 @@ import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 public class NodeBtsCounterReducer extends Reducer<
         ProtobufWritable<NodeBts>, NullWritable, LongWritable,
         ProtobufWritable<BtsCounter>> {
+    private LongWritable userId;
+    
+    @Override
+    public void setup(Context context) {
+        this.userId = new LongWritable();
+    }
+    
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
                           Iterable<NullWritable> values, Context context)
@@ -26,13 +33,10 @@ public class NodeBtsCounterReducer extends Reducer<
         for (NullWritable unused : values) {
             count++;
         }
-        NodeBts node = key.get();
-        BtsCounter counter = BtsCounterUtil.create(node.getPlaceId(),
-                                                   node.getWeekday(),
-                                                   node.getRange(), count);
-        ProtobufWritable<BtsCounter> wrapper = ProtobufWritable.newInstance(
-                BtsCounter.class);
-        wrapper.set(counter);
-        context.write(new LongWritable(node.getUserId()), wrapper);
+        final NodeBts node = key.get();
+        this.userId.set(node.getUserId());
+        ProtobufWritable<BtsCounter> counter = BtsCounterUtil.createAndWrap(
+                node.getPlaceId(), node.getWeekday(), node.getRange(), count);
+        context.write(this.userId, counter);
     }
 }

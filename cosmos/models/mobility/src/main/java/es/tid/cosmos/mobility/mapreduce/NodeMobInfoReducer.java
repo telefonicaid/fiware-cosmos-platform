@@ -1,6 +1,8 @@
 package es.tid.cosmos.mobility.mapreduce;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -8,6 +10,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeMxCounter;
+import es.tid.cosmos.mobility.data.NodeMxCounterUtil;
 
 /**
  *
@@ -20,20 +23,17 @@ public class NodeMobInfoReducer extends Reducer<LongWritable,
     public void reduce(LongWritable key,
             Iterable<ProtobufWritable<BtsCounter>> values, Context context)
             throws IOException, InterruptedException {
-        NodeMxCounter.Builder nodeMxCounterBuilder = NodeMxCounter.newBuilder();
+        List<BtsCounter> allBts = new ArrayList<BtsCounter>();
         int numberOfValues = 0;
         for (ProtobufWritable<BtsCounter> value : values) {
             numberOfValues++;
-            BtsCounter btsCounter = value.get();
-            nodeMxCounterBuilder.addBts(btsCounter);
+            final BtsCounter btsCounter = value.get();
+            allBts.add(btsCounter);
         }
-        nodeMxCounterBuilder.setBtsLength(numberOfValues);
-        nodeMxCounterBuilder.setBtsMaxLength(numberOfValues);
-        NodeMxCounter nodeMxCounter = nodeMxCounterBuilder.build();
-
-        ProtobufWritable<NodeMxCounter> nodeMxCounterWrapper =
-                ProtobufWritable.newInstance(NodeMxCounter.class);
-        nodeMxCounterWrapper.set(nodeMxCounter);
-        context.write(key, nodeMxCounterWrapper);
+        ProtobufWritable<NodeMxCounter> nodeMxCounter =
+                NodeMxCounterUtil.createAndWrap(allBts,
+                                                numberOfValues,
+                                                numberOfValues);
+        context.write(key, nodeMxCounter);
     }
 }

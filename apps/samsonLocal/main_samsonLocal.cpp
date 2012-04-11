@@ -49,7 +49,6 @@
  */
 SAMSON_ARG_VARS;
 int              workers;
-bool             noLog;
 char			 commandFileName[1024];
 bool             thread_mode;
 //bool             delilah_qt;
@@ -64,11 +63,10 @@ PaArgument paArgs[] =
 {
 	SAMSON_ARGS,
 
-	{ "-workers",     &workers,         "WORKERS",     PaInt,     PaOpt,     1,      1,    100,  "number of workers"   },
-	{ "-nolog",       &noLog,           "NO_LOG",      PaBool,    PaOpt,    false,  false,   true,  "no logging"          },
-	{ "-thread_mode", &thread_mode,     "THREAD_MODE", PaBool,    PaOpt,    false,  false,   true,  "thread_mode"          },
-//	{ "-qt",          &delilah_qt,     "" ,            PaBool,    PaOpt,    false,  false,   true,  "Delilah Qt"          },
-	{ "-f",           commandFileName,  "FILE_NAME",   PaString,  PaOpt,  _i "",   PaNL,   PaNL,  "File with commands to run"     },
+	{ "-workers",     &workers,         "WORKERS",     PaInt,     PaOpt,        1,      1,    100,  "number of workers"         },
+	{ "-thread_mode", &thread_mode,     "THREAD_MODE", PaBool,    PaOpt,    false,  false,   true,  "thread_mode"               },
+//	{ "-qt",          &delilah_qt,     "" ,            PaBool,    PaOpt,    false,  false,   true,  "Delilah Qt"                },
+	{ "-f",           commandFileName,  "FILE_NAME",   PaString,  PaOpt,    _i "",   PaNL,   PaNL,  "File with commands to run" },
 	PA_END_OF_ARGS
 };
 

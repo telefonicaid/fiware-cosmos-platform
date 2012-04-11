@@ -53,7 +53,6 @@ SAMSON_ARG_VARS;
 
 bool            fg;
 bool            monit;
-bool            noLog;
 int             valgrind;
 int             port;
 int             web_port;
@@ -72,7 +71,6 @@ PaArgument paArgs[] =
     { "-monit",     &monit,     "SAMSON_WORKER_MONIT",      PaBool,   PaOpt, false,                  false,  true,  "to use with monit"                 },
     { "-port",      &port,      "",                         PaInt,    PaOpt, SAMSON_WORKER_PORT,     1,      9999,  "Port to receive new connections"   },
     { "-web_port",  &web_port,  "",                         PaInt,    PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive web connections"   },
-    { "-nolog",     &noLog,     "SAMSON_WORKER_NO_LOG",     PaBool,   PaOpt, false,                  false,  true,  "no logging"                        },
     { "-valgrind",  &valgrind,  "SAMSON_WORKER_VALGRIND",   PaInt,    PaOpt, 0,                      0,        20,  "help valgrind debug process"       },
 
     PA_END_OF_ARGS

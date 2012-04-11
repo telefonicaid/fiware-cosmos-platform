@@ -11,6 +11,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import static org.testng.Assert.fail;
+import static org.testng.Assert.assertTrue;
 
 import es.tid.cosmos.joblaunchers.Environment;
 import es.tid.cosmos.joblaunchers.TaskStatus;
@@ -26,6 +27,9 @@ public class FrontEnd {
     public static final String CREATE_JOB_ID = "create-job";
     public static final String TASK_STATUS_TABLE_ID = "jobs-table";
     public static final String JOB_ACTION_CLASS = "jobaction";
+    public static final String RESULT_ACTION_CLASS = "results";
+    public static final String RUN_ACTION_CLASS = "run";
+    public static final String UPLOAD_DATA_ACTION_CLASS = "upload-data";
     public static final String RESULT_NAME_CLASS = "result-name";
     public static final String RESULT_STATUS_CLASS = "result-status";
     public static final String USERNAME_INPUT_ID = "id_username";
@@ -128,9 +132,19 @@ public class FrontEnd {
         }
     }
 
-    private WebElement getTaskLink(String taskId) {
-        return this.getTaskRow(taskId).findElement(
-                By.className(JOB_ACTION_CLASS));
+    private WebElement getTaskLink(String taskId, String expectedClass) {
+        WebElement taskLink = this.getTaskRow(taskId).findElement(By.className(JOB_ACTION_CLASS));
+        
+        boolean isExpectedLink = false;
+        for (String elementClass : taskLink.getAttribute("class").split("\\s")) {
+                if (elementClass.equals(expectedClass)) {
+                    isExpectedLink = true;
+                    break;
+                }
+        }
+        
+        assertTrue(isExpectedLink, "Verifying link contains class: " + expectedClass);
+        return taskLink;
     }
 
     /**
@@ -157,7 +171,17 @@ public class FrontEnd {
             throw new IllegalArgumentException(
                     "Task is not in the created state. taskId: " + taskId);
         }
-        this.getTaskLink(taskId).click();
+        this.getTaskLink(taskId, RUN_ACTION_CLASS).click();
+    }
+    
+    public SelectInputPage setInputDataForJob(String taskId) {
+        this.goHome();
+        if (TaskStatus.Created != this.getTaskStatus(taskId)) {
+            throw new IllegalArgumentException(
+                    "Task is not in the created state. taskId: " + taskId);
+        }
+        this.getTaskLink(taskId, UPLOAD_DATA_ACTION_CLASS).click();
+        return new SelectInputPage(this.driver);
     }
     
     public ResultsPage goToResultsPage(String taskId) {
@@ -170,8 +194,8 @@ public class FrontEnd {
                     + "taskId: " + taskId + "\n"
                     + "status: " + status + "\n");
         }
-
-        this.getTaskLink(taskId).click();
+        
+        this.getTaskLink(taskId, RESULT_ACTION_CLASS).click();
         return new ResultsPage(this.driver);
     }
 

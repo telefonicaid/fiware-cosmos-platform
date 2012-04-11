@@ -143,23 +143,37 @@ public class FrontendTest {
                     "Verify task hasn't been created. TaskId: " + taskId);
     }
 
-    public void testNoInputFile() throws IOException {
-        WebDriver driver = this.frontend.getDriver();
-        SelectNamePage namePage = this.frontend.goToCreateNewJob();
+    public void testNoInputFile() throws IOException, TestException {
         final String taskId = UUID.randomUUID().toString();
-        namePage.setName(taskId);
+        
+        // Create job without data and verify we get an error if no data
+        // is specified
+        {
+            WebDriver driver = this.frontend.getDriver();
+            SelectNamePage namePage = this.frontend.goToCreateNewJob();
+            namePage.setName(taskId);
 
-        SelectJarPage jarPage = namePage.submitNameForm();
-        jarPage.setInputJar(this.invalidJarPath);
+            SelectJarPage jarPage = namePage.submitNameForm();
+            jarPage.setInputJar(this.invalidJarPath);
 
-        SelectInputPage inputPage = jarPage.submitJarFileForm();
-        String currentUrl = driver.getCurrentUrl();
-        verifyLinks();
+            SelectInputPage inputPage = jarPage.submitJarFileForm();
+            String currentUrl = driver.getCurrentUrl();
+            verifyLinks();
+            inputPage.submitInputFileForm();
+
+            // We should be in the same page, and the form should be complaining
+            assertEquals(currentUrl, driver.getCurrentUrl());
+            driver.findElement(By.className("errorlist"));
+        }
+        // Verify we can go back to the frontpage and upload data through the "Upload Data" link
+        SelectInputPage inputPage = this.frontend.setInputDataForJob(taskId);
+        inputPage.setInputFile(this.invalidJarPath);
         inputPage.submitInputFileForm();
-
-        // We should be in the same page, and the form should be complaining
-        assertEquals(currentUrl, driver.getCurrentUrl());
-        driver.findElement(By.className("errorlist"));
+        
+        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
+        testDriver.launchTask(taskId);
+        testDriver.waitForTaskCompletion(taskId);
+        assertEquals(testDriver.getTaskStatus(taskId), TaskStatus.Error, "Verifying task is in the error state");
     }
 
     public void verifySampleJarFile() throws IOException, TestException {

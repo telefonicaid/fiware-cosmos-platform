@@ -27,17 +27,36 @@ public class MobilityMain extends Configured implements Tool {
     
     @Override
     public int run(String[] args) throws Exception {
-        if (args.length != 2) {
+        if (args.length != 4) {
             throw new IllegalArgumentException("Mandatory parameters: "
                                                + "cdrs_path cells_path");
         }
 
         Path cdrsPath = new Path(args[0]);
         Path cellsPath = new Path(args[1]);
+        Path btsPath = new Path(args[2]);
+        Path poisPath = new Path(args[3]);
+        Path tmpPath = new Path("/tmp");
         
         this.runParsingJobs(cdrsPath, cellsPath);
+        this.extractPointsOfInterest(btsPath, poisPath, tmpPath);
         
         return 0;
+    }
+
+    private void runParsingJobs(Path cdrsPath, Path cellsPath)
+            throws Exception {
+        ParseCdrsJob parseCdrsJob = new ParseCdrsJob(this.getConf());
+        parseCdrsJob.configure(cdrsPath, new Path(CDRS_MOB_PATH));
+        if (!parseCdrsJob.waitForCompletion(true)) {
+            throw new Exception("Failed to parse CDRs");
+        }
+        
+        ParseCellsJob parseCellsJob = new ParseCellsJob(this.getConf());
+        parseCellsJob.configure(cellsPath, new Path(CELLS_MOB_PATH));
+        if (!parseCellsJob.waitForCompletion(true)) {
+            throw new Exception("Failed to parse cells");
+        }
     }
     
     private void extractPointsOfInterest(Path input, Path output, Path tmpDir)
@@ -77,45 +96,26 @@ public class MobilityMain extends Configured implements Tool {
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run RepbtsAggbybtsJob");
             }
-        }
+        }      
 
-        Path repbtsFilterNumComms = tmpDir.suffix("repbts_filter_num_comms");
+        Path repbtsJoinDistComms = tmpDir.suffix("repbts_join_dist_comms");
         {
-            RepbtsFilterNumCommsJob job = new RepbtsFilterNumCommsJob(
+            RepbtsJoinDistCommsJob job = new RepbtsJoinDistCommsJob(
                     this.getConf());
-            job.configure(null, repbtsFilterNumComms);
+            job.configure(repbtsAggbybts, repbtsJoinDistComms);
             if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run RepbtsFilterNumCommsJob");
+                throw new Exception("Failed to run RepbtsJoinDistCommsJob");
             }
-        }
-
-        {
-            // TODO: mobmx_repbts_join_dist_comms
         }
 
         {
             RepbtsGetRepresentativeBtsJob job =
                     new RepbtsGetRepresentativeBtsJob(this.getConf());
-            job.configure(null, output);
+            job.configure(repbtsJoinDistComms, output);
             if (!job.waitForCompletion(true)) {
                 throw new Exception(
                         "Failed to run RepbtsGetRepresentativeBtsJob");
             }
-        }
-    }
-    
-    private void runParsingJobs(Path cdrsPath, Path cellsPath)
-            throws Exception {
-        ParseCdrsJob parseCdrsJob = new ParseCdrsJob(this.getConf());
-        parseCdrsJob.configure(cdrsPath, new Path(CDRS_MOB_PATH));
-        if (!parseCdrsJob.waitForCompletion(true)) {
-            throw new Exception("Failed to parse CDRs");
-        }
-        
-        ParseCellsJob parseCellsJob = new ParseCellsJob(this.getConf());
-        parseCellsJob.configure(cellsPath, new Path(CELLS_MOB_PATH));
-        if (!parseCellsJob.waitForCompletion(true)) {
-            throw new Exception("Failed to parse cells");
         }
     }
     

@@ -147,12 +147,12 @@ namespace au
         // Get formats from 
         std::string format = cmdLine->get_flag_string("format");
         int limit = cmdLine->get_flag_int("limit");
-        bool is_table = cmdLine->get_flag_bool("table");
-        
+        bool is_table = cmdLine->get_flag_bool("table");        
         
         // Formatter to create table
         TableLogFormatter table_log_formater( is_table , format );
         
+        LM_V(("Get table... table log formatter ok"));
         
         int tmp_file_counter = file_counter;
         size_t log_counter = 0;
@@ -180,6 +180,7 @@ namespace au
                         if( log_counter >= (size_t) limit )
                         {
                             delete log_file;
+                            LM_V(("Returning table..."));
                             return table_log_formater.str();
                         }
                 }
@@ -193,6 +194,7 @@ namespace au
             
         }
         
+        LM_V(("Returning table..."));
         return table_log_formater.str();
     }
 }

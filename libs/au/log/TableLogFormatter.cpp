@@ -7,8 +7,12 @@ namespace au
 {
     TableLogFormatter::TableLogFormatter( bool is_table , std::string format )
     {
+        
+        
         if( is_table )
         {
+            LM_V(("TableLogFormatter table"));
+            
             // Table fields
             table_fields = split_using_multiple_separators( format , "|:;,-/\[] ()." );
             
@@ -22,11 +26,18 @@ namespace au
             table = new au::tables::Table( table_definition );
             log_formatter = NULL;
             
+            LM_V(("TableLogFormatter table OK"));
+            
         }
         else
         {
+            LM_V(("TableLogFormatter no table"));
+
             log_formatter = new LogFormatter( format );
             table = NULL;
+            
+            LM_V(("TableLogFormatter no table OK"));
+
         }
         
         

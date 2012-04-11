@@ -12,7 +12,8 @@ namespace au
         // Att all reserved words
         size_t i = 0;
         while( log_reseved_words[i] != NULL )
-            token_vector.addToken( log_reseved_words[i] );
+            token_vector.addToken( log_reseved_words[i++] );
+        
         
         
         token_vector.parse( definition );

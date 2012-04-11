@@ -27,6 +27,36 @@ namespace au
         // Get the main command
         std::string main_command = cmdLine.get_argument(0);
         
+        if( main_command == "show_fields" )
+        {
+            au::tables::Table table( "Field|Description,left" );
+            
+            table.addRow( au::StringVector("HOST","Host where trace was generated") );
+            table.addRow( au::StringVector("TYPE","Type of trace: Warning, Error, Message") );
+            table.addRow( au::StringVector("PID","Process identifier of the executable that generated the trace") );
+            table.addRow( au::StringVector("TID","Thread identifier of the executable that generated the trace") );
+            
+            table.addRow( au::StringVector("date","Date when trace was generated") );
+            table.addRow( au::StringVector("DATE","More verbose date") );
+            
+            table.addRow( au::StringVector("time","Timestamp when trace was generated") );
+            table.addRow( au::StringVector("TIME","More verbose timestamp") );
+            
+            table.addRow( au::StringVector("FILE","Source file where trace was generated") );
+            table.addRow( au::StringVector("LINE","Line of code in the source file") );
+            
+            table.addRow( au::StringVector("TLEV","Trace level ( if the it is a trace )") );
+            table.addRow( au::StringVector("EXEC","Name of the executable that generated the trace") );
+            table.addRow( au::StringVector("AUX","Completementary name of the executable") );
+            table.addRow( au::StringVector("TEXT","Body of the trace") );
+            table.addRow( au::StringVector("text","Body of the trace limited to 100 characters") );
+            table.addRow( au::StringVector("FUNC","Name of the funciton where the trace was generated") );
+            table.addRow( au::StringVector("STRE","Error description") );
+            
+            return table.str();
+            
+        }
+        
         if( main_command == "show_connections" )
             return log_server->getConnectionsTables();
         

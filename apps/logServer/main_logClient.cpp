@@ -156,6 +156,7 @@ public:
             info->add("show");
             info->add("show_connections");
             info->add("show_channels");
+            info->add("show_fields");
         }
     }
 };

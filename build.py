@@ -3,7 +3,7 @@ Module build.py -
 
 Bootstraps and builds a predefined buildout project
 """
-import os
+import os, sys
 import subprocess, shlex
 from optparse import OptionParser
 
@@ -30,7 +30,7 @@ class BuildOut(object):
             print "The project %s does not exist from here: %s" %\
                   (project, projects_root)
             return False
-        self.__run_subproc('python bootstrap.py -c buildout.dev.cfg', 'bootstrapping')
+        self.__run_subproc('%s bootstrap.py -c buildout.dev.cfg' % sys.executable, 'bootstrapping')
         self.__run_subproc('bin/buildout -c buildout.dev.cfg', 'building out')
         os.chdir(projects_root)
 

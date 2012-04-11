@@ -13,11 +13,10 @@ import es.tid.cosmos.mobility.data.NodeBtsDayUtil;
 /**
  * Count NodeBtsDay
  *
- * @author sortega, dmicol
+ * @author dmicol, sortega
  */
-public class RepbtsAggbybtsReducer extends
-        Reducer<ProtobufWritable<NodeBtsDay>, IntWritable, LongWritable,
-        ProtobufWritable<NodeBtsDay>> {
+public class RepbtsAggbybtsReducer extends Reducer<ProtobufWritable<NodeBtsDay>,
+        IntWritable, LongWritable, ProtobufWritable<NodeBtsDay>> {
     private LongWritable userId;
 
     @Override
@@ -27,15 +26,14 @@ public class RepbtsAggbybtsReducer extends
     }
 
     @Override
-    public void reduce(ProtobufWritable<NodeBtsDay> inKey,
-            Iterable<IntWritable> callCounts, Context context)
+    public void reduce(ProtobufWritable<NodeBtsDay> key,
+            Iterable<IntWritable> values, Context context)
             throws IOException, InterruptedException {
-        inKey.setConverter(NodeBtsDay.class);
-        final NodeBtsDay byDay = inKey.get();
+        final NodeBtsDay byDay = key.get();
         this.userId.set(byDay.getUserId());
 
 	int totalCallCount = 0;
-        for (IntWritable callCount : callCounts) {
+        for (IntWritable callCount : values) {
             totalCallCount += callCount.get();
         }
 

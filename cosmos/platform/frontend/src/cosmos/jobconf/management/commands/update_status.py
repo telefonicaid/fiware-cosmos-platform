@@ -10,11 +10,10 @@ from django.core.management.base import BaseCommand
 
 from cosmos.jobconf.models import Job
 from cosmos.jobconf.cluster import remote
+from cosmos.jobconf.views_util import cluster_connection
 
 
 LOGGER = logging.getLogger(__name__)
-CLUSTER = remote.Cluster(settings.CLUSTER_CONF.get('host'),
-                         settings.CLUSTER_CONF.get('port'))
 
 
 class Command(BaseCommand):
@@ -33,10 +32,11 @@ class Command(BaseCommand):
         quiet = options.get('quiet')
         updated = 0
         try:
+            cluster = cluster_connection()
             for job in Job.objects.all():
                 if job.status == Job.RUNNING:
                     try:
-                        result = CLUSTER.getJobResult(str(job.id))
+                        result = cluster.getJobResult(str(job.id))
                         job.status = result.status - 1
                         if result.reason is not None:
                             job.set_error(result.reason)

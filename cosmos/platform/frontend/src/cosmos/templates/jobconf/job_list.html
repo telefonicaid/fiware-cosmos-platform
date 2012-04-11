@@ -44,11 +44,16 @@
                 <td>
                     {% if job.is_runnable %}
                     <a href="{% url 'list_jobs' %}?run_job={{ job.id }}"
-                       class="result-link">Run</a>
+                       class="jobaction run">Run</a>
+                    {% else %}
+                        {% if job.status == 0 %}
+                        <a href="{% url 'upload_data' job.id %}"
+                        class="jobaction upload-data">Upload data</a>
+                        {% endif %}
                     {% endif %}
                     {% if job.status > 1 %}
                     <a href="{% url 'view_results' job.id %}"
-                       class="result-link">View results</a>
+                       class="jobaction results">View results</a>
                     {% endif %}
                 </td>
             </tr>

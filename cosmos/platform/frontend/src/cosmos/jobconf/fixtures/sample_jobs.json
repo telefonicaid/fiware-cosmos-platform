@@ -1,0 +1,227 @@
+[{
+    "pk": 2,
+    "model": "auth.user",
+    "fields": {
+        "username": "user1",
+        "first_name": "",
+        "last_name": "",
+        "is_active": true,
+        "is_superuser": false,
+        "is_staff": false,
+        "last_login": "2012-04-09 08:10:45",
+        "groups": [],
+        "user_permissions": [],
+        "password": "sha1$9657c$5ec4b1765e7576c3af59423392985650377d5a10",
+        "email": "",
+        "date_joined": "2012-04-09 08:09:55"
+    }
+}, {
+    "pk": 3,
+    "model": "auth.user",
+    "fields": {
+        "username": "user2",
+        "first_name": "",
+        "last_name": "",
+        "is_active": true,
+        "is_superuser": false,
+        "is_staff": false,
+        "last_login": "2012-04-09 08:19:57",
+        "groups": [],
+        "user_permissions": [],
+        "password": "sha1$b6231$b7e64756a321d142d4985a9730f48d51ee0bb123",
+        "email": "",
+        "date_joined": "2012-04-09 08:10:02"
+    }
+}, {
+    "pk": 1,
+    "model": "jobconf.job",
+    "fields": {
+        "status": -1,
+        "name": "admin_job",
+        "error_message": "",
+        "input_data": "",
+        "user": 1,
+        "date": "2012-04-09 08:19:18",
+        "error_code": null
+    }
+}, {
+    "pk": 2,
+    "model": "jobconf.job",
+    "fields": {
+        "status": -1,
+        "name": "unconfigured",
+        "error_message": null,
+        "input_data": null,
+        "user": 2,
+        "date": "2012-04-09 08:11:00",
+        "error_code": null
+    }
+}, {
+    "pk": 3,
+    "model": "jobconf.job",
+    "fields": {
+        "status": 0,
+        "name": "no_data",
+        "error_message": null,
+        "input_data": null,
+        "user": 2,
+        "date": "2012-04-09 08:11:30",
+        "error_code": null
+    }
+}, {
+    "pk": 4,
+    "model": "jobconf.job",
+    "fields": {
+        "status": 0,
+        "name": "to_run",
+        "error_message": "",
+        "input_data": "/bdp/fictional/data/input",
+        "user": 2,
+        "date": "2012-04-09 08:15:32",
+        "error_code": null
+    }
+}, {
+    "pk": 5,
+    "model": "jobconf.job",
+    "fields": {
+        "status": 1,
+        "name": "running",
+        "error_message": "",
+        "input_data": "/bdp/fictional/data/input",
+        "user": 2,
+        "date": "2012-04-09 08:16:49",
+        "error_code": null
+    }
+}, {
+    "pk": 6,
+    "model": "jobconf.job",
+    "fields": {
+        "status": 3,
+        "name": "failed",
+        "error_message": "Faked failure",
+        "input_data": "/bdp/fictional/data/input",
+        "user": 2,
+        "date": "2012-04-09 08:18:12",
+        "error_code": 0
+    }
+}, {
+    "pk": 7,
+    "model": "jobconf.job",
+    "fields": {
+        "status": 2,
+        "name": "successful",
+        "error_message": "",
+        "input_data": "/bdp/fictional/data/input",
+        "user": 2,
+        "date": "2012-04-09 08:19:43",
+        "error_code": null
+    }
+}, {
+    "pk": 8,
+    "model": "jobconf.job",
+    "fields": {
+        "status": 0,
+        "name": "other_user_job",
+        "error_message": "",
+        "input_data": "/bdp/fictional/data/input",
+        "user": 3,
+        "date": "2012-04-09 08:20:51",
+        "error_code": null
+    }
+}, {
+    "pk": 1,
+    "model": "jobconf.jobmodel",
+    "fields": {
+        "job": 1
+    }
+}, {
+    "pk": 2,
+    "model": "jobconf.jobmodel",
+    "fields": {
+        "job": 2
+    }
+}, {
+    "pk": 3,
+    "model": "jobconf.jobmodel",
+    "fields": {
+        "job": 3
+    }
+}, {
+    "pk": 4,
+    "model": "jobconf.jobmodel",
+    "fields": {
+        "job": 4
+    }
+}, {
+    "pk": 5,
+    "model": "jobconf.jobmodel",
+    "fields": {
+        "job": 5
+    }
+}, {
+    "pk": 6,
+    "model": "jobconf.jobmodel",
+    "fields": {
+        "job": 6
+    }
+}, {
+    "pk": 7,
+    "model": "jobconf.jobmodel",
+    "fields": {
+        "job": 7
+    }
+}, {
+    "pk": 8,
+    "model": "jobconf.jobmodel",
+    "fields": {
+        "job": 8
+    }
+}, {
+    "pk": 1,
+    "model": "jobconf.customjobmodel",
+    "fields": {
+        "jar_name": "/bdp/fictional/job_1.jar"
+    }
+}, {
+    "pk": 2,
+    "model": "jobconf.customjobmodel",
+    "fields": {
+        "jar_name": "/bdp/fictional/job_2.jar"
+    }
+}, {
+    "pk": 3,
+    "model": "jobconf.customjobmodel",
+    "fields": {
+        "jar_name": "/bdp/fictional/job_3.jar"
+    }
+}, {
+    "pk": 4,
+    "model": "jobconf.customjobmodel",
+    "fields": {
+        "jar_name": "/bdp/fictional/job_4.jar"
+    }
+}, {
+    "pk": 5,
+    "model": "jobconf.customjobmodel",
+    "fields": {
+        "jar_name": "/bdp/fictional/job_5.jar"
+    }
+}, {
+    "pk": 6,
+    "model": "jobconf.customjobmodel",
+    "fields": {
+        "jar_name": "/bdp/fictional/job_6.jar"
+    }
+}, {
+    "pk": 7,
+    "model": "jobconf.customjobmodel",
+    "fields": {
+        "jar_name": "/bdp/fictional/job_7.jar"
+    }
+}, {
+    "pk": 8,
+    "model": "jobconf.customjobmodel",
+    "fields": {
+        "jar_name": "/bdp/fictional/job_8.jar"
+    }
+}]

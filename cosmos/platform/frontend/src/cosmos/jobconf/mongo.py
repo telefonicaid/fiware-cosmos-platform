@@ -10,10 +10,12 @@ from types import ListType, DictType
 from pymongo import Connection
 from pymongo.errors import AutoReconnect, ConnectionFailure
 
-from bdp_fe.jobconf.models import CustomJobModel, Job
+from cosmos.jobconf.models import CustomJobModel, Job
+
 
 HIDDEN_KEYS = []
 EXPAND_TYPES = [ListType, DictType]
+
 
 class NoResultsError(Exception):
     """
@@ -52,6 +54,7 @@ class MongoRecord(object):
                     v = json.dumps(v)
                 ans.setdefault(k, v)
         return ans
+
 
 def retrieve_results(job_id, primary_key):
     ans = []

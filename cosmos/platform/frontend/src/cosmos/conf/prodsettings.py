@@ -1,9 +1,6 @@
 """
 Module prodsettings
 
-These settings allow Django unittests to setup a temporary databse and run the
-tests of the installed applications.
-
 """
 
 DEBUG = False
@@ -36,18 +33,19 @@ MANAGERS = ADMINS
 LANDING_ROOT = '/var/cosmos/landing/'
 STATIC_ROOT = 'static'
 
-CLUSTER_CONF = {
-    'host': '127.0.0.1',
-    'port': 9888,
-    'mongobase': 'mongodb://10.173.128.148',
-}
-
 FCGI_OPTIONS = {
     'protocol': 'fcgi',
     'host': '127.0.0.1',
     'method': 'threaded',
     'port': '9000',
     'pidfile': '/var/run/cosmos/django.pid',
+}
+
+CLUSTER_CONF = {
+    'connection-factory': 'cosmos.jobconf.cluster.remote.Cluster',
+    'host': '127.0.0.1',
+    'port': 9888,
+    'mongobase': 'mongodb://10.173.128.148',
 }
 
 LOGGING = {
@@ -67,7 +65,7 @@ LOGGING = {
     },
     'formatters': {
         'detailed': {
-            'format': '%(levelname)s %(asctime)s %(module)s:%(lineno)d: ' + 
+            'format': '%(levelname)s %(asctime)s %(module)s:%(lineno)d: ' +
                       '%(message)s',
         },
     },

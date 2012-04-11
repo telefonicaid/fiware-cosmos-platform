@@ -1,8 +1,8 @@
 """
 Module testsettings
 
-These settings allow Django unittests to setup a temporary databse and run the
-tests of the installed applications.
+These settings allow Django unittests to setup a temporary database and run
+the tests of the installed applications.
 
 """
 
@@ -32,8 +32,9 @@ MANAGERS = ADMINS
 LANDING_ROOT = '/tmp/landing/'
 
 CLUSTER_CONF = {
+    'connection-factory': 'cosmos.jobconf.cluster.remote.Cluster',
     'host': 'localhost',
-    'port': 27017,
+    'port': 9888,
     'mongobase': 'mongodb://localhost',
 }
 

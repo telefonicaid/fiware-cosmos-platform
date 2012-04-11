@@ -27,7 +27,7 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
     private static final int MAX_TOTAL_CALLS = 5000;
     
     private static final String CELL_CATALOGUE_FILE_NAME =
-            "/user/hdfS/cells_cat.dat";
+            "/user/hdfs/cells_cat.dat";
     
     private static Set<Long> cellCatalogue = null;
 
@@ -47,13 +47,13 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
         int numCommsNoInfo = 0;
         int numCommsNoBts = 0;
         for (ProtobufWritable<NodeBtsDay> value : values) {
-            final NodeBtsDay bts = value.get();
-            if (!bts.hasPlaceId() || bts.getPlaceId() == 0) {
+            final NodeBtsDay nodeBtsDay = value.get();
+            if (!nodeBtsDay.hasPlaceId() || nodeBtsDay.getPlaceId() == 0) {
                 numCommsNoInfo++;
-            } else if (!cellCatalogue.contains(bts.getPlaceId())) {
+            } else if (!cellCatalogue.contains(nodeBtsDay.getPlaceId())) {
                 numCommsNoBts++;
             } else {
-                numCommsInfo += bts.getCount();
+                numCommsInfo += nodeBtsDay.getCount();
             }
         }
         int totalComms = numCommsInfo + numCommsNoInfo + numCommsNoBts;

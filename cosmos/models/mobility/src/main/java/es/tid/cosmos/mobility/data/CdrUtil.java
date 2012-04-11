@@ -20,11 +20,14 @@ public abstract class CdrUtil  implements ProtobufUtil {
                 .build();
     }
 
+    public static ProtobufWritable<Cdr> wrap(Cdr obj) {
+        ProtobufWritable<Cdr> wrapper = ProtobufWritable.newInstance(Cdr.class);
+        wrapper.set(obj);
+        return wrapper;
+    }
+    
     public static ProtobufWritable createAndWrap(long userId, long cellId,
                                                  Date date, Time time) {
-        ProtobufWritable<Cdr> wrapper =
-                ProtobufWritable.newInstance(Cdr.class);
-        wrapper.set(create(userId, cellId, date, time));
-        return wrapper;
+        return wrap(create(userId, cellId, date, time));
     }
 }

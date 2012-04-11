@@ -20,11 +20,15 @@ public abstract class NodeMxCounterUtil {
                 .build();
     }
 
-    public static ProtobufWritable<NodeMxCounter> createAndWrap(
-            Iterable<BtsCounter> allBts, int btsLength, int btsMaxLength) {
+    public static ProtobufWritable<NodeMxCounter> wrap(NodeMxCounter obj) {
         ProtobufWritable<NodeMxCounter> wrapper =
                 ProtobufWritable.newInstance(NodeMxCounter.class);
-        wrapper.set(create(allBts, btsLength, btsMaxLength));
+        wrapper.set(obj);
         return wrapper;
+    }
+    
+    public static ProtobufWritable<NodeMxCounter> createAndWrap(
+            Iterable<BtsCounter> allBts, int btsLength, int btsMaxLength) {
+        return wrap(create(allBts, btsLength, btsMaxLength));
     }
 }

@@ -9,7 +9,6 @@ import es.tid.cosmos.mobility.data.MobProtocol.Bts;
  * @author sortega
  */
 public abstract class BtsUtil implements ProtobufUtil {
-
     public static Bts create(long placeId, double posx, double posy,
             double area, Iterable<Long> adjBts) {
         Bts.Builder bts = Bts.newBuilder()
@@ -21,11 +20,14 @@ public abstract class BtsUtil implements ProtobufUtil {
         return bts.build();
     }
 
+    public static ProtobufWritable<Bts> wrap(Bts obj) {
+        ProtobufWritable<Bts> wrapper = ProtobufWritable.newInstance(Bts.class);
+        wrapper.set(obj);
+        return wrapper;
+    }
+    
     public static ProtobufWritable<Bts> createAndWrap(long placeId, double posx,
             double posy, double area, Iterable<Long> adjBts) {
-        ProtobufWritable<Bts> wrapper =
-                ProtobufWritable.newInstance(Bts.class);
-        wrapper.set(create(placeId, posx, posy, area, adjBts));
-        return wrapper;
+        return wrap(create(placeId, posx, posy, area, adjBts));
     }
 }

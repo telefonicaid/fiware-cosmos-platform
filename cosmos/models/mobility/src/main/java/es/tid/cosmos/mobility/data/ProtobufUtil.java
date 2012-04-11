@@ -9,5 +9,6 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
  */
 public interface ProtobufUtil {
     GeneratedMessage create(Object...args);
+    ProtobufWritable wrap(Object obj);
     ProtobufWritable createAndWrap(Object...args);
 }

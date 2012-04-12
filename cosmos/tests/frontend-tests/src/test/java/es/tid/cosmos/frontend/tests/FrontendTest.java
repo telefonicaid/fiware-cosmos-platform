@@ -91,9 +91,11 @@ public class FrontendTest {
                     return;
                 }
                 String linkUrl = this.frontend.resolveURL(verbatimUrl).toString();
-                assertTrue(FrontendTest.isLive(linkUrl), "Broken link: " + linkUrl);
+                assertTrue(FrontendTest.isLive(linkUrl),
+                           "Broken link: " + linkUrl);
                 if(link.getText().equalsIgnoreCase("home")) {
-                    assertEquals(this.frontend.getHomeUrl(), linkUrl.toString());
+                    assertEquals(this.frontend.getHomeUrl(),
+                                 linkUrl.toString());
                 }
             }
         } catch (MalformedURLException ex) {
@@ -142,11 +144,12 @@ public class FrontendTest {
         assertFalse(this.frontend.taskExists(taskId),
                     "Verify task hasn't been created. TaskId: " + taskId);
     }
-
-    public void testNoInputFile() throws IOException {
+    
+    private void createNoInputFileJob(String taskId) {
+        // Create job without data and verify we get an error if no data
+        // is specified
         WebDriver driver = this.frontend.getDriver();
         SelectNamePage namePage = this.frontend.goToCreateNewJob();
-        final String taskId = UUID.randomUUID().toString();
         namePage.setName(taskId);
 
         SelectJarPage jarPage = namePage.submitNameForm();
@@ -160,6 +163,25 @@ public class FrontendTest {
         // We should be in the same page, and the form should be complaining
         assertEquals(currentUrl, driver.getCurrentUrl());
         driver.findElement(By.className("errorlist"));
+    }
+
+    public void testNoInputFile() throws IOException, TestException {
+        final String taskId = UUID.randomUUID().toString();        
+        createNoInputFileJob(taskId);
+        
+        // Verify we can go back to the frontpage and upload data
+        // through the "Upload Data" link
+        SelectInputPage inputPage = this.frontend.setInputDataForJob(taskId);
+        inputPage.setInputFile(this.invalidJarPath);
+        inputPage.submitInputFileForm();
+        
+        FrontendLauncher testDriver = new FrontendLauncher(
+                this.frontend.getEnvironment());
+        testDriver.launchTask(taskId);
+        testDriver.waitForTaskCompletion(taskId);
+        assertEquals(testDriver.getTaskStatus(taskId),
+                     TaskStatus.Error,
+                     "Verifying task is in the error state");
     }
 
     public void verifySampleJarFile() throws IOException, TestException {
@@ -186,7 +208,8 @@ public class FrontendTest {
         
         // Submit job with sample JAR
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
+        FrontendLauncher testDriver = new FrontendLauncher(
+                this.frontend.getEnvironment());
         String taskId = testDriver.createNewTask(inputFilePath, jarName);
         testDriver.waitForTaskCompletion(taskId);
         assertEquals(testDriver.getTaskStatus(taskId),
@@ -224,7 +247,8 @@ public class FrontendTest {
 
     public void testSimpleTask() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
+        FrontendLauncher testDriver = new FrontendLauncher(
+                this.frontend.getEnvironment());
         String taskId = testDriver.createNewTask(inputFilePath,
                                                  this.wordcountJarPath);
         testDriver.waitForTaskCompletion(taskId);
@@ -236,7 +260,8 @@ public class FrontendTest {
 
     public void testParallelTasks() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
+        FrontendLauncher testDriver = new FrontendLauncher(
+                this.frontend.getEnvironment());
         String[] taskIds = new String[TASK_COUNT];
         for (int i = 0; i < TASK_COUNT; ++i) {
             taskIds[i] = testDriver.createNewTask(inputFilePath,
@@ -277,7 +302,8 @@ public class FrontendTest {
 
     public void testInvalidJar() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
+        FrontendLauncher testDriver = new FrontendLauncher(
+                this.frontend.getEnvironment());
         final String taskId = testDriver.createNewTask(inputFilePath,
                                                        this.invalidJarPath,
                                                        false);
@@ -300,7 +326,8 @@ public class FrontendTest {
     
     public void testFailureJar() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
+        FrontendLauncher testDriver = new FrontendLauncher(
+                this.frontend.getEnvironment());
         final String taskId = testDriver.createNewTask(inputFilePath,
                                                        this.mapperFailJarPath,
                                                        false);
@@ -324,7 +351,8 @@ public class FrontendTest {
     public void testListResultJar() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(
                 "2 3 4 5 6 7 8 9 123\n19283");
-        FrontendLauncher testDriver = new FrontendLauncher(this.frontend.getEnvironment());
+        FrontendLauncher testDriver = new FrontendLauncher(
+                this.frontend.getEnvironment());
         final String taskId = testDriver.createNewTask(inputFilePath,
                                                        this.printPrimesJarPath,
                                                        false);

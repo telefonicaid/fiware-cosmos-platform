@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
+import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,11 +22,10 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cell;
  * @author losa
  */
 
-public class ActivityAreaTest {
-    private MapReduceDriver<
-            ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
-            ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>,
-            ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>> driver;
+public class ActivityAreaMapperTest {
+    private MapDriver<ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
+            ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>>
+            driver;
     private ProtobufWritable<ActivityAreaKey> userWithSingleEntry;
     private ProtobufWritable<ActivityAreaKey> userWithTwoEntries;
     private ProtobufWritable<Cell> firstCell;
@@ -34,11 +33,9 @@ public class ActivityAreaTest {
 
     @Before
     public void setUp() {
-        this.driver = new MapReduceDriver<
-                ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
-                ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>,
-                ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>>
-                (new ActivityAreaMapper(), new ActivityAreaReducer());
+        this.driver = new MapDriver<ProtobufWritable<ActivityAreaKey>,
+                ProtobufWritable<Cell>, ProtobufWritable<ActivityAreaKey>,
+                ProtobufWritable<ActivityArea>>(new ActivityAreaMapper());
 
         long firstUserId = 5512683500L;
         long secondUserId = 5512684400L;
@@ -57,7 +54,6 @@ public class ActivityAreaTest {
         int secondPosX = 700000;
         int firstPosY = 2000000;
         int secondPosY = 4000000;
-
 
         this.userWithSingleEntry = ActivityAreaKeyUtil.createAndWrap(
                 firstUserId, month, isWorkDay);

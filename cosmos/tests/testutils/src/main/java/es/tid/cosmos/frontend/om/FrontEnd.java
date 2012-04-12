@@ -10,8 +10,8 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
-import static org.testng.Assert.fail;
 import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.fail;
 
 import es.tid.cosmos.joblaunchers.Environment;
 import es.tid.cosmos.joblaunchers.TaskStatus;
@@ -137,10 +137,10 @@ public class FrontEnd {
         
         boolean isExpectedLink = false;
         for (String elementClass : taskLink.getAttribute("class").split("\\s")) {
-                if (elementClass.equals(expectedClass)) {
-                    isExpectedLink = true;
-                    break;
-                }
+            if (elementClass.equals(expectedClass)) {
+                isExpectedLink = true;
+                break;
+            }
         }
         
         assertTrue(isExpectedLink, "Verifying link contains class: " + expectedClass);

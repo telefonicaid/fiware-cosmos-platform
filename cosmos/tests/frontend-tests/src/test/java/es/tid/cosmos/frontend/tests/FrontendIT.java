@@ -28,7 +28,7 @@ import es.tid.cosmos.joblaunchers.*;
  * @author ximo
  */
 @Test(singleThreaded = true)
-public class FrontendTest {
+public class FrontendIT {
     private static final String SIMPLE_TEXT = "Very simple text file";
     private static final int TASK_COUNT = 4;
     
@@ -82,7 +82,7 @@ public class FrontendTest {
                     return;
                 }
                 String linkUrl = this.frontend.resolveURL(verbatimUrl).toString();
-                assertTrue(FrontendTest.isLive(linkUrl),
+                assertTrue(FrontendIT.isLive(linkUrl),
                            "Broken link: " + linkUrl);
                 if(link.getText().equalsIgnoreCase("home")) {
                     assertEquals(this.frontend.getHomeUrl(),

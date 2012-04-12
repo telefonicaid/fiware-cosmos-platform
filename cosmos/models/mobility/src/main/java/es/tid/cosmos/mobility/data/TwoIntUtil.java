@@ -33,4 +33,8 @@ public abstract class TwoIntUtil implements ProtobufUtil {
         String[] values = line.split(DELIMITER);
         return create(Long.parseLong(values[0]), Long.parseLong(values[1]));
     }
+    
+    public static String toString(TwoInt obj) {
+        return (obj.getNum1() + DELIMITER + obj.getNum2());
+    }
 }

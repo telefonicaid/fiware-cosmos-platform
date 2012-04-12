@@ -38,4 +38,9 @@ public abstract class BtsCounterUtil implements ProtobufUtil {
         return create(Long.parseLong(values[0]), Integer.parseInt(values[1]),
                       Integer.parseInt(values[2]), Integer.parseInt(values[3]));
     }
+    
+    public static String toString(BtsCounter obj) {
+        return (obj.getPlaceId() + DELIMITER + obj.getWeekday() + DELIMITER +
+                obj.getRange() + DELIMITER + obj.getCount());
+    }
 }

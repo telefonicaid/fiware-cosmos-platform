@@ -6,11 +6,13 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.mobility.MobilityMain;
 import es.tid.cosmos.mobility.mapreduce.RepbtsGetRepresentativeBtsReducer;
@@ -30,9 +32,9 @@ public class RepbtsGetRepresentativeBtsJob extends Job {
         this.setInputFormatClass(SequenceFileInputFormat.class);
         this.setMapOutputKeyClass(IntWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
-        this.setOutputKeyClass(ProtobufWritable.class);
-        this.setOutputValueClass(ProtobufWritable.class);
-        this.setOutputFormatClass(SequenceFileOutputFormat.class);
+        this.setOutputKeyClass(NullWritable.class);
+        this.setOutputValueClass(Text.class);
+        this.setOutputFormatClass(TextOutputFormat.class);
         this.setReducerClass(RepbtsGetRepresentativeBtsReducer.class);
     }
 

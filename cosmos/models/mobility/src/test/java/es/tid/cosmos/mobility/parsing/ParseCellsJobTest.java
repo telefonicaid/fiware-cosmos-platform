@@ -1,6 +1,7 @@
-package es.tid.cosmos.mobility.jobs;
+package es.tid.cosmos.mobility.parsing;
 
-import es.tid.cosmos.mobility.jobs.ParseCdrsJob;
+import es.tid.cosmos.mobility.jobs.ParseCellsJob;
+import es.tid.cosmos.mobility.jobs.ParseCellsJob;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -15,12 +16,12 @@ import org.junit.Test;
  *
  * @author dmicol
  */
-public class ParseCdrsJobTest {
-    private ParseCdrsJob instance;
+public class ParseCellsJobTest {
+    private ParseCellsJob instance;
     
     @Before
     public void setUp() throws IOException {
-        this.instance = new ParseCdrsJob(new Configuration());
+        this.instance = new ParseCellsJob(new Configuration());
     }
 
     @Test

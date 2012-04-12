@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.mobility.MobilityMain;
-import es.tid.cosmos.mobility.mapreduce.ParseCdrsMapper;
+import es.tid.cosmos.mobility.parsing.ParseCdrsMapper;
 
 /**
  *

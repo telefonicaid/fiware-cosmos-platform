@@ -1,6 +1,5 @@
-package es.tid.cosmos.mobility.jobs;
+package es.tid.cosmos.mobility.pois;
 
-import es.tid.cosmos.mobility.jobs.NodeMobInfoJob;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -15,12 +14,12 @@ import static org.junit.Assert.assertEquals;
  *
  * @author dmicol
  */
-public class NodeMobInfoJobTest {
-    private NodeMobInfoJob instance;
+public class NodeBtsCounterJobTest {
+    private NodeBtsCounterJob instance;
     
     @Before
     public void setUp() throws IOException {
-        this.instance = new NodeMobInfoJob(new Configuration());
+        this.instance = new NodeBtsCounterJob(new Configuration());
     }
     
     @Test

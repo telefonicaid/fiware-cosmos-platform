@@ -13,8 +13,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.mobility.MobilityMain;
-import es.tid.cosmos.mobility.pois.NodeBtsCounterMapper;
-import es.tid.cosmos.mobility.pois.NodeBtsCounterReducer;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 
 /**

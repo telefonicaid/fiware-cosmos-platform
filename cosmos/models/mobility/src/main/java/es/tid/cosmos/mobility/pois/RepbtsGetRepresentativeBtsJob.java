@@ -15,7 +15,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.mobility.MobilityMain;
-import es.tid.cosmos.mobility.pois.RepbtsGetRepresentativeBtsReducer;
 
 /**
  *

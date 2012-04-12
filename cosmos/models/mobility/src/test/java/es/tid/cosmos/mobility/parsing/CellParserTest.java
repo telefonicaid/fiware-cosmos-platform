@@ -4,7 +4,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-import es.tid.cosmos.mobility.parsing.CellParser;
 
 /**
  *

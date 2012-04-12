@@ -1,6 +1,5 @@
 package es.tid.cosmos.mobility.jobs;
 
-import es.tid.cosmos.mobility.jobs.GetMobFromCellsJob;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;

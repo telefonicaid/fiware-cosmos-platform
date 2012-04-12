@@ -1,6 +1,5 @@
 package es.tid.cosmos.mobility.jobs;
 
-import es.tid.cosmos.mobility.jobs.VectorSumGroupcommsJob;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;

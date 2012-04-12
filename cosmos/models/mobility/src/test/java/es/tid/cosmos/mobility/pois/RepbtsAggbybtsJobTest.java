@@ -1,6 +1,5 @@
-package es.tid.cosmos.mobility.jobs;
+package es.tid.cosmos.mobility.pois;
 
-import es.tid.cosmos.mobility.jobs.RepbtsAggbybtsJob;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;

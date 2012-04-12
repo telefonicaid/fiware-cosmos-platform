@@ -14,7 +14,6 @@ import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.mapreduce.NodeBtsCounterReducer;
-import es.tid.cosmos.mobility.mapreduce.NodeBtsCounterReducer;
 
 /**
  *

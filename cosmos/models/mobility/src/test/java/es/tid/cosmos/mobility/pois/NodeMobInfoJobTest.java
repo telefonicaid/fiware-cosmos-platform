@@ -1,6 +1,5 @@
-package es.tid.cosmos.mobility.jobs;
+package es.tid.cosmos.mobility.pois;
 
-import es.tid.cosmos.mobility.jobs.RepbtsGetRepresentativeBtsJob;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -15,12 +14,12 @@ import static org.junit.Assert.assertEquals;
  *
  * @author dmicol
  */
-public class RepbtsGetRepresentativeBtsJobTest {
-    private RepbtsGetRepresentativeBtsJob instance;
+public class NodeMobInfoJobTest {
+    private NodeMobInfoJob instance;
     
     @Before
     public void setUp() throws IOException {
-        this.instance = new RepbtsGetRepresentativeBtsJob(new Configuration());
+        this.instance = new NodeMobInfoJob(new Configuration());
     }
     
     @Test

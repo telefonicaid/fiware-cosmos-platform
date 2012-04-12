@@ -1,6 +1,5 @@
 package es.tid.cosmos.mobility.jobs;
 
-import es.tid.cosmos.mobility.jobs.GetSample10000Job;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;

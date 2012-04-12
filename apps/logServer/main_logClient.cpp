@@ -7,7 +7,7 @@
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/network/SocketConnection.h"
 
-#include "au/log/Logclient.h"
+#include "au/log/LogClient.h"
 #include "au/log/log_server_common.h"
 
 

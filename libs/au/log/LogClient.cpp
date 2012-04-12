@@ -1,6 +1,6 @@
 
 
-#include "Logclient.h" // Own interface
+#include "LogClient.h" // Own interface
 
 namespace au
 {

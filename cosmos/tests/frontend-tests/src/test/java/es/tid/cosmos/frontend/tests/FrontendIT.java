@@ -1,9 +1,6 @@
 package es.tid.cosmos.frontend.tests;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,23 +18,17 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
-import es.tid.cosmos.frontend.om.FrontEnd;
-import es.tid.cosmos.frontend.om.SelectInputPage;
-import es.tid.cosmos.frontend.om.SelectJarPage;
-import es.tid.cosmos.frontend.om.SelectNamePage;
+import es.tid.cosmos.frontend.om.*;
 import es.tid.cosmos.hadoopjars.HadoopJars;
 import es.tid.cosmos.hadoopjars.JarNames;
-import es.tid.cosmos.joblaunchers.Environment;
-import es.tid.cosmos.joblaunchers.FrontendLauncher;
-import es.tid.cosmos.joblaunchers.TaskStatus;
-import es.tid.cosmos.joblaunchers.TestException;
+import es.tid.cosmos.joblaunchers.*;
 
 /**
  *
  * @author ximo
  */
 @Test(singleThreaded = true)
-public class FrontendTest {
+public class FrontendIT {
     private static final String SIMPLE_TEXT = "Very simple text file";
     private static final int TASK_COUNT = 4;
     
@@ -91,11 +82,12 @@ public class FrontendTest {
                     return;
                 }
                 String linkUrl = this.frontend.resolveURL(verbatimUrl).toString();
-                assertTrue(FrontendTest.isLive(linkUrl),
+                assertTrue(FrontendIT.isLive(linkUrl),
                            "Broken link: " + linkUrl);
                 if(link.getText().equalsIgnoreCase("home")) {
                     assertEquals(this.frontend.getHomeUrl(),
                                  linkUrl.toString());
+                    
                 }
             }
         } catch (MalformedURLException ex) {

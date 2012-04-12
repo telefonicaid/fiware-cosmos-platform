@@ -5,7 +5,6 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -29,7 +28,7 @@ public class ParseCellsJob extends Job {
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(TextInputFormat.class);
-        this.setMapOutputKeyClass(IntWritable.class);
+        this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(Text.class);
         this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);

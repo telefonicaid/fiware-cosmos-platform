@@ -3,7 +3,6 @@ package es.tid.cosmos.mobility.mapreduce;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -16,7 +15,7 @@ import es.tid.cosmos.mobility.parsing.CellParser;
  *
  * @author sortega
  */
-public class ParseCellsMapper extends Mapper<IntWritable, Text, LongWritable,
+public class ParseCellsMapper extends Mapper<LongWritable, Text, LongWritable,
         ProtobufWritable<Cdr>> {
     private LongWritable cellId;
     
@@ -26,7 +25,7 @@ public class ParseCellsMapper extends Mapper<IntWritable, Text, LongWritable,
     }
     
     @Override
-    public void map(IntWritable lineno, Text line, Context context)
+    public void map(LongWritable lineno, Text line, Context context)
             throws IOException, InterruptedException {
         final Cell cell = new CellParser(line.toString()).parse();
         ProtobufWritable wrappedCdr = ProtobufWritable.newInstance(Cell.class);

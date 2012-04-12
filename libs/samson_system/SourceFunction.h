@@ -2,6 +2,7 @@
 #ifndef _H_SAMSON_SYSTEM_SOURCE_FUNCTION
 #define _H_SAMSON_SYSTEM_SOURCE_FUNCTION
 
+#include <regex.h>
 #include "au/string.h"
 #include "au/containers/vector.h"
 #include "au/StringComponents.h"
@@ -674,6 +675,79 @@ namespace samson{
             }
         };
             
+        
+        class SourceFunction_match : public SourceFunction
+        {
+            // Value used to emit output
+            samson::system::Value value; 
+            
+            // Struct to store regular expression
+            regex_t preg;
+            
+            // Flag to indicate if the regular expressio is compiled
+            bool compiled;
+
+            // Flag to determine that has been an error
+            bool error;
+        public:
+            
+            SourceFunction_match() : SourceFunction( "match" , 2 , 2 )
+            {
+                compiled = false;
+                error =  false;
+            }
+            
+            ~SourceFunction_match()
+            {
+                if( compiled )
+                    regfree( &preg );
+            }
+            
+            samson::system::Value* get( KeyValue kv )
+            {
+                
+                if( !error && !compiled )
+                {
+                    samson::system::Value *source_regular_expression = input_sources[1]->get(kv);
+                    if( !source_regular_expression )
+                    {
+                        error = true;
+                        return NULL;
+                    }
+
+                    if( !source_regular_expression->isString() )
+                    {
+                        error = true;
+                        return NULL;
+                    }
+                    
+                    // Compile regular expression
+                    regcomp(&preg,  source_regular_expression->get_string().c_str()  , 0 );
+                    compiled = true;
+                }
+                
+                if( error )
+                    return NULL;
+
+                // Get the first value
+                samson::system::Value *source_value = input_sources[0]->get(kv);
+                
+                // Only accept string values
+                if( ( !source_value ) || !source_value->isString() )
+                    return NULL;
+
+                // Exec regular expression
+                int c = regexec( &preg, source_value->get_string().c_str(), 0, NULL , 0 );                
+
+                
+                if( c == 0 )
+                    value.set_double(1);
+                else
+                    value.set_double(0);
+                    
+                return &value;
+            }              
+        };
             
         // -----------------------------------------------------------------
         // SourceFunction_to_upper
@@ -766,6 +840,7 @@ namespace samson{
                 add<SourceFunction_find>("find");
                 add<SourceFunction_to_lower>("to_lower");
                 add<SourceFunction_to_upper>("to_upper");
+                add<SourceFunction_match>("match");
 
                 // Output strings
                 add<SourceFunction_json>("json");

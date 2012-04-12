@@ -649,6 +649,8 @@ namespace samson{
                     SamsonTokenVector token_vector;
                     token_vector.parse( rest_command );
                     
+                    printf("DEBUG: Token vector %s\n" , token_vector.str().c_str() );
+                    
                     Source* eval_source = getSource(&token_vector, error );
                     if( error->isActivated() )
                         return NULL;

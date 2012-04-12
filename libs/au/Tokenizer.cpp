@@ -168,7 +168,10 @@ namespace au {
             
             size_t pos = 0; // Begin of the considered "token"
             size_t i = 0;
-            while ( i < txt.size() )
+            
+            size_t len = txt.length();
+            
+            while ( i < len )
             {
 
                 // ------------------------------------------------------
@@ -258,7 +261,7 @@ namespace au {
             }
             
             // Last element
-            if ( txt.size() > pos )
+            if ( len > pos )
                 push_back( Token( txt.substr(pos) , Token::normal , pos ) );
             
         }
@@ -328,6 +331,7 @@ namespace au {
         std::string TokenVector::str()
         {
             std::ostringstream output;
+            output << "( " << size() << " tokens ) ";
             for ( size_t i = 0 ; i < size() ; i++ )
                 output << (*this)[i].str() << " ";
             return output.str();

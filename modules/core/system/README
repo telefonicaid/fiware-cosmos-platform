@@ -118,9 +118,9 @@ Build-in functions to use when selecting or filtering key-values
 ========================================================================================================================================================
 
 
-srtlen( X )    Length of the input key assuming it is a string. If a vector is provided, it generated an output vector with components lengths.
-str( X )       Transform input value to a string. Tipically convert a number into a string
-num( X )       Transform input value to a number. Tipically convert a string into a number
-isAlpha( X )   Return "1" if all the letters in input are alphanumerical values. "0" is returned othersise
-
+srtlen( X )            Length of the input key assuming it is a string. If a vector is provided, it generated an output vector with components lengths.
+str( X )               Transform input value to a string. Tipically convert a number into a string
+num( X )               Transform input value to a number. Tipically convert a string into a number
+isAlpha( X )           Return "1" if all the letters in input are alphanumerical values. "0" is returned othersise
+match( X , pattern )   Run a regular expression.
 

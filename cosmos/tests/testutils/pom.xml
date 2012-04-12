@@ -64,7 +64,7 @@
                 <executions> 
                     <execution> 
                         <id>aggregate</id> 
-                        <phase>compile</phase> 
+                        <phase>package</phase> 
                         <goals> 
                             <goal>single</goal> 
                         </goals> 

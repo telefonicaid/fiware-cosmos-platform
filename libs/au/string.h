@@ -134,6 +134,9 @@ bool string_begins_and_ends( std::string& str , std::string prefix , std::string
 std::string substring_without_prefix_and_posfix( std::string& str , std::string prefix , std::string postfix );
 
 
+// Reverse order of lines
+std::string reverse_lines( std::string& txt );
+
 
 NAMESPACE_END
 

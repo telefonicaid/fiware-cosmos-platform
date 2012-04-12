@@ -10,11 +10,12 @@ namespace au
     class LogFormatter
     {
         
+        std::string definition;
         std::vector<std::string> fields;
         
     public:
         
-        LogFormatter( std::string definition );        
+        LogFormatter( std::string _definition );        
         std::string get( Log* log );
         
         

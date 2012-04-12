@@ -344,6 +344,9 @@ namespace au
             // Generic sort function
             void sort( StringVector &sort_columns );
             
+            // Reverse order of rows
+            void reverseRows();
+            
         private:
             
             std::string top_line( std::vector<size_t> &length );

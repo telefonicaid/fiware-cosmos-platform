@@ -42,6 +42,9 @@ namespace au {
         
         // Add a log channel on this port to receive connections with new logs
         void add_channel( std::string name , int port ,  std::string directory , ErrorManager *error  );
+
+        // Command to add a "new_session" log
+        std::string newSessionCommand(CommandLine * cmdLine);        
         
         // Get a log table following a particular protocol
         std::string getLogsTable( CommandLine * cmdLine );

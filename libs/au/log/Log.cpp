@@ -4,7 +4,7 @@
 
 namespace au {
     
-    const char*log_reseved_words[] = {"HOST","TYPE","PID","TID","DATE","date","TIME","time","LINE","TLEV","EXEC","AUX","FILE","TEXT","text","FUNC","STRE",NULL};
+    const char*log_reseved_words[] = {"HOST","TYPE","PID","TID","DATE","date","TIME","time","LINE","TLEV","EXEC","AUX","FILE","TEXT","text","FUNC","STRE","time_unix",NULL};
 
     
     void Log::add_field( std::string field_name , std::string field_value )
@@ -134,6 +134,11 @@ namespace au {
             strftime (buffer_time,1024,"%X",&timeinfo);
             return std::string( buffer_time );
         }
+        if( name == "time_unix" )
+        {
+            return au::str("%lu" , log_data.tv.tv_sec );
+        }
+        
         if( name == "TIME" )
         {
             struct tm timeinfo;
@@ -167,6 +172,10 @@ namespace au {
         if( name == "STRE" )
             return getField( "stre" , "" ); 
         
+        // Generl look up in the strings...
+        std::map<std::string, std::string>::iterator it_fields = fields.find("name");
+        if( it_fields != fields.end() )
+            return it_fields->second;
         
         // If not recognized as a field, just return the name
         return name;
@@ -250,5 +259,26 @@ namespace au {
         }
         
     }
+
+    void Log::set_new_session()
+    {
+        log_data.lineNo=0;
+        log_data.traceLevel=0;
+        log_data.type='S';
+        log_data.tv.tv_sec = time(NULL); 
+        log_data.tv.tv_usec = 0;
+        log_data.timezone=0;
+        log_data.dst=0;
+        log_data.pid=0;
+        
+        add_field("new_session", "yes");
+    }
+    
+    bool Log::is_new_session()
+    {
+        return getField("new_session", "no") == "yes";
+    }
+    
+
     
 }

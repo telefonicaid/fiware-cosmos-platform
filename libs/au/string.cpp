@@ -602,5 +602,25 @@ std::string substring_without_prefix_and_posfix( std::string& str , std::string 
 
 
 
+std::string reverse_lines( std::string& txt )
+{
+    std::istringstream input_stream( txt );
+    
+    
+    char line[1024];
+
+    std::vector<std::string> lines;
+    
+    while( input_stream.getline( line, 1023 ) )
+        lines.push_back(line);
+
+    // Generate output
+    std::ostringstream output;
+    size_t num = lines.size();
+    for( size_t i = 0 ; i < num ; i++ )
+        output << lines[num-i-1] << "\n";
+    return output.str();
+}
+
 
 NAMESPACE_END

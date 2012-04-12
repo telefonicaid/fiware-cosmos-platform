@@ -5,9 +5,10 @@
 
 namespace au 
 {
-    TableLogFormatter::TableLogFormatter( bool is_table , std::string format )
+    TableLogFormatter::TableLogFormatter( bool is_table , bool _is_reverse, std::string format )
     {
-        
+        // Keep this information
+        is_reverse = _is_reverse;
         
         if( is_table )
         {
@@ -68,10 +69,25 @@ namespace au
     
     std::string TableLogFormatter::str()
     {
+        
+ 
+        
         if( table )
+        {
+            if( is_reverse )
+                table->reverseRows();
+            
             return table->str();
+        }
         else
-            return output.str();
+        {
+            
+            std::string lines = output.str();
+            if( is_reverse )
+                return au::reverse_lines( lines  );
+            else
+                return lines;
+        }
         
     }
 

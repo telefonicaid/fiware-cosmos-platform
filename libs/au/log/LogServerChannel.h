@@ -47,7 +47,6 @@ namespace au
         
         // Get the name of the channel        
         std::string getName();
-        
 
         // Funciton to init
         void initLogServerChannel( au::ErrorManager * error );
@@ -57,6 +56,9 @@ namespace au
         
         // Generic function to get a table of logs ( based on disk files )
         std::string  getTable( au::CommandLine * cmdLine );
+        
+        // Add a new session mark ( used in future queries )
+        void addNewSession();
         
     private:
         

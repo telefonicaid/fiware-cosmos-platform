@@ -99,9 +99,9 @@ namespace samson
             "Remove an environment variable",
             "unset <var>");
         
-        add( "set_database_mode"  , "delilah" , 
-            "Activate or deactivate debug database mode",
-            "set_database_mode on/off"
+        add( "set_mode"  , "delilah" , 
+            "Select delilah working mode: normal ,databse , logs",
+            "set_mode normal/database/logs"
             );
         
         

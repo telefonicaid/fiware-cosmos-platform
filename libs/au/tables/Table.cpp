@@ -1033,6 +1033,12 @@ namespace au
             return columns[c]->field_definition;
         }
 
+        void Table::reverseRows()
+        {
+            rows.reverse();
+        }
+
+        
     }
 }
 

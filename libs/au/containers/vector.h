@@ -70,6 +70,19 @@ public:
         return result;
     }
     
+    
+    void reverse()
+    {
+        std::vector<V*> tmp;
+        size_t num = std::vector<V*>::size();
+        for( size_t i = 0 ; i < num ; i++ )
+            tmp.push_back( (*this)[num-i-1] );
+        std::vector<V*>::clear();
+        for( size_t i = 0 ; i < num ; i++ )
+            std::vector<V*>::push_back( tmp[i] );
+        
+    }
+    
 };	
 
 NAMESPACE_END

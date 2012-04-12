@@ -57,11 +57,25 @@ namespace au
     }
     
     
+    std::string LogServer::newSessionCommand(CommandLine * cmdLine)
+    {
+        TokenTaker tt(&token);
+        std::string channel_name = cmdLine->get_flag_string("channel");
+        
+        // By default take the "default" channel
+        LogServerChannel * channel = channels.findInMap( channel_name  );
+        
+        if( ! channel )
+            return str("Channel %s found!\n" , channel_name.c_str() );
+
+        channel->addNewSession();
+        return au::str("Added a new session mark to channel %s\n" , channel_name.c_str() );
+    }
+    
+    
     std::string LogServer::getLogsTable( CommandLine * cmdLine )
     {
         TokenTaker tt(&token);
-        
-        
         std::string channel_name = cmdLine->get_flag_string("channel");
         
         // By default take the "default" channel

@@ -63,15 +63,17 @@ namespace samson
         show_alerts = false;
         verbose = true;
         
-        database_mode = false;  // By default we are not in this mode
-        
+        mode = mode_normal; // Normal mode by default
+
         // Schedule a notification to review repeat-tasks
         engine::Engine::shared()->notify( new engine::Notification( notification_delilah_review_repeat_tasks  ) , 1 );
         
         // Cool stuff
         addEspaceSequence( "samson" );
         addEspaceSequence( "q" );  // ls
-        addEspaceSequence( "d" );  // Data base mode...
+        addEspaceSequence( "d" );  // Database mode...
+        addEspaceSequence( "l" );  // logs mode...
+        addEspaceSequence( "n" );  // normal mode...
         
         // By default no save traces
         trace_file = NULL;
@@ -111,9 +113,11 @@ namespace samson
     
     std::string DelilahConsole::getPrompt()
     {
-        
-        if( database_mode )
+        if( mode == mode_database )
             return "Database >";
+
+        if( mode == mode_logs )
+            return log_client.getPrompt();
         
         return  au::str( "%s Delilah>" , network->getLoginInfo().c_str() );
     }
@@ -254,7 +258,20 @@ namespace samson
     
     void DelilahConsole::autoComplete( au::ConsoleAutoComplete* info )
     {
-        if( database_mode )
+        
+        // Common autocomplete
+        if( info->completingFirstWord() )
+            info->add("set_mode"); // always available
+                                         
+        
+        if( info->completingSecondWord("set_mode") )
+        {
+            info->add("normal");
+            info->add("database");
+            info->add("logs");
+        }
+        
+        if( mode == mode_database )
         {
             if ( info->completingFirstWord() )
                 info->add("set_database_mode off");
@@ -262,6 +279,12 @@ namespace samson
             autoCompleteForDatabaseCommand( info );
             return;
         }
+        
+        if( mode == mode_logs )
+        {
+            return log_client.autoComplete(info);
+        }
+            
         
         if ( info->completingFirstWord() )
         {
@@ -580,41 +603,51 @@ namespace samson
 		commandLine.set_flag_string("category", "");
 		commandLine.parse( command );
         
-		std::string mainCommand;
         
 		if( commandLine.get_num_arguments() == 0)
 			return 0;	// Zero means no pending operation to check
-		else
-			mainCommand = commandLine.get_argument(0);
-        
-        
-        if( database_mode )
+
+        std::string mainCommand = commandLine.get_argument(0);
+
+        // Common command in all modes
+        if( mainCommand == "set_mode" )
         {
-            
-            if( mainCommand == "set_database_mode" )
+            if( commandLine.get_num_arguments() < 2 )
             {
-                if( commandLine.get_num_arguments() < 2 )
-                {
-                    writeErrorOnConsole("Usage: set_database_mode on/off\n");
-                    return 0;
-                }
-                
-                if( commandLine.get_argument(1) == "on" )
-                {
-                    database_mode = true;  
-                    writeWarningOnConsole("Database mode activated\n");
-                }
-                else if( commandLine.get_argument(1) == "off" )
-                {
-                    database_mode = false;  
-                    writeWarningOnConsole("Database mode deactivated\n");
-                }
-                else
-                    writeErrorOnConsole("Usage: set_database_mode on/off\n");
-                
+                writeErrorOnConsole("Usage: set_mode normal/database/logs\n");
                 return 0;
             }
             
+            if( commandLine.get_argument(1) == "normal" )
+            {
+                mode = mode_normal;
+                writeWarningOnConsole("Normal mode activated\n");
+            } 
+            else if( commandLine.get_argument(1) == "database" )
+            {
+                mode = mode_database;
+                writeWarningOnConsole("Database mode activated\n");
+            }
+            else if( commandLine.get_argument(1) == "logs" )
+            {
+                mode = mode_logs;
+                writeWarningOnConsole("logs mode activated\n");
+            }
+            else
+                writeErrorOnConsole("Usage: set_mode normal/database/logs\n");
+            
+            return 0;
+        }
+        
+        // Spetial mode
+        if( mode == mode_logs )
+        {
+            log_client.evalCommand(command, this);
+            return 0;
+        }
+        
+        if( mode == mode_database )
+        {
             // Run data base command
             std::string result = runDatabaseCommand(command);
             writeOnConsole( au::strToConsole(result) );
@@ -643,31 +676,6 @@ namespace samson
             writeOnConsole( network->cluster_command( command ) + "\n" );
             return 0;
         }
-        
-        if( mainCommand == "set_database_mode" )
-        {
-            if( commandLine.get_num_arguments() < 2 )
-            {
-                writeErrorOnConsole("Usage: set_database_mode on/off\n");
-                return 0;
-            }
-            
-            if( commandLine.get_argument(1) == "on" )
-            {
-                database_mode = true;  
-                writeWarningOnConsole("Database mode activated\n");
-            }
-            else if( commandLine.get_argument(1) == "off" )
-            {
-                database_mode = false;  
-                writeWarningOnConsole("Database mode deactivated\n");
-            }
-            else
-                writeErrorOnConsole("Usage: set_database_mode on/off\n");
-            
-            return 0;
-        }
-        
         
 		if ( commandLine.isArgumentValue(0,"help","h") )
 		{

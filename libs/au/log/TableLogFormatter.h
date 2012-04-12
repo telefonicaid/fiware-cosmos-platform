@@ -22,9 +22,12 @@ namespace au
         LogFormatter* log_formatter;
         std::ostringstream output;
         
+        // Flag to indicate that reverse order is desiged
+        bool is_reverse;
+        
     public:
         
-        TableLogFormatter( bool is_table , std::string format );
+        TableLogFormatter( bool is_table , bool is_reverse, std::string format );
         ~TableLogFormatter();
         
         // Push a new log into the table to be print

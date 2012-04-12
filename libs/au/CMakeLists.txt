@@ -23,6 +23,7 @@ SET( LOG_FILES
 log/log_server_common.h
 
 log/Log.h
+log/LogClient.h
 log/LogServer.h
 log/LogServerChannel.h
 log/LogServerQuery.h
@@ -32,6 +33,7 @@ log/LogFormatter.h
 log/TableLogFormatter.h
 
 log/Log.cpp
+log/LogClient.cpp
 log/LogServer.cpp
 log/LogServerChannel.cpp
 log/LogServerQuery.cpp

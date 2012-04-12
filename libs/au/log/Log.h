@@ -8,6 +8,7 @@
 #define DATE_FORMAT "%A %d %h %H:%M:%S %Y"
 
 #include <fcntl.h>
+#include <regex.h>
 
 #include "au/containers/vector.h"
 #include "au/Status.h"
@@ -51,7 +52,7 @@ namespace au {
      text     text         // Message limited to 60 chars
      FUNC     fname        // Function name
      STR      stre         // ?
-     
+     time_unix
      */
     
     extern const char*log_reseved_words[];
@@ -90,6 +91,31 @@ namespace au {
 
         // Get total number og bytes when serialized
         size_t getTotalSerialitzationSize();
+        
+        // Match agains a particuar regular expression
+        bool match( const regex_t * preg )
+        {
+            std::map<std::string, std::string>::iterator it_fields;
+            for ( it_fields = fields.begin() ; it_fields != fields.end() ; it_fields++ )
+            {
+                std::string value = it_fields->second;
+                int c = regexec( preg, value.c_str(), 0, NULL , 0 );                
+                if( c == 0 )
+                    return true;
+                
+            }
+            
+            return false;
+        }
+        
+        bool check_time( time_t t )
+        {
+            return ( log_data.tv.tv_sec <= t );
+        }
+                   
+        // Spetial log to define mark of new session
+        void set_new_session();
+        bool is_new_session();
         
     private:
 

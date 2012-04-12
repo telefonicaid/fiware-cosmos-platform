@@ -1,5 +1,6 @@
-
+#include <time.h>
 #include "LogServerChannel.h" // Own interface
+#define Char_to_int(x) ((x)-48)
 
 namespace au 
 {
@@ -137,6 +138,53 @@ namespace au
     }
     
     
+    class Pattern
+    {
+        
+    public:
+        
+        bool activated;
+        regex_t preg;
+        int r;          // Return value of the regcomp
+        au::ErrorManager error;
+        
+        Pattern( std::string pattern )
+        {
+            LM_V(("Pattern %s" , pattern.c_str() ));
+            if( pattern == "" )
+            {
+                activated= false;
+                return;
+            }
+            
+            r = regcomp( &preg, pattern.c_str(), 0 );            
+            activated = ( r == 0 );
+            if( r != 0 )
+            {
+                char buffer[1024];
+                regerror( errno , &preg , buffer , sizeof( buffer ) );
+                error.set( buffer );
+            }
+        }
+
+        ~Pattern()
+        {
+            if( activated )
+                regfree(&preg);
+        }
+
+    };
+    
+    void LogServerChannel::addNewSession()
+    {
+        Log log;
+        log.set_new_session();
+        
+        // Add is protected with the mutex
+        add(&log);
+    }
+    
+    
     std::string LogServerChannel::getTable( au::CommandLine * cmdLine )
     {
         LM_V(("Get table..."));
@@ -148,15 +196,69 @@ namespace au
         std::string format = cmdLine->get_flag_string("format");
         int limit = cmdLine->get_flag_int("limit");
         bool is_table = cmdLine->get_flag_bool("table");        
+        bool is_reverse = cmdLine->get_flag_bool("reverse");        
+        bool is_multi_session = cmdLine->get_flag_bool("multi_session");        
+
+        std::string pattern = cmdLine->get_flag_string("pattern");
+        std::string str_time = cmdLine->get_flag_string("time");
+        std::string str_date = cmdLine->get_flag_string("date");
+        std::string str_type = cmdLine->get_flag_string("type");
+        
+        // Patern
+        Pattern p( pattern );
+        if( p.error.isActivated() )
+            return au::str("Error in pattern definition: %s" , p.error.getMessage().c_str() ); // Not possible to compile regular expression
+
+        // Time restrictions
+        time_t now = time(NULL);
+        time_t time = 0;
+        struct tm tm;
+        gmtime_r( &now , &tm );
+        
+        if( ( str_time != "" ) || ( str_date != "" ) )
+        {
+            
+            if( str_time != "" )
+            {
+                if( str_time.length() != 8 )
+                    return "Error: Wrong format for -time. It is -time HH:MM:SS\n";
+
+                tm.tm_hour = Char_to_int(str_time[0]) * 10 + Char_to_int(str_time[1]);
+                tm.tm_min = Char_to_int(str_time[3]) * 10 + Char_to_int(str_time[4]);
+                tm.tm_sec = Char_to_int(str_time[6]) * 10 + Char_to_int(str_time[7]);
+
+                LM_V(("Time interpretado %d:%d:%d" , tm.tm_hour , tm.tm_min , tm.tm_sec ));
+                
+            }
+            
+            if( str_date != "" )
+            {
+                if( str_date.length() != 8 )
+                    return "Error: Wrong format for -date. It is -date DD/MM/YY\n";
+                
+                // DD/MM/YY
+                tm.tm_year = 100 + Char_to_int( str_date[6] ) * 10 + Char_to_int( str_date[7] );
+                tm.tm_mon  = Char_to_int( str_date[3] ) * 10 + Char_to_int( str_date[4] ) - 1;
+                tm.tm_mday = Char_to_int( str_date[0] ) * 10 + Char_to_int( str_date[1] );            
+            }
+
+            // Create a different time
+            time = timelocal( &tm );
+            
+            LM_V(("Time selector  (%s)(%s)  %lu (Now %lu)" , str_time.c_str() , str_date.c_str() ,  time , now ));
+        }
+        
         
         // Formatter to create table
-        TableLogFormatter table_log_formater( is_table , format );
+        TableLogFormatter table_log_formater( is_table , is_reverse , format );
         
         LM_V(("Get table... table log formatter ok"));
         
         int tmp_file_counter = file_counter;
         size_t log_counter = 0;
-        while( true )
+        
+        bool finish = false;
+        while( !finish )
         {
             LogFile* log_file = NULL;
             std::string file_name = getFileNameForLogFile( tmp_file_counter );
@@ -172,26 +274,53 @@ namespace au
                 for( size_t i = 0 ; i < num_logs ; i++ )
                 {
                     Log* log = log_file->logs[ num_logs - i - 1];
+                    
+                    // Check if log match the pattern
+                    if( p.activated )
+                        if( !log->match( &p.preg ) )
+                            continue;
+
+                    // Check if log math the time ( smaller than .... )
+                    if( time > 0 )
+                        if( !log->check_time(time) )
+                            continue;
+                    
+                    // Check if the type is correct
+                    if( str_type != "" )
+                        if( log->log_data.type != str_type[0] )
+                            continue;
+
+                    // Detect a new session mark
+                    if( !is_multi_session )
+                        if( log->is_new_session() )
+                        {
+                            finish = true; // No more logs to be displayed
+                            break;
+                        }
+                    
                     table_log_formater.add(log);
                     
+                    // Finish condition if enougth records are collected
                     log_counter++;
-                    
                     if( limit > 0 )
                         if( log_counter >= (size_t) limit )
                         {
-                            delete log_file;
-                            LM_V(("Returning table..."));
-                            return table_log_formater.str();
+                            finish = true; // No more logs to be displayed
+                            break;
                         }
                 }
-                
+
+                // Delete the openen file
                 delete log_file;
             }
-            
+
+            // Move to the previous log file
             tmp_file_counter--;
+                        
+            // Finish if no more files to scan
             if( tmp_file_counter < 0 )
-                return table_log_formater.str();
-            
+                break;
+
         }
         
         LM_V(("Returning table..."));

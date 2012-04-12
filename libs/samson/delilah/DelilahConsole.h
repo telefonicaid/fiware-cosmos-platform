@@ -20,6 +20,8 @@
 
 #include "logMsg/logMsg.h"				
 
+#include "au/log/LogClient.h"
+
 #include "au/mutex/TokenTaker.h"                  // au::TokenTake
 #include "au/console/Console.h"                     // au::Console
 #include "au/console/ConsoleAutoComplete.h"
@@ -39,9 +41,17 @@ namespace samson {
 	
 	class DelilahConsole : public au::Console, public Delilah
 	{
+        
+        typedef enum
+        {
+            mode_normal,        // Normal mode ( interacting with all workers )
+            mode_database,      // Local database working
+            mode_logs           // logClient connection
+        }DelilahConsoleMode;
+        
+        DelilahConsoleMode mode; // Internal mode ( different interaction with console )
 		
         std::string commandFileName;
-        bool database_mode; // Flag to indicate that we are running commands over table collection
         
         DelilahCommandCatalogue delilah_command_catalogue;
         
@@ -54,14 +64,21 @@ namespace samson {
 
         // Flag to indicate if we are shoing traces
         bool show_alerts;
+        
+        // Flag to show on screen certain messages
         bool verbose;
         
         // Flag to just visualize content on screen ( delilah -command  or -f XX )
         bool simple_output;
+        
         // Flag to avoid any message visualization
         bool no_output;
         
+        // List of alias
         au::simple_map< std::string , std::string > aliases;
+
+        // LogClient used when working in log_client mode
+        au::LogClient log_client;
         
 	public:
 		
@@ -114,7 +131,19 @@ namespace samson {
             
             if( sequence == "d" )
             {
-                database_mode = !database_mode;
+                mode = mode_database;
+                refresh(); // refresh console
+            }
+            
+            if( sequence == "l" )
+            {
+                mode = mode_logs;
+                refresh(); // refresh console
+            }
+            
+            if( sequence == "n" )
+            {
+                mode = mode_normal;
                 refresh(); // refresh console
             }
                 

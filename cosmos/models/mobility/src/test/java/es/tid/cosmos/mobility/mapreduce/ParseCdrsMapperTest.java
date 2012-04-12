@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
@@ -21,19 +20,19 @@ import es.tid.cosmos.mobility.mapreduce.ParseCdrsMapper;
  * @author dmicol
  */
 public class ParseCdrsMapperTest {
-    private MapDriver<IntWritable, Text, LongWritable, ProtobufWritable<Cdr>>
+    private MapDriver<LongWritable, Text, LongWritable, ProtobufWritable<Cdr>>
             driver;
     
     @Before
     public void setUp() {
-        this.driver = new MapDriver<IntWritable, Text, LongWritable,
+        this.driver = new MapDriver<LongWritable, Text, LongWritable,
                 ProtobufWritable<Cdr>>(new ParseCdrsMapper());
     }
 
     @Test
     public void test() throws IOException {
         List<Pair<LongWritable, ProtobufWritable<Cdr>>> results = this.driver
-                .withInput(new IntWritable(1),
+                .withInput(new LongWritable(1L),
                            new Text("33F430521676F4|2221436242|"
                                     + "33F430521676F4|0442224173253|2|"
                                     + "01/01/2010|02:00:01|2891|RMITERR"))

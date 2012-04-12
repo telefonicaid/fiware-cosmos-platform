@@ -30,7 +30,7 @@ public abstract class NodeBtsUtil implements ProtobufUtil {
     
     public static ProtobufWritable<NodeBts> createAndWrap(long userId,
             int placeId, int weekday, int range) {
-        return wrap(create(placeId, placeId, weekday, range));
+        return wrap(create(userId, placeId, weekday, range));
     }
     
     public static NodeBts parse(String line) {

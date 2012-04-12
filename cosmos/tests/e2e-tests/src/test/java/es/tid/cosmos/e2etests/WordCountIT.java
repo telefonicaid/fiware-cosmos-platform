@@ -17,7 +17,7 @@ import es.tid.cosmos.joblaunchers.FrontendLauncher;
 import es.tid.cosmos.joblaunchers.JobLauncher;
 import es.tid.cosmos.joblaunchers.TestException;
 
-public class WordCountTest {
+public class WordCountIT {
     private static final String WORDCOUNT_PATH = HadoopJars.getPath(JarNames.Wordcount);
     
     public class TestImpl {        

@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.mapreduce;
+package es.tid.cosmos.mobility.pois;
 
 import java.io.IOException;
 import java.util.ArrayList;

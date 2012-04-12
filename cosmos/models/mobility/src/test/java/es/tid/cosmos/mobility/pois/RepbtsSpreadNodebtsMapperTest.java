@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.mapreduce;
+package es.tid.cosmos.mobility.pois;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +17,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeMxCounter;
 import es.tid.cosmos.mobility.data.NodeMxCounterUtil;
+import es.tid.cosmos.mobility.mapreduce.RepbtsSpreadNodebtsMapper;
 
 /**
  *

@@ -1,5 +1,11 @@
 package es.tid.cosmos.mobility;
 
+import es.tid.cosmos.mobility.pois.NodeBtsCounterJob;
+import es.tid.cosmos.mobility.pois.NodeMobInfoJob;
+import es.tid.cosmos.mobility.pois.RepbtsAggbybtsJob;
+import es.tid.cosmos.mobility.pois.RepbtsSpreadNodebtsJob;
+import es.tid.cosmos.mobility.pois.RepbtsJoinDistCommsJob;
+import es.tid.cosmos.mobility.pois.RepbtsGetRepresentativeBtsJob;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;

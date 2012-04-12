@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.jobs;
+package es.tid.cosmos.mobility.pois;
 
 import java.io.IOException;
 
@@ -13,7 +13,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.mobility.MobilityMain;
-import es.tid.cosmos.mobility.mapreduce.RepbtsJoinDistCommsReducer;
+import es.tid.cosmos.mobility.pois.RepbtsJoinDistCommsReducer;
 /**
  *
  * @author dmicol

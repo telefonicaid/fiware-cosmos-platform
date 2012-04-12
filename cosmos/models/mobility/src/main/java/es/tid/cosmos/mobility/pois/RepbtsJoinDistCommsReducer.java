@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.mapreduce;
+package es.tid.cosmos.mobility.pois;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,24 +11,26 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Reducer.Context;
 
+import es.tid.cosmos.mobility.data.BtsCounterUtil;
+import es.tid.cosmos.mobility.data.MobProtocol;
+import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
 
 /**
  *
  * @author dmicol
  */
-public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
-        ProtobufWritable<NodeBtsDay>, LongWritable, IntWritable> {
+public class RepbtsJoinDistCommsReducer extends Reducer<LongWritable,
+        ProtobufWritable<NodeBtsDay>, LongWritable,
+        ProtobufWritable<BtsCounter>> {
     private static final int MIN_TOTAL_CALLS = 200;
     private static final int MAX_TOTAL_CALLS = 5000;
-    
     private static final String CELL_CATALOGUE_FILE_NAME =
-            "/user/hdfs/cells_cat.dat";
-    
+                                "/user/hdfs/cells_cat.dat";
     private static Set<Long> cellCatalogue = null;
 
     @Override
@@ -37,7 +39,7 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
         this.loadCellsCataloge(context.getConfiguration(),
                                new Path(CELL_CATALOGUE_FILE_NAME));
     }
-    
+
     @Override
     public void reduce(LongWritable key,
                        Iterable<ProtobufWritable<NodeBtsDay>> values,
@@ -46,8 +48,8 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
         int numCommsInfo = 0;
         int numCommsNoInfo = 0;
         int numCommsNoBts = 0;
-        for (ProtobufWritable<NodeBtsDay> value : values) {
-            final NodeBtsDay nodeBtsDay = value.get();
+        for (ProtobufWritable<MobProtocol.NodeBtsDay> value : values) {
+            final MobProtocol.NodeBtsDay nodeBtsDay = value.get();
             if (!nodeBtsDay.hasPlaceId() || nodeBtsDay.getPlaceId() == 0) {
                 numCommsNoInfo++;
             } else if (!cellCatalogue.contains(nodeBtsDay.getPlaceId())) {
@@ -58,7 +60,15 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
         }
         int totalComms = numCommsInfo + numCommsNoInfo + numCommsNoBts;
         if (totalComms >= MIN_TOTAL_CALLS && totalComms <= MAX_TOTAL_CALLS) {
-            context.write(key, new IntWritable(numCommsInfo));
+            for (ProtobufWritable<MobProtocol.NodeBtsDay> value : values) {
+                final MobProtocol.NodeBtsDay nodeBtsDay = value.get();
+                ProtobufWritable<BtsCounter> counter =
+                        BtsCounterUtil.createAndWrap(
+                                nodeBtsDay.getPlaceId(), 0,
+                                nodeBtsDay.getCount(),
+                                nodeBtsDay.getCount() * 100 / totalComms);
+                context.write(key, counter);
+            }                                         
         }
     }
 

@@ -8,8 +8,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.parsing.CdrParser;
 
 /**
  *
@@ -27,11 +27,8 @@ public class ParseCdrsMapper extends Mapper<IntWritable, Text, LongWritable,
     @Override
     public void map(IntWritable key, Text line, Context context)
             throws IOException, InterruptedException {
-        final Cdr cdr = new CdrParser(line.toString()).parse();
-        ProtobufWritable wrappedCdr = ProtobufWritable.newInstance(Cdr.class);
-        wrappedCdr.set(cdr);
-
-        this.userId.set(cdr.getUserId());
-        context.write(this.userId, wrappedCdr);
+        ProtobufWritable<Cdr> cdr = CdrUtil.wrap(CdrUtil.parse(line.toString()));
+        this.userId.set(cdr.get().getUserId());
+        context.write(this.userId, cdr);
     }
 }

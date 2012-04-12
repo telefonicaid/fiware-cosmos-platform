@@ -5,6 +5,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import es.tid.cosmos.mobility.data.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
+import es.tid.cosmos.mobility.parsing.CdrParser;
 
 /**
  *
@@ -29,5 +30,9 @@ public abstract class CdrUtil  implements ProtobufUtil {
     public static ProtobufWritable createAndWrap(long userId, long cellId,
                                                  Date date, Time time) {
         return wrap(create(userId, cellId, date, time));
+    }
+    
+    public static Cdr parse(String line) {
+        return new CdrParser(line).parse();
     }
 }

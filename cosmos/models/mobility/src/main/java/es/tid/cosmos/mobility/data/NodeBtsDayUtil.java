@@ -30,12 +30,17 @@ public abstract class NodeBtsDayUtil implements ProtobufUtil {
     
     public static ProtobufWritable<NodeBtsDay> createAndWrap(long userId,
             long placeId, int workday, int count) {
-        return wrap(create(placeId, placeId, workday, count));
+        return wrap(create(userId, placeId, workday, count));
     }
     
     public static NodeBtsDay parse(String line) {
         String[] values = line.split(DELIMITER);
         return create(Long.parseLong(values[0]), Integer.parseInt(values[1]),
                       Integer.parseInt(values[2]), Integer.parseInt(values[3]));
+    }
+    
+    public static String toString(NodeBtsDay obj) {
+        return (obj.getUserId() + DELIMITER + obj.getPlaceId() + DELIMITER +
+                obj.getWorkday() + DELIMITER + obj.getCount());
     }
 }

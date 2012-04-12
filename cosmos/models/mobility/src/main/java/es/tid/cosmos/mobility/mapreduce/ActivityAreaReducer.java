@@ -39,10 +39,10 @@ public class ActivityAreaReducer extends Reducer<
             masscenterUtmY = tmp.getMasscenterUtmY();
         }
         ProtobufWritable<ActivityArea> ans =
-                ActivityAreaUtil.createAndWrapArea(numPos, difBtss, difMuns,
-                                                   difStates, masscenterUtmX,
-                                                   masscenterUtmY, radius,
-                                                   diamAreaInf);
+                ActivityAreaUtil.createAndWrap(numPos, difBtss, difMuns,
+                                               difStates, masscenterUtmX,
+                                               masscenterUtmY, radius,
+                                               diamAreaInf);
         context.write(key, ans);
     }
 }

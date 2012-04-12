@@ -32,9 +32,9 @@ public class ActivityAreaMapper extends Mapper<
         double diamAreaInf = 0.0;
 
         ActivityArea activityArea =
-            ActivityAreaUtil.createArea(numPos, difBtss, difMuns, difStates,
-                                        masscenterUtmX, masscenterUtmY,
-                                        radius, diamAreaInf);
+            ActivityAreaUtil.create(numPos, difBtss, difMuns, difStates,
+                                    masscenterUtmX, masscenterUtmY,
+                                    radius, diamAreaInf);
         ProtobufWritable<ActivityArea> ans = ActivityAreaUtil.wrap(activityArea);
         context.write(key, ans);
     }

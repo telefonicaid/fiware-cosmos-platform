@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeMxCounter;
 import es.tid.cosmos.mobility.data.NodeMxCounterUtil;
-import es.tid.cosmos.mobility.mapreduce.RepbtsSpreadNodebtsMapper;
+import es.tid.cosmos.mobility.pois.RepbtsSpreadNodebtsMapper;
 
 /**
  *

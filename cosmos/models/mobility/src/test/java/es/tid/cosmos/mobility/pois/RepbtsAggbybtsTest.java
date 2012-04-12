@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
 import es.tid.cosmos.mobility.data.NodeBtsDayUtil;
-import es.tid.cosmos.mobility.mapreduce.RepbtsAggbybtsReducer;
+import es.tid.cosmos.mobility.pois.RepbtsAggbybtsReducer;
 
 /**
  *

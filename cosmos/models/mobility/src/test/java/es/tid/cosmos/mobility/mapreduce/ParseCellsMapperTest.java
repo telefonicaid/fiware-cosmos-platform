@@ -13,7 +13,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.mapreduce.ParseCellsMapper;
+import es.tid.cosmos.mobility.parsing.ParseCellsMapper;
 
 /**
  *

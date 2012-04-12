@@ -4,20 +4,18 @@ import java.io.IOException;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-
 import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
-import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 import es.tid.cosmos.mobility.data.ActivityAreaUtil;
+import es.tid.cosmos.mobility.data.ActivityAreaKeyUtil;
+import es.tid.cosmos.mobility.data.CellUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
 import es.tid.cosmos.mobility.data.MobProtocol.ActivityAreaKey;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-import es.tid.cosmos.mobility.mapreduce.ActivityAreaMapper;
-import es.tid.cosmos.mobility.mapreduce.ActivityAreaReducer;
 
 /**
  *
@@ -61,25 +59,22 @@ public class ActivityAreaTest {
         int secondPosY = 4000000;
 
 
-        this.userWithSingleEntry =
-            ActivityAreaUtil.createAndWrapAreaKey(firstUserId, month, isWorkDay);
+        this.userWithSingleEntry = ActivityAreaKeyUtil.createAndWrap(
+                firstUserId, month, isWorkDay);
         this.userWithSingleEntry.setConverter(ActivityAreaKey.class);
 
-        this.firstCell =
-                ActivityAreaUtil.createAndWrapCell(firstCellId, firstPlaceId,
-                                                   firstGeoLoc1, firstGeoLoc2,
-                                                   firstPosX, firstPosY);
+        this.firstCell = CellUtil.createAndWrap(firstCellId, firstPlaceId,
+                                                firstGeoLoc1, firstGeoLoc2,
+                                                firstPosX, firstPosY);
         this.firstCell.setConverter(Cell.class);
 
-        this.userWithTwoEntries =
-                ActivityAreaUtil.createAndWrapAreaKey(secondUserId, month,
-                                                      isWorkDay);
+        this.userWithTwoEntries = ActivityAreaKeyUtil.createAndWrap(
+                secondUserId, month, isWorkDay);
         this.userWithTwoEntries.setConverter(ActivityAreaKey.class);
 
-        this.secondCell =
-            ActivityAreaUtil.createAndWrapCell(secondCellId, secondPlaceId,
-                                               secondGeoLoc1, secondGeoLoc2,
-                                               secondPosX, secondPosY);
+        this.secondCell = CellUtil.createAndWrap(secondCellId, secondPlaceId,
+                                                 secondGeoLoc1, secondGeoLoc2,
+                                                 secondPosX, secondPosY);
         this.secondCell.setConverter(Cell.class);
     }
 
@@ -95,10 +90,10 @@ public class ActivityAreaTest {
         double diamAreaInf = 0.0;
 
         ProtobufWritable<ActivityArea> outputWithAllVariables = 
-                ActivityAreaUtil.createAndWrapArea(numPos, difBtss, difMuns,
-                                                   difStates, masscenterUtmX,
-                                                   masscenterUtmY, radius,
-                                                   diamAreaInf);
+                ActivityAreaUtil.createAndWrap(numPos, difBtss, difMuns,
+                                               difStates, masscenterUtmX,
+                                               masscenterUtmY, radius,
+                                               diamAreaInf);
         outputWithAllVariables.setConverter(ActivityArea.class);
 
         List<Pair<ProtobufWritable<ActivityAreaKey>,
@@ -122,10 +117,10 @@ public class ActivityAreaTest {
         double diamAreaInf = 0.0;
 
         ProtobufWritable<ActivityArea> outputWithCorrectCounts = 
-                ActivityAreaUtil.createAndWrapArea(numPos, difBtss, difMuns,
-                                                   difStates, masscenterUtmX,
-                                                   masscenterUtmY, radius,
-                                                   diamAreaInf);
+                ActivityAreaUtil.createAndWrap(numPos, difBtss, difMuns,
+                                               difStates, masscenterUtmX,
+                                               masscenterUtmY, radius,
+                                               diamAreaInf);
         outputWithCorrectCounts.setConverter(ActivityArea.class);
 
         List<Pair<ProtobufWritable<ActivityAreaKey>,
@@ -139,3 +134,4 @@ public class ActivityAreaTest {
         
     }
 }
+

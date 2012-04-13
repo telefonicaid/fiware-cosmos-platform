@@ -9,8 +9,8 @@
         <dependencySet> 
             <outputDirectory>/</outputDirectory> 
             <includes> 
-                <include>es.tid.cosmos.hadoopjobs:printprimes</include>
-                <include>es.tid.cosmos.hadoopjobs:mapperfail</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:printprimes</include>
+                <include>es.tid.cosmos.tests.hadoopjobs:mapperfail</include> 
                 <include>es.tid.cosmos:wordcount-core</include>
             </includes> 
             <useTransitiveDependencies>false</useTransitiveDependencies>

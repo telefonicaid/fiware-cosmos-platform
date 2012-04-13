@@ -16,26 +16,8 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cell;
  */
 public class ActivityAreaMapper extends Mapper<
             ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
-            ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>> {
-    @Override
-    public void map(ProtobufWritable<ActivityAreaKey> key,
-                    ProtobufWritable<Cell> value, Context context)
-            throws IOException, InterruptedException {
-        final Cell cell = value.get();
-        int numPos = 1;
-        int difBtss = 1;
-        int difMuns = 1;
-        int difStates = 1;
-        double masscenterUtmX = cell.getPosx();
-        double masscenterUtmY = cell.getPosy();
-        double radius = 0.0;
-        double diamAreaInf = 0.0;
-
-        ActivityArea activityArea =
-            ActivityAreaUtil.create(numPos, difBtss, difMuns, difStates,
-                                    masscenterUtmX, masscenterUtmY,
-                                    radius, diamAreaInf);
-        ProtobufWritable<ActivityArea> ans = ActivityAreaUtil.wrap(activityArea);
-        context.write(key, ans);
-    }
+            ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>> {
+    /*
+     * the default map is the identity function
+     */
 }

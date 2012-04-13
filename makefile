@@ -282,6 +282,15 @@ clear_ipcs:
 set_ssm_linux:
 	sudo sysctl -w kernel.shmmax=64000000
 
+packages:
+	# Generic task to invoke the the correct package step depending on the OS
+	if [ "$(DISTRO)" = "Ubuntu" ]; then \
+		echo "Buildng for $(DISTRO)"; \
+		make deb; \
+	else \
+		make rpm; \
+	fi
+
 rpm: clean cleansvn
 	mkdir -p ~/rpmbuild/{BUILD,RPMS,S{OURCE,PEC,RPM}S}
 	rm -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
@@ -336,8 +345,6 @@ uninstall_debug:
 	  xargs rm -f  < BUILD_DEBUG/install_manifest.txt; \
 	fi
 	
-
-packages: install man rpm deb
 
 .PHONY : modules
 .PHONY : man

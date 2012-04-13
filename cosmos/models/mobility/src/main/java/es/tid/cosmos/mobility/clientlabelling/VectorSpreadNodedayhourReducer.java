@@ -23,6 +23,7 @@ public class VectorSpreadNodedayhourReducer extends Reducer<LongWritable,
                           Context context) throws IOException,
                                                   InterruptedException {
         for (ProtobufWritable<Cdr> value : values) {
+            value.setConverter(Cdr.class);
             final Cdr cdr = value.get();
             int weekday;
             switch (cdr.getDate().getWeekday()) {

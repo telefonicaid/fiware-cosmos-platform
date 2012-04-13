@@ -241,6 +241,7 @@
                         <excludes>
                             <exclude>**/main/Bootstrap.class</exclude>
                             <exclude>**/generated/**/*.class</exclude>
+                            <exclude>**/tests/**/*.class</exclude>
                         </excludes>
                     </instrumentation>
                     <formats>

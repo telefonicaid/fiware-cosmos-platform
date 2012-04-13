@@ -57,21 +57,14 @@ public class ActivityAreaMapperTest {
 
         this.userWithSingleEntry = ActivityAreaKeyUtil.createAndWrap(
                 firstUserId, month, isWorkDay);
-        this.userWithSingleEntry.setConverter(ActivityAreaKey.class);
-
         this.firstCell = CellUtil.createAndWrap(firstCellId, firstPlaceId,
                                                 firstGeoLoc1, firstGeoLoc2,
                                                 firstPosX, firstPosY);
-        this.firstCell.setConverter(Cell.class);
-
         this.userWithTwoEntries = ActivityAreaKeyUtil.createAndWrap(
                 secondUserId, month, isWorkDay);
-        this.userWithTwoEntries.setConverter(ActivityAreaKey.class);
-
         this.secondCell = CellUtil.createAndWrap(secondCellId, secondPlaceId,
                                                  secondGeoLoc1, secondGeoLoc2,
                                                  secondPosX, secondPosY);
-        this.secondCell.setConverter(Cell.class);
     }
 
     @Test
@@ -90,8 +83,6 @@ public class ActivityAreaMapperTest {
                                                difStates, masscenterUtmX,
                                                masscenterUtmY, radius,
                                                diamAreaInf);
-        outputWithAllVariables.setConverter(ActivityArea.class);
-
         List<Pair<ProtobufWritable<ActivityAreaKey>,
                   ProtobufWritable<ActivityArea>>> results = this.driver
                         .withInput(this.userWithSingleEntry, this.firstCell)
@@ -117,8 +108,6 @@ public class ActivityAreaMapperTest {
                                                difStates, masscenterUtmX,
                                                masscenterUtmY, radius,
                                                diamAreaInf);
-        outputWithCorrectCounts.setConverter(ActivityArea.class);
-
         List<Pair<ProtobufWritable<ActivityAreaKey>,
                   ProtobufWritable<ActivityArea>>> results = this.driver
                 .withInput(this.userWithTwoEntries, this.firstCell)

@@ -61,6 +61,10 @@ message TwoInt {
     optional uint64 num2 = 2;
 }
 
+message DailyVector {
+    repeated TwoInt hours = 1;
+}
+
 message GLEvent {
     optional uint64 userId = 1;
     optional uint64 placeId = 2;

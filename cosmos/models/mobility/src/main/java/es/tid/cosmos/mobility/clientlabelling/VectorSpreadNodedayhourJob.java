@@ -6,6 +6,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -28,8 +29,8 @@ public class VectorSpreadNodedayhourJob extends Job {
         this.setInputFormatClass(SequenceFileInputFormat.class);
         this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
-        this.setOutputKeyClass(LongWritable.class);
-        this.setOutputValueClass(ProtobufWritable.class);
+        this.setOutputKeyClass(ProtobufWritable.class);
+        this.setOutputValueClass(NullWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
         this.setReducerClass(VectorSpreadNodedayhourReducer.class);
     }

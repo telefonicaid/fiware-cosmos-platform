@@ -1,11 +1,5 @@
 package es.tid.cosmos.mobility;
 
-import es.tid.cosmos.mobility.pois.NodeBtsCounterJob;
-import es.tid.cosmos.mobility.pois.NodeMobInfoJob;
-import es.tid.cosmos.mobility.pois.RepbtsAggbybtsJob;
-import es.tid.cosmos.mobility.pois.RepbtsSpreadNodebtsJob;
-import es.tid.cosmos.mobility.pois.RepbtsJoinDistCommsJob;
-import es.tid.cosmos.mobility.pois.RepbtsGetRepresentativeBtsJob;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -16,6 +10,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import es.tid.cosmos.mobility.jobs.*;
+import es.tid.cosmos.mobility.pois.*;
 
 /**
  *
@@ -45,7 +40,7 @@ public class MobilityMain extends Configured implements Tool {
         Path tmpPath = new Path("/tmp");
         
         this.runParsingJobs(cdrsPath, cellsPath);
-        this.extractPointsOfInterest(btsPath, poisPath, tmpPath);
+        PoisRunner.run(btsPath, poisPath, tmpPath, this.getConf());
         
         return 0;
     }
@@ -62,66 +57,6 @@ public class MobilityMain extends Configured implements Tool {
         parseCellsJob.configure(cellsPath, new Path(CELLS_MOB_PATH));
         if (!parseCellsJob.waitForCompletion(true)) {
             throw new Exception("Failed to parse cells");
-        }
-    }
-    
-    private void extractPointsOfInterest(Path input, Path output, Path tmpDir)
-            throws Exception {
-        Path nodeBtsCounter = tmpDir.suffix("node_bts_counter");
-        {
-            NodeBtsCounterJob job = new NodeBtsCounterJob(this.getConf());
-            job.configure(input, nodeBtsCounter);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run NodeBtsCounterJob");
-            }
-        }
-        
-        Path nodeMobInfo = tmpDir.suffix("node_mob_info");
-        {
-            NodeMobInfoJob job = new NodeMobInfoJob(this.getConf());
-            job.configure(nodeBtsCounter, nodeMobInfo);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run NodeMobInfoJob");
-            }
-        }
-        
-        Path repbtsSpreadNodebts = tmpDir.suffix("repbts_spread_nodebts");
-        {
-            RepbtsSpreadNodebtsJob job = new RepbtsSpreadNodebtsJob(
-                    this.getConf());
-            job.configure(nodeMobInfo, repbtsSpreadNodebts);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run RepbtsSpreadNodebtsJob");
-            }
-        }
-        
-        Path repbtsAggbybts = tmpDir.suffix("repbts_aggbybts");
-        {
-            RepbtsAggbybtsJob job = new RepbtsAggbybtsJob(this.getConf());
-            job.configure(repbtsSpreadNodebts, repbtsAggbybts);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run RepbtsAggbybtsJob");
-            }
-        }      
-
-        Path repbtsJoinDistComms = tmpDir.suffix("repbts_join_dist_comms");
-        {
-            RepbtsJoinDistCommsJob job = new RepbtsJoinDistCommsJob(
-                    this.getConf());
-            job.configure(repbtsAggbybts, repbtsJoinDistComms);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run RepbtsJoinDistCommsJob");
-            }
-        }
-
-        {
-            RepbtsGetRepresentativeBtsJob job =
-                    new RepbtsGetRepresentativeBtsJob(this.getConf());
-            job.configure(repbtsJoinDistComms, output);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception(
-                        "Failed to run RepbtsGetRepresentativeBtsJob");
-            }
         }
     }
     

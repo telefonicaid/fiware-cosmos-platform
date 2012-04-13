@@ -26,9 +26,9 @@ public class VectorFuseNodeDaygroupJob extends Job {
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
-        this.setMapOutputKeyClass(LongWritable.class);
+        this.setMapOutputKeyClass(ProtobufWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
-        this.setOutputKeyClass(LongWritable.class);
+        this.setOutputKeyClass(ProtobufWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
         this.setReducerClass(VectorFuseNodeDaygroupReducer.class);

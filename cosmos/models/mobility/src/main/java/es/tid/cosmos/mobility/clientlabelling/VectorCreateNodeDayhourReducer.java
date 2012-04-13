@@ -18,11 +18,6 @@ public class VectorCreateNodeDayhourReducer extends Reducer
         <ProtobufWritable<NodeBts>, ProtobufWritable<TwoInt>,
         ProtobufWritable<TwoInt>, ProtobufWritable<DailyVector>> {
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
-    }
-
-    @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
                           Iterable<ProtobufWritable<TwoInt>> values,
                           Context context) throws IOException,

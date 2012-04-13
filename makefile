@@ -13,7 +13,7 @@ ifndef SAMSON_VERSION
 SAMSON_VERSION=0.6.1
 endif
 ifndef SAMSON_RELEASE
-SAMSON_RELEASE=$(shell svn info . | grep "Last Changed Rev: " | cut -f4 -d" ")
+	SAMSON_RELEASE:=$(shell svn info . | grep "Last Changed Rev: " | cut -f4 -d" ")
 endif
 # Who to install samson as
 ifndef SAMSON_OWNER
@@ -25,8 +25,8 @@ ifndef REPO_SERVER
 REPO_SERVER=samson09.hi.inet
 endif
 
-DISTRO=$(shell lsb_release -is)
-DISTRO_CODENAME=$(shell lsb_release -cs)
+DISTRO:=$(shell lsb_release -is)
+DISTRO_CODENAME:=$(shell lsb_release -cs)
 
 ifndef CPU_COUNT
 	OS=$(shell uname -s)
@@ -282,13 +282,17 @@ clear_ipcs:
 set_ssm_linux:
 	sudo sysctl -w kernel.shmmax=64000000
 
-packages:
+publish_packages:
 	# Generic task to invoke the the correct package step depending on the OS
+	echo "RELEASE $(SAMSON_RELEASE)"
 	if [ "$(DISTRO)" = "Ubuntu" ]; then \
-		echo "Buildng for $(DISTRO)"; \
-		make deb; \
-	else \
-		make rpm; \
+		make publish_deb; \
+	else  \
+		if [ "$(DISTRO)" = "CentOS" ] || [ "$(DISTRO)" = "RedHatEnterpriseServer" ] ; then \
+			make publish_rpm; \
+		else \
+			echo "Unknown platform $(DISTRO)"; \
+		fi; \
 	fi
 
 rpm: clean cleansvn
@@ -298,10 +302,7 @@ rpm: clean cleansvn
 	sed -e "s/SAMSON_VERSION/$(SAMSON_VERSION)/g" -e "s/SAMSON_RELEASE/$(SAMSON_RELEASE)/g" rpm/samson.spec > rpm/samson-$(SAMSON_VERSION).spec
 	rpmbuild -bb rpm/samson-$(SAMSON_VERSION).spec
 
-$(HOME)/rpmbuild/RPMS/x86_64/samson-$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm:
-	make rpm
-    
-publish_rpm: $(HOME)/rpmbuild/RPMS/x86_64/samson-$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm rpm/samson.spec
+publish_rpm: rpm
 	rpm/rpm-sign.exp ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm
 	rsync  -v  ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm repo@$(REPO_SERVER):/var/repository/redhat/6/x86_64
 	ssh repo@$(REPO_SERVER) createrepo -q -d /var/repository/redhat/6/x86_64
@@ -317,10 +318,7 @@ deb:
 	mkdir -p package/deb
 	mv ../samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)* package/deb
 
-package/deb/samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)_amd64.deb:
-	make deb
-
-publish_deb: package/deb/samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)_amd64.deb
+publish_deb: deb
 	# Upload the files. A cron job on the server will include them in the repository
 	scp package/deb/* repo@$(REPO_SERVER):/var/repository/ubuntu/incoming/$(DISTRO_CODENAME)
 

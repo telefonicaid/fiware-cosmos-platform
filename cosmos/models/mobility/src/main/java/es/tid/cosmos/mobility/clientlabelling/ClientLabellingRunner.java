@@ -19,7 +19,7 @@ public final class ClientLabellingRunner {
                     conf);
             job.configure(input, vectorSpreadNodedayhour);
             if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run VectorSpreadNodedayhourJob");
+                throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
@@ -30,8 +30,7 @@ public final class ClientLabellingRunner {
                     conf);
             job.configure(vectorSpreadNodedayhour, vectorGetNcomsNodedayhour);
             if (!job.waitForCompletion(true)) {
-                throw new Exception(
-                        "Failed to run VectorGetNcomsNodedayhourJob");
+                throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
@@ -42,7 +41,7 @@ public final class ClientLabellingRunner {
                     conf);
             job.configure(vectorGetNcomsNodedayhour, vectorCreateNodeDayhour);
             if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run VectorCreateNodeDayhourJob");
+                throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
@@ -51,7 +50,7 @@ public final class ClientLabellingRunner {
             VectorFuseNodeDaygroupJob job = new VectorFuseNodeDaygroupJob(conf);
             job.configure(vectorCreateNodeDayhour, vectorFuseNodeDaygroup);
             if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run VectorFuseNodeDaygroupJob");
+                throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
@@ -59,7 +58,7 @@ public final class ClientLabellingRunner {
             VectorNormalizedJob job = new VectorNormalizedJob(conf);
             job.configure(vectorFuseNodeDaygroup, output);
             if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run VectorNormalizedJob");
+                throw new Exception("Failed to run " + job.getJobName());
             }
         }
     }

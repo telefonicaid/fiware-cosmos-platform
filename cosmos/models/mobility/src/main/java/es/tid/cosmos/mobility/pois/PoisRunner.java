@@ -18,7 +18,7 @@ public final class PoisRunner {
             NodeBtsCounterJob job = new NodeBtsCounterJob(conf);
             job.configure(input, nodeBtsCounter);
             if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run NodeBtsCounterJob");
+                throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
@@ -27,7 +27,7 @@ public final class PoisRunner {
             NodeMobInfoJob job = new NodeMobInfoJob(conf);
             job.configure(nodeBtsCounter, nodeMobInfo);
             if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run NodeMobInfoJob");
+                throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
@@ -36,7 +36,7 @@ public final class PoisRunner {
             RepbtsSpreadNodebtsJob job = new RepbtsSpreadNodebtsJob(conf);
             job.configure(nodeMobInfo, repbtsSpreadNodebts);
             if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run RepbtsSpreadNodebtsJob");
+                throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
@@ -45,7 +45,7 @@ public final class PoisRunner {
             RepbtsAggbybtsJob job = new RepbtsAggbybtsJob(conf);
             job.configure(repbtsSpreadNodebts, repbtsAggbybts);
             if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run RepbtsAggbybtsJob");
+                throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
@@ -54,7 +54,7 @@ public final class PoisRunner {
             RepbtsJoinDistCommsJob job = new RepbtsJoinDistCommsJob(conf);
             job.configure(repbtsAggbybts, repbtsJoinDistComms);
             if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run RepbtsJoinDistCommsJob");
+                throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
@@ -63,8 +63,7 @@ public final class PoisRunner {
                     new RepbtsGetRepresentativeBtsJob(conf);
             job.configure(repbtsJoinDistComms, output);
             if (!job.waitForCompletion(true)) {
-                throw new Exception(
-                        "Failed to run RepbtsGetRepresentativeBtsJob");
+                throw new Exception("Failed to run " + job.getJobName());
             }
         }
     }

@@ -58,6 +58,7 @@ public class ActivityAreaReducer extends Reducer<
         double radiusAccY = 0.0;
         boolean already_seen;
         for (ProtobufWritable<Cell> value : values) {
+            value.setConverter(Cell.class);
             Cell cell = value.get();
             numPos += 1;
             allCells.add(cell.getCellId());

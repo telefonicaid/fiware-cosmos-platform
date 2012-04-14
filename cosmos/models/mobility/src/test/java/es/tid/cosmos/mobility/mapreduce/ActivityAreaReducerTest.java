@@ -109,11 +109,10 @@ public class ActivityAreaReducerTest {
         double radius = 0.0;
         double diamAreaInf = 0.0;
 
-        ProtobufWritable<ActivityArea> outputWithCorrectCounts = 
-                ActivityAreaUtil.createAndWrap(numPos, difBtss, difMuns,
-                                               difStates, masscenterUtmX,
-                                               masscenterUtmY, radius,
-                                               diamAreaInf);
+        ActivityArea outputWithCorrectCounts = 
+                ActivityAreaUtil.create(numPos, difBtss, difMuns, difStates,
+                                        masscenterUtmX, masscenterUtmY, radius,
+                                        diamAreaInf);
         List<Pair<ProtobufWritable<ActivityAreaKey>,
                   ProtobufWritable<ActivityArea>>> results = this.reducer
                 .withInputKey(this.userWithTwoEntries)
@@ -125,7 +124,8 @@ public class ActivityAreaReducerTest {
         ProtobufWritable<ActivityAreaKey> resultKey = results.get(0).getFirst();
         assertEquals(this.userWithTwoEntries, resultKey);
         ProtobufWritable<ActivityArea> resultValue = results.get(0).getSecond();
-        assertEquals(outputWithCorrectCounts, resultValue);
+        resultValue.setConverter(ActivityArea.class);
+        assertEquals(outputWithCorrectCounts, resultValue.get());
     }
 }
 

@@ -23,10 +23,11 @@ message Cell {
 
 message Bts {
     optional uint64 placeId = 1;
-    optional double posx = 2;
-    optional double posy = 3;
-    optional double area = 4;
-    repeated uint64 adj_bts = 5;
+    optional uint64 comms = 2;
+    optional double posx = 3;
+    optional double posy = 4;
+    optional double area = 5;
+    repeated uint64 adj_bts = 6;
 }
 
 message NodeBts {

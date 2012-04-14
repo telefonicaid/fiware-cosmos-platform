@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.parsing;
+package es.tid.cosmos.mobility.preparing;
 
 import java.io.IOException;
 import java.util.LinkedList;

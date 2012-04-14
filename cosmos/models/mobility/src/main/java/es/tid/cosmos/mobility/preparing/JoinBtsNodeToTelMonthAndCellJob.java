@@ -1,11 +1,10 @@
-package es.tid.cosmos.mobility.parsing;
+package es.tid.cosmos.mobility.preparing;
 
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.io.LongWritable;
@@ -19,10 +18,11 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class JoinBtsNodeToBtsDayRangeJob extends Job {
-    private static final String JOB_NAME = "JoinBtsNodeToBtsDayRange";
+public class JoinBtsNodeToTelMonthAndCellJob extends Job {
+    private static final String JOB_NAME = "JoinBtsNodeToTelMonthAndCell";
 
-    public JoinBtsNodeToBtsDayRangeJob(Configuration conf) throws IOException {
+    public JoinBtsNodeToTelMonthAndCellJob(Configuration conf)
+            throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
@@ -30,9 +30,9 @@ public class JoinBtsNodeToBtsDayRangeJob extends Job {
         this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
         this.setOutputKeyClass(ProtobufWritable.class);
-        this.setOutputValueClass(NullWritable.class);
+        this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(JoinBtsNodeToBtsDayRangeReducer.class);
+        this.setReducerClass(JoinBtsNodeToTelMonthAndCellReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

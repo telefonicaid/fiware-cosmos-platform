@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.parsing;
+package es.tid.cosmos.mobility.preparing;
 
 import java.io.IOException;
 
@@ -19,10 +19,10 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class JoinBtsNodeToNodeBtsJob extends Job {
-    private static final String JOB_NAME = "JoinBtsNodeToNodeBts";
+public class JoinBtsNodeToBtsDayRangeJob extends Job {
+    private static final String JOB_NAME = "JoinBtsNodeToBtsDayRange";
 
-    public JoinBtsNodeToNodeBtsJob(Configuration conf) throws IOException {
+    public JoinBtsNodeToBtsDayRangeJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
@@ -32,7 +32,7 @@ public class JoinBtsNodeToNodeBtsJob extends Job {
         this.setOutputKeyClass(ProtobufWritable.class);
         this.setOutputValueClass(NullWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(JoinBtsNodeToNodeBtsReducer.class);
+        this.setReducerClass(JoinBtsNodeToBtsDayRangeReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

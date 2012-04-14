@@ -1,27 +1,28 @@
-package es.tid.cosmos.mobility.parsing;
+package es.tid.cosmos.mobility.preparing;
 
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.mobility.MobilityMain;
+import es.tid.cosmos.mobility.preparing.FilterCellnoinfoMapper;
 
 /**
  *
  * @author dmicol
  */
-public class JoinBtsNodeToCdrJob extends Job {
-    private static final String JOB_NAME = "JoinBtsNodeToCdr";
+public class FilterCellnoinfoJob extends Job {
+    private static final String JOB_NAME = "FilterCellnoinfo";
 
-    public JoinBtsNodeToCdrJob(Configuration conf) throws IOException {
+    public FilterCellnoinfoJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
@@ -31,7 +32,7 @@ public class JoinBtsNodeToCdrJob extends Job {
         this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(JoinBtsNodeToCdrReducer.class);
+        this.setMapperClass(FilterCellnoinfoMapper.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

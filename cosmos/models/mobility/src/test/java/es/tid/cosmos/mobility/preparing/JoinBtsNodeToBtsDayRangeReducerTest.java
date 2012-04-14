@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.parsing;
+package es.tid.cosmos.mobility.preparing;
 
 import java.io.IOException;
 import static java.util.Arrays.asList;
@@ -20,6 +20,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
+import es.tid.cosmos.mobility.parsing.JoinBtsNodeToBtsDayRangeReducer;
 
 /**
  *

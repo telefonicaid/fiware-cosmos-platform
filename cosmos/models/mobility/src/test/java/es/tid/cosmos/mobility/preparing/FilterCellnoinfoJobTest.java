@@ -1,5 +1,6 @@
-package es.tid.cosmos.mobility.jobs;
+package es.tid.cosmos.mobility.preparing;
 
+import es.tid.cosmos.mobility.jobs.FilterCellnoinfoJob;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;

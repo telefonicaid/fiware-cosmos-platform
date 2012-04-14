@@ -13,16 +13,15 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.mobility.MobilityMain;
-import es.tid.cosmos.mobility.preparing.FilterCellnoinfoMapper;
 
 /**
  *
  * @author dmicol
  */
-public class FilterCellnoinfoJob extends Job {
-    private static final String JOB_NAME = "FilterCellnoinfo";
+public class FilterCellnoinfoByNodeIdJob extends Job {
+    private static final String JOB_NAME = "FilterCellnoinfoByNodeId";
 
-    public FilterCellnoinfoJob(Configuration conf) throws IOException {
+    public FilterCellnoinfoByNodeIdJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
@@ -32,7 +31,7 @@ public class FilterCellnoinfoJob extends Job {
         this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setMapperClass(FilterCellnoinfoMapper.class);
+        this.setMapperClass(FilterCellnoinfoByNodeIdMapper.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

@@ -7,6 +7,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -17,11 +18,12 @@ import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
 import es.tid.cosmos.mobility.data.MobProtocol.ActivityAreaKey;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 
+
 /**
  *
  * @author losa
  */
-
+@Ignore
 public class ActivityAreaReducerTest {
    private ReduceDriver<ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
             ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>>

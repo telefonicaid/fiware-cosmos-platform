@@ -1,6 +1,5 @@
 package es.tid.cosmos.mobility.data;
 
-import com.google.protobuf.GeneratedMessage;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;

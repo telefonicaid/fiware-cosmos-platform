@@ -25,8 +25,8 @@ public abstract class ActivityAreaKeyUtil implements ProtobufUtil {
         return wrapper;
     }
 
-    public static ProtobufWritable createAndWrap(long userId, int month, 
-                                                 boolean isWorkDay) {
+    public static ProtobufWritable<ActivityAreaKey> createAndWrap(long userId,
+            int month, boolean isWorkDay) {
         return wrap(create(userId, month, isWorkDay));
     }
 }

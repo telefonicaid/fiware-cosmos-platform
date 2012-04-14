@@ -46,13 +46,14 @@ public abstract class ActivityAreaUtil implements ProtobufUtil {
         return wrapper;
     }
 
-    public static ProtobufWritable createAndWrap(int numPos, int difBtss, 
-            int difMuns, int difStates, double masscenterUtmX, 
+    public static ProtobufWritable<ActivityArea> createAndWrap(int numPos,
+            int difBtss,  int difMuns, int difStates, double masscenterUtmX, 
             double masscenterUtmY, double radius, double diamAreaInf) {
         return wrap(create(numPos, difBtss, difMuns, difStates, masscenterUtmX,
                            masscenterUtmY, radius, diamAreaInf));
     }
 
+    // TODO: this should go in a parser class, not here
     public static Pair<ActivityAreaKey, Cell> parse(String line) {
         String[] fields = line.split(DELIMITER);
         long userId = Long.parseLong(fields[USER_ID_INDEX].trim());

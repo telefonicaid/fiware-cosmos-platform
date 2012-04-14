@@ -1,6 +1,5 @@
 package es.tid.cosmos.mobility.parsing;
 
-import es.tid.cosmos.mobility.jobs.ParseCdrsJob;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;

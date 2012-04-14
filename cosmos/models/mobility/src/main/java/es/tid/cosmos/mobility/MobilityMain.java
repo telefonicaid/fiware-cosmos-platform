@@ -28,12 +28,18 @@ public class MobilityMain extends Configured implements Tool {
 
         Path cdrsPath = new Path(args[0]);
         Path cellsPath = new Path(args[1]);
-        Path btsPath = new Path(args[2]);
-        Path poisPath = new Path(args[3]);
-        Path tmpPath = new Path("/tmp");
+        Path adjBtsPath = new Path(args[2]);
+        Path btsComarea = new Path(args[3]);
         
-        ParsingRunner.run(cdrsPath, cellsPath, this.getConf());
-        PoisRunner.run(btsPath, poisPath, tmpPath, this.getConf());
+        Path tmpPath = new Path("/tmp");
+        Path parsedCdrsPath = tmpPath.suffix("parsed_cdrs");
+        Path parsedCellsPath = tmpPath.suffix("parsed_cells");
+        Path parsedAdjBtsPath = tmpPath.suffix("parsed_adj_bts");
+        Path parsedBtsComarea = tmpPath.suffix("parsed_bts_comarea");
+        
+        ParsingRunner.run(cdrsPath, parsedCdrsPath, cellsPath, parsedCellsPath,
+                          adjBtsPath, parsedAdjBtsPath, btsComarea,
+                          parsedBtsComarea, this.getConf());
         
         return 0;
     }

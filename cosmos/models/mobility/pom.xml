@@ -14,6 +14,14 @@
     <name>mobility</name>
     <packaging>jar</packaging>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-core</artifactId>
+            <version>${org.apache.hadoop}</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>

@@ -22,7 +22,7 @@ endif
 
 # Repository Server
 ifndef REPO_SERVER
-REPO_SERVER=samson09.hi.inet
+REPO_SERVER=samson09
 endif
 
 DISTRO:=$(shell lsb_release -is)

@@ -1,5 +1,5 @@
 --NAME--
-rm_queue - delete a named queue
+rm - delete a named queue
 --DELILAH-INIT--
 remove_all_stream
 push input.txt input

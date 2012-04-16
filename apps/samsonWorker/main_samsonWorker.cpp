@@ -302,7 +302,7 @@ int main(int argC, const char *argV[])
 
     // Check to see if the current memory configuration is ok or not
     if (samson::MemoryCheck() == false)
-        LM_X(1,("Insufficient memory configured. Check %ssamsonWorkerLog for more information.", paLogDir));
+        LM_X(1,("Insufficient memory configured. Check %s/samsonWorkerLog for more information.", paLogDir));
     
     if ((fg == false) && (monit == false))
     {

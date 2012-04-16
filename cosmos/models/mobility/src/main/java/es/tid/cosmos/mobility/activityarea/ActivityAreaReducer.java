@@ -32,22 +32,22 @@ public class ActivityAreaReducer extends Reducer<
         double massCenterAccY = 0.0;
         double radiusAccX = 0.0;
         double radiusAccY = 0.0;
-        boolean already_seen;
+        boolean has_new_bts;
         for (ProtobufWritable<Cell> value : values) {
             value.setConverter(Cell.class);
             Cell cell = value.get();
             numPos += 1;
             this.allCells.add(cell.getCellId());
-            already_seen = this.allBtss.add(cell.getPlaceId());
-            if (!already_seen) {
+            has_new_bts = this.allBtss.add(cell.getPlaceId());
+            if (has_new_bts) {
                 this.cellsWithDifBts.add(cell);
             }
             this.allMuns.add(cell.getGeoloc1());
             this.allStates.add(cell.getGeoloc2());
             massCenterAccX += cell.getPosx();
             massCenterAccY += cell.getPosy();
-            radiusAccX += (massCenterAccX * massCenterAccX);
-            radiusAccY += (massCenterAccY * massCenterAccY);
+            radiusAccX += (cell.getPosx() * cell.getPosx());
+            radiusAccY += (cell.getPosy() * cell.getPosy());
         }
         ans.difPos = this.allCells.size();
         ans.numBtss = this.allBtss.size();
@@ -56,10 +56,10 @@ public class ActivityAreaReducer extends Reducer<
         ans.massCenterX = massCenterAccX / numPos;
         ans.massCenterY = massCenterAccY / numPos;
         double radiusX =
-            radiusAccX / numPos - ans.massCenterX * ans.massCenterX;
+            radiusAccX / numPos - (ans.massCenterX * ans.massCenterX);
         double radiusY =
-            radiusAccY / numPos - ans.massCenterY * ans.massCenterY;
-        ans.radius = Math.sqrt((radiusX + radiusY)/ numPos);
+            radiusAccY / numPos - (ans.massCenterY * ans.massCenterY);
+        ans.radius = Math.sqrt(radiusX + radiusY);
         return ans;
     }
 
@@ -74,8 +74,8 @@ public class ActivityAreaReducer extends Reducer<
                     currentCell.getPosx() - furtherCell.getPosx();
                 double contribY =
                     currentCell.getPosy() - furtherCell.getPosy();
-                double currentDist = Math.sqrt((contribX * contribX) +
-                                               (contribY * contribY));
+                double currentDist = Math.sqrt(contribX * contribX +
+                                               contribY * contribY);
                 if (currentDist > maxDist) {
                     maxDist = currentDist;
                 }

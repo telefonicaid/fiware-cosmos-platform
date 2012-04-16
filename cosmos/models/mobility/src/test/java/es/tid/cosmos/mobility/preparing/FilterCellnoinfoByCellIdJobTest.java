@@ -1,6 +1,5 @@
 package es.tid.cosmos.mobility.preparing;
 
-import es.tid.cosmos.mobility.jobs.FilterCellnoinfoJob;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -15,12 +14,12 @@ import static org.junit.Assert.assertEquals;
  *
  * @author dmicol
  */
-public class FilterCellnoinfoJobTest {
-    private FilterCellnoinfoJob instance;
+public class FilterCellnoinfoByCellIdJobTest {
+    private FilterCellnoinfoByCellIdJob instance;
     
     @Before
     public void setUp() throws IOException {
-        this.instance = new FilterCellnoinfoJob(new Configuration());
+        this.instance = new FilterCellnoinfoByCellIdJob(new Configuration());
     }
     
     @Test

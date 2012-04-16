@@ -14,7 +14,7 @@ import es.tid.cosmos.mobility.data.ActivityAreaUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
 import es.tid.cosmos.mobility.data.MobProtocol.ActivityAreaKey;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-import es.tid.cosmos.mobility.mapreduce.Accumulations;
+import es.tid.cosmos.mobility.activityarea.Accumulations;
 
 public class ActivityAreaReducer extends Reducer<
         ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
@@ -25,7 +25,7 @@ public class ActivityAreaReducer extends Reducer<
     private Set<Integer> allStates;
     private List<Cell> cellsWithDifBts;
 
-    protected Accumulations accumulate(Iterable<ProtobufWritable<Cell>> values) {
+    private Accumulations accumulate(Iterable<ProtobufWritable<Cell>> values) {
         Accumulations ans = new Accumulations();
         int numPos = 0;
         double massCenterAccX = 0.0;
@@ -37,22 +37,22 @@ public class ActivityAreaReducer extends Reducer<
             value.setConverter(Cell.class);
             Cell cell = value.get();
             numPos += 1;
-            allCells.add(cell.getCellId());
-            already_seen = allBtss.add(cell.getPlaceId());
+            this.allCells.add(cell.getCellId());
+            already_seen = this.allBtss.add(cell.getPlaceId());
             if (!already_seen) {
-                cellsWithDifBts.add(cell);
+                this.cellsWithDifBts.add(cell);
             }
-            allMuns.add(cell.getGeoloc1());
-            allStates.add(cell.getGeoloc2());
+            this.allMuns.add(cell.getGeoloc1());
+            this.allStates.add(cell.getGeoloc2());
             massCenterAccX += cell.getPosx();
             massCenterAccY += cell.getPosy();
             radiusAccX += (massCenterAccX * massCenterAccX);
             radiusAccY += (massCenterAccY * massCenterAccY);
         }
-        ans.difPos = allCells.size();
-        ans.numBtss = allBtss.size();
-        ans.numMuns = allMuns.size();
-        ans.numStates = allStates.size();
+        ans.difPos = this.allCells.size();
+        ans.numBtss = this.allBtss.size();
+        ans.numMuns = this.allMuns.size();
+        ans.numStates = this.allStates.size();
         ans.massCenterX = massCenterAccX / numPos;
         ans.massCenterY = massCenterAccY / numPos;
         double radiusX = radiusAccX / numPos - ans.massCenterX * ans.massCenterX;
@@ -61,7 +61,7 @@ public class ActivityAreaReducer extends Reducer<
         return ans;
     }
 
-    protected double getMaxDistance(List<Cell> cellsWithDifBts) {
+    private double getMaxDistance(List<Cell> cellsWithDifBts) {
         double maxDist = 0.0;
         for (int pos = 0; pos < cellsWithDifBts.size(); pos++) {
             Cell currentCell = cellsWithDifBts.get(pos);

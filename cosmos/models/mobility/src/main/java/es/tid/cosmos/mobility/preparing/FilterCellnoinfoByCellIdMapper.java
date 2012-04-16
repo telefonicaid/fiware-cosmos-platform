@@ -17,6 +17,7 @@ public class FilterCellnoinfoByCellIdMapper extends Mapper<LongWritable,
     @Override
     public void map(LongWritable key, ProtobufWritable<Cdr> value,
                     Context context) throws IOException, InterruptedException {
+        value.setConverter(Cdr.class);
         final Cdr cdr = value.get();
         if (cdr.getCellId() != 0) {
             context.write(new LongWritable(cdr.getCellId()), value);

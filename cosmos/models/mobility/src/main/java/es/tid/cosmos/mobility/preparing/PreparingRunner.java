@@ -37,7 +37,8 @@ public final class PreparingRunner {
         {
             JoinBtsNodeToBtsDayRangeJob job = new JoinBtsNodeToBtsDayRangeJob(
                     conf);
-            job.configure(new Path[] { cdrsInfoPath, cellsMobPath }, null);
+            job.configure(new Path[] { cdrsInfoPath, cellsMobPath },
+                          clientsBtsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -45,7 +46,8 @@ public final class PreparingRunner {
 
         {
             JoinBtsNodeToCdrJob job = new JoinBtsNodeToCdrJob(conf);
-            job.configure(new Path[] { cdrsInfoPath, cellsMobPath }, null);
+            job.configure(new Path[] { cdrsInfoPath, cellsMobPath },
+                          btsCommsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -53,7 +55,8 @@ public final class PreparingRunner {
 
         {
             JoinBtsNodeToNodeBtsJob job = new JoinBtsNodeToNodeBtsJob(conf);
-            job.configure(new Path[] { cdrsInfoPath, cellsMobPath }, null);
+            job.configure(new Path[] { cdrsInfoPath, cellsMobPath },
+                          cdrsNoBtsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

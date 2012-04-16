@@ -19,24 +19,33 @@ public final class PreparingRunner {
                            Path clientsBtsPath, Path btsCommsPath,
                            Path cdrsNoBtsPath, Path viTelmonthBtsPath,
                            Configuration conf) throws Exception {
-        Path cdrsMobDataPath = tmpPath.suffix("/cdrs_mob_data");
         {
-            ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
-            job.configure(cdrsMobPath, cdrsMobDataPath);
+            FilterCellnoinfoByCellIdJob job = new FilterCellnoinfoByCellIdJob(
+                    conf);
+            job.configure(cdrsMobPath, cdrsInfoPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
-
+        
         {
             FilterCellnoinfoByNodeIdJob job = new FilterCellnoinfoByNodeIdJob(
                     conf);
-            job.configure(cdrsMobDataPath, cdrsNoinfoPath);
+            job.configure(cdrsMobPath, cdrsNoinfoPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
+        Path cdrsInfoMobDataPath = tmpPath.suffix("/cdrs_info_mob_data");
+        {
+            ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
+            job.configure(cdrsInfoPath, cdrsInfoMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
         Path cellsMobDataPath = tmpPath.suffix("/cells_mob_data");
         {
             ConvertCellToMobDataJob job = new ConvertCellToMobDataJob(conf);
@@ -49,7 +58,7 @@ public final class PreparingRunner {
         {
             JoinBtsNodeToBtsDayRangeJob job = new JoinBtsNodeToBtsDayRangeJob(
                     conf);
-            job.configure(new Path[] { cdrsInfoPath, cellsMobDataPath },
+            job.configure(new Path[] { cdrsInfoMobDataPath, cellsMobDataPath },
                           clientsBtsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
@@ -58,7 +67,7 @@ public final class PreparingRunner {
 
         {
             JoinBtsNodeToCdrJob job = new JoinBtsNodeToCdrJob(conf);
-            job.configure(new Path[] { cdrsInfoPath, cellsMobDataPath },
+            job.configure(new Path[] { cdrsInfoMobDataPath, cellsMobDataPath },
                           btsCommsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
@@ -67,7 +76,7 @@ public final class PreparingRunner {
 
         {
             JoinBtsNodeToNodeBtsJob job = new JoinBtsNodeToNodeBtsJob(conf);
-            job.configure(new Path[] { cdrsInfoPath, cellsMobDataPath },
+            job.configure(new Path[] { cdrsInfoMobDataPath, cellsMobDataPath },
                           cdrsNoBtsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
@@ -77,7 +86,7 @@ public final class PreparingRunner {
         {
             JoinBtsNodeToTelMonthAndCellJob job =
                     new JoinBtsNodeToTelMonthAndCellJob(conf);
-            job.configure(new Path[] { cdrsInfoPath, cellsMobDataPath },
+            job.configure(new Path[] { cdrsInfoMobDataPath, cellsMobDataPath },
                           viTelmonthBtsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());

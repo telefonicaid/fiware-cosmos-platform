@@ -11,12 +11,13 @@ public final class PoisRunner {
     private PoisRunner() {
     }
     
-    public static void run(Path input, Path output, Path tmpDir,
-                           Configuration conf) throws Exception {
+    public static void run(Path tmpDir, Path clientsBtsPath,
+                           Path clientsRepbtsPath, Configuration conf)
+            throws Exception {
         Path nodeBtsCounter = tmpDir.suffix("node_bts_counter");
         {
             NodeBtsCounterJob job = new NodeBtsCounterJob(conf);
-            job.configure(input, nodeBtsCounter);
+            job.configure(clientsBtsPath, nodeBtsCounter);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -61,7 +62,7 @@ public final class PoisRunner {
         {
             RepbtsGetRepresentativeBtsJob job =
                     new RepbtsGetRepresentativeBtsJob(conf);
-            job.configure(repbtsJoinDistComms, output);
+            job.configure(repbtsJoinDistComms, clientsRepbtsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

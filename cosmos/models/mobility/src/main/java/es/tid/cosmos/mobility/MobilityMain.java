@@ -1,6 +1,5 @@
 package es.tid.cosmos.mobility;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -12,6 +11,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
+import es.tid.cosmos.mobility.pois.PoisRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
 
 /**
@@ -23,14 +23,7 @@ public class MobilityMain extends Configured implements Tool {
     
     @Override
     public int run(String[] args) throws Exception {
-        Map<String, String> arguments = new HashMap<String, String>();
-        for (String arg : args) {
-            String[] fields = arg.split("=");
-            if (fields.length != 2) {
-                throw new IllegalArgumentException("Invalid command line");
-            }
-            arguments.put(fields[0].replaceAll("--", ""), fields[1]);
-        } 
+        Map<String, String> arguments = parseArguments(args);
         
         Path tmpPath = new Path("/tmp/mobility");
         Path cdrsPath = new Path(arguments.get("cdrs"));
@@ -38,11 +31,11 @@ public class MobilityMain extends Configured implements Tool {
         Path adjBtsPath = new Path(arguments.get("adjBts"));
         Path btsVectorTxtPath = new Path(arguments.get("btsVectorTxt"));
         
-        Path tmpPathParsing = tmpPath.suffix("/parsing");
-        Path cdrsMobPath = tmpPathParsing.suffix("/cdrs_mob");
-        Path cellsMobPath = tmpPathParsing.suffix("/cells_mob");
-        Path pairbtsAdjPath = tmpPathParsing.suffix("/pairbts_adj");
-        Path btsComareaPath = tmpPathParsing.suffix("/bts_comarea");
+        Path tmpParsingPath = tmpPath.suffix("/parsing");
+        Path cdrsMobPath = tmpParsingPath.suffix("/cdrs_mob");
+        Path cellsMobPath = tmpParsingPath.suffix("/cells_mob");
+        Path pairbtsAdjPath = tmpParsingPath.suffix("/pairbts_adj");
+        Path btsComareaPath = tmpParsingPath.suffix("/bts_comarea");
         boolean shouldParse = "true".equals(arguments.get("parse"));
         if (shouldParse) {
             ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath, cellsMobPath,
@@ -50,22 +43,42 @@ public class MobilityMain extends Configured implements Tool {
                               btsComareaPath, this.getConf());
         }
         
-        Path tmpPathPreparing = tmpPath.suffix("/preparing");
-        Path cdrsInfoPath = tmpPathPreparing.suffix("/cdrs_info");
-        Path cdrsNoinfoPath = tmpPathPreparing.suffix("/cdrs_noinfo");
-        Path clientsBtsPath = tmpPathPreparing.suffix("/clients_bts");
-        Path btsCommsPath = tmpPathPreparing.suffix("/bts_comms");
-        Path cdrsNoBtsPath = tmpPathPreparing.suffix("/cdrs_no_bts");
-        Path viTelmonthBtsPath = tmpPathPreparing.suffix("/vi_telmonth_bts");
+        Path tmpPreparingPath = tmpPath.suffix("/preparing");
+        Path cdrsInfoPath = tmpPreparingPath.suffix("/cdrs_info");
+        Path cdrsNoinfoPath = tmpPreparingPath.suffix("/cdrs_noinfo");
+        Path clientsBtsPath = tmpPreparingPath.suffix("/clients_bts");
+        Path btsCommsPath = tmpPreparingPath.suffix("/bts_comms");
+        Path cdrsNoBtsPath = tmpPreparingPath.suffix("/cdrs_no_bts");
+        Path viTelmonthBtsPath = tmpPreparingPath.suffix("/vi_telmonth_bts");
         boolean shouldPrepare = "true".equals(arguments.get("prepare"));
         if (shouldPrepare) {
-            PreparingRunner.run(tmpPathPreparing, cdrsMobPath, cdrsInfoPath,
+            PreparingRunner.run(tmpPreparingPath, cdrsMobPath, cdrsInfoPath,
                                 cdrsNoinfoPath, cellsMobPath, clientsBtsPath,
                                 btsCommsPath, cdrsNoBtsPath, viTelmonthBtsPath,
                                 this.getConf());
         }
         
+        Path tmpExtractPoisPath = tmpPath.suffix("/extract_pois");
+        Path clientsRepbtsPath = tmpPreparingPath.suffix("/clients_repbts");
+        boolean shouldExtractPois = "true".equals(arguments.get("extractPOIs"));
+        if (shouldExtractPois) {
+            PoisRunner.run(tmpExtractPoisPath, clientsBtsPath,
+                           clientsRepbtsPath, this.getConf());
+        }
+        
         return 0;
+    }
+    
+    private static Map<String, String> parseArguments(String[] args) {
+        Map<String, String> arguments = new HashMap<String, String>();
+        for (String arg : args) {
+            String[] fields = arg.split("=");
+            if (fields.length != 2) {
+                throw new IllegalArgumentException("Invalid command line");
+            }
+            arguments.put(fields[0].replaceAll("--", ""), fields[1]);
+        }
+        return arguments;
     }
     
     public static void main(String[] args) throws Exception {

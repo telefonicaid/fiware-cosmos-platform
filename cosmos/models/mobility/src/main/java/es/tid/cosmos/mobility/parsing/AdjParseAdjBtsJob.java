@@ -33,7 +33,7 @@ public class AdjParseAdjBtsJob extends Job {
         this.setOutputKeyClass(ProtobufWritable.class);
         this.setOutputValueClass(NullWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setMapperClass(AdjParseAdjBtsMapper.class);
+        this.setReducerClass(AdjParseAdjBtsReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

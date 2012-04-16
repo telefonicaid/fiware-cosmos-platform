@@ -6,7 +6,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
@@ -15,12 +15,14 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  *
  * @author dmicol
  */
-public class AdjParseAdjBtsMapper extends Mapper<LongWritable, Text,
+public class AdjParseAdjBtsReducer extends Reducer<LongWritable, Text,
         ProtobufWritable<TwoInt>, NullWritable> {
     @Override
-    protected void map(LongWritable key, Text value, Context context)
-            throws IOException, InterruptedException {
-        AdjacentParser parser = new AdjacentParser(value.toString());
-        context.write(TwoIntUtil.wrap(parser.parse()), NullWritable.get());
+    protected void reduce(LongWritable key, Iterable<Text> values,
+            Context context) throws IOException, InterruptedException {
+        for (Text value : values) {
+            AdjacentParser parser = new AdjacentParser(value.toString());
+            context.write(TwoIntUtil.wrap(parser.parse()), NullWritable.get());
+        }
     }
 }

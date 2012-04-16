@@ -32,7 +32,7 @@ public class BorrarGetBtsComareaJob extends Job {
         this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setMapperClass(BorrarGetBtsComareaMapper.class);
+        this.setReducerClass(BorrarGetBtsComareaReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

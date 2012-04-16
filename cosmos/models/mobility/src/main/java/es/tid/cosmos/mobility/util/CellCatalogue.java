@@ -10,7 +10,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.log4j.Logger;
 
+import es.tid.cosmos.mobility.MobilityMain;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.parsing.CellParser;
 
@@ -19,9 +21,11 @@ import es.tid.cosmos.mobility.parsing.CellParser;
  * @author dmicol
  */
 public class CellCatalogue {
+    private static final Logger LOG = Logger.getLogger(MobilityMain.class);
+    
     private Map<Long, Cell> cellCatalogue;
     
-    public CellCatalogue(Configuration conf) {
+    public CellCatalogue(Configuration conf) throws IOException {
         this.load(conf);
     }
     
@@ -33,7 +37,7 @@ public class CellCatalogue {
         return this.cellCatalogue.get(id);
     }
     
-    private void load(Configuration conf) {
+    private void load(Configuration conf) throws IOException {
         FSDataInputStream in = null;
         BufferedReader br = null;
         try {
@@ -49,23 +53,20 @@ public class CellCatalogue {
                 // TODO: double-check if this should be cell or place ID
                 this.cellCatalogue.put(cell.getPlaceId(), cell);
             }
-            in.close();
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             this.cellCatalogue = null;
-            ex.printStackTrace(System.err);
-        } catch (NullPointerException ex) {
-            this.cellCatalogue = null;
-            ex.printStackTrace(System.err);
+            LOG.fatal(ex);
+            throw new IOException(ex);
         } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException ex) {
-                }
-            }
             if (br != null) {
                 try {
                     br.close();
+                } catch (IOException ex) {
+                }
+            }
+            if (in != null) {
+                try {
+                    in.close();
                 } catch (IOException ex) {
                 }
             }

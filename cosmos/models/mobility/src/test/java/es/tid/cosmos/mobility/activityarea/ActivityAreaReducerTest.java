@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.mapreduce;
+package es.tid.cosmos.mobility.activityarea;
 
 import java.io.IOException;
 import java.util.List;

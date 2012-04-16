@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
-import es.tid.cosmos.mobility.parsing.JoinBtsNodeToBtsDayRangeReducer;
+import es.tid.cosmos.mobility.preparing.JoinBtsNodeToBtsDayRangeReducer;
 
 /**
  *

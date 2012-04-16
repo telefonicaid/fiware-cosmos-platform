@@ -316,7 +316,7 @@ deb:
 	# Right now *everything* comes in a single package
 	dpkg-buildpackage -b
 	mkdir -p package/deb
-	mv ../samson_$(SAMSON_VERSION).$(SAMSON_RELEASE)* package/deb
+	mv ../samson*$(SAMSON_VERSION).$(SAMSON_RELEASE)* package/deb
 
 publish_deb: deb
 	# Upload the files. A cron job on the server will include them in the repository

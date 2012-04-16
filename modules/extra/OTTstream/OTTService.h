@@ -48,6 +48,8 @@ public:
 
     bool checkDNS(const char *dns);
     
+    bool checkName(const char *input_name);
+
     
 };
 

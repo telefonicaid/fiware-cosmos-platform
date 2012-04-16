@@ -149,6 +149,15 @@ bool OTTService::checkDNS(const char *dns)
 	return false;
 }
 
+bool OTTService::checkName(const char *input_name)
+{
+    if (strcmp(input_name, name.c_str()) == 0)
+    {
+      return true;
+    }
+    return false;
+}
+
 
 
 

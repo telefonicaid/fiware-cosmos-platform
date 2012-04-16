@@ -19,7 +19,7 @@ data ServiceHit
 
 data UserHit
 {
-     system.TimeUnix time;
+     system.TimeUnix timestamp;
      system.UInt userId;
 }
 
@@ -30,15 +30,27 @@ data ServiceActivity
      system.UInt8 inCount;
 }
 
+data UserActivity
+{
+     system.UInt userId;
+     system.TimeUnix last_timestamp;
+     system.UInt count;
+}
+
 data UserActivityTimeSpan
 {
      system.UInt userId;
      system.UInt countHits;
 }
 
-data Activity
+data ActivityByUser
 {
 	vector OTTstream.ServiceActivity servActivity;
+}
+
+data ActivityByService
+{
+	vector OTTstream.UserActivity user_activity;
 }
 
 # -------------------------------------------------
@@ -48,20 +60,39 @@ data Activity
 simpleParser parse_logs
 {
 	out system.UInt OTTstream.ServiceHit
+	out system.UInt OTTstream.UserHit
+	out system.UInt system.String
 	
-	helpLine "parse input logs from http or dns, and emit service use with userId as key"
+	helpLine "parse input logs from http or dns, and emit service use with userId as key, user with service as key, and can also process commands"
 }
 
 reduce red_update_last_user_profile
 {
 	in system.UInt OTTstream.ServiceHit
-	in system.UInt OTTstream.Activity
+	in system.UInt OTTstream.ActivityByUser
 	out system.String level.ValTimed
-	out system.UInt OTTstream.Activity
+	out system.UInt OTTstream.ActivityByUser
 	
 	helpLine "Update the latest user profile" 
 }
 
+reduce red_update_service_profile
+{
+	in system.UInt OTTstream.UserHit
+	in system.UInt OTTstream.ActivityByService
+	out system.UInt OTTstream.ActivityByService
+	
+	helpLine "Update the latest user profile" 
+}
+
+reduce red_commands_on_service_profile
+{
+	in system.UInt system.String
+	in system.UInt OTTstream.ActivityByService
+	out system.UInt OTTstream.UserActivity
+	
+	helpLine "Update the latest user profile" 
+}
 
 script init_stream_operations
 {
@@ -75,18 +106,23 @@ script init_stream_operations
         alias [input_dns]        	 logs_dns;
         alias [input_sms]           logs_sms;
         alias [input_voice]        	 logs_voice;
+        alias [input_commands] input_commands;
         
         # ----------------------------------------------------------------
 		# Output queues
 		# ----------------------------------------------------------------
-		alias [commands]			commands;
+		alias [level_commands]			level_commands;
+		alias [service_users]			service_users;
         
 		# ----------------------------------------------------------------
 		# Internal queues
 		# ----------------------------------------------------------------
         
-        alias [hits]              hits;
-        alias [state]            state;
+        alias [service_hits]              service_hits;
+        alias [user_hits]              user_hits;
+        alias [user_state]            user_state;
+        alias [service_state]            service_state;
+        alias [service_commands] service_commands;
         
         # ----------------------------------------------------------------
 		# Operations
@@ -99,15 +135,23 @@ script init_stream_operations
 		# Definitions
 		# ----------------------------------------------------------------
         
-        add_stream_operation      [parse_http]			OTTstream.parse_logs									[input_http]       [hits];
+        add_stream_operation      [parse_http]			OTTstream.parse_logs									[input_http]       [service_hits] [user_hits] [service_commands];
         set_stream_operation_property   [parse_http]      OTTstream.source          HTTP;
-        add_stream_operation      [parse_dns]			OTTstream.parse_logs									[input_dns]   		[hits];
+        add_stream_operation      [parse_dns]			OTTstream.parse_logs									[input_dns]   		[service_hits] [user_hits] [service_commands];
         set_stream_operation_property   [parse_dns]      OTTstream.source          DNS;
-        add_stream_operation      [parse_sms]			OTTstream.parse_logs									[input_sms]   		[hits];
+        add_stream_operation      [parse_sms]			OTTstream.parse_logs									[input_sms]   		[service_hits] [user_hits] [service_commands];
         set_stream_operation_property   [parse_sms]      OTTstream.source          SMS;
-        add_stream_operation      [parse_voice]			OTTstream.parse_logs									[input_voice]   		[hits];
+        add_stream_operation      [parse_voice]			OTTstream.parse_logs									[input_voice]   		[service_hits] [user_hits] [service_commands];
         set_stream_operation_property   [parse_voice]      OTTstream.source          voice;
-        add_stream_operation      [emit_hits]			OTTstream.red_update_last_user_profile	[hits] [state]		[commands] [state];
+        add_stream_operation      [parse_commands]			OTTstream.parse_logs									[input_commands]   		[service_hits] [user_hits] [service_commands];
+        set_stream_operation_property   [parse_commands]      OTTstream.source          commands;
+        #set_queue_property [service_commands] max_size 1;
+        
+        add_stream_operation      [emit_service_levels]			OTTstream.red_update_last_user_profile	[service_hits] [user_state]		[level_commands] [user_state];
+        add_stream_operation      [update_service_state]			OTTstream.red_update_service_profile	[user_hits] [service_state]	[service_state];
+        
+        add_stream_operation      [emit_service_users]          OTTstream.red_commands_on_service_profile [service_commands] [service_state] [service_users] -forward;
+
     }
 
     helpLine "Init stream operations"
@@ -126,15 +170,17 @@ script demo
         alias [input_dns]      logs_dns;
         alias [input_sms]      logs_sms;
         alias [input_voice]    logs_voice;
+        alias [input_commands]    input_commands;
 		# ----------------------------------------------------------------
 		
 		# ----------------------------------------------------------------
 		# Output queues
 		# ----------------------------------------------------------------
-		alias [output]			output;
+		alias [output_levels]			output_levels;
+		alias [output_users_per_service]			output_users_per_service;
 		
 		# Internal queues
-        alias [commands]              commands;
+        alias [level_commands]              level_commands;
 		
 		# ----------------------------------------------------------------
 		# OTTstream profiling stream block
@@ -149,8 +195,11 @@ script demo
 		add_queue_connection [input_dns]		01.OTTstream.logs_dns;
 		add_queue_connection [input_sms]		01.OTTstream.logs_sms;
 		add_queue_connection [input_voice]		01.OTTstream.logs_voice;
-		add_queue_connection 01.OTTstream.commands 	02.level.01.input;
-		add_queue_connection 02.level.04.levels_updates_txt    output
+		add_queue_connection [input_commands]		01.OTTstream.input_commands;
+		add_queue_connection [level_commands]		01.OTTstream.level_commands;
+		add_queue_connection [output_users_per_service] 01.OTTstream.service_users;
+		add_queue_connection 01.OTTstream.level_commands 	02.level.01.input;
+		add_queue_connection 02.level.04.levels_updates_txt    output_levels;
 		
 		# ----------------------------------------------------------------
 

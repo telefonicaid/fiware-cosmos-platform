@@ -7,7 +7,9 @@
 
 #include <samson/module/samson.h>
 #include <samson/modules/OTTstream/ServiceHit.h>
+#include <samson/modules/OTTstream/UserHit.h>
 #include <samson/modules/system/UInt.h>
+#include <samson/modules/system/String.h>
 #include <samson/modules/system/SimpleParser.h>
 
 #include "OTTService.h"
@@ -27,12 +29,15 @@ class parse_logs: public samson::system::SimpleParser
   std::vector<char*> fields;
   char sep;
 
+  std::string source;
   std::vector<OTTService*> services;
 
   samson::system::UInt userId;
   samson::system::UInt serviceId;
   samson::system::TimeUnix timestamp;
-  samson::OTTstream::ServiceHit hit;
+  samson::OTTstream::ServiceHit service_hit;
+  samson::OTTstream::UserHit user_hit;
+  samson::system::String command;
 
 public:
 
@@ -41,6 +46,8 @@ public:
   // Please, do not remove this comments, as it will be used to check consistency on module declaration
   //
   //  output: system.UInt OTTstream.ServiceHit
+  //  output: system.UInt OTTstream.UserHit
+  //  output: system.UInt system.String
   //
   // helpLine: parse input logs from http, and emit service use with userId as key
   //  END_INFO_MODULE
@@ -101,6 +108,19 @@ public:
     return 0;
   }
 
+  uint64_t classify_name(const char *name)
+  {
+    for (unsigned int i = 0; (i < services.size()); i++)
+    {
+      if (services[i]->checkName(name))
+      {
+        return services[i]->serviceId;
+      }
+    }
+    //LM_M(("unknow name:'%s'", name));
+    return 0;
+  }
+
   bool parseLine_HTTP(char * line, samson::system::UInt *userId, ServiceHit *hit)
   {
     int maxDigits = 9;
@@ -151,18 +171,18 @@ public:
 
     split_in_words(line, fields, sep);
 
-    if (fields.size() < 16)
+    if (fields.size() < 11)
     {
       return false;
     }
-    userId->value = phone2number(fields[6], maxDigits);
+    userId->value = phone2number(fields[3], maxDigits);
 
     if (userId->value == 0)
     {
       return false;
     }
 
-    p_domain = fields[2];
+    p_domain = fields[9];
 
     hit->serviceId.value = classify_dns(p_domain);
 
@@ -171,7 +191,7 @@ public:
       //return false;
     }
 
-    hit->timestamp.setFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[9]);
+    hit->timestamp.setFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[4]);
 
     return true;
 
@@ -310,9 +330,33 @@ public:
     return true;
   }
 
+  bool parseLine_commands(char * line, samson::system::UInt *serviceId, samson::system::String *command)
+  {
+    char service_name[256];
+    char command_str[256];
+
+    if (sscanf(line, "%s %[^\n]s", service_name, command_str) != 2)
+    {
+      LM_E(("Error parsing command:'%s'", line));
+      return false;
+    }
+
+    serviceId->value = classify_name(service_name);
+    LM_M(("Parsing command, service:%s(%lu), command:'%s'", service_name, serviceId->value, command_str));
+
+    if (serviceId->value == 0)
+    {
+      LM_M(("command, not emitted with service:%s(%lu), command:'%s'", service_name, serviceId->value, command_str));
+      return false;
+    }
+    command->value = command_str;
+
+    return true;
+  }
+
   void init(samson::KVWriter *writer)
   {
-    std::string source = environment->get("OTTstream.source", "HTTP"); // values: HTTP or DNS
+    source = environment->get("OTTstream.source", "HTTP"); // values: HTTP or DNS
 
     if (source == "HTTP")
     {
@@ -330,7 +374,7 @@ public:
     {
       _parseFunction = &parse_logs::parseLine_voice;
     }
-    else
+    else if ((source != "commands") && (source != "command")) // command have different output, so have to be treated in a different function
     {
       LM_W(("Source:%s not supported", source.c_str()));
       _parseFunction = &parse_logs::parseLine_voice;
@@ -435,16 +479,36 @@ public:
       newService->addDNSPattern("www.applesfera.com");
       services.push_back(newService);
     }
-
   }
 
   void parseLine(char * line, samson::KVWriter *writer)
   {
 
-    if ((this->*_parseFunction)(line, &userId, &hit))
+    if ((source != "commands") && (source != "command"))
     {
-      //LM_M(("User:%lu detected serviceId:%lu at time:%s", userId.value, hit.serviceId.value, hit.timestamp.str().c_str()));
-      writer->emit(0, &userId, &hit);
+      if ((this->*_parseFunction)(line, &userId, &service_hit))
+      {
+        //LM_M(("User:%lu detected serviceId:%lu at time:%s", userId.value, hit.serviceId.value, hit.timestamp.str().c_str()));
+        writer->emit(0, &userId, &service_hit);
+
+        if ((service_hit.serviceId.value != 0) && (service_hit.serviceId.value != 1000) && (service_hit.serviceId.value != 1100))
+        {
+          // Now emit the second queue, with serviceId as key
+          serviceId.value = service_hit.serviceId.value;
+          user_hit.userId.value = userId.value;
+          user_hit.timestamp.value = service_hit.timestamp.value;
+          writer->emit(1, &serviceId, &user_hit);
+        }
+
+      }
+    }
+    else
+    {
+      if (parseLine_commands(line, &serviceId, &command))
+      {
+        LM_M(("Emit command:'%s' on serviceId:%lu to the command queue", command.value.c_str(), serviceId.value));
+        writer->emit(2, &serviceId, &command);
+      }
     }
 
   }

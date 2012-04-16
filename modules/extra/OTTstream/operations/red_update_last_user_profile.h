@@ -26,7 +26,7 @@ namespace OTTstream{
 class red_update_last_user_profile : public samson::Reduce
 {
 
-	samson::OTTstream::Activity activity;
+	samson::OTTstream::ActivityByUser activity;
 	samson::system::UInt userId;
 	samson::OTTstream::ServiceHit hit;
 	samson::system::Int32 incOne;
@@ -49,9 +49,9 @@ public:
 	// Please, do not remove this comments, as it will be used to check consistency on module declaration
 	//
 	//  input: system.UInt OTTstream.ServiceHit
-	//  input: system.UInt OTTstream.Activity
+	//  input: system.UInt OTTstream.ActivityByUser
 	//  output: system.String level.ValTimed
-	//  output: system.UInt OTTstream.Activity
+	//  output: system.UInt OTTstream.ActivityByUser
 	//
 	// helpLine: Update the latest user profile
 	//  END_INFO_MODULE

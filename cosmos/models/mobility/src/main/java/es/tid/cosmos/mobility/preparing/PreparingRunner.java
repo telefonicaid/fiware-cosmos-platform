@@ -56,8 +56,7 @@ public final class PreparingRunner {
         }
 
         {
-            JoinBtsNodeToBtsDayRangeJob job = new JoinBtsNodeToBtsDayRangeJob(
-                    conf);
+            JoinBtsNodeToNodeBtsJob job = new JoinBtsNodeToNodeBtsJob(conf);
             job.configure(new Path[] { cdrsInfoMobDataPath, cellsMobDataPath },
                           clientsBtsPath);
             if (!job.waitForCompletion(true)) {
@@ -66,7 +65,8 @@ public final class PreparingRunner {
         }
 
         {
-            JoinBtsNodeToCdrJob job = new JoinBtsNodeToCdrJob(conf);
+            JoinBtsNodeToBtsDayRangeJob job = new JoinBtsNodeToBtsDayRangeJob(
+                    conf);
             job.configure(new Path[] { cdrsInfoMobDataPath, cellsMobDataPath },
                           btsCommsPath);
             if (!job.waitForCompletion(true)) {
@@ -75,7 +75,7 @@ public final class PreparingRunner {
         }
 
         {
-            JoinBtsNodeToNodeBtsJob job = new JoinBtsNodeToNodeBtsJob(conf);
+            JoinBtsNodeToCdrJob job = new JoinBtsNodeToCdrJob(conf);
             job.configure(new Path[] { cdrsInfoMobDataPath, cellsMobDataPath },
                           cdrsNoBtsPath);
             if (!job.waitForCompletion(true)) {

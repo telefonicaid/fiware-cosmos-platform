@@ -31,6 +31,9 @@ public class MobilityMain extends Configured implements Tool {
         Path adjBtsPath = new Path(arguments.get("adjBts"));
         Path btsVectorTxtPath = new Path(arguments.get("btsVectorTxt"));
         
+        Configuration conf = this.getConf();
+        conf.set("CELL_CATALOGUE_PATH", cellsPath.toString());
+        
         Path tmpParsingPath = tmpPath.suffix("/parsing");
         Path cdrsMobPath = tmpParsingPath.suffix("/cdrs_mob");
         Path cellsMobPath = tmpParsingPath.suffix("/cells_mob");

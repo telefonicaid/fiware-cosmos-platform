@@ -27,7 +27,15 @@ import es.tid.cosmos.mobility.parsing.BtsClustersParser;
 public class ClusterBtsGetMinDistanceReducer extends Reducer<
         ProtobufWritable<NodeBts>, ProtobufWritable<ClusterVector>,
         LongWritable, ProtobufWritable<Cluster>> {
+    private static final String BTS_CLUSTERS_PATH = "/home/hdfs/bts_clusters";
+    
     private static List<Cluster> btsClusters = null;
+
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        loadBtsClusters(context.getConfiguration(), new Path(BTS_CLUSTERS_PATH));
+    }
     
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
@@ -68,7 +76,7 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
         }
     }
     
-    private void loadBtsClusters(Configuration conf, Path input) {
+    private static void loadBtsClusters(Configuration conf, Path input) {
         if (btsClusters != null) {
             return;
         }

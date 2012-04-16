@@ -84,6 +84,11 @@ message Cluster {
     optional ClusterVector coords = 6;
 }
 
+message BtsCluster {
+    optional Bts bts = 1;
+    optional Cluster cluster = 2;
+}
+
 message GLEvent {
     optional uint64 userId = 1;
     optional uint64 placeId = 2;

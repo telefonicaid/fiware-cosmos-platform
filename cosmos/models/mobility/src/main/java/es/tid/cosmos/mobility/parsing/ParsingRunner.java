@@ -12,14 +12,14 @@ public final class ParsingRunner {
     private ParsingRunner() {
     }
 
-    public static void run(Path cdrsPath, Path parsedCdrsPath,
-                           Path cellsPath, Path parsedCellsPath,
-                           Path adjBtsPath, Path parsedAdjBtsPath,
-                           Path btsComarea, Path parsedBtsComarea,
+    public static void run(Path cdrsPath, Path cdrsMobPath,
+                           Path cellsPath, Path cellsMobPath,
+                           Path pairbtsadjTxtPath, Path pairbtsAdjPath,
+                           Path btsVectorTxtPath, Path btsComareaPath,
                            Configuration conf) throws Exception {
         {
             ParseCdrsJob job = new ParseCdrsJob(conf);
-            job.configure(cdrsPath, parsedCdrsPath);
+            job.configure(cdrsPath, cdrsMobPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -27,7 +27,7 @@ public final class ParsingRunner {
 
         {
             ParseCellsJob job = new ParseCellsJob(conf);
-            job.configure(cellsPath, parsedCellsPath);
+            job.configure(cellsPath, cellsMobPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -35,7 +35,7 @@ public final class ParsingRunner {
         
         {
             AdjParseAdjBtsJob job = new AdjParseAdjBtsJob(conf);
-            job.configure(adjBtsPath, parsedAdjBtsPath);
+            job.configure(pairbtsadjTxtPath, pairbtsAdjPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -43,7 +43,7 @@ public final class ParsingRunner {
 
         {
             BorrarGetBtsComareaJob job = new BorrarGetBtsComareaJob(conf);
-            job.configure(btsComarea, parsedBtsComarea);
+            job.configure(btsVectorTxtPath, btsComareaPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

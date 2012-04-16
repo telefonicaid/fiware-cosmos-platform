@@ -2,9 +2,7 @@ package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.MobProtocol.*;
 
 /**
  *
@@ -12,11 +10,31 @@ import es.tid.cosmos.mobility.data.MobProtocol.MobData;
  */
 public abstract class MobDataUtil implements ProtobufUtil {
     public static MobData create(Cdr cdr) {
-        return MobData.newBuilder().setCdr(cdr).build();
+        return MobData.newBuilder()
+                .setType(MobData.Type.CDR)
+                .setCdr(cdr)
+                .build();
     }
     
     public static MobData create(Cell cell) {
-        return MobData.newBuilder().setCell(cell).build();
+        return MobData.newBuilder()
+                .setType(MobData.Type.CELL)
+                .setCell(cell)
+                .build();
+    }
+
+    public static MobData create(Bts bts) {
+        return MobData.newBuilder()
+                .setBts(bts)
+                .setType(MobData.Type.BTS)
+                .build();
+    }
+
+    public static MobData create(Cluster cluster) {
+        return MobData.newBuilder()
+                .setCluster(cluster)
+                .setType(MobData.Type.CLUSTER)
+                .build();
     }
     
     public static ProtobufWritable<MobData> wrap(MobData obj) {
@@ -31,6 +49,14 @@ public abstract class MobDataUtil implements ProtobufUtil {
     }
 
     public static ProtobufWritable<MobData> createAndWrap(Cell obj) {
+        return wrap(create(obj));
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(Bts obj) {
+        return wrap(create(obj));
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(Cluster obj) {
         return wrap(create(obj));
     }
 }

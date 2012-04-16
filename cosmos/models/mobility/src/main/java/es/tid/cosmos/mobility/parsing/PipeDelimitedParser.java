@@ -31,6 +31,10 @@ public abstract class PipeDelimitedParser extends StringTokenizer {
         return Long.parseLong(nextToken(), 10);
     }
 
+    protected double parseDouble() {
+        return Double.parseDouble(nextToken());
+    }
+    
     protected long parseCellId() {
         String str = nextToken();
         if (str.length() > MAX_CELL_DIGITS) {

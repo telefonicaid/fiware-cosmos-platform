@@ -14,7 +14,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.mobility.MobilityMain;
-import es.tid.cosmos.mobility.parsing.ParseCellsMapper;
 
 /**
  *
@@ -33,7 +32,7 @@ public class ParseCellsJob extends Job {
         this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setMapperClass(ParseCellsMapper.class);
+        this.setReducerClass(ParseCellsReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

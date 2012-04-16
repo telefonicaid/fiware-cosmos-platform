@@ -1,39 +1,37 @@
-package es.tid.cosmos.mobility.parsing;
+package es.tid.cosmos.mobility.btslabelling;
 
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.mobility.MobilityMain;
-import es.tid.cosmos.mobility.parsing.ParseCdrsReducer;
 
 /**
  *
  * @author dmicol
  */
-public class ParseCdrsJob extends Job {
-    private static final String JOB_NAME = "ParseCDRs";
+public class VectorSumComsBtsJob extends Job {
+    private static final String JOB_NAME = "VectorSumComsBts";
 
-    public ParseCdrsJob(Configuration conf) throws IOException {
+    public VectorSumComsBtsJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
-        this.setInputFormatClass(TextInputFormat.class);
-        this.setMapOutputKeyClass(LongWritable.class);
-        this.setMapOutputValueClass(Text.class);
-        this.setOutputKeyClass(LongWritable.class);
+        this.setInputFormatClass(SequenceFileInputFormat.class);
+        this.setMapOutputKeyClass(ProtobufWritable.class);
+        this.setMapOutputValueClass(NullWritable.class);
+        this.setOutputKeyClass(ProtobufWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(ParseCdrsReducer.class);
+        this.setReducerClass(VectorSumComsBtsReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

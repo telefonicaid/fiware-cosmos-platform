@@ -6,8 +6,19 @@ option java_package = "es.tid.cosmos.mobility.data";
 option java_outer_classname = "MobProtocol";
 
 message MobData {
-    optional Cdr cdr = 1;
-    optional Cell cell = 2;
+    enum Type {
+        INVALID = 0;
+        CDR = 1;
+        CELL = 2;
+        BTS = 3;
+        CLUSTER = 4;
+    }
+
+    required Type type = 1;
+    optional Cdr cdr = 2;
+    optional Cell cell = 3;
+    optional Bts bts = 4;
+    optional Cluster cluster = 5;
 }
 
 message Cdr {
@@ -73,6 +84,15 @@ message DailyVector {
 
 message ClusterVector {
     repeated double coms = 1;
+}
+
+message Cluster {
+    optional uint32 label = 1;
+    optional uint32 labelgroup = 2;
+    optional uint32 confident = 3;
+    optional double mean = 4;
+    optional double distance = 5;
+    optional ClusterVector coords = 6;
 }
 
 message GLEvent {

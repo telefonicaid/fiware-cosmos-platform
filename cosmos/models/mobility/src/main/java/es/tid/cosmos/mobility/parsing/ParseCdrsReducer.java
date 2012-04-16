@@ -5,7 +5,7 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
@@ -14,7 +14,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
  *
  * @author sortega
  */
-public class ParseCdrsMapper extends Mapper<LongWritable, Text, LongWritable,
+public class ParseCdrsReducer extends Reducer<LongWritable, Text, LongWritable,
         ProtobufWritable<Cdr>> {
     private LongWritable userId;
     
@@ -24,10 +24,13 @@ public class ParseCdrsMapper extends Mapper<LongWritable, Text, LongWritable,
     }
     
     @Override
-    public void map(LongWritable key, Text line, Context context)
+    public void reduce(LongWritable key, Iterable<Text> values, Context context)
             throws IOException, InterruptedException {
-        ProtobufWritable<Cdr> cdr = CdrUtil.wrap(CdrUtil.parse(line.toString()));
-        this.userId.set(cdr.get().getUserId());
-        context.write(this.userId, cdr);
+        for (Text value : values) {
+            ProtobufWritable<Cdr> cdr =
+                    CdrUtil.wrap(CdrUtil.parse(value.toString()));
+            this.userId.set(cdr.get().getUserId());
+            context.write(this.userId, cdr);
+        }
     }
 }

@@ -17,6 +17,7 @@ fi
 SETUP_TXT=${SAMSON_WORKING}/etc/setup.txt
 
 if [ ! -f ${SETUP_TXT} ]; then
+    mkdir -p ${SAMSON_WORKING}/etc
     # generate setup.txt
     echo "Generating a base line ${SETUP_TXT}"
     cat > ${SETUP_TXT} <<EO_SETUP

@@ -40,33 +40,20 @@ public class ActivityAreaReducerTest {
             ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>>(
                     new ActivityAreaReducer());
 
-        long firstUserId = 5512683500L;
-        long secondUserId = 5512684400L;
-        int month = 1;
-        boolean isWorkDay = true;
-
-        long firstCellId = 590379901L;
-        long secondCellId = 591266215L;
-        long firstPlaceId = 100L;
-        long secondPlaceId = 100L;
-        int firstGeoLoc1 = 1;
-        int secondGeoLoc1 = 3;
-        int firstGeoLoc2 = 2;
-        int secondGeoLoc2 = 4;
         int firstPosX = 500000;
         int secondPosX = 700000;
         int firstPosY = 2000000;
         int secondPosY = 4000000;
 
         this.userWithSingleEntry = ActivityAreaKeyUtil.createAndWrap(
-                firstUserId, month, isWorkDay);
-        this.firstCell = CellUtil.createAndWrap(firstCellId, firstPlaceId,
-                firstGeoLoc1, firstGeoLoc2,
+                5512683500L, 1, true);
+        this.firstCell = CellUtil.createAndWrap(590379901L, 100L,
+                1, 2,
                 firstPosX, firstPosY);
         this.userWithTwoEntries = ActivityAreaKeyUtil.createAndWrap(
-                secondUserId, month, isWorkDay);
-        this.secondCell = CellUtil.createAndWrap(secondCellId, secondPlaceId,
-                secondGeoLoc1, secondGeoLoc2,
+                5512684400L, 1, true);
+        this.secondCell = CellUtil.createAndWrap(591266215L, 100L,
+                3, 4,
                 secondPosX, secondPosY);
     }
 

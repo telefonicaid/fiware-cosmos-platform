@@ -14,7 +14,7 @@ public final class PoisRunner {
     public static void run(Path tmpDir, Path clientsBtsPath,
                            Path clientsRepbtsPath, Configuration conf)
             throws Exception {
-        Path nodeBtsCounter = tmpDir.suffix("node_bts_counter");
+        Path nodeBtsCounter = tmpDir.suffix("/node_bts_counter");
         {
             NodeBtsCounterJob job = new NodeBtsCounterJob(conf);
             job.configure(clientsBtsPath, nodeBtsCounter);
@@ -23,7 +23,7 @@ public final class PoisRunner {
             }
         }
 
-        Path nodeMobInfo = tmpDir.suffix("node_mob_info");
+        Path nodeMobInfo = tmpDir.suffix("/node_mob_info");
         {
             NodeMobInfoJob job = new NodeMobInfoJob(conf);
             job.configure(nodeBtsCounter, nodeMobInfo);
@@ -32,7 +32,7 @@ public final class PoisRunner {
             }
         }
 
-        Path repbtsSpreadNodebts = tmpDir.suffix("repbts_spread_nodebts");
+        Path repbtsSpreadNodebts = tmpDir.suffix("/repbts_spread_nodebts");
         {
             RepbtsSpreadNodebtsJob job = new RepbtsSpreadNodebtsJob(conf);
             job.configure(nodeMobInfo, repbtsSpreadNodebts);
@@ -41,7 +41,7 @@ public final class PoisRunner {
             }
         }
 
-        Path repbtsAggbybts = tmpDir.suffix("repbts_aggbybts");
+        Path repbtsAggbybts = tmpDir.suffix("/repbts_aggbybts");
         {
             RepbtsAggbybtsJob job = new RepbtsAggbybtsJob(conf);
             job.configure(repbtsSpreadNodebts, repbtsAggbybts);
@@ -50,7 +50,7 @@ public final class PoisRunner {
             }
         }
 
-        Path repbtsJoinDistComms = tmpDir.suffix("repbts_join_dist_comms");
+        Path repbtsJoinDistComms = tmpDir.suffix("/repbts_join_dist_comms");
         {
             RepbtsJoinDistCommsJob job = new RepbtsJoinDistCommsJob(conf);
             job.configure(repbtsAggbybts, repbtsJoinDistComms);

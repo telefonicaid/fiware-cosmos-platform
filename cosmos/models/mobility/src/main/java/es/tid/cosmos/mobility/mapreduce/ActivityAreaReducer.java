@@ -14,31 +14,7 @@ import es.tid.cosmos.mobility.data.ActivityAreaUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
 import es.tid.cosmos.mobility.data.MobProtocol.ActivityAreaKey;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-
-/**
- *
- * @author losa
- */
-
-class Accumulations {
-    int difPos;
-    int numBtss;
-    int numMuns;
-    int numStates;
-    double massCenterX;
-    double massCenterY;
-    double radius;
-
-    Accumulations() {
-        difPos = 0;
-        numBtss = 0;
-        numMuns = 0;
-        numStates = 0;
-        massCenterX = 0.0;
-        massCenterY = 0.0;
-        radius = 0.0;
-    }
-}
+import es.tid.cosmos.mobility.mapreduce.Accumulations;
 
 public class ActivityAreaReducer extends Reducer<
         ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,

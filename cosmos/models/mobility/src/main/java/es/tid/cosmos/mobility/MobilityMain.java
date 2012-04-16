@@ -1,6 +1,8 @@
 package es.tid.cosmos.mobility;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -11,7 +13,6 @@ import org.apache.log4j.Logger;
 
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
-import java.util.*;
 
 /**
  *
@@ -37,10 +38,11 @@ public class MobilityMain extends Configured implements Tool {
         Path adjBtsPath = new Path(arguments.get("adjBts"));
         Path btsVectorTxtPath = new Path(arguments.get("btsVectorTxt"));
         
-        Path cdrsMobPath = tmpPath.suffix("/cdrs_mob");
-        Path cellsMobPath = tmpPath.suffix("/cells_mob");
-        Path pairbtsAdjPath = tmpPath.suffix("/pairbts_adj");
-        Path btsComareaPath = tmpPath.suffix("/bts_comarea");
+        Path tmpPathParsing = tmpPath.suffix("/parsing");
+        Path cdrsMobPath = tmpPathParsing.suffix("/cdrs_mob");
+        Path cellsMobPath = tmpPathParsing.suffix("/cells_mob");
+        Path pairbtsAdjPath = tmpPathParsing.suffix("/pairbts_adj");
+        Path btsComareaPath = tmpPathParsing.suffix("/bts_comarea");
         boolean shouldParse = "true".equals(arguments.get("parse"));
         if (shouldParse) {
             ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath, cellsMobPath,
@@ -48,17 +50,18 @@ public class MobilityMain extends Configured implements Tool {
                               btsComareaPath, this.getConf());
         }
         
-        Path cdrsInfoPath = tmpPath.suffix("/cdrs_info");
-        Path cdrsNoinfoPath = tmpPath.suffix("/cdrs_noinfo");
-        Path clientsBtsPath = tmpPath.suffix("/clients_bts");
-        Path btsCommsPath = tmpPath.suffix("/bts_comms");
-        Path cdrsNoBtsPath = tmpPath.suffix("/cdrs_no_bts");
-        Path viTelmonthBtsPath = tmpPath.suffix("/vi_telmonth_bts");
+        Path tmpPathPreparing = tmpPath.suffix("/preparing");
+        Path cdrsInfoPath = tmpPathPreparing.suffix("/cdrs_info");
+        Path cdrsNoinfoPath = tmpPathPreparing.suffix("/cdrs_noinfo");
+        Path clientsBtsPath = tmpPathPreparing.suffix("/clients_bts");
+        Path btsCommsPath = tmpPathPreparing.suffix("/bts_comms");
+        Path cdrsNoBtsPath = tmpPathPreparing.suffix("/cdrs_no_bts");
+        Path viTelmonthBtsPath = tmpPathPreparing.suffix("/vi_telmonth_bts");
         boolean shouldPrepare = "true".equals(arguments.get("prepare"));
         if (shouldPrepare) {
-            PreparingRunner.run(cdrsMobPath, cdrsInfoPath, cdrsNoinfoPath,
-                                cellsMobPath, clientsBtsPath, btsCommsPath,
-                                cdrsNoBtsPath, viTelmonthBtsPath,
+            PreparingRunner.run(tmpPathPreparing, cdrsMobPath, cdrsInfoPath,
+                                cdrsNoinfoPath, cellsMobPath, clientsBtsPath,
+                                btsCommsPath, cdrsNoBtsPath, viTelmonthBtsPath,
                                 this.getConf());
         }
         

@@ -18,8 +18,9 @@ void test( std::string txt )
     printf("-----------------------------------\n");
 
     au::ErrorManager error;
-    samson::system::SamsonTokenVector token_vector;
-    token_vector.parse(txt);
+	samson::system::SamsonTokenizer tokenizer;
+
+	au::token::TokenVector token_vector = tokenizer.parse( txt );
     
     printf("Tokens > %s\n" , token_vector.str().c_str() );
     

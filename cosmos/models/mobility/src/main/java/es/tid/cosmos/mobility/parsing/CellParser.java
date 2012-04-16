@@ -6,20 +6,27 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cell;
  *
  * @author sortega
  */
-public class CellParser extends PipeDelimitedParser {
+public class CellParser extends Parser {
+    private static final String DELIMITER = "\\|";
+    
     public CellParser(String line) {
-        super(line);
+        super(line, DELIMITER);
     }
 
     @Override
     public Cell parse() {
-        return Cell.newBuilder()
-            .setCellId(parseCellId())
-            .setPlaceId(parseLong())
-            .setGeoloc1(parseInt())
-            .setGeoloc2(parseInt())
-            .setPosx(parseInt())
-            .setPosy(parseInt())
-            .build();
+        try {
+            return Cell.newBuilder()
+                .setCellId(parseCellId())
+                .setPlaceId(parseLong())
+                .setGeoloc1(parseInt())
+                .setGeoloc2(parseInt())
+                .setPosx(parseInt())
+                .setPosy(parseInt())
+                .build();
+        } catch (Exception ex) {
+            System.err.println(ex);
+            throw new IllegalArgumentException("Failed to parse: " + this.line);
+        }
     }
 }

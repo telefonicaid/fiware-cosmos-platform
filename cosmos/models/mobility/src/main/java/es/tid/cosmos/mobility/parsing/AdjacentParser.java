@@ -6,16 +6,23 @@ import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
  *
  * @author dmicol
  */
-public class AdjacentParser extends PipeDelimitedParser {
+public class AdjacentParser extends Parser {
+    private static final String DELIMITER = "\\|";
+    
     public AdjacentParser(String line) {
-        super(line);
+        super(line, DELIMITER);
     }
     
     @Override
     public TwoInt parse() {
-        return TwoInt.newBuilder()
-                .setNum1(this.parseInt())
-                .setNum2(this.parseInt())
-                .build();
+        try {
+            return TwoInt.newBuilder()
+                    .setNum1(this.parseInt())
+                    .setNum2(this.parseInt())
+                    .build();
+        } catch (Exception ex) {
+            System.err.println(ex);
+            throw new IllegalArgumentException("Failed to parse: " + this.line);
+        }
     }
 }

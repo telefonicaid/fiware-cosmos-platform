@@ -6,17 +6,24 @@ import es.tid.cosmos.mobility.data.MobProtocol.Bts;
  *
  * @author dmicol
  */
-public class BtsParser extends PipeDelimitedParser {
+public class BtsParser extends Parser {
+    private static final String DELIMITER = "[ ]+";
+    
     public BtsParser(String line) {
-        super(line);
+        super(line, DELIMITER);
     }
     
     @Override
     public Bts parse() {
-        return Bts.newBuilder()
-                .setPlaceId(this.parseCellId())
-                .setComms(this.parseLong())
-                .setArea(this.parseLong())
-                .build();
+        try {
+            return Bts.newBuilder()
+                    .setPlaceId(this.parseInt())
+                    .setComms(this.parseInt())
+                    .setArea(this.parseDouble())
+                    .build();
+        } catch (Exception ex) {
+            System.err.println(ex);
+            throw new IllegalArgumentException("Failed to parse: " + this.line);
+        }
     }
 }

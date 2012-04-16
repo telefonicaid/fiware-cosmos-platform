@@ -62,7 +62,7 @@ public class MobilityMain extends Configured implements Tool {
         }
         
         Path tmpExtractPoisPath = tmpPath.suffix("/extract_pois");
-        Path clientsRepbtsPath = tmpPreparingPath.suffix("/clients_repbts");
+        Path clientsRepbtsPath = tmpExtractPoisPath.suffix("/clients_repbts");
         boolean shouldExtractPois = "true".equals(arguments.get("extractPOIs"));
         if (shouldExtractPois) {
             PoisRunner.run(tmpExtractPoisPath, clientsBtsPath,

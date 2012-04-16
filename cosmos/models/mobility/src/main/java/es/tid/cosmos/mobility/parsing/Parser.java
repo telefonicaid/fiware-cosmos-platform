@@ -1,26 +1,39 @@
 package es.tid.cosmos.mobility.parsing;
 
-import java.util.StringTokenizer;
-
 import es.tid.cosmos.mobility.data.BaseProtocol;
 
 /**
  *
  * @author sortega
  */
-public abstract class PipeDelimitedParser extends StringTokenizer {
-    protected static final String SEPARATOR = "|";
+public abstract class Parser {
     protected static final int MAX_CELL_DIGITS = 8;
     protected static final int MAX_CLIENT_LENGTH = 10;
+    
+    protected String line;
+    private String[] fields;
+    private int index;
 
-    public PipeDelimitedParser(String line) {
-        super(line, SEPARATOR);
+    public Parser(String line, String separator) {
+        this.line = line;
+        this.fields = line.split(separator);
+        this.index = 0;
     }
 
     public abstract Object parse();
 
+    protected String currentToken() {
+        return this.fields[this.index];
+    }
+    
+    protected String nextToken() {
+        String token = this.currentToken();
+        this.index++;
+        return token;
+    }
+    
     protected void skipField() {
-        nextToken();
+        this.nextToken();
     }
 
     protected int parseInt() {
@@ -36,8 +49,10 @@ public abstract class PipeDelimitedParser extends StringTokenizer {
     }
     
     protected long parseCellId() {
-        String str = nextToken();
-        if (str.length() > MAX_CELL_DIGITS) {
+        String str = this.nextToken();
+        if (str.isEmpty()) {
+            return 0L;
+        } else if (str.length() > MAX_CELL_DIGITS) {
             // Take the least significant hex digits
             str = str.substring(str.length() - MAX_CELL_DIGITS);
         }
@@ -45,7 +60,7 @@ public abstract class PipeDelimitedParser extends StringTokenizer {
     }
 
     protected long parseUserId() {
-        String str = nextToken();
+        String str = this.nextToken();
         if (str.length() > MAX_CLIENT_LENGTH) {
             str = str.substring(str.length() - MAX_CLIENT_LENGTH);
         }
@@ -53,7 +68,7 @@ public abstract class PipeDelimitedParser extends StringTokenizer {
     }
 
     protected BaseProtocol.Date parseDate() {
-        String date = nextToken();
+        String date = this.nextToken();
         final int day = Integer.parseInt(date.substring(0, 2), 10);
         final int month = Integer.parseInt(date.substring(3, 5), 10);
         final int year = Integer.parseInt(date.substring(8, 10), 10);
@@ -66,7 +81,7 @@ public abstract class PipeDelimitedParser extends StringTokenizer {
     }
 
     protected BaseProtocol.Time parseTime() {
-        String time = nextToken();
+        String time = this.nextToken();
         return BaseProtocol.Time.newBuilder()
                 .setHour(Integer.parseInt(time.substring(0, 2), 10))
                 .setMinute(Integer.parseInt(time.substring(3, 5), 10))

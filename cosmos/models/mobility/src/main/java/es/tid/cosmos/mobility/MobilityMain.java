@@ -10,7 +10,6 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
-import es.tid.cosmos.mobility.pois.PoisRunner;
 
 /**
  *
@@ -32,14 +31,14 @@ public class MobilityMain extends Configured implements Tool {
         Path btsComarea = new Path(args[3]);
         
         Path tmpPath = new Path("/tmp");
-        Path parsedCdrsPath = tmpPath.suffix("/parsed_cdrs");
-        Path parsedCellsPath = tmpPath.suffix("/parsed_cells");
-        Path parsedAdjBtsPath = tmpPath.suffix("/parsed_adj_bts");
-        Path parsedBtsComarea = tmpPath.suffix("/parsed_bts_comarea");
+        Path cdrsMobPath = tmpPath.suffix("/cdrs_mob");
+        Path cellsMobPath = tmpPath.suffix("/cells_mob");
+        Path pairbtsAdjPath = tmpPath.suffix("/pairbts_adj");
+        Path btsComareaPath = tmpPath.suffix("/bts_comarea");
         
-        ParsingRunner.run(cdrsPath, parsedCdrsPath, cellsPath, parsedCellsPath,
-                          adjBtsPath, parsedAdjBtsPath, btsComarea,
-                          parsedBtsComarea, this.getConf());
+        ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath, cellsMobPath,
+                          adjBtsPath, pairbtsAdjPath, btsComarea,
+                          btsComareaPath, this.getConf());
         
         return 0;
     }

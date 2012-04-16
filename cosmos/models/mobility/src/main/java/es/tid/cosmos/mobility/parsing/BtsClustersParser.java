@@ -7,9 +7,11 @@ import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
  *
  * @author dmicol
  */
-public class BtsClustersParser extends PipeDelimitedParser {
+public class BtsClustersParser extends Parser {
+    private static final String DELIMITER = "\\|";
+    
     public BtsClustersParser(String line) {
-        super(line);
+        super(line, DELIMITER);
     }
 
     @Override

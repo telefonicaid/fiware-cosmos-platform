@@ -6,17 +6,33 @@
 #include "au/log/LogServer.h"
 #include "au/log/LogFormatter.h"
 #include "au/log/LogFile.h"
+#include "au/log/TableLogFormatter.h"
 
 #define DEF_FORMAT "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT"
 
 char format[1024];
+char pattern[1024];
+char type[1024];
 char target_file[1024];
-
+int limit;
+bool is_table;
+bool is_reverse;
+bool is_multi_session;
+char str_time[1024];
+char str_date[1024];
 
 PaArgument paArgs[] =
 {
-    { "-format",  format       , "", PaString, PaOpt, _i DEF_FORMAT, PaNL, PaNL, "Log file to scan" },
-    { " ",        target_file  , "", PaString, PaReq, _i "",         PaNL, PaNL, "Log file to scan" },
+    { "-format",         format       , "", PaString, PaOpt, _i DEF_FORMAT     , PaNL, PaNL, "Log file to scan" },
+    { "-pattern",        pattern      , "", PaString, PaOpt, _i ""             , PaNL, PaNL, "Pattern to be found in logs" },
+    { "-limit",          &limit       , "", PaInt,    PaOpt, 10000             , 0, 100000000, "Max number of logs to be displayed" },
+    { "-table",          &is_table    , "", PaBool,   PaOpt, false             , false, true, "Show in table format" },
+    { "-reverse",        &is_reverse  , "", PaBool,   PaOpt, false             , false, true, "Show in reverse temporal order" },
+    { "-multi_session",  &is_reverse  , "", PaBool,   PaOpt, false             , false, true, "Skip new_session marks" },
+    { "-time",           &str_time    , "", PaString, PaOpt, _i ""             , PaNL, PaNL, "Show only logs older that this time" },
+    { "-date",           &str_date    , "", PaString, PaOpt, _i ""             , PaNL, PaNL, "Show only logs older that this date" },
+    { "-type",           type         , "", PaString, PaOpt, _i ""             , PaNL, PaNL, "Filter a particular type of logs" },
+    { " ",               target_file  , "", PaString, PaReq, _i "",         PaNL, PaNL, "Log file to scan" },
     PA_END_OF_ARGS
 };
 
@@ -60,11 +76,9 @@ int main(int argC, const char *argV[])
     logFd = lmFirstDiskFileDescriptor();
 
     LM_V(("LogCat %s" , target_file));
-
     
     // Log formmatter
     LM_V(("Using format %s" , format));
-    au::LogFormatter log_formatter(format);
     
     // Open teh log file    
     au::LogFile *logFile=NULL;
@@ -72,14 +86,39 @@ int main(int argC, const char *argV[])
     
     if( s == au::OK )
     {
+        // Formatter to create table
+        au::TableLogFormatter table_log_formater( format );
+        
+        // Setup of the table log formatter
+        table_log_formater.set_pattern( pattern );
+        table_log_formater.set_time(str_time);
+        table_log_formater.set_date(str_date);
+        table_log_formater.set_as_table( is_table );
+        table_log_formater.set_reverse( is_reverse );
+        table_log_formater.set_as_multi_session( is_multi_session );
+        table_log_formater.set_limit( limit );
+
+        au::ErrorManager error;
+        table_log_formater.init(&error);
+        
+        if( error.isActivated() )
+            LM_X(1, ("Error: %s" , error.getMessage().c_str() ));
+        
         size_t num_logs = logFile->logs.size();
         for( size_t i = 0 ; i <  num_logs ; i++ )
         {
             au::Log *log = logFile->logs[ num_logs - i -1 ];
             
-            LM_V(("Processing log %s" , log->str().c_str() ));
-            std::cout << log_formatter.get( log ) << "\n";
+            // Add log to the table formatter
+            table_log_formater.add(log);
+
+            // Check if we have enougth
+            if( table_log_formater.enougthRecords() )
+                break;
         }
+
+        // Emit output to the stdout
+        std::cout  << table_log_formater.str();
         
     }
     else

@@ -225,8 +225,6 @@ static void valgrindExit(int v)
 *
 * main - 
 */
-char           lsHost[64];
-unsigned short lsPort;
 
 int main(int argC, const char *argV[])
 {
@@ -264,14 +262,10 @@ int main(int argC, const char *argV[])
     const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
 
-    // Start log to server
-    lsPort = paLsPort;
-    strcpy(lsHost, paLsHost);
-    if ((paLsPort != 0) && (strcmp(paLsHost, "NO") != 0))
-        au::start_log_to_server();
-    else
-       paConfig("even if hook active, no traces to file", (void*) true);
-
+    // Log system
+    std::string local_log_file = au::str("%s/samsonWorkerLog" , paLogDir );
+    au::start_log_to_server( paLsHost , paLsPort , local_log_file );
+    
     // Only add in foreground to avoid warning / error messages at the stdout
     if (fg)
         atexit(cleanup);

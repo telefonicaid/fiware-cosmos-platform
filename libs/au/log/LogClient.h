@@ -175,6 +175,12 @@ namespace au
         
         void evalCommand( std::string command )
         {
+            if( command == "quit" )
+            {
+                quitConsole();
+                return;
+            }
+            
             evalCommand( command , this );
         }
         

@@ -12,15 +12,7 @@ namespace au
      * start_log_to_server - 
      */
     
-    void start_log_to_server();
-
-    /* ****************************************************************************
-     *
-     * serverConnect - 
-     */
-    
-    int serverConnect(const char* host, unsigned short port);
-    
+    void start_log_to_server( std::string log_host , int log_port , std::string local_log_file );
     
     /* ****************************************************************************
      *

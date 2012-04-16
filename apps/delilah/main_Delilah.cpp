@@ -216,33 +216,14 @@ int main(int argC, const char *argV[])
     // Random code for delilah
     delilah_random_code = au::code64_rand();
     paProgName = strdup( au::str("delilah_%s" , au::code64_str( delilah_random_code ).c_str() ).c_str() );
-    
-    const char* xxhost = paIsSetSoGet(argC, (char**) argV, "-lsHost");
-    if (xxhost != NULL)
-    {
-        if (strcmp(xxhost, "NO") == 0) // No Log Server wanted - turn on log file ...
-        {
-            paConfig("log to file",                       (void*) true);
-            // printf("logging to file\n");
-        }
-        // else
-        //    printf("NOT logging to file\n");
-    }
-    else // '-lsHost' not set - turn on log file ...
-    {
-        paConfig("log to file",                       (void*) true);
-        // printf("Logging to file\n");
-    }
 
     paParse(paArgs, argC, (char**) argV, 1, true);
     lmAux((char*) "father");
     logFd = lmFirstDiskFileDescriptor();
 
     // Start log to server
-    lsPort = paLsPort;
-    strcpy(lsHost, paLsHost);
-    if ((paLsPort != 0) && (strcmp(paLsHost, "NO") != 0))
-        au::start_log_to_server();
+    std::string local_log_file = au::str("%s/delilahLog_%s" , paLogDir , au::code64_str( delilah_random_code ).c_str() );
+    au::start_log_to_server( paLsHost , paLsPort , local_log_file );
 
     if ((strcmp(target_host, "localhost") == 0) || (strcmp(target_host, "127.0.0.1") == 0))
     {

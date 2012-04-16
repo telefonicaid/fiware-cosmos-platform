@@ -101,6 +101,8 @@ namespace au {
     // Get information from this log
     std::string Log::get( std::string  name )
     {
+        LM_V(("Getting %s from log %s" , name.c_str() , str().c_str() ));
+        
         if( name == "HOST" )
             return getField( "host" , "" ); 
         

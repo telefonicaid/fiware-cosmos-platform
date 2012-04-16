@@ -27,10 +27,14 @@ namespace au
             token_vector.popToken();
             token = token_vector.getNextToken();
         }
+        
+        LM_V(("LogFormatter %s %lu fields" , definition.c_str() , fields.size() ));
+        
     }
     
     std::string LogFormatter::get( Log* log )
     {
+        
         if( definition == "all" )
             return log->str();
         

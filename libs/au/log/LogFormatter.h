@@ -18,7 +18,6 @@ namespace au
         LogFormatter( std::string _definition );        
         std::string get( Log* log );
         
-        
     };
 }
 

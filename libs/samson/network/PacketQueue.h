@@ -124,6 +124,12 @@ namespace samson {
             
         }
         
+        void clear()
+        {
+            au::TokenTaker tt(&token_packet_queues);
+            packet_queues.clearMap();
+        }
+        
         // Pending packets
         void push_pending_packet( std::string name , Packet * packet )
         {

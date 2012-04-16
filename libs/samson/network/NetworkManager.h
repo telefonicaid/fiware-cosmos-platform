@@ -43,6 +43,11 @@ namespace samson {
         {
         }
                 
+        ~NetworkManager()
+        {
+            multi_packet_queue.clear();
+        }
+        
         // Interface to inform about a received packet from a network connection
         virtual void receive( NetworkConnection* connection, Packet* packet )
         {

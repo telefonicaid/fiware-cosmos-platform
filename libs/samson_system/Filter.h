@@ -34,7 +34,7 @@ namespace samson{
             {
                 next = NULL;
             }
-            
+                        
             virtual ~Filter()
             {
             }
@@ -192,43 +192,69 @@ namespace samson{
             
             // parse field0 field1 field2 -separator X 
             
-            static FilterParser* getFilter( std::string command , au::ErrorManager * error )
+            static FilterParser* getFilter( au::token::TokenVector* token_vector , au::ErrorManager * error )
             {
-                au::CommandLine cmdLine;
-                cmdLine.set_flag_string("separator", " "); // By default space is used as separator
-                cmdLine.parse( command );
                 
-                if( cmdLine.get_num_arguments() == 0 )
+                if( token_vector->eof() )
                 {
                     error->set("No command provided");
                     return NULL;
                 }
                 
                 FilterParser* filter = new FilterParser();
-                
-                std::string separator_param = cmdLine.get_flag_string("separator");
-                if( separator_param.length() == 0 )
-                    filter->separator = ' ';
-                else if( separator_param.length() == 1 )
-                    filter->separator = separator_param[0];
-                else if ( separator_param == "tab" )
-                    filter->separator = '\t';
-                else
-                {
-                    delete filter;
-                    error->set("Unknown separator. Use single character separator or tab");
-                    return NULL;
-                }
+                filter->separator = ' ';
+
                 
                 // Fields ( if any )
-                for( int i = 1 ; i < cmdLine.get_num_arguments() ; i++ )
+                while( !token_vector->eof() )
                 {
-                    std::string field_definition = cmdLine.get_argument(i);
+                    if( token_vector->popNextTokensIfTheyAre("-","separator") )
+                    {
+                        // Extract separator
+                        au::token::Token * separator_token = token_vector->popToken();
+                        
+                        if( !separator_token )
+                        {
+                            error->set("Wrong separator in filter command");
+                            delete filter;
+                            return NULL;
+                        }
+                        
+                        if( separator_token->content.length() != 1 )
+                        {
+                            error->set( au::str( "%s is a wrong separator in filter command ( only 1 char separators supported )" , separator_token->content.c_str() ) );
+                            delete filter;
+                            return NULL;
+                        }
+                        
+                        filter->separator = separator_token->content[0];
+                        continue;
+                    }
+                    
+                    
+                    au::token::Token* token = token_vector->popToken();
+                    
+                    if ( !token->isNormal() )
+                    {
+                        error->set( au::str("Incorrect field definition %s" , token->content.c_str() ) );
+                        delete filter;
+                        return NULL;
+                    }
+                    
+                    std::string field_definition = token->content;
                     
                     if( ( field_definition == "number" ) || ( field_definition == "num" ) || ( field_definition == "n" ) )
                         filter->fields.push_back( number );
-                    else
+                    else if ( ( field_definition == "string" ) || ( field_definition == "s" ) )
                         filter->fields.push_back( string );
+                    else
+                        if ( !token->isNormal() )
+                        {
+                            error->set( au::str("Incorrect field definition %s" , token->content.c_str() ) );
+                            delete filter;
+                            return NULL;
+                        }
+
                 }
                 
                 return filter;
@@ -505,13 +531,10 @@ namespace samson{
         };
 
         
-        class SamsonTokenVector : public au::token::TokenVector
+        class SamsonTokenizer : public au::token::Tokenizer
         {
-            
         public:
-            
-            SamsonTokenVector();
-            
+            SamsonTokenizer();
         };
         
         
@@ -541,43 +564,42 @@ namespace samson{
                 return output.str();
             }
             
-            Filter* getFilter( std::string command , samson::KVWriter *writer , TXTWriter *txt_writer , au::ErrorManager* error )
+            Filter* getFilter( au::token::TokenVector *token_vector 
+                              , samson::KVWriter *writer 
+                              , TXTWriter *txt_writer 
+                              , au::ErrorManager* error 
+                              )
             {
+
+                // Check if there are tokens to be read
+                if( token_vector->eof() )
+                {
+                    error->set("Filter name not specified");
+                    return NULL;
+                }
                 
-                au::CommandLine cmdLine;
-                cmdLine.set_flag_boolean("only_key");
-                cmdLine.parse( command );
+                // Get the next token
+                au::token::Token* token = token_vector->popToken(); 
                 
-                // Get the main command
-                std::string main_command = cmdLine.get_argument(0);
-                
-                if ( au::string_begins(main_command, "select") )
+                if ( token->content == "select" )
                 {
                     
-                    // Rest of the command after select
-                    size_t pos = command.find("select");
-                    std::string rest_command = command.substr( pos + 6 );
-
-                    // Get the token vector with all tokens
-                    SamsonTokenVector token_vector;
-                    token_vector.parse( rest_command );
-                    
-                    Source* key_source = getSource(&token_vector, error);
+                    Source* key_source = getSource(token_vector, error);
                     if( error->isActivated() )
                         return NULL; 
 
                     // Expect a ","
-                    if( !token_vector.popNextTokenIfItIs(",") )
+                    if( !token_vector->popNextTokenIfItIs(",") )
                     {
                         error->set( au::str("Expected ',' to separate key and value in a select statment. Found '%s'" 
-                                            , token_vector.getNextTokenContent().c_str() ));
+                                            , token_vector->getNextTokenContent().c_str() ));
                         return NULL;
                     }
                     
                     Source* value_source = NULL;
-                    if( !token_vector.eof() )
+                    if( !token_vector->eof() )
                     {
-                        value_source = getSource(&token_vector, error);
+                        value_source = getSource(token_vector, error);
                         if( error->isActivated() )
                             return NULL;
                     }
@@ -587,29 +609,40 @@ namespace samson{
                     return new FilterSelect( key_source , value_source );                    
 
                 }
-                else if ( main_command == "parse_words" )
+                else if ( token->content == "parse_words" )
                 {
                     return new FilterParserWords();
                 }
-                else if ( main_command == "parse_chars" )
+                else if ( token->content == "parse_chars" )
                 {
                     return new FilterParserChars();
                 }
-                else if ( main_command == "parse" )
+                else if ( token->content == "parse" )
                 {
                     // Parse kind of filter
-                    return FilterParser::getFilter(  command , error );
+                    return FilterParser::getFilter( token_vector , error );
                 }
-                else if( main_command == "emit" )
+                else if ( token->content == "emit" )
                 {
                     
                     if( writer )
                     {
-                    
-                        if ( cmdLine.get_num_arguments() > 1 )
-                            return new FilterEmit( atoi( cmdLine.get_argument(1).c_str() ) , writer );
-                        else
+                        
+                        if( token_vector->eof() )
                             return new FilterEmit( 0 , writer ); // Default channel "0"
+
+                        
+                        au::token::Token* number = token_vector->popToken();
+                        if( !number->isNumber() )
+                        {
+                            error->set( au::str("Channel '%s' not valid in emit command. It should be a number"
+                                                , number->content.c_str() ));
+                            return NULL;
+                        }
+                        
+                        int channel = atoi( number->content.c_str() );
+                        return new FilterEmit( channel , writer );
+                        
                     }
                     else if ( txt_writer )
                     {
@@ -617,7 +650,7 @@ namespace samson{
                     }
                     
                 }
-                else if( main_command == "emit_key" )
+                else if ( token->content == "emit_key" )
                 {
                     
                     if ( !txt_writer )
@@ -629,7 +662,7 @@ namespace samson{
                     return new FilterEmitKeyTxt( txt_writer );                        
                     
                 }
-                else if( main_command == "emit_value" )
+                else if ( token->content == "emit_value" )
                 {
                     if ( !txt_writer )
                     {
@@ -639,19 +672,10 @@ namespace samson{
                     
                     return new FilterEmitValueTxt( txt_writer );                        
                 }
-                
-                else if ( main_command == "filter" )
+                else if ( token->content == "filter" )
                 {
-                    // Rest of the command after select
-                    size_t pos = command.find("filter");
-                    std::string rest_command = command.substr( pos + 6 );
-
-                    SamsonTokenVector token_vector;
-                    token_vector.parse( rest_command );
                     
-                    printf("DEBUG: Token vector %s\n" , token_vector.str().c_str() );
-                    
-                    Source* eval_source = getSource(&token_vector, error );
+                    Source* eval_source = getSource(token_vector, error );
                     if( error->isActivated() )
                         return NULL;
                     if( !eval_source )
@@ -670,49 +694,78 @@ namespace samson{
             
             // filter key = 67 | select key:1,value | emit 0 / filter key = 56 | select key:1,value | emit 1
 
-            void addFilter( std::string command  , samson::KVWriter *writer , TXTWriter *txt_writer ,  au::ErrorManager* error )
+            Filter* getFilterChain( au::token::TokenVector *token_vector  
+                           , samson::KVWriter *writer 
+                           , TXTWriter *txt_writer 
+                           ,  au::ErrorManager* error )
             {
-                //printf("adding filter '%s'\n" , command.c_str() );
                 
                 // Line of filters for this command...
                 au::vector<Filter> tmp_filters;
-                
-                std::vector<std::string> components = au::split(command, '|' );
-                for( size_t i = 0 ; i < components.size() ; i++ )
-                {
-                    Filter * filter = getFilter( components[i] , writer , txt_writer ,  error );
 
+                while ( !token_vector->eof() ) 
+                {
+                    // Get the "sub" token vector for each line
+                    au::token::TokenVector sub_token_vector = token_vector->getTokensUntil( "|" );
                     
-                    if( !filter )
+                    // Get a filter from this token_vector
+                    Filter * filter = getFilter( &sub_token_vector , writer , txt_writer , error );
+                    
+                    // If there is an error, just return
+                    if( error->isActivated() )
                     {
-					   if( !error->isActivated() )
-						  error->set( au::str("Error building  component from command '%s'", command.c_str() ) );
-					   tmp_filters.clearVector();
-                       return; // Error in the filter creation...
+                        tmp_filters.clearVector();
+                        return NULL;
                     }
                     else
-                        tmp_filters.push_back(filter);
-                    
-                }
+                    {
+                        // Add the new filter
+                        tmp_filters.push_back( filter );
+                    }
+                }                
+                
                 
                 if( tmp_filters.size() == 0 )
-                    return;
-                
+                    return  NULL;
+            
                 // Link the filters
                 for ( size_t i = 0 ; i < (tmp_filters.size()-1) ; i++ )
                     tmp_filters[i]->next = tmp_filters[i+1];
-
+                
                 // Add the filter line
-                filters.push_back( tmp_filters[0] );                
+                return tmp_filters[0];
             }
             
-            
-            void addFilters( std::string command  , samson::KVWriter *writer , TXTWriter *txt_writer , au::ErrorManager* error )
+            // General command to parse
+            void addFilters( std::string command , samson::KVWriter *writer , TXTWriter *txt_writer , au::ErrorManager* error )
             { 
-                std::vector<std::string> commands = au::split(command, ';' );
-                for( size_t i = 0 ; i < commands.size() ; i++ )
-                    addFilter( commands[i] , writer , txt_writer , error );
+                // Tokenice the entire command 
+                // --------------------------------------------------------------------
+                SamsonTokenizer tokenizer;
+                au::token::TokenVector token_vector = tokenizer.parse(command);
+                
+                
+                while ( !token_vector.eof() ) 
+                {
+                    // Get the "sub" token vector for each line
+                    au::token::TokenVector sub_token_vector = token_vector.getTokensUntil( ";" );
 
+                    // Get a filter from this token_vector
+                    Filter * filter = getFilter( &sub_token_vector , writer , txt_writer , error );
+
+                    // If there is an error, just return
+                    if( error->isActivated() )
+                    {
+                        filters.clearVector();
+                        return;
+                    }
+                    else
+                    {
+                        // Add the new filter
+                        filters.push_back( filter );
+                    }
+                }
+                
             }
             
         };

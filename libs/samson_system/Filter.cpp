@@ -8,15 +8,20 @@ namespace samson{
 
         
         
-        SamsonTokenVector::SamsonTokenVector()
+        SamsonTokenizer::SamsonTokenizer()
         {
-            addSingleCharTokens("()[]{}<> ;&|?:,+-*/'");
+            addSingleCharTokens("()[]{}<> ;&|?:,+-*/'|");
             addToken(":[");
             addToken("<=");
             addToken(">=");
             addToken("==");
             addToken("!=");
 
+            addToken(" -only_key ");
+            addToken("select");
+            addToken("emit_key");
+            addToken("emit_value");
+            
         }
 
 

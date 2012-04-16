@@ -77,18 +77,11 @@ namespace au
         class TokenVector : public std::vector<Token>
         {
             size_t position;                  // Position inside the vector ( when retriving for using... )
-            std::vector<std::string> tokens;  // Vector with the considered tokens
+            
             
         public:
             
-            // Add spetial tokens
-            void addSingleCharTokens( std::string tokens ); 
-
-            // General function to add spetial tokens
-            void addToken( std::string token ); 
-            
-            // Main function to parse the provided command
-            void parse( std::string command );
+            TokenVector();
             
             // Functions to deserialize the provided command
             Token* getNextToken();
@@ -98,6 +91,7 @@ namespace au
             std::string getNextTokenContent();
             
             bool popNextTokenIfItIs( std::string content );
+            bool popNextTokensIfTheyAre( std::string content , std::string content2 );
             bool checkNextTokenIs( std::string content );
             bool checkNextNextTokenIs( std::string content );
 
@@ -109,7 +103,46 @@ namespace au
             
             // Auxiliar function to set the error.
             void set_error( au::ErrorManager *error , std::string error_message );
-           
+          
+            
+            // Extract a TokenVector until a particular token ( removing this )
+            TokenVector getTokensUntil( std::string limiter )
+            {
+                TokenVector result_tokens;
+                
+                while ( true ) 
+                {
+                    Token * token = popToken();
+                    
+                    if( !token )
+                        return result_tokens;
+                    
+                    if( token->content == limiter )
+                        return result_tokens;
+                    
+                    result_tokens.push_back( Token( token->content , token->type , token->position ) );
+                }
+            }
+            
+        };
+ 
+        
+        class Tokenizer
+        {
+            
+            std::vector<std::string> tokens;  // Vector with the considered tokens
+            
+        public:
+            
+            // Add spetial tokens
+            void addSingleCharTokens( std::string tokens ); 
+            
+            // General function to add spetial tokens
+            void addToken( std::string token ); 
+
+            // Main function to parse the provided command
+            TokenVector parse( std::string command );
+            
         };
         
     }

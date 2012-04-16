@@ -136,135 +136,18 @@ namespace au {
         
 #pragma mark TokenVector
         
+        TokenVector::TokenVector()
+        {
+            // Init position
+            position = 0;
+        }
+        
         bool compare_string_by_length(const std::string& s1, const std::string& s2)
         {
             return  s1.length() > s2.length();
         }
         
-        // Add spetial tokens
-        void TokenVector::addSingleCharTokens( std::string char_tokens )
-        {
-            for ( size_t i = 0 ; i < char_tokens.length() ; i++ )
-            {
-                std::string token = char_tokens.substr( i , 1 );
-                tokens.push_back( token );
-            }
-        }
-        
-        // General function to add spetial tokens
-        void TokenVector::addToken( std::string token )
-        {
-            tokens.push_back( token );
-        }
-        
-        
-        void TokenVector::parse( std::string txt )
-        {
-            // Init position
-            position = 0;
-            
-            // Sort tokens so longer tokens come first
-            std::sort( tokens.begin() , tokens.end() , compare_string_by_length );
-            
-            size_t pos = 0; // Begin of the considered "token"
-            size_t i = 0;
-            
-            size_t len = txt.length();
-            
-            while ( i < len )
-            {
 
-                // ------------------------------------------------------
-                // Spetial literals "XXX"
-                // ------------------------------------------------------
-                if( txt[i] == '"' )
-                {
-                    // Previous token finish ( if any )
-                    if( pos < i )
-                        push_back( Token(  txt.substr( pos , i - pos ) , Token::normal ,  pos ) );
-
-                    size_t pos_literal_begin = i+1;
-                    size_t pos_literal_end = i+1;
-                    while( (pos_literal_end < txt.length()) && (txt[pos_literal_end] != '"' ) )
-                        pos_literal_end++;
-                    
-                    // Add the literal
-                    push_back( Token( 
-                                     txt.substr( pos_literal_begin , pos_literal_end - pos_literal_begin ) 
-                                     , Token::literal
-                                     , pos_literal_begin ) );
-                    
-                    i = pos_literal_end+1;
-                    pos = pos_literal_end+1;
-                    continue;
-                }
-                
-                // ------------------------------------------------------
-                // Spetial literals 'XXX'
-                // ------------------------------------------------------
-                if( txt[i] == '\'' )
-                {
-                    // Previous token finish ( if any )
-                    if( pos < i )
-                        push_back( Token(  txt.substr( pos , i - pos )  , Token::normal , pos ) );
-                    
-                    size_t pos_literal_begin = i+1;
-                    size_t pos_literal_end = i+1;
-                    while( (pos_literal_end < txt.length()) && (txt[pos_literal_end] != '\'' ) )
-                        pos_literal_end++;
-                    
-                    // Add the literal
-                    push_back( Token( 
-                                     txt.substr( pos_literal_begin , pos_literal_end - pos_literal_begin ) 
-                                     , Token::literal
-                                     , pos_literal_begin ) );
-                    
-                    i = pos_literal_end+1;
-                    pos = pos_literal_end+1;
-                    continue;
-                }
-                
-                // ------------------------------------------------------
-                // Find any of the provided "tokens"
-                // ------------------------------------------------------
-                
-                std::string separator;
-                bool separator_found = false;
-                for ( size_t t = 0 ; t < tokens.size() ; t++ )
-                {
-                    std::string token = tokens[t];
-                    if ( i + token.length() <= txt.length() )
-                        if( txt.substr( i , token.length() ) == token )
-                        {
-                            separator_found = true;
-                            separator = token;
-                            break;
-                        }
-                }
-                // ------------------------------------------------------
-                
-                
-                if( separator_found )
-                {
-                    // Push previous token if any
-                    if( pos < i )
-                        push_back( Token(  txt.substr( pos , i - pos ) , Token::normal , pos ) );
-
-                    // Push separator
-                    if ( separator != " " )
-                        push_back( Token( separator , Token::separator , i ) );
-                    i += separator.length();
-                    pos = i;
-                }
-                else 
-                    i++;
-            }
-            
-            // Last element
-            if ( len > pos )
-                push_back( Token( txt.substr(pos) , Token::normal , pos ) );
-            
-        }
         
         std::string TokenVector::getNextTokenContent()
         {
@@ -291,6 +174,24 @@ namespace au {
             Token*t = &(*this)[position];
             position++;
             return t;
+        }
+        
+        bool TokenVector::popNextTokensIfTheyAre( std::string content , std::string content2 )
+        {
+            if ( position >= ( size() - 1 ) )
+                return NULL;
+
+            if( (*this)[position].content != content )
+                return false;
+
+            if( (*this)[position+1].content != content2 )
+                return false;
+
+            // Extract both tokens
+            getNextToken();
+            getNextToken();
+            
+            return true;
         }
         
         bool TokenVector::popNextTokenIfItIs( std::string content )
@@ -348,6 +249,135 @@ namespace au {
         bool TokenVector::eof()
         {
             return ( position >= size() );
+        }
+        
+        
+        // Add spetial tokens
+        void Tokenizer::addSingleCharTokens( std::string char_tokens )
+        {
+            for ( size_t i = 0 ; i < char_tokens.length() ; i++ )
+            {
+                std::string token = char_tokens.substr( i , 1 );
+                tokens.push_back( token );
+            }
+        }
+        
+        // General function to add spetial tokens
+        void Tokenizer::addToken( std::string token )
+        {
+            tokens.push_back( token );
+        }
+        
+        // ------------------------------------------------
+        // Tokenizer
+        // ------------------------------------------------
+        
+        TokenVector Tokenizer::parse( std::string txt )
+        {
+            TokenVector token_vector;
+            
+            // Sort tokens so longer tokens come first
+            std::sort( tokens.begin() , tokens.end() , compare_string_by_length );
+            
+            size_t pos = 0; // Begin of the considered "token"
+            size_t i = 0;
+            
+            size_t len = txt.length();
+            
+            while ( i < len )
+            {
+                
+                // ------------------------------------------------------
+                // Spetial literals "XXX"
+                // ------------------------------------------------------
+                if( txt[i] == '"' )
+                {
+                    // Previous token finish ( if any )
+                    if( pos < i )
+                        token_vector.push_back( Token(  txt.substr( pos , i - pos ) , Token::normal ,  pos ) );
+                    
+                    size_t pos_literal_begin = i+1;
+                    size_t pos_literal_end = i+1;
+                    while( (pos_literal_end < txt.length()) && (txt[pos_literal_end] != '"' ) )
+                        pos_literal_end++;
+                    
+                    // Add the literal
+                    token_vector.push_back( Token( 
+                                     txt.substr( pos_literal_begin , pos_literal_end - pos_literal_begin ) 
+                                     , Token::literal
+                                     , pos_literal_begin ) );
+                    
+                    i = pos_literal_end+1;
+                    pos = pos_literal_end+1;
+                    continue;
+                }
+                
+                // ------------------------------------------------------
+                // Spetial literals 'XXX'
+                // ------------------------------------------------------
+                if( txt[i] == '\'' )
+                {
+                    // Previous token finish ( if any )
+                    if( pos < i )
+                        token_vector.push_back( Token(  txt.substr( pos , i - pos )  , Token::normal , pos ) );
+                    
+                    size_t pos_literal_begin = i+1;
+                    size_t pos_literal_end = i+1;
+                    while( (pos_literal_end < txt.length()) && (txt[pos_literal_end] != '\'' ) )
+                        pos_literal_end++;
+                    
+                    // Add the literal
+                    token_vector.push_back( Token( 
+                                     txt.substr( pos_literal_begin , pos_literal_end - pos_literal_begin ) 
+                                     , Token::literal
+                                     , pos_literal_begin ) );
+                    
+                    i = pos_literal_end+1;
+                    pos = pos_literal_end+1;
+                    continue;
+                }
+                
+                // ------------------------------------------------------
+                // Find any of the provided "tokens"
+                // ------------------------------------------------------
+                
+                std::string separator;
+                bool separator_found = false;
+                for ( size_t t = 0 ; t < tokens.size() ; t++ )
+                {
+                    std::string token = tokens[t];
+                    if ( i + token.length() <= txt.length() )
+                        if( txt.substr( i , token.length() ) == token )
+                        {
+                            separator_found = true;
+                            separator = token;
+                            break;
+                        }
+                }
+                // ------------------------------------------------------
+                
+                
+                if( separator_found )
+                {
+                    // Push previous token if any
+                    if( pos < i )
+                        token_vector.push_back( Token(  txt.substr( pos , i - pos ) , Token::normal , pos ) );
+                    
+                    // Push separator
+                    if ( separator != " " )
+                        token_vector.push_back( Token( separator , Token::separator , i ) );
+                    i += separator.length();
+                    pos = i;
+                }
+                else 
+                    i++;
+            }
+            
+            // Last element
+            if ( len > pos )
+                token_vector.push_back( Token( txt.substr(pos) , Token::normal , pos ) );
+            
+            return token_vector;
         }
         
         

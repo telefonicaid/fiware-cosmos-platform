@@ -7,7 +7,7 @@ namespace au
     
     LogFormatter::LogFormatter( std::string _definition )
     {
-        au::token::TokenVector token_vector;
+        au::token::Tokenizer tokenizer;
      
         // Keep a copy of the definition string
         definition = _definition;
@@ -15,12 +15,10 @@ namespace au
         // Att all reserved words
         size_t i = 0;
         while( log_reseved_words[i] != NULL )
-            token_vector.addToken( log_reseved_words[i++] );
+            tokenizer.addToken( log_reseved_words[i++] );
         
-        
-        
-        token_vector.parse( definition );
-        
+        // Parse to get the tokens
+        au::token::TokenVector token_vector = tokenizer.parse( definition );
         
         au::token::Token* token = token_vector.getNextToken();
         while( token )

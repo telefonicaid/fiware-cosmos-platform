@@ -681,6 +681,7 @@ typedef struct LogLineInfo
         cmd.set_flag_string("filter", "");
         cmd.set_flag_string("sort", "");
         cmd.set_flag_uint64("limit" , 0 );
+        cmd.set_flag_string("c", "");  // Command in run operations
         
         cmd.parse( command );
 
@@ -1368,6 +1369,12 @@ typedef struct LogLineInfo
                     }
                 }
             }
+            
+            // Command environment directly in command line with "-c" option
+            std::string cmd_command = cmd.get_flag_string("c");
+            if( cmd_command != "" )
+                operation_environment.set("command" , cmd_command );
+            
             
             switch (op->getType()) 
             {

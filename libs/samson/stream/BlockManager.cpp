@@ -84,6 +84,8 @@ namespace samson {
         
         BlockManager::~BlockManager()
         {
+            // Remove the blocks contained in memory
+            blocks.clearList();
         }
         
         void BlockManager::init()
@@ -97,7 +99,10 @@ namespace samson {
         void BlockManager::destroy()
         {
             if( !blockManager )
-                LM_X(1, ("Error destroying a non-initialized BlockManager"));
+            {
+                LM_W(("Error destroying a non-initialized BlockManager"));
+                return;
+            }
 
             delete blockManager;
             blockManager = NULL;

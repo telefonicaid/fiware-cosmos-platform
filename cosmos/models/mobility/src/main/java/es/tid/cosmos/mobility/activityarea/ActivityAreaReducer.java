@@ -55,8 +55,10 @@ public class ActivityAreaReducer extends Reducer<
         ans.numStates = this.allStates.size();
         ans.massCenterX = massCenterAccX / numPos;
         ans.massCenterY = massCenterAccY / numPos;
-        double radiusX = radiusAccX / numPos - ans.massCenterX * ans.massCenterX;
-        double radiusY = radiusAccY / numPos - ans.massCenterY * ans.massCenterY;
+        double radiusX =
+            radiusAccX / numPos - ans.massCenterX * ans.massCenterX;
+        double radiusY =
+            radiusAccY / numPos - ans.massCenterY * ans.massCenterY;
         ans.radius = Math.sqrt((radiusX + radiusY)/ numPos);
         return ans;
     }
@@ -68,8 +70,10 @@ public class ActivityAreaReducer extends Reducer<
             for(int further = pos + 1; further < cellsWithDifBts.size();
                     further++) {
                 Cell furtherCell = cellsWithDifBts.get(further);
-                double contribX = currentCell.getPosx() - furtherCell.getPosx();
-                double contribY = currentCell.getPosy() - furtherCell.getPosy();
+                double contribX =
+                    currentCell.getPosx() - furtherCell.getPosx();
+                double contribY =
+                    currentCell.getPosy() - furtherCell.getPosy();
                 double currentDist = Math.sqrt((contribX * contribX) +
                                                (contribY * contribY));
                 if (currentDist > maxDist) {

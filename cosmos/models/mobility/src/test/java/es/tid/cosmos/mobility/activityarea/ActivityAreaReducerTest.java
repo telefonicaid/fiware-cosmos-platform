@@ -23,11 +23,11 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cell;
  *
  * @author losa
  */
-@Ignore
 public class ActivityAreaReducerTest {
-   private ReduceDriver<ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
-            ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>>
-            reducer;
+    private ReduceDriver<
+        ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
+        ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>>
+        reducer;
     private ProtobufWritable<ActivityAreaKey> userWithSingleEntry;
     private ProtobufWritable<ActivityAreaKey> userWithTwoEntries;
     private ProtobufWritable<Cell> firstCell;
@@ -35,9 +35,10 @@ public class ActivityAreaReducerTest {
 
     @Before
     public void setUp() {
-       this.reducer = new ReduceDriver<ProtobufWritable<ActivityAreaKey>,
-                ProtobufWritable<Cell>, ProtobufWritable<ActivityAreaKey>,
-                ProtobufWritable<ActivityArea>>(new ActivityAreaReducer());
+        this.reducer = new ReduceDriver<
+            ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
+            ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>>(
+                    new ActivityAreaReducer());
 
         long firstUserId = 5512683500L;
         long secondUserId = 5512684400L;
@@ -60,46 +61,49 @@ public class ActivityAreaReducerTest {
         this.userWithSingleEntry = ActivityAreaKeyUtil.createAndWrap(
                 firstUserId, month, isWorkDay);
         this.firstCell = CellUtil.createAndWrap(firstCellId, firstPlaceId,
-                                                firstGeoLoc1, firstGeoLoc2,
-                                                firstPosX, firstPosY);
+                firstGeoLoc1, firstGeoLoc2,
+                firstPosX, firstPosY);
         this.userWithTwoEntries = ActivityAreaKeyUtil.createAndWrap(
                 secondUserId, month, isWorkDay);
         this.secondCell = CellUtil.createAndWrap(secondCellId, secondPlaceId,
-                                                 secondGeoLoc1, secondGeoLoc2,
-                                                 secondPosX, secondPosY);
+                secondGeoLoc1, secondGeoLoc2,
+                secondPosX, secondPosY);
     }
 
     @Test
-    public void emitsAllVariables() throws IOException {
+    public void testEmitsAllVariables() throws IOException {
         int numPos = 1;
         int difBtss = 1;
         int difMuns = 1;
         int difStates = 1;
-        double masscenterUtmX = (double)500000;
-        double masscenterUtmY = (double)2000000;
+        double masscenterUtmX = 500000D;
+        double masscenterUtmY = 2000000D;
         double radius = 0.0;
         double diamAreaInf = 0.0;
 
         ProtobufWritable<ActivityArea> outputWithAllVariables = 
-                ActivityAreaUtil.createAndWrap(numPos, difBtss, difMuns,
-                                               difStates, masscenterUtmX,
-                                               masscenterUtmY, radius,
-                                               diamAreaInf);
+            ActivityAreaUtil.createAndWrap(numPos, difBtss, difMuns,
+                    difStates, masscenterUtmX,
+                    masscenterUtmY, radius,
+                    diamAreaInf);
         List<Pair<ProtobufWritable<ActivityAreaKey>,
-                  ProtobufWritable<ActivityArea>>> results = this.reducer
+             ProtobufWritable<ActivityArea>>> results =
+                 this.reducer
                         .withInputKey(this.userWithSingleEntry)
                         .withInputValue(this.firstCell)
                         .run();
 
         assertEquals(1, results.size());
-        ProtobufWritable<ActivityAreaKey> resultKey = results.get(0).getFirst();
+        ProtobufWritable<ActivityAreaKey> resultKey =
+            results.get(0).getFirst();
         assertEquals(this.userWithSingleEntry, resultKey);
-        ProtobufWritable<ActivityArea> resultValue = results.get(0).getSecond();
+        ProtobufWritable<ActivityArea> resultValue =
+            results.get(0).getSecond();
         assertEquals(outputWithAllVariables, resultValue);
     }
 
     @Test
-    public void countsMakeSense() throws IOException {
+    public void testCountsMakeSense() throws IOException {
         int numPos = 2;
         int difBtss = 2;
         int difMuns = 2;
@@ -110,20 +114,23 @@ public class ActivityAreaReducerTest {
         double diamAreaInf = 0.0;
 
         ActivityArea outputWithCorrectCounts = 
-                ActivityAreaUtil.create(numPos, difBtss, difMuns, difStates,
-                                        masscenterUtmX, masscenterUtmY, radius,
-                                        diamAreaInf);
+            ActivityAreaUtil.create(numPos, difBtss, difMuns, difStates,
+                    masscenterUtmX, masscenterUtmY, radius,
+                    diamAreaInf);
         List<Pair<ProtobufWritable<ActivityAreaKey>,
-                  ProtobufWritable<ActivityArea>>> results = this.reducer
-                .withInputKey(this.userWithTwoEntries)
-                .withInputValue(this.firstCell)
-                .withInputValue(this.secondCell)
-                .run();
+            ProtobufWritable<ActivityArea>>> results =
+                this.reducer
+                        .withInputKey(this.userWithTwoEntries)
+                        .withInputValue(this.firstCell)
+                        .withInputValue(this.secondCell)
+                        .run();
 
         assertEquals(1, results.size());
-        ProtobufWritable<ActivityAreaKey> resultKey = results.get(0).getFirst();
+        ProtobufWritable<ActivityAreaKey> resultKey =
+            results.get(0).getFirst();
         assertEquals(this.userWithTwoEntries, resultKey);
-        ProtobufWritable<ActivityArea> resultValue = results.get(0).getSecond();
+        ProtobufWritable<ActivityArea> resultValue =
+            results.get(0).getSecond();
         resultValue.setConverter(ActivityArea.class);
         assertEquals(outputWithCorrectCounts, resultValue.get());
     }

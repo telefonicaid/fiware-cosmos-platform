@@ -4,7 +4,6 @@ package es.tid.cosmos.mobility.activityarea;
  *
  * @author losa
  */
-
 class Accumulations {
     int difPos;
     int numBtss;

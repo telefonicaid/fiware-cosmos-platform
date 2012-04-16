@@ -1,13 +1,14 @@
 package es.tid.cosmos.mobility.pois;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.Map;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
 import es.tid.cosmos.mobility.util.CellCatalogue;
 
@@ -20,12 +21,12 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
     private static final int MIN_TOTAL_CALLS = 200;
     private static final int MAX_TOTAL_CALLS = 5000;
     
-    private Set<Long> cellCatalogue = null;
+    private CellCatalogue cellCatalogue;
 
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        this.cellCatalogue = CellCatalogue.get(context.getConfiguration());
+        this.cellCatalogue = new CellCatalogue(context.getConfiguration());
     }
     
     @Override

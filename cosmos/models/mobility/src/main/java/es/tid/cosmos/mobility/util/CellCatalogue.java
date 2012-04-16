@@ -3,46 +3,72 @@ package es.tid.cosmos.mobility.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.parsing.CellParser;
+
 /**
  *
  * @author dmicol
  */
-public final class CellCatalogue {
-    private static Set<Long> cellCatalogue = null;
+public class CellCatalogue {
+    private Map<Long, Cell> cellCatalogue;
     
-    public static Set<Long> get(Configuration conf) {
-        if (cellCatalogue == null) {
-            load(conf);
-        }
-        return cellCatalogue;
+    public CellCatalogue(Configuration conf) {
+        this.load(conf);
     }
     
-    private static void load(Configuration conf) {
+    public boolean contains(long id) {
+        return this.cellCatalogue.containsKey(id);
+    }
+    
+    public Cell get(long id) {
+        return this.cellCatalogue.get(id);
+    }
+    
+    private void load(Configuration conf) {
+        FSDataInputStream in = null;
+        BufferedReader br = null;
         try {
             Path input = new Path(conf.get("CELL_CATALOGUE_PATH"));
             
             FileSystem fs = FileSystem.get(conf);
-            FSDataInputStream in = fs.open(input);
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            cellCatalogue = new HashSet<Long>();
+            in = fs.open(input);
+            br = new BufferedReader(new InputStreamReader(in));
+            this.cellCatalogue = new HashMap<Long, Cell>();
             String line;
             while ((line = br.readLine()) != null) {
-                String[] columns = line.split("\\|");
-                cellCatalogue.add(Long.decode(columns[0]));
+                Cell cell = new CellParser(line).parse();
+                // TODO: double-check if this should be cell or place ID
+                this.cellCatalogue.put(cell.getPlaceId(), cell);
             }
             in.close();
         } catch (IOException ex) {
+            this.cellCatalogue = null;
             ex.printStackTrace(System.err);
         } catch (NullPointerException ex) {
+            this.cellCatalogue = null;
             ex.printStackTrace(System.err);
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                }
+            }
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ex) {
+                }
+            }
         }
     }
 }

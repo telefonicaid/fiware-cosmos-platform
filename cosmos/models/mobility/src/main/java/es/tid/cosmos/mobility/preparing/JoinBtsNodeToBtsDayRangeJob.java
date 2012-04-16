@@ -29,8 +29,8 @@ public class JoinBtsNodeToBtsDayRangeJob extends Job {
         this.setInputFormatClass(SequenceFileInputFormat.class);
         this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
-        this.setOutputKeyClass(ProtobufWritable.class);
-        this.setOutputValueClass(NullWritable.class);
+        this.setOutputKeyClass(LongWritable.class);
+        this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
         this.setReducerClass(JoinBtsNodeToBtsDayRangeReducer.class);
     }

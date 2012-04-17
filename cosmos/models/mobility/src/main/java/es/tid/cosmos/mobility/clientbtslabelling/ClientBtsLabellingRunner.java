@@ -86,5 +86,19 @@ public final class ClientBtsLabellingRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+
+        if (isDebug) {
+            Path vectorClientbtsClusterTextPath = new Path(tmpDirPath,
+                    "vector_clientbts_cluster_text");
+            {
+                ExportClusterClientMinDistanceToTextJob job =
+                        new ExportClusterClientMinDistanceToTextJob(conf);
+                job.configure(vectorClientbtsClusterPath,
+                              vectorClientbtsClusterTextPath);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
+            }
+        }
     }
 }

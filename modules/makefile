@@ -12,8 +12,8 @@ EXTRA_MODULES= webp \
 		mobility \
 		simple_mobility \
 		passive_location \
-		OTTstream \
-		pilotoOTT
+		pilotoOTT \
+		OTTstream 
 
 all: core_modules extra_modules
 all_debug: core_modules_debug extra_modules_debug

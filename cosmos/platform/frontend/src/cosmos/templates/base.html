@@ -3,9 +3,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>{{ title }}</title>
-            <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}base.css" />
-            <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}visualize.css" />
-            <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}visualize-dark.css" />
+	<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}base.css" />
+	<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}visualize.css" />
+	<!--link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}visualize-dark.css" /-->
         {% block extrahead %}{% endblock %}
     </head>
 
@@ -13,17 +13,19 @@
         {% if not is_popup %}
         <div id="header">
             <div id="branding">
-                <img id="logo" src="{{ STATIC_URL }}logo.jpg">
+		<table style="border:0; border-collapse: collapse; padding:0; width:100%;">
+                <tr>
+		<td style="text-align:left; border:none;"><img id="logo" src="{{ STATIC_URL }}logo.jpg"></td>
+                <td style="text-align:center; border:none;"><img id="logo" src="{{ STATIC_URL }}cosmos_icon_white.png" style="width:75px" ></td>
+		</tr>
+		</table>
                 {% block branding %}{% endblock %}
-            </div>
+	    </div>
     
             {% if user.is_active %}
                 <div id="user-tools">
-                Welcome,
-                <strong>{% filter force_escape %}{% firstof user.first_name user.username %}{% endfilter %}</strong>.
-                {% block userlinks %}
-                    <a href="{% url django.contrib.auth.views.logout %}">Log out</a>
-                {% endblock %}
+                Welcome, <strong>{% filter force_escape %}{% firstof user.first_name user.username %}{% endfilter %}</strong>.
+                {% block userlinks %} <a href="{% url django.contrib.auth.views.logout %}">Log out</a> {% endblock %}
                 </div>
             {% endif %}
             {% block nav-global %}
@@ -38,6 +40,10 @@
             {% endfor %}</ul>
         {% endif %}
     
+	<div id="right_banner">
+	<img src="{{ STATIC_URL }}seeding.jpg" style="width:20em;">
+	</div>
+
         <div id="content">
             {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
             {% block content %}

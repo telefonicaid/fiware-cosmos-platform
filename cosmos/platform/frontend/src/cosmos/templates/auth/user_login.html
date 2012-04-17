@@ -3,18 +3,22 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
 	<title>User authentication</title>
+	<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}base.css" />
     </head>
 
-    <body>
+    <body class="startupscreen" alink="#ee0000" link="#0000ee" vlink="#551a8b">
+
+	<div>
 	<h1>User authentication</h1>
 
 	{% if form.errors %}
-	<p>Your username and password didn't match. Please try again.</p>
+	<p class="error-msg">Your username and password didn't match. Please try again.</p>
 	{% endif %}
 
 	{% load url from future %}
 	<form method="post" action="{% url 'django.contrib.auth.views.login' %}">
 	    {% csrf_token %}
+	    
 	    <table>
 		<tr>
 		    <td>{{ form.username.label_tag }}</td>
@@ -26,9 +30,11 @@
 		</tr>
 	    </table>
 
-	    <input type="submit" value="login" />
+	    <input style="margin-bottom: 2em;" type="submit" value="login" />
 	    <input type="hidden" name="next" value="{{ next }}" />
+
 	</form>
+	</div>
     </body>
 </html>
 {# vim:set syntax=htmldjango: #}

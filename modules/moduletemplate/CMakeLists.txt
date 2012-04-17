@@ -1,4 +1,4 @@
-# 
+#
 # Samson Module development template
 #
 
@@ -6,17 +6,6 @@
 SET( MODULE_NAME moduletemplate )
 
 cmake_minimum_required(VERSION 2.6)
-
-# Installation directory
-# To overtide the default set the environment variable SAMSON_HOME
-SET (INSTALL_DIR $ENV{SAMSON_HOME})
-if (INSTALL_DIR)
-    MESSAGE("Using $ENV{SAMSON_HOME} as the installation location")
-    SET (CMAKE_INSTALL_PREFIX $ENV{SAMSON_HOME} CACHE INTERNAL "")
-else (NOT INSTALL_DIR)
-    MESSAGE("Default to $ENV{SAMSON_HOME} as the installation location. Set the environment variable SAMSON_HOME to override")
-    SET (CMAKE_INSTALL_PREFIX $ENV{SAMSON_HOME} CACHE INTERNAL "")
-endif (INSTALL_DIR)
 
 # Locate samsonModuleParser
 if (SAMSONMODULEPARSER)
@@ -34,19 +23,19 @@ else (NOT SAMSONMODULEPARSER)
     endif (HAVE_SAMSONMODULEPARSER)
 endif (SAMSONMODULEPARSER)
 
-# Modules can be built with or without the Samson source code. The SVN_BUILD check is used to determine if this module is being built along
-# with the rest of Samson
 IF (SVN_BUILD)
     ADD_CUSTOM_COMMAND(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
         COMMAND samsonModuleParser ${CMAKE_CURRENT_SOURCE_DIR}/module ${CMAKE_CURRENT_SOURCE_DIR} Module
         MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/module
+	DEPENDS ${SAMSONMODULEPARSER}
     )
 ELSE (NOT SVN_BUILD)
     ADD_CUSTOM_COMMAND(
         OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Module.cpp
         COMMAND ${SAMSONMODULEPARSER} ${PROJECT_SOURCE_DIR}/module ${PROJECT_SOURCE_DIR} Module
       	MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/module
+	DEPENDS ${SAMSONMODULEPARSER}
     )
 ENDIF (SVN_BUILD)
 
@@ -86,8 +75,7 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
-# Indicate where to finc the header files needed to build the module
-# For modules that are not built with the rest of Samson edit the "ELSE" section only
+# Include directory pointing to current dir and /usr/local/include
 IF (SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}/libs")
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
@@ -110,6 +98,7 @@ ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
+
 
 #ENABLE_TESTING()
 #ADD_SUBDIRECTORY(testing)     # Test module and ctest stuff

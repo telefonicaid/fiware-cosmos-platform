@@ -1,5 +1,5 @@
 MODULE=$(lastword $(subst /, ,$(CURDIR)))
-fndef SAMSON_HOME
+ifndef SAMSON_HOME
 SAMSON_HOME=/opt/samson
 endif
 

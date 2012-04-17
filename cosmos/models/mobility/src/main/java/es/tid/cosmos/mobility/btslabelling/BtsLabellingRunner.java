@@ -101,7 +101,7 @@ public final class BtsLabellingRunner {
 
         {
             FilterBtsVectorJob job = new FilterBtsVectorJob(conf);
-            job.configure(new Path[] { vectorBtsClusterSinfiltPath,
+            job.configure(new Path[] { vectorBtsClusterSinfiltMobDataPath,
                                        btsComareaMobDataPath },
                           vectorBtsClusterPath);
             if (!job.waitForCompletion(true)) {

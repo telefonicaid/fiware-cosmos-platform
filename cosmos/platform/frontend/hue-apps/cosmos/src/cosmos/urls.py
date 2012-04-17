@@ -18,5 +18,7 @@
 from django.conf.urls.defaults import patterns, url
 
 urlpatterns = patterns('cosmos',
-  url(r'^$', 'views.index'),
+  url(r'^$',          'views.index'),
+  url(r'^datasets/$', 'views.list_datasets'),
+  url(r'^jars/$',     'views.list_jars'),
 )

@@ -5,7 +5,10 @@ import java.util.concurrent.Callable;
 
 import org.apache.hadoop.util.RunJar;
 
-import es.tid.cosmos.platform.cluster.server.generated.*;
+import es.tid.cosmos.platform.cluster.server.generated.ClusterErrorCode;
+import es.tid.cosmos.platform.cluster.server.generated.ClusterJobResult;
+import es.tid.cosmos.platform.cluster.server.generated.ClusterJobStatus;
+import es.tid.cosmos.platform.cluster.server.generated.TransferException;
 
 /**
  *

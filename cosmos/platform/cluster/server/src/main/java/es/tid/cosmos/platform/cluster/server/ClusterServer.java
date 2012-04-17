@@ -14,7 +14,10 @@ import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
 
-import es.tid.cosmos.platform.cluster.server.generated.*;
+import es.tid.cosmos.platform.cluster.server.generated.Cluster;
+import es.tid.cosmos.platform.cluster.server.generated.ClusterErrorCode;
+import es.tid.cosmos.platform.cluster.server.generated.ClusterJobResult;
+import es.tid.cosmos.platform.cluster.server.generated.TransferException;
 
 /**
  *

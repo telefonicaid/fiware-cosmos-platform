@@ -3,7 +3,9 @@ package es.tid.cosmos.platform.cluster.server;
 import java.lang.reflect.UndeclaredThrowableException;
 
 import org.junit.After;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 

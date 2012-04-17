@@ -1,5 +1,7 @@
 MODULE=$(lastword $(subst /, ,$(CURDIR)))
-export SAMSON_HOME?=/opt/samson
+ifndef SAMSON_HOME
+SAMSON_HOME=/opt/samson
+endif
 
 all: prepare_release release
 
@@ -39,6 +41,7 @@ reset:
 	rm -f samson/modules/*/*_base.h
 	rm -Rf $(SAMSON_HOME)/include/samson/$(MODULE)
 	rm -f $(SAMSON_HOME)/modules/lib$(MODULE).so
+
 
 clean: clean_release
 clean_release:

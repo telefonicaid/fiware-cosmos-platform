@@ -1,5 +1,7 @@
 MODULE=$(lastword $(subst /, ,$(CURDIR)))
-export SAMSON_HOME ?= /opt/samson
+ifndef SAMSON_HOME
+SAMSON_HOME=/opt/samson
+endif
 
 all: prepare_release release
 

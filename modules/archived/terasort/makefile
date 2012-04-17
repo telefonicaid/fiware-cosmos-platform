@@ -1,5 +1,7 @@
 MODULE=$(lastword $(subst /, ,$(CURDIR)))
-export SAMSON_HOME?=/opt/samson
+ifndef SAMSON_HOME
+SAMSON_HOME=/opt/samson
+endif
 
 all: prepare_release release
 
@@ -22,7 +24,7 @@ prepare_release:
 xcode:
 	mkdir xcodeProj;cd xcodeProj;cmake .. -G Xcode;make;cd ..
 
-install: install_release
+install: install_release 
 install_release: prepare_release
 	make -C BUILD_RELEASE install
 install_debug: prepare_debug

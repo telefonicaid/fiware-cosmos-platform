@@ -7,17 +7,6 @@ SET( MODULE_NAME OTTstream )
 
 cmake_minimum_required(VERSION 2.6)
 
-# Installation directory
-# To overtide the default set the environment variable SAMSON_HOME
-SET (INSTALL_DIR $ENV{SAMSON_HOME})
-if (INSTALL_DIR)
-    MESSAGE("Using $ENV{SAMSON_HOME} as the installation location")
-    SET (CMAKE_INSTALL_PREFIX $ENV{SAMSON_HOME} CACHE INTERNAL "")
-else (NOT INSTALL_DIR)
-    MESSAGE("Default to $ENV{SAMSON_HOME} as the installation location. Set the environment variable SAMSON_HOME to override")
-    SET (CMAKE_INSTALL_PREFIX $ENV{SAMSON_HOME} CACHE INTERNAL "")
-endif (INSTALL_DIR)
-
 # Locate samsonModuleParser
 if (SAMSONMODULEPARSER)
     MESSAGE ("Using ${SAMSONMODULEPARSER} to parse the module file")

@@ -1,10 +1,11 @@
-package es.tid.cosmos.mobility.btslabelling;
+package es.tid.cosmos.mobility.clientbtslabelling;
 
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -18,25 +19,23 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class ClusterBtsGetMinDistanceJob extends Job {
-    private static final String JOB_NAME = "ClusterBtsGetMinDistance";
+public class VectorSpreadNodbtsJob extends Job {
+    private static final String JOB_NAME = "VectorSpreadNodbts";
 
-    public ClusterBtsGetMinDistanceJob(Configuration conf) throws IOException {
+    public VectorSpreadNodbtsJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
-        this.setMapOutputKeyClass(ProtobufWritable.class);
+        this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
-        this.setOutputKeyClass(LongWritable.class);
-        this.setOutputValueClass(ProtobufWritable.class);
+        this.setOutputKeyClass(ProtobufWritable.class);
+        this.setOutputValueClass(IntWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(ClusterBtsGetMinDistanceReducer.class);
+        this.setReducerClass(VectorSpreadNodbtsReducer.class);
     }
 
-    public void configure(Path input, Path centroids, Path output)
-            throws IOException {
-        this.conf.set("centroids", centroids.toString());
+    public void configure(Path input, Path output) throws IOException {
         FileInputFormat.setInputPaths(this, input);
         FileOutputFormat.setOutputPath(this, output);
     }

@@ -16,62 +16,74 @@ public final class ClientBtsLabellingRunner {
     private ClientBtsLabellingRunner() {
     }
     
-    public static void run(Path btsCommsPath, Path btsComareaPath,
-                           Path vectorBtsClusterPath, Path tmpDirPath,
-                           boolean isDebug, Configuration conf)
+    public static void run(Path clientsInfoPath, Path clientsRpbtsPath,
+                           Path centroidsPath, Path vectorBtsClusterPath,
+                           Path tmpDirPath, boolean isDebug, Configuration conf)
             throws Exception {
-        Path btsCountsPath = new Path(tmpDirPath, "bts_counts");
+        Path clientsbtsSpreadPath = new Path(tmpDirPath, "clientsbts_spread");
         {
-            VectorFilterBtsJob job = new VectorFilterBtsJob(conf);
-            job.configure(btsCommsPath, btsCountsPath);
+            VectorSpreadNodbtsJob job = new VectorSpreadNodbtsJob(conf);
+            job.configure(clientsInfoPath, clientsbtsSpreadPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
-        Path btsSumComsPath = new Path(tmpDirPath, "bts_sum_coms");
+        Path clientsbtsSumPath = new Path(tmpDirPath, "clientsbts_sum");
         {
-            VectorSumComsBtsJob job = new VectorSumComsBtsJob(conf);
-            job.configure(btsCountsPath, btsSumComsPath);
+            VectorSumGroupcommsJob job = new VectorSumGroupcommsJob(conf);
+            job.configure(clientsbtsSpreadPath, clientsbtsSumPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
-        Path btsDayhourPath = new Path(tmpDirPath, "bts_dayhour");
+        Path clientsbtsRpbtsPath = new Path(tmpDirPath, "clientsbts_repbts");
+        {
+            VectorFiltClientbtsJob job = new VectorFiltClientbtsJob(conf);
+            job.configure(new Path[] { clientsbtsSumPath, clientsRpbtsPath },
+                          clientsbtsRpbtsPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path clientsbtsGroupPath = new Path(tmpDirPath, "clientsbts_group");
         {
             VectorCreateNodeDayhourJob job = new VectorCreateNodeDayhourJob(
                     conf);
-            job.configure(btsSumComsPath, btsDayhourPath);
+            job.configure(clientsbtsRpbtsPath, clientsbtsGroupPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
-        Path vectorBtsPath = new Path(tmpDirPath, "vector_bts");
+        Path vectorClientbtsPath = new Path(tmpDirPath, "vector_clientbts");
         {
             VectorFuseNodeDaygroupJob job = new VectorFuseNodeDaygroupJob(conf);
-            job.configure(btsDayhourPath, vectorBtsPath);
+            job.configure(clientsbtsGroupPath, vectorClientbtsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
-        Path vectorBtsNormPath = new Path(tmpDirPath, "vector_bts_norm");
+        Path vectorClientbtsNormPath = new Path(tmpDirPath,
+                                                "vector_clientbts_norm");
         {
             VectorNormalizedJob job = new VectorNormalizedJob(conf);
-            job.configure(vectorBtsPath, vectorBtsNormPath);
+            job.configure(vectorClientbtsPath, vectorClientbtsNormPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
-        Path vectorBtsClusterSinfiltPath = new Path(tmpDirPath,
-                "vector_bts_cluster_sinfilt");
+        Path vectorClientbtsClusterPath = new Path(tmpDirPath,
+                "vector_clientbts_cluster");
         {
             ClusterBtsGetMinDistanceJob job = new ClusterBtsGetMinDistanceJob(
                     conf);
-            job.configure(vectorBtsNormPath, vectorBtsClusterSinfiltPath);
+            job.configure(vectorClientbtsNormPath, centroidsPath,
+                          vectorClientbtsClusterPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

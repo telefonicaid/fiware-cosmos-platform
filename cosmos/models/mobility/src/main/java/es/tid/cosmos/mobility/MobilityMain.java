@@ -23,6 +23,8 @@ import es.tid.cosmos.mobility.util.Logger;
 public class MobilityMain extends Configured implements Tool {
     public static final String CENTROIDS_CLIENT_TAG = "CENTROIDS_CLIENT_PATH";
     public static final String CENTROIDS_BTS_TAG = "CENTROIDS_BTS_PATH";
+    public static final String CENTROIDS_CLIENTBTS_TAG =
+            "CENTROIDS_CLIENTBTS_PATH";
     
     @Override
     public int run(String[] args) throws Exception {
@@ -40,6 +42,10 @@ public class MobilityMain extends Configured implements Tool {
         }
         if (arguments.containsKey("centroids_bts")) {
             conf.set(CENTROIDS_BTS_TAG, arguments.get("centroids_bts"));
+        }
+        if (arguments.containsKey("centroids_clientbts")) {
+            conf.set(CENTROIDS_CLIENTBTS_TAG, arguments.get(
+                    "centroids_clientbts"));
         }
         
         boolean shouldRunAll = "true".equals(arguments.get("run_all"));
@@ -92,9 +98,10 @@ public class MobilityMain extends Configured implements Tool {
                 throw new IllegalStateException(
                         "Must specify the centroids clients path");
             }
+            Path centroidsPath = new Path(conf.get(CENTROIDS_CLIENT_TAG));
             ClientLabellingRunner.run(cdrsMobPath, clientsInfoFilteredPath,
-                                      vectorClientClusterPath, tmpLabelPoisPath,
-                                      isDebug, conf);
+                                      centroidsPath, vectorClientClusterPath,
+                                      tmpLabelPoisPath, isDebug, conf);
         }
 
         Path tmpLabelBtsPath = new Path(tmpPath, "label_bts");
@@ -106,9 +113,10 @@ public class MobilityMain extends Configured implements Tool {
                 throw new IllegalStateException(
                         "Must specify the centroids BTS path");
             }
+            Path centroidsPath = new Path(conf.get(CENTROIDS_BTS_TAG));
             BtsLabellingRunner.run(btsCommsPath, btsComareaPath,
-                                   vectorBtsClusterPath, tmpLabelBtsPath,
-                                   isDebug, conf);
+                                   centroidsPath, vectorBtsClusterPath,
+                                   tmpLabelBtsPath, isDebug, conf);
         }
         
         return 0;

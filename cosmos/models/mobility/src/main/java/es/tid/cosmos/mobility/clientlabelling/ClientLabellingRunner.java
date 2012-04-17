@@ -15,8 +15,8 @@ public final class ClientLabellingRunner {
     }
     
     public static void run(Path cdrsMobPath, Path clientsInfoFilteredPath,
-                           Path vectorClientClusterPath, Path tmpDirPath,
-                           boolean isDebug, Configuration conf)
+                           Path centroidsPath, Path vectorClientClusterPath,
+                           Path tmpDirPath, boolean isDebug, Configuration conf)
             throws Exception {
         Path cdrsMobDataPath = new Path(tmpDirPath, "cdrs_mob_data");
         { 
@@ -105,7 +105,8 @@ public final class ClientLabellingRunner {
         {
             ClusterClientGetMinDistanceJob job =
                     new ClusterClientGetMinDistanceJob(conf);
-            job.configure(vectorClientNormPath, vectorClientClusterPath);
+            job.configure(vectorClientNormPath, centroidsPath,
+                          vectorClientClusterPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -117,7 +118,8 @@ public final class ClientLabellingRunner {
             {
                 ExportClusterClientMinDistanceToTextJob job =
                         new ExportClusterClientMinDistanceToTextJob(conf);
-                job.configure(vectorClientClusterPath, vectorClientClusterTextPath);
+                job.configure(vectorClientClusterPath,
+                              vectorClientClusterTextPath);
                 if (!job.waitForCompletion(true)) {
                     throw new Exception("Failed to run " + job.getJobName());
                 }

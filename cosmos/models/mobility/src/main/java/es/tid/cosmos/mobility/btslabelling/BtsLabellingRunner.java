@@ -18,8 +18,8 @@ public final class BtsLabellingRunner {
     }
     
     public static void run(Path btsCommsPath, Path btsComareaPath,
-                           Path vectorBtsClusterPath, Path tmpDirPath,
-                           boolean isDebug, Configuration conf)
+                           Path centroidsPath, Path vectorBtsClusterPath,
+                           Path tmpDirPath, boolean isDebug, Configuration conf)
             throws Exception {
         Path btsCountsPath = new Path(tmpDirPath, "bts_counts");
         {
@@ -72,7 +72,8 @@ public final class BtsLabellingRunner {
         {
             ClusterBtsGetMinDistanceJob job = new ClusterBtsGetMinDistanceJob(
                     conf);
-            job.configure(vectorBtsNormPath, vectorBtsClusterSinfiltPath);
+            job.configure(vectorBtsNormPath, centroidsPath,
+                          vectorBtsClusterSinfiltPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

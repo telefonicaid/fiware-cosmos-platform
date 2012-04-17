@@ -16,8 +16,9 @@ public final class BtsLabellingRunner {
     }
     
     public static void run(Path btsCommsPath, Path vectorBtsClusterPath,
-                           Path tmpDir, Configuration conf) throws Exception {
-        Path btsCountsPath = tmpDir.suffix("bts_counts");
+                           Path tmpDirPath, Configuration conf)
+            throws Exception {
+        Path btsCountsPath = new Path(tmpDirPath, "bts_counts");
         {
             VectorFilterBtsJob job = new VectorFilterBtsJob(conf);
             job.configure(btsCommsPath, btsCountsPath);
@@ -26,7 +27,7 @@ public final class BtsLabellingRunner {
             }
         }
 
-        Path btsSumComsPath = tmpDir.suffix("bts_sum_coms");
+        Path btsSumComsPath = new Path(tmpDirPath, "bts_sum_coms");
         {
             VectorSumComsBtsJob job = new VectorSumComsBtsJob(conf);
             job.configure(btsCountsPath, btsSumComsPath);
@@ -35,7 +36,7 @@ public final class BtsLabellingRunner {
             }
         }
 
-        Path btsDayhourPath = tmpDir.suffix("bts_dayhour");
+        Path btsDayhourPath = new Path(tmpDirPath, "bts_dayhour");
         {
             VectorCreateNodeDayhourJob job = new VectorCreateNodeDayhourJob(
                     conf);
@@ -45,7 +46,7 @@ public final class BtsLabellingRunner {
             }
         }
 
-        Path vectorBtsPath = tmpDir.suffix("vector_bts");
+        Path vectorBtsPath = new Path(tmpDirPath, "vector_bts");
         {
             VectorFuseNodeDaygroupJob job = new VectorFuseNodeDaygroupJob(conf);
             job.configure(btsDayhourPath, vectorBtsPath);
@@ -54,7 +55,7 @@ public final class BtsLabellingRunner {
             }
         }
 
-        Path vectorBtsNormPath = tmpDir.suffix("vector_bts_norm");
+        Path vectorBtsNormPath = new Path(tmpDirPath, "vector_bts_norm");
         {
             VectorNormalizedJob job = new VectorNormalizedJob(conf);
             job.configure(vectorBtsPath, vectorBtsNormPath);
@@ -63,7 +64,7 @@ public final class BtsLabellingRunner {
             }
         }
 
-        Path vectorBtsClusterSinfiltPath = tmpDir.suffix(
+        Path vectorBtsClusterSinfiltPath = new Path(tmpDirPath,
                 "vector_bts_cluster_sinfilt");
         {
             ClusterBtsGetMinDistanceJob job = new ClusterBtsGetMinDistanceJob(

@@ -25,7 +25,7 @@ namespace system{
         // Collection of filters to execute for every key-value
         FilterCollection filters_collection;
         
-
+        
 	public:
 
 
@@ -42,12 +42,20 @@ namespace system{
 		{
             // Setup the process chain...
             std::string command =  environment->get( "command" ,  "" );
+
+			if( command == "" )
+			{
+                tracer->setUserError( "Environment variable command not specified. Please specify with env:command XXX" );
+                return;
+			}
+            
             au::ErrorManager error;
             filters_collection.addFilters( command , NULL , writer , &error );
             
             // Error defined by user
             if( error.isActivated() )
                 tracer->setUserError( error.getMessage() );
+            
 		}
 
 		void run( KVSetStruct* inputs , TXTWriter *writer )
@@ -58,19 +66,8 @@ namespace system{
                 value.parse( inputs[0].kvs[i]->value );
                 
                 
-                if( filters_collection.filters.size() > 0 )
-                {
-                    KeyValue kv( &key, &value );
-                    for( size_t f = 0 ; f < filters_collection.filters.size() ; f++ )
-                        filters_collection.filters[f]->run(kv);
-                }
-                else
-                {                   
-                    //Emit the parsed key value
-                    std::string output = au::str("%s %s\n" , key.str().c_str() , value.str().c_str() );
-                    writer->emit( output.c_str() , output.length() );
-                }
-                
+                KeyValue kv( &key, &value );
+                filters_collection.run( kv );
             }
 		}
 

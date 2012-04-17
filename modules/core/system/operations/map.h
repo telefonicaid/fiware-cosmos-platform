@@ -58,7 +58,8 @@ namespace system{
             
             // Error defined by user
             if( error.isActivated() )
-                tracer->setUserError( error.getMessage() );		}
+                tracer->setUserError( error.getMessage() );		
+        }
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
@@ -71,10 +72,10 @@ namespace system{
                 // Run the filters
                 // ---------------------------------------------------------
                 KeyValue kv( &key, &value );
-                for( size_t f = 0 ; f < filters_collection.filters.size() ; f++ )
-                    filters_collection.filters[f]->run(kv);
-            }		}
-
+                filters_collection.run( kv );
+            }		
+        }
+        
 		void finish( samson::KVWriter *writer )
 		{
 		}

@@ -40,7 +40,20 @@ namespace samson{
             }
             
             virtual void run( KeyValue kv )=0;
-            virtual std::string str()=0;
+            std::string str()
+            {
+                std::string output = _str();
+                if( next )
+                {
+                    output.append(" | ");
+                    output.append( next->str() );
+                }
+                return output;
+                
+            }
+            
+            virtual std::string _str()=0;
+
         };
         
         // --------------------------------------------------------
@@ -66,7 +79,7 @@ namespace samson{
                 writer->emit(channel, kv.key, kv.value );
             }
             
-            std::string str()
+            std::string _str()
             {
                 return au::str("Emit to channel %d" , channel );
             }
@@ -82,81 +95,68 @@ namespace samson{
         {
             samson::TXTWriter *writer;
             
+            // Collection of fields to be used when exporting data
+            au::vector<Source> fields;
+            
+            // Separator used at the output ( should be programable )
+            std::string separator;
+            
         public:
                
-            FilterEmitTxt( samson::TXTWriter *_writer )
+            FilterEmitTxt( samson::TXTWriter *_writer 
+                          , au::token::TokenVector* token_vector
+                          , au::ErrorManager * error )
             {
+                // Keep a pointer to the writer to send data
                 writer = _writer;
+                
+                while( ! token_vector->eof() )
+                {
+                    if( token_vector->getNextTokenContent() == "|" )
+                        break;
+                    
+                    Source* source = getSource( token_vector , error );
+                    if( error->isActivated() )
+                        return;
+                    
+                    fields.push_back( source );
+                }
+                
+                if( fields.size() == 0 )
+                    error->set( "No fields specified in emit command" );
+                
             }
             
             virtual void run( KeyValue kv )
             {
-                std::string output = au::str("%s %s\n" , kv.key->str().c_str() , kv.value->str().c_str() );
-                writer->emit(output.c_str() , output.length() );
+                
+                std::ostringstream output;
+                for ( size_t i = 0 ; i < fields.size() ; i++ )
+                {
+                    samson::system::Value* value = fields[i]->get(kv);
+                    if( value )
+                        output << value->get_string();
+                    
+                    if( i != ( fields.size() -1 ) )
+                        output << separator;
+                    
+                }
+                
+                output << "\n";
+                
+                //std::string output = au::str("%s %s\n" , kv.key->str().c_str() , kv.value->str().c_str() );
+                std::string output_str = output.str();  
+                writer->emit(output_str.c_str() , output_str.length() );
             }
             
-            std::string str()
+            std::string _str()
             {
-                return "Emit txt";
+                return "emit (txt)";
             }
             
         };        
 
-        // --------------------------------------------------------
-        // FilterEmitTxt
-        // --------------------------------------------------------
-        
-        class FilterEmitKeyTxt : public Filter
-        {
-            samson::TXTWriter *writer;
-            
-        public:
-            
-            FilterEmitKeyTxt( samson::TXTWriter *_writer )
-            {
-                writer = _writer;
-            }
-            
-            virtual void run( KeyValue kv )
-            {
-                std::string output = au::str("%s\n" , kv.key->str().c_str() );
-                writer->emit(output.c_str() , output.length() );
-            }
-            
-            std::string str()
-            {
-                return "Emit key";
-            }
-            
-        };
-        
-        // --------------------------------------------------------
-        // FilterEmitTxt
-        // --------------------------------------------------------
-        
-        class FilterEmitValueTxt : public Filter
-        {
-            samson::TXTWriter *writer;
-            
-        public:
-            
-            FilterEmitValueTxt( samson::TXTWriter *_writer )
-            {
-                writer = _writer;
-            }
-            
-            virtual void run( KeyValue kv )
-            {
-                std::string output = au::str("%s\n" , kv.value->str().c_str() );
-                writer->emit(output.c_str() , output.length() );
-            }
-            
-            std::string str()
-            {
-                return "Emit value";
-            }
-            
-        };
+
         // --------------------------------------------------------
         // parse -  parse line
         // --------------------------------------------------------
@@ -308,9 +308,9 @@ namespace samson{
                 
             }
             
-            std::string str()
+            std::string _str()
             {
-                return au::str("FilterParser: " );
+                return au::str("parse" );
             }
             
             
@@ -379,11 +379,10 @@ namespace samson{
                 
             }
             
-            std::string str()
+            std::string _str()
             {
-                return au::str("FilterParser: " );
+                return au::str("parse_words" );
             }
-            
             
         };
         
@@ -424,9 +423,9 @@ namespace samson{
                 }
             }
             
-            std::string str()
+            std::string _str()
             {
-                return au::str("FilterParser: " );
+                return au::str("parse_chars" );
             }
             
             
@@ -466,9 +465,9 @@ namespace samson{
                         next->run( kv );
             }
             
-            std::string str()
+            std::string _str()
             {
-                return au::str("FilterCondition %s"  , eval_source->str().c_str() );
+                return au::str("filter %s"  , eval_source->str().c_str() );
             }
             
         };
@@ -502,10 +501,10 @@ namespace samson{
             }
 
             
-            std::string str()
+            std::string _str()
             {
                 std::ostringstream output;
-                output << "Filter select " << source_for_key->str() << " , " << source_for_value;
+                output << "select " << source_for_key->str() << " , " << source_for_value;
                 return output.str();
             }
             
@@ -540,233 +539,44 @@ namespace samson{
         
         
         /*
-         Collections of filter - chains to be executed
+         Collections of filter-chains to be executed
          */
         
         class FilterCollection
         {
             
-        public:
-            
+            // Collections of filters
             au::vector<Filter> filters;
             
-            ~FilterCollection()
-            {
-                // Remove defined filters
-                filters.clearVector();
-            }
+        public:
             
-            std::string str()
-            {
-                std::ostringstream output;
-                for( size_t i = 0 ; i < filters.size() ; i++ )
-                    output << filters[i]->str();
-                return output.str();
-            }
+            
+            ~FilterCollection();
+            
+            // String debug
+            std::string str();
+            
+            // General command to parse
+            void addFilters( std::string command , samson::KVWriter *writer , TXTWriter *txt_writer , au::ErrorManager* error );            
+            
+            // Run a particular key-value
+            void run( KeyValue kv );
+
+            size_t get_num_filters();
+            
+        private:
             
             Filter* getFilter( au::token::TokenVector *token_vector 
                               , samson::KVWriter *writer 
                               , TXTWriter *txt_writer 
                               , au::ErrorManager* error 
-                              )
-            {
-
-                // Check if there are tokens to be read
-                if( token_vector->eof() )
-                {
-                    error->set("Filter name not specified");
-                    return NULL;
-                }
-                
-                // Get the next token
-                au::token::Token* token = token_vector->popToken(); 
-                
-                if ( token->content == "select" )
-                {
-                    
-                    Source* key_source = getSource(token_vector, error);
-                    if( error->isActivated() )
-                        return NULL; 
-
-                    // Expect a ","
-                    if( !token_vector->popNextTokenIfItIs(",") )
-                    {
-                        error->set( au::str("Expected ',' to separate key and value in a select statment. Found '%s'" 
-                                            , token_vector->getNextTokenContent().c_str() ));
-                        return NULL;
-                    }
-                    
-                    Source* value_source = NULL;
-                    if( !token_vector->eof() )
-                    {
-                        value_source = getSource(token_vector, error);
-                        if( error->isActivated() )
-                            return NULL;
-                    }
-                    else
-                        value_source = new SourceVoid();
-                        
-                    return new FilterSelect( key_source , value_source );                    
-
-                }
-                else if ( token->content == "parse_words" )
-                {
-                    return new FilterParserWords();
-                }
-                else if ( token->content == "parse_chars" )
-                {
-                    return new FilterParserChars();
-                }
-                else if ( token->content == "parse" )
-                {
-                    // Parse kind of filter
-                    return FilterParser::getFilter( token_vector , error );
-                }
-                else if ( token->content == "emit" )
-                {
-                    
-                    if( writer )
-                    {
-                        
-                        if( token_vector->eof() )
-                            return new FilterEmit( 0 , writer ); // Default channel "0"
-
-                        
-                        au::token::Token* number = token_vector->popToken();
-                        if( !number->isNumber() )
-                        {
-                            error->set( au::str("Channel '%s' not valid in emit command. It should be a number"
-                                                , number->content.c_str() ));
-                            return NULL;
-                        }
-                        
-                        int channel = atoi( number->content.c_str() );
-                        return new FilterEmit( channel , writer );
-                        
-                    }
-                    else if ( txt_writer )
-                    {
-                        return new FilterEmitTxt( txt_writer );                        
-                    }
-                    
-                }
-                else if ( token->content == "emit_key" )
-                {
-                    
-                    if ( !txt_writer )
-                    {
-                        error->set( "emit_key is only valid in parseOut operations like system.str ");
-                        return NULL;
-                    }
-                    
-                    return new FilterEmitKeyTxt( txt_writer );                        
-                    
-                }
-                else if ( token->content == "emit_value" )
-                {
-                    if ( !txt_writer )
-                    {
-                        error->set( "emit_value is only valid in parseOut operations like system.str ");
-                        return NULL;
-                    }
-                    
-                    return new FilterEmitValueTxt( txt_writer );                        
-                }
-                else if ( token->content == "filter" )
-                {
-                    
-                    Source* eval_source = getSource(token_vector, error );
-                    if( error->isActivated() )
-                        return NULL;
-                    if( !eval_source )
-                    {
-                        error->set("Not valid condition statment in filter command");
-                        return NULL;
-                    }
-                    
-                    return new FilterCondition( eval_source );
-                    
-                }
-                return NULL;
-                
-            }
+                              );            
             
-            
-            // filter key = 67 | select key:1,value | emit 0 / filter key = 56 | select key:1,value | emit 1
-
             Filter* getFilterChain( au::token::TokenVector *token_vector  
-                           , samson::KVWriter *writer 
-                           , TXTWriter *txt_writer 
-                           ,  au::ErrorManager* error )
-            {
-                
-                // Line of filters for this command...
-                au::vector<Filter> tmp_filters;
+                                   , samson::KVWriter *writer 
+                                   , TXTWriter *txt_writer 
+                                   ,  au::ErrorManager* error );
 
-                while ( !token_vector->eof() ) 
-                {
-                    // Get the "sub" token vector for each line
-                    au::token::TokenVector sub_token_vector = token_vector->getTokensUntil( "|" );
-                    
-                    // Get a filter from this token_vector
-                    Filter * filter = getFilter( &sub_token_vector , writer , txt_writer , error );
-                    
-                    // If there is an error, just return
-                    if( error->isActivated() )
-                    {
-                        tmp_filters.clearVector();
-                        return NULL;
-                    }
-                    else
-                    {
-                        // Add the new filter
-                        tmp_filters.push_back( filter );
-                    }
-                }                
-                
-                
-                if( tmp_filters.size() == 0 )
-                    return  NULL;
-            
-                // Link the filters
-                for ( size_t i = 0 ; i < (tmp_filters.size()-1) ; i++ )
-                    tmp_filters[i]->next = tmp_filters[i+1];
-                
-                // Add the filter line
-                return tmp_filters[0];
-            }
-            
-            // General command to parse
-            void addFilters( std::string command , samson::KVWriter *writer , TXTWriter *txt_writer , au::ErrorManager* error )
-            { 
-                // Tokenice the entire command 
-                // --------------------------------------------------------------------
-                SamsonTokenizer tokenizer;
-                au::token::TokenVector token_vector = tokenizer.parse(command);
-                
-                
-                while ( !token_vector.eof() ) 
-                {
-                    // Get the "sub" token vector for each line
-                    au::token::TokenVector sub_token_vector = token_vector.getTokensUntil( ";" );
-
-                    // Get a filter from this token_vector
-                    Filter * filter = getFilter( &sub_token_vector , writer , txt_writer , error );
-
-                    // If there is an error, just return
-                    if( error->isActivated() )
-                    {
-                        filters.clearVector();
-                        return;
-                    }
-                    else
-                    {
-                        // Add the new filter
-                        filters.push_back( filter );
-                    }
-                }
-                
-            }
             
         };
         

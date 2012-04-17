@@ -64,10 +64,10 @@ namespace system{
                 // ---------------------------------------------------------
                 
                 KeyValue kv( &key, &value );
-                for( size_t f = 0 ; f < filters_collection.filters.size() ; f++ )
-                    filters_collection.filters[f]->run(kv);
-            }		}
-
+                filters_collection.run( kv );
+            }
+        }
+        
 		void finish( samson::KVWriter *writer )
 		{
 		}

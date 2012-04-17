@@ -12,6 +12,8 @@
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/UInt.h>
 
+#include "logMsg/logMsg.h"
+
 
 namespace samson{
 namespace OTTstream{

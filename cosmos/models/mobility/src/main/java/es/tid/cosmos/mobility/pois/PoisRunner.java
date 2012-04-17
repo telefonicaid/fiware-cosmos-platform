@@ -15,7 +15,8 @@ public final class PoisRunner {
     private PoisRunner() {
     }
     
-    public static void run(Path tmpDir, Path clientsBtsPath, Path cdrsNoinfoPath,
+    public static void run(Path tmpDir, Path clientsBtsPath,
+                           Path clientsInfoPath, Path cdrsNoinfoPath,
                            Path cdrsNoBtsPath, Path clientsInfoFilteredPath,
                            Path clientsRepbtsPath, boolean isDebug,
                            Configuration conf) throws Exception {
@@ -28,10 +29,10 @@ public final class PoisRunner {
             }
         }
 
-        Path nodeMobInfo = new Path(tmpDir, "node_mob_info");
+        Path ClientsInfoPath = new Path(tmpDir, "clients_info");
         {
             NodeMobInfoJob job = new NodeMobInfoJob(conf);
-            job.configure(nodeBtsCounter, nodeMobInfo);
+            job.configure(nodeBtsCounter, ClientsInfoPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -40,7 +41,7 @@ public final class PoisRunner {
         Path repbtsSpreadNodebts = new Path(tmpDir, "repbts_spread_nodebts");
         {
             RepbtsSpreadNodebtsJob job = new RepbtsSpreadNodebtsJob(conf);
-            job.configure(nodeMobInfo, repbtsSpreadNodebts);
+            job.configure(ClientsInfoPath, repbtsSpreadNodebts);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

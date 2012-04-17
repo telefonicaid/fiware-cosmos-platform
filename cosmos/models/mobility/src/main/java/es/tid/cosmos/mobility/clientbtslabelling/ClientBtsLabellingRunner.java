@@ -16,8 +16,8 @@ public final class ClientBtsLabellingRunner {
     private ClientBtsLabellingRunner() {
     }
     
-    public static void run(Path clientsInfoPath, Path clientsRpbtsPath,
-                           Path centroidsPath, Path vectorBtsClusterPath,
+    public static void run(Path clientsInfoPath, Path clientsRepbtsPath,
+                           Path centroidsPath, Path vectorClientbtsClusterPath,
                            Path tmpDirPath, boolean isDebug, Configuration conf)
             throws Exception {
         Path clientsbtsSpreadPath = new Path(tmpDirPath, "clientsbts_spread");
@@ -41,7 +41,7 @@ public final class ClientBtsLabellingRunner {
         Path clientsbtsRpbtsPath = new Path(tmpDirPath, "clientsbts_repbts");
         {
             VectorFiltClientbtsJob job = new VectorFiltClientbtsJob(conf);
-            job.configure(new Path[] { clientsbtsSumPath, clientsRpbtsPath },
+            job.configure(new Path[] { clientsbtsSumPath, clientsRepbtsPath },
                           clientsbtsRpbtsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
@@ -77,8 +77,6 @@ public final class ClientBtsLabellingRunner {
             }
         }
 
-        Path vectorClientbtsClusterPath = new Path(tmpDirPath,
-                "vector_clientbts_cluster");
         {
             ClusterBtsGetMinDistanceJob job = new ClusterBtsGetMinDistanceJob(
                     conf);

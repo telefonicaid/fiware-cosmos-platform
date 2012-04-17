@@ -74,6 +74,9 @@ public final class ActivityAreaRunner {
             // Extract to text file
             IndVarsOutJob job = new IndVarsOutJob(conf);
             job.configure(viClientFuseAcc, viClientFuseAccTxt);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
         }
 
 	  /* Delete unused:

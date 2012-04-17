@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.btslabelling;
+package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
 
@@ -18,10 +18,10 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class FilterBtsVectorJob extends Job {
-    private static final String JOB_NAME = "FilterBtsVector";
+public class ConvertClusterToMobDataJob extends Job {
+    private static final String JOB_NAME = "ConvertClusterToMobData";
 
-    public FilterBtsVectorJob(Configuration conf) throws IOException {
+    public ConvertClusterToMobDataJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
@@ -31,11 +31,11 @@ public class FilterBtsVectorJob extends Job {
         this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(FilterBtsVectorReducer.class);
+        this.setReducerClass(ConvertClusterToMobDataReducer.class);
     }
 
-    public void configure(Path[] inputs, Path output) throws IOException {
-        FileInputFormat.setInputPaths(this, inputs);
+    public void configure(Path input, Path output) throws IOException {
+        FileInputFormat.setInputPaths(this, input);
         FileOutputFormat.setOutputPath(this, output);
     }
 }

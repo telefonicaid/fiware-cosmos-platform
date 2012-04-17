@@ -120,8 +120,8 @@ public class MobilityMain extends Configured implements Tool {
                 throw new IllegalStateException(
                         "Must specify the centroids BTS path");
             }
-            BtsLabellingRunner.run(btsCommsPath, vectorBtsClusterPath,
-                                   tmpLabelBtsPath, conf);
+            BtsLabellingRunner.run(btsCommsPath, btsComareaPath,
+                                   vectorBtsClusterPath, tmpLabelBtsPath, conf);
         }
         
         return 0;

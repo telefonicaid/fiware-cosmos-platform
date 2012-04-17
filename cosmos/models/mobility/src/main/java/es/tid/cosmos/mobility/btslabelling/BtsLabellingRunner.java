@@ -6,6 +6,8 @@ import org.apache.hadoop.fs.Path;
 import es.tid.cosmos.mobility.clientlabelling.VectorCreateNodeDayhourJob;
 import es.tid.cosmos.mobility.clientlabelling.VectorFuseNodeDaygroupJob;
 import es.tid.cosmos.mobility.clientlabelling.VectorNormalizedJob;
+import es.tid.cosmos.mobility.util.ConvertBtsToMobDataJob;
+import es.tid.cosmos.mobility.util.ConvertClusterToMobDataJob;
 
 /**
  *
@@ -15,9 +17,9 @@ public final class BtsLabellingRunner {
     private BtsLabellingRunner() {
     }
     
-    public static void run(Path btsCommsPath, Path vectorBtsClusterPath,
-                           Path tmpDirPath, Configuration conf)
-            throws Exception {
+    public static void run(Path btsCommsPath, Path btsComareaPath,
+                           Path vectorBtsClusterPath, Path tmpDirPath,
+                           Configuration conf) throws Exception {
         Path btsCountsPath = new Path(tmpDirPath, "bts_counts");
         {
             VectorFilterBtsJob job = new VectorFilterBtsJob(conf);
@@ -75,9 +77,33 @@ public final class BtsLabellingRunner {
             }
         }
 
+        Path vectorBtsClusterSinfiltMobDataPath = new Path(tmpDirPath,
+                "vector_bts_cluster_sinfilt_mob_data");
+        { 
+            ConvertClusterToMobDataJob job = new ConvertClusterToMobDataJob(
+                    conf);
+            job.configure(vectorBtsClusterSinfiltPath,
+                          vectorBtsClusterSinfiltMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path btsComareaMobDataPath = new Path(tmpDirPath,
+                                              "bts_comarea_mob_data");
+        { 
+            ConvertBtsToMobDataJob job = new ConvertBtsToMobDataJob(conf);
+            job.configure(btsComareaPath, btsComareaMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
         {
             FilterBtsVectorJob job = new FilterBtsVectorJob(conf);
-            job.configure(vectorBtsClusterSinfiltPath, vectorBtsClusterPath);
+            job.configure(new Path[] { vectorBtsClusterSinfiltMobDataPath,
+                                       btsComareaMobDataPath },
+                          vectorBtsClusterPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

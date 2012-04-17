@@ -12,6 +12,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cell;
  * @author losa
  */
 public abstract class ActivityAreaUtil implements ProtobufUtil {
+    private static final String DELIMITER = "|";
 
     public static ActivityArea create(int numPos, int difBtss, int difMuns, 
             int difStates, double masscenterUtmX, double masscenterUtmY,
@@ -42,8 +43,10 @@ public abstract class ActivityAreaUtil implements ProtobufUtil {
                            masscenterUtmY, radius, diamAreaInf));
     }
 
-    // TODO
-    public static String toString(ProtobufWritable<ActivityArea> result) {
-        throw new UnsupportedOperationException("Not yet implemented");
+    public static String toString(ActivityArea obj) {
+        return (obj.getNumPos() + DELIMITER + obj.getDifBtss() + DELIMITER +
+                obj.getDifMuns() + DELIMITER + obj.getDifStates() + DELIMITER +
+                obj.getMasscenterUtmX() + DELIMITER + obj.getMasscenterUtmY() +
+                obj.getRadius() + DELIMITER + obj.getDiamAreaInf());
     }
 }

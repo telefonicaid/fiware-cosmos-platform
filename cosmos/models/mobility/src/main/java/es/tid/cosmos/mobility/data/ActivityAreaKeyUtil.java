@@ -9,6 +9,8 @@ import es.tid.cosmos.mobility.data.MobProtocol.ActivityAreaKey;
  * @author dmicol
  */
 public abstract class ActivityAreaKeyUtil implements ProtobufUtil {
+    private static final String DELIMITER = "|";
+
     public static ActivityAreaKey create(long userId, int month,
                                          boolean isWorkDay) {
         ActivityAreaKey.Builder activityAreaKey = ActivityAreaKey.newBuilder()
@@ -28,5 +30,10 @@ public abstract class ActivityAreaKeyUtil implements ProtobufUtil {
     public static ProtobufWritable<ActivityAreaKey> createAndWrap(long userId,
             int month, boolean isWorkDay) {
         return wrap(create(userId, month, isWorkDay));
+    }
+
+    public static String toString(ActivityAreaKey obj) {
+        return (obj.getUserId() + DELIMITER + obj.getMonth() + DELIMITER +
+                obj.getIsWorkDay());
     }
 }

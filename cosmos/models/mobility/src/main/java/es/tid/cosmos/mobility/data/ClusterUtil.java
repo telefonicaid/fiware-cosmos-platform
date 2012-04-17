@@ -10,6 +10,8 @@ import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
  * @author sortega
  */
 public abstract class ClusterUtil implements ProtobufUtil {
+    private static final String DELIMITER = "|";
+    
     public static Cluster create(int label, int labelgroup, int confident,
             double mean, double distance, ClusterVector coords) {
         Cluster.Builder cluster = Cluster.newBuilder()
@@ -33,5 +35,15 @@ public abstract class ClusterUtil implements ProtobufUtil {
             int labelgroup, int confident, double mean, double distance,
             ClusterVector coords) {
         return wrap(create(label, labelgroup, confident, mean, distance, coords));
+    }
+
+    public static String toString(Cluster obj) {
+        String str = obj.getLabel() + DELIMITER + obj.getLabelgroup()
+                + DELIMITER + obj.getConfident() + DELIMITER + obj.getMean()
+                + DELIMITER + obj.getDistance();
+        for (double comm : obj.getCoords().getComsList()) {
+            str += DELIMITER + comm;
+        }
+        return str;
     }
 }

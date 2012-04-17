@@ -128,8 +128,8 @@ public final class PoisRunner {
 
         Path clientsRepbtsTextPath = tmpDir.suffix("/clients_repbts_text");
         {
-            RepbtsGetRepresentativeBtsToTextJob job = new
-                    RepbtsGetRepresentativeBtsToTextJob(conf);
+            ExportRepresentativeBtsToTextJob job = new
+                    ExportRepresentativeBtsToTextJob(conf);
             job.configure(clientsRepbtsPath, clientsRepbtsTextPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());

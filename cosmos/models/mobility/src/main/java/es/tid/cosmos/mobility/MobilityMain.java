@@ -9,6 +9,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import es.tid.cosmos.mobility.clientlabelling.ClientLabellingRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
@@ -57,11 +58,24 @@ public class MobilityMain extends Configured implements Tool {
         }
         
         Path tmpExtractPoisPath = new Path(tmpPath, "extract_pois");
+        Path clientsInfoFilteredPath = new Path(tmpExtractPoisPath,
+                                                "clients_info_filtered");
         Path clientsRepbtsPath = new Path(tmpExtractPoisPath, "clients_repbts");
         boolean shouldExtractPois = "true".equals(arguments.get("extractPOIs"));
         if (shouldExtractPois) {
             PoisRunner.run(tmpExtractPoisPath, clientsBtsPath, cdrsNoinfoPath,
-                           cdrsNoBtsPath,  clientsRepbtsPath, this.getConf());
+                           cdrsNoBtsPath, clientsInfoFilteredPath,
+                           clientsRepbtsPath, this.getConf());
+        }
+
+        Path tmpLabelPoisPath = new Path(tmpPath, "label_pois");
+        Path vectorClientClusterPath = new Path(tmpLabelPoisPath,
+                                                "vector_client_clusterPath");
+        boolean shouldLabelPois = "true".equals(arguments.get("labelPOIs"));
+        if (shouldLabelPois) {
+            ClientLabellingRunner.run(cdrsMobPath, clientsInfoFilteredPath,
+                                      vectorClientClusterPath, tmpLabelPoisPath,
+                                      this.getConf());
         }
         
         return 0;

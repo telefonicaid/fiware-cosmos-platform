@@ -8,19 +8,21 @@ option java_outer_classname = "MobProtocol";
 message MobData {
     enum Type {
         INVALID = 0;
-        CDR = 1;
-        CELL = 2;
-        BTS = 3;
-        CLUSTER = 4;
-        NODE_BTS_DAY = 5;
+        INT = 1;
+        CDR = 2;
+        CELL = 3;
+        BTS = 4;
+        CLUSTER = 5;
+        NODE_BTS_DAY = 6;
     }
 
     required Type type = 1;
-    optional Cdr cdr = 2;
-    optional Cell cell = 3;
-    optional Bts bts = 4;
-    optional Cluster cluster = 5;
-    optional NodeBtsDay nodeBtsDay = 6;
+    optional uint32 int = 2;
+    optional Cdr cdr = 3;
+    optional Cell cell = 4;
+    optional Bts bts = 5;
+    optional Cluster cluster = 6;
+    optional NodeBtsDay nodeBtsDay = 7;
 }
 
 message Cdr {

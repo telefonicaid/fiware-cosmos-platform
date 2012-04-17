@@ -9,6 +9,10 @@ import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.platform.cluster.server.generated.ClusterErrorCode;
+import es.tid.cosmos.platform.cluster.server.generated.ClusterJobResult;
+import es.tid.cosmos.platform.cluster.server.generated.ClusterJobStatus;
+
 /**
  *
  * @author dmicol

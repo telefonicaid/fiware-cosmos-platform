@@ -64,6 +64,8 @@ public class MobilityMain extends Configured implements Tool {
                            cdrsNoBtsPath,  clientsRepbtsPath, this.getConf());
         }
         
+        boolean shouldLabelPois = "true".equals(arguments.get("labelPOIs"));
+        
         return 0;
     }
     

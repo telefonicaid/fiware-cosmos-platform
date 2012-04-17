@@ -11,9 +11,10 @@ public final class ClientLabellingRunner {
     private ClientLabellingRunner() {
     }
     
-    public static void run(Path input, Path output, Path tmpDir,
+    public static void run(Path cdrsMobPath, Path clientsInfoFilteredPath,
+                           Path vectorClientClusterPath, Path tmpDir,
                            Configuration conf) throws Exception {
-        Path vectorSpreadNodedayhour = tmpDir.suffix("vector_spread_nodedayhour");
+        Path vectorSpreadNodedayhour = new Path(tmpDir, "clients_info_spread");
         {
             VectorSpreadNodedayhourJob job = new VectorSpreadNodedayhourJob(
                     conf);
@@ -23,8 +24,7 @@ public final class ClientLabellingRunner {
             }
         }
 
-        Path vectorGetNcomsNodedayhour = tmpDir.suffix(
-                "vector_get_ncoms_nodedayhour");
+        Path vectorGetNcomsNodedayhour = new Path(tmpDir, "cliVec_numcoms");
         {
             VectorGetNcomsNodedayhourJob job = new VectorGetNcomsNodedayhourJob(
                     conf);
@@ -34,8 +34,7 @@ public final class ClientLabellingRunner {
             }
         }
 
-        Path vectorCreateNodeDayhour = tmpDir.suffix(
-                "vector_create_node_dayhour");
+        Path vectorCreateNodeDayhour = new Path(tmpDir, "cliVec_group");
         {
             VectorCreateNodeDayhourJob job = new VectorCreateNodeDayhourJob(
                     conf);
@@ -45,7 +44,7 @@ public final class ClientLabellingRunner {
             }
         }
 
-        Path vectorFuseNodeDaygroup = tmpDir.suffix("vector_fuse_node_daygroup");
+        Path vectorFuseNodeDaygroup = new Path(tmpDir, "vector_client");
         {
             VectorFuseNodeDaygroupJob job = new VectorFuseNodeDaygroupJob(conf);
             job.configure(vectorCreateNodeDayhour, vectorFuseNodeDaygroup);
@@ -56,7 +55,7 @@ public final class ClientLabellingRunner {
 
         {
             VectorNormalizedJob job = new VectorNormalizedJob(conf);
-            job.configure(vectorFuseNodeDaygroup, output);
+            job.configure(vectorFuseNodeDaygroup, vectorClientClusterPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

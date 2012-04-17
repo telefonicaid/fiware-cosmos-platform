@@ -1385,8 +1385,10 @@ typedef struct LogLineInfo
                     
                     
                     size_t memory = SamsonSetup::shared()->getUInt64("general.memory");
-                    int num_cores = SamsonSetup::shared()->getInt("general.num_processess");
-                    size_t max_memory =  memory / num_cores;
+                    //int num_cores = SamsonSetup::shared()->getInt("general.num_processess");
+
+                    //size_t max_memory =  memory / num_cores;
+                    size_t max_memory =  memory / 2;
 
                     // Compute the ranges to use
                     KVRangeAndSizeManager ranges_manager;
@@ -1412,7 +1414,7 @@ typedef struct LogLineInfo
                     }
                     
                     // Compute used ranges
-                    ranges_manager.compute_ranges(max_memory);
+                    ranges_manager.compute_ranges( max_memory );
                     if ( ranges_manager.error.isActivated() )
                     {
                         finishWorkerTaskWithError( ranges_manager.error.getMessage() ); 

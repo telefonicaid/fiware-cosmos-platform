@@ -76,7 +76,11 @@ namespace samson {
 
             if( !operation )
             {
-                setUserError("Unknown operation");
+              std::ostringstream error_message;
+              error_message << "Unknown operation [" << id << "]  (" << streamOperation->operation << "; " << operation_name << ")";
+              LM_E(("Error: %s", error_message.str().c_str()));
+
+                setUserError(error_message.str());
                 return;
             }
             

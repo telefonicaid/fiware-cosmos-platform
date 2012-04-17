@@ -272,7 +272,7 @@ namespace samson {
             Operation *op = ModulesManager::shared()->getOperation(  operation_name );
             if( !op )
             {
-                error->set( au::str("Unknown operation %s" , operation_name.c_str() ) ); 
+                error->set( au::str("Unknown operation:'%s' in command arguments to init_stream" , operation_name.c_str() ) );
                 return;
             }
             
@@ -1313,7 +1313,7 @@ typedef struct LogLineInfo
             
             if( cmd.get_num_arguments() < 2 )
             {
-                finishWorkerTaskWithError( au::str("Not enough parameters for command %s" , main_command.c_str() ) );
+                finishWorkerTaskWithError( au::str("Not enough parameters for command '%s'" , main_command.c_str() ) );
                 return;
             }
             
@@ -1322,7 +1322,7 @@ typedef struct LogLineInfo
             Operation *op = ModulesManager::shared()->getOperation(  operation_name );
             if( !op )
             {
-                finishWorkerTaskWithError( au::str("Unknown operation %s" , operation_name.c_str() ) ); 
+                finishWorkerTaskWithError( au::str("Unknown operation:'%s' in command arguments to run" , operation_name.c_str() ) );
                 return;
             }
             
@@ -1344,7 +1344,7 @@ typedef struct LogLineInfo
                 if( queue_format != KVFormat("*","*") )
                     if( queue_format != operation_format )
                     {
-                        finishWorkerTaskWithError( au::str("Format for input %d ( operation %s ) is %s while queue %s has format %s" 
+                        finishWorkerTaskWithError( au::str("Format for input %d ( operation '%s' ) is %s while queue %s has format %s"
                                                            , i , operation_name.c_str() , operation_format.str().c_str() , queue_name.c_str() , queue_format.str().c_str() ) );
                         return;
                     }

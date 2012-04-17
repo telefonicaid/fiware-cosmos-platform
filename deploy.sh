@@ -9,8 +9,10 @@ fi
 echo "[DEBUG] Preparing to deploy"
 echo "[DEBUG] Reading config file $1..."
 source $1
-echo "[DEBUG]     Frontend = $frontend"
-echo "[DEBUG]     Backend  = $backend"
+echo "[DEBUG]     Frontend   = $frontend"
+echo "[DEBUG]     Backend    = $backend"
+echo "[DEBUG]     Login user = $login_user"
+echo "[DEBUG]     Login pass = $login_pass"
 
 echo "[DEBUG] Deploying frontend..."
 # TODO: Deploy frontend

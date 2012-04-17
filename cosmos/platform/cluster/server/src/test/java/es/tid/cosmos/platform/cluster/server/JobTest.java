@@ -3,11 +3,13 @@ package es.tid.cosmos.platform.cluster.server;
 import java.lang.reflect.UndeclaredThrowableException;
 
 import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
+
+import es.tid.cosmos.platform.cluster.server.generated.ClusterErrorCode;
+import es.tid.cosmos.platform.cluster.server.generated.ClusterJobResult;
+import es.tid.cosmos.platform.cluster.server.generated.ClusterJobStatus;
 
 /**
  *

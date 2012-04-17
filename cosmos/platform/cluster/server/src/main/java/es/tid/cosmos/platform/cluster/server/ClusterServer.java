@@ -14,6 +14,8 @@ import org.apache.thrift.server.TThreadPoolServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TTransportException;
 
+import es.tid.cosmos.platform.cluster.server.generated.*;
+
 /**
  *
  * @author dmicol

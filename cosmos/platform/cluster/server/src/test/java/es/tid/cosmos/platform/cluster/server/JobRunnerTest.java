@@ -3,7 +3,10 @@ package es.tid.cosmos.platform.cluster.server;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.mock;
+
+import es.tid.cosmos.platform.cluster.server.generated.TransferException;
 
 /**
  *

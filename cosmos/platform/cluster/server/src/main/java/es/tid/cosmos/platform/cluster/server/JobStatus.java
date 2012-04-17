@@ -3,6 +3,9 @@ package es.tid.cosmos.platform.cluster.server;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import es.tid.cosmos.platform.cluster.server.generated.ClusterJobResult;
+import es.tid.cosmos.platform.cluster.server.generated.ClusterJobStatus;
+
 /**
  *
  * @author dmicol

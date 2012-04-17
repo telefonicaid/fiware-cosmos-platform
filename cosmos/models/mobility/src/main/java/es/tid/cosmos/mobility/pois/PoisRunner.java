@@ -17,9 +17,9 @@ public final class PoisRunner {
     
     public static void run(Path tmpDir, Path clientsBtsPath, Path cdrsNoinfoPath,
                            Path cdrsNoBtsPath, Path clientsInfoFilteredPath,
-                           Path clientsRepbtsPath, Configuration conf)
-            throws Exception {
-        Path nodeBtsCounter = tmpDir.suffix("/node_bts_counter");
+                           Path clientsRepbtsPath, boolean isDebug,
+                           Configuration conf) throws Exception {
+        Path nodeBtsCounter = new Path(tmpDir, "node_bts_counter");
         {
             NodeBtsCounterJob job = new NodeBtsCounterJob(conf);
             job.configure(clientsBtsPath, nodeBtsCounter);
@@ -28,7 +28,7 @@ public final class PoisRunner {
             }
         }
 
-        Path nodeMobInfo = tmpDir.suffix("/node_mob_info");
+        Path nodeMobInfo = new Path(tmpDir, "node_mob_info");
         {
             NodeMobInfoJob job = new NodeMobInfoJob(conf);
             job.configure(nodeBtsCounter, nodeMobInfo);
@@ -37,7 +37,7 @@ public final class PoisRunner {
             }
         }
 
-        Path repbtsSpreadNodebts = tmpDir.suffix("/repbts_spread_nodebts");
+        Path repbtsSpreadNodebts = new Path(tmpDir, "repbts_spread_nodebts");
         {
             RepbtsSpreadNodebtsJob job = new RepbtsSpreadNodebtsJob(conf);
             job.configure(nodeMobInfo, repbtsSpreadNodebts);
@@ -46,7 +46,7 @@ public final class PoisRunner {
             }
         }
 
-        Path repbtsAggbybtsPath = tmpDir.suffix("/repbts_aggbybts");
+        Path repbtsAggbybtsPath = new Path(tmpDir, "repbts_aggbybts");
         {
             RepbtsAggbybtsJob job = new RepbtsAggbybtsJob(conf);
             job.configure(repbtsSpreadNodebts, repbtsAggbybtsPath);
@@ -55,8 +55,8 @@ public final class PoisRunner {
             }
         }
         
-        Path repbtsAggbybtsMobDataPath =
-                tmpDir.suffix("/repbts_aggbybts_mob_data");
+        Path repbtsAggbybtsMobDataPath = new Path(tmpDir,
+                                                  "repbts_aggbybts_mob_data");
         {
             ConvertNodeBtsDayToMobDataJob job =
                     new ConvertNodeBtsDayToMobDataJob(conf);
@@ -66,7 +66,7 @@ public final class PoisRunner {
             }
         }
 
-        Path cdrsNoinfoMobDataPath = tmpDir.suffix("/cdrs_noinfo_mob_data");
+        Path cdrsNoinfoMobDataPath = new Path(tmpDir, "cdrs_noinfo_mob_data");
         { 
             ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
             job.configure(cdrsNoinfoPath, cdrsNoinfoMobDataPath);
@@ -75,7 +75,7 @@ public final class PoisRunner {
             }
         }
 
-        Path cdrsNoBtsMobDataPath = tmpDir.suffix("/cdrs_nobts_mob_data");
+        Path cdrsNoBtsMobDataPath = new Path(tmpDir, "cdrs_nobts_mob_data");
         { 
             ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
             job.configure(cdrsNoBtsPath, cdrsNoBtsMobDataPath);
@@ -95,8 +95,8 @@ public final class PoisRunner {
             }
         }
 
-        Path clientsInfoFilteredMobDataPath = tmpDir.suffix(
-                "/clients_info_filtered_mob_data");
+        Path clientsInfoFilteredMobDataPath = new Path(tmpDir,
+                "clients_info_filtered_mob_data");
         {
             ConvertIntToMobDataJob job = new ConvertIntToMobDataJob(conf);
             job.configure(clientsInfoFilteredPath,
@@ -106,7 +106,7 @@ public final class PoisRunner {
             }
         }
         
-        Path repbtsJoinDistComms = tmpDir.suffix("/repbts_join_dist_comms");
+        Path repbtsJoinDistComms = new Path(tmpDir, "repbts_join_dist_comms");
         {
             RepbtsJoinDistCommsJob job = new RepbtsJoinDistCommsJob(conf);
             job.configure(new Path[] { repbtsAggbybtsMobDataPath,
@@ -126,13 +126,15 @@ public final class PoisRunner {
             }
         }
 
-        Path clientsRepbtsTextPath = tmpDir.suffix("/clients_repbts_text");
-        {
-            ExportRepresentativeBtsToTextJob job = new
-                    ExportRepresentativeBtsToTextJob(conf);
-            job.configure(clientsRepbtsPath, clientsRepbtsTextPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
+        if (isDebug) {
+            Path clientsRepbtsTextPath = new Path(tmpDir, "clients_repbts_text");
+            {
+                ExportRepresentativeBtsToTextJob job = new
+                        ExportRepresentativeBtsToTextJob(conf);
+                job.configure(clientsRepbtsPath, clientsRepbtsTextPath);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
             }
         }
     }

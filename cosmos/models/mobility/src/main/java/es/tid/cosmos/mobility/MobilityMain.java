@@ -43,6 +43,7 @@ public class MobilityMain extends Configured implements Tool {
         }
         
         boolean shouldRunAll = "true".equals(arguments.get("run_all"));
+        boolean isDebug = "true".equals(arguments.get("debug"));
         
         Path tmpParsingPath = new Path(tmpPath, "parsing");
         Path cdrsMobPath = new Path(tmpParsingPath, "cdrs_mob");
@@ -79,7 +80,7 @@ public class MobilityMain extends Configured implements Tool {
         if (shouldRunAll || shouldExtractPois) {
             PoisRunner.run(tmpExtractPoisPath, clientsBtsPath, cdrsNoinfoPath,
                            cdrsNoBtsPath, clientsInfoFilteredPath,
-                           clientsRepbtsPath, conf);
+                           clientsRepbtsPath, isDebug, conf);
         }
 
         Path tmpLabelPoisPath = new Path(tmpPath, "label_pois");
@@ -93,7 +94,7 @@ public class MobilityMain extends Configured implements Tool {
             }
             ClientLabellingRunner.run(cdrsMobPath, clientsInfoFilteredPath,
                                       vectorClientClusterPath, tmpLabelPoisPath,
-                                      conf);
+                                      isDebug, conf);
         }
 
         Path tmpLabelBtsPath = new Path(tmpPath, "label_bts");
@@ -106,7 +107,8 @@ public class MobilityMain extends Configured implements Tool {
                         "Must specify the centroids BTS path");
             }
             BtsLabellingRunner.run(btsCommsPath, btsComareaPath,
-                                   vectorBtsClusterPath, tmpLabelBtsPath, conf);
+                                   vectorBtsClusterPath, tmpLabelBtsPath,
+                                   isDebug, conf);
         }
         
         return 0;

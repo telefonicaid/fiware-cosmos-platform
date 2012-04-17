@@ -22,9 +22,11 @@ public class ExportClusterClientMinDistanceToTextReducer extends Reducer<
             Iterable<ProtobufWritable<Cluster>> values, Context context)
             throws IOException, InterruptedException {
         for (ProtobufWritable<Cluster> value : values) {
+            value.setConverter(Cluster.class);
             final Cluster cluster = value.get();
             context.write(NullWritable.get(),
-                          new Text(ClusterUtil.toString(cluster)));
+                          new Text(key.get() + "|"
+                                   + ClusterUtil.toString(cluster)));
         }
     }
 }

@@ -9,6 +9,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import es.tid.cosmos.mobility.activityarea.ActivityAreaRunner;
 import es.tid.cosmos.mobility.btslabelling.BtsLabellingRunner;
 import es.tid.cosmos.mobility.clientlabelling.ClientLabellingRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
@@ -69,6 +70,20 @@ public class MobilityMain extends Configured implements Tool {
                                 cdrsNoinfoPath, cellsMobPath, clientsBtsPath,
                                 btsCommsPath, cdrsNoBtsPath, viTelmonthBtsPath,
                                 conf);
+        }
+
+        String extractMivsFlag = "extract_mivs";
+        Path tmpExtractMivsPath = new Path(tmpPath, extractMivsFlag);
+        Path viClientFuseTxtPath = new Path(tmpExtractMivsPath,
+                                            "vi_client_fuse");
+        Path viClientFuseAccTxtPath = new Path(tmpExtractMivsPath,
+                                               "vi_client_fuse_acc");
+        boolean shouldExtractMivs =
+            "true".equals(arguments.get(extractMivsFlag));
+        if (shouldRunAll || shouldExtractMivs) {
+            ActivityAreaRunner.run(viTelmonthBtsPath, viClientFuseTxtPath,
+                                   viClientFuseAccTxtPath, tmpExtractMivsPath,
+                                   conf);
         }
         
         Path tmpExtractPoisPath = new Path(tmpPath, "extract_pois");

@@ -8,10 +8,13 @@ import org.apache.hadoop.fs.Path;
  * @author losa
  */
 public final class ActivityAreaRunner {
-    private ActivityAreaRunner(Path viTelmonthBts, Path viClientFuseTxt,
-                               Path viClientFuseAccTxt, Path tmpDir,
-                               Configuration conf) throws Exception {
-        Path viTelmonthMobvars = tmpDir.suffix("vi_telmonth_mobvars");
+    private ActivityAreaRunner() {
+    }
+
+    public static void run(Path viTelmonthBts, Path viClientFuseTxt,
+                           Path viClientFuseAccTxt, Path tmpDir,
+                           Configuration conf) throws Exception {
+        Path viTelmonthMobvars = new Path(tmpDir, "vi_telmonth_mobvars");
         {
             // Calculate individual variables by month
             ActivityAreaByMonthJob job = new ActivityAreaByMonthJob(conf);
@@ -21,7 +24,7 @@ public final class ActivityAreaRunner {
             }
         }
         
-        Path viClientFuse = tmpDir.suffix("vi_client_fuse");
+        Path viClientFuse = new Path(tmpDir, "vi_client_fuse");
         {
             // Fuse in a set all user info
             FusionTotalVarsJob job = new FusionTotalVarsJob(conf);
@@ -40,7 +43,7 @@ public final class ActivityAreaRunner {
             }
         }
 
-        Path viTelmonthBtsAcc = tmpDir.suffix("vi_telmonth_bts_acc");
+        Path viTelmonthBtsAcc = new Path(tmpDir, "vi_telmonth_bts_acc");
         {
             // Delete months
             DeletePeriodJob job = new DeletePeriodJob(conf);
@@ -50,7 +53,7 @@ public final class ActivityAreaRunner {
             }
         }
 
-        Path viTelmonthMobvarsAcc = tmpDir.suffix("vi_telmonth_mobvars_acc");
+        Path viTelmonthMobvarsAcc = new Path(tmpDir, "vi_telmonth_mobvars_acc");
         {
             // Calculate individual variables for every month
             ActivityAreaByMonthJob job = new ActivityAreaByMonthJob(conf);
@@ -60,7 +63,7 @@ public final class ActivityAreaRunner {
             }
         }
 
-        Path viClientFuseAcc = tmpDir.suffix("vi_client_fuse_acc");
+        Path viClientFuseAcc = new Path(tmpDir, "vi_client_fuse_acc");
         {
             // Fuse in a set all user info
             FusionTotalVarsJob job = new FusionTotalVarsJob(conf);

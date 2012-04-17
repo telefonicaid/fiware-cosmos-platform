@@ -4,8 +4,6 @@ import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
@@ -18,7 +16,8 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  * @author dmicol
  */
 public class RepbtsGetRepresentativeBtsReducer extends Reducer<IntWritable,
-        ProtobufWritable<BtsCounter>, NullWritable, Text> {
+        ProtobufWritable<BtsCounter>, ProtobufWritable<TwoInt>,
+        ProtobufWritable<BtsCounter>> {
     private static final int MOB_CONF_MIN_PERC_REP_BTS = 5;
     private static final int MOB_CONF_MIN_NUMBER_CALLS_BTS = 14;
 
@@ -30,13 +29,12 @@ public class RepbtsGetRepresentativeBtsReducer extends Reducer<IntWritable,
             final BtsCounter counter = value.get();
             if (counter.getCount() >= MOB_CONF_MIN_PERC_REP_BTS
                     && counter.getRange() >= MOB_CONF_MIN_NUMBER_CALLS_BTS) {
-                TwoInt nodeBts = TwoIntUtil.create(key.get(),
-                                                   counter.getPlaceId());
-                BtsCounter btsCounter = BtsCounterUtil.create(
-                        counter.getPlaceId(), 0, 0, counter.getCount());
-                context.write(NullWritable.get(), new Text(
-                        TwoIntUtil.toString(nodeBts) + "|" +
-                        BtsCounterUtil.toString(btsCounter)));
+                ProtobufWritable<TwoInt> nodeBts = TwoIntUtil.createAndWrap(
+                        key.get(), counter.getPlaceId());
+                ProtobufWritable<BtsCounter> btsCounter =
+                        BtsCounterUtil.createAndWrap(counter.getPlaceId(), 0,
+                                                     0, counter.getCount());
+                context.write(nodeBts, btsCounter);
             }
         }
     }

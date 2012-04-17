@@ -29,6 +29,7 @@ public class FilterBtsVectorReducer extends Reducer<LongWritable,
         List<Bts> btsList = new LinkedList<Bts>();
         List<Cluster> clusterList = new LinkedList<Cluster>();
         for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
             final MobData mobData = value.get();
             switch (mobData.getType()) {
                 case BTS:

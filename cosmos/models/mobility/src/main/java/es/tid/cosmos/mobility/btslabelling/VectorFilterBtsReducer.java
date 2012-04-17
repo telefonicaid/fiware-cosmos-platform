@@ -22,6 +22,7 @@ public class VectorFilterBtsReducer extends Reducer<LongWritable,
             Iterable<ProtobufWritable<TwoInt>> values, Context context)
             throws IOException, InterruptedException {
         for (ProtobufWritable<TwoInt> value : values) {
+            value.setConverter(TwoInt.class);
             final TwoInt groupHour = value.get();
             ProtobufWritable<BtsCounter> counter = BtsCounterUtil.createAndWrap(
                     key.get(), (int)groupHour.getNum1(),

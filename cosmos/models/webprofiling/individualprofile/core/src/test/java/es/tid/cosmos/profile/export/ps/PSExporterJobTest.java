@@ -42,7 +42,7 @@ public class PSExporterJobTest {
     @Test
     public void shouldRenameOutputFile() throws Exception {
         this.instance.configure(new Path("file:/opt/input"),
-                                new Path("file:" + outFolder.getRoot()));
+                                new Path(outFolder.getRoot().toURI()));
         this.instance.getConfiguration().setLong("psexport.timestamp",
                                                  1331830825230L);
         File partFile = outFolder.newFile("part-r-0000.data");

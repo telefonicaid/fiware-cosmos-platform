@@ -1,4 +1,4 @@
-namespace java es.tid.cosmos.platform.cluster.server
+namespace java es.tid.cosmos.platform.cluster.server.generated
 namespace py cluster_api
 
 enum ClusterErrorCode {

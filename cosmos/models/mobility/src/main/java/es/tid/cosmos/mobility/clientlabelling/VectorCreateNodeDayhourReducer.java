@@ -22,14 +22,17 @@ public class VectorCreateNodeDayhourReducer extends Reducer
                           Iterable<ProtobufWritable<TwoInt>> values,
                           Context context) throws IOException,
                                                   InterruptedException {
+        key.setConverter(NodeBts.class);
         final NodeBts bts = key.get();
         DailyVector.Builder vectorBuilder = DailyVector.newBuilder();
         long num2 = 0;
         for (int i = 0; i < 24; i++) {
             boolean added = false;
             for (ProtobufWritable<TwoInt> value : values) {
-                num2 = value.get().getNum2();
-                if (value.get().getNum1() == i) {
+                value.setConverter(TwoInt.class);
+                final TwoInt twoInt = value.get();
+                num2 = twoInt.getNum2();
+                if (twoInt.getNum1() == i) {
                     added = true;
                     break;
                 }

@@ -5,6 +5,10 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import es.tid.cosmos.platform.cluster.server.generated.ClusterErrorCode;
+import es.tid.cosmos.platform.cluster.server.generated.ClusterJobResult;
+import es.tid.cosmos.platform.cluster.server.generated.TransferException;
+
 /**
  *
  * @author dmicol

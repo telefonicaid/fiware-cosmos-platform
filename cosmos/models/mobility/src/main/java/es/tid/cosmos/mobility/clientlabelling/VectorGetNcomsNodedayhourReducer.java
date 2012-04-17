@@ -27,6 +27,7 @@ public class VectorGetNcomsNodedayhourReducer extends Reducer<
             valueCount++;
         }
         
+        key.setConverter(NodeBts.class);
         final NodeBts bts = key.get();
         ProtobufWritable<NodeBts> outputBts = NodeBtsUtil.createAndWrap(
                 bts.getUserId(), bts.getPlaceId(), bts.getWeekday(), 0);

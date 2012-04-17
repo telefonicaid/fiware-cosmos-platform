@@ -92,9 +92,19 @@ public final class ClientLabellingRunner {
             }
         }
 
+        Path vectorClientNormPath = new Path(tmpDirPath, "vector_client_norm");
         {
             VectorNormalizedJob job = new VectorNormalizedJob(conf);
-            job.configure(vectorFuseNodeDaygroupPath, vectorClientClusterPath);
+            job.configure(vectorFuseNodeDaygroupPath, vectorClientNormPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        {
+            ClusterClientGetMinDistanceJob job =
+                    new ClusterClientGetMinDistanceJob(conf);
+            job.configure(vectorClientNormPath, vectorClientClusterPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

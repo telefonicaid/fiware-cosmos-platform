@@ -102,5 +102,15 @@ public final class PoisRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+
+        Path clientsRepbtsTextPath = tmpDir.suffix("/clients_repbts_text");
+        {
+            RepbtsGetRepresentativeBtsToTextJob job = new RepbtsGetRepresentativeBtsToTextJob(
+                    conf);
+            job.configure(clientsRepbtsPath, clientsRepbtsTextPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
     }
 }

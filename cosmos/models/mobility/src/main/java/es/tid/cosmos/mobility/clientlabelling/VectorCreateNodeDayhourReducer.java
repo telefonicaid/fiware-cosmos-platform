@@ -22,6 +22,7 @@ public class VectorCreateNodeDayhourReducer extends Reducer
                           Iterable<ProtobufWritable<TwoInt>> values,
                           Context context) throws IOException,
                                                   InterruptedException {
+        key.setConverter(NodeBts.class);
         final NodeBts bts = key.get();
         DailyVector.Builder vectorBuilder = DailyVector.newBuilder();
         long num2 = 0;

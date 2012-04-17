@@ -15,7 +15,7 @@ namespace au
     {
         if( log_server_query )
         {
-            fprintf( stderr , "Only one query channel can be open for a log server\n" );
+            LM_LW(("Only one query channel can be open for a log server\n" ));
             return false;
         }
         
@@ -23,7 +23,7 @@ namespace au
         Status s = log_server_query->initService();
         if( s != OK )
         {
-            fprintf( stderr , "Not possible to open query channel at port %d (%s)\n" , port , status(s) );
+            //LM_LW(("Not possible to open query channel at port %d (%s)\n" , port , status(s) ));
             delete log_server_query;
             log_server_query = NULL;
             return false;

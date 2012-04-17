@@ -16,7 +16,6 @@ SET (HEADERS
 	SamsonSetup.h
 	traces.h
 	MessagesOperations.h
-	daemonize.h
 	EnvironmentOperations.h
 	samsonConfig.h
 	coding.h
@@ -37,7 +36,6 @@ SET (SOURCES
 	SamsonSetup.cpp
 	traces.cpp
 	MessagesOperations.cpp
-	daemonize.cpp
 	EnvironmentOperations.cpp
 	coding.cpp
 	KVInputVector.cpp

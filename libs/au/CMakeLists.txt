@@ -174,6 +174,8 @@ StringComponents.h
 Tokenizer.h
 
 OnOffMonitor.h
+
+daemonize.h
 )
 
 SET (SOURCES
@@ -211,6 +213,8 @@ StringComponents.cpp
 Tokenizer.cpp
 
 OnOffMonitor.cpp
+
+daemonize.cpp
 )
 
 # Source groups to organize Xcode project

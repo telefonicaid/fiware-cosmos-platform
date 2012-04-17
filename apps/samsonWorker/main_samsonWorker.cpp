@@ -26,6 +26,7 @@
 #include "au/ThreadManager.h"
 #include "au/log/LogToServer.h"
 #include "au/log/Log.h"
+#include "au/daemonize.h"
 
 #include "engine/MemoryManager.h"
 #include "engine/Engine.h"
@@ -35,7 +36,6 @@
 #include "samson/common/samsonVersion.h"
 #include "samson/common/samsonVars.h"
 #include "samson/common/SamsonSetup.h"
-#include "samson/common/daemonize.h"
 #include "samson/common/MemoryCheck.h"
 #include "samson/network/WorkerNetwork.h"
 #include "samson/worker/SamsonWorker.h"

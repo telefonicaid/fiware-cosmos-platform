@@ -14,7 +14,7 @@
 #include <stdlib.h>             // free
 
 #include "logMsg/logMsg.h"             // LM_*
-#include "samson/common/daemonize.h"          // Own interface
+#include "daemonize.h"          // Own interface
 
 
 extern "C" void exit(int);

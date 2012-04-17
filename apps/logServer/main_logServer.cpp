@@ -3,6 +3,7 @@
 
 #include "au/log/log_server_common.h"
 #include "au/log/LogServer.h"
+#include "au/daemonize.h"
 
 #define LOC "localhost"
 
@@ -10,12 +11,14 @@
 #define LS_QUERY_PORT LOG_SERVER_DEFAULT_QUERY_CHANNEL_PORT
 #define LS_LOG_DIR LOG_SERVER_DEFAULT_CHANNEL_DIRECTORY
 
+bool fg;
 int query_port;
 int target_port;
 char log_directory[1024];
 
 PaArgument paArgs[] =
 {
+    { "-fg",         &fg,           "", PaBool,   PaOpt, false,      false,  true,   "don't start as daemon"             },
     { "-port",       &target_port,  "", PaInt,    PaOpt, LS_PORT,        1,   99999, "Port for default log channel"  },
     { "-query_port", &query_port,   "", PaInt,    PaOpt, LS_QUERY_PORT,  1,   99999, "Port for logClient connections"  },
     { "-dir",        log_directory, "", PaString, PaOpt, _i LS_LOG_DIR,  PaNL, PaNL, "Directory for default channel logs" },
@@ -36,8 +39,6 @@ static const char* manCopyright     = "Copyright (C) 2011 Telefonica Digital";
 static const char* manVersion       = "0.1";
 
 
-// Log server
-au::LogServer log_server;
 
 int logFd=-1;
 
@@ -65,11 +66,24 @@ int main(int argC, const char *argV[])
     logFd = lmFirstDiskFileDescriptor();
 
     
+    if (fg == false)
+    {
+        LM_M(("logServer running in background"));
+        daemonize();
+    }
+    else
+    {
+        LM_M(("logServer running in foreground"));
+    }
+    
+    // Log server
+    au::LogServer log_server;
+
     // Add default query channel
     bool s = log_server.add_query_channel( LOG_SERVER_DEFAULT_QUERY_CHANNEL_PORT );
 
     if( !s )
-        fprintf(stderr, "Error creating query channel on port %d\n" , LOG_SERVER_DEFAULT_QUERY_CHANNEL_PORT );
+        LM_X(1, ( "Not possible to open query channel on port %d\n" , LOG_SERVER_DEFAULT_QUERY_CHANNEL_PORT ));
     
     // Add default channel connections
     au::ErrorManager error;
@@ -77,7 +91,7 @@ int main(int argC, const char *argV[])
     
     if( error.isActivated() )
         LM_X(1, ("Not possible to add default channel.%s\n" , error.getMessage().c_str() ));
-
+    
     // Sleep forever
     while (true) 
         sleep(1);

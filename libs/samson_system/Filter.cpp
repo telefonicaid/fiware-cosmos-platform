@@ -50,7 +50,6 @@ namespace samson{
                           )
         {
             
-            printf("getFilter: %s\n" , token_vector->str().c_str() );
             
             // Check if there are tokens to be read
             if( token_vector->eof() )
@@ -164,7 +163,6 @@ namespace samson{
                                ,  au::ErrorManager* error )
         {
             
-            printf("getFilterChain: %s\n" , token_vector->str().c_str() );
             
             // Line of filters for this command...
             au::vector<Filter> tmp_filters;
@@ -213,25 +211,18 @@ namespace samson{
             SamsonTokenizer tokenizer;
             au::token::TokenVector token_vector = tokenizer.parse(command);
             
-            printf("Adding filters from '%s'\n" , command.c_str() );
-            printf("Tokens: %s\n" , token_vector.str().c_str() );
-            
             while ( !token_vector.eof() ) 
             {
                 // Get the "sub" token vector for each line
                 au::token::TokenVector sub_token_vector = token_vector.getTokensUntil( ";" );
                 
-                printf("Tokens line: %s\n" , sub_token_vector.str().c_str() );
                 
                 // Get a filter from this token_vector
                 Filter * filter = getFilterChain( &sub_token_vector , writer , txt_writer , error );
                 
-                printf("Filter: %s\n" , filter->str().c_str() );
-                
-                // If there is an error, just return
+               // If there is an error, just return
                 if( error->isActivated() )
                 {
-                    printf("Error: %s\n", error->getMessage().c_str() );
                     filters.clearVector();
                     return;
                 }
@@ -242,7 +233,6 @@ namespace samson{
                 }
             }
             
-            printf("Created %lu filters\n" , filters.size() );
             
         }
         

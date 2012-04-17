@@ -19,10 +19,10 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class RepbtsGetRepresentativeBtsToTextJob extends Job {
+public class ExportRepresentativeBtsToTextJob extends Job {
     private static final String JOB_NAME = "ConvertBtsCounterToText";
 
-    public RepbtsGetRepresentativeBtsToTextJob(Configuration conf) throws IOException {
+    public ExportRepresentativeBtsToTextJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
@@ -32,7 +32,7 @@ public class RepbtsGetRepresentativeBtsToTextJob extends Job {
         this.setOutputKeyClass(NullWritable.class);
         this.setOutputValueClass(Text.class);
         this.setOutputFormatClass(TextOutputFormat.class);
-        this.setReducerClass(RepbtsGetRepresentativeBtsToTextReducer.class);
+        this.setReducerClass(ExportRepresentativeBtsToTextReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

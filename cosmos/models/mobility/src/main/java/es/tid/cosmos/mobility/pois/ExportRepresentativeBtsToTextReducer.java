@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  *
  * @author dmicol
  */
-public class RepbtsGetRepresentativeBtsToTextReducer extends Reducer<
+public class ExportRepresentativeBtsToTextReducer extends Reducer<
         ProtobufWritable<TwoInt>, ProtobufWritable<BtsCounter>, NullWritable,
         Text> {
     @Override

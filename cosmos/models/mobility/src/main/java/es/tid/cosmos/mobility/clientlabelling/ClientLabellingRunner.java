@@ -109,5 +109,16 @@ public final class ClientLabellingRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+
+        Path vectorClientClusterTextPath = new Path(tmpDirPath,
+                "vector_client_cluster_text");
+        {
+            ExportClusterClientMinDistanceToTextJob job =
+                    new ExportClusterClientMinDistanceToTextJob(conf);
+            job.configure(vectorClientClusterPath, vectorClientClusterTextPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
     }
 }

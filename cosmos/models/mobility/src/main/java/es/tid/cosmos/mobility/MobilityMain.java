@@ -22,9 +22,9 @@ import es.tid.cosmos.mobility.util.Logger;
  * @author dmicol
  */
 public class MobilityMain extends Configured implements Tool {
-    public static final String CENTROIDS_CLIENT_TAG = "CENTROIDS_CLIENT_PATH";
-    public static final String CENTROIDS_BTS_TAG = "CENTROIDS_BTS_PATH";
-    public static final String CENTROIDS_CLIENTBTS_TAG =
+    private static final String CENTROIDS_CLIENT_TAG = "CENTROIDS_CLIENT_PATH";
+    private static final String CENTROIDS_BTS_TAG = "CENTROIDS_BTS_PATH";
+    private static final String CENTROIDS_CLIENTBTS_TAG =
             "CENTROIDS_CLIENTBTS_PATH";
     
     @Override

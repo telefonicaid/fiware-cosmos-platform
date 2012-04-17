@@ -34,8 +34,8 @@ public class RepbtsJoinDistCommsJob extends Job {
         this.setReducerClass(RepbtsJoinDistCommsReducer.class);
     }
 
-    public void configure(Path input, Path output) throws IOException {
-        FileInputFormat.setInputPaths(this, input);
+    public void configure(Path[] inputs, Path output) throws IOException {
+        FileInputFormat.setInputPaths(this, inputs);
         FileOutputFormat.setOutputPath(this, output);
     }
 }

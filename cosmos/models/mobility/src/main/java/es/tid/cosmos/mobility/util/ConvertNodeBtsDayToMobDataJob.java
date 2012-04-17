@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.pois;
+package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
 
@@ -18,10 +18,10 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class RepbtsGetRepresentativeBtsJob extends Job {
-    private static final String JOB_NAME = "RepbtsGetRepresentativeBts";
+public class ConvertNodeBtsDayToMobDataJob extends Job {
+    private static final String JOB_NAME = "ConvertNodeBtsDayToMobData";
 
-    public RepbtsGetRepresentativeBtsJob(Configuration conf)
+    public ConvertNodeBtsDayToMobDataJob(Configuration conf)
             throws IOException {
         super(conf, JOB_NAME);
 
@@ -29,10 +29,10 @@ public class RepbtsGetRepresentativeBtsJob extends Job {
         this.setInputFormatClass(SequenceFileInputFormat.class);
         this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
-        this.setOutputKeyClass(ProtobufWritable.class);
+        this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(RepbtsGetRepresentativeBtsReducer.class);
+        this.setReducerClass(ConvertNodeBtsDayToMobDataReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

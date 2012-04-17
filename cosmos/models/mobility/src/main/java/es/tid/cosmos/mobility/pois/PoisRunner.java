@@ -3,6 +3,9 @@ package es.tid.cosmos.mobility.pois;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
+import es.tid.cosmos.mobility.util.ConvertCdrToMobDataJob;
+import es.tid.cosmos.mobility.util.ConvertNodeBtsDayToMobDataJob;
+
 /**
  *
  * @author dmicol
@@ -11,9 +14,9 @@ public final class PoisRunner {
     private PoisRunner() {
     }
     
-    public static void run(Path tmpDir, Path clientsBtsPath,
-                           Path clientsRepbtsPath, Configuration conf)
-            throws Exception {
+    public static void run(Path tmpDir, Path clientsBtsPath, Path cdrsNoinfoPath,
+                           Path cdrsNoBtsPath, Path clientsRepbtsPath,
+                           Configuration conf) throws Exception {
         Path nodeBtsCounter = tmpDir.suffix("/node_bts_counter");
         {
             NodeBtsCounterJob job = new NodeBtsCounterJob(conf);
@@ -41,19 +44,51 @@ public final class PoisRunner {
             }
         }
 
-        Path repbtsAggbybts = tmpDir.suffix("/repbts_aggbybts");
+        Path repbtsAggbybtsPath = tmpDir.suffix("/repbts_aggbybts");
         {
             RepbtsAggbybtsJob job = new RepbtsAggbybtsJob(conf);
-            job.configure(repbtsSpreadNodebts, repbtsAggbybts);
+            job.configure(repbtsSpreadNodebts, repbtsAggbybtsPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path repbtsAggbybtsMobDataPath =
+                tmpDir.suffix("/repbts_aggbybts_mob_data");
+        { 
+            ConvertNodeBtsDayToMobDataJob job =
+                    new ConvertNodeBtsDayToMobDataJob(conf);
+            job.configure(repbtsAggbybtsPath, repbtsAggbybtsMobDataPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
+        Path cdrsNoinfoMobDataPath = tmpDir.suffix("/cdrs_noinfo_mob_data");
+        { 
+            ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
+            job.configure(cdrsNoinfoPath, cdrsNoinfoMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        Path cdrsNoBtsMobDataPath = tmpDir.suffix("/cdrs_nobts_mob_data");
+        { 
+            ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
+            job.configure(cdrsNoBtsPath, cdrsNoBtsMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
         Path repbtsJoinDistComms = tmpDir.suffix("/repbts_join_dist_comms");
         {
             RepbtsJoinDistCommsJob job = new RepbtsJoinDistCommsJob(conf);
-            job.configure(repbtsAggbybts, repbtsJoinDistComms);
+            job.configure(new Path[] { repbtsAggbybtsMobDataPath,
+                                       cdrsNoinfoMobDataPath,
+                                       cdrsNoBtsMobDataPath },
+                          repbtsJoinDistComms);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

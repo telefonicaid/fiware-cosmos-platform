@@ -32,8 +32,15 @@ public abstract class MobDataUtil implements ProtobufUtil {
 
     public static MobData create(Cluster cluster) {
         return MobData.newBuilder()
-                .setCluster(cluster)
                 .setType(MobData.Type.CLUSTER)
+                .setCluster(cluster)
+                .build();
+    }
+
+    public static MobData create(NodeBtsDay nodeBtsDay) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.NODE_BTS_DAY)
+                .setNodeBtsDay(nodeBtsDay)
                 .build();
     }
     
@@ -59,4 +66,8 @@ public abstract class MobDataUtil implements ProtobufUtil {
     public static ProtobufWritable<MobData> createAndWrap(Cluster obj) {
         return wrap(create(obj));
     }
+
+    public static ProtobufWritable<MobData> createAndWrap(NodeBtsDay obj) {
+        return wrap(create(obj));
+    }    
 }

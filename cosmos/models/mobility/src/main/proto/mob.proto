@@ -12,6 +12,7 @@ message MobData {
         CELL = 2;
         BTS = 3;
         CLUSTER = 4;
+        NODE_BTS_DAY = 5;
     }
 
     required Type type = 1;
@@ -19,6 +20,7 @@ message MobData {
     optional Cell cell = 3;
     optional Bts bts = 4;
     optional Cluster cluster = 5;
+    optional NodeBtsDay nodeBtsDay = 6;
 }
 
 message Cdr {

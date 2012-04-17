@@ -41,7 +41,7 @@ public class MobilityMain extends Configured implements Tool {
         if (shouldParse) {
             ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath, cellsMobPath,
                               adjBtsPath, pairbtsAdjPath, btsVectorTxtPath,
-                              btsComareaPath, this.getConf());
+                              btsComareaPath, conf);
         }
         
         Path tmpPreparingPath = new Path(tmpPath, "preparing");
@@ -56,15 +56,15 @@ public class MobilityMain extends Configured implements Tool {
             PreparingRunner.run(tmpPreparingPath, cdrsMobPath, cdrsInfoPath,
                                 cdrsNoinfoPath, cellsMobPath, clientsBtsPath,
                                 btsCommsPath, cdrsNoBtsPath, viTelmonthBtsPath,
-                                this.getConf());
+                                conf);
         }
         
         Path tmpExtractPoisPath = new Path(tmpPath, "extract_pois");
         Path clientsRepbtsPath = new Path(tmpExtractPoisPath, "clients_repbts");
         boolean shouldExtractPois = "true".equals(arguments.get("extractPOIs"));
         if (shouldExtractPois) {
-            PoisRunner.run(tmpExtractPoisPath, clientsBtsPath,
-                           clientsRepbtsPath, this.getConf());
+            PoisRunner.run(tmpExtractPoisPath, clientsBtsPath, cdrsNoinfoPath,
+                           cdrsNoBtsPath,  clientsRepbtsPath, conf);
         }
         
         return 0;

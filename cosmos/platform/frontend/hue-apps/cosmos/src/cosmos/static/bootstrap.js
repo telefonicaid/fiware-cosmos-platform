@@ -14,24 +14,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 Hue.Desktop.register({
-	Cosmos : {
-		name : 'Cosmos',
-		//autolaunch: "/cosmos/",
-		css : '/cosmos/static/css/cosmos.css',
-		require: [ 'cosmos/Cosmos' ],
-		launch: function(path, options){
-			// application launch code here 
-			// example code below: 
-			return new Cosmos(path || '/cosmos/', options);
-		},
-		menu: {
-			id: 'hue-cosmos-menu',
-			img: {
-				// Replace this with a real icon!
-				// ideally a 55x55 transparent png
-				src: '/cosmos/static/art/cosmos.png'
-			}
-		},
-		help: '/help/cosmos/'
-	}
+    Cosmos : {
+        name : 'Cosmos Shell',
+        //autolaunch: "/cosmos/",
+        css : '/cosmos/static/css/cosmos.css',
+        require: [ 'cosmos/Cosmos' ],
+        launch: function(path, options){
+            return new Cosmos(path || '/cosmos/', $merge({
+                displayHistory: false
+            }, options));
+        },
+        menu: {
+            id: 'hue-cosmos-menu',
+            img: {
+                src: '/cosmos/static/art/cosmos-logo.png'
+            }
+        },
+        help: '/help/cosmos/'
+    }
 });

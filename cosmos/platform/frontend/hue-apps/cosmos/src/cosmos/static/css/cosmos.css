@@ -22,6 +22,33 @@
 	width: 55px;
 	height: 55px;
 	position: absolute;
-	top: 27px;
-	left: 3px;
+	top: 24px;
+	left: 14px;
+        z-index: 1;
+}
+
+.cosmos .nav {
+    position: absolute;
+    top: 24px;
+    left: 80px;
+    z-index: 1;
+}
+
+.cosmos .nav_icon {
+    padding: 6px 8px 6px 25px;
+    height: 25px;
+}
+
+.cosmos .nav li {
+    float: left;
+}
+
+.cosmos a.cos-job_runs_nav {
+    background: url(/static/art/icons/application_view_list.png) no-repeat;
+}
+.cosmos a.cos-datasets_nav {
+    background: url(/static/art/icons/database_edit.png) no-repeat;
+}
+.cosmos a.cos-jars_nav {
+    background: url(/static/art/icons/package.png) no-repeat;
 }

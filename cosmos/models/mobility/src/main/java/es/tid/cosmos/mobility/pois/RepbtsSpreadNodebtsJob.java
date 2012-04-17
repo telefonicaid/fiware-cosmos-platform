@@ -27,8 +27,8 @@ public class RepbtsSpreadNodebtsJob extends Job {
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
-        this.setMapOutputKeyClass(IntWritable.class);
-        this.setMapOutputValueClass(ProtobufWritable.class);
+        this.setMapOutputKeyClass(ProtobufWritable.class);
+        this.setMapOutputValueClass(IntWritable.class);
         this.setOutputKeyClass(ProtobufWritable.class);
         this.setOutputValueClass(IntWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);

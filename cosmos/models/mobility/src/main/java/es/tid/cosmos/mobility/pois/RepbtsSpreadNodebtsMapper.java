@@ -29,6 +29,7 @@ public class RepbtsSpreadNodebtsMapper extends Mapper<LongWritable,
     @Override
     public void map(LongWritable key, ProtobufWritable<NodeMxCounter> value,
             Context context) throws IOException, InterruptedException {
+        value.setConverter(NodeMxCounter.class);
         final NodeMxCounter counter = value.get();
         for (BtsCounter bts : counter.getBtsList()) {
             ProtobufWritable<NodeBtsDay> nodeBtsDay = NodeBtsDayUtil.

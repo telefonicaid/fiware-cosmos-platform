@@ -27,6 +27,7 @@ public class NodeMobInfoReducer extends Reducer<LongWritable,
         int numberOfValues = 0;
         for (ProtobufWritable<BtsCounter> value : values) {
             numberOfValues++;
+            value.setConverter(BtsCounter.class);
             final BtsCounter btsCounter = value.get();
             allBts.add(btsCounter);
         }

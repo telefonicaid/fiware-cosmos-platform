@@ -29,6 +29,7 @@ public class RepbtsAggbybtsReducer extends Reducer<ProtobufWritable<NodeBtsDay>,
     public void reduce(ProtobufWritable<NodeBtsDay> key,
             Iterable<IntWritable> values, Context context)
             throws IOException, InterruptedException {
+        key.setConverter(NodeBtsDay.class);
         final NodeBtsDay byDay = key.get();
         this.userId.set(byDay.getUserId());
 

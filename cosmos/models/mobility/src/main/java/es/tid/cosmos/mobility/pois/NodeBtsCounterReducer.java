@@ -33,6 +33,8 @@ public class NodeBtsCounterReducer extends Reducer<
         for (NullWritable unused : values) {
             count++;
         }
+
+        key.setConverter(NodeBts.class);
         final NodeBts node = key.get();
         this.userId.set(node.getUserId());
         ProtobufWritable<BtsCounter> counter = BtsCounterUtil.createAndWrap(

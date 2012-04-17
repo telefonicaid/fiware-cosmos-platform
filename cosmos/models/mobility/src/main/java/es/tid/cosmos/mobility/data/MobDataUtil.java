@@ -51,6 +51,13 @@ public abstract class MobDataUtil implements ProtobufUtil {
                 .build();
     }
     
+    public static MobData create(BtsCounter btsCounter) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.BTS_COUNTER)
+                .setBtsCounter(btsCounter)
+                .build();
+    }
+    
     public static ProtobufWritable<MobData> wrap(MobData obj) {
         ProtobufWritable<MobData> wrapper = ProtobufWritable.newInstance(
                 MobData.class);
@@ -79,6 +86,10 @@ public abstract class MobDataUtil implements ProtobufUtil {
     }
 
     public static ProtobufWritable<MobData> createAndWrap(NodeBtsDay obj) {
+        return wrap(create(obj));
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(BtsCounter obj) {
         return wrap(create(obj));
     }    
 }

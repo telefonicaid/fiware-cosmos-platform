@@ -20,6 +20,8 @@ import es.tid.cosmos.mobility.util.Logger;
  * @author dmicol
  */
 public class MobilityMain extends Configured implements Tool {
+    public static final String CENTROIDES_CLIENT_TAG = "CENTROIDES_CLIENT_PATH";
+    
     @Override
     public int run(String[] args) throws Exception {
         Map<String, String> arguments = parseArguments(args);
@@ -31,8 +33,8 @@ public class MobilityMain extends Configured implements Tool {
         Path btsVectorTxtPath = new Path(arguments.get("btsVectorTxt"));
         
         Configuration conf = this.getConf();
-        if (arguments.containsKey("centroides")) {
-            conf.set("CENTROIDES_CLIENT_PATH", arguments.get("centroides"));
+        if (arguments.containsKey("centroides_client")) {
+            conf.set(CENTROIDES_CLIENT_TAG, arguments.get("centroides_client"));
         }
         
         Path tmpParsingPath = new Path(tmpPath, "parsing");
@@ -78,7 +80,7 @@ public class MobilityMain extends Configured implements Tool {
                                                 "vector_client_clusterPath");
         boolean shouldLabelPois = "true".equals(arguments.get("labelPOIs"));
         if (shouldLabelPois) {
-            if (conf.get("CENTROIDES_CLIENT_PATH") == null) {
+            if (conf.get(CENTROIDES_CLIENT_TAG) == null) {
                 throw new IllegalStateException(
                         "Must specify the centroides path");
             }

@@ -29,8 +29,10 @@ public class VectorCreateNodeDayhourReducer extends Reducer
         for (int i = 0; i < 24; i++) {
             boolean added = false;
             for (ProtobufWritable<TwoInt> value : values) {
-                num2 = value.get().getNum2();
-                if (value.get().getNum1() == i) {
+                value.setConverter(TwoInt.class);
+                final TwoInt twoInt = value.get();
+                num2 = twoInt.getNum2();
+                if (twoInt.getNum1() == i) {
                     added = true;
                     break;
                 }

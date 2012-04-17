@@ -14,6 +14,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.MobilityMain;
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
@@ -86,7 +87,7 @@ public class ClusterClientGetMinDistanceReducer extends Reducer<
         BufferedReader br = null;
         try {
             FileSystem fs = FileSystem.get(conf);
-            Path input = new Path(conf.get("CENTROIDES_CLIENT_PATH"));
+            Path input = new Path(conf.get(MobilityMain.CENTROIDES_CLIENT_TAG));
             in = fs.open(input);
             br = new BufferedReader(new InputStreamReader(in));
             clientClusters = new LinkedList<Cluster>();

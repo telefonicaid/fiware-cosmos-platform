@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.activityarea;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 /**
@@ -82,12 +83,10 @@ public final class ActivityAreaRunner {
             }
         }
 
-	  /* Delete unused:
-           * vi_telmonth_mobvars
-           * vi_telmonth_bts_mobvars
-           * vi_telmonth_bts_acc
-           * vi_telmonth_mobvars_acc
-           * vi_telmonth_bts
-           */
+        // Delete unused
+        FileSystem fs = FileSystem.get(conf);
+        fs.deleteOnExit(viTelmonthMobvars);
+        fs.deleteOnExit(viTelmonthBtsAcc);
+        fs.deleteOnExit(viTelmonthMobvarsAcc);
     }
 }

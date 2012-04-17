@@ -9,6 +9,13 @@ import es.tid.cosmos.mobility.data.MobProtocol.*;
  * @author dmicol
  */
 public abstract class MobDataUtil implements ProtobufUtil {
+    public static MobData create(int value) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.INT)
+                .setInt(value)
+                .build();
+    }
+    
     public static MobData create(Cdr cdr) {
         return MobData.newBuilder()
                 .setType(MobData.Type.CDR)
@@ -51,6 +58,10 @@ public abstract class MobDataUtil implements ProtobufUtil {
         return wrapper;
     }
 
+    public static ProtobufWritable<MobData> createAndWrap(int obj) {
+        return wrap(create(obj));
+    }
+    
     public static ProtobufWritable<MobData> createAndWrap(Cdr obj) {
         return wrap(create(obj));
     }

@@ -4,6 +4,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.mobility.util.ConvertCdrToMobDataJob;
+import es.tid.cosmos.mobility.util.ConvertIntToMobDataJob;
 import es.tid.cosmos.mobility.util.ConvertNodeBtsDayToMobDataJob;
 
 /**
@@ -15,8 +16,9 @@ public final class PoisRunner {
     }
     
     public static void run(Path tmpDir, Path clientsBtsPath, Path cdrsNoinfoPath,
-                           Path cdrsNoBtsPath, Path clientsRepbtsPath,
-                           Configuration conf) throws Exception {
+                           Path cdrsNoBtsPath, Path clientsInfoFilteredPath,
+                           Path clientsRepbtsPath, Configuration conf)
+            throws Exception {
         Path nodeBtsCounter = tmpDir.suffix("/node_bts_counter");
         {
             NodeBtsCounterJob job = new NodeBtsCounterJob(conf);
@@ -55,7 +57,7 @@ public final class PoisRunner {
         
         Path repbtsAggbybtsMobDataPath =
                 tmpDir.suffix("/repbts_aggbybts_mob_data");
-        { 
+        {
             ConvertNodeBtsDayToMobDataJob job =
                     new ConvertNodeBtsDayToMobDataJob(conf);
             job.configure(repbtsAggbybtsPath, repbtsAggbybtsMobDataPath);
@@ -82,12 +84,33 @@ public final class PoisRunner {
             }
         }
         
+        {
+            RepbtsFilterNumCommsJob job = new RepbtsFilterNumCommsJob(conf);
+            job.configure(new Path[] { repbtsAggbybtsMobDataPath,
+                                       cdrsNoinfoMobDataPath,
+                                       cdrsNoBtsMobDataPath },
+                          clientsInfoFilteredPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        Path clientsInfoFilteredMobDataPath = tmpDir.suffix(
+                "/clients_info_filtered_mob_data");
+        {
+            ConvertIntToMobDataJob job = new ConvertIntToMobDataJob(conf);
+            job.configure(clientsInfoFilteredPath,
+                          clientsInfoFilteredMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
         Path repbtsJoinDistComms = tmpDir.suffix("/repbts_join_dist_comms");
         {
             RepbtsJoinDistCommsJob job = new RepbtsJoinDistCommsJob(conf);
             job.configure(new Path[] { repbtsAggbybtsMobDataPath,
-                                       cdrsNoinfoMobDataPath,
-                                       cdrsNoBtsMobDataPath },
+                                       clientsInfoFilteredMobDataPath },
                           repbtsJoinDistComms);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
@@ -105,8 +128,8 @@ public final class PoisRunner {
 
         Path clientsRepbtsTextPath = tmpDir.suffix("/clients_repbts_text");
         {
-            RepbtsGetRepresentativeBtsToTextJob job = new RepbtsGetRepresentativeBtsToTextJob(
-                    conf);
+            RepbtsGetRepresentativeBtsToTextJob job = new
+                    RepbtsGetRepresentativeBtsToTextJob(conf);
             job.configure(clientsRepbtsPath, clientsRepbtsTextPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());

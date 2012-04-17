@@ -1,53 +1,54 @@
 package es.tid.cosmos.mobility.pois;
 
 import java.io.IOException;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
-import es.tid.cosmos.mobility.util.CellCatalogue;
+import es.tid.cosmos.mobility.util.Logger;
 
 /**
  *
  * @author dmicol
  */
 public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
-        ProtobufWritable<NodeBtsDay>, LongWritable, IntWritable> {
+        ProtobufWritable<MobData>, LongWritable, IntWritable> {
     private static final int MIN_TOTAL_CALLS = 200;
     private static final int MAX_TOTAL_CALLS = 5000;
-    
-    private CellCatalogue cellCatalogue;
 
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
-        this.cellCatalogue = new CellCatalogue(context.getConfiguration());
-    }
-    
-    @Override
     public void reduce(LongWritable key,
-                       Iterable<ProtobufWritable<NodeBtsDay>> values,
+                       Iterable<ProtobufWritable<MobData>> values,
                        Context context)
             throws IOException, InterruptedException {
+        List<NodeBtsDay> nodeBtsDayList = new LinkedList<NodeBtsDay>();
         int numCommsInfo = 0;
-        int numCommsNoInfo = 0;
-        int numCommsNoBts = 0;
-        for (ProtobufWritable<NodeBtsDay> value : values) {
-            final NodeBtsDay nodeBtsDay = value.get();
-            if (!nodeBtsDay.hasPlaceId() || nodeBtsDay.getPlaceId() == 0) {
-                numCommsNoInfo++;
-            } else if (!this.cellCatalogue.contains(nodeBtsDay.getPlaceId())) {
-                numCommsNoBts++;
-            } else {
-                numCommsInfo += nodeBtsDay.getCount();
+        int numCommsNoInfoOrNoBts = 0;
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final MobData mobData = value.get();
+            switch (mobData.getType()) {
+                case CDR:
+                    numCommsNoInfoOrNoBts++;
+                    break;
+                case NODE_BTS_DAY:
+                    final NodeBtsDay nodeBtsDay = mobData.getNodeBtsDay();
+                    numCommsInfo += nodeBtsDay.getCount();
+                    nodeBtsDayList.add(nodeBtsDay);
+                    break;
+                default:
+                    throw new IllegalArgumentException();
             }
         }
-        int totalComms = numCommsInfo + numCommsNoInfo + numCommsNoBts;
+        Logger.get().info("NumCommsInfo: " + numCommsInfo);
+        Logger.get().info("NumCommsNoInfoOrNoBts: " + numCommsNoInfoOrNoBts);
+        int totalComms = numCommsInfo + numCommsNoInfoOrNoBts;
         if (totalComms >= MIN_TOTAL_CALLS && totalComms <= MAX_TOTAL_CALLS) {
             context.write(key, new IntWritable(numCommsInfo));
         }

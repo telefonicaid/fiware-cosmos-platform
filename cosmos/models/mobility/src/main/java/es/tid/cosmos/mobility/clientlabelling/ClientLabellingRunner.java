@@ -3,6 +3,9 @@ package es.tid.cosmos.mobility.clientlabelling;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
+import es.tid.cosmos.mobility.util.ConvertCdrToMobDataJob;
+import es.tid.cosmos.mobility.util.ConvertIntToMobDataJob;
+
 /**
  *
  * @author dmicol
@@ -12,42 +15,78 @@ public final class ClientLabellingRunner {
     }
     
     public static void run(Path cdrsMobPath, Path clientsInfoFilteredPath,
-                           Path vectorClientClusterPath, Path tmpDir,
+                           Path vectorClientClusterPath, Path tmpDirPath,
                            Configuration conf) throws Exception {
-        Path vectorSpreadNodedayhour = new Path(tmpDir, "clients_info_spread");
+        Path cdrsMobDataPath = new Path(tmpDirPath, "cdrs_mob_data");
+        { 
+            ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
+            job.configure(cdrsMobPath, cdrsMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        Path clientsInfoFilteredMobDataPath = new Path(tmpDirPath,
+                "clients_info_filtered_mob_data");
+        { 
+            ConvertIntToMobDataJob job = new ConvertIntToMobDataJob(conf);
+            job.configure(clientsInfoFilteredPath,
+                          clientsInfoFilteredMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path cdrsFilteredPath = new Path(tmpDirPath, "cdrs_filtered");
+        {
+            VectorFiltClientsJob job = new VectorFiltClientsJob(conf);
+            job.configure(new Path[] { cdrsMobDataPath,
+                                       clientsInfoFilteredMobDataPath },
+                          cdrsFilteredPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path vectorSpreadNodedayhourPath = new Path(tmpDirPath,
+                                                    "clients_info_spread");
         {
             VectorSpreadNodedayhourJob job = new VectorSpreadNodedayhourJob(
                     conf);
-            job.configure(input, vectorSpreadNodedayhour);
+            job.configure(cdrsFilteredPath, vectorSpreadNodedayhourPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
-        Path vectorGetNcomsNodedayhour = new Path(tmpDir, "cliVec_numcoms");
+        Path vectorGetNcomsNodedayhourPath = new Path(tmpDirPath,
+                                                      "cliVec_numcoms");
         {
             VectorGetNcomsNodedayhourJob job = new VectorGetNcomsNodedayhourJob(
                     conf);
-            job.configure(vectorSpreadNodedayhour, vectorGetNcomsNodedayhour);
+            job.configure(vectorSpreadNodedayhourPath,
+                          vectorGetNcomsNodedayhourPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
-        Path vectorCreateNodeDayhour = new Path(tmpDir, "cliVec_group");
+        Path vectorCreateNodeDayhourPath = new Path(tmpDirPath, "cliVec_group");
         {
             VectorCreateNodeDayhourJob job = new VectorCreateNodeDayhourJob(
                     conf);
-            job.configure(vectorGetNcomsNodedayhour, vectorCreateNodeDayhour);
+            job.configure(vectorGetNcomsNodedayhourPath,
+                          vectorCreateNodeDayhourPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
-        Path vectorFuseNodeDaygroup = new Path(tmpDir, "vector_client");
+        Path vectorFuseNodeDaygroupPath = new Path(tmpDirPath, "vector_client");
         {
             VectorFuseNodeDaygroupJob job = new VectorFuseNodeDaygroupJob(conf);
-            job.configure(vectorCreateNodeDayhour, vectorFuseNodeDaygroup);
+            job.configure(vectorCreateNodeDayhourPath,
+                          vectorFuseNodeDaygroupPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -55,7 +94,7 @@ public final class ClientLabellingRunner {
 
         {
             VectorNormalizedJob job = new VectorNormalizedJob(conf);
-            job.configure(vectorFuseNodeDaygroup, vectorClientClusterPath);
+            job.configure(vectorFuseNodeDaygroupPath, vectorClientClusterPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

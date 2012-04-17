@@ -29,7 +29,7 @@ ${shared.header("Cosmos", section="job_runs")}
             <!-- TODO: show links to progress in job browser, results in
                     cosmos_dataviewer and error in here -->
             <a target="CosmosDataviewer"
-            href="/cosmos_dataviewer/run/1">Results</a>i
+	       href="/cosmos_dataviewer/run/1">Results</a>
         </td>
       </tr>
       % endfor

@@ -6,9 +6,26 @@ ${shared.header("Cosmos", section="datasets")}
 ## and passed along as the "view" argument in its onLoad event
 
 ## the class 'jframe_padded' will give the contents of your window a standard padding
-<div id="index" class="view jframe_padded">
-  <h2>Cosmos app is successfully setup!</h2>
-  <p>TO DO</p>
+<div id="index" class="view">
+  <table data-filters="HtmlTable" class="selectable sortable" cellpadding="0"
+         cellspacing="0">
+    <thead>
+      <tr>
+        <th>Name</th>
+	<th>Description</th>
+	<th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      % for dataset in datasets:
+      <tr>
+        <td>${dataset.name | h}</td>
+        <td>${dataset.description | h}</td>
+        <td/>
+      </tr>
+      % endfor
+    </tbody>
+  </table>
 </div>
 
 ${shared.footer()}

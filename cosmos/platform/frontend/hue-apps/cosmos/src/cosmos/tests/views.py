@@ -16,13 +16,29 @@ class JobRunsTestCase(test.TestCase):
 
     def test_jobruns_listed(self):
         response = self.client.get('/cosmos/')
-        print response.context['job_runs']
         listed_names = map(lambda x: x.name, response.context['job_runs'])
-        self.assertContains(response, 'running_wc', 
-                            msg_prefix="Running jobs should be listed")
-        self.assertContains(response, 'successful_wc',
-                            msg_prefix="Successful jobs should be listed")
-        self.assertContains(response, 'failed_wc',
-                            msg_prefix="Failed jobs should be listed")
-        self.assertNotContains(response, 'other_jobrun',
-                               msg_prefix="Other user jobs should be unlisted")
+        self.assertEquals(response.status_code, 200)
+        self.assertTrue('running_wc' in listed_names,
+                        msg="Running jobs should be listed")
+        self.assertTrue('successful_wc' in listed_names,
+                        msg="Successful jobs should be listed")
+        self.assertTrue('failed_wc' in listed_names,
+                        msg="Failed jobs should be listed")
+        self.assertFalse('other_jobrun' in listed_names,
+                        msg="Other user jobs should be unlisted")
+
+
+class DatasetsTestCase(test.TestCase):
+    fixtures = ['users', 'sample_runs']
+    
+    def setUp(self):
+        self.client.login(username='user101', password='user1')
+
+    def test_datasets_listed(self):
+        response = self.client.get('/cosmos/datasets/')
+        self.assertEquals(response.status_code, 200)
+        listed_names = map(lambda x: x.name, response.context['datasets'])
+        self.assertTrue('dataset1' in listed_names,
+                        msg='Own datasets should be listed')
+        self.assertFalse('dataset3' in listed_names,
+                         msg='Other user datasets should not be listed')

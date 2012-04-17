@@ -8,19 +8,17 @@ import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.log4j.Logger;
 
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
+import es.tid.cosmos.mobility.util.Logger;
 
 /**
  *
  * @author dmicol
  */
 public class MobilityMain extends Configured implements Tool {
-    private static final Logger LOG = Logger.getLogger(MobilityMain.class);
-    
     @Override
     public int run(String[] args) throws Exception {
         Map<String, String> arguments = parseArguments(args);
@@ -34,11 +32,11 @@ public class MobilityMain extends Configured implements Tool {
         Configuration conf = this.getConf();
         conf.set("CELL_CATALOGUE_PATH", cellsPath.toString());
         
-        Path tmpParsingPath = tmpPath.suffix("/parsing");
-        Path cdrsMobPath = tmpParsingPath.suffix("/cdrs_mob");
-        Path cellsMobPath = tmpParsingPath.suffix("/cells_mob");
-        Path pairbtsAdjPath = tmpParsingPath.suffix("/pairbts_adj");
-        Path btsComareaPath = tmpParsingPath.suffix("/bts_comarea");
+        Path tmpParsingPath = new Path(tmpPath, "parsing");
+        Path cdrsMobPath = new Path(tmpParsingPath, "cdrs_mob");
+        Path cellsMobPath = new Path(tmpParsingPath, "cells_mob");
+        Path pairbtsAdjPath = new Path(tmpParsingPath, "pairbts_adj");
+        Path btsComareaPath = new Path(tmpParsingPath, "bts_comarea");
         boolean shouldParse = "true".equals(arguments.get("parse"));
         if (shouldParse) {
             ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath, cellsMobPath,
@@ -46,13 +44,13 @@ public class MobilityMain extends Configured implements Tool {
                               btsComareaPath, this.getConf());
         }
         
-        Path tmpPreparingPath = tmpPath.suffix("/preparing");
-        Path cdrsInfoPath = tmpPreparingPath.suffix("/cdrs_info");
-        Path cdrsNoinfoPath = tmpPreparingPath.suffix("/cdrs_noinfo");
-        Path clientsBtsPath = tmpPreparingPath.suffix("/clients_bts");
-        Path btsCommsPath = tmpPreparingPath.suffix("/bts_comms");
-        Path cdrsNoBtsPath = tmpPreparingPath.suffix("/cdrs_no_bts");
-        Path viTelmonthBtsPath = tmpPreparingPath.suffix("/vi_telmonth_bts");
+        Path tmpPreparingPath = new Path(tmpPath, "preparing");
+        Path cdrsInfoPath = new Path(tmpPreparingPath, "cdrs_info");
+        Path cdrsNoinfoPath = new Path(tmpPreparingPath, "cdrs_noinfo");
+        Path clientsBtsPath = new Path(tmpPreparingPath, "clients_bts");
+        Path btsCommsPath = new Path(tmpPreparingPath, "bts_comms");
+        Path cdrsNoBtsPath = new Path(tmpPreparingPath, "cdrs_no_bts");
+        Path viTelmonthBtsPath = new Path(tmpPreparingPath, "vi_telmonth_bts");
         boolean shouldPrepare = "true".equals(arguments.get("prepare"));
         if (shouldPrepare) {
             PreparingRunner.run(tmpPreparingPath, cdrsMobPath, cdrsInfoPath,
@@ -61,8 +59,8 @@ public class MobilityMain extends Configured implements Tool {
                                 this.getConf());
         }
         
-        Path tmpExtractPoisPath = tmpPath.suffix("/extract_pois");
-        Path clientsRepbtsPath = tmpExtractPoisPath.suffix("/clients_repbts");
+        Path tmpExtractPoisPath = new Path(tmpPath, "extract_pois");
+        Path clientsRepbtsPath = new Path(tmpExtractPoisPath, "clients_repbts");
         boolean shouldExtractPois = "true".equals(arguments.get("extractPOIs"));
         if (shouldExtractPois) {
             PoisRunner.run(tmpExtractPoisPath, clientsBtsPath,
@@ -92,7 +90,7 @@ public class MobilityMain extends Configured implements Tool {
                 throw new Exception("Unknown error");
             }
         } catch (Exception ex) {
-            LOG.fatal(ex);
+            Logger.get().fatal(ex);
             throw ex;
         }
     }

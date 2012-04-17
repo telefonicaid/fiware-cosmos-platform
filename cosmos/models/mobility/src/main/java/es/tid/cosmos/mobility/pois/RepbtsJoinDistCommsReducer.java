@@ -12,6 +12,7 @@ import es.tid.cosmos.mobility.data.MobProtocol;
 import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
 import es.tid.cosmos.mobility.util.CellCatalogue;
+import es.tid.cosmos.mobility.util.Logger;
 
 /**
  *
@@ -50,6 +51,9 @@ public class RepbtsJoinDistCommsReducer extends Reducer<LongWritable,
                 numCommsInfo += nodeBtsDay.getCount();
             }
         }
+        Logger.get().info("NumCommsInfo: " + numCommsInfo);
+        Logger.get().info("NumCommsInfo: " + numCommsInfo);
+        Logger.get().info("NumCommsInfo: " + numCommsInfo);
         int totalComms = numCommsInfo + numCommsNoInfo + numCommsNoBts;
         if (totalComms >= MIN_TOTAL_CALLS && totalComms <= MAX_TOTAL_CALLS) {
             for (ProtobufWritable<NodeBtsDay> value : values) {

@@ -28,6 +28,7 @@ public class VectorFuseNodeDaygroupReducer extends Reducer
             boolean added = false;
             int j = 0;
             for (ProtobufWritable<DailyVector> value : values) {
+                value.setConverter(DailyVector.class);
                 final DailyVector dailyVector = value.get();
                 if (dailyVector.getHours(j).getNum2() == group) {
                     for (TwoInt hour : dailyVector.getHoursList()) {
@@ -45,8 +46,10 @@ public class VectorFuseNodeDaygroupReducer extends Reducer
             }
         }
 
+        key.setConverter(TwoInt.class);
+        final TwoInt twoInt = key.get();
         ProtobufWritable<NodeBts> bts = NodeBtsUtil.createAndWrap(
-                key.get().getNum1(), (int)key.get().getNum2(), 0, 0);
+                twoInt.getNum1(), (int)twoInt.getNum2(), 0, 0);
         ProtobufWritable<ClusterVector> clusterVectorWrapper =
                 ProtobufWritable.newInstance(ClusterVector.class);
         clusterVectorWrapper.set(clusterVectorBuilder.build());

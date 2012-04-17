@@ -22,9 +22,9 @@ public class VectorNormalizedReducer extends Reducer<ProtobufWritable<NodeBts>,
             Context context) throws IOException, InterruptedException {
         ClusterVector.Builder vectorNormBuilder = ClusterVector.newBuilder();
         ClusterVector.Builder divBuilder = ClusterVector.newBuilder();
-        final NodeBts bts = key.get();
         double elem;
         for (ProtobufWritable<ClusterVector> value : values) {
+            value.setConverter(ClusterVector.class);
             final ClusterVector clusterVector = value.get();
             double sumvalues = 0;
 

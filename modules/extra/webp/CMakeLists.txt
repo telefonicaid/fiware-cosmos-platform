@@ -3,6 +3,7 @@ SET( MODULE_NAME webp )
 SET (AUX_HEADERS
 #operations/demo.h
 operations/emit_hits.h
+operations/emit_hits_for_urls.h
 operations/joint_comscore_dictionary.h
 operations/map_comscore_lookup.h
 operations/parse_tid_web_logs.h
@@ -126,5 +127,6 @@ INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
 #ENABLE_TESTING()
 #ADD_SUBDIRECTORY(testing)     # Test module and ctest stuff
+
 
 

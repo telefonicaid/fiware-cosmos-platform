@@ -156,6 +156,9 @@ int main( int argC , const char *argV[] )
                 std::cout << block->get_header_content();
             else
                 std::cout << block->get_content( limit, format );
+
+            // Flush output
+            std::cout.flush();
             
             delete block;
         }

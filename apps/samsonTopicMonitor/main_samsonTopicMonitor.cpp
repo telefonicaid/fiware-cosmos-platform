@@ -174,10 +174,16 @@ void* process_income_blocks(void*)
     
     while( true )
     {
+        LM_V(("Start reading lines from stdin..."));
+        
         char line[100000];
         if( fgets( line, 100000 , stdin ) == NULL )
             LM_X(0,("No more commands to process at stdin"));
 
+        au::remove_return_chars(line);
+
+        LM_V(("Process income line: %s" , line));
+        
         process_command( line );
         
     }
@@ -204,9 +210,8 @@ int main( int argC ,  char *argV[] )
     
     // Run the thread to update incoming blocks
     pthread_t t;
-    
     au::ThreadManager::shared()->addThread( "main::SamsonTopicMonitor" ,&t, NULL, process_income_blocks, NULL);
-
+    
 	// Create the app ( QT library )
     app =  new QApplication(argC, argV);
 

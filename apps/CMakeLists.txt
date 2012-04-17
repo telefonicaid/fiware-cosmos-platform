@@ -34,8 +34,10 @@ if (HAVE_QT)
         ADD_SUBDIRECTORY(delilah_graph)
         #ADD_SUBDIRECTORY(delilahQt)
         #ADD_SUBDIRECTORY(samsonLevelMonitor)
-    endif (HAVE_KDCHART)
-#    ADD_SUBDIRECTORY(samsonTopicMonitor)
+    endif (HAVE_KDCHART) 		    
+       
+	ADD_SUBDIRECTORY(samsonTopicMonitor)
+
 endif (HAVE_QT)
 
 # Extra apps

@@ -90,6 +90,15 @@ map emit_hits
 	helpLine "Emit all the strings to be tracked.To be connected with hit module..."
 }
 
+
+map emit_hits_for_urls
+{
+	in system.String system.UInt
+	out system.String system.UInt
+
+	helpLine "Process urls at the input and Emit all strings to be tracked: url , domain , category,..."
+}
+
 reduce update_user
 {
 	in  system.String webp.Log

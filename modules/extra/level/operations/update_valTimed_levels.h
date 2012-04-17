@@ -73,15 +73,14 @@ namespace level{
 				  tmp.parse( inputs[0].kvs[i]->value );
 				  if (tmp.val.value != 1)
 				  {
-					  LM_M(("At hit:%s, for key:%s,  count:%d", tmp.t.str().c_str(), key.value.c_str(), tmp.val.value));
+					  //LM_M(("At hit:%s, for key:%s,  count:%d", tmp.t.str().c_str(), key.value.c_str(), tmp.val.value));
 				  }
 				  intValue.value += tmp.val.value;
 				  state.val.value = intValue.value;
 				  if (tmp.t.value > state.t.value)
 				  {
-					  LM_M(("Emit count:%d for key:%s at time:%s", intValue.value, key.value.c_str(), state.t.str().c_str()));
-					  writer->emit( 0 , &key , &tmp );
-					  writer->emit(1, &key, &state);
+					  //LM_M(("Emit count:%d for key:%s at time:%s", intValue.value, key.value.c_str(), state.t.str().c_str()));
+					  //writer->emit( 0 , &key , &tmp );
 					  state.t.value = tmp.t.value;
 				  }
 			   }
@@ -89,6 +88,7 @@ namespace level{
 			   //tmp.t.value = firstTime.value;
 
 			   LM_M(("Update state for key:%s", key.value.c_str()));
+			   writer->emit( 0 , &key , &state );
 			   writer->emit( 1 , &key , &state );
 		}
 

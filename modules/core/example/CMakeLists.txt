@@ -8,8 +8,8 @@ if (INSTALL_DIR)
     MESSAGE("Using $ENV{SAMSON_HOME} as the installation location")
     SET (CMAKE_INSTALL_PREFIX $ENV{SAMSON_HOME} CACHE INTERNAL "")
 else (NOT INSTALL_DIR)
-    MESSAGE("Default to /opt/samson as the installation location. Set the environment variable SAMSON_HOME to override")
-    SET (CMAKE_INSTALL_PREFIX /opt/samson CACHE INTERNAL "")
+    MESSAGE("Default to $ENV{SAMSON_HOME} as the installation location. Set the environment variable SAMSON_HOME to override")
+    SET (CMAKE_INSTALL_PREFIX $ENV{SAMSON_HOME} CACHE INTERNAL "")
 endif (INSTALL_DIR)
 
 # Locate samsonModuleParser

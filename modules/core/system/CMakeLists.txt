@@ -28,8 +28,8 @@ if (INSTALL_DIR)
     MESSAGE("Using $ENV{SAMSON_HOME} as the installation location")
     SET (CMAKE_INSTALL_PREFIX $ENV{SAMSON_HOME} CACHE INTERNAL "")
 else (NOT INSTALL_DIR)
-    MESSAGE("Default to /opt/samson as the installation location. Set the environment variable SAMSON_HOME to override")
-    SET (CMAKE_INSTALL_PREFIX /opt/samson CACHE INTERNAL "")
+    MESSAGE("Default to $ENV{SAMSON_HOME} as the installation location. Set the environment variable SAMSON_HOME to override")
+    SET (CMAKE_INSTALL_PREFIX $ENV{SAMSON_HOME} CACHE INTERNAL "")
 endif (INSTALL_DIR)
 
 # Locate samsonModuleParser
@@ -119,11 +119,11 @@ MESSAGE( "----------------------------------------------------------------------
 MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
-include_directories( "/opt/samson/include" )
-link_directories( "/opt/samson/lib" )
+include_directories( "$ENV{SAMSON_HOME}/include" )
+link_directories( "$ENV{SAMSON_HOME}/lib" )
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES} ${AUX_HEADERS}  )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME} lm au samson_system )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME}  samson_system lm au )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})

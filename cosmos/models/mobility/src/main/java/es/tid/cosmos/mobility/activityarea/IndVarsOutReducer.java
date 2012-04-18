@@ -4,33 +4,32 @@ import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ActivityAreaUtil;
-import es.tid.cosmos.mobility.data.ActivityAreaKeyUtil;
+import es.tid.cosmos.mobility.data.RepeatedActivityAreasUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityAreaKey;
+import es.tid.cosmos.mobility.data.MobProtocol.RepeatedActivityAreas;
 
 /**
  *
  * @author losa
  */
 public class  IndVarsOutReducer extends Reducer<
-        ProtobufWritable<ActivityAreaKey>,  ProtobufWritable<ActivityArea>,
+        LongWritable,  ProtobufWritable<RepeatedActivityAreas>,
         NullWritable,  Text> {
     @Override
-    public void reduce(ProtobufWritable<ActivityAreaKey> key,
-            Iterable<ProtobufWritable<ActivityArea>> values, Context context) 
-            throws IOException, InterruptedException {
-        key.setConverter(ActivityAreaKey.class);
-        final ActivityAreaKey actAreaKey = key.get();
-        for (ProtobufWritable<ActivityArea> value : values) {
-            value.setConverter(ActivityArea.class);
-            final ActivityArea activityArea = value.get();
+    public void reduce(LongWritable key,
+            Iterable<ProtobufWritable<RepeatedActivityAreas>> values,
+            Context context) throws IOException, InterruptedException {
+        for (ProtobufWritable<RepeatedActivityAreas> value : values) {
+            value.setConverter(RepeatedActivityAreas.class);
+            final RepeatedActivityAreas activityAreas = value.get();
             context.write(NullWritable.get(),
-                          new Text(ActivityAreaKeyUtil.toString(actAreaKey) 
-                          + "|" + ActivityAreaUtil.toString(activityArea)));
+                          new Text(key.toString() + "|" +
+                          RepeatedActivityAreasUtil.toString(activityAreas)));
         }
     }
 }

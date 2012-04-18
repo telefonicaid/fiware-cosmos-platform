@@ -313,8 +313,7 @@ publish_rpm: rpm
 # the default install location so as to not trash a live installation
 deb:
 	rm -rf package/deb
-	sed -e  "s/SAMSON_VERSION/$(SAMSON_VERSION)/"  -e "s/SAMSON_RELEASE/$(SAMSON_RELEASE)/" -e "s/DISTRO_CODENAME/$(DISTRO_CODENAME)/" CHANGELOG > debian/changelog
-	# Right now *everything* comes in a single package
+	sed -e  "s/SAMSON_VERSION/$(SAMSON_VERSION)/"  -e "s/SAMSON_RELEASE/$(SAMSON_RELEASE)-$(DISTRO_CODENAME)/" -e "s/DISTRO_CODENAME/$(DISTRO_CODENAME)/" CHANGELOG > debian/changelog
 	dpkg-buildpackage -b
 	mkdir -p package/deb
 	mv ../samson*$(SAMSON_VERSION).$(SAMSON_RELEASE)* package/deb

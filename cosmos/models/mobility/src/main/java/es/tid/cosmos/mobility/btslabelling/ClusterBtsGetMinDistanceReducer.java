@@ -8,7 +8,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.MobilityMain;
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
@@ -29,9 +28,8 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
         if (centroids == null) {
-            centroids = new CentroidsCatalogue(
-                    new Path(conf.get(MobilityMain.CENTROIDS_BTS_TAG)),
-                    conf);
+            centroids = new CentroidsCatalogue(new Path(conf.get("centroids")),
+                                               conf);
         }
     }
     

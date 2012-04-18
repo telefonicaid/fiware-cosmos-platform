@@ -11,6 +11,7 @@ import org.apache.hadoop.util.ToolRunner;
 
 import es.tid.cosmos.mobility.activityarea.ActivityAreaRunner;
 import es.tid.cosmos.mobility.btslabelling.BtsLabellingRunner;
+import es.tid.cosmos.mobility.clientbtslabelling.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.clientlabelling.ClientLabellingRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
@@ -22,8 +23,10 @@ import es.tid.cosmos.mobility.util.Logger;
  * @author dmicol
  */
 public class MobilityMain extends Configured implements Tool {
-    public static final String CENTROIDS_CLIENT_TAG = "CENTROIDS_CLIENT_PATH";
-    public static final String CENTROIDS_BTS_TAG = "CENTROIDS_BTS_PATH";
+    private static final String CENTROIDS_CLIENT_TAG = "CENTROIDS_CLIENT_PATH";
+    private static final String CENTROIDS_BTS_TAG = "CENTROIDS_BTS_PATH";
+    private static final String CENTROIDS_CLIENTBTS_TAG =
+            "CENTROIDS_CLIENTBTS_PATH";
     
     @Override
     public int run(String[] args) throws Exception {
@@ -42,8 +45,13 @@ public class MobilityMain extends Configured implements Tool {
         if (arguments.containsKey("centroids_bts")) {
             conf.set(CENTROIDS_BTS_TAG, arguments.get("centroids_bts"));
         }
+        if (arguments.containsKey("centroids_clientbts")) {
+            conf.set(CENTROIDS_CLIENTBTS_TAG, arguments.get(
+                    "centroids_clientbts"));
+        }
         
         boolean shouldRunAll = "true".equals(arguments.get("run_all"));
+        boolean isDebug = "true".equals(arguments.get("debug"));
         
         Path tmpParsingPath = new Path(tmpPath, "parsing");
         Path cdrsMobPath = new Path(tmpParsingPath, "cdrs_mob");
@@ -87,14 +95,16 @@ public class MobilityMain extends Configured implements Tool {
         }
         
         Path tmpExtractPoisPath = new Path(tmpPath, "extract_pois");
+        Path clientsInfoPath = new Path(tmpPath, "clients_info");
         Path clientsInfoFilteredPath = new Path(tmpExtractPoisPath,
                                                 "clients_info_filtered");
         Path clientsRepbtsPath = new Path(tmpExtractPoisPath, "clients_repbts");
         boolean shouldExtractPois = "true".equals(arguments.get("extractPOIs"));
         if (shouldRunAll || shouldExtractPois) {
-            PoisRunner.run(tmpExtractPoisPath, clientsBtsPath, cdrsNoinfoPath,
-                           cdrsNoBtsPath, clientsInfoFilteredPath,
-                           clientsRepbtsPath, conf);
+            PoisRunner.run(tmpExtractPoisPath, clientsBtsPath, clientsInfoPath,
+                           cdrsNoinfoPath, cdrsNoBtsPath,
+                           clientsInfoFilteredPath, clientsRepbtsPath, isDebug,
+                           conf);
         }
 
         Path tmpLabelPoisPath = new Path(tmpPath, "label_pois");
@@ -106,9 +116,10 @@ public class MobilityMain extends Configured implements Tool {
                 throw new IllegalStateException(
                         "Must specify the centroids clients path");
             }
+            Path centroidsPath = new Path(conf.get(CENTROIDS_CLIENT_TAG));
             ClientLabellingRunner.run(cdrsMobPath, clientsInfoFilteredPath,
-                                      vectorClientClusterPath, tmpLabelPoisPath,
-                                      conf);
+                                      centroidsPath, vectorClientClusterPath,
+                                      tmpLabelPoisPath, isDebug, conf);
         }
 
         Path tmpLabelBtsPath = new Path(tmpPath, "label_bts");
@@ -120,8 +131,26 @@ public class MobilityMain extends Configured implements Tool {
                 throw new IllegalStateException(
                         "Must specify the centroids BTS path");
             }
+            Path centroidsPath = new Path(conf.get(CENTROIDS_BTS_TAG));
             BtsLabellingRunner.run(btsCommsPath, btsComareaPath,
-                                   vectorBtsClusterPath, tmpLabelBtsPath, conf);
+                                   centroidsPath, vectorBtsClusterPath,
+                                   tmpLabelBtsPath, isDebug, conf);
+        }
+
+        Path tmpLabelClientbtsPath = new Path(tmpPath, "label_clientbts");
+        Path vectorClientbtsClusterPath = new Path(tmpLabelClientbtsPath,
+                                                   "vector_clientbts_cluster");
+        boolean shouldLabelClientbts = "true".equals(arguments.get(
+                "labelClientBTS"));
+        if (shouldRunAll || shouldLabelClientbts) {
+            if (conf.get(CENTROIDS_CLIENTBTS_TAG) == null) {
+                throw new IllegalStateException(
+                        "Must specify the centroids ClientBTS path");
+            }
+            Path centroidsPath = new Path(conf.get(CENTROIDS_CLIENTBTS_TAG));
+            ClientBtsLabellingRunner.run(clientsInfoPath, clientsRepbtsPath,
+                    centroidsPath, vectorClientbtsClusterPath, tmpLabelBtsPath,
+                    isDebug, conf);
         }
         
         return 0;

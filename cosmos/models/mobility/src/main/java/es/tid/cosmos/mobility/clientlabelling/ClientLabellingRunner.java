@@ -15,8 +15,9 @@ public final class ClientLabellingRunner {
     }
     
     public static void run(Path cdrsMobPath, Path clientsInfoFilteredPath,
-                           Path vectorClientClusterPath, Path tmpDirPath,
-                           Configuration conf) throws Exception {
+                           Path centroidsPath, Path vectorClientClusterPath,
+                           Path tmpDirPath, boolean isDebug, Configuration conf)
+            throws Exception {
         Path cdrsMobDataPath = new Path(tmpDirPath, "cdrs_mob_data");
         { 
             ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
@@ -104,20 +105,24 @@ public final class ClientLabellingRunner {
         {
             ClusterClientGetMinDistanceJob job =
                     new ClusterClientGetMinDistanceJob(conf);
-            job.configure(vectorClientNormPath, vectorClientClusterPath);
+            job.configure(vectorClientNormPath, centroidsPath,
+                          vectorClientClusterPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
-        Path vectorClientClusterTextPath = new Path(tmpDirPath,
-                "vector_client_cluster_text");
-        {
-            ExportClusterClientMinDistanceToTextJob job =
-                    new ExportClusterClientMinDistanceToTextJob(conf);
-            job.configure(vectorClientClusterPath, vectorClientClusterTextPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
+        if (isDebug) {
+            Path vectorClientClusterTextPath = new Path(tmpDirPath,
+                    "vector_client_cluster_text");
+            {
+                ExportClusterClientMinDistanceToTextJob job =
+                        new ExportClusterClientMinDistanceToTextJob(conf);
+                job.configure(vectorClientClusterPath,
+                              vectorClientClusterTextPath);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
             }
         }
     }

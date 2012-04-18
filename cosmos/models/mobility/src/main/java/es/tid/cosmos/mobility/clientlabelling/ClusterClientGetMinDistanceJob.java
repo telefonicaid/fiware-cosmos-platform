@@ -35,7 +35,9 @@ public class ClusterClientGetMinDistanceJob extends Job {
         this.setReducerClass(ClusterClientGetMinDistanceReducer.class);
     }
 
-    public void configure(Path input, Path output) throws IOException {
+    public void configure(Path input, Path centroids, Path output)
+            throws IOException {
+        this.conf.set("centroids", centroids.toString());
         FileInputFormat.setInputPaths(this, input);
         FileOutputFormat.setOutputPath(this, output);
     }

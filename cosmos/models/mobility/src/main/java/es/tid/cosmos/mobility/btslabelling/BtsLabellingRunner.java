@@ -18,8 +18,9 @@ public final class BtsLabellingRunner {
     }
     
     public static void run(Path btsCommsPath, Path btsComareaPath,
-                           Path vectorBtsClusterPath, Path tmpDirPath,
-                           Configuration conf) throws Exception {
+                           Path centroidsPath, Path vectorBtsClusterPath,
+                           Path tmpDirPath, boolean isDebug, Configuration conf)
+            throws Exception {
         Path btsCountsPath = new Path(tmpDirPath, "bts_counts");
         {
             VectorFilterBtsJob job = new VectorFilterBtsJob(conf);
@@ -71,7 +72,8 @@ public final class BtsLabellingRunner {
         {
             ClusterBtsGetMinDistanceJob job = new ClusterBtsGetMinDistanceJob(
                     conf);
-            job.configure(vectorBtsNormPath, vectorBtsClusterSinfiltPath);
+            job.configure(vectorBtsNormPath, centroidsPath,
+                          vectorBtsClusterSinfiltPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -106,6 +108,19 @@ public final class BtsLabellingRunner {
                           vectorBtsClusterPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        if (isDebug) {
+            Path vectorBtsClusterTextPath = new Path(tmpDirPath,
+                                                    "vector_bts_cluster_text");
+            {
+                ExportClusterClientMinDistanceToTextJob job =
+                        new ExportClusterClientMinDistanceToTextJob(conf);
+                job.configure(vectorBtsClusterPath, vectorBtsClusterTextPath);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
             }
         }
     }

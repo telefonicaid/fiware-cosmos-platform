@@ -27,6 +27,10 @@ public class ArgumentParser {
                 throw new IllegalArgumentException(
                         "Invalid command line argument");
             }
+            if (this.arguments.containsKey(name)) {
+                throw new IllegalArgumentException(
+                        "Found repeated command line argument: " + name);
+            }
             this.arguments.put(name, value);
         }
     }

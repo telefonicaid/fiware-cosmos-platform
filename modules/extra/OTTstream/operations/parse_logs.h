@@ -24,7 +24,7 @@ namespace OTTstream
 class parse_logs: public samson::system::SimpleParser
 {
 
-  bool (parse_logs::*_parseFunction)(char*line, samson::system::UInt *userId, ServiceHit *hit);
+  bool (parse_logs::*_parseFunction)(char*line, samson::system::UInt *userId, ServiceHit *hit, samson::system::String *url);
 
   std::vector<char*> fields;
   char sep;
@@ -35,6 +35,8 @@ class parse_logs: public samson::system::SimpleParser
   samson::system::UInt userId;
   samson::system::UInt serviceId;
   samson::system::TimeUnix timestamp;
+  samson::system::String url;
+  samson::system::UInt count;
   samson::OTTstream::ServiceHit service_hit;
   samson::OTTstream::UserHit user_hit;
   samson::system::String command;
@@ -48,6 +50,7 @@ public:
   //  output: system.UInt OTTstream.ServiceHit
   //  output: system.UInt OTTstream.UserHit
   //  output: system.UInt system.String
+  // output: system.String system.UInt
   //
   // helpLine: parse input logs from http, and emit service use with userId as key
   //  END_INFO_MODULE
@@ -121,19 +124,39 @@ public:
     return 0;
   }
 
-  bool parseLine_HTTP(char * line, samson::system::UInt *userId, ServiceHit *hit)
+  bool parseLine_HTTP(char * line, samson::system::UInt *userId, ServiceHit *hit, samson::system::String *url)
   {
     int maxDigits = 9;
+
+    /*
+    --- HTTP ---
+    MOBILE_IP_ADDRESS       88.31.48.46
+    REFERER                 http://www.facebook.com/messages/?action=read&tid=
+    HOST                    www.facebook.com
+    CAUSE_CODE              200
+    REPORT_REASON           71
+    SERVICE_IP_ADDRESS      69.171.242.39
+    MSISDN                  34682934158
+    MESSAGING_END_TIME      03-NOV-11 10.59.37.680000 PM
+    FIRST_URL               http://www.facebook.com/ajax/chat/send.php?__a=1
+    MESSAGING_START_TIME    03-NOV-11 10.59.12.390000 PM
+    GET_MESSAGES            1
+    IMEI                    8698780025156101
+    IMSI                    214075500570676
+    SERVICE_PORT            80
+    REPORT_TIME             2011-11_03 23:00:82800
+    APPLICATION_ID          80
+     */
 
     userId->value = 0;
     hit->serviceId.value = 0;
 
-    const char *p_url;
+     char *p_url;
     const char *p_domain;
 
     split_in_words(line, fields, sep);
 
-    if (fields.size() < 16)
+    if (fields.size() != 16)
     {
       return false;
     }
@@ -154,6 +177,12 @@ public:
       //return false;
     }
 
+    char *p_blank;
+    if ((p_blank = strchr(p_url, ' ')) != NULL)
+    {
+      *p_blank = '\0';
+    }
+    url->value = p_url;
     hit->timestamp.setFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[9]);
     //LM_M(("input_time:'%s', timeUnix:%lu, '%s'", fields[9], hit->timestamp.value, hit->timestamp.str().c_str()));
 
@@ -161,9 +190,24 @@ public:
 
   }
 
-  bool parseLine_DNS(char * line, samson::system::UInt *userId, ServiceHit *hit)
+  bool parseLine_DNS(char * line, samson::system::UInt *userId, ServiceHit *hit, samson::system::String *url)
   {
     int maxDigits = 9;
+
+    /*
+  REPORT_TIME
+  IMEI
+  IMSI
+  MSISDN
+  MESSAGING_START_TIME
+  MESSAGING_END_TIME
+  MOBILE_IP_ADDRESS
+  SERVICE_IP_ADDRESS
+  SERVICE_PORT
+  DNS_QUESTION_NAME
+  DNS_CAUSE_CODE
+     */
+
     userId->value = 0;
     hit->serviceId.value = 0;
 
@@ -171,7 +215,7 @@ public:
 
     split_in_words(line, fields, sep);
 
-    if (fields.size() < 11)
+    if (fields.size() != 11)
     {
       return false;
     }
@@ -197,7 +241,7 @@ public:
 
   }
 
-  bool parseLine_SMS(char * line, samson::system::UInt *userId, ServiceHit *hit)
+  bool parseLine_SMS(char * line, samson::system::UInt *userId, ServiceHit *hit, samson::system::String *url)
   {
     /*
      --- SMS Type 1 (RECIVE SMS?) ----
@@ -247,7 +291,7 @@ public:
 
     split_in_words(line, fields, sep);
 
-    if (fields.size() < 17)
+    if (fields.size() != 18)
     {
       return false;
     }
@@ -273,7 +317,7 @@ public:
 
   }
 
-  bool parseLine_voice(char * line, samson::system::UInt *userId, ServiceHit *hit)
+  bool parseLine_voice(char * line, samson::system::UInt *userId, ServiceHit *hit, samson::system::String *url)
   {
     /*
      REPORT_REASON
@@ -317,7 +361,7 @@ public:
 
     split_in_words(line, fields, sep);
 
-    if (fields.size() < 34)
+    if (fields.size() != 35)
     {
       return false;
     }
@@ -479,6 +523,8 @@ public:
       newService->addDNSPattern("www.applesfera.com");
       services.push_back(newService);
     }
+
+    count.value = 1;
   }
 
   void parseLine(char * line, samson::KVWriter *writer)
@@ -486,7 +532,7 @@ public:
 
     if ((source != "commands") && (source != "command"))
     {
-      if ((this->*_parseFunction)(line, &userId, &service_hit))
+      if ((this->*_parseFunction)(line, &userId, &service_hit, &url))
       {
         //LM_M(("User:%lu detected serviceId:%lu at time:%s", userId.value, hit.serviceId.value, hit.timestamp.str().c_str()));
         writer->emit(0, &userId, &service_hit);
@@ -500,6 +546,10 @@ public:
           writer->emit(1, &serviceId, &user_hit);
         }
 
+        if (source == "HTTP")
+        {
+          writer->emit(3, &url, &count);
+        }
       }
     }
     else

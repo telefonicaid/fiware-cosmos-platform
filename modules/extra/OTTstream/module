@@ -62,6 +62,7 @@ simpleParser parse_logs
 	out system.UInt OTTstream.ServiceHit
 	out system.UInt OTTstream.UserHit
 	out system.UInt system.String
+	out system.String system.UInt
 	
 	helpLine "parse input logs from http or dns, and emit service use with userId as key, user with service as key, and can also process commands"
 }
@@ -120,6 +121,7 @@ script init_stream_operations
         
         alias [service_hits]              service_hits;
         alias [user_hits]              user_hits;
+        alias [url_hits]				url_hits;
         alias [user_state]            user_state;
         alias [service_state]            service_state;
         alias [service_commands] service_commands;
@@ -135,15 +137,15 @@ script init_stream_operations
 		# Definitions
 		# ----------------------------------------------------------------
         
-        add_stream_operation      [parse_http]			OTTstream.parse_logs									[input_http]       [service_hits] [user_hits] [service_commands];
+        add_stream_operation      [parse_http]			OTTstream.parse_logs									[input_http]       [service_hits] [user_hits] [service_commands] [url_hits];
         set_stream_operation_property   [parse_http]      OTTstream.source          HTTP;
-        add_stream_operation      [parse_dns]			OTTstream.parse_logs									[input_dns]   		[service_hits] [user_hits] [service_commands];
+        add_stream_operation      [parse_dns]			OTTstream.parse_logs									[input_dns]   		[service_hits] [user_hits] [service_commands] [url_hits];
         set_stream_operation_property   [parse_dns]      OTTstream.source          DNS;
-        add_stream_operation      [parse_sms]			OTTstream.parse_logs									[input_sms]   		[service_hits] [user_hits] [service_commands];
+        add_stream_operation      [parse_sms]			OTTstream.parse_logs									[input_sms]   		[service_hits] [user_hits] [service_commands] [url_hits];
         set_stream_operation_property   [parse_sms]      OTTstream.source          SMS;
-        add_stream_operation      [parse_voice]			OTTstream.parse_logs									[input_voice]   		[service_hits] [user_hits] [service_commands];
+        add_stream_operation      [parse_voice]			OTTstream.parse_logs									[input_voice]   		[service_hits] [user_hits] [service_commands] [url_hits];
         set_stream_operation_property   [parse_voice]      OTTstream.source          voice;
-        add_stream_operation      [parse_commands]			OTTstream.parse_logs									[input_commands]   		[service_hits] [user_hits] [service_commands];
+        add_stream_operation      [parse_commands]			OTTstream.parse_logs									[input_commands]   		[service_hits] [user_hits] [service_commands] [url_hits];
         set_stream_operation_property   [parse_commands]      OTTstream.source          commands;
         #set_queue_property [service_commands] max_size 1;
         

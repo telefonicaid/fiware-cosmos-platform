@@ -12,7 +12,6 @@ EXTRA_MODULES= webp \
 		mobility \
 		simple_mobility \
 		passive_location \
-		pilotoOTT \
 		OTTstream 
 
 all: core_modules extra_modules
@@ -21,6 +20,10 @@ reset: core_reset extra_reset
 
 core_modules:
 	for module in $(CORE_MODULES); do \
+		make -C core/$$module release ; \
+		if [ "$$?" -ne 0 ]; then \
+			break; \
+		fi; \
 		make -C core/$$module install; \
 		if [ "$$?" -ne 0 ]; then \
 			break; \
@@ -29,6 +32,10 @@ core_modules:
 
 extra_modules:
 	for module in $(EXTRA_MODULES); do \
+		make -C extra/$$module release ; \
+		if [ "$$?" -ne 0 ]; then \
+			break; \
+		fi; \
 		make -C extra/$$module install; \
 		if [ "$$?" -ne 0 ]; then \
 			break; \
@@ -37,6 +44,10 @@ extra_modules:
 
 core_modules_debug:
 	for module in $(CORE_MODULES); do \
+		make -C core/$$module debug ; \
+		if [ "$$?" -ne 0 ]; then \
+			break; \
+		fi; \
 		make -C core/$$module install_debug; \
 		if [ "$$?" -ne 0 ]; then \
 			break; \
@@ -45,6 +56,10 @@ core_modules_debug:
 
 extra_modules_debug:
 	for module in $(EXTRA_MODULES); do \
+		make -C extra/$$module debug ; \
+		if [ "$$?" -ne 0 ]; then \
+			break; \
+		fi; \
 		make -C extra/$$module install_debug; \
 		if [ "$$?" -ne 0 ]; then \
 			break; \

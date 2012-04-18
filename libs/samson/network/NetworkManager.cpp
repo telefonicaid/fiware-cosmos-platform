@@ -210,7 +210,7 @@ namespace samson {
                 if( cronometer.diffTime() > 1 )
                 {
                     cronometer.reset();
-                    LM_W(("Waiting thread of network connection %s to finish..." , name.c_str() ));
+                    LM_W(("Waiting thread of network connection %s to finish..." , connection->str().c_str() ));
                 }
             }
             delete connection;

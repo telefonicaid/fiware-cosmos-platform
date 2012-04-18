@@ -3,8 +3,8 @@ rm - delete a named queue
 --DELILAH-INIT--
 remove_all_stream
 push input.txt input
---SHELL--
-delilah -command "rm input"
-delilah -command ls
+--SCRIPT--
+rm input
+ls
 --EXPECT--
 No records

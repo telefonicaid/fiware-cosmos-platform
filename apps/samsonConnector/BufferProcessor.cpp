@@ -95,6 +95,8 @@ namespace samson {
     
     void BufferProcessor::process_intenal_buffer( bool finish )
     {
+        if( size == 0)
+            return; // Nothing to be processed
         
         // If no splitter, no process
         if( !splitter )
@@ -106,6 +108,9 @@ namespace samson {
             output_buffer = engine::MemoryManager::shared()->newBuffer("output_splitter", "connector", size );
             output_buffer->write( buffer , size );
 
+            // All buffer has been processes
+            size = 0;
+            
             // Flush content of the generated buffer
             flushOutputBuffer();
             return;

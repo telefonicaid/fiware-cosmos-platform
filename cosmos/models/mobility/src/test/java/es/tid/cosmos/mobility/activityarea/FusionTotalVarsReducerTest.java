@@ -12,7 +12,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import es.tid.cosmos.mobility.data.ActivityAreaUtil;
+import es.tid.cosmos.mobility.data.RepeatedActivityAreasUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
+import es.tid.cosmos.mobility.data.MobProtocol.RepeatedActivityAreas;
 
 /**
  *
@@ -23,7 +25,7 @@ public class FusionTotalVarsReducerTest {
         LongWritable,
         ProtobufWritable<ActivityArea>,
         LongWritable,
-        List<ProtobufWritable<ActivityArea>>> 
+        ProtobufWritable<RepeatedActivityAreas>>
         reducer;
 
     @Before
@@ -32,7 +34,7 @@ public class FusionTotalVarsReducerTest {
             LongWritable,
             ProtobufWritable<ActivityArea>,
             LongWritable,
-            List<ProtobufWritable<ActivityArea>>>(
+            ProtobufWritable<RepeatedActivityAreas>>(
                     new FusionTotalVarsReducer());
     }
 
@@ -40,17 +42,22 @@ public class FusionTotalVarsReducerTest {
     public void testJoinsDifferentRows(){
         LongWritable userWithTwoEntries = new LongWritable(5512684400L);
 
-        ProtobufWritable<ActivityArea> row1 = 
-            ActivityAreaUtil.createAndWrap(1, 1, 1, 1, 1000000, 1000000,
+        ActivityArea area1 =
+            ActivityAreaUtil.create(1, 1, 1, 1, 1000000, 1000000,
                                            0.0, 0.0);
-        ProtobufWritable<ActivityArea> row2 = 
-            ActivityAreaUtil.createAndWrap(2, 2, 2, 2, 6000000, 3000000,
-                                           100, 100);
+        ProtobufWritable<ActivityArea> row1 = ActivityAreaUtil.wrap(area1);
+
+        ActivityArea area2 =
+            ActivityAreaUtil.create(2, 2, 2, 2, 6000000, 3000000, 100, 100);
+        ProtobufWritable<ActivityArea> row2 = ActivityAreaUtil.wrap(area2);
+
+        ProtobufWritable<RepeatedActivityAreas> results =
+            RepeatedActivityAreasUtil.createAndWrap(asList(area1, area2));
 
         this.reducer
             .withInputKey(userWithTwoEntries)
             .withInputValues(asList(row1, row2))
-            .withOutput(userWithTwoEntries, asList(row1, row2))
+            .withOutput(userWithTwoEntries, results)
             .runTest();
     }
 }

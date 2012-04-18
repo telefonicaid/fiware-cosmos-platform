@@ -468,13 +468,13 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
 
     if (format == "xml")
     {
-        data << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n";
-        data << "<!-- SAMSON Rest interface -->\r\n";
-        data << "<samson>\r\n";
+        data << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+        data << "<!-- SAMSON Rest interface -->\n";
+        data << "<samson>\n";
     }
     else
     {
-        data << "{\r\n";
+        data << "{\n";
     }
 
     if (saneInput == false)
@@ -482,7 +482,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         if (format == "xml")
             data << "  <error>Bad REST Request '" << in << "'</error>";
         else
-            data << "  \"error\" : \"Bad REST Request '" << in << "'\"\r\n";
+            data << "  \"error\" : \"Bad REST Request '" << in << "'\"\n";
 
         goto afterTreatment;
     }
@@ -497,14 +497,14 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         if (format == "xml")
             au::xml_simple(data, "message", "Error. Only /samson/path requests are valid");
         else
-            data << "  \"error\" : \"Only /samson/path requests are valid\"\r\n";
+            data << "  \"error\" : \"Only /samson/path requests are valid\"\n";
     }
     else if (path_components[1] == "version")
     {
         if (format == "xml")
             au::xml_simple(data, "version", au::str("SAMSON v %s" , SAMSON_VERSION ) );
         else
-            data << "  \"version\" : \"" << "SAMSON v " << SAMSON_VERSION << "\"\r\n";
+            data << "  \"version\" : \"" << "SAMSON v " << SAMSON_VERSION << "\"\n";
     }
     else if (path_components[1] == "die")
     {
@@ -513,7 +513,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         if (format == "xml")
             au::xml_simple(data, "die", "OK, I die");
         else
-            data << "  \"die\" : \"" << "OK, I die" << "\"\r\n";
+            data << "  \"die\" : \"" << "OK, I die" << "\"\n";
     }
     else if (path_components[1] == "utftest")
     {
@@ -557,12 +557,12 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "error", result);
                 else
-                    data << "  \"error\" : \"" << result << "\"\r\n";
+                    data << "  \"error\" : \"" << result << "\"\n";
             }
             else
             {
                if (format == "xml")
-                   data << "<message>\r\n" << result << "</message>";
+                   data << "<message>\n" << result << "</message>";
                else
                   data << result;
             }
@@ -572,12 +572,12 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         {
             LM_T(LmtRest, ("redirecting to '%s'", redirect));
             
-            header << "HTTP/1.1 302 Found\r\n";
-            header << "Location:   " << redirect << "/samson/state/" << path_components[2] << "/" << path_components[3].c_str() << "\r\n";
-            header << "Content-Type:   application/txt; charset=utf-8\r\n";
-            header << "Content-Length: " << 0 << "\r\n";
-            header << "\r\n";
-            header << "\r\n";
+            header << "HTTP/1.1 302 Found\n";
+            header << "Location:   " << redirect << "/samson/state/" << path_components[2] << "/" << path_components[3].c_str() << "\n";
+            header << "Content-Type:   application/txt; charset=utf-8\n";
+            header << "Content-Length: " << 0 << "\n";
+            header << "\n";
+            header << "\n";
             
             std::ostringstream output;
             output << header.str();
@@ -597,7 +597,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (format == "xml")
                 au::xml_simple(data, "format_error", au::str("correct format: /samson/queue/<queue_name>/<key>" ) );
             else
-                data << "  \"format_error\" : \"correct format: /samson/queue/<queue_name>/<key>\"\r\n";
+                data << "  \"format_error\" : \"correct format: /samson/queue/<queue_name>/<key>\"\n";
         }
         else
         {
@@ -609,12 +609,12 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "message", result);
                 else
-                    data << "  \"error\" : \"" << result << "\"\r\n";
+                    data << "  \"error\" : \"" << result << "\"\n";
             }
             else
             {
                if (format == "xml")
-                   data << "<message>\r\n" << result << "</message>";
+                   data << "<message>\n" << result << "</message>";
                else
                   data << result;
             }
@@ -624,12 +624,12 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         {
             LM_T(LmtRest, ("redirecting to '%s'", redirect));
                     
-            header << "HTTP/1.1 302 Found\r\n";
-            header << "Location:   " << redirect << "/samson/queue/" << path_components[2] << "/" << path_components[3].c_str() << "\r\n";
-            header << "Content-Type:   application/txt; charset=utf-8\r\n";
-            header << "Content-Length: " << 0 << "\r\n";
-            header << "\r\n";
-            header << "\r\n";
+            header << "HTTP/1.1 302 Found\n";
+            header << "Location:   " << redirect << "/samson/queue/" << path_components[2] << "/" << path_components[3].c_str() << "\n";
+            header << "Content-Type:   application/txt; charset=utf-8\n";
+            header << "Content-Length: " << 0 << "\n";
+            header << "\n";
+            header << "\n";
 
             std::ostringstream output;
             output << header.str();
@@ -664,7 +664,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("no logging subcommand"));
             else
-                data << "  \"error\" : \"" << au::str("no logging subcommand") << "\"\r\n";
+                data << "  \"error\" : \"" << au::str("no logging subcommand") << "\"\n";
         }
         else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "trace") && (logCommand != "verbose") && (logCommand != "debug"))
         {
@@ -673,7 +673,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("bad logging command: '%s'", logCommand.c_str()));
             else
-                data << "  \"error\" : \"" << au::str("bad logging command: '%s'", logCommand.c_str()) << "\"\r\n";
+                data << "  \"error\" : \"" << au::str("bad logging command: '%s'", logCommand.c_str()) << "\"\n";
         }
         else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off"))
         {
@@ -682,7 +682,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
             else
-                data << "  \"error\" : \"" << au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()) << "\"\r\n";
+                data << "  \"error\" : \"" << au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()) << "\"\n";
         }
         else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off"))
         {
@@ -691,7 +691,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
             else
-                data << "  \"error\" : \"" << au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()) << "\"\r\n";
+                data << "  \"error\" : \"" << au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()) << "\"\n";
         }
         else if ((logCommand == "verbose") && (sub == "set") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") && (arg != "5"))
         {
@@ -700,7 +700,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("bad logging argument for 'trace/set': %s", arg.c_str()));
             else
-                data << "  \"error\" : \"" << au::str("bad logging argument for 'trace/set': %s", arg.c_str())  << "\"\r\n";
+                data << "  \"error\" : \"" << au::str("bad logging argument for 'trace/set': %s", arg.c_str())  << "\"\n";
         }
         else if ((logCommand == "trace") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off"))
         {
@@ -709,7 +709,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
             else
-                data << "  \"error\" : \"" << au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()) << "\"\r\n";
+                data << "  \"error\" : \"" << au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()) << "\"\n";
         }
         else if (sub == "")
         {
@@ -718,7 +718,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("logging subcommand for '%s' missing", logCommand.c_str()));
             else
-                data << "  \"error\" : \"" << au::str("logging subcommand for '%s' missing", logCommand.c_str()) << "\"\r\n";
+                data << "  \"error\" : \"" << au::str("logging subcommand for '%s' missing", logCommand.c_str()) << "\"\n";
         }
         else if ((logCommand == "trace") && ((sub != "set") || (sub != "add") || (sub != "remove")))
         {
@@ -729,7 +729,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
                 else
-                    data << "  \"error\" : \"" << au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()) << "\"\r\n";
+                    data << "  \"error\" : \"" << au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()) << "\"\n";
             }
         }
         
@@ -749,7 +749,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "reads", au::str("reads turned ON"));
                 else
-                    data << "  \"reads\" : \"reads turned ON\"\r\n";
+                    data << "  \"reads\" : \"reads turned ON\"\n";
             }
             else if (sub == "off")
             {
@@ -757,7 +757,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "reads", au::str("reads turned OFF"));
                 else
-                    data << "  \"reads\" : \"reads turned OFF\"\r\n";
+                    data << "  \"reads\" : \"reads turned OFF\"\n";
             }
         }
         else if (logCommand == "writes")
@@ -769,7 +769,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "writes", au::str("writes turned ON"));
                 else
-                    data << "  \"writes\" : \"writes turned ON\"\r\n";
+                    data << "  \"writes\" : \"writes turned ON\"\n";
             }
             else if (sub == "off")
             {
@@ -777,7 +777,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "writes", au::str("writes turned OFF"));
                 else
-                    data << "  \"writes\" : \"writes turned OFF\"\r\n";
+                    data << "  \"writes\" : \"writes turned OFF\"\n";
             }
         }
         else if (logCommand == "debug")
@@ -789,7 +789,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "debug", au::str("debug turned ON"));
                 else
-                    data << "  \"debug\" : \"debug turned ON\"\r\n";
+                    data << "  \"debug\" : \"debug turned ON\"\n";
             }
             else if (sub == "off")
             {
@@ -797,7 +797,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "debug", au::str("debug turned OFF"));
                 else
-                    data << "  \"debug\" : \"debug turned OFF\"\r\n";
+                    data << "  \"debug\" : \"debug turned OFF\"\n";
             }
         }
         else if (logCommand == "verbose")  // /samson/logging/verbose
@@ -816,7 +816,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "verbose", au::str("verbosity level: %d", vLevel));
                 else
-                    data << "  \"verbose\" : \"verbosity level: " << vLevel << "\"\r\n";
+                    data << "  \"verbose\" : \"verbosity level: " << vLevel << "\"\n";
             }
             else
             {
@@ -852,9 +852,9 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 else
                 {
                     if (arg == "0")
-                        data << "  \"verbose\" : \"verbose levels OFF\"\r\n";
+                        data << "  \"verbose\" : \"verbose levels OFF\"\n";
                     else
-                        data << "  \"verbose\" : \"verbose levels upto " << arg.c_str() << " SET\"\r\n";
+                        data << "  \"verbose\" : \"verbose levels upto " << arg.c_str() << " SET\"\n";
                 }
             }
         }
@@ -867,7 +867,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "traceLevels", au::str(arg.c_str()));
                 else
-                    data << "  \"traceLevels\" : \"" << arg.c_str() << "\"\r\n";
+                    data << "  \"traceLevels\" : \"" << arg.c_str() << "\"\n";
             }
             else if (sub == "get")    // /samson/logging/trace/get
             {
@@ -877,7 +877,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "message", au::str("Tracelevels: '%s'", traceLevels));
                 else
-                    data << "  \"traceLevels\" : \"" << traceLevels << "\"\r\n";
+                    data << "  \"traceLevels\" : \"" << traceLevels << "\"\n";
             }
             else if (sub == "off")    // /samson/logging/trace/off
             {
@@ -886,7 +886,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "traceLevels", au::str("all trace levels turned off"));
                 else
-                    data << "  \"traceLevels\" : \"all trace levels turned off\"\r\n";
+                    data << "  \"traceLevels\" : \"all trace levels turned off\"\n";
             }
             else if (sub == "add")    // /samson/logging/trace/add
             {
@@ -895,7 +895,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "traceLevels", au::str("added level(s) %s",  arg.c_str()));
                 else
-                    data << "  \"traceLevels\" : \"added level(s) " << arg.c_str() << "\"\r\n";
+                    data << "  \"traceLevels\" : \"added level(s) " << arg.c_str() << "\"\n";
             }
             else if (sub == "remove")     // /samson/logging/trace/remove
             {
@@ -904,7 +904,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 if (format == "xml")
                     au::xml_simple(data, "traceLevels", au::str("removed level(s) %s",  arg.c_str()));
                 else
-                    data << "  \"traceLevels\" : \"removed level(s) " << arg.c_str() << "\"\r\n";
+                    data << "  \"traceLevels\" : \"removed level(s) " << arg.c_str() << "\"\n";
             }
         }
     }
@@ -922,11 +922,11 @@ afterTreatment:
 
     if (format == "xml")
     {
-        data << "\r\n</samson>\r\n";
+        data << "\n</samson>\n";
     }
     else
     {
-        data << "}\r\n";
+        data << "}\n";
     }
     
         
@@ -936,29 +936,29 @@ afterTreatment:
     switch (http_state)
     {
     case 200:
-        header << "HTTP/1.1 200 OK\r\n";
+        header << "HTTP/1.1 200 OK\n";
         break;
         
     case 400:
-        header << "HTTP/1.1 400 Bad Request\r\n";
+        header << "HTTP/1.1 400 Bad Request\n";
         break;
         
     case 404:
-        header << "HTTP/1.1 404 Not Found\r\n";
+        header << "HTTP/1.1 404 Not Found\n";
         break;
         
     default:
-        header << "HTTP/1.1 Bad Request \r\n"; 
+        header << "HTTP/1.1 Bad Request \n"; 
         break;
     }
     
     if (format == "xml")
-        header << "Content-Type:   \"application/xml; charset=utf-8\"\r\n";
+        header << "Content-Type:   \"application/xml; charset=utf-8\"\n";
     else
-        header << "Content-Type:   \"application/json; charset=utf-8\"\r\n";
+        header << "Content-Type:   \"application/json; charset=utf-8\"\n";
 
-    header << "Content-Length: " << dataLen << "\r\n";
-    header << "\r\n";
+    header << "Content-Length: " << dataLen << "\n";
+    header << "\n";
 
     std::ostringstream output;
 

@@ -10,7 +10,7 @@ from cosmos.models import JobRun
 
 class JobRunsTestCase(test.TestCase):
     fixtures = ['users', 'sample_runs']
-    
+
     def setUp(self):
         self.client.login(username='user101', password='user1')
 
@@ -30,7 +30,7 @@ class JobRunsTestCase(test.TestCase):
 
 class DatasetsTestCase(test.TestCase):
     fixtures = ['users', 'sample_runs']
-    
+
     def setUp(self):
         self.client.login(username='user101', password='user1')
 
@@ -42,3 +42,19 @@ class DatasetsTestCase(test.TestCase):
                         msg='Own datasets should be listed')
         self.assertFalse('dataset3' in listed_names,
                          msg='Other user datasets should not be listed')
+
+
+class CustomJarTestCase(test.TestCase):
+    fixtures = ['users', 'sample_runs']
+
+    def setUp(self):
+        self.client.login(username='user101', password='user1')
+
+    def test_datasets_listed(self):
+        response = self.client.get('/cosmos/jars/')
+        self.assertEquals(response.status_code, 200)
+        listed_names = map(lambda x: x.name, response.context['jars'])
+        self.assertTrue('wordcount' in listed_names,
+                        msg='Own JARs should be listed')
+        self.assertFalse('pi' in listed_names,
+                         msg='Other user JARs should not be listed')

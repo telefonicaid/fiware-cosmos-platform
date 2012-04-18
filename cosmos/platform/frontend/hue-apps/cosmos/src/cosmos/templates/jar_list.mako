@@ -3,24 +3,23 @@
 ${shared.header("Cosmos", section="jars")}
 
 <div id="index" class="view jframe_padded">
-  <h2>My JARs</h2>
   <table data-filters="HtmlTable" class="selectable sortable" cellpadding="0"
          cellspacing="0">
     <thead>
       <tr>
         <th>Name</th>
+        <th>Description</th>
 	<th>Actions</th>
       </tr>
     </thead>
     <tbody>
+      % for jar in jars:
       <tr>
-        <td>wordcount.jar</td>
-	<td><a href="#">Remove</a></td>
+        <td>${jar.name | h}</td>
+        <td>${jar.description | h}</td>
+        <td/>
       </tr>
-      <tr>
-        <td>pi.jar</td>
-	<td><a href="#">Remove</a></td>
-      </tr>
+      % endfor
     </tbody>
   </table>
 </div>

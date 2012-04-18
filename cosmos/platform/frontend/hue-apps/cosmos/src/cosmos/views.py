@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from desktop.lib.django_util import render
 
-from cosmos.models import Dataset, JobRun
+from cosmos.models import CustomJar, Dataset, JobRun
 
 
 def index(request):
@@ -20,4 +20,6 @@ def list_datasets(request):
 
 
 def list_jars(request):
-    return render('jar_list.mako', request, dict())
+    return render('jar_list.mako', request, dict(
+        jars=CustomJar.objects.filter(user=request.user).order_by('name')
+    ))

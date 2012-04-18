@@ -98,11 +98,11 @@ public class MobilityMain extends Configured implements Tool {
                            conf);
         }
 
-        Path tmpLabelPoisPath = new Path(tmpPath, "label_pois");
+        Path tmpLabelPoisPath = new Path(tmpPath, "label_client");
         Path vectorClientClusterPath = new Path(tmpLabelPoisPath,
                                                 "vector_client_clusterPath");
-        boolean shouldLabelPois = "true".equals(arguments.get("labelPOIs"));
-        if (shouldRunAll || shouldLabelPois) {
+        boolean shouldLabelClient = "true".equals(arguments.get("labelClient"));
+        if (shouldRunAll || shouldLabelClient) {
             if (conf.get(CENTROIDS_CLIENT_TAG) == null) {
                 throw new IllegalStateException(
                         "Must specify the centroids clients path");

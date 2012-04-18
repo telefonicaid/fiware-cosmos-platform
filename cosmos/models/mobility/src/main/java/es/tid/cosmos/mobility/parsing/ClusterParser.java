@@ -5,7 +5,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
 
 /**
  *
- * @author sortega
+ * @author dmicol
  */
 public class ClusterParser extends Parser {
     private static final String DELIMITER = "\\|";
@@ -18,21 +18,17 @@ public class ClusterParser extends Parser {
     public Cluster parse() {
         try {
             Cluster.Builder cluster = Cluster.newBuilder();
-
             cluster.setLabel(parseInt());
             cluster.setLabelgroup(parseInt());
             cluster.setMean(parseDouble());
             cluster.setDistance(parseDouble());
-            
             ClusterVector.Builder clusterVector = ClusterVector.newBuilder();
             for (int i = 0; i < 96; i++) {
                 clusterVector.addComs(parseDouble());
             }
-            cluster.setCoords(clusterVector);
-            
+            cluster.setCoords(clusterVector.build());
             return cluster.build();
         } catch (Exception ex) {
-            System.err.println(ex);
             throw new IllegalArgumentException("Failed to parse: " + this.line);
         }
     }

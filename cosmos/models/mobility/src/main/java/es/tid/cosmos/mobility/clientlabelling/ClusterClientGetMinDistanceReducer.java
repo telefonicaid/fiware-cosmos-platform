@@ -37,22 +37,17 @@ public class ClusterClientGetMinDistanceReducer extends Reducer<
     protected void reduce(ProtobufWritable<NodeBts> key,
             Iterable<ProtobufWritable<ClusterVector>> values, Context context)
             throws IOException, InterruptedException {
-        double mindist;
-        double dist;
-        double com;
-        double ccom;
-        Cluster minDistCluster = null;
-
         for (ProtobufWritable<ClusterVector> value : values) {
             value.setConverter(ClusterVector.class);
             final ClusterVector clusVector = value.get();
-            mindist = 1000;
-
+            
+            double mindist = 1000D;
+            Cluster minDistCluster = null;
             for (Cluster cluster : centroids.getCentroids()) {
-                dist = 0;
+                double dist = 0D;
                 for (int nComs = 0; nComs < clusVector.getComsCount(); nComs++) {
-                    ccom = cluster.getCoords().getComs(nComs);
-                    com = clusVector.getComs(nComs);
+                    double ccom = cluster.getCoords().getComs(nComs);
+                    double com = clusVector.getComs(nComs);
                     dist += ((ccom - com) * (ccom - com));
                 }
                 if (dist < mindist || minDistCluster == null) {
@@ -69,10 +64,10 @@ public class ClusterClientGetMinDistanceReducer extends Reducer<
                             minDistCluster.getLabel(),
                             minDistCluster.getLabelgroup(),
                             mindist > minDistCluster.getDistance() ? 0 : 1,
-                            0,
+                            0D,
                             mindist,
-                            ClusterVector.getDefaultInstance());
-            context.write(new LongWritable(nodeBts.getUserId()), outputCluster);
+                            clusVector);
+            context.write(new LongWritable(nodeBts.getPlaceId()), outputCluster);
         }
     }
 }

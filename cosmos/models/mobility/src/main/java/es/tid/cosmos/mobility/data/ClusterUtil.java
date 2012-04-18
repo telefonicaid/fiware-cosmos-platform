@@ -14,14 +14,14 @@ public abstract class ClusterUtil implements ProtobufUtil {
     
     public static Cluster create(int label, int labelgroup, int confident,
             double mean, double distance, ClusterVector coords) {
-        Cluster.Builder cluster = Cluster.newBuilder()
+        return Cluster.newBuilder()
                 .setLabel(label)
                 .setLabelgroup(labelgroup)
                 .setConfident(confident)
                 .setMean(mean)
                 .setDistance(distance)
-                .setCoords(coords);
-        return cluster.build();
+                .setCoords(coords)
+                .build();
     }
 
     public static ProtobufWritable<Cluster> wrap(Cluster obj) {

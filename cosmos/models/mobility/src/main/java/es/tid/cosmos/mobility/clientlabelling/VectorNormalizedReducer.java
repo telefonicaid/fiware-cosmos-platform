@@ -27,7 +27,6 @@ public class VectorNormalizedReducer extends Reducer<ProtobufWritable<NodeBts>,
             value.setConverter(ClusterVector.class);
             final ClusterVector clusterVector = value.get();
             double sumvalues = 0;
-
             for (int j = 0; j < clusterVector.getComsCount(); j++) {
                 if (j < 24) {
                     // Mondays, Tuesday, Wednesday and Thursday. Total: 121 days
@@ -44,11 +43,10 @@ public class VectorNormalizedReducer extends Reducer<ProtobufWritable<NodeBts>,
                 elem = comm / sumvalues;
                 vectorNormBuilder.addComs(elem);
             }
-            ClusterVector vectorNorm = vectorNormBuilder.build();
-            ProtobufWritable<ClusterVector> vectorNormWrapper =
+            ProtobufWritable<ClusterVector> vectorNorm =
                     ProtobufWritable.newInstance(ClusterVector.class);
-            vectorNormWrapper.set(vectorNorm);
-            context.write(key, vectorNormWrapper);
+            vectorNorm.set(vectorNormBuilder.build());
+            context.write(key, vectorNorm);
         }
     }
 }

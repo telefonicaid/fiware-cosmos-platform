@@ -2,6 +2,7 @@ package es.tid.cosmos.mobility.activityarea;
 
 import java.util.List;
 import java.util.ArrayList;
+import static java.util.Arrays.asList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -45,5 +46,11 @@ public class FusionTotalVarsReducerTest {
         ProtobufWritable<ActivityArea> row2 = 
             ActivityAreaUtil.createAndWrap(2, 2, 2, 2, 6000000, 3000000,
                                            100, 100);
+
+        this.reducer
+            .withInputKey(userWithTwoEntries)
+            .withInputValues(asList(row1, row2))
+            .withOutput(userWithTwoEntries, asList(row1, row2))
+            .runTest();
     }
 }

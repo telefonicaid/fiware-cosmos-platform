@@ -26,8 +26,8 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        final Configuration conf = context.getConfiguration();
         if (centroids == null) {
+            final Configuration conf = context.getConfiguration();
             centroids = new CentroidsCatalogue(new Path(conf.get("centroids")),
                                                conf);
         }
@@ -40,11 +40,10 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
         for (ProtobufWritable<ClusterVector> value : values) {
             value.setConverter(ClusterVector.class);
             final ClusterVector clusVector = value.get();
-            double mindist = 100000D;
+            double mindist = 1000000D;
             Cluster minDistCluster = null;
-
             for (Cluster cluster : centroids.getCentroids()) {
-                double dist = 0;
+                double dist = 0D;
                 for (int nComs = 0; nComs < clusVector.getComsCount(); nComs++) {
                     double ccom = cluster.getCoords().getComs(nComs);
                     double com = clusVector.getComs(nComs);
@@ -64,7 +63,7 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
                             minDistCluster.getLabel(),
                             minDistCluster.getLabelgroup(),
                             mindist > minDistCluster.getMean() ? 0 : 1,
-                            0,
+                            0D,
                             mindist,
                             clusVector);
             context.write(new LongWritable(nodeBts.getPlaceId()), outputCluster);

@@ -25,7 +25,7 @@ public class VectorNormalizedReducer extends Reducer<ProtobufWritable<NodeBts>,
         for (ProtobufWritable<ClusterVector> value : values) {
             value.setConverter(ClusterVector.class);
             final ClusterVector clusterVector = value.get();
-            double sumvalues = 0;
+            double sumvalues = 0D;
             for (int j = 0; j < clusterVector.getComsCount(); j++) {
                 double elem;
                 if (j < 24) {
@@ -40,8 +40,10 @@ public class VectorNormalizedReducer extends Reducer<ProtobufWritable<NodeBts>,
 
             ClusterVector div = divBuilder.build();
             for (double comm : div.getComsList()) {
-                vectorNormBuilder.addComs(comm / sumvalues);
+                double normCom = sumvalues == 0D ? comm : comm / sumvalues;
+                vectorNormBuilder.addComs(normCom);
             }
+            
             ProtobufWritable<ClusterVector> vectorNorm =
                     ProtobufWritable.newInstance(ClusterVector.class);
             vectorNorm.set(vectorNormBuilder.build());

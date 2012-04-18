@@ -26,8 +26,8 @@ public class ClusterClientGetMinDistanceReducer extends Reducer<
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
-        final Configuration conf = context.getConfiguration();
         if (centroids == null) {
+            final Configuration conf = context.getConfiguration();
             centroids = new CentroidsCatalogue(new Path(conf.get("centroids")),
                                                conf);
         }

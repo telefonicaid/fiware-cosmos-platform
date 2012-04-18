@@ -1,6 +1,8 @@
 package es.tid.cosmos.mobility.clientlabelling;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -23,11 +25,17 @@ public class VectorFuseNodeDaygroupReducer extends Reducer
                           Iterable<ProtobufWritable<DailyVector>> values,
                           Context context) throws IOException,
                                                   InterruptedException {
+        List<ProtobufWritable<DailyVector>> valueList =
+                new LinkedList<ProtobufWritable<DailyVector>>();
+        for (ProtobufWritable<DailyVector> value : values) {
+            valueList.add(value);
+        }
+        
         ClusterVector.Builder clusterVectorBuilder = ClusterVector.newBuilder();
         for (int group = 0; group < 4; group++) {
             boolean added = false;
             int j = 0;
-            for (ProtobufWritable<DailyVector> value : values) {
+            for (ProtobufWritable<DailyVector> value : valueList) {
                 value.setConverter(DailyVector.class);
                 final DailyVector dailyVector = value.get();
                 if (dailyVector.getHours(j).getNum1() == group) {

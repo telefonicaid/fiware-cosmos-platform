@@ -22,14 +22,13 @@ import es.tid.cosmos.mobility.util.CentroidsCatalogue;
 public class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
         ProtobufWritable<NodeBts>, ProtobufWritable<ClusterVector>,
         LongWritable, ProtobufWritable<Poi>> {
-
     private static CentroidsCatalogue centroids = null;
 
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
-        final Configuration conf = context.getConfiguration();
         if (centroids == null) {
+            final Configuration conf = context.getConfiguration();
             centroids = new CentroidsCatalogue(new Path(conf.get("centroids")),
                     conf);
         }
@@ -39,27 +38,20 @@ public class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
     protected void reduce(ProtobufWritable<NodeBts> key,
             Iterable<ProtobufWritable<ClusterVector>> values, Context context)
             throws IOException, InterruptedException {
-        double mindist;
-        double dist;
-        double sumcom;
-        double sumccom;
-        double csumcom;
-        double csumccom;
-        double sumcomxccom;
-        double com;
-        double ccom;
-        Cluster minDistCluster = null;
-
         for (ProtobufWritable<ClusterVector> value : values) {
             value.setConverter(ClusterVector.class);
             final ClusterVector clusVector = value.get();
-            mindist = 1000;
-
-            sumcom = sumccom = csumcom = csumccom = sumcomxccom = 0;
+            double mindist = 1000D;
+            Cluster minDistCluster = null;
             for (Cluster cluster : centroids.getCentroids()) {
+                double sumcom = 0;
+                double sumccom = 0;
+                double csumcom = 0;
+                double csumccom = 0;
+                double sumcomxccom = 0;
                 for (int nComs = 0; nComs < clusVector.getComsCount(); nComs++) {
-                    com = clusVector.getComs(nComs);
-                    ccom = cluster.getCoords().getComs(nComs);
+                    double com = clusVector.getComs(nComs);
+                    double ccom = cluster.getCoords().getComs(nComs);
                     sumcom += com;				// S1
                     sumccom += ccom;			        // S2
                     csumcom += com * com;		        // SC1
@@ -68,10 +60,9 @@ public class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
                 }
 
                 int nElem = clusVector.getComsCount();
-                dist = 1.0 - (((nElem * sumcomxccom) - (sumcom * sumccom))
+                double dist = 1.0 - (((nElem * sumcomxccom) - (sumcom * sumccom))
                         / (Math.sqrt((nElem * csumcom) - (sumcom * sumcom))
                         * Math.sqrt((nElem * csumccom) - (sumccom * sumccom))));
-
                 if (dist < mindist || minDistCluster == null) {
                     mindist = dist;
                     minDistCluster = cluster;

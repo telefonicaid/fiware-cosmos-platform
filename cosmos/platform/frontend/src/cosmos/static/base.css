@@ -1,23 +1,22 @@
 /* page styles from visualize.jQuery */
-a:link { color: #00C6D7; }
-a:visited { color: #BB650E; }
+a: link { color: #00C6D7; }
+a: visited { color: #BB650E; }
 div#branding {
   background-color: #004250;
 }
 div#user-tools {
-  /*color: white;*/
   color: #64C3D6;
   background-color: #004250;
   height: 2em;
   padding-left: 1em;
 }
-div#content { 
+div#content {
   left: 0;
-  width:55%;
+  width: 55%;
 }
 div#right_banner {
   float: right;
-  width: 20em; 
+  width: 20em;
 }
 div#footer { background: #004250; }
 img#logo { width: 200px; }
@@ -29,28 +28,37 @@ body {
   position: relative;
 }
 table {  border-collapse: collapse; }
+table#top_banner {
+  border: 0;
+  border-collapse: collapse;
+  padding: 0;
+  width: 100%;
+}
 td, th {
   text-align: center;
   border: 1px solid #ddd;
-  padding:2px 5px;
+  padding: 2px 5px;
 }
 caption {margin: 0 0 .5em; font-weight: bold; }
 table#jobs-table { align: centered; }
 h1 { color: #004250; }
 
 /*
-	Styles for the startup screen 
+	Styles for the startup screen
 */
 .startupscreen {
 	background-image: url('fading_bgd.gif');
 	background-color: #00709C;
 	background-repeat: repeat-y;
 }
+.startupscreen input {
+    margin-bottom: 1em;
+}
 .startupscreen table { margin: 1em auto 2em; }
 .startupscreen td { border: none; }
 .startupscreen .error-msg { color: red; }
 .startupscreen div {
-	border-style: solid; 
+	border-style: solid;
 	border-color: whiteSmoke;
 	border-width: 1px;
 	text-align: center;
@@ -67,7 +75,7 @@ h1 { color: #004250; }
     font-size: 14px;
 }
 
-ul.messagelist { text-align: center; color: #000;border:1px solid #C8DCC2; margin:0 0; padding:0 0; }
+ul.messagelist { text-align: center; color: #000;border: 1px solid #C8DCC2; margin: 0 0; padding: 0 0; }
 ul.messagelist li { background: none; padding-left: 5px; padding-top: 8px; padding-bottom: 8px;font-size: 1.2em; }
 ul.messagelist li.debug{ background: #EEFAEA; padding: 0.5em, 0 0.5em 0; list-style: none;}
 ul.messagelist li.info{ background: #EEFAEA; padding: 0.5em, 0 0.5em 0; list-style: none;}

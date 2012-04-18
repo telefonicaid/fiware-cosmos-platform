@@ -3,9 +3,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <title>{{ title }}</title>
-	<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}base.css" />
-	<link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}visualize.css" />
-	<!--link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}visualize-dark.css" /-->
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}base.css" />
+        <link rel="stylesheet" type="text/css" href="{{ STATIC_URL }}visualize.css" />
         {% block extrahead %}{% endblock %}
     </head>
 
@@ -13,14 +12,14 @@
         {% if not is_popup %}
         <div id="header">
             <div id="branding">
-		<table style="border:0; border-collapse: collapse; padding:0; width:100%;">
+                <table id="top_banner">
                 <tr>
-		<td style="text-align:left; border:none;"><img id="logo" src="{{ STATIC_URL }}logo.jpg"></td>
+                <td style="text-align:left; border:none;"><img id="logo" src="{{ STATIC_URL }}logo.jpg"></td>
                 <td style="text-align:center; border:none;"><img id="logo" src="{{ STATIC_URL }}cosmos_icon_white.png" style="width:75px" ></td>
-		</tr>
-		</table>
+                </tr>
+                </table>
                 {% block branding %}{% endblock %}
-	    </div>
+            </div>
     
             {% if user.is_active %}
                 <div id="user-tools">
@@ -40,9 +39,9 @@
             {% endfor %}</ul>
         {% endif %}
     
-	<div id="right_banner">
-	<img src="{{ STATIC_URL }}seeding.jpg" style="width:20em;">
-	</div>
+        <div id="right_banner">
+        <img src="{{ STATIC_URL }}seeding.jpg" style="width:20em;">
+        </div>
 
         <div id="content">
             {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}

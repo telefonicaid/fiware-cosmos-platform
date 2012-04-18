@@ -1,8 +1,5 @@
 package es.tid.cosmos.mobility;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -22,48 +19,33 @@ import es.tid.cosmos.mobility.util.Logger;
  * @author dmicol
  */
 public class MobilityMain extends Configured implements Tool {
-    private static final String CENTROIDS_CLIENT_TAG = "CENTROIDS_CLIENT_PATH";
-    private static final String CENTROIDS_BTS_TAG = "CENTROIDS_BTS_PATH";
-    private static final String CENTROIDS_CLIENTBTS_TAG =
-            "CENTROIDS_CLIENTBTS_PATH";
-    
     @Override
     public int run(String[] args) throws Exception {
-        Map<String, String> arguments = parseArguments(args);
+        ArgumentParser arguments = new ArgumentParser();
+        arguments.parse(args);
+        final Configuration conf = this.getConf();
         
         Path tmpPath;
-        if (arguments.containsKey("tmpDir")) {
-            tmpPath = new Path(arguments.get("tmpDir"));
+        if (arguments.has("tmpDir")) {
+            tmpPath = new Path(arguments.getString("tmpDir"));
         } else {
             tmpPath = new Path("/tmp/mobility");
         }
         
-        Path cdrsPath = new Path(arguments.get("cdrs"));
-        Path cellsPath = new Path(arguments.get("cells"));
-        Path adjBtsPath = new Path(arguments.get("adjBts"));
-        Path btsVectorTxtPath = new Path(arguments.get("btsVectorTxt"));
+        Path cdrsPath = new Path(arguments.getString("cdrs"));
+        Path cellsPath = new Path(arguments.getString("cells"));
+        Path adjBtsPath = new Path(arguments.getString("adjBts"));
+        Path btsVectorTxtPath = new Path(arguments.getString("btsVectorTxt"));
         
-        Configuration conf = this.getConf();
-        if (arguments.containsKey("centroids_client")) {
-            conf.set(CENTROIDS_CLIENT_TAG, arguments.get("centroids_client"));
-        }
-        if (arguments.containsKey("centroids_bts")) {
-            conf.set(CENTROIDS_BTS_TAG, arguments.get("centroids_bts"));
-        }
-        if (arguments.containsKey("centroids_clientbts")) {
-            conf.set(CENTROIDS_CLIENTBTS_TAG, arguments.get(
-                    "centroids_clientbts"));
-        }
-        
-        boolean shouldRunAll = "true".equals(arguments.get("run_all"));
-        boolean isDebug = "true".equals(arguments.get("debug"));
+        boolean shouldRunAll = arguments.getBoolean("run_all");
+        boolean isDebug = arguments.getBoolean("debug");
         
         Path tmpParsingPath = new Path(tmpPath, "parsing");
         Path cdrsMobPath = new Path(tmpParsingPath, "cdrs_mob");
         Path cellsMobPath = new Path(tmpParsingPath, "cells_mob");
         Path pairbtsAdjPath = new Path(tmpParsingPath, "pairbts_adj");
         Path btsComareaPath = new Path(tmpParsingPath, "bts_comarea");
-        boolean shouldParse = "true".equals(arguments.get("parse"));
+        boolean shouldParse = arguments.getBoolean("parse");
         if (shouldRunAll || shouldParse) {
             ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath, cellsMobPath,
                               adjBtsPath, pairbtsAdjPath, btsVectorTxtPath,
@@ -77,7 +59,7 @@ public class MobilityMain extends Configured implements Tool {
         Path btsCommsPath = new Path(tmpPreparingPath, "bts_comms");
         Path cdrsNoBtsPath = new Path(tmpPreparingPath, "cdrs_no_bts");
         Path viTelmonthBtsPath = new Path(tmpPreparingPath, "vi_telmonth_bts");
-        boolean shouldPrepare = "true".equals(arguments.get("prepare"));
+        boolean shouldPrepare = arguments.getBoolean("prepare");
         if (shouldRunAll || shouldPrepare) {
             PreparingRunner.run(tmpPreparingPath, cdrsMobPath, cdrsInfoPath,
                                 cdrsNoinfoPath, cellsMobPath, clientsBtsPath,
@@ -90,7 +72,7 @@ public class MobilityMain extends Configured implements Tool {
         Path clientsInfoFilteredPath = new Path(tmpExtractPoisPath,
                                                 "clients_info_filtered");
         Path clientsRepbtsPath = new Path(tmpExtractPoisPath, "clients_repbts");
-        boolean shouldExtractPois = "true".equals(arguments.get("extractPOIs"));
+        boolean shouldExtractPois = arguments.getBoolean("extractPOIs");
         if (shouldRunAll || shouldExtractPois) {
             PoisRunner.run(tmpExtractPoisPath, clientsBtsPath, clientsInfoPath,
                            cdrsNoinfoPath, cdrsNoBtsPath,
@@ -98,31 +80,25 @@ public class MobilityMain extends Configured implements Tool {
                            conf);
         }
 
-        Path tmpLabelPoisPath = new Path(tmpPath, "label_client");
-        Path vectorClientClusterPath = new Path(tmpLabelPoisPath,
+        Path tmpLabelClientPath = new Path(tmpPath, "label_client");
+        Path vectorClientClusterPath = new Path(tmpLabelClientPath,
                                                 "vector_client_clusterPath");
-        boolean shouldLabelClient = "true".equals(arguments.get("labelClient"));
+        boolean shouldLabelClient = arguments.getBoolean("labelClient");
         if (shouldRunAll || shouldLabelClient) {
-            if (conf.get(CENTROIDS_CLIENT_TAG) == null) {
-                throw new IllegalStateException(
-                        "Must specify the centroids clients path");
-            }
-            Path centroidsPath = new Path(conf.get(CENTROIDS_CLIENT_TAG));
+            Path centroidsPath = new Path(arguments.getString(
+                    "centroids_client", true));
             ClientLabellingRunner.run(cdrsMobPath, clientsInfoFilteredPath,
                                       centroidsPath, vectorClientClusterPath,
-                                      tmpLabelPoisPath, isDebug, conf);
+                                      tmpLabelClientPath, isDebug, conf);
         }
 
         Path tmpLabelBtsPath = new Path(tmpPath, "label_bts");
         Path vectorBtsClusterPath = new Path(tmpLabelBtsPath,
                                              "vector_bts_cluster");
-        boolean shouldLabelBts = "true".equals(arguments.get("labelBTS"));
+        boolean shouldLabelBts = arguments.getBoolean("labelBTS");
         if (shouldRunAll || shouldLabelBts) {
-            if (conf.get(CENTROIDS_BTS_TAG) == null) {
-                throw new IllegalStateException(
-                        "Must specify the centroids BTS path");
-            }
-            Path centroidsPath = new Path(conf.get(CENTROIDS_BTS_TAG));
+            Path centroidsPath = new Path(arguments.getString(
+                    "centroids_bts", true));
             BtsLabellingRunner.run(btsCommsPath, btsComareaPath,
                                    centroidsPath, vectorBtsClusterPath,
                                    tmpLabelBtsPath, isDebug, conf);
@@ -133,32 +109,16 @@ public class MobilityMain extends Configured implements Tool {
                                                  "vector_clientbts_cluster");
         Path vectorClientbtsClusterPath = new Path(tmpLabelClientbtsPath,
                                                    "vector_clientbts_cluster");
-        boolean shouldLabelClientbts = "true".equals(arguments.get(
-                "labelClientBTS"));
+        boolean shouldLabelClientbts = arguments.getBoolean("labelClientBTS");
         if (shouldRunAll || shouldLabelClientbts) {
-            if (conf.get(CENTROIDS_CLIENTBTS_TAG) == null) {
-                throw new IllegalStateException(
-                        "Must specify the centroids ClientBTS path");
-            }
-            Path centroidsPath = new Path(conf.get(CENTROIDS_CLIENTBTS_TAG));
+            Path centroidsPath = new Path(arguments.getString(
+                    "centroids_clientbts", true));
             ClientBtsLabellingRunner.run(clientsInfoPath, clientsRepbtsPath,
                     centroidsPath, pointsOfInterestTempPath,
                     vectorClientbtsClusterPath, tmpLabelBtsPath, isDebug, conf);
         }
         
         return 0;
-    }
-    
-    private static Map<String, String> parseArguments(String[] args) {
-        Map<String, String> arguments = new HashMap<String, String>();
-        for (String arg : args) {
-            String[] fields = arg.split("=");
-            if (fields.length != 2) {
-                throw new IllegalArgumentException("Invalid command line");
-            }
-            arguments.put(fields[0].replaceAll("--", ""), fields[1]);
-        }
-        return arguments;
     }
     
     public static void main(String[] args) throws Exception {

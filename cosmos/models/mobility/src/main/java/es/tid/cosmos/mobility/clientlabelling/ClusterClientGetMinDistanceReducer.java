@@ -40,7 +40,6 @@ public class ClusterClientGetMinDistanceReducer extends Reducer<
         for (ProtobufWritable<ClusterVector> value : values) {
             value.setConverter(ClusterVector.class);
             final ClusterVector clusVector = value.get();
-            
             double mindist = 1000D;
             Cluster minDistCluster = null;
             for (Cluster cluster : centroids.getCentroids()) {
@@ -67,7 +66,7 @@ public class ClusterClientGetMinDistanceReducer extends Reducer<
                             0D,
                             mindist,
                             clusVector);
-            context.write(new LongWritable(nodeBts.getPlaceId()), outputCluster);
+            context.write(new LongWritable(nodeBts.getUserId()), outputCluster);
         }
     }
 }

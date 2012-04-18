@@ -1234,7 +1234,7 @@ namespace samson {
                 LM_T(LmtRest, ("Redirect to the right server (%s:%d)", host.c_str(), port));
 
                 *okP = true; // redirect treated as OK ...
-                snprintf(redirect, redirectSize, "%s:%d", host.c_str(), port);
+                snprintf(redirect, redirectSize, "http://%s:%d", host.c_str(), port);
                 return au::xml_simple("redirect", au::str("Redirect to %s:%d", host.c_str(), port)); // This is not used ...
             }
 

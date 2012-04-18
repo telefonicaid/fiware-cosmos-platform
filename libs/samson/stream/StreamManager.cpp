@@ -37,7 +37,7 @@
 
 #include "StreamManager.h"                          // Own interface
 
-
+extern int web_port; // defined in main_samsonWorker.cpp ( or main_samsonLocal.cpp )
 
 namespace samson {
     namespace stream {
@@ -1228,7 +1228,8 @@ namespace samson {
             if (worker_ids[server] != my_worker_id)
             {
                 std::string     host = worker->network->getHostForWorker( worker_id );
-                unsigned short  port = worker->network->getPortForWorker( worker_id );
+                //unsigned short  port = worker->network->getPortForWorker( worker_id );
+                unsigned short  port = web_port; // We have to use to REST port, not the connections port
 
                 LM_T(LmtRest, ("Redirect to the right server (%s:%d)", host.c_str(), port));
 

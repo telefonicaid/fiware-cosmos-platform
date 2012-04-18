@@ -54,6 +54,8 @@ bool             thread_mode;
 //bool             delilah_qt;
 
 
+int web_port=0; // Not used really. It is just to avoid the errro then linking with samsonWorker
+
 #define S01 (long int) "samson01:1234"
 /* ****************************************************************************
  *

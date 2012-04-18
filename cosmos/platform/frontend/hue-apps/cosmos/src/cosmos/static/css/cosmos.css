@@ -1,0 +1,54 @@
+/* 
+	cosmos styles
+	important: these should be namespaced
+	example:
+		let's say you are creating an app called "calculator"; you should prefix all your styles with your application's name like so
+		
+		.calculator img {
+			border: 1px solid #000;
+		}
+		.calculator p {
+			margin: 10px 0px;
+		}
+		etc...
+
+	other notes:
+	* don't use ids - there may be more than one of your apps open; use classes!
+	* the toolbar element is absolutely positioned and 100% wide (and therefor 0px high);
+	  any elements inside it should also be absolutely positioned
+*/
+
+.cosmos img.cosmos_icon {
+	width: 55px;
+	height: 55px;
+	position: absolute;
+	top: 24px;
+	left: 14px;
+        z-index: 1;
+}
+
+.cosmos .nav {
+    position: absolute;
+    top: 24px;
+    left: 80px;
+    z-index: 1;
+}
+
+.cosmos .nav_icon {
+    padding: 6px 8px 6px 25px;
+    height: 25px;
+}
+
+.cosmos .nav li {
+    float: left;
+}
+
+.cosmos a.cos-job_runs_nav {
+    background: url(/static/art/icons/application_view_list.png) no-repeat;
+}
+.cosmos a.cos-datasets_nav {
+    background: url(/static/art/icons/database_edit.png) no-repeat;
+}
+.cosmos a.cos-jars_nav {
+    background: url(/static/art/icons/package.png) no-repeat;
+}

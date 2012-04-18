@@ -1,0 +1,94 @@
+[{
+    "pk": 1,
+    "model": "cosmos.dataset",
+    "fields": {
+	"name": "dataset1",
+	"user": 101,
+	"description": "First dataset",
+	"path": "/user/user1/datasets/first"
+    }
+}, {
+    "pk": 2,
+    "model": "cosmos.dataset",
+    "fields": {
+	"name": "dataset2",
+	"user": 101,
+	"description": "Second dataset",
+	"path": "/user/user1/datasets/second"
+    }
+}, {
+    "pk": 3,
+    "model": "cosmos.dataset",
+    "fields": {
+	"name": "dataset3",
+	"user": 102,
+	"description": "Third dataset from other user",
+	"path": "/user/user2/datasets/third"
+    }
+}, {
+    "pk": 1,
+    "model": "cosmos.customjar",
+    "fields": {
+	"name": "wordcount",
+	"user": 101,
+	"description": "Wordcount example. Args: input output",
+	"path": "/user/user1/jars/wordcount-1.0-SNAPSHOT.jar"
+    }
+}, {
+    "pk": 2,
+    "model": "cosmos.customjar",
+    "fields": {
+	"name": "pi",
+	"user": 102,
+	"description": "Wordcount example but different user",
+	"path": "/user/user2/jars/wordcount-1.0-SNAPSHOT.jar"
+    }
+}, {
+    "pk": 1,
+    "model": "cosmos.jobrun",
+    "fields": {
+	"name": "running_wc",
+	"user": 101,
+	"dataset": 1,
+	"model": 1,
+	"description": "Running wordcount on the Quijote",
+	"start_date": "2012-01-01 01:00:00",
+	"status": 1
+    }
+}, {
+    "pk": 2,
+    "model": "cosmos.jobrun",
+    "fields": {
+	"name": "successful_wc",
+	"user": 101,
+	"dataset": 1,
+	"model": 1,
+	"description": "Sucessful wordcount on the Quijote",
+	"start_date": "2012-01-01 01:30:00",
+	"status": 2
+    }
+}, {
+    "pk": 3,
+    "model": "cosmos.jobrun",
+    "fields": {
+	"name": "failed_wc",
+	"user": 101,
+	"dataset": 1,
+	"model": 1,
+	"description": "Failed wordcount on the Quijote",
+	"start_date": "2012-01-01 02:00:00",
+	"status": 3
+    }
+}, {
+    "pk": 4,
+    "model": "cosmos.jobrun",
+    "fields": {
+	"name": "other_jobrun",
+	"user": 102,
+	"dataset": 3,
+	"model": 2,
+	"description": "Pi estimation from other user",
+	"start_date": "2012-01-01 02:30:00",
+	"status": 2
+    }
+}]

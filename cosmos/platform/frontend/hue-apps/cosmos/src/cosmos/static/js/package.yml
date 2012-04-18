@@ -1,0 +1,5 @@
+copyright: Apache License v2.0
+version: 0.1
+description: Unknown
+name: cosmos
+sources: [Source/Cosmos/Cosmos.js]

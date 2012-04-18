@@ -31,7 +31,13 @@ public class MobilityMain extends Configured implements Tool {
     public int run(String[] args) throws Exception {
         Map<String, String> arguments = parseArguments(args);
         
-        Path tmpPath = new Path("/tmp/mobility");
+        Path tmpPath;
+        if (arguments.containsKey("tmpDir")) {
+            tmpPath = new Path(arguments.get("tmpDir"));
+        } else {
+            tmpPath = new Path("/tmp/mobility");
+        }
+        
         Path cdrsPath = new Path(arguments.get("cdrs"));
         Path cellsPath = new Path(arguments.get("cells"));
         Path adjBtsPath = new Path(arguments.get("adjBts"));
@@ -58,7 +64,7 @@ public class MobilityMain extends Configured implements Tool {
         Path pairbtsAdjPath = new Path(tmpParsingPath, "pairbts_adj");
         Path btsComareaPath = new Path(tmpParsingPath, "bts_comarea");
         boolean shouldParse = "true".equals(arguments.get("parse"));
-        if (shouldParse) {
+        if (shouldRunAll || shouldParse) {
             ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath, cellsMobPath,
                               adjBtsPath, pairbtsAdjPath, btsVectorTxtPath,
                               btsComareaPath, conf);
@@ -123,6 +129,8 @@ public class MobilityMain extends Configured implements Tool {
         }
 
         Path tmpLabelClientbtsPath = new Path(tmpPath, "label_clientbts");
+        Path pointsOfInterestTempPath = new Path(tmpLabelClientbtsPath,
+                                                 "vector_clientbts_cluster");
         Path vectorClientbtsClusterPath = new Path(tmpLabelClientbtsPath,
                                                    "vector_clientbts_cluster");
         boolean shouldLabelClientbts = "true".equals(arguments.get(
@@ -134,8 +142,8 @@ public class MobilityMain extends Configured implements Tool {
             }
             Path centroidsPath = new Path(conf.get(CENTROIDS_CLIENTBTS_TAG));
             ClientBtsLabellingRunner.run(clientsInfoPath, clientsRepbtsPath,
-                    centroidsPath, vectorClientbtsClusterPath, tmpLabelBtsPath,
-                    isDebug, conf);
+                    centroidsPath, pointsOfInterestTempPath,
+                    vectorClientbtsClusterPath, tmpLabelBtsPath, isDebug, conf);
         }
         
         return 0;

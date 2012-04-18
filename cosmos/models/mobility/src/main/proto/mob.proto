@@ -130,3 +130,23 @@ message TelMonth {
     optional uint32 month = 2;
     optional bool workingday = 3;
 }
+
+message Poi {
+    optional uint32 id = 1;
+    optional uint64 node = 2;
+    optional uint32 bts = 3;
+    optional uint32 labelnode = 4;
+    optional uint32 labelgroupnode = 5;
+    optional uint32 confidentnode = 6;
+    optional double distancenode = 7;
+    optional uint32 labelbts = 8;
+    optional uint32 labelgroupbts = 9;
+    optional uint32 confidentbts = 10;
+    optional double distancebts = 11;
+    optional uint32 labelnodebts = 12;
+    optional uint32 labelgroupnodebts = 13;
+    optional uint32 confidentnodebts = 14;
+    optional double distancenodebts = 15;
+    optional int32 inoutWeek = 16;
+    optional int32 inoutWend = 17;
+}

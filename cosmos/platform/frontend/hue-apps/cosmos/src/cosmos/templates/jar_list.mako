@@ -2,7 +2,7 @@
 
 ${shared.header("Cosmos", section="jars")}
 
-<div id="index" class="view jframe_padded">
+<div id="index" class="view">
   <table data-filters="HtmlTable" class="selectable sortable" cellpadding="0"
          cellspacing="0">
     <thead>

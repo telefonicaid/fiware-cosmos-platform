@@ -27,12 +27,12 @@ public class VectorNormalizedReducer extends Reducer<ProtobufWritable<NodeBts>,
             final ClusterVector clusterVector = value.get();
             double sumvalues = 0D;
             for (int j = 0; j < clusterVector.getComsCount(); j++) {
-                double elem;
+                double elem = clusterVector.getComs(j);
                 if (j < 24) {
                     // Mondays, Tuesday, Wednesday and Thursday. Total: 121 days
-                    elem = clusterVector.getComs(j) / 121.0D;
+                    elem /= 121.0D;
                 } else {
-                    elem = clusterVector.getComs(j) / 31.0D;
+                    elem /= 31.0D;
                 }
                 sumvalues += elem;
                 divBuilder.addComs(elem);

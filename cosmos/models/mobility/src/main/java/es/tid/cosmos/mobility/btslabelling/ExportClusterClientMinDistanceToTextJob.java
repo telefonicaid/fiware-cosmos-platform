@@ -21,7 +21,8 @@ import es.tid.cosmos.mobility.MobilityMain;
  * @author dmicol
  */
 public class ExportClusterClientMinDistanceToTextJob extends Job {
-    private static final String JOB_NAME = "ClusterClientGetMinDistanceToText";
+    private static final String JOB_NAME =
+            "ExportClusterClientMinDistanceToText";
 
     public ExportClusterClientMinDistanceToTextJob(Configuration conf)
             throws IOException {

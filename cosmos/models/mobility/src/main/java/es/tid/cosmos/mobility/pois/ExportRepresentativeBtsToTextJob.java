@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.MobilityMain;
  * @author dmicol
  */
 public class ExportRepresentativeBtsToTextJob extends Job {
-    private static final String JOB_NAME = "ConvertBtsCounterToText";
+    private static final String JOB_NAME = "ExportRepresentativeBtsToText";
 
     public ExportRepresentativeBtsToTextJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);

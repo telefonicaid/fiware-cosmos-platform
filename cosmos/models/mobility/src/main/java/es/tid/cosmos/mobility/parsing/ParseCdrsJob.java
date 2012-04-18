@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.MobilityMain;
  * @author dmicol
  */
 public class ParseCdrsJob extends Job {
-    private static final String JOB_NAME = "ParseCDRs";
+    private static final String JOB_NAME = "ParseCdrs";
 
     public ParseCdrsJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);

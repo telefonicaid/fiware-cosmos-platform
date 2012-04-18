@@ -20,7 +20,8 @@ public class DeletePeriodMapper extends Mapper<
     public void map(ProtobufWritable<ActivityAreaKey> key,
             ProtobufWritable<ActivityArea> value, Context context)
             throws IOException, InterruptedException {
-        ActivityAreaKey oldActAreaKey = key.get();
+        key.setConverter(ActivityAreaKey.class);
+        final ActivityAreaKey oldActAreaKey = key.get();
         ProtobufWritable<ActivityAreaKey> newActAreaKey =
             ActivityAreaKeyUtil.createAndWrap(oldActAreaKey.getUserId(),
                                               0,

@@ -27,6 +27,7 @@ public class MobilityMain extends Configured implements Tool {
     private static final String CENTROIDS_BTS_TAG = "CENTROIDS_BTS_PATH";
     private static final String CENTROIDS_CLIENTBTS_TAG =
             "CENTROIDS_CLIENTBTS_PATH";
+    private static final String EXTRACTMIVSFLAG = "extract_mivs";
     
     @Override
     public int run(String[] args) throws Exception {
@@ -80,14 +81,13 @@ public class MobilityMain extends Configured implements Tool {
                                 conf);
         }
 
-        String extractMivsFlag = "extract_mivs";
-        Path tmpExtractMivsPath = new Path(tmpPath, extractMivsFlag);
+        Path tmpExtractMivsPath = new Path(tmpPath, EXTRACTMIVSFLAG);
         Path viClientFuseTxtPath = new Path(tmpExtractMivsPath,
                                             "vi_client_fuse");
         Path viClientFuseAccTxtPath = new Path(tmpExtractMivsPath,
                                                "vi_client_fuse_acc");
         boolean shouldExtractMivs =
-            "true".equals(arguments.get(extractMivsFlag));
+            "true".equals(arguments.get(EXTRACTMIVSFLAG));
         if (shouldRunAll || shouldExtractMivs) {
             ActivityAreaRunner.run(viTelmonthBtsPath, viClientFuseTxtPath,
                                    viClientFuseAccTxtPath, tmpExtractMivsPath,

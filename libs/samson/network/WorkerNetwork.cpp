@@ -177,10 +177,28 @@ namespace samson {
         // Recover information included in the hello message
         ClusterInformation new_cluster_information( packet->message->hello().cluster_information() );
         NodeIdentifier new_node_identifier( packet->message->hello().node_identifier() );
-
         connection->setUserAndPassword( packet->message->hello().user(), packet->message->hello().password() );
         connection->setConnectionType( packet->message->hello().connection_type() );
         
+        // -----------------------------------------------------------------------------------------------
+        // Reset flag
+        // -----------------------------------------------------------------------------------------------
+        
+        if ( new_node_identifier.node_type == DelilahNode )
+            if( packet->message->hello().has_reset_cluster_information() )
+                if( packet->message->hello().reset_cluster_information() )
+                {
+                    LM_W(("Received a reset cluster command"));
+                    
+                    // Reset cluster information
+                    cluster_information.clearClusterInformation();
+                    cluster_information.remove_file();
+                    
+                    // Close all connections
+                    NetworkManager::reset();
+                    return;
+                }
+
         // -----------------------------------------------------------------------------------------------
         // General update of cluster information
         // -----------------------------------------------------------------------------------------------
@@ -235,21 +253,6 @@ namespace samson {
             }
         }            
 
-        // -----------------------------------------------------------------------------------------------
-        // Reset flag
-        // -----------------------------------------------------------------------------------------------
-        
-        if ( new_node_identifier.node_type == DelilahNode )
-            if( packet->message->hello().has_reset_cluster_information() )
-                if( packet->message->hello().reset_cluster_information() )
-                {
-                    // Reset cluster information
-                    cluster_information.clearClusterInformation();
-                    cluster_information.remove_file();
-                    
-                    // Close all connections
-                    NetworkManager::reset();
-                }
         
         // -----------------------------------------------------------------------------------------------
         // Set NodeIdentifier and move connection to the rigth place ( name )

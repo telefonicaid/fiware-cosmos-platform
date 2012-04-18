@@ -118,7 +118,10 @@ namespace samson
         
         std::string getDescription()
         {
-            return au::str( "[%d] %s" , samson_connector_id , getName().c_str() );
+            if( type == connection_input )
+                return au::str( "[%d] Input from %s" , samson_connector_id , getName().c_str() );
+            else
+                return au::str( "[%d] Output to %s" , samson_connector_id , getName().c_str() );
         }
         
         std::string str()

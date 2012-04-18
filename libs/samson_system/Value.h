@@ -6,7 +6,10 @@
 #include <cctype>
 #include "smaz.h"
 #include "logMsg/logMsg.h"
+
 #include "au/Pool.h"
+#include "au/tables/pugi.h"
+
 #include "samson/module/DataInstance.h"
 
 #define VALUE_CODE 1219561887489248771ULL
@@ -1229,6 +1232,9 @@ namespace samson{
                 _value_string = _data;
             }
             
+            void setFromXmlString( const char *_data ,au::ErrorManager *error );
+            void setFromXmlNode(  const pugi::xml_node& xml_node );
+            
             // ------------------------------------------------------------
             // COPY Function 
             // ------------------------------------------------------------
@@ -1434,6 +1440,17 @@ namespace samson{
             void set_as_vector()
             {
                 change_value_type( value_vector );
+            }
+
+            void vectorize()
+            {
+                Value* value = pool_values.pop();
+                value->copyFrom(this);
+                
+                set_as_vector();
+                clear_vector();
+                
+                _value_vector.push_back(value); // Put the copy of me
             }
             
             Value* add_value_to_vector()

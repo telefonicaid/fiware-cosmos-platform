@@ -70,10 +70,12 @@ namespace samson {
         if( !buffer )
             return;
 
+        /*
         samson_connector->show_message( 
                     au::str("Received %s from \"%s\"" 
                             , au::str( buffer->getSize() ,"Bytes").c_str() 
                             , getDescription().c_str() ) );
+         */
         
         // Report input block
         samson_connector->report_input_block( samson_connector_id , buffer->getSize()  );

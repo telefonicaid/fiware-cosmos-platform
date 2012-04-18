@@ -19,7 +19,6 @@ namespace samson {
                                                                             , socket_connetion );
 
         // Add this item as my children item
-        samson_connector->show_message( au::str("Connection starts: %s" , new_item->getDescription().c_str() ) );
         samson_connector->add( new_item , getSamsonconnectorId() ); 
     }
                               

@@ -8,6 +8,7 @@
 
 #include "DiskConnection.h" // Own interface
 
+extern size_t input_buffer_size; // Size of the chunks to read
 
 namespace samson {
     
@@ -169,6 +170,7 @@ namespace samson {
             
             if( s != au::OK )
             {
+                
                 error.set( au::str("Not possible to write buffer with %s to file %s" 
                                    , au::str( current_block->buffer->getSize() ).c_str()
                                    ,  current_file_name.c_str() ) );
@@ -176,6 +178,8 @@ namespace samson {
                 return;
             }
 
+            accumulated_size += current_size;
+            
             // Pop output bock
             popOutputBlock();
         }
@@ -192,12 +196,12 @@ namespace samson {
             if( file_descriptor )
             {
                 // Still reading from a file...
-                engine::Buffer * buffer = engine::MemoryManager::shared()->newBuffer("stdin", "connector", buffer_size );
+                engine::Buffer * buffer = engine::MemoryManager::shared()->newBuffer("stdin", "connector", input_buffer_size );
 
                 // Read the entire buffer
                 size_t read_size = 0;
                au::Status s = file_descriptor->partRead(buffer->getData()
-                                                     , buffer_size
+                                                     , input_buffer_size
                                                      , "read connector connections"
                                                      , 300 
                                                      , &read_size );

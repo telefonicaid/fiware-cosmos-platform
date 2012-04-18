@@ -155,6 +155,10 @@ void test_selialization( )
 }
 
 
+void test_xml_parser()
+{
+}
+
 
 int main()
 {

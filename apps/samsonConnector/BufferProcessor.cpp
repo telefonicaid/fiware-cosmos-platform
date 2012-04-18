@@ -12,6 +12,7 @@
 
 extern char input_splitter_name[1024];
 extern size_t buffer_size;
+extern size_t input_buffer_size;
 
 namespace samson {
     
@@ -39,13 +40,13 @@ namespace samson {
             if( !splitter )
                 LM_X(1, ("Error getting instance of the splitter"));
             
-            // Internal buffer
+            // Internal buffer ( to be used as input by the splitter )
             buffer = (char*) malloc( buffer_size );
             max_size = buffer_size;
             size = 0;
-
         }
-        
+    
+        output_buffer = NULL;
         
     }
     
@@ -57,50 +58,76 @@ namespace samson {
         
     }
     
-    void BufferProcessor::process_intenal_buffer( bool finish )
+
+    // SplitterEmitter interface
+    void BufferProcessor::emit( char* data , size_t length )
     {
         
-        //LM_W(("Process internal buffer %s" , au::str(size,"B").c_str() ));
+        // If not possible to write in the current buffer, just flush content
+        if( output_buffer )
+            if( output_buffer->getSize() + length > output_buffer->getMaxSize() )
+                flush();
+        
+        // Create a new buffer is necessary
+        if( !output_buffer )
+        {
+            size_t output_buffer_size = std::max( length , (size_t) 64000000 ); // Minimum 64Mbytes buffer
+            output_buffer = engine::MemoryManager::shared()->newBuffer("output_splitter", "connector", output_buffer_size );
+        }
+        
+        // Write in the buffer
+        if( !output_buffer->write(data, length) )
+            LM_X(1, ("Internal error"));
+        
+        if( output_buffer->getSize() == output_buffer->getMaxSize() )
+            flush();
+        
+    }
+    
+    void BufferProcessor::flushOutputBuffer()
+    {
+        if( output_buffer )
+        {
+            stream_connector->push( output_buffer , item );
+            output_buffer = NULL;
+        }
+        
+    }
+    
+    void BufferProcessor::process_intenal_buffer( bool finish )
+    {
 
-        // Split buffer to know what to push
-        char * outData;
-        size_t outLength;
+        // Pointer to data that has not been used in splitter
         char * nextData;
-        int c = splitter->split(buffer, size, &outData, &outLength, &nextData , finish );
         
-        //LM_W(("Splitter input (%p , %lu)" , buffer , size ));
-        //LM_W(("Splitter answer %d out:%p-%lu  Next %p" , c , outData , outLength , nextData ));
-        
-        LM_READS("client", "input", buffer, size, LmfByte);
-
-        if( outLength > size )
-            LM_X(1, ("Error in the splitter implementation. Larger size than the input returned"));
+        // Split buffer to know what to push
+        int c = splitter->split(buffer, size, finish, &nextData, this );
         
         if( c == 0 )
         {
-            if( outData && (outLength>0) )
-            {
-                // Emit at the output
-                engine::Buffer *output_buffer = engine::MemoryManager::shared()->newBuffer("output_splitter", "connector", outLength );
-                output_buffer->setSize(outLength);
-                memcpy( output_buffer->getData(), outData, outLength );
-                
-                // Push at the output
-                stream_connector->push( output_buffer , item );
-            }
+            // Flush pending data generated here
+            flushOutputBuffer();
             
             // Data to be skip after process
             if( nextData )
             {
-                size_t skip_size = nextData - buffer;
-            
-                // Move data at the begining of the buffer
-                memmove( buffer + skip_size , buffer, size - skip_size );
-                size -= skip_size;
+                
+                if( ( nextData < buffer ) || (nextData > ( buffer + size) ) )
+                {
+                    LM_W(("Splitter %s has returned a wrong nextData pointer when processing a buffer of %s. Skipping this buffer" , input_splitter_name , au::str( max_size ).c_str()  ));
+                    size = 0;
+                }
+                else
+                {
+                    size_t skip_size = nextData - buffer;
+                    
+                    // Move data at the begining of the buffer
+                    memmove( buffer + skip_size , buffer, size - skip_size );
+                    size -= skip_size;
+                }
             }
             else
-                size = 0;
-            
+                size = 0; // if nextData is NULL Ignore all input data
         }
         else
         {
@@ -137,9 +164,17 @@ namespace samson {
             memcpy(buffer+size, input_buffer->getData() + pos_in_input_buffer , copy_size);
             size += copy_size;
             pos_in_input_buffer += copy_size;
+
             
-            // Process internal buffer to push blocks at the output
-            process_intenal_buffer( false );
+            // Process internal buffer every 2 seconds or when internal buffer is full
+            if( ( size == max_size ) || ( cronometer.diffTimeInSeconds() > 2 ) )
+            {
+                // Reset cronometer
+                cronometer.reset();
+            
+                // Process internal buffer to push blocks at the output
+                process_intenal_buffer( false );
+            }
         }
         
         // Destroy input buffer
@@ -152,7 +187,6 @@ namespace samson {
         // If no splitter is present, we never accumulate nothing here
         if( !splitter )
             return;
-            
         
         process_intenal_buffer( true ); // Process internal buffer with the "finish" flag activated
     }

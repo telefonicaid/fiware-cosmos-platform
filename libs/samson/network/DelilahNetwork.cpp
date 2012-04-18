@@ -443,9 +443,10 @@ namespace samson {
             
             if ( NetworkManager::isConnected(connection_name) )
             {
+                LM_W(("Sending a remove message to node %s" , connection_name.c_str() ));
                 Packet* packet = helloMessage( NULL );
                 packet->message->mutable_hello()->set_reset_cluster_information(true);
-                packet->to = node_identifier;
+                packet->to = _node_identifier;
                 
                 NetworkManager::send(packet);
             }

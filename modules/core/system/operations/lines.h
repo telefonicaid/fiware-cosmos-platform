@@ -28,34 +28,31 @@ namespace system{
 // helpLine: Parse input keeping lines toguether
 //  END_INFO_MODULE
 
-	   int split( char * inData, size_t inLength, char ** outData, size_t *outLength, char ** nextData , bool finish )
-		{
-		   // Return all completed lines ( not partial lines )
+	   int split( char * inData, size_t inLength , bool finished , char ** nextData , SplitterEmitter* emitter )
+	   {
+		  // Return all completed lines ( not partial lines )
 
-		   for ( size_t i = 0  ; i < inLength; i++ )
-		   {
-			  if( inData[inLength -1 - i] == '\n' )
-			  {
-				 *outData = inData;
-				 *outLength = 1 + inLength -1 - i;
-				 *nextData = &inData[1+inLength -1 - i ];				 				 
-				 return 0;
-			  }
-			  
-		   }
-		   
-		   // Not possible to find a return in the entire buffer, just return error
-		   *outData = NULL;
-		   *outLength = 0;
-		   *nextData = NULL;
-		   
-           // If finish, just ignore the rest of the buffer
-		   if( finish )
-			  return 0;
-		   return 1;
-		}
+          // Search for the last return		  
+		  for ( size_t i = 0  ; i < inLength; i++ )
+		  {
+			 if( inData[inLength -1 - i] == '\n' )
+			 {
+                // Emit all completed lines
+				emitter->emit( inData , 1 + inLength -1 - i ); 
+				
+                // Point to the begin of non-used data
+				*nextData = &inData[1+inLength -1 - i ];				 				 
 
-
+				// Return OK
+				return 0;
+			 }
+			 
+		  }
+		  
+		  // Not possible to find a return in the entire buffer, not process anything
+		  *nextData = inData; // Keep all input buffer
+		  return 0;		  
+	   }	   	   
 
 	};
 

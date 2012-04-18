@@ -7,6 +7,7 @@
 
 
 extern size_t buffer_size;
+extern size_t input_buffer_size; // Size of the chunks to read
 
 namespace samson {
     
@@ -84,14 +85,14 @@ namespace samson {
         while( true )
         {
             //Get a buffer
-            engine::Buffer * buffer = engine::MemoryManager::shared()->newBuffer("stdin", "connector", buffer_size );
+            engine::Buffer * buffer = engine::MemoryManager::shared()->newBuffer("stdin", "connector", input_buffer_size );
             
             //LM_V(("%s: Reading buffer up to %s" , file_descriptor->getName().c_str() , au::str(buffer_size).c_str() ));
 
             // Read the entire buffer
             size_t read_size = 0;
             au::Status s = file_descriptor->partRead(buffer->getData()
-                                                 , buffer_size
+                                                 , input_buffer_size
                                                  , "read connector connections"
                                                  , 300 
                                                  , &read_size );

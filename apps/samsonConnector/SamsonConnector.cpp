@@ -231,12 +231,14 @@ namespace samson {
         item->samson_connector_id = items_id++;
         item->parent_samson_connector_id = parent_id;
         items.insertInMap(item->samson_connector_id, item);
+        
+        show_message( au::str("New connection: %s" , item->getDescription().c_str() ));
+        
     }
-    
-    
     
     void SamsonConnector::push( engine::Buffer * buffer , SamsonConnectorItem *item )
     {
+        /*
         if( strcmp(input_splitter_name, "") != 0 )
         {
             // Only show a message if splitter is working
@@ -247,6 +249,7 @@ namespace samson {
                                  , input_splitter_name
                                  ));
         }
+         */
         
         // Mutex protection
         au::TokenTaker tt(&token);
@@ -439,7 +442,8 @@ namespace samson {
                     au::StringVector values;
                     values.push_back( au::str("%d" , item->getSamsonconnectorId() ) );
                     values.push_back( str_ConnectionType( item->getType() ) );
-                    values.push_back( au::str( "[%d/%d]%s", item->getSamsonconnectorId() , item->getParentSamsonconnectorId(), item->getName().c_str() ) );
+                    //values.push_back( au::str( "[%d/%d]%s", item->getSamsonconnectorId() , item->getParentSamsonconnectorId(), item->getName().c_str() ) );
+                    values.push_back( item->getName() );
                     values.push_back( item->getStatus() );
                     
                     values.push_back( au::str( item->get_input_total() ) );

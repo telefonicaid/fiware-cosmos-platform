@@ -23,6 +23,7 @@
 
 #include "SamsonConnector.h"
 
+size_t input_buffer_size;
 size_t buffer_size;
 char input[1024];
 char output[1024];
@@ -68,12 +69,14 @@ static const char* manSynopsis = "[-input input_description]  [-output output_de
 
 
 int default_buffer_size = 64*1024*1024 - sizeof(samson::KVHeader);
+int default_input_buffer_size = 10000; // 10Kb
 
 PaArgument paArgs[] =
 {   
 	{ "-input",            input,               "",  PaString,  PaOpt, _i "stdin"  , PaNL, PaNL,        "Input sources "          },
 	{ "-output",           output,              "",  PaString,  PaOpt, _i "stdout"  , PaNL, PaNL,       "Output sources "         },
-	{ "-buffer_size",      &buffer_size,        "",  PaInt,     PaOpt,       default_buffer_size, 1,   default_buffer_size,  "Buffer size in bytes"    },
+	{ "-buffer_size",      &buffer_size,        "",  PaInt,     PaOpt, default_buffer_size,       1, default_buffer_size,  "Buffer size in bytes"    },
+	{ "-inputbuffer_size", &input_buffer_size,  "",  PaInt,     PaOpt, default_input_buffer_size, 1, 100000,               "Read inputs in chunks of this size" },
 	{ "-splitter",         input_splitter_name, "",  PaString,  PaOpt, _i "",   PaNL, PaNL,  "Splitter"  },
 	{ "-i",                &interactive,        "",  PaBool,    PaOpt,    false,  false,   true,        "Interactive console"          },
 	PA_END_OF_ARGS

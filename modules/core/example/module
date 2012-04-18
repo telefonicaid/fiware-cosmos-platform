@@ -172,5 +172,8 @@ map map_list
 	helpLine "Example of how to use list types"
 }
 
-
+splitter splitter
+{
+	helpLine "Example of splitter that change first two characters of every line by XX"
+}
 

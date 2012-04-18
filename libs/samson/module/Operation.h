@@ -470,14 +470,31 @@ namespace samson {
 
      \class Splitter
 
-     A splitter is a generic operation that can be defined to customize the way the platform breaks input data blocks before being sent to the parser
+     A splitter is a generic operation that can be defined to customize the way the platform breaks input data blocks before being transfered to other systems
+     It is used inside samsonConnector to break down streams of data or run small transformations
      */
 
+    class SplitterEmitter
+    {
+    public:
+        virtual void emit( char* data , size_t length )=0;
+        virtual ~SplitterEmitter(){}
+    };
+    
     class Splitter : public OperationInstance
     {
     public:
 
-        virtual int split( char * inData, size_t inLength, char ** outData, size_t *outLength, char ** nextData, bool finished)=0;
+        virtual int split( char * inData, size_t inLength , bool finished , char ** nextData , SplitterEmitter* emitter )=0;
+        
+        // inData & inLength  --> Input buffer to be processed
+        // finish             --> Flag to indicate that this is the last call from this stream
+        
+        // nextData           --> Rest of buffer not processed in this call
+        // emitter            --> Class used to emit data at the output
+
+        // Return value : 0 OK , 1 Error ( buffer will be discarted )
+        
     };
 
 }

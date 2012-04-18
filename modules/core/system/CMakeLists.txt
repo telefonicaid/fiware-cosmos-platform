@@ -119,5 +119,5 @@ INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
 #ADD_EXECUTABLE(system_test ${AUX_HEADERS} ${SOURCES_TEST} ${SOURCES} ${HEADERS})
-#TARGET_LINK_LIBRARIES(system_test lm au )
+#TARGET_LINK_LIBRARIES(system_test samson_system lm au )
 

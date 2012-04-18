@@ -61,6 +61,89 @@ namespace samson
             return constant_words[c];
         }
 
+     
+        void Value::setFromXmlString( const char * data , au::ErrorManager *error )
+        {
+		   
+            // document to parse xml
+            pugi::xml_document xml_doc;
+            
+            // Parser the xml document into "doc"
+            pugi::xml_parse_result result = xml_doc.load( data );
+            
+            // Check errors in the parsing
+            if( result.status != pugi::status_ok )
+            {
+                error->set( result.description() );
+                set_as_void();
+                return;
+            }
+
+            // Navigate the xml tree creating a map element
+            setFromXmlNode( xml_doc );
+        }
+        
+        void Value::setFromXmlNode(  const pugi::xml_node& xml_node )
+        {
+            
+            switch (xml_node.type()) 
+            {
+                case pugi::node_null:
+                {
+                    set_as_map();
+                    add_value_to_map("type")->set_string("void");
+                    return;
+                }
+                    
+                case pugi::node_document:
+                {
+                    // Main document... just skip to main element
+                    pugi::xml_node_iterator n = xml_node.begin();
+                    if( n!= xml_node.end() )
+                        setFromXmlNode( *n );
+                    break;
+                }
+                    
+                case pugi::node_element:    // Element tag, i.e. '<node/>'
+                {
+                    set_as_map();
+                    add_value_to_map("type")->set_string("node");
+                    add_value_to_map("name")->set_string( xml_node.name() );
+
+                    Value * childrens = add_value_to_map("childrens");
+                    childrens->set_as_vector();
+                    for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
+                    {
+                        // For each node
+                        pugi::xml_node node = *n;
+                        
+                        childrens->add_value_to_vector()->setFromXmlNode(*n);
+                    }      
+                }
+                    break;
+                    
+                case pugi::node_pcdata:		    // Plain character data, i.e. 'text'
+                case pugi::node_cdata:			// Character data, i.e. '<![CDATA[text]]>'
+                {
+                    set_as_map();
+                    add_value_to_map("type")->set_string("value");
+                    add_value_to_map("value")->set_string( xml_node.value() );
+                    break;
+                }
+
+                case pugi::node_comment:		 // Comment tag, i.e. '<!-- text -->'
+                case pugi::node_pi:			     // Processing instruction, i.e. '<?name?>'
+                case pugi::node_declaration :	 // Document declaration, i.e. '<?xml version="1.0"?>'
+                case pugi::node_doctype :        // Document type declaration, i.e. '<!DOCTYPE doc>'
+
+                    set_as_map();
+                    add_value_to_map("type")->set_string("unknown");
+                    
+                    break;
+                    
+            }
+            
+        }
         
     }
 }

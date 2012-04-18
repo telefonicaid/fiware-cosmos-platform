@@ -1,6 +1,9 @@
 package es.tid.cosmos.mobility.parsing;
 
+import static org.junit.Assert.assertEquals;
 import org.junit.Test;
+
+import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
 
 /**
  *
@@ -45,6 +48,11 @@ public class ClusterParserTest {
                 + "0.0145254067172264|0.0143057717118093|0.0118448756663055|"
                 + "0.00721698692307692";
         ClusterParser parser = new ClusterParser(line);
-        parser.parse();
+        Cluster cluster = parser.parse();
+        assertEquals(1, cluster.getLabel());
+        assertEquals(1, cluster.getLabelgroup());
+        assertEquals(0.011890149404647, cluster.getMean(), 0D);
+        assertEquals(0.016823651640848, cluster.getDistance(), 0D);
+        assertEquals(96, cluster.getCoords().getComsCount());
     }
 }

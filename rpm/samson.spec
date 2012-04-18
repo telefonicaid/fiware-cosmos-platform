@@ -14,7 +14,7 @@ Packager:   Samson Development <samson-dev@tid.es>
 URL:        http://wikis.hi.inet/samson
 Source:    http://www.tid.es/samson-SAMSON_VERSION.tar.gz
 BuildRoot: /var/tmp/%{name}-buildroot
-Requires: protobuf, ntp,tid-mongodb
+Requires: protobuf, ntp,tid-mongodb, samson-logserver == %{version}-${release}
 Requires(pre): shadow-utils
 
 %description
@@ -90,13 +90,13 @@ Requires: samson = %{version}-%{release}, kdchart
 
 %files gui -f MANIFEST.samson-gui
 
-%package log
+%package logserver
 Summary: A simple log server
 Group: Applications/Engineering
-Requires: samson = %{version}-%{release}
-%description log
+%description logserver
+LogServer for the SAMSON Platform
 
-%post log
+%post logserver
 mkdir -p /var/log/logserver
 chown -R %{owner}:%{owner} /var/log/logserver
 /sbin/chkconfig --add logserver

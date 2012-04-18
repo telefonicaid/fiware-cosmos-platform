@@ -9,7 +9,7 @@ Package: samson
 Section: tid
 Priority: optional
 Architecture: amd64
-Depends: libprotobuf6, ntp, tid-mongodb
+Depends: libprotobuf6, ntp, tid-mongodb, samson-logserver (= 0.6.1)
 Description: SAMSON is a high-performance MapReduce platform that is designed
  for scaling tasks on a cluster of commodity hardware. This platform removes the
  need to develop a system for parallelizing and synchronizing work between
@@ -50,11 +50,10 @@ Description: SAMSON is a high-performance MapReduce platform that is designed
  ability to continuously process new inputs and output states without
  restriction.
 
-Package: samson-log
+Package: samson-logserver
 Section: tid
 Priority: optional
 Architecture: amd64
-Depends: samson (= 0.6.1)
 Description: SAMSON is a high-performance MapReduce platform that is designed
  for scaling tasks on a cluster of commodity hardware. This platform removes the
  need to develop a system for parallelizing and synchronizing work between

@@ -10,6 +10,7 @@ import static org.testng.Assert.assertEquals;
  * @author ximo
  */
 public class SelectJarPage {
+    // HTML classes and ids
     public static final String INPUT_JAR_HTML_ID = "id_file";
     
     private WebDriver driver;

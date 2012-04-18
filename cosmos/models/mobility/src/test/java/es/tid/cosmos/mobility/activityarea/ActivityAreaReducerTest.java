@@ -5,19 +5,19 @@ import static java.util.Arrays.asList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 import es.tid.cosmos.mobility.data.ActivityAreaUtil;
-import es.tid.cosmos.mobility.data.ActivityAreaKeyUtil;
+import es.tid.cosmos.mobility.data.TelMonthUtil;
 import es.tid.cosmos.mobility.data.CellUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityAreaKey;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
 
 
 /**
@@ -26,8 +26,8 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cell;
  */
 public class ActivityAreaReducerTest {
     private ReduceDriver<
-        ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
-        ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>>
+        ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
+        LongWritable, ProtobufWritable<ActivityArea>>
         reducer;
     private ProtobufWritable<Cell> firstCell;
     private ProtobufWritable<Cell> secondCell;
@@ -36,8 +36,8 @@ public class ActivityAreaReducerTest {
     @Before
     public void setUp() {
         this.reducer = new ReduceDriver<
-            ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
-            ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>>(
+            ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
+            LongWritable, ProtobufWritable<ActivityArea>>(
                     new ActivityAreaReducer());
         this.TOLERANCE = 0.1;
 
@@ -56,8 +56,8 @@ public class ActivityAreaReducerTest {
 
     @Test
     public void testEmitsAllVariables() throws IOException {
-        ProtobufWritable<ActivityAreaKey> userWithSingleEntry =
-            ActivityAreaKeyUtil.createAndWrap(5512683500L, 1, true);
+        ProtobufWritable<TelMonth> userWithSingleEntry =
+            TelMonthUtil.createAndWrap(5512683500L, 1, true);
 
         int numPos = 1;
         int difBtss = 1;
@@ -74,14 +74,15 @@ public class ActivityAreaReducerTest {
                     diamAreaInf);
         this.reducer
                 .withInput(userWithSingleEntry, asList(this.firstCell))
-                .withOutput(userWithSingleEntry, outputWithAllVariables)
+                .withOutput(new LongWritable(5512683500L),
+                            outputWithAllVariables)
                 .runTest();
     }
 
     @Test
     public void testCountsMakeSense() throws IOException {
-        ProtobufWritable<ActivityAreaKey> userWithTwoEntries =
-            ActivityAreaKeyUtil.createAndWrap(5512684400L, 1, true);
+        ProtobufWritable<TelMonth> userWithTwoEntries =
+            TelMonthUtil.createAndWrap(5512684400L, 1, true);
 
         int numPos = 2;
         int difBtss = 2;
@@ -96,13 +97,11 @@ public class ActivityAreaReducerTest {
             ActivityAreaUtil.createAndWrap(numPos, difBtss, difMuns, difStates,
                     masscenterUtmX, masscenterUtmY, radius,
                     diamAreaInf);
-        List<Pair<ProtobufWritable<ActivityAreaKey>,
+        List<Pair<LongWritable,
             ProtobufWritable<ActivityArea>>> results =
                 this.reducer
                         .withInput(userWithTwoEntries,
                                    asList(this.firstCell, this.secondCell))
-                        .withOutput(userWithTwoEntries,
-                                    outputWithCorrectCounts)
                         .run();
 
         ProtobufWritable<ActivityArea> resultValue =

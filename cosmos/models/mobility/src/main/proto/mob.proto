@@ -108,21 +108,17 @@ message GLEvent {
     optional base.Time time = 4;
 }
 
-message ActivityAreaKey {
-    optional uint64 userId = 1;
-    optional uint32 month = 2;
-    optional bool isWorkDay = 3;
-}
-
 message ActivityArea {
-    optional uint32 numPos = 1;
-    optional uint32 difBtss = 2;
-    optional uint32 difMuns = 3;
-    optional uint32 difStates = 4;
-    optional double masscenterUtmX = 5;
-    optional double masscenterUtmY = 6;
-    optional double radius = 7;
-    optional double diamAreaInf = 8;
+    optional uint32 month = 1;
+    optional bool isWorkDay = 2;
+    optional uint32 numPos = 3;
+    optional uint32 difBtss = 4;
+    optional uint32 difMuns = 5;
+    optional uint32 difStates = 6;
+    optional double masscenterUtmX = 7;
+    optional double masscenterUtmY = 8;
+    optional double radius = 9;
+    optional double diamAreaInf = 10;
 }
 
 message TelMonth {

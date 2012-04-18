@@ -8,17 +8,18 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ActivityAreaUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityAreaKey;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
 import es.tid.cosmos.mobility.activityarea.Accumulations;
 
 public class ActivityAreaReducer extends Reducer<
-        ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
-        ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>> {
+        ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
+        LongWritable, ProtobufWritable<ActivityArea>> {
     private Set<Long> allCells;
     private Set<Long> allBtss;
     private Set<Integer> allMuns;
@@ -85,9 +86,11 @@ public class ActivityAreaReducer extends Reducer<
     }
 
     @Override
-    protected void reduce(ProtobufWritable<ActivityAreaKey> key,
+    protected void reduce(ProtobufWritable<TelMonth> key,
             Iterable<ProtobufWritable<Cell>> values, Context context)
             throws IOException, InterruptedException {
+        key.setConverter(TelMonth.class);
+        final LongWritable newKey = new LongWritable(key.get().getPhone());
         this.allCells = new HashSet<Long>();
         this.allBtss = new HashSet<Long>();
         this.allMuns = new HashSet<Integer>();
@@ -103,6 +106,6 @@ public class ActivityAreaReducer extends Reducer<
                                            accs.numMuns, accs.numStates,
                                            accs.massCenterX, accs.massCenterY,
                                            accs.radius, influenceAreaDiameter);
-        context.write(key, ans);
+        context.write(newKey, ans);
     }
 }

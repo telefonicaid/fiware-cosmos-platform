@@ -121,6 +121,10 @@ message ActivityArea {
     optional double diamAreaInf = 10;
 }
 
+message RepeatedActivityAreas {
+    repeated ActivityArea repeatedActivityArea = 1;
+}
+
 message TelMonth {
     optional uint64 phone = 1;
     optional uint32 month = 2;

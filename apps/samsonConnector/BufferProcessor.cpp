@@ -21,11 +21,15 @@ namespace samson {
         item = _item;
         stream_connector = _stream_connector;
         splitter_name = input_splitter_name;
-
+        
+        // Internal buffer ( to be used as input by the splitter )
+        buffer = (char*) malloc( buffer_size );
+        max_size = buffer_size;
+        size = 0;
+        
         if( splitter_name == "" )
         {
             splitter = NULL;
-            buffer = NULL;
         }
         else
         {
@@ -39,11 +43,6 @@ namespace samson {
             splitter = (Splitter*) operation->getInstance();
             if( !splitter )
                 LM_X(1, ("Error getting instance of the splitter"));
-            
-            // Internal buffer ( to be used as input by the splitter )
-            buffer = (char*) malloc( buffer_size );
-            max_size = buffer_size;
-            size = 0;
         }
     
         output_buffer = NULL;
@@ -96,6 +95,23 @@ namespace samson {
     
     void BufferProcessor::process_intenal_buffer( bool finish )
     {
+        
+        // If no splitter, no process
+        if( !splitter )
+        {
+            // Flush previous buffer ( just in case )
+            flushOutputBuffer();
+
+            // Create a buffer with whatever we have collected so far
+            output_buffer = engine::MemoryManager::shared()->newBuffer("output_splitter", "connector", size );
+            output_buffer->write( buffer , size );
+
+            // Flush content of the generated buffer
+            flushOutputBuffer();
+            return;
+        }
+
+        
 
         // Pointer to data that has not been used in splitter
         char * nextData;
@@ -147,15 +163,6 @@ namespace samson {
     void BufferProcessor::push( engine::Buffer * input_buffer )
     {
 
-        // If no splitter, no process
-        if( !splitter )
-        {
-            stream_connector->push( input_buffer , item );
-            return;
-        }
-        
-        //LM_M(("BufferProcessor: Process buffer %s" , au::str( input_buffer->getSize() ,"B").c_str() ));
-        
         size_t pos_in_input_buffer = 0; // Readed so far
         while( pos_in_input_buffer < input_buffer->getSize() )
         {

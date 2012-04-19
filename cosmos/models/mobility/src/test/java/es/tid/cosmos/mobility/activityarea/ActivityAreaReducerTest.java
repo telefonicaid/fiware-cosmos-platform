@@ -59,6 +59,8 @@ public class ActivityAreaReducerTest {
         ProtobufWritable<TelMonth> userWithSingleEntry =
             TelMonthUtil.createAndWrap(5512683500L, 1, true);
 
+        int month = 1;
+        boolean isWorkDay = true;
         int numPos = 1;
         int difBtss = 1;
         int difMuns = 1;
@@ -69,8 +71,8 @@ public class ActivityAreaReducerTest {
         double diamAreaInf = 0.0;
 
         ProtobufWritable<ActivityArea> outputWithAllVariables = 
-            ActivityAreaUtil.createAndWrap(numPos, difBtss, difMuns,
-                    difStates, masscenterUtmX, masscenterUtmY, radius,
+            ActivityAreaUtil.createAndWrap(month, isWorkDay, numPos, difBtss,
+                    difMuns, difStates, masscenterUtmX, masscenterUtmY, radius,
                     diamAreaInf);
         this.reducer
                 .withInput(userWithSingleEntry, asList(this.firstCell))
@@ -84,6 +86,8 @@ public class ActivityAreaReducerTest {
         ProtobufWritable<TelMonth> userWithTwoEntries =
             TelMonthUtil.createAndWrap(5512684400L, 1, true);
 
+        int month = 1;
+        boolean isWorkDay = true;
         int numPos = 2;
         int difBtss = 2;
         int difMuns = 2;
@@ -94,8 +98,8 @@ public class ActivityAreaReducerTest {
         double diamAreaInf = Math.sqrt(2)*2000000;
 
         ProtobufWritable<ActivityArea> outputWithCorrectCounts =
-            ActivityAreaUtil.createAndWrap(numPos, difBtss, difMuns, difStates,
-                    masscenterUtmX, masscenterUtmY, radius,
+            ActivityAreaUtil.createAndWrap(month, isWorkDay, numPos, difBtss,
+                    difMuns, difStates, masscenterUtmX, masscenterUtmY, radius,
                     diamAreaInf);
         List<Pair<LongWritable,
             ProtobufWritable<ActivityArea>>> results =

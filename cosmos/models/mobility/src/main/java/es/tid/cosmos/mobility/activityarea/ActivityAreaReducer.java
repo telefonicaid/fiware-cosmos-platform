@@ -91,6 +91,8 @@ public class ActivityAreaReducer extends Reducer<
             throws IOException, InterruptedException {
         key.setConverter(TelMonth.class);
         final LongWritable newKey = new LongWritable(key.get().getPhone());
+        final int month = key.get().getMonth();
+        final boolean isWorkDay = key.get().getWorkingday();
         this.allCells = new HashSet<Long>();
         this.allBtss = new HashSet<Long>();
         this.allMuns = new HashSet<Integer>();
@@ -102,10 +104,11 @@ public class ActivityAreaReducer extends Reducer<
         double influenceAreaDiameter = getMaxDistance(cellsWithDifBts);
 
         ProtobufWritable<ActivityArea> ans =
-            ActivityAreaUtil.createAndWrap(accs.difPos, accs.numBtss,
-                                           accs.numMuns, accs.numStates,
-                                           accs.massCenterX, accs.massCenterY,
-                                           accs.radius, influenceAreaDiameter);
+            ActivityAreaUtil.createAndWrap(month, isWorkDay, accs.difPos,
+                                           accs.numBtss, accs.numMuns,
+                                           accs.numStates, accs.massCenterX,
+                                           accs.massCenterY, accs.radius,
+                                           influenceAreaDiameter);
         context.write(newKey, ans);
     }
 }

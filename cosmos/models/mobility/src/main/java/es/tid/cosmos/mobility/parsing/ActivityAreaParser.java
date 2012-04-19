@@ -2,12 +2,10 @@ package es.tid.cosmos.mobility.parsing;
 
 import com.twitter.elephantbird.util.Pair;
 
-import es.tid.cosmos.mobility.data.ActivityAreaUtil;
-import es.tid.cosmos.mobility.data.ActivityAreaKeyUtil;
 import es.tid.cosmos.mobility.data.CellUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityAreaKey;
+import es.tid.cosmos.mobility.data.TelMonthUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
 
 /**
  *
@@ -31,7 +29,7 @@ public class ActivityAreaParser extends Parser {
     }
 
     @Override
-    public Pair<ActivityAreaKey, Cell> parse() {
+    public Pair<TelMonth, Cell> parse() {
         String[] fields = this.line.split(DELIMITER);
         long userId = Long.parseLong(fields[USER_ID_INDEX].trim());
         int month = Integer.parseInt(fields[MONTH_INDEX].trim());
@@ -48,10 +46,9 @@ public class ActivityAreaParser extends Parser {
         double posX = Double.parseDouble(fields[POSX_INDEX].trim());
         double posY = Double.parseDouble(fields[POSY_INDEX].trim());
 
-        ActivityAreaKey key = ActivityAreaKeyUtil.create(userId, month,
-                                                         isWorkDay);
-        Cell cell = CellUtil.create(cellId, placeId, geoLoc1,
-                                    geoLoc2, posX, posY);
+        TelMonth key = TelMonthUtil.create(userId, month, isWorkDay);
+        Cell cell = CellUtil.create(cellId, placeId, geoLoc1, geoLoc2,
+                                    posX, posY);
 
         return new Pair(key, cell);
     }

@@ -43,12 +43,13 @@ public class FusionTotalVarsReducerTest {
         LongWritable userWithTwoEntries = new LongWritable(5512684400L);
 
         ActivityArea area1 =
-            ActivityAreaUtil.create(1, 1, 1, 1, 1000000, 1000000,
-                                           0.0, 0.0);
+            ActivityAreaUtil.create(1, true, 1, 1, 1, 1, 1000000, 1000000,
+                                    0.0, 0.0);
         ProtobufWritable<ActivityArea> row1 = ActivityAreaUtil.wrap(area1);
 
         ActivityArea area2 =
-            ActivityAreaUtil.create(2, 2, 2, 2, 6000000, 3000000, 100, 100);
+            ActivityAreaUtil.create(1, true, 2, 2, 2, 2, 6000000, 3000000,
+                                    100, 100);
         ProtobufWritable<ActivityArea> row2 = ActivityAreaUtil.wrap(area2);
 
         ProtobufWritable<RepeatedActivityAreas> results =

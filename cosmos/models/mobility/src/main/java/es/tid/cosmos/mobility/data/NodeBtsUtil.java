@@ -38,5 +38,10 @@ public abstract class NodeBtsUtil implements ProtobufUtil {
         return create(Long.parseLong(values[0]), Integer.parseInt(values[1]),
                       Integer.parseInt(values[2]), Integer.parseInt(values[3]));
     }
+    
+    public static String toString(NodeBts obj) {
+        return obj.getUserId() + DELIMITER + obj.getPlaceId() + DELIMITER
+                + obj.getWeekday() + DELIMITER + obj.getRange();
+    }
 }
 

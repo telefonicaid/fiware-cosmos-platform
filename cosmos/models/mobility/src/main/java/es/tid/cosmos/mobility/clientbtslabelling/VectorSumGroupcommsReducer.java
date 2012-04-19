@@ -23,6 +23,7 @@ public class VectorSumGroupcommsReducer extends Reducer<
     protected void reduce(ProtobufWritable<NodeBts> key,
             Iterable<IntWritable> values, Context context)
             throws IOException, InterruptedException {
+        key.setConverter(NodeBts.class);
         final NodeBts nodeBts = key.get();
         ProtobufWritable<TwoInt> twoInt = TwoIntUtil.createAndWrap(
                 nodeBts.getUserId(), nodeBts.getPlaceId());

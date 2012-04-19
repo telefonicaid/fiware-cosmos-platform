@@ -46,8 +46,6 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
                     throw new IllegalArgumentException();
             }
         }
-        Logger.get().info("NumCommsInfo: " + numCommsInfo);
-        Logger.get().info("NumCommsNoInfoOrNoBts: " + numCommsNoInfoOrNoBts);
         int totalComms = numCommsInfo + numCommsNoInfoOrNoBts;
         if (totalComms >= MIN_TOTAL_CALLS && totalComms <= MAX_TOTAL_CALLS) {
             context.write(key, new IntWritable(numCommsInfo));

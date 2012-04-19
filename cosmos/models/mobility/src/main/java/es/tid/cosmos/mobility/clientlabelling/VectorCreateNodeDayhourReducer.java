@@ -1,6 +1,8 @@
 package es.tid.cosmos.mobility.clientlabelling;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -24,11 +26,18 @@ public class VectorCreateNodeDayhourReducer extends Reducer
                                                   InterruptedException {
         key.setConverter(NodeBts.class);
         final NodeBts bts = key.get();
+        
+        List<ProtobufWritable<TwoInt>> valueList =
+                new LinkedList<ProtobufWritable<TwoInt>>();
+        for (ProtobufWritable<TwoInt> value : values) {
+            valueList.add(value);
+        }
+        
         DailyVector.Builder vectorBuilder = DailyVector.newBuilder();
-        long num2 = 0;
         for (int i = 0; i < 24; i++) {
+            long num2 = 0L;
             boolean added = false;
-            for (ProtobufWritable<TwoInt> value : values) {
+            for (ProtobufWritable<TwoInt> value : valueList) {
                 value.setConverter(TwoInt.class);
                 final TwoInt twoInt = value.get();
                 num2 = twoInt.getNum2();
@@ -38,17 +47,16 @@ public class VectorCreateNodeDayhourReducer extends Reducer
                 }
             }
             if (!added) {
-                num2 = 0;
+                num2 = 0L;
             }
             TwoInt hourComms = TwoIntUtil.create(key.get().getWeekday(), num2);
             vectorBuilder.addHours(hourComms);
         }
-        DailyVector vector = vectorBuilder.build();
-        ProtobufWritable<DailyVector> vectorWrapper =
-                ProtobufWritable.newInstance(DailyVector.class);
-        vectorWrapper.set(vector);
         ProtobufWritable<TwoInt> node = TwoIntUtil.createAndWrap(
                 bts.getUserId(), bts.getPlaceId());
-        context.write(node, vectorWrapper);
+        ProtobufWritable<DailyVector> vector =
+                ProtobufWritable.newInstance(DailyVector.class);
+        vector.set(vectorBuilder.build());
+        context.write(node, vector);
     }
 }

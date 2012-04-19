@@ -1,6 +1,8 @@
 package es.tid.cosmos.mobility.clientlabelling;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -23,14 +25,20 @@ public class VectorFuseNodeDaygroupReducer extends Reducer
                           Iterable<ProtobufWritable<DailyVector>> values,
                           Context context) throws IOException,
                                                   InterruptedException {
+        List<ProtobufWritable<DailyVector>> valueList =
+                new LinkedList<ProtobufWritable<DailyVector>>();
+        for (ProtobufWritable<DailyVector> value : values) {
+            valueList.add(value);
+        }
+        
         ClusterVector.Builder clusterVectorBuilder = ClusterVector.newBuilder();
         for (int group = 0; group < 4; group++) {
             boolean added = false;
             int j = 0;
-            for (ProtobufWritable<DailyVector> value : values) {
+            for (ProtobufWritable<DailyVector> value : valueList) {
                 value.setConverter(DailyVector.class);
                 final DailyVector dailyVector = value.get();
-                if (dailyVector.getHours(j).getNum2() == group) {
+                if (dailyVector.getHours(j).getNum1() == group) {
                     for (TwoInt hour : dailyVector.getHoursList()) {
                         clusterVectorBuilder.addComs(hour.getNum2());
                     }
@@ -41,7 +49,7 @@ public class VectorFuseNodeDaygroupReducer extends Reducer
             }
             if (!added) {
                 for (int k = 0; k < 24; k++) {
-                    clusterVectorBuilder.addComs(0);
+                    clusterVectorBuilder.addComs(0D);
                 }
             }
         }
@@ -50,9 +58,9 @@ public class VectorFuseNodeDaygroupReducer extends Reducer
         final TwoInt twoInt = key.get();
         ProtobufWritable<NodeBts> bts = NodeBtsUtil.createAndWrap(
                 twoInt.getNum1(), (int)twoInt.getNum2(), 0, 0);
-        ProtobufWritable<ClusterVector> clusterVectorWrapper =
+        ProtobufWritable<ClusterVector> clusterVector =
                 ProtobufWritable.newInstance(ClusterVector.class);
-        clusterVectorWrapper.set(clusterVectorBuilder.build());
-        context.write(bts, clusterVectorWrapper);
+        clusterVector.set(clusterVectorBuilder.build());
+        context.write(bts, clusterVector);
     }
 }

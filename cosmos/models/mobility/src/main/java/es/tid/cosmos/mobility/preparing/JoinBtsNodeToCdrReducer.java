@@ -28,18 +28,21 @@ public class JoinBtsNodeToCdrReducer extends Reducer<LongWritable,
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
-            if (mobData.hasCdr()) {
-                cdrs.add(mobData.getCdr());
-            } else if (mobData.hasCell()) {
-                cells.add(mobData.getCell());
-            } else {
-                throw new IllegalArgumentException("Invalid input data");
+            switch (mobData.getType()) {
+                case CDR:
+                    cdrs.add(mobData.getCdr());
+                    break;
+                case CELL:
+                    cells.add(mobData.getCell());
+                    break;
+                default:
+                    throw new IllegalArgumentException("Invalid input data");
             }
         }
         
         if (cells.isEmpty()) {
             for (Cdr cdr : cdrs) {
-                context.write(new LongWritable(cdr.getCellId()),
+                context.write(new LongWritable(cdr.getUserId()),
                               CdrUtil.wrap(cdr));
             }
         }

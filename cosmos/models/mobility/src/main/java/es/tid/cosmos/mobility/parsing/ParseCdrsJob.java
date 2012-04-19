@@ -14,14 +14,13 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.mobility.MobilityMain;
-import es.tid.cosmos.mobility.parsing.ParseCdrsReducer;
 
 /**
  *
  * @author dmicol
  */
 public class ParseCdrsJob extends Job {
-    private static final String JOB_NAME = "ParseCDRs";
+    private static final String JOB_NAME = "ParseCdrs";
 
     public ParseCdrsJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);

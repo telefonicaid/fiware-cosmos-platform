@@ -66,14 +66,7 @@ public class KpiMain extends Configured implements Tool {
         }
         String timeFolder = "data." + Long.toString(new Date().getTime());
         Path tmpPath = new Path(args[1] + timeFolder + "/cleaned/");
-        if (!fs.mkdirs(tmpPath)) {
-            throw new IOException("Could not create " + tmpPath);
-        }
         LOG.info("Using " + tmpPath + " as temp directory");
-        if (!fs.deleteOnExit(tmpPath)) {
-            throw new IOException(
-                    "Could not set temp directory for automatic deletion");
-        }
         String mongoUrl = args[2];
 
         Configuration conf = getConf();
@@ -84,6 +77,10 @@ public class KpiMain extends Configured implements Tool {
         Job job = cleanWebNavigationLogs(conf, inputPath, tmpPath);
         if (!job.waitForCompletion(true)) {
             throw new Exception("Failed to clean navigation logs");
+        }
+        if (!fs.deleteOnExit(tmpPath)) {
+            throw new IOException(
+                    "Could not set temp directory for automatic deletion");
         }
 
         KpiConfig config = new KpiConfig();

@@ -196,8 +196,7 @@ public final class LabelJoiningRunner {
         Path pointsOfInterestTemp3MobDataPath = new Path(tmpDirPath,
                 "points_of_interest_temp3_mob_data");
         {
-            ConvertPoiToMobDataByTwoIntJob job =
-                    new ConvertPoiToMobDataByTwoIntJob(conf);
+            ConvertPoiToMobDataJob job = new ConvertPoiToMobDataJob(conf);
             job.configure(pointsOfInterestTemp3Path,
                           pointsOfInterestTemp3MobDataPath);
             if (!job.waitForCompletion(true)) {

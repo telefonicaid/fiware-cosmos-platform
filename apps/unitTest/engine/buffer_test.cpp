@@ -28,10 +28,10 @@ TEST(bufferTest, getMaxSizeTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15  );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15  );
     EXPECT_TRUE(buffer1->getMaxSize() >= 15);
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
-
+    buffer1->release();
+    
     close_engine_test();
 }
     
@@ -42,13 +42,13 @@ TEST(bufferTest, getandSetSizeTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
 
     EXPECT_EQ(buffer1->getSize(), 0) << "Error in getSize()";
     buffer1->setSize(10);
     EXPECT_EQ(buffer1->getSize(), 10) << "Error in setSize()";
 
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
 
     close_engine_test();
 }
@@ -59,12 +59,12 @@ TEST(bufferTest, strTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
     buffer1->setSize(5);
 
     EXPECT_EQ(buffer1->str(), "[ Buffer (buffer1 / test) MaxSize: 15 Size: 5 Offset 0 ]") << "Error in str()";
 
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
 
     close_engine_test();
 }
@@ -80,7 +80,7 @@ TEST(bufferTest, writeTest)
     
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
     char data[21] ="01234567890123456789";
     buffer1->write(data, 10);
     
@@ -93,7 +93,7 @@ TEST(bufferTest, writeTest)
     //if we try to write past the buffer size, it will return false
     EXPECT_EQ(buffer1->write(data, 20), false) << "should not write if size goes beyond size";
  
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
 
     close_engine_test();
 }
@@ -104,7 +104,7 @@ TEST(bufferTest, skipWriteTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" , "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test" , 15 );
     char data[21] ="01234567890123456789";
     buffer1->skipWrite(1);
     buffer1->write(data, 10);
@@ -114,7 +114,7 @@ TEST(bufferTest, skipWriteTest)
     //the string "01234..." should start at position 1 instead of 0    
     EXPECT_EQ(strcmp(readBuffer+1, "0123456789"), 0) << "wrong data after skipWriting";
 
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
 
     close_engine_test();
 }    
@@ -128,7 +128,7 @@ TEST(bufferTest, ifstreamWriteTest)
     std::string fileName = "test_data/testdata.txt";
 
     engine::MemoryManager::init(1000);
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
 
     std::ifstream file(fileName.c_str());
     ASSERT_TRUE(file.is_open()) << "Error opening test file test_data/testdata.txt at execution path. Copy it from the source directory.";
@@ -141,7 +141,7 @@ TEST(bufferTest, ifstreamWriteTest)
     readBuffer[15] = '\0';
     EXPECT_EQ(strcmp(readBuffer, "012345678901234"), 0) << "wrong data after writing from ifstream";
 
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
     
     close_engine_test();
 }    
@@ -152,13 +152,13 @@ TEST(bufferTest, getAvailableWriteTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
     char data[21] ="01234567890123456789";
     buffer1->write(data, 10);
     EXPECT_EQ(buffer1->getAvailableWrite(), 5);
 
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
-    
+    buffer1->release();
+
     close_engine_test();
 
 }    
@@ -169,7 +169,7 @@ TEST(bufferTest, skipReadTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" , "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test" , 15 );
     char data[21] ="0123456789";
     buffer1->write(data, 10);
     char readBuffer[5];
@@ -179,7 +179,7 @@ TEST(bufferTest, skipReadTest)
     //readbuffer should have started reading at 3 instead of 0
     EXPECT_EQ(strcmp(readBuffer, "3456"), 0) << "wrong data after skipRead";
 
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
     
     close_engine_test();
 }
@@ -189,7 +189,7 @@ TEST(bufferTest, readTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
     char data[21] ="0123456789";
     buffer1->write(data, 10);
     char readBuffer[5];
@@ -197,7 +197,7 @@ TEST(bufferTest, readTest)
     readBuffer[4] = '\0';
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Reading error";
 
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
     
     close_engine_test();
 }
@@ -208,14 +208,14 @@ TEST(bufferTest, getSizePendingReadTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
     char data[21] ="0123456789";
     buffer1->write(data, 10);
     char readBuffer[5];
     buffer1->read(readBuffer, 4);
     EXPECT_EQ(buffer1->getSizePendingRead(), 6) << "Wrong pending read size";
 
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
     
     close_engine_test();
 }
@@ -226,7 +226,7 @@ TEST(bufferTest, getDataTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
     char data[21] ="0123456789";
     buffer1->write(data, 10);
     char readBuffer[5];
@@ -234,7 +234,7 @@ TEST(bufferTest, getDataTest)
     readBuffer[4] = '\0';
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Error accesing buffer data pointer";
     
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
     
     close_engine_test();
 }    
@@ -244,7 +244,7 @@ TEST(bufferTest, setSizeTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
     buffer1->setSize(1);
     EXPECT_EQ(buffer1->getSize(), 1) << "Used size was not set correctly";
     
@@ -256,7 +256,7 @@ TEST(bufferTest, setSizeTest)
     //the string "01234..." should start at position 1 instead of 0    
     EXPECT_EQ(strcmp(readBuffer+1, "0123456789"), 0) << "wrong data after manually setting used size";
 
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
 
     close_engine_test();
 }    
@@ -266,7 +266,7 @@ TEST(bufferTest, getSimpleBufferTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
     char data[21] ="0123456789";
     buffer1->write(data, 10);
     
@@ -278,7 +278,7 @@ TEST(bufferTest, getSimpleBufferTest)
     readBuffer[4] = '\0';
     EXPECT_EQ(strcmp(readBuffer, "0123"), 0) << "Wrong data in the SimpleBuffer";
     
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
     
     close_engine_test();
 }    
@@ -288,7 +288,7 @@ TEST(bufferTest, getSimpleBufferAtOffsetTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15);
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15);
     char data[21] ="0123456789";
     buffer1->write(data, 10);
     
@@ -301,7 +301,7 @@ TEST(bufferTest, getSimpleBufferAtOffsetTest)
     //The dta in the SimpleBuffer should start at 2 instead of 0
     EXPECT_EQ(strcmp(readBuffer, "2345"), 0) << "Wrong data in the SimpleBuffer";
 
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
 
     close_engine_test();
 }    
@@ -314,7 +314,7 @@ TEST(bufferTest, removeLastUnfinishedLineTest)
     //std::string fileName = "./testdata.txt";
 
     engine::MemoryManager::init(1000);
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15 );
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
 
     /*std::ifstream file(fileName.c_str());
     ASSERT_TRUE(file.is_open()) << "Error opening test file ./testdata.txt at execution path";
@@ -344,7 +344,7 @@ TEST(bufferTest, removeLastUnfinishedLineTest)
         free(readBuffer);
     }
     
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
     
     close_engine_test();
 }    
@@ -355,7 +355,7 @@ TEST(bufferTest, getInfoTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->newBuffer( "buffer1" ,  "test" , 15);
+    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15);
     char data[21] ="0123456789";
     buffer1->write(data, 10);
     buffer1->skipRead(2);
@@ -370,7 +370,7 @@ TEST(bufferTest, getInfoTest)
     EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getClear().lpszValue), "2") << "Error writing offset tag";
     EXPECT_EQ(std::string(xMainNode.getChildNode("name").getClear().lpszValue), "buffer1") << "Error writing name tag";
 
-    engine::MemoryManager::shared()->destroyBuffer(buffer1);
+    buffer1->release();
     
     close_engine_test();
 }

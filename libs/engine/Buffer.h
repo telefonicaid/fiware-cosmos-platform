@@ -34,11 +34,6 @@ NAMESPACE_BEGIN(engine)
 class Buffer : public Object
 {
     
-public:
-    
-    
-private:
-    
     char * _data;			// Buffer of data
     size_t _max_size;		// Maximum size of this buffer
 
@@ -59,44 +54,60 @@ private:
     
     size_t _offset;
     
-private:
-    
     // Private constructor/destructors since it can be only access by MemoryManager
     
     Buffer( std::string name , std::string type , size_t max_size );
     ~Buffer();
     
+    // Free internal buffer
     void free();
-    
+
+    // Managed from Memory manager class
     friend class MemoryManager;
     
-public:
+    int retain_counter;
     
-    // Main functions
-    // ------------------------------------------
+public:
     
     // Get the maximum size of the buffer
     size_t getMaxSize();
     
     // Get used size of this buffer ( not necessary the maximum )
     size_t getSize();
+
+    // Get internal name for debuggin
+    std::string getName();
     
+    // Get internal type for debuggin
+    std::string getType();
+
     // Get a description of the buffer ( debugging )
     std::string str();
+
+    // Set internal name and type for debuggin
+    void setNameAndType( std::string name , std::string type );
+    
+    // Add string to the internal name
+    void addToName( std::string description );
+
+    // Retain-Release mechanism for buffers
+    // ------------------------------------------
+    
+    void release();
+    void retain();
     
     
     // Writing content to the buffer
     // ------------------------------------------
     
     /**
-     Function to write content updating the size variable coherently
-     If it is not possible to write the entire block, it return false
-     So, it never try to write less than input_size bytes
+     Function to write content updating the internal size variable
+     If it is not possible to write the entire input buffer, it return false
      */
     
     bool write( char * input_buffer , size_t input_size );
     
-    // Skip some space without writing anything
+    // Skip some space without writing anything ( usefull to fix-size headers )
     bool skipWrite( size_t size );
     
     // Write on the buffer the maximum possible ammount of data
@@ -109,7 +120,7 @@ public:
     // ------------------------------------------
     
     // Skip some space without reading
-    size_t skipRead( size_t size);
+    size_t skipRead( size_t size );
     
     // Read command
     size_t read( char *output_buffer, size_t output_size);
@@ -120,13 +131,13 @@ public:
     // Manual manipulation of data
     // ------------------------------------------
     
-    // Get a pointer to the data space
+    // Get a pointer to the data full space ( not related with write calls )
     char *getData();
     
     // Set used size manually
     void setSize( size_t size );
     
-    // Interface with SimpleBuffer
+    // Interface with SimpleBuffer ( simplified view of the internal buffer )
     // ------------------------------------------
     
     SimpleBuffer getSimpleBuffer();
@@ -138,27 +149,6 @@ public:
     // Remove the last characters of an unfinished line and put them in buffer.
     int removeLastUnfinishedLine( char *& buffer , size_t& buffer_size);
     
-    
-    std::string getName()
-    {
-        return _name;
-    }
-
-    std::string getType()
-    {
-        return _type;
-    }
-    
-    void setNameAndType( std::string name , std::string type )
-    {
-        _name = name;
-        _type = type;
-    }
-    
-    void addToName( std::string description )
-    {
-        _name.append( description );
-    }
     
 public:
     
@@ -172,6 +162,7 @@ public:
     bool finish;    // Flag ot the finish hash-group-set
     
 };
+
 
 NAMESPACE_END
 

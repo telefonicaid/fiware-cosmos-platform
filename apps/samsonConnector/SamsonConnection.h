@@ -62,7 +62,7 @@ namespace samson {
         }
         
         // Overload method to push blocks using samsonClient
-        void push( Block* block );
+        void push( engine::Buffer* buffer );
 
         // Overwritten method
         size_t getOuputBufferSize();

@@ -90,11 +90,11 @@ namespace samson {
         return connection->isConnected();
     }
 
-    void ServerConnection::push( Block* block )
+    void ServerConnection::push( engine::Buffer* buffer )
     {
         // Overwrite this methid to pass block to the connection
         if ( connection )
-            connection->push(block);
+            connection->push(buffer);
     }
 
     size_t ServerConnection::getOuputBufferSize()

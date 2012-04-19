@@ -592,7 +592,7 @@ namespace samson {
             currently_saving = true;
 
             // Get a buffer with the rigth size
-            engine::Buffer* buffer = engine::MemoryManager::shared()->newBuffer( "buffer to save stream state" 
+            engine::Buffer* buffer = engine::MemoryManager::shared()->createBuffer( "buffer to save stream state" 
                                                                                 , "stream"
                                                                                 , state_string.length() );
             if (!buffer )
@@ -605,6 +605,8 @@ namespace samson {
             operation->environment.set("save_stream_state" , "yes" );
             engine::DiskManager::shared()->add( operation );
             
+            // Release the buffer we have just created ( it is retained inside te DiskOperation )
+            buffer->release();
         }
 
         void StreamManager::recoverStateFromDisk()        

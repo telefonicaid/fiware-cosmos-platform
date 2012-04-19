@@ -81,10 +81,7 @@ namespace samson {
                 return;
             
             if( queue_name == "null")
-            {
-                engine::MemoryManager::shared()->destroyBuffer(buffer);
                 return;
-            }
 
             // Select the target worker_id
             // ------------------------------------------------------------------------------------
@@ -107,7 +104,7 @@ namespace samson {
             // ------------------------------------------------------------------------------------
             
             Packet* packet = new Packet( Message::PushBlock );
-            packet->buffer = buffer;    // Set the buffer of data
+            packet->setBuffer( buffer );    // Set the buffer of data
             packet->message->set_delilah_component_id( 0 );
             
             network::PushBlock* pb =  packet->message->mutable_push_block();

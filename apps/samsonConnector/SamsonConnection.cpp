@@ -31,7 +31,7 @@ namespace samson {
             return au::str("Samson at %s:%d to %s" , host.c_str() , port , queue.c_str() );
     }
     
-    void SamsonConnection::push( Block* block )
+    void SamsonConnection::push( engine::Buffer* buffer )
     {
         if( !connected )
             connected = initConnection( host , port );
@@ -42,8 +42,7 @@ namespace samson {
         if( type == connection_input )
             return; // Nothing to do if we are input
         
-        SamsonClient::push(queue, new BlockDataSource(block) );
-        
+        SamsonClient::push( queue , new BlockDataSource( buffer ) );
     }
 
     size_t SamsonConnection::getOuputBufferSize()
@@ -55,33 +54,22 @@ namespace samson {
     }
 
     
-    void SamsonConnection::receive_buffer_from_queue(std::string queue , engine::Buffer* buffer)
+    void SamsonConnection::receive_buffer_from_queue(std::string queue , engine::Buffer* buffer )
     {
         // Transformation of buffer
         KVHeader *header = (KVHeader*) buffer->getData();
 
         if( header->isTxt() )
         {
-            engine::Buffer * new_buffer = engine::MemoryManager::shared()->newBuffer("output_samson_connector", "connector",  header->info.size );
-            memcpy(new_buffer->getData(), buffer->getData() + sizeof(KVHeader), header->info.size);
-            new_buffer->setSize( header->info.size );
-            
-            // Remove previous buffer
-            engine::MemoryManager::shared()->destroyBuffer( buffer );
-            
             // Push the new buffer
-            pushInputBuffer( new_buffer );
+            pushInputBuffer( buffer );
             
         }
         else
         {
             std::string message = au::str("Received a binary buffer %s from %s. Still not implemented how to process this" , au::str( buffer->getSize() , "B" ).c_str() , getName().c_str() );
             samson_connector->show_message( message );
-            engine::MemoryManager::shared()->destroyBuffer( buffer );
-            
         }
-        
-        
         
     }
 

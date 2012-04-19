@@ -165,7 +165,7 @@ namespace samson {
         virtual void receive_buffer_from_queue( std::string queue , engine::Buffer* buffer )
         {
             LM_W(("Buffer received from queue %s not used" , queue.c_str() ));
-            engine::MemoryManager::shared()->destroyBuffer(buffer);
+            buffer->release();
         }
         
         

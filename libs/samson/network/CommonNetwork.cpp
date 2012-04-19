@@ -200,8 +200,9 @@ namespace samson {
     Status CommonNetwork::send( Packet* packet )
     {
         // Add more info to buffer name for debuggin
-        if( packet->buffer )
-            packet->buffer->addToName( au::str(" [in packet to %s]" , packet->to.str().c_str() ));
+        engine::Buffer * buffer = packet->getBuffer();
+        if( buffer )
+            buffer->addToName( au::str(" [in packet to %s]" , packet->to.str().c_str() ));
         
         //LM_W(("Sending packet %s to %s" ,  packet->str().c_str() , packet->to.str().c_str() ));
         

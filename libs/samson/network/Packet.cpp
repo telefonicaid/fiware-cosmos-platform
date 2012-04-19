@@ -10,19 +10,55 @@
 namespace samson
 {
     
-    const char* ClusterNodeType2str( ClusterNodeType type )
+    
+    Packet::Packet()
     {
-        switch ( type ) 
-        {
-            case DelilahNode: return "delilah";
-            case WorkerNode:  return "worker";
-            case UnknownNode: return "unknown";
-        }
+        msgCode    = Message::Unknown;
+        message    = new network::Message();
+        disposable = false;
+    };        
+    
+    Packet::Packet(Message::MessageCode _msgCode)
+    {
+        msgCode    = _msgCode;
+        message    = new network::Message();
+        disposable = false;
+    };
+    
+    Packet::Packet( Packet* p )
+    {
+        // Copy the message type
+        msgCode    = p->msgCode;
+        disposable = p->disposable;
         
-        LM_X(1, ("Impossible to got here"));
-        return "Error";
+        // Point to the same buffer
+        //buffer_container.setBuffer( p->buffer_container.getBuffer() );
+        buffer_container = p->buffer_container;
+        
+        // Google protocol buffer message
+        message = new network::Message();
+        message->CopyFrom(*p->message);
+    };
+    
+    Packet::~Packet()
+    {
+        // Buffer contained in buffer_container is auto-released
+        
+        delete message;
     }
 
+
+    void Packet::setBuffer( engine::Buffer * _buffer )
+    {
+        // Handy function to get the buffer
+        buffer_container.setBuffer(_buffer);
+    }
+    
+    engine::Buffer* Packet::getBuffer()
+    {
+        // Handy function to get the buffer
+        return  buffer_container.getBuffer();
+    }
     
     au::Status Packet::write( au::FileDescriptor *fd , size_t *size )
     {
@@ -32,6 +68,9 @@ namespace samson
         *size =0;
         
         LM_T(LmtSocketConnection, ("Sending Packet '%s' to %s " , str().c_str() , fd->getName().c_str() ));
+        
+        // Get a pointer to the buffer ( if any )
+        engine::Buffer * buffer = buffer_container.getBuffer();
         
         //
         // Preparing header
@@ -149,7 +188,7 @@ namespace samson
         {
             // Alloc a buffer to read buffer of data
             std::string buffer_name = au::str("Network Buffer from %s" , fd->getName().c_str() );
-            buffer = engine::MemoryManager::shared()->newBuffer( buffer_name , "network" , header.kvDataLen , 0.9 );
+            engine::Buffer *buffer = engine::MemoryManager::shared()->createBuffer( buffer_name , "network" , header.kvDataLen , 0.9 );
             
             char*  kvBuf  = buffer->getData();
             s = fd->partRead(kvBuf, header.kvDataLen , "Key-Value Data" , 300);
@@ -161,8 +200,55 @@ namespace samson
             *size += header.kvDataLen;
             
             buffer->setSize( header.kvDataLen );
+            
+            // Put inside the buffer_container and release the created buffer
+            // From now on, it released (at least ) internally in buffer_container 
+            buffer_container.setBuffer(buffer);
+            buffer->release();
+            
         }
         
         return au::OK;
     }
+    
+    Packet*  Packet::messagePacket( std::string message )
+    {
+        Packet * packet = new Packet( Message::Message );
+        packet->message->set_message(message);
+        return packet;
+    }
+
+    std::string Packet::str()
+    {
+        std::ostringstream output;
+        output << "Packet " << messageCode( msgCode );
+        
+        // Extra information for worker command
+        if( msgCode == Message::WorkerCommand )
+            output << "(W-Command: " << message->worker_command().command() << ")";
+        
+        if( msgCode == Message::WorkerCommandResponse )
+            output << "(W-CommandResponse: " << message->worker_command_response().worker_command().command() << ")";
+        
+        engine::Buffer* buffer = buffer_container.getBuffer();
+        if ( buffer )
+            output << " [ Buffer " << au::str(  buffer->getSize() ) << "/" << au::str(  buffer->getMaxSize() ) << " ]" ;
+        return output.str();
+    }
+    
+    
+    size_t Packet::getSize()
+    {
+        size_t total = 0;
+        
+        engine::Buffer* buffer = buffer_container.getBuffer();
+        if ( buffer )
+            total += buffer->getSize();
+        
+        total += message->ByteSize();
+        
+        return total;
+    }
+    
+
 }

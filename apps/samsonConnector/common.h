@@ -2,6 +2,8 @@
 #define _H_SAMSON_CONNECTOR_COMMON
 
 #include "engine/Buffer.h"
+#include "engine/BufferContainer.h"
+
 #include "BufferProcessor.h"
 #include "samson/client/SamsonClient.h"
 
@@ -17,7 +19,6 @@ namespace samson
     const char * str_ConnectionType( ConnectionType type );
 
     class SamsonConnector;
-    class Block;
     
     // Base class for all items
     class SamsonConnectorItem
@@ -32,8 +33,10 @@ namespace samson
         int samson_connector_id;
         int parent_samson_connector_id;
 
-        au::Token token_pending_blocks;
-        au::list<Block> pending_blocks;      // List of pending packets ( only in output )
+        
+        // List of pending packets ( only in output )
+        au::Token token_pending_buffers;
+        engine::BufferListContainer buffer_list_container;
         
         BufferProcessor* block_processor;    // Processor for input buffers ( only in input )
 
@@ -45,8 +48,8 @@ namespace samson
         
         
         // Method to recover buffers to be pushed to the output
-        Block* getNextOutputBlock();
-        void popOutputBlock();
+        engine::Buffer* getNextOutputBuffer();
+        void popOutputBuffer();
 
         // Method to push any input buffer
         void pushInputBuffer( engine::Buffer * buffer );
@@ -54,18 +57,7 @@ namespace samson
         
     public:
         
-        SamsonConnectorItem( SamsonConnector * _samson_connector , ConnectionType _type ) 
-        : token_rates("token_rates_SamsonConnectorItem") 
-        , token_pending_blocks("token_pending_blocks")
-        {
-            samson_connector = _samson_connector;
-            type = _type;
-            samson_connector_id = -1;         // Unassigned until added to SamsonConnector
-            parent_samson_connector_id = -1;
-            
-            
-            block_processor = new BufferProcessor( this, _samson_connector );
-        }
+        SamsonConnectorItem( SamsonConnector * _samson_connector , ConnectionType _type );
 
         virtual ~SamsonConnectorItem();
         
@@ -100,7 +92,7 @@ namespace samson
         virtual void review()=0;
 
         // Method to push data ( only output )
-        virtual void push( Block* block );
+        virtual void push( engine::Buffer* buffer );
         
         virtual size_t getOuputBufferSize();
         

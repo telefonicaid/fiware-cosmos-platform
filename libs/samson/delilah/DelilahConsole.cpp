@@ -1339,7 +1339,7 @@ namespace samson
             }
             // Size of the file
             size_t file_size = info.st_size;
-            engine::Buffer * buffer = engine::MemoryManager::shared()->newBuffer("push_module" , "delilah", file_size );
+            engine::Buffer * buffer = engine::MemoryManager::shared()->createBuffer("push_module" , "delilah", file_size );
             buffer->setSize(file_size);
             
             // Load the file
@@ -1348,7 +1348,12 @@ namespace samson
                 LM_W(("Errro reading file %s" , file_name.c_str() ));
             fclose(file);
             
-            return sendWorkerCommand( au::str("push_module %s" , module_name.c_str() ) , buffer );
+            size_t tmp_id = sendWorkerCommand( au::str("push_module %s" , module_name.c_str() ) , buffer );
+            
+            // Release the buffer we have just created
+            buffer->release();
+            
+            return tmp_id;
         }
         
         

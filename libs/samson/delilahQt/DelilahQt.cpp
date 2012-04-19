@@ -137,8 +137,6 @@ namespace samson
             mainWindow->updateQueuesFeed(queue, headerString.str(), dataString);
         }
         
-        //Destroy Buffer
-        engine::MemoryManager::shared()->destroyBuffer(buffer);
     }
 
     void DelilahQt::onConnectionUpdate(ConnectQueueParameters params)

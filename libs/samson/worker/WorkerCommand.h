@@ -31,6 +31,7 @@
 
 #include "engine/Object.h"                  // engine::Object
 #include "engine/Buffer.h"                  // engine::Buffer
+#include "engine/BufferContainer.h"
 
 namespace samson {
     
@@ -85,8 +86,8 @@ namespace samson {
         // Collections added in the response message
         au::vector< samson::network::Collection > collections;
         
-        // Buffer
-        engine::Buffer *buffer;
+        // BufferContainer to hold the buffer to send back to the delilah client
+        engine::BufferContainer buffer_container;
         
         friend class WorkerCommandManager;
         
@@ -94,6 +95,9 @@ namespace samson {
         
         WorkerCommand( std::string worker_command_id ,size_t _delilah_id , size_t _delilah_component_id , const network::WorkerCommand& _command );
         ~WorkerCommand();
+        
+        // Handy function to set the internal buffer in buffer_container
+        void setBuffer( engine::Buffer * buffer );
         
         void setSamsonWorker( SamsonWorker * _samsonWorker );
         bool isFinished();
@@ -108,14 +112,6 @@ namespace samson {
 
         // Fill a collection record
         void fill( samson::network::CollectionRecord* record , Visualization* visualization );
-        
-        // Set buffer form the original message
-        void setBuffer( engine::Buffer* _buffer )
-        {
-            if( buffer )
-                LM_X(1, ("Internal error"));
-            buffer = _buffer;
-        }
         
     private:
         

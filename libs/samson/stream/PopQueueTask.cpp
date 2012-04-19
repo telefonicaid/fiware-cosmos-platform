@@ -53,7 +53,7 @@ namespace samson {
             samson::Packet *packet = new Packet( Message::PopQueueResponse );
             
             // Set the buffer to be sent to this delilah
-            packet->buffer = buffer;
+            packet->setBuffer( buffer );
             
             // Set delialh id
             packet->message->set_delilah_component_id( delilah_component_id );
@@ -84,13 +84,10 @@ namespace samson {
                 if( block->isContentOnMemory() )
                 {
                     
-                    size_t  size = block->buffer->getSize();
-                    
-                    engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("PopQueueTask_run", "pop", size );
-                    
-                    memcpy( buffer->getData(), block->buffer->getData(), size );
-                    buffer->setSize(size);
-                    
+                    // Buffer is suppoused to be in memory
+                    engine::Buffer* buffer = block->buffer_container.getBuffer();
+
+                    // Send the buffer ( will be retained by the packet )
                     sendMessage( buffer );
                 }
                 else
@@ -121,7 +118,7 @@ namespace samson {
             packet->to = NodeIdentifier( DelilahNode , fromId );
             
             // Set the buffer to be sent to this delilah
-            packet->buffer = buffer;
+            packet->setBuffer( buffer );
             
             // Set no delialh id ( this is always a top level message )
             packet->message->set_delilah_component_id( 0 );
@@ -139,7 +136,6 @@ namespace samson {
         void StreamOutQueueTask::run()
         {
             
-            
             BlockList *list = getBlockList("input_0");
             au::list<Block>::iterator b;
             for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++)
@@ -148,15 +144,7 @@ namespace samson {
                 
                 if( block->isContentOnMemory() )
                 {
-                    
-                    size_t  size = block->buffer->getSize();
-                    
-                    engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer("PopQueueTask_run","pop" ,size );
-                    
-                    memcpy( buffer->getData(), block->buffer->getData(), size );
-                    buffer->setSize(size);
-                    
-                    sendMessage( buffer );
+                    sendMessage( block->buffer_container.getBuffer() );
                 }
                 else
                     LM_W(("PopQueueTask: Found a block that is not in memory. This shoudl be an error...skipping"));

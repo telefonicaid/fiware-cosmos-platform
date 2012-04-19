@@ -45,8 +45,6 @@ namespace samson {
                 LM_X(1, ("Error getting instance of the splitter"));
         }
     
-        output_buffer = NULL;
-        
     }
     
     BufferProcessor::~BufferProcessor()
@@ -61,8 +59,8 @@ namespace samson {
     // SplitterEmitter interface
     void BufferProcessor::emit( char* data , size_t length )
     {
-        
         // If not possible to write in the current buffer, just flush content
+        engine::Buffer * output_buffer = output_buffer_container.getBuffer();
         if( output_buffer )
             if( output_buffer->getSize() + length > output_buffer->getMaxSize() )
                 flush();
@@ -71,7 +69,7 @@ namespace samson {
         if( !output_buffer )
         {
             size_t output_buffer_size = std::max( length , (size_t) 64000000 ); // Minimum 64Mbytes buffer
-            output_buffer = engine::MemoryManager::shared()->newBuffer("output_splitter", "connector", output_buffer_size );
+            output_buffer = output_buffer_container.create("output_splitter", "connector", output_buffer_size );
         }
         
         // Write in the buffer
@@ -85,10 +83,12 @@ namespace samson {
     
     void BufferProcessor::flushOutputBuffer()
     {
+        engine::Buffer* output_buffer = output_buffer_container.getBuffer();
+        
         if( output_buffer )
         {
             stream_connector->push( output_buffer , item );
-            output_buffer = NULL;
+            output_buffer_container.release();
         }
         
     }
@@ -105,7 +105,7 @@ namespace samson {
             flushOutputBuffer();
 
             // Create a buffer with whatever we have collected so far
-            output_buffer = engine::MemoryManager::shared()->newBuffer("output_splitter", "connector", size );
+            engine::Buffer* output_buffer = output_buffer_container.create("output_splitter", "connector", size );
             output_buffer->write( buffer , size );
 
             // All buffer has been processes
@@ -188,9 +188,6 @@ namespace samson {
                 process_intenal_buffer( false );
             }
         }
-        
-        // Destroy input buffer
-        engine::MemoryManager::shared()->destroyBuffer( input_buffer );
         
     }
     

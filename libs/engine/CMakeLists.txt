@@ -2,6 +2,7 @@ SET (HEADERS
 Object.h
 ObjectsManager.h
 Buffer.h
+BufferContainer.h
 SimpleBuffer.h
 Engine.h
 EngineService.h
@@ -22,6 +23,7 @@ SET (SOURCES
 Object.cpp
 ObjectsManager.cpp
 Buffer.cpp
+BufferContainer.cpp
 Engine.cpp
 EngineService.cpp
 Notification.cpp

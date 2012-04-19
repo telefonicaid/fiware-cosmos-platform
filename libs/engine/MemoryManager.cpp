@@ -81,7 +81,7 @@ MemoryManager::~MemoryManager()
     memoryRequests.clearList(); // Remove pending requests
 }
 
-Buffer *MemoryManager::newBuffer( std::string name , std::string type , size_t size , double mem_limit  )
+Buffer *MemoryManager::createBuffer( std::string name , std::string type , size_t size , double mem_limit  )
 {
     au::Cronometer cronometer;
     int count = 0;
@@ -155,7 +155,6 @@ void MemoryManager::destroyBuffer(Buffer* b)
 {
 	//LM_M(("Before delete mutex  buffer:%s\n", b->str().c_str()));
     au::TokenTaker tk( &token );
-    
     
     //LM_M(("Dealloc buffer '%s' " , b->str().c_str() ));
     

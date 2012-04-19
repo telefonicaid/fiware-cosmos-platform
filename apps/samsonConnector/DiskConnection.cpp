@@ -101,10 +101,9 @@ namespace samson {
         
         while( true )
         {
-            Block* current_block = getNextOutputBlock();
+            engine::Buffer* current_buffer = getNextOutputBuffer();
             
-            
-            if( !current_block )
+            if( !current_buffer )
             {
                 samson_connector->review();
                 usleep(100000);
@@ -112,7 +111,7 @@ namespace samson {
             }
 
             // Size of the block
-            size_t current_size = current_block->buffer->getSize();
+            size_t current_size = current_buffer->getSize();
             
             if( current_size> max_size )
             {
@@ -166,14 +165,14 @@ namespace samson {
             }
 
             // Write to disk
-            au::Status s = file_descriptor->partWrite(current_block->buffer->getData(), current_block->buffer->getSize(), "samsonConnectorConnection");
+            au::Status s = file_descriptor->partWrite(current_buffer->getData(), current_buffer->getSize(), "samsonConnectorConnection");
             
             if( s != au::OK )
             {
                 
                 error.set( au::str("Not possible to write buffer with %s to file %s" 
-                                   , au::str( current_block->buffer->getSize() ).c_str()
-                                   ,  current_file_name.c_str() ) );
+                                   , au::str( current_buffer->getSize() ).c_str()
+                                   , current_file_name.c_str() ) );
                 samson_connector->show_warning( au::str("%s: %s" , getName().c_str() , error.getMessage().c_str() ) );
                 return;
             }
@@ -181,7 +180,7 @@ namespace samson {
             accumulated_size += current_size;
             
             // Pop output bock
-            popOutputBlock();
+            popOutputBuffer();
         }
         
         
@@ -196,34 +195,32 @@ namespace samson {
             if( file_descriptor )
             {
                 // Still reading from a file...
-                engine::Buffer * buffer = engine::MemoryManager::shared()->newBuffer("stdin", "connector", input_buffer_size );
-
+                engine::Buffer * buffer = engine::MemoryManager::shared()->createBuffer("stdin", "connector", input_buffer_size );
+                
                 // Read the entire buffer
                 size_t read_size = 0;
-               au::Status s = file_descriptor->partRead(buffer->getData()
-                                                     , input_buffer_size
-                                                     , "read connector connections"
-                                                     , 300 
-                                                     , &read_size );
+                au::Status s = file_descriptor->partRead(buffer->getData()
+                                                         , input_buffer_size
+                                                         , "read connector connections"
+                                                         , 300 
+                                                         , &read_size );
                 // If we have read something...
                 if( read_size > 0 )
                 {
                     // Set the buffer size
                     buffer->setSize(read_size);
                     pushInputBuffer(buffer);
-                    buffer = NULL; // Avoid releasing latter
                 }
                 
+                // Release alocated buffer
+                buffer->release();
+
                 // If last read is not ok...
                 if( s != au::OK )
                 {
-                    // Deallocated the buffer
-                    if( buffer )
-                        engine::MemoryManager::shared()->destroyBuffer(buffer);
-
                     // Close current file descriptor
                     delete file_descriptor;
-                    file_descriptor=NULL;
+                    file_descriptor = NULL;
                 }                  
             }
             else

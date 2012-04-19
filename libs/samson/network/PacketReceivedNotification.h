@@ -43,15 +43,13 @@ namespace samson
             if( ! receiver )
             {
                 LM_W(("Packet %s lost since ntework interface is still not activated." , packet->str().c_str() ));
-                if( packet->buffer )
-                    engine::MemoryManager::shared()->destroyBuffer( packet->buffer );
-                return;
                 delete packet;// Remove the packet recieved from the network
+                return;
             }
             else
             {
                 receiver->receive( packet );
-                delete packet;// Remove the packet recieved from the network
+                delete packet; // Remove the packet recieved from the network ( releasing internal buffer )
             }
         }
         

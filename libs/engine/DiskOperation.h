@@ -41,11 +41,11 @@
 #include "au/Environment.h"     // au::Environment
 #include "au/namespace.h"
 
+#include "engine/MemoryManager.h"       // engine::BufferContainer
 #include "engine/Buffer.h"              // engine::Buffer
+#include "engine/BufferContainer.h"
 #include "engine/Object.h"  // engine::EngineNotification
-#include "engine/Object.h"              // engine::Object
 
-#define destroy_buffer_after_write    "destroy_buffer_after_write"
 
 NAMESPACE_BEGIN(engine)
 
@@ -70,7 +70,9 @@ private:
     
     DiskOperationType type;				// Type of operation ( read, write , remove , etc.. )
     std::string fileName;				// FileName to open
-    Buffer * buffer;					// Buffer used when writing
+    
+    engine::BufferContainer buffer_container;    // Auto-retained pointer to a buffer
+    
     char *read_buffer;					// Buffer used when reading from disk	
     size_t size;						// Size to read/write
     size_t offset;						// Offset inside the file ( only for read operations )
@@ -118,8 +120,6 @@ public:
     {
         return size;
     }
-    
-    void destroyBuffer();
     
 public:
     

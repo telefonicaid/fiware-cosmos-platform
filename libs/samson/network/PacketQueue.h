@@ -95,15 +95,8 @@ namespace samson {
         {
             // Clear queues, removing packages and alloc buffers
             au::TokenTaker tt(&token);
-            au::list<Packet>::iterator it_queue;
-            for ( it_queue = queue.begin() ; it_queue != queue.end() ; it_queue++ )
-            {
-                engine::Buffer * buffer = ( *it_queue )->buffer;
-                if ( buffer )
-                    engine::MemoryManager::shared()->destroyBuffer( buffer );
-            }
             
-            // Remove elements calling delete to all of them
+            // Remove elements calling delete to all of them ( Not that buffer inside packets are relased )
             queue.clearList();
         }
         
@@ -143,9 +136,7 @@ namespace samson {
             {
                 LM_W(("Destroying packet %s for unconnected node (%s) since it is not a worker" 
                       , packet->str().c_str(), name.c_str() ));
-                
-                if( packet->buffer )
-                    engine::MemoryManager::shared()->destroyBuffer(packet->buffer);
+                delete packet;
             }
         }
         
@@ -174,13 +165,13 @@ namespace samson {
                 {
                     Packet * packet = packet_queue->extract();
                     if( !packet )
+                        
                         return;
-                    LM_W(("Destroying packet %s for unconnected node (%s) since it is not a worker" , packet->str().c_str() , name.c_str() )); 
-                    if( packet->buffer )
-                        engine::MemoryManager::shared()->destroyBuffer(packet->buffer);
+                    LM_W(("Destroying packet %s for unconnected node (%s) since it is not a worker" 
+                          , packet->str().c_str() , name.c_str() )); 
+                    
                     delete packet;
                 }
-                
             }
         }
         

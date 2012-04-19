@@ -18,21 +18,27 @@ namespace samson {
         return "Unknown";
     }
     
+    SamsonConnectorItem::SamsonConnectorItem( SamsonConnector * _samson_connector , ConnectionType _type ) 
+    : token_rates("token_rates_SamsonConnectorItem") 
+    , token_pending_buffers("token_pending_blocks")
+    {
+        samson_connector = _samson_connector;
+        type = _type;
+        samson_connector_id = -1;         // Unassigned until added to SamsonConnector
+        parent_samson_connector_id = -1;
+        
+        // Block to process all input buffers
+        block_processor = new BufferProcessor( this, _samson_connector );
+    }
+
     SamsonConnectorItem::~SamsonConnectorItem()
     {
-        // Remove non sent blocks
-        au::list<Block>::iterator it_pending_blocks;
-        for( it_pending_blocks = pending_blocks.begin() ; it_pending_blocks != pending_blocks.end() ; it_pending_blocks++ )
-            (*it_pending_blocks)->release();
-        pending_blocks.clear();
-        
-        
         delete block_processor;
     }
 
     
     
-    void SamsonConnectorItem::push( Block* block )
+    void SamsonConnectorItem::push( engine::Buffer* buffer )
     { 
         if( type == connection_input )
             return; // Nothing to do if we are input
@@ -41,28 +47,21 @@ namespace samson {
             return;
         
         {
-            au::TokenTaker tt(&token_pending_blocks);
-            block->retain();
-            pending_blocks.push_back( block );
+            au::TokenTaker tt(&token_pending_buffers);
+            buffer_list_container.push_back( buffer );
         }
     }
 
-    Block* SamsonConnectorItem::getNextOutputBlock()
+    engine::Buffer* SamsonConnectorItem::getNextOutputBuffer()
     {
-        au::TokenTaker tt(&token_pending_blocks);
-        if( pending_blocks.size() == 0 )
-            return NULL;
-        
-        Block * b = pending_blocks.front();
-        return b;
+        au::TokenTaker tt(&token_pending_buffers);
+        return buffer_list_container.front();
     }
 
-    void SamsonConnectorItem::popOutputBlock()
+    void SamsonConnectorItem::popOutputBuffer()
     {
-        au::TokenTaker tt(&token_pending_blocks);
-        Block * b = pending_blocks.front();
-        b->release();
-        pending_blocks.pop_front();
+        au::TokenTaker tt(&token_pending_buffers);
+        return buffer_list_container.pop();
     }
     
     void SamsonConnectorItem::pushInputBuffer( engine::Buffer * buffer )
@@ -91,14 +90,8 @@ namespace samson {
     
     size_t SamsonConnectorItem::getOuputBufferSize()
     {
-        au::TokenTaker tt(&token_pending_blocks);
-        
-        size_t total = 0;
-        au::list<Block>::iterator it_pending_blocks; 
-        for( it_pending_blocks = pending_blocks.begin() ; it_pending_blocks != pending_blocks.end() ; it_pending_blocks++ )
-            total += (*it_pending_blocks)->buffer->getSize();
-            
-        return total;
+        au::TokenTaker tt(&token_pending_buffers);
+        return buffer_list_container.getTotalSize();
     }
     
     // get type

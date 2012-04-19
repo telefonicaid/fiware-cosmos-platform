@@ -11,7 +11,6 @@ NAMESPACE_BEGIN(engine)
 DiskOperation::DiskOperation( )
 {
     // Some default values
-    buffer = NULL;
     read_buffer = NULL;
     
 }
@@ -63,7 +62,7 @@ DiskOperation* DiskOperation::newWriteOperation( Buffer* buffer ,  std::string f
     
     o->fileName = fileName;
     o->type = DiskOperation::write;
-    o->buffer = buffer;
+    o->buffer_container.setBuffer(buffer);
     o->size = buffer->getSize();
     o->offset = 0;
     o->addListener( _listenerId );
@@ -80,7 +79,7 @@ DiskOperation* DiskOperation::newAppendOperation( Buffer* buffer ,  std::string 
     
     o->fileName = fileName;
     o->type = DiskOperation::append;
-    o->buffer = buffer;
+    o->buffer_container.setBuffer(buffer);
     o->size = buffer->getSize();
     o->offset = 0;
     o->addListener( _listenerId );
@@ -183,7 +182,7 @@ void DiskOperation::run(  )
         {
             if( size > 0 )
             {
-                if( fwrite(buffer->getData(), size, 1 , file) == 1 )
+                if( fwrite( buffer_container.getBuffer()->getData(), size, 1 , file) == 1 )
                     fflush(file);
                 else
                 {
@@ -209,6 +208,10 @@ void DiskOperation::run(  )
         {
             if( size > 0 )
             {
+                engine::Buffer* buffer = buffer_container.getBuffer();
+                if( !buffer )
+                    LM_X(1, ("Internal error"));
+                
                 if( fwrite(buffer->getData(), size, 1 , file) == 1 )
                     fflush(file);
                 else
@@ -295,23 +298,9 @@ void DiskOperation::run(  )
             setError("Error while removing file");
     }
     
-    
-    // If write operation, destroy the buffer ( only in write and append operations )
-    if( environment.get( destroy_buffer_after_write , "yes") == "yes" )
-        destroyBuffer();
-    
     LM_T( LmtDisk , ("DiskManager: Finished with file %s, ready to finishDiskOperation", fileName.c_str() ));
     // Notify to the engine
     diskManager->finishDiskOperation( this );
-}
-
-void DiskOperation::destroyBuffer()
-{
-    if( buffer )
-    {
-        engine::MemoryManager::shared()->destroyBuffer(buffer);
-        buffer = NULL;
-    }
 }
 
 bool DiskOperation::compare( DiskOperation *operation )

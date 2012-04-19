@@ -57,17 +57,16 @@ namespace samson {
     {
         while( true )
         {
-            Block* current_block = getNextOutputBlock();
-            if( current_block )
+            engine::Buffer* buffer = getNextOutputBuffer();
+            if( buffer )
             {
-                engine::Buffer* buffer = current_block->buffer;
                 au::Status s = file_descriptor->partWrite(buffer->getData(), buffer->getSize(), "samsonConnectorConnection");
                 
                 
                 if( s != au::OK )
                     return; // Just quit
                 else
-                    popOutputBlock(); // Pop the block we have just sent
+                    popOutputBuffer(); // Pop the block we have just sent
 
             }
             else
@@ -85,7 +84,7 @@ namespace samson {
         while( true )
         {
             //Get a buffer
-            engine::Buffer * buffer = engine::MemoryManager::shared()->newBuffer("stdin", "connector", input_buffer_size );
+            engine::Buffer * buffer = engine::MemoryManager::shared()->createBuffer("stdin", "connector", input_buffer_size );
             
             //LM_V(("%s: Reading buffer up to %s" , file_descriptor->getName().c_str() , au::str(buffer_size).c_str() ));
 
@@ -103,16 +102,14 @@ namespace samson {
                 // Push input buffer
                 buffer->setSize(read_size);
                 pushInputBuffer( buffer );
-                buffer = NULL; // Avoid releasing latter
             }
+            
+            // Relase allocated buffer
+            buffer->release();
             
             // If last read is not ok...
             if( s != au::OK )
             {
-                // Deallocated the buffer
-                if( buffer )
-                    engine::MemoryManager::shared()->destroyBuffer(buffer);
-                
                 // Flush whatever we have..
                 flush();
 

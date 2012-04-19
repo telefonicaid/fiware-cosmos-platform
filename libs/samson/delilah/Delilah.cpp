@@ -254,16 +254,16 @@ namespace samson {
         {
             std::string queue = packet->message->stream_output_queue().queue();
             
-            if( !packet->buffer )
+            if( !packet->getBuffer() )
             {
                 LM_W(("StreamOutQueue message without a buffer"));
                 return;
             }
             
             if( data_receiver_interface )
-                data_receiver_interface->receive_buffer_from_queue(queue, packet->buffer );
+                data_receiver_interface->receive_buffer_from_queue(queue, packet->getBuffer() );
             else
-                receive_buffer_from_queue( queue , packet->buffer );
+                receive_buffer_from_queue( queue , packet->getBuffer() );
             
             return;
             
@@ -569,9 +569,6 @@ namespace samson {
         if( packet->msgCode != Message::Alert )
             LM_V(("Unused packet %s" , packet->str().c_str()));
         
-        if( packet->buffer )
-            engine::MemoryManager::shared()->destroyBuffer( packet->buffer );
-
         return 0;
     }    
 	

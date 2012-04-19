@@ -26,8 +26,8 @@ namespace  samson
         
         SamsonClientBlock( engine::Buffer *_buffer , bool _remove_buffer_at_destructor )
         {
-            
             buffer = _buffer;
+            
             remove_buffer_at_destructor = _remove_buffer_at_destructor;
             header = (KVHeader*) buffer->getData();
             
@@ -75,8 +75,7 @@ namespace  samson
         ~SamsonClientBlock()
         {
             if( buffer )
-                if( remove_buffer_at_destructor ) 
-                    engine::MemoryManager::shared()->destroyBuffer(buffer);
+                buffer->release();
         }
         
         size_t getBufferSize()

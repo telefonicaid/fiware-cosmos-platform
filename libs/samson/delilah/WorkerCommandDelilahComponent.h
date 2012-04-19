@@ -6,6 +6,10 @@
 #include "au/Cronometer.h"          // au::CronometerSystem
 
 #include <cstring>
+
+
+#include "engine/BufferContainer.h"
+
 #include "samson/network/Message.h"		// Message::MessageCode 
 #include "samson/network/Packet.h"			// samson::Packet
 #include "samson/common/samson.pb.h"	
@@ -48,7 +52,8 @@ namespace samson {
 	class WorkerCommandDelilahComponent : public DelilahComponent
 	{
 		std::string command;
-		engine::Buffer *buffer;
+        
+		engine::BufferContainer buffer_container;
 
         std::set<size_t> workers;                       // Ids of the workers involved in this command
         au::map<size_t , WorkerResponese > responses;   // Map with all the responses from workers
@@ -67,12 +72,9 @@ namespace samson {
 	public:
 		
 		WorkerCommandDelilahComponent( std::string _command , engine::Buffer *buffer );
+        
         ~WorkerCommandDelilahComponent()
         {
-            if( buffer )
-            {
-                engine::MemoryManager::shared()->destroyBuffer( buffer );
-            }
         }
 		
 		void receive( Packet* packet );

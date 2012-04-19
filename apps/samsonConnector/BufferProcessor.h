@@ -3,6 +3,7 @@
 
 #include "au/Cronometer.h"
 #include "engine/Buffer.h"
+#include "engine/BufferContainer.h"
 #include "samson/module/Operation.h"
 
 namespace samson 
@@ -30,7 +31,7 @@ namespace samson
         au::Cronometer cronometer;
 
         // Buffer used to emit output produced by the splitter
-        engine::Buffer *output_buffer;
+        engine::BufferContainer output_buffer_container;
         
     public:
         

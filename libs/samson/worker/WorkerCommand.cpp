@@ -161,7 +161,6 @@ namespace samson {
         worker_command_id = _worker_command_id;
         
         samsonWorker = NULL;
-        buffer = NULL;
         
         //Identifiers to notify when finished
         delilah_id = _delilah_id;
@@ -196,11 +195,6 @@ namespace samson {
         // Remove collections created for this command
         collections.clearVector();
         
-        if( buffer )
-        {
-            engine::MemoryManager::shared()->destroyBuffer(buffer);
-            buffer = NULL;
-        }
     }
     
     void WorkerCommand::setSamsonWorker( SamsonWorker * _samsonWorker )
@@ -738,6 +732,8 @@ typedef struct LogLineInfo
                 finishWorkerTaskWithError( "Usage push_module <name>" );
                 return;
             }
+            
+            engine::Buffer * buffer = buffer_container.getBuffer();
             
             if ( !buffer )
             {
@@ -1780,4 +1776,10 @@ typedef struct LogLineInfo
         
         
     }
+    
+    void WorkerCommand::setBuffer( engine::Buffer * buffer )
+    {
+        buffer_container.setBuffer(buffer);
+    }
+
 }

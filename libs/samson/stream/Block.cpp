@@ -226,15 +226,14 @@ namespace samson {
         }
         
         
-        Block::Block( engine::Buffer *_buffer ) : token_lookupList("token_lookupList")
+        Block::Block( engine::Buffer *buffer ) : token_lookupList("token_lookupList")
         {
+            if( !buffer )
+                LM_X(1, ("Internal error: No buffer when creating block"));
+            
             // Get a new unique id from the block manager
             worker_id = BlockManager::shared()->getWorkerId();
             id = BlockManager::shared()->getNextBlockId();
-            
-            
-            // Buffer of data
-            buffer = _buffer;  
             
             // Get the size of the packet
             size = buffer->getSize();
@@ -249,6 +248,9 @@ namespace samson {
             // Set name of buffer
             buffer->setNameAndType( au::str("%lu-%lu" , worker_id , id) , "blocks" );
             
+            // Retain internally the buffer
+            buffer_container.setBuffer( buffer );
+
             LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
             
             lookupList = NULL;
@@ -262,9 +264,6 @@ namespace samson {
             // Get a new unique id from the block manager
             worker_id = _worker_id;
             id = _id;
-            
-            // Buffer of data
-            buffer = NULL;  
             
             // Get the size of the packet
             size = _size;
@@ -296,9 +295,6 @@ namespace samson {
                 header = NULL;
             }
 
-            // Destroy buffer if still in memory
-            if( buffer )
-                engine::MemoryManager::shared()->destroyBuffer( buffer );
         }
         
         void Block::update_sort_information()
@@ -351,10 +347,15 @@ namespace samson {
 
         ::engine::DiskOperation* Block::getWriteOperation()
         {
+            // Get a pointer to the internal buffer ( retained in buffer_container )
+            engine::Buffer * buffer = buffer_container.getBuffer();
+            
             if( !buffer )
                 LM_X(1,("Not possible to get write operation over a block that it is not in memory"));
             
-            engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer ,  getFileName() , getEngineId()  );
+            engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer 
+                                                                                        ,  getFileName() 
+                                                                                        , getEngineId()  );
             operation->addListener( BlockManager::shared()->getEngineId() );
             
             // set my id as environment property
@@ -366,6 +367,9 @@ namespace samson {
 
         ::engine::DiskOperation* Block::getReadOperation()
         {
+            // Get a pointer to the internal buffer ( retained in buffer_container )
+            engine::Buffer * buffer = buffer_container.getBuffer();
+
             if( !buffer )
                 LM_X(1,("Not possible to get a read operation over a block that has not a buffer  in memory"));
             
@@ -404,7 +408,6 @@ namespace samson {
             state = writing;
             
             engine::DiskOperation *diskOperation = getWriteOperation();
-            diskOperation->environment.set(destroy_buffer_after_write, "no" );
             diskOperation->environment.set("operation_size", getSize() );
 
             engine::DiskManager::shared()->add( diskOperation );
@@ -418,17 +421,20 @@ namespace samson {
                 return;
             }
             
-            if ( buffer )
+            if ( buffer_container.getBuffer() )
             {
                 LM_W(("There is an unused buffer of data in a block with state = on_disk"));
-                engine::MemoryManager::shared()->destroyBuffer(buffer);
-                buffer = NULL;
+                // No problem since previous buffer is auytomatically released in buffer_container
             }
             
-            
-            // Allocate a buffer
-            buffer = engine::MemoryManager::shared()->newBuffer( au::str("%lu-%lu" , worker_id , id) ,  "blocks", size ); 
+            // Allocate a buffer ( it is retained since we are the creators )
+            std::string buffer_title = au::str("%lu-%lu" , worker_id , id);
+            engine::Buffer* buffer = engine::MemoryManager::shared()->createBuffer( buffer_title  , "blocks", size ); 
             buffer->setSize( size );    // Set the final size ( only used after read opertion has finished )
+            
+            // Release indice the buffer_container and release the just created buffer
+            buffer_container.setBuffer( buffer );
+            buffer->release();
             
             // Change the state to reading
             state = reading;
@@ -437,6 +443,7 @@ namespace samson {
             engine::DiskOperation *diskOperation = getReadOperation();
             diskOperation->environment.set("operation_size", getSize() );
             engine::DiskManager::shared()->add( diskOperation );
+         
             
         }
                 
@@ -464,22 +471,22 @@ namespace samson {
                 LM_W(("Not possible to free from memory a block that is locked "));
                 return;
             }
-            
-            if( !buffer )
+
+            state = on_disk;
+
+            if( !buffer_container.getBuffer() )
             {
                 LM_W(("Buffer not present in a ready block"));
                 return;
             }
-            
-            state = on_disk;
-            
+
             LM_T(LmtBlockManager,("destroyBuffer for block:'%s'", str().c_str()));
 
-            engine::MemoryManager::shared()->destroyBuffer(buffer);
-            buffer = NULL;
+            // Relase buffer
+            buffer_container.release();
             
+
         }
-        
         
         // Notifications
         
@@ -666,7 +673,7 @@ namespace samson {
         {
             if( ! isContentOnMemory() )
                 LM_X(1,("Not possible to get data for a block that is not in memory"));
-            return buffer->getData();
+            return buffer_container.getBuffer()->getData();
         }
         
         
@@ -702,13 +709,6 @@ namespace samson {
         size_t Block::getId()
         {
             return id;
-        }
-        
-        KVInfo* Block::getKVInfo()
-        {
-            LM_X(1, ("Unimplemented... "));
-            KVInfo *info = (KVInfo *) ( buffer->getData() + sizeof( KVHeader ) );
-            return info;
         }
         
         KVFormat Block::getKVFormat()

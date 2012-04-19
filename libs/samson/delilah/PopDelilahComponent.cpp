@@ -117,9 +117,11 @@ namespace samson
             return;
         }
         
-        if( packet->buffer )
+        
+        engine::Buffer* buffer = packet->getBuffer();
+        
+        if( buffer )
         {
-            
             num_write_operations++;
          
             size_t worker_id = packet->from.id;
@@ -127,7 +129,7 @@ namespace samson
             
             std::string _fileName = au::str("%s/worker_%06d_file_%06d" , fileName.c_str() , worker_id, num_output );
 
-            engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( packet->buffer , _fileName , getEngineId() );
+            engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( buffer , _fileName , getEngineId() );
             engine::DiskManager::shared()->add( operation );                
             
         }

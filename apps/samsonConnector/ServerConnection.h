@@ -42,7 +42,7 @@ namespace samson
         }
         
         bool isConnected();
-        void push( Block* block );
+        void push( engine::Buffer * buffer );
         size_t getOuputBufferSize();
 
         

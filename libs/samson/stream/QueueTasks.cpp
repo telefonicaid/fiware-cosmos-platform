@@ -371,7 +371,7 @@ namespace samson {
             
         public:
             
-            BlockReader( Block* block , int _channel ) :  file( block->buffer->getData() )
+            BlockReader( Block* block , int _channel ) :  file( block->buffer_container.getBuffer()->getData() )
             {
                 // Assigned channel
                 channel = _channel;

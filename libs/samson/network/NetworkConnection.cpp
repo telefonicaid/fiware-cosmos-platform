@@ -114,7 +114,6 @@ namespace samson {
                 network_manager->receive( this , packet );
             else
             {
-                packet->freeBuffer();
                 delete packet;
                 socket_connection->close(); // Close connection since a packet has not been received correctly
             }
@@ -152,7 +151,6 @@ namespace samson {
                 if( s == au::OK )
                 {
                     // delete packet
-                    packet->freeBuffer();
                     delete packet;
                     
                     packet_queue.pop(); // If not ok, packet is still in the queue

@@ -173,15 +173,12 @@ namespace samson {
         {
             if( !packet->message->has_push_block()  )
             {
-                if ( packet->buffer )
-                    engine::MemoryManager::shared()->destroyBuffer( packet->buffer );
-                
                 LM_W(("Internal error. Received a push block message without the push_object included"));
                 
                 return;
             }
             
-            if ( !packet->buffer )
+            if ( !packet->getBuffer() )
             {
                 LM_W(("Internal error. Received a push block message without a buffer of data"));
                 return;
@@ -190,8 +187,7 @@ namespace samson {
             
             // Tmp list with the created block
             stream::BlockList my_list( au::str("TmpList for PushBlock") );
-            my_list.createBlock( packet->buffer );
-            
+            my_list.createBlock( packet->getBuffer() );
             
             // Push the packet to a particular stream-queue
             for ( int i = 0 ; i < packet->message->push_block().queue_size() ; i++)
@@ -257,8 +253,7 @@ namespace samson {
                                                              );
             
             // If it comes with a buffer, set the buffer property
-            if( packet->buffer )
-                workerCommand->setBuffer( packet->buffer );
+            workerCommand->setBuffer( packet->getBuffer() );
             
             workerCommandManager->addWorkerCommand( workerCommand );
             return;

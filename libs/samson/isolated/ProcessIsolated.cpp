@@ -142,7 +142,7 @@ namespace samson
 				{
                     
                     engine::MemoryManager * mm = engine::MemoryManager::shared();
-                    engine::Buffer *buffer = mm->newBuffer( "Output of " + processItemIsolated_description 
+                    engine::Buffer *buffer = mm->createBuffer( "Output of " + processItemIsolated_description 
                                                             , "ProcessIsolated"
                                                             , sizeof(KVHeader) + _channel->info.size );
                     
@@ -197,6 +197,8 @@ namespace samson
                     // Process the output buffer
                     processOutputBuffer(buffer, o, s, finish);
                     
+                    // we have created this buffer, we relase it!
+                    buffer->release();
 					
 				}
 			}
@@ -223,7 +225,7 @@ namespace samson
 		{
 			
             engine::MemoryManager *mm = engine::MemoryManager::shared();
-			engine::Buffer *buffer = mm->newBuffer( "Output of " + processItemIsolated_description
+			engine::Buffer *buffer = mm->createBuffer( "Output of " + processItemIsolated_description
                                                    , "ProcessIsolated"
                                                    , sizeof(KVHeader) + size );
 
@@ -238,6 +240,10 @@ namespace samson
 			buffer->setSize( sizeof(KVHeader) + size );
             
             processOutputTXTBuffer(buffer, finish);
+            
+            // release the buffer we have just created
+            buffer->release();
+            
 		}
 		
 	}	

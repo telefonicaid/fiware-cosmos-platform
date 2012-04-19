@@ -1,4 +1,6 @@
 SET (HEADERS	
+	ClusterNodeType.h
+
 	HostMgr.h
 	Host.h
 
@@ -11,6 +13,8 @@ SET (HEADERS
 	WorkerNetwork.h
 	DelilahNetwork.h
 
+	NodeIdentifier.h
+
 	PacketReceivedNotification.h
 	Packet.h
 	Message.h
@@ -20,6 +24,8 @@ SET (HEADERS
 )
 
 SET (SOURCES
+	ClusterNodeType.cpp
+
 	HostMgr.cpp
 	Host.cpp
 
@@ -31,6 +37,8 @@ SET (SOURCES
 	CommonNetwork.cpp
 	WorkerNetwork.cpp
 	DelilahNetwork.cpp
+
+	NodeIdentifier.cpp
 
 	PacketReceivedNotification.cpp
 	Packet.cpp

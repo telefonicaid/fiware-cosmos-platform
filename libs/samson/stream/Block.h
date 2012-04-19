@@ -26,7 +26,7 @@
 
 #include "engine/DiskOperation.h"                   // engine::DiskOperation
 #include "engine/Object.h"                          // engien::EngineListener
-#include "engine/Object.h"                          // engine::Object
+#include "engine/BufferContainer.h"
 
 #include "samson/module/KVSetStruct.h"              // samson::KVSetStruct
 
@@ -93,7 +93,7 @@ namespace samson {
             size_t id;                      // Identifier of the block ( in this node )
             
             // Buffer ( if it is on memory )
-            engine::Buffer *buffer;         // Buffer of data if content of this block is on memory
+            engine::BufferContainer buffer_container;  // Buffer of data if content of this block is on memory
             
             KVHeader* header;               // Always on memory copy of the header
             
@@ -212,7 +212,6 @@ namespace samson {
             void fill( samson::network::CollectionRecord* record , Visualization* visualization );
             
             // Accessing information
-            KVInfo* getKVInfo();
             char *getData();
             
             KVHeader getHeader()

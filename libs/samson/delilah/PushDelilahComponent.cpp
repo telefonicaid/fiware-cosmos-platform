@@ -175,7 +175,9 @@ namespace samson
             processedSize += buffer->getSize();
             
             Packet* packet = new Packet( Message::PushBlock );
-            packet->buffer = buffer;    // Set the buffer of data
+            packet->setBuffer( buffer );    // Set the buffer of data
+            buffer->release();              // Now it is retaiend by packet
+            
             packet->message->set_delilah_component_id( id );
 
             network::PushBlock* pb =  packet->message->mutable_push_block();
@@ -204,16 +206,12 @@ namespace samson
             }
             else
                 finish_process = true;  // Mark as finished
-            
         }
         else
         {
         	LM_M(("PushDelilahComponent::notify: Received another type of notification"));
         }
-        
     }
-    
-
     
     std::string PushDelilahComponent::getStatus()
     {

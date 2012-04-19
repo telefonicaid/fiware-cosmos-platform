@@ -16,11 +16,12 @@
 
 namespace samson {
 
-	WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _command , engine::Buffer * _buffer ) 
+	WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _command , engine::Buffer * buffer ) 
         : DelilahComponent( DelilahComponent::worker_command )
 	{
 		command = _command;
-        buffer = _buffer;
+        
+        buffer_container.setBuffer( buffer );
         
         // Remove the last return
         while( command.substr( command.size() - 1 ) == "\n" )
@@ -132,18 +133,9 @@ namespace samson {
             }       
             
             copyEnviroment( &e , c->mutable_environment() );
-            
-            // Duplicate data to send to this worker
-            if( buffer )
-            {
-                size_t size = buffer->getSize();
-                engine::Buffer* _buffer = engine::MemoryManager::shared()->newBuffer( "worker_commnad" , "delilah" , size );
-                memcpy(_buffer->getData(), buffer->getData(), size );
-                _buffer->setSize( size );            
-                p->buffer = _buffer;
-            }
-            else
-                p->buffer = NULL;
+
+            // Set buffer to be sent
+            p->setBuffer( buffer_container.getBuffer() );
             
             // Information about destination....
             p->to.node_type = WorkerNode;

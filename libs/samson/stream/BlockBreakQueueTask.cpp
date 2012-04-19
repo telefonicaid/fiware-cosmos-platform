@@ -48,8 +48,10 @@ namespace samson {
             // Get all pointers to correct datas ( using KVFile structure )
             au::list<Block>::iterator b;
             for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++)
-                files.push_back( new KVFile( (*b)->buffer->getData() ) );
-
+            {
+                engine::Buffer * buffer = (*b)->buffer_container.getBuffer();
+                files.push_back( new KVFile( buffer->getData() ) );
+            }
             
             // Compute the size for each hg
             FullKVInfo *info = (FullKVInfo*) malloc( KVFILE_NUM_HASHGROUPS * sizeof(FullKVInfo) );
@@ -107,7 +109,7 @@ namespace samson {
             size_t size = sizeof( KVHeader ) + info.size;
             
             // Get the buffer from the memory manager & set the correct size
-            engine::Buffer *buffer = engine::MemoryManager::shared()->newBuffer( "block_break", "break", size );
+            engine::Buffer *buffer = engine::MemoryManager::shared()->createBuffer( "block_break", "break", size );
             buffer->setSize( size );
 
             // Pointer to the header
@@ -142,7 +144,7 @@ namespace samson {
             //file.header->range = KVRange(hg_begin , hg_end );
             header->range.setFrom( info_vector ); // Adjust the range of generated bocks
             
-            // Collect the output buffer
+            // Collect the output buffer ( all of the are retained )
             outputBuffers.push_back(buffer);
             
         }
@@ -163,6 +165,14 @@ namespace samson {
                 queue->push(&tmp);
             
             LM_T(LmtBlockManager,("BlockBreakQueueTask::ends finalize for (%lu) (%s) outputBuffers.size():%d, creating blocks", id, concept.c_str(), outputBuffers.size()));
+            
+            
+            // Clear and release buffers in outputBuffers
+            for (size_t i = 0 ; i < outputBuffers.size() ; i++ )
+                outputBuffers[i]->release();
+            outputBuffers.clear();
+            
+            
         }
         
         

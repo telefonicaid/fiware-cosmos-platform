@@ -69,6 +69,9 @@ class MemoryManager
     // Private constructor for
     MemoryManager( size_t _memory );
     
+    friend class Buffer;            // Buffer class can call to destoryBuffer
+    friend class BufferContainer;   // Buffer container is the only one that can create Buffers directly
+    
 public:
     
     size_t public_max_memory;
@@ -87,9 +90,9 @@ public:
      DIRECT mecanish to request buffers ( synchronous interface )
      --------------------------------------------------------------------
      */
-    
-    Buffer *newBuffer( std::string name , std::string type ,  size_t size , double mem_limit=0.0 );
-    
+
+    Buffer *createBuffer( std::string name , std::string type ,  size_t size , double mem_limit=0.0 );
+
 private:
     
     Buffer *_newBuffer( std::string name , std::string type , size_t size , double mem_limit );
@@ -113,18 +116,10 @@ private:
     void _checkMemoryRequests();         // Check the pending memory requests
     
     
-    /*
-     --------------------------------------------------------------------
-     DIRECT AND INDIRECT mecanish to destroy a buffer 
-     ( synchronous & asynchronous interface )
-     --------------------------------------------------------------------
-     */
-    
-public:
-    
+private:
+
+    // This method is called automatically when relese a Buffer that nodoby retained
     void destroyBuffer( Buffer *b );    		 //Interface to destroy a buffer of memory
-    
-    
     
 public:
     

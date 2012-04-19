@@ -238,24 +238,9 @@ namespace samson {
     
     void SamsonConnector::push( engine::Buffer * buffer , SamsonConnectorItem *item )
     {
-        /*
-        if( strcmp(input_splitter_name, "") != 0 )
-        {
-            // Only show a message if splitter is working
-            show_message( 
-                         au::str("Generated %s from \"%s\" after splitter %s"
-                                 , au::str( buffer->getSize() ,"Bytes").c_str() 
-                                 , item->getDescription().c_str() 
-                                 , input_splitter_name
-                                 ));
-        }
-         */
         
         // Mutex protection
         au::TokenTaker tt(&token);
-        
-        // Create a block
-        Block* block = new Block( buffer );
         
         au::map<int, SamsonConnectorItem>::iterator it_items;
         for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
@@ -264,15 +249,10 @@ namespace samson {
                 if( it_items->second->isConnected() )
                 {
                     _report_output_block( it_items->second->getSamsonconnectorId() , buffer->getSize() );
-                    it_items->second->push( block );
+                    it_items->second->push( buffer );
                 }
         }
-        
-        // Release block
-        block->release();
-        
     }
-    
 
     void SamsonConnector::_show_last_messages()
     {

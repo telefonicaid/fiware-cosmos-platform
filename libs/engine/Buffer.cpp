@@ -51,6 +51,7 @@ Buffer::Buffer( std::string name , std::string type ,  size_t max_size  )
     }
     
     _size = 0;
+    retain_counter = 1; // Init retain counter to "1" // See release-retain model
 }
 
 Buffer::~Buffer()
@@ -224,5 +225,43 @@ void Buffer::getInfo( std::ostringstream& output)
     au::xml_simple(output, "name", _name);
     au::xml_close(output , "buffer");
 }
+
+void Buffer::setNameAndType( std::string name , std::string type )
+{
+    _name = name;
+    _type = type;
+}
+
+void Buffer::addToName( std::string description )
+{
+    _name.append( description );
+}
+
+
+void Buffer::release()
+{
+    retain_counter--;
+    if( retain_counter==0)
+        MemoryManager::shared()->destroyBuffer(this);
+}
+
+void Buffer::retain()
+{
+    retain_counter++;
+}
+
+// Get internal name for debuggin
+std::string Buffer::getName()
+{
+    return _name;
+}
+
+// Get internal type for debuggin
+std::string Buffer::getType()
+{
+    return _type;
+}
+
+
 
 NAMESPACE_END

@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.PoiUtil;
  *
  * @author dmicol
  */
-public class ClusterAggNodeClusterByNodlblReducer1 extends Reducer<LongWritable,
+public class ClusterAggNodeClusterByNodlblReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, IntWritable, ProtobufWritable<Poi>> {
     @Override
     protected void reduce(LongWritable key,

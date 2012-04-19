@@ -35,8 +35,8 @@ public class ClusterSpreadNodelblPoilblJob extends Job {
         this.setReducerClass(ClusterSpreadNodelblPoilblReducer.class);
     }
 
-    public void configure(Path[] inputs, Path output) throws IOException {
-        FileInputFormat.setInputPaths(this, inputs);
+    public void configure(Path input, Path output) throws IOException {
+        FileInputFormat.setInputPaths(this, input);
         FileOutputFormat.setOutputPath(this, output);
     }
 }

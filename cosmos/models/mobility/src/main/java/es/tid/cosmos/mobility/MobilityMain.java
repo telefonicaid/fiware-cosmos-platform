@@ -9,6 +9,7 @@ import org.apache.hadoop.util.ToolRunner;
 import es.tid.cosmos.mobility.btslabelling.BtsLabellingRunner;
 import es.tid.cosmos.mobility.clientbtslabelling.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.clientlabelling.ClientLabellingRunner;
+import es.tid.cosmos.mobility.labeljoining.LabelJoiningRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
@@ -116,6 +117,14 @@ public class MobilityMain extends Configured implements Tool {
             ClientBtsLabellingRunner.run(clientsInfoPath, clientsRepbtsPath,
                     centroidsPath, pointsOfInterestTempPath,
                     vectorClientbtsClusterPath, tmpLabelBtsPath, isDebug, conf);
+        }
+
+        Path tmpLabelJoining = new Path(tmpPath, "label_joining");
+        boolean shouldJoinLabels = arguments.getBoolean("joinLabels");
+        if (shouldRunAll || shouldJoinLabels) {
+            LabelJoiningRunner.run(pointsOfInterestTempPath,
+                    vectorClientClusterPath, vectorClientbtsClusterPath,
+                    vectorBtsClusterPath, tmpLabelJoining, conf);
         }
         
         return 0;

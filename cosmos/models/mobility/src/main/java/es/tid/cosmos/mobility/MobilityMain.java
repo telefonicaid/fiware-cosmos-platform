@@ -6,6 +6,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import es.tid.cosmos.mobility.activityarea.ActivityAreaRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;

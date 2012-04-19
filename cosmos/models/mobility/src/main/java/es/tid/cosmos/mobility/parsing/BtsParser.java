@@ -16,11 +16,12 @@ public class BtsParser extends Parser {
     @Override
     public Bts parse() {
         try {
-            return Bts.newBuilder()
-                    .setPlaceId(this.parseInt())
-                    .setComms(this.parseInt())
-                    .setArea(this.parseDouble())
-                    .build();
+            Bts.Builder bts = Bts.newBuilder();
+            bts.setPlaceId(this.parseInt());
+            this.skipField();
+            bts.setArea(this.parseDouble());
+            bts.setComms(this.parseInt());
+            return bts.build();
         } catch (Exception ex) {
             System.err.println(ex);
             throw new IllegalArgumentException("Failed to parse: " + this.line);

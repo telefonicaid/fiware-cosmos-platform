@@ -50,11 +50,9 @@ public class FilterBtsVectorReducer extends Reducer<LongWritable,
                         bts.getComms() >= MAX_COMMS_BTS) {
                     confident = 1;
                 }
-                ProtobufWritable<Cluster> output = ClusterUtil.createAndWrap(
-                        cluster.getLabel(), cluster.getLabelgroup(), confident,
-                        cluster.getMean(), cluster.getDistance(),
-                        cluster.getCoords());
-                context.write(key, output);
+                Cluster.Builder outputCluster = Cluster.newBuilder(cluster);
+                outputCluster.setConfident(confident);
+                context.write(key, ClusterUtil.wrap(outputCluster.build()));
             }
         }
     }

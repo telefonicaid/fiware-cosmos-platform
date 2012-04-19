@@ -37,6 +37,8 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
     protected void reduce(ProtobufWritable<NodeBts> key,
             Iterable<ProtobufWritable<ClusterVector>> values, Context context)
             throws IOException, InterruptedException {
+        key.setConverter(NodeBts.class);
+        final NodeBts nodeBts = key.get();
         for (ProtobufWritable<ClusterVector> value : values) {
             value.setConverter(ClusterVector.class);
             final ClusterVector clusVector = value.get();
@@ -56,8 +58,6 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
             }
             mindist = Math.sqrt(mindist);
 
-            key.setConverter(NodeBts.class);
-            final NodeBts nodeBts = key.get();
             ProtobufWritable<Cluster> outputCluster =
                     ClusterUtil.createAndWrap(
                             minDistCluster.getLabel(),

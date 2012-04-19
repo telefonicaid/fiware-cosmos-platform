@@ -33,14 +33,14 @@ public class ActivityAreaReducer extends Reducer<
         double massCenterAccY = 0.0;
         double radiusAccX = 0.0;
         double radiusAccY = 0.0;
-        boolean has_new_bts;
+        boolean hasNewBts;
         for (ProtobufWritable<Cell> value : values) {
             value.setConverter(Cell.class);
             Cell cell = value.get();
             numPos += 1;
             this.allCells.add(cell.getCellId());
-            has_new_bts = this.allBtss.add(cell.getPlaceId());
-            if (has_new_bts) {
+            hasNewBts = this.allBtss.add(cell.getPlaceId());
+            if (hasNewBts) {
                 this.cellsWithDifBts.add(cell);
             }
             this.allMuns.add(cell.getGeoloc1());

@@ -75,7 +75,7 @@ echo "%%defattr(-, samson, samson, - )" > MANIFEST
 (cd %{buildroot}; find . -type f -or -type l | sed -e s/^.// -e /^$/d) >>MANIFEST
 grep "samsonTopicMonitor\|delilah_graph\|samsonLocal" MANIFEST >> MANIFEST.samson-gui
 grep "include\/\|lib\/\|samsonModule" MANIFEST >> MANIFEST.samson-devel
-grep "logCat\|logServer\|logClient\|logserver" MANIFEST >> MANIFEST.samson-log
+grep "logCat\|logServer\|logClient\|logserver" MANIFEST >> MANIFEST.samson-logserver
 grep -v "samsonTopicMonitor\|delilah_graph\|samsonLocal\|include\|lib\/\|samsonModule\|logCat\|logServer\|logClient\|logserver" MANIFEST >> MANIFEST.samson
 
 %files -f MANIFEST.samson
@@ -103,7 +103,7 @@ chown -R %{owner}:%{owner} /var/log/logserver
 /sbin/chkconfig --level 35 logserver on
 /etc/init.d/logserver start
 
-%files log -f MANIFEST.samson-log
+%files logserver -f MANIFEST.samson-logserver
 
 %package devel
 Summary: Development files needed for the SAMSON platform

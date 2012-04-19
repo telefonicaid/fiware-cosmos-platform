@@ -32,7 +32,7 @@ public class ConvertNullToMobDataByTwoIntJob extends Job {
         this.setOutputKeyClass(ProtobufWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(ConvertIntToMobDataReducer.class);
+        this.setReducerClass(ConvertNullToMobDataByTwoIntReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

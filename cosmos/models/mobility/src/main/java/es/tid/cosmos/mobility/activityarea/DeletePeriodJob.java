@@ -27,6 +27,8 @@ public class DeletePeriodJob extends Job {
         this.setInputFormatClass(SequenceFileInputFormat.class);
         this.setMapOutputKeyClass(ProtobufWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
+        this.setOutputKeyClass(ProtobufWritable.class);
+        this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
         this.setMapperClass(DeletePeriodMapper.class);
     }

@@ -3,9 +3,8 @@ package es.tid.cosmos.mobility.labeljoining;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
-import es.tid.cosmos.mobility.util.ConvertClusterToMobDataJob;
-import es.tid.cosmos.mobility.util.ConvertIntToMobDataJob;
-import es.tid.cosmos.mobility.util.ConvertPoiToMobDataJob;
+import es.tid.cosmos.mobility.util.*;
+
 
 /**
  *
@@ -131,28 +130,63 @@ public final class LabelJoiningRunner {
             }
         }
 
-        Path pointsOffInterestTemp3Path = new Path(tmpDirPath,
-                                                   "points_of_interest_temp3");
+        Path pointsOfInterestTemp2MobDataPath = new Path(tmpDirPath,
+                "points_of_interest_temp2_mob_data");
         {
-            ClusterAggPotPoiPoisToPoiJob job =
-                    new ClusterAggPotPoiPoisToPoiJob(conf);
-            job.configure(new Path[] { pointsOfInterestTemp2Path,
-                                       vectorClientbtsClusterPath,
-                                       poisLabeledPath },
-                          pointsOffInterestTemp3Path);
+            ConvertPoiToMobDataByTwoIntJob job =
+                    new ConvertPoiToMobDataByTwoIntJob(conf);
+            job.configure(pointsOfInterestTemp2Path,
+                          pointsOfInterestTemp2MobDataPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
+        Path vectorClientbtsClusterMobDataPath = new Path(tmpDirPath,
+                "vector_clientbts_cluster");
+        {
+            ConvertClusterToMobDataByTwoIntJob job =
+                    new ConvertClusterToMobDataByTwoIntJob(conf);
+            job.configure(vectorClientbtsClusterPath,
+                          vectorClientbtsClusterMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        Path poisLabeledMobDataPath = new Path(tmpDirPath,
+                                               "pois_labeled_mob_data");
+        {
+            ConvertNullToMobDataByTwoIntJob job =
+                    new ConvertNullToMobDataByTwoIntJob(conf);
+            job.configure(poisLabeledPath, poisLabeledMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path pointsOfInterestTemp3Path = new Path(tmpDirPath,
+                                                  "points_of_interest_temp3");
+        {
+            ClusterAggPotPoiPoisToPoiJob job =
+                    new ClusterAggPotPoiPoisToPoiJob(conf);
+            job.configure(new Path[] { pointsOfInterestTemp2MobDataPath,
+                                       vectorClientbtsClusterMobDataPath,
+                                       poisLabeledMobDataPath },
+                          pointsOfInterestTemp3Path);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
         Path vectorClientbtsClusterAddPath = new Path(tmpDirPath,
                 "vector_clientbts_cluster_add");
         {
             ClusterAggPotPoiPoisToClusterJob job =
                     new ClusterAggPotPoiPoisToClusterJob(conf);
-            job.configure(new Path[] { pointsOfInterestTemp2Path,
-                                       vectorClientbtsClusterPath,
-                                       poisLabeledPath },
+            job.configure(new Path[] { pointsOfInterestTemp2MobDataPath,
+                                       vectorClientbtsClusterMobDataPath,
+                                       poisLabeledMobDataPath },
                           vectorClientbtsClusterAddPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
@@ -163,7 +197,7 @@ public final class LabelJoiningRunner {
                                                   "points_of_interest_temp4");
         {
             ClusterAggBtsClusterJob job = new ClusterAggBtsClusterJob(conf);
-            job.configure(new Path[] { pointsOffInterestTemp3Path,
+            job.configure(new Path[] { pointsOfInterestTemp3Path,
                                        vectorBtsClusterPath },
                           pointsOfInterestTemp4Path);
             if (!job.waitForCompletion(true)) {

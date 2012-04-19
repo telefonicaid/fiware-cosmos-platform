@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.clientlabelling;
+package es.tid.cosmos.mobility.labelling.clientbts;
 
 import java.io.IOException;
 
@@ -14,16 +14,16 @@ import static org.junit.Assert.assertEquals;
  *
  * @author dmicol
  */
-public class VectorFuseNodeDaygroupJobTest {
-    private VectorFuseNodeDaygroupJob instance;
+public class VectorSumGroupcommsJobTest {
+    private VectorSumGroupcommsJob instance;
     
     @Before
     public void setUp() throws IOException {
-        this.instance = new VectorFuseNodeDaygroupJob(new Configuration());
+        this.instance = new VectorSumGroupcommsJob(new Configuration());
     }
 
     @Test
-    public void testConfigure() throws Exception {
+    public void testConfigure() throws IOException {
         Path input = new Path("hdfs://home/hdfs/input");
         Path output = new Path("hdfs://home/hdfs/output");
         this.instance.configure(input, output);

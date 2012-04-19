@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.clientlabelling;
+package es.tid.cosmos.mobility.labelling.client;
 
 import java.io.IOException;
 import static java.util.Arrays.asList;

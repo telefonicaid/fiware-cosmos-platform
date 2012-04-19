@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.clientlabelling;
+package es.tid.cosmos.mobility.labelling.client;
 
 import java.io.IOException;
 
@@ -14,12 +14,12 @@ import static org.junit.Assert.assertEquals;
  *
  * @author dmicol
  */
-public class VectorNormalizedJobTest {
-    private VectorNormalizedJob instance;
-
+public class VectorFuseNodeDaygroupJobTest {
+    private VectorFuseNodeDaygroupJob instance;
+    
     @Before
     public void setUp() throws IOException {
-        this.instance = new VectorNormalizedJob(new Configuration());
+        this.instance = new VectorFuseNodeDaygroupJob(new Configuration());
     }
 
     @Test

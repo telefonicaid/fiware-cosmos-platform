@@ -9,6 +9,7 @@ the tests of the installed applications.
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+from os import path
 from cosmos.conf.base_settings import *
 
 DATABASES = {
@@ -22,6 +23,9 @@ MEDIA_ROOT = ''
 MEDIA_URL = ''
 STATIC_ROOT = ''
 STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+	path.join(PROJECT_PATH, 'static'),
+)
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
 ADMINS = (

@@ -17,6 +17,8 @@ message MobData {
         NODE_BTS_DAY = 7;
         BTS_COUNTER = 8;
         POI = 9;
+        POI_POS = 10;
+        MOB_VI_MOB_VARS = 11;
     }
 
     required Type type = 1;
@@ -28,6 +30,8 @@ message MobData {
     optional NodeBtsDay nodeBtsDay = 7;
     optional BtsCounter btsCounter = 8;
     optional Poi poi = 9;
+    optional PoiPos poiPos = 10;
+    optional MobViMobVars mobViMobVars = 11;
 }
 
 message Cdr {
@@ -166,4 +170,23 @@ message PoiPos {
     optional double distCMWeek = 9;
     optional double radiusWend = 10;
     optional double distCMWend = 11;
+}
+
+message MobVars
+{
+    optional uint32 month = 1;
+    optional uint32 workingday = 2;
+    optional uint32 num_pos = 3;
+    optional uint32 dif_btss = 4;
+    optional uint32 dif_muns = 5;
+    optional uint32 dif_states = 6;
+    optional double masscenter_utmx = 7;
+    optional double masscenter_utmy = 8;
+    optional double radius = 9;
+    optional double diam_areainf = 10;
+}
+
+message MobViMobVars
+{
+    repeated MobVars vars = 1;
 }

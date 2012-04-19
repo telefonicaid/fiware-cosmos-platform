@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.labeljoining;
 
+import java.io.IOException;
+
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -8,7 +10,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 import es.tid.cosmos.mobility.data.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import java.io.IOException;
 
 /**
  *
@@ -30,6 +31,5 @@ public class ClusterSpreadNodelblPoilblReducer extends Reducer<
                               NullWritable.get());
             }
         }
-        
     }
 }

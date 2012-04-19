@@ -1,11 +1,11 @@
-package es.tid.cosmos.mobility.util;
+package es.tid.cosmos.mobility.labelling.client;
 
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -18,24 +18,26 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class ConvertNullToMobDataByTwoIntJob extends Job {
-    private static final String JOB_NAME = "ConvertNullToMobDataByTwoInt";
+public class ClusterClientGetMinDistanceJob extends Job {
+    private static final String JOB_NAME = "ClusterClientGetMinDistance";
 
-    public ConvertNullToMobDataByTwoIntJob(Configuration conf)
+    public ClusterClientGetMinDistanceJob(Configuration conf)
             throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
         this.setMapOutputKeyClass(ProtobufWritable.class);
-        this.setMapOutputValueClass(NullWritable.class);
-        this.setOutputKeyClass(ProtobufWritable.class);
+        this.setMapOutputValueClass(ProtobufWritable.class);
+        this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(ConvertNullToMobDataByTwoIntReducer.class);
+        this.setReducerClass(ClusterClientGetMinDistanceReducer.class);
     }
 
-    public void configure(Path input, Path output) throws IOException {
+    public void configure(Path input, Path centroids, Path output)
+            throws IOException {
+        this.conf.set("centroids", centroids.toString());
         FileInputFormat.setInputPaths(this, input);
         FileOutputFormat.setOutputPath(this, output);
     }

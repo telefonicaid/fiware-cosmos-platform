@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.util;
+package es.tid.cosmos.mobility.labelling.bts;
 
 import java.io.IOException;
 
@@ -18,11 +18,10 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class ConvertNullToMobDataByTwoIntJob extends Job {
-    private static final String JOB_NAME = "ConvertNullToMobDataByTwoInt";
+public class VectorSumComsBtsJob extends Job {
+    private static final String JOB_NAME = "VectorSumComsBts";
 
-    public ConvertNullToMobDataByTwoIntJob(Configuration conf)
-            throws IOException {
+    public VectorSumComsBtsJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
@@ -32,7 +31,7 @@ public class ConvertNullToMobDataByTwoIntJob extends Job {
         this.setOutputKeyClass(ProtobufWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(ConvertNullToMobDataByTwoIntReducer.class);
+        this.setReducerClass(VectorSumComsBtsReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

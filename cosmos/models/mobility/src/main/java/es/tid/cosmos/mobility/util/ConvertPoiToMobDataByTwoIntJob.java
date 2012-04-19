@@ -31,7 +31,7 @@ public class ConvertPoiToMobDataByTwoIntJob extends Job {
         this.setOutputKeyClass(ProtobufWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(ConvertNodeBtsDayToMobDataReducer.class);
+        this.setReducerClass(ConvertPoiToMobDataByTwoIntReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

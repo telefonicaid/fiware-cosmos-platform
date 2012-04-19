@@ -6,11 +6,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import es.tid.cosmos.mobility.activityarea.ActivityAreaRunner;
-import es.tid.cosmos.mobility.btslabelling.BtsLabellingRunner;
-import es.tid.cosmos.mobility.clientbtslabelling.ClientBtsLabellingRunner;
-import es.tid.cosmos.mobility.clientlabelling.ClientLabellingRunner;
-import es.tid.cosmos.mobility.labeljoining.LabelJoiningRunner;
+import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
+import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
+import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;
+import es.tid.cosmos.mobility.labelling.join.LabelJoiningRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;

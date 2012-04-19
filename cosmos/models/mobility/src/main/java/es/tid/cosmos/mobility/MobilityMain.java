@@ -69,7 +69,7 @@ public class MobilityMain extends Configured implements Tool {
         }
         
         Path tmpExtractPoisPath = new Path(tmpPath, "extract_pois");
-        Path clientsInfoPath = new Path(tmpPath, "clients_info");
+        Path clientsInfoPath = new Path(tmpExtractPoisPath, "clients_info");
         Path clientsInfoFilteredPath = new Path(tmpExtractPoisPath,
                                                 "clients_info_filtered");
         Path clientsRepbtsPath = new Path(tmpExtractPoisPath, "clients_repbts");

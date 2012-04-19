@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -20,7 +19,7 @@ import es.tid.cosmos.mobility.data.PoiUtil;
  * @author dmicol
  */
 public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>, IntWritable,
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>, LongWritable,
         ProtobufWritable<Poi>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
@@ -47,15 +46,12 @@ public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
             }
         }
         
-        if (poiList.size() != 1 || clusterList.size() != 1) {
-            throw new IllegalStateException();
-        }
         final Poi poi = poiList.get(0);
         Poi.Builder outputPoi = Poi.newBuilder(poi);
         if (!intList.isEmpty()) {
             outputPoi.setConfidentnodebts(1);
         }
-        context.write(new IntWritable(outputPoi.getBts()),
+        context.write(new LongWritable(outputPoi.getBts()),
                       PoiUtil.wrap(outputPoi.build()));
     }
 }

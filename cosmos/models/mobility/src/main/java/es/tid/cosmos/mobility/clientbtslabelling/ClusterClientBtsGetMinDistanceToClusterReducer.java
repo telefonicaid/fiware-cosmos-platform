@@ -44,11 +44,11 @@ public class ClusterClientBtsGetMinDistanceToClusterReducer extends Reducer<
             double mindist = 1000D;
             Cluster minDistCluster = null;
             for (Cluster cluster : centroids.getCentroids()) {
-                double sumcom = 0;
-                double sumccom = 0;
-                double csumcom = 0;
-                double csumccom = 0;
-                double sumcomxccom = 0;
+                double sumcom = 0D;
+                double sumccom = 0D;
+                double csumcom = 0D;
+                double csumccom = 0D;
+                double sumcomxccom = 0D;
                 for (int nComs = 0; nComs < clusVector.getComsCount(); nComs++) {
                     double com = clusVector.getComs(nComs);
                     double ccom = cluster.getCoords().getComs(nComs);

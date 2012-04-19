@@ -3,7 +3,6 @@ package es.tid.cosmos.mobility.clientbtslabelling;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
-import es.tid.cosmos.mobility.btslabelling.*;
 import es.tid.cosmos.mobility.clientlabelling.VectorCreateNodeDayhourJob;
 import es.tid.cosmos.mobility.clientlabelling.VectorFuseNodeDaygroupJob;
 import es.tid.cosmos.mobility.clientlabelling.VectorNormalizedJob;

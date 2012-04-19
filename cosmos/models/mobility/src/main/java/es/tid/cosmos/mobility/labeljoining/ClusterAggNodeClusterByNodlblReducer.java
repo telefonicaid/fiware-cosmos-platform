@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -19,7 +18,7 @@ import es.tid.cosmos.mobility.data.PoiUtil;
  * @author dmicol
  */
 public class ClusterAggNodeClusterByNodlblReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, IntWritable, ProtobufWritable<Poi>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<Poi>> {
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -48,7 +47,7 @@ public class ClusterAggNodeClusterByNodlblReducer extends Reducer<LongWritable,
                 outputPoi.setLabelgroupnode(cluster.getLabelgroup());
                 outputPoi.setConfidentnode(cluster.getConfident());
                 outputPoi.setDistancenode(cluster.getDistance());
-                context.write(new IntWritable(cluster.getLabel()),
+                context.write(new LongWritable(cluster.getLabel()),
                               PoiUtil.wrap(outputPoi.build()));
             }
         }

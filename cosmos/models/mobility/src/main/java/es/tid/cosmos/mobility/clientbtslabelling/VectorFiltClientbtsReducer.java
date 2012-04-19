@@ -8,7 +8,6 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
@@ -19,38 +18,33 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  * @author dmicol
  */
 public class VectorFiltClientbtsReducer extends Reducer<ProtobufWritable<TwoInt>,
-        ProtobufWritable<MobData>, ProtobufWritable<NodeBts>,
+        ProtobufWritable<BtsCounter>, ProtobufWritable<NodeBts>,
         ProtobufWritable<TwoInt>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<ProtobufWritable<BtsCounter>> values, Context context)
             throws IOException, InterruptedException {
-        List<Integer> ncommsList = new LinkedList<Integer>();
-        List<BtsCounter> btsCounterList = new LinkedList<BtsCounter>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case INT:
-                    ncommsList.add(mobData.getInt());
-                    break;
-                case BTS_COUNTER:
-                    btsCounterList.add(mobData.getBtsCounter());
-                    break;
-                default:
-                    throw new IllegalArgumentException();
+        List<BtsCounter> reprBtsCounterList = new LinkedList<BtsCounter>();
+        List<BtsCounter> sumBtsCounterList = new LinkedList<BtsCounter>();
+        for (ProtobufWritable<BtsCounter> value : values) {
+            value.setConverter(BtsCounter.class);
+            final BtsCounter counter = value.get();
+            if (counter.getWeekday() == -1 && counter.getRange() == -1) {
+                reprBtsCounterList.add(counter);
+            } else {
+                sumBtsCounterList.add(counter);
             }
         }
         
         key.setConverter(TwoInt.class);
         final TwoInt twoInt = key.get();
-        for (Integer ncomms : ncommsList) {
-            for (BtsCounter btsCounter : btsCounterList) {
+        for (BtsCounter sumBtsCounter : sumBtsCounterList) {
+            for (BtsCounter reprBtsCounter : reprBtsCounterList) {
                 ProtobufWritable<NodeBts> nodeBts = NodeBtsUtil.createAndWrap(
                         twoInt.getNum1(), (int)twoInt.getNum2(),
-                        btsCounter.getWeekday(), 0);
+                        reprBtsCounter.getWeekday(), 0);
                 ProtobufWritable<TwoInt> hourComs = TwoIntUtil.createAndWrap(
-                        btsCounter.getRange(), btsCounter.getCount());
+                        reprBtsCounter.getRange(), reprBtsCounter.getCount());
                 context.write(nodeBts, hourComs);
             }
         }

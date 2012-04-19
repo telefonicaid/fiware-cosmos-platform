@@ -2,6 +2,8 @@ package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
+import org.apache.hadoop.io.NullWritable;
+
 import es.tid.cosmos.mobility.data.MobProtocol.*;
 
 /**
@@ -9,6 +11,12 @@ import es.tid.cosmos.mobility.data.MobProtocol.*;
  * @author dmicol
  */
 public abstract class MobDataUtil implements ProtobufUtil {
+    public static MobData create(NullWritable unused) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.NULL)
+                .build();
+    }
+    
     public static MobData create(int value) {
         return MobData.newBuilder()
                 .setType(MobData.Type.INT)
@@ -57,6 +65,13 @@ public abstract class MobDataUtil implements ProtobufUtil {
                 .setBtsCounter(btsCounter)
                 .build();
     }
+
+    public static MobData create(Poi poi) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.POI)
+                .setPoi(poi)
+                .build();
+    }
     
     public static ProtobufWritable<MobData> wrap(MobData obj) {
         ProtobufWritable<MobData> wrapper = ProtobufWritable.newInstance(
@@ -65,6 +80,10 @@ public abstract class MobDataUtil implements ProtobufUtil {
         return wrapper;
     }
 
+    public static ProtobufWritable<MobData> createAndWrap(NullWritable unused) {
+        return wrap(create(unused));
+    }
+    
     public static ProtobufWritable<MobData> createAndWrap(int obj) {
         return wrap(create(obj));
     }
@@ -91,5 +110,9 @@ public abstract class MobDataUtil implements ProtobufUtil {
 
     public static ProtobufWritable<MobData> createAndWrap(BtsCounter obj) {
         return wrap(create(obj));
-    }    
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(Poi obj) {
+        return wrap(create(obj));
+    }
 }

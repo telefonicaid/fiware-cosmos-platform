@@ -29,7 +29,7 @@ public class ClusterAggNodeClusterByNodbtsJob extends Job {
         this.setInputFormatClass(SequenceFileInputFormat.class);
         this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
-        this.setOutputKeyClass(LongWritable.class);
+        this.setOutputKeyClass(ProtobufWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
         this.setReducerClass(ClusterAggNodeClusterByNodbtsReducer.class);

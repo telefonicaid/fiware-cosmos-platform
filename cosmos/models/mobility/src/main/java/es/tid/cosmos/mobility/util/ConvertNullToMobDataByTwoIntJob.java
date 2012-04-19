@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.labeljoining;
+package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
 
@@ -18,21 +18,21 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class ClusterSpreadNodelblPoilblJob extends Job {
-    private static final String JOB_NAME = "ClusterSpreadNodelblPoilbl";
+public class ConvertNullToMobDataByTwoIntJob extends Job {
+    private static final String JOB_NAME = "ConvertNullToMobDataByTwoInt";
 
-    public ClusterSpreadNodelblPoilblJob(Configuration conf)
+    public ConvertNullToMobDataByTwoIntJob(Configuration conf)
             throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
         this.setMapOutputKeyClass(ProtobufWritable.class);
-        this.setMapOutputValueClass(ProtobufWritable.class);
+        this.setMapOutputValueClass(NullWritable.class);
         this.setOutputKeyClass(ProtobufWritable.class);
-        this.setOutputValueClass(NullWritable.class);
+        this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(ClusterSpreadNodelblPoilblReducer.class);
+        this.setReducerClass(ConvertIntToMobDataReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

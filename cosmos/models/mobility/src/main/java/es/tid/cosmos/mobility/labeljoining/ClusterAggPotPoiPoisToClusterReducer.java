@@ -45,9 +45,6 @@ public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
             }
         }
         
-        if (poiList.size() != 1 || clusterList.size() != 1) {
-            throw new IllegalStateException();
-        }
         final Cluster cluster = clusterList.get(0);
         Cluster.Builder outputCluster = Cluster.newBuilder(cluster);
         if (!intList.isEmpty()) {

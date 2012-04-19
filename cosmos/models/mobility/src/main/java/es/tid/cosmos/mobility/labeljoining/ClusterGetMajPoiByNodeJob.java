@@ -29,13 +29,13 @@ public class ClusterGetMajPoiByNodeJob extends Job {
         this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
         this.setOutputKeyClass(LongWritable.class);
-        this.setOutputValueClass(ProtobufWritable.class);
+        this.setOutputValueClass(LongWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
         this.setReducerClass(ClusterGetMajPoiByNodeReducer.class);
     }
 
-    public void configure(Path[] inputs, Path output) throws IOException {
-        FileInputFormat.setInputPaths(this, inputs);
+    public void configure(Path input, Path output) throws IOException {
+        FileInputFormat.setInputPaths(this, input);
         FileOutputFormat.setOutputPath(this, output);
     }
 }

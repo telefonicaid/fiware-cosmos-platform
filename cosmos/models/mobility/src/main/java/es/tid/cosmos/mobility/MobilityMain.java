@@ -107,7 +107,7 @@ public class MobilityMain extends Configured implements Tool {
 
         Path tmpLabelClientbtsPath = new Path(tmpPath, "label_clientbts");
         Path pointsOfInterestTempPath = new Path(tmpLabelClientbtsPath,
-                                                 "vector_clientbts_cluster");
+                                                 "points_of_interest_temp");
         Path vectorClientbtsClusterPath = new Path(tmpLabelClientbtsPath,
                                                    "vector_clientbts_cluster");
         boolean shouldLabelClientbts = arguments.getBoolean("labelClientBTS");
@@ -116,7 +116,8 @@ public class MobilityMain extends Configured implements Tool {
                     "centroids_clientbts", true));
             ClientBtsLabellingRunner.run(clientsInfoPath, clientsRepbtsPath,
                     centroidsPath, pointsOfInterestTempPath,
-                    vectorClientbtsClusterPath, tmpLabelBtsPath, isDebug, conf);
+                    vectorClientbtsClusterPath, tmpLabelClientbtsPath,
+                    isDebug, conf);
         }
 
         Path tmpLabelJoining = new Path(tmpPath, "label_joining");

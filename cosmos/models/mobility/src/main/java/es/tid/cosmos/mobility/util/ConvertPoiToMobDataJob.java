@@ -1,11 +1,11 @@
-package es.tid.cosmos.mobility.labeljoining;
+package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -18,21 +18,20 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class ClusterSpreadNodelblPoilblJob extends Job {
-    private static final String JOB_NAME = "ClusterSpreadNodelblPoilbl";
+public class ConvertPoiToMobDataJob extends Job {
+    private static final String JOB_NAME = "ConvertPoiToMobData";
 
-    public ClusterSpreadNodelblPoilblJob(Configuration conf)
-            throws IOException {
+    public ConvertPoiToMobDataJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
-        this.setMapOutputKeyClass(ProtobufWritable.class);
+        this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
-        this.setOutputKeyClass(ProtobufWritable.class);
-        this.setOutputValueClass(NullWritable.class);
+        this.setOutputKeyClass(LongWritable.class);
+        this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(ClusterSpreadNodelblPoilblReducer.class);
+        this.setReducerClass(ConvertPoiToMobDataReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

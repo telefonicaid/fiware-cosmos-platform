@@ -5,22 +5,24 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
+import es.tid.cosmos.mobility.data.TwoIntUtil;
 
 /**
  *
  * @author dmicol
  */
 public class ClusterJoinPotPoiLabelReducer extends Reducer<
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
-        ProtobufWritable<TwoInt>, NullWritable> {
+        LongWritable, ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
+        NullWritable> {
     @Override
-    protected void reduce(ProtobufWritable<TwoInt> key,
+    protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<Poi> poiList = new LinkedList<Poi>();
@@ -43,7 +45,9 @@ public class ClusterJoinPotPoiLabelReducer extends Reducer<
         for (Integer majPoiLbl : intList) {
             for (Poi potPoi : poiList) {
                 if (majPoiLbl == potPoi.getLabelnodebts()) {
-                    context.write(key, NullWritable.get());
+                    context.write(TwoIntUtil.createAndWrap(potPoi.getNode(),
+                                                           potPoi.getBts()),
+                                  NullWritable.get());
                 }
             }
         }

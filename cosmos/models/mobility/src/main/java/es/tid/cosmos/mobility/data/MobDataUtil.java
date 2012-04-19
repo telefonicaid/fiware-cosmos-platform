@@ -57,6 +57,13 @@ public abstract class MobDataUtil implements ProtobufUtil {
                 .setBtsCounter(btsCounter)
                 .build();
     }
+
+    public static MobData create(Poi poi) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.POI)
+                .setPoi(poi)
+                .build();
+    }
     
     public static ProtobufWritable<MobData> wrap(MobData obj) {
         ProtobufWritable<MobData> wrapper = ProtobufWritable.newInstance(
@@ -91,5 +98,9 @@ public abstract class MobDataUtil implements ProtobufUtil {
 
     public static ProtobufWritable<MobData> createAndWrap(BtsCounter obj) {
         return wrap(create(obj));
-    }    
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(Poi obj) {
+        return wrap(create(obj));
+    }
 }

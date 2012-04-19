@@ -3,6 +3,10 @@ package es.tid.cosmos.mobility.labeljoining;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
+import es.tid.cosmos.mobility.util.ConvertClusterToMobDataJob;
+import es.tid.cosmos.mobility.util.ConvertIntToMobDataJob;
+import es.tid.cosmos.mobility.util.ConvertPoiToMobDataJob;
+
 /**
  *
  * @author dmicol
@@ -17,13 +21,36 @@ public final class LabelJoiningRunner {
                            Path vectorBtsClusterPath,
                            Path tmpDirPath, Configuration conf)
             throws Exception {
+        Path pointsOfInterestTempMobDataPath = new Path(tmpDirPath,
+                "points_of_interest_temp_mob_data");
+        {
+            ConvertPoiToMobDataJob job = new ConvertPoiToMobDataJob(conf);
+            job.configure(pointsOfInterestTempPath,
+                          pointsOfInterestTempMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path vectorClientClusterMobDataPath = new Path(tmpDirPath,
+                "vector_client_cluster_mob_data");
+        {
+            ConvertClusterToMobDataJob job = new ConvertClusterToMobDataJob(
+                    conf);
+            job.configure(vectorClientClusterPath,
+                          vectorClientClusterMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
         Path pointsOfInterestTemp2Path = new Path(tmpDirPath,
                                                   "points_of_interest_temp2");
         {
             ClusterAggNodeClusterByNodbtsJob job =
                     new ClusterAggNodeClusterByNodbtsJob(conf);
-            job.configure(new Path[] { pointsOfInterestTempPath,
-                                       vectorClientClusterPath },
+            job.configure(new Path[] { pointsOfInterestTempMobDataPath,
+                                       vectorClientClusterMobDataPath },
                           pointsOfInterestTemp2Path);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
@@ -34,14 +61,14 @@ public final class LabelJoiningRunner {
         { 
             ClusterAggNodeClusterByNodlblJob job =
                     new ClusterAggNodeClusterByNodlblJob(conf);
-            job.configure(new Path[] { pointsOfInterestTempPath,
-                                       vectorClientClusterPath },
+            job.configure(new Path[] { pointsOfInterestTempMobDataPath,
+                                       vectorClientClusterMobDataPath },
                           potpoiPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
-
+        
         Path clientbtsNodpoilblPath = new Path(tmpDirPath,
                                                "clientbts_nodpoilbl");
         { 
@@ -68,17 +95,36 @@ public final class LabelJoiningRunner {
                                                "clientbts_nod_poimaj");
         {
             ClusterGetMajPoiByNodeJob job = new ClusterGetMajPoiByNodeJob(conf);
-            job.configure(new Path[] { potpoiPath, clientbtsNodpoiCountPath },
-                          clientbtsNodPoimajPath);
+            job.configure(clientbtsNodpoiCountPath, clientbtsNodPoimajPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
+        Path potpoiMobDataPath = new Path(tmpDirPath, "potpoi_mob_data");
+        {
+            ConvertPoiToMobDataJob job = new ConvertPoiToMobDataJob(conf);
+            job.configure(potpoiPath, potpoiMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        Path clientbtsNodPoimajMobDataPath = new Path(tmpDirPath,
+                "clientbts_nod_poimaj_mob_data");
+        {
+            ConvertIntToMobDataJob job = new ConvertIntToMobDataJob(conf);
+            job.configure(clientbtsNodPoimajPath, clientbtsNodPoimajMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
         Path poisLabeledPath = new Path(tmpDirPath, "pois_labeled");
         {
             ClusterJoinPotPoiLabelJob job = new ClusterJoinPotPoiLabelJob(conf);
-            job.configure(new Path[] { potpoiPath, clientbtsNodPoimajPath },
+            job.configure(new Path[] { potpoiMobDataPath,
+                                       clientbtsNodPoimajMobDataPath },
                           poisLabeledPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());

@@ -27,7 +27,7 @@ public class ClusterAggPotPoiPoisToPoiJob extends Job {
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
-        this.setMapOutputKeyClass(LongWritable.class);
+        this.setMapOutputKeyClass(ProtobufWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
         this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);

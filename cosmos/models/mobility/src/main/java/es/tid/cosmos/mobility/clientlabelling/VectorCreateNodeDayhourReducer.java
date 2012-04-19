@@ -27,21 +27,20 @@ public class VectorCreateNodeDayhourReducer extends Reducer
         key.setConverter(NodeBts.class);
         final NodeBts bts = key.get();
         
-        List<ProtobufWritable<TwoInt>> valueList =
-                new LinkedList<ProtobufWritable<TwoInt>>();
+        List<TwoInt> valueList = new LinkedList<TwoInt>();
         for (ProtobufWritable<TwoInt> value : values) {
-            valueList.add(value);
+            value.setConverter(TwoInt.class);
+            final TwoInt hourComms = value.get();
+            valueList.add(hourComms);
         }
         
         DailyVector.Builder vectorBuilder = DailyVector.newBuilder();
         for (int i = 0; i < 24; i++) {
             long num2 = 0L;
             boolean added = false;
-            for (ProtobufWritable<TwoInt> value : valueList) {
-                value.setConverter(TwoInt.class);
-                final TwoInt twoInt = value.get();
-                num2 = twoInt.getNum2();
-                if (twoInt.getNum1() == i) {
+            for (TwoInt hourComms : valueList) {
+                num2 = hourComms.getNum2();
+                if (hourComms.getNum1() == i) {
                     added = true;
                     break;
                 }
@@ -49,7 +48,7 @@ public class VectorCreateNodeDayhourReducer extends Reducer
             if (!added) {
                 num2 = 0L;
             }
-            TwoInt hourComms = TwoIntUtil.create(key.get().getWeekday(), num2);
+            TwoInt hourComms = TwoIntUtil.create(bts.getWeekday(), num2);
             vectorBuilder.addHours(hourComms);
         }
         ProtobufWritable<TwoInt> node = TwoIntUtil.createAndWrap(

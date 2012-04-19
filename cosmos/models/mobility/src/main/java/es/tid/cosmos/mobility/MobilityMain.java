@@ -99,7 +99,7 @@ public class MobilityMain extends Configured implements Tool {
 
         Path tmpLabelClientPath = new Path(tmpPath, "label_client");
         Path vectorClientClusterPath = new Path(tmpLabelClientPath,
-                                                "vector_client_clusterPath");
+                                                "vector_client_cluster");
         boolean shouldLabelClient = arguments.getBoolean("labelClient");
         if (shouldRunAll || shouldLabelClient) {
             Path centroidsPath = new Path(arguments.getString(

@@ -25,19 +25,18 @@ public class VectorFuseNodeDaygroupReducer extends Reducer
                           Iterable<ProtobufWritable<DailyVector>> values,
                           Context context) throws IOException,
                                                   InterruptedException {
-        List<ProtobufWritable<DailyVector>> valueList =
-                new LinkedList<ProtobufWritable<DailyVector>>();
+        List<DailyVector> valueList = new LinkedList<DailyVector>();
         for (ProtobufWritable<DailyVector> value : values) {
-            valueList.add(value);
+            value.setConverter(DailyVector.class);
+            final DailyVector dailyVector = value.get();
+            valueList.add(dailyVector);
         }
         
         ClusterVector.Builder clusterVectorBuilder = ClusterVector.newBuilder();
         for (int group = 0; group < 4; group++) {
             boolean added = false;
             int j = 0;
-            for (ProtobufWritable<DailyVector> value : valueList) {
-                value.setConverter(DailyVector.class);
-                final DailyVector dailyVector = value.get();
+            for (DailyVector dailyVector : valueList) {
                 if (dailyVector.getHours(j).getNum1() == group) {
                     for (TwoInt hour : dailyVector.getHoursList()) {
                         clusterVectorBuilder.addComs(hour.getNum2());

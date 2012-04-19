@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.mapreduce;
+package es.tid.cosmos.mobility.clientbtslabelling;
 
 import java.io.IOException;
 import static java.util.Arrays.asList;
@@ -17,7 +17,6 @@ import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
-import es.tid.cosmos.mobility.mapreduce.VectorSumGroupcommsReducer;
 
 /**
  *

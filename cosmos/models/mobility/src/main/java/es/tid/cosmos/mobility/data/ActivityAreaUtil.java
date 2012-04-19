@@ -47,10 +47,10 @@ public abstract class ActivityAreaUtil implements ProtobufUtil {
     }
 
     public static String toString(ActivityArea obj) {
-        return (obj.getMonth() + DELIMITER + obj.getIsWorkDay() + DELIMITER +
-                obj.getNumPos() + DELIMITER + obj.getDifBtss() + DELIMITER +
+        return (obj.getNumPos() + DELIMITER + obj.getDifBtss() + DELIMITER +
                 obj.getDifMuns() + DELIMITER + obj.getDifStates() + DELIMITER +
-                obj.getMasscenterUtmX() + DELIMITER + obj.getMasscenterUtmY() +
+                obj.getMasscenterUtmX() + DELIMITER +
+                obj.getMasscenterUtmY() + DELIMITER +
                 obj.getRadius() + DELIMITER + obj.getDiamAreaInf());
     }
 }

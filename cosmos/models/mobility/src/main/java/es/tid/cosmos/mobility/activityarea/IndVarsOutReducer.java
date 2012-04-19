@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.activityarea;
 
 import java.io.IOException;
+import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -20,6 +21,11 @@ import es.tid.cosmos.mobility.data.MobProtocol.RepeatedActivityAreas;
 public class  IndVarsOutReducer extends Reducer<
         LongWritable,  ProtobufWritable<RepeatedActivityAreas>,
         NullWritable,  Text> {
+    private static final String DELIMITER = "|";
+    private static final String MISSING = "-1|-1|-1|-1|-1|-1|-1|-1";
+    private static final int FIRST_MONTH = 1;
+    private static final int LAST_MONTH = 6;
+
     @Override
     public void reduce(LongWritable key,
             Iterable<ProtobufWritable<RepeatedActivityAreas>> values,
@@ -27,9 +33,38 @@ public class  IndVarsOutReducer extends Reducer<
         for (ProtobufWritable<RepeatedActivityAreas> value : values) {
             value.setConverter(RepeatedActivityAreas.class);
             final RepeatedActivityAreas activityAreas = value.get();
-            context.write(NullWritable.get(),
-                          new Text(key.toString() + "|" +
-                          RepeatedActivityAreasUtil.toString(activityAreas)));
+            List<ActivityArea> areasList =
+                activityAreas.getRepeatedActivityAreaList();
+            for (int numMonth=FIRST_MONTH; numMonth<=LAST_MONTH; numMonth++) {
+                boolean exists = false;
+                String ans = key.toString();
+                ans += DELIMITER + numMonth;
+                for(int pos=0; pos < areasList.size(); pos++) {
+                    ActivityArea area = areasList.get(pos);
+                    if (area.getMonth() == numMonth && area.getIsWorkDay()) {
+                        ans += DELIMITER + ActivityAreaUtil.toString(area);
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    ans += DELIMITER + MISSING;
+                }
+                exists = false;
+                for(int pos=0; pos < areasList.size(); pos++) {
+                    ActivityArea area = areasList.get(pos);
+                    if (area.getMonth() == numMonth && !area.getIsWorkDay()) {
+                        ans += DELIMITER + ActivityAreaUtil.toString(area);
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    ans += DELIMITER + MISSING;
+                }
+                context.write(NullWritable.get(),
+                              new Text(ans));
+            }
         }
     }
 }

@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.activityarea;
 
+import static java.util.Arrays.asList;
+
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -9,7 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+import es.tid.cosmos.mobility.data.ActivityAreaUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
 import es.tid.cosmos.mobility.data.MobProtocol.RepeatedActivityAreas;
+import es.tid.cosmos.mobility.data.RepeatedActivityAreasUtil;
 
 /**
  *
@@ -30,6 +35,50 @@ public class IndVarsOutReducerTest {
     }
 
     @Test
-    public void testMissingMonthsFilledWithMinusOnes() {
+    public void testMissingProfilesFilledWithMinusOnes() {
+        LongWritable userNotSeenInFirstMonth = new LongWritable(5512684400L);
+
+        ActivityArea area =
+            ActivityAreaUtil.create(1, false, 1, 1, 1, 1, 1000000D, 1000000D,
+                    0.0, 0.0);
+        ProtobufWritable<ActivityArea> row = ActivityAreaUtil.wrap(area);
+
+        ProtobufWritable<RepeatedActivityAreas> input =
+            RepeatedActivityAreasUtil.createAndWrap(asList(area));
+
+        String s = "5512684400|1|-1|-1|-1|-1|-1|-1|-1|-1|"
+                 + "1|1|1|1|1000000.0|1000000.0|0.0|0.0";
+        Text expected = new Text(s);
+
+        String extra1 = "5512684400|2|-1|-1|-1|-1|-1|-1|-1|"
+                      + "-1|-1|-1|-1|-1|-1|-1|-1|-1";
+        Text expectedExtra1 = new Text(extra1);
+
+        String extra2 = "5512684400|3|-1|-1|-1|-1|-1|-1|-1|"
+                      + "-1|-1|-1|-1|-1|-1|-1|-1|-1";
+        Text expectedExtra2 = new Text(extra2);
+
+        String extra3 = "5512684400|4|-1|-1|-1|-1|-1|-1|-1|"
+                      + "-1|-1|-1|-1|-1|-1|-1|-1|-1";
+        Text expectedExtra3 = new Text(extra3);
+
+        String extra4 = "5512684400|5|-1|-1|-1|-1|-1|-1|-1|"
+                      + "-1|-1|-1|-1|-1|-1|-1|-1|-1";
+        Text expectedExtra4 = new Text(extra4);
+
+        String extra5 = "5512684400|6|-1|-1|-1|-1|-1|-1|-1|"
+                      + "-1|-1|-1|-1|-1|-1|-1|-1|-1";
+        Text expectedExtra5 = new Text(extra5);
+
+        this.reducer
+            .withInputKey(userNotSeenInFirstMonth)
+            .withInputValues(asList(input))
+            .withOutput(NullWritable.get(), expected)
+            .withOutput(NullWritable.get(), expectedExtra1)
+            .withOutput(NullWritable.get(), expectedExtra2)
+            .withOutput(NullWritable.get(), expectedExtra3)
+            .withOutput(NullWritable.get(), expectedExtra4)
+            .withOutput(NullWritable.get(), expectedExtra5)
+            .runTest();
     }
 }

@@ -12,9 +12,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 import es.tid.cosmos.mobility.data.ActivityAreaUtil;
-import es.tid.cosmos.mobility.data.RepeatedActivityAreasUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
 import es.tid.cosmos.mobility.data.MobProtocol.RepeatedActivityAreas;
+import es.tid.cosmos.mobility.data.RepeatedActivityAreasUtil;
 
 /**
  *

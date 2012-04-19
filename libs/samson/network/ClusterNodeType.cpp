@@ -1,7 +1,7 @@
 
 #include "logMsg/logMsg.h"
 
-#include "ClusternodeType.h" // Own interface
+#include "ClusterNodeType.h" // Own interface
 
 namespace samson
 {

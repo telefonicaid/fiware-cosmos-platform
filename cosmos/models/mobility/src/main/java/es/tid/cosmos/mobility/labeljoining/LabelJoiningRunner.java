@@ -193,12 +193,36 @@ public final class LabelJoiningRunner {
             }
         }
 
+        Path pointsOfInterestTemp3MobDataPath = new Path(tmpDirPath,
+                "points_of_interest_temp3_mob_data");
+        {
+            ConvertPoiToMobDataByTwoIntJob job =
+                    new ConvertPoiToMobDataByTwoIntJob(conf);
+            job.configure(pointsOfInterestTemp3Path,
+                          pointsOfInterestTemp3MobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        Path vectorBtsClusterMobDataPath = new Path(tmpDirPath,
+                "vector_bts_cluster_mob_data");
+        {
+            ConvertClusterToMobDataJob job = new ConvertClusterToMobDataJob(
+                    conf);
+            job.configure(vectorBtsClusterPath,
+                          vectorBtsClusterMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
         Path pointsOfInterestTemp4Path = new Path(tmpDirPath,
                                                   "points_of_interest_temp4");
         {
             ClusterAggBtsClusterJob job = new ClusterAggBtsClusterJob(conf);
-            job.configure(new Path[] { pointsOfInterestTemp3Path,
-                                       vectorBtsClusterPath },
+            job.configure(new Path[] { pointsOfInterestTemp3MobDataPath,
+                                       vectorBtsClusterMobDataPath },
                           pointsOfInterestTemp4Path);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());

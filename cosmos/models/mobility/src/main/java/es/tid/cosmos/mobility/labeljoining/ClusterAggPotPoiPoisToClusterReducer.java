@@ -26,7 +26,7 @@ public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
             throws IOException, InterruptedException {
         List<Poi> poiList = new LinkedList<Poi>();
         List<Cluster> clusterList = new LinkedList<Cluster>();
-        List<Integer> intList = new LinkedList<Integer>();
+        int nullCount = 0;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
@@ -37,8 +37,8 @@ public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
                 case CLUSTER:
                     clusterList.add(mobData.getCluster());
                     break;
-                case INT:
-                    intList.add(mobData.getInt());
+                case NULL:
+                    nullCount++;
                     break;
                 default:
                     throw new IllegalStateException();
@@ -47,7 +47,7 @@ public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
         
         final Cluster cluster = clusterList.get(0);
         Cluster.Builder outputCluster = Cluster.newBuilder(cluster);
-        if (!intList.isEmpty()) {
+        if (nullCount > 0) {
             outputCluster.setConfident(1);
         }
         context.write(key, ClusterUtil.wrap(outputCluster.build()));

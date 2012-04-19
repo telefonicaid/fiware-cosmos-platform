@@ -153,3 +153,17 @@ message Poi {
     optional int32 inoutWeek = 16;
     optional int32 inoutWend = 17;
 }
+
+message PoiPos {
+    optional uint64 node = 1;
+    optional uint64 bts = 2;
+    optional int32 label = 3;
+    optional double posx = 4;
+    optional double posy = 5;
+    optional int32 inoutWeek = 6;
+    optional int32 inoutWend = 7;
+    optional double radiusWeek = 8;
+    optional double distCMWeek = 9;
+    optional double radiusWend = 10;
+    optional double distCMWend = 11;
+}

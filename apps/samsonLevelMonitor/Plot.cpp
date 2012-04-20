@@ -9,6 +9,9 @@
 #include <KDChartPosition>
 #include <KDChartLegend>
 
+extern int refresh_time;
+extern double ntimes_real_time;
+
 Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
 {
    // Keep a pointer to the group ( change the title in the future )
@@ -36,7 +39,7 @@ Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
     
     xAxis->setTitleText( QString( x_title ) );
     yAxis->setTitleText( QString( y_title ) );
-    
+
     /*
     KDChart::TextAttributes ta = yAxis->textAttributes();
     KDChart::Measure me( ta.fontSize() );
@@ -44,6 +47,53 @@ Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
     ta.setFontSize( me );
     yAxis->setTextAttributes( ta );
 */
+
+    QStringList times = xAxis->labels();
+    QStringList times_short = xAxis->shortLabels();
+    LM_M(("xAxis with %d labels", times.size()));
+    if (times.size() > 0)
+    {
+    for (int i = 0; (i < times.size()); i++)
+    {
+      int secs = times.at(i).toInt();
+      secs = (100 - secs)*(refresh_time*ntimes_real_time);
+      int hours = secs/3600;
+      secs -= (hours * 3600);
+      int minutes = secs/60;
+      secs -= (minutes * 60);
+
+      char new_label[33];
+      sprintf(new_label, "-%d:%02d:%02d", hours, minutes, secs);
+      LM_M(("new label at pos:%d -> '%s'", i, new_label));
+      times.replace(i,QString::fromUtf8(new_label));
+    }
+    }
+    else
+    {
+      for (int i = 0; (i < 100); i++)
+      {
+        int secs = (100 - i)*(refresh_time*ntimes_real_time);
+        int hours = secs/3600;
+        secs -= (hours * 3600);
+        int minutes = secs/60;
+        secs -= (minutes * 60);
+
+        char new_label[33];
+        sprintf(new_label, "-%d:%02d:%02d", hours, minutes, secs);
+        LM_M(("new label at pos:%d -> '%s'", i, new_label));
+
+        times << new_label;
+
+        sprintf(new_label, "-%dm", secs/60);
+        LM_M(("new label at pos:%d -> '%s'", i, new_label));
+        times_short << new_label;
+      }
+    }
+    //times << 90*refresh_time*ntimes_real_time << " " <<  70*refresh_time*ntimes_real_time << " " <<  50*refresh_time*ntimes_real_time <<  " " << 30*refresh_time*ntimes_real_time <<  " " << 10*refresh_time*ntimes_real_time ;
+    //times << "9000" << "7000" << "5000" << "3000" << "1000";
+    xAxis->setLabels( times );
+    xAxis->setShortLabels( times );
+
     diagram->addAxis( xAxis );
     diagram->addAxis( yAxis );
     
@@ -65,6 +115,17 @@ Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
     m_chart.setGlobalLeadingTop( 10 );
 	//KDChart::setLayout(l);
 
+    // Add a legend and set it up
+/*    KDChart::Legend* legend = new KDChart::Legend( diagram, &m_chart );
+    legend->setPosition( KDChart::Position::NorthWest );
+    legend->setAlignment( Qt::AlignCenter );
+    legend->setShowLines( false );
+    //legend->setTitleText(tr( "Bars" ) );
+    legend->setOrientation( Qt::Vertical );
+    m_chart.addLegend( legend );*/
+
+    legend_ = new KDChart::Legend( diagram, &m_chart );
+    m_chart.addLegend( legend_ );
 
 
 }
@@ -93,22 +154,26 @@ void Plot::set_legend( std::string title ,  std::string label_1 , std::string la
 
 void Plot::set_legend( std::string title ,  std::vector<std::string>& labels )
 {
-    /*
-   KDChart::Legend* legend = new KDChart::Legend( diagram, &m_chart );
 
-   legend->setShowLines( true );
+
+
+   legend_->setShowLines( true );
    //legend->setSpacing( 5 );
 
-   legend->setTitleText( title.c_str() );
+   legend_->setTitleText( title.c_str() );
 
+   LM_M(("set_legend with %d lables", labels.size()));
    for ( size_t i=0; i<labels.size() ; i++ )
-	  legend->setText( i , labels[i].c_str() );
+   {
+     LM_M(("Add legend at pos %d with label:'%s'", i, labels[i].c_str() ));
+	  legend_->setText( i , labels[i].c_str() );
+   }
+
+   legend_->setPosition( KDChart::Position::West );
+   legend_->setAlignment( Qt::AlignCenter );
+   legend_->setOrientation( Qt::Vertical );
 
 
-   legend->setPosition( KDChart::Position::South );
-   legend->setAlignment( Qt::AlignCenter );
-   legend->setOrientation( Qt::Horizontal );
-*/
 }
 
 void Plot::set( int r , int c , double v )

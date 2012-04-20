@@ -1,13 +1,13 @@
 
 /*
- 
+
  samsonPopQT
- 
+
  Example app using samsonClient lib
  It listen std input and push content to the samson cluster indicated by parameters
- 
+
  AUTHOR: Andreu Urruela
- 
+
  */
 
 
@@ -19,10 +19,10 @@
 #include "parseArgs/parseArgs.h"
 #include "logMsg/logMsg.h"
 
-#include "au/map.h"
+#include "au/containers/map.h"
 #include "au/RRT.h"                             // au::ValueCollection 
-#include "au/Token.h"
-#include "au/TokenTaker.h"
+#include "au/mutex/Token.h"
+#include "au/mutex/TokenTaker.h"
 #include "au/string.h"                          // au::str()
 
 #include "samson/client/SamsonClient.h"         // samson::SamsonClient
@@ -39,22 +39,28 @@ size_t timeOut;
 double base;
 
 char title[1024];
+char composed_title[1024];
 char x_title[1024];
 char y_title[1024];
 char concept[1024];
+time_t last_timestamp;
+int refresh_time;
+double ntimes_real_time;
 
 PaArgument paArgs[] =
 {
-	{ "-title",      title,      "",            PaString, PaOpt, _i "Samson Level Monitor"   , PaNL, PaNL,       "Title of the plot"         },
-	{ "-x_title",    x_title,    "",            PaString, PaOpt, _i ""   , PaNL, PaNL,       "X-Title of the plot"         },
-	{ "-y_title",    y_title,    "",            PaString, PaOpt, _i ""   , PaNL, PaNL,       "Y-Title of the plot"         },
-	{ "-concept",    concept,    "CONCEPT",     PaString, PaOpt, _i "top"        , PaNL, PaNL,       "Concep to track"         },
-	{ "-base",       &base,      "",            PaDouble, PaOpt,      1.0        , 1.0, 1000000.0,       "Base to divide all numbers ( example 1000 1000000 .... )"   },
+    { "-title",      title,      "",            PaString, PaOpt, _i "Samson Level Monitor"   , PaNL, PaNL,       "Title of the plot"         },
+    { "-x_title",    x_title,    "",            PaString, PaOpt, _i ""   , PaNL, PaNL,       "X-Title of the plot"         },
+    { "-y_title",    y_title,    "",            PaString, PaOpt, _i ""   , PaNL, PaNL,       "Y-Title of the plot"         },
+    { "-concept",    concept,    "CONCEPT",     PaString, PaOpt, _i "top"        , PaNL, PaNL,       "Concep to track"         },
+    { "-refesh", &refresh_time, "", PaInt, PaOpt, 1, 1, 1000, "Refresh time, in secs"},
+    {"-nr", &ntimes_real_time, "", PaDouble, PaOpt, 1.0, 0.1, 1000, "ntimes real time of data source"},
+    { "-base",       &base,      "",            PaDouble, PaOpt,      1.0        , 1.0, 1000000.0,       "Base to divide all numbers ( example 1000 1000000 .... )"   },
     PA_END_OF_ARGS
 };
 
 static const char* manShortDescription = 
-"samsonTopicMonitor is an easy-to-use software to display topics on screen.\n";
+    "samsonTopicMonitor is an easy-to-use software to display topics on screen.\n";
 
 int logFd = -1;
 
@@ -70,98 +76,118 @@ MainWindow *mainWindow;               // Main window....
 // Map of values collections ( updated from 
 au::Token token_value_collections("value_collections");
 au::map<std::string , au::ContinuousValueCollection<double> > value_collections;
+au::map<std::string , au::ContinuousValueCollection<time_t> > time_collections;
 std::vector<std::string> concepts; // Vector with all the concepts
 
 void process_command( std::string line )
 {
-    
-    
-    // Remove returns at the end
-    //    while ( line[ line.size()-1 ] == '\n' )
-    //    line.erase( line.size()-1 );
-    
-    au::CommandLine cmd;
-    cmd.parse( line );
-    
-    if( cmd.get_num_arguments() < 2 )
-        return; // Not valid format
-    
-    std::string name = cmd.get_argument(0);
-    double value =  atof( cmd.get_argument(1).c_str() ) / base;
-    
-    LM_V(("Converting %s --> %f", cmd.get_argument(1).c_str()  , value ));
-    
-    //std::cout << au::str( "Processing '%s' %s=%f\n" , line.c_str() , name.c_str() , value );
-    
-    for ( size_t i = 0 ; i < concepts.size() ; i ++ )
-        if ( name == concepts[i] )
-        {
-            au::TokenTaker tt(&token_value_collections); // We are the only element rigth now, but in the future we can have multiple
-            au::ContinuousValueCollection<double>* vc = value_collections.findOrCreate( name );
-            vc->set( value );
-        }
+
+
+  // Remove returns at the end
+  //    while ( line[ line.size()-1 ] == '\n' )
+  //    line.erase( line.size()-1 );
+
+  au::CommandLine cmd;
+  cmd.parse( line );
+
+  if( cmd.get_num_arguments() < 2 )
+  {
+    LM_W(("Input line without two parameters, invalid format"));
+    return; // Not valid format
+  }
+
+  std::string name = cmd.get_argument(0);
+  double value =  atof( cmd.get_argument(1).c_str() ) / base;
+  time_t timestamp = atoi(cmd.get_argument(2).c_str());
+
+  LM_M(("Converting %s --> %f at timestamp:%lu", cmd.get_argument(1).c_str()  , value, static_cast<unsigned long>(timestamp) ));
+
+  //std::cout << au::str( "Processing '%s' %s=%f\n" , line.c_str() , name.c_str() , value );
+
+  for ( size_t i = 0 ; i < concepts.size() ; i ++ )
+    if ( name == concepts[i] )
+    {
+      LM_M(("Adding name:'%s' with value:%lf at time:%s", name.c_str(), value, ctime(&timestamp)));
+      au::TokenTaker tt(&token_value_collections); // We are the only element right now, but in the future we can have multiple
+      au::ContinuousValueCollection<double>* vc = value_collections.findOrCreate( name );
+      vc->set( value );
+      au::ContinuousValueCollection<time_t>* tc = time_collections.findOrCreate( name );
+      tc->set( timestamp );
+
+      if (timestamp > last_timestamp)
+      {
+      char *timestamp_str = strdup(ctime(&timestamp));
+      timestamp_str[strlen(timestamp_str)-1] = '\0';
+      sprintf(composed_title, "%s at %s (%.0lf%% real_time)", title, timestamp_str, ntimes_real_time*100.0);
+      free(timestamp_str);
+      last_timestamp = timestamp;
+      }
+    }
 }
 
 
 
 void* process_income_blocks(void*)
 {
-    // Free resources automatically when this thread finish
-    pthread_detach(pthread_self());
-    
-    while( true )
-    {
-        char line[100000];
-        if( fgets( line, 100000 , stdin ) == NULL )
-            LM_X(0,("No more commands to process at stdin"));
+  // Free resources automatically when this thread finish
+  pthread_detach(pthread_self());
 
-        process_command( line );
-        
+  while( true )
+  {
+    char line[100000];
+    if( fgets( line, 100000 , stdin ) == NULL )
+    {
+      sleep(1000);
+      LM_X(0,("No more commands to process at stdin"));
     }
-    return NULL;
+
+    process_command( line );
+
+  }
+  return NULL;
 }
 
 
 int main( int argC ,  char *argV[] )
 {
-    paConfig("usage and exit on any warning", (void*) true);
-    
-    paConfig("log to screen",                 (void*) true);
-    paConfig("log to file",                   (void*) false);
-    paConfig("screen line format",            (void*) "TYPE:EXEC: TEXT");
-    paConfig("man shortdescription",          (void*) manShortDescription);
-    
-    // Parse input arguments    
-    paParse(paArgs, argC, (char**) argV, 1, false);
-    logFd = lmFirstDiskFileDescriptor();
-    
-    if ( strcmp( concept,"main") == 0)
-        LM_W(("No concept specified with -concept optin. Traking 'main' concept...."));
+  paConfig("usage and exit on any warning", (void*) true);
 
-    // Split the concept in concepts to track all of them
-    au::split( concept , ',' , concepts );   
+  paConfig("log to screen",                 (void*) true);
+  paConfig("log to file",                   (void*) true);
+  paConfig("screen line format",            (void*) "TYPE:EXEC: TEXT");
+  paConfig("man shortdescription",          (void*) manShortDescription);
 
-    
-    LM_V(("------------------------------------------------"));
-    LM_V(("SETUP"));
-    LM_V(("------------------------------------------------"));
-    LM_V(("Base %f",base));
-    LM_V(("concept %s (%d concepts)",concept,(int)concepts.size()));
-    LM_V(("------------------------------------------------"));
-    
-    
-    // Run the thread to update incomming blocks
-    pthread_t t;
-    pthread_create(&t, NULL, process_income_blocks, NULL);
+  // Parse input arguments
+  paParse(paArgs, argC, (char**) argV, 1, false);
+  logFd = lmFirstDiskFileDescriptor();
 
-	// Create the app ( QT library )
-    app =  new QApplication(argC, argV);
+  if ( strcmp( concept,"main") == 0)
+    LM_W(("No concept specified with -concept option. Tracking 'main' concept...."));
 
-    // Main window ( hide at start )
-    mainWindow = new MainWindow();
-    mainWindow->show();
+  // Split the concept in concepts to track all of them
+  au::split( concept , ',' , concepts );
 
-    // Main QT loop
-    return app->exec();
-	
+
+  LM_V(("------------------------------------------------"));
+  LM_V(("SETUP"));
+  LM_V(("------------------------------------------------"));
+  LM_V(("Base %f",base));
+  LM_V(("concept %s (%d concepts)",concept,(int)concepts.size()));
+  LM_V(("------------------------------------------------"));
+
+
+  // Run the thread to update incomming blocks
+  pthread_t t;
+  pthread_create(&t, NULL, process_income_blocks, NULL);
+
+  // Create the app ( QT library )
+  app =  new QApplication(argC, argV);
+
+  // Main window ( hide at start )
+  mainWindow = new MainWindow();
+  mainWindow->show();
+
+  // Main QT loop
+  return app->exec();
+
 }

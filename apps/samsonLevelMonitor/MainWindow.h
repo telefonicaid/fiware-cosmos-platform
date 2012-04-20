@@ -10,6 +10,7 @@ class MainWindow : public QMainWindow , public Ui_MainWindow
     Q_OBJECT
     
     Plot* plot;  // Main plot using KVChart
+    bool first_legend;
 	
 public:
     

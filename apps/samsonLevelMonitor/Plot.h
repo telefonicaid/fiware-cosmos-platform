@@ -26,6 +26,7 @@ class Plot
     // We can change the title of this group
     QGroupBox *box;
     
+    KDChart::Legend* legend_;
     
 private:
     

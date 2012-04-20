@@ -8,17 +8,18 @@ import java.util.List;
 import java.util.ArrayList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.ActivityAreaUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityAreaKey;
+import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
+import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
 import es.tid.cosmos.mobility.activityarea.Accumulations;
 
 public class ActivityAreaReducer extends Reducer<
-        ProtobufWritable<ActivityAreaKey>, ProtobufWritable<Cell>,
-        ProtobufWritable<ActivityAreaKey>, ProtobufWritable<ActivityArea>> {
+        ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
+        LongWritable, ProtobufWritable<MobVars>> {
     private Set<Long> allCells;
     private Set<Long> allBtss;
     private Set<Integer> allMuns;
@@ -32,14 +33,14 @@ public class ActivityAreaReducer extends Reducer<
         double massCenterAccY = 0.0;
         double radiusAccX = 0.0;
         double radiusAccY = 0.0;
-        boolean has_new_bts;
+        boolean hasNewBts;
         for (ProtobufWritable<Cell> value : values) {
             value.setConverter(Cell.class);
             Cell cell = value.get();
             numPos += 1;
             this.allCells.add(cell.getCellId());
-            has_new_bts = this.allBtss.add(cell.getPlaceId());
-            if (has_new_bts) {
+            hasNewBts = this.allBtss.add(cell.getPlaceId());
+            if (hasNewBts) {
                 this.cellsWithDifBts.add(cell);
             }
             this.allMuns.add(cell.getGeoloc1());
@@ -85,9 +86,13 @@ public class ActivityAreaReducer extends Reducer<
     }
 
     @Override
-    protected void reduce(ProtobufWritable<ActivityAreaKey> key,
+    protected void reduce(ProtobufWritable<TelMonth> key,
             Iterable<ProtobufWritable<Cell>> values, Context context)
             throws IOException, InterruptedException {
+        key.setConverter(TelMonth.class);
+        final LongWritable newKey = new LongWritable(key.get().getPhone());
+        final int month = key.get().getMonth();
+        final boolean isWorkDay = key.get().getWorkingday();
         this.allCells = new HashSet<Long>();
         this.allBtss = new HashSet<Long>();
         this.allMuns = new HashSet<Integer>();
@@ -98,11 +103,12 @@ public class ActivityAreaReducer extends Reducer<
 
         double influenceAreaDiameter = getMaxDistance(cellsWithDifBts);
 
-        ProtobufWritable<ActivityArea> ans =
-            ActivityAreaUtil.createAndWrap(accs.difPos, accs.numBtss,
-                                           accs.numMuns, accs.numStates,
-                                           accs.massCenterX, accs.massCenterY,
-                                           accs.radius, influenceAreaDiameter);
-        context.write(key, ans);
+        ProtobufWritable<MobVars> ans =
+            MobVarsUtil.createAndWrap(month, isWorkDay, accs.difPos,
+                                           accs.numBtss, accs.numMuns,
+                                           accs.numStates, accs.massCenterX,
+                                           accs.massCenterY, accs.radius,
+                                           influenceAreaDiameter);
+        context.write(newKey, ans);
     }
 }

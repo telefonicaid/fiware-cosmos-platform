@@ -6,6 +6,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import es.tid.cosmos.mobility.activityarea.ActivityAreaRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;
@@ -20,6 +21,8 @@ import es.tid.cosmos.mobility.util.Logger;
  * @author dmicol
  */
 public class MobilityMain extends Configured implements Tool {
+    private static final String EXTRACTMIVSFLAG = "extract_mivs";
+    
     @Override
     public int run(String[] args) throws Exception {
         ArgumentParser arguments = new ArgumentParser();
@@ -66,6 +69,19 @@ public class MobilityMain extends Configured implements Tool {
                                 cdrsNoinfoPath, cellsMobPath, clientsBtsPath,
                                 btsCommsPath, cdrsNoBtsPath, viTelmonthBtsPath,
                                 conf);
+        }
+
+        Path tmpExtractMivsPath = new Path(tmpPath, EXTRACTMIVSFLAG);
+        Path viClientFuseTxtPath = new Path(tmpExtractMivsPath,
+                                            "vi_client_fuse_txt");
+        Path viClientFuseAccTxtPath = new Path(tmpExtractMivsPath,
+                                               "vi_client_fuse_acc_txt");
+        boolean shouldExtractMivs =
+            "true".equals(arguments.getString(EXTRACTMIVSFLAG));
+        if (shouldRunAll || shouldExtractMivs) {
+            ActivityAreaRunner.run(viTelmonthBtsPath, viClientFuseTxtPath,
+                                   viClientFuseAccTxtPath, tmpExtractMivsPath,
+                                   conf);
         }
         
         Path tmpExtractPoisPath = new Path(tmpPath, "extract_pois");

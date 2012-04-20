@@ -50,14 +50,14 @@ public class PoiJoinPoisViToPoiPosReducer extends Reducer<LongWritable,
                     double dist = Math.sqrt(distx * distx + disty * disty);
 
                     // Individual variables Monday - Friday
-                    if (vars.getWorkingday() == 1) {
+                    if (vars.getWorkingday()) {
                         outputPoiPos.setInoutWeek(
                                 dist <= vars.getRadius() ? 1 : 0);
                         outputPoiPos.setRadiusWeek(vars.getRadius());
                         outputPoiPos.setDistCMWeek(dist);
                     }
                     // Individual variables Saturday - Sunday
-                    if (vars.getWorkingday() == 0) {
+                    if (!vars.getWorkingday()) {
                         outputPoiPos.setInoutWend(
                                 dist <= vars.getRadius() ? 1 : 0);
                         outputPoiPos.setRadiusWend(vars.getRadius());

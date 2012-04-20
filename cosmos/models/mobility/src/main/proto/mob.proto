@@ -120,23 +120,6 @@ message GLEvent {
     optional base.Time time = 4;
 }
 
-message ActivityAreaKey {
-    optional uint64 userId = 1;
-    optional uint32 month = 2;
-    optional bool isWorkDay = 3;
-}
-
-message ActivityArea {
-    optional uint32 numPos = 1;
-    optional uint32 difBtss = 2;
-    optional uint32 difMuns = 3;
-    optional uint32 difStates = 4;
-    optional double masscenterUtmX = 5;
-    optional double masscenterUtmY = 6;
-    optional double radius = 7;
-    optional double diamAreaInf = 8;
-}
-
 message TelMonth {
     optional uint64 phone = 1;
     optional uint32 month = 2;
@@ -188,7 +171,7 @@ message PoiNew {
 message MobVars
 {
     optional uint32 month = 1;
-    optional uint32 workingday = 2;
+    optional bool workingday = 2;
     optional uint32 num_pos = 3;
     optional uint32 dif_btss = 4;
     optional uint32 dif_muns = 5;

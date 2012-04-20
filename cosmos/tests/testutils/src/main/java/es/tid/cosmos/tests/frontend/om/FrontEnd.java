@@ -1,10 +1,8 @@
 package es.tid.cosmos.tests.frontend.om;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Properties;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -13,17 +11,17 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-import es.tid.cosmos.tests.joblaunchers.Environment;
-import es.tid.cosmos.tests.joblaunchers.TaskStatus;
-import es.tid.cosmos.tests.joblaunchers.TestException;
+import es.tid.cosmos.tests.tasks.Environment;
+import es.tid.cosmos.tests.tasks.EnvironmentSetting;
+import es.tid.cosmos.tests.tasks.TaskStatus;
+import es.tid.cosmos.tests.tasks.TestException;
 
 /**
  *
  * @author ximo
  */
 public class FrontEnd {
-    public static final String TEST_CONFIG_FILE = "/test.properties";
-    public static final String PRODUCTION_CONFIG_FILE = "/production.properties";
+    // HTML classes and ids
     public static final String CREATE_JOB_ID = "create-job";
     public static final String TASK_STATUS_TABLE_ID = "jobs-table";
     public static final String JOB_ACTION_CLASS = "jobaction";
@@ -35,6 +33,7 @@ public class FrontEnd {
     public static final String USERNAME_INPUT_ID = "id_username";
     public static final String PASSWORD_INPUT_ID = "id_password";
     
+    // Default login info
     private static final String DEFAULT_USER = "test";
     private static final String DEFAULT_PASSWRD = "cosmostest";
     
@@ -53,23 +52,8 @@ public class FrontEnd {
         this.username = username;
         this.password = password;
         this.environment = env;
-        
-        Properties props = new Properties();
-        try {
-            switch(env) {
-                case Test:
-                    props.load(FrontEnd.class.getResource(TEST_CONFIG_FILE).openStream());
-                    break;
-                case Production:
-                    props.load(FrontEnd.class.getResource(PRODUCTION_CONFIG_FILE).openStream());
-                    break;
-                default:
-                    fail("Unrecognized environment value: " + env.toString());
-            }
-        } catch (IOException ex) {
-            fail("IOException while loading configuration: " + ex.toString());
-        }
-        this.homeUrl = props.getProperty("FRONTEND_URL");
+        this.homeUrl = this.environment.getProperty(
+            EnvironmentSetting.FRONTEND_URL);
     }
     
     public String getHomeUrl() {

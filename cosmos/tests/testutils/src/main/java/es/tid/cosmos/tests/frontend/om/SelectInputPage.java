@@ -10,6 +10,7 @@ import static org.testng.Assert.assertEquals;
  * @author ximo
  */
 public class SelectInputPage {
+    // HTML classes and ids
     public static final String INPUT_FILE_HTML_ID = "id_file";
     
     private WebDriver driver;

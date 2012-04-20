@@ -6,6 +6,7 @@ import org.openqa.selenium.WebElement;
 import static org.testng.Assert.assertEquals;
 
 public class SelectNamePage {
+    // HTML classes and ids
     public static final String NAME_ID = "id_name";    
     public static final String JAR_RESTRICTIONS_ID = "jar-restrictions";
     public static final String SAMPLE_JAR_LINK_ID = "sample-jar-link";

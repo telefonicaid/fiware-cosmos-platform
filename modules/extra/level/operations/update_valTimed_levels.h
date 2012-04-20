@@ -65,7 +65,7 @@ namespace level{
 			   {
 				  state.parse( inputs[1].kvs[i]->value );
 				  intValue.value += state.val.value;
-				  LM_M(("Reading state for key:%s, time:%s, count:%d", key.value.c_str(), state.t.str().c_str(), state.val.value));
+				  //LM_M(("Reading state for key:%s, time:%s, count:%d", key.value.c_str(), state.t.str().c_str(), state.val.value));
 			   }
 
 			   for ( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
@@ -73,7 +73,7 @@ namespace level{
 				  tmp.parse( inputs[0].kvs[i]->value );
 				  if (tmp.val.value != 1)
 				  {
-					  //LM_M(("At hit:%s, for key:%s,  count:%d", tmp.t.str().c_str(), key.value.c_str(), tmp.val.value));
+					  //LM_M(("At hit:%s, for key:%s,  count:%d, before:%d, after:%d", tmp.t.str().c_str(), key.value.c_str(), tmp.val.value, intValue.value, intValue.value + tmp.val.value ));
 				  }
 				  intValue.value += tmp.val.value;
 				  state.val.value = intValue.value;
@@ -87,7 +87,7 @@ namespace level{
 			   //tmp.val.value = intValue.value;
 			   //tmp.t.value = firstTime.value;
 
-			   LM_M(("Update state for key:%s", key.value.c_str()));
+			   //LM_M(("Update state for key:%s, count:%d", key.value.c_str(), state.t.str().c_str(), state.val.value));
 			   writer->emit( 0 , &key , &state );
 			   writer->emit( 1 , &key , &state );
 		}

@@ -53,9 +53,14 @@ namespace hit{
 			  
 			  for ( int i = 0 ; i < hit_collection.hits_length ; i ++ )
 			  {
-				 std::string concept = hit_collection.hits[i].getConcept();
-				 size_t count = hit_collection.hits[i].count.value; // convert to ingeger for displaying....
-				 output << concept << " " << count << " ";
+				 std::string topic = hit_collection.hits[i].getConcept();
+				 if ((topic == "") || (topic == " ") || (topic == "\t"))
+				 {
+				   LM_W(("Empty topic for concept:'%s' at position:%d of %d", concept.value.c_str(), i, hit_collection.hits_length));
+				   topic = "__";
+				 }
+				 size_t count = hit_collection.hits[i].count.value; // convert to integer for displaying....
+				 output << topic << " " << count << " ";
 			  }
 
 			  output << "\n";

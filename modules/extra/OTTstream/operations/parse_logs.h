@@ -370,7 +370,7 @@ public:
     hit->timestamp.setFromStrTimeDate_YYYY_mm_dd_24H(fields[1]);
     //LM_M(("input_time:'%s', timeUnix:%lu, '%s'", fields[1], hit->timestamp.value, hit->timestamp.str().c_str()));
 
-    hit->serviceId.value = 1000; //SMS
+    hit->serviceId.value = 1000; //voice
     return true;
   }
 
@@ -440,8 +440,25 @@ public:
       services.push_back(newService);
     }
     {
-      OTTService *newService = new OTTService("Tango", 80, true);
-      newService->addDNSPattern("%.cm.tango.me");
+      OTTService *newService = new OTTService("Facebook", 30, false);
+      newService->addHTTPPattern("http://www.facebook.com/ajax/messaging/typ.php?__a=1");
+      newService->addHTTPPattern("http://apps.facebook.com/ajax/messaging/typ.php?__a=1");
+      newService->addHTTPPattern("http://es-es.facebook.com/ajax/messaging/typ.php?__a=1");
+      newService->addHTTPPattern("http://www.facebook.com/ajax/messaging/async.php?__a=1");
+      newService->addHTTPPattern("http://apps.facebook.com/ajax/messaging/async.php?__a=1");
+      newService->addHTTPPattern("http://es-es.facebook.com/ajax/messaging/async.php?__a=1");
+      newService->addHTTPPattern("http://www.facebook.com/ajax/messaging/send.php?__a=1");
+      newService->addHTTPPattern("http://apps.facebook.com/ajax/chat/send.php?__a=1");
+      newService->addHTTPPattern("http://es-es.facebook.com/ajax/chat/send.php?__a=1");
+      newService->addHTTPPattern("http://www.facebook.com/ajax/chat/buddy_list.php?__a=1");
+      newService->addHTTPPattern("http://apps.facebook.com/ajax/chat/buddy_list.php?__a=1");
+      newService->addHTTPPattern("http://es-es.facebook.com/ajax/chat/buddy_list.php?__a=1");
+      newService->addHTTPPattern("http://www.facebook.com/ajax/chat/tabs.php?__a=1");
+      newService->addHTTPPattern("http://apps.facebook.com/ajax/chat/tabs.php?__a=1");
+      newService->addHTTPPattern("http://touch.facebook.com/touch/chathistory.php");
+      newService->addHTTPPattern("http://iphone.facebook.com/touch/chathistory.php");
+      newService->addHTTPPattern("http://www.facebook.com/ajax/presence/update.php");
+      newService->addHTTPPattern("http://%.channel.facebook.com%");
       services.push_back(newService);
     }
     {
@@ -463,7 +480,7 @@ public:
       services.push_back(newService);
     }
     {
-      OTTService *newService = new OTTService("WhattsApp", 50, true);
+      OTTService *newService = new OTTService("WhatsApp", 50, true);
       newService->addDNSPattern("sro.whatsapp.net");
       newService->addDNSPattern("bin-short.whatsapp.net");
       newService->addDNSPattern("bin-nokia.whatsapp.net");
@@ -482,25 +499,8 @@ public:
       services.push_back(newService);
     }
     {
-      OTTService *newService = new OTTService("Facebook", 30, false);
-      newService->addHTTPPattern("http://www.facebook.com/ajax/messaging/typ.php?__a=1");
-      newService->addHTTPPattern("http://apps.facebook.com/ajax/messaging/typ.php?__a=1");
-      newService->addHTTPPattern("http://es-es.facebook.com/ajax/messaging/typ.php?__a=1");
-      newService->addHTTPPattern("http://www.facebook.com/ajax/messaging/async.php?__a=1");
-      newService->addHTTPPattern("http://apps.facebook.com/ajax/messaging/async.php?__a=1");
-      newService->addHTTPPattern("http://es-es.facebook.com/ajax/messaging/async.php?__a=1");
-      newService->addHTTPPattern("http://www.facebook.com/ajax/messaging/send.php?__a=1");
-      newService->addHTTPPattern("http://apps.facebook.com/ajax/chat/send.php?__a=1");
-      newService->addHTTPPattern("http://es-es.facebook.com/ajax/chat/send.php?__a=1");
-      newService->addHTTPPattern("http://www.facebook.com/ajax/chat/buddy_list.php?__a=1");
-      newService->addHTTPPattern("http://apps.facebook.com/ajax/chat/buddy_list.php?__a=1");
-      newService->addHTTPPattern("http://es-es.facebook.com/ajax/chat/buddy_list.php?__a=1");
-      newService->addHTTPPattern("http://www.facebook.com/ajax/chat/tabs.php?__a=1");
-      newService->addHTTPPattern("http://apps.facebook.com/ajax/chat/tabs.php?__a=1");
-      newService->addHTTPPattern("http://touch.facebook.com/touch/chathistory.php");
-      newService->addHTTPPattern("http://iphone.facebook.com/touch/chathistory.php");
-      newService->addHTTPPattern("http://www.facebook.com/ajax/presence/update.php");
-      newService->addHTTPPattern("http://%.channel.facebook.com/%");
+      OTTService *newService = new OTTService("Tango", 80, true);
+      newService->addDNSPattern("%.cm.tango.me");
       services.push_back(newService);
     }
     {
@@ -514,15 +514,16 @@ public:
     }
     {
       OTTService *newService = new OTTService("Google+", 100, true);
+      newService->addDNSPattern("plus.google.com");
       services.push_back(newService);
     }
-    {
-      OTTService *newService = new OTTService("TEST", 200, true);
-      newService->addHTTPPattern("www.c%n.v%ber.com");
-      newService->addDNSPattern("www.applesfera.com");
-      newService->addDNSPattern("www.applesfera.com");
-      services.push_back(newService);
-    }
+//    {
+//      OTTService *newService = new OTTService("TEST", 200, true);
+//      newService->addHTTPPattern("www.c%n.v%ber.com");
+//      newService->addDNSPattern("www.applesfera.com");
+//      newService->addDNSPattern("www.applesfera.com");
+//      services.push_back(newService);
+//    }
 
     count.value = 1;
   }
@@ -548,7 +549,10 @@ public:
 
         if (source == "HTTP")
         {
+          if ((url.value != " ") && (url.value != ""))
+          {
           writer->emit(3, &url, &count);
+          }
         }
       }
     }

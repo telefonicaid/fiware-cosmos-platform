@@ -9,7 +9,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
  * @author dmicol
  */
 public abstract class TwoIntUtil implements ProtobufUtil {
-    private static String DELIMITER = "|";
+    private final static String DELIMITER = "|";
     
     public static TwoInt create(long num1, long num2) {
         return TwoInt.newBuilder()
@@ -34,7 +34,7 @@ public abstract class TwoIntUtil implements ProtobufUtil {
     }
     
     public static TwoInt parse(String line) {
-        String[] values = line.split(DELIMITER);
+        String[] values = line.split("\\" + DELIMITER);
         return create(Long.parseLong(values[0]), Long.parseLong(values[1]));
     }
     

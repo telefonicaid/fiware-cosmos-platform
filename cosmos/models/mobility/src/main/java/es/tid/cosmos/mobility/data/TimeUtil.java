@@ -32,7 +32,7 @@ public abstract class TimeUtil implements ProtobufUtil {
     }
     
     public static Time parse(String line) {
-        String[] values = line.split(DELIMITER);
+        String[] values = line.split("\\" + DELIMITER);
         return create(Integer.parseInt(values[0]), Integer.parseInt(values[1]),
                       Integer.parseInt(values[2]));
     }

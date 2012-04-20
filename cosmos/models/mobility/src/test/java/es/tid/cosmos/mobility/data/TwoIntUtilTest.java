@@ -1,12 +1,11 @@
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
-import es.tid.cosmos.mobility.data.TwoIntUtil;
 
 /**
  *
@@ -15,13 +14,31 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
 public class TwoIntUtilTest {
     @Test
     public void testCreateAndWrap() {
-        long num1 = 3L;
-        long num2 = 5L;
-        ProtobufWritable<TwoInt> wrapper = TwoIntUtil.createAndWrap(num1, num2);
+        ProtobufWritable<TwoInt> wrapper = TwoIntUtil.createAndWrap(3L, 5L);
         wrapper.setConverter(TwoInt.class);
         TwoInt obj = wrapper.get();
         assertNotNull(obj);
-        assertEquals(num1, obj.getNum1());
-        assertEquals(num2, obj.getNum2());
+        assertEquals(3L, obj.getNum1());
+        assertEquals(5L, obj.getNum2());
+    }
+
+    @Test
+    public void testGetPartition() {
+        TwoInt obj = TwoIntUtil.create(3L, 5L);
+        assertEquals(1, TwoIntUtil.getPartition(obj, 2));
+    }
+
+    @Test
+    public void testParse() {
+        TwoInt obj = TwoIntUtil.parse("3|5");
+        assertNotNull(obj);
+        assertEquals(3L, obj.getNum1());
+        assertEquals(5L, obj.getNum2());
+    }
+
+    @Test
+    public void testToString() {
+        TwoInt obj = TwoIntUtil.create(3L, 5L);
+        assertEquals("3|5", TwoIntUtil.toString(obj));
     }
 }

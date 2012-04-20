@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-
-import es.tid.cosmos.mobility.data.BtsUtil;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;

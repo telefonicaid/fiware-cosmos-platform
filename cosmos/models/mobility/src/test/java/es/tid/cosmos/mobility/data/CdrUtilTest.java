@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNotNull;
 
 import es.tid.cosmos.mobility.data.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.BaseProtocol.Time;
-import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
 
 /**

@@ -71,7 +71,8 @@ public final class DetectSecondHomesRunner {
             }
         }
 
-        Path sechPoiPosMobDataPath = new Path(tmpDirPath, "bts_mob_mob_data");
+        Path sechPoiPosMobDataPath = new Path(tmpDirPath,
+                                              "sech_poi_pos_mob_data");
         {
             ConvertPoiPosToMobDataJob job = new ConvertPoiPosToMobDataJob(conf);
             job.configure(sechPoiPosPath, sechPoiPosMobDataPath);
@@ -136,8 +137,8 @@ public final class DetectSecondHomesRunner {
         Path pairsbtsAdjMobDataPath = new Path(tmpDirPath,
                                                "pairbts_adj_mob_data");
         {
-            ConvertLongToMobDataByTwoIntJob job =
-                    new ConvertLongToMobDataByTwoIntJob(conf);
+            ConvertNullToMobDataByTwoIntJob job =
+                    new ConvertNullToMobDataByTwoIntJob(conf);
             job.configure(pairbtsAdjPath, pairsbtsAdjMobDataPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
@@ -160,9 +161,7 @@ public final class DetectSecondHomesRunner {
         {
             PoiDeleteSechomeDuplicateJob job =
                     new PoiDeleteSechomeDuplicateJob(conf);
-            job.configure(new Path[] { sechPotSecHomeMobDataPath,
-                                       pairsbtsAdjMobDataPath },
-                          nodbtsSechomeUniqPath);
+            job.configure(nodbtsSechomePath, nodbtsSechomeUniqPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

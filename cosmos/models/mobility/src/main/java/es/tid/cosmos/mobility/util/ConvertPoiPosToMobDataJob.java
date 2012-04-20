@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.labelling.secondhomes;
+package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
 
@@ -18,24 +18,24 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class PoiJoinPoisViToTwoIntJob extends Job {
-    private static final String JOB_NAME = "PoiJoinPoisViToTwoInt";
+public class ConvertPoiPosToMobDataJob extends Job {
+    private static final String JOB_NAME = "ConvertPoiPosToMobData";
 
-    public PoiJoinPoisViToTwoIntJob(Configuration conf) throws IOException {
+    public ConvertPoiPosToMobDataJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
         this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
-        this.setOutputKeyClass(ProtobufWritable.class);
+        this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(PoiJoinPoisViToTwoIntReducer.class);
+        this.setReducerClass(ConvertPoiPosToMobDataReducer.class);
     }
 
-    public void configure(Path[] inputs, Path output) throws IOException {
-        FileInputFormat.setInputPaths(this, inputs);
+    public void configure(Path input, Path output) throws IOException {
+        FileInputFormat.setInputPaths(this, input);
         FileOutputFormat.setOutputPath(this, output);
     }
 }

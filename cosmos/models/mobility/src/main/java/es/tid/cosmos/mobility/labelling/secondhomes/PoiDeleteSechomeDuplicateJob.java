@@ -21,8 +21,7 @@ import es.tid.cosmos.mobility.MobilityMain;
 public class PoiDeleteSechomeDuplicateJob extends Job {
     private static final String JOB_NAME = "PoiDeleteSechomeDuplicate";
 
-    public PoiDeleteSechomeDuplicateJob(Configuration conf)
-            throws IOException {
+    public PoiDeleteSechomeDuplicateJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
@@ -35,10 +34,8 @@ public class PoiDeleteSechomeDuplicateJob extends Job {
         this.setReducerClass(PoiDeleteSechomeDuplicateReducer.class);
     }
 
-    public void configure(Path input, Path centroids, Path output)
-            throws IOException {
-        this.conf.set("centroids", centroids.toString());
-        FileInputFormat.setInputPaths(this, input);
+    public void configure(Path[] inputs, Path output) throws IOException {
+        FileInputFormat.setInputPaths(this, inputs);
         FileOutputFormat.setOutputPath(this, output);
     }
 }

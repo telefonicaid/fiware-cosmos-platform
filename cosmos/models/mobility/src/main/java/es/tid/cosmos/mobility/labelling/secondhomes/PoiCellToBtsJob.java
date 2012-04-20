@@ -21,8 +21,7 @@ import es.tid.cosmos.mobility.MobilityMain;
 public class PoiCellToBtsJob extends Job {
     private static final String JOB_NAME = "PoiCellToBts";
 
-    public PoiCellToBtsJob(Configuration conf)
-            throws IOException {
+    public PoiCellToBtsJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
@@ -35,9 +34,7 @@ public class PoiCellToBtsJob extends Job {
         this.setReducerClass(PoiCellToBtsReducer.class);
     }
 
-    public void configure(Path input, Path centroids, Path output)
-            throws IOException {
-        this.conf.set("centroids", centroids.toString());
+    public void configure(Path input, Path output) throws IOException {
         FileInputFormat.setInputPaths(this, input);
         FileOutputFormat.setOutputPath(this, output);
     }

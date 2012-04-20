@@ -35,10 +35,8 @@ public class PoiJoinPoisViToPoiPosJob extends Job {
         this.setReducerClass(PoiJoinPoisViToPoiPosReducer.class);
     }
 
-    public void configure(Path input, Path centroids, Path output)
-            throws IOException {
-        this.conf.set("centroids", centroids.toString());
-        FileInputFormat.setInputPaths(this, input);
+    public void configure(Path[] inputs, Path output) throws IOException {
+        FileInputFormat.setInputPaths(this, inputs);
         FileOutputFormat.setOutputPath(this, output);
     }
 }

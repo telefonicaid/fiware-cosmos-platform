@@ -1,11 +1,10 @@
-package es.tid.cosmos.mobility.labelling.secondhomes;
+package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -18,24 +17,25 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class PoiJoinPoisViToTwoIntJob extends Job {
-    private static final String JOB_NAME = "PoiJoinPoisViToTwoInt";
+public class ConvertTwoIntToMobDataByTwoIntJob extends Job {
+    private static final String JOB_NAME = "ConvertTwoIntToMobDataByTwoInt";
 
-    public PoiJoinPoisViToTwoIntJob(Configuration conf) throws IOException {
+    public ConvertTwoIntToMobDataByTwoIntJob(Configuration conf)
+            throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
-        this.setMapOutputKeyClass(LongWritable.class);
+        this.setMapOutputKeyClass(ProtobufWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
         this.setOutputKeyClass(ProtobufWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(PoiJoinPoisViToTwoIntReducer.class);
+        this.setReducerClass(ConvertTwoIntToMobDataByTwoIntReducer.class);
     }
 
-    public void configure(Path[] inputs, Path output) throws IOException {
-        FileInputFormat.setInputPaths(this, inputs);
+    public void configure(Path input, Path output) throws IOException {
+        FileInputFormat.setInputPaths(this, input);
         FileOutputFormat.setOutputPath(this, output);
     }
 }

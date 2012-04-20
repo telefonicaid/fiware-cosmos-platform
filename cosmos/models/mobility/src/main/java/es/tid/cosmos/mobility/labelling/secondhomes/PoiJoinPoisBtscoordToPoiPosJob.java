@@ -36,10 +36,8 @@ public class PoiJoinPoisBtscoordToPoiPosJob extends Job {
         this.setReducerClass(PoiJoinPoisBtscoordToPoiPosReducer.class);
     }
 
-    public void configure(Path input, Path centroids, Path output)
-            throws IOException {
-        this.conf.set("centroids", centroids.toString());
-        FileInputFormat.setInputPaths(this, input);
+    public void configure(Path[] inputs, Path output) throws IOException {
+        FileInputFormat.setInputPaths(this, inputs);
         FileOutputFormat.setOutputPath(this, output);
     }
 }

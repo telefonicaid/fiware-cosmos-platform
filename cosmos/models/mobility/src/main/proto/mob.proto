@@ -119,23 +119,6 @@ message GLEvent {
     optional base.Time time = 4;
 }
 
-message ActivityArea {
-    optional uint32 month = 1;
-    optional bool isWorkDay = 2;
-    optional uint32 numPos = 3;
-    optional uint32 difBtss = 4;
-    optional uint32 difMuns = 5;
-    optional uint32 difStates = 6;
-    optional double masscenterUtmX = 7;
-    optional double masscenterUtmY = 8;
-    optional double radius = 9;
-    optional double diamAreaInf = 10;
-}
-
-message RepeatedActivityAreas {
-    repeated ActivityArea repeatedActivityArea = 1;
-}
-
 message TelMonth {
     optional uint64 phone = 1;
     optional uint32 month = 2;

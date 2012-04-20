@@ -15,9 +15,9 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  *
  * @author dmicol
  */
-public class AdjAddUniqueIdPoiToPoiNewReducer extends Reducer<ProtobufWritable<TwoInt>,
-        ProtobufWritable<Poi>, ProtobufWritable<TwoInt>,
-        ProtobufWritable<PoiNew>> {
+public class AdjAddUniqueIdPoiToPoiNewReducer extends Reducer<
+        ProtobufWritable<TwoInt>, ProtobufWritable<Poi>,
+        ProtobufWritable<TwoInt>, ProtobufWritable<PoiNew>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<ProtobufWritable<Poi>> values, Context context)

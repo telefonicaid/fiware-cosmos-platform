@@ -1,5 +1,9 @@
 package es.tid.cosmos.mobility.adjacentextraction;
 
+import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
+
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -7,9 +11,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  *

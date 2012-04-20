@@ -46,7 +46,7 @@ public abstract class CosmosJob extends Job implements Runnable {
             }
         }
     }
-    
+
     @Override
     public final List<CosmosJob> getJobs() {
         List<CosmosJob> ret = new ArrayList<CosmosJob>();

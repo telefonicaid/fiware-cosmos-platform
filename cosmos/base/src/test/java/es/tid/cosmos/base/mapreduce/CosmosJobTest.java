@@ -16,6 +16,7 @@ import org.junit.Test;
  */
 public class CosmosJobTest {
     private static final Path NON_EXISITING_PATH = new Path("badproto://i/dont/exist");
+
     private static class FakeJob extends CosmosJob {
         private boolean waitResult;
 
@@ -24,7 +25,7 @@ public class CosmosJobTest {
             super(new Configuration(), jobName);
             this.waitResult = waitResult;
         }
-        
+
         @Override
         public boolean waitForCompletion(boolean dummy) {
             return this.waitResult;
@@ -40,21 +41,21 @@ public class CosmosJobTest {
         assertEquals(jobs.size(), 1);
         assertEquals(jobs.get(0), job);
     }
-    
+
     @Test
     public void testWaitForCompletion1() throws Exception {
         final String name = "test";
         FakeJob job = new FakeJob(name, true);
         job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
     }
-    
-    @Test(expected=Exception.class)
+
+    @Test(expected = Exception.class)
     public void testWaitForCompletion2() throws Exception {
         final String name = "test";
         FakeJob job = new FakeJob(name, false);
         job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
     }
-    
+
     @Test
     public void testWaitForCompletion3() throws Exception {
         final String name = "test";
@@ -62,15 +63,15 @@ public class CosmosJobTest {
         job.waitForCompletion(
                 EnumSet.of(CleanupOptions.DeleteIntermediateResults));
     }
-    
-    @Test(expected=Exception.class)
+
+    @Test(expected = Exception.class)
     public void testWaitForCompletion4() throws Exception {
         final String name = "test";
         FakeJob job = new FakeJob(name, true);
         job.waitForCompletion(
                 EnumSet.of(CleanupOptions.DeleteOutput));
     }
-    
+
     @Test
     public void testWaitForCompletion5() throws Exception {
         final String name = "test";
@@ -78,8 +79,8 @@ public class CosmosJobTest {
         job.waitForCompletion(
                 EnumSet.of(CleanupOptions.DeleteInput));
     }
-    
-    @Test(expected=Exception.class)
+
+    @Test(expected = Exception.class)
     public void testWaitForCompletion6() throws Exception {
         final String name = "test";
         FakeJob job = new FakeJob(name, true);

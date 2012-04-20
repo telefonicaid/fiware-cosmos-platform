@@ -28,7 +28,7 @@ public class FilePipeline implements Runnable {
             List<CosmosJob> jobs = inputRunnable.getJobs();
             Path outputPath = FileOutputFormat.getOutputPath(
                     jobs.get(jobs.size() - 1));
-            if(outputPath == null) {
+            if (outputPath == null) {
                 throw new InvalidParameterException(
                         "inputs must be fully configured but at least one of "
                         + "them doesn't have an output path set");

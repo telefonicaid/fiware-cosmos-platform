@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.activityarea;
+package es.tid.cosmos.mobility.mivs;
 
 import java.io.IOException;
 
@@ -25,9 +25,9 @@ public class DeletePeriodMapper extends Mapper<
         key.setConverter(TelMonth.class);
         final TelMonth oldKey = key.get();
         ProtobufWritable<TelMonth> newKey =
-            TelMonthUtil.createAndWrap(oldKey.getPhone(),
-                                       FIRST_MONTH,
-                                       oldKey.getWorkingday());
+                TelMonthUtil.createAndWrap(oldKey.getPhone(),
+                                           FIRST_MONTH,
+                                           oldKey.getWorkingday());
         context.write(newKey, value);
     }
 }

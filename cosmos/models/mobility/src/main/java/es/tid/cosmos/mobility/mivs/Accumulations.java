@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.activityarea;
+package es.tid.cosmos.mobility.mivs;
 
 /**
  *

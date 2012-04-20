@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.activityarea;
+package es.tid.cosmos.mobility.mivs;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,17 +10,15 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobVarsUtil;
-import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
 
 /**
  *
- * @author losa
+ * @author logc
  */
-public class  IndVarsOutAccReducer extends Reducer<
-        LongWritable,  ProtobufWritable<MobViMobVars>,
-        NullWritable,  Text> {
+public class  IndVarsOutAccReducer extends Reducer<LongWritable,
+        ProtobufWritable<MobViMobVars>, NullWritable, Text> {
     private static final String DELIMITER = "|";
     private static final String MISSING = "-1|-1|-1|-1|-1|-1|-1|-1";
 
@@ -31,11 +29,10 @@ public class  IndVarsOutAccReducer extends Reducer<
         for (ProtobufWritable<MobViMobVars> value : values) {
             value.setConverter(MobViMobVars.class);
             final MobViMobVars activityAreas = value.get();
-            List<MobVars> areasList =
-                activityAreas.getVarsList();
+            List<MobVars> areasList = activityAreas.getVarsList();
             boolean exists = false;
             String ans = key.toString();
-            for(int pos=0; pos < areasList.size(); pos++) {
+            for (int pos = 0; pos < areasList.size(); pos++) {
                 MobVars area = areasList.get(pos);
                 if (area.getWorkingday()) {
                     ans += DELIMITER + MobVarsUtil.toString(area);
@@ -47,7 +44,7 @@ public class  IndVarsOutAccReducer extends Reducer<
                 ans += DELIMITER + MISSING;
             }
             exists = false;
-            for(int pos=0; pos < areasList.size(); pos++) {
+            for (int pos = 0; pos < areasList.size(); pos++) {
                 MobVars area = areasList.get(pos);
                 if (!area.getWorkingday()) {
                     ans += DELIMITER + MobVarsUtil.toString(area);
@@ -58,8 +55,7 @@ public class  IndVarsOutAccReducer extends Reducer<
             if (!exists) {
                 ans += DELIMITER + MISSING;
             }
-            context.write(NullWritable.get(),
-                          new Text(ans));
+            context.write(NullWritable.get(), new Text(ans));
         }
     }
 }

@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.activityarea;
+package es.tid.cosmos.mobility.mivs;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,7 +10,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
-import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
 
 /**
@@ -31,10 +30,10 @@ public class FusionTotalVarsReducer extends Reducer<
         this.allAreas = new ArrayList<MobVars>();
         for (ProtobufWritable<MobVars> value: values) {
             value.setConverter(MobVars.class);
-            allAreas.add(value.get());
+            this.allAreas.add(value.get());
         }
         ProtobufWritable<MobViMobVars> wrappedAreas =
-            MobViMobVarsUtil.createAndWrap(allAreas);
+                MobViMobVarsUtil.createAndWrap(this.allAreas);
         context.write(key, wrappedAreas);
     }
 }

@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.activityarea;
+package es.tid.cosmos.mobility.mivs;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -6,10 +6,10 @@ import org.apache.hadoop.fs.Path;
 
 /**
  *
- * @author losa
+ * @author logc
  */
-public final class ActivityAreaRunner {
-    private ActivityAreaRunner() {
+public final class MivsRunner {
+    private MivsRunner() {
     }
 
     public static void run(Path viTelmonthBts, Path viClientFuseTxt,
@@ -83,7 +83,7 @@ public final class ActivityAreaRunner {
             }
         }
 
-        // Delete unused
+        // Delete unused files
         FileSystem fs = FileSystem.get(conf);
         fs.deleteOnExit(viTelmonthMobvars);
         fs.deleteOnExit(viTelmonthBtsAcc);

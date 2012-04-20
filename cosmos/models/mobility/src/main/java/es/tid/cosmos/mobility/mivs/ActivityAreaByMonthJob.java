@@ -1,10 +1,11 @@
-package es.tid.cosmos.mobility.activityarea;
+package es.tid.cosmos.mobility.mivs;
 
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -15,22 +16,22 @@ import es.tid.cosmos.mobility.MobilityMain;
 
 /**
  *
- * @author losa
+ * @author logc
  */
-public class DeletePeriodJob extends Job {
-    private static final String JOB_NAME = "DeletePeriod";
+public class ActivityAreaByMonthJob extends Job {
+    private static final String JOB_NAME = "ActivityAreaByMonth";
 
-    public DeletePeriodJob(Configuration conf) throws IOException {
+    public ActivityAreaByMonthJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
         this.setMapOutputKeyClass(ProtobufWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
-        this.setOutputKeyClass(ProtobufWritable.class);
+        this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setMapperClass(DeletePeriodMapper.class);
+        this.setReducerClass(ActivityAreaReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

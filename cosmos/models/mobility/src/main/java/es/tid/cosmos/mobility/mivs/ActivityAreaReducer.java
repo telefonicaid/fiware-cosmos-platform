@@ -1,7 +1,6 @@
-package es.tid.cosmos.mobility.activityarea;
+package es.tid.cosmos.mobility.mivs;
 
 import java.io.IOException;
-import java.lang.Math;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
@@ -15,7 +14,6 @@ import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
-import es.tid.cosmos.mobility.activityarea.Accumulations;
 
 public class ActivityAreaReducer extends Reducer<
         ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
@@ -26,20 +24,45 @@ public class ActivityAreaReducer extends Reducer<
     private Set<Integer> allStates;
     private List<Cell> cellsWithDifBts;
 
+    @Override
+    protected void reduce(ProtobufWritable<TelMonth> key,
+            Iterable<ProtobufWritable<Cell>> values, Context context)
+            throws IOException, InterruptedException {
+        key.setConverter(TelMonth.class);
+        final LongWritable newKey = new LongWritable(key.get().getPhone());
+        final int month = key.get().getMonth();
+        final boolean isWorkDay = key.get().getWorkingday();
+        this.allCells = new HashSet<Long>();
+        this.allBtss = new HashSet<Long>();
+        this.allMuns = new HashSet<Integer>();
+        this.allStates = new HashSet<Integer>();
+        this.cellsWithDifBts = new ArrayList<Cell>();
+
+        Accumulations accs = this.accumulate(values);
+        double influenceAreaDiameter = this.getMaxDistance(cellsWithDifBts);
+
+        ProtobufWritable<MobVars> ans =
+            MobVarsUtil.createAndWrap(month, isWorkDay, accs.difPos,
+                                      accs.numBtss, accs.numMuns,
+                                      accs.numStates, accs.massCenterX,
+                                      accs.massCenterY, accs.radius,
+                                      influenceAreaDiameter);
+        context.write(newKey, ans);
+    }
+    
     private Accumulations accumulate(Iterable<ProtobufWritable<Cell>> values) {
         Accumulations ans = new Accumulations();
         int numPos = 0;
-        double massCenterAccX = 0.0;
-        double massCenterAccY = 0.0;
-        double radiusAccX = 0.0;
-        double radiusAccY = 0.0;
-        boolean hasNewBts;
+        double massCenterAccX = 0.0D;
+        double massCenterAccY = 0.0D;
+        double radiusAccX = 0.0D;
+        double radiusAccY = 0.0D;
         for (ProtobufWritable<Cell> value : values) {
             value.setConverter(Cell.class);
-            Cell cell = value.get();
-            numPos += 1;
+            final Cell cell = value.get();
+            numPos++;
             this.allCells.add(cell.getCellId());
-            hasNewBts = this.allBtss.add(cell.getPlaceId());
+            boolean hasNewBts = this.allBtss.add(cell.getPlaceId());
             if (hasNewBts) {
                 this.cellsWithDifBts.add(cell);
             }
@@ -65,7 +88,7 @@ public class ActivityAreaReducer extends Reducer<
     }
 
     private double getMaxDistance(List<Cell> cellsWithDifBts) {
-        double maxDist = 0.0;
+        double maxDist = 0.0D;
         for (int pos = 0; pos < cellsWithDifBts.size(); pos++) {
             Cell currentCell = cellsWithDifBts.get(pos);
             for(int further = pos + 1; further < cellsWithDifBts.size();
@@ -83,32 +106,5 @@ public class ActivityAreaReducer extends Reducer<
             }
         }
         return maxDist;
-    }
-
-    @Override
-    protected void reduce(ProtobufWritable<TelMonth> key,
-            Iterable<ProtobufWritable<Cell>> values, Context context)
-            throws IOException, InterruptedException {
-        key.setConverter(TelMonth.class);
-        final LongWritable newKey = new LongWritable(key.get().getPhone());
-        final int month = key.get().getMonth();
-        final boolean isWorkDay = key.get().getWorkingday();
-        this.allCells = new HashSet<Long>();
-        this.allBtss = new HashSet<Long>();
-        this.allMuns = new HashSet<Integer>();
-        this.allStates = new HashSet<Integer>();
-        this.cellsWithDifBts = new ArrayList<Cell>();
-
-        Accumulations accs = accumulate(values);
-
-        double influenceAreaDiameter = getMaxDistance(cellsWithDifBts);
-
-        ProtobufWritable<MobVars> ans =
-            MobVarsUtil.createAndWrap(month, isWorkDay, accs.difPos,
-                                           accs.numBtss, accs.numMuns,
-                                           accs.numStates, accs.massCenterX,
-                                           accs.massCenterY, accs.radius,
-                                           influenceAreaDiameter);
-        context.write(newKey, ans);
     }
 }

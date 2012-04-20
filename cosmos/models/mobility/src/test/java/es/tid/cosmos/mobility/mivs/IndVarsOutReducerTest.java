@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.activityarea;
+package es.tid.cosmos.mobility.mivs;
 
 import static java.util.Arrays.asList;
 
@@ -21,26 +21,22 @@ import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
  * @author losa
  */
 public class IndVarsOutReducerTest {
-    private ReduceDriver<
-        LongWritable,  ProtobufWritable<MobViMobVars>,
-        NullWritable,  Text>
-        reducer;
+    private ReduceDriver<LongWritable, ProtobufWritable<MobViMobVars>,
+        NullWritable, Text> reducer;
 
     @Before
     public void setUp() {
-        this.reducer = new ReduceDriver<
-            LongWritable,  ProtobufWritable<MobViMobVars>,
-            NullWritable,  Text>
-                (new IndVarsOutReducer());
+        this.reducer = new ReduceDriver<LongWritable,
+                ProtobufWritable<MobViMobVars>, NullWritable, Text>(
+                        new IndVarsOutReducer());
     }
 
     @Test
     public void testMissingProfilesFilledWithMinusOnes() {
         LongWritable userNotSeenInFirstMonth = new LongWritable(5512684400L);
 
-        MobVars area =
-            MobVarsUtil.create(1, false, 1, 1, 1, 1, 1000000D, 1000000D,
-                    0.0, 0.0);
+        MobVars area = MobVarsUtil.create(1, false, 1, 1, 1, 1,
+                                          1000000D, 1000000D, 0.0, 0.0);
         ProtobufWritable<MobVars> row = MobVarsUtil.wrap(area);
 
         ProtobufWritable<MobViMobVars> input =

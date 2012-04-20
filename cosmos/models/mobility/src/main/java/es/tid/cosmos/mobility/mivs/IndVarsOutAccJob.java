@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.activityarea;
+package es.tid.cosmos.mobility.mivs;
 
 import java.io.IOException;
 
@@ -20,10 +20,10 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author losa
  */
-public class IndVarsOutJob extends Job {
-    private static final String JOB_NAME = "IndVarsOut";
+public class IndVarsOutAccJob extends Job {
+    private static final String JOB_NAME = "IndVarsOutAcc";
 
-    public IndVarsOutJob(Configuration conf) throws IOException {
+    public IndVarsOutAccJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
@@ -33,7 +33,7 @@ public class IndVarsOutJob extends Job {
         this.setOutputKeyClass(NullWritable.class);
         this.setOutputValueClass(Text.class);
         this.setOutputFormatClass(TextOutputFormat.class);
-        this.setReducerClass(IndVarsOutReducer.class);
+        this.setReducerClass(IndVarsOutAccReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

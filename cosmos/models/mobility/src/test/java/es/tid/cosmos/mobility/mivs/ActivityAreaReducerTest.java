@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.activityarea;
+package es.tid.cosmos.mobility.mivs;
 
 import java.io.IOException;
 import static java.util.Arrays.asList;
@@ -25,33 +25,28 @@ import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
  * @author losa
  */
 public class ActivityAreaReducerTest {
-    private ReduceDriver<
-        ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
-        LongWritable, ProtobufWritable<MobVars>>
-        reducer;
+    private ReduceDriver<ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
+            LongWritable, ProtobufWritable<MobVars>> reducer;
     private ProtobufWritable<Cell> firstCell;
     private ProtobufWritable<Cell> secondCell;
     private double TOLERANCE;
 
     @Before
     public void setUp() {
-        this.reducer = new ReduceDriver<
-            ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
-            LongWritable, ProtobufWritable<MobVars>>(
-                    new ActivityAreaReducer());
-        this.TOLERANCE = 0.1;
+        this.reducer = new ReduceDriver<ProtobufWritable<TelMonth>,
+                ProtobufWritable<Cell>, LongWritable,
+                ProtobufWritable<MobVars>>(new ActivityAreaReducer());
+        this.TOLERANCE = 0.1D;
 
         double firstPosX = 5000000D;
         double secondPosX = 7000000D;
         double firstPosY = 2000000D;
         double secondPosY = 4000000D;
 
-        this.firstCell = CellUtil.createAndWrap(590379901L, 100L,
-                1, 2,
-                firstPosX, firstPosY);
-        this.secondCell = CellUtil.createAndWrap(591266215L, 101L,
-                3, 4,
-                secondPosX, secondPosY);
+        this.firstCell = CellUtil.createAndWrap(590379901L, 100L, 1, 2,
+                                                firstPosX, firstPosY);
+        this.secondCell = CellUtil.createAndWrap(591266215L, 101L, 3, 4,
+                                                 secondPosX, secondPosY);
     }
 
     @Test
@@ -70,10 +65,10 @@ public class ActivityAreaReducerTest {
         double radius = 0.0;
         double diamAreaInf = 0.0;
 
-        ProtobufWritable<MobVars> outputWithAllVariables = 
-            MobVarsUtil.createAndWrap(month, isWorkDay, numPos, difBtss,
-                    difMuns, difStates, masscenterUtmX, masscenterUtmY, radius,
-                    diamAreaInf);
+        ProtobufWritable<MobVars> outputWithAllVariables =
+                MobVarsUtil.createAndWrap(month, isWorkDay, numPos, difBtss,
+                                          difMuns, difStates, masscenterUtmX,
+                                          masscenterUtmY, radius, diamAreaInf);
         this.reducer
                 .withInput(userWithSingleEntry, asList(this.firstCell))
                 .withOutput(new LongWritable(5512683500L),
@@ -84,7 +79,7 @@ public class ActivityAreaReducerTest {
     @Test
     public void testCountsMakeSense() throws IOException {
         ProtobufWritable<TelMonth> userWithTwoEntries =
-            TelMonthUtil.createAndWrap(5512684400L, 1, true);
+                TelMonthUtil.createAndWrap(5512684400L, 1, true);
 
         int month = 1;
         boolean isWorkDay = true;
@@ -94,16 +89,15 @@ public class ActivityAreaReducerTest {
         int difStates = 2;
         double masscenterUtmX = 6000000D;
         double masscenterUtmY = 3000000D;
-        double radius = Math.sqrt(2)*1000000;
-        double diamAreaInf = Math.sqrt(2)*2000000;
+        double radius = Math.sqrt(2) * 1000000;
+        double diamAreaInf = Math.sqrt(2) * 2000000;
 
         ProtobufWritable<MobVars> outputWithCorrectCounts =
-            MobVarsUtil.createAndWrap(month, isWorkDay, numPos, difBtss,
-                    difMuns, difStates, masscenterUtmX, masscenterUtmY, radius,
-                    diamAreaInf);
+                MobVarsUtil.createAndWrap(month, isWorkDay, numPos, difBtss,
+                                          difMuns, difStates, masscenterUtmX,
+                                          masscenterUtmY, radius, diamAreaInf);
         List<Pair<LongWritable,
-            ProtobufWritable<MobVars>>> results =
-                this.reducer
+                ProtobufWritable<MobVars>>> results = this.reducer
                         .withInput(userWithTwoEntries,
                                    asList(this.firstCell, this.secondCell))
                         .run();

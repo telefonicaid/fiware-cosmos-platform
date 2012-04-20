@@ -24,6 +24,13 @@ public abstract class MobDataUtil implements ProtobufUtil {
                 .build();
     }
     
+    public static MobData create(long value) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.LONG)
+                .setLong(value)
+                .build();
+    }
+    
     public static MobData create(Cdr cdr) {
         return MobData.newBuilder()
                 .setType(MobData.Type.CDR)
@@ -85,6 +92,10 @@ public abstract class MobDataUtil implements ProtobufUtil {
     }
     
     public static ProtobufWritable<MobData> createAndWrap(int obj) {
+        return wrap(create(obj));
+    }
+    
+    public static ProtobufWritable<MobData> createAndWrap(long obj) {
         return wrap(create(obj));
     }
     

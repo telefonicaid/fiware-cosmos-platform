@@ -10,28 +10,30 @@ message MobData {
         INVALID = 0;
         NULL = 1;
         INT = 2;
-        CDR = 3;
-        CELL = 4;
-        BTS = 5;
-        CLUSTER = 6;
-        NODE_BTS_DAY = 7;
-        BTS_COUNTER = 8;
-        POI = 9;
-        POI_POS = 10;
-        MOB_VI_MOB_VARS = 11;
+        LONG = 3;
+        CDR = 4;
+        CELL = 5;
+        BTS = 6;
+        CLUSTER = 7;
+        NODE_BTS_DAY = 8;
+        BTS_COUNTER = 9;
+        POI = 10;
+        POI_POS = 11;
+        MOB_VI_MOB_VARS = 12;
     }
 
     required Type type = 1;
     optional uint32 int = 2;
-    optional Cdr cdr = 3;
-    optional Cell cell = 4;
-    optional Bts bts = 5;
-    optional Cluster cluster = 6;
-    optional NodeBtsDay nodeBtsDay = 7;
-    optional BtsCounter btsCounter = 8;
-    optional Poi poi = 9;
-    optional PoiPos poiPos = 10;
-    optional MobViMobVars mobViMobVars = 11;
+    optional uint64 long = 3;
+    optional Cdr cdr = 4;
+    optional Cell cell = 5;
+    optional Bts bts = 6;
+    optional Cluster cluster = 7;
+    optional NodeBtsDay nodeBtsDay = 8;
+    optional BtsCounter btsCounter = 9;
+    optional Poi poi = 10;
+    optional PoiPos poiPos = 11;
+    optional MobViMobVars mobViMobVars = 12;
 }
 
 message Cdr {

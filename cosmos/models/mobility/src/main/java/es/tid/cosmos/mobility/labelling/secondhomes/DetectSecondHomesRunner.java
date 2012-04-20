@@ -171,7 +171,7 @@ public final class DetectSecondHomesRunner {
         {
             ConvertPoiToMobDataByTwoIntJob job =
                     new ConvertPoiToMobDataByTwoIntJob(conf);
-            job.configure(pairbtsAdjPath, pairsbtsAdjMobDataPath);
+            job.configure(nodbtsPoiPath, nodbtsPoiMobDataPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -193,7 +193,7 @@ public final class DetectSecondHomesRunner {
         {
             ConvertNullToMobDataByTwoIntJob job =
                     new ConvertNullToMobDataByTwoIntJob(conf);
-            job.configure(pairbtsAdjPath, pairsbtsAdjMobDataPath);
+            job.configure(nodbtsSechomeUniqPath, nodbtsSechomeUniqMobDataPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

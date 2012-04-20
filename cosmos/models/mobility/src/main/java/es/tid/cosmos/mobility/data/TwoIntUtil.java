@@ -29,6 +29,10 @@ public abstract class TwoIntUtil implements ProtobufUtil {
         return wrap(create(num1, num2));
     }
     
+    public static long getPartition(TwoInt obj, long maxNumPartitions) {
+        return (obj.getNum1() % maxNumPartitions);
+    }
+    
     public static TwoInt parse(String line) {
         String[] values = line.split(DELIMITER);
         return create(Long.parseLong(values[0]), Long.parseLong(values[1]));

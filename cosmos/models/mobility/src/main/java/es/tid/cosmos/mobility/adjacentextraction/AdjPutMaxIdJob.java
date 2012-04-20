@@ -18,10 +18,10 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class AdjJoinPairbtsAdjbtsJob extends Job {
-    private static final String JOB_NAME = "AdjJoinPairbtsAdjbts";
+public class AdjPutMaxIdJob extends Job {
+    private static final String JOB_NAME = "AdjPutMaxId";
 
-    public AdjJoinPairbtsAdjbtsJob(Configuration conf) throws IOException {
+    public AdjPutMaxIdJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
@@ -31,11 +31,11 @@ public class AdjJoinPairbtsAdjbtsJob extends Job {
         this.setOutputKeyClass(LongWritable.class);
         this.setOutputValueClass(ProtobufWritable.class);
         this.setOutputFormatClass(SequenceFileOutputFormat.class);
-        this.setReducerClass(AdjJoinPairbtsAdjbtsReducer.class);
+        this.setReducerClass(AdjPutMaxIdReducer.class);
     }
 
-    public void configure(Path[] inputs, Path output) throws IOException {
-        FileInputFormat.setInputPaths(this, inputs);
+    public void configure(Path input, Path output) throws IOException {
+        FileInputFormat.setInputPaths(this, input);
         FileOutputFormat.setOutputPath(this, output);
     }
 }

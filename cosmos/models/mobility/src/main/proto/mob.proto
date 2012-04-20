@@ -182,7 +182,6 @@ message MobVars
     optional double diam_areainf = 10;
 }
 
-message MobViMobVars
-{
+message MobViMobVars {
     repeated MobVars vars = 1;
 }

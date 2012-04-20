@@ -20,6 +20,7 @@ message MobData {
         POI = 10;
         POI_POS = 11;
         MOB_VI_MOB_VARS = 12;
+        TWO_INT = 13;
     }
 
     required Type type = 1;
@@ -34,6 +35,7 @@ message MobData {
     optional Poi poi = 10;
     optional PoiPos poiPos = 11;
     optional MobViMobVars mobViMobVars = 12;
+    optional TwoInt twoInt = 13;
 }
 
 message Cdr {

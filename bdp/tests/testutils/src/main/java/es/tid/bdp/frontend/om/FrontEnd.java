@@ -17,7 +17,7 @@ import es.tid.bdp.joblaunchers.TestException;
  */
 public class FrontEnd {
     // TODO: Change Home URL to a config parameter in future iterations
-    public static final String HOME_URL = "http://pshdp01:8000/";
+    public static final String HOME_URL = "http://81.45.17.20/";
     public static final String CREATE_JOB_ID = "create-job";
     public static final String TASK_STATUS_TABLE_ID = "jobs-table";
     public static final String RESULT_LINK_CLASS = "result-link";
@@ -47,7 +47,7 @@ public class FrontEnd {
         this.driver.get(HOME_URL);
         if (this.driver.getCurrentUrl().contains("login")) {
             try {
-                this.login(DEFAULT_USER, DEFAULT_PASSWRD);
+                this.login(this.username, this.password);
             } catch (TestException ex) {
                 fail("Bad user/password. " +  ex.toString());
             }

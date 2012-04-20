@@ -15,6 +15,7 @@ from pymongo import Connection
 
 from bdp_fe.jobconf import upload_util
 from bdp_fe.jobconf.cluster import fakeserver, remote
+from bdp_fe.jobconf.model_tests import *
 
 
 class LoginTestCase(djangotest.TestCase):

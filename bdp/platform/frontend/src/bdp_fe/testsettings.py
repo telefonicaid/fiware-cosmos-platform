@@ -34,7 +34,7 @@ LANDING_ROOT = '/tmp/landing/'
 CLUSTER_CONF = {
     'host': 'localhost',
     'port': 9888,
-    'mongobase': 'mongodb://pshdp04',
+    'mongobase': 'mongodb://localhost',
 }
 
 LOGGING = {

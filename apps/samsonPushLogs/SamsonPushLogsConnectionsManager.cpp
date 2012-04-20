@@ -13,11 +13,11 @@ extern samson::SamsonClient *samson_client;
 extern char queue_name[1024];
 
 void* RunSamsonPushLogsConnection( void* p)
-    {
+{
   SamsonPushLogsConnection* connection = ( SamsonPushLogsConnection* ) p;
   connection->Run();
   return NULL;
-    }
+}
 
 
 SamsonPushLogsConnection::SamsonPushLogsConnection( LogsDataSet *dataset, const char *queue_name, float ntimes_real_time, samson::SamsonClient *samson_client)
@@ -46,35 +46,80 @@ SamsonPushLogsConnection::~SamsonPushLogsConnection()
 
 void SamsonPushLogsConnection::Run()
 {
-  if (dataset_->InitDir() == false)
-  {
-    thread_running_ = false;
-    return;
-  }
+  //  if (dataset_->InitDir() == false)
+  //  {
+  //    thread_running_ = false;
+  //    return;
+  //  }
 
   au::Cronometer cronometer;
 
+  time_t first_timestamp = dataset_->GetFirstTimestamp();
+  char *time_init_str = strdup(ctime(&first_timestamp));
+  time_init_str[strlen(time_init_str)-1] = '\0';
+  LM_M(("Checking %s with first_timestamp:%s", dataset_->GetQueueName(), time_init_str));
+
+  int count_lines = 0;
+  int count_skip  = 0;
+  bool first_run = true;
   while( true )
   {
     char *log_line;
     time_t timestamp;
 
-    time_t first_timestamp = dataset_->GetFirstTimestamp();
-
     if ((dataset_->GetLogLineEntry(&log_line, &timestamp)) == false)
     {
-      thread_running_ = false;
-      return;
+      //LM_W(("Skipping wrong entry in dataset: %s", dataset_->GetQueueName()));
+      continue;
     }
 
+    char *time_read_str = strdup(ctime(&timestamp));
+    time_read_str[strlen(time_read_str)-1] = '\0';
+
+
+    if ((first_run) & (timestamp < first_timestamp))
+    {
+      if (count_skip%100000000 == 0)
+      {
+        LM_M(("Skipping %s with read_timestamp:%s and first_timestamp:%s", dataset_->GetQueueName(), time_read_str, time_init_str));
+      }
+      free(time_read_str);
+      free(log_line);
+      count_skip++;
+      continue;
+    }
+    else
+    {
+      first_run = false;
+    }
+
+    int count_sleeps = 0;
+    bool first_sleep = true;
     while (timestamp > first_timestamp + ntimes_real_time_ * cronometer.diffTime())
     {
+      if (count_sleeps%1000000000 == 0)
+      {
+        LM_M(("Sleeping %s with timestamp:%s, elapsed_time:%lf since %s", dataset_->GetQueueName(),  time_read_str, ntimes_real_time_ * cronometer.diffTime(), time_init_str));
+      }
       // sleeps for 10 milliseconds
       usleep(10000);
+      count_sleeps++;
+      if (first_sleep == true)
+      {
+        pushBuffer_->flush();
+      }
+      first_sleep = false;
     }
 
+    if (count_lines%1000000000 == 0)
+    {
+      LM_M(("Pushing with time:%s (first:%s, elapsed:%lf) to SAMSON from dataset:%s", time_read_str, time_init_str, ntimes_real_time_ * cronometer.diffTime(), dataset_->GetQueueName()));
+    }
     // Pushing this log to SAMSON system
-    pushBuffer_->push( log_line , strlen(log_line) , true );
+    pushBuffer_->push( log_line , strlen(log_line) , false );
     free(log_line);
+    free(time_read_str);
+    count_lines++;
   }
+  free(time_init_str);
 }

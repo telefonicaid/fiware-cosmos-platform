@@ -38,6 +38,7 @@ char *fgetsFromFd( char * str, int line_max_size, int fd )
     if (*p_str == '\n')
     {
       *(p_str+1) = '\0';
+      //LM_M(("Logline:'%s'", str));
       return str;
     }
   }
@@ -324,14 +325,25 @@ time_t GetTimeFromStrTimeDate_YYYY_mm_dd_24H(const char *strTimeDate)
 }
 
 
-LogsDataSet::LogsDataSet(const char *dir_path, const char *extension, int timestamp_position, int timestamp_type, const char *queue_name)
+LogsDataSet::LogsDataSet(const char *dir_path, const char *extension, int num_fields, int timestamp_position, int timestamp_position_alt, int timestamp_type, const char *queue_name)
 {
   dir_path_ = strdup(dir_path);
   extension_ = strdup(extension);
+  num_fields_ = num_fields;
   timestamp_position_ = timestamp_position;
+  timestamp_position_alt_ = timestamp_position_alt;
   timestamp_type_ = timestamp_type;
-  first_timestamp_ = -1;
-  queue_name_ = strdup(queue_name);
+  first_timestamp_ = 0;
+  separator_ = '\t';
+  if (queue_name == NULL)
+  {
+    LM_E(("Error, queue_name is a required parameter"));
+    queue_name_ = NULL;
+  }
+  else
+  {
+    queue_name_ = strdup(queue_name);
+  }
 }
 
 LogsDataSet::~LogsDataSet()
@@ -343,13 +355,15 @@ LogsDataSet::~LogsDataSet()
 
 bool LogsDataSet::InitDir()
 {
-  if (chdir(dir_path_) == -1)
-  {
-    LM_E(("Error changing to directory '%s': %s", dir_path_, strerror(errno)));
-    return false;
-  }
+  /*
+//  if (chdir(dir_path_) == -1)
+//  {
+//    LM_E(("Error changing to directory '%s': %s", dir_path_, strerror(errno)));
+//    return false;
+//  }
+   */
 
-  DIR * dir = opendir(".");
+  DIR * dir = opendir(dir_path_);
   if (dir == NULL)
   {
     LM_E(("opendir(%s): %s", dir_path_, strerror(errno)));
@@ -401,6 +415,7 @@ bool LogsDataSet::InitDir()
   while ((entry = readdir(dir)) != NULL)
   {
     char*        suff;
+    char filename_tmp[256];
     struct stat  statBuf;
 
     if (entry->d_name[0] == '.')
@@ -413,7 +428,9 @@ bool LogsDataSet::InitDir()
     if (strcmp(suff, extension_) != 0)
       continue;
 
-    if (stat(entry->d_name, &statBuf) == -1)
+    snprintf(filename_tmp, 256, "%s/%s", dir_path_, entry->d_name);
+
+    if (stat(filename_tmp, &statBuf) == -1)
     {
       LM_E(("stat(%s): %s", entry->d_name, strerror(errno)));
       continue;
@@ -422,7 +439,7 @@ bool LogsDataSet::InitDir()
     if (!S_ISREG(statBuf.st_mode))
       continue;
 
-    if (strlen(entry->d_name) > sizeof(file_vector_[ix].name))
+    if (strlen(filename_tmp) > sizeof(file_vector_[ix].name))
     {
       LM_E(("File name too long: '%s'", entry->d_name));
       continue;
@@ -430,7 +447,7 @@ bool LogsDataSet::InitDir()
 
     LM_V2(("Adding file '%s'", entry->d_name));
 
-    strcpy(file_vector_[ix].name, entry->d_name);
+    strncpy(file_vector_[ix].name, filename_tmp, 256);
     file_vector_[ix].date         = statBuf.st_mtime;
     file_vector_[ix].size         = statBuf.st_size;
     file_vector_[ix].fd           = -1;
@@ -493,15 +510,16 @@ bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp)
 
     if (file_vector_[file_index].fd == -1)
     {
-      if ((file_vector_[file_index].fd = open(file_vector_[file_index].name, O_RDONLY)) == -1)
+      if ((file_vector_[file_index].fp = fopen(file_vector_[file_index].name, "r")) == NULL)
       {
         LM_E(("Error opening file:'%s' (%d of %d), errno:%s %d", file_vector_[file_index].name, file_index, num_files_, strerror(errno), errno));
         file_vector_[file_index].already_read = true;
         continue;
       }
     }
+    file_vector_[file_index].fd = fileno(file_vector_[file_index].fp);
 
-    if ( fgetsFromFd (temporal_buffer , LOGSDATASET_LINE_MAX_LENGTH , file_vector_[file_index].fd) != NULL )
+    while ( fgets (temporal_buffer , LOGSDATASET_LINE_MAX_LENGTH , file_vector_[file_index].fp) != NULL )
     {
       *log = strdup(temporal_buffer);
       if (timestamp_position_ != -1)
@@ -510,17 +528,52 @@ bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp)
 
         SplitInWords(temporal_buffer , fields , separator_);
 
+        if (static_cast<int>(fields.size()) != num_fields_)
+        {
+          free(*log);
+          continue;
+        }
+
+        if (static_cast<int>(fields.size()) < (timestamp_position_+1))
+        {
+          temporal_buffer[strlen(temporal_buffer)-1] = '\0';
+          //LM_W(("Error reading empty line:'%s' from fd:%d file_index:%d (%s)", temporal_buffer, file_vector_[file_index].fd, file_index, file_vector_[file_index].name));
+          free(*log);
+          continue;
+        }
+
+        int temporal_position = 0;
+        if (strlen(fields[timestamp_position_]) < 6)
+        {
+          if (strlen(fields[timestamp_position_alt_]) < 6)
+          {
+            //LM_W(("Error detecting timestamp in pos:%d and %d for line:%s", timestamp_position_, timestamp_position_alt_, temporal_buffer));
+            free(*log);
+            *log = NULL;
+            return false;
+          }
+          else
+          {
+            temporal_position = timestamp_position_alt_;
+          }
+
+        }
+        else
+        {
+          temporal_position = timestamp_position_;
+        }
+
         if (timestamp_type_ == 1)
         {
-          *timestamp = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(fields[timestamp_position_]);
+          *timestamp = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(fields[temporal_position]);
         }
-        else if (timestamp_type_ == 1)
+        else if (timestamp_type_ == 2)
         {
-          *timestamp = GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[timestamp_position_]);
-          if (first_timestamp_ == -1)
-          {
-            first_timestamp_ = *timestamp;
-          }
+          *timestamp = GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[temporal_position]);
+//          if (first_timestamp_ == 0)
+//          {
+//            first_timestamp_ = *timestamp;
+//          }
         }
       }
       else
@@ -529,13 +582,12 @@ bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp)
       }
       return true;
     }
-    else
-    {
-    close(file_vector_[file_index].fd);
-      file_vector_[file_index].fd = -1;
-      file_vector_[file_index].already_read = true;
-    }
 
+    // If it arrives here, the input file has been finished
+    fclose(file_vector_[file_index].fp);
+    file_vector_[file_index].fp = NULL;
+    file_vector_[file_index].fd = -1;
+    file_vector_[file_index].already_read = true;
   }
   LM_W(("End of files in directory '%s' reached after scanning %d valid files", dir_path_, num_files_));
   return false;
@@ -551,57 +603,98 @@ bool LogsDataSet::LookAtNextLogLineEntry(char **log, time_t *timestamp)
   {
     if (file_vector_[file_index].already_read == true)
     {
+      LM_M(("Skipping already read file:%d (%s)", file_index, file_vector_[file_index].name));
       continue;
     }
 
-    if (file_vector_[file_index].fd == -1)
+    if (file_vector_[file_index].fp == NULL)
     {
-      if ((file_vector_[file_index].fd = open(file_vector_[file_index].name, O_RDONLY)) == -1)
+      if ((file_vector_[file_index].fp = fopen(file_vector_[file_index].name, "r")) == NULL)
       {
         LM_E(("Error opening file:'%s' (%d of %d), errno:%s %d", file_vector_[file_index].name, file_index, num_files_, strerror(errno), errno));
         file_vector_[file_index].already_read = true;
         continue;
       }
     }
+    file_vector_[file_index].fd = fileno(file_vector_[file_index].fp);
 
-
-    if ( fgetsFromFd (temporal_buffer , LOGSDATASET_LINE_MAX_LENGTH , file_vector_[file_index].fd) != NULL )
+    size_t bytes_read_acum = 0;
+    while ( fgets (temporal_buffer , LOGSDATASET_LINE_MAX_LENGTH , file_vector_[file_index].fp) != NULL )
     {
-      if ((lseek(file_vector_[file_index].fd, -1 * strlen(temporal_buffer), SEEK_CUR)) == -1)
-      {
-        LM_E(("Error rewinding file descriptor for file '%s'", file_vector_[file_index].name));
-      }
+      bytes_read_acum += strlen(temporal_buffer);
       *log = strdup(temporal_buffer);
+
+
+
       if (timestamp_position_ != -1)
       {
         std::vector<char*> fields;
 
         SplitInWords(temporal_buffer , fields , separator_);
 
+        if (static_cast<int>(fields.size()) != num_fields_)
+        {
+          free(*log);
+          continue;
+        }
+
+        if (static_cast<int>(fields.size()) < (timestamp_position_+1))
+        {
+          //LM_W(("Error reading line:'%s' from fd:%d file_index:%d (%s)", temporal_buffer, file_vector_[file_index].fd, file_index, file_vector_[file_index].name));
+          free(*log);
+          continue;
+        }
+
+        int temporal_position = 0;
+        if (strlen(fields[timestamp_position_]) < 6)
+        {
+          if (strlen(fields[timestamp_position_alt_]) < 6)
+          {
+            //LM_W(("Error detecting timestamp in pos:%d(strlen:%d) and %d(strlen(%d) for line:%s", timestamp_position_, strlen(fields[timestamp_position_]), timestamp_position_alt_, strlen(fields[timestamp_position_alt_]), temporal_buffer));
+            free(*log);
+             *log = NULL;
+            return false;
+          }
+          else
+          {
+            temporal_position = timestamp_position_alt_;
+          }
+        }
+        else
+        {
+          temporal_position = timestamp_position_;
+        }
+
         if (timestamp_type_ == 1)
         {
-          *timestamp = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(fields[timestamp_position_]);
+          *timestamp = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(fields[temporal_position]);
         }
-        else if (timestamp_type_ == 1)
+        else if (timestamp_type_ == 2)
         {
-          *timestamp = GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[timestamp_position_]);
-          if (first_timestamp_ == -1)
-          {
-            first_timestamp_ = *timestamp;
-          }
+          *timestamp = GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[temporal_position]);
+//          if (first_timestamp_ == 0)
+//          {
+//            first_timestamp_ = *timestamp;
+//          }
         }
       }
       else
       {
         *timestamp = -1;
       }
+
+      if ((lseek(file_vector_[file_index].fd, -1 * bytes_read_acum, SEEK_CUR)) == -1)
+      {
+        LM_E(("Error rewinding file descriptor for file '%s'", file_vector_[file_index].name));
+      }
       return true;
     }
-    else
+
+    // If it arrives here, the input file has been finished
+    // but now, we don't want to jump to another file
+    if ((lseek(file_vector_[file_index].fd, -1 * bytes_read_acum, SEEK_CUR)) == -1)
     {
-    close(file_vector_[file_index].fd);
-      file_vector_[file_index].fd = -1;
-      file_vector_[file_index].already_read = true;
+      LM_E(("Error rewinding file descriptor for file '%s'", file_vector_[file_index].name));
     }
 
   }

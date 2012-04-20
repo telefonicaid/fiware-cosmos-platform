@@ -31,7 +31,6 @@ import es.tid.cosmos.tests.joblaunchers.*;
 public class FrontendIT {
     private static final String SIMPLE_TEXT = "Very simple text file";
     private static final int TASK_COUNT = 4;
-    
     private FrontEnd frontend;
     private String wordcountJarPath;
     private String mapperFailJarPath;
@@ -180,7 +179,7 @@ public class FrontendIT {
         WebDriver driver = this.frontend.getDriver();
         SelectNamePage namePage = this.frontend.goToCreateNewJob();
         verifyLinks();
-        
+
         // Get JAR link
         WebElement jarLink = driver.findElement(
                 By.id(SelectNamePage.SAMPLE_JAR_LINK_ID));
@@ -192,12 +191,12 @@ public class FrontendIT {
         ReadableByteChannel rbc = Channels.newChannel(linkUrl.openStream());
         FileOutputStream fos = new FileOutputStream(jarName);
         try {
-            fos.getChannel().transferFrom(rbc, 0, 1 << 24); 
+            fos.getChannel().transferFrom(rbc, 0, 1 << 24);
         } finally {
             rbc.close();
             fos.close();
         }
-        
+
         // Submit job with sample JAR
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         FrontendLauncher testDriver = new FrontendLauncher(
@@ -221,7 +220,7 @@ public class FrontendIT {
                 restrictions.contains("Tool"),
                 "Verifying restrictions mention the Tool interface");
     }
-    
+
     private String createAutoDeleteFile(String text)
             throws IOException {
         File tmpFile = File.createTempFile("webui-", ".tmp");
@@ -315,7 +314,7 @@ public class FrontendIT {
                 + " TaskId: " + taskId);
         verifyLinks();
     }
-    
+
     public void testFailureJar() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         FrontendLauncher testDriver = new FrontendLauncher(
@@ -339,7 +338,7 @@ public class FrontendIT {
                 + " TaskId: " + taskId);
         verifyLinks();
     }
-    
+
     public void testListResultJar() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(
                 "2 3 4 5 6 7 8 9 123\n19283");
@@ -364,6 +363,24 @@ public class FrontendIT {
                 + " TaskId: " + taskId);
         verifyLinks();
         List<Map<String, String>> results = testDriver.getResults(taskId);
-        
+
+    }
+
+    public void testDotsInName() throws IOException, TestException {
+        final String inputFilePath = createAutoDeleteFile(
+                "2 3 4 5 6 7 8 9 123\n19283");
+        FrontendLauncher testDriver = new FrontendLauncher("test@.2",
+                                                           "cosmostest@.2");
+        final String taskId = "../1234|<b>Weird</b>.Name_1!!&nbsp;%20~€";
+        testDriver.createNewTask(inputFilePath,
+                                 this.printPrimesJarPath,
+                                 taskId,
+                                 true);
+        testDriver.waitForTaskCompletion(taskId);
+        assertTrue(testDriver.getTaskStatus(taskId) == TaskStatus.Completed,
+                   "Verifying task is in the completed state."
+                + " TaskId: " + taskId);
+        verifyLinks();
+        List<Map<String, String>> results = testDriver.getResults(taskId);
     }
 }

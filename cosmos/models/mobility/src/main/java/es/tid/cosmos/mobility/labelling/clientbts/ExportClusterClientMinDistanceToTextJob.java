@@ -1,6 +1,5 @@
 package es.tid.cosmos.mobility.labelling.clientbts;
 
-import es.tid.cosmos.mobility.labelling.bts.ExportClusterClientMinDistanceToTextReducer;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;

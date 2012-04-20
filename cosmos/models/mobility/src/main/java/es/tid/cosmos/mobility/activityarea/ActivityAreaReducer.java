@@ -11,15 +11,15 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.ActivityAreaUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
+import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
 import es.tid.cosmos.mobility.activityarea.Accumulations;
 
 public class ActivityAreaReducer extends Reducer<
         ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
-        LongWritable, ProtobufWritable<ActivityArea>> {
+        LongWritable, ProtobufWritable<MobVars>> {
     private Set<Long> allCells;
     private Set<Long> allBtss;
     private Set<Integer> allMuns;
@@ -103,8 +103,8 @@ public class ActivityAreaReducer extends Reducer<
 
         double influenceAreaDiameter = getMaxDistance(cellsWithDifBts);
 
-        ProtobufWritable<ActivityArea> ans =
-            ActivityAreaUtil.createAndWrap(month, isWorkDay, accs.difPos,
+        ProtobufWritable<MobVars> ans =
+            MobVarsUtil.createAndWrap(month, isWorkDay, accs.difPos,
                                            accs.numBtss, accs.numMuns,
                                            accs.numStates, accs.massCenterX,
                                            accs.massCenterY, accs.radius,

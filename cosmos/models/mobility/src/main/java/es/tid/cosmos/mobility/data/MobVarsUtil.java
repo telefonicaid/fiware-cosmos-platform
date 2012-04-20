@@ -3,41 +3,41 @@ package es.tid.cosmos.mobility.data;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import com.twitter.elephantbird.util.Pair;
 
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
+import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 
 /**
  *
  * @author losa
  */
-public abstract class ActivityAreaUtil implements ProtobufUtil {
+public abstract class MobVarsUtil implements ProtobufUtil {
     private static final String DELIMITER = "|";
 
-    public static ActivityArea create(int month, boolean isWorkDay, int numPos,
+    public static MobVars create(int month, boolean isWorkDay, int numPos,
             int difBtss, int difMuns, int difStates, double masscenterUtmX,
             double masscenterUtmY, double radius, double diamAreaInf) {
-        return ActivityArea.newBuilder()
+        return MobVars.newBuilder()
             .setMonth(month)
-            .setIsWorkDay(isWorkDay)
+            .setWorkingday(isWorkDay)
             .setNumPos(numPos)
             .setDifBtss(difBtss)
             .setDifMuns(difMuns)
             .setDifStates(difStates)
-            .setMasscenterUtmX(masscenterUtmX)
-            .setMasscenterUtmY(masscenterUtmY)
+            .setMasscenterUtmx(masscenterUtmX)
+            .setMasscenterUtmy(masscenterUtmY)
             .setRadius(radius)
-            .setDiamAreaInf(diamAreaInf)
+            .setDiamAreainf(diamAreaInf)
             .build();
     }
 
-    public static ProtobufWritable<ActivityArea> wrap(ActivityArea obj) {
-        ProtobufWritable<ActivityArea> wrapper =
-                ProtobufWritable.newInstance(ActivityArea.class);
+    public static ProtobufWritable<MobVars> wrap(MobVars obj) {
+        ProtobufWritable<MobVars> wrapper =
+                ProtobufWritable.newInstance(MobVars.class);
         wrapper.set(obj);
         return wrapper;
     }
 
-    public static ProtobufWritable<ActivityArea> createAndWrap(int month,
+    public static ProtobufWritable<MobVars> createAndWrap(int month,
             boolean isWorkDay, int numPos, int difBtss,  int difMuns,
             int difStates, double masscenterUtmX, double masscenterUtmY,
             double radius, double diamAreaInf) {
@@ -46,11 +46,11 @@ public abstract class ActivityAreaUtil implements ProtobufUtil {
                            diamAreaInf));
     }
 
-    public static String toString(ActivityArea obj) {
+    public static String toString(MobVars obj) {
         return (obj.getNumPos() + DELIMITER + obj.getDifBtss() + DELIMITER +
                 obj.getDifMuns() + DELIMITER + obj.getDifStates() + DELIMITER +
-                obj.getMasscenterUtmX() + DELIMITER +
-                obj.getMasscenterUtmY() + DELIMITER +
-                obj.getRadius() + DELIMITER + obj.getDiamAreaInf());
+                obj.getMasscenterUtmx() + DELIMITER +
+                obj.getMasscenterUtmy() + DELIMITER +
+                obj.getRadius() + DELIMITER + obj.getDiamAreainf());
     }
 }

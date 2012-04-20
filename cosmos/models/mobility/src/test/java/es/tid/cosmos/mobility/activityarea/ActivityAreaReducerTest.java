@@ -12,10 +12,10 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import es.tid.cosmos.mobility.data.ActivityAreaUtil;
+import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.mobility.data.TelMonthUtil;
 import es.tid.cosmos.mobility.data.CellUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
+import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
 
@@ -27,7 +27,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
 public class ActivityAreaReducerTest {
     private ReduceDriver<
         ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
-        LongWritable, ProtobufWritable<ActivityArea>>
+        LongWritable, ProtobufWritable<MobVars>>
         reducer;
     private ProtobufWritable<Cell> firstCell;
     private ProtobufWritable<Cell> secondCell;
@@ -37,7 +37,7 @@ public class ActivityAreaReducerTest {
     public void setUp() {
         this.reducer = new ReduceDriver<
             ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
-            LongWritable, ProtobufWritable<ActivityArea>>(
+            LongWritable, ProtobufWritable<MobVars>>(
                     new ActivityAreaReducer());
         this.TOLERANCE = 0.1;
 
@@ -70,8 +70,8 @@ public class ActivityAreaReducerTest {
         double radius = 0.0;
         double diamAreaInf = 0.0;
 
-        ProtobufWritable<ActivityArea> outputWithAllVariables = 
-            ActivityAreaUtil.createAndWrap(month, isWorkDay, numPos, difBtss,
+        ProtobufWritable<MobVars> outputWithAllVariables = 
+            MobVarsUtil.createAndWrap(month, isWorkDay, numPos, difBtss,
                     difMuns, difStates, masscenterUtmX, masscenterUtmY, radius,
                     diamAreaInf);
         this.reducer
@@ -97,20 +97,20 @@ public class ActivityAreaReducerTest {
         double radius = Math.sqrt(2)*1000000;
         double diamAreaInf = Math.sqrt(2)*2000000;
 
-        ProtobufWritable<ActivityArea> outputWithCorrectCounts =
-            ActivityAreaUtil.createAndWrap(month, isWorkDay, numPos, difBtss,
+        ProtobufWritable<MobVars> outputWithCorrectCounts =
+            MobVarsUtil.createAndWrap(month, isWorkDay, numPos, difBtss,
                     difMuns, difStates, masscenterUtmX, masscenterUtmY, radius,
                     diamAreaInf);
         List<Pair<LongWritable,
-            ProtobufWritable<ActivityArea>>> results =
+            ProtobufWritable<MobVars>>> results =
                 this.reducer
                         .withInput(userWithTwoEntries,
                                    asList(this.firstCell, this.secondCell))
                         .run();
 
-        ProtobufWritable<ActivityArea> resultValue =
+        ProtobufWritable<MobVars> resultValue =
                 results.get(0).getSecond();
-        resultValue.setConverter(ActivityArea.class);
+        resultValue.setConverter(MobVars.class);
         assertEquals(outputWithCorrectCounts.get().getNumPos(),
                      resultValue.get().getNumPos());
         assertEquals(outputWithCorrectCounts.get().getDifBtss(),
@@ -120,17 +120,17 @@ public class ActivityAreaReducerTest {
         assertEquals(outputWithCorrectCounts.get().getDifStates(),
                      resultValue.get().getDifStates());
         assertEquals("Checking mass center UTM coord X",
-                     outputWithCorrectCounts.get().getMasscenterUtmX(),
-                     resultValue.get().getMasscenterUtmX(), this.TOLERANCE);
+                     outputWithCorrectCounts.get().getMasscenterUtmx(),
+                     resultValue.get().getMasscenterUtmx(), this.TOLERANCE);
         assertEquals("Checking mass center UTM coord Y",
-                     outputWithCorrectCounts.get().getMasscenterUtmY(),
-                     resultValue.get().getMasscenterUtmY(), this.TOLERANCE);
+                     outputWithCorrectCounts.get().getMasscenterUtmy(),
+                     resultValue.get().getMasscenterUtmy(), this.TOLERANCE);
         assertEquals("Checking radius",
                      outputWithCorrectCounts.get().getRadius(),
                      resultValue.get().getRadius(), this.TOLERANCE);
         assertEquals("Checking diameter",
-                     outputWithCorrectCounts.get().getDiamAreaInf(),
-                     resultValue.get().getDiamAreaInf(), this.TOLERANCE);
+                     outputWithCorrectCounts.get().getDiamAreainf(),
+                     resultValue.get().getDiamAreainf(), this.TOLERANCE);
     }
 }
 

@@ -11,10 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import es.tid.cosmos.mobility.data.ActivityAreaUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
-import es.tid.cosmos.mobility.data.MobProtocol.RepeatedActivityAreas;
-import es.tid.cosmos.mobility.data.RepeatedActivityAreasUtil;
+import es.tid.cosmos.mobility.data.MobVarsUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
+import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
+import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
 
 /**
  *
@@ -23,18 +23,18 @@ import es.tid.cosmos.mobility.data.RepeatedActivityAreasUtil;
 public class FusionTotalVarsReducerTest {
     private ReduceDriver<
         LongWritable,
-        ProtobufWritable<ActivityArea>,
+        ProtobufWritable<MobVars>,
         LongWritable,
-        ProtobufWritable<RepeatedActivityAreas>>
+        ProtobufWritable<MobViMobVars>>
         reducer;
 
     @Before
     public void setUp() {
         this.reducer = new ReduceDriver<
             LongWritable,
-            ProtobufWritable<ActivityArea>,
+            ProtobufWritable<MobVars>,
             LongWritable,
-            ProtobufWritable<RepeatedActivityAreas>>(
+            ProtobufWritable<MobViMobVars>>(
                     new FusionTotalVarsReducer());
     }
 
@@ -42,18 +42,18 @@ public class FusionTotalVarsReducerTest {
     public void testJoinsDifferentRows(){
         LongWritable userWithTwoEntries = new LongWritable(5512684400L);
 
-        ActivityArea area1 =
-            ActivityAreaUtil.create(1, true, 1, 1, 1, 1, 1000000, 1000000,
+        MobVars area1 =
+            MobVarsUtil.create(1, true, 1, 1, 1, 1, 1000000, 1000000,
                                     0.0, 0.0);
-        ProtobufWritable<ActivityArea> row1 = ActivityAreaUtil.wrap(area1);
+        ProtobufWritable<MobVars> row1 = MobVarsUtil.wrap(area1);
 
-        ActivityArea area2 =
-            ActivityAreaUtil.create(1, true, 2, 2, 2, 2, 6000000, 3000000,
+        MobVars area2 =
+            MobVarsUtil.create(1, true, 2, 2, 2, 2, 6000000, 3000000,
                                     100, 100);
-        ProtobufWritable<ActivityArea> row2 = ActivityAreaUtil.wrap(area2);
+        ProtobufWritable<MobVars> row2 = MobVarsUtil.wrap(area2);
 
-        ProtobufWritable<RepeatedActivityAreas> results =
-            RepeatedActivityAreasUtil.createAndWrap(asList(area1, area2));
+        ProtobufWritable<MobViMobVars> results =
+            MobViMobVarsUtil.createAndWrap(asList(area1, area2));
 
         this.reducer
             .withInputKey(userWithTwoEntries)

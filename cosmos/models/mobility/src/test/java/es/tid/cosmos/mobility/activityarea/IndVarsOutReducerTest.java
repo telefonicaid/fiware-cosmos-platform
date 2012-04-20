@@ -11,10 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import es.tid.cosmos.mobility.data.ActivityAreaUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
-import es.tid.cosmos.mobility.data.MobProtocol.RepeatedActivityAreas;
-import es.tid.cosmos.mobility.data.RepeatedActivityAreasUtil;
+import es.tid.cosmos.mobility.data.MobVarsUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
+import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
+import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
 
 /**
  *
@@ -22,14 +22,14 @@ import es.tid.cosmos.mobility.data.RepeatedActivityAreasUtil;
  */
 public class IndVarsOutReducerTest {
     private ReduceDriver<
-        LongWritable,  ProtobufWritable<RepeatedActivityAreas>,
+        LongWritable,  ProtobufWritable<MobViMobVars>,
         NullWritable,  Text>
         reducer;
 
     @Before
     public void setUp() {
         this.reducer = new ReduceDriver<
-            LongWritable,  ProtobufWritable<RepeatedActivityAreas>,
+            LongWritable,  ProtobufWritable<MobViMobVars>,
             NullWritable,  Text>
                 (new IndVarsOutReducer());
     }
@@ -38,13 +38,13 @@ public class IndVarsOutReducerTest {
     public void testMissingProfilesFilledWithMinusOnes() {
         LongWritable userNotSeenInFirstMonth = new LongWritable(5512684400L);
 
-        ActivityArea area =
-            ActivityAreaUtil.create(1, false, 1, 1, 1, 1, 1000000D, 1000000D,
+        MobVars area =
+            MobVarsUtil.create(1, false, 1, 1, 1, 1, 1000000D, 1000000D,
                     0.0, 0.0);
-        ProtobufWritable<ActivityArea> row = ActivityAreaUtil.wrap(area);
+        ProtobufWritable<MobVars> row = MobVarsUtil.wrap(area);
 
-        ProtobufWritable<RepeatedActivityAreas> input =
-            RepeatedActivityAreasUtil.createAndWrap(asList(area));
+        ProtobufWritable<MobViMobVars> input =
+            MobViMobVarsUtil.createAndWrap(asList(area));
 
         String s = "5512684400|1|-1|-1|-1|-1|-1|-1|-1|-1|"
                  + "1|1|1|1|1000000.0|1000000.0|0.0|0.0";

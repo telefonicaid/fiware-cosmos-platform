@@ -8,10 +8,10 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.RepeatedActivityAreasUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
+import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.MobProtocol.RepeatedActivityAreas;
+import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
 
 /**
  *
@@ -19,22 +19,22 @@ import es.tid.cosmos.mobility.data.MobProtocol.RepeatedActivityAreas;
  */
 public class FusionTotalVarsReducer extends Reducer<
         LongWritable,
-        ProtobufWritable<ActivityArea>,
+        ProtobufWritable<MobVars>,
         LongWritable,
-        ProtobufWritable<RepeatedActivityAreas>> {
-    private List<ActivityArea> allAreas;
+        ProtobufWritable<MobViMobVars>> {
+    private List<MobVars> allAreas;
 
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<ActivityArea>> values, Context context)
+            Iterable<ProtobufWritable<MobVars>> values, Context context)
             throws IOException, InterruptedException {
-        this.allAreas = new ArrayList<ActivityArea>();
-        for (ProtobufWritable<ActivityArea> value: values) {
-            value.setConverter(ActivityArea.class);
+        this.allAreas = new ArrayList<MobVars>();
+        for (ProtobufWritable<MobVars> value: values) {
+            value.setConverter(MobVars.class);
             allAreas.add(value.get());
         }
-        ProtobufWritable<RepeatedActivityAreas> wrappedAreas =
-            RepeatedActivityAreasUtil.createAndWrap(allAreas);
+        ProtobufWritable<MobViMobVars> wrappedAreas =
+            MobViMobVarsUtil.createAndWrap(allAreas);
         context.write(key, wrappedAreas);
     }
 }

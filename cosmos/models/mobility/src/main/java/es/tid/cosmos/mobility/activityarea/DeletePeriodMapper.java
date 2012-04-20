@@ -6,7 +6,6 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.mobility.data.TelMonthUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.ActivityArea;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
 

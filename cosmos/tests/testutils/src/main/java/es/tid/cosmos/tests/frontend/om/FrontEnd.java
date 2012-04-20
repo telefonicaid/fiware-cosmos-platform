@@ -45,10 +45,10 @@ public class FrontEnd {
     private final Environment environment;
 
     public FrontEnd(Environment env) {
-        this(DEFAULT_USER, DEFAULT_PASSWRD, env);
+        this(env, DEFAULT_USER, DEFAULT_PASSWRD);
     }
     
-    public FrontEnd(String username, String password, Environment env) {
+    public FrontEnd(Environment env, String username, String password) {
         this.driver = new HtmlUnitDriver();
         this.username = username;
         this.password = password;

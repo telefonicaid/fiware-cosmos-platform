@@ -25,8 +25,8 @@ public class FrontendLauncher implements JobLauncher {
         this.frontend = new FrontEnd(env);
     }
 
-    public FrontendLauncher(String username, String password) {
-        this.frontend = new FrontEnd(username, password);
+    public FrontendLauncher(Environment env, String username, String password) {
+        this.frontend = new FrontEnd(env, username, password);
     }
 
     @Override

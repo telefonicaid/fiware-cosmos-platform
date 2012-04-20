@@ -40,11 +40,11 @@ public class FrontendIT {
     @Parameters("environment")
     @BeforeClass
     public void setUp(String environment) throws IOException {
-        this.wordcountJarPath = HadoopJars.getPath(JarNames.Wordcount); 
+        this.wordcountJarPath = HadoopJars.getPath(JarNames.Wordcount);
         this.mapperFailJarPath = HadoopJars.getPath(JarNames.MapperFail);
         this.printPrimesJarPath = HadoopJars.getPath(JarNames.PrintPrimes);
         this.invalidJarPath = createAutoDeleteFile("Invalid Jar");
-        
+
         this.frontend = new FrontEnd(Environment.valueOf(environment));
     }
 
@@ -83,10 +83,10 @@ public class FrontendIT {
                 String linkUrl = this.frontend.resolveURL(verbatimUrl).toString();
                 assertTrue(FrontendIT.isLive(linkUrl),
                            "Broken link: " + linkUrl);
-                if(link.getText().equalsIgnoreCase("home")) {
+                if (link.getText().equalsIgnoreCase("home")) {
                     assertEquals(this.frontend.getHomeUrl(),
                                  linkUrl.toString());
-                    
+
                 }
             }
         } catch (MalformedURLException ex) {
@@ -135,7 +135,7 @@ public class FrontendIT {
         assertFalse(this.frontend.taskExists(taskId),
                     "Verify task hasn't been created. TaskId: " + taskId);
     }
-    
+
     private void createNoInputFileJob(String taskId) {
         // Create job without data and verify we get an error if no data
         // is specified
@@ -157,15 +157,15 @@ public class FrontendIT {
     }
 
     public void testNoInputFile() throws IOException, TestException {
-        final String taskId = UUID.randomUUID().toString();        
+        final String taskId = UUID.randomUUID().toString();
         createNoInputFileJob(taskId);
-        
+
         // Verify we can go back to the frontpage and upload data
         // through the "Upload Data" link
         SelectInputPage inputPage = this.frontend.setInputDataForJob(taskId);
         inputPage.setInputFile(this.invalidJarPath);
         inputPage.submitInputFileForm();
-        
+
         FrontendLauncher testDriver = new FrontendLauncher(
                 this.frontend.getEnvironment());
         testDriver.launchTask(taskId);
@@ -185,7 +185,7 @@ public class FrontendIT {
                 By.id(SelectNamePage.SAMPLE_JAR_LINK_ID));
         String verbatimUrl = jarLink.getAttribute("href");
         URL linkUrl = this.frontend.resolveURL(verbatimUrl);
-        
+
         // Download file locally
         final String jarName = "sample.jar";
         ReadableByteChannel rbc = Channels.newChannel(linkUrl.openStream());
@@ -369,8 +369,10 @@ public class FrontendIT {
     public void testDotsInName() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(
                 "2 3 4 5 6 7 8 9 123\n19283");
-        FrontendLauncher testDriver = new FrontendLauncher("test@.2",
-                                                           "cosmostest@.2");
+        FrontendLauncher testDriver = new FrontendLauncher(
+                this.frontend.getEnvironment(),
+                "test@.2",
+                "cosmostest@.2");
         final String taskId = "../1234|<b>Weird</b>.Name_1!!&nbsp;%20~€";
         testDriver.createNewTask(inputFilePath,
                                  this.printPrimesJarPath,

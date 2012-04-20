@@ -127,4 +127,3 @@ public class ActivityAreaReducerTest {
                      resultValue.get().getDiamAreainf(), this.TOLERANCE);
     }
 }
-

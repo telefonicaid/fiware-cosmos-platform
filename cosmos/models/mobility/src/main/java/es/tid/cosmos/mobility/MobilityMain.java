@@ -11,6 +11,7 @@ import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;
 import es.tid.cosmos.mobility.labelling.join.LabelJoiningRunner;
+import es.tid.cosmos.mobility.labelling.secondhomes.DetectSecondHomesRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
@@ -70,15 +71,12 @@ public class MobilityMain extends Configured implements Tool {
         }
 
         Path tmpExtractMivsPath = new Path(tmpPath, "mivs");
-        Path viClientFuseTxtPath = new Path(tmpExtractMivsPath,
-                                            "vi_client_fuse_txt");
-        Path viClientFuseAccTxtPath = new Path(tmpExtractMivsPath,
-                                               "vi_client_fuse_acc_txt");
+        Path viClientFuseAccPath = new Path(tmpExtractMivsPath,
+                                        "vi_client_fuse_acc");
         boolean shouldExtractMivs = arguments.getBoolean("extract_mivs");
         if (shouldRunAll || shouldExtractMivs) {
-            MivsRunner.run(viTelmonthBtsPath, viClientFuseTxtPath,
-                                   viClientFuseAccTxtPath, tmpExtractMivsPath,
-                                   conf);
+            MivsRunner.run(viTelmonthBtsPath, viClientFuseAccPath,
+                           tmpExtractMivsPath, isDebug, conf);
         }
         
         Path tmpExtractPoisPath = new Path(tmpPath, "pois");
@@ -134,11 +132,23 @@ public class MobilityMain extends Configured implements Tool {
         }
 
         Path tmpLabelJoining = new Path(tmpPath, "label_joining");
+        Path pointsOfInterestTemp4Path = new Path(tmpLabelJoining,
+                                                  "points_of_interest_temp4");
         boolean shouldJoinLabels = arguments.getBoolean("joinLabels");
         if (shouldRunAll || shouldJoinLabels) {
             LabelJoiningRunner.run(pointsOfInterestTempPath,
                     vectorClientClusterPath, vectorClientbtsClusterPath,
-                    vectorBtsClusterPath, tmpLabelJoining, conf);
+                    vectorBtsClusterPath, pointsOfInterestTemp4Path,
+                    tmpLabelJoining, conf);
+        }
+        
+        Path tmpSecondHomesPath = new Path(tmpPath, "second_homes");
+        boolean shouldDetectSecondHomes = arguments.getBoolean(
+                "detectSecondHomes");
+        if (shouldRunAll || shouldDetectSecondHomes) {
+            DetectSecondHomesRunner.run(cellsMobPath, pointsOfInterestTemp4Path,
+                    viClientFuseAccPath, pairbtsAdjPath, tmpSecondHomesPath,
+                    isDebug, conf);
         }
         
         return 0;

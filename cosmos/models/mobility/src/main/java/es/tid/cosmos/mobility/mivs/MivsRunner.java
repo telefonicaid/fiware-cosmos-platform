@@ -12,9 +12,9 @@ public final class MivsRunner {
     private MivsRunner() {
     }
 
-    public static void run(Path viTelmonthBts, Path viClientFuseTxt,
-                           Path viClientFuseAccTxt, Path tmpDir,
-                           Configuration conf) throws Exception {
+    public static void run(Path viTelmonthBts, Path viClientFuseAcc,
+                           Path tmpDir, boolean isDebug, Configuration conf)
+            throws Exception {
         Path viTelmonthMobvars = new Path(tmpDir, "vi_telmonth_mobvars");
         {
             // Calculate individual variables by month
@@ -30,15 +30,6 @@ public final class MivsRunner {
             // Fuse in a set all user info
             FusionTotalVarsJob job = new FusionTotalVarsJob(conf);
             job.configure(viTelmonthMobvars, viClientFuse);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
-        }
-
-        {
-            // Extract to text file
-            IndVarsOutJob job = new IndVarsOutJob(conf);
-            job.configure(viClientFuse, viClientFuseTxt);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -64,7 +55,6 @@ public final class MivsRunner {
             }
         }
 
-        Path viClientFuseAcc = new Path(tmpDir, "vi_client_fuse_acc");
         {
             // Fuse in a set all user info
             FusionTotalVarsJob job = new FusionTotalVarsJob(conf);
@@ -74,12 +64,26 @@ public final class MivsRunner {
             }
         }
 
-        {
-            // Extract to text file
-            IndVarsOutAccJob job = new IndVarsOutAccJob(conf);
-            job.configure(viClientFuseAcc, viClientFuseAccTxt);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
+        if (isDebug) {
+            Path viClientFuseText = new Path(tmpDir, "vi_client_fuse_text");
+            {
+                // Extract to text file
+                IndVarsOutJob job = new IndVarsOutJob(conf);
+                job.configure(viClientFuse, viClientFuseText);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
+            }
+
+            Path viClientFuseAccText = new Path(tmpDir,
+                                                "vi_client_fuse_acc_text");
+            {
+                // Extract to text file
+                IndVarsOutAccJob job = new IndVarsOutAccJob(conf);
+                job.configure(viClientFuseAcc, viClientFuseAccText);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
             }
         }
 

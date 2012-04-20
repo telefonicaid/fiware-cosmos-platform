@@ -18,6 +18,7 @@ public final class LabelJoiningRunner {
                            Path vectorClientClusterPath,
                            Path vectorClientbtsClusterPath,
                            Path vectorBtsClusterPath,
+                           Path pointsOfInterestTemp4Path,
                            Path tmpDirPath, Configuration conf)
             throws Exception {
         Path pointsOfInterestTempMobDataPath = new Path(tmpDirPath,
@@ -216,8 +217,6 @@ public final class LabelJoiningRunner {
             }
         }
         
-        Path pointsOfInterestTemp4Path = new Path(tmpDirPath,
-                                                  "points_of_interest_temp4");
         {
             ClusterAggBtsClusterJob job = new ClusterAggBtsClusterJob(conf);
             job.configure(new Path[] { pointsOfInterestTemp3MobDataPath,

@@ -73,8 +73,6 @@ public class FrontendLauncher implements JobLauncher {
         if (shouldLaunch) {
             this.launchTask(jobName);
         }
-
-        return jobName;
     }
 
     public void launchTask(String taskId) throws TestException {

@@ -162,7 +162,7 @@ message PoiPos {
 message MobVars
 {
     optional uint32 month = 1;
-    optional uint32 workingday = 2;
+    optional bool workingday = 2;
     optional uint32 num_pos = 3;
     optional uint32 dif_btss = 4;
     optional uint32 dif_muns = 5;

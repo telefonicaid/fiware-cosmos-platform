@@ -11,7 +11,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
-import es.tid.cosmos.mobility.util.Logger;
 
 /**
  *

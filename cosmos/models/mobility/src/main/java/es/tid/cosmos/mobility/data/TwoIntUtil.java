@@ -9,7 +9,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
  * @author dmicol
  */
 public abstract class TwoIntUtil implements ProtobufUtil {
-    private final static String DELIMITER = "|";
+    private static final String DELIMITER = "|";
     
     public static TwoInt create(long num1, long num2) {
         return TwoInt.newBuilder()

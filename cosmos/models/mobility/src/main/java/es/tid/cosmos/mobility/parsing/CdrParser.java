@@ -34,7 +34,6 @@ public class CdrParser extends Parser {
 
             return cdr.build();
         } catch (Exception ex) {
-            System.err.println(ex);
             throw new IllegalArgumentException("Failed to parse: " + this.line);
         }
     }

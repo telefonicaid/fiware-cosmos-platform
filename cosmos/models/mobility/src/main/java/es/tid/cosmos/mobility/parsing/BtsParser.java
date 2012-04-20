@@ -23,7 +23,6 @@ public class BtsParser extends Parser {
             bts.setComms(this.parseInt());
             return bts.build();
         } catch (Exception ex) {
-            System.err.println(ex);
             throw new IllegalArgumentException("Failed to parse: " + this.line);
         }
     }

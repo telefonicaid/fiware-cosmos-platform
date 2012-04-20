@@ -16,24 +16,20 @@ import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
  *
  * @author losa
  */
-public class FusionTotalVarsReducer extends Reducer<
-        LongWritable,
-        ProtobufWritable<MobVars>,
-        LongWritable,
+public class FusionTotalVarsReducer extends Reducer<LongWritable,
+        ProtobufWritable<MobVars>, LongWritable,
         ProtobufWritable<MobViMobVars>> {
-    private List<MobVars> allAreas;
-
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobVars>> values, Context context)
             throws IOException, InterruptedException {
-        this.allAreas = new ArrayList<MobVars>();
+        List<MobVars> allAreas = new ArrayList<MobVars>();
         for (ProtobufWritable<MobVars> value: values) {
             value.setConverter(MobVars.class);
-            this.allAreas.add(value.get());
+            allAreas.add(value.get());
         }
         ProtobufWritable<MobViMobVars> wrappedAreas =
-                MobViMobVarsUtil.createAndWrap(this.allAreas);
+                MobViMobVarsUtil.createAndWrap(allAreas);
         context.write(key, wrappedAreas);
     }
 }

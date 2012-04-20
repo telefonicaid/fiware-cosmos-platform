@@ -25,7 +25,6 @@ public class CellParser extends Parser {
                 .setPosy(parseInt())
                 .build();
         } catch (Exception ex) {
-            System.err.println(ex);
             throw new IllegalArgumentException("Failed to parse: " + this.line);
         }
     }

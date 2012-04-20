@@ -21,7 +21,6 @@ public class AdjacentParser extends Parser {
                     .setNum2(this.parseInt())
                     .build();
         } catch (Exception ex) {
-            System.err.println(ex);
             throw new IllegalArgumentException("Failed to parse: " + this.line);
         }
     }

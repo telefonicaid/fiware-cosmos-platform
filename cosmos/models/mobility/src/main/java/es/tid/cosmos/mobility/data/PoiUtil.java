@@ -9,6 +9,8 @@ import es.tid.cosmos.mobility.data.MobProtocol.Poi;
  * @author dmicol
  */
 public abstract class PoiUtil {
+    private static final String DELIMITER = "|";
+    
     public static Poi create(int id, long node, int bts, int labelnode,
             int labelgroupnode, int confidentnode, double distancenode,
             int labelbts, int labelgroupbts, int confidentbts,
@@ -48,5 +50,19 @@ public abstract class PoiUtil {
                 confidentnode, distancenode, labelbts, labelgroupbts,
                 confidentbts, distancebts, labelnodebts, labelgroupnodebts,
                 confidentnodebts, distancenodebts, inoutWeek, inoutWend));
+    }
+    
+    public static String toString(Poi obj) {
+        return (obj.getId() + DELIMITER + obj.getNode() + DELIMITER +
+                obj.getBts() + DELIMITER + obj.getLabelnode() + DELIMITER +
+                obj.getLabelgroupnode() + DELIMITER + obj.getConfidentnode() +
+                DELIMITER + obj.getDistancenode() + DELIMITER +
+                obj.getLabelbts() + DELIMITER + obj.getLabelgroupbts() +
+                DELIMITER + obj.getConfidentbts() + DELIMITER +
+                obj.getDistancebts() + DELIMITER + obj.getLabelnodebts() +
+                DELIMITER + obj.getLabelgroupnodebts() + DELIMITER +
+                obj.getConfidentnodebts() + DELIMITER +
+                obj.getDistancenodebts() + DELIMITER + obj.getInoutWeek() +
+                obj.getInoutWend());
     }
 }

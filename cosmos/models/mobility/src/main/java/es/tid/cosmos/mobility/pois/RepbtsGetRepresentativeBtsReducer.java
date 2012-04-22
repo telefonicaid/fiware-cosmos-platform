@@ -33,8 +33,8 @@ public class RepbtsGetRepresentativeBtsReducer extends Reducer<LongWritable,
                 ProtobufWritable<TwoInt> nodeBts = TwoIntUtil.createAndWrap(
                         key.get(), counter.getPlaceId());
                 ProtobufWritable<BtsCounter> btsCounter =
-                        BtsCounterUtil.createAndWrap(counter.getPlaceId(), -1,
-                                                     -1, counter.getCount());
+                        BtsCounterUtil.createAndWrap(counter.getPlaceId(), 0,
+                                                     0, counter.getCount());
                 context.write(nodeBts, btsCounter);
             }
         }

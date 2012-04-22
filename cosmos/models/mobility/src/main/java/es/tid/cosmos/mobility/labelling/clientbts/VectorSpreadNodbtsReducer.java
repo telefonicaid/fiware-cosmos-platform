@@ -32,7 +32,7 @@ public class VectorSpreadNodbtsReducer extends Reducer<LongWritable,
                     case 0:
                         group = 3;
                         break;
-                    case 1:
+                    case 5:
                         group = 1;
                         break;
                     case 6:

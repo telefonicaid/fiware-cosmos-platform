@@ -159,4 +159,10 @@ public abstract class MobDataUtil implements ProtobufUtil {
     public static ProtobufWritable<MobData> createAndWrap(TwoInt obj) {
         return wrap(create(obj));
     }
+    
+    public static MobData setInputId(MobData obj, int inputId) {
+        MobData.Builder mobDataBuilder = MobData.newBuilder(obj);
+        mobDataBuilder.setInputId(inputId);
+        return mobDataBuilder.build();
+    }
 }

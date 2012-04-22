@@ -19,7 +19,7 @@ public final class LabelJoiningRunner {
                            Path vectorClientbtsClusterPath,
                            Path vectorBtsClusterPath,
                            Path pointsOfInterestTemp4Path,
-                           Path tmpDirPath, Configuration conf)
+                           Path tmpDirPath, boolean isDebug, Configuration conf)
             throws Exception {
         Path pointsOfInterestTempMobDataPath = new Path(tmpDirPath,
                 "points_of_interest_temp_mob_data");
@@ -224,6 +224,20 @@ public final class LabelJoiningRunner {
                           pointsOfInterestTemp4Path);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        if (isDebug) {
+            Path pointsOfInterestTemp4TextPath = new Path(tmpDirPath,
+                    "points_of_interest_temp4_text");
+            {
+                ExportClusterAggBtsClusterToTextJob job =
+                        new ExportClusterAggBtsClusterToTextJob(conf);
+                job.configure(pointsOfInterestTemp4Path,
+                            pointsOfInterestTemp4TextPath);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
             }
         }
     }

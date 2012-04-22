@@ -139,7 +139,7 @@ public class MobilityMain extends Configured implements Tool {
             LabelJoiningRunner.run(pointsOfInterestTempPath,
                     vectorClientClusterPath, vectorClientbtsClusterPath,
                     vectorBtsClusterPath, pointsOfInterestTemp4Path,
-                    tmpLabelJoining, conf);
+                    tmpLabelJoining, isDebug, conf);
         }
         
         Path tmpSecondHomesPath = new Path(tmpPath, "second_homes");

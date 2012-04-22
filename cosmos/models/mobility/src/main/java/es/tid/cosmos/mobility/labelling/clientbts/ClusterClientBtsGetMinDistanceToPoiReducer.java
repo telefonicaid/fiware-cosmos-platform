@@ -60,7 +60,7 @@ public class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
                 }
 
                 int nElem = clusVector.getComsCount();
-                double dist = 1.0 - (((nElem * sumcomxccom) - (sumcom * sumccom))
+                double dist = 1.0D - (((nElem * sumcomxccom) - (sumcom * sumccom))
                         / (Math.sqrt((nElem * csumcom) - (sumcom * sumcom))
                         * Math.sqrt((nElem * csumccom) - (sumccom * sumccom))));
                 if (dist < mindist || minDistCluster == null) {
@@ -68,7 +68,6 @@ public class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
                     minDistCluster = cluster;
                 }
             }
-            mindist = Math.sqrt(mindist);
 
             key.setConverter(NodeBts.class);
             final NodeBts nodeBts = key.get();

@@ -6,6 +6,8 @@ import org.apache.hadoop.fs.Path;
 import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourJob;
 import es.tid.cosmos.mobility.labelling.client.VectorFuseNodeDaygroupJob;
 import es.tid.cosmos.mobility.labelling.client.VectorNormalizedJob;
+import es.tid.cosmos.mobility.util.ConvertBtsCounterToMobDataByTwoIntJob;
+import es.tid.cosmos.mobility.util.SetMobDataInputIdByTwoIntJob;
 
 /**
  *
@@ -38,10 +40,57 @@ public final class ClientBtsLabellingRunner {
             }
         }
 
+        Path clientsbtsSumMobDataPath = new Path(tmpDirPath,
+                                                 "clientsbts_sum_mob_data");
+        {
+            ConvertBtsCounterToMobDataByTwoIntJob job =
+                    new ConvertBtsCounterToMobDataByTwoIntJob(conf);
+            job.configure(clientsbtsSumPath, clientsbtsSumMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        Path clientsbtsSumMobDataWithInputIdPath = new Path(tmpDirPath,
+                "clientsbts_sum_mob_data_with_input_id");
+        {
+            SetMobDataInputIdByTwoIntJob job = new SetMobDataInputIdByTwoIntJob(
+                    conf);
+            job.configure(clientsbtsSumMobDataPath, 0,
+                          clientsbtsSumMobDataWithInputIdPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path clientsRepbtsMobDataPath = new Path(tmpDirPath,
+                                                 "clients_repbts_mob_data");
+        {
+            ConvertBtsCounterToMobDataByTwoIntJob job =
+                    new ConvertBtsCounterToMobDataByTwoIntJob(conf);
+            job.configure(clientsRepbtsPath, clientsRepbtsMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        Path clientsRepbtsMobDataWithInputIdPath = new Path(tmpDirPath,
+                "clients_repbts_mob_data_with_input_id");
+        {
+            SetMobDataInputIdByTwoIntJob job = new SetMobDataInputIdByTwoIntJob(
+                    conf);
+            job.configure(clientsRepbtsMobDataPath, 1,
+                          clientsRepbtsMobDataWithInputIdPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
         Path clientsbtsRpbtsPath = new Path(tmpDirPath, "clientsbts_repbts");
         {
             VectorFiltClientbtsJob job = new VectorFiltClientbtsJob(conf);
-            job.configure(new Path[] { clientsbtsSumPath, clientsRepbtsPath },
+            job.configure(new Path[] { clientsbtsSumMobDataWithInputIdPath,
+                                       clientsRepbtsMobDataWithInputIdPath },
                           clientsbtsRpbtsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());

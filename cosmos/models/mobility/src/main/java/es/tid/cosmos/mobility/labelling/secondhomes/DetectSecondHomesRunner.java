@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.labelling.secondhomes;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.mobility.util.*;
@@ -209,6 +210,38 @@ public final class DetectSecondHomesRunner {
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
+        }
+        
+        if (isDebug) {
+            Path pointsOfInterestTextPath = new Path(tmpDirPath,
+                                                     "points_of_interest_text");
+            {
+                ExportPoiJoinSechomeResultsToTextJob job =
+                        new ExportPoiJoinSechomeResultsToTextJob(conf);
+                job.configure(pointsOfInterestPath, pointsOfInterestTextPath);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
+            }
+        } else {
+            FileSystem fs = FileSystem.get(conf);
+            fs.delete(btsMobPath, true);
+            fs.delete(nodbtsPoiPath, true);
+            fs.delete(sechPoiPosPath, true);
+            fs.delete(sechPoiInoutPath, true);
+            fs.delete(nodbtsInoutPath, true);
+            fs.delete(sechPotSecHomePath, true);
+            fs.delete(nodbtsSechomePath, true);
+            fs.delete(nodbtsSechomeUniqPath, true);
+            fs.delete(pointsOfInterestTemp4Path, true);
+            fs.delete(pointsOfInterestTemp4MobDataPath, true);
+            fs.delete(btsMobMobDataPath, true);
+            fs.delete(sechPoiPosMobDataPath, true);
+            fs.delete(viClientFuseAccMobDataPath, true);
+            fs.delete(sechPotSecHomeMobDataPath, true);
+            fs.delete(pairsbtsAdjMobDataPath, true);
+            fs.delete(nodbtsPoiMobDataPath, true);
+            fs.delete(nodbtsInoutMobDataPath, true);
         }
     }
 }

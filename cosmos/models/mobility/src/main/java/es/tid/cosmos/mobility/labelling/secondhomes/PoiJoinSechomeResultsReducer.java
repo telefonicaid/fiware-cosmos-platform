@@ -33,15 +33,12 @@ public class PoiJoinSechomeResultsReducer extends Reducer<
                 case POI:
                     poiList.add(mobData.getPoi());
                     break;
-
                 case TWO_INT:
                     twoIntList.add(mobData.getTwoInt());
                     break;
-
                 case NULL:
                     secHomeCount++;
                     break;
-
                 default:
                     throw new IllegalStateException();
             }

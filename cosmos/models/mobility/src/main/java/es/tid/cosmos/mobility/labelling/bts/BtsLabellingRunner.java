@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.labelling.bts;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourJob;
@@ -122,6 +123,17 @@ public final class BtsLabellingRunner {
                     throw new Exception("Failed to run " + job.getJobName());
                 }
             }
+        } else {
+            FileSystem fs = FileSystem.get(conf);
+            fs.delete(btsCountsPath, true);
+            fs.delete(btsCommsPath, true);
+            fs.delete(btsSumComsPath, true);
+            fs.delete(btsDayhourPath, true);
+            fs.delete(vectorBtsPath, true);
+            fs.delete(vectorBtsNormPath, true);
+            fs.delete(vectorBtsClusterSinfiltPath, true);
+            fs.delete(vectorBtsClusterSinfiltMobDataPath, true);
+            fs.delete(btsComareaMobDataPath, true);
         }
     }
 }

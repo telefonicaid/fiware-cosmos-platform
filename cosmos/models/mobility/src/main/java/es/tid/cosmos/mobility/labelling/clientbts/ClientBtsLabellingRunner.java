@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.labelling.clientbts;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourJob;
@@ -86,12 +87,12 @@ public final class ClientBtsLabellingRunner {
             }
         }
         
-        Path clientsbtsRpbtsPath = new Path(tmpDirPath, "clientsbts_repbts");
+        Path clientsbtsRepbtsPath = new Path(tmpDirPath, "clientsbts_repbts");
         {
             VectorFiltClientbtsJob job = new VectorFiltClientbtsJob(conf);
             job.configure(new Path[] { clientsbtsSumMobDataWithInputIdPath,
                                        clientsRepbtsMobDataWithInputIdPath },
-                          clientsbtsRpbtsPath);
+                          clientsbtsRepbtsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -101,7 +102,7 @@ public final class ClientBtsLabellingRunner {
         {
             VectorCreateNodeDayhourJob job = new VectorCreateNodeDayhourJob(
                     conf);
-            job.configure(clientsbtsRpbtsPath, clientsbtsGroupPath);
+            job.configure(clientsbtsRepbtsPath, clientsbtsGroupPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -158,6 +159,17 @@ public final class ClientBtsLabellingRunner {
                     throw new Exception("Failed to run " + job.getJobName());
                 }
             }
+        } else {
+            FileSystem fs = FileSystem.get(conf);
+            fs.delete(clientsbtsSpreadPath, true);
+            fs.delete(clientsbtsSumPath, true);
+            fs.delete(clientsbtsRepbtsPath, true);
+            fs.delete(clientsbtsGroupPath, true);
+            fs.delete(vectorClientbtsNormPath, true);
+            fs.delete(clientsbtsSumMobDataPath, true);
+            fs.delete(clientsbtsSumMobDataWithInputIdPath, true);
+            fs.delete(clientsRepbtsMobDataPath, true);
+            fs.delete(clientsRepbtsMobDataWithInputIdPath, true);
         }
     }
 }

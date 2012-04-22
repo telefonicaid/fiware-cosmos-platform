@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.labelling.join;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.mobility.util.*;
@@ -239,6 +240,27 @@ public final class LabelJoiningRunner {
                     throw new Exception("Failed to run " + job.getJobName());
                 }
             }
+        } else {
+            FileSystem fs = FileSystem.get(conf);
+            fs.delete(potpoiPath, true);
+            fs.delete(clientbtsNodpoilblPath, true);
+            fs.delete(clientbtsNodpoiCountPath, true);
+            fs.delete(clientbtsNodPoimajPath, true);
+            fs.delete(poisLabeledPath, true);
+            fs.delete(pointsOfInterestTempPath, true);
+            fs.delete(pointsOfInterestTemp2Path, true);
+            fs.delete(pointsOfInterestTemp3Path, true);
+            fs.delete(vectorClientbtsClusterPath, true);
+            fs.delete(vectorClientbtsClusterAddPath, true);
+            fs.delete(pointsOfInterestTempMobDataPath, true);
+            fs.delete(vectorClientClusterMobDataPath, true);
+            fs.delete(potpoiMobDataPath, true);
+            fs.delete(clientbtsNodPoimajMobDataPath, true);
+            fs.delete(pointsOfInterestTemp2MobDataPath, true);
+            fs.delete(vectorClientbtsClusterMobDataPath, true);
+            fs.delete(poisLabeledMobDataPath, true);
+            fs.delete(pointsOfInterestTemp3MobDataPath, true);
+            fs.delete(vectorBtsClusterMobDataPath, true);
         }
     }
 }

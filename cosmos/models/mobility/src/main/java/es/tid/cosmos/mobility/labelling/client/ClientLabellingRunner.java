@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.labelling.client;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.mobility.util.ConvertCdrToMobDataJob;
@@ -124,6 +125,13 @@ public final class ClientLabellingRunner {
                     throw new Exception("Failed to run " + job.getJobName());
                 }
             }
+        } else {
+            FileSystem fs = FileSystem.get(conf);
+            fs.delete(cdrsFilteredPath, true);
+            fs.delete(clientsInfoFilteredPath, true);
+            fs.delete(vectorClientNormPath, true);
+            fs.delete(cdrsMobDataPath, true);
+            fs.delete(clientsInfoFilteredMobDataPath, true);
         }
     }
 }

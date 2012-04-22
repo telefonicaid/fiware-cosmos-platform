@@ -67,7 +67,6 @@ public final class MivsRunner {
         if (isDebug) {
             Path viClientFuseText = new Path(tmpDir, "vi_client_fuse_text");
             {
-                // Extract to text file
                 IndVarsOutJob job = new IndVarsOutJob(conf);
                 job.configure(viClientFuse, viClientFuseText);
                 if (!job.waitForCompletion(true)) {
@@ -78,19 +77,17 @@ public final class MivsRunner {
             Path viClientFuseAccText = new Path(tmpDir,
                                                 "vi_client_fuse_acc_text");
             {
-                // Extract to text file
                 IndVarsOutAccJob job = new IndVarsOutAccJob(conf);
                 job.configure(viClientFuseAcc, viClientFuseAccText);
                 if (!job.waitForCompletion(true)) {
                     throw new Exception("Failed to run " + job.getJobName());
                 }
             }
+        } else {
+            FileSystem fs = FileSystem.get(conf);
+            fs.deleteOnExit(viTelmonthMobvars);
+            fs.deleteOnExit(viTelmonthBtsAcc);
+            fs.deleteOnExit(viTelmonthMobvarsAcc);
         }
-
-        // Delete unused files
-        FileSystem fs = FileSystem.get(conf);
-        fs.deleteOnExit(viTelmonthMobvars);
-        fs.deleteOnExit(viTelmonthBtsAcc);
-        fs.deleteOnExit(viTelmonthMobvarsAcc);
     }
 }

@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.pois;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.mobility.util.ConvertCdrToMobDataJob;
@@ -15,15 +16,15 @@ public final class PoisRunner {
     private PoisRunner() {
     }
     
-    public static void run(Path tmpDir, Path clientsBtsPath,
+    public static void run(Path tmpDirPath, Path clientsBtsPath,
                            Path clientsInfoPath, Path cdrsNoinfoPath,
                            Path cdrsNoBtsPath, Path clientsInfoFilteredPath,
                            Path clientsRepbtsPath, boolean isDebug,
                            Configuration conf) throws Exception {
-        Path nodeBtsCounter = new Path(tmpDir, "node_bts_counter");
+        Path clientsBtscounterPath = new Path(tmpDirPath, "clients_btscounter");
         {
             NodeBtsCounterJob job = new NodeBtsCounterJob(conf);
-            job.configure(clientsBtsPath, nodeBtsCounter);
+            job.configure(clientsBtsPath, clientsBtscounterPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -31,42 +32,44 @@ public final class PoisRunner {
 
         {
             NodeMobInfoJob job = new NodeMobInfoJob(conf);
-            job.configure(nodeBtsCounter, clientsInfoPath);
+            job.configure(clientsBtscounterPath, clientsInfoPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
-        Path repbtsSpreadNodebts = new Path(tmpDir, "repbts_spread_nodebts");
+        Path clientsInfoSpreadPath = new Path(tmpDirPath, "clients_info_spread");
         {
             RepbtsSpreadNodebtsJob job = new RepbtsSpreadNodebtsJob(conf);
-            job.configure(clientsInfoPath, repbtsSpreadNodebts);
+            job.configure(clientsInfoPath, clientsInfoSpreadPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
-        Path repbtsAggbybtsPath = new Path(tmpDir, "repbts_aggbybts");
+        Path clientsInfoAggbybtsPath = new Path(tmpDirPath,
+                                                "clients_info_aggbybts");
         {
             RepbtsAggbybtsJob job = new RepbtsAggbybtsJob(conf);
-            job.configure(repbtsSpreadNodebts, repbtsAggbybtsPath);
+            job.configure(clientsInfoSpreadPath, clientsInfoAggbybtsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
         
-        Path repbtsAggbybtsMobDataPath = new Path(tmpDir,
+        Path repbtsAggbybtsMobDataPath = new Path(tmpDirPath,
                                                   "repbts_aggbybts_mob_data");
         {
             ConvertNodeBtsDayToMobDataJob job =
                     new ConvertNodeBtsDayToMobDataJob(conf);
-            job.configure(repbtsAggbybtsPath, repbtsAggbybtsMobDataPath);
+            job.configure(clientsInfoAggbybtsPath, repbtsAggbybtsMobDataPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
-        Path cdrsNoinfoMobDataPath = new Path(tmpDir, "cdrs_noinfo_mob_data");
+        Path cdrsNoinfoMobDataPath = new Path(tmpDirPath,
+                                              "cdrs_noinfo_mob_data");
         { 
             ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
             job.configure(cdrsNoinfoPath, cdrsNoinfoMobDataPath);
@@ -75,7 +78,7 @@ public final class PoisRunner {
             }
         }
 
-        Path cdrsNoBtsMobDataPath = new Path(tmpDir, "cdrs_nobts_mob_data");
+        Path cdrsNoBtsMobDataPath = new Path(tmpDirPath, "cdrs_nobts_mob_data");
         { 
             ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
             job.configure(cdrsNoBtsPath, cdrsNoBtsMobDataPath);
@@ -95,7 +98,7 @@ public final class PoisRunner {
             }
         }
 
-        Path clientsInfoFilteredMobDataPath = new Path(tmpDir,
+        Path clientsInfoFilteredMobDataPath = new Path(tmpDirPath,
                 "clients_info_filtered_mob_data");
         {
             ConvertIntToMobDataJob job = new ConvertIntToMobDataJob(conf);
@@ -106,12 +109,13 @@ public final class PoisRunner {
             }
         }
         
-        Path repbtsJoinDistComms = new Path(tmpDir, "repbts_join_dist_comms");
+        Path clientsInfoBtsPercPath = new Path(tmpDirPath,
+                                               "clients_info_bts_perc");
         {
             RepbtsJoinDistCommsJob job = new RepbtsJoinDistCommsJob(conf);
             job.configure(new Path[] { repbtsAggbybtsMobDataPath,
                                        clientsInfoFilteredMobDataPath },
-                          repbtsJoinDistComms);
+                          clientsInfoBtsPercPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
@@ -120,14 +124,15 @@ public final class PoisRunner {
         {
             RepbtsGetRepresentativeBtsJob job =
                     new RepbtsGetRepresentativeBtsJob(conf);
-            job.configure(repbtsJoinDistComms, clientsRepbtsPath);
+            job.configure(clientsInfoBtsPercPath, clientsRepbtsPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
 
         if (isDebug) {
-            Path clientsRepbtsTextPath = new Path(tmpDir, "clients_repbts_text");
+            Path clientsRepbtsTextPath = new Path(tmpDirPath,
+                                                  "clients_repbts_text");
             {
                 ExportRepresentativeBtsToTextJob job = new
                         ExportRepresentativeBtsToTextJob(conf);
@@ -136,6 +141,15 @@ public final class PoisRunner {
                     throw new Exception("Failed to run " + job.getJobName());
                 }
             }
+        } else {
+            FileSystem fs = FileSystem.get(conf);
+            fs.delete(clientsBtsPath, true);
+            fs.delete(clientsBtscounterPath, true);
+            fs.delete(clientsInfoSpreadPath, true);
+            fs.delete(clientsInfoAggbybtsPath, true);
+            fs.delete(clientsInfoBtsPercPath, true);
+            fs.delete(cdrsNoinfoPath, true);
+            fs.delete(cdrsNoBtsPath, true);
         }
     }
 }

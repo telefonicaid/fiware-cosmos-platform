@@ -3,7 +3,6 @@ package es.tid.cosmos.mobility.parsing;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 
-
 /**
  *
  * @author dmicol

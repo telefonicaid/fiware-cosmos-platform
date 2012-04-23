@@ -101,6 +101,13 @@ public abstract class MobDataUtil implements ProtobufUtil {
                 .build();
     }
     
+    public static MobData create(ClusterVector clusterVector) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.CLUSTER_VECTOR)
+                .setClusterVector(clusterVector)
+                .build();
+    }
+    
     public static ProtobufWritable<MobData> wrap(MobData obj) {
         ProtobufWritable<MobData> wrapper = ProtobufWritable.newInstance(
                 MobData.class);
@@ -157,6 +164,10 @@ public abstract class MobDataUtil implements ProtobufUtil {
     }
 
     public static ProtobufWritable<MobData> createAndWrap(TwoInt obj) {
+        return wrap(create(obj));
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(ClusterVector obj) {
         return wrap(create(obj));
     }
     

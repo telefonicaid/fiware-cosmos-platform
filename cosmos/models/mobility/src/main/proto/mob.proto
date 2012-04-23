@@ -21,6 +21,7 @@ message MobData {
         POI_POS = 11;
         MOB_VI_MOB_VARS = 12;
         TWO_INT = 13;
+        CLUSTER_VECTOR = 14;
     }
 
     required Type type = 1;
@@ -37,6 +38,7 @@ message MobData {
     optional PoiPos poiPos = 12;
     optional MobViMobVars mobViMobVars = 13;
     optional TwoInt twoInt = 14;
+    optional ClusterVector clusterVector = 15;
 }
 
 message Cdr {

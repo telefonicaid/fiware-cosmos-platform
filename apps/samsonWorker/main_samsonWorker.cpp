@@ -252,20 +252,28 @@ int main(int argC, const char *argV[])
     paConfig("man copyright",                     (void*) manCopyright);
     paConfig("man version",                       (void*) manVersion);
 
-    const char* xxhost = paIsSetSoGet(argC, (char**) argV, "-lsHost");
+    const char* xxhost         = paIsSetSoGet(argC, (char**) argV, "-lsHost");
+    bool        logServerUsed  = true;
+
     if (xxhost != NULL)
     {
         if (strcmp(xxhost, "NO") == 0) // No Log Server wanted - turn on log file ...
+        {
             paConfig("log to file",                       (void*) true);
+            logServerUsed = false;
+        }
     }
 
     const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
 
-    // Log system
-    std::string local_log_file = au::str("%s/samsonWorkerLog" , paLogDir );
-    au::start_log_to_server( paLsHost , paLsPort , local_log_file );
-    
+    if (logServerUsed == true)
+    {
+       // Log system
+       std::string local_log_file = au::str("%s/samsonWorkerLog" , paLogDir );
+       au::start_log_to_server( paLsHost , paLsPort , local_log_file );
+    }
+
     // Only add in foreground to avoid warning / error messages at the stdout
     if (fg)
         atexit(cleanup);

@@ -1503,7 +1503,7 @@ namespace samson
         {
             
             // Show the first line or key-value
-            SamsonClientBlock samson_client_block( buffer , false );  // Not remove buffer at destrutor
+            SamsonClientBlock samson_client_block( buffer );  // Not remove buffer at destrutor
             
             std::ostringstream output;
             output << "====================================================================\n";

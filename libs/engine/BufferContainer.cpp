@@ -46,7 +46,10 @@ namespace engine {
     void BufferContainer::release()
     {
         if( buffer )
+        {
             buffer->release();
+            buffer = NULL;
+        }
     }
     
     void BufferContainer::operator=( BufferContainer& other )

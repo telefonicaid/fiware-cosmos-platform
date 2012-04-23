@@ -1,6 +1,8 @@
 #ifndef _H_SamsonClientBlock_SamsonClient
 #define _H_SamsonClientBlock_SamsonClient
 
+#include "engine/BufferContainer.h"
+
 namespace  samson 
 {
 
@@ -11,26 +13,26 @@ namespace  samson
     
     class SamsonClientBlock : public SamsonClientBlockInterface
     {
-        engine::Buffer *buffer;
-        samson::KVHeader *header;
-        samson::KVFormat format;           // Format 
+        // Container of the in-memory buffer
+        engine::BufferContainer buffer_container; 
         
+        samson::KVHeader *header;          // Pointer to the header
+        samson::KVFormat format;           // Format 
         
         au::ErrorManager error;            // Error message
         
         char *data;                        // Pointer to data content
         
-        bool remove_buffer_at_destructor;  // Necessary to destroy buffer at dector
-        
     public:
         
-        SamsonClientBlock( engine::Buffer *_buffer , bool _remove_buffer_at_destructor )
+        SamsonClientBlock( engine::Buffer * buffer )
         {
-            buffer = _buffer;
-            
-            remove_buffer_at_destructor = _remove_buffer_at_destructor;
+            buffer_container.setBuffer( buffer );
+
+            // Header if always at the begining of the buffer
             header = (KVHeader*) buffer->getData();
-            
+
+            // Check header
             if( !header->check() )
             {
                 error.set("Header check failed");
@@ -74,18 +76,16 @@ namespace  samson
         
         ~SamsonClientBlock()
         {
-            if( buffer )
-                buffer->release();
         }
         
         size_t getBufferSize()
         {
-            return buffer->getSize();
+            return buffer_container.getBuffer()->getSize();
         }
         
         size_t getTXTBufferSize()
         {
-            return buffer->getSize() - sizeof( samson::KVHeader );
+            return buffer_container.getBuffer()->getSize() - sizeof( samson::KVHeader );
         }
         
         char* getTXTBufferPointer()

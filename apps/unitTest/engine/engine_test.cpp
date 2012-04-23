@@ -17,7 +17,6 @@
 #include "au/ThreadManager.h"
 
 #include "engine/Engine.h"
-#include "engine/EngineService.h"
 #include "engine/Notification.h"
 #include "engine/NotificationElement.h"
 #include "engine/Object.h"

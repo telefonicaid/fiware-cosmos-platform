@@ -60,15 +60,18 @@ namespace samson {
     void BufferProcessor::emit( char* data , size_t length )
     {
         // If not possible to write in the current buffer, just flush content
-        engine::Buffer * output_buffer = output_buffer_container.getBuffer();
-        if( output_buffer )
-            if( output_buffer->getSize() + length > output_buffer->getMaxSize() )
-                flush();
+        {
+            engine::Buffer * output_buffer = output_buffer_container.getBuffer();
+            if( output_buffer )
+                if( output_buffer->getSize() + length > output_buffer->getMaxSize() )
+                    flushOutputBuffer();
+        }
         
-        // Create a new buffer is necessary
+        // Recover buffer to write output
+        engine::Buffer * output_buffer = output_buffer_container.getBuffer();
         if( !output_buffer )
         {
-            size_t output_buffer_size = std::max( length , (size_t) 64000000 ); // Minimum 64Mbytes buffer
+            size_t output_buffer_size = std::max( length , (size_t) 64000000 - sizeof(KVHeader) ); // Minimum 64Mbytes buffer
             output_buffer = output_buffer_container.create("output_splitter", "connector", output_buffer_size );
         }
         
@@ -77,7 +80,7 @@ namespace samson {
             LM_X(1, ("Internal error"));
         
         if( output_buffer->getSize() == output_buffer->getMaxSize() )
-            flush();
+            flushOutputBuffer();
         
     }
     
@@ -94,30 +97,14 @@ namespace samson {
     }
     
     void BufferProcessor::process_intenal_buffer( bool finish )
-    {
-        if( size == 0)
-            return; // Nothing to be processed
-        
+    {        
         // If no splitter, no process
         if( !splitter )
-        {
-            // Flush previous buffer ( just in case )
-            flushOutputBuffer();
+            return; // If no splitter, we never create an outputBuffer
 
-            // Create a buffer with whatever we have collected so far
-            engine::Buffer* output_buffer = output_buffer_container.create("output_splitter", "connector", size );
-            output_buffer->write( buffer , size );
-
-            // All buffer has been processes
-            size = 0;
-            
-            // Flush content of the generated buffer
-            flushOutputBuffer();
+        if( size == 0 )
             return;
-        }
-
         
-
         // Pointer to data that has not been used in splitter
         char * nextData;
         
@@ -167,7 +154,13 @@ namespace samson {
     
     void BufferProcessor::push( engine::Buffer * input_buffer )
     {
-
+        
+        if( !splitter )
+        {
+            stream_connector->push( input_buffer, item );
+            return;
+        }
+            
         size_t pos_in_input_buffer = 0; // Readed so far
         while( pos_in_input_buffer < input_buffer->getSize() )
         {
@@ -193,10 +186,6 @@ namespace samson {
     
     void BufferProcessor::flush()
     {
-        // If no splitter is present, we never accumulate nothing here
-        if( !splitter )
-            return;
-        
         process_intenal_buffer( true ); // Process internal buffer with the "finish" flag activated
     }
     

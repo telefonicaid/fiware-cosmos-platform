@@ -177,33 +177,29 @@ namespace samson {
                 
                 return;
             }
+
+            // Get a pointer to the buffer ( retained inside packet )
+            engine::Buffer* buffer = packet->getBuffer();
             
-            if ( !packet->getBuffer() )
+            if ( !buffer )
             {
                 LM_W(("Internal error. Received a push block message without a buffer of data"));
                 return;
             }
             
-            
-            // Tmp list with the created block
-            stream::BlockList my_list( au::str("TmpList for PushBlock") );
-            my_list.createBlock( packet->getBuffer() );
-            
             // Push the packet to a particular stream-queue
             for ( int i = 0 ; i < packet->message->push_block().queue_size() ; i++)
             {
                 std::string queue = packet->message->push_block().queue(i);
-                streamManager->addBlocks( queue , &my_list  );
+                streamManager->addBuffer ( queue , buffer );
             }
             
             // Send a message back if delilah_id is > 0
-            
             if( packet->message->delilah_component_id() > 0)
             {
                 Packet *p = new Packet( Message::PushBlockResponse );
                 network::PushBlockResponse *pbr = p->message->mutable_push_block_response();
                 pbr->mutable_request()->CopyFrom( packet->message->push_block() );
-                
                 p->message->set_delilah_component_id( packet->message->delilah_component_id()  );
                 
                 // Direction of the message ( answer to who send you the message )

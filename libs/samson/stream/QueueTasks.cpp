@@ -512,7 +512,8 @@ namespace samson {
 #pragma mark
 
         
-        ReduceQueueTask::ReduceQueueTask( size_t id , StreamOperationBase* streamOperation , KVRange _range  ) : stream::QueueTask(id , streamOperation )
+        ReduceQueueTask::ReduceQueueTask( size_t id , StreamOperationBase* streamOperation , KVRange _range  ) 
+            : stream::QueueTask(id , streamOperation )
         {
             setProcessItemOperationName( "stream:" + streamOperation->operation );
             

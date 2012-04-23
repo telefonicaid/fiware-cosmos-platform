@@ -48,7 +48,9 @@ namespace samson
             engine::Buffer* buffer = buffer_container.getBuffer();
             
             if( b->getMaxSize() < ( buffer->getSize() + sizeof(KVHeader) ) )
-                LM_X(1,("BlockDataSource: Not possible to fill this buffer."));
+                LM_X(1,("BlockDataSource: Not possible to fill buffer (%s) with internal buffer (%s)",
+                        au::str( b->getMaxSize() ).c_str()
+                        ,au::str( buffer->getSize() + sizeof(KVHeader) ).c_str() ));
             
             KVHeader header;
             header.initForTxt( buffer->getSize() );

@@ -9,6 +9,7 @@
 #include "engine/Engine.h"                          // engine::Engine
 #include "engine/Notification.h"                    // engine::Notification
 #include "engine/MemoryManager.h"                   // engine::MemoryManager
+#include "engine/ProcessManager.h"
 
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/MemoryTags.h"               // MemoryBlocks
@@ -190,12 +191,11 @@ namespace samson {
         }
         
 
-        
-        
-
         const char* Block::getState()
         {
             switch (state) {
+                case building:
+                    return "B ";
                 case Block::on_memory:
                     if( isLockedInMemory() )
                         return "L ";
@@ -225,34 +225,90 @@ namespace samson {
             return "Unknown";
         }
         
-        
-        Block::Block( engine::Buffer *buffer ) : token_lookupList("token_lookupList")
+        Block::Block( engine::BufferListContainer *buffer_list_container  ) : token_lookupList("token_lookupList")
         {
-            if( !buffer )
+            
+            size_t num_buffers = buffer_list_container->getNumBuffers();
+            
+            if( num_buffers == 0 )
                 LM_X(1, ("Internal error: No buffer when creating block"));
+
+            if( num_buffers == 1 )
+            {
+                // Get the first (unique) buffer
+                engine::Buffer *buffer = buffer_list_container->front();
+                // Set name of buffer
+                buffer->setNameAndType( au::str("%lu-%lu" , worker_id , id) , "blocks" );
+                
+                // Get the size of the buffer
+                size = buffer->getSize();
+
+                // Keep in the intenal buffer container
+                buffer_container.setBuffer(buffer);
+                
+                // Default state is on_memory because the buffer has been given at memory
+                state = on_memory;
+
+            }
+            else
+            {
+                KVHeader* tmp_header = (KVHeader*) buffer_list_container->front()->getData();
+                KVFormat format = tmp_header->getKVFormat();
+                KVInfo info;
+
+                // Buffer finally considered to create the block
+                BlockBuilder * block_builder = new BlockBuilder(this);
+
+                while( buffer_list_container->getNumBuffers() > 0 )
+                {
+                    engine::Buffer* buffer = buffer_list_container->front();
+                    
+                    KVHeader* tmp_header = (KVHeader*) buffer->getData();
+                    if( tmp_header->getKVFormat() != format )
+                    {                        
+                        LM_W(("Ignoring a buffer %s with format %s when creating a block with format %s"
+                              , au::str( buffer->getSize() ).c_str() 
+                              , tmp_header->getKVFormat().str().c_str()
+                              , format.str().c_str() ));
+                    }
+                    else
+                    {
+                        // Append total info
+                        info.append( tmp_header->info );
+                        block_builder->buffer_list_container.push_back(buffer);
+                    }
+                    
+                    buffer_list_container->pop();
+                }
+                
+                // Compute the total size and create the buffer
+                size = sizeof( KVHeader ) + info.size;
+                buffer_container.create(au::str("%lu-%lu" , worker_id , id) , "blocks"  , size );
+                
+                // Copy the header to the final buffer and set the final size
+                KVHeader* final_header = (KVHeader*) buffer_container.getBuffer()->getData();
+                memcpy( final_header , tmp_header, sizeof(KVHeader));
+                final_header->setInfo(info);
+                
+                // State will be building until a BlockBuildtask is exewcuted
+                state = building;
+                
+                // Schedule the operation
+                engine::ProcessManager::shared()->add( block_builder , getEngineId() );
+            }
             
             // Get a new unique id from the block manager
             worker_id = BlockManager::shared()->getWorkerId();
             id = BlockManager::shared()->getNextBlockId();
-            
-            // Get the size of the packet
-            size = buffer->getSize();
-
-            // Default state is on_memory because the buffer has been given at memory
-            state = on_memory;
 
             // Get a copy of the header
+            engine::Buffer *buffer = buffer_container.getBuffer();
+            if(!buffer)
+                LM_X(1, ("Internal error"));
             header = (KVHeader*) malloc( sizeof( KVHeader ) );
             memcpy(header, buffer->getData(), sizeof(KVHeader));
 
-            // Set name of buffer
-            buffer->setNameAndType( au::str("%lu-%lu" , worker_id , id) , "blocks" );
-            
-            // Retain internally the buffer
-            buffer_container.setBuffer( buffer );
-
             LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
-            
             lookupList = NULL;
             
             // First idea of sort information
@@ -336,6 +392,9 @@ namespace samson {
         
         bool Block::isLockedInMemory()
         {
+            // If building this block, it is considered locked ( cannot be removed )
+            if( state == building )
+                return true;
             
             std::set< BlockList* >::iterator l;
             for ( l = lists.begin() ; l != lists.end() ; l++ )
@@ -499,11 +558,37 @@ namespace samson {
                 engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
                 delete operation;
 
-                // Whatever operation it was it is always ready
+                // Whatever operation it was it is always ready ( comming from reading or writing )
                 state = ready;
                 
                 LM_T(LmtBlockManager,("Block::notify block state set to ready for block:'%s'", str().c_str()));
+                return;
             }
+            
+            if( notification->isName( notification_process_request_response ) )
+            {
+                BlockBuilder* block_builder = (BlockBuilder*) notification->extractObject();
+                if( block_builder )
+                {
+                    if( block_builder->error.isActivated() )
+                    {
+                        LM_W(("Error received when creating a block: %s" , 
+                              block_builder->error.getMessage().c_str() ));
+                    }
+                    delete block_builder;
+                }
+                else
+                    LM_W(("No block_builder in a process item operation notification received in a Block"));
+                
+                
+                // The block has been build, 
+                state = on_memory;
+                
+                // Response from build
+                return;
+            }
+            
+            LM_W(("Unknown notification at Block: %s" , notification->getDescription().c_str() ));
             
         }
 
@@ -606,19 +691,13 @@ namespace samson {
         // Function to check if this block can be removed from block manager ( basically it is not contained anywhere )
         int Block::canBeRemoved()
         {
-        	// If block has been read because of "not in memory" requests, we don't want to remove it too soon;
-            // Andreu: Review mechanism to avoid histeresis...
-            /*
-        	if ((state == ready) && (requests > 0))
-        	{
-        		requests--;
-        		return false;
-        	}
-             */
             
             if( lists.size() != 0)
                 return false;
             
+            if( state == building )
+                return false;
+
             if( state == reading )
                 return false;
             
@@ -662,7 +741,6 @@ namespace samson {
         {
             return (  (state == ready ) || (state == on_disk) || ( state == reading ));
         }
-        
         
         size_t Block::getSize()
         {
@@ -831,5 +909,8 @@ namespace samson {
             
             return lookupList->lookup(key, outputFormat);
         }
+        
+
+
     }
 }

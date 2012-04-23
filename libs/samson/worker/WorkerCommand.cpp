@@ -725,6 +725,13 @@ typedef struct LogLineInfo
         visualitzation.options = visualitzation_options;
         visualitzation.pattern = pattern; 
         
+        if( main_command == "flush_buffers" )
+        {
+            streamManager->flushBuffers();
+            finishWorkerTask();
+            return;
+        }
+        
         if ( main_command == "push_module" )
         {
             if( cmd.get_num_arguments() < 2 )
@@ -1608,6 +1615,9 @@ typedef struct LogLineInfo
             // If this worker command is finished, not do anything else again.
             return;
         }
+        
+        // Flush all generated buffers if necessary
+        streamManager->flushBuffers();
         
         if ( notify_finish )
         {

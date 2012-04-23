@@ -27,6 +27,11 @@ namespace samson{
             samson::system::Value* value;
             
             // Constructor
+            KeyValue()
+            {
+                key = NULL;
+                value = NULL;
+            }
             KeyValue( samson::system::Value* _key , samson::system::Value* _value );
             
         };

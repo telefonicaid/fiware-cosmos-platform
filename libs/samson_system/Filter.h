@@ -86,6 +86,182 @@ namespace samson{
             
             
         };
+        
+        // --------------------------------------------------------
+        // FilterXMLElement
+        // --------------------------------------------------------
+        
+        class FilterXMLElement : public Filter
+        {
+            std::string element_name;
+
+            system::Value new_key;
+            samson::system::KeyValue _kv;
+
+        public:
+            
+            FilterXMLElement( std::string _element_name )
+            {
+                element_name = _element_name;
+            }
+            
+            static FilterXMLElement* getFilter( au::token::TokenVector* token_vector , au::ErrorManager * error )
+            {
+                
+                if( token_vector->eof() )
+                {
+                    error->set("No name provided for xml element extraction");
+                    return NULL;
+                }
+
+                // Get next token
+                au::token::Token* token = token_vector->popToken();
+
+                if( !token->isNormal() )
+                {
+                    error->set( au::str( "Not valid element name for xml extraction (%s)" , token->content.c_str() ) );
+                    return NULL;
+                }
+                
+                return new FilterXMLElement( token->content );
+            }
+            
+            virtual void run( KeyValue kv )
+            {
+                // Prepare output
+                _kv.key = &new_key;
+                _kv.value = kv.value;
+                
+                if(!kv.key)
+                    return;
+
+                // document to parse xml
+                pugi::xml_document xml_doc;
+                
+                // Parser the xml document into "doc"
+                pugi::xml_parse_result result = xml_doc.load( kv.key->c_str() );
+
+                // Check errors in the parsing
+                if( result.status != pugi::status_ok )
+                    return; // Do nothing
+
+                // Process all elements
+                process( xml_doc );
+            }
+
+            void add( pugi::xml_node & xml_node , std::string prefix )
+            {
+                printf("Add (%s) %s %s\n" , prefix.c_str() , xml_node.name() , xml_node.value()  );
+                
+                switch (xml_node.type()) 
+                {
+                    case pugi::node_element:    // Element tag, i.e. '<node/>'
+                    {
+                        
+                        for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
+                        {
+                            // For each node
+                            pugi::xml_node node = *n;
+                            add(node , prefix + xml_node.name() );
+                        }      
+                    }
+                        break;
+                        
+                    case pugi::node_pcdata:		    // Plain character data, i.e. 'text'
+                    case pugi::node_cdata:			// Character data, i.e. '<![CDATA[text]]>'
+                    {
+                        if( prefix == "" )
+                            prefix = "content";
+                        new_key.add_value_to_map( prefix )->set_string( xml_node.value() );
+                        return;
+                    }
+
+                    case pugi::node_document:
+                    {
+                        // Not expected here...
+                        return; 
+                    }
+                        
+                    case pugi::node_null:
+                    case pugi::node_comment:		 // Comment tag, i.e. '<!-- text -->'
+                    case pugi::node_pi:			     // Processing instruction, i.e. '<?name?>'
+                    case pugi::node_declaration :	 // Document declaration, i.e. '<?xml version="1.0"?>'
+                    case pugi::node_doctype :        // Document type declaration, i.e. '<!DOCTYPE doc>'
+                        return;
+                }
+                
+            }
+            
+            
+            void add( pugi::xml_node & xml_node )
+            {
+                printf("Add %s %s\n" , xml_node.name() , xml_node.value()  );
+                
+                // Init new key
+                new_key.set_as_map();
+                
+                for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
+                    add( *n , "" );
+
+                if( next )
+                    next->run(_kv);
+            }
+            
+            void process( pugi::xml_node & xml_node )
+            {
+                printf("Process %s %s\n" , xml_node.name() , xml_node.value()  );
+                
+                switch (xml_node.type()) 
+                {
+                    case pugi::node_null:
+                    {
+                        return;
+                    }
+                        
+                    case pugi::node_document:
+                    {
+                        // Main document... just skip to main element
+                        pugi::xml_node_iterator n = xml_node.begin();
+                        if( n!= xml_node.end() )
+                            process( *n ); // Process all elements inside
+                        break;
+                    }
+                        
+                    case pugi::node_element:    // Element tag, i.e. '<node/>'
+                    {
+                        
+                        if( xml_node.name() == element_name )
+                            add( xml_node );
+                        else
+                            for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
+                            {
+                                // For each node
+                                pugi::xml_node node = *n;
+                                process(node);
+                        }      
+                    }
+                        break;
+                        
+                    case pugi::node_pcdata:		    // Plain character data, i.e. 'text'
+                    case pugi::node_cdata:			// Character data, i.e. '<![CDATA[text]]>'
+                        return;
+
+                    case pugi::node_comment:		 // Comment tag, i.e. '<!-- text -->'
+                    case pugi::node_pi:			     // Processing instruction, i.e. '<?name?>'
+                    case pugi::node_declaration :	 // Document declaration, i.e. '<?xml version="1.0"?>'
+                    case pugi::node_doctype :        // Document type declaration, i.e. '<!DOCTYPE doc>'
+                        return;
+                }         
+                
+            }
+            
+            std::string _str()
+            {
+                return au::str("FilterXMLElement %s" , element_name.c_str() );
+            }
+            
+        };
+        
 
         // --------------------------------------------------------
         // FilterEmitTxt
@@ -513,15 +689,15 @@ namespace samson{
                 samson::system::Value* value_for_key   = source_for_key->get(kv);
                 samson::system::Value* value_for_value = source_for_value->get(kv);
                 
-                if( value_for_key )
-                    key.copyFrom( value_for_key );
-                else
-                    key.set_as_void();
+                if( !value_for_key )
+                    return;
+                
 
-                if( value_for_value )
-                    value.copyFrom( value_for_value );
-                else
-                    value.set_as_void();
+                if( !value_for_value )
+                    return;
+                
+                key.copyFrom( value_for_key );
+                value.copyFrom( value_for_value );
 
                 // Run next element
                 if( next )

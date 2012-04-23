@@ -17,6 +17,7 @@
 #include <string>
 
 #include "au/containers/map.h"                         // au::map
+#include "au/containers/vector.h"
 #include "au/string.h"                      // au::Format
 #include "au/CommandLine.h"                 // au::CommandLine
 
@@ -50,6 +51,7 @@ namespace samson {
         class PopQueue;
         class StreamOperation;
         class StreamOutConnection;
+
         
         class StreamManager : public ::engine::Object 
         {
@@ -73,6 +75,7 @@ namespace samson {
 
             // Map of quuee connections
             au::map <std::string , QueueConnections > queue_connections;
+            
             
             // Cronometer since the last "save state to disk"
             au::Cronometer cronometer_save_state_to_disk;
@@ -103,26 +106,22 @@ namespace samson {
             StreamManager( ::samson::SamsonWorker* worker );
             ~StreamManager();
             
-            // ------------------------------------------------------------
-            // Operations to review how data is redistributed for a queue
-            // ------------------------------------------------------------
-            
-            std::vector<std::string> getConnectedQueuesForQueue( std::string queue );
-            std::vector<std::string> getStreamOperationsForQueues( std::string queue );
-            void review_queue( std::string queue_name );
             
             // ------------------------------------------------------------
             // Operations over queues
             // ------------------------------------------------------------
             
-            // Add a block to a particular queue ( ususally from the network interface )
-            void addBlocks( std::string queue_name ,  BlockList *bl );
-            
+            // Add a buffer to a particular queue ( ususally from the network interface )
+            void addBuffer( std::string queue_name ,  engine::Buffer *buffer );
+                        
             // Remove a particular queue or state
             void remove_queue( std::string queue_name );
 
             // Copy contents of a queue to another queue
             void push_queue( std::string from_queue_name , std::string to_queue_name );
+            
+            // Flush accumulated buffers in all queues ( necessary when a particular operation has finished)
+            void flushBuffers();
             
             // ------------------------------------------------------------
             // pop queue operations
@@ -188,11 +187,15 @@ namespace samson {
         private:
             
             void reviewStreamOperations();
+
+            void review_connections();
             
             void saveStateToDisk();
             void recoverStateFromDisk();
             
-            
+            // Recover the stream operations for a particular queue
+            au::vector<StreamOperation> getStreamOperationsForQueues( std::string queue );
+
             
         };
     }

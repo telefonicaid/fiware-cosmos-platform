@@ -33,11 +33,21 @@ NAMESPACE_BEGIN(engine)
 class EngineElement 
 {
     
-    bool repeated;								// Flag to determine if it is necessary to repeated the process
-    int period;									// Period of the execution
-    int counter;                                // Number of times this element has been executed ( only in repeated )
+    typedef enum 
+    {
+        normal,    // Executed once
+        repeated,  // Repeated periodically
+        extra,     // Executed when nothing else is necessary to be executed before
+    } Type;
+    
+    Type type;
 
-    au::Cronometer cronometer;                  // Cronometer since creation of last execution
+    // Fields in repeated type
+    // ------------------------------------------------
+    int counter;                                // Number of times this element has been executed ( only in repeated )
+    int period;									// Period of the execution
+
+    au::Cronometer cronometer;                  // Cronometer since creation or last execution
     
 protected:
     
@@ -49,17 +59,26 @@ public:
     virtual void run()=0;						// Run method to execute
     
     // Constructor for inmediate action or repeated actions
-    EngineElement();
+    EngineElement( );
     EngineElement( int seconds );
+
+    
+    // Set as an extra element ( to be executed when nothing else has to be executed )
+    void set_as_extra()
+    {
+        type = extra;
+    }
     
     // Virtual destructor necessary to destory children-classes correctly
     virtual ~EngineElement(){};
     
-    // Reschedule action once executed
+    // Reschedule action once executed ( for repeated )
     void Reschedule();
     
-    // Check if it is a repeat tasks
+    // Check type of element
     bool isRepeated();
+    bool isExtra();
+    bool isNormal();
     
     // Get a description string for debuggin
     std::string getDescription();

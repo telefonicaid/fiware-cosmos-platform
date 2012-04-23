@@ -10,16 +10,15 @@ NAMESPACE_BEGIN(engine)
 EngineElement::EngineElement()
 {
     // Flag to indicate that this element will be executed just once
-    repeated = false;
+    type = normal;
     
     description = "Engine element to be executed once";
     shortDescription = "Engine element to be executed once";
-
 }
 
 EngineElement::EngineElement( int seconds )
 {
-    repeated = true;
+    type = repeated;
     period = seconds;
     counter = 0;
     
@@ -40,15 +39,13 @@ void EngineElement::Reschedule()
     counter++;
 }
 
-bool EngineElement::isRepeated()
-{
-    return repeated;
-}
 
 double EngineElement::getTimeToTrigger()
 {
     // Time for the next execution
-    return period - cronometer.diffTime(); 
+    if( type == repeated )
+        return period - cronometer.diffTime(); 
+    return 0;
 }
 
 double EngineElement::getWaitingTime()
@@ -60,7 +57,7 @@ double EngineElement::getWaitingTime()
 
 std::string EngineElement::getDescription()
 {
-    if( repeated )
+    if( type == repeated )
     {
         return au::str( "%s [ Engine element to be executed in %02.2f seconds ( repeat every %d secs , repeated %d times )] "
                        , description.c_str()
@@ -69,11 +66,10 @@ std::string EngineElement::getDescription()
                        , counter
                        );
     }
+    else if( type == extra )
+        return au::str( "%s [ Engine element EXTRA ]" , description.c_str() );
     else
-    {
         return au::str( "%s [ Engine element ]" , description.c_str() );
-    }
-    //return description;
 }
 
 
@@ -84,5 +80,23 @@ void EngineElement::getInfo( std::ostringstream& output)
     au::xml_simple(output, "description", getDescription() );
     au::xml_close(output, "engine_element");
 }
+
+bool EngineElement::isRepeated()
+{
+    return (type==repeated);
+}
+
+bool EngineElement::isExtra()
+{
+    return (type==extra);
+}
+
+bool EngineElement::isNormal()
+{
+    return (type==normal);
+}
+
+
+
 
 NAMESPACE_END

@@ -90,14 +90,14 @@ public:
     
     // Function to add a Process. It will be notifier by delegate mechanism
     void add( ProcessItem *item , size_t listenerId );                          
+    
     // Function to cancel a Process. 
     void cancel( ProcessItem *item );                   
     
 public:
     
-    // Publics but only called from SAMSON platform ( background process notifying ... )
-    
     // Notification that this ProcessItem has finished
+    // Public but only called from SAMSON platform ( background process notifying ... )
     void finishProcessItem( ProcessItem *item );		
     
 public:
@@ -111,6 +111,8 @@ public:
     // Check background process in order to see if new threads have to be created
     void check_background_processes();                    
     
+    // Run next item if possible
+    void run_next_items();
     
 private:
  

@@ -81,10 +81,36 @@ namespace engine {
                 total += (*it)->getSize();
             return total;
         }
-
         
+        
+        void extractFrom( BufferListContainer* other , size_t maximum_size )
+        {
+            int num=0;
+            size_t total = 0;
+            
+            while( true )
+            {
+                Buffer* buffer = other->front();
+                
+                if( !buffer )
+                    return;
+                
+                
+                if( num>0 )
+                    if( ( total + buffer->getSize() ) > maximum_size )
+                        return;
 
-
+                // Add this buffer in this list
+                push_back( buffer );
+                other->pop(); // Pop from the original list
+            }
+            
+        }
+        
+        size_t getNumBuffers()
+        {
+            return buffers.size();
+        }
         
     };
     

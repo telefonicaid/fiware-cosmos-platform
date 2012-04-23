@@ -6,6 +6,8 @@
 #define _H_SAMSON_system_reduce_VALUE_REDUCE
 
 
+#include "au/containers/List.h"
+
 #include <samson/module/samson.h>
 #include <samson_system/Value.h>
 
@@ -440,6 +442,8 @@ namespace samson{
             }
         };
         
+        
+        
         // -----------------------------------------------------------------------------------------------
         // ValueReduce_update_sum
         //
@@ -574,7 +578,258 @@ namespace samson{
             }
         };    
         
+        // Accumulate elements {... counter=# ... }
+        class TopList
+        {
+            
+        public:
+            
+            size_t num_elements;              // Maximum number of elements
+            au::list<system::Value> values;   // List of values
+            
+            TopList( )
+            {
+                num_elements = 100; // Default number of elements
+            }
+            
+            ~TopList()
+            {
+                // Remove all newly created instances
+                values.clearList();
+            }
+            
+            void push( Value* value )
+            {
+                double new_num = value->get_value_from_map("counter")->getDouble();
+                
+                // Push a new element
+                std::list<system::Value*>::iterator it_values;
+                for( it_values = values.begin() ; it_values != values.end() ; it_values ++ )
+                {
+                    double num = (*it_values)->get_value_from_map("counter")->getDouble();
+                    if( new_num > num )
+                    {
+                        values.insert(it_values, copy(value));
+                        return;
+                    }
+                }
+                
+                if( num_elements > values.size() )
+                    values.push_back(copy(value));
+                
+            }
+            
+            void get( system::Value * output_value )
+            {
+                output_value->set_as_vector();
+                std::list<system::Value*>::iterator it_values;
+                for( it_values = values.begin() ; it_values != values.end() ; it_values ++ )
+                    output_value->add_value_to_vector()->copyFrom( *it_values );
+            }
+        private:
+            
+            system::Value* copy( system::Value* v )
+            {
+                system::Value* c = new system::Value();
+                c->copyFrom(v);
+                return c;
+            }
+            
+        };
         
+        // -----------------------------------------------------------------------------------------------
+        //
+        // ValueReduce_accumulate
+        //
+        // Received     { value:"XX" category:"XX" } , counter
+        // State        { value:"XX" category:"XX" } , { value:"XX" category:"XX" counter:# timestamp:# }
+        // Emit         category                     , { value:"XX" category:"XX" counter:# timestamp:# }
+        // -----------------------------------------------------------------------------------------------
+        
+        // TODO: Emit only relevant outputs after processing all input key-values
+        
+        class ValueReduce_accumulate : public ValueReduce
+        {
+            samson::system::Value key;
+            samson::system::Value value;
+            
+            samson::system::Value output_value;
+            
+            int time_span;
+            
+            double factor; // Forgetting factor
+            
+        public:
+            
+            void init( std::string command  )
+            {
+                au::CommandLine cmdLine;
+                cmdLine.set_flag_uint64( "time_span", 360);
+                cmdLine.parse( command );
+                
+                time_span = cmdLine.get_flag_int("time");
+                
+                if ( time_span == 0 )
+                    factor = 1;
+                else
+                    factor = ( (double)time_span - 1 ) / (double)time_span;
+                
+            }
+            
+            
+            void run( samson::KVSetStruct* inputs , samson::KVWriter *writer  )
+            {
+                // Parse common key
+                if( inputs[0].num_kvs > 0 )
+                    key.parse( inputs[0].kvs[0]->key );
+                else
+                    key.parse( inputs[1].kvs[0]->key );
+                
+                // Recover state if any
+                
+                double total = 0;
+                time_t t = time(NULL);
+                
+                if( inputs[1].num_kvs > 0 )
+                {
+                    value.parse( inputs[1].kvs[0]->value );
+
+                    // Recover previous 
+                    total = value.get_value_from_map("counter")->getDouble();
+                        
+                    // Forgetting factor 
+                    size_t time_diff = t - value.get_value_from_map("timestamp")->getDouble();
+                    total = total * pow( factor  , time_diff );
+                    
+                }
+                else
+                {
+                    value.set_as_map();
+                    // Copy value and category from key
+                    value.add_value_to_map("category")->copyFrom( key.get_value_from_map("category") );
+                    value.add_value_to_map("concept")->copyFrom( key.get_value_from_map("concept") );
+
+                    // Add time-stamp and counter
+                    value.add_value_to_map("timestamp")->set_double( t );
+                    value.add_value_to_map("counter")->set_double(0);
+                    total = 0;
+                }
+                
+                
+                // Compute the new total
+                for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
+                {
+                    value.parse( inputs[0].kvs[i]->value );
+                    double tmp =  value.getDouble();
+                    total += tmp;
+                }
+
+                // Emit to update the state
+                value.add_value_to_map("counter")->set_double(total);
+                writer->emit( 1 , &key , &value );
+
+                // Emit to accumulate by category
+                key.set_string( value.get_value_from_map("category")->get_string() );
+                writer->emit( 0 , &key , &value );
+                
+                return;
+            }
+        };     
+        
+
+         
+        // -----------------------------------------------------------------------------------------------
+        //
+        // ValueReduce_accumulate_top
+        //
+        // Received     category                     , { value:"XX" category:"XX" counter:# timestamp:# }
+        // State        category                     , [ { value:"XX" counter:# timestamp:# } ... ]
+        // Emit         category                     , [ { value:"XX" counter:# timestamp:# } ... ]
+        // -----------------------------------------------------------------------------------------------
+        
+        // TODO: Emit only relevant outputs after processing all input key-values
+        
+        class ValueReduce_accumulate_top : public ValueReduce
+        {
+            samson::system::Value key;
+            samson::system::Value value;
+            
+            samson::system::Value output_value;
+            
+            int time_span;
+            
+            double factor; // Forgetting factor
+            
+            TopList top_list; // List to keep top elements
+            
+            size_t current_time;
+            
+        public:
+            
+            void init( std::string command  )
+            {
+                au::CommandLine cmdLine;
+                cmdLine.set_flag_uint64( "time_span", 360);
+                cmdLine.parse( command );
+                
+                time_span = cmdLine.get_flag_int("time");
+                
+                if ( time_span == 0 )
+                    factor = 1;
+                else
+                    factor = ( (double)time_span - 1 ) / (double)time_span;
+                
+                current_time = time(NULL);
+                
+            }
+            
+            void update_counter( system::Value * value )
+            {
+                // Forgetting factor 
+                size_t time_diff = current_time - value->get_value_from_map("timestamp")->getDouble();
+                system::Value * counter_value = value->get_value_from_map("counter");
+                counter_value->set_double( counter_value->getDouble() * pow( factor  , time_diff ) );
+            }
+            
+            void run( samson::KVSetStruct* inputs , samson::KVWriter *writer  )
+            {
+                // Parse common key
+                if( inputs[0].num_kvs > 0 )
+                    key.parse( inputs[0].kvs[0]->key );
+                else
+                    key.parse( inputs[1].kvs[0]->key );
+                
+                // Recover elements in the state
+                if( inputs[1].num_kvs > 0 )
+                {
+                    value.parse( inputs[1].kvs[0]->value );
+
+                    size_t num_elements = value.get_vector_size();
+                    for ( size_t i = 0 ; i < num_elements ; i++ )
+                    {
+                        system::Value* v = value.get_value_from_vector(i);
+                        update_counter( v );
+                        top_list.push(v);
+                    }
+                }
+                
+                // Process all inputs ( if any )
+                for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
+                {
+                    value.parse( inputs[0].kvs[i]->value );
+                    top_list.push(&value);
+                }
+                
+                // Emit to update the state
+                top_list.get( &value );
+
+                // Emit state and output
+                writer->emit( 0 , &key , &value );
+                writer->emit( 1 , &key , &value );
+                
+                return;
+            }
+        };  
         
         // -----------------------------------------------------------------------------------------------
         // ValueReduceManager manager
@@ -619,6 +874,17 @@ namespace samson{
                 {
                     add<ValueReduce_update_last>("last");        // Keep the last value
                     add<ValueReduce_update_sum>("sum");          // Keep the total sum of seen values
+                    
+                    add<ValueReduce_accumulate>("accumulate");  
+                    // Received     { value:"XX" category:"XX" } , counter
+                    // State        { value:"XX" category:"XX" } , { value:"XX" category:"XX" counter:# timestamp:# }
+                    // Emit         category                     , { value:"XX" category:"XX" counter:# timestamp:# }
+                    
+                    add<ValueReduce_accumulate_top>("accumulate_top");  
+                    // Received     category                     , { value:"XX" category:"XX" counter:# timestamp:# }
+                    // State        category                     , [ { value:"XX" counter:# timestamp:# } ... ]
+                    // Emit         category                     , [ { value:"XX" counter:# timestamp:# } ... ]
+                    
                 }
                 
             }

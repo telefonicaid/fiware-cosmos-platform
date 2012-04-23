@@ -1232,9 +1232,6 @@ namespace samson{
                 _value_string = _data;
             }
             
-            void setFromXmlString( const char *_data ,au::ErrorManager *error );
-            void setFromXmlNode(  const pugi::xml_node& xml_node );
-            
             // ------------------------------------------------------------
             // COPY Function 
             // ------------------------------------------------------------
@@ -1726,6 +1723,13 @@ namespace samson{
                 change_value_type( value_string );
                 _value_string = _value;
             }
+
+            void set_string( const char * _value , size_t len )
+            {
+                change_value_type( value_string );
+                _value_string = "";
+                _value_string.append( _value , len );
+            }
             
             void operator++ () 
             {
@@ -1806,6 +1810,12 @@ namespace samson{
                 
                 LM_X(1, ("Internal error"));
                 return 0;                
+            }
+            
+            // Access to the string char*
+            const char* c_str()
+            {
+                return _value_string.c_str();
             }
             
             void append_string( Value* value )

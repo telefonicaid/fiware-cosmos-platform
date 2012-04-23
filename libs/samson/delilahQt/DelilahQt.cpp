@@ -126,7 +126,7 @@ namespace samson
             std::stringstream headerString;
             //line << timeString << "Received buffer with size " << au::str(size,"B") << " from queue " << queue;
             // Show the first line or key-value
-            SamsonClientBlock samson_client_block( buffer , false );  // Not remove buffer at destrutor
+            SamsonClientBlock samson_client_block( buffer ); 
             
             headerString << "====================================================================\n";
             headerString << au::str("Received stream data for queue %s\n" , queue.c_str() ); 

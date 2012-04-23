@@ -6,6 +6,7 @@ SET (AUX_HEADERS
 	operations/map2.h
 	operations/map3.h
 	operations/parse.h
+	operations/parse_xml_documents.h
 	operations/parse_id_id.h
 	operations/parser_uint_void.h
 	operations/reduce.h

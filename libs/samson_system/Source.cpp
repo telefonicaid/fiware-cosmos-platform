@@ -246,7 +246,7 @@ namespace samson {
                         // Cumulative source vectors
                         main = new SourceVectorComponent(main, index);
                     }
-                    else if( token_vector->popNextTokenIfItIs(":[") )
+                    else if( token_vector->popNextTokenIfItIs(".") )
                     {
                         
                         Source* index = getSource(token_vector, error);
@@ -255,14 +255,7 @@ namespace samson {
                             delete main;
                             return NULL;
                         }
-                        
-                        if( !token_vector->popNextTokenIfItIs("]") )
-                        {
-                            delete main;
-                            error->set("Wrong index for map");
-                            return NULL;
-                        }
-                        
+                                                
                         // Cumulative source vectors
                         main = new SourceMapComponent(main, index);
                     }

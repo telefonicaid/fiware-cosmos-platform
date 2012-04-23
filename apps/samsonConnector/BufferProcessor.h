@@ -23,13 +23,16 @@ namespace samson
         Splitter * splitter;
         std::string splitter_name;
         
-        char *buffer;
-        size_t max_size;
-        size_t size;
 
         // Cronometer to indicate time since last process
         au::Cronometer cronometer;
 
+
+        // Internal buffer to be processed by splitter
+        char *buffer;
+        size_t max_size;
+        size_t size;
+        
         // Buffer used to emit output produced by the splitter
         engine::BufferContainer output_buffer_container;
         

@@ -41,6 +41,73 @@ namespace samson {
             bool containsBlockId( size_t id );            
         };
         
+        
+
+        class Queue;
+        
+        // Class to accumulate bufers before creating blocks
+        class BufferAccumulator
+        {
+            // Queue to push data when finish
+            Queue* queue;
+            
+            // Time since the last ( input buffers )
+            au::Cronometer cronometer_review; 
+                                              
+            // List of buffers at the input of this queue ( waiting to be converted into a block )
+            engine::BufferListContainer buffer_list_container;
+
+        public:
+            
+            BufferAccumulator( Queue * _queue )
+            {
+                // Keep a pointer to the queue to push new blocks when created
+                queue = _queue;
+            }
+            
+            void push( engine::Buffer* buffer )
+            {
+                if( buffer->getSize() > 10000000 )
+                {
+                    // Flush previous buffers if any
+                    flush(); 
+
+                    // Push this block into the local buffer
+                    buffer_list_container.push_back(buffer);
+                    
+                    // Flush a new buffer with the new block
+                    flush();
+                    
+                    return;
+                }
+                
+                // Init the clock if we are the first one
+                if( buffer_list_container.getNumBuffers() == 0 )
+                    cronometer_review.reset();
+                
+                buffer_list_container.push_back(buffer);
+                
+                // Review if the block has to be emited
+                review();
+            }
+            
+            void review()
+            {
+                // Review is called when engine has nothing to do... just flushing
+                // Review if new blocks should be created
+                size_t accumulated_size = buffer_list_container.getTotalSize();
+                int time = cronometer_review.diffTimeInSeconds();
+                
+                if( accumulated_size > 0 )
+                    if( ( accumulated_size > 10000000 ) || ( time > 0.5 ) )
+                        flush();
+            }
+            
+            void flush();
+
+        };
+        
+        
         class Queue
         {
             
@@ -49,6 +116,7 @@ namespace samson {
             friend class BlockBreakQueueTask;
             friend class BlockList;
             friend class StreamOperation;
+            friend class BufferAccumulator;
             
             // Pointer to StreamManager
             StreamManager* streamManager;
@@ -70,6 +138,9 @@ namespace samson {
             
             // Monitoring of the input rate
             ::samson::Rate rate; // samson::Rate for kvs and size monitoring
+
+            // Accumulator of buffers to create blcoks
+            BufferAccumulator buffer_accumulator;
             
         public:
             
@@ -80,9 +151,16 @@ namespace samson {
             Queue( std::string _name , StreamManager* _streamManager );
             ~Queue();
 
-            // Push content form a block list ( do not remove original list )
-            void push( BlockList *list ); 
+            // Push a new buffer
+            void push( engine::Buffer * buffer );
                         
+            // Flush accumulated buffers
+            void flushBuffers();
+            
+            // Push blocks to this queue
+            void push( BlockList *list );
+            void push( Block *block );
+            
             // Get information about the queue
             void update( BlockInfo& block_info );
                         
@@ -112,7 +190,7 @@ namespace samson {
             // Check if this queue is fully divided in such a way that all blocks are divided perfectly
             bool isReadyForDivisions( ); 
 
-            // Review if if is necesary to run block-break operations for this queue
+            // Review stuff necessary for this queue
             void review();
             
             void setMinNumDivisions( int _num_divisions )
@@ -133,8 +211,6 @@ namespace samson {
             
         private:
 
-            // Internal function to add a block to this queue
-            void push( Block *block );
             
             // Get necesssary blocks to break
             void getBlocksToBreak( BlockList *outputBlockList  , size_t max_size );

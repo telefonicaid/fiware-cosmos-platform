@@ -372,6 +372,13 @@ namespace samson {
             
             writeOnConsole( output.str() );
         }
+        else if ( main_command == "memory_status" )
+        {
+            writeOnConsole( au::str("Used memory %s / %s " 
+                                    , au::str(engine::MemoryManager::shared()->getUsedMemory() ).c_str()
+                                    , au::str(engine::MemoryManager::shared()->getMemory() ).c_str()
+                                    ) );
+        }
         else if ( main_command == "add_input" )
         {
             if( cmdLine.get_num_arguments() < 2 )
@@ -474,6 +481,7 @@ namespace samson {
         {
             info->add("quit");
             info->add("help");
+            info->add("memory_status");
             info->add("show");
             info->add("show_setup");
             info->add("add_input");

@@ -46,10 +46,12 @@ ProcessItem::ProcessItem(  int _priority ) :token( "ProcessItem" )
     
     operation_name = "unknown";     // By default no statistcs are done
     working_size = 0;               // By default no content to be processed
+    
 }
 
 ProcessItem::~ProcessItem()
 {
+
 }
 
 void ProcessItem::getInfo( std::ostringstream& output)

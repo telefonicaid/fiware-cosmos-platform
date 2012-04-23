@@ -26,12 +26,15 @@
 #include "au/mutex/Token.h"                       // au::Token
 #include "au/Cronometer.h"                  // au::Cronometer
 #include "au/namespace.h"                // NAMESPACE_BEGIN & NAMESPACE_END
+#include "au/containers/vector.h"
+#include "au/mutex/TokenTaker.h"
+#include "au/mutex/Token.h"
 
-#include "engine/EngineService.h"
 #include "engine/Object.h"                  // engine::EngineNotification
 #include "engine/ObjectsManager.h"          // engine::ObjectsManager
+#include "engine/EngineElementCollection.h"
 
-NAMESPACE_BEGIN(engine)
+NAMESPACE_BEGIN(au)
 class Error;
 class Token;
 NAMESPACE_END
@@ -43,28 +46,32 @@ class ProcessItem;
 class DiskOperation;
 class Notification;
 
-/**
- Main engine platform
- */
+// ---------------------------------------------------
+//
+// EngineElementCollection
+//
+// Main Engine platform
+// ---------------------------------------------------
+
 
 class Engine
 {
     // Common engine instance
     static Engine* engine;
 
-    // Elements of the samson engine to be repeated periodically
-    au::list<EngineElement> repeated_elements;           
+
+    // Collection of items
+    EngineElementCollection engine_element_collection;
     
-    // General fifo elements of the SAMSON Engine
-    au::list<EngineElement> normal_elements;               
-    
-    // Element that is currently running
-    EngineElement *running_element;                      
-    
-    // General mutex to protect global variable engine and block the main thread if necessary
-    au::Token token;                                
-    
-    pthread_t t;                                    // Thread to run the engine in background ( if necessary )
+    // Management of objects ( notification )
+    au::Token token_objectsManager;                                
+    ObjectsManager objectsManager;                  
+
+    // Counter of EngineElement processed
+    size_t counter;                                 
+
+    // Thread to run the engine in background ( if necessary )
+    pthread_t t;                                    
     
 public:
     
@@ -72,10 +79,6 @@ public:
     bool running_thread;                            // Flag to indicate that background thread is running
 
 private:    
-    
-    size_t counter;                                 // Counter of EngineElement processed
-    
-    ObjectsManager objectsManager;                  // Management of objects ( notification )
     
     Engine();
     
@@ -94,13 +97,7 @@ public:
     
     // Methods only executed from the thread-creation-functions ( never use directly )
     void run();
-    
-
-private:
-    
-    // Find the position in the list to inser a new element
-    std::list<EngineElement*>::iterator _find_pos_in_repeated_elements( EngineElement *e);
-    
+        
     
 public:
     
@@ -122,6 +119,7 @@ public:
     
     // Add a notification
     void notify( Notification*  notification );
+    void notify_extra( Notification*  notification );
     void notify( Notification*  notification , int seconds ); // Repeated notification
     
     // Function to add a simple foreground tasks 
@@ -142,6 +140,10 @@ private:
     // Only executed from friend class "NotificationElement"
     void send( Notification * notification );
     
+    // Run a particular engine element
+    void runElement( EngineElement* running_element );
+
+
     
 };
 

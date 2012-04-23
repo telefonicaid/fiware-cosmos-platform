@@ -6,6 +6,9 @@
 #include "samson/common/MessagesOperations.h"
 #include "samson/common/SamsonSetup.h"      // samson::SamsonSetup
 
+#include "samson/stream/StreamOperation.h"
+#include "samson/stream/StreamOutput.h"
+
 #include "StreamManager.h"          // samson::stream::StreamManager
 #include "Block.h"                  // samson::stream::Block
 #include "BlockList.h"              // samson::stream::BlockList
@@ -79,9 +82,33 @@ namespace samson {
         }
         
         
+        void BufferAccumulator::flush()
+        {
+            
+            while( buffer_list_container.getNumBuffers() > 0 )
+            {
+                // Extract available buffers ( at least one ) with a maximum size of 64Mb
+                engine::BufferListContainer tmp_buffer_list_container;
+                tmp_buffer_list_container.extractFrom( &buffer_list_container , 64000000 );
+                
+                // Tmp list to hold the new block
+                BlockList tmp_block_list;
+                
+                if( tmp_buffer_list_container.getNumBuffers() > 1 )
+                    LM_W(("Creating block from multiple buffers %s" , queue->name.c_str() ));
+                
+                // Create a block out of this buffers
+                Block* block = tmp_block_list.createBlock( &tmp_buffer_list_container );
+
+                // Push the new block into the queue
+                queue->push( block );
+            }
+            
+        }
+        
 #pragma mark Queue
         
-        Queue::Queue( std::string _name , StreamManager* _streamManager  )
+        Queue::Queue( std::string _name , StreamManager* _streamManager  ) : buffer_accumulator(this)
         {
             // Keep the name
             name = _name;
@@ -106,35 +133,23 @@ namespace samson {
             delete list;
         }
         
-        void Queue::push( BlockList *list )
+        void Queue::push( engine::Buffer * buffer )
         {
-            
-            BlockInfo block_info = list->getBlockInfo();
-            rate.push( block_info.info.kvs   , block_info.info.size );
-                        
-            au::list< Block >::iterator b;
-            for (b = list->blocks.begin() ; b != list->blocks.end() ; b++ )
-                push( *b );
+            // Accumulate new buffers in this auto-retained list of buffers
+            buffer_accumulator.push(buffer);
         }
-        
-        void Queue::check_format()
+
+        void Queue::flushBuffers()
         {
-            
-            if ( list->isEmpty() )
-            {
-                format = KVFormat("*","*");
-                
-            }
-            else if( format == KVFormat("*","*") )
-            {
-                Block* block = *list->blocks.begin();
-                format = block->header->getKVFormat();  // Get the format of the first one...
-            }
+            buffer_accumulator.flush();
         }
-        
         
         void Queue::push( Block *block )
         {
+            // Temporal block list used in some interfaces with stream operations
+            BlockList block_list;
+            block_list.add( block );
+            
             
             if( format == KVFormat("*","*") )
                 format = block->header->getKVFormat();  // Get the format of the first one...
@@ -162,10 +177,50 @@ namespace samson {
                 }
             }
             
+            // Update statistics
+            KVHeader header = block->getHeader();
+            rate.push( header.info.kvs   , header.info.size );
+
+            
+            // Push data to stream out connections 
+            // Note that once inside queue, we do not know what to sent, so now it is the time
+            au::map< size_t , StreamOutConnection >::iterator it_connections;
+            for( it_connections = streamManager->stream_out_connections.begin() 
+                ; it_connections != streamManager->stream_out_connections.end() 
+                ; it_connections++ )
+                it_connections->second->push( name , &block_list );
+            
+            
+            
             // Add to the list for this queue
             list->add( block );
             
-        }        
+        }   
+        
+        void Queue::push( BlockList *list )
+        {
+            au::list< Block >::iterator b;
+            for (b = list->blocks.begin() ; b != list->blocks.end() ; b++ )
+                push( *b );
+        }
+        
+        void Queue::check_format()
+        {
+            
+            if ( list->isEmpty() )
+            {
+                format = KVFormat("*","*");
+                
+            }
+            else if( format == KVFormat("*","*") )
+            {
+                Block* block = *list->blocks.begin();
+                format = block->header->getKVFormat();  // Get the format of the first one...
+            }
+        }
+        
+        
+     
         
         void Queue::getInfo( std::ostringstream& output)
         {
@@ -327,19 +382,19 @@ namespace samson {
             au::ExecesiveTimeAlarm alarm("Queue::review");
             
             // Review the size contained in this queue if there is a limit defined....
-            
             size_t max_size = environment.getSizeT( "max_size" , 0 );
-            
             if( max_size > 0 )
             {
-
                 BlockList tmp_block_list;   // Temporal list to put extracted blocks...
                 while( list->getBlockInfo().size > max_size )
                     tmp_block_list.extractBlockFrom( list );
             }
             
+            // Review if new blocks shold be created
+            buffer_accumulator.review();
         }
 
+        
         // Get some blocks that need to be broken to meet a particular number of divisions ( not locked )
         void Queue::getBlocksToBreak( BlockList *outputBlockList  , size_t max_size )
         {

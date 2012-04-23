@@ -148,6 +148,8 @@ void ProcessManager::finishProcessItem( ProcessItem *item )
         notification->environment.set("error", item->error.getMessage());
     Engine::shared()->notify( notification );
     
+    // run next elements if possible
+    run_next_items();    
 }
 
 void ProcessManager::cancel( ProcessItem *item )
@@ -183,33 +185,38 @@ void ProcessManager::check_background_processes()
 {
     while( true )
     {
-        // Get the next process item to process
-        ProcessItem * item = token_getNextProcessItem();
-        
         // Finish this thread when quitting background process
         if( quitting )
             return;
         
-        if( item )
-        {
-            // Run o re-run this item
-            switch (item->state) 
-            {
-                case ProcessItem::queued:
-                    item->state = ProcessItem::running;
-                    item->runInBackground();
-                    break;
-                                        
-                default:
-                    LM_X(1,("Unexpected state running item at Engine"));
-                    break;
-            }
-        }
-        else
-            usleep( 100000 ); // Sleep 0.1 seconds
+        // Run all possible items
+        run_next_items();        
+        
+        // Sleep 0.1 seconds
+        usleep( 100000 ); 
     }
 }
 
+void ProcessManager::run_next_items()
+{
+    while( true )
+    {
+        // Get the next process item to process
+        ProcessItem * item = token_getNextProcessItem();
+        if( item )
+        {
+            if( item->state != ProcessItem::queued )
+                LM_X(1,("Unexpected state running item at Engine"));
+            
+            // Run item
+            item->state = ProcessItem::running;
+            item->runInBackground();
+        }
+        else
+            return; // No more items to be executed
+        
+    }
+}
 
 
 int ProcessManager::getNumCores()

@@ -12,6 +12,9 @@ remove_all_stream
 # cat quijote.txt | samsonPush input
 push quijote.txt input
 
+# Flush all generated buffers
+flush_buffers
+
 # Get the lines running system.parse
 run system.parse input lines  
 

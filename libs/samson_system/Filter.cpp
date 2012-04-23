@@ -9,7 +9,7 @@ namespace samson{
         
         SamsonTokenizer::SamsonTokenizer()
         {
-            addSingleCharTokens("()[]{}<> ;&|?:,+-*/'|");
+            addSingleCharTokens("()[]{}<> ;&|?:,+-*/'|.");
             addToken(":[");
             addToken("<=");
             addToken(">=");
@@ -19,6 +19,7 @@ namespace samson{
             addToken(" -only_key ");
             addToken("select");
             addToken("parse_words");
+            addToken("xml_element");
             addToken("parse");
             addToken("emit");
             
@@ -92,6 +93,11 @@ namespace samson{
             else if ( token->content == "parse_words" )
             {
                 return new FilterParserWords();
+            }
+            else if ( token->content == "xml_element" )
+            {
+                // Parse kind of filter
+                return FilterXMLElement::getFilter( token_vector , error );
             }
             else if ( token->content == "parse_chars" )
             {

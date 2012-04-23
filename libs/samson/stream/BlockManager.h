@@ -24,7 +24,6 @@ namespace samson {
         bool compare_blocks( Block*b1 , Block *b2 );
 
         
-        
         class BlockManager : public engine::Object 
         {
             

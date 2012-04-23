@@ -246,10 +246,14 @@ namespace samson {
     
     SamsonClientBlockInterface* SamsonClient::getNextBlock( std::string queue )
     {
-        engine::Buffer *buffer = buffer_container.pop( queue );
+        engine::BufferContainer tmp_buffer_container; // Temporal buffer container
+        
+        buffer_container.pop( queue , &tmp_buffer_container );
+        
+        engine::Buffer * buffer = tmp_buffer_container.getBuffer();
         
         if( buffer )
-            return new SamsonClientBlock( buffer , true ); // Destroy buffer at destructor
+            return new SamsonClientBlock( buffer ); 
         else
             return NULL;
     }

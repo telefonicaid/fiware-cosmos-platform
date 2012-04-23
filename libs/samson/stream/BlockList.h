@@ -20,6 +20,7 @@
 #include "au/Cronometer.h"      // au::cronometer
 
 #include "engine/Buffer.h"      // engine::Buffer
+#include "engine/BufferContainer.h"
 #include "engine/Object.h"                  // engine::Object
 
 #include "samson/common/coding.h"           // FullKVInfo
@@ -78,6 +79,7 @@ namespace samson {
             
             // Create a block for this BlockList
             Block* createBlock( engine::Buffer *buffer );
+            Block* createBlock( engine::BufferListContainer *buffer_list_container );
 
             // Create a block for this BlockList
             Block* createBlockFromFile( std::string fileName );

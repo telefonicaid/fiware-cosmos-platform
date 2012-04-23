@@ -50,8 +50,9 @@ namespace samson {
             
             
             {
+                // Review of stream manager is done eveytime engine has nothing else to do
                 engine::Notification *notification = new engine::Notification(notification_review_stream_manager_fast);
-                engine::Engine::shared()->notify( notification, 1 );
+                engine::Engine::shared()->notify_extra( notification );
             }
             {
                 engine::Notification *notification = new engine::Notification(notification_review_stream_manager_save_state);
@@ -78,15 +79,9 @@ namespace samson {
         StreamManager::~StreamManager()
         {
             queues.clearMap();
-            
             stream_operations.clearMap();
-            
-            // Map of quuee connections
             queue_connections.clearMap();
-            
         }
-
-
         
         int get_num_divisions( size_t size )
         {
@@ -116,18 +111,35 @@ namespace samson {
             
             if ( notification->isName(notification_review_stream_manager_fast) )
             {
-                // Review stream operations to be executed
-                reviewStreamOperations();
+                //LM_W(("Review stream manager..."));
                 
-                // Review queues
+                // Review queues: 
+                //    --> Remove content from queues if necessary
+                //    --> Create new blocks
+                
                 au::map< std::string , Queue >::iterator it_queues;                
                 for ( it_queues = queues.begin() ; it_queues != queues.end() ; it_queues++ )
                     it_queues->second->review();
 
                 // Review StreamOutConnections
+                //
+                //    --> Schedule new operations to sent data to delilahs
+                
                 au::map< size_t , StreamOutConnection >::iterator it;
                 for( it =  stream_out_connections.begin() ; it != stream_out_connections.end() ; it++ )
                     it->second->scheduleNextTasks();    // It returns NULL when no more operations are scheduled
+
+                
+                // Review content redirection to other queues // stream operations
+                review_connections();
+                
+                
+                // Review stream operations to be executed
+                //
+                //   --> push content to stream operations from queues
+                //   --> Schedule stream_operations
+                
+                reviewStreamOperations();
                 
                 return;
             }
@@ -183,21 +195,65 @@ namespace samson {
             LM_W(("Unknown notification at StreamManager"));
         }
         
-        std::vector<std::string> StreamManager::getConnectedQueuesForQueue( std::string queue_name )
+        
+        void StreamManager::review_connections()
         {
-            QueueConnections* connections = queue_connections.findInMap( queue_name );
-            if( !connections )
-                return std::vector<std::string>();
-            else
-                return  connections->getTargetQueues();
+            au::map< std::string , Queue >::iterator it_queues;                
+            for( it_queues = queues.begin() ; it_queues != queues.end() ; it_queues++ )
+            {
+                std::string queue_name = it_queues->first;
+                Queue* queue = it_queues->second;
+                
+                // If no content to be redistributed...
+                if( queue->list->getNumBlocks() == 0 )
+                    continue;
+                
+                // Get connections if any
+                QueueConnections *my_queue_connections = queue_connections.findInMap( queue_name );
+                
+                // Get stream operations if any
+                au::vector<StreamOperation> my_stream_operations = getStreamOperationsForQueues( queue_name );
+                
+                if( my_queue_connections || (my_stream_operations.size() > 0 ) )
+                {
+                    // Content of this queue is redirected to ...
+                    BlockList block_list;
+                    block_list.extractFrom(queue->list);
+                    
+                    // Connected queues
+                    if( my_queue_connections ) 
+                    {
+                        std::set<std::string>::iterator it;
+                        for( it = my_queue_connections->target_queues.begin() ; 
+                            it != my_queue_connections->target_queues.end() ; 
+                            it++ )
+                        {
+                            std::string target_queue_name = *it;
+                            Queue* target_queue = getQueue( target_queue_name );
+                            target_queue->push( &block_list );
+                        }
+                    }
+                    // Stream operations
+                    for( size_t i = 0 ; i < my_stream_operations.size() ; i++ )
+                    {
+                        StreamOperation * stream_operation = my_stream_operations[i];
+                        
+                        if (stream_operation)
+                            stream_operation->push( &block_list );
+                    }
+                }
+                
+                
+            }
+
         }
+
         
-        std::vector<std::string> StreamManager::getStreamOperationsForQueues( std::string queue )
+        au::vector<StreamOperation> StreamManager::getStreamOperationsForQueues( std::string queue )
         {
         
-            std::vector<std::string> stream_operation_names;
+            au::vector<StreamOperation> my_stream_operations;
             
-            // First review all stream operations
             au::map <std::string , StreamOperation>::iterator it_stream_operations;
             for (it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++ )
             {
@@ -205,79 +261,36 @@ namespace samson {
                 
                 if( stream_operation->input_queues.size() > 0 )
                     if( stream_operation->input_queues[0] == queue )
-                        stream_operation_names.push_back( it_stream_operations->first );
+                        my_stream_operations.push_back( it_stream_operations->second );
             }
-            return stream_operation_names;
+            return my_stream_operations;
         }
         
         
-        void StreamManager::review_queue( std::string queue_name )
+
+        
+        void StreamManager::addBuffer( std::string queue_name ,  engine::Buffer *buffer )
         {
-            
             // Get or create the queue
             Queue *queue = getQueue( queue_name );
-            
-            // Get the list of stream-operations and connections for this queue
-            std::vector<std::string> stream_operation_names = getStreamOperationsForQueues( queue_name );
-            std::vector<std::string> queue_connections = getConnectedQueuesForQueue( queue_name );
-            
-            if( ( stream_operation_names.size() > 0 ) || (queue_connections.size() > 0 ) )
-            {
-                // Extract data to be push to all connectd queues and operations...
-                // Extract all blocks
-                BlockList tmp( "queue_to_connections_or_stream_operations" );
-                tmp.extractFrom( queue->list );
-                
-                
-                // Connected queues
-                for( size_t i = 0 ; i < queue_connections.size() ; i++ )
-                    addBlocks( queue_connections[i] , &tmp );
-                
-                // Stream operations
-                for( size_t i = 0 ; i < stream_operation_names.size() ; i++ )
-                {
-                    StreamOperation * stream_operation = stream_operations.findInMap( stream_operation_names[i] );
-                    if (stream_operation)
-                        stream_operation->push( &tmp );
-                }
-            }
-            
-            // review all the automatic operations ( maybe we can only review affected operations in the future... )
-            reviewStreamOperations();            
+            queue->push(buffer);
         }
         
-        void StreamManager::addBlocks( std::string queue_name ,  BlockList *list )
+        void StreamManager::flushBuffers()
         {
-            // Review stream_out_queues...
-            au::map< size_t , StreamOutConnection >::iterator it_connections;
-            for( it_connections = stream_out_connections.begin() ; it_connections != stream_out_connections.end() ; it_connections++)
-                it_connections->second->push( queue_name , list );
-
-            // Get or create the queue
-            Queue *queue = getQueue( queue_name );
-            
-            // Add the blocks to the queue
-            queue->push( list );
-
-            // Review if content of this queue is redistributed
-            review_queue( queue_name );
+            au::map< std::string , Queue >::iterator it_queue;
+            for( it_queue = queues.begin() ; it_queue != queues.end() ; it_queue++ )
+                it_queue->second->flushBuffers();
         }
-     
+
+        
         void StreamManager::add( StreamOperation* operation )
         {
-            
             StreamOperation* previous = stream_operations.extractFromMap( operation->name );
             if( previous )
                 delete previous;
 
             stream_operations.insertInMap( operation->name , operation );
-            
-            // Review input queue
-            if ( operation->input_queues.size() > 0 )
-                review_queue( operation->input_queues[0] );
-            
-            // review all the operations...
-            reviewStreamOperations();
         }
         
         
@@ -294,15 +307,17 @@ namespace samson {
 
         }
         
-        
         void StreamManager::push_queue( std::string from_queue_name , std::string to_queue_name )
         {
             Queue *fromQueue = getQueue( from_queue_name );
-            Queue *toQueue = getQueue( to_queue_name );
+            Queue *toQueue   = getQueue( to_queue_name );
 
-            toQueue->push( fromQueue->list );
-            
-            
+            BlockList tmp_block_list;
+            tmp_block_list.extractFrom( fromQueue->list );
+
+            au::list< Block >::iterator it;
+            for( it = tmp_block_list.blocks.begin() ;  it != tmp_block_list.blocks.end() ; it ++ )
+                toQueue->push( *it );
         }
         
         Queue* StreamManager::getQueue( std::string queue_name )
@@ -419,9 +434,9 @@ namespace samson {
         void StreamManager::reviewStreamOperations()
         {
             au::ExecesiveTimeAlarm alarm("StreamManager::reviewStreamOperations");
-
             
-	    LM_T(LmtEngineTime, ("before while"));
+            
+            LM_T(LmtEngineTime, ("before while"));
             while( true )
             {
                 // Find the most urgent stream operation
@@ -431,7 +446,9 @@ namespace samson {
                 
                 // First review all stream operations
                 au::map <std::string , StreamOperation>::iterator it_stream_operations;
-                for (it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++ )
+                for (it_stream_operations = stream_operations.begin() 
+                     ; it_stream_operations != stream_operations.end() 
+                     ; it_stream_operations++ )
                 {
                     StreamOperation *stream_operation = it_stream_operations->second;
                     
@@ -450,21 +467,21 @@ namespace samson {
                     
                     //  Review operation
                     stream_operation->last_review = "Pending revisions...";
-
-		LM_T(LmtEngineTime, ("Before getNextQueueTaskPriorityParameter task, name:%s, operation:%s", stream_operation->name.c_str(), stream_operation->operation.c_str()));
+                    
+                    LM_T(LmtEngineTime, ("Before getNextQueueTaskPriorityParameter task, name:%s, operation:%s", stream_operation->name.c_str(), stream_operation->operation.c_str()));
                     
                     // Let's see if we are really the next stream operation to be schedule next task...
                     size_t tmp_max_priority_rank = stream_operation->getNextQueueTaskPriorityParameter();
                     
-		LM_T(LmtEngineTime, ("After getNextQueueTaskPriorityParameter tmp_max_priority_rank:%lu task, name:%s, operation:%s", tmp_max_priority_rank, stream_operation->name.c_str(), stream_operation->operation.c_str()));
+                    LM_T(LmtEngineTime, ("After getNextQueueTaskPriorityParameter tmp_max_priority_rank:%lu task, name:%s, operation:%s", tmp_max_priority_rank, stream_operation->name.c_str(), stream_operation->operation.c_str()));
                     if( tmp_max_priority_rank > 0 )
                         stream_operation->last_review = au::str( "Pending task ( prioriry %s )" ,  au::str( tmp_max_priority_rank ).c_str() );
                     else
                         stream_operation->last_review = au::str( "No pending tasks" ,  au::str( tmp_max_priority_rank ).c_str() );
-                        
+                    
                     if ( ( tmp_max_priority_rank > 0 ) && (tmp_max_priority_rank > max_priority_rank ) )
                     {
-		LM_T(LmtEngineTime, ("Update next_stream_operation max_priority_rank:%lu task, name:%s, operation:%s", max_priority_rank, stream_operation->name.c_str(), stream_operation->operation.c_str()));
+                        LM_T(LmtEngineTime, ("Update next_stream_operation max_priority_rank:%lu task, name:%s, operation:%s", max_priority_rank, stream_operation->name.c_str(), stream_operation->operation.c_str()));
                         // we found a new stream operation that is more priority than the previous one
                         max_priority_rank = tmp_max_priority_rank;
                         next_stream_operation = stream_operation;
@@ -472,7 +489,7 @@ namespace samson {
                     
                 }
                 
-		LM_T(LmtEngineTime, ("Before checking memory "));
+                LM_T(LmtEngineTime, ("Before checking memory "));
                 double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
                 if ( memory_usage >= 1.0 )
                 {
@@ -486,23 +503,23 @@ namespace samson {
                 
                 
                 // If it has enougth tasks, we do not schedule anything else
-		LM_T(LmtEngineTime, ("Before queueTaskManager.hasEnougthTasks() "));
+                LM_T(LmtEngineTime, ("Before queueTaskManager.hasEnougthTasks() "));
                 if( queueTaskManager.hasEnougthTasks() )
-		{
-		    LM_T(LmtEngineTime, ("Enough tasks"));
+                {
+                    LM_T(LmtEngineTime, ("Enough tasks"));
                     return;
-	        }
+                }
                 
                 if( !next_stream_operation )
-		{
-		    LM_T(LmtEngineTime, ("No more operations"));
+                {
+                    LM_T(LmtEngineTime, ("No more operations"));
                     return; // No more operations to schedule
-		}
-
+                }
+                
                 // Schedule next task ( or tasks in some particular cases... )
-		LM_T(LmtEngineTime, ("Before scheduling next task, name:%s, operation:%s", next_stream_operation->name.c_str(), next_stream_operation->operation.c_str()));
+                LM_T(LmtEngineTime, ("Before scheduling next task, name:%s, operation:%s", next_stream_operation->name.c_str(), next_stream_operation->operation.c_str()));
                 next_stream_operation->scheduleNextQueueTasks( );
-		LM_T(LmtEngineTime, ("Next task scheduled"));
+                LM_T(LmtEngineTime, ("Next task scheduled"));
                 
             }
             
@@ -1168,9 +1185,6 @@ namespace samson {
             QueueConnections *connections = queue_connections.findOrCreate(source_queue);
             connections->queue = source_queue;
             connections->add_connection( target_queue );
-            
-            // Review if there is data waiting for you
-            review_queue( source_queue );
         }
         
         void StreamManager::remove_queue_connection( std::string source_queue , std::string target_queue )

@@ -456,6 +456,10 @@ namespace samson {
                 for ( size_t i = 0 ; i < stateBlockReaders.size() ; i++)
                     state_num_kvs += stateBlockReaders[i]->getKVInfoForHashGroup(hg).kvs;
                 
+                
+                if( ( input_num_kvs + state_num_kvs ) == 0 )
+                    return 0;
+                                
                 // Prepare KV Vector with the total number of kvs ( from input and state )
                 kvVector.prepareInput( input_num_kvs + state_num_kvs );
 
@@ -575,11 +579,14 @@ namespace samson {
                 std::list< Block* >::iterator b;
                 
                 
-                for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++)
-                    if( update_state_mode && i == (operation->getNumInputs()-1) )
+                for ( b = list->blocks.begin() ; b != list->blocks.end() ; b++ )
+                {
+                    
+                    if( update_state_mode && (i == (operation->getNumInputs()-1)) )
                         blockreaderCollection.insertStateBlocks( *b , i );
                     else
                         blockreaderCollection.insertInputBlocks( *b , i );
+                }
             }
            
             
@@ -671,9 +678,13 @@ namespace samson {
             }
             
             // Create the list with the outputs
-            BlockList *tmp = new BlockList("ReduceQueueTask_outputs");
-            for (size_t i = 0 ; i < outputBuffers.size() ; i++ )
-                tmp->createBlock( outputBuffers[i] );
+            BlockList tmp("ReduceQueueTask_outputs");
+            while( outputBuffers.getNumBuffers() > 0 )
+            {
+                engine::Buffer* buffer = outputBuffers.front();
+                tmp.createBlock( buffer );
+                outputBuffers.pop();
+            }
             
             // Original list of blocks
             BlockList *originalBlockList = getBlockList("input_1");
@@ -685,7 +696,7 @@ namespace samson {
             //LM_M(("Running finalize of a reduce for queue %s" , queue_name.c_str() ));
             
             if ( queue )
-                queue->replaceAndUnlock( originalBlockList , tmp );
+                queue->replaceAndUnlock( originalBlockList , &tmp );
             
             // Notify to the stream operation
             std::string stream_operation_name = environment.get("system.stream_operation","");
@@ -703,9 +714,6 @@ namespace samson {
 
             }
             
-            
-            // Detele the temporal list used here
-            delete tmp;
         }           
         
 

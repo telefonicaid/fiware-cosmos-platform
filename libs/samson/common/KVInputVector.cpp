@@ -147,8 +147,15 @@ namespace samson
 		}
     }
     
-    bool equalKV( KV* kv1 , KV* kv2 )
+    std::string str_kv( KV* kv )
     {
+        std::ostringstream output;
+        output << au::str("KV[%d][%d]" , kv->key_size , kv->value_size );
+        return output.str();
+    }
+    
+    bool equalKV( KV* kv1 , KV* kv2 )
+    {        
         if( kv1->key_size != kv2->key_size )
             return false;
         for (int i = 0 ; i < kv1->key_size ; i++ )
@@ -160,7 +167,6 @@ namespace samson
     
     bool compareKV( KV* kv1 , KV* kv2 )
     {
-        // Only grouping by key and also grouping by value
         
         if( kv1->key_size < kv2->key_size )
             return true;
@@ -207,6 +213,7 @@ namespace samson
         return false;
     }
     
+    
 	// global sort function key - input - value used in reduce operations
 	
 	void KVInputVector::sort()
@@ -225,6 +232,8 @@ namespace samson
         
         // Merge with the second part of the vector( supposed to be sorted )
         std::inplace_merge(_kv, _kv+middle_pos, _kv+num_kvs , compareKV);
+        
+        printf("Key-Values: %lu\n" , num_kvs);
         
     }
 

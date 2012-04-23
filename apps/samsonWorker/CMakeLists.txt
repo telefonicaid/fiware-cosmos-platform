@@ -22,6 +22,7 @@ SET (LIBS
     samsonStream
     samsonIsolated
     samsonCommon
+	samson_system
     engine
     au
     ${ICONV_LIB}

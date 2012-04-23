@@ -652,19 +652,22 @@ namespace samson{
         {
             samson::system::Value key;
             samson::system::Value value;
+
+            samson::system::Value tmp_value;
             
             samson::system::Value output_value;
             
             int time_span;
-            
             double factor; // Forgetting factor
+            
+            size_t current_time;
             
         public:
             
             void init( std::string command  )
             {
                 au::CommandLine cmdLine;
-                cmdLine.set_flag_uint64( "time_span", 360);
+                cmdLine.set_flag_int( "time", 360);
                 cmdLine.parse( command );
                 
                 time_span = cmdLine.get_flag_int("time");
@@ -672,20 +675,42 @@ namespace samson{
                 if ( time_span == 0 )
                     factor = 1;
                 else
-                    factor = ( (double)time_span - 1 ) / (double)time_span;
+                    factor = ( (double)time_span - 1.0 ) / (double)time_span;
+                
+                current_time = time(NULL);
                 
             }
             
+            void update_counter( system::Value * value )
+            {
+                // Forgetting factor 
+                size_t time_diff = current_time - value->get_value_from_map("timestamp")->getDouble();
+                system::Value * counter_value = value->get_value_from_map("counter");
+                double previous_counter = counter_value->getDouble();
+                double counter = previous_counter * pow( factor  , time_diff );
+                
+                counter_value->set_double(counter );
+            }
+
             
             void run( samson::KVSetStruct* inputs , samson::KVWriter *writer  )
             {
                 // Parse common key
+                // ------------------------------------
+                
                 if( inputs[0].num_kvs > 0 )
                     key.parse( inputs[0].kvs[0]->key );
                 else
                     key.parse( inputs[1].kvs[0]->key );
                 
+                // Check valid key
+                if( key.get_value_from_map("category") == NULL )
+                    return;
+                if( key.get_value_from_map("concept") == NULL )
+                    return;
+                
                 // Recover state if any
+                // ------------------------------------
                 
                 double total = 0;
                 time_t t = time(NULL);
@@ -693,13 +718,10 @@ namespace samson{
                 if( inputs[1].num_kvs > 0 )
                 {
                     value.parse( inputs[1].kvs[0]->value );
+                    update_counter(&value);
 
-                    // Recover previous 
+                    // Counter to accumulate inputs 
                     total = value.get_value_from_map("counter")->getDouble();
-                        
-                    // Forgetting factor 
-                    size_t time_diff = t - value.get_value_from_map("timestamp")->getDouble();
-                    total = total * pow( factor  , time_diff );
                     
                 }
                 else
@@ -719,9 +741,12 @@ namespace samson{
                 // Compute the new total
                 for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
                 {
-                    value.parse( inputs[0].kvs[i]->value );
-                    double tmp =  value.getDouble();
-                    total += tmp;
+                    tmp_value.parse( inputs[0].kvs[i]->value );
+                    if( tmp_value.isNumber() )
+                    {
+                        double tmp =  tmp_value.getDouble();
+                        total += tmp;
+                    }
                 }
 
                 // Emit to update the state

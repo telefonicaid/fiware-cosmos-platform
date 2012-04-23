@@ -151,7 +151,7 @@ namespace samson{
 
             void add( pugi::xml_node & xml_node , std::string prefix )
             {
-                printf("Add (%s) %s %s\n" , prefix.c_str() , xml_node.name() , xml_node.value()  );
+                //printf("Add (%s) %s %s\n" , prefix.c_str() , xml_node.name() , xml_node.value()  );
                 
                 switch (xml_node.type()) 
                 {
@@ -195,7 +195,7 @@ namespace samson{
             
             void add( pugi::xml_node & xml_node )
             {
-                printf("Add %s %s\n" , xml_node.name() , xml_node.value()  );
+                //printf("Add %s %s\n" , xml_node.name() , xml_node.value()  );
                 
                 // Init new key
                 new_key.set_as_map();
@@ -209,7 +209,7 @@ namespace samson{
             
             void process( pugi::xml_node & xml_node )
             {
-                printf("Process %s %s\n" , xml_node.name() , xml_node.value()  );
+                //printf("Process %s %s\n" , xml_node.name() , xml_node.value()  );
                 
                 switch (xml_node.type()) 
                 {

@@ -40,6 +40,7 @@ SET( STATIC_LIBS
     samsonIsolated
     samsonNetwork
     samsonCommon
+	samson_system
     au
     lm
     ${ICONV_LIB}

@@ -1,9 +1,10 @@
 package es.tid.cosmos.mobility.adjacentextraction;
 
-import es.tid.cosmos.mobility.util.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+
+import es.tid.cosmos.mobility.util.*;
 
 /**
  *
@@ -70,11 +71,35 @@ public final class AdjacentExtractionRunner {
             }
         }
         
+        Path poiPairbtsMobDataWithInputIdPath = new Path(tmpDirPath,
+                "poi_pairbts_mob_data_with_input_id");
+        {
+            SetMobDataInputIdByTwoIntJob job = new SetMobDataInputIdByTwoIntJob(
+                    conf);
+            job.configure(poiPairbtsMobDataPath, 0,
+                          poiPairbtsMobDataWithInputIdPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path pairbtsAdjMobDataWithInputIdPath = new Path(tmpDirPath,
+                "pairbts_adj_mob_data_with_input_id");
+        {
+            SetMobDataInputIdByTwoIntJob job = new SetMobDataInputIdByTwoIntJob(
+                    conf);
+            job.configure(pairbtsAdjMobDataPath, 1,
+                          pairbtsAdjMobDataWithInputIdPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
         Path poiPairbtsAdjPath = new Path(tmpDirPath, "poi_pairbts_adj");
         {
             AdjJoinPairbtsAdjbtsJob job = new AdjJoinPairbtsAdjbtsJob(conf);
-            job.configure(new Path[] { poiPairbtsMobDataPath,
-                                       pairbtsAdjMobDataPath },
+            job.configure(new Path[] { poiPairbtsMobDataWithInputIdPath,
+                                       pairbtsAdjMobDataWithInputIdPath },
                           poiPairbtsAdjPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());

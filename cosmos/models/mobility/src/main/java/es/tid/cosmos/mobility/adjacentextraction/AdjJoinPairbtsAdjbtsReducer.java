@@ -23,7 +23,7 @@ public class AdjJoinPairbtsAdjbtsReducer extends Reducer<LongWritable,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<TwoInt> pairPoisList = new LinkedList<TwoInt>();
-        int numAdjBts = 0;
+        boolean hasAdjacentBts = false;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
@@ -32,16 +32,18 @@ public class AdjJoinPairbtsAdjbtsReducer extends Reducer<LongWritable,
                     pairPoisList.add(mobData.getTwoInt());
                     break;
                 case 1:
-                    numAdjBts++;
+                    hasAdjacentBts = true;
                     break;
                 default:
                     throw new IllegalStateException();
             }
         }
         
-        for (TwoInt pairPois : pairPoisList) {
-            context.write(new LongWritable(pairPois.getNum1()),
-                          TwoIntUtil.wrap(pairPois));
+        if (hasAdjacentBts) {
+            for (TwoInt pairPois : pairPoisList) {
+                context.write(new LongWritable(pairPois.getNum1()),
+                            TwoIntUtil.wrap(pairPois));
+            }
         }
     }
 }

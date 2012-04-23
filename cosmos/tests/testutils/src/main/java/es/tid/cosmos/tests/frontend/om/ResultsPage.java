@@ -16,6 +16,7 @@ import static org.testng.Assert.assertEquals;
  * @author ximo
  */
 public class ResultsPage {
+    // HTML classes and ids
     public static final String RESULT_TABLE_ID = "job-results-table";
     public static final String RESULT_CELL_ID = "job-result-value";
     public static final String SELECT_PRIMARYKEY_ID = "select-pk";

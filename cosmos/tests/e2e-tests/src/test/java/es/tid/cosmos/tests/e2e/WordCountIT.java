@@ -12,18 +12,18 @@ import org.testng.annotations.*;
 
 import es.tid.cosmos.tests.hadoopjars.HadoopJars;
 import es.tid.cosmos.tests.hadoopjars.JarNames;
-import es.tid.cosmos.tests.joblaunchers.*;
+import es.tid.cosmos.tests.tasks.*;
 
 public class WordCountIT {
     private static final String WORDCOUNT_PATH = HadoopJars.getPath(JarNames.Wordcount);
-    
-    public class TestImpl {        
+
+    public class TestImpl {
         private String text;
         private String inputFilePath;
-        private final Map<String,Integer> expectedResult;
-        private final JobLauncher jobLauncher;
-        
-        public TestImpl(JobLauncher launcher, String text) {
+        private final Map<String, Integer> expectedResult;
+        private final TaskCreator taskCreator;
+
+        public TestImpl(TaskCreator taskCreator, String text) {
             this.expectedResult = new HashMap<String, Integer>();
             this.text = text;
             String[] split = this.text.split("\\s+");
@@ -32,46 +32,46 @@ public class WordCountIT {
                 if (this.expectedResult.containsKey(word)) {
                     count = this.expectedResult.get(word);
                 }
-                
+
                 this.expectedResult.put(word, count + 1);
             }
-            this.jobLauncher = launcher;
+            this.taskCreator = taskCreator;
         }
-        
+
         @BeforeClass
         public void setup() throws IOException {
             File inputData = File.createTempFile("wordcount-", ".tmp");
             this.inputFilePath = inputData.getAbsolutePath();
             PrintWriter writer = new PrintWriter(inputData);
-            try {               
+            try {
                 writer.write(this.text);
             } finally {
                 writer.close();
             }
-            
+
             this.text = null;
         }
-        
+
         @AfterClass
         public void cleanup() throws IOException {
             File inputData = new File(this.inputFilePath);
             inputData.delete();
             this.inputFilePath = null;
         }
-        
+
         @Test
         public void wordCountTest() throws IOException, TestException {
-            String taskId = this.jobLauncher.createNewTask(this.inputFilePath,
-                                                           WORDCOUNT_PATH);
-            this.jobLauncher.waitForTaskCompletion(taskId);
-            List<Map<String, String>> results = this.jobLauncher
-                    .getResults(taskId);            
+            Task task = this.taskCreator.createTask(this.inputFilePath,
+                                                    WORDCOUNT_PATH);
+            task.run();
+            task.waitForCompletion();
+            List<Map<String, String>> results = task.getResults();
             for (Map<String, String> result : results) {
                 assertEquals(result.size(),
                              2,
                              "Verifying each row has 2 elements");
                 String word = result.get("_id");
-                int count = Integer.parseInt(result.get("value"));                
+                int count = Integer.parseInt(result.get("value"));
                 assertEquals(count,
                              (int) this.expectedResult.get(word),
                              "Verifying count for word "
@@ -79,27 +79,26 @@ public class WordCountIT {
             }
         }
     }
-          
-    public Object[] testCreator(JobLauncher launcher) {
-        final String wordcountPath = HadoopJars.getPath(JarNames.Wordcount);
+
+    public Object[] testCreator(TaskCreator taskCreator) {
         final String word = "Word ";
         final int repetitions = 1000000;
         StringBuilder longStr = new StringBuilder(repetitions * word.length());
         for (int i = 0; i < repetitions; ++i) {
             longStr.append(word);
         }
-        
-        return new Object[] {
-            new TestImpl(launcher, "One"),
-            new TestImpl(launcher, "Two words"),
-            new TestImpl(launcher, "Some text\n\t\nwith\tnon-space whitespace"),
-            new TestImpl(launcher, longStr.toString())
-        };
+
+        return new Object[]{
+                    new TestImpl(taskCreator, "One"),
+                    new TestImpl(taskCreator, "Two words"),
+                    new TestImpl(taskCreator, "Some text\n\t\nwith\tnon-space whitespace"),
+                    new TestImpl(taskCreator, longStr.toString())
+                };
     }
-       
+
     @Parameters("environment")
     @Factory
     public Object[] testsUI(String environment) {
-        return testCreator(new FrontendLauncher(Environment.valueOf(environment)));
+        return testCreator(new FrontendTaskCreator(Environment.valueOf(environment)));
     }
 }

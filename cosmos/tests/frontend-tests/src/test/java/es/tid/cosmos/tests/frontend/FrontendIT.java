@@ -1,6 +1,9 @@
 package es.tid.cosmos.tests.frontend;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,7 +24,10 @@ import org.testng.annotations.Test;
 import es.tid.cosmos.tests.frontend.om.*;
 import es.tid.cosmos.tests.hadoopjars.HadoopJars;
 import es.tid.cosmos.tests.hadoopjars.JarNames;
-import es.tid.cosmos.tests.joblaunchers.*;
+import es.tid.cosmos.tests.tasks.Environment;
+import es.tid.cosmos.tests.tasks.Task;
+import es.tid.cosmos.tests.tasks.TaskStatus;
+import es.tid.cosmos.tests.tasks.TestException;
 
 /**
  *
@@ -166,11 +172,12 @@ public class FrontendIT {
         inputPage.setInputFile(this.invalidJarPath);
         inputPage.submitInputFileForm();
 
-        FrontendLauncher testDriver = new FrontendLauncher(
-                this.frontend.getEnvironment());
-        testDriver.launchTask(taskId);
-        testDriver.waitForTaskCompletion(taskId);
-        assertEquals(testDriver.getTaskStatus(taskId),
+        Task task = FrontEndTask.CreateFromExistingTaskId(
+                this.frontend.getEnvironment(),
+                taskId);
+        task.run();
+        task.waitForCompletion();
+        assertEquals(task.getStatus(),
                      TaskStatus.Error,
                      "Verifying task is in the error state");
     }
@@ -199,14 +206,15 @@ public class FrontendIT {
 
         // Submit job with sample JAR
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher(
-                this.frontend.getEnvironment());
-        String taskId = testDriver.createNewTask(inputFilePath, jarName);
-        testDriver.waitForTaskCompletion(taskId);
-        assertEquals(testDriver.getTaskStatus(taskId),
+        Task task = new FrontEndTask(this.frontend.getEnvironment(),
+                                     inputFilePath,
+                                     jarName);
+        task.run();
+        task.waitForCompletion();
+        assertEquals(task.getStatus(),
                      TaskStatus.Completed,
-                     "Verifying task completed successfully. TaskId: " + taskId);
-        testDriver.getResults(taskId); // Just verifying results can be accessed        
+                     "Verifying task completed successfully. Task: " + task);
+        task.getResults();        // Just verifying results can be accessed
     }
 
     public void verifyJarRestrictions() throws IOException {
@@ -238,151 +246,142 @@ public class FrontendIT {
 
     public void testSimpleTask() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher(
-                this.frontend.getEnvironment());
-        String taskId = testDriver.createNewTask(inputFilePath,
-                                                 this.wordcountJarPath);
-        testDriver.waitForTaskCompletion(taskId);
-        assertEquals(testDriver.getTaskStatus(taskId),
+        Task task = new FrontEndTask(this.frontend.getEnvironment(),
+                                     inputFilePath,
+                                     this.wordcountJarPath);
+        task.run();
+        task.waitForCompletion();
+        assertEquals(task.getStatus(),
                      TaskStatus.Completed,
-                     "Verifying task completed successfully. TaskId: " + taskId);
-        testDriver.getResults(taskId); // Just verifying results can be accessed
+                     "Verifying task completed successfully. Task: " + task);
+        task.getResults();     // Just verifying results can be accessed
     }
 
     public void testParallelTasks() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher(
-                this.frontend.getEnvironment());
-        String[] taskIds = new String[TASK_COUNT];
+        Environment environment = this.frontend.getEnvironment();
+        Task[] tasks = new Task[TASK_COUNT];
         for (int i = 0; i < TASK_COUNT; ++i) {
-            taskIds[i] = testDriver.createNewTask(inputFilePath,
-                                                  this.wordcountJarPath,
-                                                  false);
+            tasks[i] = new FrontEndTask(environment,
+                                        inputFilePath,
+                                        this.wordcountJarPath);
         }
-        for (String taskId : taskIds) {
+        for (Task task : tasks) {
             assertEquals(TaskStatus.Created,
-                         testDriver.getTaskStatus(taskId),
-                         "Veryfing task is in created state. TaskId: "
-                    + taskId);
+                         task.getStatus(),
+                         "Veryfing task is in created state. Task: " + task);
         }
-        for (String taskId : taskIds) {
-            testDriver.launchTask(taskId);
+        for (Task task : tasks) {
+            task.run();
         }
-        for (String taskId : taskIds) {
-            TaskStatus jobStatus = testDriver.getTaskStatus(taskId);
+        for (Task task : tasks) {
+            TaskStatus jobStatus = task.getStatus();
             assertTrue(jobStatus == TaskStatus.Completed
                     || jobStatus == TaskStatus.Running,
                        "Verifying task is in running or completed state."
-                    + " TaskId: " + taskId);
+                    + " Task: " + task);
         }
-        for (String taskId : taskIds) {
-            testDriver.waitForTaskCompletion(taskId);
+        for (Task task : tasks) {
+            task.waitForCompletion();
         }
-        for (String taskId : taskIds) {
-            TaskStatus jobStatus = testDriver.getTaskStatus(taskId);
+        for (Task task : tasks) {
+            TaskStatus jobStatus = task.getStatus();
             assertEquals(jobStatus,
                          TaskStatus.Completed,
                          "Verifying task is in completed state."
-                    + " TaskId: " + taskId);
+                    + " Task: " + task);
         }
-        for (String taskId : taskIds) {
+        for (Task task : tasks) {
             // Just verifying results can be accessed
-            testDriver.getResults(taskId);
+            task.getResults();
         }
     }
 
     public void testInvalidJar() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher(
-                this.frontend.getEnvironment());
-        final String taskId = testDriver.createNewTask(inputFilePath,
-                                                       this.invalidJarPath,
-                                                       false);
+        final Task task = new FrontEndTask(this.frontend.getEnvironment(),
+                                           inputFilePath,
+                                           this.invalidJarPath);
         assertEquals(TaskStatus.Created,
-                     testDriver.getTaskStatus(taskId),
-                     "Veryfing task is in created state. TaskId: "
-                + taskId);
-        testDriver.launchTask(taskId);
-        TaskStatus jobStatus = testDriver.getTaskStatus(taskId);
+                     task.getStatus(),
+                     "Veryfing task is in created state. Task: " + task);
+        task.run();
+        TaskStatus jobStatus = task.getStatus();
         assertTrue(jobStatus == TaskStatus.Error
                 || jobStatus == TaskStatus.Running,
                    "Verifying task is in running or error state."
-                + " TaskId: " + taskId);
-        testDriver.waitForTaskCompletion(taskId);
-        assertTrue(testDriver.getTaskStatus(taskId) == TaskStatus.Error,
+                + " Task: " + task);
+        task.waitForCompletion();
+        assertTrue(task.getStatus() == TaskStatus.Error,
                    "Verifying task is in error state."
-                + " TaskId: " + taskId);
+                + " Task: " + task);
         verifyLinks();
     }
 
     public void testFailureJar() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
-        FrontendLauncher testDriver = new FrontendLauncher(
-                this.frontend.getEnvironment());
-        final String taskId = testDriver.createNewTask(inputFilePath,
-                                                       this.mapperFailJarPath,
-                                                       false);
+        final Task task = new FrontEndTask(this.frontend.getEnvironment(),
+                                           inputFilePath,
+                                           this.mapperFailJarPath);
         assertEquals(TaskStatus.Created,
-                     testDriver.getTaskStatus(taskId),
-                     "Veryfing task is in created state. TaskId: "
-                + taskId);
-        testDriver.launchTask(taskId);
-        TaskStatus jobStatus = testDriver.getTaskStatus(taskId);
+                     task.getStatus(),
+                     "Veryfing task is in created state. Task: " + task);
+        task.run();
+        TaskStatus jobStatus = task.getStatus();
         assertTrue(jobStatus == TaskStatus.Error
                 || jobStatus == TaskStatus.Running,
                    "Verifying task is in running or error state."
-                + " TaskId: " + taskId);
-        testDriver.waitForTaskCompletion(taskId);
-        assertTrue(testDriver.getTaskStatus(taskId) == TaskStatus.Error,
+                + " Task: " + task);
+        task.waitForCompletion();
+        assertTrue(task.getStatus() == TaskStatus.Error,
                    "Verifying task is in error state."
-                + " TaskId: " + taskId);
+                + " Task: " + task);
         verifyLinks();
     }
 
     public void testListResultJar() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(
                 "2 3 4 5 6 7 8 9 123\n19283");
-        FrontendLauncher testDriver = new FrontendLauncher(
-                this.frontend.getEnvironment());
-        final String taskId = testDriver.createNewTask(inputFilePath,
-                                                       this.printPrimesJarPath,
-                                                       false);
+        final Task task = new FrontEndTask(this.frontend.getEnvironment(),
+                                           inputFilePath,
+                                           this.printPrimesJarPath);
         assertEquals(TaskStatus.Created,
-                     testDriver.getTaskStatus(taskId),
-                     "Veryfing task is in created state. TaskId: "
-                + taskId);
-        testDriver.launchTask(taskId);
-        TaskStatus jobStatus = testDriver.getTaskStatus(taskId);
+                     task.getStatus(),
+                     "Veryfing task is in created state. Task: " + task);
+        task.run();
+        TaskStatus jobStatus = task.getStatus();
         assertTrue(jobStatus == TaskStatus.Completed
                 || jobStatus == TaskStatus.Running,
                    "Verifying task is in running or completed state."
-                + " TaskId: " + taskId);
-        testDriver.waitForTaskCompletion(taskId);
-        assertTrue(testDriver.getTaskStatus(taskId) == TaskStatus.Completed,
+                + " Task: " + task);
+        task.waitForCompletion();
+        assertTrue(task.getStatus() == TaskStatus.Completed,
                    "Verifying task is in the completed state."
-                + " TaskId: " + taskId);
+                + " Task: " + task);
         verifyLinks();
-        List<Map<String, String>> results = testDriver.getResults(taskId);
+        List<Map<String, String>> results = task.getResults();
+        assertEquals(results.get(0).get("primes"),
+                     "[2, 3, 5, 7]",
+                     "Verifying result is correct");
 
     }
 
     public void testDotsInName() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(
                 "2 3 4 5 6 7 8 9 123\n19283");
-        FrontendLauncher testDriver = new FrontendLauncher(
-                this.frontend.getEnvironment(),
-                "test@.2",
-                "cosmostest@.2");
         final String taskId = "../1234|<b>Weird</b>.Name_1!!&nbsp;%20~€";
-        testDriver.createNewTask(inputFilePath,
-                                 this.printPrimesJarPath,
-                                 taskId,
-                                 true);
-        testDriver.waitForTaskCompletion(taskId);
-        assertTrue(testDriver.getTaskStatus(taskId) == TaskStatus.Completed,
+        Task task = new FrontEndTask(new FrontEnd(this.frontend.getEnvironment(),
+                                                  "test@.2",
+                                                  "cosmostest@.2"),
+                                     inputFilePath,
+                                     this.printPrimesJarPath,
+                                     taskId);
+        task.run();
+        task.waitForCompletion();
+        assertTrue(task.getStatus() == TaskStatus.Completed,
                    "Verifying task is in the completed state."
                 + " TaskId: " + taskId);
         verifyLinks();
-        List<Map<String, String>> results = testDriver.getResults(taskId);
+        List<Map<String, String>> results = task.getResults();
     }
 }

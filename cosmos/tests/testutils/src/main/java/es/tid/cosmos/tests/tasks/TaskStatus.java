@@ -1,4 +1,4 @@
-package es.tid.cosmos.tests.joblaunchers;
+package es.tid.cosmos.tests.tasks;
 
 /**
  *

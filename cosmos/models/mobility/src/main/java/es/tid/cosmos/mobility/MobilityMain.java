@@ -1,12 +1,12 @@
 package es.tid.cosmos.mobility;
 
-import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
 import es.tid.cosmos.mobility.mivs.MivsRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;

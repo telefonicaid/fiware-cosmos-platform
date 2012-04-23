@@ -161,7 +161,7 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldExtractAdjacents = arguments.getBoolean(
                 "extractAdjacents");
         if (shouldRunAll || shouldExtractAdjacents) {
-            AdjacentExtractionRunner.run(pointsOfInterestPath,
+            AdjacentExtractionRunner.run(pointsOfInterestPath, pairbtsAdjPath,
                     pointsOfInterestIdPath, tmpAdjacentsPath, isDebug, conf);
         }
         

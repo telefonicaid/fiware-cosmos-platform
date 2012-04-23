@@ -1,5 +1,6 @@
 package es.tid.cosmos.mobility.adjacentextraction;
 
+import es.tid.cosmos.mobility.util.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -12,7 +13,7 @@ public final class AdjacentExtractionRunner {
     private AdjacentExtractionRunner() {
     }
     
-    public static void run(Path pointsOfInterestPath,
+    public static void run(Path pointsOfInterestPath, Path pairbtsAdjPath,
                            Path pointsOfInterestIdPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
             throws Exception {
@@ -47,18 +48,41 @@ public final class AdjacentExtractionRunner {
             }
         }
 
+        Path poiPairbtsMobDataPath = new Path(tmpDirPath,
+                                              "poi_pairbts_mob_data");
+        {
+            ConvertTwoIntToMobDataByTwoIntJob job =
+                    new ConvertTwoIntToMobDataByTwoIntJob(conf);
+            job.configure(poiPairbtsPath, poiPairbtsMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        Path pairbtsAdjMobDataPath = new Path(tmpDirPath,
+                                              "pairbts_adj_mob_data");
+        {
+            ConvertNullToMobDataByTwoIntJob job =
+                    new ConvertNullToMobDataByTwoIntJob(conf);
+            job.configure(pairbtsAdjPath, pairbtsAdjMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
         Path poiPairbtsAdjPath = new Path(tmpDirPath, "poi_pairbts_adj");
         {
             AdjJoinPairbtsAdjbtsJob job = new AdjJoinPairbtsAdjbtsJob(conf);
-            job.configure(new Path[] { poiPairbtsPath, poisTablePath },
+            job.configure(new Path[] { poiPairbtsMobDataPath,
+                                       pairbtsAdjMobDataPath },
                           poiPairbtsAdjPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
         
-        long numIndicesLeft = 1;
-        while (numIndicesLeft > 0) {
+        long numIndicesLeft;
+        do {
             Path poiPairbtsIndexPath = new Path(tmpDirPath,
                                                 "poi_pairbts_index");
             {
@@ -69,10 +93,32 @@ public final class AdjacentExtractionRunner {
                 }
             }
 
+            Path poiPairbtsIndexMobDataPath = new Path(tmpDirPath,
+                    "poi_pairbts_index_mob_data");
+            {
+                ConvertTwoIntToMobDataJob job = new ConvertTwoIntToMobDataJob(conf);
+                job.configure(poiPairbtsIndexPath, poiPairbtsIndexMobDataPath);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
+            }
+
+            Path poisTableMobDataPath = new Path(tmpDirPath,
+                                                 "pois_table_mob_data");
+            {
+                ConvertTwoIntToMobDataJob job = new ConvertTwoIntToMobDataJob(
+                        conf);
+                job.configure(poisTablePath, poisTableMobDataPath);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
+            }
+            
             Path poisTableTmpPath = new Path(tmpDirPath, "pois_table_tmp");
             {
                 AdjUpdatePoisTableJob job = new AdjUpdatePoisTableJob(conf);
-                job.configure(new Path[] { poisTablePath, poiPairbtsIndexPath },
+                job.configure(new Path[] { poisTableMobDataPath,
+                                           poiPairbtsIndexMobDataPath },
                               poisTableTmpPath);
                 if (!job.waitForCompletion(true)) {
                     throw new Exception("Failed to run " + job.getJobName());
@@ -80,13 +126,25 @@ public final class AdjacentExtractionRunner {
             }
             
             fs.delete(poisTablePath, true);
+            fs.delete(poisTableMobDataPath, true);
             fs.rename(poisTableTmpPath, poisTablePath);
+            
+            Path poiPairbtsAdjMobDataPath = new Path(tmpDirPath,
+                                                     "poi_pairbts_adj_mob_data");
+            {
+                ConvertTwoIntToMobDataJob job = new ConvertTwoIntToMobDataJob(
+                        conf);
+                job.configure(poiPairbtsAdjPath, poiPairbtsAdjMobDataPath);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
+            }
             
             Path poiPairbtsCh1Path = new Path(tmpDirPath, "poi_pairbts_ch1");
             {
                 AdjSwapPoiIdSt1Job job = new AdjSwapPoiIdSt1Job(conf);
-                job.configure(new Path[] { poiPairbtsAdjPath,
-                                           poiPairbtsIndexPath },
+                job.configure(new Path[] { poiPairbtsAdjMobDataPath,
+                                           poiPairbtsIndexMobDataPath },
                               poiPairbtsCh1Path);
                 if (!job.waitForCompletion(true)) {
                     throw new Exception("Failed to run " + job.getJobName());
@@ -94,18 +152,29 @@ public final class AdjacentExtractionRunner {
             }
 
             fs.delete(poiPairbtsAdjPath, true);
+            fs.delete(poiPairbtsAdjMobDataPath, true);
             
+            Path poiPairbtsCh1MobDataPath = new Path(tmpDirPath,
+                                                     "poi_pairbts_ch1_mob_data");
             {
-                AdjSwapPoiIdSt1Job job = new AdjSwapPoiIdSt1Job(conf);
-                job.configure(new Path[] { poiPairbtsCh1Path,
-                                           poiPairbtsIndexPath },
-                              poiPairbtsAdjPath);
+                ConvertTwoIntToMobDataJob job = new ConvertTwoIntToMobDataJob(
+                        conf);
+                job.configure(poiPairbtsCh1Path, poiPairbtsCh1MobDataPath);
                 if (!job.waitForCompletion(true)) {
                     throw new Exception("Failed to run " + job.getJobName());
                 }
             }
             
-            fs.delete(poiPairbtsAdjPath, true);
+            Path poiPairbtsCh2Path = new Path(tmpDirPath, "poi_pairbts_ch2");
+            {
+                AdjSwapPoiIdSt2Job job = new AdjSwapPoiIdSt2Job(conf);
+                job.configure(new Path[] { poiPairbtsCh1MobDataPath,
+                                           poiPairbtsIndexMobDataPath },
+                              poiPairbtsCh2Path);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
+            }
             
             Path nindSpreadPath = new Path(tmpDirPath, "nind_spread");
             {
@@ -128,7 +197,7 @@ public final class AdjacentExtractionRunner {
             if (numIndicesLeft == -1) {
                 throw new IllegalStateException();
             }
-        }
+        } while (numIndicesLeft > 0);
         
         Path poiPoimodPath = new Path(tmpDirPath, "poi_poimod");
         {
@@ -147,22 +216,64 @@ public final class AdjacentExtractionRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+
+        Path poiPoimodMobDataPath = new Path(tmpDirPath, "poi_poimod_mob_data");
+        {
+            ConvertLongToMobDataJob job = new ConvertLongToMobDataJob(conf);
+            job.configure(poiPoimodPath, poiPoimodMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path poiIdPoiMobDataPath = new Path(tmpDirPath, "poiId_poi_mob_data");
+        {
+            ConvertPoiNewToMobDataJob job = new ConvertPoiNewToMobDataJob(conf);
+            job.configure(poiIdPoiPath, poiIdPoiMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
         
         Path pointsOfInterestModPath = new Path(tmpDirPath,
                                                 "points_of_interest_mod");
         {
             AdjJoinNewPoiIdJob job = new AdjJoinNewPoiIdJob(conf);
-            job.configure(new Path[] { poiPoimodPath, poiIdPoiPath },
+            job.configure(new Path[] { poiPoimodMobDataPath,
+                                       poiIdPoiMobDataPath },
                           pointsOfInterestModPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
-
+      
+        Path pointsOfInterestMobDataPath = new Path(tmpDirPath,
+                "points_of_interest_mob_data");
+        {
+            ConvertPoiToMobDataByTwoIntJob job =
+                    new ConvertPoiToMobDataByTwoIntJob(conf);
+            job.configure(pointsOfInterestPath, pointsOfInterestMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path pointsOfInterestModMobDataPath = new Path(tmpDirPath,
+                "points_of_interest_mod_mob_data");
+        {
+            ConvertPoiNewToMobDataByTwoIntJob job =
+                    new ConvertPoiNewToMobDataByTwoIntJob(conf);
+            job.configure(pointsOfInterestModPath,
+                          pointsOfInterestModMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
         {
             AdjChangePoisIdJob job = new AdjChangePoisIdJob(conf);
-            job.configure(new Path[] { pointsOfInterestPath,
-                                       pointsOfInterestModPath },
+            job.configure(new Path[] { pointsOfInterestMobDataPath,
+                                       pointsOfInterestModMobDataPath },
                           pointsOfInterestIdPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());

@@ -69,7 +69,10 @@ int paDefaultValues(PaiArgument* paList)
             if (aP->def)
             {
                 if (((char*) aP->def)[0] != 0)
-                    strcpy((char*) aP->varP, (char*) aP->def);
+                {
+                    if ((char*) aP->varP != (char*) aP->def)
+                        strcpy((char*) aP->varP, (char*) aP->def);
+                }
             }
             else
                 ((char*) aP->varP)[0] = 0;

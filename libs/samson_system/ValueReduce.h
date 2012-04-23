@@ -6,7 +6,7 @@
 #define _H_SAMSON_system_reduce_VALUE_REDUCE
 
 
-#include "au/containers/List.h"
+#include "au/containers/list.h"
 
 #include <samson/module/samson.h>
 #include <samson_system/Value.h>

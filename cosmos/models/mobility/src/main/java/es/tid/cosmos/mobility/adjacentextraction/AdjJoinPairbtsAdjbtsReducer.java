@@ -16,10 +16,11 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  *
  * @author dmicol
  */
-public class AdjJoinPairbtsAdjbtsReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<TwoInt>> {
+public class AdjJoinPairbtsAdjbtsReducer extends Reducer<
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
+        LongWritable, ProtobufWritable<TwoInt>> {
     @Override
-    protected void reduce(LongWritable key,
+    protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<TwoInt> pairPoisList = new LinkedList<TwoInt>();

@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobProtocol.PoiNew;
@@ -16,11 +15,11 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  *
  * @author dmicol
  */
-public class AdjGroupTypePoiClientReducer extends Reducer<LongWritable,
-        ProtobufWritable<PoiNew>, ProtobufWritable<TwoInt>,
-        ProtobufWritable<TwoInt>> {
+public class AdjGroupTypePoiClientReducer extends Reducer<
+        ProtobufWritable<TwoInt>, ProtobufWritable<PoiNew>,
+        ProtobufWritable<TwoInt>, ProtobufWritable<TwoInt>> {
     @Override
-    protected void reduce(LongWritable key,
+    protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<ProtobufWritable<PoiNew>> values, Context context)
             throws IOException, InterruptedException {
         List<PoiNew> poiNewList = new LinkedList<PoiNew>();

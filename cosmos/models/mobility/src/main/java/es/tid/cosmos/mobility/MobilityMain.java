@@ -1,5 +1,6 @@
 package es.tid.cosmos.mobility;
 
+import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -12,6 +13,7 @@ import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;
 import es.tid.cosmos.mobility.labelling.join.LabelJoiningRunner;
 import es.tid.cosmos.mobility.labelling.secondhomes.DetectSecondHomesRunner;
+import es.tid.cosmos.mobility.outpois.OutPoisRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
@@ -143,11 +145,30 @@ public class MobilityMain extends Configured implements Tool {
         }
         
         Path tmpSecondHomesPath = new Path(tmpPath, "second_homes");
+        Path pointsOfInterestPath = new Path(tmpSecondHomesPath,
+                                             "points_of_interest");
         boolean shouldDetectSecondHomes = arguments.getBoolean(
                 "detectSecondHomes");
         if (shouldRunAll || shouldDetectSecondHomes) {
             DetectSecondHomesRunner.run(cellsMobPath, pointsOfInterestTemp4Path,
-                    viClientFuseAccPath, pairbtsAdjPath, tmpSecondHomesPath,
+                    viClientFuseAccPath, pairbtsAdjPath, pointsOfInterestPath,
+                    tmpSecondHomesPath, isDebug, conf);
+        }
+        
+        Path tmpAdjacentsPath = new Path(tmpPath, "adjacents");
+        Path pointsOfInterestIdPath = new Path(tmpAdjacentsPath,
+                                               "points_of_interest_id");
+        boolean shouldExtractAdjacents = arguments.getBoolean(
+                "extractAdjacents");
+        if (shouldRunAll || shouldExtractAdjacents) {
+            AdjacentExtractionRunner.run(pointsOfInterestPath,
+                    pointsOfInterestIdPath, tmpAdjacentsPath, isDebug, conf);
+        }
+        
+        boolean shouldOutPois = arguments.getBoolean("outPois");
+        if (shouldRunAll || shouldOutPois) {
+            OutPoisRunner.run(vectorClientClusterPath, pointsOfInterestIdPath,
+                    vectorClientClusterPath, vectorBtsClusterPath, tmpPath,
                     isDebug, conf);
         }
         

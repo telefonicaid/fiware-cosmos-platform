@@ -12,8 +12,7 @@ public final class AdjacentExtractionRunner {
     private AdjacentExtractionRunner() {
     }
     
-    public static void run(Path pointsOfInterestPath, Path btsComareaPath,
-                           Path centroidsPath, Path vectorBtsClusterPath,
+    public static void run(Path pointsOfInterestPath,
                            Path pointsOfInterestIdPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
             throws Exception {

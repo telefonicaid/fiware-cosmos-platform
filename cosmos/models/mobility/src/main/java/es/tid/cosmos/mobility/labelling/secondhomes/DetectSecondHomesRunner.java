@@ -17,7 +17,8 @@ public final class DetectSecondHomesRunner {
     
     public static void run(Path cellsMobPath, Path pointsOfInterestTemp4Path,
                            Path viClientFuseAccPath, Path pairbtsAdjPath,
-                           Path tmpDirPath, boolean isDebug, Configuration conf)
+                           Path pointsOfInterestPath, Path tmpDirPath,
+                           boolean isDebug, Configuration conf)
             throws Exception {
         Path btsMobPath = new Path(tmpDirPath, "bts_mob");
         {
@@ -200,7 +201,6 @@ public final class DetectSecondHomesRunner {
             }
         }
         
-        Path pointsOfInterestPath = new Path(tmpDirPath, "points_of_interest");
         {
             PoiJoinSechomeResultsJob job = new PoiJoinSechomeResultsJob(conf);
             job.configure(new Path[] { nodbtsPoiMobDataPath,

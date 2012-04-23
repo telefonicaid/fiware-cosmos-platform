@@ -42,7 +42,7 @@ public class MobilityMain extends Configured implements Tool {
         Path adjBtsPath = new Path(arguments.getString("adjBts"));
         Path btsVectorTxtPath = new Path(arguments.getString("btsVectorTxt"));
         
-        boolean shouldRunAll = arguments.getBoolean("run_all");
+        boolean shouldRunAll = arguments.getBoolean("runAll");
         boolean isDebug = arguments.getBoolean("debug");
         
         Path tmpParsingPath = new Path(tmpPath, "parsing");

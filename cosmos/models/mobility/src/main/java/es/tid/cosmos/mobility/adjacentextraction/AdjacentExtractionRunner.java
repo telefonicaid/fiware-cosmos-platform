@@ -190,12 +190,11 @@ public final class AdjacentExtractionRunner {
                 }
             }
             
-            Path poiPairbtsCh2Path = new Path(tmpDirPath, "poi_pairbts_ch2");
             {
                 AdjSwapPoiIdSt2Job job = new AdjSwapPoiIdSt2Job(conf);
                 job.configure(new Path[] { poiPairbtsCh1MobDataPath,
                                            poiPairbtsIndexMobDataPath },
-                              poiPairbtsCh2Path);
+                              poiPairbtsAdjPath);
                 if (!job.waitForCompletion(true)) {
                     throw new Exception("Failed to run " + job.getJobName());
                 }

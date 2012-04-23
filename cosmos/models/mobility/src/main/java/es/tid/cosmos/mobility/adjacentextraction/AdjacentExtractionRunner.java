@@ -14,7 +14,8 @@ public final class AdjacentExtractionRunner {
     
     public static void run(Path pointsOfInterestPath, Path btsComareaPath,
                            Path centroidsPath, Path vectorBtsClusterPath,
-                           Path tmpDirPath, boolean isDebug, Configuration conf)
+                           Path pointsOfInterestIdPath, Path tmpDirPath,
+                           boolean isDebug, Configuration conf)
             throws Exception {
         FileSystem fs = FileSystem.get(conf);
         
@@ -57,8 +58,8 @@ public final class AdjacentExtractionRunner {
             }
         }
         
-        boolean isFinished = false;
-        while (isFinished) {
+        long numIndicesLeft = 1;
+        while (numIndicesLeft > 0) {
             Path poiPairbtsIndexPath = new Path(tmpDirPath,
                                                 "poi_pairbts_index");
             {
@@ -82,6 +83,29 @@ public final class AdjacentExtractionRunner {
             fs.delete(poisTablePath, true);
             fs.rename(poisTableTmpPath, poisTablePath);
             
+            Path poiPairbtsCh1Path = new Path(tmpDirPath, "poi_pairbts_ch1");
+            {
+                AdjSwapPoiIdSt1Job job = new AdjSwapPoiIdSt1Job(conf);
+                job.configure(new Path[] { poiPairbtsAdjPath,
+                                           poiPairbtsIndexPath },
+                              poiPairbtsCh1Path);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
+            }
+
+            fs.delete(poiPairbtsAdjPath, true);
+            
+            {
+                AdjSwapPoiIdSt1Job job = new AdjSwapPoiIdSt1Job(conf);
+                job.configure(new Path[] { poiPairbtsCh1Path,
+                                           poiPairbtsIndexPath },
+                              poiPairbtsAdjPath);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
+            }
+            
             fs.delete(poiPairbtsAdjPath, true);
             
             Path nindSpreadPath = new Path(tmpDirPath, "nind_spread");
@@ -101,6 +125,10 @@ public final class AdjacentExtractionRunner {
                     throw new Exception("Failed to run " + job.getJobName());
                 }
             }
+            numIndicesLeft = conf.getLong("num_indices_left", -1);
+            if (numIndicesLeft == -1) {
+                throw new IllegalStateException();
+            }
         }
         
         Path poiPoimodPath = new Path(tmpDirPath, "poi_poimod");
@@ -112,10 +140,31 @@ public final class AdjacentExtractionRunner {
             }
         }
 
-        Path poiIdoiPath = new Path(tmpDirPath, "poiId_poi");
+        Path poiIdPoiPath = new Path(tmpDirPath, "poiId_poi");
         {
             AdjSpreadPoisByPoiIdJob job = new AdjSpreadPoisByPoiIdJob(conf);
-            job.configure(poisIdPath, poiIdoiPath);
+            job.configure(poisIdPath, poiIdPoiPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path pointsOfInterestModPath = new Path(tmpDirPath,
+                                                "points_of_interest_mod");
+        {
+            AdjJoinNewPoiIdJob job = new AdjJoinNewPoiIdJob(conf);
+            job.configure(new Path[] { poiPoimodPath, poiIdPoiPath },
+                          pointsOfInterestModPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+
+        {
+            AdjChangePoisIdJob job = new AdjChangePoisIdJob(conf);
+            job.configure(new Path[] { pointsOfInterestPath,
+                                       pointsOfInterestModPath },
+                          pointsOfInterestIdPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }

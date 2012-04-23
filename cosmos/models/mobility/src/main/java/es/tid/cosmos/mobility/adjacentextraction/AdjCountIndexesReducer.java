@@ -20,6 +20,7 @@ public class AdjCountIndexesReducer extends Reducer <LongWritable, LongWritable,
         for (LongWritable value : values) {
             sum += value.get();
         }
+        context.getConfiguration().setLong("num_indices_left", sum);
         context.write(new LongWritable(sum), NullWritable.get());
     }
 }

@@ -28,8 +28,10 @@ public class AdjGroupTypePoiClientReducer extends Reducer<
             poiNewList.add(value.get());
         }
         
-        for (PoiNew curPoi : poiNewList) {
-            for (PoiNew tempPoi : poiNewList) {
+        for (int i = 0; i < poiNewList.size(); i++) {
+            final PoiNew curPoi = poiNewList.get(i);
+            for (int j = 0; j < poiNewList.size(); j++) {
+                final PoiNew tempPoi = poiNewList.get(j);
                 if (curPoi.getId() < tempPoi.getId()) {
                     context.write(TwoIntUtil.createAndWrap(curPoi.getBts(),
                                                            tempPoi.getBts()),

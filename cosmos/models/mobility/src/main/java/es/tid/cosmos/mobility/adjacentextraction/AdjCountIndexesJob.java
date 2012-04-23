@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.MobilityMain;
  * @author dmicol
  */
 public class AdjCountIndexesJob extends Job {
-    private static final String JOB_NAME = "AdjParseAdjBts";
+    private static final String JOB_NAME = "AdjCountIndexes";
 
     public AdjCountIndexesJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);

@@ -121,7 +121,8 @@ public final class AdjacentExtractionRunner {
             Path poiPairbtsIndexMobDataPath = new Path(tmpDirPath,
                     "poi_pairbts_index_mob_data");
             {
-                ConvertTwoIntToMobDataJob job = new ConvertTwoIntToMobDataJob(conf);
+                ConvertTwoIntToMobDataJob job = new ConvertTwoIntToMobDataJob(
+                        conf);
                 job.configure(poiPairbtsIndexPath, poiPairbtsIndexMobDataPath);
                 if (!job.waitForCompletion(true)) {
                     throw new Exception("Failed to run " + job.getJobName());

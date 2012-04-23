@@ -44,9 +44,9 @@ public class PoiJoinSechomeResultsReducer extends Reducer<
             }
         }
         
-        Poi poi = poiList.get(0);
+        final Poi poi = poiList.get(0);
         Poi.Builder outputPoi = Poi.newBuilder(poi);
-        TwoInt ioweekIowend = twoIntList.get(0);
+        final TwoInt ioweekIowend = twoIntList.get(0);
         outputPoi.setInoutWeek((int)ioweekIowend.getNum1());
         outputPoi.setInoutWend((int)ioweekIowend.getNum2());
         if (secHomeCount != 0) {

@@ -17,14 +17,16 @@ import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 public class SetMobDataInputIdByTwoIntReducer extends Reducer<
         ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
         ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
+    private static final int DEFAULT_INVALID_ID = -1;
     private static Integer inputId = null;
 
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
-        if (inputId == null) {
-            final Configuration conf = context.getConfiguration();
-            inputId = conf.getInt("input_id", -1);
+        final Configuration conf = context.getConfiguration();
+        inputId = conf.getInt("input_id", DEFAULT_INVALID_ID);
+        if (inputId == DEFAULT_INVALID_ID) {
+            throw new IllegalArgumentException("Missing or invalid input ID");
         }
     }
     

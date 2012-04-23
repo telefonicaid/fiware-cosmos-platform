@@ -363,5 +363,25 @@ public class FrontendIT {
         assertEquals(results.get(0).get("primes"),
                      "[2, 3, 5, 7]",
                      "Verifying result is correct");
+
+    }
+
+    public void testDotsInName() throws IOException, TestException {
+        final String inputFilePath = createAutoDeleteFile(
+                "2 3 4 5 6 7 8 9 123\n19283");
+        final String taskId = "../1234|<b>Weird</b>.Name_1!!&nbsp;%20~€";
+        Task task = new FrontEndTask(new FrontEnd(this.frontend.getEnvironment(),
+                                                  "test@.2",
+                                                  "cosmostest@.2"),
+                                     inputFilePath,
+                                     this.printPrimesJarPath,
+                                     taskId);
+        task.run();
+        task.waitForCompletion();
+        assertTrue(task.getStatus() == TaskStatus.Completed,
+                   "Verifying task is in the completed state."
+                + " TaskId: " + taskId);
+        verifyLinks();
+        List<Map<String, String>> results = task.getResults();
     }
 }

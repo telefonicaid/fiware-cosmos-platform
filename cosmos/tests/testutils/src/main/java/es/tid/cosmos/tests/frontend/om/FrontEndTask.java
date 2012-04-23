@@ -21,10 +21,10 @@ public class FrontEndTask implements Task {
     private final FrontEnd frontend;
     private final String taskId;
 
-    public FrontEndTask(Environment env,
+    public FrontEndTask(FrontEnd frontend,
                         String inputFilePath,
-                        String jarPath)
-            throws TestException {
+                        String jarPath,
+                        String taskId) throws TestException {
         // Verify input params
         if (!(new File(inputFilePath).exists())) {
             throw new TestException("Input path does not exist");
@@ -33,11 +33,11 @@ public class FrontEndTask implements Task {
             throw new TestException("JAR path does not exist.");
         }
 
-        this.frontend = new FrontEnd(env);
+        this.frontend = frontend;
 
         // Set name
         SelectNamePage namePage = this.frontend.goToCreateNewJob();
-        this.taskId = UUID.randomUUID().toString();
+        this.taskId = taskId;
         namePage.setName(taskId);
 
         // Set and submit JAR
@@ -48,6 +48,22 @@ public class FrontEndTask implements Task {
         // Set and submit input file
         inputPage.setInputFile(inputFilePath);
         inputPage.submitInputFileForm();
+    }
+
+    public FrontEndTask(FrontEnd frontend,
+                        String inputFilePath,
+                        String jarPath) throws TestException {
+        this(frontend, inputFilePath, jarPath, UUID.randomUUID().toString());
+    }
+
+    public FrontEndTask(Environment env, String inputFilePath, String jarPath)
+            throws TestException {
+        this(new FrontEnd(env), inputFilePath, jarPath);
+    }
+
+    public FrontEndTask(Environment env, String inputFilePath, String jarPath,
+                        String taskId) throws TestException {
+        this(new FrontEnd(env), inputFilePath, jarPath, taskId);
     }
 
     private FrontEndTask(Environment env, String taskId) {

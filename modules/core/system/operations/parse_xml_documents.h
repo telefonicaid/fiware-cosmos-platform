@@ -18,6 +18,12 @@ namespace system{
 	class parse_xml_documents : public samson::Parser
 	{
 
+	   samson::system::Value key;
+	   samson::system::Value value;
+
+	   samson::system::String trace;
+	   samson::system::Void value_void;
+
 	public:
 
 
@@ -32,10 +38,49 @@ namespace system{
 
 		void init( samson::KVWriter *writer )
 		{
+		   value = 1;
 		}
 
+        
 		void run( char *data , size_t length , samson::KVWriter *writer )
 		{
+
+            // Limiter sequence
+            const char* sequence = "<?xml";
+            size_t sequence_len = strlen( sequence );
+            
+            size_t pos_begin = 0; // Position where we begin
+            size_t pos = 0;
+            
+            while( pos < length )
+            {
+                
+                if( memcmp( &data[pos] , sequence , sequence_len ) == 0 )
+                {
+                    // Sequence found
+                    if( pos > pos_begin )
+                    {
+                        key.set_string( &data[pos_begin] , pos - pos_begin );
+                        writer->emit( 0 , &key , &value );
+                    }
+                    
+                    pos_begin = pos;
+                    pos = pos_begin+1;
+                        
+                }
+                else
+                    pos++;
+            }
+            
+
+            // emit the last one
+            if( pos > pos_begin )
+            {
+                key.set_string( &data[pos_begin] , pos - pos_begin );
+                writer->emit( 0 , &key , &value );
+            }
+            
+
 		}
 
 		void finish( samson::KVWriter *writer )

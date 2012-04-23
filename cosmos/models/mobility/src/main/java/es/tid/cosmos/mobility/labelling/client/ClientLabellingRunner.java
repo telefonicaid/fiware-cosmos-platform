@@ -19,6 +19,8 @@ public final class ClientLabellingRunner {
                            Path centroidsPath, Path vectorClientClusterPath,
                            Path tmpDirPath, boolean isDebug, Configuration conf)
             throws Exception {
+        FileSystem fs = FileSystem.get(conf);
+        
         Path cdrsMobDataPath = new Path(tmpDirPath, "cdrs_mob_data");
         { 
             ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
@@ -49,6 +51,9 @@ public final class ClientLabellingRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+        
+        fs.delete(cdrsMobDataPath, true);
+        fs.delete(clientsInfoFilteredMobDataPath, true);
         
         Path vectorSpreadNodedayhourPath = new Path(tmpDirPath,
                                                     "clients_info_spread");
@@ -126,12 +131,9 @@ public final class ClientLabellingRunner {
                 }
             }
         } else {
-            FileSystem fs = FileSystem.get(conf);
             fs.delete(cdrsFilteredPath, true);
             fs.delete(clientsInfoFilteredPath, true);
             fs.delete(vectorClientNormPath, true);
-            fs.delete(cdrsMobDataPath, true);
-            fs.delete(clientsInfoFilteredMobDataPath, true);
         }
     }
 }

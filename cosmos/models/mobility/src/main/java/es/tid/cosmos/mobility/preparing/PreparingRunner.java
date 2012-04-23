@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.preparing;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.mobility.util.ConvertCdrToMobDataJob;
@@ -19,6 +20,8 @@ public final class PreparingRunner {
                            Path clientsBtsPath, Path btsCommsPath,
                            Path cdrsNoBtsPath, Path viTelmonthBtsPath,
                            Configuration conf) throws Exception {
+        FileSystem fs = FileSystem.get(conf);
+        
         {
             FilterCellnoinfoByCellIdJob job = new FilterCellnoinfoByCellIdJob(
                     conf);
@@ -92,5 +95,8 @@ public final class PreparingRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+        
+        fs.delete(cdrsInfoMobDataPath, true);
+        fs.delete(cellsMobDataPath, true);
     }
 }

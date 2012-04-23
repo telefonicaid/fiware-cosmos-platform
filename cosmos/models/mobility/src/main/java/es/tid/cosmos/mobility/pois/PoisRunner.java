@@ -21,6 +21,8 @@ public final class PoisRunner {
                            Path cdrsNoBtsPath, Path clientsInfoFilteredPath,
                            Path clientsRepbtsPath, boolean isDebug,
                            Configuration conf) throws Exception {
+        FileSystem fs = FileSystem.get(conf);
+        
         Path clientsBtscounterPath = new Path(tmpDirPath, "clients_btscounter");
         {
             NodeBtsCounterJob job = new NodeBtsCounterJob(conf);
@@ -97,6 +99,9 @@ public final class PoisRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+        
+        fs.delete(cdrsNoinfoMobDataPath, true);
+        fs.delete(cdrsNoBtsMobDataPath, true);
 
         Path clientsInfoFilteredMobDataPath = new Path(tmpDirPath,
                 "clients_info_filtered_mob_data");
@@ -120,6 +125,9 @@ public final class PoisRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+        
+        fs.delete(repbtsAggbybtsMobDataPath, true);
+        fs.delete(clientsInfoFilteredMobDataPath, true);
 
         {
             RepbtsGetRepresentativeBtsJob job =
@@ -142,7 +150,6 @@ public final class PoisRunner {
                 }
             }
         } else {
-            FileSystem fs = FileSystem.get(conf);
             fs.delete(clientsBtsPath, true);
             fs.delete(clientsBtscounterPath, true);
             fs.delete(clientsInfoSpreadPath, true);

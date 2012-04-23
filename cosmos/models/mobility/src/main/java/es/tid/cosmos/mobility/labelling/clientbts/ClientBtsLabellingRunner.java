@@ -23,6 +23,8 @@ public final class ClientBtsLabellingRunner {
                            Path vectorClientbtsClusterPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
             throws Exception {
+        FileSystem fs = FileSystem.get(conf);
+        
         Path clientsbtsSpreadPath = new Path(tmpDirPath, "clientsbts_spread");
         {
             VectorSpreadNodbtsJob job = new VectorSpreadNodbtsJob(conf);
@@ -64,6 +66,8 @@ public final class ClientBtsLabellingRunner {
             }
         }
         
+        fs.delete(clientsbtsSumMobDataPath, true);
+        
         Path clientsRepbtsMobDataPath = new Path(tmpDirPath,
                                                  "clients_repbts_mob_data");
         {
@@ -87,6 +91,8 @@ public final class ClientBtsLabellingRunner {
             }
         }
         
+        fs.delete(clientsRepbtsMobDataPath, true);
+        
         Path clientsbtsRepbtsPath = new Path(tmpDirPath, "clientsbts_repbts");
         {
             VectorFiltClientbtsJob job = new VectorFiltClientbtsJob(conf);
@@ -97,6 +103,9 @@ public final class ClientBtsLabellingRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+        
+        fs.delete(clientsbtsSumMobDataWithInputIdPath, true);
+        fs.delete(clientsRepbtsMobDataWithInputIdPath, true);
         
         Path clientsbtsGroupPath = new Path(tmpDirPath, "clientsbts_group");
         {
@@ -160,16 +169,11 @@ public final class ClientBtsLabellingRunner {
                 }
             }
         } else {
-            FileSystem fs = FileSystem.get(conf);
             fs.delete(clientsbtsSpreadPath, true);
             fs.delete(clientsbtsSumPath, true);
             fs.delete(clientsbtsRepbtsPath, true);
             fs.delete(clientsbtsGroupPath, true);
             fs.delete(vectorClientbtsNormPath, true);
-            fs.delete(clientsbtsSumMobDataPath, true);
-            fs.delete(clientsbtsSumMobDataWithInputIdPath, true);
-            fs.delete(clientsRepbtsMobDataPath, true);
-            fs.delete(clientsRepbtsMobDataWithInputIdPath, true);
         }
     }
 }

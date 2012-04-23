@@ -22,6 +22,8 @@ public final class BtsLabellingRunner {
                            Path centroidsPath, Path vectorBtsClusterPath,
                            Path tmpDirPath, boolean isDebug, Configuration conf)
             throws Exception {
+        FileSystem fs = FileSystem.get(conf);
+        
         Path btsCountsPath = new Path(tmpDirPath, "bts_counts");
         {
             VectorFilterBtsJob job = new VectorFilterBtsJob(conf);
@@ -111,6 +113,9 @@ public final class BtsLabellingRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+        
+        fs.delete(vectorBtsClusterSinfiltMobDataPath, true);
+        fs.delete(btsComareaMobDataPath, true);
 
         if (isDebug) {
             Path vectorBtsClusterTextPath = new Path(tmpDirPath,
@@ -124,7 +129,6 @@ public final class BtsLabellingRunner {
                 }
             }
         } else {
-            FileSystem fs = FileSystem.get(conf);
             fs.delete(btsCountsPath, true);
             fs.delete(btsCommsPath, true);
             fs.delete(btsSumComsPath, true);
@@ -132,8 +136,6 @@ public final class BtsLabellingRunner {
             fs.delete(vectorBtsPath, true);
             fs.delete(vectorBtsNormPath, true);
             fs.delete(vectorBtsClusterSinfiltPath, true);
-            fs.delete(vectorBtsClusterSinfiltMobDataPath, true);
-            fs.delete(btsComareaMobDataPath, true);
         }
     }
 }

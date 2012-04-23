@@ -22,6 +22,8 @@ public final class LabelJoiningRunner {
                            Path pointsOfInterestTemp4Path,
                            Path tmpDirPath, boolean isDebug, Configuration conf)
             throws Exception {
+        FileSystem fs = FileSystem.get(conf);
+        
         Path pointsOfInterestTempMobDataPath = new Path(tmpDirPath,
                 "points_of_interest_temp_mob_data");
         {
@@ -69,6 +71,9 @@ public final class LabelJoiningRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+        
+        fs.delete(vectorClientClusterMobDataPath, true);
+        fs.delete(pointsOfInterestTempMobDataPath, true);
         
         Path clientbtsNodpoilblPath = new Path(tmpDirPath,
                                                "clientbts_nodpoilbl");
@@ -132,6 +137,9 @@ public final class LabelJoiningRunner {
             }
         }
 
+        fs.delete(potpoiMobDataPath, true);
+        fs.delete(clientbtsNodPoimajMobDataPath, true);
+        
         Path pointsOfInterestTemp2MobDataPath = new Path(tmpDirPath,
                 "points_of_interest_temp2_mob_data");
         {
@@ -195,6 +203,10 @@ public final class LabelJoiningRunner {
             }
         }
 
+        fs.delete(pointsOfInterestTemp2MobDataPath, true);
+        fs.delete(vectorClientbtsClusterMobDataPath, true);
+        fs.delete(poisLabeledMobDataPath, true);
+        
         Path pointsOfInterestTemp3MobDataPath = new Path(tmpDirPath,
                 "points_of_interest_temp3_mob_data");
         {
@@ -228,6 +240,9 @@ public final class LabelJoiningRunner {
             }
         }
 
+        fs.delete(pointsOfInterestTemp3MobDataPath, true);
+        fs.delete(vectorBtsClusterMobDataPath, true);
+        
         if (isDebug) {
             Path pointsOfInterestTemp4TextPath = new Path(tmpDirPath,
                     "points_of_interest_temp4_text");
@@ -241,7 +256,6 @@ public final class LabelJoiningRunner {
                 }
             }
         } else {
-            FileSystem fs = FileSystem.get(conf);
             fs.delete(potpoiPath, true);
             fs.delete(clientbtsNodpoilblPath, true);
             fs.delete(clientbtsNodpoiCountPath, true);
@@ -252,15 +266,6 @@ public final class LabelJoiningRunner {
             fs.delete(pointsOfInterestTemp3Path, true);
             fs.delete(vectorClientbtsClusterPath, true);
             fs.delete(vectorClientbtsClusterAddPath, true);
-            fs.delete(pointsOfInterestTempMobDataPath, true);
-            fs.delete(vectorClientClusterMobDataPath, true);
-            fs.delete(potpoiMobDataPath, true);
-            fs.delete(clientbtsNodPoimajMobDataPath, true);
-            fs.delete(pointsOfInterestTemp2MobDataPath, true);
-            fs.delete(vectorClientbtsClusterMobDataPath, true);
-            fs.delete(poisLabeledMobDataPath, true);
-            fs.delete(pointsOfInterestTemp3MobDataPath, true);
-            fs.delete(vectorBtsClusterMobDataPath, true);
         }
     }
 }

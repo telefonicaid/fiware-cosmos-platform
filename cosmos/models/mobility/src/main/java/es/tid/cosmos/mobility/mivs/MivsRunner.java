@@ -15,6 +15,8 @@ public final class MivsRunner {
     public static void run(Path viTelmonthBts, Path viClientFuseAcc,
                            Path tmpDir, boolean isDebug, Configuration conf)
             throws Exception {
+        FileSystem fs = FileSystem.get(conf);
+        
         Path viTelmonthMobvars = new Path(tmpDir, "vi_telmonth_mobvars");
         {
             // Calculate individual variables by month
@@ -84,10 +86,9 @@ public final class MivsRunner {
                 }
             }
         } else {
-            FileSystem fs = FileSystem.get(conf);
-            fs.deleteOnExit(viTelmonthMobvars);
-            fs.deleteOnExit(viTelmonthBtsAcc);
-            fs.deleteOnExit(viTelmonthMobvarsAcc);
+            fs.delete(viTelmonthMobvars, true);
+            fs.delete(viTelmonthBtsAcc, true);
+            fs.delete(viTelmonthMobvarsAcc, true);
         }
     }
 }

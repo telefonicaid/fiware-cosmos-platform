@@ -20,6 +20,8 @@ public final class DetectSecondHomesRunner {
                            Path pointsOfInterestPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
             throws Exception {
+        FileSystem fs = FileSystem.get(conf);
+        
         Path btsMobPath = new Path(tmpDirPath, "bts_mob");
         {
             PoiCellToBtsJob job = new PoiCellToBtsJob(conf);
@@ -72,6 +74,9 @@ public final class DetectSecondHomesRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+        
+        fs.delete(pointsOfInterestTemp4MobDataPath, true);
+        fs.delete(btsMobMobDataPath, true);
 
         Path sechPoiPosMobDataPath = new Path(tmpDirPath,
                                               "sech_poi_pos_mob_data");
@@ -115,6 +120,9 @@ public final class DetectSecondHomesRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+        
+        fs.delete(sechPoiPosMobDataPath, true);
+        fs.delete(viClientFuseAccMobDataPath, true);
 
         Path sechPotSecHomePath = new Path(tmpDirPath, "sech_pot_sec_home");
         {
@@ -158,6 +166,9 @@ public final class DetectSecondHomesRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+        
+        fs.delete(sechPotSecHomeMobDataPath, true);
+        fs.delete(pairsbtsAdjMobDataPath, true);
         
         Path nodbtsSechomeUniqPath = new Path(tmpDirPath, "nodbts_sechome_uniq");
         {
@@ -212,6 +223,10 @@ public final class DetectSecondHomesRunner {
             }
         }
         
+        fs.delete(nodbtsPoiMobDataPath, true);
+        fs.delete(nodbtsInoutMobDataPath, true);
+        fs.delete(nodbtsSechomeUniqMobDataPath, true);
+        
         if (isDebug) {
             Path pointsOfInterestTextPath = new Path(tmpDirPath,
                                                      "points_of_interest_text");
@@ -224,7 +239,6 @@ public final class DetectSecondHomesRunner {
                 }
             }
         } else {
-            FileSystem fs = FileSystem.get(conf);
             fs.delete(btsMobPath, true);
             fs.delete(nodbtsPoiPath, true);
             fs.delete(sechPoiPosPath, true);
@@ -234,14 +248,6 @@ public final class DetectSecondHomesRunner {
             fs.delete(nodbtsSechomePath, true);
             fs.delete(nodbtsSechomeUniqPath, true);
             fs.delete(pointsOfInterestTemp4Path, true);
-            fs.delete(pointsOfInterestTemp4MobDataPath, true);
-            fs.delete(btsMobMobDataPath, true);
-            fs.delete(sechPoiPosMobDataPath, true);
-            fs.delete(viClientFuseAccMobDataPath, true);
-            fs.delete(sechPotSecHomeMobDataPath, true);
-            fs.delete(pairsbtsAdjMobDataPath, true);
-            fs.delete(nodbtsPoiMobDataPath, true);
-            fs.delete(nodbtsInoutMobDataPath, true);
         }
     }
 }

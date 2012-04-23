@@ -4,6 +4,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import es.tid.cosmos.mobility.util.ConvertClusterVectorToMobDataByTwoIntJob;
+import es.tid.cosmos.mobility.util.ConvertPoiToMobDataByTwoIntJob;
+
 /**
  *
  * @author dmicol
@@ -17,6 +20,8 @@ public final class OutPoisRunner {
                            Path vectorBtsClusterPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
             throws Exception {
+        FileSystem fs = FileSystem.get(conf);
+        
         Path vectorClientbtsSpreadPath = new Path(tmpDirPath,
                                                   "vector_clientbts_spread");
         {
@@ -26,17 +31,43 @@ public final class OutPoisRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+        
+        Path vectorClientbtsSpreadMobDataPath = new Path(tmpDirPath,
+                "vector_clientbts_spread_mob_data");
+        {
+            ConvertClusterVectorToMobDataByTwoIntJob job =
+                    new ConvertClusterVectorToMobDataByTwoIntJob(conf);
+            job.configure(vectorClientbtsSpreadPath,
+                          vectorClientbtsSpreadMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
+        
+        Path pointsOfInterestIdMobDataPath = new Path(tmpDirPath,
+                "points_of_interest_id_mob_data");
+        {
+            ConvertPoiToMobDataByTwoIntJob job =
+                    new ConvertPoiToMobDataByTwoIntJob(conf);
+            job.configure(pointsOfInterestIdPath, pointsOfInterestIdMobDataPath);
+            if (!job.waitForCompletion(true)) {
+                throw new Exception("Failed to run " + job.getJobName());
+            }
+        }
 
         Path vectorClientpoiPath = new Path(tmpDirPath, "vector_clientpoi");
         {
             PoiJoinPoivectorPoiJob job = new PoiJoinPoivectorPoiJob(conf);
-            job.configure(new Path[] { vectorClientbtsSpreadPath,
-                                       pointsOfInterestIdPath },
+            job.configure(new Path[] { vectorClientbtsSpreadMobDataPath,
+                                       pointsOfInterestIdMobDataPath },
                           vectorClientpoiPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+        
+        fs.delete(vectorClientbtsSpreadMobDataPath, true);
+        fs.delete(pointsOfInterestIdMobDataPath, true);
         
         Path vectorPoiClusterPath = new Path(tmpDirPath, "vector_poi_cluster");
         {
@@ -86,7 +117,6 @@ public final class OutPoisRunner {
         }
         
         if (!isDebug) {
-            FileSystem fs = FileSystem.get(conf);
             fs.delete(vectorClientbtsPath, true);
             fs.delete(vectorClientbtsSpreadPath, true);
             fs.delete(vectorClientpoiPath, true);

@@ -21,11 +21,7 @@ public class BtsClustersParser extends Parser {
         cluster.setLabelgroup(this.parseInt());
         cluster.setMean(this.parseDouble());
         cluster.setDistance(this.parseDouble());
-        ClusterVector.Builder vector = ClusterVector.newBuilder();
-        for (int i = 0; i < 96; i++) {
-            vector.addComs(this.parseDouble());
-        }
-        cluster.setCoords(vector);
+        cluster.setCoords(this.parseClusterVector());
         return cluster.build();
     }
 }

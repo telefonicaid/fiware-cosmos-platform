@@ -19,13 +19,6 @@ import es.tid.cosmos.mobility.data.NodeBtsDayUtil;
 public class RepbtsSpreadNodebtsMapper extends Mapper<LongWritable,
         ProtobufWritable<NodeMxCounter>, ProtobufWritable<NodeBtsDay>,
         IntWritable> {
-    private IntWritable numberOfCalls;
-    
-    @Override
-    public void setup(Context context) {
-        this.numberOfCalls = new IntWritable();
-    }
-    
     @Override
     public void map(LongWritable key, ProtobufWritable<NodeMxCounter> value,
             Context context) throws IOException, InterruptedException {
@@ -34,8 +27,7 @@ public class RepbtsSpreadNodebtsMapper extends Mapper<LongWritable,
         for (BtsCounter bts : counter.getBtsList()) {
             ProtobufWritable<NodeBtsDay> nodeBtsDay = NodeBtsDayUtil.
                     createAndWrap(key.get(), bts.getPlaceId(), 0, 0);
-            this.numberOfCalls.set(bts.getCount());
-            context.write(nodeBtsDay, this.numberOfCalls);
+            context.write(nodeBtsDay, new IntWritable(bts.getCount()));
         }
     }
 }

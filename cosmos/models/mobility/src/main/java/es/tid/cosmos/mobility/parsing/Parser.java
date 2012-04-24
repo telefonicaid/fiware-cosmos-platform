@@ -1,6 +1,8 @@
 package es.tid.cosmos.mobility.parsing;
 
-import es.tid.cosmos.mobility.data.BaseProtocol;
+import es.tid.cosmos.mobility.data.BaseProtocol.Date;
+import es.tid.cosmos.mobility.data.BaseProtocol.Time;
+import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
 
 /**
  *
@@ -66,13 +68,21 @@ public abstract class Parser {
         }
         return Long.parseLong(str, 10);
     }
+    
+    protected ClusterVector parseClusterVector() {
+        ClusterVector.Builder clusterVector = ClusterVector.newBuilder();
+        for (int i = 0; i < 96; i++) {
+            clusterVector.addComs(this.parseDouble());
+        }
+        return clusterVector.build();
+    }
 
-    protected BaseProtocol.Date parseDate() {
+    protected Date parseDate() {
         String date = this.nextToken();
         final int day = Integer.parseInt(date.substring(0, 2), 10);
         final int month = Integer.parseInt(date.substring(3, 5), 10);
         final int year = Integer.parseInt(date.substring(8, 10), 10);
-        return BaseProtocol.Date.newBuilder()
+        return Date.newBuilder()
                 .setDay(day)
                 .setMonth(month)
                 .setYear(year)
@@ -80,9 +90,9 @@ public abstract class Parser {
                 .build();
     }
 
-    protected BaseProtocol.Time parseTime() {
+    protected Time parseTime() {
         String time = this.nextToken();
-        return BaseProtocol.Time.newBuilder()
+        return Time.newBuilder()
                 .setHour(Integer.parseInt(time.substring(0, 2), 10))
                 .setMinute(Integer.parseInt(time.substring(3, 5), 10))
                 .setSeconds(Integer.parseInt(time.substring(6, 8), 10))
@@ -90,7 +100,8 @@ public abstract class Parser {
     }
 
     private static int dayOfWeek(int day, int month, int year) {
-        int ix = ((year + 100 - 21) % 28) + monthOffset(month) + ((month > 2) ? 1 : 0);
+        int ix = ((year + 100 - 21) % 28) + monthOffset(month)
+                 + ((month > 2) ? 1 : 0);
         int tx = (ix + (ix / 4)) % 7 + day;
         return (tx + 1) % 7;
     }

@@ -22,11 +22,7 @@ public class ClusterParser extends Parser {
             cluster.setLabelgroup(this.parseInt());
             cluster.setMean(this.parseDouble());
             cluster.setDistance(this.parseDouble());
-            ClusterVector.Builder clusterVector = ClusterVector.newBuilder();
-            for (int i = 0; i < 96; i++) {
-                clusterVector.addComs(this.parseDouble());
-            }
-            cluster.setCoords(clusterVector.build());
+            cluster.setCoords(this.parseClusterVector());
             return cluster.build();
         } catch (Exception ex) {
             throw new IllegalArgumentException("Failed to parse: " + this.line);

@@ -25,13 +25,14 @@ public class AdjGroupTypePoiClientReducer extends Reducer<
         List<PoiNew> poiNewList = new LinkedList<PoiNew>();
         for (ProtobufWritable<PoiNew> value : values) {
             value.setConverter(PoiNew.class);
-            poiNewList.add(value.get());
+            final PoiNew poiNew = value.get();
+            poiNewList.add(poiNew);
         }
         
-        for (int i = 0; i < poiNewList.size(); i++) {
-            final PoiNew curPoi = poiNewList.get(i);
-            for (int j = 0; j < poiNewList.size(); j++) {
-                final PoiNew tempPoi = poiNewList.get(j);
+        key.setConverter(TwoInt.class);
+        final TwoInt twoInt = key.get();
+        for (PoiNew curPoi : poiNewList) {
+            for (PoiNew tempPoi : poiNewList) {
                 if (curPoi.getId() < tempPoi.getId()) {
                     context.write(TwoIntUtil.createAndWrap(curPoi.getBts(),
                                                            tempPoi.getBts()),

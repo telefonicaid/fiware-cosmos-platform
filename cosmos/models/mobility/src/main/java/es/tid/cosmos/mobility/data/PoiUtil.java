@@ -28,6 +28,10 @@ public abstract class PoiUtil {
                 .setLabelbts(labelbts)
                 .setLabelgroupbts(labelgroupbts)
                 .setConfidentbts(confidentbts)
+                .setDistancebts(distancebts)
+                .setLabelnodebts(labelnodebts)
+                .setLabelgroupnodebts(labelgroupnodebts)
+                .setConfidentnodebts(confidentnodebts)
                 .setDistancenodebts(distancenodebts)
                 .setInoutWeek(inoutWeek)
                 .setInoutWend(inoutWend)
@@ -63,6 +67,6 @@ public abstract class PoiUtil {
                 DELIMITER + obj.getLabelgroupnodebts() + DELIMITER +
                 obj.getConfidentnodebts() + DELIMITER +
                 obj.getDistancenodebts() + DELIMITER + obj.getInoutWeek() +
-                obj.getInoutWend());
+                DELIMITER + obj.getInoutWend());
     }
 }

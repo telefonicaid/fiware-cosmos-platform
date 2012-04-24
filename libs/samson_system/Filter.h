@@ -286,6 +286,9 @@ namespace samson{
                 // Keep a pointer to the writer to send data
                 writer = _writer;
                 
+                // Default separator
+                separator = "|";
+                
                 while( ! token_vector->eof() )
                 {
                     if( token_vector->getNextTokenContent() == "|" )

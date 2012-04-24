@@ -985,7 +985,7 @@ namespace samson{
                 return compare(other) > 0;
             }
             
-            const Value operator+(const Value &other) const 
+            const Value operator+( Value &other) //const 
             {
                 Value result = *this;       // Make a copy of myself. 
 
@@ -1279,6 +1279,7 @@ namespace samson{
             // STR Function 
             // ------------------------------------------------------------
 
+            
             std::string str() 
             {
                 switch (value_type) 
@@ -1783,7 +1784,7 @@ namespace samson{
                 return 0;
             }
             
-            std::string get_string() const
+            std::string get_string()
             {
                 switch ( value_type )
                 {
@@ -1797,15 +1798,17 @@ namespace samson{
                     case value_vector:
                     {
                         std::ostringstream output;
-                        output << "[ ";
+                        output << "[";
                         for( size_t i = 0 ; i < _value_vector.size() ; i++ )
-                            output << _value_vector[i]->str() << " ";
+                            output << _value_vector[i]->str() << ",";
                         output << "]";
                         return output.str();
                     }
                         
                     case value_map:
-                        return 0;
+                    {
+                        return str();
+                    }
                 }
                 
                 LM_X(1, ("Internal error"));
@@ -1813,7 +1816,7 @@ namespace samson{
             }
             
             // Access to the string char*
-            const char* c_str()
+            const char* c_str() const
             {
                 return _value_string.c_str();
             }

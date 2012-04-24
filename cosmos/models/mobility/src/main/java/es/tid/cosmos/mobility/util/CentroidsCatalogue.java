@@ -18,29 +18,23 @@ import es.tid.cosmos.mobility.parsing.ClusterParser;
  *
  * @author dmicol
  */
-public class CentroidsCatalogue {
-    private List<Cluster> centroids;
-    
-    public CentroidsCatalogue(Path input, Configuration conf)
+public abstract class CentroidsCatalogue {
+    public static List<Cluster> load(Path input, Configuration conf)
             throws IOException {
-        this.init(input, conf);
-    }
-    
-    private void init(Path input, Configuration conf) throws IOException {
         FSDataInputStream in = null;
         BufferedReader br = null;
         try {
             FileSystem fs = FileSystem.get(conf);
             in = fs.open(input);
             br = new BufferedReader(new InputStreamReader(in));
-            this.centroids = new LinkedList<Cluster>();
+            List<Cluster> centroids = new LinkedList<Cluster>();
             String line;
             while ((line = br.readLine()) != null) {
                 Cluster cluster = new ClusterParser(line).parse();
-                this.centroids.add(cluster);
+                centroids.add(cluster);
             }
+            return centroids;
         } catch (Exception ex) {
-            this.centroids = null;
             Logger.get().fatal(ex);
             throw new IOException(ex);
         } finally {
@@ -57,9 +51,5 @@ public class CentroidsCatalogue {
                 }
             }
         }
-    }
-    
-    public List<Cluster> getCentroids() {
-        return this.centroids;
     }
 }

@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.labelling.clientbts;
 
 import java.io.IOException;
+import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
@@ -22,15 +23,15 @@ import es.tid.cosmos.mobility.util.CentroidsCatalogue;
 public class ClusterClientBtsGetMinDistanceToClusterReducer extends Reducer<
         ProtobufWritable<NodeBts>, ProtobufWritable<ClusterVector>,
         ProtobufWritable<TwoInt>, ProtobufWritable<Cluster>> {
-    private static CentroidsCatalogue centroids = null;
+    private static List<Cluster> centroids = null;
 
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
         if (centroids == null) {
-            centroids = new CentroidsCatalogue(new Path(conf.get("centroids")),
-                    conf);
+            centroids = CentroidsCatalogue.load(new Path(conf.get("centroids")),
+                                                conf);
         }
     }
 
@@ -43,7 +44,7 @@ public class ClusterClientBtsGetMinDistanceToClusterReducer extends Reducer<
             final ClusterVector clusVector = value.get();
             double mindist = Double.POSITIVE_INFINITY;
             Cluster minDistCluster = null;
-            for (Cluster cluster : centroids.getCentroids()) {
+            for (Cluster cluster : centroids) {
                 double sumcom = 0D;
                 double sumccom = 0D;
                 double csumcom = 0D;

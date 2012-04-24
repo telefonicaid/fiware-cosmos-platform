@@ -32,6 +32,7 @@ public class VectorNodbtsOutJob extends Job {
         this.setOutputKeyClass(NullWritable.class);
         this.setOutputValueClass(Text.class);
         this.setOutputFormatClass(TextOutputFormat.class);
+        this.setNumReduceTasks(1);
         this.setReducerClass(VectorNodbtsOutReducer.class);
     }
 

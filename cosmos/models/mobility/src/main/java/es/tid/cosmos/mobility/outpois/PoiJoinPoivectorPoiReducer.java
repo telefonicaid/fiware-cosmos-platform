@@ -46,8 +46,8 @@ public class PoiJoinPoivectorPoiReducer extends Reducer<ProtobufWritable<TwoInt>
         key.setConverter(TwoInt.class);
         final TwoInt nodeBts = key.get();
         for (ClusterVector clusterVector : clusterVectorList) {
-            TwoInt.Builder outputNodeBtsBuilder = TwoInt.newBuilder(nodeBts);
             for (Poi poi : poiList) {
+                TwoInt.Builder outputNodeBtsBuilder = TwoInt.newBuilder(nodeBts);
                 outputNodeBtsBuilder.setNum2(poi.getId());
                 ProtobufWritable<Cluster> outputCluster =
                         ClusterUtil.createAndWrap(poi.getLabelnodebts(),

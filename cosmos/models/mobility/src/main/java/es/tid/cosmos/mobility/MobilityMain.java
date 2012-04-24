@@ -119,6 +119,8 @@ public class MobilityMain extends Configured implements Tool {
         }
 
         Path tmpLabelClientbtsPath = new Path(tmpPath, "label_clientbts");
+        Path vectorClientbtsPath = new Path(tmpLabelClientbtsPath,
+                                            "vector_clientbts");
         Path pointsOfInterestTempPath = new Path(tmpLabelClientbtsPath,
                                                  "points_of_interest_temp");
         Path vectorClientbtsClusterPath = new Path(tmpLabelClientbtsPath,
@@ -128,9 +130,10 @@ public class MobilityMain extends Configured implements Tool {
             Path centroidsPath = new Path(arguments.getString(
                     "centroids_clientbts", true));
             ClientBtsLabellingRunner.run(clientsInfoPath, clientsRepbtsPath,
-                    centroidsPath, pointsOfInterestTempPath,
-                    vectorClientbtsClusterPath, tmpLabelClientbtsPath,
-                    isDebug, conf);
+                                         vectorClientbtsPath, centroidsPath,
+                                         pointsOfInterestTempPath,
+                                         vectorClientbtsClusterPath,
+                                         tmpLabelClientbtsPath, isDebug, conf);
         }
 
         Path tmpLabelJoining = new Path(tmpPath, "label_joining");
@@ -139,9 +142,11 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldJoinLabels = arguments.getBoolean("joinLabels");
         if (shouldRunAll || shouldJoinLabels) {
             LabelJoiningRunner.run(pointsOfInterestTempPath,
-                    vectorClientClusterPath, vectorClientbtsClusterPath,
-                    vectorBtsClusterPath, pointsOfInterestTemp4Path,
-                    tmpLabelJoining, isDebug, conf);
+                                   vectorClientClusterPath,
+                                   vectorClientbtsClusterPath,
+                                   vectorBtsClusterPath,
+                                   pointsOfInterestTemp4Path,
+                                   tmpLabelJoining, isDebug, conf);
         }
         
         Path tmpSecondHomesPath = new Path(tmpPath, "second_homes");
@@ -151,8 +156,9 @@ public class MobilityMain extends Configured implements Tool {
                 "detectSecondHomes");
         if (shouldRunAll || shouldDetectSecondHomes) {
             DetectSecondHomesRunner.run(cellsMobPath, pointsOfInterestTemp4Path,
-                    viClientFuseAccPath, pairbtsAdjPath, pointsOfInterestPath,
-                    tmpSecondHomesPath, isDebug, conf);
+                                        viClientFuseAccPath, pairbtsAdjPath,
+                                        pointsOfInterestPath,
+                                        tmpSecondHomesPath, isDebug, conf);
         }
         
         Path tmpAdjacentsPath = new Path(tmpPath, "adjacents");
@@ -162,14 +168,16 @@ public class MobilityMain extends Configured implements Tool {
                 "extractAdjacents");
         if (shouldRunAll || shouldExtractAdjacents) {
             AdjacentExtractionRunner.run(pointsOfInterestPath, pairbtsAdjPath,
-                    pointsOfInterestIdPath, tmpAdjacentsPath, isDebug, conf);
+                                         pointsOfInterestIdPath,
+                                         tmpAdjacentsPath, isDebug, conf);
         }
         
+        Path tmpOutPoisPath = new Path(tmpPath, "out_pois");
         boolean shouldOutPois = arguments.getBoolean("outPois");
         if (shouldRunAll || shouldOutPois) {
-            OutPoisRunner.run(vectorClientClusterPath, pointsOfInterestIdPath,
-                    vectorClientClusterPath, vectorBtsClusterPath, tmpPath,
-                    isDebug, conf);
+            OutPoisRunner.run(vectorClientbtsPath, pointsOfInterestIdPath,
+                              vectorClientClusterPath, vectorBtsClusterPath,
+                              tmpOutPoisPath, isDebug, conf);
         }
         
         return 0;

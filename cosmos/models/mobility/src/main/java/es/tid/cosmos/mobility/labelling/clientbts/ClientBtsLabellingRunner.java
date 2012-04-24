@@ -20,7 +20,8 @@ public final class ClientBtsLabellingRunner {
     }
     
     public static void run(Path clientsInfoPath, Path clientsRepbtsPath,
-                           Path centroidsPath, Path pointsOfInterestTempPath,
+                           Path vectorClientbtsPath, Path centroidsPath,
+                           Path pointsOfInterestTempPath,
                            Path vectorClientbtsClusterPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
             throws Exception {
@@ -118,7 +119,6 @@ public final class ClientBtsLabellingRunner {
             }
         }
 
-        Path vectorClientbtsPath = new Path(tmpDirPath, "vector_clientbts");
         {
             VectorFuseNodeDaygroupJob job = new VectorFuseNodeDaygroupJob(conf);
             job.configure(clientsbtsGroupPath, vectorClientbtsPath);

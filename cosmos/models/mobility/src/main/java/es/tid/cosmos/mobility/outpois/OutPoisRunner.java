@@ -117,6 +117,7 @@ public final class OutPoisRunner {
         }
         
         if (!isDebug) {
+            fs.delete(pointsOfInterestIdPath, true);
             fs.delete(vectorClientbtsPath, true);
             fs.delete(vectorClientbtsSpreadPath, true);
             fs.delete(vectorClientpoiPath, true);

@@ -98,11 +98,11 @@ public class FilePipeline implements Runnable {
     @Override
     public void waitForCompletion(EnumSet<CleanupOptions> options)
             throws Exception {
-        int processedJob = 0;
+        int processedJobsCount = 0;
         try {
             for (CosmosJob job : this.jobs) {
                 job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
-                ++processedJob;
+                processedJobsCount++;
             }
         } finally {
             // All jobs must have the same FileSystem
@@ -111,7 +111,7 @@ public class FilePipeline implements Runnable {
                 // Don't delete the last job's output
                 List<CosmosJob> processedJobs = this.jobs.subList(
                         0,
-                        Math.min(processedJob, this.jobs.size() - 1));
+                        Math.min(processedJobsCount, this.jobs.size() - 1));
 
                 for (Job job : processedJobs) {
                     Path path = FileOutputFormat.getOutputPath(job);

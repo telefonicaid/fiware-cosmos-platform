@@ -42,11 +42,11 @@ public abstract class CosmosJob extends Job implements Runnable {
             Type parent = originalClass.getGenericSuperclass();
             Class superClass;
             if (parent instanceof ParameterizedType) {
-                ParameterizedType parameterizedType = (ParameterizedType) parent;
+                ParameterizedType parameterizedType = (ParameterizedType)parent;
                 Type[] args = parameterizedType.getActualTypeArguments();
                 ArrayList<Class> retVal = new ArrayList<Class>(args.length);
                 for (Type arg : args) {
-                    retVal.add((Class) arg);
+                    retVal.add((Class)arg);
                 }
                 return retVal.toArray(new Class[0]);
             } else {
@@ -54,7 +54,7 @@ public abstract class CosmosJob extends Job implements Runnable {
                     throw new Exception("parent is not a class! parent: "
                             + parent.toString());
                 }
-                superClass = (Class) parent;
+                superClass = (Class)parent;
                 if (superClass == Object.class) {
                     throw new Exception("The passed in type does not extend any"
                             + " generic class!");

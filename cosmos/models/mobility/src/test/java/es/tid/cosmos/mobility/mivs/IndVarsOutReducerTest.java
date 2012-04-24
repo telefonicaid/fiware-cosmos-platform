@@ -9,7 +9,6 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
@@ -18,7 +17,7 @@ import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
 
 /**
  *
- * @author losa
+ * @author logc
  */
 public class IndVarsOutReducerTest {
     private ReduceDriver<LongWritable, ProtobufWritable<MobViMobVars>,
@@ -34,11 +33,8 @@ public class IndVarsOutReducerTest {
     @Test
     public void testMissingProfilesFilledWithMinusOnes() {
         LongWritable userNotSeenInFirstMonth = new LongWritable(5512684400L);
-
         MobVars area = MobVarsUtil.create(1, false, 1, 1, 1, 1,
                                           1000000D, 1000000D, 0.0, 0.0);
-        ProtobufWritable<MobVars> row = MobVarsUtil.wrap(area);
-
         ProtobufWritable<MobViMobVars> input =
             MobViMobVarsUtil.createAndWrap(asList(area));
 
@@ -67,14 +63,14 @@ public class IndVarsOutReducerTest {
         Text expectedExtra5 = new Text(extra5);
 
         this.reducer
-            .withInputKey(userNotSeenInFirstMonth)
-            .withInputValues(asList(input))
-            .withOutput(NullWritable.get(), expected)
-            .withOutput(NullWritable.get(), expectedExtra1)
-            .withOutput(NullWritable.get(), expectedExtra2)
-            .withOutput(NullWritable.get(), expectedExtra3)
-            .withOutput(NullWritable.get(), expectedExtra4)
-            .withOutput(NullWritable.get(), expectedExtra5)
-            .runTest();
+                .withInputKey(userNotSeenInFirstMonth)
+                .withInputValues(asList(input))
+                .withOutput(NullWritable.get(), expected)
+                .withOutput(NullWritable.get(), expectedExtra1)
+                .withOutput(NullWritable.get(), expectedExtra2)
+                .withOutput(NullWritable.get(), expectedExtra3)
+                .withOutput(NullWritable.get(), expectedExtra4)
+                .withOutput(NullWritable.get(), expectedExtra5)
+                .runTest();
     }
 }

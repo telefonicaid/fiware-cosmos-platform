@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
 
 /**
  *
- * @author losa
+ * @author logc
  */
 public class FusionTotalVarsReducerTest {
     private ReduceDriver<LongWritable, ProtobufWritable<MobVars>, LongWritable,

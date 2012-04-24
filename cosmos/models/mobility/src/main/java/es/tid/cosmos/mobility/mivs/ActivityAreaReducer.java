@@ -45,12 +45,10 @@ public class ActivityAreaReducer extends Reducer<
         Accumulations accs = this.accumulate(values);
         double influenceAreaDiameter = this.getMaxDistance(cellsWithDifBts);
 
-        ProtobufWritable<MobVars> ans =
-            MobVarsUtil.createAndWrap(month, isWorkDay, accs.difPos,
-                                      accs.numBtss, accs.numMuns,
-                                      accs.numStates, accs.massCenterX,
-                                      accs.massCenterY, accs.radius,
-                                      influenceAreaDiameter);
+        ProtobufWritable<MobVars> ans = MobVarsUtil.createAndWrap(
+                month, isWorkDay, accs.difPos, accs.numBtss, accs.numMuns,
+                accs.numStates, accs.massCenterX, accs.massCenterY, accs.radius,
+                influenceAreaDiameter);
         context.write(newKey, ans);
     }
     
@@ -92,10 +90,10 @@ public class ActivityAreaReducer extends Reducer<
     }
 
     private double getMaxDistance(List<Cell> cellsWithDifBts) {
-        double maxDist = Double.NEGATIVE_INFINITY;
+        double maxDist = 0.0D;
         for (int pos = 0; pos < cellsWithDifBts.size(); pos++) {
             Cell currentCell = cellsWithDifBts.get(pos);
-            for(int further = pos + 1; further < cellsWithDifBts.size();
+            for (int further = pos + 1; further < cellsWithDifBts.size();
                     further++) {
                 Cell furtherCell = cellsWithDifBts.get(further);
                 double contribX =

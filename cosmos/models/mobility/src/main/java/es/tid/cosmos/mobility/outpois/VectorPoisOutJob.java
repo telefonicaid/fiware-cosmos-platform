@@ -27,7 +27,7 @@ public class VectorPoisOutJob extends Job {
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
-        this.setMapOutputKeyClass(NullWritable.class);
+        this.setMapOutputKeyClass(ProtobufWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
         this.setOutputKeyClass(NullWritable.class);
         this.setOutputValueClass(Text.class);

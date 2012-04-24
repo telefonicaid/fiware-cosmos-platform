@@ -8,16 +8,17 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobProtocol.Poi;
+import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.PoiUtil;
 
 /**
  *
  * @author dmicol
  */
-public class VectorPoisOutReducer extends Reducer<NullWritable,
+public class VectorPoisOutReducer extends Reducer<ProtobufWritable<TwoInt>,
         ProtobufWritable<Poi>, NullWritable, Text> {
     @Override
-    protected void reduce(NullWritable key,
+    protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<ProtobufWritable<Poi>> values, Context context)
             throws IOException, InterruptedException {
         for (ProtobufWritable<Poi> value : values) {

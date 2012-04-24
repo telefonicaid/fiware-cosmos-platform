@@ -1,9 +1,6 @@
 ====================================
-Big Data Platform (Codenamed Cosmos)
+Big Data Platform (codenamed Cosmos)
 ====================================
-
-Executive summary
------------------
 
 The Big Data Platform is a product that allows you to:
 

@@ -7,6 +7,7 @@ import org.apache.hadoop.fs.Path;
 import es.tid.cosmos.mobility.util.ConvertCdrToMobDataJob;
 import es.tid.cosmos.mobility.util.ConvertIntToMobDataJob;
 import es.tid.cosmos.mobility.util.ConvertNodeBtsDayToMobDataJob;
+import es.tid.cosmos.mobility.util.ExportBtsCounterToTextByTwoIntJob;
 
 /**
  *
@@ -142,8 +143,8 @@ public final class PoisRunner {
             Path clientsRepbtsTextPath = new Path(tmpDirPath,
                                                   "clients_repbts_text");
             {
-                ExportRepresentativeBtsToTextJob job = new
-                        ExportRepresentativeBtsToTextJob(conf);
+                ExportBtsCounterToTextByTwoIntJob job = new
+                        ExportBtsCounterToTextByTwoIntJob(conf);
                 job.configure(clientsRepbtsPath, clientsRepbtsTextPath);
                 if (!job.waitForCompletion(true)) {
                     throw new Exception("Failed to run " + job.getJobName());

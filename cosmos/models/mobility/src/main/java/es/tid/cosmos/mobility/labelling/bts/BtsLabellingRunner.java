@@ -9,6 +9,7 @@ import es.tid.cosmos.mobility.labelling.client.VectorFuseNodeDaygroupJob;
 import es.tid.cosmos.mobility.labelling.client.VectorNormalizedJob;
 import es.tid.cosmos.mobility.util.ConvertBtsToMobDataJob;
 import es.tid.cosmos.mobility.util.ConvertClusterToMobDataJob;
+import es.tid.cosmos.mobility.util.ExportClusterToTextJob;
 
 /**
  *
@@ -121,8 +122,7 @@ public final class BtsLabellingRunner {
             Path vectorBtsClusterTextPath = new Path(tmpDirPath,
                                                     "vector_bts_cluster_text");
             {
-                ExportClusterClientMinDistanceToTextJob job =
-                        new ExportClusterClientMinDistanceToTextJob(conf);
+                ExportClusterToTextJob job = new ExportClusterToTextJob(conf);
                 job.configure(vectorBtsClusterPath, vectorBtsClusterTextPath);
                 if (!job.waitForCompletion(true)) {
                     throw new Exception("Failed to run " + job.getJobName());

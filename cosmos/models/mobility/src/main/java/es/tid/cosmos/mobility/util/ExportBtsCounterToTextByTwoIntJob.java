@@ -1,11 +1,10 @@
-package es.tid.cosmos.mobility.labelling.bts;
+package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -20,23 +19,22 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class ExportClusterClientMinDistanceToTextJob extends Job {
-    private static final String JOB_NAME =
-            "ExportClusterClientMinDistanceToText";
+public class ExportBtsCounterToTextByTwoIntJob extends Job {
+    private static final String JOB_NAME = "ExportBtsCounterToTextByTwoInt";
 
-    public ExportClusterClientMinDistanceToTextJob(Configuration conf)
+    public ExportBtsCounterToTextByTwoIntJob(Configuration conf)
             throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
-        this.setMapOutputKeyClass(LongWritable.class);
+        this.setMapOutputKeyClass(ProtobufWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
         this.setOutputKeyClass(NullWritable.class);
         this.setOutputValueClass(Text.class);
         this.setOutputFormatClass(TextOutputFormat.class);
         this.setNumReduceTasks(1);
-        this.setReducerClass(ExportClusterClientMinDistanceToTextReducer.class);
+        this.setReducerClass(ExportBtsCounterToTextByTwoIntReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

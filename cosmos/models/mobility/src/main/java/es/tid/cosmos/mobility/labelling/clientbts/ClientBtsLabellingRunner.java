@@ -8,6 +8,7 @@ import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourJob;
 import es.tid.cosmos.mobility.labelling.client.VectorFuseNodeDaygroupJob;
 import es.tid.cosmos.mobility.labelling.client.VectorNormalizedJob;
 import es.tid.cosmos.mobility.util.ConvertBtsCounterToMobDataByTwoIntJob;
+import es.tid.cosmos.mobility.util.ExportClusterToTextByTwoIntJob;
 import es.tid.cosmos.mobility.util.SetMobDataInputIdByTwoIntJob;
 
 /**
@@ -160,8 +161,8 @@ public final class ClientBtsLabellingRunner {
             Path vectorClientbtsClusterTextPath = new Path(tmpDirPath,
                     "vector_clientbts_cluster_text");
             {
-                ExportClusterClientMinDistanceToTextJob job =
-                        new ExportClusterClientMinDistanceToTextJob(conf);
+                ExportClusterToTextByTwoIntJob job =
+                        new ExportClusterToTextByTwoIntJob(conf);
                 job.configure(vectorClientbtsClusterPath,
                               vectorClientbtsClusterTextPath);
                 if (!job.waitForCompletion(true)) {

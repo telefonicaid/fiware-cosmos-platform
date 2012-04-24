@@ -247,8 +247,7 @@ public final class LabelJoiningRunner {
             Path pointsOfInterestTemp4TextPath = new Path(tmpDirPath,
                     "points_of_interest_temp4_text");
             {
-                ExportClusterAggBtsClusterToTextJob job =
-                        new ExportClusterAggBtsClusterToTextJob(conf);
+                ExportPoiToTextJob job = new ExportPoiToTextJob(conf);
                 job.configure(pointsOfInterestTemp4Path,
                             pointsOfInterestTemp4TextPath);
                 if (!job.waitForCompletion(true)) {

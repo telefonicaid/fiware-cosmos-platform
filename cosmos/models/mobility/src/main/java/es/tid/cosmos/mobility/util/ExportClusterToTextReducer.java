@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.labelling.bts;
+package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
 
@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
  *
  * @author dmicol
  */
-public class ExportClusterClientMinDistanceToTextReducer extends Reducer<
+public class ExportClusterToTextReducer extends Reducer<
         LongWritable, ProtobufWritable<Cluster>, NullWritable, Text> {
     @Override
     protected void reduce(LongWritable key,
@@ -25,8 +25,7 @@ public class ExportClusterClientMinDistanceToTextReducer extends Reducer<
             value.setConverter(Cluster.class);
             final Cluster cluster = value.get();
             context.write(NullWritable.get(),
-                          new Text(key.get() + "|"
-                                   + ClusterUtil.toString(cluster)));
+                          new Text(key + "|" + ClusterUtil.toString(cluster)));
         }
     }
 }

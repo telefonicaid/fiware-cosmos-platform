@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.pois;
+package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
 
@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  *
  * @author dmicol
  */
-public class ExportRepresentativeBtsToTextReducer extends Reducer<
+public class ExportBtsCounterToTextByTwoIntReducer extends Reducer<
         ProtobufWritable<TwoInt>, ProtobufWritable<BtsCounter>, NullWritable,
         Text> {
     @Override

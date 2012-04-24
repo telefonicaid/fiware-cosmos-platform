@@ -231,8 +231,8 @@ public final class DetectSecondHomesRunner {
             Path pointsOfInterestTextPath = new Path(tmpDirPath,
                                                      "points_of_interest_text");
             {
-                ExportPoiJoinSechomeResultsToTextJob job =
-                        new ExportPoiJoinSechomeResultsToTextJob(conf);
+                ExportPoiToTextByTwoIntJob job = new ExportPoiToTextByTwoIntJob(
+                        conf);
                 job.configure(pointsOfInterestPath, pointsOfInterestTextPath);
                 if (!job.waitForCompletion(true)) {
                     throw new Exception("Failed to run " + job.getJobName());

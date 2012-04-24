@@ -6,6 +6,7 @@ import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.mobility.util.ConvertCdrToMobDataJob;
 import es.tid.cosmos.mobility.util.ConvertIntToMobDataJob;
+import es.tid.cosmos.mobility.util.ExportClusterToTextJob;
 
 /**
  *
@@ -122,8 +123,7 @@ public final class ClientLabellingRunner {
             Path vectorClientClusterTextPath = new Path(tmpDirPath,
                     "vector_client_cluster_text");
             {
-                ExportClusterClientMinDistanceToTextJob job =
-                        new ExportClusterClientMinDistanceToTextJob(conf);
+                ExportClusterToTextJob job = new ExportClusterToTextJob(conf);
                 job.configure(vectorClientClusterPath,
                               vectorClientClusterTextPath);
                 if (!job.waitForCompletion(true)) {

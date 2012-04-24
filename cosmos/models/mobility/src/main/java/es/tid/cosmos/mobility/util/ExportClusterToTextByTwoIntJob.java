@@ -1,11 +1,10 @@
-package es.tid.cosmos.mobility.labelling.join;
+package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -20,22 +19,22 @@ import es.tid.cosmos.mobility.MobilityMain;
  *
  * @author dmicol
  */
-public class ExportClusterAggBtsClusterToTextJob extends Job {
-    private static final String JOB_NAME = "ExportClusterAggBtsClusterToText";
+public class ExportClusterToTextByTwoIntJob extends Job {
+    private static final String JOB_NAME = "ExportClusterToTextByTwoInt";
 
-    public ExportClusterAggBtsClusterToTextJob(Configuration conf)
+    public ExportClusterToTextByTwoIntJob(Configuration conf)
             throws IOException {
         super(conf, JOB_NAME);
 
         this.setJarByClass(MobilityMain.class);
         this.setInputFormatClass(SequenceFileInputFormat.class);
-        this.setMapOutputKeyClass(LongWritable.class);
+        this.setMapOutputKeyClass(ProtobufWritable.class);
         this.setMapOutputValueClass(ProtobufWritable.class);
         this.setOutputKeyClass(NullWritable.class);
         this.setOutputValueClass(Text.class);
         this.setOutputFormatClass(TextOutputFormat.class);
         this.setNumReduceTasks(1);
-        this.setReducerClass(ExportClusterAggBtsClusterToTextReducer.class);
+        this.setReducerClass(ExportClusterToTextByTwoIntReducer.class);
     }
 
     public void configure(Path input, Path output) throws IOException {

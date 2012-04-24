@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.labelling.clientbts;
+package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
 
@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  *
  * @author dmicol
  */
-public class ExportClusterClientMinDistanceToTextReducer extends Reducer<
+public class ExportClusterToTextByTwoIntReducer extends Reducer<
         ProtobufWritable<TwoInt>, ProtobufWritable<Cluster>, NullWritable,
         Text> {
     @Override

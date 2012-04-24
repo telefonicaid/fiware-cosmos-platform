@@ -1,0 +1,9 @@
+#Script hh_calculate_overlap
+
+
+  hh_assoc_nodes_to_community $1 $1_key
+  hh_spread_communities $1_key $1_spread
+  hh_group_members_of_household $2 $2_group
+  hh_spread_households $2_group $2_spread
+  hh_overlaping_comm_households $1_spread $2_spread $3 $4
+ 

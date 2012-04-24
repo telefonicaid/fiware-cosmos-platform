@@ -67,7 +67,7 @@ public class ArgumentParser {
     
     public String getString(String name, boolean required) {
         if (!this.has(name, required)) {
-            return null;
+            return "";
         }
         return this.arguments.get(name);
     }

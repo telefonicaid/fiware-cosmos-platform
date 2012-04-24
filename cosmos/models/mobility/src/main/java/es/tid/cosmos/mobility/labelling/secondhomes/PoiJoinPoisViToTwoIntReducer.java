@@ -39,7 +39,8 @@ public class PoiJoinPoisViToTwoIntReducer extends Reducer<LongWritable,
                     mobVIVarsList.add(mobData.getMobViMobVars());
                     break;
                 default:
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unexpected MobData type: "
+                            + mobData.getType().name());
             }
         }
 

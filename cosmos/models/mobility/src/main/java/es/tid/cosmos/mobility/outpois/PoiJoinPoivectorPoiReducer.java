@@ -39,7 +39,8 @@ public class PoiJoinPoivectorPoiReducer extends Reducer<ProtobufWritable<TwoInt>
                     poiList.add(mobData.getPoi());
                     break;
                 default:
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unexpected MobData type: "
+                            + mobData.getType().name());
             }
         }
         

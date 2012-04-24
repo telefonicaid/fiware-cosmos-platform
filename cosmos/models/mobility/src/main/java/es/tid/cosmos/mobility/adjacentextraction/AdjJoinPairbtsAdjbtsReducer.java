@@ -36,7 +36,8 @@ public class AdjJoinPairbtsAdjbtsReducer extends Reducer<
                     hasAdjacentBts = true;
                     break;
                 default:
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unexpected MobData ID: "
+                            + mobData.getInputId());
             }
         }
         

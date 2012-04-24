@@ -18,6 +18,8 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
 public class AdjAddUniqueIdPoiToTwoIntMapper extends Mapper<
         ProtobufWritable<TwoInt>, ProtobufWritable<Poi>, LongWritable,
         ProtobufWritable<TwoInt>> {
+    private static final long MAX_NUM_PARTITIONS = 100L;
+    
     @Override
     protected void map(ProtobufWritable<TwoInt> key,
             ProtobufWritable<Poi> value, Context context)
@@ -25,8 +27,8 @@ public class AdjAddUniqueIdPoiToTwoIntMapper extends Mapper<
         key.setConverter(TwoInt.class);
         final TwoInt nodBts = key.get();
         Counter counter = context.getCounter(Counters.COUNTER_FOR_TABLE_ID);
-        int hash = (int)TwoIntUtil.getPartition(nodBts, 100L);
-        int tableId = (100 * (int)counter.getValue()) + hash;
+        int hash = (int)TwoIntUtil.getPartition(nodBts, MAX_NUM_PARTITIONS);
+        int tableId = (int)(MAX_NUM_PARTITIONS * counter.getValue()) + hash;
         counter.increment(1L);
         ProtobufWritable<TwoInt> poiPoimod = TwoIntUtil.createAndWrap(
                 tableId, tableId);

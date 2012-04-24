@@ -37,7 +37,8 @@ public class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
                     cellList.add(mobData.getCell());
                     break;
                 default:
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unexpected MobData type: "
+                            + mobData.getType().name());
             }
         }
         

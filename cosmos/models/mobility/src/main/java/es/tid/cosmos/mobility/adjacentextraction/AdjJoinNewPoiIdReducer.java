@@ -38,7 +38,8 @@ public class AdjJoinNewPoiIdReducer extends Reducer<LongWritable,
                     poiNewList.add(mobData.getPoiNew());
                     break;
                 default:
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unexpected MobData type: "
+                            + mobData.getType().name());
             }
         }
         

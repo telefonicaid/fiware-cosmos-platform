@@ -36,7 +36,8 @@ public class ClusterAggBtsClusterReducer extends Reducer<LongWritable,
                     clusterList.add(mobData.getCluster());
                     break;
                 default:
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unexpected MobData type: "
+                            + mobData.getType().name());
             }
         }
         

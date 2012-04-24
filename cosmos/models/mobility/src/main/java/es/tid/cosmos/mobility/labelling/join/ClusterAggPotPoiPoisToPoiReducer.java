@@ -42,7 +42,8 @@ public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
                     nullCount++;
                     break;
                 default:
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unexpected MobData type: "
+                            + mobData.getType().name());
             }
         }
         

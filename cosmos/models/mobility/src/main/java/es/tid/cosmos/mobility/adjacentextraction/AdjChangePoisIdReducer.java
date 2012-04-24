@@ -37,7 +37,8 @@ public class AdjChangePoisIdReducer extends Reducer<ProtobufWritable<TwoInt>,
                     poiNewList.add(mobData.getPoiNew());
                     break;
                 default:
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unexpected MobData type: "
+                            + mobData.getType().name());
             }
         }
         

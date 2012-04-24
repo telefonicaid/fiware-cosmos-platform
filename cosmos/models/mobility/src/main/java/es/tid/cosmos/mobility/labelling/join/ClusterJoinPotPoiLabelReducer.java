@@ -38,7 +38,8 @@ public class ClusterJoinPotPoiLabelReducer extends Reducer<
                     longList.add(mobData.getLong());
                     break;
                 default:
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unexpected MobData type: "
+                            + mobData.getType().name());
             }
         }
         

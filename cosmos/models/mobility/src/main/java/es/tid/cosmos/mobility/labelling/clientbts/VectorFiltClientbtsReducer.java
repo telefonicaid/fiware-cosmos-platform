@@ -38,7 +38,8 @@ public class VectorFiltClientbtsReducer extends Reducer<ProtobufWritable<TwoInt>
                     reprBtsCounterList.add(mobData.getBtsCounter());
                     break;
                 default:
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unexpected MobData ID: "
+                            + mobData.getInputId());
             }
         }
         

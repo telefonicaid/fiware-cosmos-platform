@@ -14,6 +14,8 @@
 #include "au/mutex/TokenTaker.h"
 #include "au/ThreadManager.h"
 
+#include "au/log/LogToServer.h"
+
 #include "engine/MemoryManager.h"			// engine::MemoryManager
 #include "engine/Notification.h"            // engine::Notification
 
@@ -685,8 +687,10 @@ namespace samson
             LM_T(LmtIsolated,("Child closing pipe descriptors not used. Child closes pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n", pipeFdPair1[0], pipeFdPair2[1]));
             LM_T(LmtIsolated,("Child closing pipe descriptors not used. Child uses pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
 
+            int log_server_connection = au::getLogServerConnectionFd();
+            
             for ( int i = 3 ;  i < 1024 ; i++ )
-                if( ( i != pipeFdPair1[1] ) && ( i!= pipeFdPair2[0] ) && ( i!= logFd ) ) 
+                if( ( i != pipeFdPair1[1] ) && ( i!= pipeFdPair2[0] ) && ( i!= logFd ) && ( i!= log_server_connection ) ) 
                 {
                     
                     //Trazas Goyo

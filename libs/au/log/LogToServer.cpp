@@ -69,7 +69,15 @@ namespace au {
             try_connect();
         }
         
-        
+        int getFd()
+        {
+            if( socket_connection )
+                return socket_connection->getFd();
+            if( local_file_descriptor )
+                return local_file_descriptor->getFd();
+            
+            return -1;
+        }
         
         void write( Log *log )
         {
@@ -213,6 +221,13 @@ namespace au {
     
     au::LogConnection * log_connection = NULL;
     
+    
+    int getLogServerConnectionFd()
+    {
+        if( log_connection )
+            return log_connection->getFd();
+        return -1;
+    }
     
     void start_log_to_server( std::string log_host , int log_port , std::string local_log_file )
     {

@@ -26,7 +26,7 @@ public class ClusterJoinPotPoiLabelReducer extends Reducer<
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<Poi> poiList = new LinkedList<Poi>();
-        List<Integer> intList = new LinkedList<Integer>();
+        List<Long> longList = new LinkedList<Long>();
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
@@ -34,15 +34,15 @@ public class ClusterJoinPotPoiLabelReducer extends Reducer<
                 case POI:
                     poiList.add(mobData.getPoi());
                     break;
-                case INT:
-                    intList.add(mobData.getInt());
+                case LONG:
+                    longList.add(mobData.getLong());
                     break;
                 default:
                     throw new IllegalStateException();
             }
         }
         
-        for (Integer majPoiLbl : intList) {
+        for (Long majPoiLbl : longList) {
             for (Poi potPoi : poiList) {
                 if (majPoiLbl == potPoi.getLabelnodebts()) {
                     context.write(TwoIntUtil.createAndWrap(potPoi.getNode(),

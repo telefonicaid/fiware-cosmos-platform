@@ -119,7 +119,7 @@ public final class LabelJoiningRunner {
         Path clientbtsNodPoimajMobDataPath = new Path(tmpDirPath,
                 "clientbts_nod_poimaj_mob_data");
         {
-            ConvertIntToMobDataJob job = new ConvertIntToMobDataJob(conf);
+            ConvertLongToMobDataJob job = new ConvertLongToMobDataJob(conf);
             job.configure(clientbtsNodPoimajPath, clientbtsNodPoimajMobDataPath);
             if (!job.waitForCompletion(true)) {
                 throw new Exception("Failed to run " + job.getJobName());

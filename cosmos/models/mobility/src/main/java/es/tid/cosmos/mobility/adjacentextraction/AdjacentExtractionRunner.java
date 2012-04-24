@@ -302,5 +302,19 @@ public final class AdjacentExtractionRunner {
                 throw new Exception("Failed to run " + job.getJobName());
             }
         }
+
+        if (isDebug) {
+            Path pointsOfInterestIdTextPath = new Path(tmpDirPath,
+                    "points_of_interest_id_text");
+            {
+                ExportPoiToTextByTwoIntJob job = new ExportPoiToTextByTwoIntJob(
+                        conf);
+                job.configure(pointsOfInterestIdPath,
+                              pointsOfInterestIdTextPath);
+                if (!job.waitForCompletion(true)) {
+                    throw new Exception("Failed to run " + job.getJobName());
+                }
+            }
+        }
     }
 }

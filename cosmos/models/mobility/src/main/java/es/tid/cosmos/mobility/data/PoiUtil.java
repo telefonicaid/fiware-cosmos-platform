@@ -9,7 +9,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.Poi;
  * @author dmicol
  */
 public abstract class PoiUtil {
-    private static final String DELIMITER = "|";
+    public static final String DELIMITER = "|";
     
     public static Poi create(int id, long node, int bts, int labelnode,
             int labelgroupnode, int confidentnode, double distancenode,

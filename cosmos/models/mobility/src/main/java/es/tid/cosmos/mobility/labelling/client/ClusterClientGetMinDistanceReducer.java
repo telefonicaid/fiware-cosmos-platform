@@ -40,7 +40,7 @@ public class ClusterClientGetMinDistanceReducer extends Reducer<
         for (ProtobufWritable<ClusterVector> value : values) {
             value.setConverter(ClusterVector.class);
             final ClusterVector clusVector = value.get();
-            double mindist = 1000D;
+            double mindist = Double.POSITIVE_INFINITY;
             Cluster minDistCluster = null;
             for (Cluster cluster : centroids.getCentroids()) {
                 double dist = 0D;
@@ -49,7 +49,7 @@ public class ClusterClientGetMinDistanceReducer extends Reducer<
                     double com = clusVector.getComs(nComs);
                     dist += ((ccom - com) * (ccom - com));
                 }
-                if (dist < mindist || minDistCluster == null) {
+                if (dist < mindist) {
                     mindist = dist;
                     minDistCluster = cluster;
                 }

@@ -14,7 +14,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
 
 /**
  *
- * @author losa
+ * @author logc
  */
 public class FusionTotalVarsReducer extends Reducer<LongWritable,
         ProtobufWritable<MobVars>, LongWritable,

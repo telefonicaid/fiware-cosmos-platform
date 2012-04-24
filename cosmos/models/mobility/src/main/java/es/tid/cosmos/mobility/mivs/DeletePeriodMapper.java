@@ -11,12 +11,12 @@ import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
 
 /**
  *
- * @author losa
+ * @author logc
  */
 public class DeletePeriodMapper extends Mapper<
         ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
         ProtobufWritable<TelMonth>, ProtobufWritable<Cell>> {
-    private static final int FIRST_MONTH = 1;
+    private static final int JANUARY = 1;
 
     @Override
     public void map(ProtobufWritable<TelMonth> key,
@@ -26,7 +26,7 @@ public class DeletePeriodMapper extends Mapper<
         final TelMonth oldKey = key.get();
         ProtobufWritable<TelMonth> newKey =
                 TelMonthUtil.createAndWrap(oldKey.getPhone(),
-                                           FIRST_MONTH,
+                                           JANUARY,
                                            oldKey.getWorkingday());
         context.write(newKey, value);
     }

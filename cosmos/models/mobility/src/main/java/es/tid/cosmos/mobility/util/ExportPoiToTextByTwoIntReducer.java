@@ -28,7 +28,8 @@ public class ExportPoiToTextByTwoIntReducer extends Reducer<
             value.setConverter(Poi.class);
             final Poi poi = value.get();
             context.write(NullWritable.get(),
-                          new Text(TwoIntUtil.toString(twoInt) + "|"
+                          new Text(TwoIntUtil.toString(twoInt)
+                                   + PoiUtil.DELIMITER
                                    + PoiUtil.toString(poi)));
         }
     }

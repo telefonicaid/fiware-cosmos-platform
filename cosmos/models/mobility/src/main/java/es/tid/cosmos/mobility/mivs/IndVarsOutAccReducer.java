@@ -32,8 +32,7 @@ public class  IndVarsOutAccReducer extends Reducer<LongWritable,
             List<MobVars> areasList = activityAreas.getVarsList();
             boolean exists = false;
             String ans = key.toString();
-            for (int pos = 0; pos < areasList.size(); pos++) {
-                MobVars area = areasList.get(pos);
+            for (MobVars area : areasList) {
                 if (area.getWorkingday()) {
                     ans += DELIMITER + MobVarsUtil.toString(area);
                     exists = true;
@@ -44,8 +43,7 @@ public class  IndVarsOutAccReducer extends Reducer<LongWritable,
                 ans += DELIMITER + MISSING;
             }
             exists = false;
-            for (int pos = 0; pos < areasList.size(); pos++) {
-                MobVars area = areasList.get(pos);
+            for (MobVars area : areasList) {
                 if (!area.getWorkingday()) {
                     ans += DELIMITER + MobVarsUtil.toString(area);
                     exists = true;

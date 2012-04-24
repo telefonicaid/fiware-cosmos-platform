@@ -31,13 +31,11 @@ public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
             poiPosList.add(value.get());
         }
 
-        for (int i = 0; i < poiPosList.size(); i++) {
-            final PoiPos poiIn = poiPosList.get(i);
+        for (PoiPos poiIn : poiPosList) {
             if (poiIn.getInoutWeek() == 1 &&
                     (poiIn.getLabel() == HOME_LABELGROUP_ID ||
                      poiIn.getLabel() == 6)) {
-                for (int j = 0; j < poiPosList.size(); j++) {
-                    final PoiPos poiOut = poiPosList.get(j);
+                for (PoiPos poiOut : poiPosList) {
                     if (poiOut.getInoutWeek() == 0 &&
                             (poiOut.getLabel() == HOME_LABELGROUP_ID ||
                              poiOut.getLabel() == 6)) {

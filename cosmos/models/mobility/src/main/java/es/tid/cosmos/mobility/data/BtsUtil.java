@@ -8,7 +8,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.Bts;
  *
  * @author sortega
  */
-public abstract class BtsUtil implements ProtobufUtil {
+public abstract class BtsUtil {
     public static Bts create(long placeId, double posx, double posy,
             double area, Iterable<Long> adjBts) {
         Bts.Builder bts = Bts.newBuilder()

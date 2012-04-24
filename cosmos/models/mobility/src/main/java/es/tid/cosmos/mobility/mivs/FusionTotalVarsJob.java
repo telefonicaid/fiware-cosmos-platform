@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.MobilityMain;
 
 /**
  *
- * @author losa
+ * @author logc
  */
 public class FusionTotalVarsJob extends Job {
     private static final String JOB_NAME = "FusionTotalVars";

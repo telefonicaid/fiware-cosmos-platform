@@ -35,12 +35,12 @@ public class VectorCreateNodeDayhourReducer extends Reducer
         }
         
         DailyVector.Builder vectorBuilder = DailyVector.newBuilder();
-        for (int i = 0; i < 24; i++) {
+        for (int hour = 0; hour < 24; hour++) {
             long num2 = 0L;
             boolean added = false;
             for (TwoInt hourComms : valueList) {
                 num2 = hourComms.getNum2();
-                if (hourComms.getNum1() == i) {
+                if (hourComms.getNum1() == hour) {
                     added = true;
                     break;
                 }

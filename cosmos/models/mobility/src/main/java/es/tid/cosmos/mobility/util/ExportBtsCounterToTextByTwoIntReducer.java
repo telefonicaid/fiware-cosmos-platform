@@ -29,7 +29,8 @@ public class ExportBtsCounterToTextByTwoIntReducer extends Reducer<
             value.setConverter(BtsCounter.class);
             final BtsCounter btsCounter = value.get();
             context.write(NullWritable.get(),
-                          new Text(TwoIntUtil.toString(twoInt) + "|"
+                          new Text(TwoIntUtil.toString(twoInt)
+                                   + BtsCounterUtil.DELIMITER
                                    + BtsCounterUtil.toString(btsCounter)));
         }
     }

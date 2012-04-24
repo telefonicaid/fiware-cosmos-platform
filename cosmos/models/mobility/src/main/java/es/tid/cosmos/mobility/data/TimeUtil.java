@@ -8,7 +8,7 @@ import es.tid.cosmos.mobility.data.BaseProtocol.Time;
  *
  * @author sortega
  */
-public abstract class TimeUtil implements ProtobufUtil {
+public abstract class TimeUtil {
     private static final String DELIMITER = "|";
     
     public static Time create(int hour, int minute, int seconds) {

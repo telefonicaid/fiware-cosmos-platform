@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.MobilityMain;
 
 /**
  *
- * @author losa
+ * @author logc
  */
 public class IndVarsOutJob extends Job {
     private static final String JOB_NAME = "IndVarsOut";

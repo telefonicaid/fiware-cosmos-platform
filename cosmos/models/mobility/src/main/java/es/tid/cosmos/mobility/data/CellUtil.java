@@ -8,7 +8,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cell;
  *
  * @author dmicol
  */
-public abstract class CellUtil implements ProtobufUtil {
+public abstract class CellUtil {
     public static Cell create(long cellId, long placeId, int geoLoc1,
                               int geoLoc2, double posX, double posY) {
         return Cell.newBuilder()

@@ -15,6 +15,10 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
 
+/**
+ *
+ * @author logc
+ */
 public class ActivityAreaReducer extends Reducer<
         ProtobufWritable<TelMonth>, ProtobufWritable<Cell>,
         LongWritable, ProtobufWritable<MobVars>> {
@@ -70,8 +74,8 @@ public class ActivityAreaReducer extends Reducer<
             this.allStates.add(cell.getGeoloc2());
             massCenterAccX += cell.getPosx();
             massCenterAccY += cell.getPosy();
-            radiusAccX += (cell.getPosx() * cell.getPosx());
-            radiusAccY += (cell.getPosy() * cell.getPosy());
+            radiusAccX += cell.getPosx() * cell.getPosx();
+            radiusAccY += cell.getPosy() * cell.getPosy();
         }
         ans.difPos = this.allCells.size();
         ans.numBtss = this.allBtss.size();
@@ -80,15 +84,15 @@ public class ActivityAreaReducer extends Reducer<
         ans.massCenterX = massCenterAccX / numPos;
         ans.massCenterY = massCenterAccY / numPos;
         double radiusX =
-            radiusAccX / numPos - (ans.massCenterX * ans.massCenterX);
+            (radiusAccX / numPos) - (ans.massCenterX * ans.massCenterX);
         double radiusY =
-            radiusAccY / numPos - (ans.massCenterY * ans.massCenterY);
+            (radiusAccY / numPos) - (ans.massCenterY * ans.massCenterY);
         ans.radius = Math.sqrt(radiusX + radiusY);
         return ans;
     }
 
     private double getMaxDistance(List<Cell> cellsWithDifBts) {
-        double maxDist = 0.0D;
+        double maxDist = Double.NEGATIVE_INFINITY;
         for (int pos = 0; pos < cellsWithDifBts.size(); pos++) {
             Cell currentCell = cellsWithDifBts.get(pos);
             for(int further = pos + 1; further < cellsWithDifBts.size();

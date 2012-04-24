@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
 
@@ -12,8 +11,8 @@ import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
  *
  * @author losa
  */
-public abstract class MobViMobVarsUtil implements ProtobufUtil {
-    private static final String DELIMITER = "|";
+public abstract class MobViMobVarsUtil {
+    public static final String DELIMITER = "|";
 
     public static MobViMobVars create(Iterable<MobVars> areas) {
         MobViMobVars.Builder repActAreas = MobViMobVars.newBuilder()

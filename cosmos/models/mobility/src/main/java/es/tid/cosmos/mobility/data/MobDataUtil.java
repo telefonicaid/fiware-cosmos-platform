@@ -10,7 +10,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.*;
  *
  * @author dmicol
  */
-public abstract class MobDataUtil implements ProtobufUtil {
+public abstract class MobDataUtil {
     public static MobData create(NullWritable unused) {
         return MobData.newBuilder()
                 .setType(MobData.Type.NULL)

@@ -28,11 +28,10 @@ public class PoiNormalizePoiVectorReducer extends Reducer<
             value.setConverter(Cluster.class);
             clusterList.add(value.get());
         }
-        
         if (clusterList.isEmpty()) {
             return;
         }
-        
+
         final Cluster.Builder clusterSumBuilder = Cluster.newBuilder(
                 clusterList.get(0));
         ClusterVector.Builder clusterSumCoordsBuilder =
@@ -40,18 +39,18 @@ public class PoiNormalizePoiVectorReducer extends Reducer<
         for (int i = 1; i < clusterList.size(); i++) {
             final Cluster cluster = clusterList.get(i);
             clusterSumCoordsBuilder.setComs(i,
-                    clusterSumCoordsBuilder.getComs(i) +
-                    cluster.getCoords().getComs(i));
+                                            clusterSumCoordsBuilder.getComs(i)
+                                            + cluster.getCoords().getComs(i));
         }
         clusterSumBuilder.setCoords(clusterSumCoordsBuilder);
         Cluster clusterSum = clusterSumBuilder.build();
-        
+
         final Cluster.Builder clusterDivBuilder = Cluster.newBuilder(
                 clusterSum);
         ClusterVector.Builder clusterDivCoordsBuilder =
                 ClusterVector.newBuilder(clusterSum.getCoords());
-	int sumValues = 0;
-	for (int i = 0; i < clusterSum.getCoords().getComsCount(); i++) {
+        int sumValues = 0;
+        for (int i = 0; i < clusterSum.getCoords().getComsCount(); i++) {
             double coms = clusterSum.getCoords().getComs(i);
             if (i < 24) {
                 // Mondays, Tuesday, Wednesday and Thursday --> Total: 103 days
@@ -61,18 +60,18 @@ public class PoiNormalizePoiVectorReducer extends Reducer<
             }
             sumValues += coms;
             clusterDivCoordsBuilder.addComs(coms);
-	}
+        }
         clusterDivBuilder.setCoords(clusterDivCoordsBuilder);
         Cluster clusterDiv = clusterDivBuilder.build();
-        
+
         final Cluster.Builder clusterNormBuilder = Cluster.newBuilder(
                 clusterDiv);
         ClusterVector.Builder clusterNormCoordsBuilder =
                 ClusterVector.newBuilder(clusterDiv.getCoords());
-	for (int i = 0; i < clusterDiv.getCoords().getComsCount(); i++) {
+        for (int i = 0; i < clusterDiv.getCoords().getComsCount(); i++) {
             double coms = clusterDiv.getCoords().getComs(i) / sumValues;
             clusterNormCoordsBuilder.addComs(coms);
-	}
+        }
         clusterNormBuilder.setCoords(clusterNormCoordsBuilder);
         context.write(key, ClusterUtil.wrap(clusterNormBuilder.build()));
     }

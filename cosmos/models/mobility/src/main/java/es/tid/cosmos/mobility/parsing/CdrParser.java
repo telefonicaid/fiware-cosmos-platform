@@ -13,24 +13,23 @@ public class CdrParser extends Parser {
         super(line, DELIMITER);
     }
 
-    //LINE --> "33F430521676F4|2221436242|33F430521676F4|0442224173253|2|01/01/2010|02:00:01|2891|RMITERR"
     @Override
     public Cdr parse() {
         try {
             Cdr.Builder cdr = Cdr.newBuilder();
 
-            cdr.setCellId(parseCellId()); // Cell 1
-            cdr.setUserId(parseUserId()); // Phone 1
+            cdr.setCellId(this.parseCellId()); // Cell 1
+            cdr.setUserId(this.parseUserId()); // Phone 1
             if (cdr.getCellId() == 0) { // Cell 2
-                cdr.setCellId(parseCellId());
+                cdr.setCellId(this.parseCellId());
             } else {
-                skipField();
+                this.skipField();
             }
-            skipField(); // Phone 2
-            skipField(); // Unknown field
+            this.skipField(); // Phone 2
+            this.skipField(); // Unknown field
 
-            cdr.setDate(parseDate());
-            cdr.setTime(parseTime());
+            cdr.setDate(this.parseDate());
+            cdr.setTime(this.parseTime());
 
             return cdr.build();
         } catch (Exception ex) {

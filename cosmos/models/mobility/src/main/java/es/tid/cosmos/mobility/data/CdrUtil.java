@@ -11,7 +11,7 @@ import es.tid.cosmos.mobility.parsing.CdrParser;
  *
  * @author dmicol
  */
-public abstract class CdrUtil  implements ProtobufUtil {
+public abstract class CdrUtil {
     public static Cdr create(long userId, long cellId, Date date, Time time) {
         return Cdr.newBuilder()
                 .setUserId(userId)

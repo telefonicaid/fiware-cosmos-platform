@@ -8,8 +8,8 @@ import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
  *
  * @author losa
  */
-public abstract class MobVarsUtil implements ProtobufUtil {
-    private static final String DELIMITER = "|";
+public abstract class MobVarsUtil {
+    public static final String DELIMITER = "|";
 
     public static MobVars create(int month, boolean isWorkDay, int numPos,
             int difBtss, int difMuns, int difStates, double masscenterUtmX,

@@ -8,8 +8,8 @@ import es.tid.cosmos.mobility.data.BaseProtocol.Date;
  *
  * @author sortega
  */
-public abstract class DateUtil implements ProtobufUtil {
-    private static final String DELIMITER = "|";
+public abstract class DateUtil {
+    public static final String DELIMITER = "|";
     
     public static Date create(int year, int month, int day, int weekday) {
         return Date.newBuilder()

@@ -8,8 +8,8 @@ import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
  *
  * @author sortega
  */
-public abstract class BtsCounterUtil implements ProtobufUtil {
-    private static final String DELIMITER = "|";
+public abstract class BtsCounterUtil {
+    public static final String DELIMITER = "|";
     
     public static BtsCounter create(long placeId, int weekday, int range,
             int count) {

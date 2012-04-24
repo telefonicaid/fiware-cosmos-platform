@@ -8,8 +8,8 @@ import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
  *
  * @author sortega
  */
-public abstract class NodeBtsUtil implements ProtobufUtil {
-    private static final String DELIMITER = "|";
+public abstract class NodeBtsUtil {
+    public static final String DELIMITER = "|";
     
     public static NodeBts create(long userId, int placeId,
                                  int weekday, int range) {

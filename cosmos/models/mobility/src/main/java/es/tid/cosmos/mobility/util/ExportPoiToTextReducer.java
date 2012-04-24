@@ -25,7 +25,8 @@ public class ExportPoiToTextReducer extends Reducer<LongWritable,
             value.setConverter(Poi.class);
             final Poi poi = value.get();
             context.write(NullWritable.get(),
-                          new Text(key + "|" + PoiUtil.toString(poi)));
+                          new Text(key + PoiUtil.DELIMITER
+                                   + PoiUtil.toString(poi)));
         }
     }
 }

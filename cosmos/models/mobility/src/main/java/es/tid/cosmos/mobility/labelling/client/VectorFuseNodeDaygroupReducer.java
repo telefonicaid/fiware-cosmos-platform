@@ -47,7 +47,7 @@ public class VectorFuseNodeDaygroupReducer extends Reducer
                 j++;
             }
             if (!added) {
-                for (int k = 0; k < 24; k++) {
+                for (int hour = 0; hour < 24; hour++) {
                     clusterVectorBuilder.addComs(0D);
                 }
             }

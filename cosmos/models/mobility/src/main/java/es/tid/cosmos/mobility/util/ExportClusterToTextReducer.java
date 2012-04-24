@@ -25,7 +25,8 @@ public class ExportClusterToTextReducer extends Reducer<
             value.setConverter(Cluster.class);
             final Cluster cluster = value.get();
             context.write(NullWritable.get(),
-                          new Text(key + "|" + ClusterUtil.toString(cluster)));
+                          new Text(key + ClusterUtil.DELIMITER
+                                   + ClusterUtil.toString(cluster)));
         }
     }
 }

@@ -29,7 +29,8 @@ public class ExportClusterToTextByTwoIntReducer extends Reducer<
             value.setConverter(Cluster.class);
             final Cluster cluster = value.get();
             context.write(NullWritable.get(),
-                          new Text(TwoIntUtil.toString(twoInt) + "|"
+                          new Text(TwoIntUtil.toString(twoInt)
+                                   + ClusterUtil.DELIMITER
                                    + ClusterUtil.toString(cluster)));
         }
     }

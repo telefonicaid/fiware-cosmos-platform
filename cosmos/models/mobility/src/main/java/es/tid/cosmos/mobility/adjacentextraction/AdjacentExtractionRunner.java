@@ -218,10 +218,8 @@ public final class AdjacentExtractionRunner {
                     throw new Exception("Failed to run " + job.getJobName());
                 }
             }
-            numIndicesLeft = conf.getLong("num_indices_left", -1);
-            if (numIndicesLeft == -1) {
-                throw new IllegalStateException();
-            }
+            numIndicesLeft = conf.getLong(
+                    AdjCountIndexesReducer.NUM_INDICES_LEFT_TAG, 0);
         } while (numIndicesLeft > 0);
         
         Path poiPoimodPath = new Path(tmpDirPath, "poi_poimod");

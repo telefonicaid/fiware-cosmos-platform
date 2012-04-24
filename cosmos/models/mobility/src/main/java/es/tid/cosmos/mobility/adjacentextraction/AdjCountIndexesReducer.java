@@ -12,6 +12,8 @@ import org.apache.hadoop.mapreduce.Reducer;
  */
 public class AdjCountIndexesReducer extends Reducer <LongWritable, LongWritable,
         LongWritable, NullWritable> {
+    public static final String NUM_INDICES_LEFT_TAG = "num_indices_left";
+    
     @Override
     protected void reduce(LongWritable key,
             Iterable<LongWritable> values, Context context)
@@ -20,7 +22,7 @@ public class AdjCountIndexesReducer extends Reducer <LongWritable, LongWritable,
         for (LongWritable value : values) {
             sum += value.get();
         }
-        context.getConfiguration().setLong("num_indices_left", sum);
+        context.getConfiguration().setLong(NUM_INDICES_LEFT_TAG, sum);
         context.write(new LongWritable(sum), NullWritable.get());
     }
 }

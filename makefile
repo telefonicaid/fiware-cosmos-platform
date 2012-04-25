@@ -150,15 +150,17 @@ debug: prepare_debug
 # Platform Code Coverage Version
 # ------------------------------------------------
 
-coverage: prepare_coverage
-	make -C BUILD_DEBUG -j $(CPU_COUNT)
-	lcov -d BUILD_DEBUG -z	
-	BUILD_DEBUG/apps/unitTest/unitTest  --gtest_output=xml:samson_test.xml
+coverage: prepare_coverage install_debug
+	killall samsonWorker || true
+	lcov -d BUILD_DEBUG -z
+	samsonWorker
+	make test
 	mkdir -p coverage
 	lcov -d BUILD_DEBUG --capture --output-file coverage/samson.info
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/usr/local/include/*" -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info
+	killall samsonWorker || true
 
 # ------------------------------------------------
 # Platform + Modules RELEASE version

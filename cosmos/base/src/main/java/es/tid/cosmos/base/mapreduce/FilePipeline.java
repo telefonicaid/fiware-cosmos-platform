@@ -40,6 +40,7 @@ public class FilePipeline implements Runnable {
                             + " not use a FileOutputFormat as the intermediate"
                             + " state");
                 }
+                index++;
             }
             Path outputPath = FileOutputFormat.getOutputPath(
                     jobs.get(jobs.size() - 1));
@@ -70,6 +71,7 @@ public class FilePipeline implements Runnable {
                         + " not use a FileOutputFormat as the intermediate"
                         + " state");
             }
+            index++;
         }
 
         FileInputFormat.setInputPaths(jobs.get(jobs.size() - 1),
@@ -134,7 +136,6 @@ public class FilePipeline implements Runnable {
     public void waitForCompletion(EnumSet<CleanupOptions> options)
             throws Exception {
         int processedJobsCount = 0;
-
 
         try {
             for (CosmosJob job : this.jobs) {

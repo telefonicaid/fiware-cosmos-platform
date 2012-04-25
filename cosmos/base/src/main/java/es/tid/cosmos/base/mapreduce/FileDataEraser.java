@@ -18,20 +18,23 @@ public class FileDataEraser extends DataEraser {
         FileSystem fs = FileSystem.get(job.getConfiguration());
         Path[] inputPaths = FileInputFormat.getInputPaths(job);
         for (Path path : inputPaths) {
-            if (!fs.deleteOnExit(path)) {
-                throw new IOException("Failed to delete input path "
-                        + path.toString());
-            }
+            deletePath(fs, path, "Failed to delete input path "
+                    + path.toString());
         }
     }
 
     @Override
     public void deleteOutput(Job job) throws IOException {
         FileSystem fs = FileSystem.get(job.getConfiguration());
-        Path outputPaths = FileOutputFormat.getOutputPath(job);
-        if (!fs.deleteOnExit(outputPaths)) {
-            throw new IOException("Failed to delete output path "
-                    + outputPaths.toString());
+        Path outputPath = FileOutputFormat.getOutputPath(job);
+        deletePath(fs, outputPath, "Failed to delete output path "
+                + outputPath.toString());
+    }
+
+    private void deletePath(FileSystem fs, Path p, String error)
+            throws IOException {
+        if (!fs.deleteOnExit(p)) {
+            throw new IOException(error);
         }
     }
 }

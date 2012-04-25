@@ -3,9 +3,14 @@ package es.tid.cosmos.mobility.labelling.join;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.util.*;
-
 
 /**
  *
@@ -27,49 +32,54 @@ public final class LabelJoiningRunner {
         Path pointsOfInterestTempMobDataPath = new Path(tmpDirPath,
                 "points_of_interest_temp_mob_data");
         {
-            ConvertPoiToMobDataJob job = new ConvertPoiToMobDataJob(conf);
-            job.configure(pointsOfInterestTempPath,
-                          pointsOfInterestTempMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertPoiToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertPoiToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, pointsOfInterestTempPath);
+            FileOutputFormat.setOutputPath(job, pointsOfInterestTempMobDataPath);
+            job.waitForCompletion(true);
         }
         
         Path vectorClientClusterMobDataPath = new Path(tmpDirPath,
                 "vector_client_cluster_mob_data");
         {
-            ConvertClusterToMobDataJob job = new ConvertClusterToMobDataJob(
-                    conf);
-            job.configure(vectorClientClusterPath,
-                          vectorClientClusterMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertClusterToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertClusterToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, vectorClientClusterPath);
+            FileOutputFormat.setOutputPath(job, vectorClientClusterMobDataPath);
+            job.waitForCompletion(true);
         }
         
         Path pointsOfInterestTemp2Path = new Path(tmpDirPath,
                                                   "points_of_interest_temp2");
         {
-            ClusterAggNodeClusterByNodbtsJob job =
-                    new ClusterAggNodeClusterByNodbtsJob(conf);
-            job.configure(new Path[] { pointsOfInterestTempMobDataPath,
-                                       vectorClientClusterMobDataPath },
-                          pointsOfInterestTemp2Path);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf,
+                    "ClusterAggNodeClusterByNodbts",
+                    SequenceFileInputFormat.class,
+                    ClusterAggNodeClusterByNodbtsReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] {
+                pointsOfInterestTempMobDataPath,
+                vectorClientClusterMobDataPath });
+            FileOutputFormat.setOutputPath(job, pointsOfInterestTemp2Path);
+            job.waitForCompletion(true);
         }
 
         Path potpoiPath = new Path(tmpDirPath, "potpoi");
         { 
-            ClusterAggNodeClusterByNodlblJob job =
-                    new ClusterAggNodeClusterByNodlblJob(conf);
-            job.configure(new Path[] { pointsOfInterestTempMobDataPath,
-                                       vectorClientClusterMobDataPath },
-                          potpoiPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf,
+                    "ClusterAggNodeClusterByNodlbl",
+                    SequenceFileInputFormat.class,
+                    ClusterAggNodeClusterByNodlblReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] {
+                pointsOfInterestTempMobDataPath,
+                vectorClientClusterMobDataPath });
+            FileOutputFormat.setOutputPath(job, potpoiPath);
+            job.waitForCompletion(true);
         }
         
         fs.delete(vectorClientClusterMobDataPath, true);
@@ -78,63 +88,73 @@ public final class LabelJoiningRunner {
         Path clientbtsNodpoilblPath = new Path(tmpDirPath,
                                                "clientbts_nodpoilbl");
         { 
-            ClusterSpreadNodelblPoilblJob job =
-                    new ClusterSpreadNodelblPoilblJob(conf);
-            job.configure(pointsOfInterestTemp2Path, clientbtsNodpoilblPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf,
+                    "ClusterSpreadNodelblPoilbl",
+                    SequenceFileInputFormat.class,
+                    ClusterSpreadNodelblPoilblReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, pointsOfInterestTemp2Path);
+            FileOutputFormat.setOutputPath(job, clientbtsNodpoilblPath);
+            job.waitForCompletion(true);
         }
         
         Path clientbtsNodpoiCountPath = new Path(tmpDirPath,
                                                  "clientbts_nodpoi_count");
         {
-            ClusterCountMajPoiByNodeJob job = new ClusterCountMajPoiByNodeJob(
-                    conf);
-            job.configure(clientbtsNodpoilblPath, clientbtsNodpoiCountPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ClusterCountMajPoiByNode",
+                    SequenceFileInputFormat.class,
+                    ClusterCountMajPoiByNodeReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientbtsNodpoilblPath);
+            FileOutputFormat.setOutputPath(job, clientbtsNodpoiCountPath);
+            job.waitForCompletion(true);
         }
         
         Path clientbtsNodPoimajPath = new Path(tmpDirPath,
                                                "clientbts_nod_poimaj");
         {
-            ClusterGetMajPoiByNodeJob job = new ClusterGetMajPoiByNodeJob(conf);
-            job.configure(clientbtsNodpoiCountPath, clientbtsNodPoimajPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ClusterGetMajPoiByNode",
+                    SequenceFileInputFormat.class,
+                    ClusterGetMajPoiByNodeReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientbtsNodpoiCountPath);
+            FileOutputFormat.setOutputPath(job, clientbtsNodPoimajPath);
+            job.waitForCompletion(true);
         }
 
         Path potpoiMobDataPath = new Path(tmpDirPath, "potpoi_mob_data");
         {
-            ConvertPoiToMobDataJob job = new ConvertPoiToMobDataJob(conf);
-            job.configure(potpoiPath, potpoiMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertPoiToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertPoiToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, potpoiPath);
+            FileOutputFormat.setOutputPath(job, potpoiMobDataPath);
+            job.waitForCompletion(true);
         }
 
         Path clientbtsNodPoimajMobDataPath = new Path(tmpDirPath,
                 "clientbts_nod_poimaj_mob_data");
         {
-            ConvertLongToMobDataJob job = new ConvertLongToMobDataJob(conf);
-            job.configure(clientbtsNodPoimajPath, clientbtsNodPoimajMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertLongToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertLongToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientbtsNodPoimajPath);
+            FileOutputFormat.setOutputPath(job, clientbtsNodPoimajMobDataPath);
+            job.waitForCompletion(true);
         }
         
         Path poisLabeledPath = new Path(tmpDirPath, "pois_labeled");
         {
-            ClusterJoinPotPoiLabelJob job = new ClusterJoinPotPoiLabelJob(conf);
-            job.configure(new Path[] { potpoiMobDataPath,
-                                       clientbtsNodPoimajMobDataPath },
-                          poisLabeledPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ClusterJoinPotPoiLabel",
+                    SequenceFileInputFormat.class,
+                    ClusterJoinPotPoiLabelReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] {
+                potpoiMobDataPath, clientbtsNodPoimajMobDataPath });
+            FileOutputFormat.setOutputPath(job, poisLabeledPath);
+            job.waitForCompletion(true);
         }
 
         fs.delete(potpoiMobDataPath, true);
@@ -143,64 +163,73 @@ public final class LabelJoiningRunner {
         Path pointsOfInterestTemp2MobDataPath = new Path(tmpDirPath,
                 "points_of_interest_temp2_mob_data");
         {
-            ConvertPoiToMobDataByTwoIntJob job =
-                    new ConvertPoiToMobDataByTwoIntJob(conf);
-            job.configure(pointsOfInterestTemp2Path,
-                          pointsOfInterestTemp2MobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertPoiToMobDataByTwoInt",
+                    SequenceFileInputFormat.class,
+                    ConvertPoiToMobDataByTwoIntReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, pointsOfInterestTemp2Path);
+            FileOutputFormat.setOutputPath(job,
+                                           pointsOfInterestTemp2MobDataPath);
+            job.waitForCompletion(true);
         }
 
         Path vectorClientbtsClusterMobDataPath = new Path(tmpDirPath,
                 "vector_clientbts_cluster");
         {
-            ConvertClusterToMobDataByTwoIntJob job =
-                    new ConvertClusterToMobDataByTwoIntJob(conf);
-            job.configure(vectorClientbtsClusterPath,
-                          vectorClientbtsClusterMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf,
+                    "ConvertClusterToMobDataByTwoInt",
+                    SequenceFileInputFormat.class,
+                    ConvertClusterToMobDataByTwoIntReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, vectorClientbtsClusterPath);
+            FileOutputFormat.setOutputPath(job,
+                                           vectorClientbtsClusterMobDataPath);
+            job.waitForCompletion(true);
         }
 
         Path poisLabeledMobDataPath = new Path(tmpDirPath,
                                                "pois_labeled_mob_data");
         {
-            ConvertNullToMobDataByTwoIntJob job =
-                    new ConvertNullToMobDataByTwoIntJob(conf);
-            job.configure(poisLabeledPath, poisLabeledMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf,
+                    "ConvertNullToMobDataByTwoInt",
+                    SequenceFileInputFormat.class,
+                    ConvertNullToMobDataByTwoIntReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, poisLabeledPath);
+            FileOutputFormat.setOutputPath(job, poisLabeledMobDataPath);
+            job.waitForCompletion(true);
         }
         
         Path pointsOfInterestTemp3Path = new Path(tmpDirPath,
                                                   "points_of_interest_temp3");
         {
-            ClusterAggPotPoiPoisToPoiJob job =
-                    new ClusterAggPotPoiPoisToPoiJob(conf);
-            job.configure(new Path[] { pointsOfInterestTemp2MobDataPath,
-                                       vectorClientbtsClusterMobDataPath,
-                                       poisLabeledMobDataPath },
-                          pointsOfInterestTemp3Path);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf,
+                    "ClusterAggPotPoiPoisToPoi",
+                    SequenceFileInputFormat.class,
+                    ClusterAggPotPoiPoisToPoiReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] {
+                pointsOfInterestTemp2MobDataPath,
+                vectorClientbtsClusterMobDataPath,
+                poisLabeledMobDataPath });
+            FileOutputFormat.setOutputPath(job, pointsOfInterestTemp3Path);
+            job.waitForCompletion(true);
         }
         
         Path vectorClientbtsClusterAddPath = new Path(tmpDirPath,
                 "vector_clientbts_cluster_add");
         {
-            ClusterAggPotPoiPoisToClusterJob job =
-                    new ClusterAggPotPoiPoisToClusterJob(conf);
-            job.configure(new Path[] { pointsOfInterestTemp2MobDataPath,
-                                       vectorClientbtsClusterMobDataPath,
-                                       poisLabeledMobDataPath },
-                          vectorClientbtsClusterAddPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf,
+                    "ClusterAggPotPoiPoisToCluster",
+                    SequenceFileInputFormat.class,
+                    ClusterAggPotPoiPoisToClusterReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] {
+                pointsOfInterestTemp2MobDataPath,
+                vectorClientbtsClusterMobDataPath,
+                poisLabeledMobDataPath });
+            FileOutputFormat.setOutputPath(job, vectorClientbtsClusterAddPath);
+            job.waitForCompletion(true);
         }
 
         fs.delete(pointsOfInterestTemp2MobDataPath, true);
@@ -210,34 +239,37 @@ public final class LabelJoiningRunner {
         Path pointsOfInterestTemp3MobDataPath = new Path(tmpDirPath,
                 "points_of_interest_temp3_mob_data");
         {
-            ConvertPoiToMobDataJob job = new ConvertPoiToMobDataJob(conf);
-            job.configure(pointsOfInterestTemp3Path,
-                          pointsOfInterestTemp3MobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertPoiToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertPoiToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, pointsOfInterestTemp3Path);
+            FileOutputFormat.setOutputPath(job,
+                                           pointsOfInterestTemp3MobDataPath);
+            job.waitForCompletion(true);
         }
 
         Path vectorBtsClusterMobDataPath = new Path(tmpDirPath,
                 "vector_bts_cluster_mob_data");
         {
-            ConvertClusterToMobDataJob job = new ConvertClusterToMobDataJob(
-                    conf);
-            job.configure(vectorBtsClusterPath,
-                          vectorBtsClusterMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertClusterToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertClusterToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, vectorBtsClusterPath);
+            FileOutputFormat.setOutputPath(job, vectorBtsClusterMobDataPath);
+            job.waitForCompletion(true);
         }
         
         {
-            ClusterAggBtsClusterJob job = new ClusterAggBtsClusterJob(conf);
-            job.configure(new Path[] { pointsOfInterestTemp3MobDataPath,
-                                       vectorBtsClusterMobDataPath },
-                          pointsOfInterestTemp4Path);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ClusterAggBtsCluster",
+                    SequenceFileInputFormat.class,
+                    ClusterAggBtsClusterReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] {
+                pointsOfInterestTemp3MobDataPath, vectorBtsClusterMobDataPath });
+            FileOutputFormat.setOutputPath(job, pointsOfInterestTemp4Path);
+            job.waitForCompletion(true);
         }
 
         fs.delete(pointsOfInterestTemp3MobDataPath, true);
@@ -247,12 +279,14 @@ public final class LabelJoiningRunner {
             Path pointsOfInterestTemp4TextPath = new Path(tmpDirPath,
                     "points_of_interest_temp4_text");
             {
-                ExportPoiToTextJob job = new ExportPoiToTextJob(conf);
-                job.configure(pointsOfInterestTemp4Path,
-                            pointsOfInterestTemp4TextPath);
-                if (!job.waitForCompletion(true)) {
-                    throw new Exception("Failed to run " + job.getJobName());
-                }
+                ReduceJob job = ReduceJob.create(conf, "ExportPoiToText",
+                        SequenceFileInputFormat.class,
+                        ExportPoiToTextReducer.class,
+                        TextOutputFormat.class);
+                FileInputFormat.setInputPaths(job, pointsOfInterestTemp4Path);
+                FileOutputFormat.setOutputPath(job,
+                                               pointsOfInterestTemp4TextPath);
+                job.waitForCompletion(true);
             }
         } else {
             fs.delete(potpoiPath, true);

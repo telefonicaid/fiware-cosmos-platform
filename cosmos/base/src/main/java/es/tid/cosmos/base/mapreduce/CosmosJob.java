@@ -15,7 +15,6 @@ import org.apache.hadoop.mapreduce.Job;
  * @author ximo
  */
 public abstract class CosmosJob extends Job implements Runnable {
-
     public CosmosJob(Configuration conf, String jobName)
             throws IOException {
         super(conf, jobName);
@@ -72,22 +71,22 @@ public abstract class CosmosJob extends Job implements Runnable {
         if (options.contains(CleanupOptions.DeleteInput)) {
             Class inputFormat = this.getInputFormatClass();
             DataEraser eraser = DataEraser.getEraser(inputFormat);
-            if(eraser == null) {
+            if (eraser == null) {
                 throw new UnsupportedOperationException("CosmosJob is not prepared"
-                    + " to handle deleting inputs of type "
-                    + inputFormat.getSimpleName() + ". Please implement a new "
-                    + "DataEraser that handles this case.");
+                        + " to handle deleting inputs of type "
+                        + inputFormat.getSimpleName() + ". Please implement a new "
+                        + "DataEraser that handles this case.");
             }
             eraser.deleteInputs(this);
         }
         if (options.contains(CleanupOptions.DeleteOutput)) {
             Class outputFormat = this.getOutputFormatClass();
             DataEraser eraser = DataEraser.getEraser(outputFormat);
-            if(eraser == null) {
+            if (eraser == null) {
                 throw new UnsupportedOperationException("CosmosJob is not prepared"
-                    + " to handle deleting outputs of type "
-                    + outputFormat.getSimpleName() + ". Please implement a new "
-                    + "DataEraser that handles this case.");
+                        + " to handle deleting outputs of type "
+                        + outputFormat.getSimpleName() + ". Please implement a new "
+                        + "DataEraser that handles this case.");
             }
             eraser.deleteOutput(this);
         }

@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.labelling.bts;
 
+import java.util.EnumSet;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,6 +11,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import es.tid.cosmos.base.mapreduce.CleanupOptions;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourReducer;
 import es.tid.cosmos.mobility.labelling.client.VectorFuseNodeDaygroupReducer;
@@ -37,7 +40,7 @@ public final class BtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsCommsPath);
             FileOutputFormat.setOutputPath(job, btsCountsPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path btsSumComsPath = new Path(tmpDirPath, "bts_sum_coms");
@@ -48,7 +51,7 @@ public final class BtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsCountsPath);
             FileOutputFormat.setOutputPath(job, btsSumComsPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path btsDayhourPath = new Path(tmpDirPath, "bts_dayhour");
@@ -59,7 +62,7 @@ public final class BtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsSumComsPath);
             FileOutputFormat.setOutputPath(job, btsDayhourPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path vectorBtsPath = new Path(tmpDirPath, "vector_bts");
@@ -70,7 +73,7 @@ public final class BtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsDayhourPath);
             FileOutputFormat.setOutputPath(job, vectorBtsPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path vectorBtsNormPath = new Path(tmpDirPath, "vector_bts_norm");
@@ -81,7 +84,7 @@ public final class BtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorBtsPath);
             FileOutputFormat.setOutputPath(job, vectorBtsNormPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path vectorBtsClusterSinfiltPath = new Path(tmpDirPath,
@@ -94,7 +97,7 @@ public final class BtsLabellingRunner {
             job.getConfiguration().set("centroids", centroidsPath.toString());
             FileInputFormat.setInputPaths(job, vectorBtsNormPath);
             FileOutputFormat.setOutputPath(job, vectorBtsClusterSinfiltPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path vectorBtsClusterSinfiltMobDataPath = new Path(tmpDirPath,
@@ -107,7 +110,7 @@ public final class BtsLabellingRunner {
             FileInputFormat.setInputPaths(job, vectorBtsClusterSinfiltPath);
             FileOutputFormat.setOutputPath(job,
                                            vectorBtsClusterSinfiltMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path btsComareaMobDataPath = new Path(tmpDirPath,
@@ -119,7 +122,7 @@ public final class BtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsComareaPath);
             FileOutputFormat.setOutputPath(job, btsComareaMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         {
@@ -146,7 +149,7 @@ public final class BtsLabellingRunner {
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, vectorBtsClusterPath);
                 FileOutputFormat.setOutputPath(job, vectorBtsClusterTextPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
         } else {
             fs.delete(btsCountsPath, true);

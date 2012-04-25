@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.labelling.join;
 
+import java.util.EnumSet;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,6 +11,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import es.tid.cosmos.base.mapreduce.CleanupOptions;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.util.*;
 
@@ -38,7 +41,7 @@ public final class LabelJoiningRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestTempPath);
             FileOutputFormat.setOutputPath(job, pointsOfInterestTempMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path vectorClientClusterMobDataPath = new Path(tmpDirPath,
@@ -50,7 +53,7 @@ public final class LabelJoiningRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorClientClusterPath);
             FileOutputFormat.setOutputPath(job, vectorClientClusterMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path pointsOfInterestTemp2Path = new Path(tmpDirPath,
@@ -65,7 +68,7 @@ public final class LabelJoiningRunner {
                 pointsOfInterestTempMobDataPath,
                 vectorClientClusterMobDataPath });
             FileOutputFormat.setOutputPath(job, pointsOfInterestTemp2Path);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path potpoiPath = new Path(tmpDirPath, "potpoi");
@@ -79,7 +82,7 @@ public final class LabelJoiningRunner {
                 pointsOfInterestTempMobDataPath,
                 vectorClientClusterMobDataPath });
             FileOutputFormat.setOutputPath(job, potpoiPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         fs.delete(vectorClientClusterMobDataPath, true);
@@ -95,7 +98,7 @@ public final class LabelJoiningRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestTemp2Path);
             FileOutputFormat.setOutputPath(job, clientbtsNodpoilblPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path clientbtsNodpoiCountPath = new Path(tmpDirPath,
@@ -107,7 +110,7 @@ public final class LabelJoiningRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientbtsNodpoilblPath);
             FileOutputFormat.setOutputPath(job, clientbtsNodpoiCountPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path clientbtsNodPoimajPath = new Path(tmpDirPath,
@@ -119,7 +122,7 @@ public final class LabelJoiningRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientbtsNodpoiCountPath);
             FileOutputFormat.setOutputPath(job, clientbtsNodPoimajPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path potpoiMobDataPath = new Path(tmpDirPath, "potpoi_mob_data");
@@ -130,7 +133,7 @@ public final class LabelJoiningRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, potpoiPath);
             FileOutputFormat.setOutputPath(job, potpoiMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path clientbtsNodPoimajMobDataPath = new Path(tmpDirPath,
@@ -142,7 +145,7 @@ public final class LabelJoiningRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientbtsNodPoimajPath);
             FileOutputFormat.setOutputPath(job, clientbtsNodPoimajMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path poisLabeledPath = new Path(tmpDirPath, "pois_labeled");
@@ -154,7 +157,7 @@ public final class LabelJoiningRunner {
             FileInputFormat.setInputPaths(job, new Path[] {
                 potpoiMobDataPath, clientbtsNodPoimajMobDataPath });
             FileOutputFormat.setOutputPath(job, poisLabeledPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         fs.delete(potpoiMobDataPath, true);
@@ -170,7 +173,7 @@ public final class LabelJoiningRunner {
             FileInputFormat.setInputPaths(job, pointsOfInterestTemp2Path);
             FileOutputFormat.setOutputPath(job,
                                            pointsOfInterestTemp2MobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path vectorClientbtsClusterMobDataPath = new Path(tmpDirPath,
@@ -184,7 +187,7 @@ public final class LabelJoiningRunner {
             FileInputFormat.setInputPaths(job, vectorClientbtsClusterPath);
             FileOutputFormat.setOutputPath(job,
                                            vectorClientbtsClusterMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path poisLabeledMobDataPath = new Path(tmpDirPath,
@@ -197,7 +200,7 @@ public final class LabelJoiningRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, poisLabeledPath);
             FileOutputFormat.setOutputPath(job, poisLabeledMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path pointsOfInterestTemp3Path = new Path(tmpDirPath,
@@ -213,7 +216,7 @@ public final class LabelJoiningRunner {
                 vectorClientbtsClusterMobDataPath,
                 poisLabeledMobDataPath });
             FileOutputFormat.setOutputPath(job, pointsOfInterestTemp3Path);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path vectorClientbtsClusterAddPath = new Path(tmpDirPath,
@@ -229,7 +232,7 @@ public final class LabelJoiningRunner {
                 vectorClientbtsClusterMobDataPath,
                 poisLabeledMobDataPath });
             FileOutputFormat.setOutputPath(job, vectorClientbtsClusterAddPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         fs.delete(pointsOfInterestTemp2MobDataPath, true);
@@ -246,7 +249,7 @@ public final class LabelJoiningRunner {
             FileInputFormat.setInputPaths(job, pointsOfInterestTemp3Path);
             FileOutputFormat.setOutputPath(job,
                                            pointsOfInterestTemp3MobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path vectorBtsClusterMobDataPath = new Path(tmpDirPath,
@@ -258,7 +261,7 @@ public final class LabelJoiningRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorBtsClusterPath);
             FileOutputFormat.setOutputPath(job, vectorBtsClusterMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         {
@@ -269,7 +272,7 @@ public final class LabelJoiningRunner {
             FileInputFormat.setInputPaths(job, new Path[] {
                 pointsOfInterestTemp3MobDataPath, vectorBtsClusterMobDataPath });
             FileOutputFormat.setOutputPath(job, pointsOfInterestTemp4Path);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         fs.delete(pointsOfInterestTemp3MobDataPath, true);
@@ -286,7 +289,7 @@ public final class LabelJoiningRunner {
                 FileInputFormat.setInputPaths(job, pointsOfInterestTemp4Path);
                 FileOutputFormat.setOutputPath(job,
                                                pointsOfInterestTemp4TextPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
         } else {
             fs.delete(potpoiPath, true);

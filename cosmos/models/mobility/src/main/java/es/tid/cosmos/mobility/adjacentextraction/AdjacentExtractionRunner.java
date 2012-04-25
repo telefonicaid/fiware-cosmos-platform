@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.adjacentextraction;
 
+import java.util.EnumSet;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,6 +11,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import es.tid.cosmos.base.mapreduce.CleanupOptions;
 import es.tid.cosmos.base.mapreduce.MapJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.util.*;
@@ -35,7 +38,7 @@ public final class AdjacentExtractionRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestPath);
             FileOutputFormat.setOutputPath(job, poisIdPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path poisTablePath = new Path(tmpDirPath, "pois_table");
@@ -46,7 +49,7 @@ public final class AdjacentExtractionRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestPath);
             FileOutputFormat.setOutputPath(job, poisTablePath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path poiPairbtsPath = new Path(tmpDirPath, "poi_pairbts");
@@ -57,7 +60,7 @@ public final class AdjacentExtractionRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, poisIdPath);
             FileOutputFormat.setOutputPath(job, poiPairbtsPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path poiPairbtsMobDataPath = new Path(tmpDirPath,
@@ -70,7 +73,7 @@ public final class AdjacentExtractionRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, poiPairbtsPath);
             FileOutputFormat.setOutputPath(job, poiPairbtsMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path pairbtsAdjMobDataPath = new Path(tmpDirPath,
@@ -83,7 +86,7 @@ public final class AdjacentExtractionRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pairbtsAdjPath);
             FileOutputFormat.setOutputPath(job, pairbtsAdjMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path poiPairbtsMobDataWithInputIdPath = new Path(tmpDirPath,
@@ -97,7 +100,7 @@ public final class AdjacentExtractionRunner {
             FileInputFormat.setInputPaths(job, poiPairbtsMobDataPath);
             FileOutputFormat.setOutputPath(job,
                                            poiPairbtsMobDataWithInputIdPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path pairbtsAdjMobDataWithInputIdPath = new Path(tmpDirPath,
@@ -111,7 +114,7 @@ public final class AdjacentExtractionRunner {
             FileInputFormat.setInputPaths(job, pairbtsAdjMobDataPath);
             FileOutputFormat.setOutputPath(job,
                                            pairbtsAdjMobDataWithInputIdPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path poiPairbtsAdjPath = new Path(tmpDirPath, "poi_pairbts_adj");
@@ -124,7 +127,7 @@ public final class AdjacentExtractionRunner {
                 poiPairbtsMobDataWithInputIdPath,
                 pairbtsAdjMobDataWithInputIdPath });
             FileOutputFormat.setOutputPath(job, poiPairbtsAdjPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         long numIndicesLeft;
@@ -138,7 +141,7 @@ public final class AdjacentExtractionRunner {
                         SequenceFileOutputFormat.class);
                 FileInputFormat.setInputPaths(job, poiPairbtsAdjPath);
                 FileOutputFormat.setOutputPath(job, poiPairbtsIndexPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
 
             Path poiPairbtsIndexMobDataPath = new Path(tmpDirPath,
@@ -150,7 +153,7 @@ public final class AdjacentExtractionRunner {
                         SequenceFileOutputFormat.class);
                 FileInputFormat.setInputPaths(job, poiPairbtsIndexPath);
                 FileOutputFormat.setOutputPath(job, poiPairbtsIndexMobDataPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
 
             Path poisTableMobDataPath = new Path(tmpDirPath,
@@ -162,7 +165,7 @@ public final class AdjacentExtractionRunner {
                         SequenceFileOutputFormat.class);
                 FileInputFormat.setInputPaths(job, poisTablePath);
                 FileOutputFormat.setOutputPath(job, poisTableMobDataPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
             
             Path poisTableTmpPath = new Path(tmpDirPath, "pois_table_tmp");
@@ -174,7 +177,7 @@ public final class AdjacentExtractionRunner {
                 FileInputFormat.setInputPaths(job, new Path[] {
                     poisTableMobDataPath, poiPairbtsIndexMobDataPath });
                 FileOutputFormat.setOutputPath(job, poisTableTmpPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
             
             fs.delete(poisTablePath, true);
@@ -190,7 +193,7 @@ public final class AdjacentExtractionRunner {
                         SequenceFileOutputFormat.class);
                 FileInputFormat.setInputPaths(job, poiPairbtsAdjPath);
                 FileOutputFormat.setOutputPath(job, poiPairbtsAdjMobDataPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
             
             Path poiPairbtsCh1Path = new Path(tmpDirPath, "poi_pairbts_ch1");
@@ -202,7 +205,7 @@ public final class AdjacentExtractionRunner {
                 FileInputFormat.setInputPaths(job, new Path[] {
                     poiPairbtsAdjMobDataPath, poiPairbtsIndexMobDataPath });
                 FileOutputFormat.setOutputPath(job, poiPairbtsCh1Path);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
 
             fs.delete(poiPairbtsAdjPath, true);
@@ -217,7 +220,7 @@ public final class AdjacentExtractionRunner {
                         SequenceFileOutputFormat.class);
                 FileInputFormat.setInputPaths(job, poiPairbtsCh1Path);
                 FileOutputFormat.setOutputPath(job, poiPairbtsCh1MobDataPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
             
             {
@@ -228,7 +231,7 @@ public final class AdjacentExtractionRunner {
                 FileInputFormat.setInputPaths(job, new Path[] {
                     poiPairbtsCh1MobDataPath, poiPairbtsIndexMobDataPath });
                 FileOutputFormat.setOutputPath(job, poiPairbtsAdjPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
             
             Path nindSpreadPath = new Path(tmpDirPath, "nind_spread");
@@ -239,7 +242,7 @@ public final class AdjacentExtractionRunner {
                         SequenceFileOutputFormat.class);
                 FileInputFormat.setInputPaths(job, poiPairbtsAdjPath);
                 FileOutputFormat.setOutputPath(job, nindSpreadPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
 
             Path numIndexPath = new Path(tmpDirPath, "num_index");
@@ -250,7 +253,7 @@ public final class AdjacentExtractionRunner {
                         SequenceFileOutputFormat.class);
                 FileInputFormat.setInputPaths(job, nindSpreadPath);
                 FileOutputFormat.setOutputPath(job, numIndexPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
             numIndicesLeft = conf.getLong(
                     AdjCountIndexesReducer.NUM_INDICES_LEFT_TAG, 0);
@@ -264,7 +267,7 @@ public final class AdjacentExtractionRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, poisTablePath);
             FileOutputFormat.setOutputPath(job, poiPoimodPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path poiIdPoiPath = new Path(tmpDirPath, "poiId_poi");
@@ -275,7 +278,7 @@ public final class AdjacentExtractionRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, poisIdPath);
             FileOutputFormat.setOutputPath(job, poiIdPoiPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path poiPoimodMobDataPath = new Path(tmpDirPath, "poi_poimod_mob_data");
@@ -286,7 +289,7 @@ public final class AdjacentExtractionRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, poiPoimodPath);
             FileOutputFormat.setOutputPath(job, poiPoimodMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path poiIdPoiMobDataPath = new Path(tmpDirPath, "poiId_poi_mob_data");
@@ -297,7 +300,7 @@ public final class AdjacentExtractionRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, poiIdPoiPath);
             FileOutputFormat.setOutputPath(job, poiIdPoiMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path pointsOfInterestModPath = new Path(tmpDirPath,
@@ -310,7 +313,7 @@ public final class AdjacentExtractionRunner {
             FileInputFormat.setInputPaths(job, new Path[] {
                 poiPoimodMobDataPath, poiIdPoiMobDataPath });
             FileOutputFormat.setOutputPath(job, pointsOfInterestModPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
       
         Path pointsOfInterestMobDataPath = new Path(tmpDirPath,
@@ -323,7 +326,7 @@ public final class AdjacentExtractionRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestPath);
             FileOutputFormat.setOutputPath(job, pointsOfInterestMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path pointsOfInterestModMobDataPath = new Path(tmpDirPath,
@@ -336,7 +339,7 @@ public final class AdjacentExtractionRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestModPath);
             FileOutputFormat.setOutputPath(job, pointsOfInterestModMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         {
@@ -347,7 +350,7 @@ public final class AdjacentExtractionRunner {
             FileInputFormat.setInputPaths(job, new Path[] {
                 pointsOfInterestMobDataPath, pointsOfInterestModMobDataPath });
             FileOutputFormat.setOutputPath(job, pointsOfInterestIdPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         if (isDebug) {
@@ -361,7 +364,7 @@ public final class AdjacentExtractionRunner {
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, pointsOfInterestIdPath);
                 FileOutputFormat.setOutputPath(job, pointsOfInterestIdTextPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
         }
     }

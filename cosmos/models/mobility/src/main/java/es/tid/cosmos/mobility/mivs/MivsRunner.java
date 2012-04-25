@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.mivs;
 
+import java.util.EnumSet;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,6 +11,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import es.tid.cosmos.base.mapreduce.CleanupOptions;
 import es.tid.cosmos.base.mapreduce.MapJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 
@@ -33,7 +36,7 @@ public final class MivsRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, viTelmonthBts);
             FileOutputFormat.setOutputPath(job, viTelmonthMobvars);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path viClientFuse = new Path(tmpDir, "vi_client_fuse");
@@ -44,7 +47,7 @@ public final class MivsRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, viTelmonthMobvars);
             FileOutputFormat.setOutputPath(job, viClientFuse);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path viTelmonthBtsAcc = new Path(tmpDir, "vi_telmonth_bts_acc");
@@ -55,7 +58,7 @@ public final class MivsRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, viTelmonthBts);
             FileOutputFormat.setOutputPath(job, viTelmonthBtsAcc);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path viTelmonthMobvarsAcc = new Path(tmpDir, "vi_telmonth_mobvars_acc");
@@ -66,7 +69,7 @@ public final class MivsRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, viTelmonthBtsAcc);
             FileOutputFormat.setOutputPath(job, viTelmonthMobvarsAcc);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         {
@@ -76,7 +79,7 @@ public final class MivsRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, viTelmonthMobvarsAcc);
             FileOutputFormat.setOutputPath(job, viClientFuseAcc);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         if (isDebug) {
@@ -88,7 +91,7 @@ public final class MivsRunner {
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, viClientFuse);
                 FileOutputFormat.setOutputPath(job, viClientFuseText);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
 
             Path viClientFuseAccText = new Path(tmpDir,
@@ -100,7 +103,7 @@ public final class MivsRunner {
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, viClientFuseAcc);
                 FileOutputFormat.setOutputPath(job, viClientFuseAccText);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
         } else {
             fs.delete(viTelmonthMobvars, true);

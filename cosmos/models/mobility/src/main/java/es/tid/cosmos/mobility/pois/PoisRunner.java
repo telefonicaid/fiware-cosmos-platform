@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.pois;
 
+import java.util.EnumSet;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,6 +11,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import es.tid.cosmos.base.mapreduce.CleanupOptions;
 import es.tid.cosmos.base.mapreduce.MapJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.util.*;
@@ -36,7 +39,7 @@ public final class PoisRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsBtsPath);
             FileOutputFormat.setOutputPath(job, clientsBtscounterPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         {
@@ -46,7 +49,7 @@ public final class PoisRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsBtscounterPath);
             FileOutputFormat.setOutputPath(job, clientsInfoPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path clientsInfoSpreadPath = new Path(tmpDirPath, "clients_info_spread");
@@ -57,7 +60,7 @@ public final class PoisRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoPath);
             FileOutputFormat.setOutputPath(job, clientsInfoSpreadPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path clientsInfoAggbybtsPath = new Path(tmpDirPath,
@@ -69,7 +72,7 @@ public final class PoisRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoSpreadPath);
             FileOutputFormat.setOutputPath(job, clientsInfoAggbybtsPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path repbtsAggbybtsMobDataPath = new Path(tmpDirPath,
@@ -81,7 +84,7 @@ public final class PoisRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoAggbybtsPath);
             FileOutputFormat.setOutputPath(job, repbtsAggbybtsMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path cdrsNoinfoMobDataPath = new Path(tmpDirPath,
@@ -93,7 +96,7 @@ public final class PoisRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsNoinfoPath);
             FileOutputFormat.setOutputPath(job, cdrsNoinfoMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path cdrsNoBtsMobDataPath = new Path(tmpDirPath, "cdrs_nobts_mob_data");
@@ -104,7 +107,7 @@ public final class PoisRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsNoBtsPath);
             FileOutputFormat.setOutputPath(job, cdrsNoBtsMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         {
@@ -116,7 +119,7 @@ public final class PoisRunner {
                 repbtsAggbybtsMobDataPath, cdrsNoinfoMobDataPath,
                 cdrsNoBtsMobDataPath });
             FileOutputFormat.setOutputPath(job, clientsInfoFilteredPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         fs.delete(cdrsNoinfoMobDataPath, true);
@@ -131,7 +134,7 @@ public final class PoisRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoFilteredPath);
             FileOutputFormat.setOutputPath(job, clientsInfoFilteredMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path clientsInfoBtsPercPath = new Path(tmpDirPath,
@@ -144,7 +147,7 @@ public final class PoisRunner {
             FileInputFormat.setInputPaths(job, new Path[] {
                 repbtsAggbybtsMobDataPath, clientsInfoFilteredMobDataPath });
             FileOutputFormat.setOutputPath(job, clientsInfoBtsPercPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         fs.delete(repbtsAggbybtsMobDataPath, true);
@@ -157,7 +160,7 @@ public final class PoisRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoBtsPercPath);
             FileOutputFormat.setOutputPath(job, clientsRepbtsPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         if (isDebug) {
@@ -171,7 +174,7 @@ public final class PoisRunner {
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, clientsRepbtsPath);
                 FileOutputFormat.setOutputPath(job, clientsRepbtsTextPath);
-                job.waitForCompletion(true);
+                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
             }
         } else {
             fs.delete(clientsBtsPath, true);

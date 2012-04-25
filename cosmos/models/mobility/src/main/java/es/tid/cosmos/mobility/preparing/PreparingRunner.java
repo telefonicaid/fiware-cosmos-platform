@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.preparing;
 
+import java.util.EnumSet;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -8,6 +10,7 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
+import es.tid.cosmos.base.mapreduce.CleanupOptions;
 import es.tid.cosmos.base.mapreduce.MapJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.util.ConvertCdrToMobDataReducer;
@@ -35,7 +38,7 @@ public final class PreparingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsMobPath);
             FileOutputFormat.setOutputPath(job, cdrsInfoPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         {
@@ -45,7 +48,7 @@ public final class PreparingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsMobPath);
             FileOutputFormat.setOutputPath(job, cdrsNoinfoPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         Path cdrsInfoMobDataPath = tmpPath.suffix("/cdrs_info_mob_data");
@@ -56,7 +59,7 @@ public final class PreparingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsInfoPath);
             FileOutputFormat.setOutputPath(job, cdrsInfoMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         Path cellsMobDataPath = tmpPath.suffix("/cells_mob_data");
@@ -67,7 +70,7 @@ public final class PreparingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cellsMobPath);
             FileOutputFormat.setOutputPath(job, cellsMobDataPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         {
@@ -78,7 +81,7 @@ public final class PreparingRunner {
             FileInputFormat.setInputPaths(job, new Path[] { cdrsInfoMobDataPath,
                                                             cellsMobDataPath });
             FileOutputFormat.setOutputPath(job, clientsBtsPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         {
@@ -89,7 +92,7 @@ public final class PreparingRunner {
             FileInputFormat.setInputPaths(job, new Path[] { cdrsInfoMobDataPath,
                                                             cellsMobDataPath });
             FileOutputFormat.setOutputPath(job, btsCommsPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         {
@@ -100,7 +103,7 @@ public final class PreparingRunner {
             FileInputFormat.setInputPaths(job, new Path[] { cdrsInfoMobDataPath,
                                                             cellsMobDataPath });
             FileOutputFormat.setOutputPath(job, cdrsNoBtsPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         {
@@ -112,7 +115,7 @@ public final class PreparingRunner {
             FileInputFormat.setInputPaths(job, new Path[] { cdrsInfoMobDataPath,
                                                             cellsMobDataPath });
             FileOutputFormat.setOutputPath(job, viTelmonthBtsPath);
-            job.waitForCompletion(true);
+            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
         
         fs.delete(cdrsInfoMobDataPath, true);

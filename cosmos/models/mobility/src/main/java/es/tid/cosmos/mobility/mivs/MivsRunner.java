@@ -3,6 +3,13 @@ package es.tid.cosmos.mobility.mivs;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+
+import es.tid.cosmos.base.mapreduce.MapJob;
+import es.tid.cosmos.base.mapreduce.ReduceJob;
 
 /**
  *
@@ -20,70 +27,78 @@ public final class MivsRunner {
         Path viTelmonthMobvars = new Path(tmpDir, "vi_telmonth_mobvars");
         {
             // Calculate individual variables by month
-            ActivityAreaByMonthJob job = new ActivityAreaByMonthJob(conf);
-            job.configure(viTelmonthBts, viTelmonthMobvars);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ActivityAreaByMonth",
+                    SequenceFileInputFormat.class, ActivityAreaReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, viTelmonthBts);
+            FileOutputFormat.setOutputPath(job, viTelmonthMobvars);
+            job.waitForCompletion(true);
         }
         
         Path viClientFuse = new Path(tmpDir, "vi_client_fuse");
         {
             // Fuse in a set all user info
-            FusionTotalVarsJob job = new FusionTotalVarsJob(conf);
-            job.configure(viTelmonthMobvars, viClientFuse);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "FusionTotalVars",
+                    SequenceFileInputFormat.class, FusionTotalVarsReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, viTelmonthMobvars);
+            FileOutputFormat.setOutputPath(job, viClientFuse);
+            job.waitForCompletion(true);
         }
 
         Path viTelmonthBtsAcc = new Path(tmpDir, "vi_telmonth_bts_acc");
         {
             // Delete months
-            DeletePeriodJob job = new DeletePeriodJob(conf);
-            job.configure(viTelmonthBts, viTelmonthBtsAcc);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            MapJob job = MapJob.create(conf, "DeletePeriod",
+                    SequenceFileInputFormat.class, DeletePeriodMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, viTelmonthBts);
+            FileOutputFormat.setOutputPath(job, viTelmonthBtsAcc);
+            job.waitForCompletion(true);
         }
 
         Path viTelmonthMobvarsAcc = new Path(tmpDir, "vi_telmonth_mobvars_acc");
         {
             // Calculate individual variables for every month
-            ActivityAreaByMonthJob job = new ActivityAreaByMonthJob(conf);
-            job.configure(viTelmonthBtsAcc, viTelmonthMobvarsAcc);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ActivityAreaByMonth",
+                    SequenceFileInputFormat.class, ActivityAreaReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, viTelmonthBtsAcc);
+            FileOutputFormat.setOutputPath(job, viTelmonthMobvarsAcc);
+            job.waitForCompletion(true);
         }
 
         {
             // Fuse in a set all user info
-            FusionTotalVarsJob job = new FusionTotalVarsJob(conf);
-            job.configure(viTelmonthMobvarsAcc, viClientFuseAcc);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "FusionTotalVars",
+                    SequenceFileInputFormat.class, FusionTotalVarsReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, viTelmonthMobvarsAcc);
+            FileOutputFormat.setOutputPath(job, viClientFuseAcc);
+            job.waitForCompletion(true);
         }
 
         if (isDebug) {
             Path viClientFuseText = new Path(tmpDir, "vi_client_fuse_text");
             {
-                IndVarsOutJob job = new IndVarsOutJob(conf);
-                job.configure(viClientFuse, viClientFuseText);
-                if (!job.waitForCompletion(true)) {
-                    throw new Exception("Failed to run " + job.getJobName());
-                }
+                ReduceJob job = ReduceJob.create(conf, "IndVarsOut",
+                        SequenceFileInputFormat.class, IndVarsOutReducer.class,
+                        SequenceFileOutputFormat.class);
+                FileInputFormat.setInputPaths(job, viClientFuse);
+                FileOutputFormat.setOutputPath(job, viClientFuseText);
+                job.waitForCompletion(true);
             }
 
             Path viClientFuseAccText = new Path(tmpDir,
                                                 "vi_client_fuse_acc_text");
             {
-                IndVarsOutAccJob job = new IndVarsOutAccJob(conf);
-                job.configure(viClientFuseAcc, viClientFuseAccText);
-                if (!job.waitForCompletion(true)) {
-                    throw new Exception("Failed to run " + job.getJobName());
-                }
+                ReduceJob job = ReduceJob.create(conf, "IndVarsOutAcc",
+                        SequenceFileInputFormat.class,
+                        IndVarsOutAccReducer.class,
+                        SequenceFileOutputFormat.class);
+                FileInputFormat.setInputPaths(job, viClientFuseAcc);
+                FileOutputFormat.setOutputPath(job, viClientFuseAccText);
+                job.waitForCompletion(true);
             }
         } else {
             fs.delete(viTelmonthMobvars, true);

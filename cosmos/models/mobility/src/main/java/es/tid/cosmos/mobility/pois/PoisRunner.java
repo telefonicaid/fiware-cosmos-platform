@@ -3,11 +3,14 @@ package es.tid.cosmos.mobility.pois;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
-import es.tid.cosmos.mobility.util.ConvertCdrToMobDataJob;
-import es.tid.cosmos.mobility.util.ConvertIntToMobDataJob;
-import es.tid.cosmos.mobility.util.ConvertNodeBtsDayToMobDataJob;
-import es.tid.cosmos.mobility.util.ExportBtsCounterToTextByTwoIntJob;
+import es.tid.cosmos.base.mapreduce.MapJob;
+import es.tid.cosmos.base.mapreduce.ReduceJob;
+import es.tid.cosmos.mobility.util.*;
 
 /**
  *
@@ -26,79 +29,90 @@ public final class PoisRunner {
         
         Path clientsBtscounterPath = new Path(tmpDirPath, "clients_btscounter");
         {
-            NodeBtsCounterJob job = new NodeBtsCounterJob(conf);
-            job.configure(clientsBtsPath, clientsBtscounterPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "NodeBtsCounter",
+                    SequenceFileInputFormat.class, NodeBtsCounterReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientsBtsPath);
+            FileOutputFormat.setOutputPath(job, clientsBtscounterPath);
+            job.waitForCompletion(true);
         }
 
         {
-            NodeMobInfoJob job = new NodeMobInfoJob(conf);
-            job.configure(clientsBtscounterPath, clientsInfoPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "NodeMobInfo",
+                    SequenceFileInputFormat.class, NodeMobInfoReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientsBtscounterPath);
+            FileOutputFormat.setOutputPath(job, clientsInfoPath);
+            job.waitForCompletion(true);
         }
 
         Path clientsInfoSpreadPath = new Path(tmpDirPath, "clients_info_spread");
         {
-            RepbtsSpreadNodebtsJob job = new RepbtsSpreadNodebtsJob(conf);
-            job.configure(clientsInfoPath, clientsInfoSpreadPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            MapJob job = MapJob.create(conf, "RepbtsSpreadNodebts",
+                    SequenceFileInputFormat.class,
+                    RepbtsSpreadNodebtsMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientsInfoPath);
+            FileOutputFormat.setOutputPath(job, clientsInfoSpreadPath);
+            job.waitForCompletion(true);
         }
 
         Path clientsInfoAggbybtsPath = new Path(tmpDirPath,
                                                 "clients_info_aggbybts");
         {
-            RepbtsAggbybtsJob job = new RepbtsAggbybtsJob(conf);
-            job.configure(clientsInfoSpreadPath, clientsInfoAggbybtsPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "RepbtsAggbybts",
+                    SequenceFileInputFormat.class, RepbtsAggbybtsReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientsInfoSpreadPath);
+            FileOutputFormat.setOutputPath(job, clientsInfoAggbybtsPath);
+            job.waitForCompletion(true);
         }
         
         Path repbtsAggbybtsMobDataPath = new Path(tmpDirPath,
                                                   "repbts_aggbybts_mob_data");
         {
-            ConvertNodeBtsDayToMobDataJob job =
-                    new ConvertNodeBtsDayToMobDataJob(conf);
-            job.configure(clientsInfoAggbybtsPath, repbtsAggbybtsMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertNodeBtsDayToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertNodeBtsDayToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientsInfoAggbybtsPath);
+            FileOutputFormat.setOutputPath(job, repbtsAggbybtsMobDataPath);
+            job.waitForCompletion(true);
         }
 
         Path cdrsNoinfoMobDataPath = new Path(tmpDirPath,
                                               "cdrs_noinfo_mob_data");
         { 
-            ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
-            job.configure(cdrsNoinfoPath, cdrsNoinfoMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertCdrToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertCdrToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, cdrsNoinfoPath);
+            FileOutputFormat.setOutputPath(job, cdrsNoinfoMobDataPath);
+            job.waitForCompletion(true);
         }
 
         Path cdrsNoBtsMobDataPath = new Path(tmpDirPath, "cdrs_nobts_mob_data");
         { 
-            ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
-            job.configure(cdrsNoBtsPath, cdrsNoBtsMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertCdrToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertCdrToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, cdrsNoBtsPath);
+            FileOutputFormat.setOutputPath(job, cdrsNoBtsMobDataPath);
+            job.waitForCompletion(true);
         }
         
         {
-            RepbtsFilterNumCommsJob job = new RepbtsFilterNumCommsJob(conf);
-            job.configure(new Path[] { repbtsAggbybtsMobDataPath,
-                                       cdrsNoinfoMobDataPath,
-                                       cdrsNoBtsMobDataPath },
-                          clientsInfoFilteredPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "RepbtsFilterNumComms",
+                    SequenceFileInputFormat.class,
+                    RepbtsFilterNumCommsReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] {
+                repbtsAggbybtsMobDataPath, cdrsNoinfoMobDataPath,
+                cdrsNoBtsMobDataPath });
+            FileOutputFormat.setOutputPath(job, clientsInfoFilteredPath);
+            job.waitForCompletion(true);
         }
         
         fs.delete(cdrsNoinfoMobDataPath, true);
@@ -107,48 +121,53 @@ public final class PoisRunner {
         Path clientsInfoFilteredMobDataPath = new Path(tmpDirPath,
                 "clients_info_filtered_mob_data");
         {
-            ConvertIntToMobDataJob job = new ConvertIntToMobDataJob(conf);
-            job.configure(clientsInfoFilteredPath,
-                          clientsInfoFilteredMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertIntToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertIntToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientsInfoFilteredPath);
+            FileOutputFormat.setOutputPath(job, clientsInfoFilteredMobDataPath);
+            job.waitForCompletion(true);
         }
         
         Path clientsInfoBtsPercPath = new Path(tmpDirPath,
                                                "clients_info_bts_perc");
         {
-            RepbtsJoinDistCommsJob job = new RepbtsJoinDistCommsJob(conf);
-            job.configure(new Path[] { repbtsAggbybtsMobDataPath,
-                                       clientsInfoFilteredMobDataPath },
-                          clientsInfoBtsPercPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "RepbtsJoinDistComms",
+                    SequenceFileInputFormat.class,
+                    RepbtsJoinDistCommsReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] {
+                repbtsAggbybtsMobDataPath, clientsInfoFilteredMobDataPath });
+            FileOutputFormat.setOutputPath(job, clientsInfoBtsPercPath);
+            job.waitForCompletion(true);
         }
         
         fs.delete(repbtsAggbybtsMobDataPath, true);
         fs.delete(clientsInfoFilteredMobDataPath, true);
 
         {
-            RepbtsGetRepresentativeBtsJob job =
-                    new RepbtsGetRepresentativeBtsJob(conf);
-            job.configure(clientsInfoBtsPercPath, clientsRepbtsPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "RepbtsGetRepresentativeBts",
+                    SequenceFileInputFormat.class,
+                    RepbtsGetRepresentativeBtsReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientsInfoBtsPercPath);
+            FileOutputFormat.setOutputPath(job, clientsRepbtsPath);
+            job.waitForCompletion(true);
         }
 
         if (isDebug) {
             Path clientsRepbtsTextPath = new Path(tmpDirPath,
                                                   "clients_repbts_text");
             {
-                ExportBtsCounterToTextByTwoIntJob job = new
-                        ExportBtsCounterToTextByTwoIntJob(conf);
-                job.configure(clientsRepbtsPath, clientsRepbtsTextPath);
-                if (!job.waitForCompletion(true)) {
-                    throw new Exception("Failed to run " + job.getJobName());
-                }
+                ReduceJob job = ReduceJob.create(conf,
+                        "ExportBtsCounterToTextByTwoInt",
+                        SequenceFileInputFormat.class,
+                        ExportBtsCounterToTextByTwoIntReducer.class,
+                        SequenceFileOutputFormat.class);
+                FileInputFormat.setInputPaths(job, clientsRepbtsPath);
+                FileOutputFormat.setOutputPath(job, clientsRepbtsTextPath);
+                job.waitForCompletion(true);
             }
         } else {
             fs.delete(clientsBtsPath, true);

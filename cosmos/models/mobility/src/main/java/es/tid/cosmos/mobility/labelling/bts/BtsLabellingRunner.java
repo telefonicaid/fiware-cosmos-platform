@@ -1,19 +1,19 @@
 package es.tid.cosmos.mobility.labelling.bts;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
+
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourReducer;
 import es.tid.cosmos.mobility.labelling.client.VectorFuseNodeDaygroupReducer;
 import es.tid.cosmos.mobility.labelling.client.VectorNormalizedReducer;
 import es.tid.cosmos.mobility.util.*;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
-
 
 /**
  *
@@ -32,7 +32,8 @@ public final class BtsLabellingRunner {
         Path btsCountsPath = new Path(tmpDirPath, "bts_counts");
         {
             ReduceJob job = ReduceJob.create(conf, "VectorFilterBts",
-                    SequenceFileInputFormat.class, VectorFilterBtsReducer.class,
+                    SequenceFileInputFormat.class,
+                    VectorFilterBtsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsCommsPath);
             FileOutputFormat.setOutputPath(job, btsCountsPath);
@@ -75,7 +76,8 @@ public final class BtsLabellingRunner {
         Path vectorBtsNormPath = new Path(tmpDirPath, "vector_bts_norm");
         {
             ReduceJob job = ReduceJob.create(conf, "VectorNormalized",
-                    SequenceFileInputFormat.class, VectorNormalizedReducer.class,
+                    SequenceFileInputFormat.class,
+                    VectorNormalizedReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorBtsPath);
             FileOutputFormat.setOutputPath(job, vectorBtsNormPath);
@@ -122,7 +124,8 @@ public final class BtsLabellingRunner {
 
         {
             ReduceJob job = ReduceJob.create(conf, "FilterBtsVector",
-                    SequenceFileInputFormat.class, FilterBtsVectorReducer.class,
+                    SequenceFileInputFormat.class,
+                    FilterBtsVectorReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
                 vectorBtsClusterSinfiltMobDataPath, btsComareaMobDataPath });
@@ -140,7 +143,7 @@ public final class BtsLabellingRunner {
                 ReduceJob job = ReduceJob.create(conf, "ExportClusterToText",
                         SequenceFileInputFormat.class,
                         ExportClusterToTextReducer.class,
-                        SequenceFileOutputFormat.class);
+                        TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, vectorBtsClusterPath);
                 FileOutputFormat.setOutputPath(job, vectorBtsClusterTextPath);
                 job.waitForCompletion(true);

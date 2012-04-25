@@ -7,6 +7,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.MapJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
@@ -82,8 +83,9 @@ public final class MivsRunner {
             Path viClientFuseText = new Path(tmpDir, "vi_client_fuse_text");
             {
                 ReduceJob job = ReduceJob.create(conf, "IndVarsOut",
-                        SequenceFileInputFormat.class, IndVarsOutReducer.class,
-                        SequenceFileOutputFormat.class);
+                        SequenceFileInputFormat.class,
+                        IndVarsOutReducer.class,
+                        TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, viClientFuse);
                 FileOutputFormat.setOutputPath(job, viClientFuseText);
                 job.waitForCompletion(true);
@@ -95,7 +97,7 @@ public final class MivsRunner {
                 ReduceJob job = ReduceJob.create(conf, "IndVarsOutAcc",
                         SequenceFileInputFormat.class,
                         IndVarsOutAccReducer.class,
-                        SequenceFileOutputFormat.class);
+                        TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, viClientFuseAcc);
                 FileOutputFormat.setOutputPath(job, viClientFuseAccText);
                 job.waitForCompletion(true);

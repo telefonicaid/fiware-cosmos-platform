@@ -7,6 +7,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.MapJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
@@ -30,7 +31,8 @@ public final class PoisRunner {
         Path clientsBtscounterPath = new Path(tmpDirPath, "clients_btscounter");
         {
             ReduceJob job = ReduceJob.create(conf, "NodeBtsCounter",
-                    SequenceFileInputFormat.class, NodeBtsCounterReducer.class,
+                    SequenceFileInputFormat.class,
+                    NodeBtsCounterReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsBtsPath);
             FileOutputFormat.setOutputPath(job, clientsBtscounterPath);
@@ -39,7 +41,8 @@ public final class PoisRunner {
 
         {
             ReduceJob job = ReduceJob.create(conf, "NodeMobInfo",
-                    SequenceFileInputFormat.class, NodeMobInfoReducer.class,
+                    SequenceFileInputFormat.class,
+                    NodeMobInfoReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsBtscounterPath);
             FileOutputFormat.setOutputPath(job, clientsInfoPath);
@@ -61,7 +64,8 @@ public final class PoisRunner {
                                                 "clients_info_aggbybts");
         {
             ReduceJob job = ReduceJob.create(conf, "RepbtsAggbybts",
-                    SequenceFileInputFormat.class, RepbtsAggbybtsReducer.class,
+                    SequenceFileInputFormat.class,
+                    RepbtsAggbybtsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoSpreadPath);
             FileOutputFormat.setOutputPath(job, clientsInfoAggbybtsPath);
@@ -164,7 +168,7 @@ public final class PoisRunner {
                         "ExportBtsCounterToTextByTwoInt",
                         SequenceFileInputFormat.class,
                         ExportBtsCounterToTextByTwoIntReducer.class,
-                        SequenceFileOutputFormat.class);
+                        TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, clientsRepbtsPath);
                 FileOutputFormat.setOutputPath(job, clientsRepbtsTextPath);
                 job.waitForCompletion(true);

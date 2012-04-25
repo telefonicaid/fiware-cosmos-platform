@@ -3,10 +3,14 @@ package es.tid.cosmos.mobility.labelling.client;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.mobility.util.ConvertCdrToMobDataJob;
-import es.tid.cosmos.mobility.util.ConvertIntToMobDataJob;
-import es.tid.cosmos.mobility.util.ExportClusterToTextJob;
+import es.tid.cosmos.base.mapreduce.ReduceJob;
+import es.tid.cosmos.mobility.util.*;
 
 /**
  *
@@ -24,33 +28,37 @@ public final class ClientLabellingRunner {
         
         Path cdrsMobDataPath = new Path(tmpDirPath, "cdrs_mob_data");
         { 
-            ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
-            job.configure(cdrsMobPath, cdrsMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertCdrToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertCdrToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, cdrsMobPath);
+            FileOutputFormat.setOutputPath(job, cdrsMobDataPath);
+            job.waitForCompletion(true);
         }
 
         Path clientsInfoFilteredMobDataPath = new Path(tmpDirPath,
                 "clients_info_filtered_mob_data");
         { 
-            ConvertIntToMobDataJob job = new ConvertIntToMobDataJob(conf);
-            job.configure(clientsInfoFilteredPath,
-                          clientsInfoFilteredMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertIntToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertIntToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientsInfoFilteredPath);
+            FileOutputFormat.setOutputPath(job, clientsInfoFilteredMobDataPath);
+            job.waitForCompletion(true);
         }
         
         Path cdrsFilteredPath = new Path(tmpDirPath, "cdrs_filtered");
         {
-            VectorFiltClientsJob job = new VectorFiltClientsJob(conf);
-            job.configure(new Path[] { cdrsMobDataPath,
-                                       clientsInfoFilteredMobDataPath },
-                          cdrsFilteredPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "VectorFiltClients",
+                    SequenceFileInputFormat.class,
+                    VectorFiltClientsReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] {
+                cdrsMobDataPath, clientsInfoFilteredMobDataPath });
+            FileOutputFormat.setOutputPath(job, cdrsFilteredPath);
+            job.waitForCompletion(true);
         }
         
         fs.delete(cdrsMobDataPath, true);
@@ -59,76 +67,83 @@ public final class ClientLabellingRunner {
         Path vectorSpreadNodedayhourPath = new Path(tmpDirPath,
                                                     "clients_info_spread");
         {
-            VectorSpreadNodedayhourJob job = new VectorSpreadNodedayhourJob(
-                    conf);
-            job.configure(cdrsFilteredPath, vectorSpreadNodedayhourPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "VectorSpreadNodedayhour",
+                    SequenceFileInputFormat.class,
+                    VectorSpreadNodedayhourReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, cdrsFilteredPath);
+            FileOutputFormat.setOutputPath(job, vectorSpreadNodedayhourPath);
+            job.waitForCompletion(true);
         }
 
         Path vectorGetNcomsNodedayhourPath = new Path(tmpDirPath,
                                                       "cliVec_numcoms");
         {
-            VectorGetNcomsNodedayhourJob job = new VectorGetNcomsNodedayhourJob(
-                    conf);
-            job.configure(vectorSpreadNodedayhourPath,
-                          vectorGetNcomsNodedayhourPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "VectorGetNcomsNodedayhour",
+                    SequenceFileInputFormat.class,
+                    VectorGetNcomsNodedayhourReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, vectorSpreadNodedayhourPath);
+            FileOutputFormat.setOutputPath(job, vectorGetNcomsNodedayhourPath);
+            job.waitForCompletion(true);
         }
 
         Path vectorCreateNodeDayhourPath = new Path(tmpDirPath, "cliVec_group");
         {
-            VectorCreateNodeDayhourJob job = new VectorCreateNodeDayhourJob(
-                    conf);
-            job.configure(vectorGetNcomsNodedayhourPath,
-                          vectorCreateNodeDayhourPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "VectorCreateNodeDayhour",
+                    SequenceFileInputFormat.class,
+                    VectorCreateNodeDayhourReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, vectorGetNcomsNodedayhourPath);
+            FileOutputFormat.setOutputPath(job, vectorCreateNodeDayhourPath);
+            job.waitForCompletion(true);
         }
 
         Path vectorFuseNodeDaygroupPath = new Path(tmpDirPath, "vector_client");
         {
-            VectorFuseNodeDaygroupJob job = new VectorFuseNodeDaygroupJob(conf);
-            job.configure(vectorCreateNodeDayhourPath,
-                          vectorFuseNodeDaygroupPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "VectorFuseNodeDaygroup",
+                    SequenceFileInputFormat.class,
+                    VectorFuseNodeDaygroupReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, vectorCreateNodeDayhourPath);
+            FileOutputFormat.setOutputPath(job, vectorFuseNodeDaygroupPath);
+            job.waitForCompletion(true);
         }
 
         Path vectorClientNormPath = new Path(tmpDirPath, "vector_client_norm");
         {
-            VectorNormalizedJob job = new VectorNormalizedJob(conf);
-            job.configure(vectorFuseNodeDaygroupPath, vectorClientNormPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "VectorNormalized",
+                    SequenceFileInputFormat.class,
+                    VectorNormalizedReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, vectorFuseNodeDaygroupPath);
+            FileOutputFormat.setOutputPath(job, vectorClientNormPath);
+            job.waitForCompletion(true);
         }
 
         {
-            ClusterClientGetMinDistanceJob job =
-                    new ClusterClientGetMinDistanceJob(conf);
-            job.configure(vectorClientNormPath, centroidsPath,
-                          vectorClientClusterPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf,
+                    "ClusterClientGetMinDistance",
+                    SequenceFileInputFormat.class,
+                    ClusterClientGetMinDistanceReducer.class,
+                    SequenceFileOutputFormat.class);
+            job.getConfiguration().set("centroids", centroidsPath.toString());
+            FileInputFormat.setInputPaths(job, vectorClientNormPath);
+            FileOutputFormat.setOutputPath(job, vectorClientClusterPath);
+            job.waitForCompletion(true);
         }
 
         if (isDebug) {
             Path vectorClientClusterTextPath = new Path(tmpDirPath,
                     "vector_client_cluster_text");
             {
-                ExportClusterToTextJob job = new ExportClusterToTextJob(conf);
-                job.configure(vectorClientClusterPath,
-                              vectorClientClusterTextPath);
-                if (!job.waitForCompletion(true)) {
-                    throw new Exception("Failed to run " + job.getJobName());
-                }
+                ReduceJob job = ReduceJob.create(conf,"ExportClusterToText",
+                        SequenceFileInputFormat.class,
+                        ExportClusterToTextReducer.class,
+                        TextOutputFormat.class);
+                FileInputFormat.setInputPaths(job, vectorClientClusterPath);
+                FileOutputFormat.setOutputPath(job, vectorClientClusterTextPath);
+                job.waitForCompletion(true);
             }
         } else {
             fs.delete(cdrsFilteredPath, true);

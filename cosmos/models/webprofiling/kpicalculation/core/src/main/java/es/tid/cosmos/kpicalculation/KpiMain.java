@@ -78,8 +78,8 @@ public class KpiMain extends Configured implements Tool {
                 conf, "Web Profiling ...", LzoTextInputFormat.class,
                 KpiCleanerMapper.class,
                 LzoProtobufB64LineOutputFormat.getOutputFormatClass(
-                WebProfilingLog.class,
-                conf));
+                    WebProfilingLog.class,
+                    conf));
         FileInputFormat.setInputPaths(cleanerJob, inputPath);
         FileOutputFormat.setOutputPath(cleanerJob, tmpPath);
         cleanerJob.waitForCompletion(EnumSet.of(CleanupOptions.DeleteOutput));
@@ -151,8 +151,8 @@ public class KpiMain extends Configured implements Tool {
         aggregationJob.setPartitionerClass(KpiPartitioner.class);
         aggregationJob.setInputFormatClass(
                 LzoProtobufB64LineInputFormat.getInputFormatClass(
-                WebProfilingLog.class,
-                aggregationJob.getConfiguration()));
+                    WebProfilingLog.class,
+                    aggregationJob.getConfiguration()));
         aggregationJob.setMapOutputValueClass(IntWritable.class);
         aggregationJob.setOutputKeyClass(Text.class);
         aggregationJob.setOutputValueClass(IntWritable.class);

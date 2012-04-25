@@ -3,31 +3,32 @@ package es.tid.cosmos.kpicalculation;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
+import java.util.EnumSet;
 
 import com.hadoop.mapreduce.LzoTextInputFormat;
+import com.mongodb.hadoop.MongoOutputFormat;
+import com.mongodb.hadoop.util.MongoConfigUtil;
 import com.twitter.elephantbird.mapreduce.input.LzoProtobufB64LineInputFormat;
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import com.twitter.elephantbird.mapreduce.output.LzoProtobufB64LineOutputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import es.tid.cosmos.base.mapreduce.BinaryKey;
-import es.tid.cosmos.base.mapreduce.SingleKey;
-import es.tid.cosmos.kpicalculation.config.KpiFeature;
+import es.tid.cosmos.base.mapreduce.*;
 import es.tid.cosmos.kpicalculation.config.KpiConfig;
-import es.tid.cosmos.kpicalculation.export.mongodb.MongoDBExporterJob;
+import es.tid.cosmos.kpicalculation.config.KpiFeature;
+import es.tid.cosmos.kpicalculation.export.mongodb.MongoDBExporterReducer;
 import es.tid.cosmos.kpicalculation.generated.data.KpiCalculationProtocol.WebProfilingLog;
 
 /**
@@ -43,7 +44,6 @@ import es.tid.cosmos.kpicalculation.generated.data.KpiCalculationProtocol.WebPro
  */
 public class KpiMain extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(KpiMain.class);
-    
     private static final URL KPI_DEFINITIONS = KpiMain.class.getResource(
             "/kpi.properties");
     private static final int NUM_ARGS = 3;
@@ -74,14 +74,15 @@ public class KpiMain extends Configured implements Tool {
         conf.addResource("kpi-filtering.xml");
 
         // Process that filters and formats input logs
-        Job job = cleanWebNavigationLogs(conf, inputPath, tmpPath);
-        if (!job.waitForCompletion(true)) {
-            throw new Exception("Failed to clean navigation logs");
-        }
-        if (!fs.deleteOnExit(tmpPath)) {
-            throw new IOException(
-                    "Could not set temp directory for automatic deletion");
-        }
+        MapJob cleanerJob = MapJob.create(
+                conf, "Web Profiling ...", LzoTextInputFormat.class,
+                KpiCleanerMapper.class,
+                LzoProtobufB64LineOutputFormat.getOutputFormatClass(
+                WebProfilingLog.class,
+                conf));
+        FileInputFormat.setInputPaths(cleanerJob, inputPath);
+        FileOutputFormat.setOutputPath(cleanerJob, tmpPath);
+        cleanerJob.waitForCompletion(EnumSet.of(CleanupOptions.DeleteOutput));
 
         KpiConfig config = new KpiConfig();
         config.read(KPI_DEFINITIONS);
@@ -89,6 +90,7 @@ public class KpiMain extends Configured implements Tool {
         for (KpiFeature features : config.getKpiFeatures()) {
             Path kpiOutputPath = outputPath.suffix("/" + timeFolder + "/"
                     + features.getName());
+
             Job aggregationJob = createAggregationJob(conf, features,
                                                       tmpPath, kpiOutputPath);
             if (!aggregationJob.waitForCompletion(true)) {
@@ -102,42 +104,22 @@ public class KpiMain extends Configured implements Tool {
                 mongoCollectionUrl += MONGO_COLLECTION_NAMESPACE_DELIMITER;
             }
             mongoCollectionUrl += features.getName();
-            MongoDBExporterJob exporterJob = new MongoDBExporterJob(conf);
-            exporterJob.configure(kpiOutputPath, mongoCollectionUrl, features);
-            if (!exporterJob.waitForCompletion(true)) {
-                throw new Exception("Failed to export " + features.getName());
-            }
+            ReduceJob exporterJob = ReduceJob.create(conf, "MongoDBExporterJob",
+                    TextInputFormat.class, MongoDBExporterReducer.class,
+                    MongoOutputFormat.class);
+            Configuration exporterConf = exporterJob.getConfiguration();
+            TextInputFormat.setInputPaths(exporterJob, kpiOutputPath);
+            MongoConfigUtil.setOutputURI(exporterConf, mongoCollectionUrl);
+            exporterConf.setStrings("fields", features.getFields());
+            exporterJob.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
         }
 
         return 0;
     }
 
-    private Job cleanWebNavigationLogs(Configuration conf, Path input,
-                                       Path output)
-            throws IOException, InterruptedException, ClassNotFoundException {
-        Job wpCleanerJob = new Job(conf, "Web Profiling ...");
-        wpCleanerJob.setNumReduceTasks(0);
-        wpCleanerJob.setJarByClass(KpiMain.class);
-        wpCleanerJob.setMapperClass(KpiCleanerMapper.class);
-        wpCleanerJob.setInputFormatClass(LzoTextInputFormat.class);
-        wpCleanerJob.setOutputKeyClass(NullWritable.class);
-        wpCleanerJob.setOutputValueClass(ProtobufWritable.class);
-        wpCleanerJob.setMapOutputKeyClass(NullWritable.class);
-        wpCleanerJob.setMapOutputValueClass(ProtobufWritable.class);
-        wpCleanerJob.setOutputFormatClass(
-                LzoProtobufB64LineOutputFormat.getOutputFormatClass(
-                        WebProfilingLog.class,
-                        wpCleanerJob.getConfiguration()));
-
-        FileInputFormat.setInputPaths(wpCleanerJob, input);
-        FileOutputFormat.setOutputPath(wpCleanerJob, output);
-
-        return wpCleanerJob;
-    }
-
     private Job createAggregationJob(Configuration conf, KpiFeature features,
                                      Path inputPath, Path outputPath)
-                                     throws IOException {
+            throws IOException {
         Job aggregationJob = new Job(conf, "Aggregation Job ..."
                 + features.getName());
 
@@ -169,8 +151,8 @@ public class KpiMain extends Configured implements Tool {
         aggregationJob.setPartitionerClass(KpiPartitioner.class);
         aggregationJob.setInputFormatClass(
                 LzoProtobufB64LineInputFormat.getInputFormatClass(
-                        WebProfilingLog.class,
-                        aggregationJob.getConfiguration()));
+                WebProfilingLog.class,
+                aggregationJob.getConfiguration()));
         aggregationJob.setMapOutputValueClass(IntWritable.class);
         aggregationJob.setOutputKeyClass(Text.class);
         aggregationJob.setOutputValueClass(IntWritable.class);
@@ -179,7 +161,7 @@ public class KpiMain extends Configured implements Tool {
         // Input and Output configuration
         FileInputFormat.setInputPaths(aggregationJob, inputPath);
         FileOutputFormat.setOutputPath(aggregationJob, outputPath);
-        
+
         return aggregationJob;
     }
 
@@ -187,7 +169,7 @@ public class KpiMain extends Configured implements Tool {
         try {
             int res = ToolRunner.run(new Configuration(), new KpiMain(), args);
             if (res != 0) {
-                throw new Exception("Uknown error");
+                throw new Exception("Unknown error");
             }
         } catch (Exception ex) {
             LOG.fatal(ex);

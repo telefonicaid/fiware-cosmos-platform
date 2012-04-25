@@ -5,7 +5,8 @@ ${shared.header("Cosmos", section="datasets")}
 <div class="toolbar">
     <ul class="subnav" data-filters="ArtButtonBar">
 	<li>
-	<a href="#" data-filters="ArtButton" class="subnav_icon cos-upload_dataset"
+	<a href="/cosmos/datasets/upload" data-filters="ArtButton"
+	   class="subnav_icon cos-upload cos-upload_dataset" target="_blank"
 	   data-icon-styles="{'width': 16, 'height': 16, 'top': 1}"
 	   >Upload new dataset</a>
 	</li>

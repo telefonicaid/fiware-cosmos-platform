@@ -21,10 +21,11 @@ script: Cosmos.js
 description: Defines Cosmos; a Hue application that extends Hue.JBrowser.
 
 authors:
-- Unknown
+- Sebastian Ortega sortega@tid.es
 
 requires:
 - JFrame/JFrame.Browser
+- fancyupload/FancyUpload3.Attach
 
 provides: [Cosmos]
 
@@ -36,14 +37,93 @@ ART.Sheet.define('window.art.browser.cosmos', {
 
 var Cosmos = new Class({
 
-	Extends: Hue.JBrowser,
+    Extends: Hue.JBrowser,
 
-	options: {
-		className: 'art browser logo_header cosmos'
-	},
+    options: {
+        className: 'art browser logo_header cosmos'
+    },
 
-	initialize: function(path, options){
-		this.parent(path || '/cosmos/', options);
-	}
+    initialize: function(path, options){
+        this.parent(path || '/cosmos/', options);
+        this.addEvent('load', this.setup.bind(this));
+    },
 
+    setup: function(view) {
+        (function() {
+            // delay to avoid "obj.CallFunction is not a function" error
+            // when communicating with the flash object
+            var uploaderNode = $(this).getElement('.cos-upload');
+            if (uploaderNode) {
+                this.upgrade_to_flash(uploaderNode);
+            }
+        }).delay(10, this);
+    },
+
+    upgrade_to_flash: function(uploaderNode) {
+        uploaderNode.target = '';
+        uploaderNode.href += '?flash_upload=1';
+        uploaderNode.addEvent('click', this.make_uploader.bind(this));
+    },
+
+    make_uploader: function() {
+        (function() {
+            var link = $('select-file')
+            var linkIdle = link.get('html')
+
+            function linkUpdate() {
+                if (!swf.uploading) return;
+                var size = link.set('html', '<span class="small">' +
+                swf.percentLoaded + '% of ' + size + '</span>');
+            }
+
+            var swf = new Swiff.Uploader({
+                path: '/static/js/ThirdParty/digitarald-fancyupload/source/Swiff.Uploader.swf',
+                url: '/cosmos/flash_upload/',
+                verbose: true,
+                queued: false,
+                multiple: false,
+                target: link,
+                instantStart: true,
+                fileSizeMax: 512 * 1024 * 1024,
+                onSelectSuccess: function(files) {
+                    this.setEnabled(false);
+                },
+                onSelectFail: function(files) {
+                    alert("No files");
+                },
+                appendCookieData: true,
+                onQueue: linkUpdate,
+                onFileComplete: function(file) {
+                    if (file.response.error) {
+                        alert("Upload of " + file + " failed");
+                    } else {
+                        var hdfs_path = JSON.decode(file.response.text, true).hdfs_path;
+                        alert("Successful upload", "Uploaded to " + hdfs_path);
+                    }
+                    file.remove();
+                    this.setEnabled(true);
+                },
+                onComplete: function() {
+                    link.set('html', linkIdle);
+                }
+            });
+
+            link.addEvents({
+                click: function() {
+                    return false;
+                },
+                mouseenter: function() {
+                    this.addClass('hover');
+                    swf.reposition();
+                },
+                mouseleave: function() {
+                    this.removeClass('hover');
+                    this.blur();
+                },
+                mousedown: function() {
+                    this.focus();
+                }
+            });
+        }).delay(100);
+    }
 });

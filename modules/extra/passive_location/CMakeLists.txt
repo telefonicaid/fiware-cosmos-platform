@@ -52,7 +52,9 @@ add_definitions(-fPIC)
 add_definitions(-Wno-strict-aliasing)
 
 #Baseline compiler flags
-set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror")
+if (NOT CMAKE_CXX_FLAGS)
+    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror")
+endif (NOT CMAKE_CXX_FLAGS)
 
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 

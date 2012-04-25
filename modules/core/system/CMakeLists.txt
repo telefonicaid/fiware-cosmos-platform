@@ -71,11 +71,14 @@ FILE( GLOB HEADERS samson/modules/${MODULE_NAME}/*.h  )
 add_definitions(-fPIC)
 
 #Baseline compiler flags
-set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror")
+if (NOT CMAKE_CXX_FLAGS)
+    set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SOURCE -Werror")
+endif (NOT CMAKE_CXX_FLAGS)
 
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
     MESSAGE("cmake: DEBUG compilation")
+    MESSAGE("Using ${CMAKE_EXE_LINKER_FLAGS} and ${CMAKE_CXX_FLAGS}")
     add_definitions(-DDEBUG -DDEBUG_$ENV{USER} -DDEBUG_${USER})
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 

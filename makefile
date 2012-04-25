@@ -23,7 +23,7 @@ endif
 
 # Repository Server
 ifndef REPO_SERVER
-REPO_SERVER=samson09
+REPO_SERVER=samson09.hi.inet
 endif
 
 DISTRO:=$(shell lsb_release -is)
@@ -33,9 +33,8 @@ ifndef CPU_COUNT
 	OS=$(shell uname -s)
 	ifeq ($(OS),Darwin)
 		CPU_COUNT:=$(shell sysctl hw.ncpu | cut -f 2 -d" ")
-		#CPU_COUNT=1
 	else
-		CPU_COUNT=$(shell cat /proc/cpuinfo | grep processor | wc -l)
+		CPU_COUNT:=$(shell cat /proc/cpuinfo | grep processor | wc -l)
 	endif
 endif
 
@@ -59,7 +58,7 @@ prepare_debug:
 
 prepare_coverage:
 	mkdir BUILD_DEBUG || true
-	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCOVERAGE=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
+	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=True -DCOVERAGE=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
 
 prepare_release_all:
 	mkdir BUILD_RELEASE || true
@@ -78,7 +77,7 @@ prepare: prepare_release prepare_debug
 i: install
 
 install_debug: prepare_debug 
-	make -C BUILD_DEBUG install
+	make -C BUILD_DEBUG install -j $(CPU_COUNT)
 	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
 	cp README $(SAMSON_HOME)/share/README.txt
 	cp modules/moduletemplate/CMakeLists.txt $(SAMSON_HOME)/share/modules/moduletemplate
@@ -183,7 +182,7 @@ debug_all: prepare_debug_all
 
 test: ctest
 
-ctest: prepare_coverage install_debug
+ctest:
 	make test -C BUILD_DEBUG ARGS="-D ExperimentalTest" || true
 	BUILD_DEBUG/apps/unitTest/unitTest --gtest_output=xml:BUILD_DEBUG/samson_test.xml || true
 

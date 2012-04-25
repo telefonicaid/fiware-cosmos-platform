@@ -1,15 +1,19 @@
 package es.tid.cosmos.mobility.labelling.bts;
 
+import es.tid.cosmos.base.mapreduce.ReduceJob;
+import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourReducer;
+import es.tid.cosmos.mobility.labelling.client.VectorFuseNodeDaygroupReducer;
+import es.tid.cosmos.mobility.labelling.client.VectorNormalizedReducer;
+import es.tid.cosmos.mobility.util.*;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourJob;
-import es.tid.cosmos.mobility.labelling.client.VectorFuseNodeDaygroupJob;
-import es.tid.cosmos.mobility.labelling.client.VectorNormalizedJob;
-import es.tid.cosmos.mobility.util.ConvertBtsToMobDataJob;
-import es.tid.cosmos.mobility.util.ConvertClusterToMobDataJob;
-import es.tid.cosmos.mobility.util.ExportClusterToTextJob;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+
 
 /**
  *
@@ -27,92 +31,103 @@ public final class BtsLabellingRunner {
         
         Path btsCountsPath = new Path(tmpDirPath, "bts_counts");
         {
-            VectorFilterBtsJob job = new VectorFilterBtsJob(conf);
-            job.configure(btsCommsPath, btsCountsPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "VectorFilterBts",
+                    SequenceFileInputFormat.class, VectorFilterBtsReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, btsCommsPath);
+            FileOutputFormat.setOutputPath(job, btsCountsPath);
+            job.waitForCompletion(true);
         }
 
         Path btsSumComsPath = new Path(tmpDirPath, "bts_sum_coms");
         {
-            VectorSumComsBtsJob job = new VectorSumComsBtsJob(conf);
-            job.configure(btsCountsPath, btsSumComsPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "VectorSumComsBts",
+                    SequenceFileInputFormat.class,
+                    VectorSumComsBtsReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, btsCountsPath);
+            FileOutputFormat.setOutputPath(job, btsSumComsPath);
+            job.waitForCompletion(true);
         }
 
         Path btsDayhourPath = new Path(tmpDirPath, "bts_dayhour");
         {
-            VectorCreateNodeDayhourJob job = new VectorCreateNodeDayhourJob(
-                    conf);
-            job.configure(btsSumComsPath, btsDayhourPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "VectorCreateNodeDayhour",
+                    SequenceFileInputFormat.class,
+                    VectorCreateNodeDayhourReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, btsSumComsPath);
+            FileOutputFormat.setOutputPath(job, btsDayhourPath);
+            job.waitForCompletion(true);
         }
 
         Path vectorBtsPath = new Path(tmpDirPath, "vector_bts");
         {
-            VectorFuseNodeDaygroupJob job = new VectorFuseNodeDaygroupJob(conf);
-            job.configure(btsDayhourPath, vectorBtsPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "VectorFuseNodeDaygroup",
+                    SequenceFileInputFormat.class,
+                    VectorFuseNodeDaygroupReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, btsDayhourPath);
+            FileOutputFormat.setOutputPath(job, vectorBtsPath);
+            job.waitForCompletion(true);
         }
 
         Path vectorBtsNormPath = new Path(tmpDirPath, "vector_bts_norm");
         {
-            VectorNormalizedJob job = new VectorNormalizedJob(conf);
-            job.configure(vectorBtsPath, vectorBtsNormPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "VectorNormalized",
+                    SequenceFileInputFormat.class, VectorNormalizedReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, vectorBtsPath);
+            FileOutputFormat.setOutputPath(job, vectorBtsNormPath);
+            job.waitForCompletion(true);
         }
 
         Path vectorBtsClusterSinfiltPath = new Path(tmpDirPath,
                 "vector_bts_cluster_sinfilt");
         {
-            ClusterBtsGetMinDistanceJob job = new ClusterBtsGetMinDistanceJob(
-                    conf);
-            job.configure(vectorBtsNormPath, centroidsPath,
-                          vectorBtsClusterSinfiltPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ClusterBtsGetMinDistance",
+                    SequenceFileInputFormat.class,
+                    ClusterBtsGetMinDistanceReducer.class,
+                    SequenceFileOutputFormat.class);
+            job.getConfiguration().set("centroids", centroidsPath.toString());
+            FileInputFormat.setInputPaths(job, vectorBtsNormPath);
+            FileOutputFormat.setOutputPath(job, vectorBtsClusterSinfiltPath);
+            job.waitForCompletion(true);
         }
 
         Path vectorBtsClusterSinfiltMobDataPath = new Path(tmpDirPath,
                 "vector_bts_cluster_sinfilt_mob_data");
         { 
-            ConvertClusterToMobDataJob job = new ConvertClusterToMobDataJob(
-                    conf);
-            job.configure(vectorBtsClusterSinfiltPath,
-                          vectorBtsClusterSinfiltMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertClusterToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertClusterToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, vectorBtsClusterSinfiltPath);
+            FileOutputFormat.setOutputPath(job,
+                                           vectorBtsClusterSinfiltMobDataPath);
+            job.waitForCompletion(true);
         }
         
         Path btsComareaMobDataPath = new Path(tmpDirPath,
                                               "bts_comarea_mob_data");
         { 
-            ConvertBtsToMobDataJob job = new ConvertBtsToMobDataJob(conf);
-            job.configure(btsComareaPath, btsComareaMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertBtsToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertBtsToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, btsComareaPath);
+            FileOutputFormat.setOutputPath(job, btsComareaMobDataPath);
+            job.waitForCompletion(true);
         }
 
         {
-            FilterBtsVectorJob job = new FilterBtsVectorJob(conf);
-            job.configure(new Path[] { vectorBtsClusterSinfiltMobDataPath,
-                                       btsComareaMobDataPath },
-                          vectorBtsClusterPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "FilterBtsVector",
+                    SequenceFileInputFormat.class, FilterBtsVectorReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] {
+                vectorBtsClusterSinfiltMobDataPath, btsComareaMobDataPath });
+            FileOutputFormat.setOutputPath(job, vectorBtsClusterPath);
+            job.waitForCompletion(true);
         }
         
         fs.delete(vectorBtsClusterSinfiltMobDataPath, true);
@@ -122,11 +137,13 @@ public final class BtsLabellingRunner {
             Path vectorBtsClusterTextPath = new Path(tmpDirPath,
                                                     "vector_bts_cluster_text");
             {
-                ExportClusterToTextJob job = new ExportClusterToTextJob(conf);
-                job.configure(vectorBtsClusterPath, vectorBtsClusterTextPath);
-                if (!job.waitForCompletion(true)) {
-                    throw new Exception("Failed to run " + job.getJobName());
-                }
+                ReduceJob job = ReduceJob.create(conf, "ExportClusterToText",
+                        SequenceFileInputFormat.class,
+                        ExportClusterToTextReducer.class,
+                        SequenceFileOutputFormat.class);
+                FileInputFormat.setInputPaths(job, vectorBtsClusterPath);
+                FileOutputFormat.setOutputPath(job, vectorBtsClusterTextPath);
+                job.waitForCompletion(true);
             }
         } else {
             fs.delete(btsCountsPath, true);

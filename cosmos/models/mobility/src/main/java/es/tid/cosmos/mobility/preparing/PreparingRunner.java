@@ -3,9 +3,15 @@ package es.tid.cosmos.mobility.preparing;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
-import es.tid.cosmos.mobility.util.ConvertCdrToMobDataJob;
-import es.tid.cosmos.mobility.util.ConvertCellToMobDataJob;
+import es.tid.cosmos.base.mapreduce.MapJob;
+import es.tid.cosmos.base.mapreduce.ReduceJob;
+import es.tid.cosmos.mobility.util.ConvertCdrToMobDataReducer;
+import es.tid.cosmos.mobility.util.ConvertCellToMobDataReducer;
 
 /**
  *
@@ -23,77 +29,90 @@ public final class PreparingRunner {
         FileSystem fs = FileSystem.get(conf);
         
         {
-            FilterCellnoinfoByCellIdJob job = new FilterCellnoinfoByCellIdJob(
-                    conf);
-            job.configure(cdrsMobPath, cdrsInfoPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            MapJob job = MapJob.create(conf, "FilterCellnoinfoByCellId",
+                    SequenceFileInputFormat.class,
+                    FilterCellnoinfoByCellIdMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, cdrsMobPath);
+            FileOutputFormat.setOutputPath(job, cdrsInfoPath);
+            job.waitForCompletion(true);
         }
         
         {
-            FilterCellnoinfoByNodeIdJob job = new FilterCellnoinfoByNodeIdJob(
-                    conf);
-            job.configure(cdrsMobPath, cdrsNoinfoPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            MapJob job = MapJob.create(conf, "FilterCellnoinfoByNodeId",
+                    SequenceFileInputFormat.class,
+                    FilterCellnoinfoByNodeIdMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, cdrsMobPath);
+            FileOutputFormat.setOutputPath(job, cdrsNoinfoPath);
+            job.waitForCompletion(true);
         }
 
         Path cdrsInfoMobDataPath = tmpPath.suffix("/cdrs_info_mob_data");
         {
-            ConvertCdrToMobDataJob job = new ConvertCdrToMobDataJob(conf);
-            job.configure(cdrsInfoPath, cdrsInfoMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertCdrToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertCdrToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, cdrsInfoPath);
+            FileOutputFormat.setOutputPath(job, cdrsInfoMobDataPath);
+            job.waitForCompletion(true);
         }
         
         Path cellsMobDataPath = tmpPath.suffix("/cells_mob_data");
         {
-            ConvertCellToMobDataJob job = new ConvertCellToMobDataJob(conf);
-            job.configure(cellsMobPath, cellsMobDataPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "ConvertCellToMobData",
+                    SequenceFileInputFormat.class,
+                    ConvertCellToMobDataReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, cellsMobPath);
+            FileOutputFormat.setOutputPath(job, cellsMobDataPath);
+            job.waitForCompletion(true);
         }
 
         {
-            JoinBtsNodeToNodeBtsJob job = new JoinBtsNodeToNodeBtsJob(conf);
-            job.configure(new Path[] { cdrsInfoMobDataPath, cellsMobDataPath },
-                          clientsBtsPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "JoinBtsNodeToNodeBts",
+                    SequenceFileInputFormat.class,
+                    JoinBtsNodeToNodeBtsReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] { cdrsInfoMobDataPath,
+                                                            cellsMobDataPath });
+            FileOutputFormat.setOutputPath(job, clientsBtsPath);
+            job.waitForCompletion(true);
         }
 
         {
-            JoinBtsNodeToBtsDayRangeJob job = new JoinBtsNodeToBtsDayRangeJob(
-                    conf);
-            job.configure(new Path[] { cdrsInfoMobDataPath, cellsMobDataPath },
-                          btsCommsPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "JoinBtsNodeToBtsDayRange",
+                    SequenceFileInputFormat.class,
+                    JoinBtsNodeToBtsDayRangeReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] { cdrsInfoMobDataPath,
+                                                            cellsMobDataPath });
+            FileOutputFormat.setOutputPath(job, btsCommsPath);
+            job.waitForCompletion(true);
         }
 
         {
-            JoinBtsNodeToCdrJob job = new JoinBtsNodeToCdrJob(conf);
-            job.configure(new Path[] { cdrsInfoMobDataPath, cellsMobDataPath },
-                          cdrsNoBtsPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf, "JoinBtsNodeToCdr",
+                    SequenceFileInputFormat.class,
+                    JoinBtsNodeToCdrReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] { cdrsInfoMobDataPath,
+                                                            cellsMobDataPath });
+            FileOutputFormat.setOutputPath(job, cdrsNoBtsPath);
+            job.waitForCompletion(true);
         }
 
         {
-            JoinBtsNodeToTelMonthAndCellJob job =
-                    new JoinBtsNodeToTelMonthAndCellJob(conf);
-            job.configure(new Path[] { cdrsInfoMobDataPath, cellsMobDataPath },
-                          viTelmonthBtsPath);
-            if (!job.waitForCompletion(true)) {
-                throw new Exception("Failed to run " + job.getJobName());
-            }
+            ReduceJob job = ReduceJob.create(conf,
+                    "JoinBtsNodeToTelMonthAndCell",
+                    SequenceFileInputFormat.class,
+                    JoinBtsNodeToTelMonthAndCellReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, new Path[] { cdrsInfoMobDataPath,
+                                                            cellsMobDataPath });
+            FileOutputFormat.setOutputPath(job, viTelmonthBtsPath);
+            job.waitForCompletion(true);
         }
         
         fs.delete(cdrsInfoMobDataPath, true);

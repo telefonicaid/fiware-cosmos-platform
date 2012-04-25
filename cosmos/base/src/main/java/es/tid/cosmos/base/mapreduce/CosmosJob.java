@@ -11,7 +11,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
@@ -46,7 +45,13 @@ public abstract class CosmosJob extends Job implements Runnable {
                 Type[] args = parameterizedType.getActualTypeArguments();
                 ArrayList<Class> retVal = new ArrayList<Class>(args.length);
                 for (Type arg : args) {
-                    retVal.add((Class)arg);
+                    if (arg instanceof Class) {
+                        retVal.add((Class)arg);
+                    } else if (arg instanceof ParameterizedType) {
+                        retVal.add((Class)((ParameterizedType)arg).getRawType());
+                    } else {
+                        throw new Exception("Unknown arg type");
+                    }
                 }
                 return retVal.toArray(new Class[0]);
             } else {

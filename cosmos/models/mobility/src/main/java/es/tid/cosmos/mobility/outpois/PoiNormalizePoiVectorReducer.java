@@ -69,7 +69,10 @@ public class PoiNormalizePoiVectorReducer extends Reducer<
         ClusterVector.Builder clusterNormCoordsBuilder =
                 ClusterVector.newBuilder(clusterDiv.getCoords());
         for (int i = 0; i < clusterDiv.getCoords().getComsCount(); i++) {
-            double coms = clusterDiv.getCoords().getComs(i) / sumValues;
+            double coms = clusterDiv.getCoords().getComs(i);
+            if (sumValues != 0) {
+                coms /= sumValues;
+            }
             clusterNormCoordsBuilder.addComs(coms);
         }
         clusterNormBuilder.setCoords(clusterNormCoordsBuilder);

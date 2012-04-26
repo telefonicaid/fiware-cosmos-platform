@@ -25,22 +25,21 @@ public class AdjAddUniqueIdPoiToPoiNewMapper extends Mapper<
     protected void map(ProtobufWritable<TwoInt> key,
             ProtobufWritable<Poi> value, Context context)
             throws IOException, InterruptedException {
-        value.setConverter(Poi.class);
-        final Poi poi = value.get();
-        ProtobufWritable<TwoInt> nodLbl = TwoIntUtil.createAndWrap(
-                poi.getNode(), poi.getLabelgroupnodebts());
-        
         key.setConverter(TwoInt.class);
         final TwoInt nodBts = key.get();
         Counter counter = context.getCounter(Counters.COUNTER_FOR_POI_ID);
         int hash = (int)TwoIntUtil.getPartition(nodBts, MAX_NUM_PARTITIONS);
-        ProtobufWritable<PoiNew> poiId = PoiNewUtil.createAndWrap(
+        value.setConverter(Poi.class);
+        final Poi poi = value.get();
+        PoiNew poiId = PoiNewUtil.create(
                 (int)(MAX_NUM_PARTITIONS * counter.getValue()) + hash,
                 poi.getNode(), poi.getBts(),
                 poi.getConfidentnodebts() == 1 ?
                         poi.getLabelgroupnodebts() : 0,
                 poi.getConfidentnodebts());
         counter.increment(1L);
-        context.write(nodLbl, poiId);
+        ProtobufWritable<TwoInt> nodLbl = TwoIntUtil.createAndWrap(
+                poi.getNode(), poiId.getLabelgroupnodebts());
+        context.write(nodLbl, PoiNewUtil.wrap(poiId));
     }
 }

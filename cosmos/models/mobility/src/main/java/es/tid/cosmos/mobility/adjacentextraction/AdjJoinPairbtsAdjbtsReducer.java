@@ -44,7 +44,7 @@ public class AdjJoinPairbtsAdjbtsReducer extends Reducer<
         if (hasAdjacentBts) {
             for (TwoInt pairPois : pairPoisList) {
                 context.write(new LongWritable(pairPois.getNum1()),
-                            TwoIntUtil.wrap(pairPois));
+                              TwoIntUtil.wrap(pairPois));
             }
         }
     }

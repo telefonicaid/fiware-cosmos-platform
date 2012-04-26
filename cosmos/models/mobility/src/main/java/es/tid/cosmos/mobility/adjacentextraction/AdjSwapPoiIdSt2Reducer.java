@@ -42,11 +42,12 @@ public class AdjSwapPoiIdSt2Reducer extends Reducer<LongWritable,
         
         for (TwoInt pairPois : pairPoisList) {
             TwoInt.Builder outputPairPois = TwoInt.newBuilder(pairPois);
-            outputPairPois.setNum2(pairIndexList.getLast().getNum2());
+            if (!pairIndexList.isEmpty()) {
+                outputPairPois.setNum2(pairIndexList.getLast().getNum2());
+            }
             if (outputPairPois.getNum1() == outputPairPois.getNum2()) {
                 continue;
-            }
-            if (outputPairPois.getNum1() > outputPairPois.getNum2()) {
+            } else if (outputPairPois.getNum1() > outputPairPois.getNum2()) {
                 long tmp = outputPairPois.getNum1();
                 outputPairPois.setNum1(outputPairPois.getNum2());
                 outputPairPois.setNum2(tmp);

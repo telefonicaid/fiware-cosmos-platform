@@ -127,8 +127,8 @@ public final class AdjacentExtractionRunner {
             job.waitForCompletion(true);
         }
         
-        long numIndicesLeft;
-        do {
+        long numIndicesLeft = 1;
+        while (numIndicesLeft > 0) {
             Path poiPairbtsIndexPath = new Path(tmpDirPath,
                                                 "poi_pairbts_index");
             {
@@ -251,16 +251,16 @@ public final class AdjacentExtractionRunner {
                 FileInputFormat.setInputPaths(job, nindSpreadPath);
                 FileOutputFormat.setOutputPath(job, numIndexPath);
                 job.waitForCompletion(true);
+                numIndicesLeft = job.getConfiguration().getLong(
+                        AdjCountIndexesReducer.NUM_INDICES_LEFT_TAG, 0);
             }
-            numIndicesLeft = conf.getLong(
-                    AdjCountIndexesReducer.NUM_INDICES_LEFT_TAG, 0);
-        } while (numIndicesLeft > 0);
+        }
         
         Path poiPoimodPath = new Path(tmpDirPath, "poi_poimod");
         {
-            ReduceJob job = ReduceJob.create(conf, "AdjSpreadTableByPoiId",
+            MapJob job = MapJob.create(conf, "AdjSpreadTableByPoiId",
                     SequenceFileInputFormat.class,
-                    AdjSpreadTableByPoiIdReducer.class,
+                    AdjSpreadTableByPoiIdMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, poisTablePath);
             FileOutputFormat.setOutputPath(job, poiPoimodPath);
@@ -269,9 +269,9 @@ public final class AdjacentExtractionRunner {
 
         Path poiIdPoiPath = new Path(tmpDirPath, "poiId_poi");
         {
-            ReduceJob job = ReduceJob.create(conf, "AdjSpreadPoisByPoiId",
+            MapJob job = MapJob.create(conf, "AdjSpreadPoisByPoiId",
                     SequenceFileInputFormat.class,
-                    AdjSpreadPoisByPoiIdReducer.class,
+                    AdjSpreadPoisByPoiIdMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, poisIdPath);
             FileOutputFormat.setOutputPath(job, poiIdPoiPath);

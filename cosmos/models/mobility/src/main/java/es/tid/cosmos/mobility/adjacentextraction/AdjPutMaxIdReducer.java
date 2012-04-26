@@ -20,7 +20,7 @@ public class AdjPutMaxIdReducer extends Reducer<LongWritable,
             Iterable<ProtobufWritable<TwoInt>> values, Context context)
             throws IOException, InterruptedException {
         TwoInt pairPois = null;
-        long max = 0L;
+        long max = Long.MIN_VALUE;
         for (ProtobufWritable<TwoInt> value : values) {
             value.setConverter(TwoInt.class);
             pairPois = value.get();

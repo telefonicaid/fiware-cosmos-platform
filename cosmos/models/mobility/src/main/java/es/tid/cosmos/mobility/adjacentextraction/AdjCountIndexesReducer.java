@@ -18,7 +18,7 @@ public class AdjCountIndexesReducer extends Reducer <LongWritable, LongWritable,
     protected void reduce(LongWritable key,
             Iterable<LongWritable> values, Context context)
             throws IOException, InterruptedException {
-        long sum = 0;
+        long sum = 0L;
         for (LongWritable value : values) {
             sum += value.get();
         }

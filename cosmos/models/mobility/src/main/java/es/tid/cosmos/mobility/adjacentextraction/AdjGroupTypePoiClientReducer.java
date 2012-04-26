@@ -29,8 +29,6 @@ public class AdjGroupTypePoiClientReducer extends Reducer<
             poiNewList.add(poiNew);
         }
         
-        key.setConverter(TwoInt.class);
-        final TwoInt twoInt = key.get();
         for (PoiNew curPoi : poiNewList) {
             for (PoiNew tempPoi : poiNewList) {
                 if (curPoi.getId() < tempPoi.getId()) {

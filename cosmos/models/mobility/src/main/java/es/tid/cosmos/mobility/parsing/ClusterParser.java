@@ -1,7 +1,6 @@
 package es.tid.cosmos.mobility.parsing;
 
 import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
-import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
 
 /**
  *

@@ -46,7 +46,7 @@ public class AdjJoinNewPoiIdReducer extends Reducer<LongWritable,
         for (long poiMod : longList) {
             for (PoiNew poi : poiNewList) {
                 PoiNew.Builder outputPoiBuilder = PoiNew.newBuilder(poi);
-                outputPoiBuilder.setId(poi.getId());
+                outputPoiBuilder.setId((int)poiMod);
                 context.write(TwoIntUtil.createAndWrap(poi.getNode(),
                                                        poi.getBts()),
                               PoiNewUtil.wrap(outputPoiBuilder.build()));

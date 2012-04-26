@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.mobility.data.MobProtocol.PoiNew;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
@@ -13,17 +13,15 @@ import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
  *
  * @author dmicol
  */
-public class AdjSpreadPoisByPoiIdReducer extends Reducer<
+public class AdjSpreadPoisByPoiIdMapper extends Mapper<
         ProtobufWritable<TwoInt>, ProtobufWritable<PoiNew>,
         LongWritable, ProtobufWritable<PoiNew>> {
     @Override
-    protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<ProtobufWritable<PoiNew>> values, Context context)
+    protected void map(ProtobufWritable<TwoInt> key,
+            ProtobufWritable<PoiNew> value, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<PoiNew> value : values) {
-            value.setConverter(PoiNew.class);
-            final PoiNew poi = value.get();
-            context.write(new LongWritable(poi.getId()), value);
-        }
+        value.setConverter(PoiNew.class);
+        final PoiNew poi = value.get();
+        context.write(new LongWritable(poi.getId()), value);
     }
 }

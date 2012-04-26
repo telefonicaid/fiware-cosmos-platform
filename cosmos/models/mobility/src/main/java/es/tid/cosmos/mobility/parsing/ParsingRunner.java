@@ -19,7 +19,7 @@ public final class ParsingRunner {
 
     public static void run(Path cdrsPath, Path cdrsMobPath,
                            Path cellsPath, Path cellsMobPath,
-                           Path pairbtsadjTxtPath, Path pairbtsAdjPath,
+                           Path adjBtsPath, Path pairbtsAdjPath,
                            Path btsVectorTxtPath, Path btsComareaPath,
                            Configuration conf) throws Exception {
         {
@@ -47,7 +47,7 @@ public final class ParsingRunner {
                     TextInputFormat.class,
                     AdjParseAdjBtsReducer.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, pairbtsadjTxtPath);
+            FileInputFormat.setInputPaths(job, adjBtsPath);
             FileOutputFormat.setOutputPath(job, pairbtsAdjPath);
             job.waitForCompletion(true);
         }

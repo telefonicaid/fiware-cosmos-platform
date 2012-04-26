@@ -12,7 +12,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
  *
  * @author dmicol
  */
-public class FilterCellnoinfoByCellIdMapper extends Mapper<LongWritable,
+public class FilterCellnoinfoMapper extends Mapper<LongWritable,
         ProtobufWritable<Cdr>, LongWritable, ProtobufWritable<Cdr>> {
     @Override
     public void map(LongWritable key, ProtobufWritable<Cdr> value,
@@ -21,6 +21,8 @@ public class FilterCellnoinfoByCellIdMapper extends Mapper<LongWritable,
         final Cdr cdr = value.get();
         if (cdr.getCellId() != 0) {
             context.write(new LongWritable(cdr.getCellId()), value);
+        } else {
+            context.write(key, value);
         }
     }
 }

@@ -29,9 +29,9 @@ public final class PreparingRunner {
         FileSystem fs = FileSystem.get(conf);
         
         {
-            MapJob job = MapJob.create(conf, "FilterCellnoinfoByCellId",
+            MapJob job = MapJob.create(conf, "FilterCellnoinfoMapper",
                     SequenceFileInputFormat.class,
-                    FilterCellnoinfoByCellIdMapper.class,
+                    FilterCellnoinfoMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsMobPath);
             FileOutputFormat.setOutputPath(job, cdrsInfoPath);
@@ -39,9 +39,9 @@ public final class PreparingRunner {
         }
         
         {
-            MapJob job = MapJob.create(conf, "FilterCellnoinfoByNodeId",
+            MapJob job = MapJob.create(conf, "FilterCellnoinfoMapper",
                     SequenceFileInputFormat.class,
-                    FilterCellnoinfoByNodeIdMapper.class,
+                    FilterCellnoinfoMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsMobPath);
             FileOutputFormat.setOutputPath(job, cdrsNoinfoPath);

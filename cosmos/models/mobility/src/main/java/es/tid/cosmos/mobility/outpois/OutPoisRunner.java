@@ -99,6 +99,7 @@ public final class OutPoisRunner {
             ReduceJob job = ReduceJob.create(conf, "VectorPoisOut",
                     SequenceFileInputFormat.class,
                     VectorPoisOutReducer.class,
+                    1,
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestIdPath);
             FileOutputFormat.setOutputPath(job, pointsOfInterestIdTxtPath);
@@ -111,6 +112,7 @@ public final class OutPoisRunner {
             ReduceJob job = ReduceJob.create(conf, "VectorOneidOut",
                     SequenceFileInputFormat.class,
                     VectorOneidOutReducer.class,
+                    1,
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorClientClusterPath);
             FileOutputFormat.setOutputPath(job, vectorCommClientTxtPath);
@@ -122,6 +124,7 @@ public final class OutPoisRunner {
             ReduceJob job = ReduceJob.create(conf, "VectorOneidOut",
                     SequenceFileInputFormat.class,
                     VectorOneidOutReducer.class,
+                    1,
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorBtsClusterPath);
             FileOutputFormat.setOutputPath(job, vectorCommBtsTxtPath);
@@ -133,6 +136,7 @@ public final class OutPoisRunner {
             ReduceJob job = ReduceJob.create(conf, "VectorNodbtsOut",
                     SequenceFileInputFormat.class,
                     VectorNodbtsOutReducer.class,
+                    1,
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorPoiClusterPath);
             FileOutputFormat.setOutputPath(job, vectorCommPoiTxtPath);

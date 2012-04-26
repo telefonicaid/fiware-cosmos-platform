@@ -85,6 +85,7 @@ public final class MivsRunner {
                 ReduceJob job = ReduceJob.create(conf, "IndVarsOut",
                         SequenceFileInputFormat.class,
                         IndVarsOutReducer.class,
+                        1,
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, viClientFuse);
                 FileOutputFormat.setOutputPath(job, viClientFuseText);
@@ -97,6 +98,7 @@ public final class MivsRunner {
                 ReduceJob job = ReduceJob.create(conf, "IndVarsOutAcc",
                         SequenceFileInputFormat.class,
                         IndVarsOutAccReducer.class,
+                        1,
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, viClientFuseAcc);
                 FileOutputFormat.setOutputPath(job, viClientFuseAccText);

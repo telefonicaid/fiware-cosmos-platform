@@ -143,6 +143,7 @@ public final class BtsLabellingRunner {
                 ReduceJob job = ReduceJob.create(conf, "ExportClusterToText",
                         SequenceFileInputFormat.class,
                         ExportClusterToTextReducer.class,
+                        1,
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, vectorBtsClusterPath);
                 FileOutputFormat.setOutputPath(job, vectorBtsClusterTextPath);

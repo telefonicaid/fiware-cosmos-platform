@@ -192,6 +192,7 @@ public final class ClientBtsLabellingRunner {
                         "ExportClusterToTextByTwoInt",
                         SequenceFileInputFormat.class,
                         ExportClusterToTextByTwoIntReducer.class,
+                        1,
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, vectorClientbtsClusterPath);
                 FileOutputFormat.setOutputPath(job,

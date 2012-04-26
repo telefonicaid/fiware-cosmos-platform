@@ -168,6 +168,7 @@ public final class PoisRunner {
                         "ExportBtsCounterToTextByTwoInt",
                         SequenceFileInputFormat.class,
                         ExportBtsCounterToTextByTwoIntReducer.class,
+                        1,
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, clientsRepbtsPath);
                 FileOutputFormat.setOutputPath(job, clientsRepbtsTextPath);

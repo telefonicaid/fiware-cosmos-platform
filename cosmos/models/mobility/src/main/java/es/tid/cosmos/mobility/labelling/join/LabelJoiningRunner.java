@@ -282,6 +282,7 @@ public final class LabelJoiningRunner {
                 ReduceJob job = ReduceJob.create(conf, "ExportPoiToText",
                         SequenceFileInputFormat.class,
                         ExportPoiToTextReducer.class,
+                        1,
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, pointsOfInterestTemp4Path);
                 FileOutputFormat.setOutputPath(job,

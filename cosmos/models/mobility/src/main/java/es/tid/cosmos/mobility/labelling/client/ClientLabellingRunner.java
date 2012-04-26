@@ -140,6 +140,7 @@ public final class ClientLabellingRunner {
                 ReduceJob job = ReduceJob.create(conf,"ExportClusterToText",
                         SequenceFileInputFormat.class,
                         ExportClusterToTextReducer.class,
+                        1,
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, vectorClientClusterPath);
                 FileOutputFormat.setOutputPath(job, vectorClientClusterTextPath);

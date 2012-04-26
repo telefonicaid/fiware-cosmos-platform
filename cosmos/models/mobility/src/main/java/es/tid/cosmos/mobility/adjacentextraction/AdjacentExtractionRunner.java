@@ -358,6 +358,7 @@ public final class AdjacentExtractionRunner {
                         "ExportPoiToTextByTwoInt",
                         SequenceFileInputFormat.class,
                         ExportPoiToTextByTwoIntReducer.class,
+                        1,
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, pointsOfInterestIdPath);
                 FileOutputFormat.setOutputPath(job, pointsOfInterestIdTextPath);

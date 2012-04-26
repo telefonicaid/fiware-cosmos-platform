@@ -266,6 +266,7 @@ public final class DetectSecondHomesRunner {
                         "ExportPoiToTextByTwoInt",
                         SequenceFileInputFormat.class,
                         ExportPoiToTextByTwoIntReducer.class,
+                        1,
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, pointsOfInterestPath);
                 FileOutputFormat.setOutputPath(job, pointsOfInterestTextPath);

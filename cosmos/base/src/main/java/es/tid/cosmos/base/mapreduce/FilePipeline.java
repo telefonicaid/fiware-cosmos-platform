@@ -133,13 +133,14 @@ public class FilePipeline implements Runnable {
     }
 
     @Override
-    public void waitForCompletion(EnumSet<CleanupOptions> options)
-            throws Exception {
+    public boolean waitForCompletion(boolean verbose,
+                                     EnumSet<CleanupOptions> options)
+            throws IOException, InterruptedException, ClassNotFoundException {
         int processedJobsCount = 0;
 
         try {
             for (CosmosJob job : this.jobs) {
-                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+                job.waitForCompletion(verbose);
                 processedJobsCount++;
             }
         } finally {
@@ -168,10 +169,19 @@ public class FilePipeline implements Runnable {
                         lastJob.getOutputFormatClass()).deleteOutput(lastJob);
             }
         }
+
+        return true;
     }
 
     @Override
     public List<CosmosJob> getJobs() {
         return new ArrayList<CosmosJob>(this.jobs);
+    }
+
+    @Override
+    public boolean waitForCompletion(boolean verbose)
+            throws IOException, InterruptedException, ClassNotFoundException {
+        return this.waitForCompletion(verbose,
+                                      EnumSet.noneOf(CleanupOptions.class));
     }
 }

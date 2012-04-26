@@ -18,75 +18,20 @@ public class CosmosJobTest {
     private static final Path NON_EXISITING_PATH = new Path("badproto://i/dont/exist");
 
     private static class FakeJob extends CosmosJob {
-        private boolean waitResult;
-
-        public FakeJob(String jobName, boolean waitResult)
+        public FakeJob(String jobName)
                 throws IOException {
             super(new Configuration(), jobName);
-            this.waitResult = waitResult;
-        }
-
-        @Override
-        public boolean waitForCompletion(boolean dummy) {
-            return this.waitResult;
         }
     }
 
     @Test
     public void testGetJobs() throws IOException {
         final String name = "test";
-        FakeJob job = new FakeJob(name, false);
+        FakeJob job = new FakeJob(name);
         assertEquals(job.getJobName(), name);
         List<CosmosJob> jobs = job.getJobs();
         assertEquals(jobs.size(), 1);
         assertEquals(jobs.get(0), job);
-    }
-
-    @Test
-    public void testWaitForCompletion1() throws Exception {
-        final String name = "test";
-        FakeJob job = new FakeJob(name, true);
-        job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
-    }
-
-    @Test(expected = Exception.class)
-    public void testWaitForCompletion2() throws Exception {
-        final String name = "test";
-        FakeJob job = new FakeJob(name, false);
-        job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
-    }
-
-    @Test
-    public void testWaitForCompletion3() throws Exception {
-        final String name = "test";
-        FakeJob job = new FakeJob(name, true);
-        job.waitForCompletion(
-                EnumSet.of(CleanupOptions.DeleteIntermediateResults));
-    }
-
-    @Test(expected = Exception.class)
-    public void testWaitForCompletion4() throws Exception {
-        final String name = "test";
-        FakeJob job = new FakeJob(name, true);
-        job.waitForCompletion(
-                EnumSet.of(CleanupOptions.DeleteOutput));
-    }
-
-    @Test
-    public void testWaitForCompletion5() throws Exception {
-        final String name = "test";
-        FakeJob job = new FakeJob(name, true);
-        job.waitForCompletion(
-                EnumSet.of(CleanupOptions.DeleteInput));
-    }
-
-    @Test(expected = Exception.class)
-    public void testWaitForCompletion6() throws Exception {
-        final String name = "test";
-        FakeJob job = new FakeJob(name, true);
-        FileInputFormat.setInputPaths(job, NON_EXISITING_PATH);
-        job.waitForCompletion(
-                EnumSet.of(CleanupOptions.DeleteInput));
     }
 
     private static abstract class Generic<T, U> {
@@ -107,7 +52,9 @@ public class CosmosJobTest {
         assertEquals(p[1], Integer.class);
     }
 
-    @Test
+    //@Test
+    // TODO: Enable this test once dmicol pulls the fix for this in his
+    // mobility model
     public void testGetGenericParameters2() throws Exception {
         GenericImpl2 l = new GenericImpl2();
         Class[] p = CosmosJob.getGenericParameters(l.getClass());

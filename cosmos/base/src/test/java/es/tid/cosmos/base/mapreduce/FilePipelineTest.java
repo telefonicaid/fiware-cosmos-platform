@@ -21,8 +21,7 @@ public class FilePipelineTest {
     private static final Path NON_EXISITING_PATH = new Path("/tmp/i/dont/exist");
 
     private static class FakeJob extends CosmosJob {
-        public FakeJob(String jobName)
-                throws IOException {
+        public FakeJob(String jobName) throws IOException {
             super(new Configuration(), jobName);
         }
     }

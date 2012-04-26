@@ -81,7 +81,7 @@ public class MapReduceJob extends CosmosJob {
         this.setOutputValueClass(outputValue);
         this.setOutputFormatClass(outputFormat);
 
-        if(numReduceTasks != null) {
+        if (numReduceTasks != null) {
             this.setNumReduceTasks(numReduceTasks);
         }
     }

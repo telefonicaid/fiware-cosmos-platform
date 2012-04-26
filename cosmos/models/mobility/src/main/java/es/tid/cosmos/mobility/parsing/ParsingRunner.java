@@ -27,7 +27,8 @@ public final class ParsingRunner {
                            Configuration conf) throws Exception {
         {
             ReduceJob job = ReduceJob.create(conf, "ParseCdrs",
-                    TextInputFormat.class, ParseCdrsReducer.class,
+                    TextInputFormat.class,
+                    ParseCdrsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsPath);
             FileOutputFormat.setOutputPath(job, cdrsMobPath);
@@ -36,7 +37,8 @@ public final class ParsingRunner {
 
         {
             ReduceJob job = ReduceJob.create(conf, "ParseCells",
-                    TextInputFormat.class, ParseCellsReducer.class,
+                    TextInputFormat.class,
+                    ParseCellsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cellsPath);
             FileOutputFormat.setOutputPath(job, cellsMobPath);
@@ -45,7 +47,8 @@ public final class ParsingRunner {
         
         {
             ReduceJob job = ReduceJob.create(conf, "AdjParseAdjBts",
-                    TextInputFormat.class, AdjParseAdjBtsReducer.class,
+                    TextInputFormat.class,
+                    AdjParseAdjBtsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pairbtsadjTxtPath);
             FileOutputFormat.setOutputPath(job, pairbtsAdjPath);
@@ -54,7 +57,8 @@ public final class ParsingRunner {
 
         {
             ReduceJob job = ReduceJob.create(conf, "BorrarGetBtsComarea",
-                    TextInputFormat.class, BorrarGetBtsComareaReducer.class,
+                    TextInputFormat.class,
+                    BorrarGetBtsComareaReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsVectorTxtPath);
             FileOutputFormat.setOutputPath(job, btsComareaPath);

@@ -46,7 +46,7 @@ public class MapJob extends CosmosJob {
         this.setInputFormatClass(inputFormat);
         this.setMapperClass(mapper);
         this.setMapOutputKeyClass(outputKey);
-        this.setMapOutputValueClass(outputKey);
+        this.setMapOutputValueClass(outputValue);
         this.setOutputKeyClass(outputKey);
         this.setOutputValueClass(outputValue);
         this.setOutputFormatClass(outputFormat);

@@ -39,12 +39,11 @@ public class AdjUpdatePoisTableReducer extends Reducer<LongWritable,
                             + mobData.getInputId());
             }
         }
-        if (pairPoisList.isEmpty()) {
-            return;
-        }
         for (TwoInt poiPoimod : poiPoimodList) {
             TwoInt.Builder outputPoiPoimod = TwoInt.newBuilder(poiPoimod);
-            outputPoiPoimod.setNum2(pairPoisList.getLast().getNum2());
+            if (!pairPoisList.isEmpty()) {
+                outputPoiPoimod.setNum2(pairPoisList.getLast().getNum2());
+            }
             context.write(new LongWritable(outputPoiPoimod.getNum2()),
                           TwoIntUtil.wrap(outputPoiPoimod.build()));
         }

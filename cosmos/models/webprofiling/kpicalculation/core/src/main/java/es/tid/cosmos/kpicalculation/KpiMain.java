@@ -82,7 +82,8 @@ public class KpiMain extends Configured implements Tool {
                     conf));
         FileInputFormat.setInputPaths(cleanerJob, inputPath);
         FileOutputFormat.setOutputPath(cleanerJob, tmpPath);
-        cleanerJob.waitForCompletion(EnumSet.of(CleanupOptions.DeleteOutput));
+        cleanerJob.waitForCompletion(true,
+                                     EnumSet.of(CleanupOptions.DeleteOutput));
 
         KpiConfig config = new KpiConfig();
         config.read(KPI_DEFINITIONS);
@@ -111,7 +112,7 @@ public class KpiMain extends Configured implements Tool {
             TextInputFormat.setInputPaths(exporterJob, kpiOutputPath);
             MongoConfigUtil.setOutputURI(exporterConf, mongoCollectionUrl);
             exporterConf.setStrings("fields", features.getFields());
-            exporterJob.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            exporterJob.waitForCompletion(true);
         }
 
         return 0;

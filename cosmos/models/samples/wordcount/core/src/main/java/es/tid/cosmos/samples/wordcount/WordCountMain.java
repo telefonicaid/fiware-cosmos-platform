@@ -1,15 +1,10 @@
 package es.tid.cosmos.samples.wordcount;
 
-import java.util.EnumSet;
-
 import com.mongodb.hadoop.MongoOutputFormat;
 import com.mongodb.hadoop.util.MongoConfigUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -18,7 +13,6 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import es.tid.cosmos.base.mapreduce.CleanupOptions;
 import es.tid.cosmos.base.mapreduce.MapReduceJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.samples.wordcount.export.mongodb.MongoDBExporterReducer;
@@ -51,7 +45,7 @@ public class WordCountMain extends Configured implements Tool {
                 TextOutputFormat.class);
         FileInputFormat.setInputPaths(wcJob, inputPath);
         FileOutputFormat.setOutputPath(wcJob, outputPath);
-        wcJob.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+        wcJob.waitForCompletion(true);
 
         if (args.length == MAX_ARGS) {
             String mongoUrl = args[2];
@@ -60,7 +54,7 @@ public class WordCountMain extends Configured implements Tool {
                     MongoDBExporterReducer.class, MongoOutputFormat.class);
             TextInputFormat.setInputPaths(exJob, outputPath);
             MongoConfigUtil.setOutputURI(exJob.getConfiguration(), mongoUrl);
-            exJob.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            exJob.waitForCompletion(true);
         }
 
         return 0;

@@ -63,10 +63,11 @@ public abstract class CosmosJob extends Job implements Runnable {
     }
 
     @Override
-    public final void waitForCompletion(EnumSet<CleanupOptions> options)
-            throws Exception {
-        if (!this.waitForCompletion(true)) {
-            throw new Exception("Failed to run " + this.getJobName());
+    public final boolean waitForCompletion(boolean verbose,
+                                           EnumSet<CleanupOptions> options)
+            throws IOException, InterruptedException, ClassNotFoundException {
+        if (!super.waitForCompletion(verbose)) {
+            throw new JobExecutionException("Failed to run " + this.getJobName());
         }
         if (options.contains(CleanupOptions.DeleteInput)) {
             Class inputFormat = this.getInputFormatClass();
@@ -90,6 +91,8 @@ public abstract class CosmosJob extends Job implements Runnable {
             }
             eraser.deleteOutput(this);
         }
+
+        return true;
     }
 
     @Override
@@ -97,5 +100,24 @@ public abstract class CosmosJob extends Job implements Runnable {
         List<CosmosJob> ret = new ArrayList<CosmosJob>();
         ret.add(this);
         return ret;
+    }
+
+    /**
+     * Same effect as calling waitForCompletion(verbose,
+     * EnumSet.noneOf(CleanupOptions.class))
+     *
+     * @param verbose
+     * @return Always returns true. If the job fails, a JobExecutionException is
+     * thrown
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws ClassNotFoundException
+     * @throws JobExecutionException
+     */
+    @Override
+    public boolean waitForCompletion(boolean verbose)
+            throws IOException, InterruptedException, ClassNotFoundException {
+        return this.waitForCompletion(verbose,
+                                      EnumSet.noneOf(CleanupOptions.class));
     }
 }

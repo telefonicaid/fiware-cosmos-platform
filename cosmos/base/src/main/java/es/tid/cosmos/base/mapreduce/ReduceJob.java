@@ -28,10 +28,24 @@ public class ReduceJob extends CosmosJob {
             Class<InputFormatClass> inputFormat, Class<ReducerClass> reducer,
             Class<OutputFormatClass> outputFormat)
             throws Exception {
+        return create(conf, jobName, inputFormat, reducer, null, outputFormat);
+    }
+
+    public static <
+            InputFormatClass extends InputFormat<InputKeyClass, InputValueClass>,
+            ReducerClass extends Reducer<InputKeyClass, InputValueClass,
+                                         OutputKeyClass, OutputValueClass>,
+            OutputFormatClass extends OutputFormat<OutputKeyClass,
+                                                   OutputValueClass>,
+            InputKeyClass, InputValueClass, OutputKeyClass, OutputValueClass>
+        ReduceJob create(Configuration conf, String jobName,
+            Class<InputFormatClass> inputFormat, Class<ReducerClass> reducer,
+            Integer numReduceTasks, Class<OutputFormatClass> outputFormat)
+            throws Exception {
         Class[] reducerClasses = getGenericParameters(reducer);
         return new ReduceJob(conf, jobName, inputFormat, reducerClasses[0],
-                             reducerClasses[1], reducer, reducerClasses[2],
-                             reducerClasses[3], outputFormat);
+                             reducerClasses[1], reducer, numReduceTasks,
+                             reducerClasses[2], reducerClasses[3], outputFormat);
     }
 
     private ReduceJob(Configuration conf, String jobName,
@@ -39,6 +53,7 @@ public class ReduceJob extends CosmosJob {
                       Class<?> inputKey,
                       Class<?> inputValue,
                       Class<? extends Reducer> reducer,
+                      Integer numReduceTasks,
                       Class<?> outputKey,
                       Class<?> outputValue,
                       Class<? extends OutputFormat> outputFormat)
@@ -53,5 +68,9 @@ public class ReduceJob extends CosmosJob {
         this.setOutputKeyClass(outputKey);
         this.setOutputValueClass(outputValue);
         this.setOutputFormatClass(outputFormat);
+
+        if (numReduceTasks != null) {
+            this.setNumReduceTasks(numReduceTasks);
+        }
     }
 }

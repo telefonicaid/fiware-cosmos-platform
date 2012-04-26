@@ -21,13 +21,20 @@ public abstract class DataEraser {
         erasers.put(FileOutputFormat.class, FileDataEraser.class);
     }
 
-    public static DataEraser getEraser(Class c) throws InstantiationException,
-                                                       IllegalAccessException {
+    public static DataEraser getEraser(Class c) {
         if (!erasers.containsKey(c)) {
             Class superClass = c.getSuperclass();
             return superClass == null ? null : getEraser(superClass);
         }
-        return erasers.get(c).newInstance();
+        try {
+            return erasers.get(c).newInstance();
+        } catch (InstantiationException ex) {
+            throw new IllegalArgumentException(
+                    "Could not create instance of eraser class", ex);
+        } catch (IllegalAccessException ex) {
+            throw new IllegalArgumentException(
+                    "Could not create instance of eraser class", ex);
+        }
     }
 
     public abstract void deleteInputs(Job job) throws IOException;

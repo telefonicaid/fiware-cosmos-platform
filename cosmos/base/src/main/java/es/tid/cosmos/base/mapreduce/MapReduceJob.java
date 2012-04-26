@@ -32,10 +32,30 @@ public class MapReduceJob extends CosmosJob {
             Class<InputFormatClass> inputFormat, Class<MapperClass> mapper,
             Class<ReducerClass> reducer, Class<OutputFormatClass> outputFormat)
             throws Exception {
+        return create(conf, jobName, inputFormat, mapper, reducer, null,
+                      outputFormat);
+    }
+
+    public static <
+            InputFormatClass extends InputFormat<InputKeyClass, InputValueClass>,
+            MapperClass extends Mapper<InputKeyClass, InputValueClass,
+                                       MapOutputKeyClass, MapOutputValueClass>,
+            ReducerClass extends Reducer<MapOutputKeyClass, MapOutputValueClass,
+                                         OutputKeyClass, OutputValueClass>,
+            OutputFormatClass extends OutputFormat<OutputKeyClass,
+                                                   OutputValueClass>,
+            InputKeyClass, InputValueClass, MapOutputKeyClass,
+            MapOutputValueClass, OutputKeyClass, OutputValueClass>
+        MapReduceJob create(Configuration conf, String jobName,
+            Class<InputFormatClass> inputFormat, Class<MapperClass> mapper,
+            Class<ReducerClass> reducer, Integer numReduceTasks,
+            Class<OutputFormatClass> outputFormat)
+            throws Exception {
         Class[] reducerClasses = getGenericParameters(reducer);
         return new MapReduceJob(conf, jobName, inputFormat, mapper,
                                 reducerClasses[0], reducerClasses[1], reducer,
-                                reducerClasses[2], reducerClasses[3], outputFormat);
+                                numReduceTasks, reducerClasses[2],
+                                reducerClasses[3], outputFormat);
     }
 
     private MapReduceJob(Configuration conf, String jobName,
@@ -44,6 +64,7 @@ public class MapReduceJob extends CosmosJob {
                          Class<?> mapOutputKey,
                          Class<?> mapOutputValue,
                          Class<? extends Reducer> reducer,
+                         Integer numReduceTasks,
                          Class<?> outputKey,
                          Class<?> outputValue,
                          Class<? extends OutputFormat> outputFormat)
@@ -59,5 +80,9 @@ public class MapReduceJob extends CosmosJob {
         this.setOutputKeyClass(outputKey);
         this.setOutputValueClass(outputValue);
         this.setOutputFormatClass(outputFormat);
+
+        if (numReduceTasks != null) {
+            this.setNumReduceTasks(numReduceTasks);
+        }
     }
 }

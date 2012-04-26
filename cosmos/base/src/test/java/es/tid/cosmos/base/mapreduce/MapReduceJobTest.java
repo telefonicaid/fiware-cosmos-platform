@@ -26,14 +26,12 @@ public class MapReduceJobTest {
     }
 
     @Test
-    public void testCreate() throws Exception {
+    public void testCreate1() throws Exception {
         final String jobName = "MapReduceJobName";
         MapReduceJob job = MapReduceJob.create(
                 new Configuration(), jobName,
-                TextInputFormat.class,
-                DummyMapper.class,
-                DummyReducer.class,
-                TextOutputFormat.class);
+                TextInputFormat.class, DummyMapper.class,
+                DummyReducer.class, TextOutputFormat.class);
         assertEquals(job.getJobName(), jobName);
         assertEquals(job.getInputFormatClass(), TextInputFormat.class);
         assertEquals(job.getMapOutputKeyClass(), NullWritable.class);
@@ -42,5 +40,24 @@ public class MapReduceJobTest {
         assertEquals(job.getOutputValueClass(), Text.class);
         assertEquals(job.getReducerClass(), DummyReducer.class);
         assertEquals(job.getMapperClass(), DummyMapper.class);
+    }
+
+    @Test
+    public void testCreate2() throws Exception {
+        final String jobName = "MapReduceJobName";
+        final int reduceTasks = 8;
+        MapReduceJob job = MapReduceJob.create(
+                new Configuration(), jobName,
+                TextInputFormat.class, DummyMapper.class,
+                DummyReducer.class, reduceTasks,  TextOutputFormat.class);
+        assertEquals(job.getJobName(), jobName);
+        assertEquals(job.getInputFormatClass(), TextInputFormat.class);
+        assertEquals(job.getMapOutputKeyClass(), NullWritable.class);
+        assertEquals(job.getMapOutputValueClass(), BSONWritable.class);
+        assertEquals(job.getOutputKeyClass(), Text.class);
+        assertEquals(job.getOutputValueClass(), Text.class);
+        assertEquals(job.getReducerClass(), DummyReducer.class);
+        assertEquals(job.getMapperClass(), DummyMapper.class);
+        assertEquals(job.getNumReduceTasks(), reduceTasks);
     }
 }

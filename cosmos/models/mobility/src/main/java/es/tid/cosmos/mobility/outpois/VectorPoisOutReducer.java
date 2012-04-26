@@ -31,8 +31,22 @@ public class VectorPoisOutReducer extends Reducer<ProtobufWritable<TwoInt>,
                     0 : poi.getLabelgroupnode());
             poiBuilder.setLabelgroupbts(poi.getConfidentbts() == 0 ?
                     0 : poi.getLabelgroupbts());
-            context.write(NullWritable.get(),
-                          new Text(PoiUtil.toString(poiBuilder.build())));
+            final Poi outputPoi = poiBuilder.build();
+            Text output = new Text(outputPoi.getId() + PoiUtil.DELIMITER
+                    + outputPoi.getNode() + PoiUtil.DELIMITER
+                    + outputPoi.getBts() + PoiUtil.DELIMITER
+                    + outputPoi.getLabelnodebts() + PoiUtil.DELIMITER
+                    + outputPoi.getLabelgroupnodebts() + PoiUtil.DELIMITER
+                    + outputPoi.getConfidentnodebts() + PoiUtil.DELIMITER
+                    + outputPoi.getInoutWeek() + PoiUtil.DELIMITER
+                    + outputPoi.getInoutWend() + PoiUtil.DELIMITER
+                    + outputPoi.getLabelnode() + PoiUtil.DELIMITER
+                    + outputPoi.getLabelgroupnode() + PoiUtil.DELIMITER
+                    + outputPoi.getConfidentnode() + PoiUtil.DELIMITER
+                    + outputPoi.getLabelbts() + PoiUtil.DELIMITER
+                    + outputPoi.getLabelgroupbts() + PoiUtil.DELIMITER
+                    + outputPoi.getConfidentbts());
+            context.write(NullWritable.get(), output);
         }
     }
 }

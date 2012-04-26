@@ -27,9 +27,15 @@ public class VectorNodbtsOutReducer extends Reducer<ProtobufWritable<TwoInt>,
         for (ProtobufWritable<Cluster> value : values) {
             value.setConverter(Cluster.class);
             final Cluster cluster = value.get();
-            context.write(NullWritable.get(), new Text(
-                    TwoIntUtil.toString(twoInt) + "|"
-                    + ClusterUtil.toString(cluster)));
+            String output =
+                    TwoIntUtil.toString(twoInt) + ClusterUtil.DELIMITER
+                    + cluster.getLabel() + ClusterUtil.DELIMITER
+                    + cluster.getLabelgroup() + ClusterUtil.DELIMITER
+                    + cluster.getConfident();
+            for (double comm : cluster.getCoords().getComsList()) {
+                output += ClusterUtil.DELIMITER + comm;
+            }
+            context.write(NullWritable.get(), new Text(output));
         }
     }
 }

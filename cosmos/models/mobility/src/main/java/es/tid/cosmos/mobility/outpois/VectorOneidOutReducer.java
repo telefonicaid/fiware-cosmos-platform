@@ -30,7 +30,7 @@ public class VectorOneidOutReducer extends Reducer<LongWritable,
                     + cluster.getLabelgroup() + ClusterUtil.DELIMITER
                     + cluster.getConfident();
             for (double comm :cluster.getCoords().getComsList()) {
-                 output += comm + ClusterUtil.DELIMITER;
+                 output += ClusterUtil.DELIMITER + comm;
             }
             context.write(NullWritable.get(), new Text(output));
         }

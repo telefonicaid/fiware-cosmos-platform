@@ -24,8 +24,15 @@ public class VectorOneidOutReducer extends Reducer<LongWritable,
         for (ProtobufWritable<Cluster> value : values) {
             value.setConverter(Cluster.class);
             final Cluster cluster = value.get();
-            context.write(NullWritable.get(), new Text(key.get() + "|"
-                    + ClusterUtil.toString(cluster)));
+            String output =
+                    key.get() + ClusterUtil.DELIMITER
+                    + cluster.getLabel() + ClusterUtil.DELIMITER
+                    + cluster.getLabelgroup() + ClusterUtil.DELIMITER
+                    + cluster.getConfident();
+            for (double comm :cluster.getCoords().getComsList()) {
+                 output += comm + ClusterUtil.DELIMITER;
+            }
+            context.write(NullWritable.get(), new Text(output));
         }
     }
 }

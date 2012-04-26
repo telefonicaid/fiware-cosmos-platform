@@ -1,7 +1,5 @@
 package es.tid.cosmos.mobility.outpois;
 
-import java.util.EnumSet;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -11,7 +9,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.CleanupOptions;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.util.*;
 
@@ -39,7 +36,7 @@ public final class OutPoisRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorClientbtsPath);
             FileOutputFormat.setOutputPath(job, vectorClientbtsSpreadPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         Path vectorClientbtsSpreadMobDataPath = new Path(tmpDirPath,
@@ -53,7 +50,7 @@ public final class OutPoisRunner {
             FileInputFormat.setInputPaths(job, vectorClientbtsSpreadPath);
             FileOutputFormat.setOutputPath(job,
                                            vectorClientbtsSpreadMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         Path pointsOfInterestIdMobDataPath = new Path(tmpDirPath,
@@ -66,7 +63,7 @@ public final class OutPoisRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestIdPath);
             FileOutputFormat.setOutputPath(job, pointsOfInterestIdMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path vectorClientpoiPath = new Path(tmpDirPath, "vector_clientpoi");
@@ -79,7 +76,7 @@ public final class OutPoisRunner {
                 vectorClientbtsSpreadMobDataPath,
                 pointsOfInterestIdMobDataPath });
             FileOutputFormat.setOutputPath(job, vectorClientpoiPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         fs.delete(vectorClientbtsSpreadMobDataPath, true);
@@ -93,7 +90,7 @@ public final class OutPoisRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorClientpoiPath);
             FileOutputFormat.setOutputPath(job, vectorPoiClusterPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path pointsOfInterestIdTxtPath = new Path(tmpDirPath,
@@ -105,7 +102,7 @@ public final class OutPoisRunner {
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestIdPath);
             FileOutputFormat.setOutputPath(job, pointsOfInterestIdTxtPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path vectorCommClientTxtPath = new Path(tmpDirPath,
@@ -117,7 +114,7 @@ public final class OutPoisRunner {
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorClientClusterPath);
             FileOutputFormat.setOutputPath(job, vectorCommClientTxtPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path vectorCommBtsTxtPath = new Path(tmpDirPath, "vectorCommBtsTxt");
@@ -128,7 +125,7 @@ public final class OutPoisRunner {
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorBtsClusterPath);
             FileOutputFormat.setOutputPath(job, vectorCommBtsTxtPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         Path vectorCommPoiTxtPath = new Path(tmpDirPath, "vectorCommPoiTxt");
@@ -139,7 +136,7 @@ public final class OutPoisRunner {
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorPoiClusterPath);
             FileOutputFormat.setOutputPath(job, vectorCommPoiTxtPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         if (!isDebug) {

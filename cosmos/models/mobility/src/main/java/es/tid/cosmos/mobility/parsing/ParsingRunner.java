@@ -1,7 +1,5 @@
 package es.tid.cosmos.mobility.parsing;
 
-import java.util.EnumSet;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -9,7 +7,6 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.CleanupOptions;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 
 /**
@@ -32,7 +29,7 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsPath);
             FileOutputFormat.setOutputPath(job, cdrsMobPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         {
@@ -42,7 +39,7 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cellsPath);
             FileOutputFormat.setOutputPath(job, cellsMobPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         {
@@ -52,7 +49,7 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pairbtsadjTxtPath);
             FileOutputFormat.setOutputPath(job, pairbtsAdjPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         {
@@ -62,7 +59,7 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsVectorTxtPath);
             FileOutputFormat.setOutputPath(job, btsComareaPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
     }
 }

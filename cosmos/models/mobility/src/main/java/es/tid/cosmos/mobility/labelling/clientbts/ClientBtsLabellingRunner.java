@@ -1,7 +1,5 @@
 package es.tid.cosmos.mobility.labelling.clientbts;
 
-import java.util.EnumSet;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -11,7 +9,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.CleanupOptions;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourReducer;
 import es.tid.cosmos.mobility.labelling.client.VectorFuseNodeDaygroupReducer;
@@ -42,7 +39,7 @@ public final class ClientBtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoPath);
             FileOutputFormat.setOutputPath(job, clientsbtsSpreadPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path clientsbtsSumPath = new Path(tmpDirPath, "clientsbts_sum");
@@ -53,7 +50,7 @@ public final class ClientBtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsbtsSpreadPath);
             FileOutputFormat.setOutputPath(job, clientsbtsSumPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path clientsbtsSumMobDataPath = new Path(tmpDirPath,
@@ -66,7 +63,7 @@ public final class ClientBtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsbtsSumPath);
             FileOutputFormat.setOutputPath(job, clientsbtsSumMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path clientsbtsSumMobDataWithInputIdPath = new Path(tmpDirPath,
@@ -80,7 +77,7 @@ public final class ClientBtsLabellingRunner {
             FileInputFormat.setInputPaths(job, clientsbtsSumMobDataPath);
             FileOutputFormat.setOutputPath(job,
                                            clientsbtsSumMobDataWithInputIdPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         fs.delete(clientsbtsSumMobDataPath, true);
@@ -95,7 +92,7 @@ public final class ClientBtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsRepbtsPath);
             FileOutputFormat.setOutputPath(job, clientsRepbtsMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path clientsRepbtsMobDataWithInputIdPath = new Path(tmpDirPath,
@@ -109,7 +106,7 @@ public final class ClientBtsLabellingRunner {
             FileInputFormat.setInputPaths(job, clientsRepbtsMobDataPath);
             FileOutputFormat.setOutputPath(job,
                                            clientsRepbtsMobDataWithInputIdPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         fs.delete(clientsRepbtsMobDataPath, true);
@@ -124,7 +121,7 @@ public final class ClientBtsLabellingRunner {
                 clientsbtsSumMobDataWithInputIdPath,
                 clientsRepbtsMobDataWithInputIdPath });
             FileOutputFormat.setOutputPath(job, clientsbtsRepbtsPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         fs.delete(clientsbtsSumMobDataWithInputIdPath, true);
@@ -138,7 +135,7 @@ public final class ClientBtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsbtsRepbtsPath);
             FileOutputFormat.setOutputPath(job, clientsbtsGroupPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         {
@@ -148,7 +145,7 @@ public final class ClientBtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsbtsGroupPath);
             FileOutputFormat.setOutputPath(job, vectorClientbtsPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path vectorClientbtsNormPath = new Path(tmpDirPath,
@@ -160,7 +157,7 @@ public final class ClientBtsLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorClientbtsPath);
             FileOutputFormat.setOutputPath(job, vectorClientbtsNormPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         {
@@ -172,7 +169,7 @@ public final class ClientBtsLabellingRunner {
             job.getConfiguration().set("centroids", centroidsPath.toString());
             FileInputFormat.setInputPaths(job, vectorClientbtsNormPath);
             FileOutputFormat.setOutputPath(job, pointsOfInterestTempPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         {
@@ -184,7 +181,7 @@ public final class ClientBtsLabellingRunner {
             job.getConfiguration().set("centroids", centroidsPath.toString());
             FileInputFormat.setInputPaths(job, vectorClientbtsNormPath);
             FileOutputFormat.setOutputPath(job, vectorClientbtsClusterPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         if (isDebug) {
@@ -199,7 +196,7 @@ public final class ClientBtsLabellingRunner {
                 FileInputFormat.setInputPaths(job, vectorClientbtsClusterPath);
                 FileOutputFormat.setOutputPath(job,
                                                vectorClientbtsClusterTextPath);
-                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+                job.waitForCompletion(true);
             }
         } else {
             fs.delete(clientsbtsSpreadPath, true);

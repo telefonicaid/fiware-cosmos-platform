@@ -1,7 +1,5 @@
 package es.tid.cosmos.mobility.labelling.secondhomes;
 
-import java.util.EnumSet;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -11,7 +9,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.CleanupOptions;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.util.*;
 
@@ -38,7 +35,7 @@ public final class DetectSecondHomesRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cellsMobPath);
             FileOutputFormat.setOutputPath(job, btsMobPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path pointsOfInterestTemp4MobDataPath = new Path(tmpDirPath,
@@ -51,7 +48,7 @@ public final class DetectSecondHomesRunner {
             FileInputFormat.setInputPaths(job, pointsOfInterestTemp4Path);
             FileOutputFormat.setOutputPath(job,
                                            pointsOfInterestTemp4MobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path btsMobMobDataPath = new Path(tmpDirPath, "bts_mob_mob_data");
@@ -62,7 +59,7 @@ public final class DetectSecondHomesRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsMobPath);
             FileOutputFormat.setOutputPath(job, btsMobMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         Path sechPoiPosPath = new Path(tmpDirPath, "sech_poi_pos");
@@ -74,7 +71,7 @@ public final class DetectSecondHomesRunner {
             FileInputFormat.setInputPaths(job, new Path[] {
                 pointsOfInterestTemp4MobDataPath, btsMobMobDataPath });
             FileOutputFormat.setOutputPath(job, sechPoiPosPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path nodbtsPoiPath = new Path(tmpDirPath, "nodbts_poi");
@@ -86,7 +83,7 @@ public final class DetectSecondHomesRunner {
             FileInputFormat.setInputPaths(job, new Path[] {
                 pointsOfInterestTemp4MobDataPath, btsMobMobDataPath });
             FileOutputFormat.setOutputPath(job, nodbtsPoiPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         fs.delete(pointsOfInterestTemp4MobDataPath, true);
@@ -101,7 +98,7 @@ public final class DetectSecondHomesRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, sechPoiPosPath);
             FileOutputFormat.setOutputPath(job, sechPoiPosMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         Path viClientFuseAccMobDataPath = new Path(tmpDirPath,
@@ -114,7 +111,7 @@ public final class DetectSecondHomesRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, viClientFuseAccPath);
             FileOutputFormat.setOutputPath(job, viClientFuseAccMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         Path sechPoiInoutPath = new Path(tmpDirPath, "vector_bts");
@@ -126,7 +123,7 @@ public final class DetectSecondHomesRunner {
             FileInputFormat.setInputPaths(job, new Path[] {
                 sechPoiPosMobDataPath, viClientFuseAccMobDataPath });
             FileOutputFormat.setOutputPath(job, sechPoiInoutPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path nodbtsInoutPath = new Path(tmpDirPath, "nodbts_inout");
@@ -138,7 +135,7 @@ public final class DetectSecondHomesRunner {
             FileInputFormat.setInputPaths(job, new Path[] {
                 sechPoiPosMobDataPath, viClientFuseAccMobDataPath });
             FileOutputFormat.setOutputPath(job, nodbtsInoutPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         fs.delete(sechPoiPosMobDataPath, true);
@@ -152,7 +149,7 @@ public final class DetectSecondHomesRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, sechPoiInoutPath);
             FileOutputFormat.setOutputPath(job, sechPotSecHomePath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path sechPotSecHomeMobDataPath = new Path(tmpDirPath,
@@ -165,7 +162,7 @@ public final class DetectSecondHomesRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, sechPotSecHomePath);
             FileOutputFormat.setOutputPath(job, sechPotSecHomeMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         Path pairsbtsAdjMobDataPath = new Path(tmpDirPath,
@@ -178,7 +175,7 @@ public final class DetectSecondHomesRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pairbtsAdjPath);
             FileOutputFormat.setOutputPath(job, pairsbtsAdjMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         Path nodbtsSechomePath = new Path(tmpDirPath, "nodbts_sechome");
@@ -190,7 +187,7 @@ public final class DetectSecondHomesRunner {
             FileInputFormat.setInputPaths(job, new Path[] {
                 sechPotSecHomeMobDataPath, pairsbtsAdjMobDataPath });
             FileOutputFormat.setOutputPath(job, nodbtsSechomePath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         fs.delete(sechPotSecHomeMobDataPath, true);
@@ -204,7 +201,7 @@ public final class DetectSecondHomesRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, nodbtsSechomePath);
             FileOutputFormat.setOutputPath(job, nodbtsSechomeUniqPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path nodbtsPoiMobDataPath = new Path(tmpDirPath, "nodbts_poi_mob_data");
@@ -215,7 +212,7 @@ public final class DetectSecondHomesRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, nodbtsPoiPath);
             FileOutputFormat.setOutputPath(job, nodbtsPoiMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path nodbtsInoutMobDataPath = new Path(tmpDirPath,
@@ -228,7 +225,7 @@ public final class DetectSecondHomesRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, nodbtsInoutPath);
             FileOutputFormat.setOutputPath(job, nodbtsInoutMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         Path nodbtsSechomeUniqMobDataPath = new Path(tmpDirPath,
@@ -241,7 +238,7 @@ public final class DetectSecondHomesRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, nodbtsSechomeUniqPath);
             FileOutputFormat.setOutputPath(job, nodbtsSechomeUniqMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         {
@@ -254,7 +251,7 @@ public final class DetectSecondHomesRunner {
                 nodbtsInoutMobDataPath,
                 nodbtsSechomeUniqMobDataPath });
             FileOutputFormat.setOutputPath(job, pointsOfInterestPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         fs.delete(nodbtsPoiMobDataPath, true);
@@ -272,7 +269,7 @@ public final class DetectSecondHomesRunner {
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, pointsOfInterestPath);
                 FileOutputFormat.setOutputPath(job, pointsOfInterestTextPath);
-                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+                job.waitForCompletion(true);
             }
         } else {
             fs.delete(btsMobPath, true);

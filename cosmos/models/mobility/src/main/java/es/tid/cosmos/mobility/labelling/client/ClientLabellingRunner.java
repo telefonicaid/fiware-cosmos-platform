@@ -1,7 +1,5 @@
 package es.tid.cosmos.mobility.labelling.client;
 
-import java.util.EnumSet;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -11,7 +9,6 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.CleanupOptions;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.util.*;
 
@@ -37,7 +34,7 @@ public final class ClientLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsMobPath);
             FileOutputFormat.setOutputPath(job, cdrsMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path clientsInfoFilteredMobDataPath = new Path(tmpDirPath,
@@ -49,7 +46,7 @@ public final class ClientLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoFilteredPath);
             FileOutputFormat.setOutputPath(job, clientsInfoFilteredMobDataPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         Path cdrsFilteredPath = new Path(tmpDirPath, "cdrs_filtered");
@@ -61,7 +58,7 @@ public final class ClientLabellingRunner {
             FileInputFormat.setInputPaths(job, new Path[] {
                 cdrsMobDataPath, clientsInfoFilteredMobDataPath });
             FileOutputFormat.setOutputPath(job, cdrsFilteredPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
         
         fs.delete(cdrsMobDataPath, true);
@@ -76,7 +73,7 @@ public final class ClientLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsFilteredPath);
             FileOutputFormat.setOutputPath(job, vectorSpreadNodedayhourPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path vectorGetNcomsNodedayhourPath = new Path(tmpDirPath,
@@ -88,7 +85,7 @@ public final class ClientLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorSpreadNodedayhourPath);
             FileOutputFormat.setOutputPath(job, vectorGetNcomsNodedayhourPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path vectorCreateNodeDayhourPath = new Path(tmpDirPath, "cliVec_group");
@@ -99,7 +96,7 @@ public final class ClientLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorGetNcomsNodedayhourPath);
             FileOutputFormat.setOutputPath(job, vectorCreateNodeDayhourPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path vectorFuseNodeDaygroupPath = new Path(tmpDirPath, "vector_client");
@@ -110,7 +107,7 @@ public final class ClientLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorCreateNodeDayhourPath);
             FileOutputFormat.setOutputPath(job, vectorFuseNodeDaygroupPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         Path vectorClientNormPath = new Path(tmpDirPath, "vector_client_norm");
@@ -121,7 +118,7 @@ public final class ClientLabellingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorFuseNodeDaygroupPath);
             FileOutputFormat.setOutputPath(job, vectorClientNormPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         {
@@ -133,7 +130,7 @@ public final class ClientLabellingRunner {
             job.getConfiguration().set("centroids", centroidsPath.toString());
             FileInputFormat.setInputPaths(job, vectorClientNormPath);
             FileOutputFormat.setOutputPath(job, vectorClientClusterPath);
-            job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+            job.waitForCompletion(true);
         }
 
         if (isDebug) {
@@ -146,7 +143,7 @@ public final class ClientLabellingRunner {
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, vectorClientClusterPath);
                 FileOutputFormat.setOutputPath(job, vectorClientClusterTextPath);
-                job.waitForCompletion(EnumSet.noneOf(CleanupOptions.class));
+                job.waitForCompletion(true);
             }
         } else {
             fs.delete(cdrsFilteredPath, true);

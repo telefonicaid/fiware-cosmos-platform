@@ -96,9 +96,10 @@ public abstract class CosmosJob extends Job {
         for (CosmosJob dependency : this.dependencies) {
             dependency.waitForCompletion(verbose);
         }
-        if (!super.waitForCompletion(verbose)) {
+        if (!this.callSuperWaitForCompletion(verbose)) {
             throw new JobExecutionException("Failed to run " + this.getJobName());
         }
+        this.submitted = true;
 
         if (this.deleteOutputOnExit) {
             Class outputFormat = this.getOutputFormatClass();
@@ -130,8 +131,24 @@ public abstract class CosmosJob extends Job {
             throw new IllegalStateException("Cannot submit a job that has"
                     + " dependencies. Please use waitForCompletion");
         }
-        super.submit();
+        this.callSuperSubmit();
         this.submitted = true;
+    }
+
+    /**
+     * This is a test hook. Please do not override unless you are a test class
+     */
+    protected void callSuperSubmit() throws IOException, InterruptedException,
+                                            ClassNotFoundException {
+        super.submit();
+    }
+
+    /**
+     * This is a test hook. Please do not override unless you are a test class
+     */
+    protected boolean callSuperWaitForCompletion(boolean verbose)
+            throws IOException, InterruptedException, ClassNotFoundException {
+        return super.waitForCompletion(verbose);
     }
 
     private void internalSubmit() throws IOException, InterruptedException,
@@ -140,12 +157,20 @@ public abstract class CosmosJob extends Job {
             for (CosmosJob dependency : this.dependencies) {
                 dependency.internalSubmit();
             }
-            super.submit();
+            this.callSuperSubmit();
             this.submitted = true;
         }
     }
 
     public void addDependentJob(CosmosJob job) {
+        if(this.submitted) {
+            throw new IllegalStateException("Cannot add a dependent job to a"
+                    + "job if that job has been already submitted");
+        }
+        if(job.equals(this)) {
+            throw new IllegalStateException("Cannot add a job to its own"
+                    + "dependent job list.");
+        }
         this.dependencies.add(job);
     }
 }

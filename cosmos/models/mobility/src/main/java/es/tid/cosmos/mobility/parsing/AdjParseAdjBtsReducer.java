@@ -21,8 +21,14 @@ public class AdjParseAdjBtsReducer extends Reducer<LongWritable, Text,
     protected void reduce(LongWritable key, Iterable<Text> values,
             Context context) throws IOException, InterruptedException {
         for (Text value : values) {
-            AdjacentParser parser = new AdjacentParser(value.toString());
-            context.write(TwoIntUtil.wrap(parser.parse()), NullWritable.get());
+            TwoInt adjBts;
+            try {
+                adjBts = new AdjacentParser(value.toString()).parse();
+            } catch (Exception ex) {
+                context.getCounter(Counters.INVALID_LINES).increment(1L);
+                continue;
+            }
+            context.write(TwoIntUtil.wrap(adjBts), NullWritable.get());
         }
     }
 }

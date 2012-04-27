@@ -20,7 +20,13 @@ public class BorrarGetBtsComareaReducer extends Reducer<LongWritable, Text,
     protected void reduce(LongWritable key, Iterable<Text> values,
             Context context) throws IOException, InterruptedException {
         for (Text value : values) {
-            Bts bts = new BtsParser(value.toString()).parse();
+            Bts bts;
+            try {
+                bts = new BtsParser(value.toString()).parse();
+            } catch (Exception ex) {
+                context.getCounter(Counters.INVALID_LINES).increment(1L);
+                continue;
+            }
             context.write(new LongWritable(bts.getPlaceId()),
                           BtsUtil.wrap(bts));
         }

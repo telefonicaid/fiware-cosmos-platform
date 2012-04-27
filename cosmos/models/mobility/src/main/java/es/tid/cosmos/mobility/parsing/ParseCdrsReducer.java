@@ -27,10 +27,15 @@ public class ParseCdrsReducer extends Reducer<LongWritable, Text, LongWritable,
     public void reduce(LongWritable key, Iterable<Text> values, Context context)
             throws IOException, InterruptedException {
         for (Text value : values) {
-            ProtobufWritable<Cdr> cdr =
-                    CdrUtil.wrap(CdrUtil.parse(value.toString()));
-            this.userId.set(cdr.get().getUserId());
-            context.write(this.userId, cdr);
+            Cdr cdr;
+            try {
+                cdr = new CdrParser(value.toString()).parse();
+            } catch (Exception ex) {
+                context.getCounter(Counters.INVALID_LINES).increment(1L);
+                continue;
+            }
+            this.userId.set(cdr.getUserId());
+            context.write(this.userId, CdrUtil.wrap(cdr));
         }
     }
 }

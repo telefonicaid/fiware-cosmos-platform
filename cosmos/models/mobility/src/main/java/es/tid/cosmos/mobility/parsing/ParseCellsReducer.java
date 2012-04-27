@@ -27,10 +27,15 @@ public class ParseCellsReducer extends Reducer<LongWritable, Text, LongWritable,
     public void reduce(LongWritable key, Iterable<Text> values, Context context)
             throws IOException, InterruptedException {
         for (Text value : values) {
-            ProtobufWritable<Cell> cell =
-                    CellUtil.wrap(new CellParser(value.toString()).parse());
-            this.cellId.set(cell.get().getCellId());
-            context.write(this.cellId, cell);
+            Cell cell;
+            try {
+                cell = new CellParser(value.toString()).parse();
+            } catch (Exception ex) {
+                context.getCounter(Counters.INVALID_LINES).increment(1L);
+                continue;
+            }
+            this.cellId.set(cell.getCellId());
+            context.write(this.cellId, CellUtil.wrap(cell));
         }
     }
 }

@@ -43,41 +43,42 @@
 
 #include "samson/network/NetworkInterface.h"      // samson::NetworkInterface
 
+#include "samson/Delilah/WorkerCommandDelilahComponent.h"
+
 #include "samson/worker/WorkerCommand.h"          // samson::stream::WorkerCommand
 #include "samson/worker/SamsonWorker.h"           // Own interfce
 
+extern size_t delilah_random_code;
+
 namespace samson {
     
-
-
-
-#pragma mark
     
     /* ****************************************************************************
      *
      * Constructor
      */
+    
     SamsonWorker::SamsonWorker( NetworkInterface* _network )
     {
         network = _network;
         
+        // Auto-client init in first REST connection
+        delilah = NULL;
+        
         // Init the stream manager
         streamManager = new stream::StreamManager(this);
         LM_T(LmtCleanup, ("Created streamManager: %p", streamManager));
-
+        
         // Init worker command manager
         workerCommandManager = new WorkerCommandManager(this);
         LM_T(LmtCleanup, ("Created workerCommandManager: %p", workerCommandManager));
         
-        // Get initial time
-        gettimeofday(&init_time, NULL);
-                
         // Set me as the packet receiver interface
         network->setReceiver(this);
-
+        
         // Random initialization
         srand( time(NULL));
-                
+        
         // Listen this notification to send packets
         listen( notification_samson_worker_send_packet );
         
@@ -96,17 +97,16 @@ namespace samson {
             int check_finish_tasks_period = samson::SamsonSetup::shared()->getInt("worker.period_check_finish_tasks" );
             engine::Notification *notification = new engine::Notification(notification_samson_worker_check_finish_tasks);
             engine::Engine::shared()->notify( notification, check_finish_tasks_period );
-            
         }
-        
         
     }
     
-        
+    
     /* ****************************************************************************
      *
      * SamsonWorker::receive -
      */
+    
     void SamsonWorker::receive( Packet* packet )
     {
         LM_T(LmtNetworkNodeMessages, ("SamsonWorker received %s " , packet->str().c_str()));
@@ -148,7 +148,7 @@ namespace samson {
                     size_t worker_id = packet->message->network_notification().disconnected_delilah_id();
                     LM_M(( "Disconnected delilah %lu\n", worker_id ));
                 }
-
+                
             }
             
             return;
@@ -177,7 +177,7 @@ namespace samson {
                 
                 return;
             }
-
+            
             // Get a pointer to the buffer ( retained inside packet )
             engine::Buffer* buffer = packet->getBuffer();
             
@@ -213,7 +213,7 @@ namespace samson {
         // --------------------------------------------------------------------
         // pop messages
         // --------------------------------------------------------------------
-             
+        
         if( msgCode == Message::PopQueue )
         {
             
@@ -259,8 +259,8 @@ namespace samson {
         
     }
     
-
-
+    
+    
     // Receive notifications
     void SamsonWorker::notify( engine::Notification* notification )
     {
@@ -273,11 +273,11 @@ namespace samson {
             // Get vector of connected delilahs
             std::vector<size_t> delilahs = network->getDelilahIds();
             std::vector<size_t> workers  = network->getWorkerIds();
-
+            
             // Send this message to all delilahs
             for ( size_t i = 0 ; i < delilahs.size() ; i++ )
             {
-
+                
                 Packet* p  = new Packet( Message::StatusReport );
                 
                 // This message is not critical - to be thrown away if worker not connected
@@ -317,13 +317,13 @@ namespace samson {
             // Collect some information and print status...
             int num_processes = engine::ProcessManager::shared()->public_num_proccesses;
             int max_processes = engine::ProcessManager::shared()->public_max_proccesses;
-
+            
             size_t used_memory = engine::MemoryManager::shared()->public_used_memory;
             size_t max_memory = engine::MemoryManager::shared()->public_max_memory;
-
+            
             size_t disk_read_rate = (size_t) engine::DiskManager::shared()->get_rate_in();
             size_t disk_write_rate = (size_t) engine::DiskManager::shared()->get_rate_out();
-
+            
             size_t network_read_rate = (size_t) network->get_rate_in();
             size_t network_write_rate = (size_t) network->get_rate_out();
             
@@ -336,7 +336,7 @@ namespace samson {
                   , au::str( network_read_rate , "Bs" ).c_str()
                   , au::str( network_write_rate , "Bs" ).c_str()
                   ));
-
+            
         }
         else if( notification->isName( notification_samson_worker_send_packet ) )
         {
@@ -363,275 +363,171 @@ namespace samson {
             LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
     }
     
-
-
-/* ****************************************************************************
-*
-* toUTF8 - 
-*/
-static char* toUTF8(char* in, size_t* outLenP)
-{
-    static iconv_t  icDesc = (iconv_t) -1;
-
-    if (icDesc == (iconv_t) -1)
+    
+    
+    /* ****************************************************************************
+     *
+     * toUTF8 - 
+     */
+    static char* toUTF8(char* in, size_t* outLenP)
     {
-        icDesc   = iconv_open("UTF-8", "ISO-8859-1");
+        static iconv_t  icDesc = (iconv_t) -1;
+        
         if (icDesc == (iconv_t) -1)
         {
-            LM_E(("error opening utf8 converter: %s", strerror(errno)));
-            return strdup("error opening utf8 converter");
-        }
-    }
-
-
-    int             outSize      = 4 * strlen(in);
-    char*           out          = (char*) calloc(1, outSize);
-    char*           outStart     = out;
-    size_t          outbytesLeft = outSize;
-    size_t          inbytesLeft  = strlen(in);
-    int             nb           = 0;
-
-    LM_T(LmtRest, ("Converting string of %d bytes to utf8", strlen(in)));
-    nb = iconv(icDesc, (char**) &in, &inbytesLeft, (char**) &out, &outbytesLeft);
-    if (nb == -1)
-    {
-        free((void*) outStart);
-        LM_RE(NULL, ("iconv: %s", strerror(errno)));
-    }
-
-    LM_T(LmtRest, ("Got a utf8 string of %d bytes as result", outSize - outbytesLeft));
-    nb = outSize - outbytesLeft;
-    if (outLenP != NULL)
-        *outLenP = nb;
-
-    return outStart;
-}
-
-
-static bool sanityCheck(const char* s)
-{
-    if ((s == NULL) || (s[0] == 0))
-        return false;
-
-    if (s[0] != '/')
-        return false;
-
-    if (strlen(s) < strlen("/samson/X"))
-        return false;
-
-    return true;
-}
-
-
-
-//
-// SamsonWorker::getRESTInformation - 
-//
-std::string SamsonWorker::getRESTInformation(::std::string in)
-{
-    unsigned short int        http_state = 200;  // be optimistic and assume all is ok :)
-    std::ostringstream        header;
-    std::ostringstream        data;
-    std::string               jsonSuffix = ".json";
-    std::string               xmlSuffix  = ".xml";
-    std::string               format     = "xml"; // Default value
-    bool                      saneInput;
-    bool                      doDie      = false;
-    std::vector<std::string>  path_components;
-
-
-    LM_T(LmtRest, ("Incoming REST request: '%s'", in.c_str()));
-
-    saneInput = sanityCheck(in.c_str());
-    if (saneInput == true)
-    {
-        if ((in.length() >= jsonSuffix.length()) && (in.substr(in.length() - jsonSuffix.length()) == jsonSuffix))
-        {
-            format = "json";
-            in     = in.substr(0, in.length() - jsonSuffix.length());
-        }
-        else if ((in.length() >= xmlSuffix.length()) && (in.substr(in.length() - xmlSuffix.length()) == xmlSuffix))
-        {
-            format = "xml";
-            in     = in.substr(0, in.length() - xmlSuffix.length());
-        }
-    }
-
-    if (format == "xml")
-    {
-        data << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-        data << "<!-- SAMSON Rest interface -->\n";
-        data << "<samson>\n";
-    }
-    else
-    {
-        data << "{\n";
-    }
-
-    if (saneInput == false)
-    {
-        if (format == "xml")
-            data << "  <error>Bad REST Request '" << in << "'</error>";
-        else
-            data << "  \"error\" : \"Bad REST Request '" << in << "'\"\n";
-
-        goto afterTreatment;
-    }
-
-    // Get the path components
-    path_components = au::split( in , '/' );
-
-    if ((path_components.size() < 2) || (path_components[0] != "samson"))
-    {
-        http_state = 400;
-
-        if (format == "xml")
-            au::xml_simple(data, "message", "Error. Only /samson/path requests are valid");
-        else
-            data << "  \"error\" : \"Only /samson/path requests are valid\"\n";
-    }
-    else if (path_components[1] == "version")
-    {
-        if (format == "xml")
-            au::xml_simple(data, "version", au::str("SAMSON v %s" , SAMSON_VERSION ) );
-        else
-            data << "  \"version\" : \"" << "SAMSON v " << SAMSON_VERSION << "\"\n";
-    }
-    else if (path_components[1] == "die")
-    {
-        doDie = true;
-
-        if (format == "xml")
-            au::xml_simple(data, "die", "OK, I die");
-        else
-            data << "  \"die\" : \"" << "OK, I die" << "\"\n";
-    }
-    else if (path_components[1] == "utftest")
-    {
-        char  test[32];
-        int   ix = 0;
-
-        memset(test, 0, 32);
-        test[ix++] = '-';
-        test[ix++] = 0xA2;
-        test[ix++] = 0xA3;
-        test[ix++] = 0xA4;
-        test[ix++] = '-';
-        test[ix++] = 0;
-        
-        if (format == "xml")
-            au::xml_simple(data, "utf8", au::str(test));
-        else
-            data << "  \"utf8\" : \"" << test << "\"";
-    }
-    else if( path_components[1] == "state" )  /* /samson/state/queue/key */
-    {
-        char redirect[512];
-        
-        redirect[0] = 0;
-        if (path_components.size() < 4)
-        {
-            http_state = 400;
-
-            if (format == "xml")
-                au::xml_simple(data, "format_error", au::str("correct format: /samson/state/queue/key"));
-            else
-                data << "  \"format_error\" : \"correct format: /samson/state/queue/key\"";
-        }
-        else
-        {
-            bool         ok     = true;
-            std::string  result = streamManager->getState(path_components[2], path_components[3].c_str(), redirect, sizeof(redirect), &ok, format);
-
-            if (ok == false)
+            icDesc   = iconv_open("UTF-8", "ISO-8859-1");
+            if (icDesc == (iconv_t) -1)
             {
-                if (format == "xml")
-                    au::xml_simple(data, "error", result);
-                else
-                    data << "  \"error\" : \"" << result << "\"\n";
-            }
-            else
-            {
-               if (format == "xml")
-                   data << "<message>\n" << result << "</message>";
-               else
-                  data << result;
+                LM_E(("error opening utf8 converter: %s", strerror(errno)));
+                return strdup("error opening utf8 converter");
             }
         }
         
-        if (redirect[0] != 0)
+        
+        int             outSize      = 4 * strlen(in);
+        char*           out          = (char*) calloc(1, outSize);
+        char*           outStart     = out;
+        size_t          outbytesLeft = outSize;
+        size_t          inbytesLeft  = strlen(in);
+        int             nb           = 0;
+        
+        LM_T(LmtRest, ("Converting string of %d bytes to utf8", strlen(in)));
+        nb = iconv(icDesc, (char**) &in, &inbytesLeft, (char**) &out, &outbytesLeft);
+        if (nb == -1)
         {
-            LM_T(LmtRest, ("redirecting to '%s'", redirect));
-            
-            header << "HTTP/1.1 302 Found\n";
-            header << "Location:   " << redirect << "/samson/state/" << path_components[2] << "/" << path_components[3].c_str() << "\n";
-            header << "Content-Type:   application/txt; charset=utf-8\n";
-            header << "Content-Length: " << 0 << "\n";
-            header << "\n";
-            header << "\n";
-            
-            std::ostringstream output;
-            output << header.str();
-            return output.str();
+            free((void*) outStart);
+            LM_RE(NULL, ("iconv: %s", strerror(errno)));
         }
+        
+        LM_T(LmtRest, ("Got a utf8 string of %d bytes as result", outSize - outbytesLeft));
+        nb = outSize - outbytesLeft;
+        if (outLenP != NULL)
+            *outLenP = nb;
+        
+        return outStart;
     }
-    else if( path_components[1] == "queue" ) 
+    
+    
+    static bool sanityCheck(const char* s)
     {
-        char redirect[512];
-            
-        redirect[0] = 0;
-
-        if (path_components.size() < 4)
-        {
-            http_state = 400;
-
-            if (format == "xml")
-                au::xml_simple(data, "format_error", au::str("correct format: /samson/queue/<queue_name>/<key>" ) );
-            else
-                data << "  \"format_error\" : \"correct format: /samson/queue/<queue_name>/<key>\"\n";
-        }
+        if ((s == NULL) || (s[0] == 0))
+            return false;
+        
+        if (s[0] != '/')
+            return false;
+        
+        if (strlen(s) < strlen("/samson/X"))
+            return false;
+        
+        return true;
+    }
+    
+    std::string getFormatedElement( std::string name , std::string value , std::string& format )
+    {
+        std::ostringstream output;
+        if (format == "xml")
+            au::xml_simple(output, name, value );
+        else if( format == "json" )
+            au::json_simple(output, name, value );
+        else if( format == "html" )
+            output << "<h1>" << name << "</h1>" << value;
         else
-        {
-            bool         ok     = true;
-            std::string  result = streamManager->getState(path_components[2] , path_components[3].c_str(), redirect, sizeof(redirect), &ok, format);
-
-            if (ok == false)
-            {
-                if (format == "xml")
-                    au::xml_simple(data, "message", result);
-                else
-                    data << "  \"error\" : \"" << result << "\"\n";
-            }
-            else
-            {
-               if (format == "xml")
-                   data << "<message>\n" << result << "</message>";
-               else
-                  data << result;
-            }
-        }
-
-        if (redirect[0] != 0)
-        {
-            LM_T(LmtRest, ("redirecting to '%s'", redirect));
-                    
-            header << "HTTP/1.1 302 Found\n";
-            header << "Location:   " << redirect << "/samson/queue/" << path_components[2] << "/" << path_components[3].c_str() << "\n";
-            header << "Content-Type:   application/txt; charset=utf-8\n";
-            header << "Content-Length: " << 0 << "\n";
-            header << "\n";
-            header << "\n";
-
-            std::ostringstream output;
-            output << header.str();
-            return output.str();
-        }
+            output << name << ":\n" << value;
+        
+        return output.str();
     }
-    else if (path_components[1] == "cluster" ) /* /samson/logging */
+    
+    std::string getFormatedError( std::string message , std::string& format )
     {
-        network->getInfo(data, "cluster", format);
+        return  getFormatedElement( "error" , message , format );
     }
-    else if (path_components[1] == "logging" )  
+    
+    void SamsonWorker::getRESTInformationFromDelilahCommand( std::ostringstream &data, std::string command , std::string &format )
+    {
+        // Create client if not created
+        if( !delilah )
+        {
+            delilah_random_code = au::code64_rand();
+            delilah = new Delilah();
+        }
+        
+        // Connect delilah if not connected
+        if( !delilah->isConnected() )
+        {
+            au::ErrorManager error;
+            delilah->delilah_connect("rest", "localhost", 1234, "anonymous", "anonymous", &error);
+            
+            if( error.isActivated() )
+            {
+                data << getFormatedError( au::str("Error connecting rest client (%s)" , error.getMessage().c_str() ) , format );
+                return;
+            }
+        }
+        
+        // Wait for a fully connected client
+        {
+            au::Cronometer c;
+            while( !delilah->isConnectionReady() )
+            {
+                usleep(10000);
+                if( c.diffTimeInSeconds() > 0.5 )
+                {
+                    data << getFormatedError( "Timeout connecting REST client" , format );
+                    return;
+                }
+            }
+        }
+        
+        // Sent the command
+        size_t command_id = delilah->sendWorkerCommand( command , NULL );
+        
+        // Wait for the command to finish
+        {
+            au::Cronometer c;
+            while( delilah->isActive(command_id) )
+            {
+                usleep(10000);
+                if( c.diffTimeInSeconds() > 1 )
+                {
+                    data << getFormatedError( au::str( "Timeout waiting response from REST client (task %lu)" , command_id ) , format );
+                    return;
+                }
+            }
+        }
+        
+        // Recover information
+        WorkerCommandDelilahComponent* component = (WorkerCommandDelilahComponent*) delilah->getComponent( command_id );
+        if( !component )
+        {
+            data << getFormatedError( "Internal error recovering answer from REST client" , format );
+            return;
+        }
+        
+        // Recover table from component
+        au::tables::Table* table = component->getMainTable();
+        
+        if( !table )
+        {
+            data << getFormatedError( "No content in answer from REST client" , format );
+            return;
+        }
+        
+        std::string output;
+        
+        if( format == "xml" )
+            data << table->str_xml();
+        else if( format == "json" )
+            data << table->str_json();
+        else if( format == "html" )
+            data << table->str_html();
+        else
+            data << table->str(); // Default non-format
+        
+        delete table;
+        
+    }
+    
+    void SamsonWorker::getRESTForLogging( std::ostringstream &data, std::vector<std::string> &path_components, unsigned short int& http_state , std::string& format )
     {
         std::string logCommand = "";
         std::string sub        = "";
@@ -644,14 +540,14 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         if (path_components.size() > 4)
             arg = path_components[4];
         
-        
         //
         // Treat all possible errors
         //
+        
         if (logCommand == "")
         {
             http_state = 400;
-
+            
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("no logging subcommand"));
             else
@@ -660,7 +556,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "trace") && (logCommand != "verbose") && (logCommand != "debug"))
         {
             http_state = 400;
-
+            
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("bad logging command: '%s'", logCommand.c_str()));
             else
@@ -669,7 +565,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off"))
         {
             http_state = 400;
-
+            
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
             else
@@ -678,7 +574,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off"))
         {
             http_state = 400;
-
+            
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
             else
@@ -687,7 +583,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         else if ((logCommand == "verbose") && (sub == "set") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") && (arg != "5"))
         {
             http_state = 400;
-
+            
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("bad logging argument for 'trace/set': %s", arg.c_str()));
             else
@@ -696,7 +592,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         else if ((logCommand == "trace") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off"))
         {
             http_state = 400;
-
+            
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
             else
@@ -705,7 +601,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         else if (sub == "")
         {
             http_state = 400;
-
+            
             if (format == "xml")
                 au::xml_simple(data, "message", au::str("logging subcommand for '%s' missing", logCommand.c_str()));
             else
@@ -716,7 +612,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
             {
                 http_state = 400;
-
+                
                 if (format == "xml")
                     au::xml_simple(data, "message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
                 else
@@ -725,9 +621,8 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
         }
         
         if (http_state != 200)
-            goto afterTreatment;
+            return;
         
-
         //
         // Treat the request
         //
@@ -736,7 +631,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (sub == "on")
             {
                 lmReads  = true;
-
+                
                 if (format == "xml")
                     au::xml_simple(data, "reads", au::str("reads turned ON"));
                 else
@@ -756,7 +651,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (sub == "on")
             {
                 lmWrites  = true;
-
+                
                 if (format == "xml")
                     au::xml_simple(data, "writes", au::str("writes turned ON"));
                 else
@@ -776,7 +671,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (sub == "on")
             {
                 lmDebug  = true;
-
+                
                 if (format == "xml")
                     au::xml_simple(data, "debug", au::str("debug turned ON"));
                 else
@@ -826,13 +721,13 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
                 // Turn on the desired verbose levels
                 switch (verboseLevel)
                 {
-                case 5: lmVerbose5 = true;
-                case 4: lmVerbose4 = true;
-                case 3: lmVerbose3 = true;
-                case 2: lmVerbose2 = true;
-                case 1: lmVerbose  = true;
+                    case 5: lmVerbose5 = true;
+                    case 4: lmVerbose4 = true;
+                    case 3: lmVerbose3 = true;
+                    case 2: lmVerbose2 = true;
+                    case 1: lmVerbose  = true;
                 }
-
+                
                 if (format == "xml")
                 {
                     if (sub == "0")
@@ -854,7 +749,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             if (sub == "set")
             {
                 lmTraceSet((char*) arg.c_str());
-
+                
                 if (format == "xml")
                     au::xml_simple(data, "traceLevels", au::str(arg.c_str()));
                 else
@@ -864,7 +759,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             {
                 char traceLevels[1024];
                 lmTraceGet(traceLevels);
-
+                
                 if (format == "xml")
                     au::xml_simple(data, "message", au::str("Tracelevels: '%s'", traceLevels));
                 else
@@ -873,7 +768,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             else if (sub == "off")    // /samson/logging/trace/off
             {
                 lmTraceSet(NULL);
-
+                
                 if (format == "xml")
                     au::xml_simple(data, "traceLevels", au::str("all trace levels turned off"));
                 else
@@ -882,7 +777,7 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             else if (sub == "add")    // /samson/logging/trace/add
             {
                 lmTraceAdd((char*) arg.c_str());
-
+                
                 if (format == "xml")
                     au::xml_simple(data, "traceLevels", au::str("added level(s) %s",  arg.c_str()));
                 else
@@ -891,86 +786,211 @@ std::string SamsonWorker::getRESTInformation(::std::string in)
             else if (sub == "remove")     // /samson/logging/trace/remove
             {
                 lmTraceSub((char*) arg.c_str());
-
+                
                 if (format == "xml")
                     au::xml_simple(data, "traceLevels", au::str("removed level(s) %s",  arg.c_str()));
                 else
                     data << "  \"traceLevels\" : \"removed level(s) " << arg.c_str() << "\"\n";
             }
         }
-    }
-    else
+    }        
+    
+    //
+    // SamsonWorker::getRESTInformation - 
+    //
+    std::string SamsonWorker::getRESTInformation( ::std::string in )
     {
-        http_state = 404;
+        unsigned short int        http_state = 200;  // be optimistic and assume all is ok :)
+        std::ostringstream        header;
+        std::ostringstream        data;
+        std::string               jsonSuffix = ".json";
+        std::string               xmlSuffix  = ".xml";
+        std::string               htmlSuffix  = ".html";
+        std::string               format     = "xml"; // Default value
+        bool                      saneInput;
+        bool                      doDie      = false;
+        std::vector<std::string>  path_components;
+        
+        
+        LM_T(LmtRest, ("Incoming REST request: '%s'", in.c_str()));
+        
+        saneInput = sanityCheck(in.c_str());
+        if (saneInput == true)
+        {
+            if ((in.length() >= jsonSuffix.length()) && (in.substr(in.length() - jsonSuffix.length()) == jsonSuffix))
+            {
+                format = "json";
+                in     = in.substr(0, in.length() - jsonSuffix.length());
+            }
+            else if ((in.length() >= xmlSuffix.length()) && (in.substr(in.length() - xmlSuffix.length()) == xmlSuffix))
+            {
+                format = "xml";
+                in     = in.substr(0, in.length() - xmlSuffix.length());
+            }
+            else if ((in.length() >= htmlSuffix.length()) && (in.substr(in.length() - htmlSuffix.length()) == htmlSuffix))
+            {
+                format = "html";
+                in     = in.substr(0, in.length() - htmlSuffix.length());
+            }
+        }
 
+        // Begin data for each format
+        // ---------------------------------------------------
         if (format == "xml")
-            au::xml_simple(data, "error", au::str("unknown path component '%s'\n" , path_components[1].c_str() ) );
+        {
+            data << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+            data << "<!-- SAMSON Rest interface -->\n";
+            data << "<samson>\n";
+        }
+        else if ( format == "html" )
+        {
+            data << "<html><body>";
+        }
+
+        
+        // Create body of the answer
+        // ---------------------------------------------------
+        
+        if (saneInput == false)
+        {
+            data << getFormatedError("Bad REST Request", format );
+            goto afterTreatment;
+        }
+        
+        // Get the path components
+        path_components = au::split( in , '/' );
+        if ((path_components.size() < 2) || (path_components[0] != "samson"))
+        {
+            http_state = 400;
+            data << getFormatedError( "Only /samson/path requests are valid" , format );
+        }
+        else if (path_components[1] == "version")
+        {
+            data << getFormatedElement("version", au::str("SAMSON v %s" , SAMSON_VERSION ), format );
+        }
+        else if( ( path_components[1] == "state" ) || ( path_components[1] == "queue" ) )  /* /samson/state/queue/key */
+        {
+            char redirect[512];
+            
+            redirect[0] = 0;
+            if (path_components.size() < 4)
+            {
+                http_state = 400;
+                data << getFormatedError("Format error. Wrong number of path components. (Usage /samson/state/queue/key)", format );
+            }
+            else
+            {
+                bool         ok     = true;
+                std::string  result = streamManager->getState(path_components[2], path_components[3].c_str(), redirect, sizeof(redirect), &ok, format);
+                
+                if (ok == false)
+                    data << getFormatedError("Internal Error recovering state.", format);
+                else
+                    data << result;
+            }
+            
+            if ( redirect[0] != 0 )
+            {
+                LM_T(LmtRest, ("redirecting to '%s'", redirect));
+                
+                header << "HTTP/1.1 302 Found\n";
+                header << "Location:   " << redirect << "/samson/state/" << path_components[2] << "/" << path_components[3].c_str() << "\n";
+                header << "Content-Type:   application/txt; charset=utf-8\n";
+                header << "Content-Length: " << 0 << "\n";
+                header << "\n";
+                header << "\n";
+                
+                std::ostringstream output;
+                output << header.str();
+                return output.str();
+            }
+        }
+        else if (path_components[1] == "command" ) /* /samson/command */
+        {
+            std::string command = "ls"; // default command
+            if( path_components.size() > 2 )
+                command = path_components[2];
+            
+            getRESTInformationFromDelilahCommand( data , command  , format );
+            
+        }
+        else if (path_components[1] == "cluster" ) /* /samson/logging */
+            network->getInfo(data, "cluster", format);
+        else if (path_components[1] == "logging" )  
+            getRESTForLogging( data , path_components , http_state , format );
         else
-            data << "  \"error\" : \"" << au::str("unknown path component '%s'\"\n" , path_components[1].c_str());
-    }
+        {
+            http_state = 404;
+            data << getFormatedError(au::str("unknown path component '%s'" , path_components[1].c_str() ), format );
+        }
+        
+    afterTreatment:
 
-afterTreatment:
+        // Close data content
+        // ---------------------------------------------------
+        if (format == "xml")
+            data << "\n</samson>\n";
+        else if( format == "json" )
+            data << "\n";
+        else if (format == "html")
+            data << "</body></html>";
+        
+        // Create message to answer back
+        // ---------------------------------------------------
 
-    if (format == "xml")
-    {
-        data << "\n</samson>\n";
-    }
-    else
-    {
-        data << "}\n";
+        int dataLen = data.str().length();
+        
+        // Send the correct HTTP status code
+        switch (http_state)
+        {
+            case 200:
+                header << "HTTP/1.1 200 OK\n";
+                break;
+                
+            case 400:
+                header << "HTTP/1.1 400 Bad Request\n";
+                break;
+                
+            case 404:
+                header << "HTTP/1.1 404 Not Found\n";
+                break;
+                
+            default:
+                header << "HTTP/1.1 Bad Request \n"; 
+                break;
+        }
+        
+        if (format == "xml")
+            header << "Content-Type: application/xml\n";
+        else if(format == "json")
+            header << "Content-Type: application/json\n";
+        else if(format == "html")
+            header << "Content-Type: text/html\n";
+        
+        header << "Content-Length: " << dataLen << "\n";
+        header << "Connection: close\n";
+        header << "\n";
+        
+        std::ostringstream output;
+        
+        char* out = toUTF8((char*) data.str().c_str(), NULL);
+        if (out == NULL)
+        {
+            out = strdup("error converting data to UTF8"); // free later ...
+            LM_E((out));
+        }
+        
+        output << header.str() << out;
+        free(out);
+        
+        if (doDie == true)
+            LM_X(1, ("Got a DIE request over REST interface ... I die!"));
+        
+        return output.str();
     }
     
-        
-    int dataLen = data.str().length();
-
-    // Send the correct HTTP status code
-    switch (http_state)
-    {
-    case 200:
-        header << "HTTP/1.1 200 OK\n";
-        break;
-        
-    case 400:
-        header << "HTTP/1.1 400 Bad Request\n";
-        break;
-        
-    case 404:
-        header << "HTTP/1.1 404 Not Found\n";
-        break;
-        
-    default:
-        header << "HTTP/1.1 Bad Request \n"; 
-        break;
-    }
-    
-    if (format == "xml")
-        header << "Content-Type:   \"application/xml; charset=utf-8\"\n";
-    else
-        header << "Content-Type:   \"application/json; charset=utf-8\"\n";
-
-    header << "Content-Length: " << dataLen << "\n";
-    header << "\n";
-
-    std::ostringstream output;
-
-    char* out = toUTF8((char*) data.str().c_str(), NULL);
-    if (out == NULL)
-    {
-        out = strdup("error converting data to UTF8"); // free later ...
-        LM_E((out));
-    }
-
-    output << header.str() << out;
-    free(out);
-
-    if (doDie == true)
-        LM_X(1, ("Got a DIE request over REST interface ... I die!"));
-
-    return output.str();
-}
     
     
-
     // Get information for monitoring
     void SamsonWorker::getInfo( std::ostringstream& output)
     {
@@ -982,13 +1002,13 @@ afterTreatment:
         
         // Modules manager
         //ModulesManager::shared()->getInfo( output );
-                
+        
         // Block manager
         //stream::BlockManager::shared()->getInfo( output );
         
         // Queues manager information
         streamManager->getInfo(output);
-
+        
         
         // WorkerCommandManager
         //workerCommandManager->getInfo(output);
@@ -1002,7 +1022,7 @@ afterTreatment:
     {
         au::CommandLine cmdLine;
         cmdLine.parse(command);
-
+        
         if( cmdLine.get_num_arguments() == 0 )
             return;
         
@@ -1010,7 +1030,7 @@ afterTreatment:
         
         if ( main_command == "quit" )
             quitConsole();
-
+        
         if ( main_command == "threads" )
             writeOnConsole( au::ThreadManager::shared()->str() );
         
@@ -1020,7 +1040,7 @@ afterTreatment:
         // More command to check what is going on inside a worker
         
     }
-
+    
     std::string SamsonWorker::getPrompt()
     {
         return "SamsonWorker> ";
@@ -1042,7 +1062,7 @@ afterTreatment:
             alert->set_type(type);
             alert->set_context(context);
             alert->set_text( message );
-                        
+            
             p->message->set_delilah_component_id( (size_t)-1 ); // This message do not belong to the operation executing it
             
             // Direction of this paket
@@ -1061,10 +1081,10 @@ afterTreatment:
         collection->set_name("workers");
         
         network::CollectionRecord* record = collection->add_record();            
-
+        
         // Common type to joint queries ls_workers -group type
         ::samson::add( record , "Type" , "worker" , "different" );
-
+        
         if( visualization->options == engine )
         {
             
@@ -1080,14 +1100,14 @@ afterTreatment:
             
             ::samson::add( record , "Disk in B/s" , engine::DiskManager::shared()->get_rate_in() , "f=uint64,sum" );
             ::samson::add( record , "Disk out B/s" , engine::DiskManager::shared()->get_rate_out() , "f=uint64,sum" );
-
+            
             double op_in = engine::DiskManager::shared()->get_rate_operations_in();
             double op_out = engine::DiskManager::shared()->get_rate_operations_out();
             
             ::samson::add( record , "Disk in Ops/s" , op_in  , "f=double , sum" );
             ::samson::add( record , "Disk out Ops/s" , op_out , "f=double,sum" );
             
-
+            
             double on_time = engine::DiskManager::shared()->on_off_monitor.get_on_time(); 
             double off_time = engine::DiskManager::shared()->on_off_monitor.get_off_time(); 
             ::samson::add( record , "On time" , on_time , "f=double,differet" );
@@ -1095,14 +1115,14 @@ afterTreatment:
             
             ::samson::add( record , "BM writing" ,  stream::BlockManager::shared()-> get_scheduled_write_size() , "f=uint64,sum" );
             ::samson::add( record , "BM reading" ,  stream::BlockManager::shared()->get_scheduled_read_size() , "f=uint64,sum" );
-
+            
             double usage =  engine::DiskManager::shared()->get_on_off_activity();
             ::samson::add( record , "Disk usage" , au::str_percentage(usage) , "differet" );
             
         }
         else
         {
-        
+            
             ::samson::add( record , "Mem used" , engine::MemoryManager::shared()->getUsedMemory() , "f=uint64,sum" );
             ::samson::add( record , "Mem total" , engine::MemoryManager::shared()->getMemory() , "f=uint64,sum" );
             
@@ -1120,9 +1140,9 @@ afterTreatment:
         
         if (visualization == NULL)
             return collection;
-
+        
         return collection;
     }
-
+    
     
 }

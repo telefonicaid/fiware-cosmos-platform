@@ -53,11 +53,24 @@ namespace samson {
 	
 	void WorkerCommandDelilahComponent::run()
 	{
+
+        if( !delilah->isConnected() )
+        {
+            setComponentFinishedWithError("Delilah not connected to any SAMSON system" );            
+            return;
+        }
+        
         // Get the workers involved in this operation
-        au::Uint64Vector _workers( delilah->network->getConnectedWorkerIds() );
+        std::vector<size_t> tmp = delilah->getConnectedWorkerIds( & error );
+        if( error.isActivated() )
+            setComponentFinished();
+        
+        au::Uint64Vector _workers( tmp );
         
         // Check with all the workers
-        std::vector<size_t> all_workers = delilah->network->getWorkerIds();
+        std::vector<size_t> all_workers = delilah->getWorkerIds( &error );
+        if( error.isActivated() )
+            setComponentFinished();
         
         // Check all the workers are connected
         if( worker_id == (size_t)-1 )
@@ -142,7 +155,9 @@ namespace samson {
             p->to.id = *it_workers;
 
             // Send message
-            delilah->network->send( p );                        
+            delilah->send( p , &error );                        
+            if( error.isActivated() )
+                setComponentFinished();
             
         }
 		
@@ -238,19 +253,18 @@ namespace samson {
         }
  	}
 	
-    
-    void WorkerCommandDelilahComponent::print_content( network::Collection * collection )
+    au::tables::Table* WorkerCommandDelilahComponent::getMainTable()
     {
-        std::string title = collection->title();
-        
-        if( collection->record_size() == 0 )
-        {
-            if( !hidden )
-                delilah->showWarningMessage("No records\n");
-            return;
-        }
+        if( collections.size() == 0 )
+            return NULL;
 
-        std::string table_name = collection->name();
+        // Get the first one
+        return getTable( collections.begin()->second );
+        
+    }
+    
+    au::tables::Table* WorkerCommandDelilahComponent::getTable( network::Collection * collection )
+    {
         
         std::string table_definition;
         
@@ -272,6 +286,9 @@ namespace samson {
         
         au::tables::Table* table = new au::tables::Table( table_definition );
         
+        std::string title = collection->title();
+        table->setTitle(title);
+        
         for (int r = 0 ; r < collection->record_size() ; r++ )
         {
             au::StringVector values;
@@ -280,17 +297,37 @@ namespace samson {
             table->addRow(values);
         }
 
-        if( !hidden )
+        return table;
+    }
+    
+    void WorkerCommandDelilahComponent::print_content( network::Collection * collection )
+    {
+        if( collection->record_size() == 0 )
         {
-            output << table->strSortedGroupedAndfiltered(title, group_field, sort_field, filter_field , limit );
+            if( !hidden )
+                delilah->showWarningMessage("No records\n");
+            return;
         }
         
+        au::tables::Table* table = getTable(collection);
+        
+        if( !hidden )
+        {
+            std::string title = collection->title();
+            output << table->strSortedGroupedAndfiltered( title , group_field, sort_field, filter_field , limit );
+        }
+        
+        // Save in the internal database
         if( save_in_database )
         {
+            std::string table_name = collection->name();
+            
             delilah->database.addTable( table_name , table );
+            
             if( !hidden )
                 delilah->showWarningMessage(
-                    au::str("Table %s has been created locally. Type set_database_mode to check content...\n",table_name.c_str())
+                    au::str("Table %s has been created locally. Type set_database_mode to check content...\n"
+                            ,table_name.c_str())
                                             );
         }
     }

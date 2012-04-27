@@ -42,6 +42,7 @@
 #include "samson/delilah/SamsonDataSet.h"
 #include "samson/delilah/Delilah.h"					// samson::Delailh
 #include "samson/delilah/DelilahConsole.h"			// Own interface
+#include "samson/delilah/RepeatDelilahComponent.h"
 
 #include "PushDelilahComponent.h"                   // samson::PushDelilahComponent
 #include "PushDelilahComponent.h"                   // PushDataComponent
@@ -50,6 +51,8 @@
 
 #define DEF1             "TYPE:EXEC/FUNC: TEXT"
 
+extern size_t delilah_random_code;
+
 namespace samson
 {	
     const char* general_description = \
@@ -57,7 +60,7 @@ namespace samson
     
     const char* auths = "Andreu Urruela, J.Gregorio Escalada & Ken Zangelin";
     
-    DelilahConsole::DelilahConsole( NetworkInterface *network ) : Delilah( network )
+    DelilahConsole::DelilahConsole( )
     {
         // Default values
         show_alerts = false;
@@ -78,19 +81,14 @@ namespace samson
         // By default no save traces
         trace_file = NULL;
         
-        // Inform about random id for this delilah
-        NodeIdentifier node_identifier = network->getMynodeIdentifier();
-        
-        if( node_identifier.node_type != DelilahNode )
-            LM_X(1, ("Internal error"));
-        
-        writeWarningOnConsole(au::str("Random delilah id generated [%s]" , au::code64_str(node_identifier.id).c_str()));
-        
         simple_output = false;
         no_output = false;
         
         // Aliases
         //add_alias( "aso" , "add_stream_operation" );
+
+        // Inform about random code for this delilah
+        writeWarningOnConsole(au::str("Random delilah id generated [%s]" , au::code64_str( delilah_random_code ).c_str()));
         
     }
 
@@ -119,7 +117,7 @@ namespace samson
         if( mode == mode_logs )
             return log_client.getPrompt();
         
-        return  au::str( "%s Delilah>" , network->getLoginInfo().c_str() );
+        return  au::str( "[%s] Delilah>" , getConnectionInformation().c_str() );
     }
 	
 	void DelilahConsole::evalCommand(std::string command)
@@ -590,6 +588,10 @@ namespace samson
             command = aliases.findInMap(command);
         
 		au::CommandLine commandLine;
+		commandLine.set_flag_string("user", "anonymous");
+		commandLine.set_flag_string("password", "anonymous");
+        commandLine.set_flag_int("port", 1234); // Default port for SAMSON
+        
 		commandLine.set_flag_string("name", "null");
 		commandLine.set_flag_string("begin", "null");           
 		commandLine.set_flag_boolean("plain");              // Flag to indicate plain ( not used ) 
@@ -653,6 +655,42 @@ namespace samson
             writeOnConsole( au::strToConsole(result) );
             return 0;
         }
+
+        if( mainCommand == "connect" )
+        {
+            if( commandLine.get_num_arguments() < 2 )
+            {
+                showErrorMessage("Usage: connect host [-port X] [-user X] [-password X]");
+                return 0;
+            }
+            
+            std::string host = commandLine.get_argument(1);
+            std::string user = commandLine.get_flag_string("user");
+            std::string password = commandLine.get_flag_string("password");
+            int port = commandLine.get_flag_int("port");
+
+            // Show message on console
+            showMessage( au::str("Connecting to %s:%d (user %s)..." , host.c_str() , port , user.c_str() ));
+
+            // Connect to this host if possible
+            connect(host, port, user, password);
+            
+            return 0;
+        }
+
+        if( mainCommand == "disconnect" )
+        {
+            au::ErrorManager error;
+            delilah_disconnect( &error );
+            
+            if( error.isActivated() )
+                write( &error );
+            else
+                writeWarningOnConsole("OK");
+                
+            return 0;
+        }
+        
         
         if( mainCommand == "history" )
         {
@@ -673,7 +711,14 @@ namespace samson
         if ( mainCommand == "cluster" )
         {
             // Interact with the network layer
-            writeOnConsole( network->cluster_command( command ) + "\n" );
+            au::ErrorManager error;
+            std::string message = runClusterCommand( command , &error );
+            
+            if( error.isActivated() )
+                writeErrorOnConsole( error.getMessage() );
+            else
+                writeOnConsole( message + "\n" );
+
             return 0;
         }
         
@@ -946,7 +991,7 @@ namespace samson
                 {
                     std::ostringstream output;
                     output << "================================================\n";
-                    output << " Process " << au::code64_str( network->getMynodeIdentifier().id ) << "_" << id << " ";
+                    output << " Process " << au::code64_str( delilah_random_code ) << "_" << id << " ";
                     
                     if( component->isComponentFinished() )
                         output << "FINISHED "  << component->cronometer.str();
@@ -1430,7 +1475,7 @@ namespace samson
         {
             std::ostringstream o;
             
-            o << "Process started: " << au::code64_str(network->getMynodeIdentifier().id) << "_" <<  component->getId() << " " << component->getConcept() << "\n";
+            o << "Process started: " << au::code64_str(delilah_random_code) << "_" <<  component->getId() << " " << component->getConcept() << "\n";
             if( component->error.isActivated() )
                 showErrorMessage( o.str() );        
             else
@@ -1447,13 +1492,13 @@ namespace samson
         {
             if( !component->error.isActivated() )
                 showWarningMessage( au::str( "Process finished: %s_%lu %s\n" 
-                                               , au::code64_str(network->getMynodeIdentifier().id).c_str()
+                                               , au::code64_str(delilah_random_code).c_str()
                                                , component->getId()
                                                , component->getConcept().c_str() ) );
             else
             {
                 showErrorMessage( au::str( "Process finished with error: %s_%lu %s\nERROR: %s\n" 
-                                             , au::code64_str(network->getMynodeIdentifier().id).c_str()
+                                             , au::code64_str(delilah_random_code).c_str()
                                              , component->getId()
                                              , component->getConcept().c_str()
                                              , component->error.getMessage().c_str()

@@ -37,6 +37,7 @@ namespace samson {
         // All managed connection
         au::map<std::string , NetworkConnection> connections;
         
+        
     public:
         
         NetworkManager()
@@ -52,8 +53,6 @@ namespace samson {
         virtual void receive( NetworkConnection* connection, Packet* packet )
         {
             LM_W(("NetworkManager::receive not implemented"));
-            if ((connection == NULL) || (packet == NULL))
-                return;
         }
         
         // Push a packet to a connection
@@ -87,7 +86,6 @@ namespace samson {
         // Debug str
         std::string str();
         
-
         // Get a collection for all connections
         network::Collection* getConnectionsCollection( Visualization* visualization );
        

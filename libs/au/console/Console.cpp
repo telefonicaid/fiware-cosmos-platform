@@ -511,6 +511,29 @@ bool Console::isQuitting()
     return quit_console;
 }
 
+void Console::write( au::ErrorManager* error )
+{
+    for ( size_t i = 0 ; i < error->getNumItems() ; i++ )
+    {
+        ErrorMessage * item = error->getItem(i);
+        
+        switch (item->getType()) 
+        {
+            case item_message:
+                writeOnConsole( item->getMultiLineMessage() );
+                break;
+                
+            case item_warning:
+                writeWarningOnConsole( item->getMultiLineMessage() );
+                break;
+            case item_error:
+                writeErrorOnConsole( item->getMultiLineMessage() );
+                break;
+        }
+    }
+}
+
+
 /* Methods to write things on screen */
 void Console::writeWarningOnConsole( std::string message )
 {

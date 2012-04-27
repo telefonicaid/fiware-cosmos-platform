@@ -329,6 +329,9 @@ namespace au
             
             // Get a string to print table on screen
             std::string str( );
+            std::string str_xml( );
+            std::string str_json( );
+            std::string str_html( );
 
             // Select
             Table* selectTable( SelectTableInformation *select_table_information );

@@ -126,50 +126,6 @@ namespace samson {
         progress = p;
     }
     
-	
-    RepeatDelilahComponent::RepeatDelilahComponent( std::string _command , int _seconds ) 
-        : DelilahComponent( DelilahComponent::repeat )
-    {
-        command = _command;
-        seconds = _seconds;
-        
-        listen( notification_delilah_review_repeat_tasks );
-        
-        concept = au::str("Repeating %s",command.c_str());
-    }
-    
-    std::string RepeatDelilahComponent::getStatus()
-    {
-        return au::str("Repeating %s",command.c_str());
-    }
-    
-    
-    void RepeatDelilahComponent::run()
-    {
-        // Run once here...
-        DelilahConsole * delilah_console = (DelilahConsole *) delilah;
-        delilah_console->run_repeat_command( command );
-    }
-    
-    void RepeatDelilahComponent::notify( engine::Notification* notification )
-    {
-        // A response for a disk operation
-        if( notification->isName( notification_delilah_review_repeat_tasks  ) )
-        {
-            if ( cronometer.diffTimeInSeconds() >= seconds )
-            {
-                if ( isComponentFinished() )
-                    return;
-                
-                // Run once here...
-                DelilahConsole * delilah_console = (DelilahConsole *) delilah;
-                delilah_console->run_repeat_command( command );
-                
-                cronometer.reset();
-            }
-        }
-    }
-    
     
     
 }

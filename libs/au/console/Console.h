@@ -10,7 +10,7 @@
 #include "au/mutex/Token.h"
 #include "au/namespace.h"
 #include "au/console/ConsoleEntry.h"
-
+#include "au/ErrorManager.h"
 #include "ConsoleEscapeSequence.h"
 
 NAMESPACE_BEGIN(au)
@@ -54,6 +54,8 @@ public:
     void writeWarningOnConsole( std::string message );
     void writeErrorOnConsole( std::string message );
     void writeOnConsole( std::string message );
+    
+    void write( au::ErrorManager* error );
     
     // Customize console
     virtual std::string getPrompt();

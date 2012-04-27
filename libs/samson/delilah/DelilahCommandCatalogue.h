@@ -19,7 +19,6 @@
 #include "au/tables/Select.h"
 #include "au/tables/Table.h"
 
-#include "DelilahClient.h"                  // ss:DelilahClient
 
 #include "samson/delilah/Delilah.h"			// samson::Delilah
 

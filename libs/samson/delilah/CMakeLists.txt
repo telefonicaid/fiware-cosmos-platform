@@ -1,9 +1,9 @@
 
 SET (HEADERS
 	DelilahBase.h
+	DelilahBaseConnection.h
 	Delilah.h
 	DelilahConsole.h
-	DelilahClient.h
 	DelilahComponent.h
 	WorkerCommandDelilahComponent.h
 	PushDelilahComponent.h
@@ -19,6 +19,7 @@ SET (HEADERS
 SET (SOURCES
 	Delilah.cpp
 	DelilahBase.cpp
+	DelilahBaseConnection.cpp	
 	DelilahConsole.cpp
 	DelilahComponent.cpp
 	WorkerCommandDelilahComponent.cpp

@@ -79,7 +79,7 @@ namespace samson
         mainWindow->updateData(queuesData, workersData);
    }
 
-    DelilahQt::DelilahQt( NetworkInterface *network ) : Delilah( network )
+    DelilahQt::DelilahQt(  )
     {
     }
     

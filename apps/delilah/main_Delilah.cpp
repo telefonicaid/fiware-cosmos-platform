@@ -108,7 +108,6 @@ static const char* manVersion       = SAMSON_VERSION;
 
 
 
-samson::DelilahNetwork* networkP       = NULL;
 samson::DelilahConsole* delilahConsole = NULL;
 
 
@@ -119,19 +118,14 @@ void cleanup(void)
     engine::Engine::stop();
     engine::DiskManager::stop();
     engine::ProcessManager::stop();
-    if( networkP ) 
-        networkP->stop();
+
+    delilahConsole->stop();
     
     // Wait all threads to finsih
     au::ThreadManager::shared()->wait();
 
     // Clear google protocol buffers library
     google::protobuf::ShutdownProtobufLibrary();
-
-    // Delete network
-    LM_T(LmtCleanup, ("Clean up network"));
-    if (networkP) 
-        delete networkP;
     
     LM_T(LmtCleanup, ("Shutting down delilah components (delilahConsole at %p)", delilahConsole));
     if (delilahConsole != NULL)
@@ -173,7 +167,7 @@ void cleanup(void)
 
 // Custom name for the log file
 extern char * paProgName;
-size_t delilah_random_code;
+extern size_t delilah_random_code;
 
 /* ****************************************************************************
 *
@@ -254,17 +248,10 @@ int main(int argC, const char *argV[])
 
     samson::ModulesManager::init();         // Init the modules manager
     
-    // Initialize the network element for delilah
-    networkP  = new samson::DelilahNetwork( "console" , delilah_random_code );
     
     // Create a DelilahControler once network is ready
-    delilahConsole = new samson::DelilahConsole(networkP);
-
-    // Add main delilah connection with specified worker
-    samson::Status s = networkP->addMainDelilahConnection( target_host , target_port , user , password );        
-    
-    if( s != samson::OK )
-        LM_X(1, ("Not possible to open connection with %s:%d (%s)" , target_host , target_port , samson::status(s) ));
+    delilahConsole = new samson::DelilahConsole();
+    delilahConsole->connect( target_host , target_port , user , password );
     
     // ----------------------------------------------------------------
     // Special mode with one command line command
@@ -274,7 +261,7 @@ int main(int argC, const char *argV[])
     {
         {
             au::Cronometer cronometer;
-            while ( !networkP->ready() ) 
+            while ( !delilahConsole->isConnectionReady() ) 
             {
                 usleep(100000);
                 if( cronometer.diffTime() > 1 )
@@ -329,7 +316,7 @@ int main(int argC, const char *argV[])
         
         {
             au::Cronometer cronometer;
-            while ( !networkP->ready() ) 
+            while ( !delilahConsole->isConnectionReady() ) 
             {
                 usleep(100000);
                 if( cronometer.diffTime() > 1 )

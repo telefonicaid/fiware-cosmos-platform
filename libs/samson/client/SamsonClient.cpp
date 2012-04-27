@@ -41,98 +41,81 @@
 
 #include "samson/delilah/TXTFileSet.h"                         // samson::DataSource
 
-namespace samson {
+extern size_t delilah_random_code;
 
-    
-#pragma mark
-    
+namespace samson 
+{
     
     SamsonClient::SamsonClient( std::string _connection_type )
     {
         connection_type = _connection_type;
+        delilah = new Delilah();
         
-        delilah = NULL;
-        networkP = NULL;
+        // No automatic update for this delilah
+        delilah->automatic_update = false;
+        
+        // Set me as the receiver for live data packets
+        delilah->data_receiver_interface = this;
     }
- 
     
     void SamsonClient::general_init( size_t memory , size_t load_buffer_size )
     {
-        std::string samson_home =  SAMSON_HOME_DEFAULT;
+        std::string samson_home    = SAMSON_HOME_DEFAULT;
         std::string samson_working = SAMSON_WORKING_DEFAULT;
         
         char *env_samson_working = getenv("SAMSON_WORKING");
         char *env_samson_home = getenv("SAMSON_HOME");
         
         if( env_samson_working )
-        {
             samson_working = env_samson_working;
-        }
+
         if( env_samson_home )
-        {
             samson_home = env_samson_home;
-        }
         
+        // Init setup
         samson::SamsonSetup::init( samson_home , samson_working );    
         
         // Change the values for this parameters
         samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::str("%lu",memory) );
         samson::SamsonSetup::shared()->setValueForParameter("load.buffer_size",  au::str("%lu",load_buffer_size) );
-        
+
+        // Init Engine, DiskManager, ProcessManager and Memory manager
         engine::Engine::init();
         engine::DiskManager::init(1);
         engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
         engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
         
-        samson::ModulesManager::init();         // Init the modules manager
-        
+        // Init the modules manager
+        samson::ModulesManager::init();         
     }
     
-    bool SamsonClient::initConnection( std::string worker_host , int port  , std::string user , std::string password )
+    void SamsonClient::initConnection( au::ErrorManager *error
+                                      , std::string worker_host 
+                                      , int port  
+                                      , std::string user 
+                                      , std::string password )
     {
-                
-        // Init the setup system 
-        LM_TODO(("Add the possibility to set particular directories for this..."));
-        
-        
-        // Initialize the network element for delilah
-        networkP  = new samson::DelilahNetwork( connection_type , au::code64_rand() );
-
+ 
         // Create a DelilahControler once network is ready
-        delilah = new Delilah( networkP );
+        delilah_random_code = au::code64_rand();
+        delilah->delilah_connect(connection_type, worker_host, port, user, password, error);
 
-        // No automatic update
-        delilah->automatic_update = false;
-        
-        // Init network connection
-        Status s = networkP->addMainDelilahConnection( worker_host , port , user , password );
-        
-        if( s != OK )
+        if( error->isActivated() )
         {
-            delete delilah;
-            delilah = NULL;
-            delete networkP;
-            networkP = NULL;
-            
-            LM_W(("Not possible to open connection with %s:%d (%s)" , worker_host.c_str() , port , status(s) ));
-            return false;
+            LM_W(("Not possible to open connection with %s:%d (%s)" , worker_host.c_str() , port , error->getMessage().c_str() ));
+            return;
         }
-        
-        // Set me as the receiver for live data packets
-        delilah->data_receiver_interface = this;
         
         // What until the network is ready
         LM_VV(("Waiting network connections to the all nodes in SAMSON cluster..."));
-        while ( !networkP->ready() )
+        while ( !delilah->isConnectionReady() )
             usleep(1000);
         LM_VV(("Connected to all workers"));
-        
-        return true;
-        
     }
     
-    void SamsonClient::receive_buffer_from_queue(std::string queue , engine::Buffer* buffer)
+    void SamsonClient::receive_buffer_from_queue( std::string queue , engine::Buffer* buffer )
     {
+        // Accumulate buffers of data in this buffer container
         buffer_container.push( queue , buffer );
     }
     
@@ -193,11 +176,6 @@ namespace samson {
         delilah->clearComponents();
         
         return id;
-    }
-    
-    std::string SamsonClient::getErrorMessage()
-    {
-        return error_message;
     }
     
     bool SamsonClient::areAllOperationsFinished()
@@ -309,7 +287,7 @@ namespace samson {
     
     bool SamsonClient::connection_ready()
     {
-        return networkP->ready();
+        return delilah->isConnectionReady();
     }
 
     

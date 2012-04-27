@@ -1,56 +1,79 @@
 
 #include "au/ErrorManager.h"      // Own interface
 
-NAMESPACE_BEGIN(au)
-
-ErrorManager::ErrorManager()
-{
-    error = false;
-}
-
-void ErrorManager::set( std::string _message )
-{
-    error = true;
-    message = _message;
-}
-
-bool ErrorManager::isActivated()
-{
-    return error;
-}
-
-std::string ErrorManager::getMessage()
-{
-    return message;
-}
-
-void ErrorManager::set( ErrorManager *otherError )
-{
-    if( otherError->isActivated() )
-        set( otherError->getMessage() );
-}
-
-std::string ErrorManager::str()
-{
-    if( !error )
-        return "No error";
-    else
-        return "Error:" + message;
-}
-
-void ErrorManager::getInfo( std::ostringstream& output)
-{
-    output << "<error>";
+namespace au {
     
-    if( error )
-        output << "<activated>YES</activated>\n";
-    else
-        output << "<activated>NO</activated>\n";
+    ErrorManager::ErrorManager()
+    {
+    }
     
-    output << "<message>" << message << "</message>";
+    void ErrorManager::set( std::string message )
+    {
+        errors.push_back( new ErrorMessage( item_error , contexts , message ) );
+    }
     
-    output << "</error>";
+    void ErrorManager::add_error( std::string message )
+    {
+        errors.push_back( new ErrorMessage( item_error , contexts , message ) );
+    }
+
+    void ErrorManager::add_warning( std::string message )
+    {
+        errors.push_back( new ErrorMessage( item_warning , contexts , message ) );
+    }
+
+    void ErrorManager::add_message( std::string message )
+    {
+        errors.push_back( new ErrorMessage( item_message , contexts , message ) );
+    }
+
+    bool ErrorManager::isActivated()
+    {
+        for( size_t i = 0 ; i < errors.size() ; i++ )
+            if( errors[i]->getType() == item_error )
+                return true;
+        return false;
+    }
+    
+    std::string ErrorManager::getMessage()
+    {
+        // Get one line of the last error
+        if( errors.size() == 0 )
+            return "No errors";
+        else
+            return errors.back()->getMessage();
+    }
+    
+    std::string ErrorManager::getCompleteMessage()
+    {
+        std::ostringstream output;
+
+        for( size_t i = 0 ; i < errors.size() ; i++ )
+            output << errors[i]->getMultiLineMessage();
+        return output.str();
+    }
+    
+    void ErrorManager::push_context( std::string context )
+    {
+        contexts.push_back( context );
+        
+    }
+    
+    void ErrorManager::pop_context( )
+    {
+        contexts.pop_back();
+    }
+    
+    ErrorContext::ErrorContext( ErrorManager* _error , std::string context )
+    {
+        error = _error;
+        error->push_context( context );
+    }
+    
+    ErrorContext::~ErrorContext()
+    {
+        error->pop_context();
+    }
+
     
 }
-
-NAMESPACE_END

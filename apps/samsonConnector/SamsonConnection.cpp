@@ -17,7 +17,8 @@ namespace samson {
         queue = _queue;
         
         // Init SamsonClien connection
-        connected = initConnection( host , port );
+        connected = false;
+        review();
         
         if( type == connection_input )
             connect_to_queue(queue, false, false); // No possible flags new of clear here
@@ -33,8 +34,8 @@ namespace samson {
     
     void SamsonConnection::push( engine::Buffer* buffer )
     {
-        if( !connected )
-            connected = initConnection( host , port );
+        // Review connection
+        review();
 
         if( !connected )
             return;

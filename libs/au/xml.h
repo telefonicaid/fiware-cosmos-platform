@@ -47,6 +47,12 @@ void xml_simple( std::ostringstream& output , std::string name , T value )
 }
 
 template< typename T>
+void json_simple( std::ostringstream& output , std::string name , T value )
+{
+    output << "{\"" << name << "\":\"" << value << "\"}";
+}
+
+template< typename T>
 std::string xml_simple( std::string name ,T value )
 {
     std::ostringstream output;

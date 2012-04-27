@@ -15,6 +15,16 @@ namespace samson
             "help all [-category cat]    Get all available commands ( optional category )\n" 
             "help command                Get help for a particular command\n"
             );
+
+        add( "connect","delilah",
+            "Connect to a SAMSON system",
+            "connect host [-port X] [-user X] [-password X]"
+            );
+        
+        add( "disconnect","delilah",
+            "Disconnect from a SAMSON system",
+            "disconnect"
+            );
         
         add( "alerts" , "delilah", 
             "Activate or disactivate showing alerts from SAMSON platform on console",

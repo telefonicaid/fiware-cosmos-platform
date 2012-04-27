@@ -39,7 +39,7 @@ namespace samson {
 	 Main class for the DelilahConsole program
 	 */
 	
-	class DelilahConsole : public au::Console, public Delilah
+	class DelilahConsole : public au::Console , public Delilah
 	{
         
         typedef enum
@@ -80,12 +80,24 @@ namespace samson {
         // LogClient used when working in log_client mode
         au::LogClient log_client;
         
-	public:
-		
+	public:		
         
-		DelilahConsole( NetworkInterface *network );		
+		DelilahConsole( );		
 		~DelilahConsole();
 		
+        // Intermediate function to connect
+        void connect( std::string host , int port , std::string user , std::string password )
+        {
+            au::ErrorManager error;
+            delilah_connect("console", host, port, user , password , &error );
+            
+            if ( error.isActivated() )
+                showErrorMessage( error.getMessage() );
+            
+        }
+
+        
+        
         // Main run command
         void run();
         

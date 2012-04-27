@@ -27,7 +27,7 @@
 #include "samson/common/NotificationMessages.h"
 
 #include "samson/network/NetworkInterface.h"
-
+#include "samson/delilah/Delilah.h"
 #include "samson/worker/WorkerCommandManager.h"
 
 namespace samson {
@@ -40,8 +40,12 @@ namespace samson {
         public engine::Object,
         public au::Console
 	{
-		// Initial time stamp 
-		struct timeval init_time;
+
+        // Initial time stamp for this worker
+        au::Cronometer cronometer; 
+        
+        // Auto-client for REST interface
+        Delilah* delilah;
         
 	public: 
 		
@@ -69,9 +73,10 @@ namespace samson {
         
 	public:
 
-		// NetworkInterfaceReceiver
-        // ----------------------------------------------------------------
+		// Interface to receive Packets ( NetworkInterfaceReceiver )
 		void receive( Packet* packet );
+        
+        // RESET Information
         std::string getRESTInformation( ::std::string in );
 		
         // Notification from the engine about finished tasks
@@ -90,6 +95,13 @@ namespace samson {
 
         // Get a collection with a single record with information for this worker...
         network::Collection* getWorkerCollection( Visualization* visualization );
+
+        
+    private:
+
+        // Internal REST methods
+        void getRESTForLogging( std::ostringstream &data, std::vector<std::string> &path_components, unsigned short int& http_state , std::string& format );
+        void getRESTInformationFromDelilahCommand( std::ostringstream &data, std::string command , std::string &format );
 
         
         

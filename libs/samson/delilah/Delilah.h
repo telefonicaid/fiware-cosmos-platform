@@ -2,12 +2,12 @@
 #define DELILAH_H
 
 /* ****************************************************************************
-*
-* FILE                     Delilah.h
-*
-* DESCRIPTION			   Client application for Samson
-*
-*/
+ *
+ * FILE                     Delilah.h
+ *
+ * DESCRIPTION			   Client application for Samson
+ *
+ */
 
 #include <iostream>				// std::cout
 #include <set>					// std::set
@@ -24,35 +24,31 @@
 
 #include "au/tables/pugi.h"          // pugi::...
 
+#include "engine/Object.h"          // engine::Object
 #include "engine/Buffer.h"
 #include "engine/MemoryManager.h"
 
-#include "samson/module/Environment.h"	// samson::Environment
 #include "samson/common/samson.pb.h"			// samson::network::..
-
-#include "engine/Object.h" // engine::Object
-#include "engine/Object.h"          // engine::Object
-
 #include "samson/common/Macros.h"             // EXIT, ...
 #include "samson/common/traces.h"				// TRACE_DALILAH
+
+#include "samson/module/Environment.h"	// samson::Environment
 
 #include "samson/network/NetworkInterface.h"			// NetworkInterface
 #include "samson/network/Message.h"            // Message::MessageCode
 
 #include "DelilahBase.h"                    // Monitorization information for delilah
+#include "DelilahBaseConnection.h"
 
-namespace  engine {
+namespace  engine 
+{
     class Buffer;
 }
 
-namespace samson
+namespace samson 
 {
+    
     class Delilah;
-}
-
-namespace samson {
-    
-    
 	class DelilahClient;
 	class DelilahComponent;
     class PushDelilahComponent;
@@ -62,18 +58,15 @@ namespace samson {
     // Interface to receive live data
     class DelilahLiveDataReceiverInterface
     {
-        
     public:
-        
-        virtual void receive_buffer_from_queue(std::string queue , engine::Buffer* buffer)=0;
-        
+        virtual void receive_buffer_from_queue(std::string queue , engine::Buffer* buffer )=0;
     };
     
 	/**
 	   Main class for the samson client element
 	 */
     
-	class Delilah : public NetworkInterfaceReceiver  , public engine::Object, public DelilahBase
+	class Delilah :  public engine::Object, public DelilahBase , public DelilahBaseConnection
 	{
 		// Id counter of all internal DelilahComponents
 		size_t id;												
@@ -98,18 +91,15 @@ namespace samson {
         
 	public:
 		
-		Environment environment;								// Environment properties to be sent in the next job
-		bool              finish;								// Global flag used by all threads to detect to stop
-
-
-        // Identifier of the next worker to send data
-		int next_worker;
+		Environment environment;	// Environment properties to be sent in the next job
+		bool finish;				// Global flag used by all threads to detect to stop
 		
 	public:
 		
-		Delilah( NetworkInterface *_network );
+		Delilah( );
 		~Delilah();
-        
+
+        // Stop all threads
 		void quit();
 
         // Notification system
@@ -125,16 +115,13 @@ namespace samson {
         size_t addPushData( std::vector<std::string> fileNames , std::vector<std::string> queues );
         size_t addPushData( DataSource* dataSource , std::vector<std::string> queues );
         size_t addPopData( std::string queue_name , std::string fileName , bool force_flag  , bool show_flag);
-
 		size_t sendWorkerCommand( std::string command , engine::Buffer *buffer );
-		
 		
 		// Check a particular id
 		bool isActive( size_t id );
         bool hasError( size_t id );
         std::string errorMessage( size_t id );
         std::string getDescription( size_t id );
-        
         
 	public:
 				
@@ -172,8 +159,8 @@ namespace samson {
 		// Get info about the list of loads
         std::string getListOfComponents();
         
-        // Get next worker_id to send data...
-        size_t getNextWorkerId();
+        // Recover a particular component
+        DelilahComponent* getComponent( size_t delilah_id );
         
 	public:
 		

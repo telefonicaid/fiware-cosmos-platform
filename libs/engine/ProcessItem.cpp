@@ -83,8 +83,6 @@ void ProcessItem::getInfo( std::ostringstream& output)
     // Inform about sub status for this operation
     output << "<sub_status>" << sub_status << "</sub_status>\n";
     
-    // Inform about the error
-    error.getInfo( output );
     
     output << "</process_item>\n";
 }

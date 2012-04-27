@@ -153,28 +153,6 @@ namespace samson {
         return output.str();
     }
     
-    int DelilahBase::getUpdateSeconds()
-    {
-        // Get the 
-        size_t time = 0;
-
-        std::vector<size_t> worker_ids = network->getWorkerIds();
-
-        for( size_t i = 0 ; i < worker_ids.size() ; i++ )
-        {
-            XMLStringHolder * holder = workers.findInMap( worker_ids[i] );
-
-            if( holder )
-            {
-                size_t _time = holder->getTime();
-                if (_time > time )
-                    time = _time;
-            }
-        }
-        
-        return (int) time;
-    }    
-    
 }
 
 

@@ -109,7 +109,8 @@ namespace samson {
         {
             
             running_tasks.erase( task_id );
-            error.set( _error );
+            if( _error->isActivated() )
+                error.set( _error->getMessage() );
                         
             check();
         }

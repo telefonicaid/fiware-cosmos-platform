@@ -34,7 +34,7 @@ namespace samson {
 		
 	public:
 		
-		DelilahQt( NetworkInterface *network );     
+		DelilahQt( );     
         
         // Main run command ( it should be blocking )
         void run();

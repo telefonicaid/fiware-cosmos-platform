@@ -2,6 +2,8 @@
 #include <algorithm>
 #include "Select.h"
 
+#include "au/xml.h"
+
 #include "Table.h" // Own interterface
 
 /*
@@ -650,6 +652,144 @@ namespace au
             
             // Separation line
             output << bottom_line( column_width );
+            
+            return output.str();
+        }
+        
+        std::string Table::str_xml( )
+        {
+            
+            // Output string
+            std::ostringstream output;
+
+            au::xml_open( output , "table" );
+
+            
+            // Main title...
+            if( title != "" )
+                au::xml_simple(output, "title",  title );
+            
+            // For each record at the input, create an output 
+            for( size_t r = 0 ; r < rows.size() ; r++)
+            {
+                // Skip separators
+                if( rows[r]->getType() == TableRow::separator )
+                    continue;
+                
+                au::xml_open(output, "item");
+
+                for ( size_t c = 0 ; c < columns.size() ; c++)
+                {
+                    au::xml_open(output, "property");
+                    
+                    au::xml_simple(output, "name", columns[c]->getTitle() );
+
+                    // Get the formatted output
+                    std::string column = columns[c]->getName();
+                    std::string value = getValue( r , c );
+                    
+                    au::xml_simple(output, "value", value );
+
+                    au::xml_close(output, "property");
+                    
+                }
+                au::xml_close(output, "item");
+            }
+            
+            au::xml_close( output , "table" );
+
+            return output.str();
+        }
+        
+        std::string Table::str_json( )
+        {
+            // Output string
+            std::ostringstream output;
+            
+            output << "{";
+            
+            // Main title...
+            if( title != "" )
+                output << "\"title\":\"" <<  title << "\",";
+            
+            // For each record at the input, create an output 
+            output << "\"items\":[";
+            for( size_t r = 0 ; r < rows.size() ; r++)
+            {
+                // Skip separators
+                if( rows[r]->getType() == TableRow::separator )
+                    continue;
+
+                output << "{";
+                for ( size_t c = 0 ; c < columns.size() ; c++)
+                {
+                    std::string _title = columns[c]->getTitle();
+                    std::string column = columns[c]->getName();
+                    std::string _value = getValue( r , c );
+                    output << "\"" << _title << "\":\"" <<  _value << "\"";
+                    
+                    if ( c !=  ( columns.size() - 1 ) )
+                        output << ",";
+                }
+                output << "}";
+                
+                if( r != (rows.size()-1) )
+                    output << ",";
+                
+            }
+            
+            output << "]"; // End of items
+            output << "}"; // End of global map
+
+            return output.str();
+        }
+        
+        std::string Table::str_html( )
+        {
+            // Output string
+            std::ostringstream output;
+            
+            output << "<table border=\"1\" cellspacing=\"4\" CELLPADDING=\"12\"  >";
+            
+            // Main title...
+            if( title != "" )
+            {
+                output << "<tr>";
+                output << "<td colspan=\"" << columns.size() << "\">";
+                output <<  "<h1>" << title <<  "</h1>";
+                output << "</td>";
+                output << "</tr>";
+            }
+            
+            // Colum titles
+            for ( size_t c = 0 ; c < columns.size() ; c++)
+            {
+                std::string _title = columns[c]->getTitle();
+                output << "<th>";
+                output << _title;
+                output << "</th>";
+            }
+            // Rows
+            for( size_t r = 0 ; r < rows.size() ; r++)
+            {
+                // Skip separators
+                if( rows[r]->getType() == TableRow::separator )
+                    continue;
+
+                output << "<tr>";
+
+                for ( size_t c = 0 ; c < columns.size() ; c++)
+                {
+                    std::string column = columns[c]->getName();
+                    std::string _value = getValue( r , c );
+                    output << "<td>";
+                    output << _value;
+                    output << "</td>";
+
+                }
+                output << "</tr>";
+            }
+            output << "</table>";
             
             return output.str();
         }

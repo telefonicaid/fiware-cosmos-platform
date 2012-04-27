@@ -59,35 +59,35 @@ namespace  samson {
     
     class SamsonClient : public DelilahLiveDataReceiverInterface
     {
-                    
-        std::string error_message;              // Error message if a particular operation fails
-        
-        std::vector<size_t> delilah_ids;        // Delilah operation to wait for...
-        
         std::string connection_type;            // String to describe connection with SAMSON (pop, push, console, ...)
         
-        samson::DelilahNetwork* networkP;       // Network interface for delilah client
-        samson::Delilah* delilah;                // Delilah client   
-        BufferContainer buffer_container;            // Blocks Container for live data
+        std::vector<size_t> delilah_ids;        // Delilah operation to wait for... ( mainly push opertions )
+        
+        samson::Delilah* delilah;               // Delilah client   
+        
+        BufferContainer buffer_container;       // Blocks of data received so far ( live data )
         
 	public:
-
-        au::rate::Rate push_rate;                    // Statistics about rate
-        au::rate::Rate pop_rate;                    // Statistics about rate
+        
+        au::rate::Rate push_rate;               // Statistics about rate
+        au::rate::Rate pop_rate;                // Statistics about rate
         
         // Default constructor
         SamsonClient( std::string connection_type );
         
+        // General init ( Init engine )
         static void general_init( size_t memory = 1000000000 , size_t load_buffer_size = 64000000 );
         
         // Init the connection with a SAMSON cluster
-        bool initConnection( std::string samson_node 
-                  , int port = SAMSON_WORKER_PORT 
-                  , std::string user = "anonymous" 
-                  , std::string password = "anonymous");
+        void initConnection( au::ErrorManager * error
+                            , std::string samson_node 
+                            , int port = SAMSON_WORKER_PORT 
+                            , std::string user = "anonymous" 
+                            , std::string password = "anonymous"
+                            );
         
         // DelilahLiveDataReceiverInterface
-        virtual void receive_buffer_from_queue(std::string queue , engine::Buffer* buffer);
+        void receive_buffer_from_queue( std::string queue , engine::Buffer* buffer );
         
         // Push content to a particular queue
         size_t push( std::string queue , char *data , size_t length );
@@ -95,15 +95,13 @@ namespace  samson {
         // Push a generic data source 
         size_t push( std::string queue , DataSource *data_source );
 
-        // Get error message
-        std::string getErrorMessage();
-        
         // Wait until all operations are finished
         void waitUntilFinish();        
         
         // Check if all operations are finished
         bool areAllOperationsFinished();
         
+        // Check if connection is ready
         bool connection_ready();
         
         // Live data connection
@@ -116,7 +114,9 @@ namespace  samson {
       
         std::string getStatisticsString()
         {
-            return au::str("Pushed %s in %d blocs", au::str(push_rate.getTotalSize(),"B").c_str() , push_rate.getTotalNumberOfHits() );
+            return au::str("Pushed %s in %d blocs", 
+                           au::str(push_rate.getTotalSize(),"B").c_str() , 
+                           push_rate.getTotalNumberOfHits() );
         }
         
     };

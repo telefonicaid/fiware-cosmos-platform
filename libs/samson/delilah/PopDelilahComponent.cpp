@@ -14,7 +14,6 @@
 #include "samson/network/Message.h"						// samson::Message
 #include "samson/delilah/Delilah.h"						// samson::Delilah
 #include "samson/common/samson.pb.h"						// network::...
-#include "DelilahClient.h"					// samson::DelilahClient
 #include "samson/common/SamsonSetup.h"					// samson::SamsonSetup
 #include "samson/common/MemoryTags.h"                     // samson::MemoryInput , samson::MemoryOutput...
 
@@ -85,7 +84,11 @@ namespace samson
         }
                 
         // Send to all the workers a message to pop a queue
-        workers = delilah->network->getWorkerIds();
+        au::ErrorManager error;
+        workers = delilah->getWorkerIds( &error );
+        if (error.isActivated() )
+            setComponentFinishedWithError( error.getMessage() );
+
         
         num_finish_worker = 0;
         
@@ -104,7 +107,12 @@ namespace samson
             p->to.id = workers[w];
 
             // Send message
-            delilah->network->send( p );
+            delilah->send( p , &error );
+            
+            if (error.isActivated() )
+                setComponentFinishedWithError( error.getMessage() );
+
+            
         }
         
     }

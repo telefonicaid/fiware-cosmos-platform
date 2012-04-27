@@ -20,7 +20,6 @@
 
 #include "PushDelilahComponent.h"                      // Own interface
 
-#include "DelilahClient.h"					// samson::DelilahClient
 
 namespace samson
 {
@@ -78,6 +77,9 @@ namespace samson
     void PushDelilahComponent::run()
     {
        
+        if( !delilah->isConnected() )
+            setComponentFinishedWithError("Not connected to any SAMSON system");
+        
 		if( totalSize == 0)
 		{
 			error.set("Not data to upload.");
@@ -197,7 +199,9 @@ namespace samson
             packet->to.id = worker_id;
             
             // Send packet
-            delilah->network->send( packet );
+            delilah->send( packet , &error );
+            if( error.isActivated() )
+                setComponentFinished();
             
             if( !dataSource->isFinish() )
             {

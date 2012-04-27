@@ -85,40 +85,12 @@ namespace samson {
         
         void setConcept( std::string _concept );
         void setProgress( double p );
-        
-        
-    protected:
-        
+
+        // Command to mark this delilah component finished
         void setComponentFinished();
         void setComponentFinishedWithError( std::string error_message );
         
 	};
-    
-    
-    class RepeatDelilahComponent : public DelilahComponent , engine::Object
-    {
-        std::string command;
-        int seconds;
-        
-        au::Cronometer cronometer;
-        
-    public:
-      
-        RepeatDelilahComponent( std::string _command , int _seconds );
-		std::string getStatus();
-        void notify( engine::Notification* notification );
-
-		void receive( Packet* packet )
-        {
-            LM_W(("Received a packet in a RepeatDelilahComponent... nothing was expected"));
-
-            if (packet == NULL)
-                return;
-        }
-        
-        void run();
-        
-    };
 	
 }
 

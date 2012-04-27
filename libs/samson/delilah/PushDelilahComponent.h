@@ -53,10 +53,6 @@ namespace samson {
         //TXTFileSet fileSet;				
         
 	public:
-
-		// Error log ( public since it is access from delilah )
-		au::ErrorManager error;
-		
 		
 		PushDelilahComponent( DataSource * _dataSource , std::string _queue  );		
         

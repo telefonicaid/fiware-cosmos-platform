@@ -22,6 +22,7 @@ SET (LIBS
     samsonStream
     samsonIsolated
     samsonCommon
+	delilahLib
 	samson_system
     engine
     au

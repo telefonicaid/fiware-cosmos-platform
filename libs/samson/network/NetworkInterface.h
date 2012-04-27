@@ -153,7 +153,7 @@ namespace samson {
         
         virtual std::string getLoginInfo()
         {
-            return "";
+            return "?";
         }
         
         virtual network::Collection* getConnectionsCollection( Visualization* visualization )
@@ -186,6 +186,19 @@ namespace samson {
             LM_X(1, ("NetworkInterface method not implemented"));
             return 0xFFFF;
         }
+        
+        // Get a descriptio of this connection ( host & port for example )
+        virtual std::string str()
+        {
+            return au::str("NetworkInterrface::str() TO BE IMPLEMENTED" );
+        }
+        
+        // Check if we are fully connected
+        virtual bool ready()
+        {
+            return true;
+        }
+
         
     };
     

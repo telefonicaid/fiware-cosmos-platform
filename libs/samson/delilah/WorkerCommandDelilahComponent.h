@@ -13,7 +13,7 @@
 #include "samson/network/Message.h"		// Message::MessageCode 
 #include "samson/network/Packet.h"			// samson::Packet
 #include "samson/common/samson.pb.h"	
-
+#include "samson/delilah/DelilahComponent.h"
 
 namespace engine {
     class Buffer;
@@ -82,10 +82,16 @@ namespace samson {
 		
 		std::string getStatus();
 
+        
+        au::tables::Table* getMainTable();
+        
     private:
-    
+
+        // Internal function to print content of recevied collection
         void print_content( network::Collection * collection );
         
+        // Transform a collection into a table
+        au::tables::Table* getTable( network::Collection * collection );
 	};
     
 	

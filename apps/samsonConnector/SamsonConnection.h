@@ -58,7 +58,9 @@ namespace samson {
             if( connected )
                 return;
             
-            connected = initConnection( host , port );
+            au::ErrorManager error;
+            initConnection( &error, host , port );
+            connected = !error.isActivated(); // If not error, assumed connected
         }
         
         // Overload method to push blocks using samsonClient

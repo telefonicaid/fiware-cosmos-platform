@@ -5,7 +5,6 @@
 #include "samson/network/Message.h"						// samson::Message
 #include "samson/delilah/Delilah.h"						// samson::Delilah
 #include "samson/common/samson.pb.h"						// network::...
-#include "DelilahClient.h"					// samson::DelilahClient
 #include "samson/common/SamsonSetup.h"					// samson::SamsonSetup
 
 #include "TXTFileSet.h"  // Own interface

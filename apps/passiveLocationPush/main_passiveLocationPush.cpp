@@ -907,9 +907,11 @@ int main(int argC, const char* argV[])
         pushBuffer = NULL;
     else
     {
-        if( !client.initConnection( controller , SAMSON_WORKER_PORT , user , password ) )
+        au::ErrorManager error;
+        client.initConnection( &error, controller , SAMSON_WORKER_PORT , user , password );
+        if( error.isActivated() )
         {
-            fprintf(stderr, "Error connecting with samson cluster: %s\n" , client.getErrorMessage().c_str() );
+            fprintf(stderr, "Error connecting with samson cluster: %s\n" , error.getMessage().c_str() );
             exit(0);
         }
         LM_V(("Conection to %s OK" , controller));

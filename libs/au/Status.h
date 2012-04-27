@@ -22,46 +22,47 @@
 
 #include "au/namespace.h"
 
-NAMESPACE_BEGIN(au)
-
-typedef enum Status
+namespace au 
 {
-    OK,
-    Error,    // Generic error
-
-	NotImplemented,
     
-    Timeout,
+    typedef enum Status
+    {
+        OK,
+        Error,    // Generic error
+        
+        NotImplemented,
+        
+        Timeout,
+        
+        OpenError, // Error in the open call
+        
+        ConnectError,
+        AcceptError,
+        SelectError,
+        SocketError,
+        BindError,
+        ListenError,
+        ReadError,
+        WriteError,
+        ConnectionClosed,
+        GetHostByNameError,
+        
+        // Google Protocol Buffer errros
+        
+        GPB_Timeout,
+        GPB_ClosedPipe,
+        GPB_ReadError,
+        GPB_CorruptedHeader,
+        GPB_WrongReadSize,
+        GPB_ReadErrorParsing,
+        GPB_NotInitializedMessage,
+        GPB_WriteErrorSerializing,
+        GPB_WriteError,
+        
+    } Status;
     
-    OpenError, // Error in the open call
+    const char* status( Status code );
     
-	ConnectError,
-	AcceptError,
-	SelectError,
-	SocketError,
-	BindError,
-	ListenError,
-	ReadError,
-	WriteError,
-	ConnectionClosed,
-    GetHostByNameError,
-    
-    // Google Protocol Buffer errros
-    
-    GPB_Timeout,
-    GPB_ClosedPipe,
-    GPB_ReadError,
-    GPB_CorruptedHeader,
-    GPB_WrongReadSize,
-    GPB_ReadErrorParsing,
-    GPB_NotInitializedMessage,
-    GPB_WriteErrorSerializing,
-    GPB_WriteError,
-    
-} Status;
-
-const char* status( Status code );
-
-NAMESPACE_END
+}
 
 #endif

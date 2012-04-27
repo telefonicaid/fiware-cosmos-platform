@@ -167,14 +167,9 @@ int main(int argC, const char *argV[])
     networkCenter = new samson::NetworkFakeCenter(workers);
     atexit(deleteNetworkCenter);
 	
-    samson::DelilahConsole* delilahConsole = NULL;
-//    samson::DelilahQt* delilahQt = NULL;
-    
-    // Console delilah..
-/*    if( delilah_qt )
-        delilahQt = new samson::DelilahQt( networkCenter->getNetworkForDelilah() );
-    else            */
-        delilahConsole = new samson::DelilahConsole( networkCenter->getNetworkForDelilah() );
+    // Init delilah and assign the network interface
+    samson::DelilahConsole* delilahConsole = new samson::DelilahConsole(  );
+    delilahConsole->setNetwork(networkCenter->getNetworkForDelilah());
 
 	
 	LM_V(("SamsonLocal start"));

@@ -102,7 +102,7 @@ static const char* manVersion       = SAMSON_VERSION;
 
 // Custom name for the log file
 extern char * paProgName;
-size_t delilah_random_code;
+extern size_t delilah_random_code;
 
 
 /* ****************************************************************************
@@ -162,7 +162,8 @@ int main(int argC, const char *argV[])
 	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( "graph" , delilah_random_code );
     
 	// Create a DelilahQt once network is ready
-    samson::DelilahQt* delilahQt = new samson::DelilahQt( networkP );
+    samson::DelilahQt* delilahQt = new samson::DelilahQt(  );
+    delilahQt->setNetwork(networkP);
 	//samson::DelilahConsole* delilahConsole = new samson::DelilahConsole(networkP);
 
     // Add main delilah connection with specified worker

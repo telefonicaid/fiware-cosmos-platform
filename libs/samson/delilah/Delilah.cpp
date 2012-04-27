@@ -24,7 +24,7 @@
 #include "samson/network/Message.h"            // Message::MessageCode, ...
 #include "samson/network/Packet.h"				// samson::Packet
 #include "samson/network/NetworkInterface.h"			// NetworkInterface
-
+#include "samson/network/DelilahNetwork.h"
 #include "samson/module/ModulesManager.h"       // samson::ModulesManager
 
 #include "samson/network/Packet.h"				// samson::Packet
@@ -38,6 +38,8 @@
 #include "samson/delilah/DelilahConsole.h"      // samson::DelilahConsole
 
 
+extern size_t delilah_random_code;
+
 namespace samson {
     
     
@@ -45,21 +47,17 @@ namespace samson {
      *
      * Delilah::Delilah
      */
-    Delilah::Delilah( NetworkInterface* _network ) : DelilahBase( ) , token("Delilah_token")
+    Delilah::Delilah(  ) : token("Delilah_token")
     {
-        
-        network = _network;		// Keep a pointer to our network interface element
-        network->setReceiver(this);
 		
-        id = 2;	// we start with process 2 because 0 is no process & 1 is global_update messages
+        // we start with process 2 because 0 is no process & 1 is global_update messages
+        id = 2;	
 		
-        finish = false;				// Global flag to finish threads
+        finish = false;   // Global flag to finish threads
                 
         // Listen notification about netowrk disconnection
         listen( notification_network_diconnected );
 
-        // No next worker decided
-        next_worker = -1;
         
         // No receiver to deal with live data from queues by default ( used in samsonClient library )
         data_receiver_interface = NULL;
@@ -71,7 +69,6 @@ namespace samson {
             engine::Notification *notification = new engine::Notification(notification_update_status);
             engine::Engine::shared()->notify( notification, update_period );
         }        
-
      
         // By default update everything ( canceled in samsonClient )
         automatic_update = true;
@@ -83,26 +80,7 @@ namespace samson {
         clearAllComponents();
     }
 
-    
-    size_t Delilah::getNextWorkerId()
-    {
-        
-        std::vector<size_t> workers = network->getWorkerIds();
-                
-        if( next_worker == -1 )
-        {
-            int max = workers.size();
-            int r = rand();
-            next_worker = r%max;
-            
-        }
-        
-        next_worker++;
-        if( next_worker == (int)workers.size() )
-            next_worker = 0;
-        
-        return workers[ next_worker ];
-    }
+
     
     void Delilah::notify( engine::Notification* notification )
     {
@@ -129,12 +107,20 @@ namespace samson {
         
         if ( notification->isName(notification_update_status))
         {
+            if( !isConnected() )
+                return;
+            
+            au::ErrorManager error;
+            
             // Create a xml version of monitorization ( common to all delilahs )
             std::ostringstream info_str;
             getInfo( info_str );
             
             // Get vector of all workers
-            std::vector<size_t> workers = network->getWorkerIds();
+            std::vector<size_t> workers = getWorkerIds(&error);
+            
+            if( error.isActivated() )
+                return;
             
             // Send this message to all delilahs
             for ( size_t i = 0 ; i < workers.size() ; i++ )
@@ -152,7 +138,11 @@ namespace samson {
                 p->to.id = workers[i];
                 
                 // Send this message to all delilahs connected
-                network->send( p );
+                send( p , &error );
+                
+                if( error.isActivated() )
+                    return;
+
             }
             return;
         }        
@@ -170,7 +160,6 @@ namespace samson {
     void Delilah::quit()
     {
         finish = true;
-        network->quit();
     }
 	
     
@@ -374,9 +363,8 @@ namespace samson {
 		return tmp_id;
 	}
     
-    
-	
-	
+
+
 	size_t Delilah::addComponent( DelilahComponent* component )
 	{
         au::TokenTaker tk( &token );
@@ -479,7 +467,7 @@ namespace samson {
                 continue;
             
             au::StringVector values;
-            values.push_back( au::str("%s_%lu", au::code64_str( network->getMynodeIdentifier().id ).c_str() , component->getId() ) );
+            values.push_back( au::str("%s_%lu", au::code64_str( delilah_random_code ).c_str() , component->getId() ) );
             values.push_back( component->getTypeName() );
             values.push_back( component->getStatusDescription() );
             
@@ -685,6 +673,10 @@ namespace samson {
         return OK;
     }
 
+    DelilahComponent* Delilah::getComponent( size_t delilah_id )
+    {
+        return components.findInMap(delilah_id);
+    }
 
     
     

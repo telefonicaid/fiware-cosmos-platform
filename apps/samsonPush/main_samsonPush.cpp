@@ -164,10 +164,11 @@ int main( int argC , const char *argV[] )
     
     LM_V(("Connecting to %s ..." , controller));
     
-    // Init connection
-    if( !samson_client->initConnection( controller , port_node , user , password ) )
+    au::ErrorManager error;
+    samson_client->initConnection( &error, controller , port_node , user , password );
+    if( error.isActivated() )
     {
-        fprintf(stderr, "Error connecting with samson cluster: %s, port:%d\n" , samson_client->getErrorMessage().c_str(), port_node );
+        fprintf(stderr, "Error connecting with samson cluster: %s\n" , error.getMessage().c_str() );
         exit(0);
     }
     LM_V(("Conection to %s OK" , controller));

@@ -83,9 +83,6 @@ namespace samson {
         au::tables::DataBase database;
         
     public:
-
-        // Network interface
-		NetworkInterface* network;								
         
         DelilahBase( );
         ~DelilahBase();
@@ -97,13 +94,9 @@ namespace samson {
         // Own funciton to get xml content
         virtual void getInfo( std::ostringstream& output )=0; 
         
-        // Get the max time since the last monitorization update
-        int getUpdateSeconds( );
-
-        // Simple queries to get a list of operations, queues, etc...
+        // Simple queries to get a list of operations, queues, etc for autocompletion
         std::vector<std::string> getOperationNames( );        
         std::vector<std::string> getOperationNames( std::string type );        
-        
         std::vector<std::string> getQueueNames();
         std::vector<std::string> getQueueNames( KVFormat );
 
@@ -111,7 +104,7 @@ namespace samson {
         std::string updateTimeString();
 
         // Run a command over database
-        std::string runDatabaseCommand( std::string command);
+        std::string runDatabaseCommand( std::string command );
 
         // Autocomplete for database mode
         void autoCompleteForDatabaseCommand( au::ConsoleAutoComplete* info );

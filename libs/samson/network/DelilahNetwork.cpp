@@ -64,8 +64,8 @@ namespace samson {
         
         if( s != au::OK )
         {
-            std::cerr << au::str("Error: Not possible to open connection with %s:%d (%s)\n" , host.c_str() , port , status(s));
-            return Error;
+            //std::cerr << au::str("Error: Not possible to open connection with %s:%d (%s)\n" , host.c_str() , port , status(s));
+            return au_status(s); // Best conversion between error codes
         }
         
         

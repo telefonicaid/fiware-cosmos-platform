@@ -168,8 +168,7 @@ public final class AdjacentExtractionRunner {
             Path poisTableMobDataWithInputIdPath = new Path(tmpDirPath,
                     "pois_table_mob_data_with_input_id");
             {
-                ReduceJob job = ReduceJob.create(conf,
-                        "SetMobDataInputIdReducer",
+                ReduceJob job = ReduceJob.create(conf, "SetMobDataInputId",
                         SequenceFileInputFormat.class,
                         SetMobDataInputIdReducer.class,
                         SequenceFileOutputFormat.class);
@@ -183,8 +182,7 @@ public final class AdjacentExtractionRunner {
             Path poiPairbtsIndexMobDataWithInputIdPath = new Path(tmpDirPath,
                     "poi_pairbts_index_mob_data_with_input_id");
             {
-                ReduceJob job = ReduceJob.create(conf,
-                        "SetMobDataInputIdReducer",
+                ReduceJob job = ReduceJob.create(conf, "SetMobDataInputId",
                         SequenceFileInputFormat.class,
                         SetMobDataInputIdReducer.class,
                         SequenceFileOutputFormat.class);
@@ -223,6 +221,20 @@ public final class AdjacentExtractionRunner {
                 FileOutputFormat.setOutputPath(job, poiPairbtsAdjMobDataPath);
                 job.waitForCompletion(true);
             }
+
+            Path poiPairbtsAdjMobDataWithInputIdPath = new Path(tmpDirPath,
+                    "poi_pairbts_adj_mob_data_with_input_id");
+            {
+                ReduceJob job = ReduceJob.create(conf, "SetMobDataInputId",
+                        SequenceFileInputFormat.class,
+                        SetMobDataInputIdReducer.class,
+                        SequenceFileOutputFormat.class);
+                job.getConfiguration().setInt("input_id", 0);
+                FileInputFormat.setInputPaths(job, poiPairbtsAdjMobDataPath);
+                FileOutputFormat.setOutputPath(job,
+                        poiPairbtsAdjMobDataWithInputIdPath);
+                job.waitForCompletion(true);
+            }
             
             Path poiPairbtsCh1Path = new Path(tmpDirPath, "poi_pairbts_ch1");
             {
@@ -231,13 +243,15 @@ public final class AdjacentExtractionRunner {
                         AdjSwapPoiIdSt1Reducer.class,
                         SequenceFileOutputFormat.class);
                 FileInputFormat.setInputPaths(job, new Path[] {
-                    poiPairbtsAdjMobDataPath, poiPairbtsIndexMobDataPath });
+                    poiPairbtsAdjMobDataWithInputIdPath,
+                    poiPairbtsIndexMobDataWithInputIdPath });
                 FileOutputFormat.setOutputPath(job, poiPairbtsCh1Path);
                 job.waitForCompletion(true);
             }
 
             fs.delete(poiPairbtsAdjPath, true);
             fs.delete(poiPairbtsAdjMobDataPath, true);
+            fs.delete(poiPairbtsAdjMobDataWithInputIdPath, true);
             
             Path poiPairbtsCh1MobDataPath = new Path(tmpDirPath,
                                                      "poi_pairbts_ch1_mob_data");
@@ -251,13 +265,28 @@ public final class AdjacentExtractionRunner {
                 job.waitForCompletion(true);
             }
             
+            Path poiPairbtsCh1MobDataWithInputIdPath = new Path(tmpDirPath,
+                    "poi_pairbts_ch1_mob_data_with_input_id");
+            {
+                ReduceJob job = ReduceJob.create(conf, "SetMobDataInputId",
+                        SequenceFileInputFormat.class,
+                        SetMobDataInputIdReducer.class,
+                        SequenceFileOutputFormat.class);
+                job.getConfiguration().setInt("input_id", 0);
+                FileInputFormat.setInputPaths(job, poiPairbtsCh1MobDataPath);
+                FileOutputFormat.setOutputPath(job,
+                        poiPairbtsCh1MobDataWithInputIdPath);
+                job.waitForCompletion(true);
+            }
+            
             {
                 ReduceJob job = ReduceJob.create(conf, "AdjSwapPoiIdSt2",
                         SequenceFileInputFormat.class,
                         AdjSwapPoiIdSt2Reducer.class,
                         SequenceFileOutputFormat.class);
                 FileInputFormat.setInputPaths(job, new Path[] {
-                    poiPairbtsCh1MobDataPath, poiPairbtsIndexMobDataPath });
+                    poiPairbtsCh1MobDataWithInputIdPath,
+                    poiPairbtsIndexMobDataWithInputIdPath });
                 FileOutputFormat.setOutputPath(job, poiPairbtsAdjPath);
                 job.waitForCompletion(true);
             }
@@ -283,7 +312,7 @@ public final class AdjacentExtractionRunner {
                 FileOutputFormat.setOutputPath(job, numIndexPath);
                 job.waitForCompletion(true);
                 numIndicesLeft = job.getConfiguration().getLong(
-                        AdjCountIndexesReducer.NUM_INDICES_LEFT_TAG, 0);
+                        AdjCountIndexesReducer.NUM_INDICES_LEFT_TAG, 0L);
             }
         }
         

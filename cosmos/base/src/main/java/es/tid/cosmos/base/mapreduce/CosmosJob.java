@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -14,10 +14,17 @@ import org.apache.hadoop.mapreduce.Job;
  *
  * @author ximo
  */
-public abstract class CosmosJob extends Job implements Runnable {
+public abstract class CosmosJob extends Job {
+    private boolean submitted;
+    private boolean deleteOutputOnExit;
+    private List<CosmosJob> dependencies;
+
     public CosmosJob(Configuration conf, String jobName)
             throws IOException {
         super(conf, jobName);
+        this.submitted = false;
+        this.deleteOutputOnExit = false;
+        this.dependencies = new LinkedList<CosmosJob>();
     }
 
     /**
@@ -62,27 +69,34 @@ public abstract class CosmosJob extends Job implements Runnable {
         }
     }
 
+    /**
+     * This method submits and waits for this job and all its dependent jobs. It
+     * signals errors through JobExecutionException, so the return value will
+     * never be false.
+     *
+     * @param verbose
+     * @return Always true
+     * @throws IOException
+     * @throws InterruptedException
+     * @throws ClassNotFoundException
+     * @throws JobExecutionException
+     */
     @Override
-    public final boolean waitForCompletion(boolean verbose,
-                                           EnumSet<CleanupOptions> options)
+    public final boolean waitForCompletion(boolean verbose)
             throws IOException, InterruptedException, ClassNotFoundException {
+        for (CosmosJob dependency : this.dependencies) {
+            dependency.internalSubmit();
+        }
+        for (CosmosJob dependency : this.dependencies) {
+            dependency.waitForCompletion(verbose);
+        }
         if (!super.waitForCompletion(verbose)) {
             throw new JobExecutionException("Failed to run " + this.getJobName());
         }
-        if (options.contains(CleanupOptions.DeleteInput)) {
-            Class inputFormat = this.getInputFormatClass();
-            DataEraser eraser = DataEraser.getEraser(inputFormat);
-            if (eraser == null) {
-                throw new UnsupportedOperationException("CosmosJob is not prepared"
-                        + " to handle deleting inputs of type "
-                        + inputFormat.getSimpleName() + ". Please implement a new "
-                        + "DataEraser that handles this case.");
-            }
-            eraser.deleteInputs(this);
-        }
-        if (options.contains(CleanupOptions.DeleteOutput)) {
+
+        if (this.deleteOutputOnExit) {
             Class outputFormat = this.getOutputFormatClass();
-            DataEraser eraser = DataEraser.getEraser(outputFormat);
+            OutputEraser eraser = OutputEraser.getEraser(outputFormat);
             if (eraser == null) {
                 throw new UnsupportedOperationException("CosmosJob is not prepared"
                         + " to handle deleting outputs of type "
@@ -95,29 +109,37 @@ public abstract class CosmosJob extends Job implements Runnable {
         return true;
     }
 
-    @Override
-    public final List<CosmosJob> getJobs() {
-        List<CosmosJob> ret = new ArrayList<CosmosJob>();
-        ret.add(this);
-        return ret;
+    public void setDeleteOutputOnExit(boolean deleteOutputOnExit) {
+        this.deleteOutputOnExit = deleteOutputOnExit;
     }
 
-    /**
-     * Same effect as calling waitForCompletion(verbose,
-     * EnumSet.noneOf(CleanupOptions.class))
-     *
-     * @param verbose
-     * @return Always returns true. If the job fails, a JobExecutionException is
-     * thrown
-     * @throws IOException
-     * @throws InterruptedException
-     * @throws ClassNotFoundException
-     * @throws JobExecutionException
-     */
+    public boolean getDeleteOutputOnExit() {
+        return this.deleteOutputOnExit;
+    }
+
     @Override
-    public boolean waitForCompletion(boolean verbose)
-            throws IOException, InterruptedException, ClassNotFoundException {
-        return this.waitForCompletion(verbose,
-                                      EnumSet.noneOf(CleanupOptions.class));
+    public void submit() throws IOException, InterruptedException,
+                                ClassNotFoundException {
+        if (!this.dependencies.isEmpty()) {
+            throw new IllegalStateException("Cannot submit a job that has"
+                    + " dependencies. Please use waitForCompletion");
+        }
+        super.submit();
+        this.submitted = true;
+    }
+
+    private void internalSubmit() throws IOException, InterruptedException,
+                                         ClassNotFoundException {
+        if (!this.submitted) {
+            for (CosmosJob dependency : this.dependencies) {
+                dependency.internalSubmit();
+            }
+            super.submit();
+            this.submitted = true;
+        }
+    }
+
+    public void addDependentJob(CosmosJob job) {
+        this.dependencies.add(job);
     }
 }

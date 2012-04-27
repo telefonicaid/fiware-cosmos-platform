@@ -168,7 +168,8 @@ public final class AdjacentExtractionRunner {
             Path poisTableMobDataWithInputIdPath = new Path(tmpDirPath,
                     "pois_table_mob_data_with_input_id");
             {
-                ReduceJob job = ReduceJob.create(conf, "ConvertTwoIntToMobData",
+                ReduceJob job = ReduceJob.create(conf,
+                        "SetMobDataInputIdReducer",
                         SequenceFileInputFormat.class,
                         SetMobDataInputIdReducer.class,
                         SequenceFileOutputFormat.class);
@@ -182,7 +183,8 @@ public final class AdjacentExtractionRunner {
             Path poiPairbtsIndexMobDataWithInputIdPath = new Path(tmpDirPath,
                     "poi_pairbts_index_mob_data_with_input_id");
             {
-                ReduceJob job = ReduceJob.create(conf, "ConvertTwoIntToMobData",
+                ReduceJob job = ReduceJob.create(conf,
+                        "SetMobDataInputIdReducer",
                         SequenceFileInputFormat.class,
                         SetMobDataInputIdReducer.class,
                         SequenceFileOutputFormat.class);

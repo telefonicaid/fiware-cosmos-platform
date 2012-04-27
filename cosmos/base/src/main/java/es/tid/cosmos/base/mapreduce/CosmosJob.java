@@ -41,7 +41,13 @@ public abstract class CosmosJob extends Job implements Runnable {
                 Type[] args = parameterizedType.getActualTypeArguments();
                 ArrayList<Class> retVal = new ArrayList<Class>(args.length);
                 for (Type arg : args) {
-                    retVal.add((Class)arg);
+                    if (arg instanceof Class) {
+                        retVal.add((Class)arg);
+                    } else if (arg instanceof ParameterizedType) {
+                        retVal.add((Class)((ParameterizedType)arg).getRawType());
+                    } else {
+                        throw new Exception("Unknown arg type");
+                    }
                 }
                 return retVal.toArray(new Class[0]);
             } else {

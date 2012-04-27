@@ -43,7 +43,7 @@
 
 #include "samson/network/NetworkInterface.h"      // samson::NetworkInterface
 
-#include "samson/Delilah/WorkerCommandDelilahComponent.h"
+#include "samson/delilah/WorkerCommandDelilahComponent.h"
 
 #include "samson/worker/WorkerCommand.h"          // samson::stream::WorkerCommand
 #include "samson/worker/SamsonWorker.h"           // Own interfce

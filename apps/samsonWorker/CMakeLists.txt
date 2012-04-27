@@ -17,12 +17,12 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 SET (LIBS
     samsonWorkerLib
+	delilahLib
     samsonNetwork
     samsonModule
     samsonStream
     samsonIsolated
     samsonCommon
-	delilahLib
 	samson_system
     engine
     au

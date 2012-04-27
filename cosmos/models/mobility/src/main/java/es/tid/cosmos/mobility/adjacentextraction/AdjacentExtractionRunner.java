@@ -251,6 +251,7 @@ public final class AdjacentExtractionRunner {
 
             fs.delete(poiPairbtsAdjPath, true);
             fs.delete(poiPairbtsAdjMobDataPath, true);
+            fs.delete(poiPairbtsAdjMobDataWithInputIdPath, true);
             
             Path poiPairbtsCh1MobDataPath = new Path(tmpDirPath,
                                                      "poi_pairbts_ch1_mob_data");
@@ -311,7 +312,7 @@ public final class AdjacentExtractionRunner {
                 FileOutputFormat.setOutputPath(job, numIndexPath);
                 job.waitForCompletion(true);
                 numIndicesLeft = job.getConfiguration().getLong(
-                        AdjCountIndexesReducer.NUM_INDICES_LEFT_TAG, 0);
+                        AdjCountIndexesReducer.NUM_INDICES_LEFT_TAG, 0L);
             }
         }
         

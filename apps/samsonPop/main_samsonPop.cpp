@@ -122,7 +122,10 @@ int main( int argC , const char *argV[] )
     logFd = lmFirstDiskFileDescriptor();
     
     // Random initialization
-    srand( time(NULL) );
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    int rand_seq = tp.tv_sec*1000 + tp.tv_usec%1000;
+    srand( rand_seq );
 
     // Set 1G RAM for uploading content
     samson::SamsonClient::general_init(  1024*1024*1024 );

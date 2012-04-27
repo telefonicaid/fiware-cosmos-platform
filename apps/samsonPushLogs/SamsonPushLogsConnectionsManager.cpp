@@ -55,7 +55,7 @@ void SamsonPushLogsConnection::Run()
   au::Cronometer cronometer;
 
   time_t first_timestamp = dataset_->GetFirstTimestamp();
-  char *time_init_str = strdup(ctime(&first_timestamp));
+  char *time_init_str = strdup(ctimeUTC(&first_timestamp));
   time_init_str[strlen(time_init_str)-1] = '\0';
   LM_M(("Checking %s with first_timestamp:%s", dataset_->GetQueueName(), time_init_str));
 
@@ -73,7 +73,7 @@ void SamsonPushLogsConnection::Run()
       continue;
     }
 
-    char *time_read_str = strdup(ctime(&timestamp));
+    char *time_read_str = strdup(ctimeUTC(&timestamp));
     time_read_str[strlen(time_read_str)-1] = '\0';
 
 
@@ -97,7 +97,7 @@ void SamsonPushLogsConnection::Run()
     bool first_sleep = true;
     while (timestamp > first_timestamp + ntimes_real_time_ * cronometer.diffTime())
     {
-      if (count_sleeps%1000000000 == 0)
+      if ((count_lines%1000 == 0) && (count_sleeps%100000 == 0))
       {
         LM_M(("Sleeping %s with timestamp:%s, elapsed_time:%lf since %s", dataset_->GetQueueName(),  time_read_str, ntimes_real_time_ * cronometer.diffTime(), time_init_str));
       }
@@ -111,7 +111,7 @@ void SamsonPushLogsConnection::Run()
       first_sleep = false;
     }
 
-    if (count_lines%1000000000 == 0)
+    if (count_lines%100000000 == 0)
     {
       LM_M(("Pushing with time:%s (first:%s, elapsed:%lf) to SAMSON from dataset:%s", time_read_str, time_init_str, ntimes_real_time_ * cronometer.diffTime(), dataset_->GetQueueName()));
     }

@@ -324,6 +324,17 @@ time_t GetTimeFromStrTimeDate_YYYY_mm_dd_24H(const char *strTimeDate)
   return value;
 }
 
+char *ctimeUTC(time_t *timestamp)
+{
+struct tm tm_calendar;
+static char time_str[81];
+
+gmtime_r(timestamp, &tm_calendar);
+asctime_r(&tm_calendar, time_str);
+
+return time_str;
+}
+
 
 LogsDataSet::LogsDataSet(const char *dir_path, const char *extension, int num_fields, int timestamp_position, int timestamp_position_alt, int timestamp_type, const char *queue_name)
 {
@@ -460,6 +471,11 @@ bool LogsDataSet::InitDir()
   num_files_ = ix;
   LM_V(("%d files in vector", num_files_));
 
+  if (num_files_ == 0)
+  {
+      LM_W(("No file found at directory:%s with extension:%s", dir_path_, extension_));
+  }
+
 
   //
   // Sort the vector in name order (smallest first)
@@ -494,6 +510,43 @@ bool LogsDataSet::InitDir()
     }
   }
   return true;
+}
+
+bool LogsDataSet::Synchronize(time_t time_init)
+{
+  char *time_init_str = strdup(ctimeUTC(&time_init));
+  time_init_str[strlen(time_init_str)-1] = '\0';
+
+  int count_skip  = 0;
+  while( true )
+  {
+    char *log_line;
+    time_t timestamp;
+
+    if ((GetLogLineEntry(&log_line, &timestamp)) == false)
+    {
+      //LM_W(("Skipping wrong entry in dataset: %s", dataset_->GetQueueName()));
+      continue;
+    }
+
+    char *time_read_str = strdup(ctimeUTC(&timestamp));
+    time_read_str[strlen(time_read_str)-1] = '\0';
+
+    if (timestamp > time_init)
+    {
+      free(time_read_str);
+      free(log_line);
+      return true;
+    }
+      if (count_skip%100000000 == 0)
+      {
+        LM_M(("Skipping %s with read_timestamp:%s and first_timestamp:%s", GetQueueName(), time_read_str, time_init_str));
+      }
+      free(time_read_str);
+      free(log_line);
+      count_skip++;
+  }
+  return false; // Impossible
 }
 
 bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp)
@@ -570,10 +623,6 @@ bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp)
         else if (timestamp_type_ == 2)
         {
           *timestamp = GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[temporal_position]);
-//          if (first_timestamp_ == 0)
-//          {
-//            first_timestamp_ = *timestamp;
-//          }
         }
       }
       else
@@ -672,10 +721,6 @@ bool LogsDataSet::LookAtNextLogLineEntry(char **log, time_t *timestamp)
         else if (timestamp_type_ == 2)
         {
           *timestamp = GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[temporal_position]);
-//          if (first_timestamp_ == 0)
-//          {
-//            first_timestamp_ = *timestamp;
-//          }
         }
       }
       else

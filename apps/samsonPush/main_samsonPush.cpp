@@ -146,7 +146,11 @@ int main( int argC , const char *argV[] )
     logFd = lmFirstDiskFileDescriptor();
 
     // Random initialization
-    srand( time(NULL) );
+    struct timeval tp;
+    gettimeofday(&tp, NULL);
+    int rand_seq = tp.tv_sec*1000 + tp.tv_usec%1000;
+    srand( rand_seq );
+
 
     if( buffer_size == 0)
         LM_X(1,("Wrong buffer size %lu", buffer_size ));

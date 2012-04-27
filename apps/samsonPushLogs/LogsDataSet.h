@@ -25,6 +25,7 @@ char *fgetsFromFd( char * str, int line_max_size, int fd );
 time_t GetTimeUTCFromCalendar(struct tm *tm);
 time_t GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(const char *strTimeDate);
 time_t GetTimeFromStrTimeDate_YYYY_mm_dd_24H(const char *strTimeDate);
+char *ctimeUTC(time_t *timestamp);
 
 
 
@@ -49,10 +50,11 @@ public:
     bool InitDir();
     bool GetLogLineEntry(char **log, time_t *timestamp);
     bool LookAtNextLogLineEntry(char **log, time_t *timestamp);
+    bool Synchronize(time_t time_init);
 
 
-    time_t GetFirstTimestamp(){ LM_M(("Get first_timestamp:%s", ctime(&first_timestamp_))); return first_timestamp_;};
-    void SetFirstTimestamp(time_t value){  first_timestamp_ = value; LM_M(("Set first_timestamp:%s", ctime(&first_timestamp_)));};
+    time_t GetFirstTimestamp(){ LM_M(("For queue:%s, Get first_timestamp:%s", queue_name_, ctimeUTC(&first_timestamp_))); return first_timestamp_;};
+    void SetFirstTimestamp(time_t value){  first_timestamp_ = value; LM_M(("For queue:%s, Set first_timestamp:%s", queue_name_, ctimeUTC(&first_timestamp_)));};
 
     const char *GetQueueName(){ return queue_name_;};
 };

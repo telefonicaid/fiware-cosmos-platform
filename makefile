@@ -152,13 +152,15 @@ debug: prepare_debug
 
 coverage: prepare_coverage install_debug
 	killall samsonWorker || true
-	lcov -d BUILD_DEBUG -z
+	lcov --directory BUILD_DEBUG --zerocounters
 	samsonWorker
 	make test
 	mkdir -p coverage
-	lcov -d BUILD_DEBUG --capture --output-file coverage/samson.info
+	lcov --directory BUILD_DEBUG --capture --output-file coverage/samson.info
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/usr/local/include/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "BUILD_DEBUG/modules/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "modules/*" -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info
 	killall samsonWorker || true
 

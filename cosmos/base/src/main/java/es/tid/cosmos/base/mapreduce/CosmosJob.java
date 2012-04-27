@@ -15,14 +15,14 @@ import org.apache.hadoop.mapreduce.Job;
  * @author ximo
  */
 public abstract class CosmosJob extends Job {
-    private boolean submitted;
+    private boolean isSubmitted;
     private boolean deleteOutputOnExit;
     private List<CosmosJob> dependencies;
 
     public CosmosJob(Configuration conf, String jobName)
             throws IOException {
         super(conf, jobName);
-        this.submitted = false;
+        this.isSubmitted = false;
         this.deleteOutputOnExit = false;
         this.dependencies = new LinkedList<CosmosJob>();
     }
@@ -99,7 +99,7 @@ public abstract class CosmosJob extends Job {
         if (!this.callSuperWaitForCompletion(verbose)) {
             throw new JobExecutionException("Failed to run " + this.getJobName());
         }
-        this.submitted = true;
+        this.isSubmitted = true;
 
         if (this.deleteOutputOnExit) {
             Class outputFormat = this.getOutputFormatClass();
@@ -132,7 +132,7 @@ public abstract class CosmosJob extends Job {
                     + " dependencies. Please use waitForCompletion");
         }
         this.callSuperSubmit();
-        this.submitted = true;
+        this.isSubmitted = true;
     }
 
     /**
@@ -153,22 +153,23 @@ public abstract class CosmosJob extends Job {
 
     private void internalSubmit() throws IOException, InterruptedException,
                                          ClassNotFoundException {
-        if (!this.submitted) {
-            for (CosmosJob dependency : this.dependencies) {
-                dependency.internalSubmit();
-            }
-            this.callSuperSubmit();
-            this.submitted = true;
+        if (this.isSubmitted) {
+            return;
         }
+        for (CosmosJob dependency : this.dependencies) {
+            dependency.internalSubmit();
+        }
+        this.callSuperSubmit();
+        this.isSubmitted = true;
     }
 
     public void addDependentJob(CosmosJob job) {
-        if(this.submitted) {
+        if (this.isSubmitted) {
             throw new IllegalStateException("Cannot add a dependent job to a"
                     + "job if that job has been already submitted");
         }
-        if(job.equals(this)) {
-            throw new IllegalStateException("Cannot add a job to its own"
+        if (job.equals(this)) {
+            throw new IllegalArgumentException("Cannot add a job to its own"
                     + "dependent job list.");
         }
         this.dependencies.add(job);

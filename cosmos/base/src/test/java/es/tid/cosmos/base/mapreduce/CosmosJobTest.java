@@ -132,7 +132,7 @@ public class CosmosJobTest {
         job.addDependentJob(null);
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testWaitForCompletion6() throws Exception {
         FakeJob job = new FakeJob(new Configuration(), "Test", true);
         job.addDependentJob(job);
@@ -173,7 +173,6 @@ public class CosmosJobTest {
         assertTrue(job3.getWaitForCompletionCalled());
         assertTrue(job2.getWaitForCompletionCalled());
         assertTrue(job.getWaitForCompletionCalled());
-
     }
 
     @Test
@@ -202,7 +201,6 @@ public class CosmosJobTest {
         assertTrue(job3.getWaitForCompletionCalled());
         assertTrue(job2.getWaitForCompletionCalled());
         assertTrue(job.getWaitForCompletionCalled());
-
     }
 
     @Test(expected = IllegalStateException.class)

@@ -19,6 +19,7 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
 public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
         ProtobufWritable<PoiPos>, ProtobufWritable<TwoInt>, LongWritable> {
     private static final int HOME_LABELGROUP_ID = 3;
+    private static final int WORK_LABELGROUP_ID = 6;
     private static final double MIN_DIST_SECOND_HOME = 49342.85D;
     
     @Override
@@ -34,11 +35,11 @@ public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
         for (PoiPos poiIn : poiPosList) {
             if (poiIn.getInoutWeek() == 1 &&
                     (poiIn.getLabel() == HOME_LABELGROUP_ID ||
-                     poiIn.getLabel() == 6)) {
+                     poiIn.getLabel() == WORK_LABELGROUP_ID)) {
                 for (PoiPos poiOut : poiPosList) {
                     if (poiOut.getInoutWeek() == 0 &&
                             (poiOut.getLabel() == HOME_LABELGROUP_ID ||
-                             poiOut.getLabel() == 6)) {
+                             poiOut.getLabel() == WORK_LABELGROUP_ID)) {
                         double distx = poiIn.getPosx() - poiOut.getPosx();
                         double disty = poiIn.getPosy() - poiOut.getPosy();
                         double dist = Math.sqrt(distx * distx + disty * disty);

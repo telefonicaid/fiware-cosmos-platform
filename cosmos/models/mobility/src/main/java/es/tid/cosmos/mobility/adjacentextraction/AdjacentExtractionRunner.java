@@ -141,18 +141,6 @@ public final class AdjacentExtractionRunner {
                 job.waitForCompletion(true);
             }
 
-            Path poiPairbtsIndexMobDataPath = new Path(tmpDirPath,
-                    "poi_pairbts_index_mob_data");
-            {
-                ReduceJob job = ReduceJob.create(conf, "ConvertTwoIntToMobData",
-                        SequenceFileInputFormat.class,
-                        ConvertTwoIntToMobDataReducer.class,
-                        SequenceFileOutputFormat.class);
-                FileInputFormat.setInputPaths(job, poiPairbtsIndexPath);
-                FileOutputFormat.setOutputPath(job, poiPairbtsIndexMobDataPath);
-                job.waitForCompletion(true);
-            }
-
             Path poisTableMobDataPath = new Path(tmpDirPath,
                                                  "pois_table_mob_data");
             {
@@ -165,17 +153,15 @@ public final class AdjacentExtractionRunner {
                 job.waitForCompletion(true);
             }
 
-            Path poiPairbtsIndexWithInputIdMobDataPath = new Path(tmpDirPath,
-                    "poi_pairbts_index_mob_data_with_input_id");
+            Path poiPairbtsIndexMobDataPath = new Path(tmpDirPath,
+                    "poi_pairbts_index_mob_data");
             {
                 ReduceJob job = ReduceJob.create(conf, "ConvertTwoIntToMobData",
                         SequenceFileInputFormat.class,
-                        SetMobDataInputIdReducer.class,
+                        ConvertTwoIntToMobDataReducer.class,
                         SequenceFileOutputFormat.class);
-                job.getConfiguration().setInt("input_id", 0);
-                FileInputFormat.setInputPaths(job, poiPairbtsIndexMobDataPath);
-                FileOutputFormat.setOutputPath(job,
-                        poiPairbtsIndexWithInputIdMobDataPath);
+                FileInputFormat.setInputPaths(job, poiPairbtsIndexPath);
+                FileOutputFormat.setOutputPath(job, poiPairbtsIndexMobDataPath);
                 job.waitForCompletion(true);
             }
 
@@ -186,10 +172,24 @@ public final class AdjacentExtractionRunner {
                         SequenceFileInputFormat.class,
                         SetMobDataInputIdReducer.class,
                         SequenceFileOutputFormat.class);
-                job.getConfiguration().setInt("input_id", 1);
+                job.getConfiguration().setInt("input_id", 0);
                 FileInputFormat.setInputPaths(job, poisTableMobDataPath);
                 FileOutputFormat.setOutputPath(job,
                                                poisTableMobDataWithInputIdPath);
+                job.waitForCompletion(true);
+            }
+            
+            Path poiPairbtsIndexMobDataWithInputIdPath = new Path(tmpDirPath,
+                    "poi_pairbts_index_mob_data_with_input_id");
+            {
+                ReduceJob job = ReduceJob.create(conf, "ConvertTwoIntToMobData",
+                        SequenceFileInputFormat.class,
+                        SetMobDataInputIdReducer.class,
+                        SequenceFileOutputFormat.class);
+                job.getConfiguration().setInt("input_id", 1);
+                FileInputFormat.setInputPaths(job, poiPairbtsIndexMobDataPath);
+                FileOutputFormat.setOutputPath(job,
+                        poiPairbtsIndexMobDataWithInputIdPath);
                 job.waitForCompletion(true);
             }
             
@@ -200,8 +200,8 @@ public final class AdjacentExtractionRunner {
                         AdjUpdatePoisTableReducer.class,
                         SequenceFileOutputFormat.class);
                 FileInputFormat.setInputPaths(job, new Path[] {
-                    poiPairbtsIndexWithInputIdMobDataPath,
-                    poisTableMobDataWithInputIdPath });
+                    poisTableMobDataWithInputIdPath,
+                    poiPairbtsIndexMobDataWithInputIdPath });
                 FileOutputFormat.setOutputPath(job, poisTableTmpPath);
                 job.waitForCompletion(true);
             }

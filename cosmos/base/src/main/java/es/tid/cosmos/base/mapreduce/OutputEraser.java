@@ -5,23 +5,23 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 /**
  *
  * @author ximo
  */
-public abstract class DataEraser {
-    private static final Map<Class, Class<? extends DataEraser>> erasers;
+abstract class OutputEraser {
+    private static final Map<Class<? extends OutputFormat>,
+                             Class<? extends OutputEraser>> erasers;
 
     static {
-        erasers = new HashMap<Class, Class<? extends DataEraser>>();
-        erasers.put(FileInputFormat.class, FileDataEraser.class);
+        erasers = new HashMap();
         erasers.put(FileOutputFormat.class, FileDataEraser.class);
     }
 
-    public static DataEraser getEraser(Class c) {
+    public static OutputEraser getEraser(Class c) {
         if (!erasers.containsKey(c)) {
             Class superClass = c.getSuperclass();
             return superClass == null ? null : getEraser(superClass);
@@ -36,8 +36,6 @@ public abstract class DataEraser {
                     "Could not create instance of eraser class", ex);
         }
     }
-
-    public abstract void deleteInputs(Job job) throws IOException;
 
     public abstract void deleteOutput(Job job) throws IOException;
 }

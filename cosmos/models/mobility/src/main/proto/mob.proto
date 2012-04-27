@@ -1,0 +1,191 @@
+package mob;
+
+import "base.proto";
+
+option java_package = "es.tid.cosmos.mobility.data";
+option java_outer_classname = "MobProtocol";
+
+message MobData {
+    enum Type {
+        INVALID = 0;
+        NULL = 1;
+        INT = 2;
+        LONG = 3;
+        CDR = 4;
+        CELL = 5;
+        BTS = 6;
+        CLUSTER = 7;
+        NODE_BTS_DAY = 8;
+        BTS_COUNTER = 9;
+        POI = 10;
+        POI_POS = 11;
+        MOB_VI_MOB_VARS = 12;
+        TWO_INT = 13;
+        CLUSTER_VECTOR = 14;
+        POI_NEW = 15;
+    }
+
+    required Type type = 1;
+    optional int32 inputId = 2 [default = -1];
+    optional uint32 int = 3;
+    optional uint64 long = 4;
+    optional Cdr cdr = 5;
+    optional Cell cell = 6;
+    optional Bts bts = 7;
+    optional Cluster cluster = 8;
+    optional NodeBtsDay nodeBtsDay = 9;
+    optional BtsCounter btsCounter = 10;
+    optional Poi poi = 11;
+    optional PoiPos poiPos = 12;
+    optional MobViMobVars mobViMobVars = 13;
+    optional TwoInt twoInt = 14;
+    optional ClusterVector clusterVector = 15;
+    optional PoiNew poiNew = 16;
+}
+
+message Cdr {
+    optional uint64 userId = 1;
+    optional uint64 cellId = 2;
+    optional base.Date date = 3;
+    optional base.Time time = 4;
+}
+
+message Cell {
+    optional uint64 cellId = 1;
+    optional uint64 placeId = 2;
+    optional uint32 geoloc1 = 3;
+    optional uint32 geoloc2 = 4;
+    optional double posx = 5;
+    optional double posy = 6;
+}
+
+message Bts {
+    optional uint64 placeId = 1;
+    optional uint64 comms = 2;
+    optional double posx = 3;
+    optional double posy = 4;
+    optional double area = 5;
+    repeated uint64 adj_bts = 6;
+}
+
+message NodeBts {
+    optional uint64 userId = 1;
+    optional uint32 placeId = 2;
+    optional uint32 weekday = 3;
+    optional uint32 range = 4;
+}
+
+message BtsCounter {
+    optional uint64 placeId = 1;
+    optional uint32 weekday = 2;
+    optional uint32 range = 3;
+    optional uint32 count = 4;
+}
+
+message NodeBtsDay {
+    optional uint64 userId = 1;
+    optional uint64 placeId = 2;
+    optional uint32 workday = 3;
+    optional uint32 count = 4;
+}
+
+message NodeMxCounter {
+    repeated BtsCounter bts = 1;
+    optional uint32 btsLength = 2;
+    optional uint32 btsMaxLength = 3;
+}
+
+message TwoInt {
+    optional uint64 num1 = 1;
+    optional uint64 num2 = 2;
+}
+
+message DailyVector {
+    repeated TwoInt hours = 1;
+}
+
+message ClusterVector {
+    repeated double coms = 1;
+}
+
+message Cluster {
+    optional uint32 label = 1;
+    optional uint32 labelgroup = 2;
+    optional uint32 confident = 3;
+    optional double mean = 4;
+    optional double distance = 5;
+    optional ClusterVector coords = 6;
+}
+
+message GLEvent {
+    optional uint64 userId = 1;
+    optional uint64 placeId = 2;
+    optional base.Date date = 3;
+    optional base.Time time = 4;
+}
+
+message TelMonth {
+    optional uint64 phone = 1;
+    optional uint32 month = 2;
+    optional bool workingday = 3;
+}
+
+message Poi {
+    optional uint32 id = 1;
+    optional uint64 node = 2;
+    optional uint32 bts = 3;
+    optional uint32 labelnode = 4;
+    optional uint32 labelgroupnode = 5;
+    optional uint32 confidentnode = 6;
+    optional double distancenode = 7;
+    optional uint32 labelbts = 8;
+    optional uint32 labelgroupbts = 9;
+    optional uint32 confidentbts = 10;
+    optional double distancebts = 11;
+    optional uint32 labelnodebts = 12;
+    optional uint32 labelgroupnodebts = 13;
+    optional uint32 confidentnodebts = 14;
+    optional double distancenodebts = 15;
+    optional int32 inoutWeek = 16;
+    optional int32 inoutWend = 17;
+}
+
+message PoiPos {
+    optional uint64 node = 1;
+    optional uint64 bts = 2;
+    optional int32 label = 3;
+    optional double posx = 4;
+    optional double posy = 5;
+    optional int32 inoutWeek = 6;
+    optional int32 inoutWend = 7;
+    optional double radiusWeek = 8;
+    optional double distCMWeek = 9;
+    optional double radiusWend = 10;
+    optional double distCMWend = 11;
+}
+
+message PoiNew {
+    optional uint32 id = 1;
+    optional uint64 node = 2;
+    optional uint64 bts = 3;
+    optional uint32 labelgroupnodebts = 4;
+    optional uint32 confidentnodebts = 5;
+}
+
+message MobVars
+{
+    optional uint32 month = 1;
+    optional bool workingday = 2;
+    optional uint32 num_pos = 3;
+    optional uint32 dif_btss = 4;
+    optional uint32 dif_muns = 5;
+    optional uint32 dif_states = 6;
+    optional double masscenter_utmx = 7;
+    optional double masscenter_utmy = 8;
+    optional double radius = 9;
+    optional double diam_areainf = 10;
+}
+
+message MobViMobVars {
+    repeated MobVars vars = 1;
+}

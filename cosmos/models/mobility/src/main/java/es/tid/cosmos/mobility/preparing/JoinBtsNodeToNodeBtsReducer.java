@@ -13,6 +13,9 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
+import es.tid.cosmos.mobility.util.CellsCatalogue;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 
 /**
@@ -20,30 +23,35 @@ import org.apache.hadoop.io.NullWritable;
  * @author dmicol
  */
 public class JoinBtsNodeToNodeBtsReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, ProtobufWritable<NodeBts>, NullWritable> {
+        ProtobufWritable<Cdr>, ProtobufWritable<NodeBts>, NullWritable> {
+    private static List<Cell> cells = null;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+            InterruptedException {
+        if (cells == null) {
+            final Configuration conf = context.getConfiguration();
+            cells = CellsCatalogue.load(new Path(conf.get("cells")), conf);
+        }
+    }
+    
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<ProtobufWritable<Cdr>> values, Context context)
             throws IOException, InterruptedException {
-        List<Cdr> cdrs = new LinkedList<Cdr>();
-        List<Cell> cells = new LinkedList<Cell>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            if (mobData.hasCdr()) {
-                cdrs.add(mobData.getCdr());
-            } else if (mobData.hasCell()) {
-                cells.add(mobData.getCell());
-            } else {
-                throw new IllegalArgumentException("Invalid input data");
+        List<Cell> filteredCells = new LinkedList<Cell>();
+        for (Cell cell : cells) {
+            if (cell.getCellId() == key.get()) {
+                filteredCells.add(cell);
             }
         }
-        
-        if (cells.isEmpty()) {
+        if (filteredCells.isEmpty()) {
             return;
         }
-        for (Cell cell : cells) {
-            for (Cdr cdr : cdrs) {
+        for (ProtobufWritable<Cdr> value : values) {
+            value.setConverter(Cdr.class);
+            final Cdr cdr = value.get();
+            for (Cell cell : filteredCells) {
                 ProtobufWritable<NodeBts> nodeBts = NodeBtsUtil.createAndWrap(
                         cdr.getUserId(), (int)cell.getPlaceId(),
                         cdr.getDate().getWeekday(), cdr.getTime().getHour());

@@ -67,7 +67,7 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldPrepare = arguments.getBoolean("prepare");
         if (shouldRunAll || shouldPrepare) {
             PreparingRunner.run(tmpPreparingPath, cdrsMobPath, cdrsInfoPath,
-                                cdrsNoinfoPath, cellsMobPath, clientsBtsPath,
+                                cdrsNoinfoPath, cellsPath, clientsBtsPath,
                                 btsCommsPath, cdrsNoBtsPath, viTelmonthBtsPath,
                                 conf);
         }

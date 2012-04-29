@@ -1,8 +1,6 @@
 package es.tid.cosmos.mobility.labelling.join;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;

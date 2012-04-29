@@ -25,7 +25,7 @@ public class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<Poi> poiList = new LinkedList<Poi>();
-        List<Cell> cellList = new LinkedList<Cell>();
+        Cell cell = null;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
@@ -34,7 +34,9 @@ public class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
                     poiList.add(mobData.getPoi());
                     break;
                 case CELL:
-                    cellList.add(mobData.getCell());
+                    if (cell == null) {
+                        cell = mobData.getCell();
+                    }
                     break;
                 default:
                     throw new IllegalStateException("Unexpected MobData type: "
@@ -43,7 +45,6 @@ public class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
         }
         
         for (Poi poi : poiList) {
-            Cell cell = cellList.get(0);
             ProtobufWritable<PoiPos> poiPos = PoiPosUtil.createAndWrap(
                     poi.getNode(), poi.getBts(),
                     poi.getConfidentnodebts() == 0 ? 0 :

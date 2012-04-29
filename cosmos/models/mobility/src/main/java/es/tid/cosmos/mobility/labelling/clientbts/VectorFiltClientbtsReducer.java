@@ -25,7 +25,7 @@ public class VectorFiltClientbtsReducer extends Reducer<ProtobufWritable<TwoInt>
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        List<BtsCounter> reprBtsCounterList = new LinkedList<BtsCounter>();
+        int reprBtsCounterCount = 0;
         List<BtsCounter> sumBtsCounterList = new LinkedList<BtsCounter>();
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
@@ -35,7 +35,7 @@ public class VectorFiltClientbtsReducer extends Reducer<ProtobufWritable<TwoInt>
                     sumBtsCounterList.add(mobData.getBtsCounter());
                     break;
                 case 1:
-                    reprBtsCounterList.add(mobData.getBtsCounter());
+                    reprBtsCounterCount++;
                     break;
                 default:
                     throw new IllegalStateException("Unexpected MobData ID: "
@@ -45,7 +45,7 @@ public class VectorFiltClientbtsReducer extends Reducer<ProtobufWritable<TwoInt>
         
         key.setConverter(TwoInt.class);
         final TwoInt twoInt = key.get();
-        for (BtsCounter reprBtsCounter : reprBtsCounterList) {
+        for (int i = 0; i < reprBtsCounterCount; i++) {
             for (BtsCounter sumBtsCounter : sumBtsCounterList) {
                 ProtobufWritable<NodeBts> nodeBts = NodeBtsUtil.createAndWrap(
                         twoInt.getNum1(), (int)twoInt.getNum2(),

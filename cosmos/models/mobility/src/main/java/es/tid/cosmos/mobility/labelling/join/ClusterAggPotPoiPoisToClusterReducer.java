@@ -10,7 +10,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 
 /**
@@ -24,18 +23,18 @@ public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        List<Poi> poiList = new LinkedList<Poi>();
-        List<Cluster> clusterList = new LinkedList<Cluster>();
+        Cluster cluster = null;
         int nullCount = 0;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
             switch (mobData.getType()) {
                 case POI:
-                    poiList.add(mobData.getPoi());
                     break;
                 case CLUSTER:
-                    clusterList.add(mobData.getCluster());
+                    if (cluster == null) {
+                        cluster = mobData.getCluster();
+                    }
                     break;
                 case NULL:
                     nullCount++;
@@ -46,7 +45,6 @@ public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
             }
         }
         
-        final Cluster cluster = clusterList.get(0);
         Cluster.Builder outputCluster = Cluster.newBuilder(cluster);
         if (nullCount > 0) {
             outputCluster.setConfident(1);

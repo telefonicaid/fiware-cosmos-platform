@@ -22,14 +22,14 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        List<Integer> ncommsList = new LinkedList<Integer>();
+        int ncommsCount = 0;
         List<Cdr> cdrList = new LinkedList<Cdr>();
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
             switch (mobData.getType()) {
                 case INT:
-                    ncommsList.add(mobData.getInt());
+                    ncommsCount++;
                     break;
                 case CDR:
                     cdrList.add(mobData.getCdr());
@@ -38,7 +38,7 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
                     throw new IllegalArgumentException();
             }
         }
-        for (Integer ncomms : ncommsList) {
+        for (int i = 0; i < ncommsCount; i++) {
             for (Cdr cdr : cdrList) {
                 context.write(key, CdrUtil.wrap(cdr));
             }

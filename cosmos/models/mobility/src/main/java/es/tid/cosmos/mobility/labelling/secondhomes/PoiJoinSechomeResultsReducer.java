@@ -23,34 +23,43 @@ public class PoiJoinSechomeResultsReducer extends Reducer<
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        List<Poi> poiList = new LinkedList<Poi>();
-        List<TwoInt> twoIntList = new LinkedList<TwoInt>();
+        Poi poi = null;
+        TwoInt ioweekIowend = null;
+        boolean hasSecHomeCount = false;
         int secHomeCount = 0;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
             switch (mobData.getType()) {
                 case POI:
-                    poiList.add(mobData.getPoi());
+                    if (poi == null) {
+                        poi = mobData.getPoi();
+                    }
                     break;
                 case TWO_INT:
-                    twoIntList.add(mobData.getTwoInt());
+                    if (ioweekIowend == null) {
+                        ioweekIowend = mobData.getTwoInt();
+                    }
                     break;
                 case NULL:
-                    secHomeCount++;
+                    hasSecHomeCount = true;
                     break;
                 default:
                     throw new IllegalStateException("Unexpected MobData type: "
                             + mobData.getType().name());
             }
+            
+            if (poi != null && ioweekIowend != null && hasSecHomeCount) {
+                // We already have all the required values, so there's no need
+                // to process more records
+                break;
+            }
         }
         
-        final Poi poi = poiList.get(0);
         Poi.Builder outputPoi = Poi.newBuilder(poi);
-        final TwoInt ioweekIowend = twoIntList.get(0);
         outputPoi.setInoutWeek((int)ioweekIowend.getNum1());
         outputPoi.setInoutWend((int)ioweekIowend.getNum2());
-        if (secHomeCount != 0) {
+        if (hasSecHomeCount) {
             outputPoi.setLabelnodebts(100);
             outputPoi.setLabelgroupnodebts(100);
         }

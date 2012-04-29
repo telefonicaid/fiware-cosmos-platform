@@ -26,7 +26,6 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
                        Iterable<ProtobufWritable<MobData>> values,
                        Context context)
             throws IOException, InterruptedException {
-        List<NodeBtsDay> nodeBtsDayList = new LinkedList<NodeBtsDay>();
         int numCommsInfo = 0;
         int numCommsNoInfoOrNoBts = 0;
         for (ProtobufWritable<MobData> value : values) {
@@ -39,7 +38,6 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
                 case NODE_BTS_DAY:
                     final NodeBtsDay nodeBtsDay = mobData.getNodeBtsDay();
                     numCommsInfo += nodeBtsDay.getCount();
-                    nodeBtsDayList.add(nodeBtsDay);
                     break;
                 default:
                     throw new IllegalArgumentException();

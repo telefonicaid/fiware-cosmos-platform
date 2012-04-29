@@ -80,8 +80,7 @@ public final class DetectSecondHomesRunner {
                     SequenceFileInputFormat.class,
                     PoiJoinPoisBtscoordToPoiReducer.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, new Path[] {
-                pointsOfInterestTemp4MobDataPath, btsMobMobDataPath });
+            FileInputFormat.setInputPaths(job, pointsOfInterestTemp4Path);
             FileOutputFormat.setOutputPath(job, nodbtsPoiPath);
             job.waitForCompletion(true);
         }

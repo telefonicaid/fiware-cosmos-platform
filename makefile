@@ -107,7 +107,7 @@ i: install
 install: install_release
 install_release: release
 	make -C BUILD_RELEASE install
-	make install_man
+	make install_man_release
 	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
 	cp README $(SAMSON_HOME)/share/README.txt
 	cp modules/moduletemplate/CMakeLists.txt $(SAMSON_HOME)/share/modules/moduletemplate
@@ -146,8 +146,11 @@ install_release_all: release_all
 install_debug_all: debug_all
 	make -C BUILD_RELEASE_ALL install -j $(CPU_COUNT)				
 
-install_man: man
+install_man_release: man_release
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/
+
+install_man_release_all: man_release_all
+	cp -r BUILD_RELEASE_ALL/man $(SAMSON_HOME)/
 
 clean:
 	if [ -d BUILD_RELEASE ]; then \
@@ -370,16 +373,25 @@ publish_deb: deb
 	# Upload the files. A cron job on the server will include them in the repository
 	scp package/deb/* repo@$(REPO_SERVER):/var/repository/ubuntu/incoming/$(DISTRO_CODENAME)
 
-man:
+man_release:
 	if [ ! -d BUILD_RELEASE ]; then \
 		echo "execute make release before trying to build the manual pages"; \
 	fi
 	mkdir -p BUILD_RELEASE/man/man1
 	mkdir -p BUILD_RELEASE/man/man7
-	help2man --name="Samson worker"         --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonWorker/samsonWorker     > ./BUILD_RELEASE/man/man1/samsonWorker.1
-	help2man --name="Samson setup"          --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSetup/samsonSetup       > ./BUILD_RELEASE/man/man1/samsonSetup.1
-	#help2man --name="Samson platform interaction shell" --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/delilah/delilah                > ./BUILD_RELEASE/man/man1/delilah.1
+	help2man --name="Samson worker"  --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonWorker/samsonWorker     > ./BUILD_RELEASE/man/man1/samsonWorker.1
+	help2man --name="Samson setup"   --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSetup/samsonSetup       > ./BUILD_RELEASE/man/man1/samsonSetup.1
 	cp man/samson-*.7 ./BUILD_RELEASE/man/man7
+
+man_release_all:
+	if [ ! -d BUILD_RELEASE_ALL ]; then \
+		echo "execute make release_all before trying to build the manual pages"; \
+	fi
+	mkdir -p BUILD_RELEASE_ALL/man/man1
+	mkdir -p BUILD_RELEASE_ALL/man/man7
+	help2man --name="Samson worker" --no-info --section=1 --manual=Samson ./BUILD_RELEASE_ALL/apps/samsonWorker/samsonWorker > ./BUILD_RELEASE_ALL/man/man1/samsonWorker.1
+	help2man --name="Samson setup"  --no-info --section=1 --manual=Samson ./BUILD_RELEASE_ALL/apps/samsonSetup/samsonSetup > ./BUILD_RELEASE_ALL/man/man1/samsonSetup.1
+	cp man/samson-*.7 ./BUILD_RELEASE_ALL/man/man7
 
 uninstall:
 	if [ -f BUILD_RELEASE/install_manifest.txt ]; then \

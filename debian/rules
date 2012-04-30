@@ -23,7 +23,7 @@ build-stamp: configure-stamp
 	dh_testdir
 	# Add here commands to compile the package.
 	make release_all SAMSON_HOME=$(CURDIR)/debian/samson/opt/samson
-	make man SAMSON_HOME=$(CURDIR)/debian/samson/opt/samson
+	make man_release_all SAMSON_HOME=$(CURDIR)/debian/samson/opt/samson
 	touch $@
 
 clean: 

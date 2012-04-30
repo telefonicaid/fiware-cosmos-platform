@@ -176,7 +176,7 @@ int main( int argC , const char *argV[] )
             delete block;
             
             if( max_size > 0 )
-                if( downloaded_content >= max_size )
+			   if( downloaded_content >= (size_t)max_size )
                     break;
 
         }

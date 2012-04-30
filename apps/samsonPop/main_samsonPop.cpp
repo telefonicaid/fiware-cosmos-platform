@@ -38,19 +38,21 @@ bool show_header;
 bool flag_new;
 bool flag_remove;
 int limit;
+int max_size; // Max size downloading in bytes ( just for testing )
 
 PaArgument paArgs[] =
 {
-	{ "-node",        controller,      "",    PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SAMSON node to connect with "         },
-	{ "-port_node",    &port_node,           "",                       PaInt,    PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
-	{ "-user",             user,                  "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
-	{ "-password",         password,              "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
-	{ "-header",      &show_header,    "SHOW_HEADER",   PaBool,    PaOpt,  false, false,  true,     "Show only header of blocks"   },
-	{ "-remove",      &flag_remove,    "",              PaBool,    PaOpt,  false, false,  true,     "Remove downloaded stuff"   },
-	{ "-new",         &flag_new,       "",              PaBool,    PaOpt,  false, false,  true,     "Get only new data"   },
-	{ "-limit",       &limit,          "MAX_KVS",       PaInt,     PaOpt,     0,      0,    10000,  "number of kvs to be shown for each block"   },
-    { "-format",       format,          "",       PaString,     PaOpt,     _i "plain",      PaNL,    PaNL,  "type of output format: [plain|json|xml]"   },
-	{ " ",            queue_name,      "QUEUE",         PaString,  PaReq,  (long) "null",   PaNL,   PaNL,  "name of the queue to pop data from"         },
+	{ "-node",      controller,    "",  PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SAMSON node to connect with "         },
+	{ "-port_node", &port_node,    "",  PaInt,     PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
+	{ "-user",      user,          "",  PaString,  PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
+	{ "-password",  password,      "",  PaString,  PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
+	{ "-header",    &show_header,  "",  PaBool,    PaOpt,  false, false,  true,     "Show only header of blocks"   },
+	{ "-remove",    &flag_remove,  "",  PaBool,    PaOpt,  false, false,  true,     "Remove downloaded stuff"   },
+	{ "-new",       &flag_new,     "",  PaBool,    PaOpt,  false, false,  true,     "Get only new data"   },
+	{ "-limit",     &limit,        "",  PaInt,     PaOpt,     0,      0,    10000,  "number of kvs to be shown for each block"   },
+    { "-format",    format,        "",  PaString,  PaOpt,     _i "plain",      PaNL,    PaNL,  "type of output format: [plain|json|xml]"   },
+	{ "-max_size",  &max_size,     "",  PaInt,     PaOpt, SAMSON_WORKER_PORT,  0,  100000000, "Max size to download"                     },
+	{ " ",          queue_name,    "",  PaString,  PaReq,  (long) "null",   PaNL,   PaNL,  "name of the queue to pop data from"         },
     PA_END_OF_ARGS
 };
 
@@ -151,6 +153,8 @@ int main( int argC , const char *argV[] )
     client.connect_to_queue( queue_name , flag_new , flag_remove );
     LM_V(("Connected to queue %s" , queue_name ));
 
+    size_t downloaded_content = 0;
+    
     while( true )
     {
         samson::SamsonClientBlockInterface *block = client.getNextBlock( queue_name );
@@ -160,12 +164,21 @@ int main( int argC , const char *argV[] )
             if( show_header )
                 std::cout << block->get_header_content();
             else
-                std::cout << block->get_content( limit, format );
+            {
+                std::string content = block->get_content( limit, format );
+                std::cout << content;
+                downloaded_content += content.length();
+            }
 
             // Flush output
             std::cout.flush();
             
             delete block;
+            
+            if( max_size > 0 )
+                if( downloaded_content >= max_size )
+                    break;
+
         }
         else
             usleep(100000);

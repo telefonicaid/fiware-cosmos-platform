@@ -11,7 +11,11 @@ Counter::Counter()
 
 int Counter::get()
 {
-    return c++;
+    return c;
+}
+void Counter::append( int v )
+{
+    c += v;
 }
 
 NAMESPACE_END  

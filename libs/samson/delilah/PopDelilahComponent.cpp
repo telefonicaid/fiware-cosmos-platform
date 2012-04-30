@@ -133,7 +133,7 @@ namespace samson
             num_write_operations++;
          
             size_t worker_id = packet->from.id;
-            int num_output = counter_per_worker.getCounterFor( worker_id );
+            int num_output = counter_per_worker.appendAndGetCounterFor( worker_id );
             
             std::string _fileName = au::str("%s/worker_%06d_file_%06d" , fileName.c_str() , worker_id, num_output );
 

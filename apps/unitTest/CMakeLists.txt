@@ -1,6 +1,10 @@
 SET (SOURCES
     main_UnitTest.cpp
 
+	#au
+	au/CommandLine_test.cpp
+	au/au.cpp
+
     #engine
 	engine/common_engine_test.h
 	engine/common_engine_test.cpp

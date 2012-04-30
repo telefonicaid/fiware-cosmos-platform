@@ -1,4 +1,0 @@
-remove_all_stream
-push input.txt input
-pop input run/input
-ls_queues

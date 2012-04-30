@@ -27,9 +27,15 @@ set (CMAKE_CXX_FLAGS "-Wall -Wno-unknown-pragmas -D_LARGEFILE64_SOURCE -D_GNU_SO
 #
 # Platform checks
 # 
+MESSAGE( "Compiling in system ${CMAKE_SYSTEM_NAME}")
+
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     ADD_DEFINITIONS(-DOSX)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOSX")
+	# Use clang compiler in mac ( to support code coverage )
+	MESSAGE( "Using clang compilers" )
+	set( CMAKE_C_COMPILER "clang" )
+	set( CMAKE_CXX_COMPILER "clang++" )
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -87,6 +93,7 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 #
 
 include_directories("/opt/local/include")
+include_directories("/usr/include")
 
 #
 # Library directories

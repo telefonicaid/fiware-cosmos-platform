@@ -119,7 +119,8 @@ void cleanup(void)
     engine::DiskManager::stop();
     engine::ProcessManager::stop();
 
-    delilahConsole->stop();
+    if( delilahConsole )
+        delilahConsole->stop();
     
     // Wait all threads to finsih
     au::ThreadManager::shared()->wait();
@@ -177,7 +178,6 @@ char           lsHost[64];
 unsigned short lsPort;
 int main(int argC, const char *argV[])
 {
-    atexit(cleanup);
 
     paConfig("prefix",                        (void*) "DELILAH_");
     paConfig("builtin prefix",                (void*) "SS_DELILAH_");
@@ -204,7 +204,7 @@ int main(int argC, const char *argV[])
     // Random initialization
     struct timeval tp;
     gettimeofday(&tp, NULL);
-    int rand_seq = tp.tv_sec*1000 + tp.tv_usec%1000;
+    int rand_seq = tp.tv_sec*1000000 + tp.tv_usec;
     srand( rand_seq );
 
     // Random code for delilah
@@ -214,6 +214,9 @@ int main(int argC, const char *argV[])
     paParse(paArgs, argC, (char**) argV, 1, true);
     lmAux((char*) "father");
     logFd = lmFirstDiskFileDescriptor();
+
+    // Clean up function
+    atexit(cleanup);
 
     // Start log to server
     std::string local_log_file = au::str("%s/delilahLog_%s" , paLogDir , au::code64_str( delilah_random_code ).c_str() );

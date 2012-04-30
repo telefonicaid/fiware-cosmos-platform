@@ -1528,7 +1528,7 @@ namespace samson
     
     void DelilahConsole::receive_buffer_from_queue( std::string queue , engine::Buffer* buffer )
     {
-        size_t counter = stream_out_queue_counters.getCounterFor( queue );
+        size_t counter = stream_out_queue_counters.appendAndGetCounterFor( queue );
         size_t packet_size = buffer->getSize();
         
         std::string directory_name = au::str("stream_out_%s" , queue.c_str() );

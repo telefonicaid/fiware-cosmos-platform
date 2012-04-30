@@ -1,5 +1,4 @@
 
-
 # ------------------------------------------------------------
 # Environment variables
 # ------------------------------------------------------------
@@ -38,10 +37,14 @@ ifndef CPU_COUNT
 	endif
 endif
 
+# ------------------------------------------------
+# Default compilation mode
+# ------------------------------------------------
+
 default: release
 
 # ------------------------------------------------
-# Prepare CMAKE
+# PREPARING
 # ------------------------------------------------
 
 prepare_release:
@@ -57,41 +60,52 @@ prepare_debug:
 	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
 
 prepare_coverage:
-	mkdir BUILD_DEBUG || true
-	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=True -DCOVERAGE=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
+	mkdir BUILD_COVERAGE || true
+	cd BUILD_COVERAGE; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=True -DCOVERAGE=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
 
 prepare_release_all:
-	mkdir BUILD_RELEASE || true
-	cd BUILD_RELEASE; cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_MODULES=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
+	mkdir BUILD_RELEASE_ALL || true
+	cd BUILD_RELEASE_ALL; cmake .. -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_MODULES=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
 
 prepare_debug_all:
-	mkdir BUILD_DEBUG || true
-	cd BUILD_DEBUG; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
+	mkdir BUILD_DEBUG_ALL || true
+	cd BUILD_DEBUG_ALL; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=True -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME)
 
-prepare: prepare_release prepare_debug
+prepare: prepare_release prepare_debug prepare_coverage prepare_release_all prepare_debug_all
 
 # ------------------------------------------------
-# Global install scripts
+# BUILDING
+# ------------------------------------------------
+
+release: prepare_release
+	make -C BUILD_RELEASE -j $(CPU_COUNT)
+
+debug: prepare_debug
+	make -C BUILD_DEBUG -j $(CPU_COUNT)
+
+all: release_all
+release_all: prepare_release_all
+	make -C BUILD_RELEASE_ALL -j $(CPU_COUNT)
+
+da: debug_all
+debug_all: prepare_debug_all
+	make -C BUILD_DEBUG_ALL -j $(CPU_COUNT)
+
+coverage: prepare_coverage
+	make -C BUILD_COVERAGE -j $(CPU_COUNT)
+
+strict: strict_compilation
+strict_compilation: prepare_strict
+	make -C BUILD_STRICT -j $(CPU_COUNT)
+
+
+# ------------------------------------------------
+# INSTALLING
 # ------------------------------------------------
 
 i: install
-
-install_debug: prepare_debug 
-	make -C BUILD_DEBUG install -j $(CPU_COUNT)
-	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
-	cp README $(SAMSON_HOME)/share/README.txt
-	cp modules/moduletemplate/CMakeLists.txt $(SAMSON_HOME)/share/modules/moduletemplate
-	cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
-	cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
-	cp scripts/samsonModuleBootstrap $(SAMSON_HOME)/bin
-	cp scripts/samsonProcessesSupervise $(SAMSON_HOME)/bin
-	echo
-	echo
-	echo "Before starting Samson you need to run the following commands as root"
-	echo "mkdir -p /var/samson"
-	echo "chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_WORKING)"
-
-install: prepare_release
+install: install_release
+install_release: release
 	make -C BUILD_RELEASE install
 	make install_man
 	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
@@ -107,88 +121,123 @@ install: prepare_release
 	echo "mkdir -p /var/samson"
 	echo "chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_WORKING)"
 
+di:	install_debug
+install_debug: debug
+	make -C BUILD_DEBUG install -j $(CPU_COUNT)
+	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
+	cp README $(SAMSON_HOME)/share/README.txt
+	cp modules/moduletemplate/CMakeLists.txt $(SAMSON_HOME)/share/modules/moduletemplate
+	cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
+	cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
+	cp scripts/samsonModuleBootstrap $(SAMSON_HOME)/bin
+	cp scripts/samsonProcessesSupervise $(SAMSON_HOME)/bin
+	echo
+	echo
+	echo "Before starting Samson you need to run the following commands as root"
+	echo "mkdir -p /var/samson"
+	echo "chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_WORKING)"
+
+install_coverage: coverage
+	make -C BUILD_COVERAGE install -j $(CPU_COUNT)
+
+install_release_all: release_all
+	make -C BUILD_RELEASE_ALL install -j $(CPU_COUNT)				
+
+install_debug_all: debug_all
+	make -C BUILD_RELEASE_ALL install -j $(CPU_COUNT)				
+
 install_man: man
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/
 
-# Install the supporting script/files that go in the OS directories
-install_scripts:
-	cp etc/profile.d 
- 
 clean:
-	if [ -d BUILD_DEBUG ]; then \
-		make -C BUILD_DEBUG clean; \
-	fi
 	if [ -d BUILD_RELEASE ]; then \
 		make -C BUILD_RELEASE clean; \
 	fi
+	if [ -d BUILD_DEBUG ]; then \
+		make -C BUILD_DEBUG clean; \
+	fi
+	if [ -d BUILD_RELEASE_ALL ]; then \
+		make -C BUILD_RELEASE_ALL clean; \
+	fi
+	if [ -d BUILD_DEBUG_ALL ]; then \
+		make -C BUILD_DEBUG_ALL clean; \
+	fi
+	if [ -d BUILD_COVERAGE ]; then \
+		make -C BUILD_COVERAGE clean; \
+	fi
 	rm -rf BUILD_DEBUG
 	rm -rf BUILD_RELEASE
+	rm -rf BUILD_COVERAGE
 
-# ------------------------------------------------
-# Platform RELEASE version
-# ------------------------------------------------
-
-release: prepare_release
-	make -C BUILD_RELEASE -j $(CPU_COUNT)
-
-# ------------------------------------------------
-# Platform STRICT compilation
-# ------------------------------------------------
-
-strict: strict_compilation
-strict_compilation: prepare_strict
-	make -C BUILD_STRICT -j $(CPU_COUNT)
-
-# ------------------------------------------------
-# Platform DEBUG Version
-# ------------------------------------------------
-
-debug: prepare_debug
-	make -C BUILD_DEBUG -j $(CPU_COUNT)
 
 # ------------------------------------------------
 # Platform Code Coverage Version
 # ------------------------------------------------
 
-coverage: prepare_coverage install_debug
+run_coverage: install_coverage
 	killall samsonWorker || true
-	lcov --directory BUILD_DEBUG --zerocounters
+	lcov --directory BUILD_COVERAGE --zerocounters	
 	samsonWorker
-	make test
+	make test_coverage
+	killall samsonWorker || true
 	mkdir -p coverage
-	lcov --directory BUILD_DEBUG --capture --output-file coverage/samson.info
+	lcov --directory BUILD_COVERAGE --capture --output-file coverage/samson.info
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/usr/local/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "BUILD_DEBUG/modules/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "modules/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "/opt/local/include/google/*" -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info
+
+
+# There is a problem with coverage tool for mac.. please do use this output a mac environment
+
+run_mac_coverage: install_coverage
+	export GCOV_PREFIX=$PWD
+	make begin_mac_coverage
+	make process_mac_coverage
+	make finish_mac_coverage
+
+begin_mac_coverage:	
+	rm -Rf CMakeFiles
+	rm -Rf coverage
+	scripts/prepare_mac_coverage.sh				  
+	lcov --directory CMakeFiles --zerocounters
+	echo "NOTE: PLEASE MAKE SURE YOU RUN  export GCOV_PREFIX=$$PWD"
+
+process_mac_coverage:
+	killall samsonWorker || true
+	samsonWorker
+	make test_coverage
 	killall samsonWorker || true
 
-# ------------------------------------------------
-# Platform + Modules RELEASE version
-# ------------------------------------------------
-
-all: release_all
-release_all: prepare_release_all
-	make -C BUILD_RELEASE -j $(CPU_COUNT)
-
-# ------------------------------------------------
-# Platform + Modules DEBUG version
-# ------------------------------------------------
-
-da: debug_all
-debug_all: prepare_debug_all
-	make -C BUILD_DEBUG -j $(CPU_COUNT)
+finish_mac_coverage:
+	mkdir -p coverage
+	lcov --directory CMakeFiles --capture --output-file coverage/samson.info
+	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "/usr/local/include/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "BUILD_DEBUG/modules/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "modules/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "/opt/local/include/google/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "extern/*" -o coverage/samson.info
+	genhtml -o coverage coverage/samson.info
 
 # ------------------------------------------------
 # Testing
 # ------------------------------------------------
 
 test: ctest
-
-ctest:
+ctest: debug
 	make test -C BUILD_DEBUG ARGS="-D ExperimentalTest"
 	BUILD_DEBUG/apps/unitTest/unitTest --gtest_output=xml:BUILD_DEBUG/samson_test.xml
+
+unit_test: debug
+	BUILD_DEBUG/apps/unitTest/unitTest --gtest_output=xml:BUILD_DEBUG/samson_test.xml
+
+test_coverage:
+	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest"
+	BUILD_COVERAGE/apps/unitTest/unitTest --gtest_output=xml:BUILD_COVERAGE/samson_test.xml
+
 
 test_samsonWorker: install_debug
 	scripts/samsonTest test/samsonWorker
@@ -211,10 +260,6 @@ pdi: debug
 pdid: pdi
 	./scripts/samsonDist
 
-di:	debuginstall
-
-debuginstall: debug
-	make -C BUILD_DEBUG install
 
 distribute: install
 ifndef SAMSON_CLUSTER
@@ -362,3 +407,11 @@ help:
 	less doc/makefile_targets
 
 #vim: noexpandtab
+
+
+test_makefile:
+	make install_release
+	make install_debug
+	make install_release_all
+	make install_debug_all
+	make install coverage

@@ -1,1 +1,0 @@
-samsonCat run/input | sort > run/output_pop_input

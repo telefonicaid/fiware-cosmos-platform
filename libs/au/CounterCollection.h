@@ -28,38 +28,48 @@
 #include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
-
-class Counter
-{
-    int c;
+namespace au {
     
-public:
-    
-    Counter();
-    
-    int get();
-};
-
-template <typename T>
-class CounterCollection
-{
-    au::map<T,Counter> counters;
-    
-public:
-    
-    int getCounterFor(T t)
+    class Counter
     {
-        Counter *c = counters.findInMap( t );
-        if( !c )
-        {
-            c = new Counter();
-            counters.insertInMap( t , c);
-        }
-        return c->get();
-    }
-};
+        int c;
+    public:
+        Counter();
+        int get();
+        void append( int v );
+    };
+    
+    template <typename T>
+    class CounterCollection
+    {
+        au::map<T,Counter> counters;
+        
+    public:
 
-NAMESPACE_END
+        ~CounterCollection()
+        {
+            counters.clearMap();
+        }
+
+        Counter* getCounterFor( T t )
+        {
+            Counter *c = counters.findInMap( t );
+            if( !c )
+            {
+                c = new Counter();
+                counters.insertInMap( t , c);
+            }
+            return c;
+        }
+        
+        int appendAndGetCounterFor( T t )
+        {
+            Counter *c = getCounterFor(t);
+            c->append(1);
+            return c->get();
+        }
+    };
+    
+}
 
 #endif

@@ -200,7 +200,7 @@ void read_original_dictionary_file( const char * file_name , size_t max_num_reco
     while( fgets( line, 10000 , file ) )
     {
         fields[0] = line;
-        for ( int f = 1 ; f < (sizeof(fields)/sizeof(char*)) ; f++ )
+        for ( int f = 1 ; f < (int)(sizeof(fields)/sizeof(char*)) ; f++ )
         {
             char * pos = strstr( fields[f-1], "\t" );
             *pos = '\0';

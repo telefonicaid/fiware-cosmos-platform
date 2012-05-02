@@ -58,7 +58,7 @@ rm -rf $RPM_BUILD_ROOT
 make release_all SAMSON_HOME=$RPM_BUILD_ROOT/opt/samson
 
 %install
-make SAMSON_HOME=$RPM_BUILD_ROOT/opt/samson install
+make SAMSON_HOME=$RPM_BUILD_ROOT/opt/samson install_release_all
 mkdir -p $RPM_BUILD_ROOT/var/samson
 mkdir -p $RPM_BUILD_ROOT/var/samson/etc
 mkdir -p $RPM_BUILD_ROOT/etc/init.d

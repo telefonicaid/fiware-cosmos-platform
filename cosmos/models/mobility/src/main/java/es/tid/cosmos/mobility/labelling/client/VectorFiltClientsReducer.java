@@ -22,14 +22,14 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        int ncommsCount = 0;
+        boolean hasComms = false;
         List<Cdr> cdrList = new LinkedList<Cdr>();
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
             switch (mobData.getType()) {
                 case INT:
-                    ncommsCount++;
+                    hasComms = true;
                     break;
                 case CDR:
                     cdrList.add(mobData.getCdr());
@@ -37,11 +37,26 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
                 default:
                     throw new IllegalArgumentException();
             }
-        }
-        for (int i = 0; i < ncommsCount; i++) {
-            for (Cdr cdr : cdrList) {
-                context.write(key, CdrUtil.wrap(cdr));
+            if (hasComms) {
+                break;
             }
+        }
+        if (!hasComms) {
+            // If we don't have communications for this user, we won't output
+            // any CDRs
+            return;
+        }
+        for (Cdr cdr : cdrList) {
+            context.write(key, CdrUtil.wrap(cdr));
+        }
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final MobData mobData = value.get();
+            final Cdr cdr = mobData.getCdr();
+            if (mobData.getType() != MobData.Type.CDR) {
+                throw new IllegalStateException();
+            }
+            context.write(key, CdrUtil.wrap(cdr));
         }
     }
 }

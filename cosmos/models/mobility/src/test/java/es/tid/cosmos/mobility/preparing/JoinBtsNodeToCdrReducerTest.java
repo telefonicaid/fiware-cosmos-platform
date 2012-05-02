@@ -37,9 +37,9 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(CellsCatalogue.class)
-public class JoinBtsNodeToBtsDayRangeReducerTest {
+public class JoinBtsNodeToCdrReducerTest {
     private ReduceDriver<LongWritable, ProtobufWritable<Cdr>, LongWritable,
-            ProtobufWritable<TwoInt>> driver;
+            ProtobufWritable<Cdr>> driver;
     
     @Before
     public void setUp() throws IOException {
@@ -52,8 +52,8 @@ public class JoinBtsNodeToBtsDayRangeReducerTest {
         when(CellsCatalogue.load(any(Path.class), any(Configuration.class)))
                 .thenReturn(cells);
         this.driver = new ReduceDriver<LongWritable, ProtobufWritable<Cdr>,
-                LongWritable, ProtobufWritable<TwoInt>>(
-                        new JoinBtsNodeToBtsDayRangeReducer());
+                LongWritable, ProtobufWritable<Cdr>>(
+                        new JoinBtsNodeToCdrReducer());
         this.driver.getConfiguration().set("cells", "/home/test");
     }
 
@@ -63,8 +63,8 @@ public class JoinBtsNodeToBtsDayRangeReducerTest {
                 Date.getDefaultInstance(), Time.getDefaultInstance());
         final ProtobufWritable<Cdr> value2 = CdrUtil.createAndWrap(3L, 4L,
                 Date.getDefaultInstance(), Time.getDefaultInstance());        
-        List<Pair<LongWritable, ProtobufWritable<TwoInt>>> results = this.driver
-                .withInput(new LongWritable(57L), asList(value1, value2))
+        List<Pair<LongWritable, ProtobufWritable<Cdr>>> results = this.driver
+                .withInput(new LongWritable(10L), asList(value1, value2))
                 .run();
         assertNotNull(results);
         assertEquals(0, results.size());
@@ -76,10 +76,10 @@ public class JoinBtsNodeToBtsDayRangeReducerTest {
                 Date.getDefaultInstance(), Time.getDefaultInstance());
         final ProtobufWritable<Cdr> value2 = CdrUtil.createAndWrap(3L, 4L,
                 Date.getDefaultInstance(), Time.getDefaultInstance());        
-        List<Pair<LongWritable, ProtobufWritable<TwoInt>>> results = this.driver
-                .withInput(new LongWritable(10L), asList(value1, value2))
+        List<Pair<LongWritable, ProtobufWritable<Cdr>>> results = this.driver
+                .withInput(new LongWritable(57L), asList(value1, value2))
                 .run();
         assertNotNull(results);
-        assertEquals(4, results.size());
+        assertEquals(2, results.size());
     }
 }

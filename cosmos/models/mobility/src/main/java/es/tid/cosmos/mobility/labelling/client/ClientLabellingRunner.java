@@ -9,6 +9,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import es.tid.cosmos.base.mapreduce.MapReduceJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.util.*;
 
@@ -51,8 +52,9 @@ public final class ClientLabellingRunner {
         
         Path cdrsFilteredPath = new Path(tmpDirPath, "cdrs_filtered");
         {
-            ReduceJob job = ReduceJob.create(conf, "VectorFiltClients",
+            MapReduceJob job = MapReduceJob.create(conf, "VectorFiltClients",
                     SequenceFileInputFormat.class,
+                    VectorFiltClientsMapper.class,
                     VectorFiltClientsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {

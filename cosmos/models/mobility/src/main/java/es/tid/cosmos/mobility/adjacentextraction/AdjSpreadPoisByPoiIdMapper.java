@@ -14,8 +14,8 @@ import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class AdjSpreadPoisByPoiIdMapper extends Mapper<
-        ProtobufWritable<TwoInt>, ProtobufWritable<PoiNew>,
-        LongWritable, ProtobufWritable<PoiNew>> {
+        ProtobufWritable<TwoInt>, ProtobufWritable<PoiNew>, LongWritable,
+        ProtobufWritable<PoiNew>> {
     @Override
     protected void map(ProtobufWritable<TwoInt> key,
             ProtobufWritable<PoiNew> value, Context context)

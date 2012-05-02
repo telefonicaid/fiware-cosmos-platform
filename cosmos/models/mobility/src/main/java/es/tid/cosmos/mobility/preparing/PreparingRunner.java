@@ -24,8 +24,6 @@ public final class PreparingRunner {
                            Path clientsBtsPath, Path btsCommsPath,
                            Path cdrsNoBtsPath, Path viTelmonthBtsPath,
                            Configuration conf) throws Exception {
-        FileSystem fs = FileSystem.get(conf);
-        
         {
             MapJob job = MapJob.create(conf, "FilterCellnoinfoMapper",
                     SequenceFileInputFormat.class,

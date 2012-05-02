@@ -151,9 +151,9 @@ public final class PoisRunner {
         fs.delete(clientsInfoFilteredMobDataPath, true);
 
         {
-            ReduceJob job = ReduceJob.create(conf, "RepbtsGetRepresentativeBts",
+            MapJob job = MapJob.create(conf, "RepbtsGetRepresentativeBts",
                     SequenceFileInputFormat.class,
-                    RepbtsGetRepresentativeBtsReducer.class,
+                    RepbtsGetRepresentativeBtsMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoBtsPercPath);
             FileOutputFormat.setOutputPath(job, clientsRepbtsPath);

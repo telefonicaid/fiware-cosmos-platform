@@ -301,7 +301,38 @@ namespace samson {
                 return string_collection.get(s[0]);
         }
         
+        size_t SamsonComscoreDictionary::getNumEntries()
+        {
+            return dictionary_entries.size;
+            
+        }
         
+        size_t SamsonComscoreDictionary::getPatternIdForEnty( size_t i )
+        {
+            if( i > dictionary_entries.size )
+                return 0;
+            return dictionary_entries.v[i].id;
+        }
+        
+        const char* SamsonComscoreDictionary::getDomainForEntry( size_t i )
+        {
+            if( i > dictionary_entries.size )
+                return "Unknown";
+            return string_collection.get( dictionary_entries.v[i].domain );
+        }
+        
+        const char* SamsonComscoreDictionary::getPreDomainPatternForEntry( size_t i )
+        {
+            if( i > dictionary_entries.size )
+                return "Unknown";
+            return string_collection.get( dictionary_entries.v[i].pre_domain_pattern );
+        }
+        const char* SamsonComscoreDictionary::getPathPatternForEntry( size_t i )
+        {
+            if( i > dictionary_entries.size )
+                return "Unknown";
+            return string_collection.get( dictionary_entries.v[i].path_pattern );
+        }
         
     }
 }

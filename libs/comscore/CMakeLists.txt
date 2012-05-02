@@ -41,8 +41,17 @@ TARGET_LINK_LIBRARIES(samson_comscore_directory_create ${STATIC_LIBS})
 ADD_EXECUTABLE( samson_comscore_directory_query  main_samson_comscore_directory_query.cpp )
 TARGET_LINK_LIBRARIES(samson_comscore_directory_query ${STATIC_LIBS})
 
+ADD_EXECUTABLE( samson_comscore_directory_cat main_samson_comscore_directory_cat.cpp )
+TARGET_LINK_LIBRARIES(samson_comscore_directory_cat ${STATIC_LIBS})
+
+
 INSTALL(TARGETS               samson_comscore_directory_create
         RUNTIME DESTINATION   bin)
 
 INSTALL(TARGETS               samson_comscore_directory_query
         RUNTIME DESTINATION   bin)
+
+INSTALL(TARGETS               samson_comscore_directory_cat
+        RUNTIME DESTINATION   bin)
+
+

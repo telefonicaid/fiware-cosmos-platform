@@ -22,6 +22,12 @@ namespace au {
             max_size = 0;
         }
         
+        ~StructCollection()
+        {
+            if( v )
+                free( v );
+        }
+        
         void add( C c )
         {
             if( size == max_size )

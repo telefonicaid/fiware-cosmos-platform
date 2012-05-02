@@ -70,39 +70,22 @@ int main(int argC, const char *argV[])
     
 	paParse(paArgs, argC, (char**) argV, 1, false);
     
-    
     // Load dictionary
     samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
     samson_comscore_dictionary.read(dictionary_file_name);
-
-	//const char * url_to_test = "yahoo.com";
-	//const char * url_to_test = "m.yahoo.com/aux/yservices/1.0/image/fwpEyWUNOZdh7HgM46ViCA--/resource:/brand/yahoouk/web/1.0.17/image/A/icon/everything/featured/featured_mail";
     
-    char nativeURL[1024];
-    while( true )
+    size_t num = samson_comscore_dictionary.getNumEntries();
+    
+    printf("Comscore dictionary %s\n" , dictionary_file_name );
+    printf("--------------------------------------\n");
+    
+    for ( size_t i = 0 ; i < num ; i++ )
     {
-        printf("Enter URL> ");
-        fflush(stdout);
-        if ( scanf("%s" , nativeURL ) == 0 )
-            LM_W(("Error reading url"));
-  
-        // Get categories for this URL
-        std::vector<uint> categories = samson_comscore_dictionary.getCategories( nativeURL );
-        
-        if( categories.size() == 0 )
-        {
-            std::cout << nativeURL << " has not being identifier inside this comscore dictionary\n";
-            continue;
-        }
-        
-        for( size_t i = 0 ; i < categories.size() ; i++ )
-        {
-            std::string description = samson_comscore_dictionary.getCategoryName( categories[i] );
-            std::cout << nativeURL << " -> : " << categories[i] << " " << description << "\n";
-        }
-        
+        printf("PATTERN:    %lu\n" , samson_comscore_dictionary.getPatternIdForEnty(i) );
+        printf("DOMAIN:     %s\n"  , samson_comscore_dictionary.getDomainForEntry(i) );
+        printf("PRE-DOMAIN: %s\n"  , samson_comscore_dictionary.getPreDomainPatternForEntry(i) );
+        printf("PATH:       %s\n"  , samson_comscore_dictionary.getPathPatternForEntry(i) );
+        printf("\n");
     }
-    
-    
     
 }

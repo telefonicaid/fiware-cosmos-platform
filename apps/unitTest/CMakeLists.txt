@@ -8,9 +8,7 @@ SET (SOURCES
     #engine
 	engine/common_engine_test.h
 	engine/common_engine_test.cpp
-
     engine/object_test.cpp
-
     engine/engine_test.cpp
     engine/memoryManager_test.cpp
     engine/diskOperation_test.cpp
@@ -19,6 +17,12 @@ SET (SOURCES
     engine/processItem_test.cpp
     engine/buffer_test.cpp
     engine/readFile_test.cpp
+
+	#samson_system lib
+	samson_system/samson_system.cpp
+
+	#comscore library
+	comscore/comscore.cpp
 
 )
 
@@ -49,6 +53,8 @@ SET (STATIC_LIBS
      samsonModule
      samsonWorkerLib
      samsonCommon
+	 samson_comscore
+	 samson_system
      au
      xmlmarkup
      xmlparser	

@@ -115,6 +115,14 @@ namespace samson
             void write( const char* file_name );            
             void read( const char* file_name );            
 
+            
+            // Method to access content directly
+            size_t getNumEntries();
+            size_t getPatternIdForEnty( size_t i );
+            const char* getDomainForEntry( size_t i );
+            const char* getPreDomainPatternForEntry( size_t i );
+            const char* getPathPatternForEntry( size_t i );
+            
         private:
             
             // Methods to find pattern of a provided URL

@@ -27,17 +27,34 @@
  * Option variables
  */
 
+int max_num_entries;
 
 
+
+char comsore_dictionary_file_name[1024];
+char pattern_to_category_file_name[1024];
+char comscore_categories_files[1024];          
+char samson_comsore_dictionary_file_name[1024];
+
+#define DEF_DICTIONARY  "/var/comscore/cs_mmxi.bcp"
+#define DEF_PATTERN_CAT "/var/comscore/pattern_category_mapping.txt"
+#define DEF_CAT         "/var/comscore/cat_subcat_lookup.txt"
+#define DEF_OUTPUT      "samson_comscore_dictionary.bin"
+ 
 /* ****************************************************************************
  *
  * parse arguments
  */
+
 PaArgument paArgs[] =
 {
+    { "-source",                      comsore_dictionary_file_name,        "", PaString, PaOpt, _i DEF_DICTIONARY,  PaNL, PaNL,  "Original Comscore dictionary (.bcp)"  },
+    { "-pattern_to_catergories_file", pattern_to_category_file_name,       "", PaString, PaOpt, _i DEF_PATTERN_CAT,  PaNL, PaNL, "Pattern to categories file"  },
+    { "-categories_file",             comscore_categories_files,           "", PaString, PaOpt, _i DEF_CAT,  PaNL, PaNL,         "Categories file"  },
+    { "-output",                      samson_comsore_dictionary_file_name, "", PaString, PaOpt, _i DEF_OUTPUT,  PaNL, PaNL,      "Output binary diccionary"  },
+    { "-max_num_entries",             &max_num_entries,                    "", PaInt,    PaOpt, 0,           0,    1000000000,   "Maximum number of entries from original file"   },
 	PA_END_OF_ARGS
 };
-
 
 
 /* ****************************************************************************
@@ -101,6 +118,15 @@ void read_original_categories_file( const char* file_name )
     
 }
 
+
+bool isPatternIdUsed( size_t id )
+{
+    for( size_t i = 0 ; i < original_dictionary_entries.size() ; i++ )
+        if( original_dictionary_entries[i].id == id )
+            return true;
+    return false;
+}
+
 void read_original_pattern_to_category_file( const char * file_name )
 {
     LM_M(("Reading original pattern to cageory file"));
@@ -132,12 +158,18 @@ void read_original_pattern_to_category_file( const char * file_name )
         entry.first  = atoll( fields[0] );
         entry.second = atoll( fields[1] );
         
-
-        // Push back this entry
-        original_pattern_to_category.push_back( entry );
-        
         if ( (++num%100000)==0 )
             LM_M(("Readed %lu records" , num));
+        
+        if( ( max_num_entries > 0 ) && ( max_num_entries<1000 ) )
+            if( !isPatternIdUsed( entry.first ) )
+            {
+                //LM_M(("Pattern %lu not used...", entry.first));
+                continue;
+            }
+ 
+        original_pattern_to_category.push_back( entry );
+        
     }
     
     // Sorting original records
@@ -148,9 +180,12 @@ void read_original_pattern_to_category_file( const char * file_name )
 }
 
 
-void read_original_dictionary_file( const char * file_name )
+void read_original_dictionary_file( const char * file_name , size_t max_num_records = 0 )
 {
-    LM_M(("Reading original dictionary file"));
+    LM_M(("Reading original dictionary file '%s'" , file_name ));
+    
+    if( max_num_records > 0 )
+        LM_M(("Max number records %d" , max_num_records ));
     
     FILE *file = fopen( file_name , "r" );
     
@@ -159,18 +194,24 @@ void read_original_dictionary_file( const char * file_name )
 
     
     char line[10000];
-    char* fields[10];
+    char* fields[11];
     size_t num = 0;
     
     while( fgets( line, 10000 , file ) )
     {
         fields[0] = line;
-        for ( int f = 1 ; f < 10 ; f++ )
+        for ( int f = 1 ; f < (sizeof(fields)/sizeof(char*)) ; f++ )
         {
             char * pos = strstr( fields[f-1], "\t" );
             *pos = '\0';
             
             fields[f] = pos+1;
+        }
+        
+        if( atoi( fields[10] ) == -1 )
+        {
+            LM_W(("Discarted element"));
+            continue;
         }
         
         // Fill element
@@ -218,11 +259,22 @@ void read_original_dictionary_file( const char * file_name )
         // Push back this entry
         original_dictionary_entries.push_back( dictionary_entry );
         
+        // Increase counter of records
+        num++;
+        
+        // Max number of records limit
+        if( max_num_records > 0 )
+            if( num >= max_num_records )
+                break;
+        
         if ( (++num%100000)==0 )
             LM_M(("Readed %lu records" , num));
         
     }
  
+    // Close the file
+    fclose(file);
+    
     // Sorting original records
     LM_M(("Sorting entries"));
     std::sort(original_dictionary_entries.begin(), original_dictionary_entries.end() , samson::comscore::compareOriginalDictionaryEntry );
@@ -244,20 +296,14 @@ int main(int argC, const char *argV[])
     
 	paParse(paArgs, argC, (char**) argV, 1, false);
     
-    const char* comsore_dictionary_file_name        = "/var/comscore/cs_mmxi.bcp";
-    const char* pattern_to_category_file_name       = "/var/comscore/pattern_category_mapping.txt";
-    const char* comscore_categories_files           = "/var/comscore/cat_subcat_lookup.txt";  
-    
-    const char* samson_comsore_dictionary_file_name = "samson_comscore_dictionary.bin";  // Current directories
  
     // Reading original files
-    read_original_dictionary_file( comsore_dictionary_file_name );
+    read_original_dictionary_file( comsore_dictionary_file_name , max_num_entries );
     read_original_pattern_to_category_file( pattern_to_category_file_name );
     read_original_categories_file( comscore_categories_files );
     
-    // ------------------------------------
+    
     // Creating the file
-    // ------------------------------------
     LM_M(("Creating samson comscore dictionary"));
     samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;    
 

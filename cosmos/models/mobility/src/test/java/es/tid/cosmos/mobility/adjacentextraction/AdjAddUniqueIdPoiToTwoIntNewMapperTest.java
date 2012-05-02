@@ -33,7 +33,7 @@ public class AdjAddUniqueIdPoiToTwoIntNewMapperTest {
     }
     
     @Test
-    public void testReduce() throws IOException {
+    public void testMap() throws IOException {
         Poi poi = PoiUtil.create(1, 2L, 3, 4, 5, 1, 4.3D, 6, 7,
                                  0, 9.1D, 10, 11, 1, 8.45D, 1, 0);
         List<Pair<LongWritable, ProtobufWritable<TwoInt>>> result =

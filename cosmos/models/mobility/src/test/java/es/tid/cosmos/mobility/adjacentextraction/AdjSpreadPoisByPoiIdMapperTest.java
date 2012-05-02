@@ -27,7 +27,7 @@ public class AdjSpreadPoisByPoiIdMapperTest {
     }
 
     @Test
-    public void testReduce() {
+    public void testMap() {
         final ProtobufWritable<PoiNew> poiNew = PoiNewUtil.createAndWrap(
                 1, 2L, 3L, 4, 0);
         this.driver

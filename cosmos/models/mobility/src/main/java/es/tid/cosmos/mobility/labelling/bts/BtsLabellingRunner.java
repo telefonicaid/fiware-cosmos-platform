@@ -9,6 +9,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import es.tid.cosmos.base.mapreduce.MapJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourReducer;
 import es.tid.cosmos.mobility.labelling.client.VectorFuseNodeDaygroupReducer;
@@ -31,9 +32,9 @@ public final class BtsLabellingRunner {
         
         Path btsCountsPath = new Path(tmpDirPath, "bts_counts");
         {
-            ReduceJob job = ReduceJob.create(conf, "VectorFilterBts",
+            MapJob job = MapJob.create(conf, "VectorFilterBts",
                     SequenceFileInputFormat.class,
-                    VectorFilterBtsReducer.class,
+                    VectorFilterBtsMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsCommsPath);
             FileOutputFormat.setOutputPath(job, btsCountsPath);

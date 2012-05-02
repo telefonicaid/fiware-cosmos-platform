@@ -24,7 +24,7 @@ public class AdjSpreadTableByPoiIdMapperTest {
     }
     
     @Test
-    public void testReduce() {
+    public void testMap() {
         this.driver
                 .withInput(new LongWritable(57L),
                            TwoIntUtil.createAndWrap(3L, 6L))

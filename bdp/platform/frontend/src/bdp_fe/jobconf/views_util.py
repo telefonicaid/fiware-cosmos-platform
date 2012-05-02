@@ -73,13 +73,10 @@ def get_owned_job_or_40x(request, job_id):
 def retrieve_results(job_id, primary_key):
     ans = []
     jobmodel = CustomJobModel.objects.get(id=job_id)
-    mongo_url = jobmodel.mongo_url()
-    mongo_db = jobmodel.job.user.username
-    mongo_collection = 'job_%s' % jobmodel.job.id
     try:
-        connection = Connection(mongo_url)
-        db = connection[mongo_db]
-        job_results = db[mongo_collection]
+        connection = Connection(jobmodel.mongo_url())
+        db = connection[jobmodel.mongo_db()]
+        job_results = db[jobmodel.mongo_collection()]
         if not primary_key:
             some_result = job_results.find_one()
             if not some_result:

@@ -9,6 +9,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import es.tid.cosmos.base.mapreduce.MapJob;
+import es.tid.cosmos.base.mapreduce.MapReduceJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.util.*;
 
@@ -29,9 +31,9 @@ public final class DetectSecondHomesRunner {
         
         Path btsMobPath = new Path(tmpDirPath, "bts_mob");
         {
-            ReduceJob job = ReduceJob.create(conf, "PoiCellToBts",
+            MapJob job = MapJob.create(conf, "PoiCellToBts",
                     SequenceFileInputFormat.class,
-                    PoiCellToBtsReducer.class,
+                    PoiCellToBtsMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cellsMobPath);
             FileOutputFormat.setOutputPath(job, btsMobPath);
@@ -64,7 +66,8 @@ public final class DetectSecondHomesRunner {
         
         Path sechPoiPosPath = new Path(tmpDirPath, "sech_poi_pos");
         {
-            ReduceJob job = ReduceJob.create(conf, "PoiJoinPoisBtscoordToPoiPos",
+            ReduceJob job = ReduceJob.create(conf,
+                    "PoiJoinPoisBtscoordToPoiPos",
                     SequenceFileInputFormat.class,
                     PoiJoinPoisBtscoordToPoiPosReducer.class,
                     SequenceFileOutputFormat.class);
@@ -76,9 +79,9 @@ public final class DetectSecondHomesRunner {
 
         Path nodbtsPoiPath = new Path(tmpDirPath, "nodbts_poi");
         {
-            ReduceJob job = ReduceJob.create(conf, "PoiJoinPoisBtscoordToPoi",
+            MapJob job = MapJob.create(conf, "PoiJoinPoisBtscoordToPoi",
                     SequenceFileInputFormat.class,
-                    PoiJoinPoisBtscoordToPoiReducer.class,
+                    PoiJoinPoisBtscoordToPoiMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestTemp4Path);
             FileOutputFormat.setOutputPath(job, nodbtsPoiPath);
@@ -179,8 +182,10 @@ public final class DetectSecondHomesRunner {
         
         Path nodbtsSechomePath = new Path(tmpDirPath, "nodbts_sechome");
         {
-            ReduceJob job = ReduceJob.create(conf, "PoiFilterSechomeAdjacent",
+            MapReduceJob job = MapReduceJob.create(conf,
+                    "PoiFilterSechomeAdjacent",
                     SequenceFileInputFormat.class,
+                    PoiFilterSechomeAdjacentMapper.class,
                     PoiFilterSechomeAdjacentReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {

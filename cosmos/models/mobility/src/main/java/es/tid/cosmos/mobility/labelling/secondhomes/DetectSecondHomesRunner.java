@@ -10,7 +10,6 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.MapJob;
-import es.tid.cosmos.base.mapreduce.MapReduceJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.util.*;
 
@@ -182,10 +181,9 @@ public final class DetectSecondHomesRunner {
         
         Path nodbtsSechomePath = new Path(tmpDirPath, "nodbts_sechome");
         {
-            MapReduceJob job = MapReduceJob.create(conf,
+            ReduceJob job = ReduceJob.create(conf,
                     "PoiFilterSechomeAdjacent",
                     SequenceFileInputFormat.class,
-                    PoiFilterSechomeAdjacentMapper.class,
                     PoiFilterSechomeAdjacentReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {

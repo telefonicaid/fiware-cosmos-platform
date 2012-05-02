@@ -24,7 +24,6 @@ public class PoiJoinSechomeResultsReducer extends Reducer<
         Poi poi = null;
         TwoInt ioweekIowend = null;
         boolean hasSecHomeCount = false;
-        int secHomeCount = 0;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();

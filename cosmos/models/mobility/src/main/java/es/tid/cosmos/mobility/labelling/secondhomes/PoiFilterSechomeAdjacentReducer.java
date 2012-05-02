@@ -24,7 +24,6 @@ public class PoiFilterSechomeAdjacentReducer extends Reducer<
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<Long> nodeList = new LinkedList<Long>();
-        int adjCount = 0;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
@@ -33,8 +32,8 @@ public class PoiFilterSechomeAdjacentReducer extends Reducer<
                     nodeList.add(mobData.getLong());
                     break;
                 case NULL:
-                    adjCount++;
-                    break;
+                    // If we find one null, we won't output anything
+                    return;
                 default:
                     throw new IllegalStateException("Unexpected MobData type: "
                             + mobData.getType().name());
@@ -43,11 +42,9 @@ public class PoiFilterSechomeAdjacentReducer extends Reducer<
         
         key.setConverter(TwoInt.class);
         final TwoInt pairbts = key.get();
-        if (adjCount == 0) {
-            for (long node : nodeList) {
-                context.write(TwoIntUtil.createAndWrap(node, pairbts.getNum2()),
-                              NullWritable.get());
-            }
+        for (long node : nodeList) {
+            context.write(TwoIntUtil.createAndWrap(node, pairbts.getNum2()),
+                          NullWritable.get());
         }
     }
 }

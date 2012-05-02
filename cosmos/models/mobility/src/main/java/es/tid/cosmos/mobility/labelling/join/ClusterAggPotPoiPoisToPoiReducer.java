@@ -23,7 +23,7 @@ public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         Poi poi = null;
-        int nullCount = 0;
+        boolean hasNulls = false;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
@@ -36,16 +36,19 @@ public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
                 case CLUSTER:
                     break;
                 case NULL:
-                    nullCount++;
+                    hasNulls = true;
                     break;
                 default:
                     throw new IllegalStateException("Unexpected MobData type: "
                             + mobData.getType().name());
             }
+            if (poi != null && hasNulls) {
+                break;
+            }
         }
         
         Poi.Builder outputPoi = Poi.newBuilder(poi);
-        if (nullCount > 0) {
+        if (hasNulls) {
             outputPoi.setConfidentnodebts(1);
         }
         context.write(new LongWritable(outputPoi.getBts()),

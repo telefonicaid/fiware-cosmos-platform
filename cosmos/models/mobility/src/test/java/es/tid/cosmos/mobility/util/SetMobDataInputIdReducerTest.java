@@ -17,20 +17,20 @@ import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
+import org.apache.hadoop.io.LongWritable;
 
 /**
  *
  * @author dmicol
  */
-public class SetMobDataInputIdByTwoIntReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
-            ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> driver;
+public class SetMobDataInputIdReducerTest {
+    private ReduceDriver<LongWritable, ProtobufWritable<MobData>, LongWritable,
+            ProtobufWritable<MobData>> driver;
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>>(
-                        new SetMobDataInputIdByTwoIntReducer());
+        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
+                LongWritable, ProtobufWritable<MobData>>(
+                        new SetMobDataInputIdReducer());
     }
     
     @Test(expected=IllegalArgumentException.class)
@@ -42,12 +42,11 @@ public class SetMobDataInputIdByTwoIntReducerTest {
     public void testSetInputId() throws IOException {
         Configuration conf = this.driver.getConfiguration();
         conf.setInt("input_id", 3);
-        List<Pair<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>> res =
-                this.driver
-                        .withInput(TwoIntUtil.createAndWrap(1L, 2L),
-                                   asList(MobDataUtil.createAndWrap(
-                                           NullWritable.get())))
-                        .run();
+        List<Pair<LongWritable, ProtobufWritable<MobData>>> res = this.driver
+                .withInput(new LongWritable(57L),
+                            asList(MobDataUtil.createAndWrap(
+                                    NullWritable.get())))
+                .run();
         assertEquals(1, res.size());
         ProtobufWritable<MobData> output = res.get(0).getSecond();
         output.setConverter(MobData.class);

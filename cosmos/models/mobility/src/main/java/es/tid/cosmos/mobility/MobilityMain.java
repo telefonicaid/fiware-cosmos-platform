@@ -74,7 +74,7 @@ public class MobilityMain extends Configured implements Tool {
 
         Path tmpExtractMivsPath = new Path(tmpPath, "mivs");
         Path viClientFuseAccPath = new Path(tmpExtractMivsPath,
-                                        "vi_client_fuse_acc");
+                                            "vi_client_fuse_acc");
         boolean shouldExtractMivs = arguments.getBoolean("extractMIVs");
         if (shouldRunAll || shouldExtractMivs) {
             MivsRunner.run(viTelmonthBtsPath, viClientFuseAccPath,

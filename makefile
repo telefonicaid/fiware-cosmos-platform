@@ -108,43 +108,27 @@ install: install_release
 install_release: release
 	make -C BUILD_RELEASE install
 	make install_man_release
-	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
-	cp README $(SAMSON_HOME)/share/README.txt
-	cp modules/moduletemplate/CMakeLists.txt $(SAMSON_HOME)/share/modules/moduletemplate
-	cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
-	cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
-	cp scripts/samsonModuleBootstrap $(SAMSON_HOME)/bin
-	cp scripts/samsonProcessesSupervise $(SAMSON_HOME)/bin
-	echo
-	echo
-	echo "Before starting Samson you need to run the following commands as root"
-	echo "mkdir -p /var/samson"
-	echo "chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_WORKING)"
+	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKER) $(SAMSON_OWNER)
 
 di:	install_debug
 install_debug: debug
 	make -C BUILD_DEBUG install -j $(CPU_COUNT)
 	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
-	cp README $(SAMSON_HOME)/share/README.txt
-	cp modules/moduletemplate/CMakeLists.txt $(SAMSON_HOME)/share/modules/moduletemplate
-	cp modules/moduletemplate/makefile $(SAMSON_HOME)/share/modules/moduletemplate
-	cp modules/moduletemplate/module $(SAMSON_HOME)/share/modules/moduletemplate
-	cp scripts/samsonModuleBootstrap $(SAMSON_HOME)/bin
-	cp scripts/samsonProcessesSupervise $(SAMSON_HOME)/bin
-	echo
-	echo
-	echo "Before starting Samson you need to run the following commands as root"
-	echo "mkdir -p /var/samson"
-	echo "chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_WORKING)"
+	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKER) $(SAMSON_OWNER)
+
+ria: install_release_all
+install_release_all: release_all
+	make -C BUILD_RELEASE_ALL install
+	make install_man_release_all
+	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKER) $(SAMSON_OWNER)
+
+dia: install_debug_all
+install_debug_all: debug_all
+	make -C BUILD_DEBUG_ALL install
+	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKER) $(SAMSON_OWNER)
 
 install_coverage: coverage
 	make -C BUILD_COVERAGE install -j $(CPU_COUNT)
-
-install_release_all: release_all
-	make -C BUILD_RELEASE_ALL install -j $(CPU_COUNT)				
-
-install_debug_all: debug_all
-	make -C BUILD_RELEASE_ALL install -j $(CPU_COUNT)				
 
 install_man_release: man_release
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/
@@ -298,8 +282,10 @@ eclipse:
 
 reset:
 	rm -Rf BUILD_DEBUG
+	rm -Rf BUILD_DEBUG_ALL
 	rm -Rf BUILD_STRICT
 	rm -Rf BUILD_RELEASE
+	rm -Rf BUILD_RELEASE_ALL
 	rm -Rf BUILD_DEBUG_COVERAGE
 	rm -Rf xcode_proj
 	rm -f libs/common/samson.pb.*
@@ -383,7 +369,7 @@ man_release:
 	help2man --name="Samson setup"   --no-info --section=1 --manual=Samson ./BUILD_RELEASE/apps/samsonSetup/samsonSetup       > ./BUILD_RELEASE/man/man1/samsonSetup.1
 	cp man/samson-*.7 ./BUILD_RELEASE/man/man7
 
-man_release_all:
+man_release_all: release_all
 	if [ ! -d BUILD_RELEASE_ALL ]; then \
 		echo "execute make release_all before trying to build the manual pages"; \
 	fi

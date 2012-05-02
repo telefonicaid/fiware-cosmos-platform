@@ -36,6 +36,7 @@ clean:
 	rm -rf $(CURDIR)/debian/samson-dev
 	rm -rf $(CURDIR)/debian/samson-log
 	rm -rf $(CURDIR)/debian/MANIFEST*
+	rm -rf $(CURDIR)/debian/samson*.tar
 	rm -rf BUILD_RELEASE
 	dh_clean debian/files
 
@@ -44,7 +45,7 @@ install: build
 	dh_testroot
 	dh_prep
 	dh_installdirs
-	make install SAMSON_HOME=$(CURDIR)/debian/samson/opt/samson
+	make install_release_all SAMSON_HOME=$(CURDIR)/debian/samson/opt/samson
 	# Generate a list of files for each package 
 	(cd $(CURDIR)/debian/samson; find . -type f -or -type l | sed -e '/^$$/d') > $(CURDIR)/debian/MANIFEST
 	grep "samsonTopicMonitor\|delilah_graph\|samsonLocal" $(CURDIR)/debian/MANIFEST > $(CURDIR)/debian/MANIFEST.samson-gui

@@ -9,6 +9,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import es.tid.cosmos.base.mapreduce.MapJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 
 /**
@@ -29,9 +30,9 @@ public final class OutPoisRunner {
         Path vectorClientbtsSpreadPath = new Path(tmpDirPath,
                                                   "vector_clientbts_spread");
         {
-            ReduceJob job = ReduceJob.create(conf, "PoiSpreadNodebtsVector",
+            MapJob job = MapJob.create(conf, "PoiSpreadNodebtsVector",
                     SequenceFileInputFormat.class,
-                    PoiSpreadNodebtsVectorReducer.class,
+                    PoiSpreadNodebtsVectorMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorClientbtsPath);
             FileOutputFormat.setOutputPath(job, vectorClientbtsSpreadPath);

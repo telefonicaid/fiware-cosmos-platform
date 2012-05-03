@@ -3,7 +3,7 @@ package es.tid.cosmos.mobility.outpois;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
@@ -16,18 +16,16 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  * 
  * @author dmicol
  */
-public class PoiSpreadNodebtsVectorReducer extends Reducer<
+public class PoiSpreadNodebtsVectorMapper extends Mapper<
         ProtobufWritable<NodeBts>, ProtobufWritable<MobData>,
         ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
     @Override
-    protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+    protected void map(ProtobufWritable<NodeBts> key,
+            ProtobufWritable<MobData> value, Context context)
             throws IOException, InterruptedException {
         key.setConverter(NodeBts.class);
         final NodeBts nodeBts = key.get();
-        for (ProtobufWritable<MobData> value : values) {
-            context.write(TwoIntUtil.createAndWrap(nodeBts.getUserId(),
-                                                   nodeBts.getPlaceId()), value);
-        }
+        context.write(TwoIntUtil.createAndWrap(nodeBts.getUserId(),
+                                               nodeBts.getPlaceId()), value);
     }
 }

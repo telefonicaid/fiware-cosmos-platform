@@ -11,18 +11,23 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
- *
+ * Input: <Long, Cdr>
+ * Output: <NodeBts, Null>
+ * 
  * @author dmicol
  */
 public class JoinBtsNodeToNodeBtsReducer extends Reducer<LongWritable,
-        ProtobufWritable<Cdr>, ProtobufWritable<NodeBts>, NullWritable> {
+        ProtobufWritable<MobData>, ProtobufWritable<NodeBts>,
+        ProtobufWritable<MobData>> {
     private static List<Cell> cells = null;
     
     @Override
@@ -36,7 +41,7 @@ public class JoinBtsNodeToNodeBtsReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<Cdr>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<Cell> filteredCells = new LinkedList<Cell>();
         for (Cell cell : cells) {
@@ -47,14 +52,15 @@ public class JoinBtsNodeToNodeBtsReducer extends Reducer<LongWritable,
         if (filteredCells.isEmpty()) {
             return;
         }
-        for (ProtobufWritable<Cdr> value : values) {
-            value.setConverter(Cdr.class);
-            final Cdr cdr = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final Cdr cdr = value.get().getCdr();
             for (Cell cell : filteredCells) {
                 ProtobufWritable<NodeBts> nodeBts = NodeBtsUtil.createAndWrap(
                         cdr.getUserId(), (int)cell.getPlaceId(),
                         cdr.getDate().getWeekday(), cdr.getTime().getHour());
-                context.write(nodeBts, NullWritable.get());
+                context.write(nodeBts,
+                              MobDataUtil.createAndWrap(NullWritable.get()));
             }
         }
     }

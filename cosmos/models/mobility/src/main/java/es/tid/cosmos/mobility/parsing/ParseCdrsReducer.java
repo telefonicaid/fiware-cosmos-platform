@@ -7,15 +7,18 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.CdrUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
- *
+ * Input: <Long, Text>
+ * Output: <Long, Cdr>
+ * 
  * @author sortega
  */
 public class ParseCdrsReducer extends Reducer<LongWritable, Text, LongWritable,
-        ProtobufWritable<Cdr>> {
+        ProtobufWritable<MobData>> {
     private LongWritable userId;
     
     @Override
@@ -35,7 +38,7 @@ public class ParseCdrsReducer extends Reducer<LongWritable, Text, LongWritable,
                 continue;
             }
             this.userId.set(cdr.getUserId());
-            context.write(this.userId, CdrUtil.wrap(cdr));
+            context.write(this.userId, MobDataUtil.createAndWrap(cdr));
         }
     }
 }

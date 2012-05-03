@@ -5,18 +5,20 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
-import es.tid.cosmos.mobility.data.PoiUtil;
 
 /**
- *
+ * Input: <TwoInt, Poi|TwoInt|Null>
+ * Output: <TwoInt, Poi>
+ * 
  * @author dmicol
  */
 public class PoiJoinSechomeResultsReducer extends Reducer<
         ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
-        ProtobufWritable<TwoInt>, ProtobufWritable<Poi>> {
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -60,6 +62,6 @@ public class PoiJoinSechomeResultsReducer extends Reducer<
             outputPoi.setLabelnodebts(100);
             outputPoi.setLabelgroupnodebts(100);
         }
-        context.write(key, PoiUtil.wrap(outputPoi.build()));
+        context.write(key, MobDataUtil.createAndWrap(outputPoi.build()));
     }
 }

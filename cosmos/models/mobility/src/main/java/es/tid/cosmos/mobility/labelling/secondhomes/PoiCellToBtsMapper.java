@@ -7,18 +7,21 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
- *
+ * Input: <Long, Cell>
+ * Output: <Long, Cell>
+ * 
  * @author dmicol
  */
 public class PoiCellToBtsMapper extends Mapper<LongWritable,
-        ProtobufWritable<Cell>, LongWritable, ProtobufWritable<Cell>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     @Override
-    protected void map(LongWritable key, ProtobufWritable<Cell> value,
+    protected void map(LongWritable key, ProtobufWritable<MobData> value,
             Context context) throws IOException, InterruptedException {
-        value.setConverter(Cell.class);
-        final Cell cell = value.get();
+        value.setConverter(MobData.class);
+        final Cell cell = value.get().getCell();
         context.write(new LongWritable(cell.getPlaceId()), value);
     }
 }

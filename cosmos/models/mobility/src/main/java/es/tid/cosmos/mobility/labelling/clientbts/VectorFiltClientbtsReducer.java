@@ -7,6 +7,7 @@ import java.util.List;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
@@ -15,12 +16,14 @@ import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 
 /**
- *
+ * Input: <TwoInt, BtsCounter>
+ * Output: <NodeBts, TwoInt>
+ * 
  * @author dmicol
  */
-public class VectorFiltClientbtsReducer extends Reducer<ProtobufWritable<TwoInt>,
-        ProtobufWritable<MobData>, ProtobufWritable<NodeBts>,
-        ProtobufWritable<TwoInt>> {
+public class VectorFiltClientbtsReducer extends Reducer<
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
+        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -50,9 +53,9 @@ public class VectorFiltClientbtsReducer extends Reducer<ProtobufWritable<TwoInt>
                 ProtobufWritable<NodeBts> nodeBts = NodeBtsUtil.createAndWrap(
                         twoInt.getNum1(), (int)twoInt.getNum2(),
                         sumBtsCounter.getWeekday(), 0);
-                ProtobufWritable<TwoInt> hourComs = TwoIntUtil.createAndWrap(
-                        sumBtsCounter.getRange(), sumBtsCounter.getCount());
-                context.write(nodeBts, hourComs);
+                TwoInt hourComs = TwoIntUtil.create(sumBtsCounter.getRange(),
+                                                    sumBtsCounter.getCount());
+                context.write(nodeBts, MobDataUtil.createAndWrap(hourComs));
             }
         }
     }

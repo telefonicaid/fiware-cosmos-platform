@@ -6,18 +6,20 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
-import es.tid.cosmos.mobility.data.PoiUtil;
 
 /**
- *
+ * Input: <TwoInt, Poi|Cluster|Null>
+ * Output: <Long, Poi>
+ * 
  * @author dmicol
  */
 public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
         ProtobufWritable<TwoInt>, ProtobufWritable<MobData>, LongWritable,
-        ProtobufWritable<Poi>> {
+        ProtobufWritable<MobData>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -52,6 +54,6 @@ public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
             outputPoi.setConfidentnodebts(1);
         }
         context.write(new LongWritable(outputPoi.getBts()),
-                      PoiUtil.wrap(outputPoi.build()));
+                      MobDataUtil.createAndWrap(outputPoi.build()));
     }
 }

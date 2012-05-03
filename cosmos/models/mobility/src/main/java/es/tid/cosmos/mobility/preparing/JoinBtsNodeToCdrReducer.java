@@ -10,17 +10,20 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.CdrUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
- *
+ * Input: <Long, Cdr>
+ * Output: <Long, TwoInt>
+ * 
  * @author dmicol
  */
 public class JoinBtsNodeToCdrReducer extends Reducer<LongWritable,
-        ProtobufWritable<Cdr>, LongWritable, ProtobufWritable<Cdr>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     private static List<Cell> cells = null;
     
     @Override
@@ -34,7 +37,7 @@ public class JoinBtsNodeToCdrReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<Cdr>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<Cell> filteredCells = new LinkedList<Cell>();
         for (Cell cell : cells) {
@@ -43,11 +46,11 @@ public class JoinBtsNodeToCdrReducer extends Reducer<LongWritable,
             }
         }
         if (filteredCells.isEmpty()) {
-            for (ProtobufWritable<Cdr> value : values) {
-                value.setConverter(Cdr.class);
-                final Cdr cdr = value.get();
+            for (ProtobufWritable<MobData> value : values) {
+                value.setConverter(MobData.class);
+                final Cdr cdr = value.get().getCdr();
                 context.write(new LongWritable(cdr.getUserId()),
-                              CdrUtil.wrap(cdr));
+                              MobDataUtil.createAndWrap(cdr));
             }
         }
     }

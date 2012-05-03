@@ -7,25 +7,29 @@ import java.util.List;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.PoiNew;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 
 /**
- *
+ * Input: <TwoInt, PoiNew>
+ * Output: <TwoInt, TwoInt>
+ * 
  * @author dmicol
  */
 public class AdjGroupTypePoiClientReducer extends Reducer<
-        ProtobufWritable<TwoInt>, ProtobufWritable<PoiNew>,
-        ProtobufWritable<TwoInt>, ProtobufWritable<TwoInt>> {
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<ProtobufWritable<PoiNew>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<PoiNew> poiNewList = new LinkedList<PoiNew>();
-        for (ProtobufWritable<PoiNew> value : values) {
-            value.setConverter(PoiNew.class);
-            final PoiNew poiNew = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final PoiNew poiNew = value.get().getPoiNew();
             poiNewList.add(poiNew);
         }
         
@@ -34,8 +38,8 @@ public class AdjGroupTypePoiClientReducer extends Reducer<
                 if (curPoi.getId() < tempPoi.getId()) {
                     context.write(TwoIntUtil.createAndWrap(curPoi.getBts(),
                                                            tempPoi.getBts()),
-                                  TwoIntUtil.createAndWrap(curPoi.getId(),
-                                                           tempPoi.getId()));
+                                  MobDataUtil.createAndWrap(TwoIntUtil.create(
+                                          curPoi.getId(), tempPoi.getId())));
                 }
             }
         }

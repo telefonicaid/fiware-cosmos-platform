@@ -10,18 +10,22 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.util.CentroidsCatalogue;
 
 /**
- *
+ * Input: <NodeBts, ClusterVector>
+ * Output: <Long, Cluster>
+ * 
  * @author dmicol
  */
 public class ClusterClientGetMinDistanceReducer extends Reducer<
-        ProtobufWritable<NodeBts>, ProtobufWritable<ClusterVector>,
-        LongWritable, ProtobufWritable<Cluster>> {
+        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>,
+        LongWritable, ProtobufWritable<MobData>> {
     private static List<Cluster> centroids = null;
     
     @Override
@@ -36,11 +40,11 @@ public class ClusterClientGetMinDistanceReducer extends Reducer<
 
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<ProtobufWritable<ClusterVector>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<ClusterVector> value : values) {
-            value.setConverter(ClusterVector.class);
-            final ClusterVector clusVector = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final ClusterVector clusVector = value.get().getClusterVector();
             double mindist = Double.POSITIVE_INFINITY;
             Cluster minDistCluster = null;
             for (Cluster cluster : centroids) {
@@ -59,15 +63,15 @@ public class ClusterClientGetMinDistanceReducer extends Reducer<
 
             key.setConverter(NodeBts.class);
             final NodeBts nodeBts = key.get();
-            ProtobufWritable<Cluster> outputCluster =
-                    ClusterUtil.createAndWrap(
+            Cluster outputCluster = ClusterUtil.create(
                             minDistCluster.getLabel(),
                             minDistCluster.getLabelgroup(),
                             mindist > minDistCluster.getDistance() ? 0 : 1,
                             0D,
                             mindist,
                             clusVector);
-            context.write(new LongWritable(nodeBts.getUserId()), outputCluster);
+            context.write(new LongWritable(nodeBts.getUserId()),
+                          MobDataUtil.createAndWrap(outputCluster));
         }
     }
 }

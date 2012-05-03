@@ -6,7 +6,8 @@ import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
+import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 
 /**
@@ -14,21 +15,22 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  * @author dmicol
  */
 public class AdjSpreadTableByPoiIdMapperTest {
-    private MapDriver<LongWritable, ProtobufWritable<TwoInt>, LongWritable,
-            LongWritable> driver;
+    private MapDriver<LongWritable, ProtobufWritable<MobData>, LongWritable,
+            ProtobufWritable<MobData>> driver;
 
     @Before
     public void setUp() {
-        this.driver = new MapDriver<LongWritable, ProtobufWritable<TwoInt>,
-                LongWritable, LongWritable>(new AdjSpreadTableByPoiIdMapper());
+        this.driver = new MapDriver<LongWritable, ProtobufWritable<MobData>,
+                LongWritable, ProtobufWritable<MobData>>(
+                        new AdjSpreadTableByPoiIdMapper());
     }
     
     @Test
     public void testMap() {
         this.driver
                 .withInput(new LongWritable(57L),
-                           TwoIntUtil.createAndWrap(3L, 6L))
-                .withOutput(new LongWritable(3L), new LongWritable(6L))
+                           MobDataUtil.createAndWrap(TwoIntUtil.create(3L, 6L)))
+                .withOutput(new LongWritable(3L), MobDataUtil.createAndWrap(6L))
                 .runTest();
     }
 }

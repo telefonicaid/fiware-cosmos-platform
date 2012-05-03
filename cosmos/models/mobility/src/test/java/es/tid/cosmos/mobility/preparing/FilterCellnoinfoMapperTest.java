@@ -9,27 +9,29 @@ import org.junit.Test;
 import es.tid.cosmos.mobility.data.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.CdrUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
+import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
  *
  * @author dmicol
  */
 public class FilterCellnoinfoMapperTest {
-    private MapDriver<LongWritable, ProtobufWritable<Cdr>, LongWritable,
-            ProtobufWritable<Cdr>> driver;
+    private MapDriver<LongWritable, ProtobufWritable<MobData>, LongWritable,
+            ProtobufWritable<MobData>> driver;
 
     @Before
     public void setUp() {
-        this.driver = new MapDriver<LongWritable, ProtobufWritable<Cdr>,
-                LongWritable, ProtobufWritable<Cdr>>(
+        this.driver = new MapDriver<LongWritable, ProtobufWritable<MobData>,
+                LongWritable, ProtobufWritable<MobData>>(
                         new FilterCellnoinfoMapper());
     }
     
     @Test
     public void testValidCellId() throws Exception {
-        final ProtobufWritable<Cdr> value = CdrUtil.createAndWrap(3L, 7L,
-                Date.getDefaultInstance(), Time.getDefaultInstance());
+        final ProtobufWritable<MobData> value = MobDataUtil.createAndWrap(
+                CdrUtil.create(3L, 7L, Date.getDefaultInstance(),
+                               Time.getDefaultInstance()));
         this.driver
                 .withInput(new LongWritable(1L), value)
                 .withOutput(new LongWritable(7L), value)
@@ -38,8 +40,9 @@ public class FilterCellnoinfoMapperTest {
 
     @Test
     public void testInvalidCellId() throws Exception {
-        final ProtobufWritable<Cdr> value = CdrUtil.createAndWrap(3L, 0L,
-                Date.getDefaultInstance(), Time.getDefaultInstance());
+        final ProtobufWritable<MobData> value = MobDataUtil.createAndWrap(
+                CdrUtil.create(3L, 0L, Date.getDefaultInstance(),
+                               Time.getDefaultInstance()));
         this.driver
                 .withInput(new LongWritable(1L), value)
                 .withOutput(new LongWritable(1L), value)

@@ -9,20 +9,24 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.util.CentroidsCatalogue;
 
 /**
- *
+ * Input: <NodeBts, ClusterVector>
+ * Output: <TwoInt, Cluster>
+ * 
  * @author dmicol
  */
 public class ClusterClientBtsGetMinDistanceToClusterReducer extends Reducer<
-        ProtobufWritable<NodeBts>, ProtobufWritable<ClusterVector>,
-        ProtobufWritable<TwoInt>, ProtobufWritable<Cluster>> {
+        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>,
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
     private static List<Cluster> centroids = null;
 
     @Override
@@ -37,11 +41,11 @@ public class ClusterClientBtsGetMinDistanceToClusterReducer extends Reducer<
 
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<ProtobufWritable<ClusterVector>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<ClusterVector> value : values) {
-            value.setConverter(ClusterVector.class);
-            final ClusterVector clusVector = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final ClusterVector clusVector = value.get().getClusterVector();
             double mindist = Double.POSITIVE_INFINITY;
             Cluster minDistCluster = null;
             for (Cluster cluster : centroids) {
@@ -74,11 +78,11 @@ public class ClusterClientBtsGetMinDistanceToClusterReducer extends Reducer<
             final NodeBts nodeBts = key.get();
             ProtobufWritable<TwoInt> twoInt = TwoIntUtil.createAndWrap(
                     nodeBts.getUserId(), nodeBts.getPlaceId());
-            ProtobufWritable<Cluster> cluster = ClusterUtil.createAndWrap(
+            Cluster cluster = ClusterUtil.create(
                     minDistCluster.getLabel(), minDistCluster.getLabelgroup(),
                     mindist > minDistCluster.getDistance() ? 0 : 1,
                     0D, mindist, clusVector);
-            context.write(twoInt, cluster);
+            context.write(twoInt, MobDataUtil.createAndWrap(cluster));
         }
     }
 }

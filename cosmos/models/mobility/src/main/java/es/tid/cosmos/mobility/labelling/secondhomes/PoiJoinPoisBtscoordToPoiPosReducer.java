@@ -8,6 +8,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.Poi;
@@ -15,11 +16,13 @@ import es.tid.cosmos.mobility.data.MobProtocol.PoiPos;
 import es.tid.cosmos.mobility.data.PoiPosUtil;
 
 /**
- *
+ * Input: <Long, Poi|Cell>
+ * Output: <Long, PoiPos>
+ * 
  * @author dmicol
  */
 public class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<PoiPos>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -45,13 +48,14 @@ public class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
         }
         
         for (Poi poi : poiList) {
-            ProtobufWritable<PoiPos> poiPos = PoiPosUtil.createAndWrap(
+            PoiPos poiPos = PoiPosUtil.create(
                     poi.getNode(), poi.getBts(),
                     poi.getConfidentnodebts() == 0 ? 0 :
                                                      poi.getLabelgroupnodebts(),
                     cell.getPosx(), cell.getPosy(), poi.getInoutWeek(),
                     poi.getInoutWend(), -1D, -1D, -1D, -1D);
-            context.write(new LongWritable(poi.getNode()), poiPos);
+            context.write(new LongWritable(poi.getNode()),
+                          MobDataUtil.createAndWrap(poiPos));
         }
     }
 }

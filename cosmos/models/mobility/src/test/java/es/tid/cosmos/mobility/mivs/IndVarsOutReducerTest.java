@@ -10,9 +10,10 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobVarsUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
-import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
+import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
 
 /**
@@ -20,13 +21,13 @@ import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
  * @author logc
  */
 public class IndVarsOutReducerTest {
-    private ReduceDriver<LongWritable, ProtobufWritable<MobViMobVars>,
+    private ReduceDriver<LongWritable, ProtobufWritable<MobData>,
         NullWritable, Text> reducer;
 
     @Before
     public void setUp() {
         this.reducer = new ReduceDriver<LongWritable,
-                ProtobufWritable<MobViMobVars>, NullWritable, Text>(
+                ProtobufWritable<MobData>, NullWritable, Text>(
                         new IndVarsOutReducer());
     }
 
@@ -35,8 +36,8 @@ public class IndVarsOutReducerTest {
         LongWritable userNotSeenInFirstMonth = new LongWritable(5512684400L);
         MobVars area = MobVarsUtil.create(1, false, 1, 1, 1, 1,
                                           1000000D, 1000000D, 0.0, 0.0);
-        ProtobufWritable<MobViMobVars> input =
-            MobViMobVarsUtil.createAndWrap(asList(area));
+        ProtobufWritable<MobData> input = MobDataUtil.createAndWrap(
+            MobViMobVarsUtil.create(asList(area)));
 
         String s = "5512684400|1|-1|-1|-1|-1|-1|-1|-1|-1|"
                  + "1|1|1|1|1000000.0|1000000.0|0.0|0.0";

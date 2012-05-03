@@ -38,30 +38,6 @@ public final class DetectSecondHomesRunner {
             FileOutputFormat.setOutputPath(job, btsMobPath);
             job.waitForCompletion(true);
         }
-
-        Path pointsOfInterestTemp4MobDataPath = new Path(tmpDirPath,
-                "points_of_interest_temp4_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf, "ConvertPoiToMobData",
-                    SequenceFileInputFormat.class,
-                    ConvertPoiToMobDataReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, pointsOfInterestTemp4Path);
-            FileOutputFormat.setOutputPath(job,
-                                           pointsOfInterestTemp4MobDataPath);
-            job.waitForCompletion(true);
-        }
-
-        Path btsMobMobDataPath = new Path(tmpDirPath, "bts_mob_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf, "ConvertCellToMobData",
-                    SequenceFileInputFormat.class,
-                    ConvertCellToMobDataReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, btsMobPath);
-            FileOutputFormat.setOutputPath(job, btsMobMobDataPath);
-            job.waitForCompletion(true);
-        }
         
         Path sechPoiPosPath = new Path(tmpDirPath, "sech_poi_pos");
         {
@@ -71,7 +47,7 @@ public final class DetectSecondHomesRunner {
                     PoiJoinPoisBtscoordToPoiPosReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                pointsOfInterestTemp4MobDataPath, btsMobMobDataPath });
+                pointsOfInterestTemp4Path, btsMobPath });
             FileOutputFormat.setOutputPath(job, sechPoiPosPath);
             job.waitForCompletion(true);
         }
@@ -87,34 +63,6 @@ public final class DetectSecondHomesRunner {
             job.waitForCompletion(true);
         }
         
-        fs.delete(pointsOfInterestTemp4MobDataPath, true);
-        fs.delete(btsMobMobDataPath, true);
-
-        Path sechPoiPosMobDataPath = new Path(tmpDirPath,
-                                              "sech_poi_pos_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf, "ConvertPoiPosToMobData",
-                    SequenceFileInputFormat.class,
-                    ConvertPoiPosToMobDataReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, sechPoiPosPath);
-            FileOutputFormat.setOutputPath(job, sechPoiPosMobDataPath);
-            job.waitForCompletion(true);
-        }
-        
-        Path viClientFuseAccMobDataPath = new Path(tmpDirPath,
-                "vi_client_fuse_acc_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf,
-                    "ConvertMobViMobVarsToMobData",
-                    SequenceFileInputFormat.class,
-                    ConvertMobViMobVarsToMobDataReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, viClientFuseAccPath);
-            FileOutputFormat.setOutputPath(job, viClientFuseAccMobDataPath);
-            job.waitForCompletion(true);
-        }
-        
         Path sechPoiInoutPath = new Path(tmpDirPath, "vector_bts");
         {
             ReduceJob job = ReduceJob.create(conf, "PoiJoinPoisViToPoiPos",
@@ -122,7 +70,7 @@ public final class DetectSecondHomesRunner {
                     PoiJoinPoisViToPoiPosReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                sechPoiPosMobDataPath, viClientFuseAccMobDataPath });
+                sechPoiPosPath, viClientFuseAccPath });
             FileOutputFormat.setOutputPath(job, sechPoiInoutPath);
             job.waitForCompletion(true);
         }
@@ -134,13 +82,10 @@ public final class DetectSecondHomesRunner {
                     PoiJoinPoisViToTwoIntReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                sechPoiPosMobDataPath, viClientFuseAccMobDataPath });
+                sechPoiPosPath, viClientFuseAccPath });
             FileOutputFormat.setOutputPath(job, nodbtsInoutPath);
             job.waitForCompletion(true);
         }
-        
-        fs.delete(sechPoiPosMobDataPath, true);
-        fs.delete(viClientFuseAccMobDataPath, true);
 
         Path sechPotSecHomePath = new Path(tmpDirPath, "sech_pot_sec_home");
         {
@@ -152,32 +97,6 @@ public final class DetectSecondHomesRunner {
             FileOutputFormat.setOutputPath(job, sechPotSecHomePath);
             job.waitForCompletion(true);
         }
-
-        Path sechPotSecHomeMobDataPath = new Path(tmpDirPath,
-                                                  "sech_pot_sec_home_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf,
-                    "ConvertLongToMobDataByTwoInt",
-                    SequenceFileInputFormat.class,
-                    ConvertLongToMobDataByTwoIntReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, sechPotSecHomePath);
-            FileOutputFormat.setOutputPath(job, sechPotSecHomeMobDataPath);
-            job.waitForCompletion(true);
-        }
-        
-        Path pairsbtsAdjMobDataPath = new Path(tmpDirPath,
-                                               "pairbts_adj_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf,
-                    "ConvertNullToMobDataByTwoInt",
-                    SequenceFileInputFormat.class,
-                    ConvertNullToMobDataByTwoIntReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, pairbtsAdjPath);
-            FileOutputFormat.setOutputPath(job, pairsbtsAdjMobDataPath);
-            job.waitForCompletion(true);
-        }
         
         Path nodbtsSechomePath = new Path(tmpDirPath, "nodbts_sechome");
         {
@@ -187,15 +106,13 @@ public final class DetectSecondHomesRunner {
                     PoiFilterSechomeAdjacentReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                sechPotSecHomeMobDataPath, pairsbtsAdjMobDataPath });
+                sechPotSecHomePath, pairbtsAdjPath });
             FileOutputFormat.setOutputPath(job, nodbtsSechomePath);
             job.waitForCompletion(true);
         }
         
-        fs.delete(sechPotSecHomeMobDataPath, true);
-        fs.delete(pairsbtsAdjMobDataPath, true);
-        
-        Path nodbtsSechomeUniqPath = new Path(tmpDirPath, "nodbts_sechome_uniq");
+        Path nodbtsSechomeUniqPath = new Path(tmpDirPath,
+                                              "nodbts_sechome_uniq");
         {
             ReduceJob job = ReduceJob.create(conf, "PoiDeleteSechomeDuplicate",
                     SequenceFileInputFormat.class,
@@ -205,43 +122,6 @@ public final class DetectSecondHomesRunner {
             FileOutputFormat.setOutputPath(job, nodbtsSechomeUniqPath);
             job.waitForCompletion(true);
         }
-
-        Path nodbtsPoiMobDataPath = new Path(tmpDirPath, "nodbts_poi_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf, "ConvertPoiToMobDataByTwoInt",
-                    SequenceFileInputFormat.class,
-                    ConvertPoiToMobDataByTwoIntReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, nodbtsPoiPath);
-            FileOutputFormat.setOutputPath(job, nodbtsPoiMobDataPath);
-            job.waitForCompletion(true);
-        }
-
-        Path nodbtsInoutMobDataPath = new Path(tmpDirPath,
-                                               "nodbts_inout_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf,
-                    "ConvertTwoIntToMobDataByTwoInt",
-                    SequenceFileInputFormat.class,
-                    ConvertTwoIntToMobDataByTwoIntReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, nodbtsInoutPath);
-            FileOutputFormat.setOutputPath(job, nodbtsInoutMobDataPath);
-            job.waitForCompletion(true);
-        }
-        
-        Path nodbtsSechomeUniqMobDataPath = new Path(tmpDirPath,
-                "nodbts_sechome_uniq_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf,
-                    "ConvertNullToMobDataByTwoInt",
-                    SequenceFileInputFormat.class,
-                    ConvertNullToMobDataByTwoIntReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, nodbtsSechomeUniqPath);
-            FileOutputFormat.setOutputPath(job, nodbtsSechomeUniqMobDataPath);
-            job.waitForCompletion(true);
-        }
         
         {
             ReduceJob job = ReduceJob.create(conf, "PoiJoinSechomeResults",
@@ -249,16 +129,12 @@ public final class DetectSecondHomesRunner {
                     PoiJoinSechomeResultsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                nodbtsPoiMobDataPath,
-                nodbtsInoutMobDataPath,
-                nodbtsSechomeUniqMobDataPath });
+                nodbtsPoiPath,
+                nodbtsInoutPath,
+                nodbtsSechomeUniqPath });
             FileOutputFormat.setOutputPath(job, pointsOfInterestPath);
             job.waitForCompletion(true);
         }
-        
-        fs.delete(nodbtsPoiMobDataPath, true);
-        fs.delete(nodbtsInoutMobDataPath, true);
-        fs.delete(nodbtsSechomeUniqMobDataPath, true);
         
         if (isDebug) {
             Path pointsOfInterestTextPath = new Path(tmpDirPath,

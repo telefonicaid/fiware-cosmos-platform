@@ -1,5 +1,6 @@
 package es.tid.cosmos.mobility.adjacentextraction;
 
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import static java.util.Arrays.asList;
 
 import org.apache.hadoop.io.LongWritable;
@@ -8,27 +9,34 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
+
 /**
  *
  * @author dmicol
  */
 public class AdjCountIndexesReducerTest {
-    private ReduceDriver<LongWritable, LongWritable, LongWritable, NullWritable>
-            driver;
+    private ReduceDriver<LongWritable, ProtobufWritable<MobData>, LongWritable,
+            ProtobufWritable<MobData>> driver;
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, LongWritable, LongWritable,
-                NullWritable>(new AdjCountIndexesReducer());
+        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
+                LongWritable, ProtobufWritable<MobData>>(
+                        new AdjCountIndexesReducer());
     }
     
     @Test
     public void testReduce() {
         this.driver
                 .withInput(new LongWritable(3L),
-                           asList(new LongWritable(5L), new LongWritable(10L),
-                                  new LongWritable(7L), new LongWritable(0L)))
-                .withOutput(new LongWritable(22L), NullWritable.get())
+                           asList(MobDataUtil.createAndWrap(5L),
+                                  MobDataUtil.createAndWrap(10L),
+                                  MobDataUtil.createAndWrap(7L),
+                                  MobDataUtil.createAndWrap(0L)))
+                .withOutput(new LongWritable(22L),
+                            MobDataUtil.createAndWrap(NullWritable.get()))
                 .runTest();
     }
 }

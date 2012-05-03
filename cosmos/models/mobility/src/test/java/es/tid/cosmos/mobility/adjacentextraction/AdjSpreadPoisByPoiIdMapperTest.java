@@ -6,7 +6,8 @@ import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobProtocol.PoiNew;
+import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.PoiNewUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
@@ -16,20 +17,20 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  * @author dmicol
  */
 public class AdjSpreadPoisByPoiIdMapperTest {
-    private MapDriver<ProtobufWritable<TwoInt>, ProtobufWritable<PoiNew>,
-            LongWritable, ProtobufWritable<PoiNew>> driver;
+    private MapDriver<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
+            LongWritable, ProtobufWritable<MobData>> driver;
 
     @Before
     public void setUp() {
         this.driver = new MapDriver<ProtobufWritable<TwoInt>,
-                ProtobufWritable<PoiNew>, LongWritable,
-                ProtobufWritable<PoiNew>>(new AdjSpreadPoisByPoiIdMapper());
+                ProtobufWritable<MobData>, LongWritable,
+                ProtobufWritable<MobData>>(new AdjSpreadPoisByPoiIdMapper());
     }
 
     @Test
     public void testMap() {
-        final ProtobufWritable<PoiNew> poiNew = PoiNewUtil.createAndWrap(
-                1, 2L, 3L, 4, 0);
+        final ProtobufWritable<MobData> poiNew = MobDataUtil.createAndWrap(
+                PoiNewUtil.create(1, 2L, 3L, 4, 0));
         this.driver
                 .withInput(TwoIntUtil.createAndWrap(5L, 6L), poiNew)
                 .withOutput(new LongWritable(1L), poiNew)

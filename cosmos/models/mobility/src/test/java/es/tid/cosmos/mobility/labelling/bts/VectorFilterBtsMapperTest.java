@@ -10,6 +10,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
@@ -19,13 +21,13 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  * @author dmicol
  */
 public class VectorFilterBtsMapperTest {
-    private MapDriver<LongWritable, ProtobufWritable<TwoInt>,
-            ProtobufWritable<BtsCounter>, NullWritable> driver;
+    private MapDriver<LongWritable, ProtobufWritable<MobData>,
+            ProtobufWritable<BtsCounter>, ProtobufWritable<MobData>> driver;
     
     @Before
     public void setUp() {
-        this.driver = new MapDriver<LongWritable, ProtobufWritable<TwoInt>,
-                ProtobufWritable<BtsCounter>, NullWritable>(
+        this.driver = new MapDriver<LongWritable, ProtobufWritable<MobData>,
+                ProtobufWritable<BtsCounter>, ProtobufWritable<MobData>>(
                         new VectorFilterBtsMapper());
     }
     
@@ -35,8 +37,9 @@ public class VectorFilterBtsMapperTest {
         final TwoInt value = TwoIntUtil.create(4L, 7L);
         final BtsCounter outKey = BtsCounterUtil.create(3L, 4, 7, 0);
         this.driver
-                .withInput(key, TwoIntUtil.wrap(value))
-                .withOutput(BtsCounterUtil.wrap(outKey), NullWritable.get())
+                .withInput(key, MobDataUtil.createAndWrap(value))
+                .withOutput(BtsCounterUtil.wrap(outKey),
+                            MobDataUtil.createAndWrap(NullWritable.get()))
                 .runTest();
     }
 }

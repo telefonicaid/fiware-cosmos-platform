@@ -7,15 +7,18 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.CellUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
- *
- * @author sortega
+ * Input: <Long, Text>
+ * Output: <Long, Cell>
+ * 
+ * @author dmicol, sortega
  */
 public class ParseCellsReducer extends Reducer<LongWritable, Text, LongWritable,
-        ProtobufWritable<Cell>> {
+        ProtobufWritable<MobData>> {
     private LongWritable cellId;
     
     @Override
@@ -35,7 +38,7 @@ public class ParseCellsReducer extends Reducer<LongWritable, Text, LongWritable,
                 continue;
             }
             this.cellId.set(cell.getCellId());
-            context.write(this.cellId, CellUtil.wrap(cell));
+            context.write(this.cellId, MobDataUtil.createAndWrap(cell));
         }
     }
 }

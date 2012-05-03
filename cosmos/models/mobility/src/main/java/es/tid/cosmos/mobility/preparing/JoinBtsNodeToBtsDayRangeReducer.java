@@ -10,18 +10,21 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
- *
+ * Input: <Long, Cdr>
+ * Output: <Long, TwoInt>
+ * 
  * @author dmicol
  */
 public class JoinBtsNodeToBtsDayRangeReducer extends Reducer<LongWritable,
-        ProtobufWritable<Cdr>, LongWritable, ProtobufWritable<TwoInt>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     private static List<Cell> cells = null;
     
     @Override
@@ -35,7 +38,7 @@ public class JoinBtsNodeToBtsDayRangeReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<Cdr>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<Cell> filteredCells = new LinkedList<Cell>();
         for (Cell cell : cells) {
@@ -46,9 +49,9 @@ public class JoinBtsNodeToBtsDayRangeReducer extends Reducer<LongWritable,
         if (filteredCells.isEmpty()) {
             return;
         }
-        for (ProtobufWritable<Cdr> value : values) {
-            value.setConverter(Cdr.class);
-            final Cdr cdr = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final Cdr cdr = value.get().getCdr();
             for (Cell cell : filteredCells) {
                 int group;
                 switch (cdr.getDate().getWeekday()) {
@@ -65,8 +68,9 @@ public class JoinBtsNodeToBtsDayRangeReducer extends Reducer<LongWritable,
                         group = 0;
                 }
                 context.write(new LongWritable(cell.getPlaceId()),
-                              TwoIntUtil.createAndWrap(group,
-                                                       cdr.getTime().getHour()));
+                        MobDataUtil.createAndWrap(
+                                TwoIntUtil.create(group,
+                                                  cdr.getTime().getHour())));
             }
         }
     }

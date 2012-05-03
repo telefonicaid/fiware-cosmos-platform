@@ -8,16 +8,18 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.CdrUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
- *
+ * Input: <Long, Int|Cdr>
+ * Output: <Long, Cdr>
+ * 
  * @author dmicol
  */
 public class VectorFiltClientsReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<Cdr>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -47,7 +49,7 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
             return;
         }
         for (Cdr cdr : cdrList) {
-            context.write(key, CdrUtil.wrap(cdr));
+            context.write(key, MobDataUtil.createAndWrap(cdr));
         }
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
@@ -56,7 +58,7 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
             if (mobData.getType() != MobData.Type.CDR) {
                 throw new IllegalStateException();
             }
-            context.write(key, CdrUtil.wrap(cdr));
+            context.write(key, MobDataUtil.createAndWrap(cdr));
         }
     }
 }

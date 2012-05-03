@@ -7,19 +7,21 @@ import java.util.List;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.MobProtocol.PoiNew;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
-import es.tid.cosmos.mobility.data.PoiUtil;
 
 /**
- *
+ * Input: <TwoInt, Poi|PoiNew>
+ * Output: <TwoInt, Poi>
+ * 
  * @author dmicol
  */
 public class AdjChangePoisIdReducer extends Reducer<ProtobufWritable<TwoInt>,
         ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-        ProtobufWritable<Poi>> {
+        ProtobufWritable<MobData>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -46,7 +48,8 @@ public class AdjChangePoisIdReducer extends Reducer<ProtobufWritable<TwoInt>,
             for (PoiNew poiNew : poiNewList) {
                 Poi.Builder outputPoiBuilder = Poi.newBuilder(poi);
                 outputPoiBuilder.setId(poiNew.getId());
-                context.write(key, PoiUtil.wrap(outputPoiBuilder.build()));
+                context.write(key, MobDataUtil.createAndWrap(
+                        outputPoiBuilder.build()));
             }
         }
     }

@@ -23,12 +23,12 @@ import es.tid.cosmos.mobility.data.MobProtocol.MobData;
  */
 public class VectorFiltClientsReducerTest {
     private ReduceDriver<LongWritable, ProtobufWritable<MobData>, LongWritable,
-            ProtobufWritable<Cdr>> driver;
+            ProtobufWritable<MobData>> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                LongWritable, ProtobufWritable<Cdr>>(
+                LongWritable, ProtobufWritable<MobData>>(
                         new VectorFiltClientsReducer());
     }
 
@@ -38,11 +38,11 @@ public class VectorFiltClientsReducerTest {
                 Cdr.getDefaultInstance());
         ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
                 Cdr.getDefaultInstance());
-        List<Pair<LongWritable, ProtobufWritable<Cdr>>> results = this.driver
+        List<Pair<LongWritable, ProtobufWritable<MobData>>> res = this.driver
                 .withInput(new LongWritable(17L), asList(value1, value2))
                 .run();
-        assertNotNull(results);
-        assertEquals(0, results.size());
+        assertNotNull(res);
+        assertEquals(0, res.size());
     }
     
     @Test(expected=IllegalStateException.class)

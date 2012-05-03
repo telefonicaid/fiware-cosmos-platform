@@ -53,63 +53,31 @@ public final class ClientBtsLabellingRunner {
             job.waitForCompletion(true);
         }
 
-        Path clientsbtsSumMobDataPath = new Path(tmpDirPath,
-                                                 "clientsbts_sum_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf,
-                    "ConvertBtsCounterToMobDataByTwoInt",
-                    SequenceFileInputFormat.class,
-                    ConvertBtsCounterToMobDataByTwoIntReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, clientsbtsSumPath);
-            FileOutputFormat.setOutputPath(job, clientsbtsSumMobDataPath);
-            job.waitForCompletion(true);
-        }
-
-        Path clientsbtsSumMobDataWithInputIdPath = new Path(tmpDirPath,
-                "clientsbts_sum_mob_data_with_input_id");
+        Path clientsbtsSumWithInputIdPath = new Path(tmpDirPath,
+                "clientsbts_sum_with_input_id");
         {
             ReduceJob job = ReduceJob.create(conf, "SetMobDataInputIdByTwoInt",
                     SequenceFileInputFormat.class,
                     SetMobDataInputIdByTwoIntReducer.class,
                     SequenceFileOutputFormat.class);
             job.getConfiguration().setInt("input_id", 0);
-            FileInputFormat.setInputPaths(job, clientsbtsSumMobDataPath);
-            FileOutputFormat.setOutputPath(job,
-                                           clientsbtsSumMobDataWithInputIdPath);
-            job.waitForCompletion(true);
-        }
-        
-        fs.delete(clientsbtsSumMobDataPath, true);
-        
-        Path clientsRepbtsMobDataPath = new Path(tmpDirPath,
-                                                 "clients_repbts_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf,
-                    "ConvertBtsCounterToMobDataByTwoInt",
-                    SequenceFileInputFormat.class,
-                    ConvertBtsCounterToMobDataByTwoIntReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, clientsRepbtsPath);
-            FileOutputFormat.setOutputPath(job, clientsRepbtsMobDataPath);
+            FileInputFormat.setInputPaths(job, clientsbtsSumPath);
+            FileOutputFormat.setOutputPath(job, clientsbtsSumWithInputIdPath);
             job.waitForCompletion(true);
         }
 
-        Path clientsRepbtsMobDataWithInputIdPath = new Path(tmpDirPath,
-                "clients_repbts_mob_data_with_input_id");
+        Path clientsRepbtsWithInputIdPath = new Path(tmpDirPath,
+                "clients_repbts_with_input_id");
         {
             ReduceJob job = ReduceJob.create(conf, "SetMobDataInputIdByTwoInt",
                     SequenceFileInputFormat.class,
                     SetMobDataInputIdByTwoIntReducer.class,
                     SequenceFileOutputFormat.class);
             job.getConfiguration().setInt("input_id", 1);
-            FileInputFormat.setInputPaths(job, clientsRepbtsMobDataPath);
-            FileOutputFormat.setOutputPath(job,
-                                           clientsRepbtsMobDataWithInputIdPath);
+            FileInputFormat.setInputPaths(job, clientsRepbtsPath);
+            FileOutputFormat.setOutputPath(job, clientsRepbtsWithInputIdPath);
             job.waitForCompletion(true);
         }
-        
-        fs.delete(clientsRepbtsMobDataPath, true);
         
         Path clientsbtsRepbtsPath = new Path(tmpDirPath, "clientsbts_repbts");
         {
@@ -118,14 +86,13 @@ public final class ClientBtsLabellingRunner {
                     VectorFiltClientbtsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                clientsbtsSumMobDataWithInputIdPath,
-                clientsRepbtsMobDataWithInputIdPath });
+                clientsbtsSumWithInputIdPath, clientsRepbtsWithInputIdPath });
             FileOutputFormat.setOutputPath(job, clientsbtsRepbtsPath);
             job.waitForCompletion(true);
         }
         
-        fs.delete(clientsbtsSumMobDataWithInputIdPath, true);
-        fs.delete(clientsRepbtsMobDataWithInputIdPath, true);
+        fs.delete(clientsbtsSumWithInputIdPath, true);
+        fs.delete(clientsRepbtsWithInputIdPath, true);
         
         Path clientsbtsGroupPath = new Path(tmpDirPath, "clientsbts_group");
         {

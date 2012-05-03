@@ -10,20 +10,23 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.CellUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TelMonth;
 import es.tid.cosmos.mobility.data.TelMonthUtil;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
- *
+ * Input: <Long, Cdr>
+ * Output: <TelMonth, Cell>
+ * 
  * @author dmicol
  */
 public class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
-        ProtobufWritable<Cdr>, ProtobufWritable<TelMonth>,
-        ProtobufWritable<Cell>> {
+        ProtobufWritable<MobData>, ProtobufWritable<TelMonth>,
+        ProtobufWritable<MobData>> {
     private static List<Cell> cells = null;
     
     @Override
@@ -37,7 +40,7 @@ public class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<Cdr>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<Cell> filteredCells = new LinkedList<Cell>();
         for (Cell cell : cells) {
@@ -48,9 +51,9 @@ public class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
         if (filteredCells.isEmpty()) {
             return;
         }
-        for (ProtobufWritable<Cdr> value : values) {
-            value.setConverter(Cdr.class);
-            final Cdr cdr = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final Cdr cdr = value.get().getCdr();
             for (Cell cell : filteredCells) {
                 int weekday = cdr.getDate().getWeekday();
                 int hour = cdr.getTime().getHour();
@@ -63,7 +66,7 @@ public class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
                 }
                 ProtobufWritable<TelMonth> telMonth = TelMonthUtil.createAndWrap(
                         cdr.getUserId(), cdr.getDate().getMonth(), workingday);
-                context.write(telMonth, CellUtil.wrap(cell));
+                context.write(telMonth, MobDataUtil.createAndWrap(cell));
             }
         }
     }

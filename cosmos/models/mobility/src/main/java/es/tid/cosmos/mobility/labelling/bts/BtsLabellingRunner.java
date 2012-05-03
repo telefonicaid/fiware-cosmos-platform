@@ -98,44 +98,16 @@ public final class BtsLabellingRunner {
             job.waitForCompletion(true);
         }
 
-        Path vectorBtsClusterSinfiltMobDataPath = new Path(tmpDirPath,
-                "vector_bts_cluster_sinfilt_mob_data");
-        { 
-            ReduceJob job = ReduceJob.create(conf, "ConvertClusterToMobData",
-                    SequenceFileInputFormat.class,
-                    ConvertClusterToMobDataReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, vectorBtsClusterSinfiltPath);
-            FileOutputFormat.setOutputPath(job,
-                                           vectorBtsClusterSinfiltMobDataPath);
-            job.waitForCompletion(true);
-        }
-        
-        Path btsComareaMobDataPath = new Path(tmpDirPath,
-                                              "bts_comarea_mob_data");
-        { 
-            ReduceJob job = ReduceJob.create(conf, "ConvertBtsToMobData",
-                    SequenceFileInputFormat.class,
-                    ConvertBtsToMobDataReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, btsComareaPath);
-            FileOutputFormat.setOutputPath(job, btsComareaMobDataPath);
-            job.waitForCompletion(true);
-        }
-
         {
             ReduceJob job = ReduceJob.create(conf, "FilterBtsVector",
                     SequenceFileInputFormat.class,
                     FilterBtsVectorReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                vectorBtsClusterSinfiltMobDataPath, btsComareaMobDataPath });
+                vectorBtsClusterSinfiltPath, btsComareaPath });
             FileOutputFormat.setOutputPath(job, vectorBtsClusterPath);
             job.waitForCompletion(true);
         }
-        
-        fs.delete(vectorBtsClusterSinfiltMobDataPath, true);
-        fs.delete(btsComareaMobDataPath, true);
 
         if (isDebug) {
             Path vectorBtsClusterTextPath = new Path(tmpDirPath,

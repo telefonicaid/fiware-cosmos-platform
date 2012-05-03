@@ -26,9 +26,9 @@ import es.tid.cosmos.mobility.data.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.CellUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
@@ -38,8 +38,8 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(CellsCatalogue.class)
 public class JoinBtsNodeToCdrReducerTest {
-    private ReduceDriver<LongWritable, ProtobufWritable<Cdr>, LongWritable,
-            ProtobufWritable<Cdr>> driver;
+    private ReduceDriver<LongWritable, ProtobufWritable<MobData>, LongWritable,
+            ProtobufWritable<MobData>> driver;
     
     @Before
     public void setUp() throws IOException {
@@ -51,35 +51,39 @@ public class JoinBtsNodeToCdrReducerTest {
         PowerMockito.mockStatic(CellsCatalogue.class);
         when(CellsCatalogue.load(any(Path.class), any(Configuration.class)))
                 .thenReturn(cells);
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<Cdr>,
-                LongWritable, ProtobufWritable<Cdr>>(
+        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
+                LongWritable, ProtobufWritable<MobData>>(
                         new JoinBtsNodeToCdrReducer());
         this.driver.getConfiguration().set("cells", "/home/test");
     }
 
     @Test
     public void testEmptyOutput() throws IOException {
-        final ProtobufWritable<Cdr> value1 = CdrUtil.createAndWrap(1L, 2L,
-                Date.getDefaultInstance(), Time.getDefaultInstance());
-        final ProtobufWritable<Cdr> value2 = CdrUtil.createAndWrap(3L, 4L,
-                Date.getDefaultInstance(), Time.getDefaultInstance());        
-        List<Pair<LongWritable, ProtobufWritable<Cdr>>> results = this.driver
+        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+                CdrUtil.create(1L, 2L, Date.getDefaultInstance(),
+                               Time.getDefaultInstance()));
+        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+                CdrUtil.create(3L, 4L, Date.getDefaultInstance(),
+                               Time.getDefaultInstance()));
+        List<Pair<LongWritable, ProtobufWritable<MobData>>> res = this.driver
                 .withInput(new LongWritable(10L), asList(value1, value2))
                 .run();
-        assertNotNull(results);
-        assertEquals(0, results.size());
+        assertNotNull(res);
+        assertEquals(0, res.size());
     }
     
     @Test
     public void testNonEmptyOutput() throws IOException {
-        final ProtobufWritable<Cdr> value1 = CdrUtil.createAndWrap(1L, 2L,
-                Date.getDefaultInstance(), Time.getDefaultInstance());
-        final ProtobufWritable<Cdr> value2 = CdrUtil.createAndWrap(3L, 4L,
-                Date.getDefaultInstance(), Time.getDefaultInstance());        
-        List<Pair<LongWritable, ProtobufWritable<Cdr>>> results = this.driver
+        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+                CdrUtil.create(1L, 2L, Date.getDefaultInstance(),
+                               Time.getDefaultInstance()));
+        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+                CdrUtil.create(3L, 4L, Date.getDefaultInstance(),
+                               Time.getDefaultInstance()));
+        List<Pair<LongWritable, ProtobufWritable<MobData>>> res = this.driver
                 .withInput(new LongWritable(57L), asList(value1, value2))
                 .run();
-        assertNotNull(results);
-        assertEquals(2, results.size());
+        assertNotNull(res);
+        assertEquals(2, res.size());
     }
 }

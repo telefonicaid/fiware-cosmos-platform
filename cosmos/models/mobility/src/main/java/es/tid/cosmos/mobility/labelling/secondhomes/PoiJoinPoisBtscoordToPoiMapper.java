@@ -27,6 +27,6 @@ public class PoiJoinPoisBtscoordToPoiMapper extends Mapper<LongWritable,
         value.setConverter(MobData.class);
         final Poi poi = value.get().getPoi();
         context.write(TwoIntUtil.createAndWrap(poi.getNode(), poi.getBts()),
-                      MobDataUtil.createAndWrap(poi));
+                      value);
     }
 }

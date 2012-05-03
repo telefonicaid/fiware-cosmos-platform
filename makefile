@@ -171,7 +171,7 @@ run_coverage: install_coverage
 	lcov --directory BUILD_COVERAGE --capture --output-file coverage/samson.info
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/usr/local/include/*" -o coverage/samson.info
-	lcov -r coverage/samson.info "BUILD_DEBUG/modules/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "BUILD_COVERAGE/modules/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "modules/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/opt/local/include/google/*" -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info
@@ -203,7 +203,7 @@ finish_mac_coverage:
 	lcov --directory CMakeFiles --capture --output-file coverage/samson.info
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/usr/local/include/*" -o coverage/samson.info
-	lcov -r coverage/samson.info "BUILD_DEBUG/modules/*" -o coverage/samson.info
+	lcov -r coverage/samson.info "BUILD_COVERAGE/modules/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "modules/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "/opt/local/include/google/*" -o coverage/samson.info
 	lcov -r coverage/samson.info "extern/*" -o coverage/samson.info

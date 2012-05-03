@@ -51,7 +51,7 @@ PaArgument paArgs[] =
 	{ "-new",       &flag_new,     "",  PaBool,    PaOpt,  false, false,  true,     "Get only new data"   },
 	{ "-limit",     &limit,        "",  PaInt,     PaOpt,     0,      0,    10000,  "number of kvs to be shown for each block"   },
     { "-format",    format,        "",  PaString,  PaOpt,     _i "plain",      PaNL,    PaNL,  "type of output format: [plain|json|xml]"   },
-	{ "-max_size",  &max_size,     "",  PaInt,     PaOpt, SAMSON_WORKER_PORT,  0,  100000000, "Max size to download"                     },
+	{ "-max_size",  &max_size,     "",  PaInt,     PaOpt, 0,  0,  100000000, "Max size to download"                     },
 	{ " ",          queue_name,    "",  PaString,  PaReq,  (long) "null",   PaNL,   PaNL,  "name of the queue to pop data from"         },
     PA_END_OF_ARGS
 };
@@ -176,8 +176,13 @@ int main( int argC , const char *argV[] )
             delete block;
             
             if( max_size > 0 )
+            {
 			   if( downloaded_content >= (size_t)max_size )
+			   {
+			       LM_V(("Exit infinite loop because downloaded_content(%d) >= max_size(%d)", downloaded_content, max_size));
                     break;
+			   }
+            }
 
         }
         else
@@ -186,7 +191,7 @@ int main( int argC , const char *argV[] )
     }
     
     // Wait until all operations are complete
-    LM_V(("Waiting for all the push operations to complete..."));
+    LM_V(("Waiting for all the pop operations to complete..."));
     client.waitUntilFinish();
     LM_V(("Finish correctly\n"));
     

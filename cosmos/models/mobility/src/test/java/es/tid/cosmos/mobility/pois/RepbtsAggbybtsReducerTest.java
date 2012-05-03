@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.NodeBtsDayUtil;
  *
  * @author sortega
  */
-public class RepbtsAggbybtsTest {
+public class RepbtsAggbybtsReducerTest {
     private ReduceDriver<ProtobufWritable<NodeBtsDay>,
             ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>>
             driver;
@@ -30,7 +30,7 @@ public class RepbtsAggbybtsTest {
     }
 
     @Test
-    public void reduceTest() throws Exception {
+    public void testReduce() throws Exception {
         int node = 123;
         int bts = 456;
         int workday = 1;

@@ -34,7 +34,6 @@ public class RepbtsAggbybtsReducerTest {
         int node = 123;
         int bts = 456;
         int workday = 1;
-
         this.driver
                 .withInput(NodeBtsDayUtil.createAndWrap(node, bts, workday, 101),
                            asList(MobDataUtil.createAndWrap(4),

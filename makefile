@@ -286,7 +286,7 @@ reset:
 	rm -Rf BUILD_STRICT
 	rm -Rf BUILD_RELEASE
 	rm -Rf BUILD_RELEASE_ALL
-	rm -Rf BUILD_DEBUG_COVERAGE
+	rm -Rf BUILD_COVERAGE
 	rm -Rf xcode_proj
 	rm -f libs/common/samson.pb.*
 	rm -f libs/data/data.pb.*

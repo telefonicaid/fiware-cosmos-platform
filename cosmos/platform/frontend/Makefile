@@ -20,4 +20,4 @@ bin/buildout: $(CONFIG)
 distclean:
 	rm -rf bin build develop-eggs dist downloads eggs parts src/cosmos.egg-info/ var
 
-.PHONY: dev prod all distclean
+.PHONY: env all distclean

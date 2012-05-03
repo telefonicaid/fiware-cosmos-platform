@@ -26,6 +26,16 @@ import es.tid.cosmos.mobility.data.MobVarsUtil;
 public class ActivityAreaReducer extends Reducer<
         ProtobufWritable<TelMonth>, ProtobufWritable<MobData>,
         LongWritable, ProtobufWritable<MobData>> {
+    private static class Accumulations {
+        public int difPos;
+        public int numBtss;
+        public int numMuns;
+        public int numStates;
+        public double massCenterX;
+        public double massCenterY;
+        public double radius;
+    }
+    
     private Set<Long> allCells;
     private Set<Long> allBtss;
     private Set<Integer> allMuns;

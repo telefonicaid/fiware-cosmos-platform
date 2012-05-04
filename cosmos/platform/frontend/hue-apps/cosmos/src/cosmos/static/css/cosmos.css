@@ -63,6 +63,7 @@
 .cosmos a.cos-jars_nav {
     background: url(/static/art/icons/package.png) no-repeat;
 }
-.cosmos a.cos-upload_dataset {
+.cosmos a.cos-upload_dataset,
+.cosmos a.cos-upload_jar {
     background: url(/static/art/icons/add.png) no-repeat;
 }

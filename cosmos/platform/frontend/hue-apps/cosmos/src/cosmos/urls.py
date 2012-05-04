@@ -19,7 +19,8 @@ from django.conf.urls.defaults import patterns, url
 
 urlpatterns = patterns('cosmos',
   url(r'^$',                'views.index'),
-  url(r'^datasets/$',       'views.list_datasets', name='list_datasets'),
+  url(r'^datasets/$',       'views.list_datasets',  name='list_datasets'),
   url(r'^datasets/upload$', 'views.upload_dataset', name='upload_dataset'),
-  url(r'^jars/$',           'views.list_jars'),
+  url(r'^jars/$',           'views.list_jars',      name='list_jars'),
+  url(r'^jars/upload$',     'views.upload_jar',     name='upload_jar'),
 )

@@ -37,7 +37,7 @@ namespace samson
     {
         long int kernel_shmmax = 0;
         long int kernel_shmall = 0;
-        //long int page_size = 0;
+        int page_size = 0;
         long int max_memory_size = 0;
         long int needed_shmall = 0;
 
@@ -70,13 +70,16 @@ namespace samson
         sysctl_value((char *)KERNEL_SHMMAX, &kernel_shmmax);
         sysctl_value((char *)KERNEL_SHMALL, &kernel_shmall);
 
+        // Fetch the current page size
+        page_size = getpagesize();
+
         // max memory allowed  shmall * page_size
-        max_memory_size = kernel_shmall * PAGE_SIZE;
+        max_memory_size = kernel_shmall * page_size;
 
         // Check to see if we can allocate all the memory needed
         if ( samson_required_mem > max_memory_size )
         {
-            needed_shmall = samson_required_mem / PAGE_SIZE;
+            needed_shmall = samson_required_mem / page_size;
             LM_E(("Unable to allocate the needed memory for SAMSON. The system has %ld allocated and we need %ld.", max_memory_size, samson_required_mem));
             LM_E(("Set kernel.shmall to %ld using the command 'sudo sysctl -w %s=%ld'.", needed_shmall, SYSCTL_SHMALL, needed_shmall));
             return false;

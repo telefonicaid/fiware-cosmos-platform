@@ -16,8 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/user.h>                           // PAGE_SIZE
+#include <unistd.h>                             // getpagesize()
 
 #include "logMsg/logMsg.h"
 

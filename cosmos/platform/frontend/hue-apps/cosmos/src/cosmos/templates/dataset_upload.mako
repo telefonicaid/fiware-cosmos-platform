@@ -28,17 +28,17 @@ ${shared.simple_header('Upload new dataset')}
             ${ unicode(form['description']) | n }
         </p>
 
-        % if flash_upload:
-        <p>
-            <a href="#" id="select-file">Upload file</a>
-        </p>
-        % else:
+        ##% if flash_upload:
+        ##<p>
+        ##    <a href="#" id="select-file">Upload file</a>
+        ##</p>
+        ##% else:
         <p>
             ${ unicode(form['hdfs_file'].errors) | n }
             <label for="hdfs_file">File</label>
             ${ unicode(form['hdfs_file']) | n }
         </p>
-        % endif
+        ##% endif
 
 	<input class="jframe-hidden" type="submit" value="Submit" />
     </form>

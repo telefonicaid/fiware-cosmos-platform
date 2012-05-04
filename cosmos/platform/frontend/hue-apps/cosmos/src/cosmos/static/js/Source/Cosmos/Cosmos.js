@@ -53,7 +53,7 @@ var Cosmos = new Class({
             // delay to avoid "obj.CallFunction is not a function" error
             // when communicating with the flash object
             var uploaderNode = $(this).getElement('.cos-upload');
-            if (uploaderNode) {
+            if (Browser.Plugins.Flash.build) {
                 this.upgrade_to_flash(uploaderNode);
             }
         }).delay(10, this);

@@ -51,27 +51,34 @@ def upload_dataset(request):
         if not form.is_valid():
             LOGGER.error("Error uploading dataset: %s" % (form.errors,))
         else:
+            name = form.cleaned_data["name"]
+            if Dataset.objects.filter(user=request.user, name=name).exists():
+                raise PopupException('Datased "%s" already exists' % name)
+            dataset = Dataset(name=name, user=request.user,
+                              description=form.cleaned_data['description'],
+                              path=dataset_path(request.user, name))
+
             uploaded_file = request.FILES['hdfs_file']
             tmp_file = uploaded_file.get_temp_path()
             chown(request.fs, tmp_file, request.user.username)
-            dest_dir = dataset_path(request.user, form.cleaned_data["name"])
-            if request.fs.exists(dest_dir):
+            if request.fs.exists(dataset.path):
                 raise PopupException('Dataset "%s" already exists' % dest_dir)
 
-            dest_file = request.fs.join(dest_dir, uploaded_file.name)
+            dest_file = request.fs.join(dataset.path, uploaded_file.name)
             try:
-                request.fs.mkdir(dest_dir)
+                request.fs.mkdir(dataset.path)
                 request.fs.rename(tmp_file, dest_file)
-                LOGGER.info('Dataset %s uploaded correctly' % dest_dir)
+                LOGGER.info('Dataset %s uploaded correctly to %s' % (
+                    name, dataset.path))
+                dataset.save()
             except IOError, ex:
                 raise PopupException(
                     'Failed to rename uploaded temporary file "%s" to "%s": %s'
                     % (tmp_file, dest_file, ex))
 
+            uploaded_file.remove()
             return redirect(reverse('list_datasets'))
 
-            # TODO: finally delete tmp file
-            
     else:
         form = UploadDatasetForm()
     return render('dataset_upload.mako', request, dict(

@@ -3,6 +3,7 @@ package es.tid.cosmos.mobility.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,25 +23,19 @@ public abstract class CentroidsCatalogue {
     public static List<Cluster> load(Path input, Configuration conf)
             throws IOException {
         FSDataInputStream in = null;
-        BufferedReader br = null;
+        InputStreamReader reader = null;
         try {
             FileSystem fs = FileSystem.get(conf);
             in = fs.open(input);
-            br = new BufferedReader(new InputStreamReader(in));
-            List<Cluster> centroids = new LinkedList<Cluster>();
-            String line;
-            while ((line = br.readLine()) != null) {
-                Cluster cluster = new ClusterParser(line).parse();
-                centroids.add(cluster);
-            }
-            return centroids;
+            reader = new InputStreamReader(in);
+            return load(reader);
         } catch (Exception ex) {
             Logger.get().fatal(ex);
             throw new IOException(ex);
         } finally {
-            if (br != null) {
+            if (reader != null) {
                 try {
-                    br.close();
+                    reader.close();
                 } catch (IOException ex) {
                 }
             }
@@ -51,5 +46,16 @@ public abstract class CentroidsCatalogue {
                 }
             }
         }
+    }
+    
+    public static List<Cluster> load(Reader input) throws IOException {
+        BufferedReader br = new BufferedReader(input);
+        List<Cluster> centroids = new LinkedList<Cluster>();
+        String line;
+        while ((line = br.readLine()) != null) {
+            Cluster cluster = new ClusterParser(line).parse();
+            centroids.add(cluster);
+        }
+        return centroids;
     }
 }

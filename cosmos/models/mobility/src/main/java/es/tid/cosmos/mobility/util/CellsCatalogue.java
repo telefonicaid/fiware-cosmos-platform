@@ -3,6 +3,7 @@ package es.tid.cosmos.mobility.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,25 +23,19 @@ public abstract class CellsCatalogue {
     public static List<Cell> load(Path input, Configuration conf)
             throws IOException {
         FSDataInputStream in = null;
-        BufferedReader br = null;
+        Reader reader = null;
         try {
             FileSystem fs = FileSystem.get(conf);
             in = fs.open(input);
-            br = new BufferedReader(new InputStreamReader(in));
-            List<Cell> cells = new LinkedList<Cell>();
-            String line;
-            while ((line = br.readLine()) != null) {
-                Cell cell = new CellParser(line).parse();
-                cells.add(cell);
-            }
-            return cells;
+            reader = new InputStreamReader(in);
+            return load(reader);
         } catch (Exception ex) {
             Logger.get().fatal(ex);
             throw new IOException(ex);
         } finally {
-            if (br != null) {
+            if (reader != null) {
                 try {
-                    br.close();
+                    reader.close();
                 } catch (IOException ex) {
                 }
             }
@@ -51,5 +46,16 @@ public abstract class CellsCatalogue {
                 }
             }
         }
+    }
+
+    public static List<Cell> load(Reader input) throws IOException {
+        List<Cell> cells = new LinkedList<Cell>();
+        BufferedReader br = new BufferedReader(input);
+        String line;
+        while ((line = br.readLine()) != null) {
+            Cell cell = new CellParser(line).parse();
+            cells.add(cell);
+        }
+        return cells;
     }
 }

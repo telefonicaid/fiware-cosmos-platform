@@ -30,6 +30,9 @@ class Dataset(models.Model):
     def __unicode__(self):
         return self.name
 
+    def set_default_path(self):
+        self.path = "/user/%s/datasets/%s/" % (self.user.username, self.name)
+
 
 class CustomJar(models.Model):
     """
@@ -50,6 +53,9 @@ class CustomJar(models.Model):
 
     def __unicode__(self):
         return self.name
+
+    def set_default_path(self):
+        self.path = "/user/%s/jars/%s/" % (self.user.username, self.name)
 
 
 class JobRun(models.Model):

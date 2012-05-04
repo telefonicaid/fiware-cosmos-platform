@@ -146,10 +146,11 @@ class RetrieveFromMongo(djangotest.TestCase):
         self.mongo_port = 27017
         self.test_user = 'test'
         self.test_pass = 'test'
+        self.test_user_id = 1
         self.job_id = self.__create_job()
 
         self.connection = Connection(self.mongo_host, self.mongo_port)
-        self.db = self.connection[self.test_user]
+        self.db = self.connection["db_%d" % self.test_user_id]
         self.job_results = self.db['job_%s' % self.job_id]
         self.__fake_results(self.job_id)
 

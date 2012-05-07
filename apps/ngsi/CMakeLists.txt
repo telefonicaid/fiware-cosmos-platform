@@ -1,5 +1,5 @@
 SET (SOURCES
-    main_ngsiTest.cpp
+    main_ngsi.cpp
 )
 
 SET (HEADERS
@@ -19,9 +19,9 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Executable declaration
 # ------------------------------------------------------------
 
-ADD_EXECUTABLE(ngsiTest ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(ngsiTest ${STATIC_LIBS})
+ADD_EXECUTABLE(ngsi ${SOURCES} ${HEADERS} )
+TARGET_LINK_LIBRARIES(ngsi ${STATIC_LIBS})
 
-INSTALL(TARGETS               ngsiTest
+INSTALL(TARGETS               ngsi
         RUNTIME DESTINATION   bin)
 

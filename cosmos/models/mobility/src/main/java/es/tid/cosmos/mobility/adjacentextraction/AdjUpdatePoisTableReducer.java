@@ -25,7 +25,7 @@ public class AdjUpdatePoisTableReducer extends Reducer<LongWritable,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<TwoInt> poiPoimodList = new LinkedList<TwoInt>();
-        TwoInt pairPois = null;
+        TwoInt lastPairPois = null;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
@@ -34,8 +34,7 @@ public class AdjUpdatePoisTableReducer extends Reducer<LongWritable,
                     poiPoimodList.add(mobData.getTwoInt());
                     break;
                 case 1:
-                    // Only keep the last element of this list
-                    pairPois = mobData.getTwoInt();
+                    lastPairPois = mobData.getTwoInt();
                     break;
                 default:
                     throw new IllegalStateException("Unexpected MobData ID: "
@@ -45,8 +44,8 @@ public class AdjUpdatePoisTableReducer extends Reducer<LongWritable,
         for (TwoInt poiPoimod : poiPoimodList) {
             long outputKey = key.get();
             TwoInt.Builder outputPoiPoimod = TwoInt.newBuilder(poiPoimod);
-            if (pairPois != null) {
-                outputKey = pairPois.getNum2();
+            if (lastPairPois != null) {
+                outputKey = lastPairPois.getNum2();
                 outputPoiPoimod.setNum2(outputKey);
             }
             context.write(new LongWritable(outputKey),

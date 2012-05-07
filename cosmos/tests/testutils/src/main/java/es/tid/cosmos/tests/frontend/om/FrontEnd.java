@@ -32,11 +32,6 @@ public class FrontEnd {
     public static final String RESULT_STATUS_CLASS = "result-status";
     public static final String USERNAME_INPUT_ID = "id_username";
     public static final String PASSWORD_INPUT_ID = "id_password";
-    
-    // Default login info
-    private static final String DEFAULT_USER = "test";
-    private static final String DEFAULT_PASSWRD = "cosmostest";
-    
     private WebDriver driver;
     private final String username;
     private final String password;
@@ -44,26 +39,27 @@ public class FrontEnd {
     private final Environment environment;
 
     public FrontEnd(Environment env) {
-        this(env, DEFAULT_USER, DEFAULT_PASSWRD);
+        this(env, env.getProperty(EnvironmentSetting.DEFAULT_USER),
+             env.getProperty(EnvironmentSetting.DEFAULT_PASSWORD));
     }
-    
+
     public FrontEnd(Environment env, String username, String password) {
         this.driver = new HtmlUnitDriver();
         this.username = username;
         this.password = password;
         this.environment = env;
         this.homeUrl = this.environment.getProperty(
-            EnvironmentSetting.FRONTEND_URL);
+                EnvironmentSetting.FRONTEND_URL);
     }
-    
+
     public String getHomeUrl() {
         return this.homeUrl;
     }
-    
+
     public Environment getEnvironment() {
         return this.environment;
     }
-    
+
     public URL resolveURL(String verbatimUrl) throws MalformedURLException {
         return new URL(new URL(this.driver.getCurrentUrl()), verbatimUrl);
     }
@@ -74,26 +70,26 @@ public class FrontEnd {
             try {
                 this.login(this.username, this.password);
             } catch (TestException ex) {
-                fail("Bad user/password. " +  ex.toString());
+                fail("Bad user/password. " + ex.toString());
             }
         }
     }
-    
+
     private void login(String user, String pass) throws TestException {
         WebElement userElement = this.driver.findElement(By.id(USERNAME_INPUT_ID));
         userElement.sendKeys(user);
         this.driver.findElement(By.id(PASSWORD_INPUT_ID)).sendKeys(pass);
-        
+
         userElement.submit();
         if (this.driver.getCurrentUrl().contains("login")) {
             throw new TestException("Login was not successful");
         }
     }
-    
+
     public boolean taskExists(String taskId) {
         this.goHome();
         return this.getTaskRow(taskId) != null;
-        
+
     }
 
     public TaskStatus getTaskStatus(String taskId) {
@@ -118,7 +114,7 @@ public class FrontEnd {
 
     private WebElement getTaskLink(String taskId, String expectedClass) {
         WebElement taskLink = this.getTaskRow(taskId).findElement(By.className(JOB_ACTION_CLASS));
-        
+
         boolean isExpectedLink = false;
         for (String elementClass : taskLink.getAttribute("class").split("\\s")) {
             if (elementClass.equals(expectedClass)) {
@@ -126,7 +122,7 @@ public class FrontEnd {
                 break;
             }
         }
-        
+
         assertTrue(isExpectedLink, "Verifying link contains class: " + expectedClass);
         return taskLink;
     }
@@ -136,8 +132,7 @@ public class FrontEnd {
      */
     private WebElement getTaskRow(String taskId) {
         WebElement table = this.driver.findElement(By.id(TASK_STATUS_TABLE_ID));
-        List<WebElement> rows = table.findElement(By.tagName("tbody"))
-                .findElements(By.tagName("tr"));
+        List<WebElement> rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"));
         for (WebElement row : rows) {
             WebElement nameElement = row.findElement(
                     By.className(RESULT_NAME_CLASS));
@@ -157,7 +152,7 @@ public class FrontEnd {
         }
         this.getTaskLink(taskId, RUN_ACTION_CLASS).click();
     }
-    
+
     public SelectInputPage setInputDataForJob(String taskId) {
         this.goHome();
         if (TaskStatus.Created != this.getTaskStatus(taskId)) {
@@ -167,7 +162,7 @@ public class FrontEnd {
         this.getTaskLink(taskId, UPLOAD_DATA_ACTION_CLASS).click();
         return new SelectInputPage(this.driver);
     }
-    
+
     public ResultsPage goToResultsPage(String taskId) {
         this.goHome();
         TaskStatus status = this.getTaskStatus(taskId);
@@ -178,15 +173,14 @@ public class FrontEnd {
                     + "taskId: " + taskId + "\n"
                     + "status: " + status + "\n");
         }
-        
+
         this.getTaskLink(taskId, RESULT_ACTION_CLASS).click();
         return new ResultsPage(this.driver);
     }
 
     public SelectNamePage goToCreateNewJob() {
         this.goHome();
-        WebElement createJobElement = this.driver
-                .findElement(By.id(CREATE_JOB_ID));
+        WebElement createJobElement = this.driver.findElement(By.id(CREATE_JOB_ID));
         createJobElement.click();
         return new SelectNamePage(this.driver);
     }

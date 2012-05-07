@@ -456,13 +456,11 @@ namespace samson {
                 for ( size_t i = 0 ; i < stateBlockReaders.size() ; i++)
                     state_num_kvs += stateBlockReaders[i]->getKVInfoForHashGroup(hg).kvs;
                 
+                // Total number of key-values
+                size_t total_kvs = input_num_kvs + state_num_kvs;
                 
                 // Prepare KV Vector with the total number of kvs ( from input and state )
-                kvVector.prepareInput( input_num_kvs + state_num_kvs );
-
-                if( ( input_num_kvs + state_num_kvs ) == 0 )
-                    return 0;
-                                
+                kvVector.prepareInput( total_kvs );
 
                 // Add key values for all the inputs
                 if ( input_num_kvs > 0 )
@@ -484,7 +482,6 @@ namespace samson {
                                         );
                 }
                 
-                size_t total_kvs = input_num_kvs + state_num_kvs;
                 return total_kvs;
 
             }                

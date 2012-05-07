@@ -4,12 +4,12 @@ ${shared.header("Cosmos", section="jars")}
 
 <div class="toolbar">
     <ul class="subnav" data-filters="ArtButtonBar">
-	<li>
-	<a href="/cosmos/jars/upload" data-filters="ArtButton"
-	   class="subnav_icon cos-upload cos-upload_jar" target="_blank"
-	   data-icon-styles="{'width': 16, 'height': 16, 'top': 1}"
-	   >Upload new JAR</a>
-	</li>
+        <li>
+        <a href="/cosmos/jars/upload" data-filters="ArtButton"
+           class="subnav_icon cos-upload cos-upload_jar" target="_blank"
+           data-icon-styles="{'width': 16, 'height': 16, 'top': 1}"
+           >Upload new JAR</a>
+        </li>
     </ul>
 </div>
 
@@ -20,7 +20,7 @@ ${shared.header("Cosmos", section="jars")}
       <tr>
         <th>Name</th>
         <th>Description</th>
-	<th>Actions</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>

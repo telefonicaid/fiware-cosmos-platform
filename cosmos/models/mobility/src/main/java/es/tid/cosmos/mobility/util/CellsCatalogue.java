@@ -36,13 +36,13 @@ public abstract class CellsCatalogue {
             if (reader != null) {
                 try {
                     reader.close();
-                } catch (IOException ex) {
+                } catch (IOException ignored) {
                 }
             }
             if (in != null) {
                 try {
                     in.close();
-                } catch (IOException ex) {
+                } catch (IOException ignored) {
                 }
             }
         }

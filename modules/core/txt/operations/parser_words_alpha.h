@@ -64,7 +64,6 @@ namespace txt{
 					key.value ="";
 					key.value.append( &line[pos] ,i-pos );					
 
-					printf("emiting %s\n", key.value.c_str() );
 					writer->emit( 0 , &key , &value );
 				 }
 				 // Go to the next

@@ -45,6 +45,7 @@ typedef struct RegisterContextRequest
 *
 * registerContextRequestParse - 
 */
+extern RegisterContextRequest* registerContextOldRequestParse(xmlNodePtr node0P);
 extern RegisterContextRequest* registerContextRequestParse(xmlNodePtr node0P);
 
 

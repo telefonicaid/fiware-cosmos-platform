@@ -2,7 +2,7 @@ INCLUDE		= -I/usr/include/libxml2
 CFLAGS		= $(INCLUDE) -g -Wall
 LIBS		= -lxml2
 CPP		    = g++
-OBJS        = registerContext.o discoverContextAvailability.o ws.o xmlParse.o xmlParseTest.o 
+OBJS        = registerContextOld.o discoverContextAvailability.o ws.o xmlParse.o xmlParseTest.o registerContext2.o
 EXEC        = xmlParseTest
 
 

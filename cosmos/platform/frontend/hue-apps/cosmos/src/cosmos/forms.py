@@ -10,7 +10,7 @@ from django.core import validators
 from cosmos.models import Dataset, CustomJar
 
 ID_VALIDATOR = validators.RegexValidator(
-    regex=re.compile(r'^[a-z][a-z0-9-_]*$', re.IGNORECASE),
+    regex=re.compile(r'^[a-z][a-z0-9\-_]*$', re.IGNORECASE),
     message='Enter a valid identifier (only letters, numbers and dashes' +
             'starting by a number)')
 

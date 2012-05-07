@@ -33,81 +33,49 @@ namespace txt{
             // Output value is always 1
 			value.value = 1;			
 		}
-		
+
+/*		
 		bool isSeparator( char c )
 		{
            // If it not a letter is a separator
 		   return !au::iso_8859_is_letter( c );
 		}
+*/
+
+        bool isSeparator( char c )
+        {
+           if( c == ' ')
+              return  true;
+           if( c == '\t')
+              return  true;
+
+           return false;
+        }
 
 
-		void parseLine( char *data , samson::KVWriter *writer )
-		{
-		   return; 
-		   //OLM_M(("Parsing line '%s'" , data ));
+        void parseLine( char * line, samson::KVWriter *writer )
+        {
+           size_t len = strlen( line );
+           size_t pos = 0;
+           for ( size_t i = 0 ; i < (len+1) ; i++ )
+           {
+              if( isSeparator( line[i] ) || line[i]=='\0' )
+              {
+                 if( pos < i )
+                 {
+                    // New word
+                    key.value ="";
+                    key.value.append( &line[pos] ,i-pos );
 
-			int pos_begin=0;
-			int pos_end;
+                    printf("emiting %s\n", key.value.c_str() );
+                    writer->emit( 0 , &key , &value );
+                 }
+                 // Go to the next
+                 pos = i+1;
+              }
+           }
 
-			while( true )
-			{			   
-
-			   // Find where the word starts...
-			   while(  true )
-			   {
-				  if( data[pos_begin] == '\0' )
-					 return;// Found end of line, so more new words
-
-				  // Find where the word starts...
-				  if( isSeparator( data[pos_begin] ) )
-					 pos_begin++;
-				  else
-					 break;
-			   }
-
-			   pos_end = pos_begin+1;
-
-               // Find where the word ends...
-               while(  true )
-               {
-                  if( data[pos_end] == '\0' )
-					 break;
-
-                  // Find where the word starts...
-                  if( !isSeparator( data[pos_end] ) )
-                     pos_end++;
-                  else
-                     break;
-               }
-
-
-				if( data[pos_end] == '\0' )
-				{
-				   // the last word
-					key.value = &data[pos_begin];
-					if( key.value.length() > 0 )
-					{
-						writer->emit( 0 , &key, &value);
-						//OLM_M(("Output last word '%s' [%d %d]" , key.value.c_str() , pos_begin , pos_end ));
-					}
-					return;
-				}
-				else
-				{
-				   data[pos_end]='\0';// Artifical end of string
-					key.value = &data[pos_begin];
-					if( key.value.length() > 0 )
-					{
-						writer->emit( 0 , &key, &value);
-						//OLM_M(("Output last word '%s' [%d %d]" , key.value.c_str() , pos_begin , pos_end ));
-					}
-
-					pos_begin = pos_end+1;
-				}
-
-			}
-		}
-
+        }
 	};
 
 

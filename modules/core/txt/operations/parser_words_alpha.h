@@ -40,34 +40,36 @@ namespace txt{
 		   value.value = 1;
 		}
 
+		bool isSeparator( char c )
+		{
+		   if( c == ' ')
+			  return  true;
+		   if( c == '\t')
+			  return  true;
+		   
+		   return false;
+		}
+
 		void parseLine( char * line, samson::KVWriter *writer )
 		{
 		   size_t len = strlen( line );
 		   size_t pos = 0;
-		   for ( size_t i = 0 ; i < len ; i++ )
+		   for ( size_t i = 0 ; i < (len+1) ; i++ )
 		   {
-			  if( !isalpha( line[i] ) )
+			  if( isSeparator( line[i] ) || line[i]=='\0' )
 			  {
 				 if( pos < i )
 				 {
 					// New word
 					key.value ="";
 					key.value.append( &line[pos] ,i-pos );					
+
+					printf("emiting %s\n", key.value.c_str() );
 					writer->emit( 0 , &key , &value );
 				 }
-
 				 // Go to the next
 				 pos = i+1;
 			  }
-
-
-		   }
-
-		   // Emit last word
-		   if( pos < len )
-		   {
-			  key.value = &line[pos];
-			  writer->emit( 0 , &key , &value );
 		   }
 
 		}

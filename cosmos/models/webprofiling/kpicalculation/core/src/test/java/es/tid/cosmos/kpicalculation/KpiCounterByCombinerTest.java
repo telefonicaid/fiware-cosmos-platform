@@ -1,5 +1,6 @@
 package es.tid.cosmos.kpicalculation;
 
+import java.io.IOException;
 import static java.util.Arrays.asList;
 
 import org.apache.hadoop.io.IntWritable;
@@ -8,7 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.mapreduce.BinaryKey;
-import java.io.IOException;
 
 /**
  *

@@ -58,15 +58,12 @@ class MongoRecord(object):
 
 def retrieve_results(job_id, primary_key):
     ans = []
-    job = Job.objects.get(id=job_id)
+    job = Job.objects.get(pk=job_id)
     jobmodel = CustomJobModel.objects.get(job=job)
-    mongo_url = jobmodel.mongo_url()
-    mongo_db = jobmodel.job.user.username
-    mongo_collection = 'job_%s' % jobmodel.job.id
     try:
-        connection = Connection(mongo_url)
-        db = connection[mongo_db]
-        job_results = db[mongo_collection]
+        connection = Connection(jobmodel.mongo_url())
+        db = connection[jobmodel.mongo_db()]
+        job_results = db[jobmodel.mongo_collection()]
         if not primary_key:
             some_result = job_results.find_one()
             if not some_result:

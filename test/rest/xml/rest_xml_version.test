@@ -1,7 +1,7 @@
 --NAME--
 REST XML version
 --SHELL--
-curl http://localhost:9898/samson/version
+curl http://localhost:1202/samson/version
 --EXPECT--
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- SAMSON Rest interface -->

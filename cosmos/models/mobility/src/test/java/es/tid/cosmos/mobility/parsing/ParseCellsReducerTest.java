@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
  *
@@ -21,24 +21,32 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cell;
  */
 public class ParseCellsReducerTest {
     private ReduceDriver<LongWritable, Text, LongWritable,
-            ProtobufWritable<Cell>> driver;
+            ProtobufWritable<MobData>> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, Text, LongWritable,
-                ProtobufWritable<Cell>>(new ParseCellsReducer());
+                ProtobufWritable<MobData>>(new ParseCellsReducer());
     }
 
     @Test
-    public void test() throws IOException {
-        List<Pair<LongWritable, ProtobufWritable<Cell>>> results = this.driver
+    public void testValidLine() throws IOException {
+        List<Pair<LongWritable, ProtobufWritable<MobData>>> res = this.driver
                 .withInput(new LongWritable(1L),
                            asList(new Text("33F43052|2221436242|12|34|56|78")))
                 .run();
-        assertEquals(1, results.size());
-        assertEquals(new LongWritable(871641170L), results.get(0).getFirst());
-        ProtobufWritable<Cell> wrappedCell = results.get(0).getSecond();
-        wrappedCell.setConverter(Cell.class);
-        assertNotNull(wrappedCell.get());
+        assertEquals(1, res.size());
+        assertEquals(new LongWritable(871641170L), res.get(0).getFirst());
+        ProtobufWritable<MobData> wrappedCell = res.get(0).getSecond();
+        wrappedCell.setConverter(MobData.class);
+        assertNotNull(wrappedCell.get().getCell());
+    }
+
+    @Test
+    public void testInvalidLine() throws IOException {
+        this.driver
+                .withInput(new LongWritable(1L),
+                           asList(new Text("33F43052|blah blah|4234232")))
+                .runTest();
     }
 }

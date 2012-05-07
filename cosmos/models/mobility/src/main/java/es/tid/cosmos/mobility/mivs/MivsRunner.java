@@ -29,7 +29,8 @@ public final class MivsRunner {
         {
             // Calculate individual variables by month
             ReduceJob job = ReduceJob.create(conf, "ActivityAreaByMonth",
-                    SequenceFileInputFormat.class, ActivityAreaReducer.class,
+                    SequenceFileInputFormat.class,
+                    ActivityAreaReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, viTelmonthBts);
             FileOutputFormat.setOutputPath(job, viTelmonthMobvars);
@@ -40,7 +41,8 @@ public final class MivsRunner {
         {
             // Fuse in a set all user info
             ReduceJob job = ReduceJob.create(conf, "FusionTotalVars",
-                    SequenceFileInputFormat.class, FusionTotalVarsReducer.class,
+                    SequenceFileInputFormat.class,
+                    FusionTotalVarsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, viTelmonthMobvars);
             FileOutputFormat.setOutputPath(job, viClientFuse);
@@ -51,7 +53,8 @@ public final class MivsRunner {
         {
             // Delete months
             MapJob job = MapJob.create(conf, "DeletePeriod",
-                    SequenceFileInputFormat.class, DeletePeriodMapper.class,
+                    SequenceFileInputFormat.class,
+                    DeletePeriodMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, viTelmonthBts);
             FileOutputFormat.setOutputPath(job, viTelmonthBtsAcc);
@@ -62,7 +65,8 @@ public final class MivsRunner {
         {
             // Calculate individual variables for every month
             ReduceJob job = ReduceJob.create(conf, "ActivityAreaByMonth",
-                    SequenceFileInputFormat.class, ActivityAreaReducer.class,
+                    SequenceFileInputFormat.class,
+                    ActivityAreaReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, viTelmonthBtsAcc);
             FileOutputFormat.setOutputPath(job, viTelmonthMobvarsAcc);
@@ -72,7 +76,8 @@ public final class MivsRunner {
         {
             // Fuse in a set all user info
             ReduceJob job = ReduceJob.create(conf, "FusionTotalVars",
-                    SequenceFileInputFormat.class, FusionTotalVarsReducer.class,
+                    SequenceFileInputFormat.class,
+                    FusionTotalVarsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, viTelmonthMobvarsAcc);
             FileOutputFormat.setOutputPath(job, viClientFuseAcc);

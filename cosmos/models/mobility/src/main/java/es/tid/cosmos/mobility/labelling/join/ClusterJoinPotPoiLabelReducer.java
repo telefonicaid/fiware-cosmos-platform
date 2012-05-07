@@ -9,18 +9,21 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 
 /**
- *
+ * Input: <Long, Poi|Long>
+ * Output: <TwoInt, Null>
+ * 
  * @author dmicol
  */
 public class ClusterJoinPotPoiLabelReducer extends Reducer<
         LongWritable, ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-        NullWritable> {
+        ProtobufWritable<MobData>> {
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -48,7 +51,8 @@ public class ClusterJoinPotPoiLabelReducer extends Reducer<
                 if (majPoiLbl == potPoi.getLabelnodebts()) {
                     context.write(TwoIntUtil.createAndWrap(potPoi.getNode(),
                                                            potPoi.getBts()),
-                                  NullWritable.get());
+                                  MobDataUtil.createAndWrap(
+                                          NullWritable.get()));
                 }
             }
         }

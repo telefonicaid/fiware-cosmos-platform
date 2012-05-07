@@ -26,29 +26,6 @@ public final class ClientLabellingRunner {
             throws Exception {
         FileSystem fs = FileSystem.get(conf);
         
-        Path cdrsMobDataPath = new Path(tmpDirPath, "cdrs_mob_data");
-        { 
-            ReduceJob job = ReduceJob.create(conf, "ConvertCdrToMobData",
-                    SequenceFileInputFormat.class,
-                    ConvertCdrToMobDataReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, cdrsMobPath);
-            FileOutputFormat.setOutputPath(job, cdrsMobDataPath);
-            job.waitForCompletion(true);
-        }
-
-        Path clientsInfoFilteredMobDataPath = new Path(tmpDirPath,
-                "clients_info_filtered_mob_data");
-        { 
-            ReduceJob job = ReduceJob.create(conf, "ConvertIntToMobData",
-                    SequenceFileInputFormat.class,
-                    ConvertIntToMobDataReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, clientsInfoFilteredPath);
-            FileOutputFormat.setOutputPath(job, clientsInfoFilteredMobDataPath);
-            job.waitForCompletion(true);
-        }
-        
         Path cdrsFilteredPath = new Path(tmpDirPath, "cdrs_filtered");
         {
             ReduceJob job = ReduceJob.create(conf, "VectorFiltClients",
@@ -56,13 +33,10 @@ public final class ClientLabellingRunner {
                     VectorFiltClientsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                cdrsMobDataPath, clientsInfoFilteredMobDataPath });
+                cdrsMobPath, clientsInfoFilteredPath });
             FileOutputFormat.setOutputPath(job, cdrsFilteredPath);
             job.waitForCompletion(true);
         }
-        
-        fs.delete(cdrsMobDataPath, true);
-        fs.delete(clientsInfoFilteredMobDataPath, true);
         
         Path vectorSpreadNodedayhourPath = new Path(tmpDirPath,
                                                     "clients_info_spread");

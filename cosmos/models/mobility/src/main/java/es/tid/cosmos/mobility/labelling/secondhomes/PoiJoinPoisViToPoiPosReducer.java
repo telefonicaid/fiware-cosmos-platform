@@ -8,18 +8,20 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
 import es.tid.cosmos.mobility.data.MobProtocol.PoiPos;
-import es.tid.cosmos.mobility.data.PoiPosUtil;
 
 /**
- *
+ * Input: <Long, PoiPos|MobViMobVars>
+ * Output: <Long, PoiPos>
+ * 
  * @author dmicol
  */
 public class PoiJoinPoisViToPoiPosReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<PoiPos>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -65,7 +67,8 @@ public class PoiJoinPoisViToPoiPosReducer extends Reducer<LongWritable,
                         outputPoiPos.setDistCMWend(dist);
                     }
                 }
-                context.write(key, PoiPosUtil.wrap(outputPoiPos.build()));
+                context.write(key,
+                              MobDataUtil.createAndWrap(outputPoiPos.build()));
             }
         }
     }

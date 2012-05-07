@@ -7,30 +7,33 @@ import java.util.List;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.DailyVector;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 
 /**
- *
+ * Input: <NodeBts, TwoInt>
+ * Output: <TwoInt, DailyVector>
+ * 
  * @author dmicol
  */
 public class VectorCreateNodeDayhourReducer extends Reducer
-        <ProtobufWritable<NodeBts>, ProtobufWritable<TwoInt>,
-        ProtobufWritable<TwoInt>, ProtobufWritable<DailyVector>> {
+        <ProtobufWritable<NodeBts>, ProtobufWritable<MobData>,
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-                          Iterable<ProtobufWritable<TwoInt>> values,
-                          Context context) throws IOException,
-                                                  InterruptedException {
+            Iterable<ProtobufWritable<MobData>> values, Context context)
+            throws IOException, InterruptedException {
         key.setConverter(NodeBts.class);
         final NodeBts bts = key.get();
         
         List<TwoInt> valueList = new LinkedList<TwoInt>();
-        for (ProtobufWritable<TwoInt> value : values) {
-            value.setConverter(TwoInt.class);
-            final TwoInt hourComms = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final TwoInt hourComms = value.get().getTwoInt();
             valueList.add(hourComms);
         }
         
@@ -53,9 +56,6 @@ public class VectorCreateNodeDayhourReducer extends Reducer
         }
         ProtobufWritable<TwoInt> node = TwoIntUtil.createAndWrap(
                 bts.getUserId(), bts.getPlaceId());
-        ProtobufWritable<DailyVector> vector =
-                ProtobufWritable.newInstance(DailyVector.class);
-        vector.set(vectorBuilder.build());
-        context.write(node, vector);
+        context.write(node, MobDataUtil.createAndWrap(vectorBuilder.build()));
     }
 }

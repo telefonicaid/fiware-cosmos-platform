@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -16,12 +17,14 @@ import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 
 /**
- *
+ * Input: <Long, PoiPos|MobViMobVars>
+ * Output: <TwoInt, TwoInt>
+ * 
  * @author dmicol
  */
 public class PoiJoinPoisViToTwoIntReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-        ProtobufWritable<TwoInt>> {
+        ProtobufWritable<MobData>> {
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -70,8 +73,9 @@ public class PoiJoinPoisViToTwoIntReducer extends Reducer<LongWritable,
             }
             context.write(TwoIntUtil.createAndWrap(poiPos.getNode(),
                                                    poiPos.getBts()),
-                          TwoIntUtil.createAndWrap(poiPos.getInoutWeek(),
-                                                   poiPos.getInoutWend()));
+                          MobDataUtil.createAndWrap(
+                                  TwoIntUtil.create(poiPos.getInoutWeek(),
+                                                    poiPos.getInoutWend())));
         }
     }
 }

@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
  *
@@ -21,26 +21,34 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
  */
 public class ParseCdrsReducerTest {
     private ReduceDriver<LongWritable, Text, LongWritable,
-            ProtobufWritable<Cdr>> driver;
+            ProtobufWritable<MobData>> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, Text, LongWritable,
-                ProtobufWritable<Cdr>>(new ParseCdrsReducer());
+                ProtobufWritable<MobData>>(new ParseCdrsReducer());
     }
 
     @Test
-    public void test() throws IOException {
-        List<Pair<LongWritable, ProtobufWritable<Cdr>>> results = this.driver
+    public void testValidLine() throws IOException {
+        List<Pair<LongWritable, ProtobufWritable<MobData>>> res = this.driver
                 .withInput(new LongWritable(1L),
                            asList(new Text("33F430521676F4|2221436242|"
                                   + "33F430521676F4|0442224173253|2|"
                                   + "01/01/2010|02:00:01|2891|RMITERR")))
                 .run();
-        assertEquals(1, results.size());
-        assertEquals(new LongWritable(2221436242L), results.get(0).getFirst());
-        ProtobufWritable<Cdr> wrappedCdr = results.get(0).getSecond();
-        wrappedCdr.setConverter(Cdr.class);
-        assertNotNull(wrappedCdr.get());
+        assertEquals(1, res.size());
+        assertEquals(new LongWritable(2221436242L), res.get(0).getFirst());
+        ProtobufWritable<MobData> wrappedCdr = res.get(0).getSecond();
+        wrappedCdr.setConverter(MobData.class);
+        assertNotNull(wrappedCdr.get().getCdr());
+    }
+
+    @Test
+    public void testInvalidLine() throws IOException {
+        this.driver
+                .withInput(new LongWritable(1L),
+                           asList(new Text("33F430521676F4|blah blah|43242")))
+                .runTest();
     }
 }

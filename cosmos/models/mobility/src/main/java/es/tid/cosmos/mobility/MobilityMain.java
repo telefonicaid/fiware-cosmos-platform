@@ -7,12 +7,12 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
-import es.tid.cosmos.mobility.mivs.MivsRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;
 import es.tid.cosmos.mobility.labelling.join.LabelJoiningRunner;
 import es.tid.cosmos.mobility.labelling.secondhomes.DetectSecondHomesRunner;
+import es.tid.cosmos.mobility.mivs.MivsRunner;
 import es.tid.cosmos.mobility.outpois.OutPoisRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
@@ -67,14 +67,14 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldPrepare = arguments.getBoolean("prepare");
         if (shouldRunAll || shouldPrepare) {
             PreparingRunner.run(tmpPreparingPath, cdrsMobPath, cdrsInfoPath,
-                                cdrsNoinfoPath, cellsMobPath, clientsBtsPath,
+                                cdrsNoinfoPath, cellsPath, clientsBtsPath,
                                 btsCommsPath, cdrsNoBtsPath, viTelmonthBtsPath,
                                 conf);
         }
 
         Path tmpExtractMivsPath = new Path(tmpPath, "mivs");
         Path viClientFuseAccPath = new Path(tmpExtractMivsPath,
-                                        "vi_client_fuse_acc");
+                                            "vi_client_fuse_acc");
         boolean shouldExtractMivs = arguments.getBoolean("extractMIVs");
         if (shouldRunAll || shouldExtractMivs) {
             MivsRunner.run(viTelmonthBtsPath, viClientFuseAccPath,

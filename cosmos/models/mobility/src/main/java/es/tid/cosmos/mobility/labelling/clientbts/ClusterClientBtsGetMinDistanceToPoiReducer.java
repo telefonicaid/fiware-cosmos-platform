@@ -9,20 +9,24 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.PoiUtil;
 import es.tid.cosmos.mobility.util.CentroidsCatalogue;
 
 /**
- *
+ * Input: <NodeBts, ClusterVector>
+ * Output: <Long, Poi>
+ * 
  * @author dmicol
  */
 public class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
-        ProtobufWritable<NodeBts>, ProtobufWritable<ClusterVector>,
-        LongWritable, ProtobufWritable<Poi>> {
+        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>,
+        LongWritable, ProtobufWritable<MobData>> {
     private static List<Cluster> centroids = null;
 
     @Override
@@ -37,11 +41,11 @@ public class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
 
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<ProtobufWritable<ClusterVector>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<ClusterVector> value : values) {
-            value.setConverter(ClusterVector.class);
-            final ClusterVector clusVector = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final ClusterVector clusVector = value.get().getClusterVector();
             double mindist = Double.POSITIVE_INFINITY;
             Cluster minDistCluster = null;
             for (Cluster cluster : centroids) {
@@ -72,13 +76,14 @@ public class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
 
             key.setConverter(NodeBts.class);
             final NodeBts nodeBts = key.get();
-            ProtobufWritable<Poi> poi = PoiUtil.createAndWrap(
+            Poi poi = PoiUtil.create(
                     0, nodeBts.getUserId(), nodeBts.getPlaceId(), 0, 0, 0, 0,
                     0, 0, 0, 0, minDistCluster.getLabel(),
                     minDistCluster.getLabelgroup(),
                     mindist > minDistCluster.getDistance() ? 0 : 1, mindist,
                     -1, -1);
-            context.write(new LongWritable(nodeBts.getUserId()), poi);
+            context.write(new LongWritable(nodeBts.getUserId()),
+                          MobDataUtil.createAndWrap(poi));
         }
     }
 }

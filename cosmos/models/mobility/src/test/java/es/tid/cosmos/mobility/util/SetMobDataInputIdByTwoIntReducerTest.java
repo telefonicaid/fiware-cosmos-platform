@@ -47,7 +47,7 @@ public class SetMobDataInputIdByTwoIntReducerTest {
                         .withInput(TwoIntUtil.createAndWrap(1L, 2L),
                                    asList(MobDataUtil.createAndWrap(
                                            NullWritable.get())))
-                .run();
+                        .run();
         assertEquals(1, res.size());
         ProtobufWritable<MobData> output = res.get(0).getSecond();
         output.setConverter(MobData.class);

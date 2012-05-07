@@ -23,6 +23,9 @@ message MobData {
         TWO_INT = 13;
         CLUSTER_VECTOR = 14;
         POI_NEW = 15;
+        NODE_MX_COUNTER = 16;
+        DAILY_VECTOR = 17;
+        MOB_VARS = 18;
     }
 
     required Type type = 1;
@@ -41,6 +44,9 @@ message MobData {
     optional TwoInt twoInt = 14;
     optional ClusterVector clusterVector = 15;
     optional PoiNew poiNew = 16;
+    optional NodeMxCounter nodeMxCounter = 17;
+    optional DailyVector dailyVector = 18;
+    optional MobVars mobVars = 19;
 }
 
 message Cdr {
@@ -172,8 +178,7 @@ message PoiNew {
     optional uint32 confidentnodebts = 5;
 }
 
-message MobVars
-{
+message MobVars {
     optional uint32 month = 1;
     optional bool workingday = 2;
     optional uint32 num_pos = 3;

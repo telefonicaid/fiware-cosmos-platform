@@ -5,47 +5,54 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
+import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
- *
+ * Input: <Long, Cdr>
+ * Output: <Long, TwoInt>
+ * 
  * @author dmicol
  */
 public class JoinBtsNodeToBtsDayRangeReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<TwoInt>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+    private static List<Cell> cells = null;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+            InterruptedException {
+        if (cells == null) {
+            final Configuration conf = context.getConfiguration();
+            cells = CellsCatalogue.load(new Path(conf.get("cells")), conf);
+        }
+    }
+    
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        List<Cdr> cdrs = new LinkedList<Cdr>();
-        List<Cell> cells = new LinkedList<Cell>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case CDR:
-                    cdrs.add(mobData.getCdr());
-                    break;
-                case CELL:
-                    cells.add(mobData.getCell());
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid input data");
+        List<Cell> filteredCells = new LinkedList<Cell>();
+        for (Cell cell : cells) {
+            if (cell.getCellId() == key.get()) {
+                filteredCells.add(cell);
             }
         }
-        
-        if (cells.isEmpty()) {
+        if (filteredCells.isEmpty()) {
             return;
         }
-        for (Cell cell : cells) {
-            for (Cdr cdr : cdrs) {
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final Cdr cdr = value.get().getCdr();
+            for (Cell cell : filteredCells) {
                 int group;
                 switch (cdr.getDate().getWeekday()) {
                     case 0:
@@ -61,8 +68,9 @@ public class JoinBtsNodeToBtsDayRangeReducer extends Reducer<LongWritable,
                         group = 0;
                 }
                 context.write(new LongWritable(cell.getPlaceId()),
-                              TwoIntUtil.createAndWrap(group,
-                                                       cdr.getTime().getHour()));
+                        MobDataUtil.createAndWrap(
+                                TwoIntUtil.create(group,
+                                                  cdr.getTime().getHour())));
             }
         }
     }

@@ -8,28 +8,33 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.PoiPos;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 
 /**
- *
+ * Input: <Long, PoiPos>
+ * Output: <TwoInt, Long>
+ * 
  * @author dmicol
  */
 public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
-        ProtobufWritable<PoiPos>, ProtobufWritable<TwoInt>, LongWritable> {
+        ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
+        ProtobufWritable<MobData>> {
     private static final int HOME_LABELGROUP_ID = 3;
     private static final int WORK_LABELGROUP_ID = 6;
     private static final double MIN_DIST_SECOND_HOME = 49342.85D;
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<PoiPos>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<PoiPos> poiPosList = new LinkedList<PoiPos>();
-        for (ProtobufWritable<PoiPos> value : values) {
-            value.setConverter(PoiPos.class);
-            poiPosList.add(value.get());
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            poiPosList.add(value.get().getPoiPos());
         }
 
         for (PoiPos poiIn : poiPosList) {
@@ -44,9 +49,10 @@ public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
                         double disty = poiIn.getPosy() - poiOut.getPosy();
                         double dist = Math.sqrt(distx * distx + disty * disty);
                         if (dist >= MIN_DIST_SECOND_HOME) {
-                            context.write(TwoIntUtil.createAndWrap(
-                                    poiIn.getBts(), poiOut.getBts()),
-                                          new LongWritable(poiIn.getNode()));
+                            context.write(
+                                    TwoIntUtil.createAndWrap(poiIn.getBts(),
+                                                             poiOut.getBts()),
+                                    MobDataUtil.createAndWrap(poiIn.getNode()));
                         }
                     }
                 }

@@ -6,13 +6,14 @@ import es.tid.cosmos.mobility.data.MobProtocol.Bts;
 
 /**
  *
- * @author sortega
+ * @author dmicol, sortega
  */
 public abstract class BtsUtil {
-    public static Bts create(long placeId, double posx, double posy,
+    public static Bts create(long placeId, long comms, double posx, double posy,
             double area, Iterable<Long> adjBts) {
         Bts.Builder bts = Bts.newBuilder()
                 .setPlaceId(placeId)
+                .setComms(comms)
                 .setPosx(posx)
                 .setPosy(posy)
                 .setArea(area)
@@ -26,8 +27,8 @@ public abstract class BtsUtil {
         return wrapper;
     }
     
-    public static ProtobufWritable<Bts> createAndWrap(long placeId, double posx,
-            double posy, double area, Iterable<Long> adjBts) {
-        return wrap(create(placeId, posx, posy, area, adjBts));
+    public static ProtobufWritable<Bts> createAndWrap(long placeId, long comms,
+            double posx, double posy, double area, Iterable<Long> adjBts) {
+        return wrap(create(placeId, comms, posx, posy, area, adjBts));
     }
 }

@@ -9,24 +9,27 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 
 /**
- *
+ * Input: <TwoInt, Cluster>
+ * Output: <Null, Text>
+ * 
  * @author dmicol
  */
 public class VectorNodbtsOutReducer extends Reducer<ProtobufWritable<TwoInt>,
-        ProtobufWritable<Cluster>, NullWritable, Text> {
+        ProtobufWritable<MobData>, NullWritable, Text> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<ProtobufWritable<Cluster>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(TwoInt.class);
         final TwoInt twoInt = key.get();
-        for (ProtobufWritable<Cluster> value : values) {
-            value.setConverter(Cluster.class);
-            final Cluster cluster = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final Cluster cluster = value.get().getCluster();
             String output =
                     TwoIntUtil.toString(twoInt) + ClusterUtil.DELIMITER
                     + cluster.getLabel() + ClusterUtil.DELIMITER

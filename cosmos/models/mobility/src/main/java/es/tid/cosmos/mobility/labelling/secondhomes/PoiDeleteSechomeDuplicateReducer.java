@@ -6,19 +6,23 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 
 /**
- *
+ * Input: <TwoInt, Null>
+ * Output: <TwoInt, Null>
+ * 
  * @author dmicol
  */
 public class PoiDeleteSechomeDuplicateReducer extends Reducer<
-        ProtobufWritable<TwoInt>, NullWritable, ProtobufWritable<TwoInt>,
-        NullWritable> {
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<NullWritable> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        context.write(key, NullWritable.get());
+        context.write(key, MobDataUtil.createAndWrap(NullWritable.get()));
     }
 }

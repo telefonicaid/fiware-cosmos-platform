@@ -114,6 +114,27 @@ public abstract class MobDataUtil {
                 .setPoiNew(poiNew)
                 .build();
     }
+
+    public static MobData create(NodeMxCounter nodeMxCounter) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.NODE_MX_COUNTER)
+                .setNodeMxCounter(nodeMxCounter)
+                .build();
+    }
+
+    public static MobData create(DailyVector dailyVector) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.DAILY_VECTOR)
+                .setDailyVector(dailyVector)
+                .build();
+    }
+
+    public static MobData create(MobVars mobVars) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.MOB_VARS)
+                .setMobVars(mobVars)
+                .build();
+    }
     
     public static ProtobufWritable<MobData> wrap(MobData obj) {
         ProtobufWritable<MobData> wrapper = ProtobufWritable.newInstance(
@@ -179,6 +200,18 @@ public abstract class MobDataUtil {
     }
 
     public static ProtobufWritable<MobData> createAndWrap(PoiNew obj) {
+        return wrap(create(obj));
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(NodeMxCounter obj) {
+        return wrap(create(obj));
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(DailyVector obj) {
+        return wrap(create(obj));
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(MobVars obj) {
         return wrap(create(obj));
     }
     

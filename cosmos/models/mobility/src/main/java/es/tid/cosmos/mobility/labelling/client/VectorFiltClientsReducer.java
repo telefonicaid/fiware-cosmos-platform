@@ -20,6 +20,8 @@ import es.tid.cosmos.mobility.data.MobProtocol.MobData;
  */
 public class VectorFiltClientsReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+    private static final int MAX_CDRS = 3000;
+    
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -41,6 +43,9 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
             }
             if (hasComms) {
                 break;
+            }
+            if (cdrList.size() > MAX_CDRS) {
+                return;
             }
         }
         if (!hasComms) {

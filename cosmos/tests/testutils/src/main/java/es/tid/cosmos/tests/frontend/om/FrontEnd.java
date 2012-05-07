@@ -12,7 +12,9 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import es.tid.cosmos.tests.tasks.Environment;
-import es.tid.cosmos.tests.tasks.EnvironmentSetting;
+import static es.tid.cosmos.tests.tasks.EnvironmentSetting.CosmosRelativeUrl;
+import static es.tid.cosmos.tests.tasks.EnvironmentSetting.DataviewerRelativeUrl;
+import static es.tid.cosmos.tests.tasks.EnvironmentSetting.FrontendUrl;
 import es.tid.cosmos.tests.tasks.TaskStatus;
 import es.tid.cosmos.tests.tasks.TestException;
 
@@ -30,70 +32,85 @@ public class FrontEnd {
     public static final String UPLOAD_DATA_ACTION_CLASS = "upload-data";
     public static final String RESULT_NAME_CLASS = "result-name";
     public static final String RESULT_STATUS_CLASS = "result-status";
-    public static final String USERNAME_INPUT_ID = "id_username";
-    public static final String PASSWORD_INPUT_ID = "id_password";
-    
+    public static final String USERNAME_INPUT_NAME = "username";
+    public static final String PASSWORD_INPUT_NAME = "password";
     // Default login info
     private static final String DEFAULT_USER = "test";
     private static final String DEFAULT_PASSWRD = "cosmostest";
-    
     private WebDriver driver;
     private final String username;
     private final String password;
-    private final String homeUrl;
+    private final String baseUrl;
+    private final String cosmosUrl;
+    private final String dataViewerUrl;
     private final Environment environment;
 
-    public FrontEnd(Environment env) {
+    public FrontEnd(Environment env) throws TestException {
         this(env, DEFAULT_USER, DEFAULT_PASSWRD);
     }
-    
-    public FrontEnd(Environment env, String username, String password) {
+
+    public FrontEnd(Environment env, String username, String password)
+            throws TestException {
         this.driver = new HtmlUnitDriver();
         this.username = username;
         this.password = password;
         this.environment = env;
-        this.homeUrl = this.environment.getProperty(
-            EnvironmentSetting.FRONTEND_URL);
+        this.baseUrl = this.environment.getProperty(FrontendUrl);
+        try {
+            URL base = new URL(baseUrl);
+            this.cosmosUrl = new URL(
+                    base,
+                    this.environment.getProperty(CosmosRelativeUrl)).toString();
+            this.dataViewerUrl = new URL(
+                    base,
+                    this.environment.getProperty(DataviewerRelativeUrl)).toString();
+        } catch (MalformedURLException ex) {
+            throw new TestException("[Test bug] Malformed URL for frontend. " + ex.toString());
+        }
     }
-    
-    public String getHomeUrl() {
-        return this.homeUrl;
-    }
-    
+
     public Environment getEnvironment() {
         return this.environment;
     }
-    
+
     public URL resolveURL(String verbatimUrl) throws MalformedURLException {
         return new URL(new URL(this.driver.getCurrentUrl()), verbatimUrl);
     }
 
-    public void goHome() {
-        this.driver.get(this.homeUrl);
-        if (this.driver.getCurrentUrl().contains("login")) {
-            try {
-                this.login(this.username, this.password);
-            } catch (TestException ex) {
-                fail("Bad user/password. " +  ex.toString());
-            }
-        }
+    public void gotoCosmosHome() {
+        this.driver.get(this.cosmosUrl);
+        this.login(this.username, this.password);
     }
-    
-    private void login(String user, String pass) throws TestException {
-        WebElement userElement = this.driver.findElement(By.id(USERNAME_INPUT_ID));
+
+    public void gotoDataViewHome() {
+        this.driver.get(this.dataViewerUrl);
+        this.login(this.username, this.password);
+    }
+
+    private boolean needLogin() {
+        return this.driver.getCurrentUrl().contains("login");
+    }
+
+    private void login(String user, String pass) {
+        if (!this.needLogin()) {
+            return;
+        }
+
+        WebElement userElement = this.driver.findElement(
+                By.name(USERNAME_INPUT_NAME));
         userElement.sendKeys(user);
-        this.driver.findElement(By.id(PASSWORD_INPUT_ID)).sendKeys(pass);
-        
+        this.driver.findElement(By.name(PASSWORD_INPUT_NAME)).sendKeys(pass);
+
         userElement.submit();
-        if (this.driver.getCurrentUrl().contains("login")) {
-            throw new TestException("Login was not successful");
+        if (this.needLogin()) {
+            fail("[Test bug] Bad user/password. User: " + user + ". Password: " + pass);
         }
     }
-    
+
     public boolean taskExists(String taskId) {
         this.goHome();
         return this.getTaskRow(taskId) != null;
-        
+
     }
 
     public TaskStatus getTaskStatus(String taskId) {
@@ -118,7 +135,7 @@ public class FrontEnd {
 
     private WebElement getTaskLink(String taskId, String expectedClass) {
         WebElement taskLink = this.getTaskRow(taskId).findElement(By.className(JOB_ACTION_CLASS));
-        
+
         boolean isExpectedLink = false;
         for (String elementClass : taskLink.getAttribute("class").split("\\s")) {
             if (elementClass.equals(expectedClass)) {
@@ -126,7 +143,7 @@ public class FrontEnd {
                 break;
             }
         }
-        
+
         assertTrue(isExpectedLink, "Verifying link contains class: " + expectedClass);
         return taskLink;
     }
@@ -136,8 +153,7 @@ public class FrontEnd {
      */
     private WebElement getTaskRow(String taskId) {
         WebElement table = this.driver.findElement(By.id(TASK_STATUS_TABLE_ID));
-        List<WebElement> rows = table.findElement(By.tagName("tbody"))
-                .findElements(By.tagName("tr"));
+        List<WebElement> rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"));
         for (WebElement row : rows) {
             WebElement nameElement = row.findElement(
                     By.className(RESULT_NAME_CLASS));
@@ -150,16 +166,16 @@ public class FrontEnd {
     }
 
     public void launchJob(String taskId) {
-        this.goHome();
+        this.gotoCosmosHome();
         if (TaskStatus.Created != this.getTaskStatus(taskId)) {
             throw new IllegalArgumentException(
                     "Task is not in the created state. taskId: " + taskId);
         }
         this.getTaskLink(taskId, RUN_ACTION_CLASS).click();
     }
-    
+
     public SelectInputPage setInputDataForJob(String taskId) {
-        this.goHome();
+        this.gotoCosmosHome();
         if (TaskStatus.Created != this.getTaskStatus(taskId)) {
             throw new IllegalArgumentException(
                     "Task is not in the created state. taskId: " + taskId);
@@ -167,9 +183,9 @@ public class FrontEnd {
         this.getTaskLink(taskId, UPLOAD_DATA_ACTION_CLASS).click();
         return new SelectInputPage(this.driver);
     }
-    
+
     public ResultsPage goToResultsPage(String taskId) {
-        this.goHome();
+        this.gotoDataViewHome();
         TaskStatus status = this.getTaskStatus(taskId);
         if (TaskStatus.Created == status
                 || TaskStatus.Running == status) {
@@ -178,15 +194,15 @@ public class FrontEnd {
                     + "taskId: " + taskId + "\n"
                     + "status: " + status + "\n");
         }
-        
+
         this.getTaskLink(taskId, RESULT_ACTION_CLASS).click();
         return new ResultsPage(this.driver);
     }
 
     public SelectNamePage goToCreateNewJob() {
-        this.goHome();
-        WebElement createJobElement = this.driver
-                .findElement(By.id(CREATE_JOB_ID));
+        this.gotoCosmosHome();
+        WebElement createJobElement = this.driver.findElement(
+                By.id(CREATE_JOB_ID));
         createJobElement.click();
         return new SelectNamePage(this.driver);
     }

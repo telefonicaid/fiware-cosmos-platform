@@ -66,13 +66,14 @@ public class FrontEndTask implements Task {
         this(new FrontEnd(env), inputFilePath, jarPath, taskId);
     }
 
-    private FrontEndTask(Environment env, String taskId) {
+    private FrontEndTask(Environment env, String taskId) throws TestException {
         this.taskId = taskId;
         this.frontend = new FrontEnd(env);
     }
 
     public static FrontEndTask CreateFromExistingTaskId(Environment env,
-                                                        String taskId) {
+                                                        String taskId)
+            throws TestException {
         return new FrontEndTask(env, taskId);
     }
 

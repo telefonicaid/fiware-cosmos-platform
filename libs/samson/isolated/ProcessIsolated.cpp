@@ -305,7 +305,7 @@ namespace samson
             addOutput( op->getOutputFormat(i) );
         
         // Add an additional output for log
-        addOutput( KVFormat("system.String", "system.Void") );
+        addOutput( KVFormat("system.Value", "system.Value") );
     }
    
     void ProcessIsolated::setDistributionInformation( DistributionInformation _distribution_information  )

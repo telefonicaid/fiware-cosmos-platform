@@ -232,9 +232,7 @@ namespace samson
         
         // Merge with the second part of the vector( supposed to be sorted )
         std::inplace_merge(_kv, _kv+middle_pos, _kv+num_kvs , compareKV);
-        
-        printf("Key-Values: %lu\n" , num_kvs);
-        
+                
     }
 
     

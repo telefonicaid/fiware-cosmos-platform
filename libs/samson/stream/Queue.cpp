@@ -94,9 +94,11 @@ namespace samson {
                 // Tmp list to hold the new block
                 BlockList tmp_block_list;
                 
+                /*
                 if( tmp_buffer_list_container.getNumBuffers() > 1 )
                     LM_W(("Creating block from multiple buffers %s" , queue->name.c_str() ));
-                
+                */
+                 
                 // Create a block out of this buffers
                 Block* block = tmp_block_list.createBlock( &tmp_buffer_list_container );
 

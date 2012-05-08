@@ -76,7 +76,7 @@ PaArgument paArgs[] =
 	{ "-input",            input,               "",  PaString,  PaOpt, _i "stdin"  , PaNL, PaNL,        "Input sources "          },
 	{ "-output",           output,              "",  PaString,  PaOpt, _i "stdout"  , PaNL, PaNL,       "Output sources "         },
 	{ "-buffer_size",      &buffer_size,        "",  PaInt,     PaOpt, default_buffer_size,       1, default_buffer_size,  "Buffer size in bytes"    },
-	{ "-inputbuffer_size", &input_buffer_size,  "",  PaInt,     PaOpt, default_input_buffer_size, 1, 100000,               "Read inputs in chunks of this size" },
+	{ "-inputbuffer_size", &input_buffer_size,  "",  PaInt,     PaOpt, default_input_buffer_size, 1, 10000000,               "Read inputs in chunks of this size" },
 	{ "-splitter",         input_splitter_name, "",  PaString,  PaOpt, _i "",   PaNL, PaNL,  "Splitter"  },
 	{ "-i",                &interactive,        "",  PaBool,    PaOpt,    false,  false,   true,        "Interactive console"          },
 	PA_END_OF_ARGS

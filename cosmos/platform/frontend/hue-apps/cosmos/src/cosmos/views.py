@@ -5,8 +5,8 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from desktop.lib.django_util import PopupException, render
 
-from cosmos.models import CustomJar, Dataset, JobRun
-from cosmos.forms import UploadDatasetForm, UploadCustomJarForm
+from cosmos.models import JobRun
+from cosmos.forms import RunJobForm
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,10 +19,12 @@ def index(request):
     ))
 
 
-def list_datasets(request):
-    return render('dataset_list.mako', request, dict(
-        datasets=Dataset.objects.filter(user=request.user).order_by('name')
-    ))
+def run_job(request):
+    pass
+
+
+def upload_index(request):
+    return render('upload_index.mako', request, dict())
 
 
 def chown(fs, filename, username):
@@ -40,11 +42,9 @@ def chown(fs, filename, username):
         fs.setuser(username)
 
 
-def upload_to_new_dir(fs, path, upload, user):
+def upload_to_dir(fs, path, upload, user):
     tmp_file = upload.get_temp_path()
     chown(fs, tmp_file, user.username)
-    if fs.exists(path):
-        raise PopupException('Directory %s already exists' % path)
 
     dest_file = fs.join(path, upload.name)
     try:
@@ -71,7 +71,10 @@ def upload_dataset(request):
                               description=form.cleaned_data['description'])
             dataset.set_default_path()
             upload = request.FILES['hdfs_file']
-            upload_to_new_dir(request.fs, dataset.path, upload, request.user)
+            if request.fs.exists(dataset.path):
+                raise PopupException('Directory %s already exists' % 
+                                     datset.path)
+            upload_to_dir(request.fs, dataset.path, upload, request.user)
             dataset.save()
             upload.remove()
             return redirect(reverse('list_datasets'))
@@ -83,11 +86,6 @@ def upload_dataset(request):
         flash_upload=request.GET.get('flash_upload', False)
     ))
 
-
-def list_jars(request):
-    return render('jar_list.mako', request, dict(
-        jars=CustomJar.objects.filter(user=request.user).order_by('name')
-    ))
 
 def upload_jar(request):
     if request.method == 'POST':
@@ -103,7 +101,7 @@ def upload_jar(request):
                             description=form.cleaned_data['description'])
             jar.set_default_path()
             upload = request.FILES['hdfs_file']
-            upload_to_new_dir(request.fs, jar.path, upload, request.user)
+            upload_to_dir(request.fs, __default_jar_dir__, upload, request.user)
             jar.save()
             upload.remove()
             return redirect(reverse('list_jars'))
@@ -114,3 +112,4 @@ def upload_jar(request):
         form=form,
         flash_upload=request.GET.get('flash_upload', False)
     ))
+

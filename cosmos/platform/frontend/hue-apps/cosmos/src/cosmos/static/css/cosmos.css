@@ -57,13 +57,32 @@
 .cosmos a.cos-job_runs_nav {
     background: url(/static/art/icons/application_view_list.png) no-repeat;
 }
-.cosmos a.cos-datasets_nav {
-    background: url(/static/art/icons/database_edit.png) no-repeat;
-}
-.cosmos a.cos-jars_nav {
-    background: url(/static/art/icons/package.png) no-repeat;
+.cosmos a.cos-upload_nav {
+    background: url(/static/art/icons/add.png) no-repeat;
 }
 .cosmos a.cos-upload_dataset,
 .cosmos a.cos-upload_jar {
     background: url(/static/art/icons/add.png) no-repeat;
+}
+.cosmos a.cos-runjob {
+    background: url(/static/art/icons/control_play_blue.png) no-repeat;
+}
+
+.cosmos .cos-upload_choices {
+    padding: 1em;
+}
+.cosmos .cos-upload_choices ul li {
+    display: block;
+    margin: 2em;
+}
+.cosmos a.cos-upload_dataset,
+.cosmos a.cos-upload_jar {
+    padding: 4px 8px 4px 24px;
+    height: 25px;
+}
+.cosmos a.cos-upload_dataset {
+    background: url(/static/art/icons/page_add.png) no-repeat;
+}
+.cosmos a.cos-upload_jar {
+    background: url(/static/art/icons/package_add.png) no-repeat;
 }

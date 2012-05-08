@@ -27,11 +27,13 @@
         z-index: 1;
 }
 
-.cosmos .nav {
+.cosmos .nav, .cosmos .subnav {
     position: absolute;
-    top: 24px;
-    left: 80px;
     z-index: 1;
+    left: 80px;
+}
+.cosmos .nav {
+    top: 24px;
 }
 
 .cosmos .nav_icon {
@@ -43,6 +45,15 @@
     float: left;
 }
 
+.cosmos .subnav {
+    top: 55px;
+}
+
+.cosmos .subnav_icon {
+    padding: 4px 8px 4px 24px;
+    height: 18px;
+}
+
 .cosmos a.cos-job_runs_nav {
     background: url(/static/art/icons/application_view_list.png) no-repeat;
 }
@@ -51,4 +62,8 @@
 }
 .cosmos a.cos-jars_nav {
     background: url(/static/art/icons/package.png) no-repeat;
+}
+.cosmos a.cos-upload_dataset,
+.cosmos a.cos-upload_jar {
+    background: url(/static/art/icons/add.png) no-repeat;
 }

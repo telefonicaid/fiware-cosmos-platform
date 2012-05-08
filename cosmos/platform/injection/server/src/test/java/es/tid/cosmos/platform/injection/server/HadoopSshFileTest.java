@@ -23,9 +23,6 @@ public class HadoopSshFileTest {
     private HadoopSshFile hfoo;
     private HadoopSshFile hdir;
 
-    @Rule
-    public ExpectedException exception = ExpectedException.none();
-
     @Before
     public void setUp() {
         this.dir = new Path("/tmp/user01");
@@ -42,8 +39,12 @@ public class HadoopSshFileTest {
 
     @After
     public void tearDown() {
-        this.hfoo.delete();
-        this.hdir.delete();
+        if (this.hfoo.doesExist()) {
+            this.hfoo.delete();
+        }
+        if (this.hdir.doesExist()) {
+            this.hdir.delete();
+        }
     }
 
     @Test
@@ -56,18 +57,11 @@ public class HadoopSshFileTest {
         assertEquals("file01", this.hfoo.getName());
     }
 
-    @Test()
+    @Test
     public void testIsDirectory() throws Exception {
         //exception.expect(FileNotFoundException.class);
         // TODO: do not catch exception or check stack trace
         this.hdir.isDirectory();
-    }
-
-    @Test()
-    public void testIsFile() throws Exception {
-        //exception.expect(FileNotFoundException.class);
-        // TODO: do not catch exception or check stack trace
-        this.hfoo.isFile();
     }
 
     @Test
@@ -80,7 +74,13 @@ public class HadoopSshFileTest {
     @Test
     public void testIsReadable() throws Exception {
         // TODO: implement testIsReadable
+    }
 
+    @Test
+    public void testIsFile() throws Exception {
+        //exception.expect(FileNotFoundException.class);
+        // TODO: do not catch exception or check stack trace
+        this.hfoo.isFile();
     }
 
     @Test

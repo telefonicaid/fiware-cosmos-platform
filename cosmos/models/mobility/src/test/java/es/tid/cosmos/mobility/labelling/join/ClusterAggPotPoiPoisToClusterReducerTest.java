@@ -40,6 +40,7 @@ public class ClusterAggPotPoiPoisToClusterReducerTest {
         final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
                 ClusterUtil.create(5, 6, 1, 7, 8,
                                    ClusterVector.getDefaultInstance()));
+        // This value is what makes the reducer change the confidence
         final ProtobufWritable<MobData> value3 = MobDataUtil.createAndWrap(
                 NullWritable.get());
         final ProtobufWritable<MobData> outValue = MobDataUtil.createAndWrap(

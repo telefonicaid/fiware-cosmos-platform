@@ -347,6 +347,10 @@
             <url>https://oss.sonatype.org/content/repositories/releases</url>
         </repository>
         <repository>
+            <id>elephant-bird</id>
+            <url>https://raw.github.com/kevinweil/elephant-bird/master/repo</url>
+        </repository>
+        <repository>
             <id>nexus</id>
             <url>http://cosmos-ci/nexus/content/repositories/releases</url>
         </repository>
@@ -410,7 +414,7 @@
         <dependency>
             <groupId>com.twitter</groupId>
             <artifactId>elephant-bird</artifactId>
-            <version>2.1.7</version>
+            <version>2.1.11</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.thrift</groupId>

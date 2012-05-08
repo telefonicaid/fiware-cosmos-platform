@@ -43,6 +43,7 @@ public class WordCountMain extends Configured implements Tool {
                 this.getConf(), "WordCount", TextInputFormat.class,
                 WordCountMapper.class, WordCountReducer.class,
                 TextOutputFormat.class);
+        wcJob.setCombinerClass(WordCountReducer.class);
         FileInputFormat.setInputPaths(wcJob, inputPath);
         FileOutputFormat.setOutputPath(wcJob, outputPath);
         wcJob.waitForCompletion(true);

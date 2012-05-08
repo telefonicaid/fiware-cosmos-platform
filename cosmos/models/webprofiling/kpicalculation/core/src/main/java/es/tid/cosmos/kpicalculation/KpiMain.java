@@ -82,8 +82,8 @@ public class KpiMain extends Configured implements Tool {
                     conf));
         FileInputFormat.setInputPaths(cleanerJob, inputPath);
         FileOutputFormat.setOutputPath(cleanerJob, tmpPath);
-        cleanerJob.waitForCompletion(true,
-                                     EnumSet.of(CleanupOptions.DeleteOutput));
+        cleanerJob.setDeleteOutputOnExit(true);
+        cleanerJob.waitForCompletion(true);
 
         KpiConfig config = new KpiConfig();
         config.read(KPI_DEFINITIONS);

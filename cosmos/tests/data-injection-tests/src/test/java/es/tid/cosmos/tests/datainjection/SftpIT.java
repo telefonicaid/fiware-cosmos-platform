@@ -58,22 +58,156 @@ public class SftpIT {
             throws SftpException, JSchException, IOException {
         final Session session = this.connectToServer();
         try {
-            putAndVerifyFile(session, "testFileUpload", new Data(1));
+            this.putAndVerifyFile(session, "testFileUpload", new Data(1));
         } finally {
             session.disconnect();
         }
     }
 
-    // TODO: Change the expected exception to something more specific
-    @Test(expectedExceptions=Exception.class)
-    public void testOutOfDirectoryUpload(String environment)
+    @Test(expectedExceptions = SftpException.class)
+    public void testOutOfDirectoryUpload1(String environment)
             throws SftpException, JSchException, IOException {
         final Session session = this.connectToServer();
         try {
-            putAndVerifyFile(session, "../testOutOfDirectoryUpload",
-                             new Data(1));
+            this.putAndVerifyFile(session, "../testOutOfDirectoryUpload",
+                                  new Data(1));
         } finally {
             session.disconnect();
+        }
+    }
+
+    private String getDefaultDir() {
+        return "/user/" + this.env.getProperty(EnvironmentSetting.DEFAULT_USER);
+    }
+
+    @Test(expectedExceptions = SftpException.class)
+    public void testOutOfDirectoryUpload2(String environment)
+            throws SftpException, JSchException, IOException {
+        final Session session = this.connectToServer();
+        try {
+            this.putAndVerifyFile(
+                    session,
+                    this.getDefaultDir() + "/../testOutOfDirectoryUpload",
+                    new Data(1));
+        } finally {
+            session.disconnect();
+        }
+    }
+
+    @Test(expectedExceptions = SftpException.class)
+    public void testOutOfDirectoryUpload3(String environment)
+            throws SftpException, JSchException, IOException {
+        final Session session = this.connectToServer();
+        try {
+            this.putAndVerifyFile(
+                    session,
+                    "/testOutOfDirectoryUpload",
+                    new Data(1));
+        } finally {
+            session.disconnect();
+        }
+    }
+
+    @Test
+    public void testFileUploadWithEscaping1(String environment)
+            throws SftpException, JSchException, IOException {
+        final Session session = this.connectToServer();
+        try {
+            this.putAndVerifyFile(
+                    session,
+                    "./testEscapedUpload",
+                    new Data(Byte.MAX_VALUE / 4));
+        } finally {
+            session.disconnect();
+        }
+    }
+
+    @Test
+    public void testFileUploadWithEscaping2(String environment)
+            throws SftpException, JSchException, IOException {
+        final Session session = this.connectToServer();
+        final ChannelSftp sftpChannel = this.connectToSftp(session);
+        final String dirName = "myDumyDir";
+        try {
+            Data data = new Data(Byte.MAX_VALUE / 4);
+            sftpChannel.mkdir(dirName);
+            this.putFile(sftpChannel, dirName + "../testEscapedUpload", data);
+            this.verifyFile(sftpChannel, dirName + "../testEscapedUpload", data);
+            this.verifyFile(sftpChannel, "testEscapedUpload", data);
+            sftpChannel.rmdir(dirName);
+        } finally {
+            sftpChannel.exit();
+            session.disconnect();
+        }
+    }
+
+    @Test(expectedExceptions = SftpException.class)
+    public void testMoveToRoot(String environment)
+            throws SftpException, JSchException, IOException {
+        final Session session = this.connectToServer();
+        final ChannelSftp sftpChannel = this.connectToSftp(session);
+        try {
+            sftpChannel.cd("/");
+        } finally {
+            sftpChannel.exit();
+            session.disconnect();
+        }
+    }
+
+    @Test
+    public void testDefaultPwd(String environment)
+            throws SftpException, JSchException, IOException {
+        final Session session = this.connectToServer();
+        final ChannelSftp sftpChannel = this.connectToSftp(session);
+        try {
+            assertEquals(sftpChannel.pwd(), this.getDefaultDir());
+        } finally {
+            sftpChannel.exit();
+            session.disconnect();
+        }
+    }
+
+    @Test
+    public void testDirCommands(String environment)
+            throws SftpException, JSchException, IOException {
+        final Session session = this.connectToServer();
+        final ChannelSftp sftpChannel = this.connectToSftp(session);
+        final String dirName = "myTempDir";
+        try {
+            sftpChannel.mkdir(dirName);
+            sftpChannel.cd(dirName);
+            assertEquals(sftpChannel.ls(".").size(), 2); // "." and ".."
+            sftpChannel.cd("..");
+            sftpChannel.rmdir(dirName);
+        } finally {
+            sftpChannel.exit();
+            session.disconnect();
+        }
+    }
+
+    private void putFile(ChannelSftp sftpChannel, String filePath,
+                         Iterable<Integer> data)
+            throws SftpException, IOException {
+        OutputStream output = sftpChannel.put(filePath);
+        try {
+            for (int b : data) {
+                output.write(b);
+            }
+        } finally {
+            output.close();
+        }
+    }
+
+    private void verifyFile(ChannelSftp sftpChannel, String filePath,
+                            Iterable<Integer> data)
+            throws SftpException, IOException {
+        InputStream input = sftpChannel.get(filePath);
+        try {
+            for (int b : data) {
+                assertEquals(input.read(), b);
+            }
+        } finally {
+            input.close();
         }
     }
 
@@ -86,25 +220,8 @@ public class SftpIT {
             final String currentDir = sftpChannel.pwd();
             final String filePath = currentDir + Path.SEPARATOR + fileName;
 
-            // Put file in server
-            OutputStream output = sftpChannel.put(filePath);
-            try {
-                for (int b : data) {
-                    output.write(b);
-                }
-            } finally {
-                output.close();
-            }
-
-            // Read file back from server
-            InputStream input = sftpChannel.get(filePath);
-            try {
-                for (int b : data) {
-                    assertEquals(input.read(), b);
-                }
-            } finally {
-                input.close();
-            }
+            this.putFile(sftpChannel, filePath, data);
+            this.verifyFile(sftpChannel, filePath, data);
 
             // Remove file
             sftpChannel.rm(filePath);
@@ -121,24 +238,24 @@ public class SftpIT {
         FutureTask task1 = new FutureTask(new Callable() {
             @Override
             public Object call() throws Exception {
-                putAndVerifyFile(session, "testParallelFileUpload1",
-                                 new Data(1));
+                SftpIT.this.putAndVerifyFile(session, "testParallelFileUpload1",
+                                             new Data(1));
                 return null;
             }
         });
         FutureTask task2 = new FutureTask(new Callable() {
             @Override
             public Object call() throws Exception {
-                putAndVerifyFile(session, "testParallelFileUpload2",
-                                 new Data(5));
+                SftpIT.this.putAndVerifyFile(session, "testParallelFileUpload2",
+                                             new Data(5));
                 return null;
             }
         });
         FutureTask task3 = new FutureTask(new Callable() {
             @Override
             public Object call() throws Exception {
-                putAndVerifyFile(session, "testParallelFileUpload3",
-                                 new Data(10));
+                SftpIT.this.putAndVerifyFile(session, "testParallelFileUpload3",
+                                             new Data(10));
                 return null;
             }
         });

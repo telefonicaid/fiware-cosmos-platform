@@ -58,7 +58,7 @@ public class FrontendIT {
         HttpURLConnection urlConnection = null;
         try {
             URL url = new URL(link);
-            urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection = (HttpURLConnection)url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
             String redirectLink = urlConnection.getHeaderField("Location");
@@ -89,11 +89,6 @@ public class FrontendIT {
                 String linkUrl = this.frontend.resolveURL(verbatimUrl).toString();
                 assertTrue(FrontendIT.isLive(linkUrl),
                            "Broken link: " + linkUrl);
-                if (link.getText().equalsIgnoreCase("home")) {
-                    assertEquals(this.frontend.getHomeUrl(),
-                                 linkUrl.toString());
-
-                }
             }
         } catch (MalformedURLException ex) {
             fail("Malformed URL in page "
@@ -103,17 +98,20 @@ public class FrontendIT {
     }
 
     public void testMainPage() {
-        this.frontend.goHome();
+        this.frontend.gotoCosmosHome();
         verifyLinks();
     }
 
-    public void testNoNameFile() {
+    public void testNoNameFile() throws IOException {
         WebDriver driver = this.frontend.getDriver();
-        SelectNamePage namePage = this.frontend.goToCreateNewJob();
+        CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
         String currentUrl = driver.getCurrentUrl();
+        final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
 
         verifyLinks();
-        namePage.submitNameForm();
+        createJobPage.setInputFile(inputFilePath);
+        createJobPage.setInputJar(this.wordcountJarPath);
+        createJobPage.create();
 
         // We should be in the same page, and the form should be complaining
         assertEquals(currentUrl, driver.getCurrentUrl());
@@ -122,18 +120,20 @@ public class FrontendIT {
                     "Verify task hasn't been created");
         assertFalse(this.frontend.taskExists("null"),
                     "Verify task hasn't been created");
+        assertFalse(this.frontend.taskExists("None"),
+                    "Verify task hasn't been created");
     }
 
-    public void testNoJarFile() {
+    public void testNoJarFile() throws IOException {
         WebDriver driver = this.frontend.getDriver();
-        SelectNamePage namePage = this.frontend.goToCreateNewJob();
+        CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
         final String taskId = UUID.randomUUID().toString();
-        namePage.setName(taskId);
-        SelectJarPage jarPage = namePage.submitNameForm();
+        createJobPage.setName(taskId);
+        final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
+        createJobPage.setInputFile(inputFilePath);
 
         String currentUrl = driver.getCurrentUrl();
-        verifyLinks();
-        jarPage.submitJarFileForm();
+        createJobPage.create();
 
         // We should be in the same page, and the form should be complaining
         assertEquals(currentUrl, driver.getCurrentUrl());
@@ -142,47 +142,24 @@ public class FrontendIT {
                     "Verify task hasn't been created. TaskId: " + taskId);
     }
 
-    private void createNoInputFileJob(String taskId) {
+    public void testNoInputFile() throws IOException {
+        final String taskId = UUID.randomUUID().toString();
+
         // Create job without data and verify we get an error if no data
         // is specified
         WebDriver driver = this.frontend.getDriver();
-        SelectNamePage namePage = this.frontend.goToCreateNewJob();
-        namePage.setName(taskId);
-
-        SelectJarPage jarPage = namePage.submitNameForm();
-        jarPage.setInputJar(this.invalidJarPath);
-
-        SelectInputPage inputPage = jarPage.submitJarFileForm();
+        CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
+        createJobPage.setName(taskId);
+        createJobPage.setInputJar(this.wordcountJarPath);
         String currentUrl = driver.getCurrentUrl();
-        verifyLinks();
-        inputPage.submitInputFileForm();
+        createJobPage.create();
 
         // We should be in the same page, and the form should be complaining
         assertEquals(currentUrl, driver.getCurrentUrl());
         driver.findElement(By.className("errorlist"));
     }
 
-    public void testNoInputFile() throws IOException, TestException {
-        final String taskId = UUID.randomUUID().toString();
-        createNoInputFileJob(taskId);
-
-        // Verify we can go back to the frontpage and upload data
-        // through the "Upload Data" link
-        SelectInputPage inputPage = this.frontend.setInputDataForJob(taskId);
-        inputPage.setInputFile(this.invalidJarPath);
-        inputPage.submitInputFileForm();
-
-        Task task = FrontEndTask.CreateFromExistingTaskId(
-                this.frontend.getEnvironment(),
-                taskId);
-        task.run();
-        task.waitForCompletion();
-        assertEquals(task.getStatus(),
-                     TaskStatus.Error,
-                     "Verifying task is in the error state");
-    }
-
-    public void verifySampleJarFile() throws IOException, TestException {
+    public void verifySampleJarFile() throws IOException {
         WebDriver driver = this.frontend.getDriver();
         SelectNamePage namePage = this.frontend.goToCreateNewJob();
         verifyLinks();
@@ -244,7 +221,7 @@ public class FrontendIT {
         return tmpFile.getAbsolutePath();
     }
 
-    public void testSimpleTask() throws IOException, TestException {
+    public void testSimpleTask() throws IOException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         Task task = new FrontEndTask(this.frontend.getEnvironment(),
                                      inputFilePath,
@@ -257,7 +234,7 @@ public class FrontendIT {
         task.getResults();     // Just verifying results can be accessed
     }
 
-    public void testParallelTasks() throws IOException, TestException {
+    public void testParallelTasks() throws IOException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         Environment environment = this.frontend.getEnvironment();
         Task[] tasks = new Task[TASK_COUNT];
@@ -265,11 +242,6 @@ public class FrontendIT {
             tasks[i] = new FrontEndTask(environment,
                                         inputFilePath,
                                         this.wordcountJarPath);
-        }
-        for (Task task : tasks) {
-            assertEquals(TaskStatus.Created,
-                         task.getStatus(),
-                         "Veryfing task is in created state. Task: " + task);
         }
         for (Task task : tasks) {
             task.run();
@@ -297,7 +269,7 @@ public class FrontendIT {
         }
     }
 
-    public void testInvalidJar() throws IOException, TestException {
+    public void testInvalidJar() throws IOException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         final Task task = new FrontEndTask(this.frontend.getEnvironment(),
                                            inputFilePath,
@@ -318,7 +290,7 @@ public class FrontendIT {
         verifyLinks();
     }
 
-    public void testFailureJar() throws IOException, TestException {
+    public void testFailureJar() throws IOException {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         final Task task = new FrontEndTask(this.frontend.getEnvironment(),
                                            inputFilePath,
@@ -339,7 +311,7 @@ public class FrontendIT {
         verifyLinks();
     }
 
-    public void testListResultJar() throws IOException, TestException {
+    public void testListResultJar() throws IOException {
         final String inputFilePath = createAutoDeleteFile(
                 "2 3 4 5 6 7 8 9 123\n19283");
         final Task task = new FrontEndTask(this.frontend.getEnvironment(),
@@ -366,7 +338,7 @@ public class FrontendIT {
 
     }
 
-    public void testDotsInName() throws IOException, TestException {
+    public void testDotsInName() throws IOException {
         final String inputFilePath = createAutoDeleteFile(
                 "2 3 4 5 6 7 8 9 123\n19283");
         final String taskId = "../1234|<b>Weird</b>.Name_1!!&nbsp;%20~€";

@@ -6,6 +6,5 @@ package es.tid.cosmos.tests.tasks;
  */
 public enum EnvironmentSetting {
     FrontendUrl,
-    CosmosRelativeUrl,
-    DataviewerRelativeUrl
+    CosmosRelativeUrl
 }

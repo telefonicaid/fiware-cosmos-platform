@@ -17,17 +17,17 @@ public interface Task {
      * This function blocks until the task finished execution (i.e. it enters
      * the Error or Completed state).
      */
-    void waitForCompletion() throws TestException;
+    void waitForCompletion();
     
     /**
      * This function returns the task's status
      */
-    TaskStatus getStatus() throws TestException;
+    TaskStatus getStatus();
     
     /**
      * If the task is in the Completed state, this function returns a
      * representation of the MongoDB output of that task. Otherwise, it throws
      * a TestException.
      */
-    List<Map<String,String>> getResults() throws TestException;
+    List<Map<String,String>> getResults();
 }

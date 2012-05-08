@@ -9,30 +9,44 @@ import static org.testng.Assert.assertEquals;
  *
  * @author ximo
  */
-public class SelectInputPage {
+public class CreateJobPage {
     // HTML classes and ids
     public static final String INPUT_FILE_HTML_ID = "id_file";
-    
+    public static final String JAR_FILE_HTML_ID = "id_jar";
+    public static final String NAME_FILE_HTML_ID = "id_name";
     private WebDriver driver;
-    private final String selectInputUrl;    
-    
+    private final String selectInputUrl = "TODO"; // TODO    
+
     private void assertCorrectUrl() {
         assertEquals(this.driver.getCurrentUrl(), this.selectInputUrl);
     }
-    
-    public SelectInputPage(WebDriver driver) {
+
+    public CreateJobPage(WebDriver driver) {
         this.driver = driver;
-        this.selectInputUrl = driver.getCurrentUrl();
     }
-    
+
     public void setInputFile(String filePath) {
         assertCorrectUrl();
         WebElement inputElement = this.driver.findElement(
                 By.id(INPUT_FILE_HTML_ID));
         inputElement.sendKeys(filePath);
     }
-    
-    public void submitInputFileForm() {
+
+    public void setName(String name) {
+        assertCorrectUrl();
+        WebElement inputElement = this.driver.findElement(
+                By.id(NAME_FILE_HTML_ID));
+        inputElement.sendKeys(name);
+    }
+
+    public void setInputJar(String filePath) {
+        assertCorrectUrl();
+        WebElement inputElement = this.driver.findElement(
+                By.id(JAR_FILE_HTML_ID));
+        inputElement.sendKeys(filePath);
+    }
+
+    public void create() {
         assertCorrectUrl();
         WebElement inputElement = this.driver.findElement(
                 By.id(INPUT_FILE_HTML_ID));

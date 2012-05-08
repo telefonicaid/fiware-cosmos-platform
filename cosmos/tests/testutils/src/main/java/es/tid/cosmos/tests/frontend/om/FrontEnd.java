@@ -13,7 +13,6 @@ import static org.testng.Assert.fail;
 
 import es.tid.cosmos.tests.tasks.Environment;
 import static es.tid.cosmos.tests.tasks.EnvironmentSetting.CosmosRelativeUrl;
-import static es.tid.cosmos.tests.tasks.EnvironmentSetting.DataviewerRelativeUrl;
 import static es.tid.cosmos.tests.tasks.EnvironmentSetting.FrontendUrl;
 import es.tid.cosmos.tests.tasks.TaskStatus;
 import es.tid.cosmos.tests.tasks.TestException;
@@ -42,15 +41,13 @@ public class FrontEnd {
     private final String password;
     private final String baseUrl;
     private final String cosmosUrl;
-    private final String dataViewerUrl;
     private final Environment environment;
 
-    public FrontEnd(Environment env) throws TestException {
+    public FrontEnd(Environment env) {
         this(env, DEFAULT_USER, DEFAULT_PASSWRD);
     }
 
-    public FrontEnd(Environment env, String username, String password)
-            throws TestException {
+    public FrontEnd(Environment env, String username, String password) {
         this.driver = new HtmlUnitDriver();
         this.username = username;
         this.password = password;
@@ -61,9 +58,6 @@ public class FrontEnd {
             this.cosmosUrl = new URL(
                     base,
                     this.environment.getProperty(CosmosRelativeUrl)).toString();
-            this.dataViewerUrl = new URL(
-                    base,
-                    this.environment.getProperty(DataviewerRelativeUrl)).toString();
         } catch (MalformedURLException ex) {
             throw new TestException("[Test bug] Malformed URL for frontend. " + ex.toString());
         }
@@ -79,11 +73,6 @@ public class FrontEnd {
 
     public void gotoCosmosHome() {
         this.driver.get(this.cosmosUrl);
-        this.login(this.username, this.password);
-    }
-
-    public void gotoDataViewHome() {
-        this.driver.get(this.dataViewerUrl);
         this.login(this.username, this.password);
     }
 
@@ -108,20 +97,18 @@ public class FrontEnd {
     }
 
     public boolean taskExists(String taskId) {
-        this.goHome();
+        this.gotoCosmosHome();
         return this.getTaskRow(taskId) != null;
 
     }
 
     public TaskStatus getTaskStatus(String taskId) {
-        this.goHome();
+        this.gotoCosmosHome();
         WebElement row = this.getTaskRow(taskId);
 
         String statusText = row.findElement(
                 By.className(RESULT_STATUS_CLASS)).getText();
-        if (statusText.equals("Configured")) {
-            return TaskStatus.Created;
-        } else if (statusText.equals("Running")) {
+        if (statusText.equals("Running")) {
             return TaskStatus.Running;
         } else if (statusText.equals("Successful")) {
             return TaskStatus.Completed;
@@ -165,32 +152,12 @@ public class FrontEnd {
         return null;
     }
 
-    public void launchJob(String taskId) {
-        this.gotoCosmosHome();
-        if (TaskStatus.Created != this.getTaskStatus(taskId)) {
-            throw new IllegalArgumentException(
-                    "Task is not in the created state. taskId: " + taskId);
-        }
-        this.getTaskLink(taskId, RUN_ACTION_CLASS).click();
-    }
-
-    public SelectInputPage setInputDataForJob(String taskId) {
-        this.gotoCosmosHome();
-        if (TaskStatus.Created != this.getTaskStatus(taskId)) {
-            throw new IllegalArgumentException(
-                    "Task is not in the created state. taskId: " + taskId);
-        }
-        this.getTaskLink(taskId, UPLOAD_DATA_ACTION_CLASS).click();
-        return new SelectInputPage(this.driver);
-    }
-
     public ResultsPage goToResultsPage(String taskId) {
-        this.gotoDataViewHome();
+        this.gotoCosmosHome();
         TaskStatus status = this.getTaskStatus(taskId);
-        if (TaskStatus.Created == status
-                || TaskStatus.Running == status) {
+        if (TaskStatus.Completed != status) {
             throw new IllegalArgumentException(
-                    "Task does not have a result yet.\n"
+                    "Task is not in the completed state.\n"
                     + "taskId: " + taskId + "\n"
                     + "status: " + status + "\n");
         }
@@ -199,12 +166,26 @@ public class FrontEnd {
         return new ResultsPage(this.driver);
     }
 
-    public SelectNamePage goToCreateNewJob() {
+    public ResultsPage goToFailurePage(String taskId) {
+        this.gotoCosmosHome();
+        TaskStatus status = this.getTaskStatus(taskId);
+        if (TaskStatus.Error != status) {
+            throw new IllegalArgumentException(
+                    "Task is not in the error state.\n"
+                    + "taskId: " + taskId + "\n"
+                    + "status: " + status + "\n");
+        }
+
+        this.getTaskLink(taskId, RESULT_ACTION_CLASS).click();
+        return new ResultsPage(this.driver);
+    }
+
+    public CreateJobPage goToCreateNewJob() {
         this.gotoCosmosHome();
         WebElement createJobElement = this.driver.findElement(
                 By.id(CREATE_JOB_ID));
         createJobElement.click();
-        return new SelectNamePage(this.driver);
+        return new CreateJobPage(this.driver);
     }
 
     public WebDriver getDriver() {

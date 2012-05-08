@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertTrue;
 
 import es.tid.cosmos.tests.tasks.Environment;
 import es.tid.cosmos.tests.tasks.Task;
@@ -18,13 +20,16 @@ import es.tid.cosmos.tests.tasks.TestException;
  */
 public class FrontEndTask implements Task {
     private static final int SLEEP_TIME = 30000; // 30 seconds
+    private boolean isRun;
     private final FrontEnd frontend;
     private final String taskId;
+    private final String jarPath;
+    private final String inputFilePath;
 
     public FrontEndTask(FrontEnd frontend,
                         String inputFilePath,
                         String jarPath,
-                        String taskId) throws TestException {
+                        String taskId) {
         // Verify input params
         if (!(new File(inputFilePath).exists())) {
             throw new TestException("Input path does not exist");
@@ -34,59 +39,60 @@ public class FrontEndTask implements Task {
         }
 
         this.frontend = frontend;
-
-        // Set name
-        SelectNamePage namePage = this.frontend.goToCreateNewJob();
         this.taskId = taskId;
-        namePage.setName(taskId);
-
-        // Set and submit JAR
-        SelectJarPage jarPage = namePage.submitNameForm();
-        jarPage.setInputJar(jarPath);
-        SelectInputPage inputPage = jarPage.submitJarFileForm();
-
-        // Set and submit input file
-        inputPage.setInputFile(inputFilePath);
-        inputPage.submitInputFileForm();
+        this.jarPath = jarPath;
+        this.inputFilePath = inputFilePath;
+        this.isRun = false;
     }
 
     public FrontEndTask(FrontEnd frontend,
                         String inputFilePath,
-                        String jarPath) throws TestException {
+                        String jarPath) {
         this(frontend, inputFilePath, jarPath, UUID.randomUUID().toString());
     }
 
-    public FrontEndTask(Environment env, String inputFilePath, String jarPath)
-            throws TestException {
+    public FrontEndTask(Environment env, String inputFilePath, String jarPath) {
         this(new FrontEnd(env), inputFilePath, jarPath);
     }
 
     public FrontEndTask(Environment env, String inputFilePath, String jarPath,
-                        String taskId) throws TestException {
+                        String taskId) {
         this(new FrontEnd(env), inputFilePath, jarPath, taskId);
     }
 
-    private FrontEndTask(Environment env, String taskId) throws TestException {
-        this.taskId = taskId;
+    private FrontEndTask(Environment env, String taskId) {
         this.frontend = new FrontEnd(env);
+        assertTrue(this.frontend.taskExists(taskId));
+
+        this.taskId = taskId;
+        this.isRun = true;
+        this.jarPath = null;
+        this.inputFilePath = null;
     }
 
     public static FrontEndTask CreateFromExistingTaskId(Environment env,
-                                                        String taskId)
-            throws TestException {
+                                                        String taskId) {
         return new FrontEndTask(env, taskId);
     }
 
     @Override
-    public void run() throws TestException {
-        assertEquals(this.getStatus(),
-                     TaskStatus.Created,
-                     "Verifying task is in Created state");
-        this.frontend.launchJob(this.taskId);
+    public void run() {
+        assertFalse(this.isRun, "Veryfing run hasn't been called previously."
+                + " If this fails, it is a test bug.");
+
+        CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
+        createJobPage.setName(taskId);
+        createJobPage.setInputJar(jarPath);
+        createJobPage.setInputFile(inputFilePath);
+        createJobPage.create();
+        this.isRun = true;
     }
 
     @Override
-    public void waitForCompletion() throws TestException {
+    public void waitForCompletion() {
+        if (!this.isRun) {
+            this.run();
+        }
         while (true) {
             TaskStatus status = this.frontend.getTaskStatus(taskId);
             if (status != TaskStatus.Running) {
@@ -102,13 +108,12 @@ public class FrontEndTask implements Task {
     }
 
     @Override
-    public TaskStatus getStatus() throws TestException {
+    public TaskStatus getStatus() {
         return this.frontend.getTaskStatus(taskId);
     }
 
     @Override
-    public List<Map<String, String>> getResults()
-            throws TestException {
+    public List<Map<String, String>> getResults() {
         ResultsPage resultsPage = this.frontend.goToResultsPage(this.taskId);
         return resultsPage.getResults();
     }

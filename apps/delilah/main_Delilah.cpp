@@ -43,6 +43,9 @@
 
 #include "samson/common/status.h"
 
+#include "samson_system/Process.h"
+
+samson::system::Process p;
 
 
 /* ****************************************************************************

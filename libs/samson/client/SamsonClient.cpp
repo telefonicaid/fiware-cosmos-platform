@@ -58,6 +58,11 @@ namespace samson
         delilah->data_receiver_interface = this;
     }
     
+    void SamsonClient::set_receiver_interface( DelilahLiveDataReceiverInterface* interface )
+    {
+        delilah->data_receiver_interface = interface;
+    }
+    
     void SamsonClient::general_init( size_t memory , size_t load_buffer_size )
     {
         std::string samson_home    = SAMSON_HOME_DEFAULT;

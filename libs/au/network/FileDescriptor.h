@@ -33,6 +33,11 @@ namespace au
             fd = _fd;
         }
         
+        ~FileDescriptor()
+        {
+            close(); // Close if still open
+        }
+        
         int getFd()
         {
             return fd;
@@ -47,7 +52,6 @@ namespace au
         {
             name = _name;
         }
-
         
         // Connection management
         void close();                 // Disconnect

@@ -18,7 +18,6 @@ namespace engine {
 namespace samson 
 {
     
-
     class BlockDataSource : public DataSource
     {
         // Container of the buffer

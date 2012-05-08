@@ -2,109 +2,145 @@
 
 #include "SamsonConnectorConnection.h"
 #include "SamsonConnector.h"
+#include "Channel.h"
 #include "ServerConnection.h" // Own interface
 
 
 namespace samson {
-
-
-    ServerConnection::ServerConnection( SamsonConnector* samson_connector 
-                                       , ConnectionType type 
-                                       ,  std::string _host 
-                                       , int _port  ) 
-        : SamsonConnectorItem( samson_connector , type ) , token("ServerConnection")
+    namespace connector
     {
-        host = _host;
-        port = _port;
         
-        connection = NULL;
-        review();
+        // ---------------------------------
+        // ConnectionItem
+        // ---------------------------------
         
-        connection_cronometer.reset();
-        connection_trials = 0;
-    }
-    
-    ServerConnection::~ServerConnection()
-    {
-        if( connection )
-            delete connection;
-    }
-    
-    void ServerConnection::review()
-    {
-        au::TokenTaker tt(&token);
-        
-        // If already connected, nothing to do
-        if( connection )
+        ConnectionItem::ConnectionItem( Channel* _channel , ConnectionType _type , std::string _host , int _port  )
+        : Item( _channel , _type, au::str("Connection to %s:%d" , _host.c_str() , _port) ) 
         {
-            if( connection->canBeRemoved() )
-            {
-                delete connection;
-                connection = NULL;
+            host = _host;
+            port = _port;
 
-                // Init counter and cronometer
+            // Init cronometer and trials counter
+            connection_cronometer.reset();
+            connection_trials = 0;
+            
+            // Review item to establish connection
+            try_connect();
+            
+        }
+        
+        void ConnectionItem::try_connect()
+        {
+            au::SocketConnection* socket_connection;
+            au::Status s = au::SocketConnection::newSocketConnection( host
+                                                                     , port
+                                                                     , &socket_connection);                                  
+            if( s == au::OK )
+            {
+                std::string name = au::str( "socket %s" ,socket_connection->getHostAndPort().c_str() );
+                add( new FileDescriptorConnection( this , getType() , name , socket_connection ) );
+                
                 connection_cronometer.reset();
                 connection_trials = 0;
             }
             else
-                return;
+                connection_trials++;
+            
         }
         
-        au::SocketConnection* socket_connection;
-        au::Status s = au::SocketConnection::newSocketConnection( host
-                                                         , port
-                                                         , &socket_connection);                                  
-        if( s == au::OK )
-        {
-            std::string name = socket_connection->getHostAndPort().c_str();
-            connection = new SamsonConnectorConnection( samson_connector , type , name , socket_connection  );
-        }
-        else
-            connection_trials++;
-    }
-    
-    std::string ServerConnection::getName()
-    {
-        return au::str("%s:%d" , host.c_str() , port );
-    }
-
-    std::string ServerConnection::getStatus()
-    {
-        au::TokenTaker tt(&token);
-        if( !connection )
-        {
-            return au::str("connecting... [ %d trials in %s ] )" 
-                           , connection_trials 
-                           , connection_cronometer.str().c_str() );
-        }
-        else
-            return connection->getStatus();
-    }
-    
-    
-    bool ServerConnection::isConnected()
-    {
-        if( !connection ) 
-            return false;
         
-        return connection->isConnected();
+        void ConnectionItem::review_item()
+        {
+            
+            if( getNumConnections() > 0 )
+                return; // Connection is established
+            if( connection_cronometer.diffTimeInSeconds() < 3 )
+                return; // No retray
+            try_connect();
+        }
+
+        std::string ConnectionItem::getStatus()
+        {
+            if( getNumConnections() > 0 )
+                return "connected";
+            return au::str("connecting... [ %d trials ] )" , connection_trials );
+        }
+        
+        bool ConnectionItem::canBeRemoved()
+        {
+            return true; // No threads to check
+        }
+        
+        // ---------------------------------
+        // StdinItem
+        // ---------------------------------
+
+        
+        // Constructor & Destructor
+        StdinItem::StdinItem( Channel* _channel ) : Item( _channel , connection_input , "stdin" ) 
+        {
+            // Add connection
+            add( new FileDescriptorConnection( this , connection_input , "stdin" , new au::FileDescriptor( "stdin" , 0 ) ) );
+            
+            // Set as removing since it will be closed when no more inputs available
+            set_removing();
+        }
+        
+        // Information about status
+        std::string StdinItem::getStatus()
+        {
+            if( getNumConnections() > 0 )
+                return "connected";
+            return "closed";
+        }
+        
+        void StdinItem::review_item()
+        {
+            // Nothing to do here
+        }
+        
+        bool StdinItem::canBeRemoved()
+        {
+            return true;
+        }
+        
+        
+        // ---------------------------------
+        // StdoutItem
+        // ---------------------------------
+        
+        // Constructor & Destructor
+        StdoutItem::StdoutItem( Channel* _channel ) : Item( _channel , connection_output , "stdout" ) 
+        {
+            // Add connection
+            add( new FileDescriptorConnection( this , connection_output , "stdout" , new au::FileDescriptor( "stdout" , 1 ) ) );
+            
+            // Set as removing since it will be closed when no more inputs available
+            set_removing();
+        }
+        
+        // Information about status
+        std::string StdoutItem::getStatus()
+        {
+            if( getNumConnections() > 0 )
+                return "connected";
+            return "closed";
+        }
+        
+        void StdoutItem::review_item()
+        {
+            // Nothing to do here
+        }
+        
+        bool StdoutItem::canBeRemoved()
+        {
+            return true;
+        }
+        
+        
+        
+        
     }
-
-    void ServerConnection::push( engine::Buffer* buffer )
-    {
-        // Overwrite this methid to pass block to the connection
-        if ( connection )
-            connection->push(buffer);
-    }
-
-    size_t ServerConnection::getOuputBufferSize()
-    {
-        // Overwrite this methid to pass block to the connection
-        if ( connection )
-            return connection->getOuputBufferSize();
-        return 0;
-    }
-
-
+    
     
 }

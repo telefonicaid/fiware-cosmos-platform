@@ -67,6 +67,8 @@ public:
     bool completingSecondWord( std::string first_word );
     bool completingThirdWord( std::string first_word , std::string second_word );
     
+    std::string getCurrentCommand();
+    
     int completingWord();
     std::string firstWord();
     std::string secondWord();
@@ -91,6 +93,20 @@ public:
     int common_chars_in_last_word_alternative();
     bool necessary_print_last_words_alternatives();
     void print_last_words_alternatives();
+    
+    
+    // Access options directly
+    size_t getNumAlternatives()
+    {
+        return last_word_alternatives.size();
+    }
+    
+    ConsoleAutoCompleteAlternative getAlternative( size_t i )
+    {
+        if( i >= last_word_alternatives.size() )
+            LM_X(1, ("Major error"));
+        return last_word_alternatives[i];
+    }
     
 };
 

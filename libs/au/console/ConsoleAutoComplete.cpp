@@ -97,6 +97,12 @@ bool ConsoleAutoComplete::completingThirdWord( std::string first_word , std::str
     return true;
 }
 
+std::string ConsoleAutoComplete::getCurrentCommand()
+{
+    return current_command;
+}
+
+
 void ConsoleAutoComplete::add( std::string command )
 {
     add( ConsoleAutoCompleteAlternative( command ) );

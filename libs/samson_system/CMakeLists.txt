@@ -6,6 +6,7 @@ Source.h
 SourceFunction.h
 ValueReduce.h
 smaz.h
+Process.h
 )
 
 SET (SOURCES
@@ -16,6 +17,7 @@ Source.cpp
 SourceFunction.cpp
 ValueReduce.cpp
 smaz.cpp
+Process.cpp
 )
 
 # Include directories
@@ -30,8 +32,3 @@ INSTALL(TARGETS samson_system ARCHIVE DESTINATION lib)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson_system)
 
 SET (LIBSAMSONSYSTEM ${PROJECT_BINARY_DIR}/libs/samson_system/libsamson_system.a CACHE INTERNAL "")
-
-
-
-
-

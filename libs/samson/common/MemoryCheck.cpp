@@ -1,4 +1,6 @@
 #include "samson/common/MemoryCheck.h"
+#include <sys/types.h>
+#include <sys/sysctl.h>
 
 namespace samson
 {

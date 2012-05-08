@@ -10,6 +10,7 @@ SET (AUX_HEADERS
 	operations/parse_id_id.h
 	operations/parser_uint_void.h
 	operations/reduce.h
+	operations/process.h
 	operations/str.h
 	operations/update.h
 	operations/update_state.h

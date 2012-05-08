@@ -74,6 +74,7 @@ namespace  samson {
         
         // Default constructor
         SamsonClient( std::string connection_type );
+        virtual ~SamsonClient(){}
         
         // General init ( Init engine )
         static void general_init( size_t memory = 1000000000 , size_t load_buffer_size = 64000000 );
@@ -112,6 +113,10 @@ namespace  samson {
         std::string getInfoAboutPushConnections( bool print_verbose );
         std::string getInfoAboutDelilahComponents();
       
+        // Change the interface to receive live data from SAMSON
+        void set_receiver_interface( DelilahLiveDataReceiverInterface* interface );
+
+        
         std::string getStatisticsString()
         {
             return au::str("Pushed %s in %d blocs", 

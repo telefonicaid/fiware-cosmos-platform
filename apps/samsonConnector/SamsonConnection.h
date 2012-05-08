@@ -3,79 +3,158 @@
 
 #include "au/mutex/Token.h"
 
+#include "Item.h"
+#include "Connection.h"
 #include "common.h"
+#include "Block.h"
 
 
 namespace samson {
-    
-    class Block;
-    
-    class SamsonConnection : public SamsonConnectorItem , SamsonClient
-    {
-        std::string queue;
-        std::string host;
-        int port;
+    namespace connector {
         
-        // Internal class for connect to a samson cluster
-        bool connected;
-
-        au::Token token;
+        class Block;
         
-    public:
-        
-        SamsonConnection( SamsonConnector * samson_connector ,  ConnectionType _type , std::string _host , int _port , std::string _queue );
-        
-        std::string getName();
-
-        
-        // Get status of this element
-        std::string getStatus()
+        class SamsonConnection : public Connection , public DelilahLiveDataReceiverInterface
         {
-            if( connected )
-            {
-                if( connection_ready() )
-                    return  "connected";
-                else
-                    return "connected but not all workers available";
-            }
-            else
-                return  "connecting...";
-        }
-        
-        bool canBeRemoved()
-        {
-            return false; // Never remove this can of connections
-        }
-        
-        bool isConnected()
-        {
-            return connected;
-        }
-        
-        // Method called every 5 seconds to re-connect or whatever is necessary here...
-        void review()
-        {
-            if( connected )
-                return;
             
-            au::ErrorManager error;
-            initConnection( &error, host , port );
-            connected = !error.isActivated(); // If not error, assumed connected
-        }
-        
-        // Overload method to push blocks using samsonClient
-        void push( engine::Buffer* buffer );
+            SamsonClient * client;
+            std::string queue;
+            
+        public:
+            
+            
+            SamsonConnection( Item  * _item , ConnectionType _type , std::string name , SamsonClient * _client )
+            : Connection( _item , _type , name  )
+            {
+                // Keep a pointer to the client
+                client = _client;
+                
+                // Set me as the receiver of live data from SAMSON
+                client->set_receiver_interface(this);
+            }
+            
+            ~SamsonConnection()
+            {
+                delete client;
+            }
+            
+            bool canBeRemoved()
+            {
+                return false; // Still not considered how to cancel this connection
+            }
+            
+            
+            // Overload method to push blocks using samsonClient
+            void push( engine::Buffer* buffer )
+            {
+                if( getType() == connection_input )
+                    return; // Nothing to do if we are input
 
-        // Overwritten method
-        size_t getOuputBufferSize();
+                // Report manually size ( not we are overloading Connection class )
+                report_output_size( buffer->getSize() );
+
+                
+                // Push this block directly to the SAMSON client
+                client->push( queue , new BlockDataSource( buffer ) );
+            }
+            
+            // Overwriteen method of SamsonClient
+            void receive_buffer_from_queue(std::string queue , engine::Buffer* buffer)
+            {
+                // Transformation of buffer
+                KVHeader *header = (KVHeader*) buffer->getData();
+                
+                if( header->isTxt() )
+                {
+                    // Push the new buffer
+                    pushInputBuffer( buffer );
+                    
+                }
+                else
+                {
+                    LM_W(("Received a binary buffer %s from %s. Still not implemented how to process this" 
+                          , au::str( buffer->getSize() , "B" ).c_str() , getName().c_str() ));
+                }
+            }
+            
+            std::string getStatus()
+            {
+                return client->getStatisticsString();
+            }
+            
+        };
+        
+        class SamsonItem : public Item
+        {
+            // Information to stablish the connection with the SAMSON system
+            std::string host;
+            int port;
+            std::string queue;
+            
+            // Last connection trial
+            au::Cronometer cronometer;
+            
+        public:
+            
+            SamsonItem( Channel * _channel , ConnectionType _type , 
+                       std::string _host 
+                       , int _port 
+                       , std::string _queue );
+                        
+            bool canBeRemoved()
+            {
+                return false; // Still not considered how to cancel this connection
+            }
+
+            // Get status of this element
+            std::string getStatus()
+            {
+                if( getNumConnections() == 0 )
+                    return au::str( "Non connected... ( last trial %s )" , cronometer.str().c_str() );
+                else
+                    return "Connection created";
+            }
+            
+            void review_item()
+            {
+                
+                if( getNumConnections() > 0 )
+                    return; // Already connected with this SAMSON
+ 
+                // Reset the cornometer
+                cronometer.reset();
+                
+                // Try to connect to this SAMSON
+                SamsonClient* client = new SamsonClient("connector");
+                au::ErrorManager error;
+                client->initConnection( &error , host , port );
+                
+                if( error.isActivated() )
+                {
+                    // Not possible to establish connection
+                    delete client;
+                    return;
+                }
+                
+                // At the moment, it is not possible to specify flags new of clear here
+                if( getType() == connection_input )
+                    client->connect_to_queue(queue, false, false); 
+                
+                // Add the connection 
+                std::string name = au::str("SAMSON at %s:%d (%s)" , host.c_str() , port , queue.c_str() );
+                
+                // Add connection
+                add( new SamsonConnection( this , getType() , name , client ) );
+                
+            }
+            
+            
+        };
         
         
-        // Overwriteen method of SamsonClient
-        void receive_buffer_from_queue(std::string queue , engine::Buffer* buffer);
 
         
-    };
-    
+    }
 }
 
 #endif

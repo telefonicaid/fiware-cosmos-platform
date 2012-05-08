@@ -42,75 +42,25 @@ namespace engine {
         
     public:
         
-        ~BufferListContainer()
-        {
-            clear(); // Clear vector releasing all included buffers
-        }
+        ~BufferListContainer();
         
-        void push_back( Buffer* buffer )
-        {
-            buffer->retain();
-            buffers.push_back(buffer);
-        }
+        void push_back( Buffer* buffer );
 
-        void clear()
-        {
-            au::list<Buffer>::iterator it_buffers;      
-            for( it_buffers = buffers.begin() ; it_buffers != buffers.end() ; it_buffers ++ )
-                (*it_buffers)->release();
-            buffers.clear();
-        }
-        
-        Buffer* front()
-        {
-            return buffers.findFront();
-        }
-        
-        void pop()
-        {
-            Buffer*buffer =  buffers.extractFront();
-            if( buffer )
-                buffer->release();
-        }
-        
-        size_t getTotalSize()
-        {
-            size_t total = 0;
-            au::list<Buffer>::iterator it; 
-            for( it = buffers.begin() ; it != buffers.end() ; it++ )
-                total += (*it)->getSize();
-            return total;
-        }
-        
-        
-        void extractFrom( BufferListContainer* other , size_t maximum_size )
-        {
-            int num=0;
-            size_t total = 0;
-            
-            while( true )
-            {
-                Buffer* buffer = other->front();
-                
-                if( !buffer )
-                    return;
-                
-                
-                if( num>0 )
-                    if( ( total + buffer->getSize() ) > maximum_size )
-                        return;
+        void clear();
 
-                // Add this buffer in this list
-                push_back( buffer );
-                other->pop(); // Pop from the original list
-            }
-            
-        }
+        // Get the next buffer
+        Buffer* front();
+        void pop();
+
+        // Get total size included in the list
+        size_t getTotalSize();
         
-        size_t getNumBuffers()
-        {
-            return buffers.size();
-        }
+        // Get total number of buffers included here
+        size_t getNumBuffers();
+
+        // Extract from other list
+        void extractFrom( BufferListContainer* other , size_t maximum_size );
+        
         
     };
     

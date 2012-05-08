@@ -22,10 +22,15 @@ ADD_SUBDIRECTORY(logServer)
 
 #ADD_SUBDIRECTORY(samsonTest) #Sandbox for debuggin and testing
 
-if (HAVE_GTEST)
-   ADD_SUBDIRECTORY(unitTest)
-endif (HAVE_GTEST)
-
+if ( IGNORE_UNI_TEST )
+   MESSAGE( "Ignoring unit test..." )
+ELSE ( IGNORE_UNI_TEST )
+   if (HAVE_GTEST)
+      ADD_SUBDIRECTORY(unitTest)
+   else	(HAVE_GTEST)
+   		MESSAGE( "Skipping unitTest since library gtest is not found" )
+   endif (HAVE_GTEST)
+ENDIF ( IGNORE_UNI_TEST )
 #
 # Any application that makes use of QT or KDChart should be in the correct section below
 #

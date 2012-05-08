@@ -14,6 +14,7 @@
 #include "engine/Buffer.h"
 
 #include "au/network/NetworkListener.h"
+#include "au/network/ConsoleService.h"
 
 #include "common.h"
 #include "SamsonConnection.h"
@@ -21,98 +22,233 @@
 #include "DiskConnection.h"
 #include "BufferProcessor.h"
 
-extern bool interactive; // Defined in the main.cpp
+#include "Channel.h"
+#include "Item.h"
+#include "ConnectorCommand.h"
+#include "ConnectorCommand.h"
 
-namespace samson {
-    
-    
-    class InputReader;
-    class OutputWriter;
-    class SamsonConnectorConnection;
-    
-    
-    class SamsonConnector :  public au::Console
+/*
+
+ ------------------------------------------------------------
+
+ Input 1 -> BufferProcessor                   Output1
+ Input 2 -> BufferProcessor --> Channel 1  --> Output2
+ Input 3 -> BufferProcessor                   Output3
+ 
+ Input 1 -> BufferProcessor                   Output1
+ Input 2 -> BufferProcessor --> Channel 2 --> Output2
+ Input 3 -> BufferProcessor                   Output3
+ 
+ ------------------------------------------------------------
+ 
+ Inputs
+ 
+ port:P            Open port P and accept connections
+ connection:H:P    Establish a connection to host H port P
+ samson:H:Q        Establish a connection to samson at host H and receive from queue Q
+ disk:D            Read content from directory D
+ stdin             Standard input ( only in non iterative / deamon )
+ 
+ Outputs
+ 
+ port:P            Open port P and accept connections
+ connection:H:P    Establish a connection to host H port P
+ samson:H:Q        Establish a connection to samson at host H and receive from queue Q
+ disk:D            Read content from directory D
+ stdout            Standard output ( only in non iterative / deamon )
+
+ 
+ */
+
+extern bool interactive;
+
+namespace samson 
+{
+    namespace connector
     {
+        class Channel;
+        class SamsonConnectorService;
         
-        au::Token token;
-
-        // All items: listeners, connections , disk connection, samson connections, etc... 
-        int items_id; // id for the next item
-        au::map<int, SamsonConnectorItem> items;
-                
-        bool setup_complete;
-        
-    public:
-        
-        SamsonConnector() : token("SamsonPushConnectionsManager")
+        class SamsonConnector :  public au::Console
         {
-            items_id = 0; // First id for an item
+            // List of channels in this samsonConnector
+            au::map<std::string, Channel> channels;
 
-            // Add the total counter with id "0"
-            add( new SamsonConnectorItemTotal(this) , -1 );  // Parent is forced to -1 to avoid infinite looping
+            // Mutex protection for channels
+            au::Token token;
             
-            // Flag to inform that all input & outputs in command line are correclty parsed
-            setup_complete = false;
-        }
+            // Service to accept monitor connection
+            SamsonConnectorService* service;
+            
+            friend class SamsonConnectorService;
+
+
+            // General environment
+            au::Token token_environment;
+            au::Environment environment;
+            
+        public:
+            
+            SamsonConnector();
+            
+            //Add service to accept monitor connection
+            void add_service();
+            
+            // Generic command line
+            void process_command( std::string command , au::ErrorManager * error );
+            
+            // au::Console interface
+            std::string getPrompt();
+            void evalCommand( std::string command );
+            void autoComplete( au::ConsoleAutoComplete* info );
+            
+            // Review
+            void review();
+            
+            int getNumInputItems();
+            
+            // Generic way to show messages on screen
+            void show_message( std::string message )
+            {
+                if( interactive )
+                    writeWarningOnConsole(message);
+                else
+                    LM_V(("%s" , message.c_str() ));
+            }
+            void show_warning( std::string message )
+            {
+                if( interactive )
+                    writeWarningOnConsole(message);
+                else
+                    LM_V(("%s" , message.c_str() ));
+            }
+            
+            void show_error( std::string message )
+            {
+                if( interactive )
+                    writeErrorOnConsole(message);
+                else
+                    LM_X( 1 , ("%s" , message.c_str() ));
+            }
+            
+            
+            std::string getPasswordForUser( std::string user )
+            {
+                au::TokenTaker tt( &token_environment);
+                return environment.get( au::str("user_%s", user.c_str()) , "" );
+            }
+            
+            void setPasswordForUser( std::string user , std::string password )
+            {
+                au::TokenTaker tt( &token_environment);
+                environment.set( au::str("user_%s", user.c_str()) , password );
+            }
+            
+        };
+        
+        // Class to accept connection to monitor
+        class SamsonConnectorService : public au::network::ConsoleService
+        {
+            SamsonConnector * samson_connector;
+            
+        public:
+            
+            SamsonConnectorService( SamsonConnector * _samson_connector ) : au::network::ConsoleService( 1234 )
+            {
+                samson_connector = _samson_connector;
+            }
+            
+            virtual void runCommand( std::string command , au::Environment* environment ,au::ErrorManager* error )
+            {
+                // Parse login and password commands....
+                au::CommandLine cmdLine;
+                cmdLine.set_flag_string("p", "");
+                cmdLine.parse(command);
                 
-        // Generic command to process add_input add_output
-        void add_inputs ( std::string input_string , au::ErrorManager* error );
-        void add_outputs ( std::string input_string , au::ErrorManager* error );
-        
-        // Generic method to add an item
-        void add( SamsonConnectorItem * item , int parent_id = 0 );
-        
-        // Methods to report activity...
-        void report_input_block( int id , size_t size );
-        void _report_output_block( int id , size_t size );
-        
-        // General review
-        void review();
-        
-        // Common method to push data to all output connections
-        void push( engine::Buffer * buffer , SamsonConnectorItem *item );
-        
-        // au::Console interface
-        std::string getPrompt();
-        void evalCommand( std::string command );
-        void autoComplete( au::ConsoleAutoComplete* info );
+                if( cmdLine.get_num_arguments() > 0 )
+                {
+                    if( cmdLine.get_argument(0) == "login" )
+                    {
+                        if( cmdLine.get_num_arguments() < 2 )
+                        {
+                            error->set("Usage: login user [-p password]");
+                            return;
+                        }
+                        
+                        std::string user = cmdLine.get_argument(1);
+                        std::string password = cmdLine.get_flag_string("p");
+                        
+                        if( user != "root" )
+                        {
+                            error->set("Only root user supported in this release");
+                            return;
+                        }
+                        
+                        if( password == samson_connector->getPasswordForUser( user ) )
+                        {
+                            error->add_warning(au::str("Login correct as %s" , user.c_str()));
+                            environment->set("user" , user );
+                        }
+                        else
+                        {
+                            error->add_error(au::str("Wrong password for user %s" , user.c_str()));
+                        }
+                        return;
+                    }
+                    
+                    if( cmdLine.get_argument(0) == "password" )
+                    {
+                        if( cmdLine.get_num_arguments() < 2 )
+                        {
+                            error->set("Usage: password new_password");
+                            return;
+                        }
+                        
+                        if( !environment->isSet("user") )
+                        {
+                            error->set("Not logged! Please log using command 'login user-name -p password'");
+                            return;
+                        }
 
-        // Generic way to show messages on screen
-        void show_message( std::string message )
-        {
-            if( interactive )
-                writeWarningOnConsole(message);
-            else
-                LM_V(("%s" , message.c_str() ));
-        }
-        void show_warning( std::string message )
-        {
-            if( interactive )
-                writeWarningOnConsole(message);
-            else
-                LM_V(("%s" , message.c_str() ));
-        }
-        
-        void show_error( std::string message )
-        {
-            if( interactive )
-                writeErrorOnConsole(message);
-            else
-                LM_X( 1 , ("%s" , message.c_str() ));
-        }
-        
-        void set_setup_complete()
-        {
-            setup_complete = true;
-        }
+                        std::string user = environment->get("user","no-user");
+                        std::string new_password = cmdLine.get_argument(1);
+                        samson_connector->setPasswordForUser( user , new_password );
+                        error->add_warning(au::str("Set new password for user %s correctly" , user.c_str()));
+                        return;
+                        
+                    }
+                    
+                }
+                
+                // Protect against non authorized users
+                if( !environment->isSet("user") )
+                {
+                    error->set("Not logged! Please log using command 'login user-name -p password'");
+                    return;
+                }
+                
+                // Direct connection
+                samson_connector->process_command(command, error);
+            }
+            
+            virtual void autoComplete( au::ConsoleAutoComplete* info )
+            {
+                if( info->completingFirstWord() )
+                {
+                    info->add("login");
+                    info->add("password");
+                }
+                
+                // Complete with the rest of options
+                samson_connector->autoComplete(info);
+                
+            }
 
+            
+            
+        };
         
-    private:
         
-        void _exit_if_necessary_for_no_inputs();
-        void _exit_if_necessary_for_no_outputs();
-        void _show_last_messages();
-        
-    };
+    }
 }
 #endif

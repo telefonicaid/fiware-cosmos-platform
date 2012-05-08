@@ -4,78 +4,85 @@
 
 #include "au/network/NetworkListener.h"
 #include "common.h"
+#include "Item.h"
 
 namespace samson 
 {
-    class SamsonConnectorListener : public au::NetworkListener 
-                                  , public au::NetworkListenerInterface 
-                                  , public SamsonConnectorItem 
+    namespace connector
     {
         
-        int port;
-        au::Status status_init;
-        
-        friend class SamsonConnector;
-        
-    public:
-      
-        SamsonConnectorListener( SamsonConnector * samson_connector , ConnectionType type , int _port ) : 
-                  au::NetworkListener( this ) 
-                  , SamsonConnectorItem( samson_connector , type )
+        class ListenerItem : public Item, public au::NetworkListener , public au::NetworkListenerInterface
         {
-            // Keep the port
-            port = _port;
+
+            // Port to open to accept connections
+            int port;
             
-            // Init listener and run in background
-            status_init = initNetworkListener( port );    
+            friend class SamsonConnector;
             
-            if ( status_init == au::OK )
-                runNetworkListenerInBackground();
-        }
-
-        // samson::NetworkListenerInterface
-        void newSocketConnection( au::NetworkListener* listener 
-                                 , au::SocketConnection * socket_connetion );
-
-        
-        // Get a name of this element
-        std::string getName()
-        {
-            if ( status_init == au::OK )
-                return au::str("Listen %d" , port);
-            else
-                return au::str("Error opening port %d ", port );
-        }
-        
-        // Get status of this element
-        std::string getStatus()
-        {
-            if ( status_init == au::OK )
-                return "Listening";
-            else
-                return "NOT Listening";
-        }
-        
-        // Can be removed ( no background threads and so... )
-        bool canBeRemoved()
-        {
-            return false; // never removed
-        }
-        
-        // Check if this item is finished ( if so, no data is push here )
-        bool isConnected()
-        {
-            return false;  // This one is not really connected
-        }
-        
-        // Method called every 5 seconds to re-connect or whatever is necessary here...
-        void review()
-        {
-            return; // Nothing to review here
-        }
-        
-
-    };
+            au::Status status_init;
+            
+        public:
+            
+            ListenerItem( Channel * channel , ConnectionType type , int _port ) : 
+            Item( channel , type , au::str("Listener port %d" , _port ) ) ,
+            au::NetworkListener( this )
+            {
+                // Keep the port
+                port = _port;
+                
+                // Init listener and run in background
+                status_init = initNetworkListener( port );    
+                
+                if ( status_init == au::OK )
+                    runNetworkListenerInBackground();
+            }
+            
+            // samson::NetworkListenerInterface
+            void newSocketConnection( au::NetworkListener* listener 
+                                     , au::SocketConnection * socket_connetion );
+            
+            // Get status of this element
+            std::string getStatus()
+            {
+                if ( isNetworkListenerRunning() )
+                    return "Listening";
+                else
+                    return au::str( "NOT Listening (%s)" , au::status( status_init ) );
+            }
+            
+            // Review item: open port if it was not possible in the past...
+            void review_item()
+            {
+                if( isRemoving() )
+                {
+                    // Stop listener
+                    if( isNetworkListenerRunning() )
+                        stop(true);
+                    // nothing else
+                    return;
+                }
+                
+                if( !isNetworkListenerRunning() )
+                {
+                    // Init again
+                    status_init = initNetworkListener( port );    
+                    
+                    if ( status_init == au::OK )
+                        runNetworkListenerInBackground();
+                }
+            }
+            
+            bool canBeRemoved()
+            {
+                if( isNetworkListenerRunning() )
+                    return false; // Listener still running...
+                
+                return true; // Not it is possible to remove this item
+            }
+            
+            
+        };
+    }
 }
 
 

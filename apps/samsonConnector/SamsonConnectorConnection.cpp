@@ -10,121 +10,114 @@ extern size_t buffer_size;
 extern size_t input_buffer_size; // Size of the chunks to read
 
 namespace samson {
-    
-    void* run_SamsonConnectorConnection( void* p )
-    {
-        SamsonConnectorConnection* connection = ( SamsonConnectorConnection* ) p;
+    namespace connector {
         
-        // Keep samson connector pointer
-        SamsonConnector * samson_connector = NULL;
-        samson_connector = connection->getSamsonConnector();
-
-        // Main run
-        connection->run();
-        LM_V(("Connection finish: %s" , connection->str().c_str() ));
-        connection->thread_running = false;
-        
-        // Review to exit if it is necessary
-        samson_connector->review();
-        
-        return NULL;
-
-    }
-
-    
-    SamsonConnectorConnection::SamsonConnectorConnection( SamsonConnector* samson_connector
-                                                         , ConnectionType type 
-                                                         , std::string _name 
-                                                         , au::FileDescriptor * _file_descriptor )
-    : SamsonConnectorItem( samson_connector , type )
-    {
-        name = _name;
-        file_descriptor = _file_descriptor;
-        
-        // Create the thread
-        thread_running = true;
-        pthread_t t;
-        au::ThreadManager::shared()->addThread("SamsonConnectorConnection",&t, NULL, run_SamsonConnectorConnection, this);
-    }
-    
-    SamsonConnectorConnection::~SamsonConnectorConnection()
-    {
-        if( file_descriptor )
-            delete file_descriptor;
-    }
-
-    void SamsonConnectorConnection::run_as_output()
-    {
-        while( true )
+        void* run_FileDescriptorConnection( void* p )
         {
-            engine::Buffer* buffer = getNextOutputBuffer();
-            if( buffer )
+            // Recover the correct pointer
+            FileDescriptorConnection* connection = ( FileDescriptorConnection* ) p;
+            
+            // Main run
+            connection->run();
+            
+            return NULL;
+            
+        }
+        
+        FileDescriptorConnection::FileDescriptorConnection( Item  * _item , ConnectionType _type , std::string _name
+                                                           , au::FileDescriptor * _file_descriptor )
+        : Connection( _item , _type , _name )
+        {
+            // Keep pointer to file descriptor
+            file_descriptor = _file_descriptor;
+            
+            // Create the thread
+            thread_running = true;
+            pthread_t t;
+            au::ThreadManager::shared()->addThread("SamsonConnectorConnection",&t, NULL, run_FileDescriptorConnection, this);
+        }
+        
+        FileDescriptorConnection::~FileDescriptorConnection()
+        {
+            if( file_descriptor )
+                delete file_descriptor;
+        }
+        
+        void FileDescriptorConnection::run_as_output()
+        {
+            while( true )
             {
-                au::Status s = file_descriptor->partWrite(buffer->getData(), buffer->getSize(), "samsonConnectorConnection");
+                // Container to keep a retained version of buffer
+                engine::BufferContainer container;
+                getNextBufferToSent(&container);
                 
-                
-                if( s != au::OK )
-                    return; // Just quit
+                engine::Buffer* buffer = container.getBuffer();
+                if( buffer )
+                {
+                    au::Status s = file_descriptor->partWrite(buffer->getData(), buffer->getSize(), "samsonConnectorConnection");
+                    
+                    if( s != au::OK )
+                        return; // Just quit
+                }
                 else
-                    popOutputBuffer(); // Pop the block we have just sent
-
-            }
-            else
-            {
-                // Review samson connector to exit if necessary
-                samson_connector->review();
-                usleep( 100000 );
-            }
-        }        
-    }
-
-    void SamsonConnectorConnection::run_as_input()
-    {
-        // Read from stdin and push blocks to the samson_connector
-        while( true )
+                {
+                    // Sleep a little bit before checking again
+                    usleep( 100000 );
+                }
+            }        
+        }
+        
+        void FileDescriptorConnection::run_as_input()
         {
-            //Get a buffer
-            engine::Buffer * buffer = engine::MemoryManager::shared()->createBuffer("stdin", "connector", input_buffer_size );
-            
-            //LM_V(("%s: Reading buffer up to %s" , file_descriptor->getName().c_str() , au::str(buffer_size).c_str() ));
-
-            // Read the entire buffer
-            size_t read_size = 0;
-            au::Status s = file_descriptor->partRead(buffer->getData()
-                                                 , input_buffer_size
-                                                 , "read connector connections"
-                                                 , 300 
-                                                 , &read_size );
-            
-            // If we have read something...
-            if( read_size > 0 )
+            // Read from stdin and push blocks to the samson_connector
+            while( true )
             {
-                // Push input buffer
-                buffer->setSize(read_size);
-                pushInputBuffer( buffer );
-            }
-            
-            // Relase allocated buffer
-            buffer->release();
-            
-            // If last read is not ok...
-            if( s != au::OK )
-            {
-                // Flush whatever we have..
-                flush();
-
-                // Quit main threads
-                return;
+                //Get a buffer
+                engine::Buffer * buffer = engine::MemoryManager::shared()->createBuffer("stdin", "connector", input_buffer_size );
+                
+                //LM_V(("%s: Reading buffer up to %s" , file_descriptor->getName().c_str() , au::str(buffer_size).c_str() ));
+                
+                // Read the entire buffer
+                size_t read_size = 0;
+                au::Status s = file_descriptor->partRead(buffer->getData()
+                                                         , input_buffer_size
+                                                         , "read connector connections"
+                                                         , 300 
+                                                         , &read_size );
+                
+                // If we have read something...
+                if( read_size > 0 )
+                {
+                    // Push input buffer
+                    buffer->setSize(read_size);
+                    pushInputBuffer( buffer );
+                }
+                
+                // Relase allocated buffer
+                buffer->release();
+                
+                // If last read is not ok...
+                if( s != au::OK )
+                {
+                    // Flush whatever we have..
+                    flushInputBuffers();
+                    
+                    // Quit main threads
+                    return;
+                }
             }
         }
-    }
-    
-    void SamsonConnectorConnection::run()
-    {
-        if( type == connection_input )
-            run_as_input();
-        else
-            run_as_output();
         
+        void FileDescriptorConnection::run()
+        {
+            if( getType() == connection_input )
+                run_as_input();
+            else
+                run_as_output();
+            
+            // Mark as non thread_running
+            thread_running = false;
+            
+        }
     }
 }

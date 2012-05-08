@@ -96,6 +96,8 @@ network/NetworkListener.cpp
 network/NetworkListener.h
 network/Service.cpp
 network/Service.h
+network/ConsoleService.h
+network/ConsoleService.cpp
 network/SocketConnection.cpp
 network/SocketConnection.h
 network/misc.cpp
@@ -140,7 +142,7 @@ string/split.cpp
 
 SET (HEADERS
 Status.h
-
+au.pb.h
 TemporalBuffer.h
 namespace.h
 charset.h
@@ -180,12 +182,13 @@ daemonize.h
 
 SET (SOURCES
 Status.cpp
-
+au.pb.cc
 TemporalBuffer.cpp
 charset.cpp
 utils.cpp
 
 Descriptors.cpp
+gpb.cpp
 CommandLine.cpp
 Environment.cpp
 
@@ -228,6 +231,13 @@ SOURCE_GROUP( network    FILES ${NETWORK_FILES} )
 SOURCE_GROUP( console    FILES ${CONSOLE_FILES} )
 SOURCE_GROUP( string     FILES ${STRING_FILES} )
 
+# Generate 'au.pb.h' and 'au.pb.cc' from ''au.proto''
+add_custom_command (
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/au.pb.cc
+  OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/au.pb.h
+  COMMAND protoc ${CMAKE_CURRENT_SOURCE_DIR}/au.proto --cpp_out=${CMAKE_CURRENT_SOURCE_DIR} --proto_path=${CMAKE_CURRENT_SOURCE_DIR}
+  MAIN_DEPENDENCY au.proto
+)
 
 # Include directories
 # -----------------------------------------------------------------

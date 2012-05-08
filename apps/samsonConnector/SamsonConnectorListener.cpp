@@ -6,20 +6,28 @@
 
 
 namespace samson {
-
-    void SamsonConnectorListener::newSocketConnection( au::NetworkListener* listener 
-                                              , au::SocketConnection * socket_connetion )
-    {
+    namespace connector {
         
-        std::string name  = au::str("%s ( connected to localhost:%d )"  , socket_connetion->getHostAndPort().c_str() , port );
-        
-        SamsonConnectorConnection* new_item = new SamsonConnectorConnection( samson_connector 
-                                                                            , type 
-                                                                            , name 
-                                                                            , socket_connetion );
+        void ListenerItem::newSocketConnection( au::NetworkListener* listener 
+                                               , au::SocketConnection * socket_connetion )
+        {
 
-        // Add this item as my children item
-        samson_connector->add( new_item , getSamsonconnectorId() ); 
+            if( isRemoving() )
+            {
+                // Do not accept connections if removing...
+                delete socket_connetion; 
+                return;
+            }
+            
+            std::string name  = au::str("Socket %s" , socket_connetion->getHostAndPort().c_str() );
+            
+            FileDescriptorConnection* new_item = new FileDescriptorConnection( this 
+                                                                              , getType() 
+                                                                              , name 
+                                                                              , socket_connetion );
+            // Add this item as my children item
+            add( new_item ); 
+        }
+        
     }
-                              
 }

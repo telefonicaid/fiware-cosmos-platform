@@ -68,9 +68,13 @@ namespace au
         std::string getMultiLineMessage()
         {
             std::ostringstream output;
+            
+            if( item_message == item_error )
+                output << "ERROR: ";
+            
             for ( size_t i = 0 ; i < contexts.size() ; i ++ )
                 output << ">> " << contexts[i] << "\n";
-            output << "    Error: "  << message << "\n";
+            output << message << "\n";
             return output.str();
         }
         

@@ -12,11 +12,14 @@
 
 namespace samson 
 {
+    namespace connector
+    {
     
-    class SamsonConnectorConnection;
-    class SamsonConnector;
+        class SamsonConnectorConnection;
+        class SamsonConnector;
     
     
+    /*
     class DiskConnection : public SamsonConnectorItem
     {
         
@@ -69,7 +72,8 @@ namespace samson
         
     };
     
-    
+    */
+    }
 }
 
 

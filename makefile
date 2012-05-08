@@ -122,6 +122,7 @@ install_release_all: release_all
 	make install_man_release_all
 	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKER) $(SAMSON_OWNER)
 
+dai: install_debug_all
 dia: install_debug_all
 install_debug_all: debug_all
 	make -C BUILD_DEBUG_ALL install
@@ -274,8 +275,9 @@ testdistribute: install
 # Other
 # ------------------------------------------------
 
-xcode:	
-	./scripts/prepareXcode
+xcode:
+	mkdir xcode_proj || true
+	cd xcode_proj; cmake .. -DIGNORE_UNI_TEST=1 -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=False -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME) -G Xcode
 
 eclipse:	
 	./scripts/prepareEclipse

@@ -87,25 +87,13 @@ int logFd = -1;
 
 
 // Network connections ( input and output )
-samson::SamsonConnector samson_connector;
-
+samson::connector::SamsonConnector* samson_connector;
 
 
 // Instance of the client to connect to SAMSON system
 samson::SamsonClient *samson_client;
 
 
-void* review_samson_connector(void*p)
-{
-    // Endless loop waiting for data....
-    while( true )
-    {
-        samson_connector.review();
-        sleep(5);
-    }
-
-	return NULL;
-}
 
 void captureSIGPIPE(int s )
 {
@@ -117,7 +105,7 @@ int main( int argC , const char *argV[] )
     paConfig("usage and exit on any warning", (void*) true);
     
     paConfig("log to screen",                 (void*) true);
-    paConfig("log to file",                   (void*) true);  // In production it will be false
+    paConfig("log to file",                   (void*) true);  // In production it will be false?
     paConfig("screen line format",            (void*) "TYPE:EXEC: TEXT");
     paConfig("man shortdescription",          (void*) manShortDescription);
     paConfig("man synopsis",                  (void*) manSynopsis);
@@ -153,31 +141,40 @@ int main( int argC , const char *argV[] )
     if( interactive )
         lmVerbose = false;
     
+    // Init samsonConnector
+    
+    samson_connector = new samson::connector::SamsonConnector();
+    
     // Add outputs
     au::ErrorManager error;
-    samson_connector.add_outputs(output ,&error);
+    samson_connector->process_command( au::str("add_output %s" , output )  , &error );
     if( error.isActivated() )
-        samson_connector.show_error( error.getMessage().c_str()  );
+        samson_connector->show_error( error.getMessage().c_str()  );
     
     // Add inputs
-    samson_connector.add_inputs(input , &error);
+    samson_connector->process_command( au::str("add_input %s" , input )  , &error );
     if( error.isActivated() )
-        samson_connector.show_error( error.getMessage().c_str() );
+        samson_connector->show_error( error.getMessage().c_str()  );
     
-    // Review to create dedicated connections
-    samson_connector.set_setup_complete();
-    samson_connector.review();
-    
-    // Background thread to review connections in samson connector
-    pthread_t t;
-    au::ThreadManager::shared()->addThread( "SamsonConector:review" , &t, NULL, review_samson_connector, NULL);
     
     // Run console if interactive mode is activated
     if( interactive )
-        samson_connector.runConsole();
+    {
+        samson_connector->add_service(); // Add service to accept monitor connections from samsonConnectorClient
+        samson_connector->runConsole();
+    }
     else
         while( true )
-            sleep(10000);
+        {
+            // Verify if can exit....
+            
+            int num_imput_item = samson_connector->getNumInputItems();
+            
+            if( num_imput_item == 0 )
+                LM_X(0, ("Not more inputs"));
+            
+            usleep(100000);
+        }
     
     
     

@@ -15,6 +15,7 @@ SET (STATIC_LIBS
      samsonNetwork
      samsonStream
      samsonModule
+	 samson_system
      dl
      engine
      au

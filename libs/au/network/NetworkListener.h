@@ -52,12 +52,18 @@ namespace au
         Status initNetworkListener( int port );        
 
         // Function to cancel banground thread accepting connections
-        void stop( bool wait);
+        void stop( bool wait );
         
         // Non blocking and blocking calls to accept connections
         void runNetworkListenerInBackground();
         void runNetworkListener();
         
+        
+        // Check running status
+        bool isNetworkListenerRunning()
+        {
+            return background_thread_running;
+        }
         
     private:
         

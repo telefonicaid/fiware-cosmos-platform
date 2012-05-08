@@ -154,6 +154,28 @@ reduce update
 
 }
 
+
+reduce process
+{
+    in  system.Value system.Value
+    in  system.Value system.Value
+
+    out system.Value system.Value	
+    out system.Value system.Value
+    out system.Value system.Value
+
+	helpLine "Accumulation, Level and other common tasks implemented in the same operation"
+
+}
+
+script init_process
+{
+	code
+	{
+		add_stream_operation p system.process input state output input state;
+	}					 
+}
+
 splitter lines
 {
 	helpLine "Parse input keeping lines toguether"

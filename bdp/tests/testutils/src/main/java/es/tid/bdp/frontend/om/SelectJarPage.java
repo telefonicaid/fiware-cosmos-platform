@@ -4,6 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotSame;
 
 /**
  *
@@ -36,6 +37,8 @@ public class SelectJarPage {
         WebElement inputElement = this.driver.findElement(
                 By.id(INPUT_JAR_HTML_ID));
         inputElement.submit();
+        assertNotSame(this.driver.getCurrentUrl(), this.selectJarUrl,
+                      "Verifying URL has changed");
         
         return new SelectInputPage(this.driver);
     }

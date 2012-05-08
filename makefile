@@ -249,7 +249,7 @@ pdid: pdi
 	./scripts/samsonDist
 
 
-distribute: install_release_all
+distribute: install_debug_all
 ifndef SAMSON_CLUSTER
 	echo "The environment variable SAMSON_CLUSTER is not defined, unable to distribute"
 	exit 1

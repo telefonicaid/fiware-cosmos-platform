@@ -25,6 +25,8 @@ namespace samson {
                 samson_connector->review();
                 usleep(100000);
             }
+
+			return NULL;
         }
         
         SamsonConnector::SamsonConnector() 

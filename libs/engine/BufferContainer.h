@@ -2,6 +2,7 @@
 #ifndef _H_BUFFER_CONTAINER
 #define _H_BUFFER_CONTAINER
 
+#include <string>
 #include "au/containers/list.h"
 
 namespace engine {

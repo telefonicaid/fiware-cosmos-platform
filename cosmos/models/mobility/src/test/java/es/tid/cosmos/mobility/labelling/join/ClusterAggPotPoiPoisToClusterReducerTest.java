@@ -32,7 +32,7 @@ public class ClusterAggPotPoiPoisToClusterReducerTest {
     }
 
     @Test
-    public void testChangeConfident() {
+    public void shoulChangeConfidence() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);
         final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
                 ClusterUtil.create(1, 2, 0, 3, 4,
@@ -53,7 +53,7 @@ public class ClusterAggPotPoiPoisToClusterReducerTest {
     }
     
     @Test
-    public void testDontChangeConfident() {
+    public void shouldNotChangeConfidence() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);
         final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
                 ClusterUtil.create(1, 2, 0, 3, 4,

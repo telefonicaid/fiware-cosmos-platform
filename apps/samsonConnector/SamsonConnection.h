@@ -23,11 +23,14 @@ namespace samson {
         public:
             
             
-            SamsonConnection( Item  * _item , ConnectionType _type , std::string name , SamsonClient * _client )
+            SamsonConnection( Item  * _item , ConnectionType _type , std::string name , SamsonClient * _client , std::string _queue )
             : Connection( _item , _type , name  )
             {
                 // Keep a pointer to the client
                 client = _client;
+                
+                // Keep the name of the queue
+                queue = _queue;
                 
                 // Set me as the receiver of live data from SAMSON
                 client->set_receiver_interface(this);
@@ -144,7 +147,7 @@ namespace samson {
                 std::string name = au::str("SAMSON at %s:%d (%s)" , host.c_str() , port , queue.c_str() );
                 
                 // Add connection
-                add( new SamsonConnection( this , getType() , name , client ) );
+                add( new SamsonConnection( this , getType() , name , client , queue ) );
                 
             }
             

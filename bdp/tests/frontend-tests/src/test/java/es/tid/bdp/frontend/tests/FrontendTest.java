@@ -362,7 +362,8 @@ public class FrontendTest {
                 "2 3 4 5 6 7 8 9 123\n19283");
         FrontendLauncher testDriver = new FrontendLauncher("test@.2",
                                                            "cosmostest@.2");
-        final String taskId = "../1234|<b>Weird</b>.Name_1!!&nbsp;%20~€";
+        final String taskIdPrefix = "../1|<b>W</b>._1!!&nbsp;%20~€";
+        String taskId = taskIdPrefix + UUID.randomUUID().toString().substring(25);
         testDriver.createNewTask(inputFilePath,
                                  this.printPrimesJarPath,
                                  taskId,

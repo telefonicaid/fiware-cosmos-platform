@@ -11,10 +11,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.server.Command;
+import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.UserAuth;
 import org.apache.sshd.server.auth.UserAuthNone;
+import org.apache.sshd.server.auth.UserAuthPassword;
 import org.apache.sshd.server.command.ScpCommandFactory;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
+import org.apache.sshd.server.session.ServerSession;
 import org.apache.sshd.server.sftp.SftpSubsystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,19 +52,23 @@ public class InjectionServer {
     }
 
     public void setupSftpServer(){
+
         SshServer sshd = SshServer.setUpDefaultServer();
+        // General settings
         sshd.setFileSystemFactory(hadoopFileSystemFactory);
         sshd.setPort(this.serverSocketPort);
         sshd.setKeyPairProvider(
                 new SimpleGeneratorHostKeyProvider("hostkey.ser"));
-
+        // User authentication settings
+        PasswordAuthenticator passwordAuthenticator = new SystemPassword();
+        sshd.setPasswordAuthenticator(passwordAuthenticator);
         List<NamedFactory<UserAuth>> userAuthFactories =
                 new ArrayList<NamedFactory<UserAuth>>();
-        userAuthFactories.add(new UserAuthNone.Factory());
+        userAuthFactories.add(new UserAuthPassword.Factory());
         sshd.setUserAuthFactories(userAuthFactories);
-
+        // Command settings
         sshd.setCommandFactory(new ScpCommandFactory());
-
+        // Subsystem settings
         List<NamedFactory<Command>> namedFactoryList =
                 new ArrayList<NamedFactory<Command>>();
         namedFactoryList.add(new SftpSubsystem.Factory());

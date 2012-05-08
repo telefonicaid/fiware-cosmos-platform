@@ -50,10 +50,12 @@ long baStoi(char* string, int* baseP, char* errorText)
         multiplicator = 1024 * 1024;
     else if (last == 'G')
         multiplicator = 1024 * 1024 * 1024;
+#ifdef __LP64__
     else if (last == 'T')
         multiplicator = (long) 1024 * 1024 * 1024 * 1024;
     else if (last == 'P')
         multiplicator = (long) 1024 * 1024 * 1024 * 1024 * 1024;
+#endif
 
     if (multiplicator != 1)
         string[strlen(string) - 1] = 0;

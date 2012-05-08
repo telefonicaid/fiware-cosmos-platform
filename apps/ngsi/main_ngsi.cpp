@@ -7,6 +7,40 @@
 * CREATION DATE            April 23 2012
 * 
 * 
+*
+* CALL with Juanjo 2012-04-27
+* ------------------------------
+*
+*   1. What do we want 'finally'?
+*   2. What's the minimum for end of June?
+*   3. Will NECs Context Broker be used for the end of June?
+*
+*   IoT Broker to be used
+*
+*   TO IMPLEMENT: Things and Resources Management GE
+*   Operations to be implemented (*mandatory):
+*     * registerContext
+*     * discoverContextAvailability (entityId is a regexp)
+*     ? subscribeContextAvailability
+*     ? notifyContextAvailability
+*     ? updateContextAvailabilitySubscription
+*     ? unsubscribeContextAvailability
+*
+* -------------------------------------------
+*
+* Next Steps:
+*
+* Fri + Mon
+*   DOCUMENT ngsi-9 
+*   Comments about ngsi-10
+*
+* Wed:
+*   Conf call
+*
+* -------------------------------------------
+*
+*
+*
 * NGSI-9
 * 
 * Register/Update Context Entities, their attributes and their availability
@@ -34,7 +68,7 @@
 *    - subscribeContext from Broker (with duration)
 *    - subscribe to Context Producer ()
 * 
-*  Application (is this not jsut a combination of Producer/Consumer?)
+*  Application (is this not just a combination of Producer/Consumer?)
 *    - subscribe to Context
 *    - register context
 *    - receive 'discover context'
@@ -55,7 +89,12 @@
 *   GET /NGSI10/unsubscribeContext
 *   GET /NGSI10/updateContext
 *
+*
+* CURL commands:
 #if 0
+    curl 'localhost:1025/NGSI10/contextEntities/entity01?Z=1&Abba=123' -d '{ "s" : "25", "i" : 131, "b" : true }'  --header "Content-Type: text/json"
+    curl 'localhost:1025/NGSI10/contextEntities/entity01?Z=1&Abba=123' -d '{ "s" : "25", "i" : 131, "b" : true }'  --header "Content-Type: text/json" -G
+
     curl localhost:1025/NGSI10/contextEntities/entity01/attributes/attribute01/value01
     curl localhost:1025/NGSI10/contextEntities/entity01/attributeDomains/attributeDomain01
     curl localhost:1025/NGSI10/contextEntityTypes/type01/attributes/attribute01
@@ -162,11 +201,87 @@
 #include <string>
 #include <sstream>
 
+#include "json.h"
+
 #include "parseArgs/parseArgs.h"
 #include "parseArgs/paConfig.h"
 #include "logMsg/logMsg.h"
 
 using namespace std;
+
+
+
+/* ****************************************************************************
+*
+* TraceLevels - 
+*/
+typedef enum TraceLevels
+{
+	LmtInput        = 21,
+	LmtInputLines,
+	LmtComponents,
+	LmtSuffix,
+	LmtPeer,
+    LmtOperation,
+    LmtParameters,
+    LmtParameters2,
+	LmtHttpHeader,
+	LmtHttpData,
+	LmtEntity
+} TraceLevels;
+
+
+
+/* ****************************************************************************
+*
+* MetaData - 
+*/
+typedef struct MetaData
+{
+	char*      name;
+	void*      value;
+} MetaData;
+
+
+
+/* ****************************************************************************
+*
+* AttributeType - 
+*/
+typedef enum AttributeType
+{
+	IntegerAttribute,
+	StringAttribute,
+	BooleanAttribute,
+	DoubleAttribute
+} AttributeType;
+
+
+
+/* ****************************************************************************
+*
+* Attribute - 
+*/
+typedef struct Attribute
+{
+	char           name[64];
+	void*          value;
+	AttributeType  type;
+	MetaData*      metaDataList;
+} Attribute;
+
+
+
+/* ****************************************************************************
+*
+* Entity - 
+*/
+typedef struct Entity
+{
+	char            id[64];
+	Attribute*      attributeList;
+	struct Entity*  next;
+} Entity;
 
 
 
@@ -220,10 +335,70 @@ typedef enum Verb
 
 /* ****************************************************************************
 *
+* PeerType - 
+*/
+typedef enum PeerType
+{
+	ContextCnsumer    = 1,
+	ContextProducer,
+	ContextBroker,
+} PeerType;
+
+
+
+/* ****************************************************************************
+*
+* Peer - 
+*/
+typedef struct Peer
+{
+	char          hostname[64];
+	int           ip;
+	PeerType      type;
+	struct Peer*  next;
+} Peer;
+
+
+
+/* ****************************************************************************
+*
+* Parameter - 
+*/
+typedef struct Parameter
+{
+    char* name;
+    char* value;
+} Parameter;
+
+
+
+/* ****************************************************************************
+*
 * global variables
 */
 char          inBuf[8 * 1024];
-static char*  allow = NULL;
+Parameter     parameterV[100];   // 100 is more than enough ...
+int           parameters       = 0;
+Entity*       entityV          = NULL;
+int           entities         = 0;
+Peer*         peerV            = NULL;
+int           peers            = 0;
+static char*  allow            = NULL;
+
+
+
+/* ****************************************************************************
+*
+* HTTP Header and Data variables
+*/
+char* contentType;
+char* contentLength;
+char* host;
+char* userAgent;
+char* accepts;
+
+char* data[100];
+int   dataLines = 0;
 
 
 
@@ -233,6 +408,7 @@ static char*  allow = NULL;
 */
 int             port;
 bool            fg;
+
 
 
 /* ****************************************************************************
@@ -249,6 +425,320 @@ PaArgument paArgs[] =
 
 
 
+/* ****************************************************************************
+*
+* peerInit - 
+*/
+void peerInit(void)
+{
+	peerV = NULL;
+	peers = 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* entityInit - 
+*/
+void entityInit(void)
+{
+	entityV  = NULL;
+	entities = 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* jsonTypeName - 
+*/
+const char* jsonTypeName(json_type type)
+{
+	switch (type)
+	{
+	case json_type_null:       return "json_type_null";
+	case json_type_boolean:    return "json_type_boolean";
+	case json_type_double:     return "json_type_double";
+	case json_type_int:        return "json_type_int";
+	case json_type_object:     return "json_type_object";
+	case json_type_array:      return "json_type_array";
+	case json_type_string:     return "json_type_string";
+	}
+
+	return "json_type_unknown";
+}
+
+
+
+/* ****************************************************************************
+*
+* jsonParse - 
+*/
+int jsonParse(Entity* entityP, char* in)
+{
+	struct json_object* json;
+	struct json_object* jsonObj;
+	struct lh_table*    table;
+	lh_entry*           entry;
+	char*               key;
+
+	json  = json_tokener_parse(in);
+	table = json_object_get_object(json);
+	entry = table->head;
+	
+	while (entry != NULL)
+	{
+		key     = (char*) entry->k;
+		jsonObj = json_object_object_get(json, key);
+		
+		json_type type = json_object_get_type(jsonObj);
+
+		if (type == json_type_boolean)
+		{
+			bool b = json_object_get_boolean(jsonObj);
+			LM_T(LmtHttpData, ("json: '%s' : %s (%s)", key, (b==true)? "true" : "false", jsonTypeName(type)));
+		}
+		else if (type == json_type_double)
+		{
+			double d = json_object_get_double(jsonObj);
+			LM_T(LmtHttpData, ("json: '%s' : %f (%s)", key, d, jsonTypeName(type)));
+		}
+		else if (type == json_type_int)
+		{
+			int i = json_object_get_int(jsonObj);
+			LM_T(LmtHttpData, ("json: '%s' : %d (%s)", key, i, jsonTypeName(type)));
+		}
+		else if (type == json_type_string)
+		{
+			const char* s = json_object_get_string(jsonObj);
+			LM_T(LmtHttpData, ("json: '%s' : %s (%s)", key, s, jsonTypeName(type)));
+		}
+			
+		entry = entry->next;
+	}
+
+	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* peerAdd - 
+*/
+void peerAdd(const char* hostname, int ip)
+{
+	Peer* peerP = peerV;
+
+	while (peerP != NULL)
+	{
+		if (peerP->ip == ip)
+		{
+			LM_T(LmtPeer, ("Peer '%s' already in per list", hostname));
+			return;
+		}
+
+		if (peerP->next == NULL)
+			break;
+
+		peerP = peerP->next;
+	}
+
+	Peer* newPeer = (Peer*) malloc(sizeof(Peer));
+
+	if (newPeer == NULL)
+		LM_X(1, ("malloc: %s", strerror(errno)));
+
+	strncpy(newPeer->hostname, hostname, sizeof(newPeer->hostname));
+	newPeer->ip   = ip;
+	newPeer->next = NULL;
+
+	if (peerV == NULL)
+		peerV = newPeer;
+	else
+		peerP->next = newPeer;
+
+	LM_T(LmtPeer, ("Added peer '%s'", newPeer->hostname));
+}
+
+
+
+/* ****************************************************************************
+*
+* restReplySend - 
+*/
+bool restReplySend(int fd, std::string data, int httpCode, Format format)
+{
+    int                 dataLen = strlen(data.c_str());
+    std::ostringstream  header;
+    std::ostringstream  output;
+    int                 outputLen;
+    int                 nb;
+
+    switch (httpCode)
+    {
+    case 200:
+        header << "HTTP/1.1 200 OK\n";
+        break;
+        
+    case 400:
+        header << "HTTP/1.1 400 Bad Request\n";
+        break;
+        
+    case 404:
+        header << "HTTP/1.1 404 Not Found\n";
+        break;
+        
+    case 405:
+        header << "HTTP/1.1 405 XXX\n";
+		if (allow != NULL)
+		{
+			header << "Allow: " << allow << "\n";
+			allow = NULL;
+		}
+        break;
+        
+    default:
+        header << "HTTP/1.1 Bad Request \n"; 
+        break;
+    }
+    
+    if (format == JSON)
+        header << "Content-Type:   \"application/json; charset=utf-8\"\n";
+    else
+        header << "Content-Type:   \"application/xml; charset=utf-8\"\n";
+
+    header << "Content-Length: " << dataLen << "\n";
+    header << "\n";
+    output << header.str() << data << "\n\n";
+
+	if (lmWrites)
+	   LM_F(("Output:\n%s\n", output.str().c_str()));
+
+    outputLen  = strlen(output.str().c_str());
+    nb         = write(fd, output.str().c_str(), outputLen);
+
+    if (nb != outputLen)
+        LM_RE(-1, ("Written only %d bytes of %d", nb, outputLen));
+
+    return true;
+}
+
+
+
+/* ****************************************************************************
+*
+* restReply - 
+*/
+bool restReply(int fd, Format format, int httpCode, const char* key, const char* value)
+{
+    std::ostringstream  data;
+
+    if (format == JSON)
+        data << "{" << '"' << key << '"' << " : " << '"' << value << '"' << "}";
+    else
+        data << "<ngsi><key>" << key << "</key>" << "<value>" << value << "</value></ngsi>";
+
+    return restReplySend(fd, data.str(), httpCode, format);
+}
+
+
+
+/* ****************************************************************************
+*
+* entityLookup -
+*/
+Entity* entityLookup(const char* id)
+{
+	Entity* entityP = entityV;
+
+	while (entityP != NULL)
+	{
+		if (strcmp(entityP->id, id) == 0)
+			return entityP;
+
+		entityP = entityP->next;
+	}
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* entityCreate - 
+*/
+Entity* entityCreate(const char* entityId)
+{
+	Entity* entity = (Entity*) malloc(sizeof(Entity));
+
+	if (entity == NULL)
+		LM_X(1, ("malloc: %s", strerror(errno)));
+
+	strncpy(entity->id, entityId, sizeof(entity->id));
+	entity->next = NULL;
+
+	LM_T(LmtEntity, ("Created entity '%s'", entity->id));
+	return entity;
+}
+
+
+Entity* entityNext = NULL;
+/* ****************************************************************************
+*
+* entityAppend - 
+*/
+void entityAppend(Entity* entity)
+{
+	if (entityNext == NULL)
+		entityV = entity;
+	else
+		entityNext->next = entity;
+
+	entityNext = entity;
+}
+
+
+
+/* ****************************************************************************
+*
+* entityAdd - 
+*/
+bool entityAdd(int fd, Format format, const char* entityId)
+{
+	Entity* entityP;
+
+	//
+	// Lookup the entity 'entityId'
+	//
+	LM_T(LmtEntity, ("Looking up entity '%s'", entityId));
+	entityP = entityLookup(entityId);
+	if (entityP == NULL)
+	{
+		entityP = entityCreate(entityId);
+		entityAppend(entityP);
+	}
+	LM_T(LmtEntity, ("Adding to entity '%s'", entityP->id));
+
+
+	//
+	// Add the data for this entity
+	//
+	LM_T(LmtHttpData, ("data lines: %d", dataLines));
+	for (int ix = 0; ix < dataLines; ix++)
+		jsonParse(entityP, data[ix]);
+
+    return restReply(fd, format, 200, "status", "OK");
+}
+
+
+
+/* ****************************************************************************
+*
+* verbName - 
+*/
 const char* verbName(Verb verb)
 {
     switch (verb)
@@ -350,40 +840,12 @@ int serverInit(unsigned short port)
 
 /* ****************************************************************************
 *
-* TraceLevels - 
-*/
-typedef enum TraceLevels
-{
-	LmtInput        = 21,
-	LmtInputLines,
-	LmtComponents,
-	LmtSuffix,
-    LmtOperation,
-    LmtParameters,
-    LmtParameters2
-} TraceLevels;
-
-
-
-typedef struct Parameter
-{
-    char* name;
-    char* value;
-} Parameter;
-
-Parameter parameterV[100];   // 100 is more than enough ...
-int       parameters       = 0;
-
-
-
-/* ****************************************************************************
-*
 * parametersPresent - 
 */
 void parametersPresent(void)
 {
-    int ix;
-    int nameLen = 0;
+    int           ix;
+    unsigned int  nameLen = 0;
 
     for (ix = 0; ix < parameters; ix++)
         nameLen = MAX(nameLen, strlen(parameterV[ix].name));
@@ -453,12 +915,70 @@ void parametersParse(char* params)
 *
 * linesPresent - just for debugging ...
 */
-void linesPresent(int lines, char** input)
+void linesPresent(char** input, int lines)
 {
     int ix;
 
     for (ix = 0; ix < lines; ix++)
         LM_T(LmtInputLines, ("input: '%s'", input[ix]));
+}
+
+
+
+/* ****************************************************************************
+*
+* dataParse - 
+*/
+void dataParse(char** input, int lines)
+{
+    int  ix;
+	bool isData = false;
+
+	LM_T(LmtInputLines, ("******************************************"));
+	dataLines = 0;
+	//
+	// Skipping first line (GET/PUT/POST/DELETE)
+	//
+    for (ix = 1; ix < lines; ix++)
+	{
+	    // LM_T(LmtInputLines, ("input: '%s' (%x)", input[ix], input[ix]));
+
+		if (input[ix][0] == 0)
+		{
+			isData = true; // next lines are data lines
+			LM_T(LmtHttpData, ("Got an empty line - nextcoming lines are data"));
+		}
+		else if (isData)
+		{
+			LM_T(LmtHttpData, ("dataLine[%d]: '%s'", dataLines, input[ix]));
+			data[dataLines++] = input[ix];
+		}
+		else if (strncmp(input[ix], "Accept: ", 8) == 0)
+		{
+			accepts = &input[ix][8];
+			LM_T(LmtHttpHeader, ("Accepts:          '%s'", accepts));
+		}
+		else if (strncmp(input[ix], "User-Agent: ", 12) == 0)
+		{
+			userAgent = &input[ix][12];
+			LM_T(LmtHttpHeader, ("userAgent:        '%s'", userAgent));
+		}
+		else if (strncmp(input[ix], "Host: ", 6) == 0)
+		{
+			host = &input[ix][6];
+			LM_T(LmtHttpHeader, ("Host:             '%s'", host));
+		}
+		else if (strncmp(input[ix], "Content-Length: ", 16) == 0)
+		{
+			contentLength = &input[ix][16];
+			LM_T(LmtHttpHeader, ("Content-Length:   '%s'", contentLength));
+		}
+		else if (strncmp(input[ix], "Content-Type: ", 14) == 0)
+		{
+			contentType = &input[ix][14];
+			LM_T(LmtHttpHeader, ("Content-Type:     '%s'", contentType));
+		}
+	}
 }
 
 
@@ -540,84 +1060,6 @@ int stringSplit(char* path, std::string* component, char separator)
 
 /* ****************************************************************************
 *
-* restReplySend - 
-*/
-int restReplySend(int fd, std::string data, int httpCode, Format format)
-{
-    int                 dataLen = strlen(data.c_str());
-    std::ostringstream  header;
-    std::ostringstream  output;
-    int                 outputLen;
-    int                 nb;
-
-    switch (httpCode)
-    {
-    case 200:
-        header << "HTTP/1.1 200 OK\n";
-        break;
-        
-    case 400:
-        header << "HTTP/1.1 400 Bad Request\n";
-        break;
-        
-    case 404:
-        header << "HTTP/1.1 404 Not Found\n";
-        break;
-        
-    case 405:
-        header << "HTTP/1.1 405 XXX\n";
-		if (allow != NULL)
-		{
-			header << "Allow: " << allow << "\n";
-			allow = NULL;
-		}
-        break;
-        
-    default:
-        header << "HTTP/1.1 Bad Request \n"; 
-        break;
-    }
-    
-    if (format == JSON)
-        header << "Content-Type:   \"application/json; charset=utf-8\"\n";
-    else
-        header << "Content-Type:   \"application/xml; charset=utf-8\"\n";
-
-    header << "Content-Length: " << dataLen << "\n";
-    header << "\n";
-    output << header.str() << data << "\n";
-
-    outputLen  = strlen(output.str().c_str());
-    nb         = write(fd, output.str().c_str(), outputLen);
-
-    if (nb != outputLen)
-        LM_RE(-1, ("Written only %d bytes of %d", nb, outputLen));
-
-    return 0;
-}
-
-
-
-/* ****************************************************************************
-*
-* restReply - 
-*/
-int restReply(int fd, Format format, int httpCode, const char* key, const char* value)
-{
-    std::ostringstream  data;
-
-    if (format == JSON)
-        data << "{" << '"' << key << '"' << " : " << '"' << value << '"' << "}";
-    else
-        data << "<ngsi><key>" << key << "</key>" << "<value>" << value << "</value></ngsi>";
-
-    return restReplySend(fd, data.str(), httpCode, format);
-}
-
-
-
-/* ****************************************************************************
-*
 * sanityCheck - 
 */
 static bool sanityCheck(const char* s)
@@ -628,10 +1070,7 @@ static bool sanityCheck(const char* s)
     if (s[0] != '/')
         return false;
 
-    if (strlen(s) < strlen("/NGSI10/X"))
-        return false;
-
-    if (strncmp(s, "/NGSI10/", 8) != 0)
+    if ((strncmp(s, "/NGSI10/", 8) != 0) && (strncmp(s, "/NGSI9/", 7) != 0))
         return false;
 
     return true;
@@ -674,6 +1113,67 @@ bool componentSanityCheck(int components, std::string* component)
 		return true;
 
 	return false;
+}
+
+
+
+/* ****************************************************************************
+*
+* registerContext - 
+*/
+bool registerContext(int fd, Verb verb, Format format, std::string entityId)
+{
+    LM_T(LmtOperation, ("entityId: '%s'", entityId.c_str()));
+
+    if (verb == GET)
+    {
+        LM_T(LmtOperation, ("Retrieve all available information about the context entity '%s'", entityId.c_str()));
+    }
+    else if (verb == PUT)
+    {
+        LM_T(LmtOperation, ("Replace a number of attribute values for the context entity '%s'?", entityId.c_str()));
+    }
+    else if (verb == POST)
+    {
+        LM_T(LmtOperation, ("Create entity '%s'", entityId.c_str()));
+		return entityAdd(fd, format, entityId.c_str());
+    }
+    else if (verb == DELETE)
+    {
+        LM_T(LmtOperation, ("Delete all entity information for the context entity '%s'", entityId.c_str()));
+    }
+        
+    return restReply(fd, format, 501, __FUNCTION__, "not implemented");
+}
+
+
+
+/* ****************************************************************************
+*
+* registerContextAttributes - 
+*/
+bool registerContextAttributes(int fd, Verb verb, Format format, std::string entityId)
+{
+    LM_T(LmtOperation, ("entityId: '%s'", entityId.c_str()));
+
+    if (verb == GET)
+    {
+        LM_T(LmtOperation, ("Retrieve all available information about the context entity '%s'", entityId.c_str()));
+    }
+    else if (verb == PUT)
+    {
+        LM_T(LmtOperation, ("Replace a number of attribute values for the context entity '%s'?", entityId.c_str()));
+    }
+    else if (verb == POST)
+    {
+        LM_T(LmtOperation, ("Update attributes for entity '%s'", entityId.c_str()));
+    }
+    else if (verb == DELETE)
+    {
+        LM_T(LmtOperation, ("Delete all entity information for the context entity '%s'", entityId.c_str()));
+    }
+        
+    return restReply(fd, format, 501, __FUNCTION__, "not implemented");
 }
 
 
@@ -731,6 +1231,7 @@ bool contextEntity(int fd, Verb verb, Format format, std::string entityId)
         //
 
         LM_T(LmtOperation, ("Append context attribute values for the context entity '%s'", entityId.c_str()));
+		// entityAdd(entityId.c_str());
     }
     else if (verb == DELETE)
     {
@@ -1144,14 +1645,24 @@ bool restReqTreat(int fd, Verb verb, Format format, int components, std::string*
     //
     if (components < 2)
         return false;
-    if (component[0] != "NGSI10")
+    if ((component[0] != "NGSI10") && (component[0] != "NGSI9"))
         return false;
+
+
+	//
+	// /NGSI9/registerContext
+	//
+	if ((component[0] == "NGSI9") && (components == 3) && (component[1] == "registerContext"))
+		return registerContext(fd, verb, format, component[2]);
+	else if ((component[0] == "NGSI9") && (components == 4) && (component[1] == "registerContext") && (component[3] == "attributes"))
+		return registerContextAttributes(fd, verb, format, component[2]);
+
 
 
     //
     // /NGSI10/contextEntities
     //
-	if ((components == 3) && (component[1] == "contextEntities"))
+	else if ((components == 3) && (component[1] == "contextEntities"))
 		return contextEntity(fd, verb, format, component[2]);
 	else if ((components == 4) && (component[1] == "contextEntities") && (component[3] == "attributes"))
 		return contextEntityAttributes(fd, verb, format, component[2]);
@@ -1252,6 +1763,21 @@ int restTreat(Verb verb, char* path, int fd)
 
 
     //
+    // Any parameters?
+    //
+    char* parameters = strchr(path, '?');
+
+    if (parameters != NULL)
+    {
+        *parameters = 0;
+        ++parameters;
+        LM_T(LmtParameters2, ("parameters: '%s'", parameters));
+        parametersParse(parameters);
+    }
+
+
+
+    //
     // Check if request ends in '.xml' or '.json'
     //
     char* suffix = &path[strlen(path) - 5];
@@ -1274,21 +1800,6 @@ int restTreat(Verb verb, char* path, int fd)
         }
         else
             LM_T(LmtSuffix, ("Default reply is JSON"));
-    }
-
-
-
-    //
-    // Any parameters?
-    //
-    char* parameters = strchr(path, '?');
-
-    if (parameters != NULL)
-    {
-        *parameters = 0;
-        ++parameters;
-        LM_T(LmtParameters2, ("parameters: '%s'", parameters));
-        parametersParse(parameters);
     }
 
 
@@ -1332,7 +1843,9 @@ int restServe(int fd)
         int   lines;
 
         lines = lineSplit(inBuf, lineV);
-        linesPresent(lines, lineV);
+        linesPresent(lineV, lines);
+		dataParse(lineV, lines);
+
         if (strncmp(lineV[0], "GET ", 4) == 0)
             restTreat(GET, &lineV[0][4], fd);
         else if (strncmp(lineV[0], "POST ", 5) == 0)
@@ -1348,6 +1861,21 @@ int restServe(int fd)
     }
 
     return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* ip2string - 
+*/
+void ip2string(int ip, char* ipString, int ipStringLen)
+{
+    snprintf(ipString, ipStringLen, "%d.%d.%d.%d",
+			 ip & 0xFF,
+			 (ip & 0xFF00) >> 8,
+			 (ip & 0xFF0000) >> 16,
+			 (ip & 0xFF000000) >> 24);
 }
 
 
@@ -1388,12 +1916,15 @@ void serve(int fd)
 		{
 			struct sockaddr_in  sin;
 			unsigned int        len         = sizeof(sin);
-			
+			char                hostName[64];
 			if (cFd != -1)
 				close(cFd);
 			cFd = accept(fd, (struct sockaddr*) &sin, &len);
 			if (cFd == -1)
 				LM_X(1, ("accept: %s", strerror(errno)));
+
+			ip2string(sin.sin_addr.s_addr, hostName, sizeof(hostName));
+			peerAdd(hostName, sin.sin_addr.s_addr);
         }
 
 		if (cFd != -1)
@@ -1420,7 +1951,7 @@ int main(int argC, const char *argV[])
     paConfig("log to screen",                     (void*) true);
 
     paConfig("log file line format",              (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
-    paConfig("screen line format",                (void*) "TYPE@TIME  EXEC: TEXT");
+    paConfig("screen line format",                (void*) "TYPE@TIME  FUNC[LINE]: TEXT");
 
     paParse(paArgs, argC, (char**) argV, 1, false);
 

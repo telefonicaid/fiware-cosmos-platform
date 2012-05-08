@@ -48,7 +48,9 @@ public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
                 break;
             }
         }
-        
+        if (poi == null) {
+            return;
+        }
         Poi.Builder outputPoi = Poi.newBuilder(poi);
         if (hasNulls) {
             outputPoi.setConfidentnodebts(1);

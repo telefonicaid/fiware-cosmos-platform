@@ -47,7 +47,9 @@ public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
                 break;
             }
         }
-        
+        if (cluster == null) {
+            return;
+        }
         Cluster.Builder outputCluster = Cluster.newBuilder(cluster);
         if (hasNulls) {
             outputCluster.setConfident(1);

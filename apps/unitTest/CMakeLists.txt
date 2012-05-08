@@ -23,6 +23,11 @@ SET (SOURCES
 
 	#comscore library
 	comscore/comscore.cpp
+	
+	#delilah library
+	delilah/common_delilah_test.h
+	delilah/common_delilah_test.cpp
+	delilah/delilahConsole_test.cpp
 
 )
 
@@ -42,12 +47,11 @@ SET (STATIC_LIBS
      ${HAVE_GTEST}
      ${GTESTMAIN_LIBRARY}
      engine
+     delilahLib
      pa
      lm
      protobuf
      pthread
-     dl
-     curses
      samsonNetwork
      samsonStream
      samsonModule
@@ -58,6 +62,8 @@ SET (STATIC_LIBS
      au
      xmlmarkup
      xmlparser	
+     curses
+     dl
      ${COMMON_SAMSON_LIBS}
 )
 

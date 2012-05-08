@@ -12,7 +12,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 
 /**
- * Input: <TwoInt, Poi|Cluster|Null>
+ * Input: <TwoInt, Poi|Null>
  * Output: <Long, Poi>
  * 
  * @author dmicol

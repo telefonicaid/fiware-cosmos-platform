@@ -9,90 +9,93 @@ namespace samson{
 namespace system{
 
 
-        class SimpleParser : public samson::Parser
-	{
+class SimpleParser : public samson::Parser
+{
 
-	public:
+public:
 
-		virtual void parseLine( char * line , samson::KVWriter *writer )=0;
-		
-		void run( char *data , size_t length , samson::KVWriter *writer )
-		{
-			
-			size_t line_begin = 0;
-			size_t offset = 0;
-			
-			while( offset < length )
-			{
-				
-				if( data[offset] == '\n' || data[offset] == '\0' )
-				{
-					data[offset] = '\0';
-					
-					parseLine( data+line_begin , writer );
-					line_begin = offset+1;
-				}
-				
-				offset++;
-			}
-			
-			if( line_begin < (length-1) )
-			{
-				data[length-1] = '\0';
-				parseLine( data+line_begin , writer );
-			}
-			
-		}
+    virtual void parseLine( char * line , samson::KVWriter *writer )=0;
 
-		static void split_in_words( char *line , std::vector<char*>& words )
-		{
-		   split_in_words( line, words, ' ');
-		}
+    void run( char *data , size_t length , samson::KVWriter *writer )
+    {
 
-		static void split_in_words( char *line , std::vector<char*>& words , char separator )
-		{
-		   size_t pos = 0;
-		   size_t previous = 0;
+        size_t line_begin = 0;
+        size_t offset = 0;
 
-		   bool finish = false;
+        while( offset < length )
+        {
 
+            if( data[offset] == '\n' || data[offset] == '\0' )
+            {
+                data[offset] = '\0';
 
-		   // Clear words vector
-		   words.clear();
+                parseLine( data+line_begin , writer );
+                line_begin = offset+1;
+            }
 
-		   while( !finish )
-		   {
+            offset++;
+        }
 
-			  if( ( line[pos] == separator ) || ( line[pos] == '\0' ) )
-			  {
-				 if(( line[pos] == '\0' )|| (line[pos] == '\n'))
-					finish = true;
+        if( line_begin < (length-1) )
+        {
+            data[length-1] = '\0';
+            parseLine( data+line_begin , writer );
+        }
 
-				 // Artifical termination of string
-				 line[pos] = '\0';
+    }
 
-				 // Add the found word
-				 words.push_back(  &line[previous] );
+    static void split_in_words( char *line , std::vector<char*>& words )
+    {
+        split_in_words( line, words, ' ');
+    }
 
-				 // Point to the next words
-				 // Jumps blank spaces
-				 pos++;
-				 while (line[pos] == ' ')
-				 {
-					 pos++;
-				 }
-				 previous = pos;
+    static void split_in_words( char *line , std::vector<char*>& words , char separator )
+    {
+        size_t pos = 0;
+        size_t previous = 0;
 
-			  }
-			  else
-				 pos++;
-		   }
-
-		}
+        bool finish = false;
 
 
+        // Clear words vector
+        words.clear();
 
-	};
+        while( !finish )
+        {
+
+            if( ( line[pos] == separator ) || ( line[pos] == '\0' ) )
+            {
+                if(( line[pos] == '\0' )|| (line[pos] == '\n'))
+                    finish = true;
+
+                // Artifical termination of string
+                line[pos] = '\0';
+
+                // Add the found word
+                words.push_back(  &line[previous] );
+
+                // Point to the next words
+                // Jumps blank spaces
+                pos++;
+
+                // To avoid valgrind detected error when checking after the end of the buffer
+                if (!finish)
+                {
+                    while (line[pos] == ' ')
+                    {
+                        pos++;
+                    }
+                }
+                previous = pos;
+            }
+            else
+                pos++;
+        }
+    }
+
+
+
+};
 
 } // end of namespace system
 } // end of namespace samson

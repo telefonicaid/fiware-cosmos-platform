@@ -196,13 +196,13 @@ namespace samson
 		{
 			LM_E(("System error: not possible to create pipes when running this process"));
 			error.set("System error: not possible to create pipes when running this process");
-			LM_T( LmtIsolated, ("Isolated process %s: pipes closed: pipeFdPair1[0]:%d, pipeFdPair1[1]:%d\n", pipeFdPair1[0], pipeFdPair1[1]));
+			LM_T( LmtFileDescriptors, ("Isolated process %s: pipes closed: pipeFdPair1[0]:%d, pipeFdPair1[1]:%d\n", pipeFdPair1[0], pipeFdPair1[1]));
 			close( pipeFdPair1[0] );
 			close( pipeFdPair1[1] );
 			return;
 		}
 		
-		LM_T(LmtIsolated, ("Isolated process %s: pipes created. pipeFdPair1[0]:%d, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, pipeFdPair2[1]:%d\n",getStatus().c_str(), pipeFdPair1[0], pipeFdPair1[1], pipeFdPair2[0], pipeFdPair2[1]));
+		LM_T(LmtFileDescriptors, ("Isolated process %s: pipes created. pipeFdPair1[0]:%d, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, pipeFdPair2[1]:%d\n",getStatus().c_str(), pipeFdPair1[0], pipeFdPair1[1], pipeFdPair2[0], pipeFdPair2[1]));
 		LM_T( LmtIsolated , ("Isolated process %s: pipes created ",getStatus().c_str()));
 		
         
@@ -249,12 +249,12 @@ namespace samson
         if( isolated_process_as_tread )
         {
             sleep(1);  
-            LM_T( LmtIsolated , ("Isolated process %s: Closing unused side of the pipe (thread mode) pipeFdPair1[1]:%d, pipeFdPair2[0]:%d ",getStatus().c_str(), pipeFdPair1[1], pipeFdPair2[0]));
+            LM_T( LmtFileDescriptors , ("Isolated process %s: Closing unused side of the pipe (thread mode) pipeFdPair1[1]:%d, pipeFdPair2[0]:%d ",getStatus().c_str(), pipeFdPair1[1], pipeFdPair2[0]));
             close(pipeFdPair1[1]);
             close(pipeFdPair2[0]);
         }
 		
-		LM_T( LmtIsolated , ("Isolated process %s: Closing the rest of fds of the pipe pipeFdPair1[0]:%d, pipeFdPair2[1]:%d ",getStatus().c_str(), pipeFdPair1[0], pipeFdPair2[1]));
+		LM_T( LmtFileDescriptors , ("Isolated process %s: Closing the rest of fds of the pipe pipeFdPair1[0]:%d, pipeFdPair2[1]:%d ",getStatus().c_str(), pipeFdPair1[0], pipeFdPair2[1]));
 		close(pipeFdPair1[0]);
 		close(pipeFdPair2[1]);
 		
@@ -450,7 +450,7 @@ namespace samson
             // Close the unnecessary pipes
             if( !isolated_process_as_tread )
             {
-                LM_T( LmtIsolated , ("Isolated process %s: Closing secondary fds of pipes, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d ",getStatus().c_str(), pipeFdPair1[1], pipeFdPair2[0]));
+                LM_T( LmtFileDescriptors , ("Isolated process %s: Closing secondary fds of pipes, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d ",getStatus().c_str(), pipeFdPair1[1], pipeFdPair2[0]));
                 close(pipeFdPair1[1]);
                 close(pipeFdPair2[0]);
             }
@@ -493,7 +493,7 @@ namespace samson
             if( c != au::OK )
             {
                 // Not possible to read the message for any reason
-				LM_E(("Isolated process op:'%s', %s: Not possible to read a message from pipeFdPair1[0]:%d with error_code' %s' in time_out:%d", processItemIsolated_description.c_str() ,getStatus().c_str() , pipeFdPair1[0], au::status(c), timeout_setup ));
+				LM_E(("Isolated process op:'%s', %s: Not possible to read a message from pipeFdPair1[0]:%d with error_code' %s' (time_out:%d)", processItemIsolated_description.c_str() ,getStatus().c_str() , pipeFdPair1[0], au::status(c), timeout_setup ));
                 
 				error.set( au::str( "Third party operation '%s' has crashed - [ Error code %s ]", processItemIsolated_description.c_str() ,  au::status(c) ) );
                 return;
@@ -684,17 +684,21 @@ namespace samson
             close(pipeFdPair2[1]);
             
             //Trazas Goyo
-            LM_T(LmtIsolated,("Child closing pipe descriptors not used. Child closes pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n", pipeFdPair1[0], pipeFdPair2[1]));
-            LM_T(LmtIsolated,("Child closing pipe descriptors not used. Child uses pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
+            LM_T(LmtFileDescriptors,("Child closing pipe descriptors not used. Child closes pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n", pipeFdPair1[0], pipeFdPair2[1]));
+            LM_T(LmtFileDescriptors,("Child closing pipe descriptors not used. Child uses pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
 
             int log_server_connection = au::getLogServerConnectionFd();
             
-            for ( int i = 3 ;  i < 1024 ; i++ )
-                if( ( i != pipeFdPair1[1] ) && ( i!= pipeFdPair2[0] ) && ( i!= logFd ) && ( i!= log_server_connection ) ) 
+
+            // Valgrind
+            // Warning: Invalid file descriptor 1014 in syscal close()
+            // So changing limit from 1024 to 1014
+            for ( int i = 3 ;  i < 1014 ; i++ )
+                if( ( i != pipeFdPair1[1] ) && ( i != pipeFdPair2[0] ) && ( i != logFd ) && ( i != log_server_connection ) )
                 {
                     
                     //Trazas Goyo
-                    //LM_T(LmtIsolated, ("Child closing descriptors but pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, logFd:%d. fd:%d\n", pipeFdPair1[1], pipeFdPair2[0], logFd, i));
+                    LM_T(LmtFileDescriptors, ("Child closing descriptors but pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, logFd:%d. fd:%d\n", pipeFdPair1[1], pipeFdPair2[0], logFd, i));
                     
                     close( i );
                 }
@@ -733,7 +737,7 @@ namespace samson
             close(pipeFdPair2[0]);
             
             //Trazas Goyo
-            LM_T(LmtIsolated,  ("Child closing used pipe descriptors because finished. pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
+            LM_T(LmtFileDescriptors,  ("Child closing used pipe descriptors because finished. pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
         }
         
         LM_T(LmtIsolated, ("Finishing runBackgroundProcessRun..."));

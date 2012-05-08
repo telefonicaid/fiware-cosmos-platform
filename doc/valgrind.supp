@@ -1,0 +1,1726 @@
+{
+   <mongo_01>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo6RamLogC1ESs
+   fun:_GLOBAL__I_version.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_02>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo13MutexDebuggerC1Ev
+   fun:_GLOBAL__I_vars.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_03>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo16DBConnectionPoolC1Ev
+   fun:_GLOBAL__I_shardconnection.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_04>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt6vectorIPN5mongo12PeriodicTaskESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_
+   fun:_ZN5mongo12PeriodicTask6Runner3addEPS0_
+   fun:_ZN5mongo16DBConnectionPoolC1Ev
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_05>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo16DBConnectionPoolC1Ev
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_06>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo13BackgroundJobC1Eb
+   fun:_ZN5mongo12PeriodicTaskC1Ev
+   fun:_ZN5mongo16DBConnectionPoolC1Ev
+   fun:_GLOBAL__I_shardconnection.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_07>
+   Memcheck:Leak
+   fun:_Znwm
+   obj:/usr/lib64/libboost_thread-mt.so.5
+   fun:_ZN5boost6detail16add_new_tss_nodeEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPv
+   fun:_ZN5boost6detail12set_tss_dataEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPvb
+   fun:_ZN5boost6spirit4impl14get_definitionIN5mongo11JsonGrammarENS0_14parser_contextINS0_5nil_tEEENS0_7scannerIPKcNS0_16scanner_policiesINS0_24skipper_iteration_policyINS0_16iteration_policyEEENS0_12match_policyENS0_13action_policyEEEEEEERNT_10definitionIT1_EEPKNS0_7grammarISJ_T0_EE
+   fun:_ZN5mongo8fromjsonEPKcPi
+   fun:_GLOBAL__I_dbclient.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_08>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo13MutexDebuggerC1Ev
+   fun:_GLOBAL__I_vars.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_09>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN5mongo7CommandC1EPKcbS2_
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_10>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN5mongo7CommandC1EPKcbS2_
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_11>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN5mongo7CommandC1EPKcbS2_
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_12>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN5mongo7CommandC1EPKcbS2_
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_13>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo13BackgroundJobC1Eb
+   fun:_ZN5mongo12PeriodicTaskC1Ev
+   fun:_ZN5mongo16DBConnectionPoolC1Ev
+   fun:_GLOBAL__I_shardconnection.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_14>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo5mutexC1EPKc
+   fun:_GLOBAL__I_listen.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_15>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo6RamLogC1ESs
+   fun:_GLOBAL__I_version.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_16>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo13MutexDebuggerC1Ev
+   fun:_GLOBAL__I_vars.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_17>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo7CommandC1EPKcbS2_
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_18>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo7CommandC1EPKcbS2_
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_19>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo7CommandEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo7CommandEESt10_Select1stIS5_ESt4lessISsESaIS5_EE16_M_insert_uniqueERKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo7CommandEESt10_Select1stIS5_ESt4lessISsESaIS5_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS5_ERKS5_
+   fun:_ZN5mongo7CommandC1EPKcbS2_
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_19>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo7CommandEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo7CommandEESt10_Select1stIS5_ESt4lessISsESaIS5_EE16_M_insert_uniqueERKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo7CommandEESt10_Select1stIS5_ESt4lessISsESaIS5_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS5_ERKS5_
+   fun:_ZN5mongo7CommandC1EPKcbS2_
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_20>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo7CommandEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo7CommandEESt10_Select1stIS5_ESt4lessISsESaIS5_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS5_ERKS5_
+   fun:_ZN5mongo7CommandC1EPKcbS2_
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_21>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo7CommandEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo7CommandEESt10_Select1stIS5_ESt4lessISsESaIS5_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS5_ERKS5_
+   fun:_ZN5mongo7CommandC1EPKcbS2_
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_22>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo7CommandEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo7CommandEESt10_Select1stIS5_ESt4lessISsESaIS5_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS5_ERKS5_
+   fun:_ZN5mongo7CommandC1EPKcbS2_
+   fun:_GLOBAL__I_connpool.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_23>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo6RamLogC1ESs
+   fun:_GLOBAL__I_version.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_24>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo6RamLogEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo6RamLogEESt10_Select1stIS5_ESt4lessISsESaIS5_EE16_M_insert_uniqueERKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo6RamLogEESt10_Select1stIS5_ESt4lessISsESaIS5_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS5_ERKS5_
+   fun:_ZN5mongo6RamLogC1ESs
+   fun:_GLOBAL__I_version.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_25>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo12PeriodicTaskC1Ev
+   fun:_ZN5mongo16DBConnectionPoolC1Ev
+   fun:_GLOBAL__I_shardconnection.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <boost_01>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost6detail16add_new_tss_nodeEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPv
+   fun:_ZN5boost6detail12set_tss_dataEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPvb
+   fun:_ZN5boost19thread_specific_ptrIN5mongo9LogstreamEED1Ev
+   fun:exit
+   fun:(below main)
+}
+{
+   <boost_02>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost6detail16add_new_tss_nodeEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPv
+   fun:_ZN5boost6detail12set_tss_dataEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPvb
+   fun:_ZN5mongo16ThreadLocalValueISsED1Ev
+   fun:exit
+   fun:(below main)
+}
+{
+   <boost_03>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost6detail16add_new_tss_nodeEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPv
+   fun:_ZN5boost6detail12set_tss_dataEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPvb
+   fun:_ZN5boost19thread_specific_ptrIN5mongo17ClientConnectionsEED1Ev
+   fun:exit
+   fun:(below main)
+}
+{
+   <mongo_26>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt6vectorIPN5mongo8UnitTestESaIS2_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS2_S4_EERKS2_
+   fun:_GLOBAL__I_queryutil.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <boost_04>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt8_Rb_treeIPKvSt4pairIKS1_N5boost6detail13tss_data_nodeEESt10_Select1stIS7_ESt4lessIS1_ESaIS7_EE10_M_insert_EPKSt18_Rb_tree_node_baseSG_RKS7_
+   fun:_ZN5boost6detail16add_new_tss_nodeEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPv
+   fun:_ZN5boost6detail12set_tss_dataEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPvb
+   fun:_ZN5boost19thread_specific_ptrIxED1Ev
+   fun:exit
+   fun:(below main)
+}
+{
+   <boost_05>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5boost6detail16add_new_tss_nodeEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPv
+   fun:_ZN5boost6detail12set_tss_dataEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPvb
+   fun:_ZN5mongo15LastErrorHolderD1Ev
+   fun:exit
+   fun:(below main)
+}
+{
+   <mongo_27>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo13BackgroundJobC1Eb
+   fun:_ZN5mongo12PeriodicTaskC1Ev
+   fun:_ZN5mongo16DBConnectionPoolC1Ev
+   fun:_GLOBAL__I_shardconnection.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_28>
+   Memcheck:Leak
+   fun:_Znwm
+   obj:/usr/lib64/libboost_thread-mt.so.5
+   fun:_ZN5boost6detail16add_new_tss_nodeEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPv
+   fun:_ZN5boost6detail12set_tss_dataEPKvNS_10shared_ptrINS0_20tss_cleanup_functionEEEPvb
+   fun:_ZN5boost6spirit4impl14get_definitionIN5mongo11JsonGrammarENS0_14parser_contextINS0_5nil_tEEENS0_7scannerIPKcNS0_16scanner_policiesINS0_24skipper_iteration_policyINS0_16iteration_policyEEENS0_12match_policyENS0_13action_policyEEEEEEERNT_10definitionIT1_EEPKNS0_7grammarISJ_T0_EE
+   fun:_ZN5mongo8fromjsonEPKcPi
+   fun:_GLOBAL__I_dbclient.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_29>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN5mongo8Security4initEv
+   fun:_GLOBAL__I_nonce.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_30>
+   Memcheck:Leak
+   fun:malloc
+   fun:__fopen_internal
+   fun:_ZNSt12__basic_fileIcE4openEPKcSt13_Ios_Openmodei
+   fun:_ZNSt13basic_filebufIcSt11char_traitsIcEE4openEPKcSt13_Ios_Openmode
+   fun:_ZN5mongo8Security4initEv
+   fun:_GLOBAL__I_nonce.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_31>
+   Memcheck:Leak
+   fun:_Znam
+   fun:_ZNSt13basic_filebufIcSt11char_traitsIcEE27_M_allocate_internal_bufferEv
+   fun:_ZNSt13basic_filebufIcSt11char_traitsIcEE4openEPKcSt13_Ios_Openmode
+   fun:_ZN5mongo8Security4initEv
+   fun:_GLOBAL__I_nonce.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_32>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_GLOBAL__I_ramlog.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_33>
+   Memcheck:Leak
+   fun:malloc
+   fun:_ZN5boost6detail25get_once_per_thread_epochEv
+   fun:_ZN5boost9call_onceIPFvvEEEvRNS_9once_flagET_
+   fun:_ZN5boost6spirit4impl19object_with_id_baseINS1_11grammar_tagEmE17acquire_object_idEv
+   fun:_ZN5mongo8fromjsonEPKcPi
+   fun:_GLOBAL__I_dbclient.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_34>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_GLOBAL__I_listen.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_35>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_GLOBAL__I_text.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_36>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_GLOBAL__I_ramlog.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_37>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_GLOBAL__I_message_port.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_38>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_GLOBAL__I_version.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_39>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_GLOBAL__I_listen.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_40>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo6RamLogEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsPN5mongo6RamLogEESt10_Select1stIS5_ESt4lessISsESaIS5_EE17_M_insert_unique_ESt23_Rb_tree_const_iteratorIS5_ERKS5_
+   fun:_ZN5mongo6RamLogC1ESs
+   fun:_GLOBAL__I_ramlog.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_41>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_GLOBAL__I_message_port.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_42>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_GLOBAL__I_vars.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <mongo_43>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_GLOBAL__I_version.cpp
+   obj:/usr/lib64/libmongoclient.so
+   obj:/usr/lib64/libmongoclient.so
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <uninitialized_01>
+   Memcheck:Value8
+   fun:_itoa_word
+   fun:vfprintf
+   fun:vsnprintf
+   fun:_ZN2au3strEPKcz
+   fun:_ZN6samson6stream5BlockC1EPN6engine19BufferListContainerE
+   fun:_ZN6samson6stream9BlockList11createBlockEPN6engine19BufferListContainerE
+   fun:_ZN6samson6stream17BufferAccumulator5flushEv
+   fun:_ZN6samson6stream17BufferAccumulator4pushEPN6engine6BufferE
+   fun:_ZN6samson6stream5Queue4pushEPN6engine6BufferE
+   fun:_ZN6samson6stream13StreamManager9addBufferESsPN6engine6BufferE
+   fun:_ZN6samson12SamsonWorker7receiveEPNS_6PacketE
+   fun:_ZN6samson26PacketReceivedNotification3runEv
+}
+{
+   <uninitialized_02>
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:_ZN2au8writeGPBIN6samson7network22MessageProcessPlatformEEENS_6StatusEiPT_
+   fun:_ZN6samson19ProcessItemIsolated26sendMessageProcessPlatformEPNS_7network22MessageProcessPlatformE
+   fun:_ZN6samson19ProcessItemIsolated23runBackgroundProcessRunEv
+   fun:_ZN6samson19ProcessItemIsolated3runEv
+   fun:_ZN6engine14runProcessItemEPv
+   fun:_ZN2au14run_ThreadInfoEPv
+   fun:start_thread
+   fun:clone
+}
+{
+   <uninitialized_03>
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:_ZN2au8writeGPBIN6samson7network22MessagePlatformProcessEEENS_6StatusEiPT_
+   fun:_ZN6samson19ProcessItemIsolated19runExchangeMessagesEv
+   fun:_ZN6samson19ProcessItemIsolated3runEv
+   fun:_ZN6engine14runProcessItemEPv
+   fun:_ZN2au14run_ThreadInfoEPv
+   fun:start_thread
+   fun:clone
+}
+{
+   <uninitialized_04>
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:_ZN2au8writeGPBIN6samson7network22MessageProcessPlatformEEENS_6StatusEiPT_
+   fun:_ZN6samson19ProcessItemIsolated26sendMessageProcessPlatformEPNS_7network22MessageProcessPlatformE
+   fun:_ZN6samson19ProcessItemIsolated8sendCodeEi
+   fun:_ZN6samson13ProcessWriter11flushBufferEb
+   fun:_ZN6samson15ProcessIsolated11runIsolatedEv
+   fun:_ZN6samson19ProcessItemIsolated23runBackgroundProcessRunEv
+   fun:_ZN6samson19ProcessItemIsolated3runEv
+   fun:_ZN6engine14runProcessItemEPv
+   fun:_ZN2au14run_ThreadInfoEPv
+   fun:start_thread
+   fun:clone
+}
+{
+   <uninitialized_05>
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:_ZN2au8writeGPBIN6samson7network22MessagePlatformProcessEEENS_6StatusEiPT_
+   fun:_ZN6samson19ProcessItemIsolated29processProcessPlatformMessageEPNS_7network22MessageProcessPlatformE
+   fun:_ZN6samson19ProcessItemIsolated19runExchangeMessagesEv
+   fun:_ZN6samson19ProcessItemIsolated3runEv
+   fun:_ZN6engine14runProcessItemEPv
+   fun:_ZN2au14run_ThreadInfoEPv
+   fun:start_thread
+   fun:clone
+}
+{
+   <uninitialized_06>
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:_ZN2au8writeGPBIN6samson7network22MessageProcessPlatformEEENS_6StatusEiPT_
+   fun:_ZN6samson19ProcessItemIsolated26sendMessageProcessPlatformEPNS_7network22MessageProcessPlatformE
+   fun:_ZN6samson19ProcessItemIsolated23runBackgroundProcessRunEv
+   fun:_ZN6samson19ProcessItemIsolated3runEv
+   fun:_ZN6engine14runProcessItemEPv
+   fun:_ZN2au14run_ThreadInfoEPv
+   fun:start_thread
+   fun:clone
+}
+{
+   <uninitialized_07>
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:_ZN2au8writeGPBIN6samson7network22MessagePlatformProcessEEENS_6StatusEiPT_
+   fun:_ZN6samson19ProcessItemIsolated29processProcessPlatformMessageEPNS_7network22MessageProcessPlatformE
+   fun:_ZN6samson19ProcessItemIsolated19runExchangeMessagesEv
+   fun:_ZN6samson19ProcessItemIsolated3runEv
+   fun:_ZN6engine14runProcessItemEPv
+   fun:_ZN2au14run_ThreadInfoEPv
+   fun:start_thread
+   fun:clone
+}
+{
+   <uninitialized_08>
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:_ZN2au8writeGPBIN6samson7network22MessageProcessPlatformEEENS_6StatusEiPT_
+   fun:_ZN6samson19ProcessItemIsolated26sendMessageProcessPlatformEPNS_7network22MessageProcessPlatformE
+   fun:_ZN6samson19ProcessItemIsolated23runBackgroundProcessRunEv
+   fun:_ZN6samson19ProcessItemIsolated3runEv
+   fun:_ZN6engine14runProcessItemEPv
+   fun:_ZN2au14run_ThreadInfoEPv
+   fun:start_thread
+   fun:clone
+}
+{
+   <uninitialized_09>
+   Memcheck:Param
+   write(buf)
+   obj:/lib64/libpthread-2.12.so
+   fun:_ZN2au8writeGPBIN6samson7network22MessageProcessPlatformEEENS_6StatusEiPT_
+   fun:_ZN6samson19ProcessItemIsolated26sendMessageProcessPlatformEPNS_7network22MessageProcessPlatformE
+   fun:_ZN6samson19ProcessItemIsolated8sendCodeEi
+   fun:_ZN6samson13ProcessWriter11flushBufferEb
+   fun:_ZN6samson15ProcessIsolated11runIsolatedEv
+   fun:_ZN6samson19ProcessItemIsolated23runBackgroundProcessRunEv
+   fun:_ZN6samson19ProcessItemIsolated3runEv
+   fun:_ZN6engine14runProcessItemEPv
+   fun:_ZN2au14run_ThreadInfoEPv
+   fun:start_thread
+   fun:clone
+}
+{
+   <dlopen_01>
+   Memcheck:Leak
+   fun:malloc
+   fun:local_strdup
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_error
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+}
+{
+   <dlopen_02>
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_error
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+}
+{
+   <dlopen_03>
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_lookup_symbol_x
+   fun:_dl_relocate_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:_ZN6samson14ModulesManager9addModuleESs
+   fun:_ZN6samson14ModulesManager23addModulesFromDirectoryESs
+}
+{
+   <dlopen_04>
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:_ZN6samson14ModulesManager9addModuleESs
+}
+{
+   <dlopen_05>
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   fun:_ZN6samson14ModulesManager9addModuleESs
+   fun:_ZN6samson14ModulesManager23addModulesFromDirectoryESs
+   fun:_ZN6samson14ModulesManager10addModulesEv
+}
+{
+   <dlopen_06>
+   Memcheck:Leak
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_error
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_error
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_error
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_ZL12paConfigInitv
+   fun:_Z8paConfigPKcPKvS2_
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_ZL12paConfigInitv
+   fun:_Z8paConfigPKcPKvS2_
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z7paParseP10PaArgumentiPPcibPKc
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z8paConfigPKcPKvS2_
+   fun:main
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6google8protobuf14DescriptorPoolC1EPNS0_18DescriptorDatabaseEPNS1_14ErrorCollectorE
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   fun:pthread_once
+   fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6google8protobuf8internal21InitShutdownFunctionsEv
+   fun:pthread_once
+   fun:_ZN6google8protobuf8internal10OnShutdownEPFvvE
+   fun:pthread_once
+   fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+   obj:*
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z8paConfigPKcPKvS2_
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z8paConfigPKcPKvS2_
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z7paParseP10PaArgumentiPPcibPKc
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_ZL12paConfigInitv
+   fun:_Z8paConfigPKcPKvS2_
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z7paParseP10PaArgumentiPPcibPKc
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z7paParseP10PaArgumentiPPcibPKc
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z8paConfigPKcPKvS2_
+   fun:main
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6google8protobuf8internal21InitShutdownFunctionsEv
+   fun:pthread_once
+   fun:_ZN6google8protobuf8internal10OnShutdownEPFvvE
+   fun:pthread_once
+   fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+   obj:*
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt3tr110_HashtableIPKcSt4pairIKS2_PFvRKSsEESaIS9_ESt10_Select1stIS9_EN6google8protobuf5streqENSE_4hashIS2_EENS_8__detail18_Mod_range_hashingENSI_20_Default_ranged_hashENSI_20_Prime_rehash_policyELb0ELb0ELb1EE16_M_insert_bucketERKS9_mm
+   fun:_ZN6google8protobuf14MessageFactory29InternalRegisterGeneratedFileEPKcPFvRKSsE
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z8paConfigPKcPKvS2_
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z8paConfigPKcPKvS2_
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt6vectorIPFvvESaIS1_EE13_M_insert_auxEN9__gnu_cxx17__normal_iteratorIPS1_S3_EERKS1_
+   fun:_ZN6google8protobuf8internal10OnShutdownEPFvvE
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson7network31protobuf_AddDesc_samson_2eprotoEv
+   fun:_ZN6samson7network42StaticDescriptorInitializer_samson_2eprotoC1Ev
+   fun:_Z41__static_initialization_and_destruction_0ii
+   fun:_GLOBAL__I_samson.pb.cc
+   obj:/opt/samson061/bin/samsonWorker
+   obj:/opt/samson061/bin/samsonWorker
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   fun:__libc_csu_init
+   fun:(below main)
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6google8protobuf8internal5MutexC1Ev
+   fun:_ZN6google8protobuf14DescriptorPoolC1EPNS0_18DescriptorDatabaseEPNS1_14ErrorCollectorE
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   fun:pthread_once
+   fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+   obj:*
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6google8protobuf8internal5MutexC1Ev
+   fun:_ZN6google8protobuf8internal21InitShutdownFunctionsEv
+   fun:pthread_once
+   fun:_ZN6google8protobuf8internal10OnShutdownEPFvvE
+   fun:pthread_once
+   fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6google8protobuf8internal5MutexC1Ev
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   fun:pthread_once
+   fun:_ZN6google8protobuf14MessageFactory29InternalRegisterGeneratedFileEPKcPFvRKSsE
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson19SetupItemCollection3addESsSsSsNS_14SamsonItemTypeE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson19SetupItemCollection3addESsSsSsNS_14SamsonItemTypeE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson19SetupItemCollection3addESsSsSsNS_14SamsonItemTypeE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson19SetupItemCollection3addESsSsSsNS_14SamsonItemTypeE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson19SetupItemCollection3addESsSsSsNS_14SamsonItemTypeE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson19SetupItemCollection3addESsSsSsNS_14SamsonItemTypeE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson19SetupItemCollection3addESsSsSsNS_14SamsonItemTypeE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson19SetupItemCollection3addESsSsSsNS_14SamsonItemTypeE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson19SetupItemCollection3addESsSsSsNS_14SamsonItemTypeE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson19SetupItemCollection3addESsSsSsNS_14SamsonItemTypeE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson19SetupItemCollection3addESsSsSsNS_14SamsonItemTypeE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6samson19SetupItemCollection3addESsSsSsNS_14SamsonItemTypeE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   fun:_ZNSs4_Rep8_M_cloneERKSaIcEm
+   fun:_ZNSsC1ERKSs
+   fun:_ZN6samson15cannonical_pathESs
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   fun:pthread_once
+   fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z8paConfigPKcPKvS2_
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z8paConfigPKcPKvS2_
+   fun:main
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsS0_IPKviEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsS0_IPKviEESt10_Select1stIS5_ESt4lessISsESaIS5_EE16_M_insert_uniqueERKS5_
+   fun:_ZN6google8protobuf24SimpleDescriptorDatabase15DescriptorIndexISt4pairIPKviEE7AddFileERKNS0_19FileDescriptorProtoES6_
+   fun:_ZN6google8protobuf25EncodedDescriptorDatabase3AddEPKvi
+   fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+   obj:*
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsS0_IPKviEESt10_Select1stIS5_ESt4lessISsESaIS5_EE10_M_insert_EPKSt18_Rb_tree_node_baseSE_RKS5_
+   fun:_ZNSt8_Rb_treeISsSt4pairIKSsS0_IPKviEESt10_Select1stIS5_ESt4lessISsESaIS5_EE16_M_insert_uniqueERKS5_
+   fun:_ZN6google8protobuf24SimpleDescriptorDatabase15DescriptorIndexISt4pairIPKviEE9AddSymbolERKSsS6_
+   fun:_ZN6google8protobuf24SimpleDescriptorDatabase15DescriptorIndexISt4pairIPKviEE7AddFileERKNS0_19FileDescriptorProtoES6_
+   fun:_ZN6google8protobuf25EncodedDescriptorDatabase3AddEPKvi
+   fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+   obj:*
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <paConfig>
+   Memcheck:Leak
+   fun:malloc
+   fun:strdup
+   fun:_Z8paConfigPKcPKvS2_
+   fun:main
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   fun:_ZNSs4_Rep8_M_cloneERKSaIcEm
+   fun:_ZNSsC1ERKSs
+   fun:_ZN6google8protobuf24SimpleDescriptorDatabase15DescriptorIndexISt4pairIPKviEE7AddFileERKNS0_19FileDescriptorProtoES6_
+   fun:_ZN6google8protobuf25EncodedDescriptorDatabase3AddEPKvi
+   fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+}
+{
+   <setup>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   obj:/usr/lib64/libstdc++.so.6.0.13
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN6samson11SamsonSetupC1ESsSs
+   fun:_ZN6samson11SamsonSetup4initESsSs
+   fun:main
+}
+{
+   <google>
+   Memcheck:Leak
+   fun:_Znwm
+   fun:_ZNSt3tr110_HashtableISsSsSaISsESt9_IdentityISsESt8equal_toISsEN6google8protobuf4hashISsEENS_8__detail18_Mod_range_hashingENSA_20_Default_ranged_hashENSA_20_Prime_rehash_policyELb0ELb1ELb1EE19_M_allocate_bucketsEm
+   fun:_ZN6google8protobuf14DescriptorPool6TablesC1Ev
+   fun:_ZN6google8protobuf14DescriptorPoolC1EPNS0_18DescriptorDatabaseEPNS1_14ErrorCollectorE
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   fun:pthread_once
+   fun:_ZN6google8protobuf14DescriptorPool24InternalAddGeneratedFileEPKvi
+   fun:_ZN6google8protobuf55protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eprotoEv
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:/usr/lib64/libprotobuf.so.6.0.0
+   obj:*
+}
+

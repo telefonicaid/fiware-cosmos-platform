@@ -2,6 +2,9 @@
 #include "LogServerChannel.h" // Own interface
 #define Char_to_int(x) ((x)-48)
 
+#include "logMsg/logMsg.h"                                              // LM_T
+#include "logMsg/traceLevels.h"            // LmtFileDescriptors, etc.
+
 namespace au 
 {
     LogServerChannel::LogServerChannel( std::string _name , int port , std::string _directory ) 
@@ -49,6 +52,7 @@ namespace au
                 
                 LM_V(("Opening log file %s" , current_file_name.c_str()));
                 int _fd = open( current_file_name.c_str() , O_CREAT | O_WRONLY , 0644 );
+                LM_T(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
                 
                 if( _fd < 0 )
                 {

@@ -13,6 +13,9 @@
 
 #include "au/mutex/TokenTaker.h"
 
+#include "logMsg/logMsg.h"                                              // LM_T
+#include "logMsg/traceLevels.h"            // LmtFileDescriptors, etc.
+
 #include "FileDescriptor.h" // Own interface
 
 namespace au {
@@ -23,6 +26,7 @@ namespace au {
         au::TokenTaker tt(&token);
         if( fd != -1 )
         {
+            LM_T(LmtFileDescriptors, ("Closing FileDescriptor fd:%d", fd));
             ::close(fd);
             fd = -1;
         }

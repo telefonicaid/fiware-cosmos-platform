@@ -49,7 +49,7 @@ namespace au
         }
 
         
-        // Connection mnagement
+        // Connection management
         void close();                 // Disconnect
         bool isDisconnected();        // Check if we are still connected
         

@@ -6,6 +6,9 @@
 
 #include "samson/module/ModulesManager.h"           // samson::ModulesManager
 
+#include "logMsg/logMsg.h"                                              // LM_T
+#include "logMsg/traceLevels.h"            // LmtFileDescriptors, etc.
+
 #include "SamsonFile.h"                             // Own interface
 
 namespace samson {
@@ -14,10 +17,12 @@ namespace samson {
     {
         fileName = _fileName;
         int fd = open( fileName.c_str() , O_RDONLY );
+        LM_T(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
         
         if( fd < 0 )
         {
             error.set("Not possible to open file");
+
             return;
         }
         
@@ -29,6 +34,8 @@ namespace samson {
         	LM_E(("Getting header: read only %d bytes (wanted to read %ld)\n", nb, (long int) sizeof(samson::KVHeader)));
             error.set(au::str("Getting header: read only %d bytes (wanted to read %ld)\n", nb, (long int) sizeof(samson::KVHeader)));
             close(fd);
+            LM_T(LmtFileDescriptors, ("Closing SamsonFile because error fd:%d", fd));
+            fd = -1;
             return;
         }
         
@@ -37,6 +44,8 @@ namespace samson {
         	LM_E(("Wrong magic number in header"));
             error.set("Wrong magic number in header");
             close(fd);
+            LM_T(LmtFileDescriptors, ("Closing SamsonFile because error fd:%d", fd));
+            fd = -1;
             return;
         }
         
@@ -65,7 +74,9 @@ namespace samson {
                 error.set( message.str() );
                 
                 std::cout << header.str() << "\n";
+                LM_T(LmtFileDescriptors, ("Closing SamsonFile because error fd:%d", fd));
                 close(fd);
+                fd = -1;
                 return;
             }
         }
@@ -84,7 +95,9 @@ namespace samson {
                 message << "File size: " << filestatus.st_size << " bytes\n";
                 
                 error.set( message.str() );
+                LM_T(LmtFileDescriptors, ("Closing SamsonFile because error fd:%d", fd));
                 close(fd);
+                fd = -1;
                 return;
             }
         }
@@ -92,14 +105,20 @@ namespace samson {
         // Get format
         format = header.getKVFormat(); 
 
+        LM_T(LmtFileDescriptors, ("Closing SamsonFile fd:%d", fd));
         close(fd);
+        fd = -1;
         return;
     }
     
     SamsonFile::~SamsonFile()
     {
         if( fd >= 0 )
+        {
+            LM_T(LmtFileDescriptors, ("Closing SamsonFile fd:%d", fd));
             close( fd );
+        }
+        fd = -1;
     }
     
     bool SamsonFile::hasError()

@@ -208,6 +208,7 @@ namespace au {
             std::string tmp_local_file = au::str("%s_%d" , local_file.c_str() , (int) getpid() );
 
             int fd = open( tmp_local_file.c_str() , O_WRONLY | O_CREAT , 0644 );
+            LM_T(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
             
             if( fd >= 0 )
             {
@@ -215,7 +216,7 @@ namespace au {
                 LM_LW(("Open local log file %s.",tmp_local_file.c_str() ));
             }
             else
-                LM_LW(("Not possible to open local log file %s. Logs will be definetilly lost",tmp_local_file.c_str() ));
+                LM_LW(("Not possible to open local log file %s. Logs will be definitely lost",tmp_local_file.c_str() ));
         }
     };
     

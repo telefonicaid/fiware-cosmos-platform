@@ -35,8 +35,6 @@ public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
                         poi = mobData.getPoi();
                     }
                     break;
-                case CLUSTER:
-                    break;
                 case NULL:
                     hasNulls = true;
                     break;

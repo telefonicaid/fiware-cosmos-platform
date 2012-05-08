@@ -29,8 +29,6 @@ public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
             switch (mobData.getType()) {
-                case POI:
-                    break;
                 case CLUSTER:
                     if (cluster == null) {
                         cluster = mobData.getCluster();

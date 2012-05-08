@@ -92,8 +92,10 @@ namespace samson {
             delilah_connect("console", host, port, user , password , &error );
             
             if ( error.isActivated() )
+	    {
+		LM_E(("Error connecting to host:%s at port:%d, user:%s, passwd:%s, with errorMessage:%s", host.c_str(), port, user.c_str(), password.c_str(), error.getMessage().c_str()));
                 showErrorMessage( error.getMessage() );
-            
+	    }
         }
 
         

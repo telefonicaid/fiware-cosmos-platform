@@ -130,6 +130,7 @@ namespace samson
 		struct dirent *dirp;
 		if((dp  = opendir(dir_name.c_str())) == NULL) {
 			//logError( "Error opening directory for modules " + dir_name );
+			LM_E(("Error opening directory for modules at dir_name:%s", dir_name.c_str()));
 			return;
 		}
 		
@@ -138,7 +139,11 @@ namespace samson
 			std::string path = dir_name + "/" + dirp->d_name;
 			
 			struct ::stat info;
-			stat(path.c_str(), &info);
+			if (stat(path.c_str(), &info) == -1)
+			{
+				LM_E(("Skipping file with path:%s because stat() failed", path.c_str()));
+				continue;
+			}
 			
 			if( S_ISREG(info.st_mode) )
 				addModule( path );

@@ -10,11 +10,14 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author logc
  */
 public class HadoopSshFileTest {
+    private Logger LOG = LoggerFactory.getLogger(HadoopSshFileTest.class);
     private Path foo;
     private Path dir;
     private HadoopSshFile hfoo;
@@ -33,7 +36,7 @@ public class HadoopSshFileTest {
             this.hdir = new HadoopSshFile("/tmp/user01/",
                     "user01", 1);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage());
         }
     }
 

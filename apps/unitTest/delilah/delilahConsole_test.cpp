@@ -21,7 +21,7 @@
 
 
 //Test void getInfo( std::ostringstream& output);
-TEST(delilahConsoleTest, getPrompt)
+TEST(delilahConsoleTest, DISABLED_getPrompt)
 {
     samson::DelilahConsole *delilah_console = init_delilah_test();
 

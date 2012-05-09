@@ -187,6 +187,11 @@ namespace au
                 TableCell* cell1 = get( column );
                 TableCell* cell2 = row->get( column );
 
+                if( !cell1 )
+                    return 1;
+                if( !cell2 )
+                    return -1;
+                
                 int c = cell1->compare(cell2);
 
                 if( c != 0 )

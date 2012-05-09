@@ -38,8 +38,7 @@ namespace samson {
             size_t scheduled_write_size;
             size_t scheduled_read_size;
             
-            size_t memory;                  // Total amount of memory used by all blocks
-            size_t max_memory;              // Maximum amount of memory to always kept
+            size_t max_memory;              // Maximum amount of memory to be used by this block manager
             
         public:
 
@@ -85,11 +84,6 @@ namespace samson {
         public:
             
             virtual void notify( engine::Notification* notification );
-
-        private:
-            
-            void _freeMemoryWithLowerPriorityBLocks( Block *b );
-
             
         public:
             

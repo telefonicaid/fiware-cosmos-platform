@@ -73,8 +73,6 @@ namespace samson {
             scheduled_write_size = 0;
             scheduled_read_size = 0;
 
-            memory = 0;
-            
             max_memory = (double)SamsonSetup::shared()->getUInt64("general.memory")*0.8;  // 60% of memory for block manager
 
             listen(notification_review_block_manager);
@@ -119,16 +117,10 @@ namespace samson {
         void BlockManager::insert( Block* b )
         {
             // Insert the new block in the right position
-        	LM_T(LmtBlockManager,("Inserting block with memory(%lu); max_memory(%lu), block:'%s'", memory, max_memory, b->str().c_str()));
+        	LM_T(LmtBlockManager,("Inserting block '%s'", b->str().c_str()));
 
             // Insert block at the end ( will be resorted before considering reading or writing )
             blocks.push_back(b);
-            
-            // Increase the amount of memory used by all blocks
-            if( b->isContentOnMemory() )
-                memory += b->size;
-            
-            LM_T(LmtBlockManager,("Inserted block with memory(%lu); max_memory(%lu), block:'%s'", memory, max_memory, b->str().c_str()));
             
             // Review where this block goes...
             review();
@@ -177,9 +169,9 @@ namespace samson {
         
         void BlockManager::review()
         {
+            // Get setup parameter to control review of BlockManager...
             size_t max_scheduled_write_size = SamsonSetup::shared()->getUInt64("stream.max_scheduled_write_size");
             size_t max_scheduled_read_size = SamsonSetup::shared()->getUInt64("stream.max_scheduled_read_size");
-            
             
             // No schedule new operations until all the previous one have finished
             if( scheduled_read_size > max_scheduled_read_size/2 )
@@ -188,6 +180,11 @@ namespace samson {
                 return;
             
             LM_T( LmtBlockManager , ("Reviewing block manager"));
+
+            
+            // --------------------------------------------------------------------------------
+            // Sort by priorities
+            // --------------------------------------------------------------------------------
             
             //au::ExecesiveTimeAlarm alarm("BlockManager::_review");
             {
@@ -201,25 +198,7 @@ namespace samson {
                 // Sort list of blocks according to id and min_task involved
                 blocks.sort( compare_blocks );
             }
-            
-            
-            // Sort list of blocks using a simple array 
-            // Fast alternative for sorting if necessary
-            /*
-            {
-                Block** tmp_blocks = (Block**) malloc( sizeof(Block*) * blocks.size() );
-                au::list<Block>::iterator it_blocks;
-                
-                int pos = 0;
-                for( it_blocks = blocks.begin() ; it_blocks != blocks.end() ;it_blocks++)
-                    tmp_blocks[pos++] = *it_blocks;
-                {
-                    au::ExecesiveTimeAlarm alarm("BlockManager::sort2" , 0.00 );
-                    qsort(tmp_blocks, blocks.size() , sizeof(Block*), compare_blocks2 );
-                }
-                free( tmp_blocks );
-            }
-             */
+
             
             
             // --------------------------------------------------------------------------------
@@ -240,15 +219,10 @@ namespace samson {
                         
                         // Schedule remove file
                         engine::DiskOperation * operation = 
-                              engine::DiskOperation::newRemoveOperation( block->getFileName() , getEngineId() );
+                        engine::DiskOperation::newRemoveOperation( block->getFileName() , getEngineId() );
                         engine::DiskManager::shared()->add( operation );
                         
                         LM_T(LmtBlockManager,("In check, removing block:'%s'", block->str().c_str()));
-                        if( block->isContentOnMemory() )
-                        {
-                            memory -= block->size;
-                            LM_T(LmtBlockManager,("Discounted memory for block with memory(%lu); max_memory(%lu), read block:'%s'", memory, max_memory, block->str().c_str()));
-                        }
                         
                         if( block->isWriting() || block->isReading() )
                             LM_X(1,("Not allowed to remove an object that is reading or writing..."));
@@ -256,10 +230,10 @@ namespace samson {
                         delete block;
                     }
                     else
-		    {
+                    {
                         //LM_T(LmtBlockManager,("In check, cannot remove block:'%s'", block->str().c_str()));
                         b++;
-		    }
+                    }
                 }
             }
             
@@ -268,7 +242,7 @@ namespace samson {
                 return;
             
             // --------------------------------------------------------------------------------
-            // Find the blocks that should be in memory
+            // Find the blocks that should be in memory ( all until "limit_block" )
             // --------------------------------------------------------------------------------
             LM_T( LmtBlockManager , ("Detect limit_block"));
             size_t accumulated_memory = 0;
@@ -311,11 +285,10 @@ namespace samson {
                     if( block->isReady() )  // Both on disk and on memory
                         if( !block->isLockedInMemory() )
                         {
-                            LM_T(LmtBlockManager,("With memory(%lu) > max_memory(%lu), Free block:'%s'", memory, max_memory, block->str().c_str()));
+                            LM_T(LmtBlockManager,("Free block:'%s'", block->str().c_str()));
                             
                             // Free block
                             block->freeBlock();
-                            memory -= block->size;
                         }
                 }
             }
@@ -332,18 +305,10 @@ namespace samson {
                 for ( b = blocks.rbegin() ; b != blocks.rend() ; b++ )
                 {
                     Block *block = *b;
-                    //
-                    // Stop when arrive to the limit block ( this should be in memory )
-                    //if( block == limit_block )
-		    //{
-			//LM_T(LmtBlockManager, ("Stops looking for write, because block_limit reached"));
-                        //break;
-		    //}
-                    
                     
                     if( block->isOnMemory() )
                     {
-                    	LM_T(LmtBlockManager,("With memory(%lu); max_memory(%lu), writing block:'%s'", memory, max_memory, block->str().c_str()));
+                    	LM_T(LmtBlockManager,("Schedule write for block:'%s'", block->str().c_str()));
                         
                         // Schedule write
                         block->write();
@@ -354,7 +319,7 @@ namespace samson {
                         scheduled_write_size += operation_size;
                         
                         LM_T(LmtBlockManager,("Write block of size %s" , au::str( operation_size ).c_str() ));
-
+                        
                         // No continue for more writes
                         if ( scheduled_write_size >= max_scheduled_write_size )
                             break;
@@ -378,27 +343,12 @@ namespace samson {
 
                     if( block->isOnDisk() ) // Needed to be loaded...
                     {
-                    	LM_T(LmtBlockManager,("Trying to read block with memory(%lu); max_memory(%lu), block:'%s'", memory, max_memory, block->str().c_str()));
-
-                        // Only read the block if there is memory of we can free lower priority blocks
-                        if( (memory + block->size) >= max_memory )
-                        {
-                        	LM_T(LmtBlockManager,("Trying to free memory for block with memory(%lu); max_memory(%lu), block:'%s'", memory, max_memory, block->str().c_str()));
-                            //_freeMemoryWithLowerPriorityBLocks( block );
-                        }
-                        
-                        if( (memory + block->size) > max_memory )
-                        {
-                        	LM_T(LmtBlockManager,("Stop trying to read block with memory(%lu); max_memory(%lu), block:'%s', because no memory", memory, max_memory, block->str().c_str()));
-                            break;  // It is not possible this new read
-                        }
-                        
+                    	LM_T(LmtBlockManager,("Trying to read block'%s'", block->str().c_str()));
                         
                         // Read the block
-
                         block->read();
-                        memory += block->size;
-                        LM_T(LmtBlockManager,("With memory(%lu); max_memory(%lu), read block:'%s'", memory, max_memory, block->str().c_str()));
+
+                        LM_T(LmtBlockManager,("Scheduling read for block:'%s'", block->str().c_str()));
 
                         // Get size
                         size_t operation_size = block->getSize();
@@ -411,43 +361,14 @@ namespace samson {
                             break;
                     }
                     
-                    
+                    // No schedule read operations over the block limit
                     if( block == limit_block )
-		    {
-			LM_T(LmtBlockManager, ("Stops looking for read, because block_limit reached"));
+                    {
+                        LM_T(LmtBlockManager, ("Stops looking for read, because block_limit reached"));
                         break; // Not schedule reads on blocks that are not suppose to be on memory
-		    }
+                    }
                 }
             }
-            
-        }
-        
-        
-        void BlockManager::_freeMemoryWithLowerPriorityBLocks( Block *block )
-        {
-            std::list<Block*>::reverse_iterator b;
-            for ( b = blocks.rbegin() ; b != blocks.rend() ; b++ )
-            {
-                Block *block_to_be_free = *b;
-
-                if( block_to_be_free == block )
-                    continue;     // There are no more blocks with lower priority
-                
-                if( block_to_be_free->isReady() )  // Both on disk and on memory
-                {
-
-                    if( !block_to_be_free->isLockedInMemory() ) // Check that is not locked ( using in a process )
-                    {
-                    	LM_T(LmtBlockManager,("_freeMemoryWithLowerPriorityBLocks. With memory(%lu); max_memory(%lu), Free block:'%s'", memory, max_memory, block_to_be_free->str().c_str()));
-                        block_to_be_free->freeBlock();
-                        memory -= block_to_be_free->size;
-
-                        if( (memory + block->size ) < max_memory )
-                            return;     // Enough memory for the block we want to read
-                    }
-                    
-                }
-            }                
             
         }
 
@@ -458,7 +379,6 @@ namespace samson {
             au::xml_simple( output , "scheduled_write_size" , scheduled_write_size );
             au::xml_simple( output , "scheduled_read_size"  , scheduled_read_size );
 
-            au::xml_simple( output , "memory" , memory );
             au::xml_simple( output , "max_memory" , max_memory );
             
             

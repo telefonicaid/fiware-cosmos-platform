@@ -50,8 +50,10 @@ namespace samson {
         
         Block* BlockList::createBlock( engine::Buffer *buffer )
         {
+            // Temporal list to contain the list of buffers
             engine::BufferListContainer buffer_list_container;
             buffer_list_container.push_back(buffer);
+            
             return createBlock(&buffer_list_container);
         }
         
@@ -59,7 +61,7 @@ namespace samson {
         Block* BlockList::createBlock( engine::BufferListContainer *buffer_list_container )
         {
             
-            // create a new block
+            // Create a new block
             Block *block  = new Block( buffer_list_container );
             LM_T(LmtCleanup2, ("Creating a block"));
 

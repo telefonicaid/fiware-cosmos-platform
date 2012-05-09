@@ -42,7 +42,7 @@ namespace samson {
         };
         
         
-#define MAX_TIME_TO_FLUSH_BUFFERS 0.5   // In time
+#define MAX_TIME_TO_FLUSH_BUFFERS 0.5        // In time
 #define MAX_SIZE_TO_FLUSH_BUFFERS 10000000   // In bytes
         
 
@@ -105,7 +105,7 @@ namespace samson {
                 double time = cronometer_review.diffTime();
                 
                 if( accumulated_size > 0 )
-                    if( ( accumulated_size > 10000000 ) || ( time > MAX_TIME_TO_FLUSH_BUFFERS ) )
+                    if( ( accumulated_size > MAX_SIZE_TO_FLUSH_BUFFERS ) || ( time > MAX_TIME_TO_FLUSH_BUFFERS ) )
                         flush();
             }
             

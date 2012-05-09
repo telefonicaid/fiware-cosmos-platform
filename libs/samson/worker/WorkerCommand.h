@@ -73,6 +73,9 @@ namespace samson {
         // Environment properties
         Environment enviroment;
         
+        // Flag to flush queues at the end of the operation
+        bool flush_queues;
+        
         // Flag to indicate that this command is still pending to be executed
         bool pending_to_be_executed;
         

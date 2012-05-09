@@ -42,6 +42,9 @@ namespace samson {
         };
         
         
+#define MAX_TIME_TO_FLUSH_BUFFERS 0.5   // In time
+#define MAX_SIZE_TO_FLUSH_BUFFERS 10000000   // In bytes
+        
 
         class Queue;
         
@@ -67,7 +70,9 @@ namespace samson {
             
             void push( engine::Buffer* buffer )
             {
-                if( buffer->getSize() > 10000000 )
+                /*
+                // If the incomming block is large enougth, we will create a block with it ( flushing previous buffers, if any )
+                if( buffer->getSize() > MAX_SIZE_TO_FLUSH_BUFFERS )
                 {
                     // Flush previous buffers if any
                     flush(); 
@@ -77,14 +82,15 @@ namespace samson {
                     
                     // Flush a new buffer with the new block
                     flush();
-                    
                     return;
                 }
+                 */
                 
-                // Init the clock if we are the first one
+                // Init the clock if we are the first one...
                 if( buffer_list_container.getNumBuffers() == 0 )
                     cronometer_review.reset();
                 
+                // Push the new buffer to the list
                 buffer_list_container.push_back(buffer);
                 
                 // Review if the block has to be emited
@@ -96,10 +102,10 @@ namespace samson {
                 // Review is called when engine has nothing to do... just flushing
                 // Review if new blocks should be created
                 size_t accumulated_size = buffer_list_container.getTotalSize();
-                int time = cronometer_review.diffTimeInSeconds();
+                double time = cronometer_review.diffTime();
                 
                 if( accumulated_size > 0 )
-                    if( ( accumulated_size > 10000000 ) || ( time > 0.5 ) )
+                    if( ( accumulated_size > 10000000 ) || ( time > MAX_TIME_TO_FLUSH_BUFFERS ) )
                         flush();
             }
             

@@ -181,6 +181,7 @@ namespace samson {
         // Original value for the flags
         pending_to_be_executed =  true;
         finished = false;
+        flush_queues = false;
         
         // No pending process at the moment
         num_pending_processes = 0;
@@ -225,11 +226,14 @@ namespace samson {
         cmd.set_flag_boolean("v");
         cmd.set_flag_boolean("vv");
         cmd.set_flag_boolean("vvv");
+        cmd.set_flag_boolean("flush");
         
         cmd.set_flag_boolean("new");
         cmd.set_flag_boolean("remove");
         cmd.set_flag_string("prefix", "");
         cmd.parse( command );
+        
+        flush_queues = cmd.get_flag_bool("flush");
         
         std::string prefix = cmd.get_flag_string("prefix");
         
@@ -239,6 +243,7 @@ namespace samson {
             return;
         }
         
+        // Set the main command
         std::string main_command = cmd.get_argument(0);
 
         if( main_command == "init_stream" )
@@ -1616,8 +1621,9 @@ typedef struct LogLineInfo
             return;
         }
         
-        // Flush all generated buffers if necessary
-        streamManager->flushBuffers();
+        // Flush all generated buffers if necessary ( only in run-like commands )
+        if( flush_queues )
+            streamManager->flushBuffers();
         
         if ( notify_finish )
         {

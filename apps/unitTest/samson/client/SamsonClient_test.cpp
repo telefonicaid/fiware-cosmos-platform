@@ -17,6 +17,13 @@
 #include "samson/common/ports.h"
 #include "samson/client/SamsonClient.h"
 #include "au/ErrorManager.h"
+#include "au/ThreadManager.h"
+
+#include "engine/Engine.h"
+#include "engine/DiskManager.h"
+#include "engine/ProcessManager.h"
+#include "engine/MemoryManager.h"
+#include "samson/module/ModulesManager.h"
 
 class SamsonClientTest : public ::testing::Test
 {
@@ -35,12 +42,19 @@ class SamsonClientTest : public ::testing::Test
 
 		}
 
-		/*
 		virtual void TearDown()
 		{
-			// Kill SamsonClient
+		    engine::Engine::stop();                  // Stop engine
+		    engine::DiskManager::stop();             // Stop disk manager
+		    engine::ProcessManager::stop();          // Stop process manager
+
+		    //au::ThreadManager::wait_all_threads();   // Wait all threads to finsih
+
+		    engine::DiskManager::destroy();          // Destroy Disk manager
+		    engine::MemoryManager::destroy();        // Destroy Memory manager
+		    engine::ProcessManager::destroy();       // Destroy Process manager
+		    engine::Engine::destroy();               // Destroy Engine
 		}
-		*/
 
 		samson::SamsonClient *samson_client;
 		std::string controller;
@@ -51,12 +65,21 @@ class SamsonClientTest : public ::testing::Test
 
 };
 
-//Test void getInfo( std::ostringstream& output);
+/* Test void initConnection( au::ErrorManager * error
+                    , std::string samson_node
+                    , int port = SAMSON_WORKER_PORT
+                    , std::string user = "anonymous"
+                    , std::string password = "anonymous"
+                    );*/
 TEST_F(SamsonClientTest, initConnection)
 {
-
 	samson_client->initConnection( &error, controller , port , user , password );
 	ASSERT_FALSE(error.isActivated());
 }
 
+TEST_F(SamsonClientTest, DISABLED_connection_ready)
+{
+	samson_client->initConnection( &error, controller , port , user , password );
+	ASSERT_TRUE(samson_client->connection_ready());
+}
 

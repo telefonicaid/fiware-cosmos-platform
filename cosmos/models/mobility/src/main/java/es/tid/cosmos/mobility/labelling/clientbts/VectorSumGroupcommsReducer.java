@@ -3,25 +3,28 @@ package es.tid.cosmos.mobility.labelling.clientbts;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 
 /**
- *
+ * Input: <NodeBts, Int>
+ * Output: <TwoInt, BtsCounter>
+ * 
  * @author dmicol
  */
 public class VectorSumGroupcommsReducer extends Reducer<
-        ProtobufWritable<NodeBts>, IntWritable, ProtobufWritable<TwoInt>,
-        ProtobufWritable<BtsCounter>> {
+        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>,
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<IntWritable> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(NodeBts.class);
         final NodeBts nodeBts = key.get();
@@ -29,12 +32,12 @@ public class VectorSumGroupcommsReducer extends Reducer<
                 nodeBts.getUserId(), nodeBts.getPlaceId());
         
         int ncoms = 0;
-        for (IntWritable value : values) {
-            ncoms += value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            ncoms += value.get().getInt();
         }
-        ProtobufWritable<BtsCounter> btsCounter = BtsCounterUtil.createAndWrap(
-                nodeBts.getPlaceId(), nodeBts.getWeekday(), nodeBts.getRange(),
-                ncoms);
-        context.write(twoInt, btsCounter);
+        BtsCounter btsCounter = BtsCounterUtil.create(nodeBts.getPlaceId(),
+                nodeBts.getWeekday(), nodeBts.getRange(), ncoms);
+        context.write(twoInt, MobDataUtil.createAndWrap(btsCounter));
     }
 }

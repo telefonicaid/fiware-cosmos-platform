@@ -8,22 +8,24 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
-import es.tid.cosmos.mobility.data.TwoIntUtil;
 
 /**
- *
+ * Input: <Long, TwoInt>
+ * Output: <Long, TwoInt>
+ * 
  * @author dmicol
  */
 public class AdjSwapPoiIdSt1Reducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<TwoInt>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<TwoInt> pairPoisList = new LinkedList<TwoInt>();
-        LinkedList<TwoInt> pairIndexList = new LinkedList<TwoInt>();
+        TwoInt lastPairIndex = null;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
@@ -32,7 +34,7 @@ public class AdjSwapPoiIdSt1Reducer extends Reducer<LongWritable,
                     pairPoisList.add(mobData.getTwoInt());
                     break;
                 case 1:
-                    pairIndexList.add(mobData.getTwoInt());
+                    lastPairIndex = mobData.getTwoInt();
                     break;
                 default:
                     throw new IllegalStateException("Unexpected MobData ID: "
@@ -42,11 +44,11 @@ public class AdjSwapPoiIdSt1Reducer extends Reducer<LongWritable,
         
         for (TwoInt pairPois : pairPoisList) {
             TwoInt.Builder outputPairPois = TwoInt.newBuilder(pairPois);
-            if (!pairIndexList.isEmpty()) {
-                outputPairPois.setNum1(pairIndexList.getLast().getNum2());
+            if (lastPairIndex != null) {
+                outputPairPois.setNum1(lastPairIndex.getNum2());
             }  
             context.write(new LongWritable(outputPairPois.getNum2()),
-                          TwoIntUtil.wrap(outputPairPois.build()));
+                          MobDataUtil.createAndWrap(outputPairPois.build()));
         }
     }
 }

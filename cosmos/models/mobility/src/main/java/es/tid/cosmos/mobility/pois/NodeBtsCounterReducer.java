@@ -4,41 +4,36 @@ import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 
 /**
+ * Input: <NodeBts, Null>
+ * Output: <Long, BtsCounter>
  *
  * @author dmicol
  */
 public class NodeBtsCounterReducer extends Reducer<
-        ProtobufWritable<NodeBts>, NullWritable, LongWritable,
-        ProtobufWritable<BtsCounter>> {
-    private LongWritable userId;
-    
-    @Override
-    public void setup(Context context) {
-        this.userId = new LongWritable();
-    }
-    
+        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>, LongWritable,
+        ProtobufWritable<MobData>> {
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-                          Iterable<NullWritable> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         int count = 0;
-        for (NullWritable unused : values) {
+        for (ProtobufWritable<MobData> value : values) {
             count++;
         }
-
         key.setConverter(NodeBts.class);
         final NodeBts node = key.get();
-        this.userId.set(node.getUserId());
-        ProtobufWritable<BtsCounter> counter = BtsCounterUtil.createAndWrap(
-                node.getPlaceId(), node.getWeekday(), node.getRange(), count);
-        context.write(this.userId, counter);
+        BtsCounter counter = BtsCounterUtil.create(node.getPlaceId(),
+                node.getWeekday(), node.getRange(), count);
+        context.write(new LongWritable(node.getUserId()),
+                      MobDataUtil.createAndWrap(counter));
     }
 }

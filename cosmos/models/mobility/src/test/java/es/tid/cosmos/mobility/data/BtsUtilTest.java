@@ -18,6 +18,7 @@ public class BtsUtilTest {
     @Test
     public void testCreateAndWrap() {
         long placeId = 132L;
+        long comms = 50000L;
         double posx = 32D;
         double posy = 98D;
         double area = 157D;
@@ -27,11 +28,12 @@ public class BtsUtilTest {
         adjBts.add(1L);
 
         ProtobufWritable<Bts> wrapper = BtsUtil.createAndWrap(
-                placeId, posx, posy, area, adjBts);
+                placeId, comms, posx, posy, area, adjBts);
         wrapper.setConverter(Bts.class);
         Bts obj = wrapper.get();
         assertNotNull(obj);
         assertEquals(placeId, obj.getPlaceId());
+        assertEquals(comms, obj.getComms());
         assertEquals(posx, obj.getPosx(), 0.0D);
         assertEquals(posy, obj.getPosy(), 0.0D);
         assertEquals(area, obj.getArea(), 0.0D);

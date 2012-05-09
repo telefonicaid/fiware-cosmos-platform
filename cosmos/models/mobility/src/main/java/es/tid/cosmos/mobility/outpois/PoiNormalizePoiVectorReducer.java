@@ -7,26 +7,29 @@ import java.util.List;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.ClusterUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 
 /**
- *
+ * Input: <TwoInt, Cluster>
+ * Output: <TwoInt, Cluster>
+ * 
  * @author dmicol
  */
 public class PoiNormalizePoiVectorReducer extends Reducer<
-        ProtobufWritable<TwoInt>, ProtobufWritable<Cluster>,
-        ProtobufWritable<TwoInt>, ProtobufWritable<Cluster>> {
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<ProtobufWritable<Cluster>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<Cluster> clusterList = new LinkedList<Cluster>();
-        for (ProtobufWritable<Cluster> value : values) {
-            value.setConverter(Cluster.class);
-            clusterList.add(value.get());
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            clusterList.add(value.get().getCluster());
         }
         if (clusterList.isEmpty()) {
             return;
@@ -76,6 +79,7 @@ public class PoiNormalizePoiVectorReducer extends Reducer<
             clusterNormCoordsBuilder.addComs(coms);
         }
         clusterNormBuilder.setCoords(clusterNormCoordsBuilder);
-        context.write(key, ClusterUtil.wrap(clusterNormBuilder.build()));
+        context.write(key,
+                      MobDataUtil.createAndWrap(clusterNormBuilder.build()));
     }
 }

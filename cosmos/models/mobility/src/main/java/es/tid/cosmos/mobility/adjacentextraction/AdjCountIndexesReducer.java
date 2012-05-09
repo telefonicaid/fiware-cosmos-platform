@@ -2,27 +2,34 @@ package es.tid.cosmos.mobility.adjacentextraction;
 
 import java.io.IOException;
 
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
+
 /**
+ * Input: <LongWritable, LongWritable>
+ * Output: <LongWritable, NullWritable>
  *
  * @author dmicol
  */
-public class AdjCountIndexesReducer extends Reducer <LongWritable, LongWritable,
-        LongWritable, NullWritable> {
-    public static final String NUM_INDICES_LEFT_TAG = "num_indices_left";
-    
+public class AdjCountIndexesReducer extends Reducer <LongWritable,
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<LongWritable> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         long sum = 0L;
-        for (LongWritable value : values) {
-            sum += value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            sum += value.get().getLong();
         }
-        context.getConfiguration().setLong(NUM_INDICES_LEFT_TAG, sum);
-        context.write(new LongWritable(sum), NullWritable.get());
+        context.getCounter(Counters.NUM_INDEXES).increment(sum);
+        context.write(new LongWritable(sum),
+                      MobDataUtil.createAndWrap(NullWritable.get()));
     }
 }

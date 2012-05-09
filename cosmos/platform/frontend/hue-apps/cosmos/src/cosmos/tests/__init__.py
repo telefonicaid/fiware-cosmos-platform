@@ -3,4 +3,5 @@
 Tests package.
 
 """
+from cosmos.tests.models import *
 from cosmos.tests.views import *

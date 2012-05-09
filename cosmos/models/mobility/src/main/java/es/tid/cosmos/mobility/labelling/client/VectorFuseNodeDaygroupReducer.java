@@ -7,28 +7,31 @@ import java.util.List;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.MobProtocol.DailyVector;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 
 /**
- *
+ * Input: <TwoInt, DailyVector>
+ * Output: <NodeBts, ClusterVector>
+ * 
  * @author dmicol
  */
 public class VectorFuseNodeDaygroupReducer extends Reducer
-        <ProtobufWritable<TwoInt>, ProtobufWritable<DailyVector>,
-        ProtobufWritable<NodeBts>, ProtobufWritable<ClusterVector>> {
+        <ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
+        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-                          Iterable<ProtobufWritable<DailyVector>> values,
-                          Context context) throws IOException,
-                                                  InterruptedException {
+            Iterable<ProtobufWritable<MobData>> values, Context context)
+            throws IOException, InterruptedException {
         List<DailyVector> valueList = new LinkedList<DailyVector>();
-        for (ProtobufWritable<DailyVector> value : values) {
-            value.setConverter(DailyVector.class);
-            final DailyVector dailyVector = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final DailyVector dailyVector = value.get().getDailyVector();
             valueList.add(dailyVector);
         }
         
@@ -57,9 +60,7 @@ public class VectorFuseNodeDaygroupReducer extends Reducer
         final TwoInt twoInt = key.get();
         ProtobufWritable<NodeBts> bts = NodeBtsUtil.createAndWrap(
                 twoInt.getNum1(), (int)twoInt.getNum2(), 0, 0);
-        ProtobufWritable<ClusterVector> clusterVector =
-                ProtobufWritable.newInstance(ClusterVector.class);
-        clusterVector.set(clusterVectorBuilder.build());
-        context.write(bts, clusterVector);
+        context.write(bts,
+                      MobDataUtil.createAndWrap(clusterVectorBuilder.build()));
     }
 }

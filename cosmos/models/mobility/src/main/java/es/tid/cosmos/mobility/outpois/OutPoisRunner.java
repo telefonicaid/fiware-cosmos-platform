@@ -9,8 +9,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
+import es.tid.cosmos.base.mapreduce.MapJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
-import es.tid.cosmos.mobility.util.*;
 
 /**
  *
@@ -30,39 +30,12 @@ public final class OutPoisRunner {
         Path vectorClientbtsSpreadPath = new Path(tmpDirPath,
                                                   "vector_clientbts_spread");
         {
-            ReduceJob job = ReduceJob.create(conf, "PoiSpreadNodebtsVector",
+            MapJob job = MapJob.create(conf, "PoiSpreadNodebtsVector",
                     SequenceFileInputFormat.class,
-                    PoiSpreadNodebtsVectorReducer.class,
+                    PoiSpreadNodebtsVectorMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, vectorClientbtsPath);
             FileOutputFormat.setOutputPath(job, vectorClientbtsSpreadPath);
-            job.waitForCompletion(true);
-        }
-        
-        Path vectorClientbtsSpreadMobDataPath = new Path(tmpDirPath,
-                "vector_clientbts_spread_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf,
-                    "ConvertClusterVectorToMobDataByTwoInt",
-                    SequenceFileInputFormat.class,
-                    ConvertClusterVectorToMobDataByTwoIntReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, vectorClientbtsSpreadPath);
-            FileOutputFormat.setOutputPath(job,
-                                           vectorClientbtsSpreadMobDataPath);
-            job.waitForCompletion(true);
-        }
-        
-        Path pointsOfInterestIdMobDataPath = new Path(tmpDirPath,
-                "points_of_interest_id_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf,
-                    "ConvertPoiToMobDataByTwoInt",
-                    SequenceFileInputFormat.class,
-                    ConvertPoiToMobDataByTwoIntReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, pointsOfInterestIdPath);
-            FileOutputFormat.setOutputPath(job, pointsOfInterestIdMobDataPath);
             job.waitForCompletion(true);
         }
 
@@ -73,14 +46,10 @@ public final class OutPoisRunner {
                     PoiJoinPoivectorPoiReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                vectorClientbtsSpreadMobDataPath,
-                pointsOfInterestIdMobDataPath });
+                vectorClientbtsSpreadPath, pointsOfInterestIdPath });
             FileOutputFormat.setOutputPath(job, vectorClientpoiPath);
             job.waitForCompletion(true);
         }
-        
-        fs.delete(vectorClientbtsSpreadMobDataPath, true);
-        fs.delete(pointsOfInterestIdMobDataPath, true);
         
         Path vectorPoiClusterPath = new Path(tmpDirPath, "vector_poi_cluster");
         {

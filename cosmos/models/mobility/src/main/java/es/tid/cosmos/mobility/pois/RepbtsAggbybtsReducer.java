@@ -3,36 +3,36 @@ package es.tid.cosmos.mobility.pois;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
 import es.tid.cosmos.mobility.data.NodeBtsDayUtil;
 
 /**
- * Count NodeBtsDay
+ * Input: <NodeBtsDay, Int>
+ * Output: <Long, NodeBtsDay>
  *
  * @author dmicol, sortega
  */
 public class RepbtsAggbybtsReducer extends Reducer<ProtobufWritable<NodeBtsDay>,
-        IntWritable, LongWritable, ProtobufWritable<NodeBtsDay>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     @Override
     public void reduce(ProtobufWritable<NodeBtsDay> key,
-            Iterable<IntWritable> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         int totalCallCount = 0;
-        for (IntWritable callCount : values) {
-            totalCallCount += callCount.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            totalCallCount += value.get().getInt();
         }
-
         key.setConverter(NodeBtsDay.class);
         final NodeBtsDay byDay = key.get();
-        ProtobufWritable<NodeBtsDay> nodeBtsDay = NodeBtsDayUtil.createAndWrap(
-                byDay.getUserId(),
-                byDay.getPlaceId(),
-                byDay.getWorkday(),
-                totalCallCount);
-        context.write(new LongWritable(byDay.getUserId()), nodeBtsDay);
+        NodeBtsDay nodeBtsDay = NodeBtsDayUtil.create(byDay.getUserId(),
+                byDay.getPlaceId(), byDay.getWorkday(), totalCallCount);
+        context.write(new LongWritable(byDay.getUserId()),
+                      MobDataUtil.createAndWrap(nodeBtsDay));
     }
 }

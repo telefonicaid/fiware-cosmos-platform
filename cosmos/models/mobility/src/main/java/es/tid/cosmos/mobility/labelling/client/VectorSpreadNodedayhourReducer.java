@@ -7,24 +7,28 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 
 /**
- *
+ * Input: <Long, Cdr>
+ * Output: <NodeBts, Null>
+ * 
  * @author dmicol
  */
 public class VectorSpreadNodedayhourReducer extends Reducer<LongWritable,
-        ProtobufWritable<Cdr>, ProtobufWritable<NodeBts>, NullWritable> {
+        ProtobufWritable<MobData>, ProtobufWritable<NodeBts>,
+        ProtobufWritable<MobData>> {
     @Override
     protected void reduce(LongWritable key,
-                          Iterable<ProtobufWritable<Cdr>> values,
-                          Context context) throws IOException,
-                                                  InterruptedException {
-        for (ProtobufWritable<Cdr> value : values) {
-            value.setConverter(Cdr.class);
-            final Cdr cdr = value.get();
+            Iterable<ProtobufWritable<MobData>> values, Context context)
+            throws IOException, InterruptedException {
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final Cdr cdr = value.get().getCdr();
             int weekday;
             switch (cdr.getDate().getWeekday()) {
                 case 0:
@@ -41,7 +45,7 @@ public class VectorSpreadNodedayhourReducer extends Reducer<LongWritable,
             }
             ProtobufWritable<NodeBts> bts = NodeBtsUtil.createAndWrap(
                     key.get(), 0, weekday, cdr.getTime().getHour());
-            context.write(bts, NullWritable.get());
+            context.write(bts, MobDataUtil.createAndWrap(NullWritable.get()));
         }
     }
 }

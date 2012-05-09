@@ -9,6 +9,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 
@@ -17,17 +18,17 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  * @author dmicol
  */
 public class ExportBtsCounterToTextByTwoIntReducer extends Reducer<
-        ProtobufWritable<TwoInt>, ProtobufWritable<BtsCounter>, NullWritable,
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>, NullWritable,
         Text> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<ProtobufWritable<BtsCounter>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(TwoInt.class);
         final TwoInt twoInt = key.get();
-        for (ProtobufWritable<BtsCounter> value : values) {
-            value.setConverter(BtsCounter.class);
-            final BtsCounter btsCounter = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final BtsCounter btsCounter = value.get().getBtsCounter();
             context.write(NullWritable.get(),
                           new Text(TwoIntUtil.toString(twoInt)
                                    + BtsCounterUtil.DELIMITER

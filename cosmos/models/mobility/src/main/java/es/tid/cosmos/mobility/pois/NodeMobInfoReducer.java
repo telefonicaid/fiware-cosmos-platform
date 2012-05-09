@@ -8,33 +8,35 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeMxCounter;
 import es.tid.cosmos.mobility.data.NodeMxCounterUtil;
 
 /**
- *
+ * Input: <Long, BtsCounter>
+ * Output: <Long, NodeMxCounter>
+ * 
  * @author dmicol
  */
 public class NodeMobInfoReducer extends Reducer<LongWritable,
-        ProtobufWritable<BtsCounter>, LongWritable,
-        ProtobufWritable<NodeMxCounter>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     @Override
     public void reduce(LongWritable key,
-            Iterable<ProtobufWritable<BtsCounter>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<BtsCounter> allBts = new ArrayList<BtsCounter>();
         int numberOfValues = 0;
-        for (ProtobufWritable<BtsCounter> value : values) {
+        for (ProtobufWritable<MobData> value : values) {
             numberOfValues++;
-            value.setConverter(BtsCounter.class);
-            final BtsCounter btsCounter = value.get();
+            value.setConverter(MobData.class);
+            final BtsCounter btsCounter = value.get().getBtsCounter();
             allBts.add(btsCounter);
         }
-        ProtobufWritable<NodeMxCounter> nodeMxCounter =
-                NodeMxCounterUtil.createAndWrap(allBts,
-                                                numberOfValues,
-                                                numberOfValues);
-        context.write(key, nodeMxCounter);
+        NodeMxCounter nodeMxCounter = NodeMxCounterUtil.create(allBts,
+                                                               numberOfValues,
+                                                               numberOfValues);
+        context.write(key, MobDataUtil.createAndWrap(nodeMxCounter));
     }
 }

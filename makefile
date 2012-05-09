@@ -218,13 +218,19 @@ test: ctest
 ctest: debug
 	make test -C BUILD_DEBUG ARGS="-D ExperimentalTest"
 	BUILD_DEBUG/apps/unitTest/unitTest --gtest_shuffle --gtest_output=xml:BUILD_DEBUG/samson_test.xml
+	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
+	sed -i -e 's/disabled/skipped/' BUILD_DEBUG/samson_test.xml
 
 unit_test: debug
 	BUILD_DEBUG/apps/unitTest/unitTest --gtest_shuffle --gtest_output=xml:BUILD_DEBUG/samson_test.xml
+	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
+	sed -i -e 's/disabled/skipped/' BUILD_DEBUG/samson_test.xml
 
 test_coverage:
 	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest"
 	BUILD_COVERAGE/apps/unitTest/unitTest --gtest_shuffle --gtest_output=xml:BUILD_COVERAGE/samson_test.xml
+	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
+	sed -i -e 's/disabled/skipped/' BUILD_COVERAGE/samson_test.xml
 
 
 test_samsonWorker: install_debug

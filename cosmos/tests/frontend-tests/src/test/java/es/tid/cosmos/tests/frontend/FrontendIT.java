@@ -161,12 +161,12 @@ public class FrontendIT {
 
     public void verifySampleJarFile() throws IOException {
         WebDriver driver = this.frontend.getDriver();
-        SelectNamePage namePage = this.frontend.goToCreateNewJob();
+        CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
         verifyLinks();
 
         // Get JAR link
         WebElement jarLink = driver.findElement(
-                By.id(SelectNamePage.SAMPLE_JAR_LINK_ID));
+                By.id(CreateJobPage.SAMPLE_JAR_LINK_ID));
         String verbatimUrl = jarLink.getAttribute("href");
         URL linkUrl = this.frontend.resolveURL(verbatimUrl);
 
@@ -195,9 +195,8 @@ public class FrontendIT {
     }
 
     public void verifyJarRestrictions() throws IOException {
-        WebDriver driver = this.frontend.getDriver();
-        SelectNamePage namePage = this.frontend.goToCreateNewJob();
-        String restrictions = namePage.getJarRestrictions();
+        CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
+        String restrictions = createJobPage.getJarRestrictions();
         assertTrue(
                 restrictions.contains("Mongo"),
                 "Verifying restrictions mention Mongo");
@@ -274,9 +273,6 @@ public class FrontendIT {
         final Task task = new FrontEndTask(this.frontend.getEnvironment(),
                                            inputFilePath,
                                            this.invalidJarPath);
-        assertEquals(TaskStatus.Created,
-                     task.getStatus(),
-                     "Veryfing task is in created state. Task: " + task);
         task.run();
         TaskStatus jobStatus = task.getStatus();
         assertTrue(jobStatus == TaskStatus.Error
@@ -295,9 +291,6 @@ public class FrontendIT {
         final Task task = new FrontEndTask(this.frontend.getEnvironment(),
                                            inputFilePath,
                                            this.mapperFailJarPath);
-        assertEquals(TaskStatus.Created,
-                     task.getStatus(),
-                     "Veryfing task is in created state. Task: " + task);
         task.run();
         TaskStatus jobStatus = task.getStatus();
         assertTrue(jobStatus == TaskStatus.Error
@@ -317,9 +310,6 @@ public class FrontendIT {
         final Task task = new FrontEndTask(this.frontend.getEnvironment(),
                                            inputFilePath,
                                            this.printPrimesJarPath);
-        assertEquals(TaskStatus.Created,
-                     task.getStatus(),
-                     "Veryfing task is in created state. Task: " + task);
         task.run();
         TaskStatus jobStatus = task.getStatus();
         assertTrue(jobStatus == TaskStatus.Completed

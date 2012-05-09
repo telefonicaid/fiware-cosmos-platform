@@ -14,8 +14,19 @@ public class CreateJobPage {
     public static final String INPUT_FILE_HTML_ID = "id_file";
     public static final String JAR_FILE_HTML_ID = "id_jar";
     public static final String NAME_FILE_HTML_ID = "id_name";
+    public static final String SAMPLE_JAR_LINK_ID = "sample-jar-link";
+    public static final String JAR_RESTRICTIONS_ID = "jar-restrictions";
     private WebDriver driver;
     private final String selectInputUrl = "TODO"; // TODO    
+
+    public String getJarRestrictions() {
+        assertCorrectUrl();
+        this.driver.findElement(By.id(JAR_RESTRICTIONS_ID)).click();
+        String source = this.driver.getPageSource();
+        this.driver.get(this.selectInputUrl);
+        return source;
+
+    }
 
     private void assertCorrectUrl() {
         assertEquals(this.driver.getCurrentUrl(), this.selectInputUrl);

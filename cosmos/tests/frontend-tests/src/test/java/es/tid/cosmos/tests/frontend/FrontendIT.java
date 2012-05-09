@@ -21,13 +21,14 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
-import es.tid.cosmos.tests.frontend.om.*;
+import es.tid.cosmos.tests.frontend.om.CreateJobPage;
+import es.tid.cosmos.tests.frontend.om.FrontEnd;
+import es.tid.cosmos.tests.frontend.om.FrontEndTask;
 import es.tid.cosmos.tests.hadoopjars.HadoopJars;
 import es.tid.cosmos.tests.hadoopjars.JarNames;
 import es.tid.cosmos.tests.tasks.Environment;
 import es.tid.cosmos.tests.tasks.Task;
 import es.tid.cosmos.tests.tasks.TaskStatus;
-import es.tid.cosmos.tests.tasks.TestException;
 
 /**
  *
@@ -38,20 +39,35 @@ public class FrontendIT {
     private static final String SIMPLE_TEXT = "Very simple text file";
     private static final int TASK_COUNT = 4;
     private FrontEnd frontend;
-    private String wordcountJarPath;
-    private String mapperFailJarPath;
-    private String printPrimesJarPath;
-    private String invalidJarPath;
+    private String wordcountHdfsPath;
+    private String mapperFailHdfsPath;
+    private String printPrimesHdfsPath;
+    private String invalidJarHdfsPath;
 
     @Parameters("environment")
     @BeforeClass
     public void setUp(String environment) throws IOException {
-        this.wordcountJarPath = HadoopJars.getPath(JarNames.Wordcount);
-        this.mapperFailJarPath = HadoopJars.getPath(JarNames.MapperFail);
-        this.printPrimesJarPath = HadoopJars.getPath(JarNames.PrintPrimes);
-        this.invalidJarPath = createAutoDeleteFile("Invalid Jar");
-
         this.frontend = new FrontEnd(Environment.valueOf(environment));
+        this.wordcountHdfsPath = FrontendIT.ensureJar(
+                this.frontend, FrontEnd.DEFAULT_USER,
+                HadoopJars.getPath(JarNames.Wordcount));
+        this.mapperFailHdfsPath = FrontendIT.ensureJar(
+                this.frontend, FrontEnd.DEFAULT_USER,
+                HadoopJars.getPath(JarNames.MapperFail));
+        this.printPrimesHdfsPath = FrontendIT.ensureJar(
+                this.frontend, FrontEnd.DEFAULT_USER,
+                HadoopJars.getPath(JarNames.PrintPrimes));
+        this.invalidJarHdfsPath = FrontendIT.ensureJar(
+                this.frontend, FrontEnd.DEFAULT_USER,
+                this.createAutoDeleteFile("Invalid Jar"));
+    }
+
+    private static String ensureJar(FrontEnd frontend, String user, String localPath) {
+        if (!FrontEndTask.jarExists(frontend.getEnvironment(), user, localPath)) {
+            FrontEndTask.uploadJar(frontend, localPath);
+        }
+
+        return FrontEndTask.getJarHdfsPath(user, localPath);
     }
 
     private static boolean isLive(String link) {
@@ -110,7 +126,7 @@ public class FrontendIT {
 
         verifyLinks();
         createJobPage.setInputFile(inputFilePath);
-        createJobPage.setInputJar(this.wordcountJarPath);
+        createJobPage.setInputJar(this.wordcountHdfsPath);
         createJobPage.create();
 
         // We should be in the same page, and the form should be complaining
@@ -150,7 +166,7 @@ public class FrontendIT {
         WebDriver driver = this.frontend.getDriver();
         CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
         createJobPage.setName(taskId);
-        createJobPage.setInputJar(this.wordcountJarPath);
+        createJobPage.setInputJar(this.wordcountHdfsPath);
         String currentUrl = driver.getCurrentUrl();
         createJobPage.create();
 
@@ -224,7 +240,7 @@ public class FrontendIT {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         Task task = new FrontEndTask(this.frontend.getEnvironment(),
                                      inputFilePath,
-                                     this.wordcountJarPath);
+                                     this.wordcountHdfsPath);
         task.run();
         task.waitForCompletion();
         assertEquals(task.getStatus(),
@@ -240,7 +256,7 @@ public class FrontendIT {
         for (int i = 0; i < TASK_COUNT; ++i) {
             tasks[i] = new FrontEndTask(environment,
                                         inputFilePath,
-                                        this.wordcountJarPath);
+                                        this.wordcountHdfsPath);
         }
         for (Task task : tasks) {
             task.run();
@@ -272,7 +288,7 @@ public class FrontendIT {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         final Task task = new FrontEndTask(this.frontend.getEnvironment(),
                                            inputFilePath,
-                                           this.invalidJarPath);
+                                           this.invalidJarHdfsPath);
         task.run();
         TaskStatus jobStatus = task.getStatus();
         assertTrue(jobStatus == TaskStatus.Error
@@ -290,7 +306,7 @@ public class FrontendIT {
         final String inputFilePath = createAutoDeleteFile(SIMPLE_TEXT);
         final Task task = new FrontEndTask(this.frontend.getEnvironment(),
                                            inputFilePath,
-                                           this.mapperFailJarPath);
+                                           this.mapperFailHdfsPath);
         task.run();
         TaskStatus jobStatus = task.getStatus();
         assertTrue(jobStatus == TaskStatus.Error
@@ -309,7 +325,7 @@ public class FrontendIT {
                 "2 3 4 5 6 7 8 9 123\n19283");
         final Task task = new FrontEndTask(this.frontend.getEnvironment(),
                                            inputFilePath,
-                                           this.printPrimesJarPath);
+                                           this.printPrimesHdfsPath);
         task.run();
         TaskStatus jobStatus = task.getStatus();
         assertTrue(jobStatus == TaskStatus.Completed
@@ -332,12 +348,14 @@ public class FrontendIT {
         final String inputFilePath = createAutoDeleteFile(
                 "2 3 4 5 6 7 8 9 123\n19283");
         final String taskIdPrefix = "../1|<b>W</b>._1!!&nbsp;%20~€";
+        final String user = "test@.2";
+        final String password = "cosmostest@.2";
         String taskId = taskIdPrefix + UUID.randomUUID().toString().substring(25);
-        Task task = new FrontEndTask(new FrontEnd(this.frontend.getEnvironment(),
-                                                  "test@.2",
-                                                  "cosmostest@.2"),
-                                     inputFilePath,
-                                     this.printPrimesJarPath,
+        FrontEnd front = new FrontEnd(this.frontend.getEnvironment(),
+                                      user, password);
+        String jarHdfsPath = FrontendIT.ensureJar(
+                front, user, HadoopJars.getPath(JarNames.PrintPrimes));
+        Task task = new FrontEndTask(front, inputFilePath, jarHdfsPath,
                                      taskId);
         task.run();
         task.waitForCompletion();

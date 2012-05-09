@@ -23,18 +23,18 @@ import es.tid.cosmos.tests.tasks.TestException;
  */
 public class FrontEnd {
     // HTML classes and ids
+    public static final String UPLOAD_JAR_ID = "upload-jar";
+    public static final String UPLOAD_DATA_ID = "upload-data";
     public static final String CREATE_JOB_ID = "create-job";
     public static final String TASK_STATUS_TABLE_ID = "jobs-table";
     public static final String JOB_ACTION_CLASS = "jobaction";
     public static final String RESULT_ACTION_CLASS = "results";
-    public static final String RUN_ACTION_CLASS = "run";
-    public static final String UPLOAD_DATA_ACTION_CLASS = "upload-data";
     public static final String RESULT_NAME_CLASS = "result-name";
     public static final String RESULT_STATUS_CLASS = "result-status";
     public static final String USERNAME_INPUT_NAME = "username";
     public static final String PASSWORD_INPUT_NAME = "password";
     // Default login info
-    private static final String DEFAULT_USER = "test";
+    public static final String DEFAULT_USER = "test";
     private static final String DEFAULT_PASSWRD = "cosmostest";
     private WebDriver driver;
     private final String username;
@@ -186,6 +186,22 @@ public class FrontEnd {
                 By.id(CREATE_JOB_ID));
         createJobElement.click();
         return new CreateJobPage(this.driver);
+    }
+
+    public UploadJarPage goToUploadJar() {
+        this.gotoCosmosHome();
+        WebElement createJobElement = this.driver.findElement(
+                By.id(UPLOAD_JAR_ID));
+        createJobElement.click();
+        return new UploadJarPage(this.driver);
+    }
+
+    public UploadDataPage goToUploadData() {
+        this.gotoCosmosHome();
+        WebElement createJobElement = this.driver.findElement(
+                By.id(UPLOAD_DATA_ID));
+        createJobElement.click();
+        return new UploadDataPage(this.driver);
     }
 
     public WebDriver getDriver() {

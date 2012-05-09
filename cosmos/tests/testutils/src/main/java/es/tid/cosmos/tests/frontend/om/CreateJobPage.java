@@ -17,7 +17,7 @@ public class CreateJobPage {
     public static final String SAMPLE_JAR_LINK_ID = "sample-jar-link";
     public static final String JAR_RESTRICTIONS_ID = "jar-restrictions";
     private WebDriver driver;
-    private final String selectInputUrl = "TODO"; // TODO    
+    private final String selectInputUrl = "TODO"; // TODO
 
     public String getJarRestrictions() {
         assertCorrectUrl();

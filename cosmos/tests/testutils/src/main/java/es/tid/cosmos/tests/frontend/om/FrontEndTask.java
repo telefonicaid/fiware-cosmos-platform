@@ -1,18 +1,17 @@
 package es.tid.cosmos.tests.frontend.om;
 
-import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.testng.Assert.assertEquals;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import es.tid.cosmos.tests.tasks.Environment;
-import es.tid.cosmos.tests.tasks.Task;
-import es.tid.cosmos.tests.tasks.TaskStatus;
-import es.tid.cosmos.tests.tasks.TestException;
+import es.tid.cosmos.tests.tasks.*;
 
 /**
  *
@@ -20,28 +19,74 @@ import es.tid.cosmos.tests.tasks.TestException;
  */
 public class FrontEndTask implements Task {
     private static final int SLEEP_TIME = 30000; // 30 seconds
+    private static final String FILE_BROWSER_URL = "TODO"; // TODO
     private boolean isRun;
     private final FrontEnd frontend;
     private final String taskId;
-    private final String jarPath;
-    private final String inputFilePath;
+    private final String jarHdfsPath;
+    private final String inputHdfsPath;
+
+    public static String getJarHdfsPath(String user, String jarFileName) {
+        return "/user/" + user + "/jars/" + jarFileName;
+    }
+
+    public static String getJarHdfsPath(String user) {
+        return getJarHdfsPath(user, "");
+    }
+
+    public static String getDataHdfsPath(String user, String dataFileName) {
+        return "/user/" + user + "/datasets/" + dataFileName;
+    }
+
+    public static String getDataHdfsPath(String user) {
+        return getDataHdfsPath(user, "");
+    }
+
+    public static boolean jarExists(Environment env, String user,
+                                    String jarName) {
+        return fileExists(env, getJarHdfsPath(user), jarName);
+    }
+
+    public static boolean dataSetExists(Environment env, String user,
+                                        String dataSetName) {
+        return fileExists(env, getJarHdfsPath(user), dataSetName);
+    }
+
+    private static boolean fileExists(Environment env, String hdfsPath,
+                                      String fileName) {
+        WebDriver driver = new HtmlUnitDriver();
+        driver.get(env.getProperty(EnvironmentSetting.FrontendUrl) + "/"
+                + FILE_BROWSER_URL + hdfsPath);
+        List<WebElement> files = driver.findElements(By.className("fb-file"));
+        for (WebElement file : files) {
+            if (file.getText().equals(fileName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void uploadJar(FrontEnd frontend, String filePath) {
+        UploadJarPage uploadJarPage = frontend.goToUploadJar();
+        uploadJarPage.setJarFile(filePath);
+        uploadJarPage.submitForm();
+        throw new UnsupportedOperationException("Need to implement return value");
+    }
+
+    public static void uploadData(FrontEnd frontend, String filePath) {
+        UploadDataPage uploadDataPage = frontend.goToUploadData();
+        uploadDataPage.setDataFile(filePath);
+        uploadDataPage.submitForm();
+    }
 
     public FrontEndTask(FrontEnd frontend,
-                        String inputFilePath,
-                        String jarPath,
+                        String inputHdfsPath,
+                        String jarHdfsPath,
                         String taskId) {
-        // Verify input params
-        if (!(new File(inputFilePath).exists())) {
-            throw new TestException("Input path does not exist");
-        }
-        if (!(new File(jarPath).exists())) {
-            throw new TestException("JAR path does not exist.");
-        }
-
         this.frontend = frontend;
         this.taskId = taskId;
-        this.jarPath = jarPath;
-        this.inputFilePath = inputFilePath;
+        this.jarHdfsPath = jarHdfsPath;
+        this.inputHdfsPath = inputHdfsPath;
         this.isRun = false;
     }
 
@@ -66,8 +111,8 @@ public class FrontEndTask implements Task {
 
         this.taskId = taskId;
         this.isRun = true;
-        this.jarPath = null;
-        this.inputFilePath = null;
+        this.jarHdfsPath = null;
+        this.inputHdfsPath = null;
     }
 
     public static FrontEndTask CreateFromExistingTaskId(Environment env,
@@ -81,9 +126,9 @@ public class FrontEndTask implements Task {
                 + " If this fails, it is a test bug.");
 
         CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
-        createJobPage.setName(taskId);
-        createJobPage.setInputJar(jarPath);
-        createJobPage.setInputFile(inputFilePath);
+        createJobPage.setName(this.taskId);
+        createJobPage.setInputJar(this.jarHdfsPath);
+        createJobPage.setInputFile(this.inputHdfsPath);
         createJobPage.create();
         this.isRun = true;
     }

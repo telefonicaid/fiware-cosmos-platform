@@ -245,5 +245,122 @@ namespace samson
         output << table.str();                        
         return output.str();
     }
+   
+    // --------------------------------------------------------------------
+    // BufferPushDelilahComponent
+    // --------------------------------------------------------------------
+    
+    BufferPushDelilahComponent::BufferPushDelilahComponent(  engine::Buffer * buffer , std::string queue ) : DelilahComponent( DelilahComponent::push ) 
+	{
+        if( !buffer )
+            LM_X(1, ("Internal error"));
+        
+		// Queue name 
+		queues.insert( queue );
+        
+        // Data source
+        buffer_container.setBuffer( buffer );
+
+        // Set concept
+        setConcept( au::str("Pushing single buffer %s to queue/s %s" , au::str( buffer->getSize() , "bytes").c_str() , queue.c_str() ) );
+	}	
+    
+    void BufferPushDelilahComponent::addQueue( std::string  _queue )
+    {
+		queues.insert( _queue );
+    }
+
+    
+    std::string BufferPushDelilahComponent::getShortDescription()
+    {
+        if( isComponentFinished() )
+        {
+            std::ostringstream output;
+            output << "[ ";
+            output << "Id " << id << " ";
+            output << "Finished ";
+            output << "]";
+            return output.str();
+            
+        }
+        
+        std::ostringstream output;
+        output << "[ ";
+        output << "Id " << id << " ";
+        output << "Pushing buffer " << au::str( buffer_container.getBuffer()->getSize() , "B" );
+        output << "]";
+        return output.str();
+    }
+    
+    // Function to start running
+    void BufferPushDelilahComponent::run()
+    {
+        
+        // Request another buffer to add the header
+        engine::BufferContainer new_buffer_container;
+        new_buffer_container.create("BufferPushDelilahComponent", "push",  buffer_container.getBuffer()->getSize() + sizeof(KVHeader) );
+
+        // Pointer to the old and new buffer
+        engine::Buffer * original_buffer = buffer_container.getBuffer();
+        engine::Buffer * buffer = new_buffer_container.getBuffer();
+        
+        // Set the header    
+        KVHeader *header = (KVHeader*) buffer->getData();
+        header->initForTxt( original_buffer->getSize() );
+        buffer->skipWrite(sizeof(KVHeader));
+        
+        // Copy content
+        buffer->write( original_buffer->getData() , original_buffer->getSize() );
+        
+        // Create the packet to send to the worker        
+        Packet* packet = new Packet( Message::PushBlock );
+        packet->setBuffer( buffer );                            // Set the buffer of data
+        packet->message->set_delilah_component_id( id );        // Set my delilah id to get answer from worker
+ 
+        // Fill packet information
+        network::PushBlock* pb =  packet->message->mutable_push_block();
+        std::set<std::string>::iterator q;
+        for (q = queues.begin() ; q != queues.end() ; q++)
+            pb->add_queue( *q );
+        pb->set_size( original_buffer->getSize() );
+        
+        // Get the next worker_id to send data...
+        size_t worker_id = delilah->getNextWorkerId();
+        
+        // Information about destination
+        packet->to.node_type = WorkerNode;
+        packet->to.id = worker_id;
+        
+        // Send packet
+        delilah->send( packet , &error );
+
+        // If error sending packet, just finish
+        if( error.isActivated() )
+            setComponentFinished();
+    }
+    
+    // Function to receive packets
+    void BufferPushDelilahComponent::receive( Packet* packet )
+    {
+        // At the moment we do not receive anything
+        if( packet->msgCode != Message::PushBlockResponse )
+            LM_X(1, ("Received an unexpected packet in a push block operation"));
+        
+        size_t uploadedSize = packet->message->push_block_response().request().size();
+        
+        if( uploadedSize != buffer_container.getBuffer()->getSize() )
+            setComponentFinishedWithError("Non correct size for push operation");
+        else
+            setComponentFinished();
+    }
+
+    
+    // Function to get the status
+    std::string BufferPushDelilahComponent::getStatus()
+    {
+        return au::str("Sending buffer %s", au::str( buffer_container.getBuffer()->getSize() , "B" ).c_str() );
+    }
+		
+
     
 }

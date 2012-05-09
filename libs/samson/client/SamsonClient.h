@@ -92,9 +92,8 @@ namespace  samson {
         
         // Push content to a particular queue
         size_t push( std::string queue , char *data , size_t length );
-
-        // Push a generic data source 
         size_t push( std::string queue , DataSource *data_source );
+        size_t push( std::string queue , engine::Buffer * buffer );
 
         // Wait until all operations are finished
         void waitUntilFinish();        

@@ -80,6 +80,37 @@ namespace samson {
 
 	};	
 	
+    
+	// All the information related with a load process
+	class BufferPushDelilahComponent : public DelilahComponent , engine::Object
+	{
+		
+        engine::BufferContainer buffer_container;   // Internal container of the buffer while processing it
+        std::set<std::string> queues;				// Name of the stream-queue we are uploading
+        
+	public:
+		
+		BufferPushDelilahComponent( engine::Buffer * buffer , std::string queue  );		
+        void addQueue( std::string  _queue );
+        		
+        // Function to start running
+        void run();
+        
+        // Function to receive packets
+		void receive( Packet* packet );
+        
+		// Function to get the status
+		std::string getStatus();		
+        
+        // Virtual in DelilahComponent
+        std::string getShortDescription();
+        
+    private:
+        
+        void requestMemoryBuffer();
+        
+	};	
+	
 	
 }
 

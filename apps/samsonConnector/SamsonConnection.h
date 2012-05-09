@@ -55,10 +55,10 @@ namespace samson {
 
                 // Report manually size ( not we are overloading Connection class )
                 report_output_size( buffer->getSize() );
-
                 
                 // Push this block directly to the SAMSON client
-                client->push( queue , new BlockDataSource( buffer ) );
+                //client->push( queue , new BlockDataSource( buffer ) );
+                client->push( queue , buffer );
             }
             
             // Overwriteen method of SamsonClient

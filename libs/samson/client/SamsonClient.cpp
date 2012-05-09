@@ -183,6 +183,34 @@ namespace samson
         return id;
     }
     
+    size_t SamsonClient::push( std::string queue , engine::Buffer * buffer )
+    {
+        if( !buffer )
+            return 0;
+        
+        // Statistics
+        push_rate.push( buffer->getSize() );
+        
+        // Show some info if -v option is selected
+        LM_VV(("Pushing a data source to queue %s" ,  queue.c_str() ));
+        LM_VV(("SamsonClient info: %s"  , push_rate.str().c_str() ));
+        
+        std::vector<std::string>queues;
+        queues.push_back( queue );
+        
+        size_t id = delilah->addPushData( buffer , queues );
+        
+        // Save the id to make sure it is finish before quiting...
+        delilah_ids.push_back( id );
+        
+        // Clean previous jobs ( if any )
+        delilah->clearComponents();
+        
+        return id;
+        
+    }
+
+    
     bool SamsonClient::areAllOperationsFinished()
     {
         for ( size_t i = 0 ; i < delilah_ids.size() ; i++)

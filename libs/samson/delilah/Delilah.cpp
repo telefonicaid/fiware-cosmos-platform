@@ -341,6 +341,19 @@ namespace samson {
         
     }
     
+    size_t Delilah::addPushData( engine::Buffer* buffer , std::vector<std::string> queues )
+    {
+		BufferPushDelilahComponent * d = new BufferPushDelilahComponent( buffer , queues[0] );
+        for ( size_t i = 1 ; i < queues.size() ; i++)
+            d->addQueue( queues[i] );
+        
+		size_t tmp_id = addComponent(d);	
+        
+		d->run();
+        
+		return tmp_id;
+        
+    }
 
 	/* ****************************************************************************
      *

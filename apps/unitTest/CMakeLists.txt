@@ -28,6 +28,9 @@ SET (SOURCES
 	delilah/common_delilah_test.h
 	delilah/common_delilah_test.cpp
 	delilah/delilahConsole_test.cpp
+	
+	#samson/client library
+	samson/client/SamsonClient_test.cpp
 
 )
 
@@ -59,6 +62,7 @@ SET (STATIC_LIBS
      samsonCommon
 	 samson_comscore
 	 samson_system
+	 samsonClient
      au
      xmlmarkup
      xmlparser	

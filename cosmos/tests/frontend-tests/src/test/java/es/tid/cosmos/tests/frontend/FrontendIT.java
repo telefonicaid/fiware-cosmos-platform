@@ -172,7 +172,7 @@ public class FrontendIT {
         inputPage.setInputFile(this.invalidJarPath);
         inputPage.submitInputFileForm();
 
-        Task task = FrontEndTask.CreateFromExistingTaskId(
+        Task task = FrontEndTask.createFromExistingTaskId(
                 this.frontend.getEnvironment(),
                 taskId);
         task.run();

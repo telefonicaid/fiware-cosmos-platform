@@ -8,17 +8,19 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.ClusterUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Bts;
 import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
- *
+ * Input: <Long, Bts|Cluster>
+ * Output: <Long, Cluster>
+ * 
  * @author dmicol
  */
 public class FilterBtsVectorReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<Cluster>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     private static final double MAX_BTS_AREA = 10.83515D;
     private static final long MAX_COMMS_BTS = 70000L;
     
@@ -53,7 +55,8 @@ public class FilterBtsVectorReducer extends Reducer<LongWritable,
                 }
                 Cluster.Builder outputCluster = Cluster.newBuilder(cluster);
                 outputCluster.setConfident(confident);
-                context.write(key, ClusterUtil.wrap(outputCluster.build()));
+                context.write(key,
+                              MobDataUtil.createAndWrap(outputCluster.build()));
             }
         }
     }

@@ -6,5 +6,6 @@ package es.tid.cosmos.mobility.adjacentextraction;
  */
 public enum Counters {
     COUNTER_FOR_POI_ID,
-    COUNTER_FOR_TABLE_ID
+    COUNTER_FOR_TABLE_ID,
+    NUM_INDEXES
 }

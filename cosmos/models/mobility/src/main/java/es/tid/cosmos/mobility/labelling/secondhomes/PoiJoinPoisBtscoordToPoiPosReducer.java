@@ -8,6 +8,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.Poi;
@@ -15,17 +16,19 @@ import es.tid.cosmos.mobility.data.MobProtocol.PoiPos;
 import es.tid.cosmos.mobility.data.PoiPosUtil;
 
 /**
- *
+ * Input: <Long, Poi|Cell>
+ * Output: <Long, PoiPos>
+ * 
  * @author dmicol
  */
 public class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<PoiPos>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<Poi> poiList = new LinkedList<Poi>();
-        List<Cell> cellList = new LinkedList<Cell>();
+        Cell cell = null;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
@@ -34,7 +37,9 @@ public class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
                     poiList.add(mobData.getPoi());
                     break;
                 case CELL:
-                    cellList.add(mobData.getCell());
+                    if (cell == null) {
+                        cell = mobData.getCell();
+                    }
                     break;
                 default:
                     throw new IllegalStateException("Unexpected MobData type: "
@@ -43,14 +48,14 @@ public class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
         }
         
         for (Poi poi : poiList) {
-            Cell cell = cellList.get(0);
-            ProtobufWritable<PoiPos> poiPos = PoiPosUtil.createAndWrap(
+            PoiPos poiPos = PoiPosUtil.create(
                     poi.getNode(), poi.getBts(),
                     poi.getConfidentnodebts() == 0 ? 0 :
                                                      poi.getLabelgroupnodebts(),
                     cell.getPosx(), cell.getPosy(), poi.getInoutWeek(),
                     poi.getInoutWend(), -1D, -1D, -1D, -1D);
-            context.write(new LongWritable(poi.getNode()), poiPos);
+            context.write(new LongWritable(poi.getNode()),
+                          MobDataUtil.createAndWrap(poiPos));
         }
     }
 }

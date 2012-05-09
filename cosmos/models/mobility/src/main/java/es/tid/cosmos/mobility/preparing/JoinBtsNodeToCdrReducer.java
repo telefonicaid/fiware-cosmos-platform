@@ -5,45 +5,52 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.CdrUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
+import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
- *
+ * Input: <Long, Cdr>
+ * Output: <Long, TwoInt>
+ * 
  * @author dmicol
  */
 public class JoinBtsNodeToCdrReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<Cdr>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+    private static List<Cell> cells = null;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+            InterruptedException {
+        if (cells == null) {
+            final Configuration conf = context.getConfiguration();
+            cells = CellsCatalogue.load(new Path(conf.get("cells")), conf);
+        }
+    }
+    
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        List<Cdr> cdrs = new LinkedList<Cdr>();
-        List<Cell> cells = new LinkedList<Cell>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case CDR:
-                    cdrs.add(mobData.getCdr());
-                    break;
-                case CELL:
-                    cells.add(mobData.getCell());
-                    break;
-                default:
-                    throw new IllegalArgumentException("Invalid input data");
+        List<Cell> filteredCells = new LinkedList<Cell>();
+        for (Cell cell : cells) {
+            if (cell.getCellId() == key.get()) {
+                filteredCells.add(cell);
             }
         }
-        
-        if (cells.isEmpty()) {
-            for (Cdr cdr : cdrs) {
+        if (filteredCells.isEmpty()) {
+            for (ProtobufWritable<MobData> value : values) {
+                value.setConverter(MobData.class);
+                final Cdr cdr = value.get().getCdr();
                 context.write(new LongWritable(cdr.getUserId()),
-                              CdrUtil.wrap(cdr));
+                              MobDataUtil.createAndWrap(cdr));
             }
         }
     }

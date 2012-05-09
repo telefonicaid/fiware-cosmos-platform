@@ -3,29 +3,32 @@ package es.tid.cosmos.mobility.labelling.clientbts;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeMxCounter;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 
 /**
- *
+ * Input: <Long, NodeMxCounter>
+ * Output: <NodeBts, Int>
+ * 
  * @author dmicol
  */
 public class VectorSpreadNodbtsReducer extends Reducer<LongWritable,
-        ProtobufWritable<NodeMxCounter>, ProtobufWritable<NodeBts>,
-        IntWritable> {
+        ProtobufWritable<MobData>, ProtobufWritable<NodeBts>,
+        ProtobufWritable<MobData>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<NodeMxCounter>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<NodeMxCounter> value : values) {
-            value.setConverter(NodeMxCounter.class);
-            final NodeMxCounter nodeMxCounter = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final NodeMxCounter nodeMxCounter = value.get().getNodeMxCounter();
             for (BtsCounter btsCounter : nodeMxCounter.getBtsList()) {
                 int group;
                 switch (btsCounter.getWeekday()) {
@@ -44,7 +47,8 @@ public class VectorSpreadNodbtsReducer extends Reducer<LongWritable,
                 ProtobufWritable<NodeBts> nodeBts = NodeBtsUtil.createAndWrap(
                         key.get(), (int)btsCounter.getPlaceId(),
                         group, btsCounter.getRange());
-                context.write(nodeBts, new IntWritable(btsCounter.getCount()));
+                context.write(nodeBts,
+                              MobDataUtil.createAndWrap(btsCounter.getCount()));
             }
         }
     }

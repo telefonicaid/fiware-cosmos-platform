@@ -9,6 +9,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 
@@ -17,17 +18,17 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
  * @author dmicol
  */
 public class ExportClusterToTextByTwoIntReducer extends Reducer<
-        ProtobufWritable<TwoInt>, ProtobufWritable<Cluster>, NullWritable,
+        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>, NullWritable,
         Text> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<ProtobufWritable<Cluster>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(TwoInt.class);
         final TwoInt twoInt = key.get();
-        for (ProtobufWritable<Cluster> value : values) {
-            value.setConverter(Cluster.class);
-            final Cluster cluster = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final Cluster cluster = value.get().getCluster();
             context.write(NullWritable.get(),
                           new Text(TwoIntUtil.toString(twoInt)
                                    + ClusterUtil.DELIMITER

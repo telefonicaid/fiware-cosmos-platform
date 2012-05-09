@@ -10,20 +10,21 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
+import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
  *
  * @author dmicol
  */
 public class ExportClusterToTextReducer extends Reducer<
-        LongWritable, ProtobufWritable<Cluster>, NullWritable, Text> {
+        LongWritable, ProtobufWritable<MobData>, NullWritable, Text> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<Cluster>> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<Cluster> value : values) {
-            value.setConverter(Cluster.class);
-            final Cluster cluster = value.get();
+        for (ProtobufWritable<MobData> value : values) {
+            value.setConverter(MobData.class);
+            final Cluster cluster = value.get().getCluster();
             context.write(NullWritable.get(),
                           new Text(key + ClusterUtil.DELIMITER
                                    + ClusterUtil.toString(cluster)));

@@ -10,20 +10,22 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
 
 /**
- *
+ * Input: <Long, Int|NodeBtsDay>
+ * Output: <Long, BtsCounter>
+ * 
  * @author dmicol
  */
 public class RepbtsJoinDistCommsReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<BtsCounter>> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     @Override
     public void reduce(LongWritable key,
-                       Iterable<ProtobufWritable<MobData>> values,
-                       Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<Integer> ncommsList = new LinkedList<Integer>();
         List<NodeBtsDay> nodeBtsDayList = new LinkedList<NodeBtsDay>();
@@ -43,13 +45,12 @@ public class RepbtsJoinDistCommsReducer extends Reducer<LongWritable,
         }
         for (Integer ncomms : ncommsList) {
             for (NodeBtsDay nodeBtsDay : nodeBtsDayList) {
-                ProtobufWritable<BtsCounter> counter =
-                        BtsCounterUtil.createAndWrap(
+                BtsCounter counter = BtsCounterUtil.create(
                                 nodeBtsDay.getPlaceId(),
                                 0,
                                 nodeBtsDay.getCount(),
                                 nodeBtsDay.getCount() * 100 / ncomms);
-                context.write(key, counter);
+                context.write(key, MobDataUtil.createAndWrap(counter));
             }
         }
     }

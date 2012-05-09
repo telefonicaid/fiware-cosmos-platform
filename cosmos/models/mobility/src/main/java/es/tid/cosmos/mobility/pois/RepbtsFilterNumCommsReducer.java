@@ -1,23 +1,23 @@
 package es.tid.cosmos.mobility.pois;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
 
 /**
- *
+ * Input: <Long, Cdr|NodeBsDay>
+ * Output: <Long, Int>
+ * 
  * @author dmicol
  */
 public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, IntWritable> {
+        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
     private static final int MIN_TOTAL_CALLS = 200;
     private static final int MAX_TOTAL_CALLS = 5000;
 
@@ -26,7 +26,6 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
                        Iterable<ProtobufWritable<MobData>> values,
                        Context context)
             throws IOException, InterruptedException {
-        List<NodeBtsDay> nodeBtsDayList = new LinkedList<NodeBtsDay>();
         int numCommsInfo = 0;
         int numCommsNoInfoOrNoBts = 0;
         for (ProtobufWritable<MobData> value : values) {
@@ -39,7 +38,6 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
                 case NODE_BTS_DAY:
                     final NodeBtsDay nodeBtsDay = mobData.getNodeBtsDay();
                     numCommsInfo += nodeBtsDay.getCount();
-                    nodeBtsDayList.add(nodeBtsDay);
                     break;
                 default:
                     throw new IllegalArgumentException();
@@ -47,7 +45,7 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
         }
         int totalComms = numCommsInfo + numCommsNoInfoOrNoBts;
         if (totalComms >= MIN_TOTAL_CALLS && totalComms <= MAX_TOTAL_CALLS) {
-            context.write(key, new IntWritable(numCommsInfo));
+            context.write(key, MobDataUtil.createAndWrap(numCommsInfo));
         }
     }
 }

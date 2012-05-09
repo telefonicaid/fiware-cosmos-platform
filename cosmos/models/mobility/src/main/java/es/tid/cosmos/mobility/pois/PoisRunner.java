@@ -49,7 +49,8 @@ public final class PoisRunner {
             job.waitForCompletion(true);
         }
 
-        Path clientsInfoSpreadPath = new Path(tmpDirPath, "clients_info_spread");
+        Path clientsInfoSpreadPath = new Path(tmpDirPath,
+                                              "clients_info_spread");
         {
             MapJob job = MapJob.create(conf, "RepbtsSpreadNodebts",
                     SequenceFileInputFormat.class,
@@ -72,65 +73,14 @@ public final class PoisRunner {
             job.waitForCompletion(true);
         }
         
-        Path repbtsAggbybtsMobDataPath = new Path(tmpDirPath,
-                                                  "repbts_aggbybts_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf, "ConvertNodeBtsDayToMobData",
-                    SequenceFileInputFormat.class,
-                    ConvertNodeBtsDayToMobDataReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, clientsInfoAggbybtsPath);
-            FileOutputFormat.setOutputPath(job, repbtsAggbybtsMobDataPath);
-            job.waitForCompletion(true);
-        }
-
-        Path cdrsNoinfoMobDataPath = new Path(tmpDirPath,
-                                              "cdrs_noinfo_mob_data");
-        { 
-            ReduceJob job = ReduceJob.create(conf, "ConvertCdrToMobData",
-                    SequenceFileInputFormat.class,
-                    ConvertCdrToMobDataReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, cdrsNoinfoPath);
-            FileOutputFormat.setOutputPath(job, cdrsNoinfoMobDataPath);
-            job.waitForCompletion(true);
-        }
-
-        Path cdrsNoBtsMobDataPath = new Path(tmpDirPath, "cdrs_nobts_mob_data");
-        { 
-            ReduceJob job = ReduceJob.create(conf, "ConvertCdrToMobData",
-                    SequenceFileInputFormat.class,
-                    ConvertCdrToMobDataReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, cdrsNoBtsPath);
-            FileOutputFormat.setOutputPath(job, cdrsNoBtsMobDataPath);
-            job.waitForCompletion(true);
-        }
-        
         {
             ReduceJob job = ReduceJob.create(conf, "RepbtsFilterNumComms",
                     SequenceFileInputFormat.class,
                     RepbtsFilterNumCommsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                repbtsAggbybtsMobDataPath, cdrsNoinfoMobDataPath,
-                cdrsNoBtsMobDataPath });
+                clientsInfoAggbybtsPath, cdrsNoinfoPath, cdrsNoBtsPath });
             FileOutputFormat.setOutputPath(job, clientsInfoFilteredPath);
-            job.waitForCompletion(true);
-        }
-        
-        fs.delete(cdrsNoinfoMobDataPath, true);
-        fs.delete(cdrsNoBtsMobDataPath, true);
-
-        Path clientsInfoFilteredMobDataPath = new Path(tmpDirPath,
-                "clients_info_filtered_mob_data");
-        {
-            ReduceJob job = ReduceJob.create(conf, "ConvertIntToMobData",
-                    SequenceFileInputFormat.class,
-                    ConvertIntToMobDataReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, clientsInfoFilteredPath);
-            FileOutputFormat.setOutputPath(job, clientsInfoFilteredMobDataPath);
             job.waitForCompletion(true);
         }
         
@@ -142,18 +92,15 @@ public final class PoisRunner {
                     RepbtsJoinDistCommsReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                repbtsAggbybtsMobDataPath, clientsInfoFilteredMobDataPath });
+                clientsInfoAggbybtsPath, clientsInfoFilteredPath });
             FileOutputFormat.setOutputPath(job, clientsInfoBtsPercPath);
             job.waitForCompletion(true);
         }
-        
-        fs.delete(repbtsAggbybtsMobDataPath, true);
-        fs.delete(clientsInfoFilteredMobDataPath, true);
 
         {
-            ReduceJob job = ReduceJob.create(conf, "RepbtsGetRepresentativeBts",
+            MapJob job = MapJob.create(conf, "RepbtsGetRepresentativeBts",
                     SequenceFileInputFormat.class,
-                    RepbtsGetRepresentativeBtsReducer.class,
+                    RepbtsGetRepresentativeBtsMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoBtsPercPath);
             FileOutputFormat.setOutputPath(job, clientsRepbtsPath);

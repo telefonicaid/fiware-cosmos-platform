@@ -98,18 +98,12 @@ public class KpiMain extends Configured implements Tool {
                         + features.getName());
             }
 
-            String mongoCollectionUrl = mongoUrl;
-            if (!mongoCollectionUrl.endsWith(
-                    MONGO_COLLECTION_NAMESPACE_DELIMITER)) {
-                mongoCollectionUrl += MONGO_COLLECTION_NAMESPACE_DELIMITER;
-            }
-            mongoCollectionUrl += features.getName();
             ReduceJob exporterJob = ReduceJob.create(conf, "MongoDBExporterJob",
                     TextInputFormat.class, MongoDBExporterReducer.class,
                     MongoOutputFormat.class);
             Configuration exporterConf = exporterJob.getConfiguration();
             TextInputFormat.setInputPaths(exporterJob, kpiOutputPath);
-            MongoConfigUtil.setOutputURI(exporterConf, mongoCollectionUrl);
+            MongoConfigUtil.setOutputURI(exporterConf, mongoUrl);
             exporterConf.setStrings("fields", features.getFields());
             exporterJob.waitForCompletion(true);
         }

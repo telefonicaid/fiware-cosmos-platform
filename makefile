@@ -227,8 +227,8 @@ unit_test: debug
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG/samson_test.xml
 
 test_coverage:
-	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest"
-	BUILD_COVERAGE/apps/unitTest/unitTest --gtest_shuffle --gtest_output=xml:BUILD_COVERAGE/samson_test.xml
+	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" || true
+	BUILD_COVERAGE/apps/unitTest/unitTest --gtest_shuffle --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' -e 's,\(<testcase name="\)DISABLED_\(.*status="notrun".*\) />,\1\2>\n      <skipped/>\n    </testcase>,' BUILD_COVERAGE/samson_test.xml
 

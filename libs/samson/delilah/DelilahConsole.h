@@ -247,13 +247,6 @@ namespace samson {
 				writeWarningOnConsole( message );
 		}
         
-        
-        void run_repeat_command( std::string command )
-        {
-            LM_TODO(("Check what type of messages...."));
-            runAsyncCommand(command);
-        }
-        
         void add_alias( std::string key , std::string value );
         void remove_alias( std::string key );
 

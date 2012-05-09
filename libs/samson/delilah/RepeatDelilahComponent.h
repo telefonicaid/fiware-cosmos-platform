@@ -12,7 +12,7 @@
 
 namespace samson 
 {
-   
+   /*
     class RepeatDelilahComponent : public DelilahComponent , engine::Object
     {
         std::string command;
@@ -37,6 +37,7 @@ namespace samson
         void run();
         
     };
+    */
 	
 }
 

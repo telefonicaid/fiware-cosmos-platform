@@ -166,9 +166,11 @@ namespace samson
 		
 		void clearComponents();
         void clearAllComponents();  // Force all of them to be removed
-        
+
+        /*
         Status stop_repeat( size_t id );        
         Status stop_all_repeat(  );
+         */
         
         // Get a list of local directory
         std::string getLsLocal( std::string pattern , bool only_queues );

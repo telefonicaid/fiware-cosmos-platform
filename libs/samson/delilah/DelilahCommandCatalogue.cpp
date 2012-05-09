@@ -79,7 +79,8 @@ namespace samson
             "      -warning      Mark this trace as a warning for correct visualitzation\n"
             "      message       Use only this worker as broadcaster\n"
             );
-        
+
+        /*
         add( "repeat" , "delilah",
             "Repeat a command continuously",
             "repeat <command>. Stop them using stop_repeat\n\n"
@@ -90,6 +91,7 @@ namespace samson
              "stop_repeat [process_id]\n"
              "            [process_id] optional id to be stoped\n"
             );
+         */
         
         
         add( "ps" , "delilah" ,   

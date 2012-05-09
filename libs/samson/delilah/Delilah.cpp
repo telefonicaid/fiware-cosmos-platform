@@ -642,7 +642,7 @@ namespace samson {
         return table.str();
     }
     
-    
+/*    
     Status Delilah::stop_repeat( size_t id )
     {
         au::TokenTaker tt(&token);
@@ -672,6 +672,7 @@ namespace samson {
         }
         return OK;
     }
+ */
 
     DelilahComponent* Delilah::getComponent( size_t delilah_id )
     {

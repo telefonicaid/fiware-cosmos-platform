@@ -327,6 +327,7 @@ namespace samson
             info->add("-out");
         }
         
+        /*
         if (info->completingSecondWord("stop_repeat") )
         {
             // Add all ps repeat tasks...
@@ -340,6 +341,7 @@ namespace samson
 
             
         }
+         */
         
         // Options for the cluster command
         if (info->completingSecondWord("cluster") )
@@ -1021,6 +1023,7 @@ namespace samson
             
         }
         
+        /*
         if( mainCommand == "stop_repeat" )
         {
             
@@ -1046,7 +1049,7 @@ namespace samson
             
             return 0;
         }
-        
+         
         if( mainCommand == "repeat" )
         {
             if( commandLine.get_num_arguments() < 2 )
@@ -1085,7 +1088,9 @@ namespace samson
             return 0;
             
         }
-        
+        */
+         
+         
         // Push data to a queue
         
         if( mainCommand == "push" )

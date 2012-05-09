@@ -19,7 +19,8 @@
 
 namespace samson 
 {
-	
+/*
+ 
     RepeatDelilahComponent::RepeatDelilahComponent( std::string _command , int _seconds ) 
     : DelilahComponent( DelilahComponent::repeat )
     {
@@ -62,5 +63,7 @@ namespace samson
             }
         }
     }
-    
+ 
+ */
+ 
 }

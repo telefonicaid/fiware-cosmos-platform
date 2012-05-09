@@ -31,7 +31,7 @@ public class VectorGetNcomsNodedayhourReducerTest {
     }
 
     @Test
-    public void testReduce() {
+    public void testGetNumberOfComsPerNodeAndDailyhour() {
         final ProtobufWritable<NodeBts> key = NodeBtsUtil.createAndWrap(1, 2,
                                                                         3, 4);
         final ProtobufWritable<MobData> value = MobDataUtil.createAndWrap(

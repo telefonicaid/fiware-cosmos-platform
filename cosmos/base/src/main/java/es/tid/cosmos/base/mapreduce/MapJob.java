@@ -9,7 +9,7 @@ import org.apache.hadoop.mapreduce.OutputFormat;
  *
  * @author ximo
  */
-public class MapJob extends CosmosJob {
+public final class MapJob extends CosmosJob {
     // This class is created through a static method to enable type inference in
     // generic parameters by the Java compiler. Directs calls to constructors do
     // not activate the type inference mechanism in the compiler, which causes

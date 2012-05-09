@@ -9,7 +9,7 @@ import org.apache.hadoop.mapreduce.Reducer;
  *
  * @author ximo
  */
-public class ReduceJob extends CosmosJob {
+public final class ReduceJob extends CosmosJob {
     // This class is created through a static method to enable type inference in
     // generic parameters by the Java compiler. Directs calls to constructors do
     // not activate the type inference mechanism in the compiler, which causes

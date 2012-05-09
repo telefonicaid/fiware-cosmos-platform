@@ -71,7 +71,7 @@ public class FrontEndTask implements Task {
         this.frontend = new FrontEnd(env);
     }
 
-    public static FrontEndTask CreateFromExistingTaskId(Environment env,
+    public static FrontEndTask createFromExistingTaskId(Environment env,
                                                         String taskId) {
         return new FrontEndTask(env, taskId);
     }

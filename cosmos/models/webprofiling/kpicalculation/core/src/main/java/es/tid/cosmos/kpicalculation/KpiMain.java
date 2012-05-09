@@ -3,7 +3,6 @@ package es.tid.cosmos.kpicalculation;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
-import java.util.EnumSet;
 
 import com.hadoop.mapreduce.LzoTextInputFormat;
 import com.mongodb.hadoop.MongoOutputFormat;

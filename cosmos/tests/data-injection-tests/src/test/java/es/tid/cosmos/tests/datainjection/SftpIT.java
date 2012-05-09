@@ -167,6 +167,28 @@ public class SftpIT {
         }
     }
 
+    @Test(expectedExceptions = JSchException.class)
+    public void testUserAuth1(String environment) throws JSchException {
+        this.connectToServer(
+                this.env.getProperty(EnvironmentSetting.DEFAULT_USER),
+                "BadPassword");
+    }
+
+    @Test(expectedExceptions = JSchException.class)
+    public void testUserAuth2(String environment) throws JSchException {
+        this.connectToServer("BadUser", "BadPassword");
+    }
+
+    @Test(expectedExceptions = JSchException.class)
+    public void testUserAuth3(String environment) throws JSchException {
+        this.connectToServer("root", "root");
+    }
+
+    @Test(expectedExceptions = JSchException.class)
+    public void testUserAuth4(String environment) throws JSchException {
+        this.connectToServer("root", "1234");
+    }
+
     @Test
     public void testDirCommands(String environment)
             throws SftpException, JSchException, IOException {

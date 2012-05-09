@@ -46,7 +46,6 @@ public class KpiMain extends Configured implements Tool {
     private static final URL KPI_DEFINITIONS = KpiMain.class.getResource(
             "/kpi.properties");
     private static final int NUM_ARGS = 3;
-    private static final String MONGO_COLLECTION_NAMESPACE_DELIMITER = ".";
 
     @Override
     public int run(String[] args) throws Exception {

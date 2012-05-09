@@ -69,7 +69,7 @@ static const char* manSynopsis = "[-input input_description]  [-output output_de
 
 
 int default_buffer_size = 64*1024*1024 - sizeof(samson::KVHeader);
-int default_input_buffer_size = 10000; // 10Kb
+int default_input_buffer_size = 100000; // 100Kb
 
 PaArgument paArgs[] =
 {   

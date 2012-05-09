@@ -1,0 +1,7 @@
+--NAME--
+samsonMemCheck - OK
+--SHELL--
+samsonMemCheck
+--EXPECT--
+Found enough shared memory for SAMSON
+The maximum shared memory segment size is sufficent for SAMSON.

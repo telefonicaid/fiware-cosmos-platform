@@ -5,6 +5,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from desktop.lib.django_util import PopupException, render
 
+from cosmos import paths
 from cosmos.models import JobRun
 from cosmos.forms import RunJobForm
 
@@ -24,7 +25,10 @@ def run_job(request):
 
 
 def upload_index(request):
-    return render('upload_index.mako', request, dict())
+    return render('upload_index.mako', request, dict(
+        datasets_base=paths.datasets_base(request.user),
+        jars_base=paths.jars_base(request.user)
+    ))
 
 
 def chown(fs, filename, username):

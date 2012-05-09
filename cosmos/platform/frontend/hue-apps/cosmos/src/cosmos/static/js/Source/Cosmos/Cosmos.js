@@ -52,78 +52,49 @@ var Cosmos = new Class({
         (function() {
             // delay to avoid "obj.CallFunction is not a function" error
             // when communicating with the flash object
-            var uploaderNode = $(this).getElement('.cos-upload');
             if (Browser.Plugins.Flash.build) {
-                this.upgrade_to_flash(uploaderNode);
+                this.upgrade_to_flash($(this).getElement('.cos-upload_dataset'));
+                this.upgrade_to_flash($(this).getElement('.cos-upload_jar'));
             }
         }).delay(10, this);
     },
 
     upgrade_to_flash: function(uploaderNode) {
+        if (!uploaderNode) {
+            return;
+        }
         uploaderNode.target = '';
         uploaderNode.href += '?flash_upload=1';
-        uploaderNode.addEvent('click', this.make_uploader.bind(this));
-    },
+        var dest = uploaderNode.get('href').toURI().get('data').dest;
 
-    make_uploader: function() {
-        (function() {
-            var link = $('select-file')
-            var linkIdle = link.get('html')
-
-            function linkUpdate() {
-                if (!swf.uploading) return;
-                var size = link.set('html', '<span class="small">' +
-                swf.percentLoaded + '% of ' + size + '</span>');
+        this.addEvents({
+            alert: function(){
+                if (this.uploader) this.uploader.uploader.box.hide();
+            },
+            endAlert: function(){
+                if (this.uploader) this.uploader.uploader.box.show();
             }
+        });
 
-            var swf = new Swiff.Uploader({
-                path: '/static/js/ThirdParty/digitarald-fancyupload/source/Swiff.Uploader.swf',
-                url: '/cosmos/flash_upload/',
-                verbose: true,
-                queued: false,
-                multiple: false,
-                target: link,
-                instantStart: true,
-                fileSizeMax: 512 * 1024 * 1024,
-                onSelectSuccess: function(files) {
-                    this.setEnabled(false);
-                },
-                onSelectFail: function(files) {
-                    alert("No files");
-                },
-                appendCookieData: true,
-                onQueue: linkUpdate,
-                onFileComplete: function(file) {
-                    if (file.response.error) {
-                        alert("Upload of " + file + " failed");
-                    } else {
-                        var hdfs_path = JSON.decode(file.response.text, true).hdfs_path;
-                        alert("Successful upload", "Uploaded to " + hdfs_path);
-                    }
-                    file.remove();
-                    this.setEnabled(true);
-                },
-                onComplete: function() {
-                    link.set('html', linkIdle);
-                }
-            });
-
-            link.addEvents({
-                click: function() {
-                    return false;
-                },
-                mouseenter: function() {
-                    this.addClass('hover');
-                    swf.reposition();
-                },
-                mouseleave: function() {
-                    this.removeClass('hover');
-                    this.blur();
-                },
-                mousedown: function() {
-                    this.focus();
-                }
-            });
-        }).delay(100);
+        this.uploader = new Hue.FileBrowser.Uploader(dest, this.jframe, {
+            //the DOM element where we're going to display our results
+            list: $(this).getElement('.cos-upload-list'),
+            listContainer: $(this).getElement('.cos-uploader'),
+            button: uploaderNode,
+            uploaderOptions: {
+                //call this url when we upload a file
+                url: '/filebrowser/upload_flash',
+                container: this.toolbar
+            }
+        });
+        
+        // Infect Hue.FileBrowser.Uploaded to tune error messages
+        var that = {wrappedHandler: this.uploader.uploader.$events.fileError[0]};
+        this.uploader.uploader.removeEvent('fileError', that.wrappedHandler);
+        this.uploader.uploader.addEvent('fileError', function (file) {
+            file.errorMessage = 'Cannot upload file. A file with the same ' +
+                                'name might exists';
+            this.wrappedHandler(file);
+        }.bind(that));
     }
 });

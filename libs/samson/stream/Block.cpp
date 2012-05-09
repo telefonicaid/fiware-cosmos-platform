@@ -249,6 +249,20 @@ namespace samson {
                 // Default state is on_memory because the buffer has been given at memory
                 state = on_memory;
 
+                // Get a new unique id from the block manager
+                worker_id = BlockManager::shared()->getWorkerId();
+                id = BlockManager::shared()->getNextBlockId();
+                
+                // Get a copy of the header
+                header = (KVHeader*) malloc( sizeof( KVHeader ) );
+                memcpy(header, buffer->getData(), sizeof(KVHeader));
+                
+                LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
+                lookupList = NULL;
+                
+                // First idea of sort information
+                update_sort_information();
+
             }
             else
             {
@@ -292,27 +306,29 @@ namespace samson {
                 
                 // State will be building until a BlockBuildtask is exewcuted
                 state = building;
+
+                // Get a new unique id from the block manager
+                worker_id = BlockManager::shared()->getWorkerId();
+                id = BlockManager::shared()->getNextBlockId();
+                
+                // Get a copy of the header
+                engine::Buffer *buffer = buffer_container.getBuffer();
+                if(!buffer)
+                    LM_X(1, ("Internal error"));
+                header = (KVHeader*) malloc( sizeof( KVHeader ) );
+                memcpy(header, buffer->getData(), sizeof(KVHeader));
+                
+                LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
+                lookupList = NULL;
+                
+                // First idea of sort information
+                update_sort_information();
+
                 
                 // Schedule the operation
                 engine::ProcessManager::shared()->add( block_builder , getEngineId() );
             }
             
-            // Get a new unique id from the block manager
-            worker_id = BlockManager::shared()->getWorkerId();
-            id = BlockManager::shared()->getNextBlockId();
-
-            // Get a copy of the header
-            engine::Buffer *buffer = buffer_container.getBuffer();
-            if(!buffer)
-                LM_X(1, ("Internal error"));
-            header = (KVHeader*) malloc( sizeof( KVHeader ) );
-            memcpy(header, buffer->getData(), sizeof(KVHeader));
-
-            LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
-            lookupList = NULL;
-            
-            // First idea of sort information
-            update_sort_information();
         }
         
         Block::Block( size_t _worker_id , size_t _id , size_t _size , KVHeader* _header ) : token_lookupList("token_lookupList")

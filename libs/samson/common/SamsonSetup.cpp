@@ -380,16 +380,6 @@ namespace samson
         return _samson_working + "/etc/setup.txt";
     }
     
-    std::string SamsonSetup::dataDirectory( )
-    {
-        return _samson_working + "/data";
-    }
-    
-    std::string SamsonSetup::dataFile( std::string filename )
-    {
-        return _samson_working + "/data/" + filename;
-    }
-    
     std::string SamsonSetup::sharedMemoryLogFileName()
     {
         return _samson_working + "/log/shared_memory_ids.data";
@@ -489,8 +479,6 @@ namespace samson
     {
         if( createFullDirectory( _samson_working ) != OK )
             LM_X(1,("Error creating directory %s" , _samson_working.c_str() ));
-        if( createFullDirectory( _samson_working + "/data" )!= OK )
-            LM_X(1,("Error creating directory at %s" , _samson_working.c_str() ));
         if( createFullDirectory( _samson_working + "/log" )!= OK )
             LM_X(1,("Error creating directory at %s" , _samson_working.c_str() ));
         if( createFullDirectory( _samson_working + "/blocks" )!= OK )

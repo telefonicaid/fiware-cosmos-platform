@@ -1,31 +1,24 @@
 package es.tid.cosmos.samples.wordcount;
 
-import com.mongodb.hadoop.MongoOutputFormat;
-import com.mongodb.hadoop.util.MongoConfigUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import es.tid.cosmos.base.mapreduce.MapReduceJob;
-import es.tid.cosmos.base.mapreduce.ReduceJob;
-import es.tid.cosmos.samples.wordcount.export.mongodb.MongoDBExporterReducer;
+import es.tid.cosmos.samples.wordcount.export.mongodb.MongoDBExporterJob;
 
 /**
- * Application entry point. Runs a job that counts each different word in a
- * given text.
+ * Application entry point. Runs a job that counts each different word
+ * in a given text.
  *
  * @author logc
  */
 public class WordCountMain extends Configured implements Tool {
     private static final Logger LOGGER = Logger.getLogger(
             WordCountMain.class);
+    
     private static final int MIN_ARGS = 2;
     private static final int MAX_ARGS = 3;
 
@@ -38,26 +31,22 @@ public class WordCountMain extends Configured implements Tool {
 
         Path inputPath = new Path(args[0]);
         Path outputPath = new Path(args[1]);
-
-        MapReduceJob wcJob = MapReduceJob.create(
-                this.getConf(), "WordCount", TextInputFormat.class,
-                WordCountMapper.class, WordCountReducer.class,
-                TextOutputFormat.class);
-        wcJob.setCombinerClass(WordCountReducer.class);
-        FileInputFormat.setInputPaths(wcJob, inputPath);
-        FileOutputFormat.setOutputPath(wcJob, outputPath);
-        wcJob.waitForCompletion(true);
+        
+        WordCountJob wcJob = new WordCountJob(this.getConf());
+        wcJob.configure(inputPath, outputPath);
+        if (!wcJob.waitForCompletion(true)) {
+            throw new Exception("Failed to process word counts");
+        }
 
         if (args.length == MAX_ARGS) {
             String mongoUrl = args[2];
-            ReduceJob exJob = ReduceJob.create(
-                    this.getConf(), "MongoDBExporterJob", TextInputFormat.class,
-                    MongoDBExporterReducer.class, MongoOutputFormat.class);
-            TextInputFormat.setInputPaths(exJob, outputPath);
-            MongoConfigUtil.setOutputURI(exJob.getConfiguration(), mongoUrl);
-            exJob.waitForCompletion(true);
+            MongoDBExporterJob exJob = new MongoDBExporterJob(this.getConf());
+            exJob.configure(outputPath, mongoUrl);
+            if (!exJob.waitForCompletion(true)) {
+                throw new Exception("Failed to export to MongoDB");
+            }
         }
-
+        
         return 0;
     }
 

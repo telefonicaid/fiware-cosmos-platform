@@ -172,7 +172,7 @@ public class FrontendIT {
         inputPage.setInputFile(this.invalidJarPath);
         inputPage.submitInputFileForm();
 
-        Task task = FrontEndTask.CreateFromExistingTaskId(
+        Task task = FrontEndTask.createFromExistingTaskId(
                 this.frontend.getEnvironment(),
                 taskId);
         task.run();
@@ -369,7 +369,8 @@ public class FrontendIT {
     public void testDotsInName() throws IOException, TestException {
         final String inputFilePath = createAutoDeleteFile(
                 "2 3 4 5 6 7 8 9 123\n19283");
-        final String taskId = "../1234|<b>Weird</b>.Name_1!!&nbsp;%20~€";
+        final String taskIdPrefix = "../1|<b>W</b>._1!!&nbsp;%20~€";
+        String taskId = taskIdPrefix + UUID.randomUUID().toString().substring(25);
         Task task = new FrontEndTask(new FrontEnd(this.frontend.getEnvironment(),
                                                   "test@.2",
                                                   "cosmostest@.2"),

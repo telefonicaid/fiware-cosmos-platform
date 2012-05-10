@@ -235,51 +235,42 @@ namespace samson {
 
             if( num_buffers == 1 )
             {
-                // Get a new unique id from the block manager
-                worker_id = BlockManager::shared()->getWorkerId();
-                id = BlockManager::shared()->getNextBlockId();
-                
                 // Get the first (unique) buffer
                 engine::Buffer *buffer = buffer_list_container->front();
-                
                 // Set name of buffer
                 buffer->setNameAndType( au::str("%lu-%lu" , worker_id , id) , "blocks" );
+                
+                // Get the size of the buffer
+                size = buffer->getSize();
 
                 // Keep in the intenal buffer container
                 buffer_container.setBuffer(buffer);
+                
+                // Default state is on_memory because the buffer has been given at memory
+                state = on_memory;
+
+                // Get a new unique id from the block manager
+                worker_id = BlockManager::shared()->getWorkerId();
+                id = BlockManager::shared()->getNextBlockId();
                 
                 // Get a copy of the header
                 header = (KVHeader*) malloc( sizeof( KVHeader ) );
                 memcpy(header, buffer->getData(), sizeof(KVHeader));
                 
-                // Get the size of the buffer
-                size = buffer->getSize();
-
-                // Default state is on_memory because the buffer has been given at memory
-                state = on_memory;
-                
-                // LookupList not initializaed by default
+                LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
                 lookupList = NULL;
                 
                 // First idea of sort information
                 update_sort_information();
 
-                LM_T(LmtBlockManager, ("Block created from 1 buffer: %s", this->str().c_str()));
-                
             }
             else
             {
-                // Get a new unique id from the block manager
-                worker_id = BlockManager::shared()->getWorkerId();
-                id = BlockManager::shared()->getNextBlockId();
+                KVHeader* tmp_header = (KVHeader*) buffer_list_container->front()->getData();
+                KVFormat format = tmp_header->getKVFormat();
+                KVInfo info;
 
-                // Init header with the first buffer header
-                header = (KVHeader*) malloc( sizeof( KVHeader ) );
-                memcpy(header, (KVHeader*) buffer_list_container->front()->getData(), sizeof(KVHeader));
-                KVFormat format = header->getKVFormat();
-                KVInfo info; // Collect information from component buffers
-
-                // Operation to build the final buffer
+                // Buffer finally considered to create the block
                 BlockBuilder * block_builder = new BlockBuilder(this);
 
                 while( buffer_list_container->getNumBuffers() > 0 )
@@ -306,15 +297,26 @@ namespace samson {
                 
                 // Compute the total size and create the buffer
                 size = sizeof( KVHeader ) + info.size;
-                
-                // Create the new buffer 
                 buffer_container.create(au::str("%lu-%lu" , worker_id , id) , "blocks"  , size );
                 
                 // Copy the header to the final buffer and set the final size
-                header->setInfo(info);
+                KVHeader* final_header = (KVHeader*) buffer_container.getBuffer()->getData();
+                memcpy( final_header , tmp_header, sizeof(KVHeader));
+                final_header->setInfo(info);
                 
-                // State will be building until a the scheduled BlockBuild operation is finished
+                // State will be building until a BlockBuildtask is exewcuted
                 state = building;
+
+                // Get a new unique id from the block manager
+                worker_id = BlockManager::shared()->getWorkerId();
+                id = BlockManager::shared()->getNextBlockId();
+                
+                // Get a copy of the header
+                engine::Buffer *buffer = buffer_container.getBuffer();
+                if(!buffer)
+                    LM_X(1, ("Internal error"));
+                header = (KVHeader*) malloc( sizeof( KVHeader ) );
+                memcpy(header, buffer->getData(), sizeof(KVHeader));
                 
                 LM_T(LmtBlockManager, ("Block created from buffer: %s", this->str().c_str()));
                 lookupList = NULL;
@@ -322,7 +324,8 @@ namespace samson {
                 // First idea of sort information
                 update_sort_information();
 
-                // Schedule the operation to create the buffer
+                
+                // Schedule the operation
                 engine::ProcessManager::shared()->add( block_builder , getEngineId() );
             }
             

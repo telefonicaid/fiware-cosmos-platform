@@ -108,25 +108,25 @@ install: install_release
 install_release: release
 	make -C BUILD_RELEASE install
 	make install_man_release
-	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKER) $(SAMSON_OWNER)
+	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKING) $(SAMSON_OWNER)
 
 di:	install_debug
 install_debug: debug
 	make -C BUILD_DEBUG install -j $(CPU_COUNT)
 	mkdir -p $(SAMSON_HOME)/share/modules/moduletemplate
-	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKER) $(SAMSON_OWNER)
+	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKING) $(SAMSON_OWNER)
 
 ria: install_release_all
 install_release_all: release_all
 	make -C BUILD_RELEASE_ALL install
 	make install_man_release_all
-	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKER) $(SAMSON_OWNER)
+	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKING) $(SAMSON_OWNER)
 
 dai: install_debug_all
 dia: install_debug_all
 install_debug_all: debug_all
 	make -C BUILD_DEBUG_ALL install
-	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKER) $(SAMSON_OWNER)
+	scripts/postInstall $(SAMSON_HOME) $(SAMSON_WORKING) $(SAMSON_OWNER)
 
 install_coverage: coverage
 	make -C BUILD_COVERAGE install -j $(CPU_COUNT)

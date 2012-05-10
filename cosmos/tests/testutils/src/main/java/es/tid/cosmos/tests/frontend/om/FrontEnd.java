@@ -67,6 +67,10 @@ public class FrontEnd {
         return this.environment;
     }
 
+    public String getUsername() {
+        return this.username;
+    }
+
     public URL resolveURL(String verbatimUrl) throws MalformedURLException {
         return new URL(new URL(this.driver.getCurrentUrl()), verbatimUrl);
     }

@@ -614,7 +614,7 @@ namespace samson {
                 ::samson::add( record , "Input Size"    , input_block_info.info.size , "f=uint64,sum" );
                 ::samson::add( record , "Input #Kvs"    , input_block_info.info.kvs , "f=uint64,sum" );
 
-                ::samson::add( record , "Latency (ms)"    , 1000*latency_time , "f=uint64,average" );
+                ::samson::add( record , "Latency (ms)"    , 1000*latency_time , "f=uint64,different" );
                 
                 
                 ::samson::add( record , "running_tasks" , running_tasks.size()        , "f=uint64,sum" );

@@ -82,7 +82,10 @@ endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # Indicate where to finc the header files needed to build the module
 # For modules that are not built with the rest of Samson edit the "ELSE" section only
+
+# Include directory pointing to current dir and /usr/local/include
 IF (SVN_BUILD)
+    include_directories("${PROJECT_SOURCE_DIR}/libs")
     include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
     include_directories("${PROJECT_SOURCE_DIR}/modules/core/system")
     include_directories("${PROJECT_SOURCE_DIR}/modules/extra/level")

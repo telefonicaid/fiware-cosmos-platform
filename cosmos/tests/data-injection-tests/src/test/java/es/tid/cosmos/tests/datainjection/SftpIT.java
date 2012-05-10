@@ -4,16 +4,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
-import com.jcraft.jsch.*;
+import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+import com.jcraft.jsch.SftpException;
 import org.apache.hadoop.fs.Path;
 import static org.testng.Assert.assertEquals;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
+import es.tid.cosmos.tests.sftp.om.CosmosSftp;
 import es.tid.cosmos.tests.tasks.Environment;
 import es.tid.cosmos.tests.tasks.EnvironmentSetting;
 
@@ -26,37 +29,10 @@ public class SftpIT {
         this.env = Environment.valueOf(environment);
     }
 
-    private Session connectToServer(String username, String password)
-            throws JSchException {
-        JSch jsch = new JSch();
-        Session session = jsch.getSession(
-                username,
-                env.getProperty(EnvironmentSetting.SFTP_URL),
-                22);
-
-        session.setConfig("StrictHostKeyChecking", "no");
-        session.setPassword(password);
-        session.connect();
-        return session;
-    }
-
-    private Session connectToServer()
-            throws JSchException {
-        return this.connectToServer(
-                env.getProperty(EnvironmentSetting.DEFAULT_USER),
-                env.getProperty(EnvironmentSetting.DEFAULT_PASSWORD));
-    }
-
-    private ChannelSftp connectToSftp(Session session) throws JSchException {
-        Channel channel = session.openChannel("sftp");
-        channel.connect();
-        return (ChannelSftp)channel;
-    }
-
     @Test
     public void testFileUpload(String environment)
-            throws SftpException, JSchException, IOException {
-        final Session session = this.connectToServer();
+            throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
         try {
             this.putAndVerifyFile(session, "testFileUpload", new Data(1));
         } finally {
@@ -66,8 +42,8 @@ public class SftpIT {
 
     @Test(expectedExceptions = SftpException.class)
     public void testOutOfDirectoryUpload1(String environment)
-            throws SftpException, JSchException, IOException {
-        final Session session = this.connectToServer();
+            throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
         try {
             this.putAndVerifyFile(session, "../testOutOfDirectoryUpload",
                                   new Data(1));
@@ -82,8 +58,8 @@ public class SftpIT {
 
     @Test(expectedExceptions = SftpException.class)
     public void testOutOfDirectoryUpload2(String environment)
-            throws SftpException, JSchException, IOException {
-        final Session session = this.connectToServer();
+            throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
         try {
             this.putAndVerifyFile(
                     session,
@@ -96,8 +72,8 @@ public class SftpIT {
 
     @Test(expectedExceptions = SftpException.class)
     public void testOutOfDirectoryUpload3(String environment)
-            throws SftpException, JSchException, IOException {
-        final Session session = this.connectToServer();
+            throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
         try {
             this.putAndVerifyFile(
                     session,
@@ -110,8 +86,8 @@ public class SftpIT {
 
     @Test
     public void testFileUploadWithEscaping1(String environment)
-            throws SftpException, JSchException, IOException {
-        final Session session = this.connectToServer();
+            throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
         try {
             this.putAndVerifyFile(
                     session,
@@ -124,9 +100,9 @@ public class SftpIT {
 
     @Test
     public void testFileUploadWithEscaping2(String environment)
-            throws SftpException, JSchException, IOException {
-        final Session session = this.connectToServer();
-        final ChannelSftp sftpChannel = this.connectToSftp(session);
+            throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
+        final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
         final String dirName = "myDumyDir";
         try {
             Data data = new Data(Byte.MAX_VALUE / 4);
@@ -143,9 +119,9 @@ public class SftpIT {
 
     @Test(expectedExceptions = SftpException.class)
     public void testMoveToRoot(String environment)
-            throws SftpException, JSchException, IOException {
-        final Session session = this.connectToServer();
-        final ChannelSftp sftpChannel = this.connectToSftp(session);
+            throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
+        final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
         try {
             sftpChannel.cd("/");
         } finally {
@@ -156,9 +132,9 @@ public class SftpIT {
 
     @Test
     public void testDefaultPwd(String environment)
-            throws SftpException, JSchException, IOException {
-        final Session session = this.connectToServer();
-        final ChannelSftp sftpChannel = this.connectToSftp(session);
+            throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
+        final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
         try {
             assertEquals(sftpChannel.pwd(), this.getDefaultDir());
         } finally {
@@ -168,32 +144,33 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = JSchException.class)
-    public void testUserAuth1(String environment) throws JSchException {
-        this.connectToServer(
+    public void testUserAuth1(String environment) throws Exception {
+        CosmosSftp.createSession(
+                this.env,
                 this.env.getProperty(EnvironmentSetting.DEFAULT_USER),
                 "BadPassword");
     }
 
     @Test(expectedExceptions = JSchException.class)
-    public void testUserAuth2(String environment) throws JSchException {
-        this.connectToServer("BadUser", "BadPassword");
+    public void testUserAuth2(String environment) throws Exception {
+        CosmosSftp.createSession(this.env, "BadUser", "BadPassword");
     }
 
     @Test(expectedExceptions = JSchException.class)
-    public void testUserAuth3(String environment) throws JSchException {
-        this.connectToServer("root", "root");
+    public void testUserAuth3(String environment) throws Exception {
+        CosmosSftp.createSession(this.env, "root", "root");
     }
 
     @Test(expectedExceptions = JSchException.class)
-    public void testUserAuth4(String environment) throws JSchException {
-        this.connectToServer("root", "1234");
+    public void testUserAuth4(String environment) throws Exception {
+        CosmosSftp.createSession(this.env, "root", "1234");
     }
 
     @Test
     public void testDirCommands(String environment)
-            throws SftpException, JSchException, IOException {
-        final Session session = this.connectToServer();
-        final ChannelSftp sftpChannel = this.connectToSftp(session);
+            throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
+        final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
         final String dirName = "myTempDir";
         try {
             sftpChannel.mkdir(dirName);
@@ -209,7 +186,7 @@ public class SftpIT {
 
     private void putFile(ChannelSftp sftpChannel, String filePath,
                          Iterable<Integer> data)
-            throws SftpException, IOException {
+            throws Exception {
         OutputStream output = sftpChannel.put(filePath);
         try {
             for (int b : data) {
@@ -222,7 +199,7 @@ public class SftpIT {
 
     private void verifyFile(ChannelSftp sftpChannel, String filePath,
                             Iterable<Integer> data)
-            throws SftpException, IOException {
+            throws Exception {
         InputStream input = sftpChannel.get(filePath);
         try {
             for (int b : data) {
@@ -235,8 +212,8 @@ public class SftpIT {
 
     private void putAndVerifyFile(Session session, String fileName,
                                   Iterable<Integer> data)
-            throws SftpException, IOException, JSchException {
-        final ChannelSftp sftpChannel = this.connectToSftp(session);
+            throws Exception {
+        final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
 
         try {
             final String currentDir = sftpChannel.pwd();
@@ -254,9 +231,8 @@ public class SftpIT {
 
     @Test
     public void testParallelFileUpload(String environment)
-            throws SftpException, JSchException, IOException,
-                   ExecutionException, InterruptedException {
-        final Session session = this.connectToServer();
+            throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
         FutureTask task1 = new FutureTask(new Callable() {
             @Override
             public Object call() throws Exception {

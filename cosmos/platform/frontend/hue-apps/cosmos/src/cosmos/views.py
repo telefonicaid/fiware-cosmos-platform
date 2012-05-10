@@ -2,14 +2,20 @@
 import logging
 
 from django.core.urlresolvers import reverse
+from django.forms.util import ErrorList
 from django.shortcuts import redirect
 from desktop.lib.django_util import PopupException, render
+import jobsub.views as jobsub
+from jobsub.models import Submission
+from jobsubd.ttypes import (BinHadoopStep, LocalizedFile, LocalizeFilesStep,
+                            State, SubmissionPlan, SubmissionPlanStep)
 
-from cosmos import paths
+from cosmos import conf, paths
 from cosmos.models import JobRun
 from cosmos.forms import RunJobForm
 
 LOGGER = logging.getLogger(__name__)
+TEMP_JAR = "tmp.jar"
 
 def index(request):
     """List job runs."""
@@ -20,100 +26,75 @@ def index(request):
     ))
 
 
+def validate_hdfs_path(fs, form, field):
+    has_file = fs.exists(form.cleaned_data[field])
+    if not has_file:
+        errors = form._errors.setdefault(field, ErrorList())
+        errors.append("File does not exist")
+    return has_file
+
+
+def submit(job):
+    LOGGER.info("Submitting job %s (%d) for %s with JAR=%s on dataset %s" %
+                (job.name, job.id, job.user.username, job.jar_path,
+                 job.dataset_path))
+
+    lf = LocalizedFile(target_name=TEMP_JAR, path_on_hdfs=job.jar_path)
+    lfs = LocalizeFilesStep(localize_files=[lf])
+    bhs = BinHadoopStep(arguments=job.hadoop_args(TEMP_JAR))
+    plan = SubmissionPlan(name=job.name,
+                          user=job.user.username,
+                          groups=job.user.get_groups(),
+                          steps=[SubmissionPlanStep(localize_files_step=lfs),
+                                 SubmissionPlanStep(bin_hadoop_step=bhs)])
+    submission = Submission(owner=job.user,
+                            name=job.name,
+                            last_seen_state=State.SUBMITTED,
+                            submission_plan=plan)
+    submission.save()
+    job.submission = submission
+    job.save()
+    try:
+        try:
+            submission.submission_handle = jobsub.get_client().submit(plan)
+        except Exception:
+            import ipdb; ipdb.set_trace()
+            submission.last_seen_state = State.ERROR
+            raise
+    finally:
+        submission.save()
+
+
 def run_job(request):
-    pass
+    """Starts a new job."""
+
+    if request.method == 'POST':
+        form = RunJobForm(request.POST, request.FILES)
+
+        if form.is_valid():
+            has_jar = validate_hdfs_path(request.fs, form, "jar_path")
+            has_dataset = validate_hdfs_path(request.fs, form, "dataset_path")
+            if has_jar and has_dataset:
+                data = form.cleaned_data
+                job = JobRun(name=data['name'], description=data['description'],
+                             user=request.user,
+                             dataset_path=data['dataset_path'],
+                             jar_path=data['jar_path'])
+                job.save()
+                submit(job)
+                return redirect(reverse('list_jobs'))
+    else:
+        form = RunJobForm()
+
+    return render('job_run.mako', request, dict(
+        form=form
+    ))
 
 
 def upload_index(request):
+    """Allows to upload datasets and jars."""
+
     return render('upload_index.mako', request, dict(
         datasets_base=paths.datasets_base(request.user),
         jars_base=paths.jars_base(request.user)
     ))
-
-
-def chown(fs, filename, username):
-    try:
-        try:
-            fs.setuser(fs.superuser)
-            fs.chmod(filename, 0644)
-            fs.chown(filename, username, username)
-        except IOError, ex:
-            msg = 'Failed to chown file ("%s") as superuser %s' % (
-                filename, fs.superuser)
-            LOGGER.exception(msg)
-            raise PopupException(msg, detail=str(ex))
-    finally:
-        fs.setuser(username)
-
-
-def upload_to_dir(fs, path, upload, user):
-    tmp_file = upload.get_temp_path()
-    chown(fs, tmp_file, user.username)
-
-    dest_file = fs.join(path, upload.name)
-    try:
-        fs.mkdir(path)
-        fs.rename(tmp_file, dest_file)
-        LOGGER.info('Upload %s correctly moved to %s' % (upload.name, path))
-    except IOError, ex:
-        raise PopupException(
-            'Failed to rename uploaded temporary file "%s" to "%s": %s'
-            % (tmp_file, dest_file, ex))
-
-
-def upload_dataset(request):
-    if request.method == 'POST':
-        form = UploadDatasetForm(request.POST, request.FILES)
-
-        if not form.is_valid():
-            LOGGER.error("Error uploading dataset: %s" % (form.errors,))
-        else:
-            name = form.cleaned_data["name"]
-            if Dataset.objects.filter(user=request.user, name=name).exists():
-                raise PopupException('Dataset "%s" already exists' % name)
-            dataset = Dataset(name=name, user=request.user,
-                              description=form.cleaned_data['description'])
-            dataset.set_default_path()
-            upload = request.FILES['hdfs_file']
-            if request.fs.exists(dataset.path):
-                raise PopupException('Directory %s already exists' % 
-                                     datset.path)
-            upload_to_dir(request.fs, dataset.path, upload, request.user)
-            dataset.save()
-            upload.remove()
-            return redirect(reverse('list_datasets'))
-
-    else:
-        form = UploadDatasetForm()
-    return render('dataset_upload.mako', request, dict(
-        form=form,
-        flash_upload=request.GET.get('flash_upload', False)
-    ))
-
-
-def upload_jar(request):
-    if request.method == 'POST':
-        form = UploadCustomJarForm(request.POST, request.FILES)
-
-        if not form.is_valid():
-            LOGGER.error("Error uploading custom jar: %s" % (form.errors,))
-        else:
-            name = form.cleaned_data["name"]
-            if CustomJar.objects.filter(user=request.user, name=name).exists():
-                raise PopupException('Custom JAR "%s" already exists' % name)
-            jar = CustomJar(name=name, user=request.user,
-                            description=form.cleaned_data['description'])
-            jar.set_default_path()
-            upload = request.FILES['hdfs_file']
-            upload_to_dir(request.fs, __default_jar_dir__, upload, request.user)
-            jar.save()
-            upload.remove()
-            return redirect(reverse('list_jars'))
-
-    else:
-        form = UploadCustomJarForm()
-    return render('jar_upload.mako', request, dict(
-        form=form,
-        flash_upload=request.GET.get('flash_upload', False)
-    ))
-

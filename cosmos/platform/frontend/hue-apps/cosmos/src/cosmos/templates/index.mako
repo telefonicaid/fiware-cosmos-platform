@@ -35,7 +35,7 @@ ${shared.header("Cosmos", section="job_runs")}
         <td>${job_run.start_date | h}</td>
         <td>${job_run.name | h}</td>
         <td>${job_run.description | h}</td>
-        <td>${job_run.status | h}</td>
+        <td>${job_run.status() | h}</td>
 	<td>
             <!-- TODO: show links to progress in job browser, results in
                     cosmos_dataviewer and error in here -->

@@ -6,57 +6,20 @@ import logging
 
 from django.contrib.auth.models import User
 from django.db import models
+from jobsub.models import Submission
+
+from cosmos import conf
 
 
 LOGGER = logging.getLogger(__name__)
-
-class Dataset(models.Model):
-    """
-    A dataset is a related set of files grouped into a HDFS path.
-
-    """
-
-    NAME_MAX_LENGTH = 256
-    name = models.CharField(max_length=NAME_MAX_LENGTH)
-
-    user = models.ForeignKey(User)
-
-    DESCRIPTION_MAX_LENGTH = 1024
-    description = models.TextField(max_length=DESCRIPTION_MAX_LENGTH)
-
-    PATH_MAX_LENGTH = 256
-    path = models.CharField(max_length=PATH_MAX_LENGTH)
-
-    def __unicode__(self):
-        return self.name
-
-    def set_default_path(self):
-        self.path = "/user/%s/datasets/%s/" % (self.user.username, self.name)
-
-
-class CustomJar(models.Model):
-    """
-    Custom JARs uploaded by the user.
-
-    """
-
-    NAME_MAX_LENGTH = 256
-    name = models.CharField(max_length=NAME_MAX_LENGTH)
-
-    user = models.ForeignKey(User)
-
-    DESCRIPTION_MAX_LENGTH = 1024
-    description = models.TextField(max_length=DESCRIPTION_MAX_LENGTH)
-
-    PATH_MAX_LENGTH = 256
-    path = models.CharField(max_length=PATH_MAX_LENGTH)
-
-    def __unicode__(self):
-        return self.name
-
-    def set_default_path(self):
-        self.path = "/user/%s/jars/%s/" % (self.user.username, self.name)
-
+PATH_MAX_LENGTH = 256
+STATE_NAMES = {
+    1: 'submitted',
+    2: 'running',
+    3: 'successful',
+    4: 'failed',
+    5: 'failed'
+}
 
 class JobRun(models.Model):
     """
@@ -69,22 +32,24 @@ class JobRun(models.Model):
 
     DESCRIPTION_MAX_LENGTH = 1024
     description = models.TextField(max_length=DESCRIPTION_MAX_LENGTH)
-
     user = models.ForeignKey(User)
-    dataset = models.ForeignKey(Dataset)
-    model = models.ForeignKey(CustomJar)
-
-    start_date = models.DateTimeField(auto_now = True)
-
-    RUNNING = 1
-    SUCCESSFUL = 2
-    FAILED = 3
-    STATUS_CHOICES = (
-        (RUNNING, 'Running'),
-        (SUCCESSFUL, 'Successful'),
-        (FAILED, 'Failed'),
-    )
-    status = models.IntegerField(choices = STATUS_CHOICES)
+    dataset_path = models.CharField(max_length=PATH_MAX_LENGTH)
+    jar_path = models.CharField(max_length=PATH_MAX_LENGTH)
+    start_date = models.DateTimeField(auto_now=True)
+    submission = models.ForeignKey(Submission, null=True)
 
     def __unicode__(self):
         return self.name
+
+    def hadoop_args(self, jar_name):
+        input_path = self.dataset_path
+        output_path = '/user/%s/tmp/job_%d/' % (self.user.username, self.id)
+        mongo_url = '%s/db_%d.job_%d' % (conf.MONGO_BASE.get(), self.user.id,
+                                         self.id)
+        return ['jar', jar_name, input_path, output_path, mongo_url]
+
+    def status(self):
+        if self.submission is None:
+            return "unsubmitted"
+        else:
+            return STATE_NAMES[self.submission.last_seen_state]

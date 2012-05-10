@@ -168,3 +168,18 @@
 	vertical-align: middle;
 	background-image: url(/static/js/ThirdParty/digitarald-fancyupload/assets/progress-bar/progress.gif);
 }
+
+/* Run job form */
+.cos-run_job_form dt {
+    float: left;
+    clear: both;
+    text-align: right;
+    width: 90px;
+}
+.cos-run_job_form dd {
+    float: left;
+    text-align: left;
+}
+.cos-run_job_form input {
+    width: 120px;
+}

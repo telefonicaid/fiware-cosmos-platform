@@ -4,8 +4,10 @@
 #include <string>
 #include <vector>
 
-#include "Entity.h"
-#include "Scope.h"
+#include "Format.h"                         // Format
+#include "Verb.h"                           // Verb
+#include "Entity.h"                         // Entity
+#include "Scope.h"                          // Scope
 
 
 
@@ -25,16 +27,8 @@ typedef struct DiscoverContextAvailabilityRequest
 
 /* ****************************************************************************
 *
-* discoverContextAvailabilityRequestParse - 
+* discoverContextAvailability - 
 */
-extern DiscoverContextAvailabilityRequest* discoverContextAvailabilityRequestParse(xmlNodePtr nodeP);
-
-
-
-/* ****************************************************************************
-*
-* discoverContextAvailabilityRequestPresent - 
-*/
-extern void discoverContextAvailabilityRequestPresent(DiscoverContextAvailabilityRequest* dcarP);
+extern bool discoverContextAvailability(int fd, Verb verb, Format format, char* data);
 
 #endif

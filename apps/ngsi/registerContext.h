@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-#include "Entity.h"
-#include "Metadata.h"
+#include "Verb.h"                           // Verb
+#include "Format.h"                         // Format
 
 using namespace std;
 
@@ -13,47 +13,8 @@ using namespace std;
 
 /* ****************************************************************************
 *
-* ContextRegistrationAttributeList - 
+* registerContext - 
 */
-typedef struct ContextRegistrationAttributeList
-{
-    std::string         name;
-    std::string         type;
-    bool                isDomain;
-    vector<Metadata*>   metadataV;
-} ContextRegistrationAttributeList;
-
-
-
-/* ****************************************************************************
-*
-* RegisterContextRequest - 
-*/
-typedef struct RegisterContextRequest
-{
-    vector<Entity*>                  entityV;
-    ContextRegistrationAttributeList attributeList;
-    vector<Metadata*>                registrationMetadataV;
-    std::string                      providingApplication;
-    std::string                      duration;
-    std::string                      registrationId;
-} RegisterContextRequest;
-
-
-
-/* ****************************************************************************
-*
-* registerContextRequestParse - 
-*/
-extern RegisterContextRequest* registerContextOldRequestParse(xmlNodePtr node0P);
-extern RegisterContextRequest* registerContextRequestParse(xmlNodePtr node0P);
-
-
-
-/* ****************************************************************************
-*
-* registerContextRequestPresent - 
-*/
-extern void registerContextRequestPresent(RegisterContextRequest* rcrP);
+extern bool registerContext(int fd, Verb verb, Format format, char* data);
 
 #endif

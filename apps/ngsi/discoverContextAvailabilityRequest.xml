@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<discoverContextAvailabilityRequest>
+<discoveryContextAvailabilityRequest>
 	<entityIdList>
 		<entityId>
 			<id>ConferenceRoom</id>
@@ -18,16 +18,16 @@
 		<attribute>lightstatus</attribute>
 	</attributeList>
 	<restriction>
-		<attributeExpression>ATTREXPR</attributeExpression>
+		<attributeExpression></attributeExpression>
 		<scope>
 			<operationScope>
-				<scopeType>SCOPETYPE1</scopeType>
-				<scopeValue>SCOPEVALUE1</scopeValue>
+				<scopeType></scopeType>
+				<scopeValue></scopeValue>
 			</operationScope>
 			<operationScope>
-				<scopeType>SCOPETYPE2</scopeType>
-				<scopeValue>SCOPEVALUE2</scopeValue>
+				<scopeType></scopeType>
+				<scopeValue></scopeValue>
 			</operationScope>
 		</scope>
 	</restriction>
-</discoverContextAvailabilityRequest>
+</discoveryContextAvailabilityRequest>

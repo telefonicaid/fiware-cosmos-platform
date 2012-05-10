@@ -1,8 +1,16 @@
 #include <libxml/tree.h>
 #include <string>
+#include <libxml/tree.h>
 
+#include "logMsg/logMsg.h"                  // LM_*
+
+#include "traceLevels.h"                    // Trace levels for log msg library
 #include "ws.h"                             // whitespace functions
 #include "Scope.h"                          // Scope
+#include "Format.h"                         // Format
+#include "Verb.h"                           // Verb
+#include "rest.h"                           // allow, restReply
+#include "httpData.h"                       // httpDataLines, httpData
 #include "discoverContextAvailability.h"    // Own interface
 
 using namespace std;
@@ -106,7 +114,7 @@ static DiscoverContextAvailabilityRequest* discoverContextAvailabilityRequest(Di
 *
 * discoverContextAvailabilityRequestParse - 
 */
-DiscoverContextAvailabilityRequest* discoverContextAvailabilityRequestParse(xmlNodePtr nodeP)
+static DiscoverContextAvailabilityRequest* discoverContextAvailabilityRequestParse(xmlNodePtr nodeP)
 {
     DiscoverContextAvailabilityRequest* dcarP = new DiscoverContextAvailabilityRequest();
 
@@ -121,11 +129,12 @@ DiscoverContextAvailabilityRequest* discoverContextAvailabilityRequestParse(xmlN
 
 
 
+#if 0
 /* ****************************************************************************
 *
 * discoverContextAvailabilityRequestPresent - 
 */
-void discoverContextAvailabilityRequestPresent(DiscoverContextAvailabilityRequest* dcarP)
+static void discoverContextAvailabilityRequestPresent(DiscoverContextAvailabilityRequest* dcarP)
 {
     unsigned int ix;
 
@@ -153,6 +162,93 @@ void discoverContextAvailabilityRequestPresent(DiscoverContextAvailabilityReques
         printf("  scopeValue[%d]: '%s'\n", ix, dcarP->scopeV[ix]->value.c_str());
     }
 }
+#endif
 
 
 
+/* ****************************************************************************
+*
+* discoverContextAvailabilityRequestTreat - 
+*/
+static bool discoverContextAvailabilityRequestTreat(DiscoverContextAvailabilityRequest* dcarP)
+{
+	LM_M(("Not Implemented"));
+	return false;
+}
+
+
+
+/* ****************************************************************************
+*
+* discoverContextAvailabilityXmlDataParse - 
+*/
+static bool discoverContextAvailabilityXmlDataParse(int fd, Format format, std::string buf)
+{
+    xmlDocPtr                            doc;
+    xmlNodePtr                           node;
+    DiscoverContextAvailabilityRequest*  dcarP;
+	bool                                 ret = true;
+
+    doc  = xmlParseDoc((const xmlChar*) buf.c_str());
+    node = doc->children;
+
+    if (strcmp((char*) node->name, "discoverContextAvailabilityRequest") != 0)
+    {
+		LM_E(("XML Data should be 'discoverContextAvailabilityRequest'. Was '%s'", (char*) node->name));
+		restReply(fd, format, 404, "status", "XML Data should be 'discoverContextAvailabilityRequest'");
+		ret = false;
+	}
+	else
+	{
+		dcarP = discoverContextAvailabilityRequestParse(node);
+		if (dcarP != NULL)
+		{
+			if (discoverContextAvailabilityRequestTreat(dcarP) != true) // if OK, responds to REST request
+			{
+				restReply(fd, format, 500, "status", "XML data treat error");
+				ret = false;
+			}
+		}
+		else
+		{
+			restReply(fd, format, 404, "status", "error parsing XML rquest data");
+			ret = false;
+		}
+	}
+
+	xmlFreeDoc(doc);
+
+	return ret;
+}
+
+
+
+/* ****************************************************************************
+*
+* discoverContextAvailability - 
+*/
+bool discoverContextAvailability(int fd, Verb verb, Format format, char* data)
+{
+	LM_T(LmtOperation, ("discoverContextAvailability: %s", verbName(verb)));
+
+	if (verb == POST)
+    {
+        LM_T(LmtOperation, ("discoverContextAvailability: POST"));
+
+		if (httpDataLines == 0)
+		{
+			LM_W(("No data for discoverContextAvailability"));
+			return restReply(fd, format, 404, "status", "No XML data");
+		}
+		else if (httpDataLines > 1)
+		{
+			LM_W(("More than one data line for discoverContextAvailability (%d)", httpDataLines));
+			return restReply(fd, format, 404, "status", "Only one line of XML data allowed");
+		}
+
+		return discoverContextAvailabilityXmlDataParse(fd, format, data);
+    }
+        
+	allow = "POST";
+    return restReply(fd, format, 405, "error", "BAD VERB");
+}

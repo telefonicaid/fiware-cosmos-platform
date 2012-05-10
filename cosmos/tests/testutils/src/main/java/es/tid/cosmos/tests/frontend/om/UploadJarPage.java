@@ -12,6 +12,7 @@ import static org.testng.Assert.assertEquals;
 public class UploadJarPage {
     // HTML classes and ids
     public static final String JAR_FILE_HTML_ID = "id_jar";
+    public static final String ERROR_HTML_ID = "error";
     private WebDriver driver;
     private final String uploadJarUrl = "TODO"; // TODO
 
@@ -22,18 +23,25 @@ public class UploadJarPage {
     public UploadJarPage(WebDriver driver) {
         this.driver = driver;
     }
-    
+
     public void setJarFile(String filePath) {
         assertCorrectUrl();
         WebElement inputElement = this.driver.findElement(
                 By.id(JAR_FILE_HTML_ID));
         inputElement.sendKeys(filePath);
     }
-    
+
     public void submitForm() {
         assertCorrectUrl();
         WebElement inputElement = this.driver.findElement(
                 By.id(JAR_FILE_HTML_ID));
         inputElement.submit();
+    }
+
+    public String getErrorText() {
+        assertCorrectUrl();
+        WebElement errorElement = this.driver.findElement(
+                By.id(ERROR_HTML_ID));
+        return errorElement.getText();
     }
 }

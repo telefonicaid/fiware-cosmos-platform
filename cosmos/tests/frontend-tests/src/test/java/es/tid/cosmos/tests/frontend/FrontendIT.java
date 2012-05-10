@@ -21,9 +21,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
-import es.tid.cosmos.tests.frontend.om.CreateJobPage;
-import es.tid.cosmos.tests.frontend.om.FrontEnd;
-import es.tid.cosmos.tests.frontend.om.FrontEndTask;
+import es.tid.cosmos.tests.frontend.om.*;
 import es.tid.cosmos.tests.hadoopjars.HadoopJars;
 import es.tid.cosmos.tests.hadoopjars.JarNames;
 import es.tid.cosmos.tests.tasks.Environment;
@@ -136,6 +134,40 @@ public class FrontendIT {
     public void testMainPage() {
         this.frontend.gotoCosmosHome();
         verifyLinks();
+    }
+
+    public void testUploadJarNoFile() {
+        UploadJarPage uploadJarPage = this.frontend.goToUploadJar();
+        uploadJarPage.submitForm();
+        assertTrue(uploadJarPage.getErrorText().contains("empty"),
+                   "Verifying page errors if no file is submitted");
+    }
+
+    public void testUploadJarExistingFile() throws IOException {
+        String localTmpFile = FrontendIT.createAutoDeleteFile(SIMPLE_TEXT);
+        this.ensureJar(localTmpFile);
+        UploadJarPage uploadJarPage = this.frontend.goToUploadJar();
+        uploadJarPage.setJarFile(localTmpFile);
+        uploadJarPage.submitForm();
+        assertTrue(uploadJarPage.getErrorText().contains("exists"),
+                   "Verifying page errors if file already exists");
+    }
+
+    public void testUploadDataNoFile() {
+        UploadDataPage uploadDataPage = this.frontend.goToUploadData();
+        uploadDataPage.submitForm();
+        assertTrue(uploadDataPage.getErrorText().contains("empty"),
+                   "Verifying page errors if no file is submitted");
+    }
+
+    public void testUploadDataExistingFile() throws IOException {
+        String localTmpFile = FrontendIT.createAutoDeleteFile(SIMPLE_TEXT);
+        this.ensureData(localTmpFile);
+        UploadDataPage uploadDataPage = this.frontend.goToUploadData();
+        uploadDataPage.setDataFile(localTmpFile);
+        uploadDataPage.submitForm();
+        assertTrue(uploadDataPage.getErrorText().contains("exists"),
+                   "Verifying page errors if file already exists");
     }
 
     public void testNoNameFile() throws IOException {

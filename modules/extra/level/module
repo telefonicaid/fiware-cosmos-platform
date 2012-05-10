@@ -135,8 +135,10 @@ script init_stream_operations_timed
 		rm [input] [state] [output] [output_txt] -f;
 		rm_stream_operation [o1] [o2] -f;
 
-		# Properties for output queue
-		set_queue_property [output_txt] max_size 1000;
+		# Properties for output queues
+		set_queue_property [input] max_size 1;
+		set_queue_property [output] max_size 1;
+		set_queue_property [output_txt] max_size 1;
 
 		# Definitions
 		aso [o1]  level.update_valTimed_levels    [input] [state]       [output] [state];

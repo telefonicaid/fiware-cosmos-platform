@@ -33,6 +33,7 @@ namespace level{
 
 		void init( TXTWriter *writer )
 		{
+		    LM_M(("init publish_valTimed_levels"));
 		}
 
 		void run( KVSetStruct* inputs , TXTWriter *writer )

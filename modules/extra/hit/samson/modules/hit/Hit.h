@@ -46,15 +46,14 @@ namespace hit{
 */
 
 
-	   void setTime( time_t current_ts , size_t time_span )
+	   void setTime( time_t current_ts , double forgetting_factor )
 	   {
 		  if( current_ts < time.value )
 			 return;
 
           ::time_t diff =  current_ts - time.value;
-		  double f = ((double)(time_span - 1)) / ((double) time_span); 
 
-          count.value = (( (double) count.value ) * pow( f  , (double) diff ));
+          count.value = (( (double) count.value ) * pow( forgetting_factor  , (int) diff ));
 		  time.value = current_ts;
 	   }
 

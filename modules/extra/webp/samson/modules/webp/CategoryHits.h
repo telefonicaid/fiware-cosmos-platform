@@ -41,7 +41,7 @@ namespace webp{
 		  // Apply a forgetting factor to "current" counter
 		  double time_span = 300;
 		  double factor = ( time_span - 1 ) / time_span;
-		  current.value = current.value * pow( factor  , seconds );		  
+		  current.value = current.value * pow( factor  , (int) seconds );
 	   }
 	   
 

@@ -28,13 +28,15 @@ namespace hit{
 
 	  time_t reference_time_stamp;
 	  size_t time_span;
+	  double forgetting_factor;    //computable from time_span, but stored for efficiency
 	  
-	  HitCollectionManager( std::string _concept , size_t _time_span )
+	  HitCollectionManager( std::string _concept , size_t _time_span, double _forgetting_factor )
 	  {
 		 concept = _concept;
 		 time_span = _time_span;
+
 		 reference_time_stamp = 0; // Init with 0 to make sure it is updated the first time
-		 
+		 forgetting_factor = _forgetting_factor;
 		 top_hits = (samson::hit::Hit**) malloc( sizeof(samson::hit::Hit*) * NUM_TOP_ITEMS );
 		 
 		 for( int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
@@ -56,7 +58,7 @@ namespace hit{
 	   void setTime( time_t new_reference_time_stamp  )
 	   {
 		  for( int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
-			 top_hits[i]->setTime( new_reference_time_stamp , time_span );
+			 top_hits[i]->setTime( new_reference_time_stamp, forgetting_factor );
 
 		  reference_time_stamp = new_reference_time_stamp;
 	   }
@@ -64,17 +66,17 @@ namespace hit{
 	   void add( samson::hit::Hit *hit  )
 	   {
 		  
-		  // Upjust time
+		  // Adjust time
 		  if ( hit->time.value > reference_time_stamp )
 			 setTime( hit->time.value );
 		  else
-			 hit->setTime( reference_time_stamp , time_span );
+			 hit->setTime( reference_time_stamp, forgetting_factor );
 
 
 		  if( hit->count.value < top_hits[NUM_TOP_ITEMS-1]->count.value )
 			 return;
 
-		  // Check if we had this concept before, so just update the total acucmulated
+		  // Check if we had this concept before, so just update the total accumulated
 		  for (int i = 0 ; i < NUM_TOP_ITEMS ; i++ )
 			 if( top_hits[i]->concept.value == hit->concept.value )
 			 {				
@@ -102,7 +104,7 @@ namespace hit{
 		  		 return;
 			 }
 
-		  // Just look for the rigth place to update
+		  // Just look for the right place to update
 		  int pos = 0;
 		  while( ( pos < NUM_TOP_ITEMS ) && (top_hits[pos]->count.value > hit->count.value ) )
 			 pos++;
@@ -147,17 +149,20 @@ namespace hit{
 
 	  std::vector<HitCollectionManager*> managers;
 	  size_t time_span;
+	  double forgetting_factor;    //computable from time_span, but stored for efficiency
 
    public:
 
 	  MultiHitCollectionManager()
 	  {
 		 time_span = 300; // Default value
+		 forgetting_factor = ((double)(time_span - 1)) / ((double) time_span);
 	  }
 
-	  void setTimeSpan( size_t _time_span )
+	  void setTimeSpan( size_t _time_span, double _forgetting_factor )
 	  {
 		 time_span = _time_span;
+		 forgetting_factor = _forgetting_factor;
 	  }
 
 	  void add( samson::hit::Hit *hit )
@@ -180,7 +185,7 @@ namespace hit{
 		 }
 
 		 // Create a new one at the end
-		 HitCollectionManager*manager = new HitCollectionManager( concept , time_span );
+		 HitCollectionManager*manager = new HitCollectionManager( concept , time_span, forgetting_factor );
 		 manager->add( hit  );
 		 managers.push_back( manager );
 

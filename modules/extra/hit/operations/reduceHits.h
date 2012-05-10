@@ -34,6 +34,7 @@ namespace hit{
 	   time_t current_time;
 
 	   size_t time_span;
+	   double forgetting_factor;
 
 	public:
 
@@ -57,6 +58,7 @@ namespace hit{
 
            // Get time span for environment variables
 		   time_span = environment->getSizeT( "time_span" ,  300 ); // By default 5 minuts average
+		   forgetting_factor = ((double)(time_span - 1)) / ((double) time_span);
 		}
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
@@ -67,7 +69,7 @@ namespace hit{
 		   {
 			  concept.parse( inputs[1].kvs[0]->key );
 			  hit.parse( inputs[1].kvs[0]->value );
-			  hit.setTime( current_time , time_span ); // Update state to current time
+			  hit.setTime( current_time, forgetting_factor ); // Update state to current time
 		   }
 		   else
 		   {			  

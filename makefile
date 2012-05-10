@@ -164,10 +164,13 @@ clean:
 
 run_coverage: install_coverage
 	killall samsonWorker || true
+	killall logServer || true
 	lcov --directory BUILD_COVERAGE --zerocounters	
+	logServer
 	samsonWorker
 	make test_coverage
 	killall samsonWorker || true
+	killall logServer || true
 	mkdir -p coverage
 	lcov --directory BUILD_COVERAGE --capture --output-file coverage/samson.info
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
@@ -217,18 +220,20 @@ finish_mac_coverage:
 test: ctest
 ctest: debug
 	make test -C BUILD_DEBUG ARGS="-D ExperimentalTest"
-	BUILD_DEBUG/apps/unitTest/unitTest --gtest_shuffle --gtest_output=xml:BUILD_DEBUG/samson_test.xml
+	BUILD_DEBUG/apps/unitTest/unitTest --gtest_output=xml:BUILD_DEBUG/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG/samson_test.xml
 
 unit_test: debug
+	# Enable core dumps for any potential SEGVs
+	ulimit -c unlimited
 	BUILD_DEBUG/apps/unitTest/unitTest --gtest_shuffle --gtest_output=xml:BUILD_DEBUG/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG/samson_test.xml
 
 test_coverage:
 	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" || true
-	BUILD_COVERAGE/apps/unitTest/unitTest --gtest_shuffle --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
+	BUILD_COVERAGE/apps/unitTest/unitTest --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' -e 's,\(<testcase name="\)DISABLED_\(.*status="notrun".*\) />,\1\2>\n      <skipped/>\n    </testcase>,' BUILD_COVERAGE/samson_test.xml
 

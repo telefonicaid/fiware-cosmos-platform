@@ -188,16 +188,36 @@ string	DataType::getAddFunction( string pre_line )
     ostringstream o;
 
     o << pre_line <<  classNameForType() << "* " << name <<"Add(){\n";
-
     o << pre_line << "\t" << name << "SetLength( " << name << "_length + 1 );\n";
-
     o << pre_line << "\t" << "return &" << name << "["<<name << "_length-1];\n";
-
     o << pre_line << "}\n\n";
 
     return o.str();
 }
 
+
+/* Erase element function... only in vectors */
+
+string  DataType::getEraseFunction( string pre_line )
+{
+    if(!isVector())
+    {
+        fprintf(stderr, "samsonModuleParser: Error generating the erase function over a non-vector data type");
+        exit (1);
+    }
+
+    ostringstream o;
+
+    o << pre_line <<  "bool "  << name << "Erase( int item_to_erase){\n";
+    o << pre_line << "\t" << "if ((item_to_erase < 0) || (item_to_erase >= " << name << "_length)) return false;\n";
+    o << pre_line << "\t" << "for (int i = item_to_erase; (i < " << name << "_length-1); i++)\n";
+    o << pre_line << "\t\t" << name << "[i].copyFrom(&" << name << "[i+1]);\n";
+    o << pre_line << "\t" << name << "_length -= 1;\n";
+    o << pre_line << "\t" << "return true;\n";
+    o << pre_line << "}\n\n";
+
+    return o.str();
+}
 
 
 

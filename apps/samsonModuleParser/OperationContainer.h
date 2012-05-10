@@ -278,6 +278,8 @@ public:
         fprintf(stderr, "samsonModuleParser: Error: Unknown type of operation in the operation section (%s)\n" , type.c_str());
         _exit(1);
 
+        return "no sense";
+
     }
 
     void printFile( std::string directory )

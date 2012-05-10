@@ -72,8 +72,9 @@ public:
     /* Get assigned function... only in optional variables */
     string	getGetAssignedFunction( string pre_line );
 
-    /* Add element function... only in vectors */
+    /* Add and Erase element functions... only in vectors */
     string	getAddFunction( string pre_line );
+    string  getEraseFunction( string pre_line );
 
     /* Initialization inside the constructor */
     string getInitialization(string pre_line);

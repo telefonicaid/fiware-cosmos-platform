@@ -384,6 +384,7 @@ public:
             {
                 file << (*field).getSetLengthFunction("\t");
                 file << (*field).getAddFunction("\t");
+                file << (*field).getEraseFunction("\t");
             }
         }
 
@@ -532,6 +533,7 @@ public:
         file << "\t\t\t\treturn (" << "\"_ERROR_\"" << ");\n";
         file << "\t\t\t\tbreak;\n";
         file << "\t\t};\n";
+        file << "\t\treturn (" << "\"_ERROR_\"" << ");\n";
         file << "\t}\n\n";
 
         // API to get the Type from static
@@ -602,6 +604,7 @@ public:
         file << "\t\t\t\treturn (NULL);\n";
         file << "\t\t\t\tbreak;\n";
         file << "\t\t};\n";
+        file << "\t\treturn (NULL);\n";
         file << "\t}\n\n";
 
         //Copy from

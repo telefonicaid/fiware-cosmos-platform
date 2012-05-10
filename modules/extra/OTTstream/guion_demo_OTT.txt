@@ -51,8 +51,16 @@
 		$ samsonPop -port_node 1236 output_levels | samsonLevelMonitor -nr 10.0 -refresh 10 -concept Skype,Viber,Facebook,GTalk,WhatsApp,faceTime,iphoneMessage,Facebook,Tuenti,Google+,seq1,seq2 -title "Number of users in last 5 minutes"
 
 
+- En la sexta pantalla REST:
+	- Se puede consultar por curl:
+		$ curl -L http://overthetop01:1202/samson/version
+		$ curl -L http://overthetop01:1202/samson/state/01.OTTstream.service_state/10
+		$ curl -L http://overthetop01:1202/samson/state/01.OTTstream.service_state/2001 | fgrep 2001
+
+		Y también se puede probar desde el explorer
+
 - En las pantallas Queries y Alerts se mostrará la generación de alertas.
-- En la sexta pantall Queries
+- En la septima pantalla Queries
 	- Se lanza un samsonPush para escribir comandos (de uno en uno)
 		$ samsonPush -node overthetop01 -port_node 1236 -lines input_commands
 			Skype NEWER time_window=3600
@@ -60,19 +68,11 @@
 			GTalk NEWER time_window=3600 clusterId=2
 			2001 OLDER time_window=600
 
-- En la séptima pantalla Alerts aparecerán los datos de los usuarios en respuesta a las queries
+- En la octava pantalla Alerts aparecerán los datos de los usuarios en respuesta a las queries
 	- Se lanza un samsonPop a la cola correspondiente
 		$ samsonPop -node overthetop01 -port_node 1236 -new output_users_per_service
 
 		tarda un ratillo, por la latencia, ya que tienen que entrar tres operaciones. Un solución más elegante sería el interfaz REST (aunque para responder a los requisitos de filtrado, habría que haber organziado los estados de otra manera)
-
-- En la octava pantalla REST:
-	- Se puede consultar por curl:
-		$ curl -L http://overthetop01:1202/samson/version
-		$ curl -L http://overthetop01:1202/samson/state/01.OTTstream.service_state/10
-		$ curl -L http://overthetop01:1202/samson/state/01.OTTstream.service_state/2001 | fgrep 2001
-
-		Y también se puede probar desde el explorer
 
 - Finalmente, en la pantalla TopicMonitor, se mostrarán unas primeras actividades hacia un perfila de web profiling en continuo
 	- Arrancar la presentación de web profiling:

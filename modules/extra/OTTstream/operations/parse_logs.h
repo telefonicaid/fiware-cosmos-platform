@@ -419,8 +419,8 @@ public:
             if (serviceId->value == 0)
             {
                 LM_M(("service:%s(%lu), not recognized as a number. Ignoring command:'%s'", service_name, serviceId->value, command_str));
+                return false;
             }
-            return false;
         }
         command->value = command_str;
         return true;

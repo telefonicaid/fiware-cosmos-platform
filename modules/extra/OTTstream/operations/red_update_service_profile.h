@@ -49,7 +49,7 @@ public:
     if ( inputs[1].num_kvs == 0 )
     {
       // New service state
-      activity.init();
+      activity.Init();
       serviceId.parse( inputs[0].kvs[0]->key );
     }
     else
@@ -71,16 +71,16 @@ public:
 
       if (i%10000 == 0)
       {
-        LM_M(("Check %lu of %lu, for service:%lu userId:%lu", i, inputs[0].num_kvs, serviceId.value, hit.userId.value));
+        LM_M(("Check %lu of %lu, for service:%lu userId:%lu", i, inputs[0].num_kvs, serviceId.value, hit.user.userId.value));
       }
 
-     // LM_M(("Check for service:%lu userId:%lu", serviceId.value, hit.userId.value));
+     // LM_M(("Check for service:%lu userId:%lu", serviceId.value, hit.user.userId.value));
       // First inefficient try with vectors (we would like having lists or maps)
       // As we insert new users at the end, will look first at the end of the vector
 
       for (int j= (activity.user_activity_length - 1); ((j >= 0) && (user_found == false)); j--)
       {
-        if (hit.userId.value == activity.user_activity[j].userId.value)
+        if (hit.user.userId.value == activity.user_activity[j].user.userId.value)
         {
           if (activity.user_activity[j].last_timestamp.value < hit.timestamp.value)
           {
@@ -93,8 +93,8 @@ public:
 
       if (user_found == false)
       {
-        //LM_M(("For service:%d new user:%lu at time:%lu", serviceId.value, hit.userId.value, static_cast<unsigned long>(hit.timestamp.value)));
-        activity.addUser(hit.userId, hit.timestamp, 1);
+        //LM_M(("For service:%d new userId:%lu at time:%lu", serviceId.value, hit.user.userId.value, static_cast<unsigned long>(hit.timestamp.value)));
+        activity.AddUser(hit.user, hit.timestamp, 1);
       }
     }
     LM_M(("Update service:%lu state with %d users", serviceId.value, activity.user_activity_length));

@@ -2,9 +2,6 @@
 #include <vector>
 #include "OTTService.h"
 
-
-
-
 static char *strnstr_limitpattern(const char *text, const char *pattern, size_t max_length)
 {
 	char cpat, ctxt;

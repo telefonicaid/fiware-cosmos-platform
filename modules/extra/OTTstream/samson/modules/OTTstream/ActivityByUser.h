@@ -17,18 +17,42 @@ namespace OTTstream{
 	class ActivityByUser : public ActivityByUser_base
 	{
 	  public:
-	        void init()
+	        void Init()
 	        {
-	            servActivitySetLength(0);
+	            // Preallocate a number of services...
+#define INITIAL_NUMBER_OF_SERVICES 16
+	          servActivitySetLength(INITIAL_NUMBER_OF_SERVICES);
+	          // ... but start from 0
+	          servActivitySetLength(0);
+
+	          sequencesSetLength(0);
 	        }
 
-	        void addService(samson::system::UInt serviceId, samson::system::TimeUnix timestamp, int inCount)
+	        void AddService(samson::system::UInt serviceId, samson::system::TimeUnix timestamp, int inCount)
 	        {
 	            samson::OTTstream::ServiceActivity *service = servActivityAdd();
-	            service->serviceId = serviceId;
-	            service->timestamp = timestamp;
-	            service->inCount = inCount;
+	            service->serviceId.value = serviceId.value;
+	            service->timestamp.value = timestamp.value;
+	            service->inCount.value = inCount;
 	        }
+
+	        void AddSequence(int seqId, const char *seq_name, unsigned long time_window, const char *events_str, int strict)
+	        {
+	            samson::OTTstream::Sequence *sequence = sequencesAdd();
+	            sequence->Init(seqId, seq_name,  time_window, events_str, strict);
+	        }
+
+            void AddAndCloneSequence(samson::OTTstream::Sequence *ref_sequence)
+            {
+                samson::OTTstream::Sequence *sequence = sequencesAdd();
+                sequence->Clone(ref_sequence);
+            }
+
+            bool sequencesErase( int item_to_erase)
+            {
+                    LM_M(("sequencesErase called with item_to_erase:%d", item_to_erase));
+                    return ActivityByUser_base::sequencesErase(item_to_erase);
+            }
 	};
 
 

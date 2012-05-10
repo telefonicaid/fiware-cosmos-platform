@@ -9,7 +9,6 @@
 
 #include <samson/modules/OTTstream/ActivityByService_base.h>
 
-
 namespace samson{
 namespace OTTstream{
 
@@ -17,17 +16,24 @@ namespace OTTstream{
 	class ActivityByService : public ActivityByService_base
 	{
 	  public:
-	        void init()
+	        void Init()
 	        {
+	       // Initialize to a large initial number of users to avoid reallocating several times
+
+#define INITIAL_NUMBER_OF_USERS 100000
+	            // Preallocate a number of services...
+	            user_activitySetLength(INITIAL_NUMBER_OF_USERS);
+	            // ... but start from 0
 	            user_activitySetLength(0);
+
 	        }
 
-	        void addUser(samson::system::UInt userId, samson::system::TimeUnix timestamp, int count)
+	        void AddUser(samson::OTTstream::User user, samson::system::TimeUnix timestamp, int count)
 	        {
-	            samson::OTTstream::UserActivity *user = user_activityAdd();
-	            user->userId = userId;
-	            user->last_timestamp = timestamp;
-	            user->count = count;
+	            samson::OTTstream::UserActivity *user_item = user_activityAdd();
+	            user_item->user = user;
+	            user_item->last_timestamp = timestamp;
+	            user_item->count = count;
 	        }
 	};
 

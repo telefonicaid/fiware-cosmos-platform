@@ -30,14 +30,18 @@ ${shared.simple_header("Run new job")}
 	    </dd>
 
             <dt><label for="jar_path">JAR file</label></dt>
-	    <dd>
+	    <dd class="file_finder">
 		${ unicode(form['jar_path']) | n }
+		<a class="hue-choose_file" data-filters="ArtButton"
+		   data-chooseFor="jar_path">...</a>
 		${ unicode(form['jar_path'].errors) | n }
 	    </dd>
 
             <dt><label for="dataset_path">Dataset path</label></dt>
-	    <dd>
+	    <dd class="file_finder">
 		${ unicode(form['dataset_path']) | n }
+		<a class="hue-choose_file" data-filters="ArtButton"
+		   data-chooseFor="dataset_path">...</a>
 		${ unicode(form['dataset_path'].errors) | n }
 	    </dd>
         </dl>

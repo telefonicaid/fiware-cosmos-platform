@@ -83,7 +83,7 @@ namespace au {
         {
             
             au::TokenTaker tt(&token);
-            LM_LV(("Writing log..."));
+            //LM_LV(("Writing log..."));
             
             // Check if the estabished connection should be canceled
             check_disconnection();
@@ -148,7 +148,7 @@ namespace au {
         
         void check_disconnection()
         {
-            LM_LV(("Check if we are still connected with log server..."));
+            //LM_LV(("Check if we are still connected with log server..."));
 
             if( socket_connection && socket_connection->isDisconnected() )
             {
@@ -162,7 +162,7 @@ namespace au {
         void try_connect()
         {
             
-            LM_LV(("try to connect with log server..."));
+            //LM_LV(("try to connect with log server..."));
             
             if( socket_connection )
                 return ; // Already connected

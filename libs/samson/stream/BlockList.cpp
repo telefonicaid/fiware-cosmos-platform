@@ -581,6 +581,20 @@ namespace samson {
             
         }
 
+        bool BlockList::isBlockIncluded( Block* b )
+        {
+            au::list< Block >::iterator block_it;
+            int pos = 0;
+            for ( block_it = blocks.begin() ; block_it != blocks.end() ; block_it++)
+            {
+                Block*block = (*block_it);
+                if( b == block )
+                    return true;
+                pos++;
+            }
+            return false;
+        }
+
         size_t BlockList::getPosition(Block* b)
         {
             au::list< Block >::iterator block_it;

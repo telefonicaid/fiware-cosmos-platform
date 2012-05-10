@@ -73,6 +73,28 @@ namespace samson
         }
         
         
+        bool BlockListContainer::isBlockIncluded( Block* block )
+        {
+            au::map<std::string, BlockList >::iterator it_blockLists;
+            for ( it_blockLists = blockLists.begin() ; it_blockLists != blockLists.end() ; it_blockLists++ )
+            {
+                BlockList *block_list = it_blockLists->second;
+                if( block_list->isBlockIncluded( block ) )
+                    return true;
+            }
+            return false;
+        }
+        
+        std::vector<std::string> BlockListContainer::get_block_list_names()
+        {
+            std::vector<std::string> keys;
+            au::map<std::string, BlockList >::iterator it_blockLists;
+            for ( it_blockLists = blockLists.begin() ; it_blockLists != blockLists.end() ; it_blockLists++ )
+                keys.push_back(it_blockLists->first);
+            return keys;                
+        }
+
+        
         
     } 
 }

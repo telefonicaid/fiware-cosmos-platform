@@ -160,6 +160,10 @@ namespace samson {
             void setAsQueueBlockList();
             size_t getOldestBlockTime();
             size_t getPosition(Block* b);
+            
+            // Check if a particular block is included
+            bool isBlockIncluded( Block* block );
+
         };
         
         

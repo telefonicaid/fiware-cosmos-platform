@@ -52,7 +52,76 @@ namespace samson {
             in_num_operations = 0;
             out_num_operations = 0;
             out_core_seconds = 0;
+         
+            latency_time = 0;
+
+        }
+
+        void StreamOperation::add_latency_time( double t )
+        {
+            LM_W(("Latency time %f" , t));
             
+            if( t < 0 )
+                return;
+            
+            if( latency_time == 0 )
+                latency_time = t;
+            else
+                latency_time = 0.9*latency_time + 0.1*t;
+        }
+        
+        void StreamOperation::add_block_to_cronometers( Block* block )
+        {
+            LM_W(("Adding block to cronometer %p" , block));
+
+            if( block_cronometers.findInMap(block) )
+                return; // Blcok already included.... ( common in reduce operations )
+            
+            block_cronometers.insertInMap(block, new au::Cronometer() );
+        }
+        
+        void StreamOperation::remove_block_to_cronometers( Block* block )
+        {
+            LM_W(("Remove block to cronometer %p" , block));
+
+            if( isBlockIncluded(block) )
+                return; // It is still included as an input somewhere...
+            
+            au::Cronometer* cronometer = block_cronometers.extractFromMap(block);
+            if( !cronometer )
+                return; // We do not have a temporal reference for this block
+            
+            add_latency_time( cronometer->diffTime() );
+            
+            delete cronometer;
+        }
+            
+        void StreamOperation::add_block_to_cronometers( BlockList* block_list )
+        {
+            au::list< Block >::iterator it_blocks;
+            for( it_blocks = block_list->blocks.begin() ; it_blocks != block_list->blocks.end() ; it_blocks++ )
+                add_block_to_cronometers(*it_blocks);
+        }
+        
+        void StreamOperation::remove_block_to_cronometers( BlockList* block_list )
+        {
+            au::list< Block >::iterator it_blocks;
+            for( it_blocks = block_list->blocks.begin() ; it_blocks != block_list->blocks.end() ; it_blocks++ )
+                remove_block_to_cronometers(*it_blocks);
+        }
+        
+        void StreamOperation::add_block_to_cronometers( BlockListContainer * block_list )
+        {
+            std::vector<std::string> block_lists = block_list->get_block_list_names();
+            for( size_t i = 0 ; i < block_lists.size() ; i++)
+                add_block_to_cronometers( block_list->getBlockList(block_lists[i]) );
+        }
+        
+        void StreamOperation::remove_block_to_cronometers( BlockListContainer* block_list )
+        {
+            std::vector<std::string> block_lists = block_list->get_block_list_names();
+            for( size_t i = 0 ; i < block_lists.size() ; i++)
+                remove_block_to_cronometers( block_list->getBlockList(block_lists[i]) );
         }
         
         StreamOperation* StreamOperation::newStreamOperation( StreamManager *streamManager ,  std::string command , au::ErrorManager& error )
@@ -300,6 +369,9 @@ namespace samson {
         
         void StreamOperation::remove( QueueTask* task )
         {
+            // Stop all the cronometers for included blocks
+            remove_block_to_cronometers(task);
+            
             // Remove this task from the list of running tasks
             running_tasks.erase( task );
             
@@ -387,6 +459,8 @@ namespace samson {
         
         void StreamOperationForward::push( BlockList *list )
         {
+            add_block_to_cronometers(list);
+            
             // Update history information since we will absorb all data included in this list
             list->update( history_block_info );
             getBlockList("input")->copyFrom( list , 0 );
@@ -536,9 +610,16 @@ namespace samson {
             if( ( options == running ) || (options == all ) )
             {
                 BlockInfo input_block_info = getUniqueBlockInfo();
-                ::samson::add( record , "inputs"        , input_block_info.strShort() , "different" );
+                //::samson::add( record , "inputs"        , input_block_info.strShort() , "different" );
+                ::samson::add( record , "Input Size"    , input_block_info.info.size , "f=uint64,sum" );
+                ::samson::add( record , "Input #Kvs"    , input_block_info.info.kvs , "f=uint64,sum" );
+
+                ::samson::add( record , "Latency (ms)"    , 1000*latency_time , "f=uint64,average" );
+                
+                
                 ::samson::add( record , "running_tasks" , running_tasks.size()        , "f=uint64,sum" );
-                ::samson::add( record , "last_review" , last_review + " " + getStatus() , "left,different" );
+                
+                ::samson::add( record , "last_review"   , last_review + " " + getStatus() , "left,different" );
             }
             
             if( ( options == in ) || (options == all ) )
@@ -629,6 +710,7 @@ namespace samson {
         
         void StreamOperationUpdateState::push( BlockList *list )
         {
+            add_block_to_cronometers(list);
                         
             // Extract data from input queue to the "input" blocklist ( no size limit... all blocks )
             BlockList tmp;
@@ -853,6 +935,8 @@ namespace samson {
         
         void StreamOperationForwardReduce::push( BlockList *list )
         {
+            add_block_to_cronometers(list);
+            
             // Update history information since we will absorb all data included in this list
             list->update( history_block_info );
             getBlockList("input")->copyFrom( list , 0 );

@@ -105,6 +105,24 @@ namespace samson {
             
         protected:
             
+            // Get time statistics for this stream operation
+            au::map< Block*, au::Cronometer > block_cronometers;
+            double latency_time;
+
+            void add_latency_time( double t );
+            
+            void add_block_to_cronometers( Block* block );
+            void remove_block_to_cronometers( Block* block );
+
+            void add_block_to_cronometers( BlockList* block_list );
+            void remove_block_to_cronometers( BlockList* block_list );
+            
+            void add_block_to_cronometers( BlockListContainer * block_list );
+            void remove_block_to_cronometers( BlockListContainer* block_list );
+            
+            
+        protected:
+            
             StreamManager *streamManager;   // Pointer to the stream manager to check ready
 
             std::string command;            // Original command that originated this StreamOperation

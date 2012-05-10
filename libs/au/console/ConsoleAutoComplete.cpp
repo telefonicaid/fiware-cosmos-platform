@@ -123,6 +123,11 @@ void ConsoleAutoComplete::add( ConsoleAutoCompleteAlternative alternative )
 {
     if ( alternative.command.length() < last_word.length() )
         return; // Not valid candidate
+
+    // Check if it was previously included...
+    for( size_t i = 0 ; i < last_word_alternatives.size() ; i++ )
+        if( last_word_alternatives[i].command == alternative.command )
+            return;
     
     if( strings_begin_equal(alternative.command, last_word) )
         last_word_alternatives.push_back( alternative );            

@@ -24,6 +24,7 @@ namespace samson
     namespace stream
     {
         class BlockList;
+        class Block;
         
         class BlockListContainer
         {
@@ -47,6 +48,11 @@ namespace samson
             // Get the information about contained blocks considering them only one if there are contained in multiple BlockLists    
             BlockInfo getUniqueBlockInfo();
             
+            // Check is a particular block is included here
+            bool isBlockIncluded( Block* block );
+          
+            // Get the list of names for all the block lists...
+            std::vector<std::string> get_block_list_names();
         };
     }
 }

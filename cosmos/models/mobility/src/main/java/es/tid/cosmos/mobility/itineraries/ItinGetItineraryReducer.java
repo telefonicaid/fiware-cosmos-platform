@@ -32,8 +32,8 @@ public class ItinGetItineraryReducer extends Reducer<
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
             final ClusterVector distMoves = mobData.getClusterVector();
-            final ClusterVector.Builder peaksMoves = ClusterVector.newBuilder();
-            // VECTOR NORMALIZATION	
+            ClusterVector.Builder peaksMoves = ClusterVector.newBuilder();
+            // Vector normalization
             for (int j = 0; j < distMoves.getComsCount(); j++) {
                 if (j >= 24 && j <= 95) {
                     double elem;
@@ -52,14 +52,14 @@ public class ItinGetItineraryReducer extends Reducer<
                     }
                 }
             }
-            // FILTER LOW MOVEMENTS
+            // Filter small movements
             for (int j = 0; j < peaksMoves.getComsCount(); j++) {
                 if (peaksMoves.getComs(j) <
                         (absMax * PERC_ABSOLUTE_MAX / 100.0)) {
                     peaksMoves.setComs(j, 0.0D);
                 }
             }
-            // EXTRACT ITINERARIES
+            // Extract itineraries
             Itinerary.Builder itin = Itinerary.newBuilder();
             itin.setSource(moveRange.getPoiSrc());
             itin.setTarget(moveRange.getPoiTgt());
@@ -89,7 +89,6 @@ public class ItinGetItineraryReducer extends Reducer<
                         itin.setWdayFin(j);
                         itin.setRangeFin(j);
                     }
-
                     itin.setWdayInit((itin.getWdayInit() / 24 + 1) % 7);
                     itin.setWdayPeakInit((itin.getWdayPeakInit() / 24 + 1) % 7);
                     itin.setWdayPeakFin((itin.getWdayPeakFin() / 24 + 1) % 7);
@@ -99,7 +98,7 @@ public class ItinGetItineraryReducer extends Reducer<
                     itin.setRangePeakFin(itin.getRangePeakFin() % 24);
                     itin.setRangeFin(itin.getRangeFin() % 24);
                     context.write(new LongWritable(moveRange.getNode()),
-                            MobDataUtil.createAndWrap(itin.build()));
+                                  MobDataUtil.createAndWrap(itin.build()));
                 }
             }
         }

@@ -43,7 +43,7 @@ public class MobDataUtilTest {
             wrapper.setConverter(MobData.class);
             MobData mobData = wrapper.get();
             assertEquals(MobData.Type.DOUBLE, mobData.getType());
-            assertEquals(57D, mobData.getDouble());
+            assertEquals(57D, mobData.getDouble(), 0.0D);
         }
 
         {

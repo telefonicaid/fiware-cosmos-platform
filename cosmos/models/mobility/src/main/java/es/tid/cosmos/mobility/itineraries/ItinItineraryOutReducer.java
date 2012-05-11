@@ -18,6 +18,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 public class ItinItineraryOutReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, NullWritable, Text> {
     private static final String DELIMITER = "|";
+    
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)

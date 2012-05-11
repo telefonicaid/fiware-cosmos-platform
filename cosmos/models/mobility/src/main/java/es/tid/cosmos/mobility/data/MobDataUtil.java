@@ -4,7 +4,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
 import org.apache.hadoop.io.NullWritable;
 
-import es.tid.cosmos.mobility.data.MobProtocol.*;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.*;
 
 /**
  *

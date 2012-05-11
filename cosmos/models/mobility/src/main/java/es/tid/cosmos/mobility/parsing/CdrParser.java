@@ -1,6 +1,6 @@
 package es.tid.cosmos.mobility.parsing;
 
-import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 
 /**
  *

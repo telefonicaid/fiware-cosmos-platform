@@ -2,7 +2,7 @@ package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.cosmos.mobility.data.MobProtocol.PoiNew;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiNew;
 
 /**
  *

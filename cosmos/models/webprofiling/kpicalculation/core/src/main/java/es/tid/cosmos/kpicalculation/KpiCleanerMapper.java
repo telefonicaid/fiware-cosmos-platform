@@ -48,9 +48,6 @@ public class KpiCleanerMapper extends Mapper<LongWritable, Text, NullWritable,
     @Resource
     private KpiCalculationFilterChain filter;
 
-    private NullWritable nullw;
-    private ProtobufWritable<WebProfilingLog> wpWritable;
-
     /**
      * Method that prepares the filters to be applied. The classes implementing
      * them and the values to be filtered for each of them will be loaded from
@@ -64,9 +61,6 @@ public class KpiCleanerMapper extends Mapper<LongWritable, Text, NullWritable,
             InterruptedException {
         context.getConfiguration().addResource("kpi-filtering.xml");
         this.filter = new KpiCalculationFilterChain(context.getConfiguration());
-        this.wpWritable = new ProtobufWritable<WebProfilingLog>();
-        this.wpWritable.setConverter(WebProfilingLog.class);
-        this.nullw = NullWritable.get();
     }
 
     /**
@@ -84,9 +78,12 @@ public class KpiCleanerMapper extends Mapper<LongWritable, Text, NullWritable,
             WebProfilingLog webLog = WebProfilingUtil.getInstance(value
                     .toString());
             this.filter.filter(webLog.getFullUrl());
-            this.wpWritable.set(webLog);
+            ProtobufWritable<WebProfilingLog> wrapper =
+                    new ProtobufWritable<WebProfilingLog>();
+            wrapper.setConverter(WebProfilingLog.class);
+            wrapper.set(webLog);
             context.getCounter(KpiCalculationCounter.LINE_STORED).increment(1L);
-            context.write(this.nullw, this.wpWritable);
+            context.write(NullWritable.get(), wrapper);
         } catch (KpiCalculationFilterException e) {
             context.getCounter(e.getCounter()).increment(1L);
         } catch (KpiCalculationDataException e) {

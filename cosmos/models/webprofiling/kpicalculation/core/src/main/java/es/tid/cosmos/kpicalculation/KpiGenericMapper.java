@@ -11,7 +11,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.base.mapreduce.BinaryKey;
@@ -46,7 +46,7 @@ import es.tid.cosmos.kpicalculation.generated.data.KpiCalculationProtocol.WebPro
  *
  * @author javierb@tid.es
  */
-public class KpiGenericMapper extends Mapper<LongWritable,
+public class KpiGenericMapper extends Mapper<NullWritable,
         ProtobufWritable<WebProfilingLog>, CompositeKey, IntWritable> {
     private static final IntWritable ONE = new IntWritable(1);
     private static final String MAIN_FIELDS_PARAMETER =
@@ -84,7 +84,7 @@ public class KpiGenericMapper extends Mapper<LongWritable,
      *            has the method "write()" to output the key,value pair
      */
     @Override
-    protected void map(LongWritable key,
+    protected void map(NullWritable key,
             ProtobufWritable<WebProfilingLog> value, Context context)
             throws IOException, InterruptedException {
         try {

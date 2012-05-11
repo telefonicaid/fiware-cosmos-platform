@@ -20,12 +20,14 @@ public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
         LongWritable, BSONWritable> {
     private static final String DELIMITER = "\t";
     
+    private String name;
     private String[] fields;
     private List<String> columns;
     
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
+        this.name = context.getConfiguration().get("name");
         this.fields = context.getConfiguration().getStrings("fields");
         this.columns = new ArrayList<String>();
     }
@@ -47,9 +49,10 @@ public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
 
     private BSONWritable toBSON(List<String> attributes, long count) {
         if (this.fields.length != attributes.size()) {
-            throw new IllegalStateException("Invalid aggregate data.");
+            throw new IllegalStateException("Invalid aggregate data");
         }
         BSONObject obj = new BasicBSONObject();
+        obj.put("name", this.name);
         for (int i = 0; i < attributes.size(); i++) {
             obj.put(this.fields[i], attributes.get(i));
         }

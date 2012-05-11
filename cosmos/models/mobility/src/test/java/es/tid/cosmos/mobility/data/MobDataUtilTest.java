@@ -179,5 +179,24 @@ public class MobDataUtilTest {
             assertEquals(MobData.Type.MOB_VARS, mobData.getType());
             assertEquals(MobVars.getDefaultInstance(), mobData.getMobVars());
         }
+
+        {
+            ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(
+                    ItinTime.getDefaultInstance());
+            wrapper.setConverter(MobData.class);
+            MobData mobData = wrapper.get();
+            assertEquals(MobData.Type.ITIN_TIME, mobData.getType());
+            assertEquals(ItinTime.getDefaultInstance(), mobData.getItinTime());
+        }
+
+        {
+            ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(
+                    ItinMovement.getDefaultInstance());
+            wrapper.setConverter(MobData.class);
+            MobData mobData = wrapper.get();
+            assertEquals(MobData.Type.ITIN_MOVEMENT, mobData.getType());
+            assertEquals(ItinMovement.getDefaultInstance(),
+                         mobData.getItinMovement());
+        }
     }
 }

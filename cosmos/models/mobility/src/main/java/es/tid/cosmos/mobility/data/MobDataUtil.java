@@ -136,6 +136,20 @@ public abstract class MobDataUtil {
                 .build();
     }
     
+    public static MobData create(ItinTime itinTime) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.ITIN_TIME)
+                .setItinTime(itinTime)
+                .build();
+    }
+
+    public static MobData create(ItinMovement itinMovement) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.ITIN_MOVEMENT)
+                .setItinMovement(itinMovement)
+                .build();
+    }
+    
     public static ProtobufWritable<MobData> wrap(MobData obj) {
         ProtobufWritable<MobData> wrapper = ProtobufWritable.newInstance(
                 MobData.class);
@@ -212,6 +226,14 @@ public abstract class MobDataUtil {
     }
 
     public static ProtobufWritable<MobData> createAndWrap(MobVars obj) {
+        return wrap(create(obj));
+    }
+    
+    public static ProtobufWritable<MobData> createAndWrap(ItinTime obj) {
+        return wrap(create(obj));
+    }
+    
+    public static ProtobufWritable<MobData> createAndWrap(ItinMovement obj) {
         return wrap(create(obj));
     }
     

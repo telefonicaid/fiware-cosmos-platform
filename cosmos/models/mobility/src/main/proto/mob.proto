@@ -26,6 +26,8 @@ message MobData {
         NODE_MX_COUNTER = 16;
         DAILY_VECTOR = 17;
         MOB_VARS = 18;
+        ITIN_TIME = 19;
+        ITIN_MOVEMENT = 20;
     }
 
     required Type type = 1;
@@ -47,6 +49,8 @@ message MobData {
     optional NodeMxCounter nodeMxCounter = 17;
     optional DailyVector dailyVector = 18;
     optional MobVars mobVars = 19;
+    optional ItinTime itinTime = 20;
+    optional ItinMovement itinMovement = 21;
 }
 
 message Cdr {
@@ -193,4 +197,15 @@ message MobVars {
 
 message MobViMobVars {
     repeated MobVars vars = 1;
+}
+
+message ItinTime {
+    optional base.Date date = 1;
+    optional base.Time time = 2;
+    optional uint64 bts = 3;
+}
+
+message ItinMovement {
+    optional ItinTime source = 1;
+    optional ItinTime target = 2;
 }

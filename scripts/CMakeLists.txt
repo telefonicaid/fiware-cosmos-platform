@@ -3,7 +3,6 @@ SET (FILES
     samsonValgrindSupervise
     samsonModuleBootstrap
     samsonPrepareServer
-    samsonRun
     samsonModuleDist
     samsonInitSetup
 )

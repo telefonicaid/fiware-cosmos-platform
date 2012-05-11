@@ -49,3 +49,6 @@ echo SAMSON_HOME is $SAMSON_HOME
 echo SAMSON_WORKING is $SAMSON_WORKING
 echo SS_WORKER_LOG_DIR is $SS_WORKER_LOG_DIR
 echo LOG_DIR is $LOG_DIR
+
+alias sgrep="egrep --exclude=*.svn*"
+

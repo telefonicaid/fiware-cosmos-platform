@@ -31,6 +31,13 @@ public abstract class MobDataUtil {
                 .build();
     }
     
+    public static MobData create(double value) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.DOUBLE)
+                .setDouble(value)
+                .build();
+    }
+    
     public static MobData create(Cdr cdr) {
         return MobData.newBuilder()
                 .setType(MobData.Type.CDR)
@@ -187,6 +194,10 @@ public abstract class MobDataUtil {
     }
     
     public static ProtobufWritable<MobData> createAndWrap(long obj) {
+        return wrap(create(obj));
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(double obj) {
         return wrap(create(obj));
     }
     

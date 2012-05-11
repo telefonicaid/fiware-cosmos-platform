@@ -39,6 +39,14 @@ public class MobDataUtilTest {
         }
 
         {
+            ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(57D);
+            wrapper.setConverter(MobData.class);
+            MobData mobData = wrapper.get();
+            assertEquals(MobData.Type.DOUBLE, mobData.getType());
+            assertEquals(57D, mobData.getDouble());
+        }
+
+        {
             ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(
                     Cdr.getDefaultInstance());
             wrapper.setConverter(MobData.class);

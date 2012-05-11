@@ -20,6 +20,7 @@ import es.tid.cosmos.tests.sftp.om.CosmosSftp;
 import es.tid.cosmos.tests.tasks.Environment;
 import es.tid.cosmos.tests.tasks.EnvironmentSetting;
 
+@Test
 public class SftpIT {
     private Environment env;
 
@@ -29,8 +30,7 @@ public class SftpIT {
         this.env = Environment.valueOf(environment);
     }
 
-    @Test
-    public void testFileUpload(String environment)
+    public void testFileUpload()
             throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         try {
@@ -41,7 +41,7 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = SftpException.class)
-    public void testOutOfDirectoryUpload1(String environment)
+    public void testOutOfDirectoryUpload1()
             throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         try {
@@ -57,7 +57,7 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = SftpException.class)
-    public void testOutOfDirectoryUpload2(String environment)
+    public void testOutOfDirectoryUpload2()
             throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         try {
@@ -71,7 +71,7 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = SftpException.class)
-    public void testOutOfDirectoryUpload3(String environment)
+    public void testOutOfDirectoryUpload3()
             throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         try {
@@ -84,8 +84,7 @@ public class SftpIT {
         }
     }
 
-    @Test
-    public void testFileUploadWithEscaping1(String environment)
+    public void testFileUploadWithEscaping1()
             throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         try {
@@ -98,8 +97,7 @@ public class SftpIT {
         }
     }
 
-    @Test
-    public void testFileUploadWithEscaping2(String environment)
+    public void testFileUploadWithEscaping2()
             throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
@@ -118,7 +116,7 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = SftpException.class)
-    public void testMoveToRoot(String environment)
+    public void testMoveToRoot()
             throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
@@ -130,8 +128,7 @@ public class SftpIT {
         }
     }
 
-    @Test
-    public void testDefaultPwd(String environment)
+    public void testDefaultPwd()
             throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
@@ -144,7 +141,7 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = JSchException.class)
-    public void testUserAuth1(String environment) throws Exception {
+    public void testUserAuth1() throws Exception {
         CosmosSftp.createSession(
                 this.env,
                 this.env.getProperty(EnvironmentSetting.DEFAULT_USER),
@@ -152,22 +149,21 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = JSchException.class)
-    public void testUserAuth2(String environment) throws Exception {
+    public void testUserAuth2() throws Exception {
         CosmosSftp.createSession(this.env, "BadUser", "BadPassword");
     }
 
     @Test(expectedExceptions = JSchException.class)
-    public void testUserAuth3(String environment) throws Exception {
+    public void testUserAuth3() throws Exception {
         CosmosSftp.createSession(this.env, "root", "root");
     }
 
     @Test(expectedExceptions = JSchException.class)
-    public void testUserAuth4(String environment) throws Exception {
+    public void testUserAuth4() throws Exception {
         CosmosSftp.createSession(this.env, "root", "1234");
     }
 
-    @Test
-    public void testDirCommands(String environment)
+    public void testDirCommands()
             throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
@@ -229,8 +225,7 @@ public class SftpIT {
         }
     }
 
-    @Test
-    public void testParallelFileUpload(String environment)
+    public void testParallelFileUpload()
             throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         FutureTask task1 = new FutureTask(new Callable() {

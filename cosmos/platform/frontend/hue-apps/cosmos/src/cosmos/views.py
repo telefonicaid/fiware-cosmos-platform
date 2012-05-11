@@ -98,3 +98,7 @@ def upload_index(request):
         datasets_base=paths.datasets_base(request.user),
         jars_base=paths.jars_base(request.user)
     ))
+
+
+def show_results(request, job_id):
+    pass

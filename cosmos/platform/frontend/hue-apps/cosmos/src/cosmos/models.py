@@ -5,7 +5,9 @@ Data models.
 import logging
 
 from django.contrib.auth.models import User
+from django.core.urlresolvers import reverse
 from django.db import models
+from jobsubd.ttypes import State
 from jobsub.models import Submission
 
 from cosmos import conf
@@ -53,3 +55,26 @@ class JobRun(models.Model):
             return "unsubmitted"
         else:
             return STATE_NAMES[self.submission.last_seen_state]
+
+    def action_links(self):
+        """
+        Creates a vector of links to actions related to the job run.
+        Each link is a dict of the form:
+            {href: '/path', target: 'HueApp', name: 'name'}
+        """
+        if self.submission is None:
+            return []
+        links = []
+        if self.submission.last_seen_state in [State.SUCCESS, State.ERROR,
+                                               State.FAILURE]:
+            links.append({
+                'name': 'Results',
+                'target': None,
+                'href': reverse('show_results', args=[self.id])
+            });
+        links.append({
+            'name': 'Detailed status',
+            'target': 'JobSub',
+            'href': self.submission.watch_url()
+        });
+        return links

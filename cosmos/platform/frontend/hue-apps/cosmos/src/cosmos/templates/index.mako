@@ -37,10 +37,16 @@ ${shared.header("Cosmos", section="job_runs")}
         <td>${job_run.description | h}</td>
         <td>${job_run.status() | h}</td>
 	<td>
-            <!-- TODO: show links to progress in job browser, results in
-                    cosmos_dataviewer and error in here -->
-            <a target="CosmosDataviewer"
-	       href="/cosmos_dataviewer/run/1">Results</a>
+	    % for i, link in enumerate(job_run.action_links()):
+	    % if i > 0:
+	    |
+	    % endif
+            <a href="${ link['href'] }"
+	       % if link['target'] is not None:
+	       target="${ link['target'] }"
+	       % endif
+	       >${ link['name'] }</a>
+	    % endfor
         </td>
       </tr>
       % endfor

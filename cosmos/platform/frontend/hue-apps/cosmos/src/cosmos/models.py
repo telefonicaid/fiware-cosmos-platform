@@ -43,12 +43,20 @@ class JobRun(models.Model):
     def __unicode__(self):
         return self.name
 
+    def mongo_db(self):
+        return 'db_%d' % self.user.id
+
+    def mongo_collection(self):
+        return 'job_%d' % self.id
+
+    def mongo_url(self):
+        return '%s/%s.%s' % (conf.MONGO_BASE.get(), self.mongo_db(),
+                             self.mongo_collection())
+
     def hadoop_args(self, jar_name):
         input_path = self.dataset_path
         output_path = '/user/%s/tmp/job_%d/' % (self.user.username, self.id)
-        mongo_url = '%s/db_%d.job_%d' % (conf.MONGO_BASE.get(), self.user.id,
-                                         self.id)
-        return ['jar', jar_name, input_path, output_path, mongo_url]
+        return ['jar', jar_name, input_path, output_path, self.mongo_url()]
 
     def status(self):
         if self.submission is None:

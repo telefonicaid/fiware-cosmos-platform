@@ -49,4 +49,5 @@ class JobRunTestCase(test.TestCase):
                                     State.ERROR, State.FAILURE])
 
     def test_no_links_when_unsubmitted(self):
-        pass # TODO
+        self.job.submission = None
+        self.assertEquals(self.job.action_links(), [])

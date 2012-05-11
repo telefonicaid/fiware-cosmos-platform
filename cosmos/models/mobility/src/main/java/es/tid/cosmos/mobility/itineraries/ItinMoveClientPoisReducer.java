@@ -63,8 +63,7 @@ public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
                                + (60 * difHour) + difMin;
                 // Filter movements by diff of time
                 if (distance <= MAX_MINUTES_IN_MOVES &&
-                    distance >= MIN_MINUTES_IN_MOVES)  
-                {
+                    distance >= MIN_MINUTES_IN_MOVES) {
                     ProtobufWritable<MobData> move = MobDataUtil.createAndWrap(
                             ItinMovementUtil.create(prevLoc, curLoc));
                     context.write(key, move);

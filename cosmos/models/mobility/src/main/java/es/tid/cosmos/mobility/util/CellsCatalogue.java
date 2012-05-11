@@ -58,4 +58,14 @@ public abstract class CellsCatalogue {
         }
         return cells;
     }
+    
+    public static List<Cell> filter(List<Cell> cells, long cellId) {
+        List<Cell> filteredCells = new LinkedList<Cell>();
+        for (Cell cell : cells) {
+            if (cell.getCellId() == cellId) {
+                filteredCells.add(cell);
+            }
+        }
+        return filteredCells;
+    }
 }

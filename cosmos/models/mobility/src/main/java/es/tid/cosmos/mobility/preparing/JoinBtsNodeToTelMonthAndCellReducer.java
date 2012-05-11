@@ -42,12 +42,7 @@ public class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        List<Cell> filteredCells = new LinkedList<Cell>();
-        for (Cell cell : cells) {
-            if (cell.getCellId() == key.get()) {
-                filteredCells.add(cell);
-            }
-        }
+        List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
         if (filteredCells.isEmpty()) {
             return;
         }

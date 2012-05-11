@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -15,6 +17,7 @@ import es.tid.cosmos.mobility.data.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
+import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
  *
@@ -23,29 +26,30 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
 public class ItinJoinCellBtsReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
         ProtobufWritable<MobData>> {
+    private static List<Cell> cells;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        if (cells == null) {
+            final Configuration conf = context.getConfiguration();
+            cells = CellsCatalogue.load(new Path(conf.get("cells")), conf);
+        }
+    }
+    
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        List<Cdr> cdrList = new LinkedList<Cdr>();
-        List<Cell> cellList = new LinkedList<Cell>();
+        List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
+        if (filteredCells.isEmpty()) {
+            return;
+        }
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case CDR:
-                    cdrList.add(mobData.getCdr());
-                    break;
-                case CELL:
-                    cellList.add(mobData.getCell());
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected MobData type: "
-                            + mobData.getType().name());
-            }
-        }
-        for (Cell cell : cellList) {
-            for (Cdr cdr : cdrList) {
+            final Cdr cdr = mobData.getCdr();
+            for (Cell cell : filteredCells) {
                 final ProtobufWritable<TwoInt> nodeBts =
                         TwoIntUtil.createAndWrap(cdr.getUserId(),
                                                  cell.getPlaceId());

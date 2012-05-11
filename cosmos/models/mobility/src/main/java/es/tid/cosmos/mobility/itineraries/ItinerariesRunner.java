@@ -18,8 +18,7 @@ public final class ItinerariesRunner {
     private ItinerariesRunner() {
     }
     
-    public static void run(Path cdrsInfoPath, Path cellsMobPath,
-                           Path pointsOfInterestIdPath,
+    public static void run(Path cdrsInfoPath, Path pointsOfInterestIdPath,
                            Path clientItinerariesTxtPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
             throws Exception {
@@ -29,8 +28,7 @@ public final class ItinerariesRunner {
                     SequenceFileInputFormat.class,
                     ItinJoinCellBtsReducer.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, new Path[] { cdrsInfoPath,
-                                                            cellsMobPath });
+            FileInputFormat.setInputPaths(job, cdrsInfoPath);
             FileOutputFormat.setOutputPath(job, itClientbtsTimePath);
             job.waitForCompletion(true);
         }

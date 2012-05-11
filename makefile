@@ -226,8 +226,7 @@ ctest: debug
 
 unit_test: debug
 	# Enable core dumps for any potential SEGVs
-	ulimit -c unlimited
-	BUILD_DEBUG/apps/unitTest/unitTest --gtest_shuffle --gtest_output=xml:BUILD_DEBUG/samson_test.xml
+	ulimit -c unlimited && BUILD_DEBUG/apps/unitTest/unitTest --gtest_shuffle --gtest_output=xml:BUILD_DEBUG/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG/samson_test.xml
 

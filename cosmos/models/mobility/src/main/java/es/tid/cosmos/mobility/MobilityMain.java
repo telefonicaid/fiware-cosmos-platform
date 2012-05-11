@@ -7,6 +7,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
+import es.tid.cosmos.mobility.itineraries.ItinerariesRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;
@@ -178,6 +179,17 @@ public class MobilityMain extends Configured implements Tool {
             OutPoisRunner.run(vectorClientbtsPath, pointsOfInterestIdPath,
                               vectorClientClusterPath, vectorBtsClusterPath,
                               tmpOutPoisPath, isDebug, conf);
+        }
+        
+        Path tmpItinerariesPath = new Path(tmpPath, "itineraries");
+        Path clientItinerariesTxtPath = new Path(tmpItinerariesPath,
+                                                 "client_itineraries_txt");
+        boolean shouldGetItineraries = arguments.getBoolean("getItineraries");
+        if (shouldRunAll || shouldGetItineraries) {
+            ItinerariesRunner.run(cdrsInfoPath, cellsMobPath,
+                                  pointsOfInterestIdPath,
+                                  clientItinerariesTxtPath, tmpItinerariesPath,
+                                  isDebug, conf);
         }
         
         return 0;

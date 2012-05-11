@@ -485,8 +485,6 @@ namespace samson
             LM_X(1,("Error creating directory at %s" , _samson_working.c_str() ));
         if( createFullDirectory( _samson_working + "/etc" )!= OK )
             LM_X(1,("Error creating directory at %s" , _samson_working.c_str() ));
-        if( createFullDirectory( _samson_working + "/config" )!= OK )
-            LM_X(1,("Error creating directory at %s" , _samson_working.c_str() ));
         
         // Create modules directory 
         if( createFullDirectory( _samson_home + "/modules" ) )

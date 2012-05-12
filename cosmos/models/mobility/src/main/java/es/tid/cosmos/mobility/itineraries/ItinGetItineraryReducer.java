@@ -13,7 +13,9 @@ import es.tid.cosmos.mobility.data.MobProtocol.Itinerary;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
- *
+ * Input: <ItinRange, ClusterVector>
+ * Output: <Long, Itinerary>
+ * 
  * @author dmicol
  */
 public class ItinGetItineraryReducer extends Reducer<

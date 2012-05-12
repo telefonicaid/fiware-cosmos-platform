@@ -15,7 +15,9 @@ import es.tid.cosmos.mobility.data.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 
 /**
- *
+ * Input: <TwoInt, ItinTime|Poi>
+ * Output: <Long, ItinTime>
+ * 
  * @author dmicol
  */
 public class ItinFilterPoisReducer extends Reducer<ProtobufWritable<TwoInt>,

@@ -12,7 +12,9 @@ import es.tid.cosmos.mobility.data.MobProtocol.ItinTime;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
- *
+ * Input: <Long, ItinTime>
+ * Output: <Long, ItinMovement>
+ * 
  * @author dmicol
  */
 public class ItinMoveClientPoisReducer extends Reducer<LongWritable,

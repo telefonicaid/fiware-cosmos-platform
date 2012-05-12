@@ -13,7 +13,9 @@ import es.tid.cosmos.mobility.data.MobProtocol.ItinRange;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
- *
+ * Input: <Long, ItinMovement>
+ * Output: <ItinRange, Double>
+ * 
  * @author dmicol
  */
 public class ItinGetRangesReducer extends Reducer<LongWritable,

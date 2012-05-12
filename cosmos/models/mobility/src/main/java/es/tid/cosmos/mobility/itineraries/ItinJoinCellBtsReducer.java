@@ -19,7 +19,9 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
- *
+ * Input: <Long, Cdr>
+ * Output: <TwoInt, ItinTime>
+ * 
  * @author dmicol
  */
 public class ItinJoinCellBtsReducer extends Reducer<LongWritable,

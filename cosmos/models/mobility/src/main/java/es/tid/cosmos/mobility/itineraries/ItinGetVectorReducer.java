@@ -12,7 +12,9 @@ import es.tid.cosmos.mobility.data.MobProtocol.ItinRange;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
- *
+ * Input: <ItinRange, ItinPercMove>
+ * Output: <ItinRange, ClusterVector>
+ * 
  * @author dmicol
  */
 public class ItinGetVectorReducer extends Reducer<ProtobufWritable<ItinRange>,

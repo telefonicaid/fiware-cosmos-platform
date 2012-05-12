@@ -12,7 +12,9 @@ import es.tid.cosmos.mobility.data.MobProtocol.Itinerary;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 
 /**
- *
+ * Input: <Long, Itinerary>
+ * Output: <Null, Text>
+ * 
  * @author dmicol
  */
 public class ItinItineraryOutReducer extends Reducer<LongWritable,

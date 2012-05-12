@@ -9,6 +9,8 @@ import java.util.Properties;
  * @author dmicol
  */
 public abstract class Config {
+    public static int minTotalCalls;
+    public static int maxTotalCalls;
     public static double maxBtsArea;
     public static long maxCommsBts;
     public static int homeLabelgroupId;
@@ -24,6 +26,10 @@ public abstract class Config {
     public static void load(InputStream configInput) throws IOException {
         Properties props = new Properties();
         props.load(configInput);
+        minTotalCalls = Integer.parseInt(props.getProperty(
+                "MIN_TOTAL_CALLS"));
+        maxTotalCalls = Integer.parseInt(props.getProperty(
+                "MAX_TOTAL_CALLS"));
         maxBtsArea = Double.parseDouble(props.getProperty(
                 "MAX_BTS_AREA"));
         maxCommsBts = Long.parseLong(props.getProperty(

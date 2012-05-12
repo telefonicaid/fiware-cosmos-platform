@@ -6,6 +6,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
@@ -18,9 +19,6 @@ import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
  */
 public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
-    private static final int MIN_TOTAL_CALLS = 200;
-    private static final int MAX_TOTAL_CALLS = 5000;
-
     @Override
     public void reduce(LongWritable key,
                        Iterable<ProtobufWritable<MobData>> values,
@@ -44,7 +42,8 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
             }
         }
         int totalComms = numCommsInfo + numCommsNoInfoOrNoBts;
-        if (totalComms >= MIN_TOTAL_CALLS && totalComms <= MAX_TOTAL_CALLS) {
+        if (totalComms >= Config.minTotalCalls &&
+                totalComms <= Config.maxTotalCalls) {
             context.write(key, MobDataUtil.createAndWrap(numCommsInfo));
         }
     }

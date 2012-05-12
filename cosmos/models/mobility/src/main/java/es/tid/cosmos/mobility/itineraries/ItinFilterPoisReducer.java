@@ -47,10 +47,8 @@ public class ItinFilterPoisReducer extends Reducer<ProtobufWritable<TwoInt>,
             for (ItinTime itinTime : itinTimeList) {
                 ItinTime.Builder itinTimeOut = ItinTime.newBuilder(itinTime);
                 itinTimeOut.setBts(poi.getId());
-                ProtobufWritable<MobData> itinTimeOutWrapper =
-                        MobDataUtil.createAndWrap(itinTimeOut.build());
                 context.write(new LongWritable(nodeBts.getNum1()),
-                              itinTimeOutWrapper);
+                              MobDataUtil.createAndWrap(itinTimeOut.build()));
             }
         }
     }

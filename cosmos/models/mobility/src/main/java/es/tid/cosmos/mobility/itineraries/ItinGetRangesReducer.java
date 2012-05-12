@@ -77,7 +77,7 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
                     moveRange.setGroup(group);
                     percMoves = 60 / dur;
                     context.write(ItinRangeUtil.wrap(moveRange.build()),
-                                MobDataUtil.createAndWrap(percMoves));
+                                  MobDataUtil.createAndWrap(percMoves));
                 }
             }
         }

@@ -7,6 +7,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 
@@ -18,7 +19,8 @@ public final class ItinerariesRunner {
     private ItinerariesRunner() {
     }
     
-    public static void run(Path cdrsInfoPath, Path pointsOfInterestIdPath,
+    public static void run(Path cellsPath, Path cdrsInfoPath,
+                           Path pointsOfInterestIdPath,
                            Path clientItinerariesTxtPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
             throws Exception {
@@ -28,6 +30,7 @@ public final class ItinerariesRunner {
                     SequenceFileInputFormat.class,
                     ItinJoinCellBtsReducer.class,
                     SequenceFileOutputFormat.class);
+            job.getConfiguration().set("cells", cellsPath.toString());
             FileInputFormat.setInputPaths(job, cdrsInfoPath);
             FileOutputFormat.setOutputPath(job, itClientbtsTimePath);
             job.waitForCompletion(true);
@@ -108,7 +111,7 @@ public final class ItinerariesRunner {
             ReduceJob job = ReduceJob.create(conf, "ItinItineraryOut",
                     SequenceFileInputFormat.class,
                     ItinItineraryOutReducer.class,
-                    SequenceFileOutputFormat.class);
+                    TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, itClientItinerariesPath);
             FileOutputFormat.setOutputPath(job, clientItinerariesTxtPath);
             job.waitForCompletion(true);

@@ -186,7 +186,8 @@ public class MobilityMain extends Configured implements Tool {
                                                  "client_itineraries_txt");
         boolean shouldGetItineraries = arguments.getBoolean("getItineraries");
         if (shouldRunAll || shouldGetItineraries) {
-            ItinerariesRunner.run(cdrsInfoPath, pointsOfInterestIdPath,
+            ItinerariesRunner.run(cellsPath, cdrsInfoPath,
+                                  pointsOfInterestIdPath,
                                   clientItinerariesTxtPath, tmpItinerariesPath,
                                   isDebug, conf);
         }

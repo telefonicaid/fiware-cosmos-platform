@@ -6,6 +6,7 @@ import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
@@ -22,6 +23,8 @@ public class RepbtsGetRepresentativeBtsMapperTest {
     
     @Before
     public void setUp() {
+        Config.minPercRepBts = 5;
+        Config.minNumberCallsBts = 14;
         this.driver = new MapDriver<LongWritable, ProtobufWritable<MobData>,
                 ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>(
                         new RepbtsGetRepresentativeBtsMapper());

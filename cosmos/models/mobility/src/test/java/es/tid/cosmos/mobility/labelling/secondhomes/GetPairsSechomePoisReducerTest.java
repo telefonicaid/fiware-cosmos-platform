@@ -8,6 +8,7 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
@@ -24,6 +25,9 @@ public class GetPairsSechomePoisReducerTest {
     
     @Before
     public void setUp() {
+        Config.homeLabelgroupId = 3;
+        Config.workLabelgroupId = 6;
+        Config.minDistSecondHome = 49342.85D;
         this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
                 ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>(
                         new GetPairsSechomePoisReducer());

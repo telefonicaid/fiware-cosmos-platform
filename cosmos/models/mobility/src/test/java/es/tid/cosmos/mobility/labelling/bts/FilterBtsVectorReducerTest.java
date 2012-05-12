@@ -8,6 +8,7 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.BtsUtil;
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
@@ -24,6 +25,8 @@ public class FilterBtsVectorReducerTest {
     
     @Before
     public void setUp() {
+        Config.maxBtsArea = 10.83515D;
+        Config.maxCommsBts = 70000L;
         this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
                 LongWritable, ProtobufWritable<MobData>>(
                         new FilterBtsVectorReducer());

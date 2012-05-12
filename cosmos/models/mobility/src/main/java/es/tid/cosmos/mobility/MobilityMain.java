@@ -1,5 +1,8 @@
 package es.tid.cosmos.mobility;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -28,7 +31,15 @@ public class MobilityMain extends Configured implements Tool {
     public int run(String[] args) throws Exception {
         ArgumentParser arguments = new ArgumentParser();
         arguments.parse(args);
-        final Configuration conf = this.getConf();
+        
+        InputStream configInput;
+        if (arguments.has("config")) {
+            configInput = new FileInputStream(arguments.getString("config"));
+        } else {
+            configInput = Config.class.getResource("/mobility.properties")
+                    .openStream();
+        }
+        Config.load(configInput);
         
         Path tmpPath;
         if (arguments.has("tmpDir")) {
@@ -54,7 +65,7 @@ public class MobilityMain extends Configured implements Tool {
         if (shouldRunAll || shouldParse) {
             ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath, cellsMobPath,
                               adjBtsPath, pairbtsAdjPath, btsVectorTxtPath,
-                              btsComareaPath, conf);
+                              btsComareaPath, this.getConf());
         }
         
         Path tmpPreparingPath = new Path(tmpPath, "preparing");
@@ -69,7 +80,7 @@ public class MobilityMain extends Configured implements Tool {
             PreparingRunner.run(tmpPreparingPath, cdrsMobPath, cdrsInfoPath,
                                 cdrsNoinfoPath, cellsPath, clientsBtsPath,
                                 btsCommsPath, cdrsNoBtsPath, viTelmonthBtsPath,
-                                conf);
+                                this.getConf());
         }
 
         Path tmpExtractMivsPath = new Path(tmpPath, "mivs");
@@ -78,7 +89,7 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldExtractMivs = arguments.getBoolean("extractMIVs");
         if (shouldRunAll || shouldExtractMivs) {
             MivsRunner.run(viTelmonthBtsPath, viClientFuseAccPath,
-                           tmpExtractMivsPath, isDebug, conf);
+                           tmpExtractMivsPath, isDebug, this.getConf());
         }
         
         Path tmpExtractPoisPath = new Path(tmpPath, "pois");
@@ -91,7 +102,7 @@ public class MobilityMain extends Configured implements Tool {
             PoisRunner.run(tmpExtractPoisPath, clientsBtsPath, clientsInfoPath,
                            cdrsNoinfoPath, cdrsNoBtsPath,
                            clientsInfoFilteredPath, clientsRepbtsPath, isDebug,
-                           conf);
+                           this.getConf());
         }
 
         Path tmpLabelClientPath = new Path(tmpPath, "label_client");
@@ -103,7 +114,8 @@ public class MobilityMain extends Configured implements Tool {
                     "centroids_client", true));
             ClientLabellingRunner.run(cdrsMobPath, clientsInfoFilteredPath,
                                       centroidsPath, vectorClientClusterPath,
-                                      tmpLabelClientPath, isDebug, conf);
+                                      tmpLabelClientPath, isDebug,
+                                      this.getConf());
         }
 
         Path tmpLabelBtsPath = new Path(tmpPath, "label_bts");
@@ -115,7 +127,7 @@ public class MobilityMain extends Configured implements Tool {
                     "centroids_bts", true));
             BtsLabellingRunner.run(btsCommsPath, btsComareaPath,
                                    centroidsPath, vectorBtsClusterPath,
-                                   tmpLabelBtsPath, isDebug, conf);
+                                   tmpLabelBtsPath, isDebug, this.getConf());
         }
 
         Path tmpLabelClientbtsPath = new Path(tmpPath, "label_clientbts");
@@ -133,7 +145,8 @@ public class MobilityMain extends Configured implements Tool {
                                          vectorClientbtsPath, centroidsPath,
                                          pointsOfInterestTempPath,
                                          vectorClientbtsClusterPath,
-                                         tmpLabelClientbtsPath, isDebug, conf);
+                                         tmpLabelClientbtsPath, isDebug,
+                                         this.getConf());
         }
 
         Path tmpLabelJoining = new Path(tmpPath, "label_joining");
@@ -146,7 +159,7 @@ public class MobilityMain extends Configured implements Tool {
                                    vectorClientbtsClusterPath,
                                    vectorBtsClusterPath,
                                    pointsOfInterestTemp4Path,
-                                   tmpLabelJoining, isDebug, conf);
+                                   tmpLabelJoining, isDebug, this.getConf());
         }
         
         Path tmpSecondHomesPath = new Path(tmpPath, "second_homes");
@@ -158,7 +171,8 @@ public class MobilityMain extends Configured implements Tool {
             DetectSecondHomesRunner.run(cellsMobPath, pointsOfInterestTemp4Path,
                                         viClientFuseAccPath, pairbtsAdjPath,
                                         pointsOfInterestPath,
-                                        tmpSecondHomesPath, isDebug, conf);
+                                        tmpSecondHomesPath, isDebug,
+                                        this.getConf());
         }
         
         Path tmpAdjacentsPath = new Path(tmpPath, "adjacents");
@@ -169,7 +183,8 @@ public class MobilityMain extends Configured implements Tool {
         if (shouldRunAll || shouldExtractAdjacents) {
             AdjacentExtractionRunner.run(pointsOfInterestPath, pairbtsAdjPath,
                                          pointsOfInterestIdPath,
-                                         tmpAdjacentsPath, isDebug, conf);
+                                         tmpAdjacentsPath, isDebug,
+                                         this.getConf());
         }
         
         Path tmpOutPoisPath = new Path(tmpPath, "out_pois");
@@ -177,7 +192,7 @@ public class MobilityMain extends Configured implements Tool {
         if (shouldRunAll || shouldOutPois) {
             OutPoisRunner.run(vectorClientbtsPath, pointsOfInterestIdPath,
                               vectorClientClusterPath, vectorBtsClusterPath,
-                              tmpOutPoisPath, isDebug, conf);
+                              tmpOutPoisPath, isDebug, this.getConf());
         }
         
         return 0;

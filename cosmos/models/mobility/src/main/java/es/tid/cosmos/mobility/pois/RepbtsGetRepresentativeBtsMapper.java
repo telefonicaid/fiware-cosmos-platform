@@ -6,6 +6,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
@@ -22,16 +23,13 @@ import es.tid.cosmos.mobility.data.TwoIntUtil;
 public class RepbtsGetRepresentativeBtsMapper extends Mapper<LongWritable,
         ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
         ProtobufWritable<MobData>> {
-    private static final int MOB_CONF_MIN_PERC_REP_BTS = 5;
-    private static final int MOB_CONF_MIN_NUMBER_CALLS_BTS = 14;
-
     @Override
     public void map(LongWritable key, ProtobufWritable<MobData> value,
             Context context) throws IOException, InterruptedException {
         value.setConverter(MobData.class);
         final BtsCounter counter = value.get().getBtsCounter();
-        if (counter.getCount() >= MOB_CONF_MIN_PERC_REP_BTS
-                && counter.getRange() >= MOB_CONF_MIN_NUMBER_CALLS_BTS) {
+        if (counter.getCount() >= Config.minPercRepBts
+                && counter.getRange() >= Config.minNumberCallsBts) {
             ProtobufWritable<TwoInt> nodeBts = TwoIntUtil.createAndWrap(
                     key.get(), counter.getPlaceId());
             BtsCounter btsCounter = BtsCounterUtil.create(counter.getPlaceId(),

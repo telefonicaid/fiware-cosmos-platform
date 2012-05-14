@@ -181,7 +181,7 @@ namespace samson {
                     if (outputFormat == "html")
                     {
                         std::ostringstream output;
-                        output << "<h1>key</h1>\n";
+                        output << "<h1>key</h1>\n";
                         output << keyDataInstance->strHTML();
                         output << "<h1>value</h1>\n";
                         output << valueDataInstance->strHTML();

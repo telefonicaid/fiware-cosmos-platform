@@ -31,6 +31,8 @@ namespace samson {
                     return au::str("Writing to %s" , fileName.c_str() );
                     break;
             }
+
+			return "Error";
         }
         
         DiskConnection::DiskConnection( Item  * _item 

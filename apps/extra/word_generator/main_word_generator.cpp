@@ -52,8 +52,7 @@ PaArgument paArgs[] =
 int logFd = -1;
 
 char word[100];
-
-size_t progressive_counter=0;
+int progressive_word_slots[100]; // Indexes to generate progressive words
 
 au::Cronometer cronometer;
 
@@ -63,9 +62,21 @@ void getNewWord()
 
    if ( progresive )
    {
-	  unsigned long int slot = (progressive_counter++)/PROGRESSIVE_NUMBER;
-	  sprintf( word , "%lu" , slot );
-	  return;
+       for ( int i = 0 ; i < word_length ; i++ )
+           word[i] = 48 + progressive_word_slots[i];
+       
+       // Increase counter...
+       progressive_word_slots[word_length-1]++;
+       
+       int pos = word_length-1;
+       while( (pos>0) && ( progressive_word_slots[pos] >= alphabet_length ) )
+       {
+           progressive_word_slots[pos]=0;
+           progressive_word_slots[pos-1]++;
+           pos--;
+       }
+       
+       return;
    }
 
     for ( int i = 0 ; i < word_length ; i++ )
@@ -87,6 +98,11 @@ int main( int argC , const char*argV[] )
     // Parse input arguments    
     paParse(paArgs, argC, (char**) argV, 1, false);
     logFd = lmFirstDiskFileDescriptor();
+
+    
+    if ( progresive )
+        for ( int i = 0 ; i < word_length ; i++ )
+            progressive_word_slots[i]=0;
 
     
     // End of line for all the words...

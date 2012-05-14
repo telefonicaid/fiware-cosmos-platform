@@ -18,20 +18,21 @@ message MobData {
         CLUSTER = 8;
         NODE_BTS_DAY = 9;
         BTS_COUNTER = 10;
-        POI = 11;
-        POI_POS = 12;
-        MOB_VI_MOB_VARS = 13;
-        TWO_INT = 14;
-        CLUSTER_VECTOR = 15;
-        POI_NEW = 16;
-        NODE_MX_COUNTER = 17;
-        DAILY_VECTOR = 18;
-        MOB_VARS = 19;
-        ITIN_TIME = 20;
-        ITIN_MOVEMENT = 21;
-        ITIN_RANGE = 22;
-        ITIN_PERC_MOVE = 23;
-        ITINERARY = 24;
+        BTS_PROFILE = 11;
+        POI = 12;
+        POI_POS = 13;
+        MOB_VI_MOB_VARS = 14;
+        TWO_INT = 15;
+        CLUSTER_VECTOR = 16;
+        POI_NEW = 17;
+        NODE_MX_COUNTER = 18;
+        DAILY_VECTOR = 19;
+        MOB_VARS = 20;
+        ITIN_TIME = 21;
+        ITIN_MOVEMENT = 22;
+        ITIN_RANGE = 23;
+        ITIN_PERC_MOVE = 24;
+        ITINERARY = 25;
     }
 
     required Type type = 1;
@@ -45,20 +46,21 @@ message MobData {
     optional Cluster cluster = 9;
     optional NodeBtsDay nodeBtsDay = 10;
     optional BtsCounter btsCounter = 11;
-    optional Poi poi = 12;
-    optional PoiPos poiPos = 13;
-    optional MobViMobVars mobViMobVars = 14;
-    optional TwoInt twoInt = 15;
-    optional ClusterVector clusterVector = 16;
-    optional PoiNew poiNew = 17;
-    optional NodeMxCounter nodeMxCounter = 18;
-    optional DailyVector dailyVector = 19;
-    optional MobVars mobVars = 20;
-    optional ItinTime itinTime = 21;
-    optional ItinMovement itinMovement = 22;
-    optional ItinRange itinRange = 23;
-    optional ItinPercMove itinPercMove = 24;
-    optional Itinerary itinerary = 25;
+    optional BtsProfile btsProfile = 12;
+    optional Poi poi = 13;
+    optional PoiPos poiPos = 14;
+    optional MobViMobVars mobViMobVars = 15;
+    optional TwoInt twoInt = 16;
+    optional ClusterVector clusterVector = 17;
+    optional PoiNew poiNew = 18;
+    optional NodeMxCounter nodeMxCounter = 19;
+    optional DailyVector dailyVector = 20;
+    optional MobVars mobVars = 21;
+    optional ItinTime itinTime = 22;
+    optional ItinMovement itinMovement = 23;
+    optional ItinRange itinRange = 24;
+    optional ItinPercMove itinPercMove = 25;
+    optional Itinerary itinerary = 26;
 }
 
 message Cdr {
@@ -98,6 +100,13 @@ message BtsCounter {
     optional uint32 weekday = 2;
     optional uint32 range = 3;
     optional uint32 count = 4;
+}
+
+message BtsProfile {
+    optional uint64 placeId = 1;
+    optional uint32 profile = 2;
+    optional uint32 wday = 3;
+    optional uint32 hour = 4;
 }
 
 message NodeBtsDay {

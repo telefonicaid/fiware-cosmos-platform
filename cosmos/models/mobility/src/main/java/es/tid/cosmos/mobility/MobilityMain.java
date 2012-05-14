@@ -17,6 +17,7 @@ import es.tid.cosmos.mobility.mivs.MivsRunner;
 import es.tid.cosmos.mobility.outpois.OutPoisRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
+import es.tid.cosmos.mobility.populationdensity.PopulationDensityRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
 import es.tid.cosmos.mobility.util.Logger;
 
@@ -190,6 +191,18 @@ public class MobilityMain extends Configured implements Tool {
                                   pointsOfInterestIdPath,
                                   clientItinerariesTxtPath, tmpItinerariesPath,
                                   isDebug, conf);
+        }
+
+        Path tmpPopulationDensityPath = new Path(tmpPath, "population_density");
+        Path populationDensityOutPath = new Path(tmpPopulationDensityPath,
+                                                 "populationDensityOut");
+        boolean shouldGetPopulationDensity = arguments.getBoolean(
+                "getPopulationDensity");
+        if (shouldRunAll || shouldGetPopulationDensity) {
+            PopulationDensityRunner.run(clientsInfoPath,
+                                        populationDensityOutPath,
+                                        tmpPopulationDensityPath, isDebug,
+                                        conf);
         }
         
         return 0;

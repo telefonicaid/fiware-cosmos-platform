@@ -59,7 +59,6 @@ namespace samson {
 
         void StreamOperation::add_latency_time( double t )
         {
-            LM_W(("Latency time %f" , t));
             
             if( t < 0 )
                 return;
@@ -72,7 +71,6 @@ namespace samson {
         
         void StreamOperation::add_block_to_cronometers( Block* block )
         {
-            LM_W(("Adding block to cronometer %p" , block));
 
             if( block_cronometers.findInMap(block) )
                 return; // Blcok already included.... ( common in reduce operations )
@@ -82,7 +80,6 @@ namespace samson {
         
         void StreamOperation::remove_block_to_cronometers( Block* block )
         {
-            LM_W(("Remove block to cronometer %p" , block));
 
             if( isBlockIncluded(block) )
                 return; // It is still included as an input somewhere...

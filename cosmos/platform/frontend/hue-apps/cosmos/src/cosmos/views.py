@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
 import logging
 
+from desktop.lib.django_util import PopupException, render, render_to_string
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.forms.util import ErrorList
-from django.shortcuts import redirect
-from desktop.lib.django_util import PopupException, render
+from django.http import Http404, HttpResponse
+from django.shortcuts import get_object_or_404, redirect
 import jobsub.views as jobsub
 from jobsub.models import Submission
 from jobsubd.ttypes import (BinHadoopStep, LocalizedFile, LocalizeFilesStep,
                             State, SubmissionPlan, SubmissionPlanStep)
 
-from cosmos import conf, paths
+from cosmos import conf, mongo, paths
 from cosmos.models import JobRun
 from cosmos.forms import RunJobForm
 
@@ -101,4 +103,45 @@ def upload_index(request):
 
 
 def show_results(request, job_id):
-    pass
+    job = get_object_or_404(JobRun, pk=job_id, user=request.user)
+    if job.submission is None:
+        raise Http404
+
+    # TODO: only successful ones
+    return view_successful_results(request, job)
+
+
+def view_successful_results(request, job):
+    try:
+        primary_key = request.GET.get('primary_key')
+        results = mongo.retrieve_results(job.id, primary_key)
+        prototype_result = results[0]
+        if not primary_key:
+            primary_key = prototype_result.pk
+        paginator = Paginator(results, 100)
+        page = request.GET.get('page', 1)
+        try:
+            paginated_results = paginator.page(page)
+        except PageNotAnInteger:
+            paginated_results = paginator.page(1)
+        except EmptyPage:
+            paginated_results = paginator.page(paginator.num_pages)
+
+        return render('job_results.mako', request, dict(
+            title='Results of job %s' % job.id,
+            job_results=paginated_results,
+            prototype_result=prototype_result,
+            hidden_keys=mongo.HIDDEN_KEYS,
+            primary_key=primary_key
+        ))
+
+    except mongo.NoResultsError:
+        return render('job_results.mako', request, dict(
+            title='Results of job %s' % job.id,
+            job_results=None,
+            hidden_keys=mongo.HIDDEN_KEYS
+        ))
+
+    except mongo.NoConnectionError:
+        return HttpResponse(render_to_string("503.html", dict(
+            reason='Database not available')), status=503)

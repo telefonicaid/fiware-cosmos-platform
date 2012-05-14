@@ -21,6 +21,7 @@ import es.tid.cosmos.mobility.outpois.OutPoisRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
 import es.tid.cosmos.mobility.populationdensity.PopulationDensityRunner;
+import es.tid.cosmos.mobility.populationdensity.profile.PopulationDensityProfileRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
 import es.tid.cosmos.mobility.util.Logger;
 
@@ -214,6 +215,21 @@ public class MobilityMain extends Configured implements Tool {
                                         populationDensityOutPath,
                                         tmpPopulationDensityPath, isDebug,
                                         conf);
+        }
+
+        Path tmpPopulationDensityProfilePath = new Path(tmpPath,
+                "population_density_profile");
+        Path populationDensityProfileOutPath = new Path(
+                tmpPopulationDensityProfilePath, "populationDensityProfileOut");
+        boolean shouldGetPopulationDensityProfile = arguments.getBoolean(
+                "getPopulationDensityProfile");
+        if (shouldRunAll || shouldGetPopulationDensityProfile) {
+            // TODO: specify the clients profile path
+            PopulationDensityProfileRunner.run(null,
+                                               clientsInfoPath,
+                                               populationDensityProfileOutPath,
+                                               tmpPopulationDensityPath,
+                                               isDebug, conf);
         }
         
         return 0;

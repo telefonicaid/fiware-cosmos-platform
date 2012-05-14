@@ -230,7 +230,7 @@ namespace samson
         {
             size_t id = delilah_ids[i];
             
-            while (delilah->isActive( id ) )
+            while ( delilah->isActive( id ) )
             {
                 std::string description =  delilah->getDescription( id );                
                 LM_V(("Waiting process %lu: %s", id , description.c_str()  ));
@@ -323,5 +323,21 @@ namespace samson
         return delilah->isConnectionReady();
     }
 
+    size_t SamsonClient::getNumPendingOperations()
+    {
+        size_t total = 0;
+        
+        for ( size_t i = 0 ; i < delilah_ids.size() ; i++)
+        {
+            size_t id = delilah_ids[i];
+            
+            if ( delilah->isActive( id ) )
+                total ++;
+        }
+        
+        return total;
+
+    }
     
+
 }

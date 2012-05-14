@@ -115,6 +115,8 @@ namespace  samson {
         // Change the interface to receive live data from SAMSON
         void set_receiver_interface( DelilahLiveDataReceiverInterface* interface );
 
+        // Get number of operations we are waiting for...
+        size_t getNumPendingOperations();
         
         std::string getStatisticsString()
         {

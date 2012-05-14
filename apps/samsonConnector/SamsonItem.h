@@ -46,6 +46,14 @@ namespace samson {
                 return false; // Still not considered how to cancel this connection
             }
             
+            size_t getSize()
+            {
+                if( getType() == connection_output )
+                    return client->getNumPendingOperations(); // It is not the size in bytes but at least is >0 if not all data is emitted
+                else
+                    return 0;
+            }
+
             
             // Overload method to push blocks using samsonClient
             void push( engine::Buffer* buffer )

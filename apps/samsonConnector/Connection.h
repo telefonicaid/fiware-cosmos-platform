@@ -52,7 +52,7 @@ namespace samson
             ConnectionType getType();       // Get type
             const char* getTypeStr();
             std::string getName();          // Get a name of this element
-            size_t getSize();               // Get currect size accumulated here
+            virtual size_t getSize();               // Get currect size accumulated here
 
             
             // Method to push data from channel ( only output )

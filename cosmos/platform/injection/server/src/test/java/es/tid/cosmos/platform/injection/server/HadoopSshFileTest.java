@@ -2,7 +2,10 @@ package es.tid.cosmos.platform.injection.server;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.After;
 import static org.junit.Assert.*;
@@ -22,18 +25,33 @@ public class HadoopSshFileTest {
     private Path dir;
     private HadoopSshFile hfoo;
     private HadoopSshFile hdir;
+    private Configuration configuration;
+    private String userName = "test";
+    private FileSystem hadoopFS;
 
     @Before
     public void setUp() {
+        this.configuration = new Configuration();
+        try {
+            this.hadoopFS = FileSystem.get(URI.create(
+                    this.configuration.get("fs.default.name")), this.configuration,
+                    this.userName);
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+        } catch (InterruptedException e) {
+            LOG.error(e.getMessage(), e);
+        }
         this.dir = new Path("/tmp/user01");
         this.foo = new Path("/tmp/user01/file01");
         try {
             this.hfoo = new HadoopSshFile("/tmp/user01/file01",
-                    "user01", 1);
+                    "user01", this.configuration, this.hadoopFS);
             this.hdir = new HadoopSshFile("/tmp/user01/",
-                    "user01", 1);
+                    "user01", this.configuration, this.hadoopFS);
         } catch (IOException e) {
-            LOG.error(e.getLocalizedMessage());
+            LOG.error(e.getMessage());
+        } catch (InterruptedException e) {
+            LOG.error(e.getMessage());
         }
     }
 

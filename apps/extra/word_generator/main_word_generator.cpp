@@ -124,7 +124,7 @@ int main( int argC , const char*argV[] )
     {
         // Check the limit of generated words
         if( max_num_lines > 0 )
-            if( num_lines >= max_num_lines )
+		   if( num_lines >= (size_t) max_num_lines )
                 break; 
         
         // Get new word

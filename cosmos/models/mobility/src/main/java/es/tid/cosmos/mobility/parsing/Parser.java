@@ -1,8 +1,8 @@
 package es.tid.cosmos.mobility.parsing;
 
-import es.tid.cosmos.mobility.data.BaseProtocol.Date;
-import es.tid.cosmos.mobility.data.BaseProtocol.Time;
-import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
+import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
+import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 
 /**
  *

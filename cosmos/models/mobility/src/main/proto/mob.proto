@@ -2,7 +2,7 @@ package mob;
 
 import "base.proto";
 
-option java_package = "es.tid.cosmos.mobility.data";
+option java_package = "es.tid.cosmos.mobility.data.generated";
 option java_outer_classname = "MobProtocol";
 
 message MobData {

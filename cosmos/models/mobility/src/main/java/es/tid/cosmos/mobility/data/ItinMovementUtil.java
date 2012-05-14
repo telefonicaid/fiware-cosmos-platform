@@ -2,8 +2,8 @@ package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.cosmos.mobility.data.MobProtocol.ItinMovement;
-import es.tid.cosmos.mobility.data.MobProtocol.ItinTime;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 
 /**
  *

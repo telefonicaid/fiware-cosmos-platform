@@ -8,9 +8,9 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ItinRangeUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.ItinMovement;
-import es.tid.cosmos.mobility.data.MobProtocol.ItinRange;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, ItinMovement>

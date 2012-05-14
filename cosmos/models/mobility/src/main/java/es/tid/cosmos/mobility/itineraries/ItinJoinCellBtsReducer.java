@@ -11,11 +11,11 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ItinTimeUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
@@ -58,7 +58,7 @@ public class ItinJoinCellBtsReducer extends Reducer<LongWritable,
                         MobDataUtil.createAndWrap(
                                 ItinTimeUtil.create(cdr.getDate(),
                                                     cdr.getTime(),
-                                                    cdr.getCellId()));
+                                                    cell.getPlaceId()));
                 context.write(nodeBts, itTime);
             }
         }

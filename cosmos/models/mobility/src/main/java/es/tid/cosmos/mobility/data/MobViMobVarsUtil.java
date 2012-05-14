@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
-import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 
 /**
  *

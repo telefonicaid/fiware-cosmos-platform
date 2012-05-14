@@ -23,14 +23,14 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import es.tid.cosmos.mobility.data.BaseProtocol.Date;
-import es.tid.cosmos.mobility.data.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.CellUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
+import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
+import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**

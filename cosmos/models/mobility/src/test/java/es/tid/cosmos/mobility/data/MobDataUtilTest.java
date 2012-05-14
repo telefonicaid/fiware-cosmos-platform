@@ -5,7 +5,7 @@ import org.apache.hadoop.io.NullWritable;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobProtocol.*;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.*;
 
 /**
  *

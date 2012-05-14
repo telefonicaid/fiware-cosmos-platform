@@ -31,7 +31,7 @@ public class WebProfilingUtil {
     }
 
     private static void init() {
-        dateFormatter = new KpiCalculationDateFormatter(DELIMITER);
+        dateFormatter = new KpiCalculationDateFormatter();
         builder = WebProfilingLog.newBuilder();
     }
 

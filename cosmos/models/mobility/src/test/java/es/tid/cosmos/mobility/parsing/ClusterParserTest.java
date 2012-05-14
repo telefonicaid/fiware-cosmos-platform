@@ -3,7 +3,7 @@ package es.tid.cosmos.mobility.parsing;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 
 /**
  *

@@ -9,10 +9,10 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
-import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
 import es.tid.cosmos.mobility.data.MobVarsUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 
 /**
  * Input: <Long, MobViMobVars>

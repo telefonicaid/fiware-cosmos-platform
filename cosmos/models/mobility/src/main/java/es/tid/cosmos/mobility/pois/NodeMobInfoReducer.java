@@ -9,10 +9,10 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.NodeMxCounter;
 import es.tid.cosmos.mobility.data.NodeMxCounterUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
 /**
  * Input: <Long, BtsCounter>

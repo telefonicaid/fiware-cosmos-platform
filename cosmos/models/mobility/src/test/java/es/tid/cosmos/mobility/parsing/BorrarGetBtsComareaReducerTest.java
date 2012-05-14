@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  *

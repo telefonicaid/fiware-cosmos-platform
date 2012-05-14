@@ -85,7 +85,6 @@ int main(int argC, const char *argV[])
 {
     long int kernel_shmmax = 0;
     long int kernel_shmall = 0;
-    long int page_size = 0;
     long int max_memory_size = 0;
     long int needed_shmall = 0;
 
@@ -124,7 +123,7 @@ int main(int argC, const char *argV[])
     // Check to see if we can allocate all the memory needed
     if ( samson_required_mem > max_memory_size )
     {
-        needed_shmall = samson_required_mem / page_size;
+        needed_shmall = samson_required_mem / PAGE_SIZE;
         printf ("Unable to allocate the needed memory for SAMSON. The system has %ld allocated and we need %ld.\n", max_memory_size, samson_required_mem);
         printf ("Set kernel.shmall to %ld using the command 'sysctl -w kernel.shmall=%ld'.\n", needed_shmall, needed_shmall);
     }

@@ -751,6 +751,11 @@ namespace samson {
     //
     void SamsonWorker::process( au::network::RESTServiceCommand* command )
     {
+        // Default format
+        if( command->format == "" )
+            command->format = "xml";
+
+        
         // Begin data for each format
         // ---------------------------------------------------
         if ( command->format == "xml" )
@@ -783,6 +788,7 @@ namespace samson {
     {
         LM_T(LmtRest, ("Incoming REST request: '%s'", command->resource.c_str()));
 
+        
         if( command->path_components.size() < 2 )
         {
             command->appendFormatedError(400 , "Only /samson/option paths are valid");

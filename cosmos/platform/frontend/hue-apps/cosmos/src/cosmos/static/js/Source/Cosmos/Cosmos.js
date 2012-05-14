@@ -85,8 +85,15 @@ var Cosmos = new Class({
                 });
             },
             VisualizedTable: function (table) {
-               jQuery(table).visualize({type: 'pie', pieMargin: 10});
-               jQuery(table).visualize({type: 'bar'});
+                var options = {
+                    height: 800
+                };
+                jQuery(table).visualize($merge({
+                    type: 'pie',
+                    pieMargin: 60,
+                    pieLabelPos: 'outer'
+                }, options));
+                jQuery(table).visualize($merge({type: 'bar'}, options));
             }
         });
     },

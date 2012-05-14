@@ -59,7 +59,7 @@ $.fn.visualize = function(options, container){
 						self.find('tr:gt(0)').filter(o.rowFilter).each(function(i){
 							dataGroups[i] = {};
 							dataGroups[i].points = [];
-							dataGroups[i].color = colors[i];
+							dataGroups[i].color = colors[i % colors.length];
 							if(textColors[i]){ dataGroups[i].textColor = textColors[i]; }
 							$(this).find('td').filter(o.colFilter).each(function(){
 								dataGroups[i].points.push( parseFloat($(this).text()) );
@@ -71,7 +71,7 @@ $.fn.visualize = function(options, container){
 						for(var i=0; i<cols; i++){
 							dataGroups[i] = {};
 							dataGroups[i].points = [];
-							dataGroups[i].color = colors[i];
+							dataGroups[i].color = colors[i % colors.length];
 							if(textColors[i]){ dataGroups[i].textColor = textColors[i]; }
 							self.find('tr:gt(0)').filter(o.rowFilter).each(function(){
 								dataGroups[i].points.push( $(this).find('td').filter(o.colFilter).eq(i).text()*1 );
@@ -194,7 +194,7 @@ $.fn.visualize = function(options, container){
 						
 				var centerx = Math.round(canvas.width()/2);
 				var centery = Math.round(canvas.height()/2);
-				var radius = centery - o.pieMargin;				
+				var radius = Math.min(centerx, centery) - o.pieMargin;				
 				var counter = 0.0;
 				var toRad = function(integer){ return (Math.PI/180)*integer; };
 				var labels = $('<ul class="visualize-labels"></ul>')
@@ -215,7 +215,8 @@ $.fn.visualize = function(options, container){
 			        ctx.fill();
 			        // draw labels
 			       	var sliceMiddle = (counter + fraction/2);
-			       	var distance = o.pieLabelPos == 'inside' ? radius/1.5 : radius +  radius / 5;
+			       	var distance = o.pieLabelPos == 'inside' ? (radius / 1.5)
+                                                                         : (radius + o.pieMargin / 3);
 			        var labelx = Math.round(centerx + Math.sin(sliceMiddle * Math.PI * 2) * (distance));
 			        var labely = Math.round(centery - Math.cos(sliceMiddle * Math.PI * 2) * (distance));
 			        var leftRight = (labelx > centerx) ? 'right' : 'left';
@@ -233,7 +234,9 @@ $.fn.visualize = function(options, container){
 				        		.css({left: labelx, top: labely})
 				        		.append(labeltext);	
 				        labeltext
-				        	.css('font-size', radius / 8)		
+				        	.css('font-size', (o.pieLabelPos == 'inside')
+                                                        ? (radius / 8)
+                                                        : (o.pieMargin / 3))
 				        	.css('margin-'+leftRight, -labeltext.width()/2)
 				        	.css('margin-'+topBottom, -labeltext.outerHeight()/2);
 				        	

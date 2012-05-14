@@ -34,18 +34,17 @@ static const char* manSynopsis =
 int word_length;
 int alphabet_length;
 bool rand_flag;
-int repeate_time;
-int num_lines;
+int max_num_lines;
 bool progresive;
-
+int max_rate; // Max rate of words per second
 PaArgument paArgs[] =
 {
-	{ "-l",           &word_length,       "",  PaInt,     PaOpt,     9, 1,  30,         "Number of letters of generated words ( default 9 )" },    
-    { "-alphabet",    &alphabet_length,   "",  PaInt,     PaOpt,     10, 1, 30,         "Number of differnt letters used to generate words ( default 10 )" },
-	{ "-random",      &rand_flag,         "",  PaBool,    PaOpt,  false,  false, true,  "Flag to generate completelly randomized sequence of words"},
-	{ "-progressive", &progresive,        "",  PaBool,    PaOpt,  false,  false, true,  "Flag to generate sequences of numbers in incressing order"},
-	{ "-repeat",      &repeate_time,      "",  PaInt,     PaOpt,     0, 0, 10000,       "time_to_repeat in seconds with a new wave of words" },    
-	{ " ",            &num_lines,         "",  PaInt,     PaOpt,     0, 0, 1000000000,  "Number of words to be generated" }, 
+	{ "-l",           &word_length,       "",  PaInt,     PaOpt,     9, 1,  30,             "Number of letters of generated words ( default 9 )" },    
+    { "-alphabet",    &alphabet_length,   "",  PaInt,     PaOpt,     10, 1, 30,             "Number of differnt letters used to generate words ( default 10 )" },
+	{ "-random",      &rand_flag,         "",  PaBool,    PaOpt,  false,  false, true,      "Flag to generate completelly randomized sequence of words"},
+	{ "-progressive", &progresive,        "",  PaBool,    PaOpt,  false,  false, true,      "Flag to generate sequences of numbers in incressing order"},
+	{ "-rate",        &max_rate,          "",  PaInt,     PaOpt,     0, 0, 10000000000,     "Max rate in words / second" },    
+	{ " ",            &max_num_lines,         "",  PaInt,     PaOpt,     0, 0, 1000000000,  "Number of words to be generated" }, 
 	PA_END_OF_ARGS
 };
 
@@ -99,7 +98,7 @@ int main( int argC , const char*argV[] )
     paParse(paArgs, argC, (char**) argV, 1, false);
     logFd = lmFirstDiskFileDescriptor();
 
-    
+    // Init progressive
     if ( progresive )
         for ( int i = 0 ; i < word_length ; i++ )
             progressive_word_slots[i]=0;
@@ -107,14 +106,8 @@ int main( int argC , const char*argV[] )
     
     // End of line for all the words...
     word[word_length] = '\0';
-
-    if ( repeate_time == 0 )
-        LM_V(("Generating %s words of %d chars (%s)" , au::str( num_lines ).c_str() , alphabet_length , rand_flag?"Randomly":"Non randomly"));
-    else
-        LM_V(("Generating %s words of %d chars every %d seconds (%s)" , au::str( num_lines ).c_str() , alphabet_length , repeate_time , rand_flag?"Randomly":"Non randomly"));
     
-    
-    size_t total_num = 0;
+    size_t num_lines = 0;
     size_t total_size = 0;
 
     // Init random numbers if random specified
@@ -123,55 +116,50 @@ int main( int argC , const char*argV[] )
     else
         srand(0);
     
-    
-    if( num_lines == 0)
-        while( true )
-        {
-            getNewWord();
-            printf("%s\n",word);            
-        }
-    
-    
+    // Generate continuously...
     while( true )
     {
+        // Check the limit of generated words
+        if( max_num_lines > 0 )
+            if( num_lines >= max_num_lines )
+                break; 
         
-        int local_num_lines = 0;
-        
-        while( local_num_lines < num_lines )
-        {
-            getNewWord();
-            
-            total_size += printf("%s\n",word);
-            total_num++;
-            
-            local_num_lines++;
-         
-            
-            if( num_lines > 100 )
-                if( (local_num_lines%( num_lines/100)) == 0 )
-                {
-                    size_t total_seconds = cronometer.diffTimeInSeconds();
-                    LM_V(( "Generated %s %s lines ( %s bytes ) in %s. Rate: %s / %s", 
-                          au::str_percentage( local_num_lines,  num_lines).c_str(), 
-                          au::str(total_num).c_str() , au::str(total_size).c_str(), au::str_time( total_seconds ).c_str() ,
-                          au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() ));
-                }
-            
-        }
+        // Get new word
+        getNewWord();
 
+        // Counter of bytes and words
+        total_size += printf("%s\n",word);
+        num_lines++;
+         
+        // Get the total number of seconds running...
         size_t total_seconds = cronometer.diffTimeInSeconds();
-        LM_V(( "Generated %s lines ( %s bytes ) in %s. Rate: %s / %s", 
-              au::str(total_num).c_str() , au::str(total_size).c_str(), au::str_time( total_seconds ).c_str() ,
-              au::str( (double)total_num/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() ));
+
+        if( total_seconds > 0 )
+            if( max_num_lines > 100 )
+                if( (num_lines%( max_num_lines/100)) == 0 )
+                {
+                    LM_V(( "Generated %s - %s lines ( %s bytes ) in %s. Rate: %s / %s", 
+                          au::str_percentage( num_lines,  max_num_lines).c_str(), 
+                          au::str(num_lines).c_str() , au::str(total_size).c_str(), au::str_time( total_seconds ).c_str() ,
+                          au::str( (double)num_lines/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() ));
+                }
+      
         
-        if( repeate_time == 0 )
-            exit(1);
-        else
+        // Sleep if necessary
+        if( max_rate > 0 )
         {
-            LM_V(("Sleeping %d seconds..." , (int)repeate_time));
-            sleep( repeate_time );
+            size_t theoretical_seconds = num_lines / max_rate;
+            
+            if( total_seconds < theoretical_seconds )
+                sleep( theoretical_seconds - total_seconds );
         }
         
     }
+    
+    size_t total_seconds = cronometer.diffTimeInSeconds();
+    LM_V(( "Generated %s lines ( %s bytes ) in %s. Rate: %s / %s", 
+          au::str(num_lines).c_str() , au::str(total_size).c_str(), au::str_time( total_seconds ).c_str() ,
+          au::str( (double)num_lines/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() ));
+
     
 }

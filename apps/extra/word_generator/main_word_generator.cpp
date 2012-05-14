@@ -90,8 +90,6 @@ class BufferToScreen
     size_t max_size;
     size_t size;
     
-    au::Cronometer c;
-    
 public:
     
     BufferToScreen( size_t _max_size )
@@ -103,11 +101,8 @@ public:
     
     void append( char* data , int len )
     {
-        if( ( (size + len ) > max_size ) || ( c.diffTimeInSeconds() > 1 ) )
-        {
+        if( (size + len ) > max_size )
             flush();
-            c.reset();
-        }
         
         memcpy(buffer+size, data, len);
         size += len;
@@ -162,6 +157,8 @@ int main( int argC , const char*argV[] )
     // Buffer to flsh data to screen in batches
     BufferToScreen buffer_to_screen( 10000 );
     
+    double lines_per_second = 0;
+    
     // Generate continuously...
     while( true )
     {
@@ -182,10 +179,26 @@ int main( int argC , const char*argV[] )
         // Counter of bytes and words
         total_size += word_len;
         num_lines++;
-         
+
+        // This avoid exesive calls to timeout
+        if( lines_per_second > 100000 )
+        {
+            size_t num_continue = lines_per_second/100;
+            if( (num_lines%num_continue) != 0 )
+                continue;
+        }
+
+        // Flush accumulated buffer so far
+        buffer_to_screen.flush();
+        
         // Get the total number of seconds running...
         size_t total_seconds = cronometer.diffTimeInSeconds();
 
+        // Compute the number of lines per second, so far...
+        if( total_seconds > 0 )
+            lines_per_second = (double)num_lines/(double)total_seconds; 
+        
+        
         if( ( total_seconds - last_message_time ) > 5 )
         {
             last_message_time = total_seconds;

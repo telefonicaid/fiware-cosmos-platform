@@ -1,5 +1,0 @@
-copyright: Apache License v2.0
-version: 0.1
-description: Unknown
-name: cosmos_dataviewer
-sources: [Source/CosmosDataviewer/CosmosDataviewer.js]

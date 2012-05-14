@@ -3,15 +3,18 @@ package es.tid.cosmos.tests.datainjection;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import com.jcraft.jsch.SftpException;
 import org.apache.hadoop.fs.Path;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
@@ -35,6 +38,17 @@ public class SftpIT {
         final Session session = CosmosSftp.createSession(this.env);
         try {
             this.putAndVerifyFile(session, "testFileUpload", new Data(1));
+        } finally {
+            session.disconnect();
+        }
+    }
+
+    public void testFileUploadOverwrite()
+            throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
+        try {
+            this.putAndVerifyFile(session, "testFileUpload", new Data(5));
+            this.putAndVerifyFile(session, "testFileUpload", new Data(8));
         } finally {
             session.disconnect();
         }
@@ -116,12 +130,12 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = SftpException.class)
-    public void testMoveToRoot()
+    public void testListRoot()
             throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
         try {
-            sftpChannel.cd("/");
+            sftpChannel.ls("/");
         } finally {
             sftpChannel.exit();
             session.disconnect();
@@ -171,7 +185,12 @@ public class SftpIT {
         try {
             sftpChannel.mkdir(dirName);
             sftpChannel.cd(dirName);
-            assertEquals(sftpChannel.ls(".").size(), 2); // "." and ".."
+            List<LsEntry> ls = sftpChannel.ls(".");
+            assertEquals(ls.size(), 2); // "." and ".."
+            for (LsEntry entry : ls) {
+                assertTrue(entry.getLongname().contains("rw"),
+                           "Verifying ls returns permissions data");
+            }
             sftpChannel.cd("..");
             sftpChannel.rmdir(dirName);
         } finally {

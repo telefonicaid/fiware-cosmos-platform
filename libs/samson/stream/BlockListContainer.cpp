@@ -103,9 +103,7 @@ namespace samson
             {
                 output << it_blockLists->first;
                 output << " : ";
-
-                it_blockLists->second->getBlockInfo().strShort();
-                
+                output << it_blockLists->second->getBlockInfo().strShort();
                 output << " ";
                 
             }

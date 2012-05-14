@@ -423,7 +423,7 @@ namespace samson
                 return output.str();
             }
         
-        return au::str( au::red , "Unknown command %s\n" , name.c_str() );
+        return au::str( "Unknown command %s\n" , name.c_str() );
     }
     
     

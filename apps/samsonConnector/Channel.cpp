@@ -9,6 +9,7 @@
 
 
 extern bool interactive;
+extern bool run_as_daemon;
 
 namespace samson {
     
@@ -144,7 +145,7 @@ namespace samson {
                 
                 if( components[0] == "stdout" )
                 {
-                    if( !interactive ) 
+                    if( !interactive && !run_as_daemon ) 
                     {
                         add( new StdoutItem( this ) );
                     }
@@ -251,7 +252,7 @@ namespace samson {
                 
                 if( components[0] == "stdin" )
                 {
-                    if( !interactive ) // No send to add stdout in interactive mode ;)
+                    if( !interactive && !run_as_daemon ) // No send to add stdout in interactive mode ;)
                         add( new StdinItem( this ) );
                     else
                     {

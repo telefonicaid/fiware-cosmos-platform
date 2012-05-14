@@ -136,8 +136,11 @@ int main( int argC , const char *argV[] )
         LM_X(1,("Wrong buffer size %lu", buffer_size ));
 
     // Run in background if required
-    //    if( run_as_daemon )
-    //  daemonize();
+    if( run_as_daemon )
+    {
+        daemonize();
+        deamonize_close_all();
+    }
     
     // Init samson setup with default values
 	samson::SamsonSetup::init("","");			
@@ -172,7 +175,6 @@ int main( int argC , const char *argV[] )
     // Run console if interactive mode is activated
     if( run_as_daemon )
     {
-        LM_M(("Running in background..."));
         samson_connector->add_service();          // Add service to accept monitor connections from samsonConnectorClient
         samson_connector->initRESTInterface();    // Add REST service to accept REST-full connections
         while( true )

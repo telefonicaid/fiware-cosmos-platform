@@ -8,7 +8,7 @@
 #include "samson/client/SamsonClient.h"
 #include "samson/client/SamsonPushBuffer.h"
 
-#include "Block.h"
+
 #include "Connection.h"
 #include "common.h"
 

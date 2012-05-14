@@ -3,7 +3,6 @@
 #include "au/string.h"
 #include "au/ThreadManager.h"
 
-#include "Block.h"
 #include "Channel.h"
 #include "SamsonConnector.h" // Own interface
 

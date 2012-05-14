@@ -12,6 +12,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.parsing.ClusterParser;
 
@@ -30,7 +31,7 @@ public abstract class CentroidsCatalogue {
             reader = new InputStreamReader(in);
             return load(reader);
         } catch (Exception ex) {
-            Logger.get().fatal(ex);
+            Logger.get(CentroidsCatalogue.class).fatal(ex);
             throw new IOException(ex);
         } finally {
             if (reader != null) {

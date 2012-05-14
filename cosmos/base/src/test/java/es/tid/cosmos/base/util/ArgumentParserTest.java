@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility;
+package es.tid.cosmos.base.util;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;

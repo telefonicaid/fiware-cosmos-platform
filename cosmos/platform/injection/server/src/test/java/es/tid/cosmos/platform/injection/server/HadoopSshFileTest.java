@@ -10,9 +10,7 @@ import org.apache.hadoop.fs.Path;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,9 +43,9 @@ public class HadoopSshFileTest {
         this.foo = new Path("/tmp/user01/file01");
         try {
             this.hfoo = new HadoopSshFile("/tmp/user01/file01",
-                    "user01", this.configuration, this.hadoopFS);
+                    "user01", this.configuration);
             this.hdir = new HadoopSshFile("/tmp/user01/",
-                    "user01", this.configuration, this.hadoopFS);
+                    "user01", this.configuration);
         } catch (IOException e) {
             LOG.error(e.getMessage());
         } catch (InterruptedException e) {

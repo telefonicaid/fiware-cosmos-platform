@@ -25,31 +25,34 @@ import org.slf4j.LoggerFactory;
  * @author logc
  */
 public class InjectionServer {
-    private static Logger LOG;
-    private static final String CONFIG_FILE = "/injection_server.properties";
-//    private final String notificationEmail;
-    private final URI hdfsURI;
-    private final int serverSocketPort;
     private Configuration conf;
     private HadoopFileSystemFactory hadoopFileSystemFactory;
+    private final String frontendDbUrl;
+    private final int serverSocketPort;
+    private final String dbName;
+    private final String dbUser;
+    private final String dbPassword;
+    private final Logger LOG = LoggerFactory.getLogger(InjectionServer.class);
+    private static final String CONFIG_FILE = "/injection_server.dev.properties";
 
     public InjectionServer() throws IOException, URISyntaxException {
-        LOG = LoggerFactory.getLogger(InjectionServer.class);
         Properties props = new Properties();
         props.load(InjectionServer.class.getResource(CONFIG_FILE).openStream());
-//        this.notificationEmail = props.getProperty("NOTIFICATION_EMAIL");
-        this.hdfsURI = new URI(props.getProperty("HDFS_URL"));
+        URI hdfsURI = new URI(props.getProperty("HDFS_URL"));
         this.serverSocketPort = Integer.parseInt(
                 props.getProperty("SERVER_SOCKET_PORT"));
         String jobtrackerUrl = props.getProperty("JOBTRACKER_URL");
+        this.frontendDbUrl = props.getProperty("FRONTEND_DB");
+        this.dbName = props.getProperty("DB_NAME");
+        this.dbUser = props.getProperty("DB_USER");
+        this.dbPassword = props.getProperty("DB_PASS");
         this.conf = new Configuration();
-        this.conf.set("fs.default.name", this.hdfsURI.toString());
+        this.conf.set("fs.default.name", hdfsURI.toString());
         this.conf.set("mapred.job.tracker", jobtrackerUrl);
         this.hadoopFileSystemFactory = new HadoopFileSystemFactory(conf);
     }
 
     public void setupSftpServer(){
-
         SshServer sshd = SshServer.setUpDefaultServer();
         // General settings
         sshd.setFileSystemFactory(hadoopFileSystemFactory);
@@ -57,7 +60,9 @@ public class InjectionServer {
         sshd.setKeyPairProvider(
                 new SimpleGeneratorHostKeyProvider("hostkey.ser"));
         // User authentication settings
-        PasswordAuthenticator passwordAuthenticator = new FrontendPassword();
+        FrontendPassword passwordAuthenticator = new FrontendPassword();
+        passwordAuthenticator.setFrontendCredentials(this.frontendDbUrl,
+                this.dbName, this.dbUser, this.dbPassword);
         sshd.setPasswordAuthenticator(passwordAuthenticator);
         List<NamedFactory<UserAuth>> userAuthFactories =
                 new ArrayList<NamedFactory<UserAuth>>();
@@ -76,5 +81,6 @@ public class InjectionServer {
         } catch (Exception e) {
             LOG.error(e.getLocalizedMessage());
         }
+
     }
 }

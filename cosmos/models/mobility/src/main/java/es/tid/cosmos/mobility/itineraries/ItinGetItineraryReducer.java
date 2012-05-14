@@ -3,9 +3,11 @@ package es.tid.cosmos.mobility.itineraries;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
@@ -21,8 +23,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 public class ItinGetItineraryReducer extends Reducer<
         ProtobufWritable<ItinRange>, ProtobufWritable<MobData>, LongWritable,
         ProtobufWritable<MobData>> {
-    private static final double PERC_ABSOLUTE_MAX = 20.0D;
-
+    private double percAbsoluteMax;
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final Configuration conf = context.getConfiguration();
+        this.percAbsoluteMax = Double.parseDouble(conf.get(
+                Config.PERC_ABSOLUTE_MAX));
+    }
+    
     @Override
     protected void reduce(ProtobufWritable<ItinRange> key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -56,8 +65,7 @@ public class ItinGetItineraryReducer extends Reducer<
             }
             // Filter small movements
             for (int j = 0; j < peaksMoves.getComsCount(); j++) {
-                if (peaksMoves.getComs(j) <
-                        (absMax * PERC_ABSOLUTE_MAX / 100.0)) {
+                if (peaksMoves.getComs(j) < absMax * percAbsoluteMax / 100.0) {
                     peaksMoves.setComs(j, 0.0D);
                 }
             }

@@ -3,9 +3,11 @@ package es.tid.cosmos.mobility.itineraries;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.ItinMovementUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
@@ -19,8 +21,18 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  */
 public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
-    private final static int MAX_MINUTES_IN_MOVES = 360;
-    private final static int MIN_MINUTES_IN_MOVES = 0;
+    private int maxMinutesInMoves;
+    private int minMinutesInMoves;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final Configuration conf = context.getConfiguration();
+        this.maxMinutesInMoves = conf.getInt(Config.MAX_MINUTES_IN_MOVES,
+                                             Integer.MAX_VALUE);
+        this.minMinutesInMoves = conf.getInt(Config.MIN_MINUTES_IN_MOVES,
+                                             Integer.MIN_VALUE);
+    }
 
     @Override
     protected void reduce(LongWritable key,
@@ -64,8 +76,8 @@ public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
                 int distance = (nMinsMonth * difMonth) + (1440 * difDay)
                                + (60 * difHour) + difMin;
                 // Filter movements by diff of time
-                if (distance <= MAX_MINUTES_IN_MOVES &&
-                        distance >= MIN_MINUTES_IN_MOVES) {
+                if (distance <= maxMinutesInMoves &&
+                        distance >= minMinutesInMoves) {
                     ProtobufWritable<MobData> move = MobDataUtil.createAndWrap(
                             ItinMovementUtil.create(prevLoc, curLoc));
                     context.write(key, move);

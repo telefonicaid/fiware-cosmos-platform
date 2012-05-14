@@ -1,5 +1,7 @@
-copyright: Apache License v2.0
+copyright: Telefonica Investigacion y Desarrollo S.A.U. All Rights Reserved
 version: 0.1
-description: Unknown
+description: Cosmos shell app
 name: cosmos
-sources: [Source/Cosmos/Cosmos.js]
+sources: [Source/third-party/jquery.js,
+          Source/third-party/visualize.js,
+          Source/Cosmos/Cosmos.js]

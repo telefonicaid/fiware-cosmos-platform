@@ -26,6 +26,7 @@ authors:
 requires:
 - JFrame/JFrame.Browser
 - fancyupload/FancyUpload3.Attach
+- visualize
 
 provides: [Cosmos]
 
@@ -34,6 +35,22 @@ provides: [Cosmos]
 ART.Sheet.define('window.art.browser.cosmos', {
 	'min-width': 620
 });
+
+// Utility function. Nice to have: having it available as part of the filters
+// framework.
+function getUrlParamsMap(url) {
+    var mapping = {};
+    var queryStringStart = url.indexOf('?');
+    if (queryStringStart === -1) {
+        return mapping;
+    }
+    var params = url.slice(queryStringStart + 1).split('&');
+    params.forEach(function (param) {
+        pair = param.split('=');
+        mapping[pair[0]] = pair[1];
+    });
+    return mapping;
+}
 
 var Cosmos = new Class({
 
@@ -46,6 +63,32 @@ var Cosmos = new Class({
     initialize: function(path, options){
         this.parent(path || '/cosmos/', options);
         this.addEvent('load', this.setup.bind(this));
+        var frame = this.jframe;
+        this.jframe.addBehaviors({
+            KeySelector: function (element) {
+                $(element).addEvent('change', function() {
+                    var path = frame.currentPath;
+                    var params = getUrlParamsMap(path);
+                    params.primary_key = $(element).value;
+
+                    var queryString = '';
+                    for (var key in params) {
+                        if (queryString) {
+                            queryString += '&';
+                        } else {
+                            queryString += '?';
+                        }
+                        queryString += key + '=' + params[key];
+                    }
+                    var basePath = path.substring(0, path.indexOf('?')) || path;
+                    frame.load({requestPath: basePath + queryString});
+                });
+            },
+            VisualizedTable: function (table) {
+               jQuery(table).visualize({type: 'pie', pieMargin: 10});
+               jQuery(table).visualize({type: 'bar'});
+            }
+        });
     },
 
     setup: function(view) {

@@ -12,7 +12,9 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
- *
+ * Input: <TwoInt, ClusterVector>
+ * Output: <Null, Text>
+ * 
  * @author dmicol
  */
 public class PopdenProfileGetOutReducer extends Reducer<

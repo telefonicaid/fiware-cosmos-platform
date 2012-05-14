@@ -12,7 +12,9 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
- *
+ * Input: <TwoInt, BtsCounter>
+ * Output: <TwoInt, ClusterVector>
+ * 
  * @author dmicol
  */
 public class PopdenCreateVectorReducer extends Reducer<ProtobufWritable<TwoInt>,

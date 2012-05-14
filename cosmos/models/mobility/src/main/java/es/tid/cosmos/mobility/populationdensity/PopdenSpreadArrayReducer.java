@@ -14,7 +14,9 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
 /**
- *
+ * Input: <TwoInt, NodeMxCounter>
+ * Output: <BtsProfile, Int>
+ * 
  * @author dmicol
  */
 public class PopdenSpreadArrayReducer extends Reducer<LongWritable,

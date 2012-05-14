@@ -214,7 +214,7 @@ void Engine::run()
         // Warning if we have a lot of elements in the engine stack
         size_t num_engine_elements = engine_element_collection.getNumEngineElements();
         LM_T( LmtEngine, ("Number of elements in the engine stack %lu" , num_engine_elements ));
-        if( num_engine_elements > 100 )
+        if( num_engine_elements > 300 )
             LM_W(("Execesive number of elements in the engine stack %lu" , num_engine_elements ));
 
         // ------------------------------------------------------------------------------------

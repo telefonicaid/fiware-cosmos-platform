@@ -7,6 +7,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 
@@ -58,7 +59,8 @@ public final class PopulationDensityRunner {
             ReduceJob job = ReduceJob.create(conf, "PopdenProfileGetOut",
                     SequenceFileInputFormat.class,
                     PopdenProfileGetOutReducer.class,
-                    SequenceFileOutputFormat.class);
+                    1,
+                    TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, populationDensityPath);
             FileOutputFormat.setOutputPath(job, populationDensityOutPath);
             job.waitForCompletion(true);

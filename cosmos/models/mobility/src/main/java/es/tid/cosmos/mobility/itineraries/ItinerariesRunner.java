@@ -111,6 +111,7 @@ public final class ItinerariesRunner {
             ReduceJob job = ReduceJob.create(conf, "ItinItineraryOut",
                     SequenceFileInputFormat.class,
                     ItinItineraryOutReducer.class,
+                    1,
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, itClientItinerariesPath);
             FileOutputFormat.setOutputPath(job, clientItinerariesTxtPath);

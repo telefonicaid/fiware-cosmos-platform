@@ -14,6 +14,8 @@ import es.tid.cosmos.mobility.data.PoiPosUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  *
@@ -24,13 +26,14 @@ public class GetPairsSechomePoisReducerTest {
             ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> driver;
     
     @Before
-    public void setUp() {
-        Config.homeLabelgroupId = 3;
-        Config.workLabelgroupId = 6;
-        Config.minDistSecondHome = 49342.85D;
+    public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
                 ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>(
                         new GetPairsSechomePoisReducer());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                this.driver.getConfiguration()));
     }
 
     @Test

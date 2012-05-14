@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.pois;
 
+import java.io.IOException;
+import java.io.InputStream;
 import static java.util.Arrays.asList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
@@ -23,12 +25,14 @@ public class RepbtsFilterNumCommsReducerTest {
             ProtobufWritable<MobData>> driver;
     
     @Before
-    public void setUp() {
-        Config.minTotalCalls = 200;
-        Config.maxTotalCalls = 5000;
+    public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
                 LongWritable, ProtobufWritable<MobData>>(
                         new RepbtsFilterNumCommsReducer());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                this.driver.getConfiguration()));
     }
 
     @Test

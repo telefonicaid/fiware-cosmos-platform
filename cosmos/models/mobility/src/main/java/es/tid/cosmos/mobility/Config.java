@@ -4,47 +4,51 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.apache.hadoop.conf.Configuration;
+
 /**
  *
  * @author dmicol
  */
 public abstract class Config {
-    public static int minTotalCalls;
-    public static int maxTotalCalls;
-    public static double maxBtsArea;
-    public static long maxCommsBts;
-    public static int homeLabelgroupId;
-    public static int workLabelgroupId;
-    public static double minDistSecondHome;
-    public static int minPercRepBts;
-    public static int minNumberCallsBts;
-    public static int maxCdrs;
+    public static final String MIN_TOTAL_CALLS = "mob.min_total_calls";
+    public static final String MAX_TOTAL_CALLS = "mob.max_total_calls";
+    public static final String MAX_BTS_AREA = "mob.max_bts_area";
+    public static final String MAX_COMMS_BTS = "mob.max_comms_bts";
+    public static final String HOME_LABELGROUP_ID = "mob.home_labelgroup_id";
+    public static final String WORK_LABELGROUP_ID = "mob.work_labelgroup_id";
+    public static final String MIN_DIST_SECOND_HOME = "mob.min_dist_second_home";
+    public static final String MIN_PERC_REP_BTS = "mob.min_perc_rep_bts";
+    public static final String MIN_NUMBER_CALLS_BTS = "mob.min_number_calls_bts";
+    public static final String MAX_CDRS = "mob.max_cdrs";
     
     private Config() {
     }
     
-    public static void load(InputStream configInput) throws IOException {
+    public static Configuration load(InputStream configInput,
+                                     Configuration conf) throws IOException {
         Properties props = new Properties();
         props.load(configInput);
-        minTotalCalls = Integer.parseInt(props.getProperty(
-                "MIN_TOTAL_CALLS"));
-        maxTotalCalls = Integer.parseInt(props.getProperty(
-                "MAX_TOTAL_CALLS"));
-        maxBtsArea = Double.parseDouble(props.getProperty(
-                "MAX_BTS_AREA"));
-        maxCommsBts = Long.parseLong(props.getProperty(
-                "MAX_COMMS_BTS"));
-        homeLabelgroupId = Integer.parseInt(props.getProperty(
-                "HOME_LABELGROUP_ID"));
-        workLabelgroupId = Integer.parseInt(props.getProperty(
-                "WORK_LABELGROUP_ID"));
-        minDistSecondHome = Double.parseDouble(props.getProperty(
-                "MIN_DIST_SECOND_HOME"));
-        minPercRepBts = Integer.parseInt(props.getProperty(
-                "MIN_PERC_REP_BTS"));
-        minNumberCallsBts = Integer.parseInt(props.getProperty(
-                "MIN_NUMBER_CALLS_BTS"));
-        maxCdrs = Integer.parseInt(props.getProperty(
-                "MAX_CDRS"));
+        conf.setInt(MIN_TOTAL_CALLS, Integer.parseInt(props.getProperty(
+                MIN_TOTAL_CALLS)));
+        conf.setInt(MAX_TOTAL_CALLS, Integer.parseInt(props.getProperty(
+                MAX_TOTAL_CALLS)));
+        // Unfortunate since Hadoop's Configuration doesn't have setDouble
+        conf.set(MAX_BTS_AREA, props.getProperty(MAX_BTS_AREA));
+        conf.setLong(MAX_COMMS_BTS, Long.parseLong(props.getProperty(
+                MAX_COMMS_BTS)));
+        conf.setInt(HOME_LABELGROUP_ID, Integer.parseInt(props.getProperty(
+                HOME_LABELGROUP_ID)));
+        conf.setInt(WORK_LABELGROUP_ID, Integer.parseInt(props.getProperty(
+                WORK_LABELGROUP_ID)));
+        // Unfortunate since Hadoop's Configuration doesn't have setDouble
+        conf.set(MIN_DIST_SECOND_HOME, props.getProperty(MIN_DIST_SECOND_HOME));
+        conf.setInt(MIN_PERC_REP_BTS, Integer.parseInt(props.getProperty(
+                MIN_PERC_REP_BTS)));
+        conf.setInt(MIN_NUMBER_CALLS_BTS, Integer.parseInt(props.getProperty(
+                MIN_NUMBER_CALLS_BTS)));
+        conf.setInt(MAX_CDRS, Integer.parseInt(props.getProperty(
+                MAX_CDRS)));
+        return conf;
     }
 }

@@ -1,5 +1,8 @@
 package es.tid.cosmos.mobility.pois;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
@@ -22,12 +25,14 @@ public class RepbtsGetRepresentativeBtsMapperTest {
             ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> driver;
     
     @Before
-    public void setUp() {
-        Config.minPercRepBts = 5;
-        Config.minNumberCallsBts = 14;
+    public void setUp() throws IOException {
         this.driver = new MapDriver<LongWritable, ProtobufWritable<MobData>,
                 ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>(
                         new RepbtsGetRepresentativeBtsMapper());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                this.driver.getConfiguration()));
     }
 
     @Test

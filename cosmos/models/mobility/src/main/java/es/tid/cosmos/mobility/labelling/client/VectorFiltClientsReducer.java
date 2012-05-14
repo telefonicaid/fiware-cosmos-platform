@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -21,6 +22,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  */
 public class VectorFiltClientsReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+    private int maxCdrs;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final Configuration conf = context.getConfiguration();
+        this.maxCdrs = conf.getInt(Config.MAX_CDRS, Integer.MAX_VALUE);
+    }
+    
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -43,7 +53,7 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
             if (hasComms) {
                 break;
             }
-            if (cdrList.size() > Config.maxCdrs) {
+            if (cdrList.size() > this.maxCdrs) {
                 return;
             }
         }

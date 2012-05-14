@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
@@ -22,6 +23,17 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  */
 public class FilterBtsVectorReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+    private double maxBtsArea;
+    private int maxCommsBts;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final Configuration conf = context.getConfiguration();
+        this.maxBtsArea = Double.parseDouble(conf.get(Config.MAX_BTS_AREA));
+        this.maxCommsBts = conf.getInt(Config.MAX_COMMS_BTS, Integer.MAX_VALUE);
+    }
+    
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -47,8 +59,8 @@ public class FilterBtsVectorReducer extends Reducer<LongWritable,
         for (Bts bts : btsList) {
             for (Cluster cluster : clusterList) {
                 int confident = cluster.getConfident();
-                if (bts.getArea() <= Config.maxBtsArea &&
-                        bts.getComms() >= Config.maxCommsBts) {
+                if (bts.getArea() <= this.maxBtsArea &&
+                        bts.getComms() >= this.maxCommsBts) {
                     confident = 1;
                 }
                 Cluster.Builder outputCluster = Cluster.newBuilder(cluster);

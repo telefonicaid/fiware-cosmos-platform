@@ -1,5 +1,8 @@
 package es.tid.cosmos.mobility;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
@@ -28,7 +31,15 @@ public class MobilityMain extends Configured implements Tool {
     public int run(String[] args) throws Exception {
         ArgumentParser arguments = new ArgumentParser();
         arguments.parse(args);
-        final Configuration conf = this.getConf();
+        
+        InputStream configInput;
+        if (arguments.has("config")) {
+            configInput = new FileInputStream(arguments.getString("config"));
+        } else {
+            configInput = Config.class.getResource("/mobility.properties")
+                    .openStream();
+        }
+        final Configuration conf = Config.load(configInput, this.getConf());
         
         Path tmpPath;
         if (arguments.has("tmpDir")) {

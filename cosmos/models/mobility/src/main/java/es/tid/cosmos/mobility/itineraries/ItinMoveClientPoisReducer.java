@@ -42,9 +42,9 @@ public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
         ItinTime curLoc = null;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
-            MobData mobData = value.get();
+            final MobData mobData = value.get();
             prevLoc = curLoc;
-            curLoc = mobData.getItinTime();
+            curLoc = ItinTime.newBuilder(mobData.getItinTime()).build();
             if (prevLoc == null) {
                 // We are analyzing the first record, so move on to the next one
                 continue;

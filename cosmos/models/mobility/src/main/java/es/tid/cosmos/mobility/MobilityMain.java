@@ -55,6 +55,7 @@ public class MobilityMain extends Configured implements Tool {
         Path cellsPath = new Path(arguments.getString("cells"));
         Path adjBtsPath = new Path(arguments.getString("adjBts"));
         Path btsVectorTxtPath = new Path(arguments.getString("btsVectorTxt"));
+        Path clientProfilePath = new Path(arguments.getString("clientProfile"));
         
         boolean shouldRunAll = arguments.getBoolean("runAll");
         boolean isDebug = arguments.getBoolean("debug");
@@ -224,8 +225,7 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldGetPopulationDensityProfile = arguments.getBoolean(
                 "getPopulationDensityProfile");
         if (shouldRunAll || shouldGetPopulationDensityProfile) {
-            // TODO: specify the clients profile path
-            PopulationDensityProfileRunner.run(null,
+            PopulationDensityProfileRunner.run(clientProfilePath,
                                                clientsInfoPath,
                                                populationDensityProfileOutPath,
                                                tmpPopulationDensityPath,

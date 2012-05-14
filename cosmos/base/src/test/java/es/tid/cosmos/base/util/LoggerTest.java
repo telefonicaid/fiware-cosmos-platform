@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.util;
+package es.tid.cosmos.base.util;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -11,7 +11,8 @@ import org.junit.Test;
 public class LoggerTest {
     @Test
     public void testGet() {
-        assertNotNull(Logger.get());
-        assertTrue(Logger.get() instanceof org.apache.log4j.Logger);
+        assertNotNull(Logger.get(LoggerTest.class));
+        assertTrue(Logger.get(LoggerTest.class) instanceof
+                org.apache.log4j.Logger);
     }
 }

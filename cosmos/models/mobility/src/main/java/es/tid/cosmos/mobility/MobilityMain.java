@@ -9,6 +9,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import es.tid.cosmos.base.util.ArgumentParser;
+import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
 import es.tid.cosmos.mobility.itineraries.ItinerariesRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
@@ -23,7 +25,6 @@ import es.tid.cosmos.mobility.pois.PoisRunner;
 import es.tid.cosmos.mobility.populationdensity.PopulationDensityRunner;
 import es.tid.cosmos.mobility.populationdensity.profile.PopulationDensityProfileRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
-import es.tid.cosmos.mobility.util.Logger;
 
 /**
  *
@@ -243,7 +244,7 @@ public class MobilityMain extends Configured implements Tool {
                 throw new Exception("Unknown error");
             }
         } catch (Exception ex) {
-            Logger.get().fatal(ex);
+            Logger.get(MobilityMain.class).fatal(ex);
             throw ex;
         }
     }

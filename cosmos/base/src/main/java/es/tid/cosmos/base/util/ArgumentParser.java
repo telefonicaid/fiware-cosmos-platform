@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility;
+package es.tid.cosmos.base.util;
 
 import java.util.HashMap;
 import java.util.Map;

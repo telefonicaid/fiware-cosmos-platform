@@ -41,6 +41,8 @@ public class PopdenJoinArrayProfileReducer extends Reducer<LongWritable,
                     profileList.add(mobData.getInt());
                     break;
                 default:
+                    throw new IllegalStateException("Unexpected MobData type: "
+                            + mobData.getType().name());
             }
         }
         for (int profile : profileList) {

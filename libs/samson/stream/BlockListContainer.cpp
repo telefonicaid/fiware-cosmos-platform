@@ -93,6 +93,27 @@ namespace samson
                 keys.push_back(it_blockLists->first);
             return keys;                
         }
+        
+        std::string BlockListContainer::getBlockListContainerDataDescription()
+        {
+            std::ostringstream output;
+            output << "[ ";
+            au::map<std::string, BlockList >::iterator it_blockLists;
+            for ( it_blockLists = blockLists.begin() ; it_blockLists != blockLists.end() ; it_blockLists++ )
+            {
+                output << it_blockLists->first;
+                output << " : ";
+
+                it_blockLists->second->getBlockInfo().strShort();
+                
+                output << " ";
+                
+            }
+            output << "]";
+            
+            return output.str();
+        }
+
 
         
         

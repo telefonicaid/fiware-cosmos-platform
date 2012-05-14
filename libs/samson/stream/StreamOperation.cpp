@@ -354,11 +354,10 @@ namespace samson {
             // Add the task to the list of running task
             running_tasks.insert( task );
 
-            std::string message = au::str("[ %s ] [ task %lu ] Starts processing %s from queue %s" , 
+            std::string message = au::str("[ %s ] [ task %lu ] Input data %s" , 
                                           name.c_str() , 
                                           task->getId(),
-                                          task->getBlockList("input_0")->strShortDescription().c_str(),
-                                          input_queues[0].c_str() 
+                                          task->getBlockListContainerDataDescription().c_str()
                                           );
             streamManager->worker->sendTrace( "message" , "stream" , message );
             
@@ -389,7 +388,7 @@ namespace samson {
             
             // Inform about this operation
             {
-                std::string  message = au::str("[ %s ] [ task %lu ] Finishing after running %s ( defined %s )" , 
+                std::string  message = au::str("[ %s ] [ task %lu ] Finishing after %s ( Defined %s ago )" , 
                                                name.c_str() , 
                                                task->getId() ,
                                                au::str_time( task->cronometer.getSeconds() ).c_str(),
@@ -407,7 +406,7 @@ namespace samson {
                                       task->error.getMessage().c_str()
                                       );
                 else
-                    message = au::str("[ %s ] [ task %lu ] Finished" , 
+                    message = au::str("[ %s ] [ task %lu ] Finished correctly" , 
                                       name.c_str() , 
                                       task->getId()
                                       );

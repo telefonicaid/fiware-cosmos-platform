@@ -53,6 +53,9 @@ namespace samson
           
             // Get the list of names for all the block lists...
             std::vector<std::string> get_block_list_names();
+            
+            // Get a description of the contents
+            std::string getBlockListContainerDataDescription();
         };
     }
 }

@@ -1,7 +1,12 @@
 package es.tid.cosmos.platform.injection.server;
 
 import java.io.IOException;
+import java.net.URI;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.security.AccessControlException;
 import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.SshFile;
 import org.slf4j.Logger;
@@ -12,43 +17,77 @@ import org.slf4j.LoggerFactory;
  * @author logc
  */
 public class HadoopFileSystemView implements FileSystemView {
-    private final Logger LOG;
-    private String userName;
+    private Configuration configuration;
+    private FileSystem hadoopFS;
+    private String homePath;
+    private final String userName;
+    private final Logger LOG =
+            LoggerFactory.getLogger(HadoopFileSystemView.class);
 
-    public HadoopFileSystemView(String userName) {
+    public HadoopFileSystemView(String userName, Configuration configuration) {
         this.userName = userName;
-        this.LOG = LoggerFactory.getLogger(HadoopFileSystemView.class);
+        this.configuration = configuration;
+        try {
+            this.hadoopFS = FileSystem.get(
+                    URI.create(configuration.get("fs.default.name")), configuration,
+                    userName);
+            this.homePath = this.hadoopFS.getHomeDirectory().toString()
+                    .replaceAll(this.hadoopFS.getUri().toString(), "");
+        } catch (InterruptedException e) {
+            LOG.error(e.getMessage(), e);
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+        }
     }
 
     @Override
     public HadoopSshFile getFile(String file) {
-//        throw new UnsupportedOperationException(
-//                String.format("method getFile not yet implemented; asked for %s",
-//                        file));
-        // TODO: determine system root
-        if (file.equals(".")) {
-            file = "/";
-        }
-        // TODO: get real userId
+        LOG.info("view asked for file " + file);
         try {
-            return new HadoopSshFile(file, userName, 1);
+            return this.getFile("", file);
         } catch (IOException e) {
-            LOG.error(e.getLocalizedMessage());
+            LOG.error(e.getMessage(), e);
+            return null;
+        } catch (InterruptedException e) {
+            LOG.error(e.getMessage(), e);
             return null;
         }
     }
 
     @Override
     public HadoopSshFile getFile(SshFile baseDir, String file) {
-        throw new UnsupportedOperationException(
-                "method getFile not yet implemented");
+        LOG.info("view asked for ssh path " + baseDir.toString() +
+                " and file " + file);
+        String baseDirPath = baseDir.getAbsolutePath();
+        try {
+            return this.getFile(baseDirPath, file);
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+            return null;
+        } catch (InterruptedException e) {
+            LOG.error(e.getMessage(), e);
+            return null;
+        }
     }
 
-    private HadoopSshFile getFile(String baseDir, String file) {
+    private HadoopSshFile getFile(String baseDir, String file) throws IOException, InterruptedException {
+        LOG.info("view asked for dir " + baseDir + " and file " + file);
+        if (baseDir.equals(".") && file.equals(".")) {
+            LOG.info("your home dir is set to " + this.homePath);
+            baseDir = this.homePath;
+            file = "";
+            LOG.info(String.format("reformatting requested dir to %s, " +
+                    "file to %s", baseDir, file));
+        }
         try {
-            return new HadoopSshFile("lacabra", "user", 1);
-        } catch (IOException e) {
-            return null;
+            LOG.info("trying to open the path: " + baseDir + file);
+            HadoopSshFile ans = new HadoopSshFile(baseDir + file,
+                    this.userName, this.configuration, this.hadoopFS);
+            return ans;
+        } catch (InjectionUnathorizedPathException e) {
+            LOG.error(e.getMessage(), e);
+            return new HadoopSshFile(this.homePath, this.userName,
+                    this.configuration, this.hadoopFS);
         }
     }
 }

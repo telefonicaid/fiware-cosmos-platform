@@ -45,8 +45,7 @@ public class InjectionServer {
         this.conf = new Configuration();
         this.conf.set("fs.default.name", this.hdfsURI.toString());
         this.conf.set("mapred.job.tracker", jobtrackerUrl);
-        // TODO: pass conf to hadoopFileSystemFactory
-        this.hadoopFileSystemFactory = new HadoopFileSystemFactory();
+        this.hadoopFileSystemFactory = new HadoopFileSystemFactory(conf);
     }
 
     public void setupSftpServer(){

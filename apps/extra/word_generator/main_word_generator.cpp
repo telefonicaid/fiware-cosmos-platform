@@ -50,7 +50,7 @@ PaArgument paArgs[] =
 
 int logFd = -1;
 
-char word[100];
+char word[100];                  // Place for this word
 int progressive_word_slots[100]; // Indexes to generate progressive words
 
 au::Cronometer cronometer;
@@ -68,10 +68,11 @@ void getNewWord()
        progressive_word_slots[word_length-1]++;
        
        int pos = word_length-1;
-       while( (pos>0) && ( progressive_word_slots[pos] >= alphabet_length ) )
+       while( (pos>=0) && ( progressive_word_slots[pos] >= alphabet_length ) )
        {
            progressive_word_slots[pos]=0;
-           progressive_word_slots[pos-1]++;
+           if( pos > 0 )
+               progressive_word_slots[pos-1]++;
            pos--;
        }
        
@@ -81,6 +82,45 @@ void getNewWord()
     for ( int i = 0 ; i < word_length ; i++ )
         word[i] = 48 + rand()%alphabet_length;
 }
+
+
+class BufferToScreen
+{
+    char *buffer;
+    size_t max_size;
+    size_t size;
+    
+    au::Cronometer c;
+    
+public:
+    
+    BufferToScreen( size_t _max_size )
+    {
+        max_size = _max_size;
+        buffer = (char*) malloc( max_size );
+        size = 0;
+    }
+    
+    void append( char* data , int len )
+    {
+        if( ( (size + len ) > max_size ) || ( c.diffTimeInSeconds() > 1 ) )
+        {
+            flush();
+            c.reset();
+        }
+        
+        memcpy(buffer+size, data, len);
+        size += len;
+    }
+    
+    void flush()
+    {
+        write(1, buffer, size);
+        size =0;
+    }
+    
+};
+
 
 int main( int argC , const char*argV[] )
 {
@@ -103,9 +143,9 @@ int main( int argC , const char*argV[] )
         for ( int i = 0 ; i < word_length ; i++ )
             progressive_word_slots[i]=0;
 
-    
     // End of line for all the words...
-    word[word_length] = '\0';
+    word[word_length] = '\n';
+    word[word_length+1] = '\0';
     
     size_t num_lines = 0;
     size_t total_size = 0;
@@ -116,8 +156,11 @@ int main( int argC , const char*argV[] )
     else
         srand(0);
     
-    
+    // Time to show a message on screen in verbose mode
     size_t last_message_time=0;
+
+    // Buffer to flsh data to screen in batches
+    BufferToScreen buffer_to_screen( 10000 );
     
     // Generate continuously...
     while( true )
@@ -130,8 +173,14 @@ int main( int argC , const char*argV[] )
         // Get new word
         getNewWord();
 
+        // Length of this word
+        int word_len = strlen(word);
+
+        // Append to the screen
+        buffer_to_screen.append( word , word_len );
+        
         // Counter of bytes and words
-        total_size += printf("%s\n",word);
+        total_size += word_len;
         num_lines++;
          
         // Get the total number of seconds running...
@@ -166,6 +215,8 @@ int main( int argC , const char*argV[] )
         }
         
     }
+    
+    buffer_to_screen.flush();
     
     size_t total_seconds = cronometer.diffTimeInSeconds();
     LM_V(( "Generated %s lines ( %s bytes ) in %s. Rate: %s / %s", 

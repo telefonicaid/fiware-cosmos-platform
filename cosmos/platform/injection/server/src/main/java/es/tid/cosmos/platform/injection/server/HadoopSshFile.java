@@ -257,8 +257,8 @@ public class HadoopSshFile implements SshFile {
             for (FileStatus fileStatus : fileStatuses) {
                 String fileName = fileStatus.getPath().getName();
                 String fileOwner = fileStatus.getOwner();
-                ans[i] = new HadoopSshFile(joinPath(fileName), fileOwner,
-                        this.configuration, this.hadoopFS);
+                ans[i] = new HadoopSshFile(this.joinPath(fileName),
+                        this.userName, this.configuration, this.hadoopFS);
                 i++;
             }
             return Collections.unmodifiableList(Arrays.asList(ans));

@@ -110,8 +110,10 @@ public:
     
     void flush()
     {
-        write(1, buffer, size);
-        size =0;
+        size_t w = write(1, buffer, size);
+		if( w != size )
+		   LM_X(1,("Problem writing %lu bytes to the screen", size));
+        size = 0;
     }
     
 };

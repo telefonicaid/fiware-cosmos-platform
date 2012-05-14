@@ -7,12 +7,12 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.Poi;
-import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
- * Input: <TwoInt, Poi|Cluster|Null>
+ * Input: <TwoInt, Poi|Null>
  * Output: <Long, Poi>
  * 
  * @author dmicol
@@ -35,8 +35,6 @@ public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
                         poi = mobData.getPoi();
                     }
                     break;
-                case CLUSTER:
-                    break;
                 case NULL:
                     hasNulls = true;
                     break;
@@ -48,7 +46,9 @@ public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
                 break;
             }
         }
-        
+        if (poi == null) {
+            return;
+        }
         Poi.Builder outputPoi = Poi.newBuilder(poi);
         if (hasNulls) {
             outputPoi.setConfidentnodebts(1);

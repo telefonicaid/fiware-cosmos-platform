@@ -5,8 +5,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
-import es.tid.cosmos.mobility.data.NodeBtsUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 
 /**
  *

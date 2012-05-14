@@ -12,7 +12,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
-import es.tid.cosmos.mobility.data.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.parsing.CellParser;
 
 /**

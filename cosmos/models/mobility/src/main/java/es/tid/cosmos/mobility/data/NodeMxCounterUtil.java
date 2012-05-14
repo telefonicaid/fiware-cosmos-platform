@@ -2,8 +2,8 @@ package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.MobProtocol.NodeMxCounter;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
 /**
  *

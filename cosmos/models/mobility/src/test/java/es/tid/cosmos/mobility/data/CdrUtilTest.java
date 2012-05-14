@@ -5,9 +5,9 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import es.tid.cosmos.mobility.data.BaseProtocol.Date;
-import es.tid.cosmos.mobility.data.BaseProtocol.Time;
-import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
+import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
+import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 
 /**
  *

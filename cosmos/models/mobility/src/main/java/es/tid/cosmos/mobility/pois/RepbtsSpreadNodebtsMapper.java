@@ -7,11 +7,11 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
-import es.tid.cosmos.mobility.data.MobProtocol.NodeMxCounter;
 import es.tid.cosmos.mobility.data.NodeBtsDayUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
 /**
  * Input: <LongWritable, NodeMxCounter>

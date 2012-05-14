@@ -10,9 +10,9 @@ import org.junit.Test;
 
 import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.NodeBtsDayUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  *

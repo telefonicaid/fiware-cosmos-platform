@@ -6,18 +6,16 @@ import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 import org.junit.Before;
+import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
-import es.tid.cosmos.mobility.data.TwoIntUtil;
-import org.apache.hadoop.io.LongWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  *

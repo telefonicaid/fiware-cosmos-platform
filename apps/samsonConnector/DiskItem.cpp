@@ -3,17 +3,15 @@
 
 #include "au/ThreadManager.h"
 
-#include "SamsonConnectorConnection.h"
 #include "SamsonConnector.h"
 
-#include "DiskConnection.h" // Own interface
+#include "DiskItem.h" // Own interface
 
 extern size_t input_buffer_size; // Size of the chunks to read
 
 namespace samson {
     namespace connector
     {
-        /*
         
         void* run_DiskConnection(void*p)
         {
@@ -23,13 +21,29 @@ namespace samson {
             return NULL;
         }
         
-        DiskConnection::DiskConnection( SamsonConnector* samson_connector , ConnectionType type , std::string _file_name )
-        : SamsonConnectorItem( samson_connector , type ) , token("DiskConnection")
+        std::string nameDiskConnection( ConnectionType type , std::string fileName )
         {
+            switch (type) {
+                case connection_input:
+                    return au::str("Reading from %s" , fileName.c_str() );
+                    break;
+                case connection_output:
+                    return au::str("Writing to %s" , fileName.c_str() );
+                    break;
+            }
+        }
+        
+        DiskConnection::DiskConnection( Item  * _item 
+                                       , ConnectionType _type 
+                                       , std::string _file_name ) 
+        : Connection( _item , _type , nameDiskConnection( _type ,  _file_name ) )
+        , token("DiskConnection")
+        {
+            // Keep  copy of the file name
             file_name = _file_name;
             
             // Open files if input
-            if( type == connection_input )
+            if( getType() == connection_input )
             {
                 // Analyse files to be read...
                 struct stat s;
@@ -87,13 +101,7 @@ namespace samson {
         DiskConnection::~DiskConnection()
         {
         }
-        
-        bool DiskConnection::isConnected()
-        {
-            return thread_running;
-        }
-        
-        
+
         void DiskConnection::run_as_output()
         {
             std::string current_file_name;
@@ -103,11 +111,15 @@ namespace samson {
             
             while( true )
             {
-                engine::Buffer* current_buffer = getNextOutputBuffer();
+                // Get the next buffer to be transmitted
+                engine::BufferContainer container;
+                getNextBufferToSent(&container);
+
+                // Get a pointer to this buffer
+                engine::Buffer* current_buffer = container.getBuffer();
                 
                 if( !current_buffer )
                 {
-                    samson_connector->review();
                     usleep(100000);
                     continue;
                 }
@@ -120,9 +132,6 @@ namespace samson {
                     error.set( au::str("Received a block with size %s. Max file size %s." 
                                        , au::str( current_size,"B" ).c_str() 
                                        , au::str( max_size ,"B" ).c_str() ) );
-                    
-                    samson_connector->show_warning( au::str("%s: %s" , getName().c_str() , error.getMessage().c_str() ) );
-                    
                     return;
                 }
                 
@@ -156,7 +165,6 @@ namespace samson {
                         if( _fd < 0 )
                         {
                             error.set( au::str("Not possible to open file %s (%s)" , current_file_name.c_str() , strerror(errno) ) );
-                            samson_connector->show_warning( au::str("%s: %s" , getName().c_str() , error.getMessage().c_str() ) );
                             return;
                         }
                         
@@ -175,14 +183,11 @@ namespace samson {
                     error.set( au::str("Not possible to write buffer with %s to file %s" 
                                        , au::str( current_buffer->getSize() ).c_str()
                                        , current_file_name.c_str() ) );
-                    samson_connector->show_warning( au::str("%s: %s" , getName().c_str() , error.getMessage().c_str() ) );
                     return;
                 }
                 
                 accumulated_size += current_size;
                 
-                // Pop output bock
-                popOutputBuffer();
             }
             
             
@@ -228,11 +233,7 @@ namespace samson {
                 else
                 {
                     if( files.size() == 0)
-                    {
-                        // Flush whatever we have..
-                        flush();
-                        return; 
-                    }
+                        return;  // Nothing else to be read
                     
                     // Open the next file...
                     std::string current_file_name = files.front();
@@ -259,7 +260,7 @@ namespace samson {
             if( error.isActivated() )
                 return;
             
-            if( type == connection_input )
+            if( getType() == connection_input )
                 run_as_input();
             else
                 run_as_output();
@@ -278,17 +279,11 @@ namespace samson {
             return "Stopped";
         }
         
-        std::string DiskConnection::getName()
-        {
-            return au::str("Disk %s" , file_name.c_str() );
-        }
-        
         bool DiskConnection::canBeRemoved()
         {
             return !thread_running;
         }
      
-        */
     }
     
 }

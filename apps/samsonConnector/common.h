@@ -7,6 +7,12 @@
 #include "au/mutex/TokenTaker.h"
 #include "engine/BufferContainer.h"
 
+
+// ----------------------------------------------------------------
+#define SC_CONSOLE_PORT 5467
+#define SC_WEB_PORT     9999
+// ----------------------------------------------------------------
+
 namespace samson 
 {
     namespace connector

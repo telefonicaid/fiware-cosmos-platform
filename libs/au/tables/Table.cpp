@@ -224,6 +224,7 @@ namespace au
             return output.str();
         }
         
+
         
         // ------------------------------------------------------------
         // TableRow
@@ -798,6 +799,23 @@ namespace au
             
             return output.str();
         }
+        
+        std::string Table::strFormatted( std::string format )
+        {
+            if( format == "json" )
+                return str_json();
+            
+            if( format == "xml" )
+                return str_xml();
+
+            if( format == "html" )
+                return str_html();
+
+            // Default
+            return str();
+            
+        }
+
         
         TableColumn* Table::getSelectColumn( std::string description )
         {

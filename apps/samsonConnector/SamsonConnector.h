@@ -15,11 +15,13 @@
 
 #include "au/network/NetworkListener.h"
 #include "au/network/ConsoleService.h"
+#include "au/network/RESTService.h"
 
 #include "common.h"
-#include "SamsonConnection.h"
-#include "ServerConnection.h"
-#include "DiskConnection.h"
+#include "SamsonConnector.h"
+#include "DiskItem.h"
+#include "SamsonItem.h"
+
 #include "BufferProcessor.h"
 
 #include "Channel.h"
@@ -61,6 +63,9 @@
  */
 
 extern bool interactive;
+extern bool run_as_daemon;
+extern int sc_console_port;
+extern int sc_web_port;
 
 namespace samson 
 {
@@ -69,7 +74,7 @@ namespace samson
         class Channel;
         class SamsonConnectorService;
         
-        class SamsonConnector :  public au::Console
+        class SamsonConnector :  public au::Console , public au::network::RESTServiceInterface
         {
             // List of channels in this samsonConnector
             au::map<std::string, Channel> channels;
@@ -87,10 +92,16 @@ namespace samson
             au::Token token_environment;
             au::Environment environment;
             
+            // REST Interface
+            au::network::RESTService *rest_service;
+            
         public:
             
             SamsonConnector();
             
+            // Init rest interface
+            void initRESTInterface();
+
             //Add service to accept monitor connection
             void add_service();
             
@@ -105,32 +116,11 @@ namespace samson
             // Review
             void review();
             
+            // Get the number of input items
             int getNumInputItems();
-            
-            // Generic way to show messages on screen
-            void show_message( std::string message )
-            {
-                if( interactive )
-                    writeWarningOnConsole(message);
-                else
-                    LM_V(("%s" , message.c_str() ));
-            }
-            void show_warning( std::string message )
-            {
-                if( interactive )
-                    writeWarningOnConsole(message);
-                else
-                    LM_V(("%s" , message.c_str() ));
-            }
-            
-            void show_error( std::string message )
-            {
-                if( interactive )
-                    writeErrorOnConsole(message);
-                else
-                    LM_X( 1 , ("%s" , message.c_str() ));
-            }
-            
+
+            // Get pending data to be sent
+            size_t getOutputConnectionsSize();
             
             std::string getPasswordForUser( std::string user )
             {
@@ -144,6 +134,22 @@ namespace samson
                 environment.set( au::str("user_%s", user.c_str()) , password );
             }
             
+            // au::network::RESTServiceInterface
+            void process( au::network::RESTServiceCommand* command );
+
+            // Write errors depending on setup ( interactive, deamon, normal )
+            void writeError( std::string message );
+            
+            
+        private:
+            
+            au::tables::Table* getChannelsTable();
+            au::tables::Table* getItemsTable();
+            au::tables::Table* getItemsTableForChannel( std::string channel );
+            au::tables::Table* getConnectionsTable();
+            au::tables::Table* getConnectionsTableForChannel( std::string channel );
+            
+            
         };
         
         // Class to accept connection to monitor
@@ -153,7 +159,7 @@ namespace samson
             
         public:
             
-            SamsonConnectorService( SamsonConnector * _samson_connector ) : au::network::ConsoleService( 1234 )
+            SamsonConnectorService( SamsonConnector * _samson_connector ) : au::network::ConsoleService( sc_console_port )
             {
                 samson_connector = _samson_connector;
             }
@@ -243,8 +249,6 @@ namespace samson
                 samson_connector->autoComplete(info);
                 
             }
-
-            
             
         };
         

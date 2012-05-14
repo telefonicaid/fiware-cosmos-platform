@@ -5,7 +5,7 @@
 #include "Channel.h"
 
 #include "SamsonConnector.h"
-#include "SamsonConnection.h" // Own interface
+#include "SamsonItem.h" // Own interface
 
 
 namespace samson {

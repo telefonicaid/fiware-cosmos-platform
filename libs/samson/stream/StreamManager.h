@@ -21,6 +21,9 @@
 #include "au/string.h"                      // au::Format
 #include "au/CommandLine.h"                 // au::CommandLine
 
+#include "au/network/Service.h"
+#include "au/network/RESTService.h"
+
 #include "engine/Object.h"                  // engine::Object
 #include "engine/Object.h"                  // engine::Object
 #include "engine/Buffer.h"                  // engine::Buffer
@@ -182,7 +185,7 @@ namespace samson {
             Queue* getQueue( std::string name );
             
             // Get value for a particular state
-            std::string getState(std::string queue_name, const char* key, char* redirect, int redirectSize, bool* okP, std::string outputFormat);
+            void process( au::network::RESTServiceCommand* command );
             
         private:
             

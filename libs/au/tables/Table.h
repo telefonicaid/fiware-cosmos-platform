@@ -332,6 +332,7 @@ namespace au
             std::string str_xml( );
             std::string str_json( );
             std::string str_html( );
+            std::string strFormatted( std::string format );
 
             // Select
             Table* selectTable( SelectTableInformation *select_table_information );

@@ -443,7 +443,7 @@ public:
                     //LM_M(("Check for matching hits for userId:%lu sequence[%d] hit.serviceId:%lu with next_event_to_fulfill:%d(serviceId:%lu) of events_length:%d", user.value, j, hit.serviceId.value, next_event_to_fulfill, activity.sequences[j].events[next_event_to_fulfill].expected_serviceId.value, activity.sequences[j].events_length));
 
                     //LM_M(("Trying match for userId:%lu hit.serviceId:%lu activity.ev[%d].serviceId:%lu at pos:%d", user.value, hit.serviceId.value,next_event_to_fulfill, activity.sequences[j].events[next_event_to_fulfill].expected_serviceId.value, j));
-                    if ((hit.serviceId.value == activity.sequences[j].events[next_event_to_fulfill].expected_serviceId.value))
+                    if (hit.serviceId.value == activity.sequences[j].events[next_event_to_fulfill].expected_serviceId.value)
                     {
                         activity.sequences[j].events[next_event_to_fulfill].fulfilled.value = 1;
                         activity.sequences[j].events[next_event_to_fulfill].timestamp.value = hit.timestamp.value;

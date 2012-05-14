@@ -29,10 +29,12 @@ static const char* manSynopsis = "";
 
 int default_buffer_size = 64*1024*1024 - sizeof(samson::KVHeader);
 int default_input_buffer_size = 10000; // 10Kb
+int sc_console_port;
 
 PaArgument paArgs[] =
 {   
-	{ "",      host,     "",  PaString,  PaOpt, _i ""  , PaNL, PaNL,        "Host to connect"     },
+	{ "",        host,     "",  PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,        "Host to connect"     },
+    { "-port",   &sc_console_port,    "",  PaInt,     PaOpt,    SC_CONSOLE_PORT,     1,      9999,  "Port for console connections in samsonConnector"   },
 	PA_END_OF_ARGS
 };
 
@@ -57,7 +59,7 @@ int main( int argC , const char *argV[] )
     
 
     
-    au::network::ConsoleServiceClient console( 1234 );  // Default port for this client
+    au::network::ConsoleServiceClient console( sc_console_port );  // Default port for this client
     if( strcmp( host , "" ) != 0 ) 
         console.connect( host );    // Connect to the given host
     

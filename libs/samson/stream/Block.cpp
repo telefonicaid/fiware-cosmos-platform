@@ -168,9 +168,35 @@ namespace samson {
                     valueDataInstance->parse(valueP);
                     
                     if (outputFormat == "xml")
-                        return keyDataInstance->strXMLInternal("key") + valueDataInstance->strXMLInternal("value");
+                    {
+                        std::ostringstream output;
+                        output << "<key>\n";
+                        output << keyDataInstance->strXMLInternal("key");
+                        output << "</key>\n";
+                        output << "<value>\n";
+                        output << valueDataInstance->strXMLInternal("value");
+                        output << "</value>\n";
+                        return output.str();
+                    }
+                    if (outputFormat == "html")
+                    {
+                        std::ostringstream output;
+                        output << "<h1>key</h1>\n";
+                        output << keyDataInstance->strHTML();
+                        output << "<h1>value</h1>\n";
+                        output << valueDataInstance->strHTML();
+                        return output.str();
+                    }
                     else
-                        return std::string("    \"key\" : ") + keyDataInstance->str() + ", \"value\" : \"" + valueDataInstance->str() + "\"\r\n";
+                    {
+                        std::ostringstream output;
+                        output << "{ \"key\" : ";
+                        output << keyDataInstance->strJSON("key");
+                        output << " \"value\" : ";
+                        output << valueDataInstance->strJSON("value");
+                        output << " } ";
+                        return output.str();
+                    }
                 }
                 
                 if (compare < 0) // keyName < testKey => Go to the left - to 'smaller' key names

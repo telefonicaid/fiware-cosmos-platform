@@ -14,6 +14,7 @@
 #include "logMsg/logMsg.h"				        // 
 
 #include "au/console/Console.h"
+#include "au/network/RESTService.h"
 
 #include "engine/EngineElement.h"               // samson::EngineElement
 
@@ -30,6 +31,7 @@
 #include "samson/delilah/Delilah.h"
 #include "samson/worker/WorkerCommandManager.h"
 
+
 namespace samson {
 	
     class NetworkInterface;
@@ -38,7 +40,8 @@ namespace samson {
 	class SamsonWorker : 
         public NetworkInterfaceReceiver, 
         public engine::Object,
-        public au::Console
+        public au::Console,
+        public au::network::RESTServiceInterface
 	{
 
         // Initial time stamp for this worker
@@ -46,7 +49,10 @@ namespace samson {
         
         // Auto-client for REST interface
         Delilah* delilah;
-        
+
+        // REST Service
+        au::network::RESTService *rest_service;
+
 	public: 
 		
 		SamsonWorker( NetworkInterface* network );
@@ -57,7 +63,9 @@ namespace samson {
 
             LM_T(LmtCleanup, ("Deleting streamManager: %p", streamManager));
             delete streamManager;
-
+            
+            if( rest_service )
+                delete rest_service;
         }
 
         friend class StreamManager;                     // Friend to be able to log to dataManager
@@ -75,9 +83,6 @@ namespace samson {
 
 		// Interface to receive Packets ( NetworkInterfaceReceiver )
 		void receive( Packet* packet );
-        
-        // RESET Information
-        std::string getRESTInformation( ::std::string in );
 		
         // Notification from the engine about finished tasks
         void notify( engine::Notification* notification );
@@ -96,12 +101,21 @@ namespace samson {
         // Get a collection with a single record with information for this worker...
         network::Collection* getWorkerCollection( Visualization* visualization );
 
+        //RESTServiceInterface
+        void process( au::network::RESTServiceCommand* command );
+        void intern_process( au::network::RESTServiceCommand* command );
+        void process_delilah_command( std::string delilah_command , au::network::RESTServiceCommand* command  );
+        void process_loggin( au::network::RESTServiceCommand* command );
+
+        
+        void stop()
+        {
+            rest_service->stop();
+        }
         
     private:
 
         // Internal REST methods
-        void getRESTForLogging( std::ostringstream &data, std::vector<std::string> &path_components, unsigned short int& http_state , std::string& format );
-        void getRESTInformationFromDelilahCommand( std::ostringstream &data, std::string command , std::string &format );
 
         
         

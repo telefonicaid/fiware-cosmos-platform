@@ -46,26 +46,7 @@ namespace samson {
             worker_listener->runNetworkListenerInBackground();
             
         }
-        
-        // Add listener for incoming web/rest connections
-        // ----------------------------------------------------------------------------
-        {
-            web_listener = new au::NetworkListener( this );
-            au::Status s = web_listener->initNetworkListener( web_port );
-            
-            if( s != au::OK )
-            {
-                // Not allow to continue without incoming connections...
-                LM_W(("Not possible to open web interface at port %d (%s)" , port , status(s) ));
-            }
-            else
-            {
-                // Init background thread to receive connections 
-                web_listener->runNetworkListenerInBackground();
-            }
-        }
-        // ----------------------------------------------------------------------------
-            
+  
     }
     
     
@@ -78,18 +59,12 @@ namespace samson {
             worker_listener = NULL;
         }
         
-        if (web_listener != NULL)
-        {
-            delete web_listener;
-            web_listener = NULL;
-        }
     }
     
     void WorkerNetwork::stop()
     {
         // Stop listeners
         worker_listener->stop( true );
-        web_listener->stop(  true );
         
         // Close all connections
         NetworkManager::reset();
@@ -111,45 +86,6 @@ namespace samson {
             
             // Send Hello packet
             network_connection->push( helloMessage( network_connection ) );
-        }
-        else if ( listener == web_listener )
-        {
-            char line[1024];
-
-            au::Status s = socket_connection->readLine( line , sizeof(line) , 10 );
-
-            
-            if (s == au::OK)
-            {
-                // Remove last "\n" "\r" characters.
-                au::remove_return_chars( line );
-                
-                //
-                // Read the rest of the REST Request, but without parsing it ...
-                //
-                char flags[1024];
-                s = socket_connection->readBuffer(flags, sizeof(flags), 1);
-                if (s == au::OK)
-                    LM_T(LmtRest, ("Rest of GET:\n%s", flags));
-                else
-                    LM_W(("error reading rest of REST request"));
-                au::CommandLine cmdLine;
-                cmdLine.parse( line );
-                
-                if ((cmdLine.get_num_arguments() >= 2) && (cmdLine.get_argument(0) == "GET"))
-                {
-                    std::string content = network_interface_receiver->getRESTInformation(cmdLine.get_argument(1));
-                    socket_connection->writeLine(content.c_str(), 1, 0, 100); // Try just once, timeout 0.0001 seconds
-                }
-                else
-                    socket_connection->writeLine("Error: GET message expected\n", 1, 0, 100);
-            }
-            else
-                socket_connection->writeLine(au::str("Error: unable to read incoming command (%s)\n", status(s)).c_str(), 1, 0, 100);
-
-            
-            // Close socket connection in all cases
-            socket_connection->close();
         }
         else
         {

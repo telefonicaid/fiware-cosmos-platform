@@ -1202,26 +1202,41 @@ namespace samson {
             }
         }
         
-        std::string StreamManager::getState(std::string queue_name, const char* key, char* redirect, int redirectSize, bool* okP, std::string outputFormat)
+        void StreamManager::process( au::network::RESTServiceCommand* command )
         {
-            LM_T(LmtRest, ("looking up key '%s' in queue '%s'", key, queue_name.c_str()));
 
-            *okP = false;
+            std::string queue_name = command->path_components[2];
+            std::string key = command->path_components[3];
 
-            Queue* queue = queues.findInMap(queue_name);
+            LM_T(LmtRest, ("looking up key '%s' in queue '%s'", key.c_str() , queue_name.c_str() ));
+            
+            Queue* queue = queues.findInMap( queue_name );
+            
             if (!queue)
-                return au::str("Queue '%s' not found", queue_name.c_str());
+            {
+                command->appendFormatedError( au::str("Queue '%s' not found", queue_name.c_str() ) );
+                return;
+            }
             
             KVFormat format = queue->getFormat();
-            if (format.isGenericKVFormat())
-                return au::str("Queue '%s' is of generic format '%s'" , queue_name.c_str() , format.str().c_str());
+            if ( format.isGenericKVFormat() )
+            {
+                std::string m = au::str("Queue '%s' is of generic format '%s'" 
+                                        , queue_name.c_str() , format.str().c_str());
+                command->appendFormatedError(m);
+                return;
+            }
             
             // Data instances
-            Data* key_data   = ModulesManager::shared()->getData( format.keyFormat);
-            Data* value_data = ModulesManager::shared()->getData( format.valueFormat);
+            Data* key_data   = ModulesManager::shared()->getData( format.keyFormat );
+            Data* value_data = ModulesManager::shared()->getData( format.valueFormat );
 
             if (!key_data || !value_data )
-                return au::str("Queue '%s' has wrong format" , queue_name.c_str());
+            {
+                std::string m = au::str("Queue '%s' has wrong format" , queue_name.c_str());
+                command->appendFormatedError(m);
+                return;
+            }
                 
             DataInstance* reference_key_data_instance  = (DataInstance*)key_data->getInstance();
 
@@ -1229,7 +1244,7 @@ namespace samson {
             DataInstance* value_data_instance          = (DataInstance*)value_data->getInstance();
 
             // Get all the information from the reference key
-            reference_key_data_instance->setFromString(key);
+            reference_key_data_instance->setFromString( key.c_str() );
             
             // Get hashgroup
             int hg = reference_key_data_instance->hash(KVFILE_NUM_HASHGROUPS);
@@ -1248,22 +1263,25 @@ namespace samson {
                 unsigned short  port = web_port; // We have to use to REST port, not the connections port
 
                 LM_T(LmtRest, ("Redirect to the right server (%s:%d)", host.c_str(), port));
-
-                *okP = true; // redirect treated as OK ...
-                snprintf(redirect, redirectSize, "http://%s:%d", host.c_str(), port);
-                return au::xml_simple("redirect", au::str("Redirect to %s:%d", host.c_str(), port)); // This is not used ...
+                command->set_redirect( au::str("http://%s:%d%s", host.c_str(), port , command->resource.c_str() ) );
+                return;
             }
 
-
             if ( queue->list->blocks.size() == 0 )
-                return au::str("No data in queue %s" , queue_name.c_str());
+            {
+                command->appendFormatedError( au::str("No data in queue %s" , queue_name.c_str()) );
+                return;
+            }
 
             // Look up this key
             BlockList list;
             list.copyFirstBlockFrom(queue->list, hg);
 
-            if (list.blocks.size() == 0)
-                return au::str("No data in queue %s" , queue_name.c_str());
+            if (list.blocks.size() == 0 )
+            {
+                command->appendFormatedError( au::str("No data in queue %s" , queue_name.c_str()) );
+                return;
+            }
 
             Block* block = *list.blocks.begin();
             LM_T(LmtRest, ("Any faster way to get the block ?"));
@@ -1274,15 +1292,16 @@ namespace samson {
                 delete reference_key_data_instance;
                 delete key_data_instance;
                 delete value_data_instance;
-                return au::str("Block not in memory for queue %s" , queue_name.c_str());
+                
+                command->appendFormatedError( au::str("Block not in memory for queue %s" , queue_name.c_str()) );
             }
             
             delete reference_key_data_instance;
             delete key_data_instance;
             delete value_data_instance;
-                
-            *okP = true;
-            return block->lookup(key, outputFormat);
+            
+            command->append( block->lookup( key.c_str() , command->format ) );
+            return;
         }
     }
 }

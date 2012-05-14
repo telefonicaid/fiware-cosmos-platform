@@ -1,35 +1,36 @@
-SET (SOURCES
-   	common.cpp
-	ConnectorCommand.cpp
-	Block.cpp
-	BufferProcessor.cpp
-	TrafficStatistics.cpp
-	SamsonConnector.cpp
-	Channel.cpp
-	Item.cpp
-	Connection.cpp
-	SamsonConnectorListener.cpp
-	DiskConnection.cpp
-	ServerConnection.cpp
-	SamsonConnectorConnection.cpp
-	SamsonConnection.cpp
-)
 
 SET (HEADERS
-	common.h
-	ConnectorCommand.h
-	Block.h
+	BufferList.h
 	BufferProcessor.h
-	TrafficStatistics.h
-	SamsonConnector.h
 	Channel.h
-	Item.h
 	Connection.h
-	SamsonConnectorListener.h
-	DiskConnection.h
+	ConnectorCommand.h
+	DiskItem.h
+	FileDescriptorConnection.h
+	Item.h
+	ListenerItem.h
+	SamsonConnector.h
+	SamsonItem.h
 	ServerConnection.h
-	SamsonConnectorConnection.h
-	SamsonConnection.h
+	TrafficStatistics.h
+	common.h
+)
+
+SET (SOURCES
+	BufferList.cpp
+	BufferProcessor.cpp
+	Channel.cpp
+	Connection.cpp
+	ConnectorCommand.cpp
+	DiskItem.cpp
+	FileDescriptorConnection.cpp
+	Item.cpp
+	ListenerItem.cpp
+	SamsonConnector.cpp
+	SamsonItem.cpp
+	ServerConnection.cpp
+	TrafficStatistics.cpp
+	common.cpp
 )
 
 SET( STATIC_LIBS
@@ -74,6 +75,7 @@ TARGET_LINK_LIBRARIES(samsonConnectorClient ${STATIC_LIBS})
 
 INSTALL(TARGETS               samsonConnectorClient
         RUNTIME DESTINATION   bin)
+
 
 
 

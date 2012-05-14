@@ -1,9 +1,9 @@
 
 #include "au/ThreadManager.h"
 
+#include "FileDescriptorConnection.h"
 #include "SamsonConnector.h"
 #include "BufferProcessor.h"
-#include "SamsonConnectorConnection.h" // Own interface
 
 
 extern size_t buffer_size;

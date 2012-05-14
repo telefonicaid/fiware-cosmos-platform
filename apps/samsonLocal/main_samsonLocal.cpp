@@ -16,6 +16,7 @@
 #include "logMsg/logMsg.h"             // LM_*
 #include "logMsg/traceLevels.h"        // Trace Levels
 
+#include "samson/common/ports.h"
 #include "samson/common/traces.h"				// Traces stuff: samsonInitTrace(.) , ...
 #include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
 #include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
@@ -51,10 +52,11 @@ SAMSON_ARG_VARS;
 int              workers;
 char			 commandFileName[1024];
 bool             thread_mode;
+int web_port;         // Port to receive connection to the REST interface
+int port;             // Not used but decessary to compile with samsonWorker
+
 //bool             delilah_qt;
 
-
-int web_port=0; // Not used really. It is just to avoid the errro then linking with samsonWorker
 
 #define S01 (long int) "samson01:1234"
 /* ****************************************************************************
@@ -69,6 +71,7 @@ PaArgument paArgs[] =
 	{ "-thread_mode", &thread_mode,     "THREAD_MODE", PaBool,    PaOpt,    false,  false,   true,  "thread_mode"               },
 //	{ "-qt",          &delilah_qt,     "" ,            PaBool,    PaOpt,    false,  false,   true,  "Delilah Qt"                },
 	{ "-f",           commandFileName,  "FILE_NAME",   PaString,  PaOpt,    _i "",   PaNL,   PaNL,  "File with commands to run" },
+    { "-web_port",  &web_port,  "",                         PaInt,    PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive web connections"   },
 	PA_END_OF_ARGS
 };
 

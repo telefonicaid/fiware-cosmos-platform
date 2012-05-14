@@ -1,6 +1,8 @@
 #ifndef _H_SAMSON_CHANNEL
 #define _H_SAMSON_CHANNEL
 
+#include "engine/Buffer.h"
+
 #include "TrafficStatistics.h"
 #include "ConnectorCommand.h"
 

@@ -152,6 +152,9 @@ void cleanup(void)
     if( networkP )
         networkP->stop();
     
+    if( worker ) 
+        worker->stop();
+    
     // Wait all threads to finsih
     au::ThreadManager::shared()->wait();
     

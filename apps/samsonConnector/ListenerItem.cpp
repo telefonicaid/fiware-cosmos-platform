@@ -1,9 +1,7 @@
 
-
-#include "SamsonConnectorConnection.h"
 #include "SamsonConnector.h"
-#include "SamsonConnectorListener.h" // Own interfave
-
+#include "FileDescriptorConnection.h"
+#include "ListenerItem.h" // Own interfave
 
 namespace samson {
     namespace connector {

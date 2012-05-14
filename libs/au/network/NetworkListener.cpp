@@ -119,7 +119,7 @@ namespace au
         LM_T(LmtCleanup, ("Creating a thread"));
         background_thread_running = true;
         
-        au::ThreadManager::shared()->addThread("NetworkListener::runNetworkListenerInBackground"
+        au::ThreadManager::shared()->addThread( au::str("NetworkListener on port %d" , port )
                                                ,&t, NULL, NetworkListener_run, this);
         pthread_detach(t);
     }

@@ -20,6 +20,7 @@ namespace samson {
             buffer_processor = new BufferProcessor( item->channel );
             
             removing = false;
+            
         }
         
         Connection::~Connection()

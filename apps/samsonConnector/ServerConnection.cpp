@@ -1,10 +1,9 @@
 
 
-#include "SamsonConnectorConnection.h"
 #include "SamsonConnector.h"
 #include "Channel.h"
+#include "FileDescriptorConnection.h"
 #include "ServerConnection.h" // Own interface
-
 
 namespace samson {
     namespace connector

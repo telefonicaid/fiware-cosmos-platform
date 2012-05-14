@@ -28,12 +28,12 @@ namespace samson
             ConnectionType type;              // Type of item ( input or output )
             au::Cronometer cronometer;        // Global cronometer
             Item * item;                      // My item            
-            
+                        
             TrafficStatistics traffic_statistics;  // Information about input & output
 
             friend class SamsonConnector;
             
-            bool removing;
+            bool removing;            
             
         protected:
             

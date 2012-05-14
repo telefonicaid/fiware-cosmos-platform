@@ -13,6 +13,9 @@
 #include "au/au.pb.h"
 #include "au/gpb.h"
 
+#include "au/string.h"
+#include "au/utils.h"
+
 #include "au/console/Console.h"
 
 #include "au/network/NetworkListener.h"
@@ -98,10 +101,14 @@ namespace au
             
             void stop()
             {
-                au::TokenTaker tt(&token);
-                au::set< ServiceItem >::iterator it_items;
-                for (it_items = items.begin() ; it_items != items.end() ; it_items ++ )
-                    (*it_items)->stop();
+                {
+                    au::TokenTaker tt(&token);
+                    au::set< ServiceItem >::iterator it_items;
+                    for (it_items = items.begin() ; it_items != items.end() ; it_items ++ )
+                        (*it_items)->stop();
+                }
+                
+                listener.stop(true);
             }
             
             void newSocketConnection( NetworkListener* _listener , SocketConnection * socket_connetion )
@@ -170,7 +177,7 @@ namespace au
             }
             
         };
-        
+                
     }
 }
 

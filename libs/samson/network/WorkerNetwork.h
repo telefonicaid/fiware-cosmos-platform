@@ -23,9 +23,6 @@ namespace samson {
         
         // Worker listtener for new worker / delilah connections
         au::NetworkListener * worker_listener;
-
-        // Web RESET interface
-        au::NetworkListener * web_listener;
         
     public:
         

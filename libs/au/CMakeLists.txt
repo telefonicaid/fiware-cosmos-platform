@@ -98,6 +98,8 @@ network/Service.cpp
 network/Service.h
 network/ConsoleService.h
 network/ConsoleService.cpp
+network/RESTService.h
+network/RESTService.cpp
 network/SocketConnection.cpp
 network/SocketConnection.h
 network/misc.cpp

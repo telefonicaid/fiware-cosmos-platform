@@ -48,7 +48,9 @@
 #include "samson/worker/WorkerCommand.h"          // samson::stream::WorkerCommand
 #include "samson/worker/SamsonWorker.h"           // Own interfce
 
-extern size_t delilah_random_code;
+extern size_t delilah_random_code;     // Random code for the rest delilah client
+extern int port;                       // Port where samsonWorker is started
+extern int web_port;                   
 
 namespace samson {
     
@@ -98,6 +100,10 @@ namespace samson {
             engine::Notification *notification = new engine::Notification(notification_samson_worker_check_finish_tasks);
             engine::Engine::shared()->notify( notification, check_finish_tasks_period );
         }
+        
+        // Run REST interface
+        rest_service = new au::network::RESTService( web_port  , this );
+        rest_service->initRESTService();
         
     }
     
@@ -363,65 +369,6 @@ namespace samson {
             LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
     }
     
-    
-    
-    /* ****************************************************************************
-     *
-     * toUTF8 - 
-     */
-    static char* toUTF8(char* in, size_t* outLenP)
-    {
-        static iconv_t  icDesc = (iconv_t) -1;
-        
-        if (icDesc == (iconv_t) -1)
-        {
-            icDesc   = iconv_open("UTF-8", "ISO-8859-1");
-            if (icDesc == (iconv_t) -1)
-            {
-                LM_E(("error opening utf8 converter: %s", strerror(errno)));
-                return strdup("error opening utf8 converter");
-            }
-        }
-        
-        
-        int             outSize      = 4 * strlen(in);
-        char*           out          = (char*) calloc(1, outSize);
-        char*           outStart     = out;
-        size_t          outbytesLeft = outSize;
-        size_t          inbytesLeft  = strlen(in);
-        int             nb           = 0;
-        
-        LM_T(LmtRest, ("Converting string of %d bytes to utf8", strlen(in)));
-        nb = iconv(icDesc, (char**) &in, &inbytesLeft, (char**) &out, &outbytesLeft);
-        if (nb == -1)
-        {
-            free((void*) outStart);
-            LM_RE(NULL, ("iconv: %s", strerror(errno)));
-        }
-        
-        LM_T(LmtRest, ("Got a utf8 string of %d bytes as result", outSize - outbytesLeft));
-        nb = outSize - outbytesLeft;
-        if (outLenP != NULL)
-            *outLenP = nb;
-        
-        return outStart;
-    }
-    
-    
-    static bool sanityCheck(const char* s)
-    {
-        if ((s == NULL) || (s[0] == 0))
-            return false;
-        
-        if (s[0] != '/')
-            return false;
-        
-        if (strlen(s) < strlen("/samson/X"))
-            return false;
-        
-        return true;
-    }
-    
     std::string getFormatedElement( std::string name , std::string value , std::string& format )
     {
         std::ostringstream output;
@@ -442,8 +389,9 @@ namespace samson {
         return  getFormatedElement( "error" , message , format );
     }
     
-    void SamsonWorker::getRESTInformationFromDelilahCommand( std::ostringstream &data, std::string command , std::string &format )
+    void SamsonWorker::process_delilah_command( std::string delilah_command , au::network::RESTServiceCommand* command )
     {
+        /*
         // Create client if not created
         if( !delilah )
         {
@@ -455,7 +403,7 @@ namespace samson {
         if( !delilah->isConnected() )
         {
             au::ErrorManager error;
-            delilah->delilah_connect("rest", "localhost", 1234, "anonymous", "anonymous", &error);
+            delilah->delilah_connect("rest", "localhost", port, "anonymous", "anonymous", &error);
             
             if( error.isActivated() )
             {
@@ -525,10 +473,12 @@ namespace samson {
         
         delete table;
         
+        */
     }
     
-    void SamsonWorker::getRESTForLogging( std::ostringstream &data, std::vector<std::string> &path_components, unsigned short int& http_state , std::string& format )
+    void SamsonWorker::process_loggin( au::network::RESTServiceCommand* command )
     {
+        /*
         std::string logCommand = "";
         std::string sub        = "";
         std::string arg        = "";
@@ -793,200 +743,98 @@ namespace samson {
                     data << "  \"traceLevels\" : \"removed level(s) " << arg.c_str() << "\"\n";
             }
         }
+         */
     }        
     
     //
     // SamsonWorker::getRESTInformation - 
     //
-    std::string SamsonWorker::getRESTInformation( ::std::string in )
+    void SamsonWorker::process( au::network::RESTServiceCommand* command )
     {
-        unsigned short int        http_state = 200;  // be optimistic and assume all is ok :)
-        std::ostringstream        header;
-        std::ostringstream        data;
-        std::string               jsonSuffix = ".json";
-        std::string               xmlSuffix  = ".xml";
-        std::string               htmlSuffix  = ".html";
-        std::string               format     = "xml"; // Default value
-        bool                      saneInput;
-        bool                      doDie      = false;
-        std::vector<std::string>  path_components;
-        
-        
-        LM_T(LmtRest, ("Incoming REST request: '%s'", in.c_str()));
-        
-        saneInput = sanityCheck(in.c_str());
-        if (saneInput == true)
-        {
-            if ((in.length() >= jsonSuffix.length()) && (in.substr(in.length() - jsonSuffix.length()) == jsonSuffix))
-            {
-                format = "json";
-                in     = in.substr(0, in.length() - jsonSuffix.length());
-            }
-            else if ((in.length() >= xmlSuffix.length()) && (in.substr(in.length() - xmlSuffix.length()) == xmlSuffix))
-            {
-                format = "xml";
-                in     = in.substr(0, in.length() - xmlSuffix.length());
-            }
-            else if ((in.length() >= htmlSuffix.length()) && (in.substr(in.length() - htmlSuffix.length()) == htmlSuffix))
-            {
-                format = "html";
-                in     = in.substr(0, in.length() - htmlSuffix.length());
-            }
-        }
-
         // Begin data for each format
         // ---------------------------------------------------
-        if (format == "xml")
+        if ( command->format == "xml" )
         {
-            data << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-            data << "<!-- SAMSON Rest interface -->\n";
-            data << "<samson>\n";
+            command->append( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            command->append("<!-- SAMSON Rest interface -->\n" );
+            command->append( "<samson>\n" );
         }
-        else if ( format == "html" )
+        else if ( command->format == "html" )
         {
-            data << "<html><body>";
+            command->append("<html><body>");
         }
 
+        // Internal process of the command
+        intern_process(command);
         
-        // Create body of the answer
-        // ---------------------------------------------------
-        
-        if (saneInput == false)
-        {
-            data << getFormatedError("Bad REST Request", format );
-            goto afterTreatment;
-        }
-        
-        // Get the path components
-        path_components = au::split( in , '/' );
-        if ((path_components.size() < 2) || (path_components[0] != "samson"))
-        {
-            http_state = 400;
-            data << getFormatedError( "Only /samson/path requests are valid" , format );
-        }
-        else if (path_components[1] == "version")
-        {
-            data << getFormatedElement("version", au::str("SAMSON v %s" , SAMSON_VERSION ), format );
-        }
-        else if( ( path_components[1] == "state" ) || ( path_components[1] == "queue" ) )  /* /samson/state/queue/key */
-        {
-            char redirect[512];
-            
-            redirect[0] = 0;
-            if (path_components.size() < 4)
-            {
-                http_state = 400;
-                data << getFormatedError("Format error. Wrong number of path components. (Usage /samson/state/queue/key)", format );
-            }
-            else
-            {
-                bool         ok     = true;
-                std::string  result = streamManager->getState(path_components[2], path_components[3].c_str(), redirect, sizeof(redirect), &ok, format);
-                
-                if (ok == false)
-                    data << getFormatedError("Internal Error recovering state.", format);
-                else
-                    data << result;
-            }
-            
-            if ( redirect[0] != 0 )
-            {
-                LM_T(LmtRest, ("redirecting to '%s'", redirect));
-                
-                header << "HTTP/1.1 302 Found\n";
-                header << "Location:   " << redirect << "/samson/state/" << path_components[2] << "/" << path_components[3].c_str() << "\n";
-                header << "Content-Type:   application/txt; charset=utf-8\n";
-                header << "Content-Length: " << 0 << "\n";
-                header << "\n";
-                header << "\n";
-                
-                std::ostringstream output;
-                output << header.str();
-                return output.str();
-            }
-        }
-        else if (path_components[1] == "command" ) /* /samson/command */
-        {
-            std::string command = "ls"; // default command
-            if( path_components.size() > 2 )
-                command = path_components[2];
-            
-            getRESTInformationFromDelilahCommand( data , command  , format );
-            
-        }
-        else if (path_components[1] == "cluster" ) /* /samson/logging */
-            network->getInfo(data, "cluster", format);
-        else if (path_components[1] == "logging" )  
-            getRESTForLogging( data , path_components , http_state , format );
-        else
-        {
-            http_state = 404;
-            data << getFormatedError(au::str("unknown path component '%s'" , path_components[1].c_str() ), format );
-        }
-        
-    afterTreatment:
-
         // Close data content
         // ---------------------------------------------------
-        if (format == "xml")
-            data << "\n</samson>\n";
-        else if( format == "json" )
-            data << "\n";
-        else if (format == "html")
-            data << "</body></html>";
+        if (command->format == "xml")
+            command->append("\n</samson>\n");
+        else if( command->format == "json" )
+            command->append("\n");
+        else if (command->format == "html")
+            command->append("</body></html>");
         
-        // Create message to answer back
-        // ---------------------------------------------------
+    }
+    
+    
+    void SamsonWorker::intern_process( au::network::RESTServiceCommand* command )
+    {
+        LM_T(LmtRest, ("Incoming REST request: '%s'", command->resource.c_str()));
 
-        int dataLen = data.str().length();
-        
-        // Send the correct HTTP status code
-        switch (http_state)
+        if( command->path_components.size() < 2 )
         {
-            case 200:
-                header << "HTTP/1.1 200 OK\n";
-                break;
-                
-            case 400:
-                header << "HTTP/1.1 400 Bad Request\n";
-                break;
-                
-            case 404:
-                header << "HTTP/1.1 404 Not Found\n";
-                break;
-                
-            default:
-                header << "HTTP/1.1 Bad Request \n"; 
-                break;
+            command->appendFormatedError(400 , "Only /samson/option paths are valid");
+            return;
+        }
+
+        if( command->path_components[0] != "samson")            
+        {
+            command->appendFormatedError(400 , "Only /samson/option paths are valid");
+            return;
         }
         
-        if (format == "xml")
-            header << "Content-Type: application/xml\n";
-        else if(format == "json")
-            header << "Content-Type: application/json\n";
-        else if(format == "html")
-            header << "Content-Type: text/html\n";
-        
-        header << "Content-Length: " << dataLen << "\n";
-        header << "Connection: close\n";
-        header << "\n";
-        
-        std::ostringstream output;
-        
-        char* out = toUTF8((char*) data.str().c_str(), NULL);
-        if (out == NULL)
+        // Get the main command for the first path component before /samson/
+        std::string main_command = command->path_components[1];
+
+        if (main_command == "version")
         {
-            out = strdup("error converting data to UTF8"); // free later ...
-            LM_E((out));
+            command->appendFormatedElement("version", au::str("SAMSON v %s" , SAMSON_VERSION ));
+            return;
+        }
+        else if( ( main_command == "state" ) || ( main_command == "queue" ) ) 
+        {
+             /* /samson/state/queue/key */
+            if ( command->path_components.size() < 4 )
+                command->appendFormatedError(400 , "Only /samson/state/queue/key paths are valid");
+            else
+                streamManager->process( command );             // Get this from the stream manager
+
+            return;
+        }
+        else if (main_command == "command" ) /* /samson/command */
+        {
+            std::string delilah_command = "ls"; // default command
+            if( command->path_components.size() > 2 )
+                delilah_command = command->path_components[2];
+            process_delilah_command( delilah_command , command );
+            return;
+        }
+        else if (main_command == "cluster" ) /* /samson/logging */
+        {
+            std::ostringstream data;
+            network->getInfo(data, "cluster", command->format);
+            command->append( data.str() );
+            
+        }
+        else if (main_command == "logging" )  
+            process_loggin( command );
+        else
+        {
+            command->appendFormatedError(404, au::str("unknown path component '%s'" , main_command.c_str() ) );
         }
         
-        output << header.str() << out;
-        free(out);
-        
-        if (doDie == true)
-            LM_X(1, ("Got a DIE request over REST interface ... I die!"));
-        
-        return output.str();
     }
     
     

@@ -1,10 +1,10 @@
 
 #include "Item.h"
 #include "common.h"
-#include "SamsonConnectorConnection.h"
-#include "SamsonConnectorListener.h"
 #include "ServerConnection.h"
-#include "SamsonConnection.h"
+#include "ListenerItem.h"
+#include "SamsonItem.h"
+#include "DiskItem.h"
 #include "Channel.h" // Own interface
 
 
@@ -183,7 +183,7 @@ namespace samson {
                         return;
                     }
                     
-                    //add( new DiskConnection( this , connection_output , components[1] ) );
+                    add( new DiskItem( this , connection_output , components[1] ) );
                     
                 }
                 else if( components[0] == "connection" )
@@ -286,7 +286,8 @@ namespace samson {
                         error->set("Usage disk:file_name_or_dir");
                         return;
                     }
-                    //add( new DiskConnection( this , connection_input , components[1]  ) );
+                    
+                    add( new DiskItem( this , connection_input , components[1]  ) );
                 }
                 else if( components[0] == "connection" )
                 {

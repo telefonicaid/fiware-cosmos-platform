@@ -54,12 +54,6 @@ namespace samson {
         
         // Virtual destructor for correct memory deallocation
         virtual ~NetworkInterfaceReceiver() { };
-                        
-        // Synchronous interface to get informtion for the REST interface
-        virtual ::std::string getRESTInformation( ::std::string in )
-        {
-            return ::std::string("cannot process '") + in + "' - not implemented\n";
-        }
         
         // Convenient way to run the receive methods using Engine system
         void schedule_receive( Packet* packet );

@@ -72,12 +72,12 @@ namespace samson
             );
         
         add( "send_alert" , "delilah", 
-            "Send a trace to all conneceted delilah using a random worker as a sender",
-            "send_trace [-worker X] [-error] [-warning] \"Message to be sent\""
+            "Send an alert to all conneected delilahs using a random worker as sender",
+            "send_alert [-worker X] [-error] [-warning] \"Message to be sent\"\n"
             "      -worker X     Use only this worker as broadcaster\n"
-            "      -error        Mark this trace as an error for correct visualitzation\n"
-            "      -warning      Mark this trace as a warning for correct visualitzation\n"
-            "      message       Use only this worker as broadcaster\n"
+            "      -error        Mark this trace as an error for correct visualization\n"
+            "      -warning      Mark this trace as a warning for correct visualization\n"
+            "      message       The text message of this alert\n"
             );
 
         /*
@@ -111,8 +111,8 @@ namespace samson
             "Remove an environment variable",
             "unset <var>");
         
-        add( "set_mode"  , "delilah" , 
-            "Select delilah working mode: normal ,databse , logs",
+        add( "set_mode"  , "delilah",
+            "Select delilah working mode: normal, database, logs",
             "set_mode normal/database/logs"
             );
         
@@ -133,21 +133,21 @@ namespace samson
         // ------------------------------------------------------------------
         
         add( "ls" , "data" , "Show a list of all data queues in the system",
-            "ls [-rates] [-blocks] [-properties] [-group group_field]"
-            "      -rates        Information about total size and current rate\n"
-            "      -blocks       Detailes information about blocks\n"
-            "      -properties   Get properties assigned to queues\n"
-            "      -group X      Group results by a particular field"
-            );
+			 "ls [-rates] [-blocks] [-properties] [-group group_field]\n"
+			 "      -rates        Information about total size and current rate\n"
+			 "      -blocks       Detailes information about blocks\n"
+			 "      -properties   Get properties assigned to queues\n"
+			 "      -group X      Group results by a particular field"
+		   );
         
         add( "rm" , "data" , 
-            "Remove a queue" 
-            "Usage: rm queue"
-            );
+			 "Remove a queue",
+			 "rm <queue>"
+		   );
                 
         add( "set_queue_property" , "data" ,
             "Specify the value of property <property> for queue <queue>",
-            "set_queue_property [queue] [property] [value]"
+            "set_queue_property <queue> <property> <value>"
             );
         
         add( "unset_queue_property" , "data" ,

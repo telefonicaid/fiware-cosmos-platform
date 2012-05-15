@@ -28,4 +28,17 @@ using namespace std;
 Attribute* attributeAdd(Entity* entityP, Attribute* attribute)
 {
 	LM_M(("Please implement me!"));
+    return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
+* attributeLookup - 
+*/
+Attribute* attributeLookup(std::string name, std::string type, std::string ID)
+{
+	LM_M(("Please implement me!"));
+    return NULL;
 }

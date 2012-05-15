@@ -61,18 +61,18 @@ static void registerContextRequestNode(RegisterContextRequest* rcReqP, xmlNodePt
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.entityIdList.entityId.isPattern")
         rcReqP->entityV[entityIdIx]->isPattern = (content == "false")? false : true;
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.name")
-       rcReqP->attributeList.attributeV[0].name = content;
+       rcReqP->attributeList.attributeV[0]->name = content;
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.type")
-       rcReqP->attributeList.attributeV[0].type = content;
+       rcReqP->attributeList.attributeV[0]->type = content;
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.isDomain")
-       rcReqP->attributeList.attributeV[0].isDomain = (content == "true")? true : false;
+       rcReqP->attributeList.attributeV[0]->isDomain = (content == "true")? true : false;
 
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.metaData.contextMetadata.name")
-       rcReqP->attributeList.metadataV[cralMetaIx]->name = content;
+       rcReqP->attributeList.attributeV[0]->metadataV[cralMetaIx]->name = content;
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.metaData.contextMetadata.type")
-       rcReqP->attributeList.metadataV[cralMetaIx]->type = content;
+       rcReqP->attributeList.attributeV[0]->metadataV[cralMetaIx]->type = content;
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.metaData.contextMetadata.value")
-       rcReqP->attributeList.metadataV[cralMetaIx]->value = content;
+       rcReqP->attributeList.attributeV[0]->metadataV[cralMetaIx]->value = content;
 
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.registrationMetaData.contextMetadata.name")
        rcReqP->registrationMetadataV[rMetaIx]->name = content;
@@ -96,7 +96,7 @@ static void registerContextRequestNode(RegisterContextRequest* rcReqP, xmlNodePt
     }
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.metaData.contextMetadata")
     {
-       rcReqP->attributeList.metadataV.push_back(new Metadata());
+       rcReqP->attributeList.attribute[0]->metadataV.push_back(new Metadata());
        ++cralMetaIx;
     }
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.registrationMetaData.contextMetadata")

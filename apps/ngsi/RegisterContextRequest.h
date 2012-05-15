@@ -10,6 +10,7 @@
 *
 */
 #include <string>
+#include <vector>
 
 #include "Entity.h"
 #include "ContextRegistrationAttributeList.h"

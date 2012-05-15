@@ -10,6 +10,7 @@
 *
 */
 #include <string>
+#include <vector>
 
 #include "Metadata.h"
 #include "Entity.h"
@@ -40,9 +41,10 @@ typedef struct Attribute
 {
     std::string        name;
 	std::string        value;
-	AttributeType      type;
+    bool               isDomain;
+    std::string        type;
 	std::string        ID;     // From metadata ...
-	Metadata*          metaDataList;
+	vector<Metadata*>  metadataV;
 	struct Attribute*  next;
 	Entity*            entityP;
 } Attribute;
@@ -54,5 +56,13 @@ typedef struct Attribute
 * attributeAdd - 
 */
 extern Attribute* attributeAdd(Entity* entityP, Attribute* attribute);
+
+
+
+/* ****************************************************************************
+*
+* attributeLookup - 
+*/
+extern Attribute* attributeLookup(std::string name, std::string type, std::string ID);
 
 #endif

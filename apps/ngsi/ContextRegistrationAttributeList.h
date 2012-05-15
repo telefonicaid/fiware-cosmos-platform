@@ -10,9 +10,11 @@
 *
 */
 #include <string>
+#include <vector>
 
 #include "Metadata.h"
 #include "ContextRegistrationAttribute.h"
+#include "Attribute.h"
 
 using namespace std;
 
@@ -24,7 +26,7 @@ using namespace std;
 */
 typedef struct ContextRegistrationAttributeList
 {
-	vector<ContextRegistrationAttribute*> attributeV;
+	vector<Attribute*> attributeV;
 } ContextRegistrationAttributeList;
 
 #endif

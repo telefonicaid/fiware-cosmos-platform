@@ -32,6 +32,7 @@ SET( STATIC_LIBS
 
 include_directories("${PROJECT_SOURCE_DIR}/libs")
 include_directories("/usr/local/include/json")
+include_directories("/usr/include/json")
 include_directories("/usr/include/libxml2")
 
 

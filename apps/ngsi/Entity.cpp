@@ -6,19 +6,20 @@
 *
 *
 */
-#include <string.h>                         // strcmp, ...
-#include <string>                           // std::string
-#include <stdlib.h>                         // malloc
-#include <errno.h>                          // errno
+#include <string.h>                            // strcmp, ...
+#include <string>                              // std::string
+#include <stdlib.h>                            // malloc
+#include <errno.h>                             // errno
 
-#include "logMsg/logMsg.h"                  // LM_*
+#include "logMsg/logMsg.h"                     // LM_*
 
-#include "traceLevels.h"                    // Trace levels for log msg library
-#include "jsonParse.h"                      // JSON parsing function
-#include "httpData.h"                       // httpData
-#include "rest.h"                           // restReply
-#include "Attribute.h"                      // Attribute
-#include "Entity.h"                         // Own interface
+#include "traceLevels.h"                       // Trace levels for log msg library
+#include "jsonParse.h"                         // JSON parsing function
+#include "httpData.h"                          // httpData
+#include "rest.h"                              // restReply
+#include "Attribute.h"                         // Attribute
+#include "ContextRegistrationAttributeList.h"  // ContextRegistrationAttributeList
+#include "Entity.h"                            // Own interface
 
 using namespace std;
 
@@ -119,7 +120,8 @@ static void entityAppend(Entity* entity)
 */
 Entity* entityAdd(std::string id, std::string type, bool isPattern, std::string providingApplication, int duration, std::string registrationId, ContextRegistrationAttributeList* attributeList)
 {
-	Entity* entityP;
+	Entity*       entityP;
+    unsigned int  ix;
 
 	//
 	// Lookup the entity 'id'
@@ -132,7 +134,7 @@ Entity* entityAdd(std::string id, std::string type, bool isPattern, std::string 
 	entityP = entityCreate(id, type, isPattern, providingApplication, duration, registrationId);
 	entityAppend(entityP);
 
-	for (int ix = 0; ix < attributeList->attributeV.size(); ix+)
+	for (ix = 0; ix < attributeList->attributeV.size(); ix++)
 		attributeAdd(entityP, attributeList->attributeV[ix]);
 
     return entityP;
@@ -146,7 +148,8 @@ Entity* entityAdd(std::string id, std::string type, bool isPattern, std::string 
 */
 Entity* entityUpdate(std::string id, std::string type, bool isPattern, std::string providingApplication, int duration, std::string registrationId, ContextRegistrationAttributeList* attributeList)
 {
-	Entity* entityP;
+	Entity*       entityP;
+    unsigned int  ix;
 
 	//
 	// Lookup the entity 'id'
@@ -164,8 +167,6 @@ Entity* entityUpdate(std::string id, std::string type, bool isPattern, std::stri
 	
 	if (duration != 0)
 	{
-		int endTime;
-
 		//
 		// What I do with 'startTime' ... ?
 		// Seems more logical to keep the old start time
@@ -179,7 +180,7 @@ Entity* entityUpdate(std::string id, std::string type, bool isPattern, std::stri
 	//
 	// Update or add attributes
 	//
-	for (int ix = 0; ix < attributeList->attributeV.size(); ix+)
+	for (ix = 0; ix < attributeList->attributeV.size(); ix++)
 	{
 		Attribute* aP;
 		Attribute* attribute;

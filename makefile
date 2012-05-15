@@ -220,7 +220,7 @@ finish_mac_coverage:
 test: ctest
 ctest: debug
 	make test -C BUILD_DEBUG ARGS="-D ExperimentalTest"
-	BUILD_DEBUG/apps/unitTest/unitTest --gtest_output=xml:BUILD_DEBUG/samson_test.xml
+	ulimit -c unlimited && BUILD_DEBUG/apps/unitTest/unitTest --gtest_output=xml:BUILD_DEBUG/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG/samson_test.xml
 
@@ -232,7 +232,7 @@ unit_test: debug
 
 test_coverage:
 	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" || true
-	BUILD_COVERAGE/apps/unitTest/unitTest --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
+	ulimit -c unlimited && BUILD_COVERAGE/apps/unitTest/unitTest --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' -e 's,\(<testcase name="\)DISABLED_\(.*status="notrun".*\) />,\1\2>\n      <skipped/>\n    </testcase>,' BUILD_COVERAGE/samson_test.xml
 
@@ -302,10 +302,10 @@ reset:
 	rm -Rf xcode_proj
 	rm -f libs/common/samson.pb.*
 	rm -f libs/data/data.pb.*
-	rm -Rf /usr/local/include/samson
+	rm -Rf /usr/local/include/samson || true
 	rm -f testing/module_test/Module.*
-	rm -f /etc/init/samson.conf
-	rm -f /etc/profile.d/samson.sh
+	rm -f /etc/init/samson.conf || true
+	rm -f /etc/profile.d/samson.sh || true
 
 cleansvn: 
 	for file in `svn status | grep ? | awk '{print $$2}'`; do rm -rf $$file; done

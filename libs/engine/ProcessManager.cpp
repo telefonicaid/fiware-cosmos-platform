@@ -31,7 +31,10 @@ void ProcessManager::init( int _num_processes)
     LM_V(("ProcessManager init with %d processes" ,  _num_processes ));
     
     if( processManager )
-        LM_X(1,("Please, init processManager only once"));
+	{
+        LM_W(("Please, init processManager only once.Ignoring..."));
+		return;
+	}
     processManager = new ProcessManager( _num_processes );
     
 }

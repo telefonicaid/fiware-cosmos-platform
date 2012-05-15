@@ -31,7 +31,10 @@ void DiskManager::init( int _num_disk_operations )
     LM_V(("DiskManager init with %d max background operations" , _num_disk_operations ));
     
     if( diskManager )
-        LM_X(1 ,("Please, init diskManager only once"));
+	{
+        LM_W(("Please, init diskManager only once. Ignoring..."));
+		return;
+	}
     
     diskManager = new DiskManager ( _num_disk_operations );
 }

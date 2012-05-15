@@ -49,8 +49,9 @@ typedef enum TraceLevels
     
 	LmtIsolated               = 215, // Isolated mechanism
     LmtIsolatedOperations     = 216, // Traces to see start and stop of executions
-    LmtIsolatedOutputs        = 217, // See processing of operations outputs
-    LmtFileDescriptors = 218, // to keep track of opening/closing file descriptors
+    LmtReduceOperation        = 217, // Reduce operation steps
+    LmtIsolatedOutputs        = 218, // See processing of operations outputs
+    LmtFileDescriptors        = 219, // to keep track of opening/closing file descriptors
     
 	LmtUser01 = 250,
 	LmtUser02 = 251,

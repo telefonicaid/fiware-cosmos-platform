@@ -121,7 +121,9 @@ namespace samson {
                 remove_block_to_cronometers( block_list->getBlockList(block_lists[i]) );
         }
         
-        StreamOperation* StreamOperation::newStreamOperation( StreamManager *streamManager ,  std::string command , au::ErrorManager& error )
+        StreamOperation* StreamOperation::newStreamOperation( StreamManager *streamManager 
+                                                             ,  std::string command 
+                                                             , au::ErrorManager& error )
         {
             // Expected format add_stream_operation name operation input_queues... output_queues ... parameters
             
@@ -132,6 +134,9 @@ namespace samson {
             
             // Number of divisions in state operations 
             cmd.set_flag_int("divisions", SamsonSetup::shared()->getInt("general.num_processess") );    
+
+            // Use third party software only for state with new input
+            cmd.set_flag_boolean("update_only");    
             
             // Prefix used to change names of queues and operations
             cmd.set_flag_string("prefix", "");
@@ -208,7 +213,8 @@ namespace samson {
                     if( cmd.get_flag_bool("forward") )
                         stream_operation = new StreamOperationForwardReduce();
                     else
-                        stream_operation = new StreamOperationUpdateState( cmd.get_flag_int("divisions")  );
+                        stream_operation = new StreamOperationUpdateState( cmd.get_flag_int("divisions") 
+                                                                          , cmd.get_flag_bool("update_only")  );
                     
                 }
                     break;
@@ -644,11 +650,19 @@ namespace samson {
         
 #pragma mark StreamOperationUpdateState::
  
-        StreamOperationUpdateState::StreamOperationUpdateState( int _num_divisions )
+        StreamOperationUpdateState::StreamOperationUpdateState( int _num_divisions , bool _update_only )
         {
             // Number of divisions defined by user at creation time
             num_divisions = _num_divisions;
+            
+            // Flag to only process states with new inputs...
+            update_only = _update_only;
 
+            if( update_only )
+                environment.set("update_only", "yes");
+            else
+                environment.set("update_only", "no");
+            
             // Alloc vector of booleans to flag what divisions we are updating...
             updating_division = new bool[num_divisions];
             
@@ -759,7 +773,7 @@ namespace samson {
             Operation *op = getOperation( );
             
             // Properties for this stream operation
-            size_t max_size         = SamsonSetup::shared()->getUInt64("general.memory") / 8;       // Max memory to get
+            size_t max_size = SamsonSetup::shared()->getUInt64("general.memory") / 8;       // Max memory to get
             
             last_review = "";
 
@@ -796,11 +810,15 @@ namespace samson {
             size_t id = streamManager->getNewId();
             
             ReduceQueueTask * task = new ReduceQueueTask( id , this , rangeForDivision( division, num_divisions ) );
+            if( update_only )
+                task->set_update_only();
+            
             task->addOutputsForOperation(op);
             
             // Special flag to indicate update_state mode ( process different output buffers )
             task->setUpdateStateDivision( division );
             
+            // Add inputs
             task->getBlockList("input_0")->copyFrom( &inputBlockList );
             task->getBlockList("input_1")->copyFrom( &stateBlockList );
             

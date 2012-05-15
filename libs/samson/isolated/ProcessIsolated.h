@@ -29,27 +29,6 @@ namespace samson {
     class TXTWriter;
     class NetworkInterface;
     
-    
-    /*
-     Base class for the elements that decides what to do with the output buffers of a ProcessIsolated
-     */
-    
-    class ProcessIsolatedOutput
-    {
-        
-    public:
-        
-        virtual void processOutputBuffer( engine::Buffer *buffer , int output , int outputWorker , bool finish )=0;
-        virtual void processOutputTXTBuffer( engine::Buffer *buffer , bool finish )=0;
-    };
-    
-    class ProcessIsolatedDataGenerator
-    {
-    public:
-		virtual void generateKeyValues( KVWriter *writer ) { if (writer == NULL) return; };
-		virtual void generateTXT( TXTWriter *writer )      { if (writer == NULL) return; };
-    };
-    
     /**
      
      ProcessIsolated is an isolated process that share 
@@ -120,7 +99,7 @@ namespace samson {
         // Methods implemented by subclases to generate content
         // Not pure virtual
         // --------------------------------------------------------------------------
-		virtual void generateKeyValues( KVWriter *writer ) { if (writer == NULL) return; };
+		virtual void generateKeyValues( ProcessWriter *writer ) { if (writer == NULL) return; };
 		virtual void generateTXT( TXTWriter *writer )      { if (writer == NULL) return; };
         
         // --------------------------------------------------------------------------

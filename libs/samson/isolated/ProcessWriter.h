@@ -70,8 +70,11 @@ namespace samson {
 		 Called allways from the Process side 
 		 */
 		
-		void emit( int output , DataInstance *key , DataInstance *value );
-
+		void emit( int output  , DataInstance *key , DataInstance *value );
+        
+        // Emit data for a particular output channel
+        void internal_emit( int output , int hg , char* data , size_t size );
+        
 		// Clear the current buffer to submit new key-values
 		void clear();
 

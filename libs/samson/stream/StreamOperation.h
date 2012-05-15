@@ -256,6 +256,8 @@ namespace samson {
         
         class StreamOperationUpdateState : public StreamOperation
         {
+            // Flag to only process states with new inputs
+            bool update_only;
             
             // Information to keep track of everything
             int num_divisions;            // Number of divisions  ( state is divided and updated individually in divisions )
@@ -266,7 +268,7 @@ namespace samson {
             
         public:
             
-            StreamOperationUpdateState( int _num_divisions );
+            StreamOperationUpdateState( int _num_divisions, bool _update_only );
             ~StreamOperationUpdateState();
             
             virtual std::string getStatus()

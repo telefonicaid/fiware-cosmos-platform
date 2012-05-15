@@ -35,7 +35,7 @@ namespace samson
 
             
             // Function to generate output key-values
-            void generateKeyValues( KVWriter *writer );
+            void generateKeyValues( samson::ProcessWriter *writer );
 
             void finalize( StreamManager* streamManager );         
             
@@ -103,7 +103,7 @@ namespace samson
             }
             
             // Function to generate output key-values
-            void generateKeyValues( KVWriter *writer );
+            void generateKeyValues( samson::ProcessWriter *writer );
 
             void finalize( StreamManager* streamManager );         
             
@@ -122,16 +122,21 @@ namespace samson
             bool update_state_mode;                         // Spetial flag to indicate update_status mode
             int division;                                   // Division, this operation is processing
 
+            bool update_only; // Flag to update only states with new inputs
+            
         public:
 
             // Constructor
             ReduceQueueTask( size_t id , StreamOperationBase* streamOperation , KVRange range  );
            
+            // Set update only flag
+            void set_update_only();
+            
             // Set mode state_update
             void setUpdateStateDivision( int _division );
             
             // Function to generate output key-values
-            void generateKeyValues( KVWriter *writer );
+            void generateKeyValues( samson::ProcessWriter *writer );
             
             // Get a string with the status of this task
             std::string getStatus();

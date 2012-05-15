@@ -63,7 +63,7 @@ namespace hit{
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-
+		   //printf("Running reduce hits with %lu inputs and state %lu\n" , inputs[0].num_kvs , inputs[1].num_kvs );
 
 		   if( inputs[1].num_kvs > 0 )
 		   {

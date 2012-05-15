@@ -66,7 +66,7 @@ namespace samson {
         };
         
         
-        void ParserQueueTask::generateKeyValues( KVWriter *writer )
+        void ParserQueueTask::generateKeyValues( samson::ProcessWriter *writer )
         {
             // Handy class to emit traces
             OperationTraces operation_traces( au::str( "[%lu] Parser %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
@@ -259,7 +259,7 @@ namespace samson {
         
 #pragma mark MapQueueTask
         
-        void MapQueueTask::generateKeyValues( KVWriter *writer )
+        void MapQueueTask::generateKeyValues( samson::ProcessWriter *writer )
         {
             // Handy class to emit traces
             OperationTraces operation_traces( au::str( "[%lu] Map %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
@@ -524,8 +524,17 @@ namespace samson {
             
             // By default it is not in update_state mode
             update_state_mode = false;
+
+            // By default it is not a update_only operation
+            update_only = false;
             
         }
+        
+        void ReduceQueueTask::set_update_only()
+        {
+            update_only = true;
+        }
+
         
         void ReduceQueueTask::setUpdateStateDivision( int _division )
         {
@@ -544,8 +553,15 @@ namespace samson {
         };
         
         
-        void ReduceQueueTask::generateKeyValues( KVWriter *writer )
+        void ReduceQueueTask::generateKeyValues( samson::ProcessWriter *writer )
         {
+            if( update_only )
+                LM_T(LmtReduceOperation, ("Reduce %lu - %s begin.... (update_only)" , id , operation_name.c_str() ));
+            else
+                LM_T(LmtReduceOperation, ("Reduce %lu - %s begin" , id , operation_name.c_str() ));
+            
+            LM_T(LmtReduceOperation, ("Reduce %lu - %s KVRange %s" , id , operation_name.c_str() , range.str().c_str() ));
+            
             // Handy class to emit traces
             OperationTraces operation_traces( au::str( "[%lu] reduce %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
             
@@ -566,9 +582,11 @@ namespace samson {
             // Init function
             reduce->init( writer );
             
+            LM_T(LmtReduceOperation, ("Reduce %lu - %s Preparing data...(%s)" 
+                                      , id , operation_name.c_str() , getBlockListContainerDataDescription().c_str() ));
+
             // Get the block reader list to prepare inputs for operation
             BlockReaderCollection blockreaderCollection( operation );
-
             
             // Insert all the blocks involved in this operation
             for ( int i = 0 ; i < operation->getNumInputs() ; i++ )
@@ -587,9 +605,14 @@ namespace samson {
                 }
             }
            
-            
+            // Counters for statistics
             int total_hgs =  range.hg_end - range.hg_begin;
             int processed_hds = 0;
+            
+            int transfered_states = 0;
+            int processed_states = 0;
+            
+            LM_T(LmtReduceOperation, ("Reduce %lu - %s Data ready! Running hash-groups" , id , operation_name.c_str() ));
             
             for (int hg = 0 ; hg < KVFILE_NUM_HASHGROUPS ; hg++)
             {
@@ -616,8 +639,43 @@ namespace samson {
                         
                         while( inputStructs )
                         {
-                            // Call the reduce operation
-                            reduce->run( inputStructs, writer );
+                            
+                            if( update_only && (inputStructs[0].num_kvs == 0) )
+                            {
+                                
+                                // Just copy state to the output...
+                                if( inputStructs[1].num_kvs > 0 ) // Check we really have state
+                                {
+                                    // Satte out
+                                    int state_output = operation->getNumOutputs()-1;
+                                    
+                                    // Data pointer
+                                    char * key_data = inputStructs[1].kvs[0]->key;
+                                    //char * value_data = inputStructs[1].kvs[0]->value;
+                                    
+                                    // Total size
+                                    size_t key_size = inputStructs[1].kvs[0]->key_size;
+                                    size_t value_size = inputStructs[1].kvs[0]->value_size;
+
+                                    //inputStructs[1].kvs[0]->key
+                                    writer->internal_emit(state_output, hg , key_data, key_size + value_size );
+                                    transfered_states++;
+                                }
+                                else
+                                    LM_T(LmtReduceOperation, ("Reduce %lu - %s ERROR since no data at input nor state" 
+                                                              , id 
+                                                              , operation_name.c_str()
+                                                              ));
+                                    
+                                
+                            }
+                            else
+                            {
+                            
+                                // Call the reduce operation
+                                reduce->run( inputStructs, writer );
+                                processed_states++;
+                            }
                             
                             // Get the next one
                             inputStructs = blockreaderCollection.getNext();
@@ -625,6 +683,8 @@ namespace samson {
                         
                     }
                 }
+                
+
             }
             
             reduce->finish( writer  );
@@ -633,6 +693,12 @@ namespace samson {
             delete reduce;            
             
             //LM_M(("Finish ReduceQueueTask for range %s  [%s]" , range.str().c_str() , block_info.str().c_str() ));
+            LM_T(LmtReduceOperation, ("Reduce %lu - %s finish [ Different key Processed: %d DirectState: %d ]" 
+                                      , id 
+                                      , operation_name.c_str()
+                                      , processed_states
+                                      , transfered_states
+                                      ));
             
         }          
         

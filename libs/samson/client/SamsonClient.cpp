@@ -58,6 +58,13 @@ namespace samson
         delilah->data_receiver_interface = this;
     }
     
+    SamsonClient::~SamsonClient()
+    {
+        // Remove delilah instance
+        delete delilah;
+        
+    }
+    
     void SamsonClient::set_receiver_interface( DelilahLiveDataReceiverInterface* interface )
     {
         delilah->data_receiver_interface = interface;
@@ -117,6 +124,13 @@ namespace samson
             usleep(1000);
         LM_VV(("Connected to all workers"));
     }
+    
+    void SamsonClient::disconnect()
+    {
+        // Stop all connections of my delilah
+        delilah->stop();
+    }
+
     
     void SamsonClient::receive_buffer_from_queue( std::string queue , engine::Buffer* buffer )
     {

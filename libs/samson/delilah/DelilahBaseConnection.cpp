@@ -45,7 +45,11 @@ namespace samson
     {
         au::TokenTaker tt(&token);
         if( network )
+        {
             network->stop();
+            delete network;
+            network = NULL;
+        }
     }
 
     

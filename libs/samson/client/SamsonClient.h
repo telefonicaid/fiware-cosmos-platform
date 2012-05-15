@@ -74,7 +74,7 @@ namespace  samson {
         
         // Default constructor
         SamsonClient( std::string connection_type );
-        virtual ~SamsonClient(){}
+        virtual ~SamsonClient();
         
         // General init ( Init engine )
         static void general_init( size_t memory = 1000000000 , size_t load_buffer_size = 64000000 );
@@ -86,6 +86,8 @@ namespace  samson {
                             , std::string user = "anonymous" 
                             , std::string password = "anonymous"
                             );
+        
+        void disconnect();
         
         // DelilahLiveDataReceiverInterface
         void receive_buffer_from_queue( std::string queue , engine::Buffer* buffer );

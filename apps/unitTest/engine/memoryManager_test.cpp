@@ -21,12 +21,13 @@
 
 #include "xmlparser/xmlParser.h"
 
+#include "common_engine_test.h"
 
 //Test void add( MemoryRequest *request );
 TEST(memoryManagerTest, addTest) 
 {
-    engine::Engine::init();
-    engine::MemoryManager::init(1000);
+
+   init_engine_test();
 
     engine::Buffer *buffer = engine::MemoryManager::shared()->createBuffer( "test_buffer" , "test" , 100 , 0.0 );
     EXPECT_TRUE( buffer != NULL ) << "Buffer was not creatd";
@@ -38,17 +39,15 @@ TEST(memoryManagerTest, addTest)
     buffer->release();
 
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 0) << "Buffer is not removed correctly";
-    
-    engine::Engine::stop();                  // Stop engine
-    au::ThreadManager::shared()->wait();     // Wait all threads to finsih
-    engine::Engine::destroy();               // Destroy Engine
+
+	close_engine_test();
+
 }    
 
 //Test int getNumBuffers();
 TEST(memoryManagerTest, getNumBuffersTest) 
 {
-    engine::Engine::init();
-    engine::MemoryManager::init(1000);
+	init_engine_test();
     
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 0) << "Should be no buffers";
     
@@ -63,11 +62,8 @@ TEST(memoryManagerTest, getNumBuffersTest)
     
     buffer2->release();
     EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 0) << "Wrong number of buffers";
-    
-    engine::Engine::stop();                  // Stop engine
-    au::ThreadManager::shared()->wait();     // Wait all threads to finsih
-    engine::Engine::destroy();               // Destroy Engine
 
+	close_engine_test();    
     
 }
 
@@ -75,10 +71,9 @@ TEST(memoryManagerTest, getNumBuffersTest)
 //Test double getMemoryUsage();
 TEST(memoryManagerTest, getUsedMemoryTest) 
 {
-    
-    engine::Engine::init();
-    engine::MemoryManager::init(1000);
-    
+   
+   init_engine_test();    
+       
     EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 0) << "Used memory does not match";
     EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsage(), 0.0) << "Memory usage does not match";
     
@@ -97,10 +92,8 @@ TEST(memoryManagerTest, getUsedMemoryTest)
     EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 0) << "Used memory does not match";
     EXPECT_EQ(engine::MemoryManager::shared()->getMemoryUsage(), 0.0) << "Memory usage does not match";
  
-    engine::Engine::stop();                  // Stop engine
-    au::ThreadManager::shared()->wait();     // Wait all threads to finsih
-    engine::Engine::destroy();               // Destroy Engine
-    
+	close_engine_test();
+
 }
 
     

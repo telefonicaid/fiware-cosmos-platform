@@ -98,7 +98,7 @@ namespace au {
         ThreadManager();
         
         static ThreadManager * shared();
-        static void wait_all_threads();
+        static void wait_all_threads(std::string title);
         
         // Add a thread to the manager
         int addThread( 
@@ -119,7 +119,7 @@ namespace au {
         std::string str();
         
         // Wait for all threads to finish ( except the calling thread )
-        void wait();
+        void wait( std::string title );
         
         // Internal function used to notify that a particular threads has finished
         void notify_finish_thread( ThreadInfo* thread_info );

@@ -126,7 +126,7 @@ void cleanup(void)
         delilahConsole->stop();
     
     // Wait all threads to finsih
-    au::ThreadManager::shared()->wait();
+    au::ThreadManager::shared()->wait("Delilah");
 
     // Clear google protocol buffers library
     google::protobuf::ShutdownProtobufLibrary();

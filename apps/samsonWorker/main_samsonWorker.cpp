@@ -156,7 +156,7 @@ void cleanup(void)
         worker->stop();
     
     // Wait all threads to finsih
-    au::ThreadManager::shared()->wait();
+    au::ThreadManager::shared()->wait("samsonWorker");
     
     google::protobuf::ShutdownProtobufLibrary();
 

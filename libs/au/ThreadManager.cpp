@@ -12,9 +12,9 @@ namespace au {
         return &thread_manager;
     }
     
-    void ThreadManager::wait_all_threads()
+    void ThreadManager::wait_all_threads(std::string title)
     {
-        thread_manager.wait();
+        thread_manager.wait(title);
     }
 
     
@@ -99,7 +99,7 @@ namespace au {
         return output.str();
     }
     
-    void ThreadManager::wait()
+    void ThreadManager::wait( std::string title )
     {
         //std::cerr << "Waiting all threads to finish\n";
         
@@ -124,7 +124,7 @@ namespace au {
                 
                 if( c.diffTimeInSeconds() > 2 )
                 {
-                    std::cerr << "Waiting all threads to finish\n";
+                    std::cerr << title << ": Waiting all threads to finish\n";
                     std::cerr << _str() << "\n";
                     std::cerr << au::str( "Still running %d threads ...\n" , threads.size() );
                     

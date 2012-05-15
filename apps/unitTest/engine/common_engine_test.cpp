@@ -21,7 +21,7 @@ void close_engine_test()
     engine::DiskManager::stop();             // Stop disk manager
     engine::ProcessManager::stop();          // Stop process manager
     
-    au::ThreadManager::wait_all_threads();   // Wait all threads to finsih
+    au::ThreadManager::wait_all_threads("EngineTest");   // Wait all threads to finsih
     
     engine::DiskManager::destroy();          // Destroy Disk manager
     engine::MemoryManager::destroy();        // Destroy Memory manager

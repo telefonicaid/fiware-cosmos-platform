@@ -76,8 +76,7 @@ namespace samson {
         
         // Get a table with available command ( optional filter per category )
         std::string getCommandsTable( std::string category="" );
-        
-        
+
         // Get help message for an individual command
         std::string getHelpForCommand( std::string name );
         
@@ -86,6 +85,9 @@ namespace samson {
 
         // Check if a command is valid ( used in repeat command )
         bool isValidCommand( std::string command );
+        
+        // Check if is a category
+        bool isValidCategory( std::string category );
         
     };    
     

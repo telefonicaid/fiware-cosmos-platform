@@ -362,7 +362,15 @@ namespace samson
             
             // Independent option
             info->add("all");
+            info->add("categories");
             info->add("-category"); // To help type 
+            
+            
+            // Add categories as well...
+            au::StringVector categories = delilah_command_catalogue.getCategories();
+            for ( size_t i = 0 ; i < categories.size() ; i++ )
+                info->add( categories[i] );
+            
         }
         
         
@@ -751,10 +759,10 @@ namespace samson
                 output << "\n";
                 output << au::lineInConsole('-') << "\n";
                 output << "\n";
-                output << "\tType help all [-category category_name] to get help for all available commands\n";
-                output << "\t\tCurrent categories: " << delilah_command_catalogue.getCategories().str() << "\n";
-                output << "\n";
-                output << "\tType help <command> to get detailed information for a command\n";
+                output << "\thelp all .................. get a list of all available commands\n";
+                output << "\thelp categories ........... get a list of command categories\n";
+                output << "\thelp <command> ............ get detailed information for a command\n";
+                output << "\thelp <category> ........... get list of commands for a particular categoriy\n";
                 output << "\n";
                 output << au::lineInConsole('-') << "\n";
                 output << "\n";

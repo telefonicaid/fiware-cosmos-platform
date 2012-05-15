@@ -214,7 +214,7 @@ std::string str_indent( std::string txt , int num_spaces )
 {
     std::string sep;
     for (int i = 0 ; i < num_spaces ; i++ )
-        sep.insert(0, " ");
+        sep.append(" ");
 
     // Replace all "returns" by "return and tab"
     find_and_replace( txt , "\n" , "\n" + sep );

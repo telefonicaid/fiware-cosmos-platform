@@ -632,7 +632,7 @@ void Console::writeOnConsole( std::string message )
             for ( size_t i = pos ; i < std::min( lines.size() , max_pos ) ; i++ )
             {
                 std::string line_to_print;
-                if( lines[i].length() < (size_t)x )
+                if( lines[i].length() <= (size_t)x )
                     line_to_print = lines[i];
                 else
                     line_to_print = lines[i].substr( 0 , x - 3 ) + "...";

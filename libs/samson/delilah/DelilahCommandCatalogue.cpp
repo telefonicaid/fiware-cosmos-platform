@@ -37,7 +37,7 @@ namespace samson
             );
         
         add( "log" , "delilah", 
-             "log - view lines of the log files of the workers (last 20 lines by default - change using option '-lines')\n"
+             "log - view lines of the log files of the workers (last 20 lines by default - change using option '-lines')",
              "  log 'pattern'     only lines that match 'pattern'\n"
              "  log Type=X        only lines of Type 'X'\n"
              "  log FileName=X    only lines from the file X"
@@ -225,7 +225,7 @@ namespace samson
             );
 
         add( "cancel_stream_operation" , "stream" ,
-            "Cancel a particular operation ( both executed manually with run or automatically througth add_stream_operation",
+            "Cancel a particular operation",
             "cancel_stream_operation <op_id>\n"
             "\n"
             "           <op_name>        : Identifier of the operation. Usually something like XXXXX_XXX\n"
@@ -233,16 +233,16 @@ namespace samson
         
         
         add( "set_stream_operation_property"    , "stream" ,  
-            "Set value of an enviroment property associated to a stream operation ( defined with add_stream_operation )",
+            "Set value of an enviroment property associated to a stream operation ( see add_stream_operation )",
             "set_stream_operation_property stream_operation_name variable_name value");
         
         add( "unset_stream_operation_property"    , "stream" ,  
-            "Unset value of an enviroment property associated to a stream operation ( defined with add_stream_operation )",
+            "Unset value of an enviroment property associated to a stream operation ( see add_stream_operation )",
             "unset_stream_operation_property stream_operation_name variable_name");
         
         
         add( "add_queue_connection"    , "stream" ,  
-            "Connect a particular queue with a set of queues. All data inserted in the first queue will be redirected to the other ones",
+            "Connect a queue to a set of queues. Data will be automatically redirected to target queues",
             "add_queue_connection source_queue target_queue_1 target_queue_2 ... target_queue_N ");
 
         add( "rm_queue_connection"    , "stream" ,  
@@ -297,7 +297,7 @@ namespace samson
         
         
         add( "connect_to_queue" , "push&pop"  
-            , "Connect to a particular queue to receive live data from SAMSON. Received data will be stored in a local directory called stream_out_<queue>"
+            , "Connect to a  queue to receive live data from SAMSON."
             , "connect_to_queue queue" );
         
         add( "disconnect_from_queue" , "push&pop" ,
@@ -307,7 +307,7 @@ namespace samson
         
         
         add("ls_local_queues", "push&pop", 
-            "Show a list of local queues ( current directory ). These queues have been typically being downloaded with command pop.");
+            "Show a list of local queues ( current directory ).");
         
         add( "show_local_queue" , "push&pop"  ,
             "Show contents of a queue downloaded using pop. Modules should be installed locally",
@@ -341,6 +341,17 @@ namespace samson
             "           remove id                                    : Remove one of the involved workers. The worker id should be provided ( see cluster info )\n"
             "           get_my_id                                    : Get this delilah identifier ( see ls_connections )\n"
             );
+        
+        
+        
+        // Extra description
+        add_description("connect_to_queue", "Received data will be stored in a local directory called stream_out_<queue>");
+        add_description("ls_local_queues", "These queues have been typically being downloaded with command pop.");
+
+        add_description( "cancel_stream_operation" ,"This command cancels both"
+                        "\n\toperations executed manually ( see run )"
+                        "\n\toperations executed automatically  ( see add_stream_operation )");
+        
     }
     
     void DelilahCommandCatalogue::add(
@@ -372,30 +383,26 @@ namespace samson
         commands.push_back(command);
     }
     
+    
     std::string DelilahCommandCatalogue::getCommandsTable( std::string category )
     {
-        au::StringVector columns = au::StringVector("Command"  , "Description" );
-        au::tables::Table *table = new au::tables::Table( columns );
+        au::StringVector columns = au::StringVector("Command"  , "Category,left" , "Description,left" );
+        au::tables::Table table( columns );
         
         for( size_t i = 0 ; i < commands.size() ; i++ )
         {
             if( category == "" || (commands[i].category == category ) )
-                table->addRow(au::StringVector( commands[i].name , commands[i].short_description ));
+                table.addRow( au::StringVector( commands[i].name , commands[i].category ,  commands[i].short_description ) );
         }
-        
+
         // Print the table
-        au::tables::SelectTableInformation select_table_information;
-        select_table_information.addColumn("Command");
-        select_table_information.addColumn("Description,left");
         
         if( category == "" )
-            select_table_information.title = "All commands";
+            table.setTitle( "All commands" );
         else
-            select_table_information.title = au::str( "Commands of category %s" , category.c_str() );
+            table.setTitle( au::str( "Commands of category %s" , category.c_str() ) );
         
-        std::string output = table->str(&select_table_information);
-        delete table;
-        return output;
+        return table.str();
     }
     
     
@@ -407,21 +414,45 @@ namespace samson
                 std::ostringstream output;
                 
                 output << au::lineInConsole('-') << "\n";
-                output << name << "    ( " << commands[i].category  <<  " )\n";
+                output << au::str( au::purple , " COMMAND %s       ( %s )" , name.c_str() , commands[i].category.c_str() );
+                output << "\n";
                 output << au::lineInConsole('-') << "\n";
                 output << "\n";
-                output << "DESCRIPTION:  " << commands[i].short_description << "\n";
+                output << au::str( au::purple , "DESCRIPTION:  " ) << commands[i].short_description << "\n";
+                if( commands[i].description != "" )
+                {
+                    output << au::str_indent( commands[i].description , 14 );
+                    output << "\n";
+                }
+                
                 
                 if( commands[i].usage != "" )
-                    output << "USAGE:        " << commands[i].usage << "\n";
+                {
+                    output << au::str( au::purple , "USAGE: ") << "\n";
+                    output << au::str_indent( commands[i].usage , 14 );
+                    output << "\n";
+                }
                 
-                output << "\n";
-                output << au::str_indent( commands[i].description );
-                output << "\n";
                 output << au::lineInConsole('-') << "\n";
                 
                 return output.str();
             }
+        
+        
+        // Check if it is a category...
+        if( isValidCategory( name ) )
+            return getCommandsTable( name );
+        
+        // Show list of categories
+        if( name == "categories" )
+        {
+            au::StringVector cats = getCategories();
+            std::ostringstream output;
+            output << "\nCategories:\n\n";
+            for ( size_t i = 0 ; i < cats.size() ; i++ )
+                output << "\tCategory " << cats[i] << "\n";
+            return output.str();
+        }
         
         return au::str( "Unknown command %s\n" , name.c_str() );
     }
@@ -445,5 +476,14 @@ namespace samson
                 return true;
         return  false;
     }
+
+    bool DelilahCommandCatalogue::isValidCategory( std::string category )
+    {
+        for ( size_t i = 0 ; i < commands.size() ; i++ )
+            if( commands[i].category == category )
+                return true;
+        return  false;
+    }
+    
 
 }

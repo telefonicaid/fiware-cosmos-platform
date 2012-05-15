@@ -21,8 +21,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * InjectionServer connects an SFTP client to an HDFS filesystem
+ * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
+ * @since  03/05/12
  */
 public class InjectionServer {
     private Configuration conf;

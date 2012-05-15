@@ -8,8 +8,11 @@ import org.apache.sshd.server.FileSystemFactory;
 import org.apache.sshd.server.FileSystemView;
 
 /**
+ * HadoopFileSystemFactory
+ * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
+ * @since  04/05/12
  */
 public class HadoopFileSystemFactory implements FileSystemFactory {
     private Configuration configuration;

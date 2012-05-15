@@ -1,12 +1,13 @@
 package es.tid.cosmos.platform.injection.server;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
+import java.io.StringWriter;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.sshd.server.SshFile;
 import org.junit.After;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -19,33 +20,19 @@ import org.slf4j.LoggerFactory;
  */
 public class HadoopSshFileTest {
     private Logger LOG = LoggerFactory.getLogger(HadoopSshFileTest.class);
-    private Path foo;
-    private Path dir;
     private HadoopSshFile hfoo;
     private HadoopSshFile hdir;
+    private String user01 = "user01";
     private Configuration configuration;
-    private String userName = "test";
-    private FileSystem hadoopFS;
 
     @Before
     public void setUp() {
         this.configuration = new Configuration();
+        String foodir = "/tmp/user01";
+        String foofile = "/tmp/user01/file01";
         try {
-            this.hadoopFS = FileSystem.get(URI.create(
-                    this.configuration.get("fs.default.name")), this.configuration,
-                    this.userName);
-        } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
-        } catch (InterruptedException e) {
-            LOG.error(e.getMessage(), e);
-        }
-        this.dir = new Path("/tmp/user01");
-        this.foo = new Path("/tmp/user01/file01");
-        try {
-            this.hfoo = new HadoopSshFile("/tmp/user01/file01",
-                    "user01", this.configuration);
-            this.hdir = new HadoopSshFile("/tmp/user01/",
-                    "user01", this.configuration);
+            this.hfoo = new HadoopSshFile(foofile, this.user01, configuration);
+            this.hdir = new HadoopSshFile(foodir, this.user01, configuration);
         } catch (IOException e) {
             LOG.error(e.getMessage());
         } catch (InterruptedException e) {
@@ -89,19 +76,20 @@ public class HadoopSshFileTest {
 
     @Test
     public void testIsReadable() throws Exception {
-        // TODO: implement testIsReadable
+        this.hfoo.create();
+        assertTrue(this.hfoo.isReadable());
     }
 
     @Test
     public void testIsFile() throws Exception {
-        //exception.expect(FileNotFoundException.class);
-        // TODO: do not catch exception or check stack trace
-        this.hfoo.isFile();
+        this.hfoo.create();
+        assertTrue(this.hfoo.isFile());
     }
 
     @Test
     public void testIsWritable() throws Exception {
-        // TODO: testIsWritable
+        this.hfoo.create();
+        assertTrue(this.hfoo.isWritable());
     }
 
     @Test
@@ -112,22 +100,30 @@ public class HadoopSshFileTest {
 
     @Test
     public void testIsRemovable() throws Exception {
-        // TODO: testIsRemovable
+        this.hfoo.create();
+        assertTrue(this.hfoo.isRemovable());
     }
 
     @Test
     public void testGetParentFile() throws Exception {
-        // TODO: testGetParentFile
+        this.hfoo.create();
+        assertTrue(this.hfoo.getParentFile().toString()
+                .startsWith("es.tid.cosmos.platform.injection" +
+                        ".server.HadoopSshFile@"));
     }
 
     @Test
     public void testGetLastModified() throws Exception {
-        // TODO: testGetLastModified
+        long modificationTime = this.hfoo.getLastModified();
+        assertEquals(0, modificationTime);
     }
 
     @Test
     public void testSetLastModified() throws Exception {
-        // TODO: testSetLastModified
+        this.hfoo.create();
+        long fixedTime = System.currentTimeMillis();
+        this.hfoo.setLastModified(fixedTime);
+        assertEquals(fixedTime, this.hfoo.getLastModified());
     }
 
     @Test
@@ -141,21 +137,23 @@ public class HadoopSshFileTest {
 
     @Test
     public void testMkdir() throws Exception {
-        // TODO: do not catch exception or check stack trace
-        this.hdir.mkdir();
+        boolean success = this.hdir.mkdir();
+        assertTrue(success);
     }
 
     @Test
     public void testDelete() throws Exception {
         this.hfoo.create();
         assertTrue(this.hfoo.doesExist());
-        this.hfoo.delete();
+        boolean success = this.hfoo.delete();
+        assertTrue(success);
         assertFalse(this.hfoo.doesExist());
     }
 
     @Test
     public void testCreate() throws Exception {
-        this.hfoo.create();
+        boolean success = this.hfoo.create();
+        assertTrue(success);
         assertTrue(this.hfoo.doesExist());
     }
 
@@ -172,26 +170,50 @@ public class HadoopSshFileTest {
 
     @Test
     public void testMove() throws Exception {
-        // TODO: testMove
+        String newsubdir = "/tmp/user01/new/file01";
+        HadoopSshFile newfoo = new HadoopSshFile(newsubdir, this.user01,
+                this.configuration);
+        this.hfoo.create();
+        assertFalse(newfoo.doesExist());
+        this.hfoo.move(newfoo);
+        assertTrue(newfoo.doesExist());
     }
 
     @Test
     public void testListSshFiles() throws Exception {
-        // TODO: testListSshFiles
+        this.hfoo.create();
+        List<SshFile> fileList = this.hdir.listSshFiles();
+        assertEquals(1, fileList.size());
+        SshFile found = fileList.get(0);
+        assertEquals(this.hfoo.getAbsolutePath(), found.getAbsolutePath());
     }
 
     @Test
     public void testCreateOutputStream() throws Exception {
-        // TODO: testCreateOutputStream
+        this.hfoo.create();
+        OutputStream ostream = this.hfoo.createOutputStream(0);
+        ostream.write("Hello world".getBytes());
+        ostream.close();
+        assertEquals(11, this.hfoo.getSize());
     }
 
     @Test
     public void testCreateInputStream() throws Exception {
-        // TODO: testCreateInputStream
-    }
+        this.hfoo.create();
+        InputStream istream = this.hfoo.createInputStream(0);
+        int read = istream.read();
+        istream.close();
+        assertEquals(-1, read);
 
-    @Test
-    public void testHandleClose() throws Exception {
-        // TODO: testHandleClose
+        OutputStream outputStream = this.hfoo.createOutputStream(0);
+        outputStream.write("Hello world".getBytes());
+        outputStream.close();
+        InputStream inputStream = this.hfoo.createInputStream(0);
+        StringWriter writer = new StringWriter();
+        for (int byte_read = 0; byte_read != -1;
+             byte_read = inputStream.read()) {
+            writer.write(byte_read);
+        }
+        assertEquals("Hello world", writer.toString());
     }
 }

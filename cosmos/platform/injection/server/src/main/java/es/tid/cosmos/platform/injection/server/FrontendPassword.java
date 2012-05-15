@@ -2,12 +2,7 @@ package es.tid.cosmos.platform.injection.server;
 
 import java.sql.*;
 import java.util.StringTokenizer;
-import javax.security.auth.login.Configuration;
-import javax.security.auth.login.LoginContext;
-import javax.security.auth.login.LoginException;
 
-import com.sun.security.auth.callback.TextCallbackHandler;
-import com.sun.security.auth.login.ConfigFile;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
@@ -17,7 +12,6 @@ import org.slf4j.LoggerFactory;
 /**
  * FrontendPassword
  * see COPYRIGHT or LICENSE for terms of use
- *
  * @author logc
  * @since 08/05/12
  */
@@ -35,6 +29,7 @@ public class FrontendPassword implements PasswordAuthenticator {
                                 String password, ServerSession session) {
         LOG.info(String.format("received %s as username, %s as password",
                 username, password));
+        boolean ans = false;
         try {
             this.connect(this.frontendDbUrl, this.dbName, this.dbUserName,
                     this.dbPassword);
@@ -54,36 +49,39 @@ public class FrontendPassword implements PasswordAuthenticator {
                 hash = algorithmSaltHash.nextToken();
             }
             if (algorithm.equals("sha1")) {
-                return hash.equals(DigestUtils.shaHex(salt + password));
-            } else if (algorithm.equals("md5")) {
-                return hash.equals(DigestUtils.md5Hex(salt + password));
+                ans = hash.equals(DigestUtils.shaHex(salt + password));
+            }
+            if (algorithm.equals("md5")) {
+                ans = hash.equals(DigestUtils.md5Hex(salt + password));
             }
         } catch (SQLException e) {
             LOG.error(e.getMessage(), e);
             return false;
         }
-        return false;
+        return ans;
     }
 
     /**
      * connect to the platform frontend database with the configured
      * credentials
-     *
      * @param url
      * @param dbName
      * @param userName
      * @param password
      */
     private void connect(String url, String dbName, String userName,
-                         String password) {
+                         String password) throws SQLException {
+        if (url == null) {
+            throw new SQLException("no database URL set up");
+        }
         try {
             String driver = "org.sqlite.JDBC";
             if (url.contains("mysql")) {
                 driver = "com.mysql.jdbc.Driver";
             }
             Class.forName(driver).newInstance();
-            this.connection = DriverManager.getConnection(url+dbName, userName,
-                    password);
+            this.connection = DriverManager
+                              .getConnection(url+dbName, userName, password);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }
@@ -92,7 +90,6 @@ public class FrontendPassword implements PasswordAuthenticator {
     /**
      * set all instance variables required to connect to the platform frontend
      * database
-     *
      * @param url
      * @param dbName
      * @param userName
@@ -104,5 +101,21 @@ public class FrontendPassword implements PasswordAuthenticator {
         this.dbName = dbName;
         this.dbUserName = userName;
         this.dbPassword = password;
+    }
+
+    public String getFrontendDbUrl() {
+        return this.frontendDbUrl;
+    }
+
+    public String getDbName() {
+        return this.dbName;
+    }
+
+    public String getDbUserName() {
+        return this.dbUserName;
+    }
+
+    public String getDbPassword() {
+        return this.dbPassword;
     }
 }

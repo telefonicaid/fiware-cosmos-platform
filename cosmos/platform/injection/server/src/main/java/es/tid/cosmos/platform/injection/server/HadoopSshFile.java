@@ -14,7 +14,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.security.AccessControlException;
-import org.apache.sshd.common.util.SelectorUtils;
 import org.apache.sshd.server.SshFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,12 +33,6 @@ public class HadoopSshFile implements SshFile {
     protected HadoopSshFile(final String fileName, final String userName,
                             Configuration configuration)
             throws IOException, InterruptedException {
-        if (fileName.isEmpty()) {
-            throw new IllegalArgumentException("fileName cannot be empty");
-        } else if (!fileName.startsWith(Path.SEPARATOR)) {
-            SelectorUtils.normalizePath(this.hadoopPath.toString(),
-                    Path.SEPARATOR);
-        }
         this.userName = userName;
         this.configuration = configuration;
         this.hadoopPath = new Path(fileName);
@@ -49,12 +42,7 @@ public class HadoopSshFile implements SshFile {
 
     @Override
     public String getAbsolutePath() {
-        String fullName = this.hadoopPath.toString();
-        if (fullName.length() != 1 &&
-                (fullName.endsWith("/"))) {
-            fullName = fullName.substring(0, fullName.length() - 1);
-        }
-        return fullName;
+        return this.hadoopPath.toString();
     }
 
     @Override
@@ -98,7 +86,7 @@ public class HadoopSshFile implements SshFile {
         try {
             String pathOwner = this.hadoopFS.getFileStatus(this.hadoopPath)
                     .getOwner();
-            boolean ans = false;
+            boolean ans;
             if (pathOwner.equals(this.userName)) {
                 ans = this.hadoopFS.getFileStatus(this.hadoopPath).getPermission()
                         .getUserAction().implies(queriedFsAction);
@@ -178,7 +166,9 @@ public class HadoopSshFile implements SshFile {
     @Override
     public boolean setLastModified(long time) {
         try {
-            this.hadoopFS.setTimes(this.hadoopPath, time, System.currentTimeMillis());
+            /* Filesystem.setTimes(path, modification time, access time) */
+            this.hadoopFS.setTimes(this.hadoopPath, time,
+                    System.currentTimeMillis());
             return true;
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
@@ -204,12 +194,10 @@ public class HadoopSshFile implements SshFile {
 
     @Override
     public boolean mkdir() {
-        if (!this.doesExist() && this.isDirectory()) {
-            try {
-                return this.hadoopFS.mkdirs(this.hadoopPath);
-            } catch (IOException e) {
-                LOG.error(e.getMessage(), e);
-            }
+        try {
+            return this.hadoopFS.mkdirs(this.hadoopPath);
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
         }
         return false;
     }
@@ -249,20 +237,13 @@ public class HadoopSshFile implements SshFile {
     @Override
     public List<SshFile> listSshFiles() {
         LOG.info(String.format("listing files at %s", this.getAbsolutePath()));
-        if (!this.isReadable()){
-            throw new InjectionUnathorizedPathException(String.format(
-                    "User %s not authorized to list directory %s",
-                    this.userName, this.getAbsolutePath()));
-        }
-        LOG.info("got here");
         try {
             FileStatus[] fileStatuses = this.hadoopFS.listStatus(this.hadoopPath);
             SshFile[] ans = new SshFile[fileStatuses.length];
             int i = 0;
             for (FileStatus fileStatus : fileStatuses) {
                 String fileName = fileStatus.getPath().getName();
-                String fileOwner = fileStatus.getOwner();
-                ans[i] = new HadoopSshFile(this.joinPath(fileName),
+                ans[i] = new HadoopSshFile(this.joinToThisPath(fileName),
                         this.userName, this.configuration);
                 i++;
             }
@@ -289,7 +270,7 @@ public class HadoopSshFile implements SshFile {
         return null;
     }
 
-    private String joinPath(String fileName) {
+    private String joinToThisPath(String fileName) {
         String absPath = this.getAbsolutePath();
         return ((absPath.endsWith(
                  Path.SEPARATOR)) ? absPath

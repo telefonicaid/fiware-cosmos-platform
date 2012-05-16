@@ -3,8 +3,11 @@
 
 /* ****************************************************************************
 *
-* FILE                  Attribute.h 
+* FILE                     Attribute.h - 
 *
+* AUTHOR                   Ken Zangelin
+*
+* CREATION DATE            May 15 2012
 *
 *
 *
@@ -13,7 +16,6 @@
 #include <vector>
 
 #include "Metadata.h"
-#include "Entity.h"
 
 using namespace std;
 
@@ -35,18 +37,26 @@ typedef enum AttributeType
 
 /* ****************************************************************************
 *
+* Forward declarations
+*/
+struct Entity;
+
+
+
+/* ****************************************************************************
+*
 * Attribute - 
 */
 typedef struct Attribute
 {
     std::string        name;
-	std::string        value;
-    bool               isDomain;
     std::string        type;
-	std::string        ID;     // From metadata ...
+	std::string        value;
+	std::string        metaID;     // From metadata named 'ID' ...
+    bool               isDomain;
 	vector<Metadata*>  metadataV;
 	struct Attribute*  next;
-	Entity*            entityP;
+	struct Entity*     entityP;
 } Attribute;
 
 

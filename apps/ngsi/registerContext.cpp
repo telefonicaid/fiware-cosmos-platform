@@ -1,10 +1,13 @@
-#include <string>
-#include <libxml/tree.h>
+#include <sstream>                          // std::ostringstream
+#include <string>                           // std::stream
+
+#include <libxml/tree.h>                    // XML library
 
 #include "logMsg/logMsg.h"                  // LM_*
 
 #include "traceLevels.h"                    // Trace levels for log msg library
 #include "globals.h"                        // TF
+#include "database.h"                       // dbRegistrationAdd
 #include "ws.h"                             // whitespace functions
 #include "Format.h"                         // Format
 #include "Verb.h"                           // Verb
@@ -12,6 +15,8 @@
 #include "httpData.h"                       // httpDataLines, httpData
 #include "duration.h"                       // durationStringToSeconds
 #include "RegisterContextRequest.h"         // RegisterContextRequest
+#include "Attribute.h"                      // Attribute
+#include "Registration.h"                   // Registration, registrationIdGet, ...
 #include "registerContext.h"                // Own interface
 
 using namespace std;
@@ -22,9 +27,76 @@ using namespace std;
 *
 * Globals
 */
-static int          entityIdIx  = -1;
-static int          cralMetaIx  = -1;
-static int          rMetaIx     = -1;
+static int          entityIdIx         = -1;
+static int          cralMetaIx         = -1;
+static int          rMetaIx            = -1;
+static std::string  lastRegistrationId = "";
+
+
+
+/* ****************************************************************************
+*
+* registerContextResponse - 
+*/
+static bool registerContextResponse(int fd, Format format, int httpCode = 200, const char* duration = NULL, int errorCode = 0, const char* errorString = NULL, const char* errorDetails = NULL)
+{
+	std::ostringstream  output;
+
+	//
+	// Start of XML 
+	//
+	output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+    output << "<registerContextResponse>";
+
+	//
+	// duration
+	//
+    if (duration != NULL)
+		output << "<duration>" << duration << "</duration>";
+
+
+	//
+	// registrationId
+	//
+	if (lastRegistrationId == "")
+	{
+		LM_E(("Error - NULL registrationId - using 43 as substitute ..."));
+		lastRegistrationId = "43";
+	}
+	output << "<registrationId>" << lastRegistrationId << "</registrationId>";
+	lastRegistrationId = "";
+
+
+	//
+	// errorCode
+	//
+	if (errorCode != 0)
+	{
+		output << "<errorCode>";
+
+		output << "<code>"         << errorCode    << "</code>";
+		output << "<reasonPhrase>" << errorString  << "</reasonPhrase>";
+
+		if (errorDetails != NULL)
+			output << "<details>"      << errorDetails << "</details>";
+
+		output << "</errorCode>";
+	}
+
+
+
+	//
+	// End of XML
+	//
+	output << "</registerContextResponse>";
+
+
+
+	//
+	// Now send it
+	//
+	return restReplySend(fd, format, httpCode, output.str().c_str());
+}
 
 
 
@@ -86,8 +158,10 @@ static void registerContextRequestNode(RegisterContextRequest* rcReqP, xmlNodePt
     else if (path == "registerContextRequest.duration")
        rcReqP->duration = content;
     else if (path == "registerContextRequest.registrationId")
-       rcReqP->registrationId = content;
-
+    {
+		rcReqP->registrationId = content;
+		lastRegistrationId     = content;
+	}
 
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.entityIdList.entityId")
     {
@@ -96,7 +170,7 @@ static void registerContextRequestNode(RegisterContextRequest* rcReqP, xmlNodePt
     }
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.metaData.contextMetadata")
     {
-       rcReqP->attributeList.attribute[0]->metadataV.push_back(new Metadata());
+       rcReqP->attributeList.attributeV[0]->metadataV.push_back(new Metadata());
        ++cralMetaIx;
     }
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.registrationMetaData.contextMetadata")
@@ -121,7 +195,8 @@ static RegisterContextRequest* registerContextRequest(RegisterContextRequest* rc
 {
     xmlNodePtr firstChild;
 
-	rcReqP->attributeList.attributeV.push_back(new ContextRegistrationAttribute());
+	rcReqP->attributeList.attributeV.push_back(new Attribute());
+
     while (nodeP)
     {
         registerContextRequestNode(rcReqP, nodeP, level);
@@ -171,7 +246,7 @@ static RegisterContextRequest* registerContextRequestParse(xmlNodePtr nodeP)
 * nothing is done and an error is flagged
 * 
 */
-static bool registerContextRequestTreat(RegisterContextRequest* rcrP)
+static bool registerContextRequestTreat(int fd, Format format, RegisterContextRequest* rcrP)
 {
 	unsigned int  ix;
 	std::string   registrationId;
@@ -182,10 +257,16 @@ static bool registerContextRequestTreat(RegisterContextRequest* rcrP)
 	{
 		char s[64];
 		
-		registrationId = std::string(registrationIdGet(s, sizeof(s)));
+		registrationId     = std::string(registrationIdGet(s, sizeof(s)));
+		if (dbRegistrationAdd(registrationId) != 0)
+			LM_RE(false, ("error adding a Registration to database"));
+
+		lastRegistrationId = registrationId;
 	}
 	else
 	{
+		Registration* registrationP;
+
 		LM_M(("Got a registerContextRequest with a registrationId - treat like update ..."));
 		isUpdate       = true;
 		registrationId = rcrP->registrationId;
@@ -193,7 +274,7 @@ static bool registerContextRequestTreat(RegisterContextRequest* rcrP)
 		registrationP = registrationLookup(registrationId);
 		if (registrationP == NULL)
 		{
-			restReply(fd, format, 474, "error", "registration id not found");
+			registerContextResponse(fd, format, 474, NULL, 474, "registration id not found", NULL);
 			return true;
 		}
 	}
@@ -216,13 +297,14 @@ static bool registerContextRequestTreat(RegisterContextRequest* rcrP)
 			if ((entityP = entityLookup(rcrP->entityV[ix]->id, rcrP->entityV[ix]->type)) == NULL)
 			{
 				restReply(fd, format, 404, "error", "entity not found");
-				LM_RE(true, ("Cannot find entity with id '%s and type '%s'", rcrP->entityV[ix]->id, rcrP->entityV[ix]->type));
+				LM_RE(true, ("Cannot find entity with id '%s and type '%s'", rcrP->entityV[ix]->id.c_str(), rcrP->entityV[ix]->type.c_str()));
 			}
 
 			if (entityP->registrationId != registrationId)
 			{
 				restReply(fd, format, 404, "error", "bad registration id");
-				LM_RE(true, ("Entity with id '%s and type '%s' has registration id '%s'. Incoming registration id was: '%s'", entityP->id.c_str(), entityP->type.c_str(), entityP->registrationId.c_str(), registrationId.c_str()));
+				LM_RE(true, ("Entity with id '%s and type '%s' has registration id '%s'. Incoming registration id was: '%s'",
+							 entityP->id.c_str(), entityP->type.c_str(), entityP->registrationId.c_str(), registrationId.c_str()));
 			}
 		}
 	}
@@ -238,7 +320,7 @@ static bool registerContextRequestTreat(RegisterContextRequest* rcrP)
 			if (entityLookup(rcrP->entityV[ix]->id, rcrP->entityV[ix]->type) != NULL)
 			{
 				restReply(fd, format, 404, "error", "entity already exists and no registration id supplied");
-				LM_RE(true, ("entity with id '%s and type '%s' does already exist", rcrP->entityV[ix]->id, rcrP->entityV[ix]->type));
+				LM_RE(true, ("entity with id '%s and type '%s' does already exist", rcrP->entityV[ix]->id.c_str(), rcrP->entityV[ix]->type.c_str()));
 			}
 		}
 	}
@@ -262,7 +344,7 @@ static bool registerContextRequestTreat(RegisterContextRequest* rcrP)
 	//
 	registrationAdd(registrationId, rcrP->registrationMetadataV);
 
-	restReply(fd, format, 200, "status", "OK");
+	registerContextResponse(fd, format);
 	return true;
 }
 
@@ -342,7 +424,7 @@ static bool registerContextXmlDataParse(int fd, Format format, std::string buf)
 		rcrP = registerContextRequestParse(node);
 		if (rcrP != NULL)
 		{
-			if (registerContextRequestTreat(rcrP) != true)  // if OK, responds to REST request
+			if (registerContextRequestTreat(fd, format, rcrP) != true)  // if OK, responds to REST request
 			{
 				restReply(fd, format, 500, "status", "XML data treat error");
 				ret = false;

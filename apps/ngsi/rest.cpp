@@ -6,8 +6,8 @@
 *
 *
 */
-#include <sstream>
-#include <string>
+#include <sstream>                          // std::ostringstream
+#include <string>                           // std::stream
 
 #include "logMsg/logMsg.h"                  // LM_*
 
@@ -69,7 +69,7 @@ static void componentsPresent(int components, std::string* component)
 *
 * restReplySend - 
 */
-static bool restReplySend(int fd, std::string data, int httpCode, Format format)
+bool restReplySend(int fd, Format format, int httpCode, std::string data)
 {
     int                 dataLen = strlen(data.c_str());
     std::ostringstream  header;
@@ -141,7 +141,7 @@ bool restReply(int fd, Format format, int httpCode, const char* key, const char*
     else
         data << "<ngsi><key>" << key << "</key>" << "<value>" << value << "</value></ngsi>";
 
-    return restReplySend(fd, data.str(), httpCode, format);
+    return restReplySend(fd, format, httpCode, data.str());
 }
 
 

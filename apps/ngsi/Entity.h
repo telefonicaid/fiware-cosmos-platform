@@ -12,6 +12,7 @@
 #include <string>
 
 #include "Format.h"
+#include "ContextRegistrationAttributeList.h"
 
 using namespace std;
 
@@ -37,9 +38,32 @@ typedef struct Entity
 
 /* ****************************************************************************
 *
-* entity functions
+* entityInit - 
 */
 extern void    entityInit(void);
-extern Entity* entityAdd(std::string id, std::string type, bool isPattern, std::string providingApplication, int duration, std::string registrationId);
+
+
+
+/* ****************************************************************************
+*
+* entityAdd - 
+*/
+extern Entity* entityAdd(std::string id, std::string type, bool isPattern, std::string providingApplication, int duration, std::string registrationId, ContextRegistrationAttributeList* attributeList);
+
+
+
+/* ****************************************************************************
+*
+* entityUpdate - 
+*/
+extern Entity* entityUpdate(std::string id, std::string type, bool isPattern, std::string providingApplication, int duration, std::string registrationId, ContextRegistrationAttributeList* attributeList);
+
+
+
+/* ****************************************************************************
+*
+* entityLookup -
+*/
+extern Entity* entityLookup(std::string id, std::string type);
 
 #endif

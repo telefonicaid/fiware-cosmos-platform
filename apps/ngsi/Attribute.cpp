@@ -1,7 +1,10 @@
 /* ****************************************************************************
 *
-*  FILE                 Attribute.cpp -  
+*  FILE                    Attribute.cpp -  
 *
+* AUTHOR                   Ken Zangelin
+*
+* CREATION DATE            May 15 2012
 *
 *
 *

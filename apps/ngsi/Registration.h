@@ -10,6 +10,7 @@
 *
 */
 #include <string>
+#include <vector>
 
 #include "Format.h"                         // Format
 #include "Metadata.h"                       // Metadata
@@ -41,10 +42,24 @@ extern char* registrationIdGet(char* s, int sLen);
 
 /* ****************************************************************************
 *
+* registrationAdd - 
+*/
+extern Registration* registrationAdd(std::string registrationId, vector<Metadata*> metadataV);
+
+
+
+/* ****************************************************************************
+*
 * registrationUpdate - 
 */
 extern Registration* registrationUpdate(std::string registrationId, vector<Metadata*> V);
 
 
+
+/* ****************************************************************************
+*
+* registrationLookup -
+*/
+extern Registration* registrationLookup(std::string id);
 
 #endif

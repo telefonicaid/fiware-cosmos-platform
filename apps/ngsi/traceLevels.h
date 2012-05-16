@@ -23,7 +23,8 @@ typedef enum TraceLevels
 	LmtHttpDataSeparate,
 	LmtEntity,
 	LmtRegisterContext,
-	LmtDuration
+	LmtDuration,
+	LmtRegistration
 } TraceLevels;
 
 #endif

@@ -15,6 +15,7 @@ SET (SOURCES
 	versionRequest.cpp
 	Registration.cpp
 	Attribute.cpp
+	database.cpp
 )
 
 SET (HEADERS
@@ -25,6 +26,13 @@ SET( STATIC_LIBS
      pa
 	 json
 	 xml2
+	 mysqlclient
+	 z
+	 crypt
+	 nsl
+	 m
+	 ssl3
+	 crypto++
 )
 
 # Include directories
@@ -34,7 +42,7 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 include_directories("/usr/local/include/json")
 include_directories("/usr/include/json")
 include_directories("/usr/include/libxml2")
-
+include_directories("/usr/include/mysql")
 
 # Executable declaration
 # ------------------------------------------------------------

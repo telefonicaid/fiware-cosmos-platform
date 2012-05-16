@@ -35,8 +35,8 @@ static Registration*   registrationNext  = NULL;
 */
 void registrationInit(void)
 {
-	registrationV  = NULL;
-	entities = 0;
+	registrationV   = NULL;
+	registrationNo  = 1;
 }
 
 
@@ -63,7 +63,7 @@ static void registrationAppend(Registration* registration)
 *
 * registrationLookup -
 */
-static Registration* registrationLookup(std::string id)
+Registration* registrationLookup(std::string id)
 {
 	Registration* registrationP = registrationV;
 
@@ -88,9 +88,13 @@ char* registrationIdGet(char* s, int sLen)
 {
 	time_t now = time(NULL);
 	
-	snprintf(s, sLen, "%dT%d", now, registrationNo);
+	snprintf(s, sLen, "%dT%03d", (int) now, registrationNo);
 	++registrationNo;
+	
+	if (registrationNo >= 1000)
+	    registrationNo = 1;
 
+	LM_M(("registrationId: '%s'", s));
 	return s;
 }
 
@@ -120,6 +124,7 @@ Registration* registrationUpdate(std::string registrationId, vector<Metadata*> m
 */
 Registration* registrationAdd(std::string registrationId, vector<Metadata*> metadataV)
 {
+	unsigned int  ix;
 	Registration* regP;
 
 	regP = registrationLookup(registrationId);
@@ -130,30 +135,10 @@ Registration* registrationAdd(std::string registrationId, vector<Metadata*> meta
 
 	regP->id = registrationId;
 
-	for (int ix = 0; ix < attributeV.size(); ix++)
-		regP->attributeV.push_back(attributeV[ix]);
+	for (ix = 0; ix < metadataV.size(); ix++)
+		regP->metadataV.push_back(metadataV[ix]);
 
 	registrationAppend(regP);
 
-	return regP:
-}
-
-
-
-/* ****************************************************************************
-*
-* registrationLookup - 
-*/
-Registration* registrationLookup(std::string registrationId)
-{
-}
-
-
-
-/* ****************************************************************************
-*
-* registrationLookup - 
-*/
-Registration* registrationLookup(std::string registrationId)
-{
+	return regP;
 }

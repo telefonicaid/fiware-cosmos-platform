@@ -31,6 +31,14 @@ extern bool restReply(int fd, Format format, int httpCode, const char* key, cons
 
 /* ****************************************************************************
 *
+* restReplySend - 
+*/
+extern bool restReplySend(int fd, Format format, int httpCode, std::string data);
+
+
+
+/* ****************************************************************************
+*
 * restServe - 
 */
 extern int restServe(int fd);

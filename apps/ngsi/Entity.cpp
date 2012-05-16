@@ -6,20 +6,20 @@
 *
 *
 */
-#include <string.h>                            // strcmp, ...
-#include <string>                              // std::string
-#include <stdlib.h>                            // malloc
-#include <errno.h>                             // errno
+#include <string.h>                             // strcmp, ...
+#include <string>                               // std::string
+#include <stdlib.h>                             // malloc
+#include <errno.h>                              // errno
 
-#include "logMsg/logMsg.h"                     // LM_*
+#include "logMsg/logMsg.h"                      // LM_*
 
-#include "traceLevels.h"                       // Trace levels for log msg library
-#include "jsonParse.h"                         // JSON parsing function
-#include "httpData.h"                          // httpData
-#include "rest.h"                              // restReply
-#include "Attribute.h"                         // Attribute
-#include "ContextRegistrationAttributeList.h"  // ContextRegistrationAttributeList
-#include "Entity.h"                            // Own interface
+#include "traceLevels.h"                        // Trace levels for log msg library
+#include "jsonParse.h"                          // JSON parsing function
+#include "httpData.h"                           // httpData
+#include "rest.h"                               // restReply
+#include "Attribute.h"                          // Attribute
+#include "ContextRegistrationAttributeList.h"   // ContextRegistrationAttributeList
+#include "Entity.h"                             // Own interface
 
 using namespace std;
 
@@ -50,7 +50,7 @@ void entityInit(void)
 *
 * entityLookup -
 */
-static Entity* entityLookup(std::string id, std::string type)
+Entity* entityLookup(std::string id, std::string type)
 {
 	Entity* entityP = entityV;
 
@@ -186,7 +186,7 @@ Entity* entityUpdate(std::string id, std::string type, bool isPattern, std::stri
 		Attribute* attribute;
 
 		aP        = attributeList->attributeV[ix];
-		attribute = attributeLookup(aP->name, aP->type, aP->ID);
+		attribute = attributeLookup(aP->name, aP->type, aP->metaID);
 
 		attributeAdd(entityP, attributeList->attributeV[ix]);
 	}

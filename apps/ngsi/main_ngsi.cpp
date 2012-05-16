@@ -209,6 +209,7 @@
 #include "logMsg/logMsg.h"                  // LM_*
 
 #include "traceLevels.h"                    // Trace levels for log msg library
+#include "database.h"                       // dbConnect, dbReset
 #include "httpData.h"                       // httpDataParse
 #include "Attribute.h"                      // Attribute
 #include "Verb.h"                           // Verb
@@ -235,6 +236,7 @@ std::string version = "0.0.1";
 */
 int             port;
 bool            fg;
+bool            reset;
 
 
 
@@ -246,6 +248,7 @@ PaArgument paArgs[] =
 {
     { "-port",      &port,      "PORT",       PaInt,    PaOpt, 1025,     1,      9999,  "port to receive new connections" },
     { "-fg",        &fg,        "FOREGROUND", PaBool,   PaOpt, false,    false,  true,  "don't start as daemon"           },
+    { "-reset",     &reset,     "RESET",      PaBool,   PaOpt, false,    false,  true,  "reset database"                  },
 
     PA_END_OF_ARGS
 };
@@ -263,7 +266,7 @@ void daemonize(void)
 
 	// already daemon
 	if (getppid() == 1)
-		return;
+        return;
 
 	pid = fork();
 	if (pid == -1)
@@ -417,11 +420,13 @@ int main(int argC, const char *argV[])
 {
     int fd;
 
-    paConfig("builtin prefix",                    (void*) "SS_NGSI_");
+    paConfig("builtin prefix",                    (void*) "FW_CM_");
     paConfig("usage and exit on any warning",     (void*) true);
     paConfig("log to screen",                     (void*) true);
+    paConfig("log to file",                       (void*) true);
 
-    paConfig("log file line format",              (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+    paConfig("default value", "-logDir",          (void*) "/tmp");
+    paConfig("log file line format",              (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] FUNC: TEXT");
     paConfig("screen line format",                (void*) "TYPE@TIME  FUNC[LINE]: TEXT");
 
     paParse(paArgs, argC, (char**) argV, 1, false);
@@ -434,6 +439,20 @@ int main(int argC, const char *argV[])
         LM_X(1, ("error opening port %d for connections", port));
 
     LM_F(("Opened port %d for connections", port));
+
+
+	//
+	// databse initialisation
+	//
+	if (dbConnect() != 0)
+		LM_X(1, ("error connecting to database"));
+
+	if (reset == true)
+	{
+		if (dbReset() != 0)
+			LM_X(1, ("error resetting database"));
+	}
+
     run(fd);
 
     return 0;

@@ -18,6 +18,7 @@ from cosmos.forms import RunJobForm
 
 LOGGER = logging.getLogger(__name__)
 TEMP_JAR = "tmp.jar"
+DEFAULT_PAGE = 1
 
 def index(request):
     """List job runs."""
@@ -112,9 +113,14 @@ def show_results(request, job_id):
         paginator = mongo.retrieve_results(job.id, primary_key)
 
         try:
-            page = paginator.page(request.GET.get('page', 1))
+            page_num = request.GET.get('page', DEFAULT_PAGE)
+        except ValueError:
+            page_num = DEFAULT_PAGE
+
+        try:
+            page = paginator.page(page_num)
         except PageNotAnInteger:
-            page = paginator.page(1) # TODO: what is it is an empty page?
+            page = paginator.page(DEFAULT_PAGE)
         except EmptyPage:
             page = paginator.page(paginator.num_pages)
 

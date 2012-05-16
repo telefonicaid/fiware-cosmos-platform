@@ -32,16 +32,17 @@ ${shared.header("Cosmos", section="job_runs")}
     <tbody>
       % for job_run in job_runs:
       <tr>
-        <td>${job_run.start_date | h}</td>
-        <td>${job_run.name | h}</td>
-        <td>${job_run.description | h}</td>
-        <td>${job_run.status() | h}</td>
-	<td>
+        <td class="job-start">${job_run.start_date | h}</td>
+        <td class="job-name">${job_run.name | h}</td>
+        <td class="job-description">${job_run.description | h}</td>
+        <td class="job-status">${job_run.status() | h}</td>
+	<td class="job-actions">
 	    % for i, link in enumerate(job_run.action_links()):
 	    % if i > 0:
 	    |
 	    % endif
             <a href="${ link['href'] }"
+	       class="job-action ${ link['class'] }"
 	       % if link['target'] is not None:
 	       target="${ link['target'] }"
 	       % endif

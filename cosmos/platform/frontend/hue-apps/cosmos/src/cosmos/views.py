@@ -5,7 +5,7 @@ from desktop.lib.django_util import PopupException, render, render_to_string
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.forms.util import ErrorList
-from django.http import Http404, HttpResponse
+from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect
 import jobsub.views as jobsub
 from jobsub.models import Submission
@@ -143,5 +143,4 @@ def view_successful_results(request, job):
         ))
 
     except mongo.NoConnectionError:
-        return HttpResponse(render_to_string("503.html", dict(
-            reason='Database not available')), status=503)
+        raise PopupException('Database not available')

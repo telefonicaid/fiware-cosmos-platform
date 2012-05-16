@@ -73,15 +73,16 @@ class JobRun(models.Model):
         if self.submission is None:
             return []
         links = []
-        if self.submission.last_seen_state in [State.SUCCESS, State.ERROR,
-                                               State.FAILURE]:
+        if self.submission.last_seen_state == State.SUCCESS:
             links.append({
                 'name': 'Results',
+                'class': 'results',
                 'target': None,
                 'href': reverse('show_results', args=[self.id])
             });
         links.append({
             'name': 'Detailed status',
+            'class': 'status',
             'target': 'JobSub',
             'href': self.submission.watch_url()
         });

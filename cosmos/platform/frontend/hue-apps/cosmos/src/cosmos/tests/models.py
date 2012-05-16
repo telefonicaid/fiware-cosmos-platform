@@ -38,11 +38,13 @@ class JobRunTestCase(test.TestCase):
 
     def test_action_links(self):
         self.assert_link_in_states({'name': 'Results',
+                                    'class': 'results',
                                     'target': None,
                                     'href': '/cosmos/job/15/results/'},
-                                   [State.SUCCESS, State.ERROR, State.FAILURE])
+                                   [State.SUCCESS])
 
         self.assert_link_in_states({'name': 'Detailed status',
+                                    'class': 'status',
                                     'target': 'JobSub',
                                     'href': '/jobsub/watch/23'},
                                    [State.SUBMITTED, State.RUNNING, State.SUCCESS,

@@ -391,7 +391,7 @@ namespace samson {
     
     void SamsonWorker::process_delilah_command( std::string delilah_command , au::network::RESTServiceCommand* command )
     {
-        /*
+
         // Create client if not created
         if( !delilah )
         {
@@ -407,7 +407,7 @@ namespace samson {
             
             if( error.isActivated() )
             {
-                data << getFormatedError( au::str("Error connecting rest client (%s)" , error.getMessage().c_str() ) , format );
+                command->appendFormatedError( au::str("Error connecting rest client (%s)" , error.getMessage().c_str() ) );
                 return;
             }
         }
@@ -420,14 +420,14 @@ namespace samson {
                 usleep(10000);
                 if( c.diffTimeInSeconds() > 0.5 )
                 {
-                    data << getFormatedError( "Timeout connecting REST client" , format );
+                    command->appendFormatedError( "Timeout connecting REST client" );
                     return;
                 }
             }
         }
         
         // Sent the command
-        size_t command_id = delilah->sendWorkerCommand( command , NULL );
+        size_t command_id = delilah->sendWorkerCommand( delilah_command , NULL );
         
         // Wait for the command to finish
         {
@@ -435,9 +435,9 @@ namespace samson {
             while( delilah->isActive(command_id) )
             {
                 usleep(10000);
-                if( c.diffTimeInSeconds() > 1 )
+                if( c.diffTimeInSeconds() > 2 )
                 {
-                    data << getFormatedError( au::str( "Timeout waiting response from REST client (task %lu)" , command_id ) , format );
+                    command->appendFormatedError( au::str( "Timeout waiting response from REST client (task %lu)" , command_id ));
                     return;
                 }
             }
@@ -447,7 +447,7 @@ namespace samson {
         WorkerCommandDelilahComponent* component = (WorkerCommandDelilahComponent*) delilah->getComponent( command_id );
         if( !component )
         {
-            data << getFormatedError( "Internal error recovering answer from REST client" , format );
+            command->appendFormatedError( "Internal error recovering answer from REST client" );
             return;
         }
         
@@ -456,24 +456,23 @@ namespace samson {
         
         if( !table )
         {
-            data << getFormatedError( "No content in answer from REST client" , format );
+            command->appendFormatedError( "No content in answer from REST client" );
             return;
         }
         
         std::string output;
         
-        if( format == "xml" )
-            data << table->str_xml();
-        else if( format == "json" )
-            data << table->str_json();
-        else if( format == "html" )
-            data << table->str_html();
+        if( command->format == "xml" )
+            command->append( table->str_xml() );
+        else if( command->format == "json" )
+            command->append( table->str_json() );
+        else if( command->format == "html" )
+            command->append( table->str_html() );
         else
-            data << table->str(); // Default non-format
+            command->append( table->str() ); // Default non-format
         
         delete table;
         
-        */
     }
     
     void SamsonWorker::process_loggin( au::network::RESTServiceCommand* command )
@@ -819,6 +818,12 @@ namespace samson {
 
             return;
         }
+        else if( main_command == "queues" )
+        {
+            process_delilah_command( "ls -group name -sort name" , command );
+            return;
+        }
+        
         else if (main_command == "command" ) /* /samson/command */
         {
             std::string delilah_command = "ls"; // default command

@@ -61,6 +61,6 @@ class ViewSuccessfulResultsTestCase(test.TestCase):
     def test_display_results(self):
         response = self.client.get('/cosmos/job/2/results/?primary_key=word')
         self.assertEquals(response.status_code, 200)
-        results = response.context['job_results']
+        results = response.context['job_results'].object_list
         self.assertEquals(len(results), 2)
         self.assertEquals(results[0].pk, 'word')

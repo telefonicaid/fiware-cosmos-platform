@@ -107,18 +107,13 @@ def show_results(request, job_id):
     if job.submission is None:
         raise Http404
 
-    # TODO: only successful ones
-    return view_successful_results(request, job)
-
-
-def view_successful_results(request, job):
     try:
         primary_key = request.GET.get('primary_key')
         results = mongo.retrieve_results(job.id, primary_key)
         prototype_result = results[0]
         if not primary_key:
             primary_key = prototype_result.pk
-        paginator = Paginator(results, 100)
+        paginator = Paginator(results, conf.RESULTS_PER_PAGE.get())
         page = request.GET.get('page', 1)
         try:
             paginated_results = paginator.page(page)

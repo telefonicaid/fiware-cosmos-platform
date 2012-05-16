@@ -52,8 +52,17 @@ public class FrontEnd {
         this.username = username;
         this.password = password;
         this.environment = env;
-        this.homeUrl = this.environment.getProperty(
-            EnvironmentSetting.FRONTEND_URL);
+        String frontendServer = this.environment.getProperty(
+            EnvironmentSetting.FRONTEND_SERVER);
+        String frontendPort = this.environment.getProperty(
+            EnvironmentSetting.FRONTEND_HTTP_PORT);
+        if(frontendPort.equals("80")) {
+            frontendPort = "";
+        }
+        else {
+            frontendPort = ":" + frontendPort;
+        }
+        this.homeUrl = "http://" + frontendServer + frontendPort;
     }
     
     public String getHomeUrl() {

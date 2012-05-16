@@ -71,8 +71,8 @@ class MongoPaginator(Paginator):
         "Returns a Page object for the given 1-based page number."
         number = self.validate_number(number)
         bottom = (number - 1) * self.per_page
-        records = map(lambda raw: MongoRecord(raw, self.primary_key),
-                      self.object_list.skip(bottom).limit(self.per_page))
+        records = [MongoRecord(document, self.primary_key) for document in
+                   self.object_list.skip(bottom).limit(self.per_page)]
         return Page(records, number, self)
 
 

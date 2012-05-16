@@ -20,14 +20,11 @@ STATE_NAMES = {
     2: 'running',
     3: 'successful',
     4: 'failed',
-    5: 'failed'
+    5: 'failed'   # jobsub model has two failed states that we map to failed
 }
 
 class JobRun(models.Model):
-    """
-    JobRun corresponds with an execution of a given model.
-
-    """
+    """JobRun corresponds with an execution of a given model."""
 
     NAME_MAX_LENGTH = 40
     name = models.CharField(max_length=NAME_MAX_LENGTH)
@@ -60,7 +57,7 @@ class JobRun(models.Model):
 
     def status(self):
         if self.submission is None:
-            return "unsubmitted"
+            return 'unsubmitted'
         else:
             return STATE_NAMES[self.submission.last_seen_state]
 
@@ -68,7 +65,7 @@ class JobRun(models.Model):
         """
         Creates a vector of links to actions related to the job run.
         Each link is a dict of the form:
-            {href: '/path', target: 'HueApp', name: 'name'}
+            {href: '/path', class: 'class', target: 'HueApp', name: 'name'}
         """
         if self.submission is None:
             return []

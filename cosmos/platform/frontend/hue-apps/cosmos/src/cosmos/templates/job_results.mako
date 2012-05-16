@@ -6,10 +6,10 @@ ${shared.header("Cosmos - " + title)}
     <ul class="subnav" data-filters="ArtButtonBar">
 	<li>
 	${ title }
-	% if job_results:
+	% if page:
 	    by
 	    <select id="select-pk" name="select-pk" data-filters="KeySelector">
-		% for key, value in prototype_result.document.items():
+		% for key, value in page.object_list[0].document.items():
 		    % if key not in hidden_keys:
 		    <option
 			    % if key == primary_key:
@@ -28,19 +28,19 @@ ${shared.header("Cosmos - " + title)}
 	<li class="pagination">
 	    <span class="step-links">
 		<span class="current">
-		    Page ${ job_results.number } of
-		    ${ job_results.paginator.num_pages }
+		    Page ${ page.number } of
+		    ${ page.paginator.num_pages }
 		    &nbsp;
 		</span>
-		% if job_results.has_next():
+		% if page.has_next():
 		    <a class="cos-next_page" title="Next page"
 		       id="link-next-results" href="?page=${
-		       job_results.next_page_number() }">next</a>
+		       page.next_page_number() }">next</a>
 		% endif
-		% if job_results.has_previous():
+		% if page.has_previous():
 		    <a class="cos-prev_page" title="Previous page"
 			id="link-prev-results" href="?page=${
-			job_results.previous_page_number() }">previous</a>
+			page.previous_page_number() }">previous</a>
 		% endif
 	    </span>
 	</li>
@@ -48,21 +48,21 @@ ${shared.header("Cosmos - " + title)}
 </div>
 
 <div class="view jframe_padded">
-    % if job_results:
+    % if page:
         <table id="job-results-table" data-filters="VisualizedTable">
             <caption class="jframe-hidden">${ title }</caption>
             <thead>
                 <tr>
-                    <td></td>
-                    % for key, value in prototype_result.get_fields().items():
-                        % if key not in hidden_keys:
+                    <th>${ primary_key } </th>
+                    % for key, value in page.object_list[0].document.items():
+                        % if (key not in hidden_keys) and (key != primary_key):
                             <th>${ key }</th>
                         % endif
                     % endfor
                 </tr>
             </thead>
             <tbody>
-            % for job_result in job_results.object_list:
+            % for job_result in page.object_list:
             <tr>
                 <th scope="row">${ job_result.get_primary_key() }</th>
                 % for key, value in job_result.get_fields().items():

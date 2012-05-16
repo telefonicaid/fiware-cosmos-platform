@@ -25,9 +25,11 @@ class MongoTestCase(test.TestCase):
         self.collection = self.connection['db_101']['job_15']
         self.collection.remove()
         self.collection.insert([{
+            '_id': 'Hello',
             'word': 'Hello',
             'count': 1
         }, {
+            '_id': 'world',
             'word': 'world',
             'count': 2
         }])
@@ -37,11 +39,15 @@ class MongoTestCase(test.TestCase):
         self.connection.close()
 
     def test_retrieve_with_primary_key(self):
-        results = retrieve_results(self.job.id, 'word')
-        self.assertEquals(len(results), 2)
-        self.assertEquals(results[0].get_primary_key(), 'Hello')
+        results = retrieve_results(self.job.id, 'count')
+        first_result = results.page(1).object_list[0]
+        self.assertEquals(results.object_list.count(), 2)
+        self.assertEquals('count', first_result.pk)
+        self.assertEquals(1, first_result.get_primary_key())
 
     def test_retrieve_without_primary_key(self):
         results = retrieve_results(self.job.id)
-        self.assertEquals(len(results), 2)
-        self.assertTrue(results[0].get_primary_key() in ['Hello', 1])
+        first_result = results.page(1).object_list[0]
+        self.assertEquals(results.object_list.count(), 2)
+        self.assertEquals('_id', first_result.pk)
+        self.assertEquals('Hello', first_result.get_primary_key())

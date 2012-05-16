@@ -109,23 +109,22 @@ def show_results(request, job_id):
 
     try:
         primary_key = request.GET.get('primary_key')
-        results = mongo.retrieve_results(job.id, primary_key)
-        prototype_result = results[0]
-        if not primary_key:
-            primary_key = prototype_result.pk
-        paginator = Paginator(results, conf.RESULTS_PER_PAGE.get())
-        page = request.GET.get('page', 1)
+        paginator = mongo.retrieve_results(job.id, primary_key)
+
         try:
-            paginated_results = paginator.page(page)
+            page = paginator.page(request.GET.get('page', 1))
         except PageNotAnInteger:
-            paginated_results = paginator.page(1)
+            page = paginator.page(1) # TODO: what is it is an empty page?
         except EmptyPage:
-            paginated_results = paginator.page(paginator.num_pages)
+            page = paginator.page(paginator.num_pages)
+
+        prototype_result = page.object_list[0]
+        if primary_key is None:
+            primary_key = prototype_result.pk
 
         return render('job_results.mako', request, dict(
             title='Results of job %s' % job.id,
-            job_results=paginated_results,
-            prototype_result=prototype_result,
+            page=page,
             hidden_keys=mongo.HIDDEN_KEYS,
             primary_key=primary_key
         ))
@@ -133,7 +132,6 @@ def show_results(request, job_id):
     except mongo.NoResultsError:
         return render('job_results.mako', request, dict(
             title='Results of job %s' % job.id,
-            job_results=None,
             hidden_keys=mongo.HIDDEN_KEYS
         ))
 

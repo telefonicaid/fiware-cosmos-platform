@@ -4,12 +4,13 @@ Module mongo.py -
 This module holds functionality to retrieve job results from a mongoDB.
 """
 import json
-from random import choice
 from types import ListType, DictType
 
+from django.core.paginator import Paginator, Page
 from pymongo import Connection
 from pymongo.errors import AutoReconnect, ConnectionFailure
 
+from cosmos import conf
 from cosmos.models import JobRun
 
 
@@ -56,21 +57,43 @@ class MongoRecord(object):
         return ans
 
 
+class MongoPaginator(Paginator):
+    """Paginator specialization to optimize mongodb cursors."""
+
+    def __init__(self, cursor, page_size, primary_key):
+        Paginator.__init__(self, cursor, page_size)
+        self.primary_key = primary_key
+
+    def __len__(self):
+        return self.object_list.count()
+
+    def page(self, number):
+        "Returns a Page object for the given 1-based page number."
+        number = self.validate_number(number)
+        bottom = (number - 1) * self.per_page
+        records = map(lambda raw: MongoRecord(raw, self.primary_key),
+                      self.object_list.skip(bottom).limit(self.per_page))
+        return Page(records, number, self)
+
+
+def choose_default_primary_key(collection):
+    some_result = collection.find_one()
+    if not some_result:
+        raise NoResultsError
+    return sorted([k for k in some_result.keys() if k not in HIDDEN_KEYS])[0]
+
+
 def retrieve_results(job_id, primary_key=None):
     ans = []
     job = JobRun.objects.get(pk=job_id)
     try:
-        connection = Connection(job.mongo_url())
-        db = connection[job.mongo_db()]
-        job_results = db[job.mongo_collection()]
-        if not primary_key:
-            some_result = job_results.find_one()
-            if not some_result:
-                raise NoResultsError
-            primary_key = choice([k for k in some_result.keys()
-                                 if k not in HIDDEN_KEYS])
-        for job_result in job_results.find():
-            ans.append(MongoRecord(job_result, primary_key))
-        return ans
+        with Connection(job.mongo_url()) as connection:
+            db = connection[job.mongo_db()]
+            collection = db[job.mongo_collection()]
+            job_results = collection.find()
+            if primary_key is None:
+                primary_key = choose_default_primary_key(collection)
+            return MongoPaginator(job_results, conf.RESULTS_PER_PAGE.get(),
+                                  primary_key)
     except (AutoReconnect, ConnectionFailure):
         raise NoConnectionError

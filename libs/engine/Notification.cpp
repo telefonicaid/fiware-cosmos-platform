@@ -72,8 +72,7 @@ void Notification::destroyObjects()
     
     if( object )
     {
-        LM_W(("Destroyed an abandoned object in a notification"));
-        LM_T(LmtEngine, ("Destroying object of a notification [%s]", getDescription().c_str() ));
+        LM_W(("Destroyed an abandoned object in a notification (%s)" , getDescription().c_str() ));
         delete object;
         object = NULL;
     }

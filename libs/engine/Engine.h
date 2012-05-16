@@ -63,8 +63,7 @@ class Engine
     // Collection of items
     EngineElementCollection engine_element_collection;
     
-    // Management of objects ( notification )
-    au::Token token_objectsManager;                                
+    // Management of all objects
     ObjectsManager objectsManager;                  
 
     // Counter of EngineElement processed

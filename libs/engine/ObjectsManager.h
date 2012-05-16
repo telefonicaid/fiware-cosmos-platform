@@ -22,6 +22,7 @@
 #include "au/containers/map.h"     // au::map
 #include "au/containers/simple_map.h"     // au::simple_map
 #include "au/mutex/Token.h"     // au::Token
+#include "au/mutex/TokenTaker.h" 
 #include "au/namespace.h"
 
 NAMESPACE_BEGIN(engine)
@@ -36,17 +37,25 @@ class IdsCollection
     
 public:
     
-    std::set<size_t> ids;
+    std::set<size_t> ids_;
     
     void add( size_t id )
     {
-        ids.insert( id );
+        ids_.insert( id );
     }
     
     void remove( size_t id )
     {
-        ids.erase( id );
+        ids_.erase( id );
     }
+    
+    void addTo( std::set<size_t> &ids )
+    {
+        std::set<size_t>::iterator it;
+        for ( it = ids_.begin() ; it != ids_.end() ; it++ )
+            ids.insert(*it);
+    }
+
     
 };
 
@@ -70,6 +79,9 @@ class ObjectsManager
     
     // Map of objects by name
     au::map< const char* , Object , au::strCompare > objects_by_name;
+
+    // Mutex protection
+    au::Token token;                                
     
 public:
     
@@ -89,6 +101,9 @@ public:
     
     // Get the object registered with this name
     Object* getObjectByName( const char *name );
+    
+    // Recover ids for a particular channel
+    void getObjectIdsForChannel( const char* name , std::set<size_t>& ids );
     
 private:
     

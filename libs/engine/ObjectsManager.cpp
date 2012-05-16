@@ -10,7 +10,7 @@
 
 NAMESPACE_BEGIN(engine)
 
-ObjectsManager::ObjectsManager() //: token("engine::ObjectsManager")
+ObjectsManager::ObjectsManager() : token("Engine::ObjectsManager")
 {
     engine_id = 1;            
 }
@@ -23,7 +23,7 @@ ObjectsManager::~ObjectsManager()
 
 void ObjectsManager::add( Object* o )
 {
-    //au::TokenTaker tt( &token );
+    au::TokenTaker tt( &token );
     
     // Give a global id to this object    
     o->engine_id = engine_id++;
@@ -46,7 +46,7 @@ void ObjectsManager::add( Object* o )
 
 void ObjectsManager::remove( Object* o )
 {
-    //au::TokenTaker tt( &token );
+    au::TokenTaker tt( &token );
     
     LM_T(LmtEngineNotification, ("Remove completely object %lu", o  , o->engine_id  ));
     objects.extractFromMap( o->engine_id );
@@ -63,7 +63,7 @@ void ObjectsManager::remove( Object* o )
 
 void ObjectsManager::add( Object* o , const char* name )
 {
-    //au::TokenTaker tt( &token );
+    au::TokenTaker tt( &token );
     
     LM_T(LmtEngineNotification, ("Add object %lu to channel %s", o->engine_id , name ));
     get(name)->add( o->engine_id );
@@ -71,15 +71,32 @@ void ObjectsManager::add( Object* o , const char* name )
 
 void ObjectsManager::remove(Object* o , const char* name )
 {
-    //au::TokenTaker tt( &token );
+    au::TokenTaker tt( &token );
     
     LM_T(LmtEngineNotification, ("Remove object %lu to channel %s", o->engine_id , name ));
     get(name)->remove( o->engine_id );
 }
 
+
+// Get the collections of ids for a particular channel
+void ObjectsManager::getObjectIdsForChannel( const char* name , std::set<size_t>& ids )
+{
+    au::TokenTaker tt( &token );
+    
+    IdsCollection* delivery = channels.findInMap( name );
+    
+    if( !delivery )
+        return; // No ids to be added
+
+    delivery->addTo(ids);
+}
+
+
 // Get the collections of ids for a particular channel
 IdsCollection* ObjectsManager::get( const char* name )
 {
+    // Private method ( no mutex protection )
+    
     IdsCollection* delivery;
     
     delivery = channels.findInMap( name );
@@ -95,32 +112,29 @@ IdsCollection* ObjectsManager::get( const char* name )
 
 void ObjectsManager::send( Notification* notification )
 {
+
+    std::set<size_t> ids; // Total list of objects that should be notified
+
+    // Get list of objects that should be notified because they are listening the channel
+    getObjectIdsForChannel( notification->getName() , ids );
     
-    // Send to each listener contained in listner_id in Notification
+    // Add objects that should be notified directly...
     std::set<size_t>::iterator t;
     for( t = notification->targets.begin() ; t != notification->targets.end() ; t++ )
+        ids.insert(*t);
+    
+    // Notify all the objects
+    for( t = ids.begin() ; t != ids.end() ; t++ )
         send( notification , *t );
-    
-    // Get the channel with all the ids listening this particular channel
-    IdsCollection *channel = get( notification->getName() );
-    
-    // Notify to all the objects contained here
-    for ( t = channel->ids.begin() ; t != channel->ids.end() ; t++ )
-    {
-        if( notification->targets.find( *t ) != notification->targets.end() )
-            LM_W(("Notifying twice for listen and direct %d", notification->getDescription().c_str() ));
-        
-        send( notification , *t);
-    }
     
 }
 
 // Run a notification in an object
-void ObjectsManager::send( Notification *notification, size_t target)
+void ObjectsManager::send( Notification *notification, size_t target )
 {
     Object* o=NULL;
     {
-        //au::TokenTaker tt( &token );
+        au::TokenTaker tt( &token );
         o = objects.findInMap( target );
     }
     

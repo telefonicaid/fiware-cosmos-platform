@@ -621,11 +621,7 @@ namespace samson {
                 }
                 else
                     LM_W(("No block_builder in a process item operation notification received in a Block"));
-                
-                
-                // The block has been build, 
-                state = on_memory;
-                
+
                 // Response from build
                 return;
             }

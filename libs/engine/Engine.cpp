@@ -62,7 +62,7 @@ void* runEngineBackground(void* e)
     return e;
 }
 
-Engine::Engine() : token_objectsManager("Engine::token_objectsManager")
+Engine::Engine()
 {
     quitting = false;               // Put this to "true" when destroying Engine
     running_thread = false;         // No running thread at the moment
@@ -300,26 +300,17 @@ void Engine::getInfo( std::ostringstream& output)
 // Functions to register objects ( general and for a particular notification )
 void Engine::register_object( Object* object )
 {
-    // Mutex protection
-    au::TokenTaker tt(&token_objectsManager , "Engine::register_object" );
-    
     objectsManager.add( object );
 }
 
 void Engine::register_object_for_channel( Object* object, const char* channel )
 {
-    // Mutex protection
-    au::TokenTaker tt(&token_objectsManager,"Engine::register_object_for_channel");
-    
     objectsManager.add( object , channel );
 }
 
 // Generic method to unregister an object
 void Engine::unregister_object( Object* object )
 {
-    // Mutex protection
-    au::TokenTaker tt(&token_objectsManager , "Engine::unregister_object");
-    
     objectsManager.remove( object );
 }
 
@@ -362,9 +353,6 @@ void Engine::add( EngineElement *element )
 // Get an object by its registry names
 Object* Engine::getObjectByName( const char *name )
 {
-    // Mutex protection
-    au::TokenTaker tt(&token_objectsManager);
-    
     return objectsManager.getObjectByName(name);
     
 }

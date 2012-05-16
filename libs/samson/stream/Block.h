@@ -336,6 +336,9 @@ namespace samson
                     buffer_kv_sets.clearVector();
                 }
                 
+                // The block has been build, so now it is on memory... 
+                block->state = Block::on_memory;
+                
                 if( final_buffer->getSize() != final_buffer->getMaxSize() )
                     error.set( au::str( "Error creating a blcok (Size:%s != MaxSize:%s)" 
                                        , au::str( final_buffer->getSize() ).c_str() 

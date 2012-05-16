@@ -15,8 +15,8 @@ RESULTS_PER_PAGE = Config(key='results_per_page', default=100, type=int,
 
 def config_validator():
     """
-    config_validator() -> [(config_variable, error_msg)] or None
-    Called by core check_config() view.
+    Called by HUE check_config() view.
+    Accepted retrun values: [(config_variable, error_msg)] or None
     """
     res = []
     if not MONGO_BASE.get():

@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -17,6 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * HadoopSshFile
+ * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
  * @since  04/05/12
@@ -35,18 +38,37 @@ public class HadoopSshFile implements SshFile {
         this.hadoopFS = hadoopFS;
     }
 
+    /**
+     * Get the whole tree of directories from root until the current path
+     *
+     * @return a string of directories until the current path
+     */
     @Override
     public String getAbsolutePath() {
+        LOG.info("getting absolute path");
         return this.hadoopPath.toString();
     }
 
+    /**
+     * Get the last part of the path, i.e. the file name if the path is a file
+     * path
+     *
+     * @return the file name
+     */
     @Override
     public String getName() {
+        LOG.info("getting name");
         return this.hadoopPath.getName();
     }
 
+    /**
+     * Answer if the current path is a directory path
+     *
+     * @return is this a directory path?
+     */
     @Override
     public boolean isDirectory() {
+        LOG.info("is this a directory?");
         try {
             return this.hadoopFS.getFileStatus(this.hadoopPath).isDir();
         } catch (IOException e) {
@@ -55,8 +77,14 @@ public class HadoopSshFile implements SshFile {
         }
     }
 
+    /**
+     * Answer if the current path is a file path
+     *
+     * @return is this a file path?
+     */
     @Override
     public boolean isFile() {
+        LOG.info("is this a file?");
         try {
             return this.hadoopFS.isFile(this.hadoopPath);
         } catch (IOException e) {
@@ -65,8 +93,15 @@ public class HadoopSshFile implements SshFile {
         }
     }
 
+    /**
+     * Answer whether the current path exists or is just a representation for
+     * something to be later created.
+     *
+     * @return does this path exist?
+     */
     @Override
     public boolean doesExist() {
+        LOG.info("does this exist?");
         try {
             return this.hadoopFS.exists(this.hadoopPath);
         } catch (IOException e) {
@@ -75,7 +110,16 @@ public class HadoopSshFile implements SshFile {
         }
     }
 
+    /**
+     * Answer if the current user permissions on the current path are enough to
+     * perform a requested action. This method is the common basis for the
+     * following permission-related methods, such as isReadable, isWritable ...
+     *
+     * @param queriedFsAction an action such as read, write ...
+     * @return                is this user allowed to perform this action?
+     */
     private boolean isAllowed(FsAction queriedFsAction) {
+        LOG.info("is this allowed?");
         try {
             String pathOwner = this.hadoopFS.getFileStatus(this.hadoopPath)
                     .getOwner();
@@ -87,6 +131,7 @@ public class HadoopSshFile implements SshFile {
                 ans = this.hadoopFS.getFileStatus(this.hadoopPath).getPermission()
                         .getOtherAction().implies(queriedFsAction);
             }
+            LOG.info(ans? "yes" : "no");
             return ans;
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
@@ -94,29 +139,56 @@ public class HadoopSshFile implements SshFile {
         }
     }
 
+    /**
+     * Answer if this path is readable by the current user.
+     *
+     * @return is this user allowed to read this path?
+     */
     @Override
     public boolean isReadable() {
+        LOG.info("is this readable?");
         return isAllowed(FsAction.READ);
     }
 
+    /**
+     * Answer if this path is writable by the current user. If the current path
+     * does not exist, look for the same permission in the parent path.
+     *
+     * @return is this user allowed to write to this path?
+     */
     @Override
     public boolean isWritable() {
-        if (this.looksLikeFilePath() && !this.doesExist()) {
-            return (this.getParentFile().isWritable());
+        LOG.info("is this writable?");
+        if (this.doesExist()){
+            return isAllowed(FsAction.WRITE);
+        } else {
+            return this.getParentFile().isWritable();
         }
-        return isAllowed(FsAction.WRITE);
     }
 
-    private boolean looksLikeFilePath() {
-        return !this.getAbsolutePath().endsWith(Path.SEPARATOR);
-    }
-
+    /**
+     * Answer if the path is executable by the current user. HDFS does not have
+     * any executable files, but this is still delegated to its API in case
+     * there are executable files in the future.
+     *
+     * References
+     * In contrast to the POSIX model, there are no sticky, setuid or setgid
+     * bits for files as there is no notion of executable files.
+     * http://hadoop.apache.org/common/docs/r0.20.2/hdfs_permissions_guide.html
+     *
+     * @return is this user allowed to execute this path?
+     */
     @Override
     public boolean isExecutable() {
+        LOG.info("is this executable?");
         return isAllowed(FsAction.EXECUTE);
     }
 
     /**
+     * Answer if this path is removable by the current user
+     *
+     * References
+     *
      * For directories, the r permission is required to list the contents of
      * the directory, the w permission is required to create or delete files or
      * directories, and the x permission is required to access a child of the
@@ -127,11 +199,19 @@ public class HadoopSshFile implements SshFile {
      */
     @Override
     public boolean isRemovable() {
+        LOG.info("is this removable?");
         return isAllowed(FsAction.WRITE);
     }
 
+    /**
+     * Answer which path is the parent of the current path in the filesystem
+     * tree
+     *
+     * @return the parent path of the current path
+     */
     @Override
     public SshFile getParentFile() {
+        LOG.info("getting parent file");
         try {
             return new HadoopSshFile(this.hadoopPath.getParent().toString(),
                     this.userName, this.hadoopFS);
@@ -144,8 +224,14 @@ public class HadoopSshFile implements SshFile {
         }
     }
 
+    /**
+     * Answer when was a file modified for the last time
+     *
+     * @return the last modification time in milliseconds
+     */
     @Override
     public long getLastModified() {
+        LOG.info("getting last modified");
         try {
             FileStatus fileStatus = this.hadoopFS.getFileStatus(this.hadoopPath);
             return fileStatus.getModificationTime();
@@ -155,8 +241,15 @@ public class HadoopSshFile implements SshFile {
         }
     }
 
+    /**
+     * Change the modification time of a path
+     *
+     * @param  time new modification time in milliseconds
+     * @return was the modification time successfully changed?
+     */
     @Override
     public boolean setLastModified(long time) {
+        LOG.info("setting last modified");
         try {
             /* Filesystem.setTimes(path, modification time, access time)
              *
@@ -172,8 +265,14 @@ public class HadoopSshFile implements SshFile {
         return false;
     }
 
+    /**
+     * Answer how long is a file in bytes
+     *
+     * @return file length in bytes
+     */
     @Override
     public long getSize() {
+        LOG.info("getting size");
         try {
             if (this.doesExist()) {
                 FileStatus fileStatus =
@@ -188,18 +287,36 @@ public class HadoopSshFile implements SshFile {
         return 0;
     }
 
+    /**
+     * Create a new directory
+     *
+     * @return was the directory successfully created?
+     */
     @Override
     public boolean mkdir() {
+        LOG.info("trying to make the dir: " + this.getAbsolutePath());
         try {
-            return this.hadoopFS.mkdirs(this.hadoopPath);
+            if (this.getParentFile().doesExist() &&
+                    this.getParentFile().isWritable()) {
+                if (this.hadoopFS.mkdirs(this.hadoopPath)) {
+                    return true;
+                }
+            }
+            return false;
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
             return false;
         }
     }
 
+    /**
+     * Delete a file
+     *
+     * @return was the file successfully deleted?
+     */
     @Override
     public boolean delete() {
+        LOG.info("deleting");
         try {
             return this.hadoopFS.delete(this.hadoopPath, this.isDirectory());
         } catch (IOException e) {
@@ -208,19 +325,41 @@ public class HadoopSshFile implements SshFile {
         }
     }
 
+    /**
+     * Create a new file
+     *
+     * @return was the file successfully created?
+     * @throws IOException
+     */
     @Override
     public boolean create() throws IOException {
+        LOG.info("creating");
         return this.hadoopFS.createNewFile(this.hadoopPath);
     }
 
+    /**
+     * Discard all contents in a path, setting its size to 0 but keeping it as
+     * existing.
+     *
+     * @throws IOException
+     */
     @Override
     public void truncate() throws IOException {
+        LOG.info("truncating");
         boolean do_overwrite = true;
         this.hadoopFS.create(this.hadoopPath, do_overwrite);
     }
 
+    /**
+     * Move this path to the destination specified in this method's signature,
+     * if permissions of this user on destination are sufficient.
+     *
+     * @param destination a path where this file is requested to be moved
+     * @return            was the path moved?
+     */
     @Override
     public boolean move(SshFile destination) {
+        LOG.info("moving");
         try {
             Path dest = new Path(destination.getAbsolutePath());
             return this.hadoopFS.rename(this.hadoopPath, dest);
@@ -230,6 +369,11 @@ public class HadoopSshFile implements SshFile {
         return false;
     }
 
+    /**
+     * List files found within a directory
+     *
+     * @return a List of SshFiles
+     */
     @Override
     public List<SshFile> listSshFiles() {
         LOG.info(String.format("listing files at %s", this.getAbsolutePath()));
@@ -267,26 +411,54 @@ public class HadoopSshFile implements SshFile {
     }
 
     private String joinToThisPath(String fileName) {
+        LOG.info("joining to this path");
         String absPath = this.getAbsolutePath();
         return ((absPath.endsWith(
                  Path.SEPARATOR)) ? absPath
                                   : (absPath + Path.SEPARATOR)) + fileName;
     }
 
+    /**
+     * Create output stream for writing
+     *
+     * @param  offset  a number of bytes to be skipped
+     * @return         a stream to write bytes to
+     * @throws IOException
+     */
     @Override
     public OutputStream createOutputStream(long offset) throws IOException {
-        // TODO: when offset != 0, append with bufferSize?
         LOG.info("trying to write to path:" + this.hadoopPath.toString());
-        return this.hadoopFS.create(this.hadoopPath);
+        if (!this.isWritable()) {
+            throw new IOException("No write permission for: " +
+                    this.getAbsolutePath());
+        }
+        // TODO: when offset != 0, append with bufferSize?
+        return this.hadoopFS.create(this.hadoopPath.getParent());
     }
 
+    /**
+     * Create input stream for reading
+     *
+     * @param  offset a number of bytes to be skipped
+     * @return        a stream to read bytes from
+     * @throws IOException
+     */
     @Override
     public InputStream createInputStream(long offset) throws IOException {
-        // TODO: when offset != 0, append with bufferSize?
         LOG.info("trying to read from path: " + this.hadoopPath.toString());
+        if (!this.isReadable()) {
+            throw new IOException("No read permission for: " +
+                    this.getAbsolutePath());
+        }
+        // TODO: when offset != 0, append with bufferSize?
         return this.hadoopFS.open(this.hadoopPath);
     }
 
+    /**
+     * Close a file handle after reading from or writing to it
+     *
+     * @throws IOException
+     */
     @Override
     public void handleClose() throws IOException {
         LOG.info("trying to close the handle for path: " +

@@ -57,12 +57,15 @@ var Cosmos = new Class({
     Extends: Hue.JBrowser,
 
     options: {
-        className: 'art browser logo_header cosmos'
+        className: 'art browser logo_header cosmos',
+        autoreloaded_views: ['index'],
+        autoreload_period: 30
     },
 
     initialize: function(path, options){
         this.parent(path || '/cosmos/', options);
         this.addEvent('load', this.setup.bind(this));
+        this.addEvent('load', this.autoreload.bind(this));
         var frame = this.jframe;
         this.jframe.addBehaviors({
             KeySelector: function (element) {
@@ -107,6 +110,18 @@ var Cosmos = new Class({
                 this.upgrade_to_flash($(this).getElement('.cos-upload_jar'));
             }
         }).delay(10, this);
+    },
+
+    autoreload: function(view) {
+        if (this.reload_timeout) {
+            clearTimeout(this.reload_timeout);
+            delete this.reload_timeout;
+        }
+        if (this.options.autoreloaded_views.contains(view)) {
+            this.reload_timeout = setTimeout(function () {
+                this.jframe.refresh();
+            }.bind(this), this.options.autoreload_period * 1000);
+        }
     },
 
     upgrade_to_flash: function(uploaderNode) {

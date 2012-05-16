@@ -5,7 +5,7 @@
 
 ${shared.header('Upload datasets and JARs', section='upload')}
 
-<div id="index" class="view">
+<div id="upload_index" class="view">
     <div class="cos-upload_choices">
         <p>
             Upload your data and MapReduce tasks to the platform.

@@ -15,12 +15,18 @@ ${shared.header('Upload datasets and JARs', section='upload')}
                    data-filters="ArtButton" target="_blank"
                    data-icon-styles="{'width': 16, 'height': 16, 'top':4,
                                       'left': 5}"
-                   class="cos-upload_dataset">Upload dataset</a></li>
+                   class="cos-upload_dataset">Upload dataset</a>
+                or browse <a href="/filebrowser/view/${ datasets_base }"
+                             target="FileBrowser">existing datasets</a>.
+            </li>
             <li><a href="/filebrowser/upload?dest=${ jars_base }&next=${ url('cosmos.views.upload_index') }"
                    data-filters="ArtButton" target="_blank"
                    data-icon-styles="{'width': 16, 'height': 16, 'top':4,
                                       'left': 5}"
-                   class="cos-upload_jar">Upload jar</a></li>
+                   class="cos-upload_jar">Upload jar</a>
+                or browse <a href="/filebrowser/view/${ jars_base }"
+                             target="FileBrowser">existing JARs</a>.
+            </li>
         </ul>
     </div>
 </div>

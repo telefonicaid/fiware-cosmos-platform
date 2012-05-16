@@ -19,22 +19,20 @@ import org.slf4j.LoggerFactory;
  * @since  04/05/12
  */
 public class HadoopFileSystemView implements FileSystemView {
-    private Configuration conf;
     private String homePath;
+    private FileSystem hadoopFS;
     private final String userName;
     private final Logger LOG = LoggerFactory
-                                   .getLogger(HadoopFileSystemView.class);
+            .getLogger(HadoopFileSystemView.class);
 
     public HadoopFileSystemView(String userName, Configuration configuration) {
         this.userName = userName;
-        this.conf = configuration;
         try {
-            FileSystem hadoopFS;
-            hadoopFS = FileSystem.get(
+            this.hadoopFS = FileSystem.get(
                     URI.create(configuration.get("fs.default.name")),
                     configuration, userName);
-            this.homePath = hadoopFS.getHomeDirectory().toString()
-                    .replaceFirst(hadoopFS.getUri().toString(), "");
+            this.homePath = this.hadoopFS.getHomeDirectory().toString()
+                    .replaceFirst(this.hadoopFS.getUri().toString(), "");
         } catch (InterruptedException e) {
             LOG.error(e.getMessage(), e);
         } catch (IOException e) {
@@ -90,6 +88,6 @@ public class HadoopFileSystemView implements FileSystemView {
             wholePath = baseDir + Path.SEPARATOR + file;
         }
         LOG.info("trying to open the path: " + wholePath);
-        return new HadoopSshFile(wholePath, this.userName, this.conf);
+        return new HadoopSshFile(wholePath, this.userName, this.hadoopFS);
     }
 }

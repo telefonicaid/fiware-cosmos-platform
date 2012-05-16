@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
  * @since  03/05/12
  */
 public class InjectionServer {
-    private Configuration conf;
     private HadoopFileSystemFactory hadoopFileSystemFactory;
     private final String frontendDbUrl;
     private final int serverSocketPort;
@@ -49,9 +48,9 @@ public class InjectionServer {
         this.dbName = props.getProperty("DB_NAME");
         this.dbUser = props.getProperty("DB_USER");
         this.dbPassword = props.getProperty("DB_PASS");
-        this.conf = new Configuration();
-        this.conf.set("fs.default.name", hdfsURI.toString());
-        this.conf.set("mapred.job.tracker", jobtrackerUrl);
+        Configuration conf = new Configuration();
+        conf.set("fs.default.name", hdfsURI.toString());
+        conf.set("mapred.job.tracker", jobtrackerUrl);
         this.hadoopFileSystemFactory = new HadoopFileSystemFactory(conf);
     }
 

@@ -3,12 +3,10 @@ package es.tid.cosmos.platform.injection.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -26,18 +24,15 @@ import org.slf4j.LoggerFactory;
 public class HadoopSshFile implements SshFile {
     private String userName;
     private Path hadoopPath;
-    private Configuration configuration;
     private final FileSystem hadoopFS;
     private final Logger LOG = LoggerFactory.getLogger(HadoopSshFile.class);
 
     protected HadoopSshFile(final String fileName, final String userName,
-                            Configuration configuration)
+                            FileSystem hadoopFS)
             throws IOException, InterruptedException {
-        this.userName = userName;
-        this.configuration = configuration;
         this.hadoopPath = new Path(fileName);
-        this.hadoopFS = FileSystem.get(URI.create(
-                configuration.get("fs.default.name")), configuration, userName);
+        this.userName = userName;
+        this.hadoopFS = hadoopFS;
     }
 
     @Override
@@ -81,8 +76,6 @@ public class HadoopSshFile implements SshFile {
     }
 
     private boolean isAllowed(FsAction queriedFsAction) {
-        LOG.info("looking for action " + queriedFsAction.toString() +
-                " on path " + this.hadoopPath.toString());
         try {
             String pathOwner = this.hadoopFS.getFileStatus(this.hadoopPath)
                     .getOwner();
@@ -94,7 +87,6 @@ public class HadoopSshFile implements SshFile {
                 ans = this.hadoopFS.getFileStatus(this.hadoopPath).getPermission()
                         .getOtherAction().implies(queriedFsAction);
             }
-            LOG.info("user action allowed?: " + ans);
             return ans;
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
@@ -142,7 +134,7 @@ public class HadoopSshFile implements SshFile {
     public SshFile getParentFile() {
         try {
             return new HadoopSshFile(this.hadoopPath.getParent().toString(),
-                    this.userName, this.configuration);
+                    this.userName, this.hadoopFS);
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
             return null;
@@ -166,7 +158,11 @@ public class HadoopSshFile implements SshFile {
     @Override
     public boolean setLastModified(long time) {
         try {
-            /* Filesystem.setTimes(path, modification time, access time) */
+            /* Filesystem.setTimes(path, modification time, access time)
+             *
+             * Here it is supposed that setting the modification time is an
+             * access to the file.
+             */
             this.hadoopFS.setTimes(this.hadoopPath, time,
                     System.currentTimeMillis());
             return true;
@@ -198,8 +194,8 @@ public class HadoopSshFile implements SshFile {
             return this.hadoopFS.mkdirs(this.hadoopPath);
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
+            return false;
         }
-        return false;
     }
 
     @Override
@@ -244,7 +240,7 @@ public class HadoopSshFile implements SshFile {
             for (FileStatus fileStatus : fileStatuses) {
                 String fileName = fileStatus.getPath().getName();
                 ans[i] = new HadoopSshFile(this.joinToThisPath(fileName),
-                        this.userName, this.configuration);
+                        this.userName, this.hadoopFS);
                 i++;
             }
             return Collections.unmodifiableList(Arrays.asList(ans));
@@ -253,7 +249,7 @@ public class HadoopSshFile implements SshFile {
             try {
                 SshFile[] ans = new SshFile[1];
                 ans[0] = new HadoopSshFile(Path.CUR_DIR,
-                        this.userName, this.configuration);
+                        this.userName, this.hadoopFS);
                 return Collections.unmodifiableList(Arrays.asList(ans));
             } catch (IOException e1) {
                 LOG.error(e1.getMessage(), e);
@@ -280,17 +276,22 @@ public class HadoopSshFile implements SshFile {
     @Override
     public OutputStream createOutputStream(long offset) throws IOException {
         // TODO: when offset != 0, append with bufferSize?
+        LOG.info("trying to write to path:" + this.hadoopPath.toString());
         return this.hadoopFS.create(this.hadoopPath);
     }
 
     @Override
     public InputStream createInputStream(long offset) throws IOException {
         // TODO: when offset != 0, append with bufferSize?
+        LOG.info("trying to read from path: " + this.hadoopPath.toString());
         return this.hadoopFS.open(this.hadoopPath);
     }
 
     @Override
     public void handleClose() throws IOException {
+        LOG.info("trying to close the handle for path: " +
+                this.hadoopPath.toString());
         // Noop
+        LOG.info("but this is a noop");
     }
 }

@@ -57,7 +57,7 @@ public class HadoopFileSystemViewTest {
         String homePath = fs.getHomeDirectory().toString().replaceFirst(
                 fs.getUri().toString(), "");
         HadoopSshFile init = this.hadoopFileSystemView.getFile(
-                new HadoopSshFile(".", "test", conf), ".");
+                new HadoopSshFile(".", "test", fs), ".");
         assertEquals(homePath, init.getAbsolutePath());
     }
 }

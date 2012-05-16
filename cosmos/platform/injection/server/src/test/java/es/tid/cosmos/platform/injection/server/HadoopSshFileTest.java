@@ -4,14 +4,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
 import org.junit.After;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,6 +31,7 @@ public class HadoopSshFileTest {
     private HadoopSshFile hdir;
     private String user01 = "user01";
     private Configuration configuration;
+    private FileSystem hadoopFS;
 
     @Before
     public void setUp() {
@@ -31,8 +39,11 @@ public class HadoopSshFileTest {
         String foodir = "/tmp/user01";
         String foofile = "/tmp/user01/file01";
         try {
-            this.hfoo = new HadoopSshFile(foofile, this.user01, configuration);
-            this.hdir = new HadoopSshFile(foodir, this.user01, configuration);
+            this.hadoopFS = FileSystem.get(
+                    URI.create(this.configuration.get("fs.default.name")),
+                    this.configuration, this.user01);
+            this.hfoo = new HadoopSshFile(foofile, this.user01, this.hadoopFS);
+            this.hdir = new HadoopSshFile(foodir, this.user01, this.hadoopFS);
         } catch (IOException e) {
             LOG.error(e.getMessage());
         } catch (InterruptedException e) {
@@ -72,6 +83,16 @@ public class HadoopSshFileTest {
         assertFalse(this.hfoo.doesExist());
         this.hfoo.create();
         assertTrue(this.hfoo.doesExist());
+    }
+
+    @Test
+    public void testExceptionDoesExist() throws Exception {
+        FileSystem mocked = mock(FileSystem.class);
+        when(mocked.exists(Matchers.<Path>any()))
+                .thenThrow(new IOException("you have been mocked"));
+        HadoopSshFile neverExists = new HadoopSshFile("/in/fantasyland",
+                "whatever_user", mocked);
+        assertFalse(neverExists.doesExist());
     }
 
     @Test
@@ -177,7 +198,7 @@ public class HadoopSshFileTest {
     public void testMove() throws Exception {
         String newsubdir = "/tmp/user01/new/file01";
         HadoopSshFile newfoo = new HadoopSshFile(newsubdir, this.user01,
-                this.configuration);
+                this.hadoopFS);
         this.hfoo.create();
         assertFalse(newfoo.doesExist());
         this.hfoo.move(newfoo);

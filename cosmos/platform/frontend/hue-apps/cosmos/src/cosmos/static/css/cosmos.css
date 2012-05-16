@@ -208,6 +208,7 @@
     text-indent: -500px;
     position: relative;
     top: 3px;
+    overflow: hidden;
 }
 
 /*

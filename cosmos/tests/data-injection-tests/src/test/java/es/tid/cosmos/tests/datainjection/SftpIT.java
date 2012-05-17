@@ -33,8 +33,7 @@ public class SftpIT {
         this.env = Environment.valueOf(environment);
     }
 
-    public void testFileUpload()
-            throws Exception {
+    public void testFileUpload() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         try {
             this.putAndVerifyFile(session, "testFileUpload", new Data(1));
@@ -43,8 +42,7 @@ public class SftpIT {
         }
     }
 
-    public void testFileUploadOverwrite()
-            throws Exception {
+    public void testFileUploadOverwrite() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         try {
             this.putAndVerifyFile(session, "testFileUpload", new Data(5));
@@ -55,8 +53,7 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = SftpException.class)
-    public void testOutOfDirectoryUpload1()
-            throws Exception {
+    public void testOutOfDirectoryUpload1() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         try {
             this.putAndVerifyFile(session, "../testOutOfDirectoryUpload",
@@ -71,8 +68,7 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = SftpException.class)
-    public void testOutOfDirectoryUpload2()
-            throws Exception {
+    public void testOutOfDirectoryUpload2() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         try {
             this.putAndVerifyFile(
@@ -85,8 +81,7 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = SftpException.class)
-    public void testOutOfDirectoryUpload3()
-            throws Exception {
+    public void testOutOfDirectoryUpload3() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         try {
             this.putAndVerifyFile(
@@ -98,8 +93,7 @@ public class SftpIT {
         }
     }
 
-    public void testFileUploadWithEscaping1()
-            throws Exception {
+    public void testFileUploadWithEscaping1() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         try {
             this.putAndVerifyFile(
@@ -111,8 +105,7 @@ public class SftpIT {
         }
     }
 
-    public void testFileUploadWithEscaping2()
-            throws Exception {
+    public void testFileUploadWithEscaping2() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
         final String dirName = "myDumyDir";
@@ -130,8 +123,7 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = SftpException.class)
-    public void testListRoot()
-            throws Exception {
+    public void testListRoot() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
         try {
@@ -142,8 +134,7 @@ public class SftpIT {
         }
     }
 
-    public void testDefaultPwd()
-            throws Exception {
+    public void testDefaultPwd() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
         try {
@@ -177,8 +168,7 @@ public class SftpIT {
         CosmosSftp.createSession(this.env, "root", "1234");
     }
 
-    public void testDirCommands()
-            throws Exception {
+    public void testDirCommands() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
         final String dirName = "myTempDir";
@@ -200,8 +190,7 @@ public class SftpIT {
     }
 
     private void putFile(ChannelSftp sftpChannel, String filePath,
-                         Iterable<Integer> data)
-            throws Exception {
+                         Iterable<Integer> data) throws Exception {
         OutputStream output = sftpChannel.put(filePath);
         try {
             for (int b : data) {
@@ -213,8 +202,7 @@ public class SftpIT {
     }
 
     private void verifyFile(ChannelSftp sftpChannel, String filePath,
-                            Iterable<Integer> data)
-            throws Exception {
+                            Iterable<Integer> data) throws Exception {
         InputStream input = sftpChannel.get(filePath);
         try {
             for (int b : data) {
@@ -226,8 +214,7 @@ public class SftpIT {
     }
 
     private void putAndVerifyFile(Session session, String fileName,
-                                  Iterable<Integer> data)
-            throws Exception {
+                                  Iterable<Integer> data) throws Exception {
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
 
         try {
@@ -244,8 +231,7 @@ public class SftpIT {
         }
     }
 
-    public void testParallelFileUpload()
-            throws Exception {
+    public void testParallelFileUpload() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         FutureTask task1 = new FutureTask(new Callable() {
             @Override

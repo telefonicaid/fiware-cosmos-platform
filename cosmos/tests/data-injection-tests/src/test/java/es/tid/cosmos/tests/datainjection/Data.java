@@ -9,7 +9,7 @@ import java.util.Iterator;
 class Data implements Iterable<Integer> {
     private final int step;
 
-    Data(int step) {
+    public Data(int step) {
         this.step = step;
     }
 
@@ -20,7 +20,7 @@ class Data implements Iterable<Integer> {
 
             @Override
             public boolean hasNext() {
-                return this.item + Data.this.step > Byte.MAX_VALUE;
+                return (this.item + Data.this.step) > Byte.MAX_VALUE;
             }
 
             @Override
@@ -31,7 +31,8 @@ class Data implements Iterable<Integer> {
 
             @Override
             public void remove() {
-                throw new UnsupportedOperationException("Not supported yet.");
+                throw new UnsupportedOperationException(
+                        "This iterable does not support removal");
             }
         };
     }

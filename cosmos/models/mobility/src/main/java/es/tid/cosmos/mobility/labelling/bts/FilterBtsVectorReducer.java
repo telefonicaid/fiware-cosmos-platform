@@ -5,13 +5,15 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Bts;
-import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, Bts|Cluster>
@@ -21,8 +23,16 @@ import es.tid.cosmos.mobility.data.MobProtocol.MobData;
  */
 public class FilterBtsVectorReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
-    private static final double MAX_BTS_AREA = 10.83515D;
-    private static final long MAX_COMMS_BTS = 70000L;
+    private double maxBtsArea;
+    private int maxCommsBts;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final Configuration conf = context.getConfiguration();
+        this.maxBtsArea = Double.parseDouble(conf.get(Config.MAX_BTS_AREA));
+        this.maxCommsBts = conf.getInt(Config.MAX_COMMS_BTS, Integer.MAX_VALUE);
+    }
     
     @Override
     protected void reduce(LongWritable key,
@@ -49,8 +59,8 @@ public class FilterBtsVectorReducer extends Reducer<LongWritable,
         for (Bts bts : btsList) {
             for (Cluster cluster : clusterList) {
                 int confident = cluster.getConfident();
-                if (bts.getArea() <= MAX_BTS_AREA &&
-                        bts.getComms() >= MAX_COMMS_BTS) {
+                if (bts.getArea() <= this.maxBtsArea &&
+                        bts.getComms() >= this.maxCommsBts) {
                     confident = 1;
                 }
                 Cluster.Builder outputCluster = Cluster.newBuilder(cluster);

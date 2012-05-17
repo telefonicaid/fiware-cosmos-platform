@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 
 /**
  *

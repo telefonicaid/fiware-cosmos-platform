@@ -13,15 +13,17 @@ import java.util.Locale;
  * @author javierb
  */
 public class KpiCalculationDateFormatter {
+    private final String DELIMITER = "/";
+    
     private SimpleDateFormat inputFormat;
     private SimpleDateFormat dateFormat;
     private Calendar calendar;
 
-    public KpiCalculationDateFormatter(String delimiter) {
+    public KpiCalculationDateFormatter() {
         this.inputFormat = new SimpleDateFormat("ddMMMyyyyhhmmss",
                                                 Locale.ENGLISH);
-        this.dateFormat = new SimpleDateFormat("dd" + delimiter + "MM"
-                                               + delimiter + "yyyy");
+        this.dateFormat = new SimpleDateFormat("dd" + DELIMITER + "MM"
+                                               + DELIMITER + "yyyy");
         this.calendar = Calendar.getInstance();
     }
 

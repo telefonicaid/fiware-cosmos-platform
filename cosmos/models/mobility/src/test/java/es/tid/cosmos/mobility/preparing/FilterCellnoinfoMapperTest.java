@@ -6,11 +6,11 @@ import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.BaseProtocol.Date;
-import es.tid.cosmos.mobility.data.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
+import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  *

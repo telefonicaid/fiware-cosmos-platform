@@ -16,8 +16,7 @@ import es.tid.cosmos.tests.tasks.TestException;
  *
  * @author ximo
  */
-public class FrontEndTask implements Task {
-    private static final int SLEEP_TIME = 30000; // 30 seconds
+public class FrontEndTask extends Task {
     private final FrontEnd frontend;
     private final String taskId;
 
@@ -82,22 +81,6 @@ public class FrontEndTask implements Task {
                      TaskStatus.Created,
                      "Verifying task is in Created state");
         this.frontend.launchJob(this.taskId);
-    }
-
-    @Override
-    public void waitForCompletion() throws TestException {
-        while (true) {
-            TaskStatus status = this.frontend.getTaskStatus(taskId);
-            if (status != TaskStatus.Running) {
-                break;
-            }
-            try {
-                Thread.sleep(SLEEP_TIME);
-            } catch (InterruptedException ex) {
-                throw new TestException("[InterruptedException] "
-                        + ex.getMessage());
-            }
-        }
     }
 
     @Override

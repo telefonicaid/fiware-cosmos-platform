@@ -5,12 +5,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, Int|Cdr>
@@ -20,7 +22,14 @@ import es.tid.cosmos.mobility.data.MobProtocol.MobData;
  */
 public class VectorFiltClientsReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
-    private static final int MAX_CDRS = 3000;
+    private int maxCdrs;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final Configuration conf = context.getConfiguration();
+        this.maxCdrs = conf.getInt(Config.MAX_CDRS, Integer.MAX_VALUE);
+    }
     
     @Override
     protected void reduce(LongWritable key,
@@ -44,7 +53,7 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
             if (hasComms) {
                 break;
             }
-            if (cdrList.size() > MAX_CDRS) {
+            if (cdrList.size() > this.maxCdrs) {
                 return;
             }
         }

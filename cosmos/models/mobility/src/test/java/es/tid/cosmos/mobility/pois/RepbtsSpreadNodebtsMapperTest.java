@@ -13,10 +13,10 @@ import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.NodeBtsDay;
 import es.tid.cosmos.mobility.data.NodeMxCounterUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
 
 /**
  *

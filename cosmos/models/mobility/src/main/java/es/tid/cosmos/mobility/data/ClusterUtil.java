@@ -2,8 +2,8 @@ package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
-import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
-import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 
 /**
  *

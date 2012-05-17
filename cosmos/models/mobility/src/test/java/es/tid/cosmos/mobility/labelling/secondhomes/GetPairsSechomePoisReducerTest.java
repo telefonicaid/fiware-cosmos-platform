@@ -8,11 +8,14 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.data.PoiPosUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  *
@@ -23,10 +26,14 @@ public class GetPairsSechomePoisReducerTest {
             ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> driver;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
                 ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>(
                         new GetPairsSechomePoisReducer());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                this.driver.getConfiguration()));
     }
 
     @Test

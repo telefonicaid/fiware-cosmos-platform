@@ -9,11 +9,11 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.Poi;
-import es.tid.cosmos.mobility.data.MobProtocol.PoiPos;
 import es.tid.cosmos.mobility.data.PoiPosUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
 
 /**
  * Input: <Long, Poi|Cell>

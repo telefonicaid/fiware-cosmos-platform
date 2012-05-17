@@ -26,11 +26,12 @@ import es.tid.cosmos.base.util.Logger;
  * @since  CTP 2
  */
 public class HadoopSshFile implements SshFile {
-    private FSDataOutputStream fsDataOutputStream;
     private final String userName;
     private final Path hadoopPath;
     private final FileSystem hadoopFS;
     private final org.apache.log4j.Logger LOG = Logger.get(HadoopSshFile.class);
+    private FSDataOutputStream fsDataOutputStream;
+    private FSDataInputStream fsDataInputStream;
 
     protected HadoopSshFile(final String fileName, final String userName,
                             FileSystem hadoopFS)
@@ -421,11 +422,12 @@ public class HadoopSshFile implements SshFile {
     @Override
     public InputStream createInputStream(long offset) throws IOException {
         if (!this.isReadable()) {
-            throw new IOException("No read permission for: " +
+            throw new IOException("no read permission for: " +
                     this.getAbsolutePath());
         }
         // TODO: when offset != 0, append with bufferSize?
-        return this.hadoopFS.open(this.hadoopPath);
+        this.fsDataInputStream = this.hadoopFS.open(this.hadoopPath);
+        return this.fsDataInputStream;
     }
 
     /**
@@ -436,9 +438,14 @@ public class HadoopSshFile implements SshFile {
     @Override
     public void handleClose() throws IOException {
         try {
-            this.fsDataOutputStream.close();
+            if (this.fsDataOutputStream != null) {
+                this.fsDataOutputStream.close();
+            }
+            if (this.fsDataInputStream != null){
+                this.fsDataInputStream.close();
+            }
         } catch (Exception e) {
-            LOG.info("closed path that was not open", e);
+            LOG.info("closed path handle that was not open", e);
         }
     }
 }

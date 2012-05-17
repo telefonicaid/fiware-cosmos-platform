@@ -9,7 +9,8 @@ ${shared.header("Cosmos - " + title)}
 	% if page:
 	    by
 	    <select id="select-pk" name="select-pk" data-filters="KeySelector">
-                <option selected="selected">${ primary_key }</option>
+                <option value="${ primary_key }"
+                        selected="selected">${ primary_key }</option>
 		% for key, value in page.object_list[0].document.items():
 		    % if key not in hidden_keys and key != primary_key:
 		    <option value="${ key }">${ key }</option>

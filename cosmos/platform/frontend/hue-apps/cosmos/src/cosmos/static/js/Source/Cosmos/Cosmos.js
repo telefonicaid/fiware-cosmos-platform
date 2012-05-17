@@ -81,7 +81,7 @@ var Cosmos = new Class({
                         } else {
                             queryString += '?';
                         }
-                        queryString += key + '=' + params[key];
+                        queryString += escape(key) + '=' + params[key];
                     }
                     var basePath = path.substring(0, path.indexOf('?')) || path;
                     frame.load({requestPath: basePath + queryString});

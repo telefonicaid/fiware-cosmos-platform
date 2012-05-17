@@ -43,7 +43,7 @@ class MongoRecord(object):
 
     def get_primary_key(self):
         """Gets the value of the primary key for this record"""
-        return self.document[self.pk]
+        return self.document.get(self.pk)
 
     def get_fields(self):
         """Gets the values of all non-primary keys for this record. If the
@@ -90,10 +90,10 @@ def retrieve_results(job_id, primary_key=None):
         with Connection(job.mongo_url()) as connection:
             db = connection[job.mongo_db()]
             collection = db[job.mongo_collection()]
-            job_results = collection.find()
             if primary_key is None:
                 primary_key = choose_default_primary_key(collection)
-            return MongoPaginator(job_results, conf.RESULTS_PER_PAGE.get(),
+            return MongoPaginator(collection.find().sort(primary_key),
+                                  conf.RESULTS_PER_PAGE.get(),
                                   primary_key)
     except (AutoReconnect, ConnectionFailure):
         raise NoConnectionError

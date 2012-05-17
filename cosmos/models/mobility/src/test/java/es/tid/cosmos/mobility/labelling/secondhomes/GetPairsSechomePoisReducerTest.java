@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.labelling.secondhomes;
 
+import java.io.IOException;
+import java.io.InputStream;
 import static java.util.Arrays.asList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
@@ -14,8 +16,6 @@ import es.tid.cosmos.mobility.data.PoiPosUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  *

@@ -14,8 +14,7 @@ public class FrontendTaskCreator implements TaskCreator {
     }
     
     @Override
-    public Task createTask(String inputFilePath, String jarPath)
-            throws TestException {
+    public Task createTask(String inputFilePath, String jarPath) {
         return new FrontEndTask(this.env, inputFilePath, jarPath);
     }
 }

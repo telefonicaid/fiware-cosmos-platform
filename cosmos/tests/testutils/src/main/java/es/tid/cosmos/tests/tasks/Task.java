@@ -19,7 +19,7 @@ public abstract class Task {
      * This function blocks until the task finished execution (i.e. it enters
      * the Error or Completed state).
      */
-    public void waitForCompletion() throws TestException {
+    public void waitForCompletion() {
         if (this.getStatus() == TaskStatus.Created) {
             this.run();
         }
@@ -38,12 +38,12 @@ public abstract class Task {
     /**
      * This function returns the task's status
      */
-    public abstract TaskStatus getStatus() throws TestException;
+    public abstract TaskStatus getStatus();
 
     /**
      * If the task is in the Completed state, this function returns a
      * representation of the MongoDB output of that task. Otherwise, it throws a
      * TestException.
      */
-    public abstract List<Map<String, String>> getResults() throws TestException;
+    public abstract List<Map<String, String>> getResults();
 }

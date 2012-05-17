@@ -61,7 +61,7 @@ public class WordCountIT {
         }
 
         @Test
-        public void wordCountTest() throws IOException, TestException {
+        public void wordCountTest() throws IOException {
             Task task = this.taskCreator.createTask(this.inputFilePath,
                                                     WORDCOUNT_PATH);
             task.run();

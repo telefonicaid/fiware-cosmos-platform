@@ -17,8 +17,8 @@ public final class CosmosSftp {
             throws JSchException {
         return CosmosSftp.createSession(
                 env,
-                env.getProperty(EnvironmentSetting.DEFAULT_USER),
-                env.getProperty(EnvironmentSetting.DEFAULT_PASSWORD));
+                env.getProperty(EnvironmentSetting.DefaultUser),
+                env.getProperty(EnvironmentSetting.DefaultPassword));
     }
 
     public static Session createSession(Environment env, String username,
@@ -27,7 +27,7 @@ public final class CosmosSftp {
         JSch jsch = new JSch();
         Session session = jsch.getSession(
                 username,
-                env.getProperty(EnvironmentSetting.SFTP_URL),
+                env.getProperty(EnvironmentSetting.FrontendServer),
                 22);
 
         session.setConfig("StrictHostKeyChecking", "no");

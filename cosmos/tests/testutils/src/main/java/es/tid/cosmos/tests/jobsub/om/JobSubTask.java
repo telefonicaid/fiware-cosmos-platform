@@ -37,9 +37,9 @@ public class JobSubTask extends Task {
     public JobSubTask(Environment env, SubmissionPlan plan, String[] attributes)
             throws TTransportException {
         this.transport = new TSocket(
-                env.getProperty(EnvironmentSetting.FRONTEND_SERVER),
+                env.getProperty(EnvironmentSetting.FrontendServer),
                 Integer.parseInt(env.getProperty(
-                    EnvironmentSetting.FRONTEND_THRIFT_PORT)));
+                        EnvironmentSetting.FrontendThriftPort)));
         this.transport.open();
         TBinaryProtocol protocol = new TBinaryProtocol(this.transport);
 
@@ -104,7 +104,7 @@ public class JobSubTask extends Task {
             assertEquals(this.getStatus(), TaskStatus.Completed,
                          "Verifying task is completed");
             final String frontendName = this.env.getProperty(
-                    EnvironmentSetting.FRONTEND_SERVER);
+                    EnvironmentSetting.FrontendServer);
             fs = FileSystem.newInstance(
                     new URI("hdfs://" + frontendName),
                     new Configuration());

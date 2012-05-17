@@ -29,6 +29,7 @@ public class HadoopSshFile implements SshFile {
     private Path hadoopPath;
     private final FileSystem hadoopFS;
     private final Logger LOG = LoggerFactory.getLogger(HadoopSshFile.class);
+    private FSDataOutputStream fsDataOutputStream;
 
     protected HadoopSshFile(final String fileName, final String userName,
                             FileSystem hadoopFS)
@@ -433,7 +434,8 @@ public class HadoopSshFile implements SshFile {
                     this.getAbsolutePath());
         }
         // TODO: when offset != 0, append with bufferSize?
-        return this.hadoopFS.create(this.hadoopPath.getParent());
+        this.fsDataOutputStream = this.hadoopFS.create(this.hadoopPath);
+        return this.fsDataOutputStream;
     }
 
     /**
@@ -463,7 +465,10 @@ public class HadoopSshFile implements SshFile {
     public void handleClose() throws IOException {
         LOG.info("trying to close the handle for path: " +
                 this.hadoopPath.toString());
-        // Noop
-        LOG.info("but this is a noop");
+        try {
+            this.fsDataOutputStream.close();
+        } catch (Exception e) {
+            LOG.info("closed path that was not open", e);
+        }
     }
 }

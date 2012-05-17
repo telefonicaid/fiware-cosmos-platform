@@ -11,14 +11,19 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import es.tid.cosmos.tests.tasks.*;
+import es.tid.cosmos.tests.tasks.Environment;
+import es.tid.cosmos.tests.tasks.EnvironmentSetting;
+import es.tid.cosmos.tests.tasks.Task;
+import es.tid.cosmos.tests.tasks.TaskStatus;
 
 /**
  *
  * @author ximo
  */
 public class FrontEndTask extends Task {
-    private static final String FILE_BROWSER_URL = "TODO"; // TODO
+    private static final String FILE_BROWSER_URL = "TODO";
+        // TODO: Put correct value once deployment happens
+    
     private boolean isRun;
     private final FrontEnd frontend;
     private final String taskId;
@@ -26,7 +31,7 @@ public class FrontEndTask extends Task {
     private final String inputHdfsPath;
 
     public static String getJarHdfsPath(String user, String jarFileName) {
-        return "/user/" + user + "/jars/" + jarFileName;
+        return ("/user/" + user + "/jars/" + jarFileName);
     }
 
     public static String getJarHdfsPath(String user) {
@@ -34,7 +39,7 @@ public class FrontEndTask extends Task {
     }
 
     public static String getDataHdfsPath(String user, String dataFileName) {
-        return "/user/" + user + "/datasets/" + dataFileName;
+        return ("/user/" + user + "/datasets/" + dataFileName);
     }
 
     public static String getDataHdfsPath(String user) {
@@ -135,7 +140,7 @@ public class FrontEndTask extends Task {
 
     @Override
     public TaskStatus getStatus() {
-        if(!this.isRun) {
+        if (!this.isRun) {
             return TaskStatus.Created;
         }
         return this.frontend.getTaskStatus(taskId);

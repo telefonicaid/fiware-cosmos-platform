@@ -14,7 +14,8 @@ public class UploadDataPage {
     public static final String DATA_FILE_HTML_ID = "id_jar";
     public static final String ERROR_HTML_ID = "error";
     private WebDriver driver;
-    private final String uploadDataUrl = "TODO"; // TODO
+    private final String uploadDataUrl = "TODO";
+        // TODO: Put correct value once deployment happens
 
     private void assertCorrectUrl() {
         assertEquals(this.driver.getCurrentUrl(), this.uploadDataUrl);

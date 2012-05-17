@@ -37,6 +37,7 @@ public class FrontendIT {
     private static final String SIMPLE_TEXT = "Very simple text file";
     private static final String PRIMES_TEXT = "2 3 4 5 6 7 8 9 123\n19283";
     private static final int TASK_COUNT = 4;
+    
     private FrontEnd frontend;
     private String wordcountHdfsPath;
     private String mapperFailHdfsPath;

@@ -39,7 +39,7 @@ public class JobSubTask extends Task {
         this.transport = new TSocket(
                 env.getProperty(EnvironmentSetting.FrontendServer),
                 Integer.parseInt(env.getProperty(
-                    EnvironmentSetting.FrontendThriftPort)));
+                        EnvironmentSetting.FrontendThriftPort)));
         this.transport.open();
         TBinaryProtocol protocol = new TBinaryProtocol(this.transport);
 

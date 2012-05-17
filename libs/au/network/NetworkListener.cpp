@@ -140,16 +140,14 @@ namespace au
         
         while ( true )
         {
-            if ( quit_flag )
-            {
-                close( rFd );
-                return;
-            }
-            
-            //periodic();
-            
             do
             {
+                if ( quit_flag )
+                {
+                    close( rFd );
+                    return;
+                }
+                
                 // One fd to read connections
                 FD_ZERO(&rFds);
                 eps = 1;
@@ -157,7 +155,7 @@ namespace au
                 FD_SET(rFd, &rFds);
                 
                 // Timeout
-                tv.tv_sec  = 2;
+                tv.tv_sec  = 1;
                 tv.tv_usec = 0;
                 
                 // Main select to wait new connections

@@ -239,9 +239,9 @@ namespace samson {
             output << ",";
             output << disk_out.getJson("disk out");
             output << ",";
-            output << net_in.getJson("net_out");
+            output << net_in.getJson("net in");
             output << ",";
-            output << net_out.getJson("net_out");
+            output << net_out.getJson("net out");
             output << "]";
             return output.str();
         }

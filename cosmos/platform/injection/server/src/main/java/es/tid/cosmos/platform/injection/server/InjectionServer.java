@@ -11,7 +11,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.server.Command;
-import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.UserAuth;
 import org.apache.sshd.server.auth.UserAuthPassword;
 import org.apache.sshd.server.command.ScpCommandFactory;
@@ -25,7 +24,7 @@ import org.slf4j.LoggerFactory;
  * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
- * @since  03/05/12
+ * @since  CTP 2
  */
 public class InjectionServer {
     private HadoopFileSystemFactory hadoopFileSystemFactory;
@@ -37,6 +36,12 @@ public class InjectionServer {
     private final Logger LOG = LoggerFactory.getLogger(InjectionServer.class);
     private static final String CONFIG_FILE = "/injection_server.dev.properties";
 
+    /**
+     * Constructs this instance from the configured values
+     *
+     * @throws IOException
+     * @throws URISyntaxException
+     */
     public InjectionServer() throws IOException, URISyntaxException {
         Properties props = new Properties();
         props.load(InjectionServer.class.getResource(CONFIG_FILE).openStream());
@@ -54,6 +59,9 @@ public class InjectionServer {
         this.hadoopFileSystemFactory = new HadoopFileSystemFactory(conf);
     }
 
+    /**
+     * Sets up and start an SFTP server
+     */
     public void setupSftpServer(){
         SshServer sshd = SshServer.setUpDefaultServer();
         // General settings

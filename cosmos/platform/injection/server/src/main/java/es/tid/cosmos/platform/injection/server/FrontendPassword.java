@@ -12,8 +12,9 @@ import org.slf4j.LoggerFactory;
 /**
  * FrontendPassword
  * see COPYRIGHT or LICENSE for terms of use
+ *
  * @author logc
- * @since 08/05/12
+ * @since  CTP 2
  */
 public class FrontendPassword implements PasswordAuthenticator {
     private String frontendDbUrl;
@@ -62,12 +63,13 @@ public class FrontendPassword implements PasswordAuthenticator {
     }
 
     /**
-     * connect to the platform frontend database with the configured
+     * Connect to the platform frontend database with the configured
      * credentials
-     * @param url
-     * @param dbName
-     * @param userName
-     * @param password
+     *
+     * @param url      the frontend database host URL
+     * @param dbName   the frontend database name, if any
+     * @param userName the username to connect to the frontend database
+     * @param password the password to connect to the frontend database
      */
     private void connect(String url, String dbName, String userName,
                          String password) throws SQLException {
@@ -88,12 +90,13 @@ public class FrontendPassword implements PasswordAuthenticator {
     }
 
     /**
-     * set all instance variables required to connect to the platform frontend
+     * Set all instance variables required to connect to the platform frontend
      * database
-     * @param url
-     * @param dbName
-     * @param userName
-     * @param password
+     *
+     * @param url      the frontend database host URL
+     * @param dbName   the frontend database name, if any
+     * @param userName the username to connect to the frontend database
+     * @param password the password to connect to the frontend database
      */
     public void setFrontendCredentials(String url, String dbName,
                                        String userName, String password) {

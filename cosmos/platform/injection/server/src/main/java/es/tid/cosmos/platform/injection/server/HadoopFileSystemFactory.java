@@ -12,7 +12,7 @@ import org.apache.sshd.server.FileSystemView;
  * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
- * @since  04/05/12
+ * @since  CTP 2
  */
 public class HadoopFileSystemFactory implements FileSystemFactory {
     private Configuration configuration;

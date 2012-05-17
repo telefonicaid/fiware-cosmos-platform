@@ -13,7 +13,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
 import org.junit.After;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import org.junit.Before;
@@ -30,18 +29,17 @@ public class HadoopSshFileTest {
     private HadoopSshFile hfoo;
     private HadoopSshFile hdir;
     private String user01 = "user01";
-    private Configuration configuration;
     private FileSystem hadoopFS;
 
     @Before
     public void setUp() {
-        this.configuration = new Configuration();
+        Configuration configuration = new Configuration();
         String foodir = "/tmp/user01";
         String foofile = "/tmp/user01/file01";
         try {
             this.hadoopFS = FileSystem.get(
-                    URI.create(this.configuration.get("fs.default.name")),
-                    this.configuration, this.user01);
+                    URI.create(configuration.get("fs.default.name")),
+                    configuration, this.user01);
             this.hfoo = new HadoopSshFile(foofile, this.user01, this.hadoopFS);
             this.hdir = new HadoopSshFile(foodir, this.user01, this.hadoopFS);
         } catch (IOException e) {

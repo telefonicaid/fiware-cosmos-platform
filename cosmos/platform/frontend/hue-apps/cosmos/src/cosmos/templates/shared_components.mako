@@ -30,12 +30,12 @@ from django.template.defaultfilters import urlencode, escape
     <ul class="nav" data-filters="ArtButtonBar">
       ${toolbar_icon('job_runs', 'Job runs', url('cosmos.views.index'),
                      is_selected(section, 'job_runs'))}
-      ${toolbar_icon('datasets', 'My datasets', 
-                     url('cosmos.views.list_datasets'),
-                     is_selected(section, 'datasets'))}
-      ${toolbar_icon('jars', 'My JARs', url('cosmos.views.list_jars'),
-                     is_selected(section, 'jars'))}
-      <li><a class="jframe-refresh large" data-filters="ArtButton">Refresh</a></li>
+      ${toolbar_icon('upload', 'Upload',
+                     url('cosmos.views.upload_index'),
+                     is_selected(section, 'upload'))}
+      <li>
+	<a class="jframe-refresh large" data-filters="ArtButton">Refresh</a>
+      </li>
     </ul>
     % endif
   </div>

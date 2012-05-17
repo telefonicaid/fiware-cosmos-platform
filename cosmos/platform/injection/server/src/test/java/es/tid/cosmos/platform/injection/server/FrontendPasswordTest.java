@@ -96,12 +96,15 @@ public class FrontendPasswordTest {
      * The PasswordAuthenticator interface requires us to catch any exceptions
      * thrown by the underlying authentication, including SQL databases not
      * found, etc ...
-     * Here we show that there is no exception thrown, and that the user
-     * authentication fails when the DB is not found.
+     *
+     * Here we show that the exception is caught and we do not allow
+     * authentication if the credentials are correct but the database is missing
+     *
      * @throws Exception
      */
     @Test
     public void testWithoutDb() throws Exception {
+        this.instance.setFrontendCredentials(this.frontendDbUrl, "", "", "");
         this.deleteDbFile();
         assertFalse(this.instance.authenticate("who_cares", "whatever",
                 null));
@@ -120,10 +123,12 @@ public class FrontendPasswordTest {
      * Show that if the content found in the database does not make sense, we
      * do not allow authentication. Note that one user does not exist and the
      * other has 'colt45' stored as its password hashing algorithm.
+     *
      * @throws Exception
      */
     @Test
     public void testDefaultAuthenticationIsFalse() throws Exception {
+        this.instance.setFrontendCredentials(this.frontendDbUrl, "", "", "");
         assertFalse(this.instance.authenticate("anonymous",
                 "we_are_legion", null));
         assertFalse(this.instance.authenticate("testSenselessContent",

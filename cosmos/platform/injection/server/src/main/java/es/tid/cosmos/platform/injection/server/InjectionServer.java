@@ -92,6 +92,5 @@ public class InjectionServer {
         } catch (Exception e) {
             LOG.error(e.getLocalizedMessage());
         }
-
     }
 }

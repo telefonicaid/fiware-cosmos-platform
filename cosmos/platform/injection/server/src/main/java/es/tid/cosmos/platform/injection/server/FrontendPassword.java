@@ -51,8 +51,7 @@ public class FrontendPassword implements PasswordAuthenticator {
             }
             if (algorithm.equals("sha1")) {
                 ans = hash.equals(DigestUtils.shaHex(salt + password));
-            }
-            if (algorithm.equals("md5")) {
+            } else if (algorithm.equals("md5")) {
                 ans = hash.equals(DigestUtils.md5Hex(salt + password));
             }
         } catch (SQLException e) {
@@ -74,16 +73,21 @@ public class FrontendPassword implements PasswordAuthenticator {
     private void connect(String url, String dbName, String userName,
                          String password) throws SQLException {
         if (url == null) {
-            throw new SQLException("no database URL set up");
+            throw new IllegalArgumentException("no database URL set up");
         }
         try {
-            String driver = "org.sqlite.JDBC";
-            if (url.contains("mysql")) {
+            String driver = "";
+            if (url.contains("sqlite")) {
+                driver = "org.sqlite.JDBC";
+            } else if (url.contains("mysql")) {
                 driver = "com.mysql.jdbc.Driver";
             }
-            Class.forName(driver).newInstance();
-            this.connection = DriverManager
-                              .getConnection(url+dbName, userName, password);
+            if (!driver.isEmpty()) {
+                Class.forName(driver).newInstance();
+                this.connection = DriverManager.getConnection(url + dbName,
+                                                              userName,
+                                                              password);
+            }
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
         }

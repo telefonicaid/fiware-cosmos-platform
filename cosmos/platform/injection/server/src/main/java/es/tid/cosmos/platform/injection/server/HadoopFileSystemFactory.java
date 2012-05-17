@@ -14,7 +14,7 @@ import org.apache.sshd.server.FileSystemView;
  * @since  CTP 2
  */
 public class HadoopFileSystemFactory implements FileSystemFactory {
-    private Configuration configuration;
+    private final Configuration configuration;
 
     public HadoopFileSystemFactory(Configuration configuration) {
         this.configuration = configuration;

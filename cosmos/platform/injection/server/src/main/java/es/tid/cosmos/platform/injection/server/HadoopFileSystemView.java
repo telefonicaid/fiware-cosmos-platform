@@ -24,7 +24,8 @@ public class HadoopFileSystemView implements FileSystemView {
     private final org.apache.log4j.Logger LOG =
             Logger.get(HadoopFileSystemView.class);
 
-    public HadoopFileSystemView(String userName, Configuration configuration) {
+    public HadoopFileSystemView(String userName, Configuration configuration)
+            throws IOException {
         this.userName = userName;
         try {
             this.hadoopFS = FileSystem.get(
@@ -34,12 +35,13 @@ public class HadoopFileSystemView implements FileSystemView {
                     .replaceFirst(this.hadoopFS.getUri().toString(), "");
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
+            throw e;
         }
     }
 
     @Override
     public HadoopSshFile getFile(String file) {
-        LOG.info("view asked for file " + file);
+        LOG.debug("view asked for file " + file);
         try {
             return this.getFile("", file);
         } catch (IOException e) {
@@ -53,11 +55,10 @@ public class HadoopFileSystemView implements FileSystemView {
 
     @Override
     public HadoopSshFile getFile(SshFile baseDir, String file) {
-        LOG.info("view asked for ssh path " + baseDir.toString() +
+        LOG.debug("view asked for ssh path " + baseDir.toString() +
                 " and file " + file);
-        String baseDirPath = baseDir.getAbsolutePath();
         try {
-            return this.getFile(baseDirPath, file);
+            return this.getFile(baseDir.getAbsolutePath(), file);
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
             return this.getFile(Path.CUR_DIR);
@@ -69,22 +70,23 @@ public class HadoopFileSystemView implements FileSystemView {
 
     private HadoopSshFile getFile(String baseDir, String file)
             throws IOException, InterruptedException {
-        LOG.info("view asked for dir " + baseDir + " and file " + file);
-        if (baseDir.isEmpty() && file.isEmpty()) {
-            throw new IllegalArgumentException("filesystem view not possible" +
-                    "for empty directory and filename");
-        }
-        if (baseDir.isEmpty() && file.equals(Path.CUR_DIR)) {
-            baseDir = this.homePath;
-            file = "";
-            LOG.info("redirecting to homepath: " + this.homePath);
+        LOG.debug("view asked for dir " + baseDir + " and file " + file);
+        if (baseDir.isEmpty()){
+            if (file.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "filesystem view impossible for empty dir and filename!");
+            } else if (file.equals(Path.CUR_DIR)) {
+                baseDir = this.homePath;
+                file = "";
+                LOG.debug("redirecting to home path: " + this.homePath);
+            }
         }
         String wholePath = baseDir + file;
         if (!baseDir.endsWith(Path.SEPARATOR) &&
                 !file.startsWith(Path.SEPARATOR)) {
             wholePath = baseDir + Path.SEPARATOR + file;
         }
-        LOG.info("trying to get a view for path: " + wholePath);
+        LOG.debug("trying to get a view for path: " + wholePath);
         return new HadoopSshFile(wholePath, this.userName, this.hadoopFS);
     }
 }

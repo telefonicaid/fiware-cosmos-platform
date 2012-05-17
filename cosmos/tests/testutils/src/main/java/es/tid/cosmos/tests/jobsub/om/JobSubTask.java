@@ -38,7 +38,8 @@ public class JobSubTask extends Task {
             throws TTransportException {
         this.transport = new TSocket(
                 env.getProperty(EnvironmentSetting.FRONTEND_SERVER),
-                Integer.parseInt(env.getProperty(EnvironmentSetting.FRONTEND_THRIFT_PORT)));
+                Integer.parseInt(env.getProperty(
+                    EnvironmentSetting.FRONTEND_THRIFT_PORT)));
         this.transport.open();
         TBinaryProtocol protocol = new TBinaryProtocol(this.transport);
 
@@ -86,8 +87,7 @@ public class JobSubTask extends Task {
         switch (state) {
             case SUCCESS:
                 return TaskStatus.Completed;
-            case SUBMITTED:
-            case RUNNING:
+            case SUBMITTED: case RUNNING:
                 return TaskStatus.Running;
             case FAILURE:
             case ERROR:

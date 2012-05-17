@@ -87,7 +87,7 @@ public class HadoopFileSystemView implements FileSystemView {
                 !file.startsWith(Path.SEPARATOR)) {
             wholePath = baseDir + Path.SEPARATOR + file;
         }
-        LOG.info("trying to open the path: " + wholePath);
+        LOG.info("trying to get a view for path: " + wholePath);
         return new HadoopSshFile(wholePath, this.userName, this.hadoopFS);
     }
 }

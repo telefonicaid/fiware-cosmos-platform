@@ -181,7 +181,7 @@ int MACRO_mobmx_MobVar_indVars_out::parseOut( KVSet kvSet , FILE *file)
 		totalVars.parse( kvSet.kvs[kv].value );
 		
 		// TODO: Modificar a parámetros de configuración o algo así
-		for(int nMon=4; nMon<=10; nMon++)
+		for(int nMon=1; nMon<=6; nMon++)
 		{
 			bool exists = false;
 			counter += fprintf(file, "%lu|%d" , phoneId_key.value, nMon);

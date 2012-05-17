@@ -21,16 +21,16 @@ void MACRO_mobmx_matrix_get_group_catalogue::parseLines( std::vector<char*> line
 	MRData_UInt cell;
 	MRData_TwoInt bts_group;
 	
-	long unsigned int cellId;
+	//long unsigned int cellId;
 
   	for (std::vector<char*>::iterator iter = lines.begin() ; iter < lines.end() ; iter++)
 	{
 		MR_PARSER_INIT(*iter);		
 		GET_INIT_MX
 		GET_NEXT_FIELD
-		//GET_HEXA(cell.value)
-		gstCodedStrToInt(&line[pos_field],&cellId, 20);		//CHILE: Conversión de String a decimal
-		cell.value = cellId;
+		GET_HEXA(cell.value)
+		//gstCodedStrToInt(&line[pos_field],&cellId, 20);		//CHILE: Conversión de String a decimal
+		//cell.value = cellId;
 		GET_NEXT_FIELD
 		GET_LONG(bts_group.num1)
 		GET_NEXT_FIELD
@@ -224,37 +224,6 @@ void MACRO_mobmx_matrix_count_ranges::run( KVSet* inputs, int num_inputs , KVWri
 //////////////////////
 void MACRO_mobmx_matrix_get_vector::run( KVSet* inputs, int num_inputs , KVWriterInterface **writer , int num_outputs)
 {
-	/*//Inputs
-	MRData_ItinRange moveRange;
-	MRData_ItinPercMove perc_moves;
-	//Outputs
-	MRData_UInt bts;
-	MRData_PairIdMtx dist_moves;
-
-	double num_moves=0;
-	
-	// Initialization of vector
-	dist_moves.comsSetLength(168);
-	for(int i=0; i<168; i++)
-	{
-		dist_moves.coms[i].value = 0;
-	}
-
-	moveRange.parse(inputs[0].kvs[0].key);
-	bts.value = dist_moves.id1 = moveRange.poiSrc;
-	dist_moves.id2 = moveRange.poiTgt;
-	// Create vector
-	for(int i=0;i<inputs[0].num_kvs; i++)
-	{
-		perc_moves.parse(inputs[0].kvs[i].value);
-		int j = perc_moves.group - 1; // Vector starts on Monday
-		j = j>=0 ? j : 6;	// Sunday at the end
-		j *= 24;
-		j += perc_moves.range;
-		dist_moves.coms[j].value = perc_moves.perc_moves;
-		num_moves += perc_moves.perc_moves;
-	}*/
-	
 	//Inputs
 	MRData_ItinRange moveRange;
 	MRData_ItinPercMove perc_moves;

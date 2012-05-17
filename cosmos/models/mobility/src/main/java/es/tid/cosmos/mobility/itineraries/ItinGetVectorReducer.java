@@ -36,7 +36,7 @@ public class ItinGetVectorReducer extends Reducer<ProtobufWritable<ItinRange>,
             final MobData mobData = value.get();
             final ItinPercMove percMoves = mobData.getItinPercMove();
             int j = percMoves.getGroup() - 1;  // Vector starts on Monday
-            j = j >= 0 ? j : 6;	 // Sunday at the end
+            j = (j >= 0) ? j : 6;  // Sunday at the end
             j *= 24;
             j += percMoves.getRange();
             distMoves.setComs(j, percMoves.getPercMoves());

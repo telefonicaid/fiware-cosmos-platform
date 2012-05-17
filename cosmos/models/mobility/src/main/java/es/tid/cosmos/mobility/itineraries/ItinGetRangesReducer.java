@@ -10,6 +10,7 @@ import es.tid.cosmos.mobility.data.ItinRangeUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
@@ -30,47 +31,49 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
             final ItinMovement move = mobData.getItinMovement();
+            final ItinTime source = move.getSource();
+            final ItinTime target = move.getTarget();
             ItinRange.Builder moveRange = ItinRange.newBuilder();
             moveRange.setNode(node);
-            moveRange.setPoiSrc(move.getSource().getBts());
-            moveRange.setPoiTgt(move.getTarget().getBts());
+            moveRange.setPoiSrc(source.getBts());
+            moveRange.setPoiTgt(target.getBts());
             // Calculate portion of moves by hour
-            int hourSrc = move.getSource().getTime().getHour();
-            int hourTgt = move.getTarget().getTime().getHour();
+            int hourSrc = source.getTime().getHour();
+            int hourTgt = target.getTime().getHour();
 
-            if (move.getSource().getDate().getWeekday()
-                    != move.getTarget().getDate().getWeekday()) {
+            if (source.getDate().getWeekday()
+                    != target.getDate().getWeekday()) {
                 hourTgt += 24;
             }
             int diff = (hourTgt - hourSrc);
             if (diff == 0) {
                 // Source hour and target hour are the same.
-                moveRange.setRange(move.getSource().getTime().getHour());
-                moveRange.setGroup(move.getSource().getDate().getWeekday());
+                moveRange.setRange(source.getTime().getHour());
+                moveRange.setGroup(source.getDate().getWeekday());
                 context.write(ItinRangeUtil.wrap(moveRange.build()),
                               MobDataUtil.createAndWrap(1.0D));
             } else {
-                int minutSrc = move.getSource().getTime().getMinute();
-                int minutTgt = move.getTarget().getTime().getMinute();
+                int minutSrc = source.getTime().getMinute();
+                int minutTgt = target.getTime().getMinute();
                 int dur = (diff * 60) + (minutTgt - minutSrc);
                 // Comunication in source hour
-                moveRange.setRange(move.getSource().getTime().getHour());
-                moveRange.setGroup(move.getSource().getDate().getWeekday());
+                moveRange.setRange(source.getTime().getHour());
+                moveRange.setGroup(source.getDate().getWeekday());
                 double percMoves = (60 - minutSrc) / dur;
                 context.write(ItinRangeUtil.wrap(moveRange.build()),
                               MobDataUtil.createAndWrap(percMoves));
                 
                 // Comunication in target hour
-                moveRange.setRange(move.getTarget().getTime().getHour());
-                moveRange.setGroup(move.getTarget().getDate().getWeekday());
+                moveRange.setRange(target.getTime().getHour());
+                moveRange.setGroup(target.getDate().getWeekday());
                 percMoves = minutTgt / dur;
                 context.write(ItinRangeUtil.wrap(moveRange.build()),
                               MobDataUtil.createAndWrap(percMoves));
                 
                 // Fill the intermediate hours
                 for (int i = 1; i < diff; i++) {
-                    int range = move.getSource().getTime().getHour() + i;
-                    int group = move.getSource().getDate().getWeekday();
+                    int range = source.getTime().getHour() + i;
+                    int group = source.getDate().getWeekday();
                     if (range > 23) {
                         range -= 24;
                         group++;

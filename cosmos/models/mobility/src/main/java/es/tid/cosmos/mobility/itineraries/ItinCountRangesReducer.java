@@ -14,7 +14,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 /**
  * Input: <ItinRange, Double>
  * Output: <ItinRange, ItinPercMove>
- * 
+ *
  * @author dmicol
  */
 public class ItinCountRangesReducer extends Reducer<ProtobufWritable<ItinRange>,
@@ -38,6 +38,6 @@ public class ItinCountRangesReducer extends Reducer<ProtobufWritable<ItinRange>,
         ItinRange.Builder outMoveRange = ItinRange.newBuilder(moveRange);
         outMoveRange.setGroup(0);
         outMoveRange.setRange(0);
-	context.write(ItinRangeUtil.wrap(outMoveRange.build()), distMoves);
+        context.write(ItinRangeUtil.wrap(outMoveRange.build()), distMoves);
     }
 }

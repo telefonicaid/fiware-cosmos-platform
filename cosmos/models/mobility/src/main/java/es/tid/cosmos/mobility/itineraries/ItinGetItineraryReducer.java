@@ -38,7 +38,7 @@ public class ItinGetItineraryReducer extends Reducer<
             throws IOException, InterruptedException {
         key.setConverter(ItinRange.class);
         final ItinRange moveRange = key.get();
-        double absMax = 0.0D;
+        double absMax = Double.MIN_VALUE;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
@@ -74,13 +74,13 @@ public class ItinGetItineraryReducer extends Reducer<
             itin.setSource(moveRange.getPoiSrc());
             itin.setTarget(moveRange.getPoiTgt());
             for (int j = 0; j < peaksMoves.getComsCount(); j++) {
-                if (peaksMoves.getComs(j) != 0.0D) // Zone starts
-                {
+                // Zone starts
+                if (peaksMoves.getComs(j) != 0.0D) {
                     double peak = 0.0D;
                     itin.setWdayInit(j);
                     itin.setRangeInit(j);
                     for (; j < peaksMoves.getComsCount()
-                            && peaksMoves.getComs(j) != 0; j++) {
+                            && peaksMoves.getComs(j) != 0.0D; j++) {
                         if (peaksMoves.getComs(j) > peak) {
                             // Peak starts
                             peak = peaksMoves.getComs(j);
@@ -90,7 +90,7 @@ public class ItinGetItineraryReducer extends Reducer<
                             itin.setRangePeakFin(j);
                             for (; j < peaksMoves.getComsCount() - 1
                                     && peaksMoves.getComs(j)
-                                    == peaksMoves.getComs(j + 1);
+                                            == peaksMoves.getComs(j + 1);
                                     j++) {
                                 itin.setWdayPeakFin(j + 1);
                                 itin.setRangePeakFin(j + 1);

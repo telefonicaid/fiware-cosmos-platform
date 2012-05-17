@@ -33,7 +33,7 @@ public class FrontendPassword implements PasswordAuthenticator {
         boolean ans = false;
         try {
             this.connect(this.frontendDbUrl, this.dbName, this.dbUserName,
-                    this.dbPassword);
+                         this.dbPassword);
             String sql = "SELECT password FROM auth_user WHERE username = ?";
             PreparedStatement preparedStatement =
                     this.connection.prepareStatement(sql);
@@ -104,21 +104,5 @@ public class FrontendPassword implements PasswordAuthenticator {
         this.dbName = dbName;
         this.dbUserName = userName;
         this.dbPassword = password;
-    }
-
-    public String getFrontendDbUrl() {
-        return this.frontendDbUrl;
-    }
-
-    public String getDbName() {
-        return this.dbName;
-    }
-
-    public String getDbUserName() {
-        return this.dbUserName;
-    }
-
-    public String getDbPassword() {
-        return this.dbPassword;
     }
 }

@@ -140,18 +140,4 @@ public class FrontendPasswordTest {
                 "");
         assertFalse(this.instance.authenticate("test", "test", null));
     }
-
-    @Test
-    public void testSetFrontendCredentials() throws Exception {
-        String dbName = "test";
-        String dbUserName = "test";
-        String dbPassword = "test";
-        this.instance.setFrontendCredentials(this.frontendDbUrl, dbName,
-                dbUserName, dbPassword);
-
-        assertEquals(this.frontendDbUrl, this.instance.getFrontendDbUrl());
-        assertEquals(dbName, this.instance.getDbName());
-        assertEquals(dbUserName, this.instance.getDbUserName());
-        assertEquals(dbPassword, this.instance.getDbPassword());
-    }
 }

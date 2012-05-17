@@ -13,6 +13,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.sshd.server.SshFile;
 
@@ -25,9 +26,9 @@ import es.tid.cosmos.base.util.Logger;
  * @since  CTP 2
  */
 public class HadoopSshFile implements SshFile {
-    private String userName;
-    private Path hadoopPath;
     private FSDataOutputStream fsDataOutputStream;
+    private final String userName;
+    private final Path hadoopPath;
     private final FileSystem hadoopFS;
     private final org.apache.log4j.Logger LOG = Logger.get(HadoopSshFile.class);
 
@@ -118,15 +119,11 @@ public class HadoopSshFile implements SshFile {
         try {
             String pathOwner = this.hadoopFS.getFileStatus(this.hadoopPath)
                     .getOwner();
-            boolean ans;
-            if (pathOwner.equals(this.userName)) {
-                ans = this.hadoopFS.getFileStatus(this.hadoopPath).getPermission()
-                        .getUserAction().implies(queriedFsAction);
-            } else {
-                ans = this.hadoopFS.getFileStatus(this.hadoopPath).getPermission()
-                        .getOtherAction().implies(queriedFsAction);
-            }
-            return ans;
+            FsPermission permission = this.hadoopFS
+                    .getFileStatus(this.hadoopPath).getPermission();
+            FsAction action = (pathOwner.equals(this.userName)?
+                    permission.getUserAction() : permission.getOtherAction());
+            return action.implies(queriedFsAction);
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
             return false;

@@ -347,8 +347,8 @@ public class HadoopSshFile implements SshFile {
     @Override
     public void truncate() throws IOException {
         LOG.info("truncating");
-        boolean do_overwrite = true;
-        this.hadoopFS.create(this.hadoopPath, do_overwrite);
+        FSDataOutputStream tmp = this.hadoopFS.create(this.hadoopPath, true);
+        tmp.close();
     }
 
     /**

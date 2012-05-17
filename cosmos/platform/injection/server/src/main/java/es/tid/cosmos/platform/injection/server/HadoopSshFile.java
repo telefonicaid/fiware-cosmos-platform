@@ -14,12 +14,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.sshd.server.SshFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import es.tid.cosmos.base.util.Logger;
 
 /**
  * HadoopSshFile
- * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
  * @since  CTP 2
@@ -27,9 +26,9 @@ import org.slf4j.LoggerFactory;
 public class HadoopSshFile implements SshFile {
     private String userName;
     private Path hadoopPath;
-    private final FileSystem hadoopFS;
-    private final Logger LOG = LoggerFactory.getLogger(HadoopSshFile.class);
     private FSDataOutputStream fsDataOutputStream;
+    private final FileSystem hadoopFS;
+    private final org.apache.log4j.Logger LOG = Logger.get(HadoopSshFile.class);
 
     protected HadoopSshFile(final String fileName, final String userName,
                             FileSystem hadoopFS)

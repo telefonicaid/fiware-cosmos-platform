@@ -8,12 +8,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.SshFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import es.tid.cosmos.base.util.Logger;
 
 /**
  * HadoopFileSystemView
- * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
  * @since  CTP 2
@@ -22,19 +21,17 @@ public class HadoopFileSystemView implements FileSystemView {
     private String homePath;
     private FileSystem hadoopFS;
     private final String userName;
-    private final Logger LOG = LoggerFactory
-            .getLogger(HadoopFileSystemView.class);
+    private final org.apache.log4j.Logger LOG =
+            Logger.get(HadoopFileSystemView.class);
 
     public HadoopFileSystemView(String userName, Configuration configuration) {
         this.userName = userName;
         try {
             this.hadoopFS = FileSystem.get(
                     URI.create(configuration.get("fs.default.name")),
-                    configuration, userName);
+                    configuration);
             this.homePath = this.hadoopFS.getHomeDirectory().toString()
                     .replaceFirst(this.hadoopFS.getUri().toString(), "");
-        } catch (InterruptedException e) {
-            LOG.error(e.getMessage(), e);
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
         }

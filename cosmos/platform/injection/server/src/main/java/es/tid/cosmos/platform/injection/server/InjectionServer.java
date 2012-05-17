@@ -16,25 +16,26 @@ import org.apache.sshd.server.auth.UserAuthPassword;
 import org.apache.sshd.server.command.ScpCommandFactory;
 import org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
 import org.apache.sshd.server.sftp.SftpSubsystem;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import es.tid.cosmos.base.util.Logger;
 
 /**
  * InjectionServer connects an SFTP client to an HDFS filesystem
- * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
  * @since  CTP 2
  */
 public class InjectionServer {
+    private static final String CONFIG_FILE = "/injection_server.dev.properties";
+
     private HadoopFileSystemFactory hadoopFileSystemFactory;
     private final String frontendDbUrl;
     private final int serverSocketPort;
     private final String dbName;
     private final String dbUser;
     private final String dbPassword;
-    private final Logger LOG = LoggerFactory.getLogger(InjectionServer.class);
-    private static final String CONFIG_FILE = "/injection_server.dev.properties";
+    private final org.apache.log4j.Logger LOG =
+            Logger.get(InjectionServer.class);
 
     /**
      * Constructs this instance from the configured values

@@ -9,7 +9,6 @@ import org.apache.sshd.server.FileSystemView;
 
 /**
  * HadoopFileSystemFactory
- * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
  * @since  CTP 2

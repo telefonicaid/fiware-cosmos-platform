@@ -6,30 +6,30 @@ import java.util.StringTokenizer;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.sshd.server.PasswordAuthenticator;
 import org.apache.sshd.server.session.ServerSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import es.tid.cosmos.base.util.Logger;
 
 /**
  * FrontendPassword
- * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
  * @since  CTP 2
  */
 public class FrontendPassword implements PasswordAuthenticator {
+    private static final String djangoSeparator = "$";
+
     private String frontendDbUrl;
     private String dbName;
     private String dbUserName;
     private String dbPassword;
     private Connection connection;
-    private final Logger LOG = LoggerFactory.getLogger(FrontendPassword.class);
-    private static final String djangoSeparator = "$";
+    private final org.apache.log4j.Logger LOG = Logger.get(FrontendPassword.class);
 
     @Override
     public boolean authenticate(String username,
                                 String password, ServerSession session) {
-        LOG.info(String.format("received %s as username, %s as password",
-                username, password));
+        LOG.debug(String.format("received %s as username, %d chars as password",
+                username, password.length()));
         boolean ans = false;
         try {
             this.connect(this.frontendDbUrl, this.dbName, this.dbUserName,

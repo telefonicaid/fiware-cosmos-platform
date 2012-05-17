@@ -1,6 +1,9 @@
 package es.tid.cosmos.platform.injection.server;
 
-import es.tid.cosmos.base.util.ArgumentParser;
+import java.io.File;
+
+import org.apache.commons.cli.*;
+import org.apache.commons.configuration.ConfigurationException;
 
 /**
  * InjectionServerMain is the main entry point to this application
@@ -10,23 +13,44 @@ import es.tid.cosmos.base.util.ArgumentParser;
  */
 public final class InjectionServerMain {
     private String appName = "Injection Server";
+    private static final String DEFAULT_EXTERNAL_CONFIGURATION =
+            "file:///etc/cosmos/injection.properties";
+    private static final String INTERNAL_CONFIGURATION =
+            "/injection_server.prod.properties";
 
     private InjectionServerMain() {
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ConfigurationException {
+        ServerCommandLine commandLine = new ServerCommandLine();
         try {
-            ArgumentParser argumentParser = new ArgumentParser();
-            argumentParser.parse(args);
-
-        } catch (IllegalArgumentException e) {
-            System.out.println();
+            commandLine.parse(args);
+        } catch (ParseException e) {
+            commandLine.printUsage();
+            System.exit(1);
         }
+
+        String externalConfiguration = DEFAULT_EXTERNAL_CONFIGURATION;
+        if (commandLine.hasConfigFile()) {
+            externalConfiguration = commandLine.getConfigFile();
+        }
+
+        Configuration config;
         try {
-            InjectionServer server = new InjectionServer();
+            config = new Configuration(new File(externalConfiguration)
+                                               .toURI().toURL());
+        } catch(Exception ex) {
+            config = new Configuration(InjectionServerMain.class
+                                         .getResource(INTERNAL_CONFIGURATION));
+        }
+
+        try {
+            InjectionServer server = new InjectionServer(config);
             server.setupSftpServer();
         } catch (Exception ex) {
             System.exit(1);
         }
     }
+
+
 }

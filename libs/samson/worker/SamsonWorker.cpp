@@ -1179,11 +1179,11 @@ namespace samson {
         cpu.push( (double) num_processes / (double) max_processes );
         memory.push( (double) used_memory / (double) max_memory );
 
-        disk_in.push( (double) disk_read_rate / (double) 200000000 );
-        disk_out.push( (double) disk_write_rate / (double) 200000000 );
+        disk_in.push( (double) disk_read_rate / (double) 1000000 );
+        disk_out.push( (double) disk_write_rate / (double) 1000000 );
 
-        net_in.push( (double) network_read_rate / (double) 100000000 );
-        net_out.push( (double) network_write_rate / (double) 100000000 );
+        net_in.push( (double) network_read_rate / (double) 1000000 );
+        net_out.push( (double) network_write_rate / (double) 1000000 );
         
     
         

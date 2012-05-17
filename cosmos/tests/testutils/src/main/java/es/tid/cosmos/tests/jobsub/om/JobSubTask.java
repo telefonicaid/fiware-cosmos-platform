@@ -1,12 +1,22 @@
 package es.tid.cosmos.tests.jobsub.om;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransportException;
+import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 
 import es.tid.cosmos.tests.jobsub.om.generated.*;
@@ -17,20 +27,29 @@ import es.tid.cosmos.tests.tasks.*;
  * @author ximo
  */
 public class JobSubTask extends Task {
+    private final Environment env;
+    private final TSocket transport;
     private SubmissionPlan plan;
     private SubmissionHandle handle;
-    private JobSubmissionService.Client service;
+    private final JobSubmissionService.Client service;
+    private final String[] attributes;
 
-    public JobSubTask(Environment env, SubmissionPlan plan)
+    public JobSubTask(Environment env, SubmissionPlan plan, String[] attributes)
             throws TTransportException {
-        TSocket transport = new TSocket(
+        this.transport = new TSocket(
                 env.getProperty(EnvironmentSetting.FRONTEND_SERVER),
                 Integer.parseInt(env.getProperty(EnvironmentSetting.FRONTEND_THRIFT_PORT)));
-        transport.open();
-        TBinaryProtocol protocol = new TBinaryProtocol(transport);
+        this.transport.open();
+        TBinaryProtocol protocol = new TBinaryProtocol(this.transport);
 
         this.service = new JobSubmissionService.Client(protocol);
         this.plan = plan;
+        this.env = env;
+        this.attributes = attributes;
+    }
+
+    public void close() {
+        this.transport.close();
     }
 
     @Override
@@ -80,6 +99,50 @@ public class JobSubTask extends Task {
 
     @Override
     public List<Map<String, String>> getResults() throws TestException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        FileSystem fs;
+        try {
+            assertEquals(this.getStatus(), TaskStatus.Completed,
+                         "Verifying task is completed");
+            final String frontendName = this.env.getProperty(
+                    EnvironmentSetting.FRONTEND_SERVER);
+            fs = FileSystem.newInstance(
+                    new URI("hdfs://" + frontendName),
+                    new Configuration());
+        } catch (URISyntaxException ex) {
+            throw new TestException("Bad URI", ex);
+        } catch (IOException ex) {
+            throw new TestException("[IOException]", ex);
+        }
+
+        List<Map<String, String>> ret = new LinkedList<Map<String, String>>();
+        BufferedReader output = null;
+        try {
+            output = new BufferedReader(new InputStreamReader(fs.open(null)));
+
+            String line;
+            while ((line = output.readLine()) != null) {
+                String[] tokens = line.split("\\s");
+                Map<String, String> lineVal = new HashMap<String, String>();
+                assertEquals(tokens.length, this.attributes.length,
+                             "Verifying line has the same amout of tokens as"
+                        + " attributes passed in the constructor");
+                for (int i = 0; i < this.attributes.length; i++) {
+                    lineVal.put(this.attributes[i], tokens[i]);
+                }
+                ret.add(lineVal);
+            }
+        } catch (IOException ex) {
+            throw new TestException("[IOException]", ex);
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException ex) {
+                    throw new TestException("[IOException]", ex);
+                }
+            }
+        }
+
+        return ret;
     }
 }

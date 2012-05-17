@@ -963,9 +963,9 @@ namespace samson {
             logdata = process_logging(command);
             command->append(logdata);
         }
-        else if( main_command == "status" )
+        else if( main_command == "node" )
         {
-            process_status( command );
+            process_node( command );
             return;
         }
         else
@@ -975,18 +975,18 @@ namespace samson {
         
     }
     
-    void SamsonWorker::process_status(  au::network::RESTServiceCommand* command  )
+    void SamsonWorker::process_node(  au::network::RESTServiceCommand* command  )
     {
         
         if( command->format != "json" )
         {
-            command->appendFormatedError("Only json format is suppourted in */status/ path");
+            command->appendFormatedError("Only json format is suppourted in samson/node/*");
             return;
         }
         
         if( command->path_components.size() <= 2 )
         {
-            command->appendFormatedError("Wrong path. Supported: samson/status/general.json");
+            command->appendFormatedError("Wrong path. Supported: samson/node/general.json");
             return;
         }
         
@@ -1000,7 +1000,7 @@ namespace samson {
         }
         else
         {
-            command->appendFormatedError("Wrong path. Supported: samson/status/general.json");
+            command->appendFormatedError("Wrong path. Supported: samson/node/general.json");
             return;
         }
         

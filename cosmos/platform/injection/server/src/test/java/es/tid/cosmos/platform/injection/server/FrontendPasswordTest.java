@@ -14,7 +14,6 @@ import static junit.framework.Assert.assertTrue;
 
 /**
  * FrontendPasswordTest
- * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
  * @since 15/05/12
@@ -36,12 +35,11 @@ public class FrontendPasswordTest {
         this.connection = DriverManager.getConnection(this.frontendDbUrl);
         Statement stat = this.connection.createStatement();
         stat.executeUpdate("DROP TABLE IF EXISTS auth_user");
-        /* As dumped from frontend temporary database on 2012-05-15 with the
-         * following commands:
-         * bin/django syncdb; sqlite3 /tmp/cosmos.db; > .schema auth_user
-         *
-         * Unused fields (e.g. first_name) were ignored
-         */
+        //  As dumped from frontend temporary database on 2012-05-15 with the
+        //  following commands:
+        //  bin/django syncdb; sqlite3 /tmp/cosmos.db; > .schema auth_user
+
+        //  Unused fields (e.g. first_name) were ignored
         String createStatement = "CREATE TABLE \"auth_user\" (\n" +
                 "    \"username\" varchar(30) NOT NULL UNIQUE,\n" +
                 "    \"password\" varchar(128) NOT NULL\n" +
@@ -52,14 +50,11 @@ public class FrontendPasswordTest {
          * > SELECT username, password FROM auth_user;
          */
         String usernameColContent1 = "test";
-        String passwordColContent1 = "sha1" + "$" + "a49dc" + "$" +
-                "b234ed692454a6164983c3fae6d8b4ca0f69b219";
+        String passwordColContent1 = "sha1$a49dc$b234ed692454a6164983c3fae6d8b4ca0f69b219";
         String usernameColContent2 = "testMd5";
-        String passwordColContent2 = "md5"+ "$" + "a49dc" + "$" +
-                "de03e38fd7240af348801f09ab2ed616";
+        String passwordColContent2 = "md5$a49dc$de03e38fd7240af348801f09ab2ed616";
         String usernameColContent3 = "testSenselessContent";
-        String passwordColContent3 = "colt45"+ "$" + "a49dc" + "$" +
-                "de03e38fd7240af348801f09ab2ed616";
+        String passwordColContent3 = "colt45$a49dc$de03e38fd7240af348801f09ab2ed616";
 
         this.insertIntoTestDb(usernameColContent1, passwordColContent1);
         this.insertIntoTestDb(usernameColContent2, passwordColContent2);

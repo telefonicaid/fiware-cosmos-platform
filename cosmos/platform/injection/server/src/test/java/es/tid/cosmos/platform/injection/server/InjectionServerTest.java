@@ -1,12 +1,12 @@
 package es.tid.cosmos.platform.injection.server;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import java.io.File;
+
+import org.junit.*;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * InjectionServerTest
- * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
  * @since 15/05/12
@@ -16,7 +16,10 @@ public class InjectionServerTest {
 
     @Before
     public void setUp() throws Exception {
-        this.instance = new InjectionServer();
+        Configuration configuration = new Configuration(
+                InjectionServerMain.class
+                        .getResource("/injection_server.dev.properties"));
+        this.instance = new InjectionServer(configuration);
     }
 
     @After
@@ -26,7 +29,8 @@ public class InjectionServerTest {
 
     @Test
     public void testSetupSftpServer() throws Exception {
-        // TODO: implement testSetupSftpServer
+        assertTrue(this.instance instanceof InjectionServer);
+        // No exceptions thrown
         this.instance.setupSftpServer();
     }
 }

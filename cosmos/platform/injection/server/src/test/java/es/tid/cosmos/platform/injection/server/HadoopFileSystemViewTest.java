@@ -16,7 +16,6 @@ import static org.mockito.Mockito.when;
 
 /**
  * HadoopFileSystemViewTest
- * see COPYRIGHT or LICENSE for terms of use
  *
  * @author logc
  * @since 15/05/12

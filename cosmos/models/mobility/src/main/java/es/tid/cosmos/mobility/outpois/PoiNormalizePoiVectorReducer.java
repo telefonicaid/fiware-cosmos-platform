@@ -57,9 +57,9 @@ public class PoiNormalizePoiVectorReducer extends Reducer<
             double coms = clusterSum.getCoords().getComs(i);
             if (i < 24) {
                 // Mondays, Tuesday, Wednesday and Thursday --> Total: 103 days
-                coms /= 121.0D;
+                coms /= 103.0D;
             } else {
-                coms /= 31.0D;
+                coms /= 26.0D;
             }
             sumValues += coms;
             clusterDivCoordsBuilder.addComs(coms);

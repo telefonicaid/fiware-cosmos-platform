@@ -1,7 +1,6 @@
 package es.tid.cosmos.mobility.preparing;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
@@ -39,12 +38,7 @@ public class JoinBtsNodeToCdrReducer extends Reducer<LongWritable,
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        List<Cell> filteredCells = new LinkedList<Cell>();
-        for (Cell cell : cells) {
-            if (cell.getCellId() == key.get()) {
-                filteredCells.add(cell);
-            }
-        }
+        List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
         if (filteredCells.isEmpty()) {
             for (ProtobufWritable<MobData> value : values) {
                 value.setConverter(MobData.class);

@@ -33,9 +33,7 @@ public class FrontEnd {
     public static final String USERNAME_INPUT_ID = "id_username";
     public static final String PASSWORD_INPUT_ID = "id_password";
     private static final String DEFAULT_HTTP_PORT = "80";
-    // Default login info
-    private static final String DEFAULT_USER = "test";
-    private static final String DEFAULT_PASSWRD = "cosmostest";
+    
     private WebDriver driver;
     private final String username;
     private final String password;
@@ -43,7 +41,8 @@ public class FrontEnd {
     private final Environment environment;
 
     public FrontEnd(Environment env) {
-        this(env, DEFAULT_USER, DEFAULT_PASSWRD);
+        this(env, env.getProperty(EnvironmentSetting.DEFAULT_USER),
+             env.getProperty(EnvironmentSetting.DEFAULT_PASSWORD));
     }
 
     public FrontEnd(Environment env, String username, String password) {

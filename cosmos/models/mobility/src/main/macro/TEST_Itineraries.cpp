@@ -3,7 +3,7 @@
 
 #define mob_conf_max_minutes_in_moves 360
 #define mob_conf_min_minutes_in_moves 0
-#define mob_conf_min_itin_moves 6.9
+#define mob_conf_min_itin_moves 5.9
 #define mob_conf_perc_absolute_max 20.0
 
 void MACRO_mobmx_itin_join_cell_bts::run( KVSet* inputs, int num_inputs , KVWriterInterface **writer , int num_outputs)
@@ -258,14 +258,13 @@ void MACRO_mobmx_itin_get_itinerary::run( KVSet* inputs, int num_inputs , KVWrit
 		// VECTOR NORMALIZATION	
 		for(int j=0; j<dist_moves.coms_length; j++)
 		{
-			if(j>=24  && j<= 95)	// 30 Tuesdays, Wednesdays and Thursdays in the period
-			if(j<72 || j>95)	
+			if(j>=72  && j<= 95)	// 25 Thursdays in the period	
 			{
-				elem.value = dist_moves.coms[j].value/30.0;
+				elem.value = dist_moves.coms[j].value/25.0;
 			}
-			else	// 31 Mondays, Fridays, Saturdays and Sundays in the period
+			else	// 26 Mondays, Tuesdays, Wednesdays, Fridays, Saturdays and Sundays in the period
 			{
-				elem.value = dist_moves.coms[j].value/31.0;
+				elem.value = dist_moves.coms[j].value/26.0;
 			}
 			peaks_moves.comsAdd()->copyFrom(&elem);
 			// Get absolute maximum

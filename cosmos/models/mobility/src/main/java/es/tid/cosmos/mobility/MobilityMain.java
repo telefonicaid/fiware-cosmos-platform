@@ -12,6 +12,7 @@ import org.apache.hadoop.util.ToolRunner;
 import es.tid.cosmos.base.util.ArgumentParser;
 import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
+import es.tid.cosmos.mobility.itineraries.ItinerariesRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;
@@ -21,6 +22,8 @@ import es.tid.cosmos.mobility.mivs.MivsRunner;
 import es.tid.cosmos.mobility.outpois.OutPoisRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
+import es.tid.cosmos.mobility.populationdensity.PopulationDensityRunner;
+import es.tid.cosmos.mobility.populationdensity.profile.PopulationDensityProfileRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
 
 /**
@@ -53,6 +56,7 @@ public class MobilityMain extends Configured implements Tool {
         Path cellsPath = new Path(arguments.getString("cells"));
         Path adjBtsPath = new Path(arguments.getString("adjBts"));
         Path btsVectorTxtPath = new Path(arguments.getString("btsVectorTxt"));
+        Path clientProfilePath = new Path(arguments.getString("clientProfile"));
         
         boolean shouldRunAll = arguments.getBoolean("runAll");
         boolean isDebug = arguments.getBoolean("debug");
@@ -190,6 +194,43 @@ public class MobilityMain extends Configured implements Tool {
             OutPoisRunner.run(vectorClientbtsPath, pointsOfInterestIdPath,
                               vectorClientClusterPath, vectorBtsClusterPath,
                               tmpOutPoisPath, isDebug, conf);
+        }
+        
+        Path tmpItinerariesPath = new Path(tmpPath, "itineraries");
+        Path clientItinerariesTxtPath = new Path(tmpItinerariesPath,
+                                                 "client_itineraries_txt");
+        boolean shouldGetItineraries = arguments.getBoolean("getItineraries");
+        if (shouldRunAll || shouldGetItineraries) {
+            ItinerariesRunner.run(cellsPath, cdrsInfoPath,
+                                  pointsOfInterestIdPath,
+                                  clientItinerariesTxtPath, tmpItinerariesPath,
+                                  isDebug, conf);
+        }
+
+        Path tmpPopulationDensityPath = new Path(tmpPath, "population_density");
+        Path populationDensityOutPath = new Path(tmpPopulationDensityPath,
+                                                 "populationDensityOut");
+        boolean shouldGetPopulationDensity = arguments.getBoolean(
+                "getPopulationDensity");
+        if (shouldRunAll || shouldGetPopulationDensity) {
+            PopulationDensityRunner.run(clientsInfoPath,
+                                        populationDensityOutPath,
+                                        tmpPopulationDensityPath, isDebug,
+                                        conf);
+        }
+
+        Path tmpPopulationDensityProfilePath = new Path(tmpPath,
+                "population_density_profile");
+        Path populationDensityProfileOutPath = new Path(
+                tmpPopulationDensityProfilePath, "populationDensityProfileOut");
+        boolean shouldGetPopulationDensityProfile = arguments.getBoolean(
+                "getPopulationDensityProfile");
+        if (shouldRunAll || shouldGetPopulationDensityProfile) {
+            PopulationDensityProfileRunner.run(clientProfilePath,
+                                               clientsInfoPath,
+                                               populationDensityProfileOutPath,
+                                               tmpPopulationDensityPath,
+                                               isDebug, conf);
         }
         
         return 0;

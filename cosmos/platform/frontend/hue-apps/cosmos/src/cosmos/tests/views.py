@@ -3,7 +3,14 @@
 View tests.
 
 """
+from os import path
+import tempfile
+import shutil
+
+from desktop.lib import fsmanager
 from django import test
+from hadoop.fs import LocalSubFileSystem
+from pymongo import Connection
 
 from cosmos.models import JobRun
 
@@ -28,33 +35,32 @@ class JobRunsTestCase(test.TestCase):
                         msg="Other user jobs should be unlisted")
 
 
-class DatasetsTestCase(test.TestCase):
+class ViewSuccessfulResultsTestCase(test.TestCase):
     fixtures = ['users', 'sample_runs']
 
     def setUp(self):
         self.client.login(username='user101', password='user1')
+        try:
+            self.connection = Connection('mongodb://localhost')
+        except:
+            self.fail('Cannot connect to local mongodb test server')
+        self.collection = self.connection['db_101']['job_2']
+        self.collection.remove()
+        self.collection.insert([{
+            'word': 'Hello',
+            'count': 1
+        }, {
+            'word': 'world',
+            'count': 2
+        }])
 
-    def test_datasets_listed(self):
-        response = self.client.get('/cosmos/datasets/')
+    def tearDown(self):
+        self.collection.remove()
+        self.connection.close()
+
+    def test_display_results(self):
+        response = self.client.get('/cosmos/job/2/results/?primary_key=word')
         self.assertEquals(response.status_code, 200)
-        listed_names = map(lambda x: x.name, response.context['datasets'])
-        self.assertTrue('dataset1' in listed_names,
-                        msg='Own datasets should be listed')
-        self.assertFalse('dataset3' in listed_names,
-                         msg='Other user datasets should not be listed')
-
-
-class CustomJarTestCase(test.TestCase):
-    fixtures = ['users', 'sample_runs']
-
-    def setUp(self):
-        self.client.login(username='user101', password='user1')
-
-    def test_datasets_listed(self):
-        response = self.client.get('/cosmos/jars/')
-        self.assertEquals(response.status_code, 200)
-        listed_names = map(lambda x: x.name, response.context['jars'])
-        self.assertTrue('wordcount' in listed_names,
-                        msg='Own JARs should be listed')
-        self.assertFalse('pi' in listed_names,
-                         msg='Other user JARs should not be listed')
+        results = response.context['page'].object_list
+        self.assertEquals(len(results), 2)
+        self.assertEquals(results[0].pk, 'word')

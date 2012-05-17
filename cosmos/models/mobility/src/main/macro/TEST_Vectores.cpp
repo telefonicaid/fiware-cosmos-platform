@@ -1,10 +1,11 @@
 #include "TEST_Module.h"
 
 #define mob_conf_max_comms_bts 70000
-#define mob_conf_max_bts_area 10.83515
+#define mob_conf_max_bts_area 4.2
+//#define mob_conf_max_bts_area 10.83515
 #define mob_conf_home_labelgroup_id 3
-//#define mob_conf_min_dist_second_home 50165.21	//Mexico
-#define mob_conf_min_dist_second_home 49342.85 	//Chile
+#define mob_conf_min_dist_second_home 50165.21	//Mexico
+//#define mob_conf_min_dist_second_home 49342.85 	//Chile
 ////////////////////////////////////////////////////////////////////
 /////////////////////  GLOBAL INFORMATION  /////////////////////////
 ////////////////////////////////////////////////////////////////////
@@ -592,15 +593,15 @@ void MACRO_mobmx_cluster_bts_get_min_distance::run( KVSet* inputs, int num_input
 		bts.value = nodbts.bts;
 		cluster.label = btsClusters.cluster[clusId].label;
 		cluster.labelgroup = btsClusters.cluster[clusId].labelgroup;
-		// FILTER BY DISTANCE
-		if(mindist > btsClusters.cluster[clusId].mean)
+		// FILTER BY DISTANCE (only in Chile)
+		/*if(mindist > btsClusters.cluster[clusId].mean)
 		{
 			cluster.confident = 0;
 		}
 		else
-		{
+		{*/
 			cluster.confident = 1;
-		}
+		//}
 
 		cluster.distance = mindist;
 		cluster.mean = 0;
@@ -623,10 +624,11 @@ void MACRO_mobmx_filter_bts_vector::run( KVSet* inputs, int num_inputs , KVWrite
 		for(int j=0; j<inputs[0].num_kvs; j++)
 		{
 			cluster.parse(inputs[0].kvs[j].value);
-			if(bts_info.area <= mob_conf_max_bts_area && bts_info.comms >= mob_conf_max_comms_bts)
-			//if(bts_info.comms < mob_conf_max_comms_bts)
+			//if(bts_info.area <= mob_conf_max_bts_area && bts_info.comms >= mob_conf_max_comms_bts)  // CHILE
+			if(bts_info.comms < mob_conf_max_comms_bts && bts_info.area > mob_conf_max_bts_area) // MEXICO
 			{
-				cluster.confident = 1;
+				//cluster.confident = 1;
+				cluster.confident = 0;
 			}
 			writer[0]->emit(&bts,&cluster);
 		}
@@ -921,12 +923,12 @@ void MACRO_mobmx_poi_get_pairs_sechome_pois::run( KVSet* inputs, int num_inputs 
 	for(int i=0; i<inputs[0].num_kvs; i++)
 	{
 		poi_in.parse(inputs[0].kvs[i].value);
-		if(poi_in.inoutWeek == 1 && (poi_in.label == mob_conf_home_labelgroup_id || poi_in.label == 6))	// In the Monday-Friday radius
+		if(poi_in.inoutWeek == 1 && poi_in.label == mob_conf_home_labelgroup_id)	// In the Monday-Friday radius
 		{
 			for(int j=0; j<inputs[0].num_kvs; j++)
 			{
 				poi_out.parse(inputs[0].kvs[j].value);
-				if(poi_out.inoutWeek == 0 && (poi_out.label == mob_conf_home_labelgroup_id || poi_out.label == 6))	// Out of Monday-Friday radius
+				if(poi_out.inoutWeek == 0 && poi_out.label == mob_conf_home_labelgroup_id)	// Out of Monday-Friday radius
 				{
 					node.value = poi_in.node;
 					pairbts.num1 = poi_in.bts;

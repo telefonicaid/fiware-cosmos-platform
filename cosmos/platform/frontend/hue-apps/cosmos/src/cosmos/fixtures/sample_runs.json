@@ -1,47 +1,46 @@
 [{
     "pk": 1,
-    "model": "cosmos.dataset",
+    "model": "jobsub.submission",
     "fields": {
-	"name": "dataset1",
-	"user": 101,
-	"description": "First dataset",
-	"path": "/user/user1/datasets/first"
+	"name": "running_wc_submission",
+	"submission_date": "2012-01-01 01:00:00",
+	"submission_handle":"{\"id\": 4}",
+	"submission_plan":"{\"groups\": [\"cloudera\"], \"steps\": [{\"localize_files_step\": {\"localize_files\": [{\"target_name\": \"tmp.jar\", \"pre_fab_localized_file\": null, \"path_on_hdfs\": \"/user/cloudera/jars/hadoop-examples.jar\"}]}, \"bin_hadoop_step\": null}, {\"localize_files_step\": null, \"bin_hadoop_step\": {\"arguments\": [\"jar\", \"tmp.jar\", \"pi\", \"21000\"]}}], \"name\": \"test0\", \"save_output\": null, \"user\": \"cloudera\"}",
+	"last_seen_state": 2,
+	"owner": 101
     }
 }, {
     "pk": 2,
-    "model": "cosmos.dataset",
+    "model": "jobsub.submission",
     "fields": {
-	"name": "dataset2",
-	"user": 101,
-	"description": "Second dataset",
-	"path": "/user/user1/datasets/second"
+	"name": "successful_wc_submission",
+	"submission_date": "2012-01-01 01:30:00",
+	"submission_handle":"{\"id\": 4}",
+	"submission_plan":"{\"groups\": [\"cloudera\"], \"steps\": [{\"localize_files_step\": {\"localize_files\": [{\"target_name\": \"tmp.jar\", \"pre_fab_localized_file\": null, \"path_on_hdfs\": \"/user/cloudera/jars/hadoop-examples.jar\"}]}, \"bin_hadoop_step\": null}, {\"localize_files_step\": null, \"bin_hadoop_step\": {\"arguments\": [\"jar\", \"tmp.jar\", \"pi\", \"21000\"]}}], \"name\": \"test0\", \"save_output\": null, \"user\": \"cloudera\"}",
+	"last_seen_state": 3,
+	"owner": 101
     }
 }, {
     "pk": 3,
-    "model": "cosmos.dataset",
+    "model": "jobsub.submission",
     "fields": {
-	"name": "dataset3",
-	"user": 102,
-	"description": "Third dataset from other user",
-	"path": "/user/user2/datasets/third"
+	"name": "failed_wc_submission",
+	"submission_date": "2012-01-01 02:00:00",
+	"submission_handle":"{\"id\": 4}",
+	"submission_plan":"{\"groups\": [\"cloudera\"], \"steps\": [{\"localize_files_step\": {\"localize_files\": [{\"target_name\": \"tmp.jar\", \"pre_fab_localized_file\": null, \"path_on_hdfs\": \"/user/cloudera/jars/hadoop-examples.jar\"}]}, \"bin_hadoop_step\": null}, {\"localize_files_step\": null, \"bin_hadoop_step\": {\"arguments\": [\"jar\", \"tmp.jar\", \"pi\", \"21000\"]}}], \"name\": \"test0\", \"save_output\": null, \"user\": \"cloudera\"}",
+	"last_seen_state": 4,
+	"owner": 101
     }
 }, {
-    "pk": 1,
-    "model": "cosmos.customjar",
+    "pk": 4,
+    "model": "jobsub.submission",
     "fields": {
-	"name": "wordcount",
-	"user": 101,
-	"description": "Wordcount example. Args: input output",
-	"path": "/user/user1/jars/wordcount-1.0-SNAPSHOT.jar"
-    }
-}, {
-    "pk": 2,
-    "model": "cosmos.customjar",
-    "fields": {
-	"name": "pi",
-	"user": 102,
-	"description": "Wordcount example but different user",
-	"path": "/user/user2/jars/wordcount-1.0-SNAPSHOT.jar"
+	"name": "other_jobrun_submission",
+	"submission_date": "2012-01-01 02:30:00",
+	"submission_handle":"{\"id\": 4}",
+	"submission_plan":"{\"groups\": [\"cloudera\"], \"steps\": [{\"localize_files_step\": {\"localize_files\": [{\"target_name\": \"tmp.jar\", \"pre_fab_localized_file\": null, \"path_on_hdfs\": \"/user/cloudera/jars/hadoop-examples.jar\"}]}, \"bin_hadoop_step\": null}, {\"localize_files_step\": null, \"bin_hadoop_step\": {\"arguments\": [\"jar\", \"tmp.jar\", \"pi\", \"21000\"]}}], \"name\": \"test0\", \"save_output\": null, \"user\": \"cloudera\"}",
+	"last_seen_state": 3,
+	"owner": 102
     }
 }, {
     "pk": 1,
@@ -49,11 +48,11 @@
     "fields": {
 	"name": "running_wc",
 	"user": 101,
-	"dataset": 1,
-	"model": 1,
-	"description": "Running wordcount on the Quijote",
+	"dataset_path": "/datasets/1",
+	"jar_path": "/jars/1.jar",
 	"start_date": "2012-01-01 01:00:00",
-	"status": 1
+	"description": "Running wordcount on the Quijote",
+	"submission": 1
     }
 }, {
     "pk": 2,
@@ -61,11 +60,11 @@
     "fields": {
 	"name": "successful_wc",
 	"user": 101,
-	"dataset": 1,
-	"model": 1,
+	"dataset_path": "/datasets/1",
+	"jar_path": "/jars/1.jar",
 	"description": "Sucessful wordcount on the Quijote",
 	"start_date": "2012-01-01 01:30:00",
-	"status": 2
+	"submission": 2
     }
 }, {
     "pk": 3,
@@ -73,11 +72,11 @@
     "fields": {
 	"name": "failed_wc",
 	"user": 101,
-	"dataset": 1,
-	"model": 1,
+	"dataset_path": "/datasets/1",
+	"jar_path": "/jars/1.jar",
 	"description": "Failed wordcount on the Quijote",
 	"start_date": "2012-01-01 02:00:00",
-	"status": 3
+	"submission": 3
     }
 }, {
     "pk": 4,
@@ -85,10 +84,10 @@
     "fields": {
 	"name": "other_jobrun",
 	"user": 102,
-	"dataset": 3,
-	"model": 2,
+	"dataset_path": "/datasets/3",
+	"jar_path": "/jars/2.jar",
 	"description": "Pi estimation from other user",
 	"start_date": "2012-01-01 02:30:00",
-	"status": 2
+	"submission": 4
     }
 }]

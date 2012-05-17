@@ -18,7 +18,7 @@ Hue.Desktop.register({
         name : 'Cosmos Shell',
         //autolaunch: "/cosmos/",
         css : '/cosmos/static/css/cosmos.css',
-        require: [ 'cosmos/Cosmos' ],
+        require: [ 'cosmos/Cosmos', 'filebrowser/Hue.FileBrowser' ],
         launch: function(path, options){
             return new Cosmos(path || '/cosmos/', $merge({
                 displayHistory: false

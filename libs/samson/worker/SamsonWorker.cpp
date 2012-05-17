@@ -48,6 +48,8 @@
 #include "samson/worker/WorkerCommand.h"          // samson::stream::WorkerCommand
 #include "samson/worker/SamsonWorker.h"           // Own interfce
 
+#define notification_samson_worker_take_sample "notification_samson_worker_take_sample"
+
 extern size_t delilah_random_code;     // Random code for the rest delilah client
 extern int port;                       // Port where samsonWorker is started
 extern int web_port;                   
@@ -60,7 +62,7 @@ namespace samson {
      * Constructor
      */
     
-    SamsonWorker::SamsonWorker( NetworkInterface* _network )
+    SamsonWorker::SamsonWorker( NetworkInterface* _network ) : samson_worker_samples( this )
     {
         network = _network;
         
@@ -100,6 +102,14 @@ namespace samson {
             engine::Notification *notification = new engine::Notification(notification_samson_worker_check_finish_tasks);
             engine::Engine::shared()->notify( notification, check_finish_tasks_period );
         }
+
+        // Take samples for the REST interface
+        listen(notification_samson_worker_take_sample);
+        {
+            engine::Notification *notification = new engine::Notification(notification_samson_worker_take_sample);
+            engine::Engine::shared()->notify( notification, 1 );
+        }
+        
         
         // Run REST interface
         rest_service = new au::network::RESTService( web_port  , this );
@@ -265,8 +275,6 @@ namespace samson {
         
     }
     
-    
-    
     // Receive notifications
     void SamsonWorker::notify( engine::Notification* notification )
     {
@@ -364,6 +372,11 @@ namespace samson {
             std::string type    = notification->environment.get("type","message" );
             
             sendTrace( type , context , message );
+        }
+        else if ( notification->isName( notification_samson_worker_take_sample ) )
+        {
+            // Take samples every second to check current status
+            samson_worker_samples.take_samples();
         }
         else
             LM_X(1, ("SamsonWorker received an unexpected notification %s", notification->getDescription().c_str()));
@@ -820,12 +833,27 @@ namespace samson {
 
             return;
         }
+        else if( main_command == "data_test" )
+        {
+            command->appendFormatedElement("data_size", au::str("%lu" , command->data_size));
+            
+            if( command->data_size == 0 )
+                command->appendFormatedElement("Data", "No data provided in the REST request");
+            else
+            {
+                // Return with provided data
+                std::string data;
+                data.append( command->data , command->data_size );
+                command->appendFormatedElement("data", data );
+            }
+
+            return;
+        }
         else if( main_command == "queues" )
         {
             process_delilah_command( "ls -group name -sort name" , command );
             return;
         }
-        
         else if (main_command == "command" ) /* /samson/command */
         {
             std::string delilah_command = "ls"; // default command
@@ -846,6 +874,11 @@ namespace samson {
             logdata = process_logging(command);
             command->append(logdata);
         }
+        else if( main_command == "status" )
+        {
+            process_status( command );
+            return;
+        }
         else
         {
             command->appendFormatedError(404, au::str("unknown path component '%s'" , main_command.c_str() ) );
@@ -853,7 +886,36 @@ namespace samson {
         
     }
     
-    
+    void SamsonWorker::process_status(  au::network::RESTServiceCommand* command  )
+    {
+        
+        if( command->format != "json" )
+        {
+            command->appendFormatedError("Only json format is suppourted in */status/ path");
+            return;
+        }
+        
+        if( command->path_components.size() <= 2 )
+        {
+            command->appendFormatedError("Wrong path. Supported: samson/status/general.json");
+            return;
+        }
+        
+        //  /samson/status/
+        std::string sub_command = command->path_components[2];
+        
+        if( sub_command == "general" )
+        {
+            command->append( samson_worker_samples.getJson() );
+            return;
+        }
+        else
+        {
+            command->appendFormatedError("Wrong path. Supported: samson/status/general.json");
+            return;
+        }
+        
+    }
     
     // Get information for monitoring
     void SamsonWorker::getInfo( std::ostringstream& output)
@@ -1007,6 +1069,37 @@ namespace samson {
         
         return collection;
     }
+    
+    
+    void SamsonWorkerSamples::take_samples()
+    {
+        
+
+        int num_processes = engine::ProcessManager::shared()->public_num_proccesses;
+        int max_processes = engine::ProcessManager::shared()->public_max_proccesses;
+        
+        size_t used_memory = engine::MemoryManager::shared()->public_used_memory;
+        size_t max_memory = engine::MemoryManager::shared()->public_max_memory;
+        
+        size_t disk_read_rate = (size_t) engine::DiskManager::shared()->get_rate_in();
+        size_t disk_write_rate = (size_t) engine::DiskManager::shared()->get_rate_out();
+        
+        size_t network_read_rate = (size_t) samsonWorker_->network->get_rate_in();
+        size_t network_write_rate = (size_t) samsonWorker_->network->get_rate_out();
+
+        cpu.push( (double) num_processes / (double) max_processes );
+        memory.push( (double) used_memory / (double) max_memory );
+
+        disk_in.push( (double) disk_read_rate / (double) 200000000 );
+        disk_out.push( (double) disk_write_rate / (double) 200000000 );
+
+        net_in.push( (double) network_read_rate / (double) 100000000 );
+        net_out.push( (double) network_write_rate / (double) 100000000 );
+        
+    
+        
+    }
+
     
     
 }

@@ -132,7 +132,8 @@ void ObjectsManager::send( Notification* notification )
 // Run a notification in an object
 void ObjectsManager::send( Notification *notification, size_t target )
 {
-    Object* o=NULL;
+    Object* o = NULL;
+    
     {
         au::TokenTaker tt( &token );
         o = objects.findInMap( target );
@@ -140,6 +141,7 @@ void ObjectsManager::send( Notification *notification, size_t target )
     
     if( o )
         o->notify( notification );
+
 }
 
 // Get the object registered with this name

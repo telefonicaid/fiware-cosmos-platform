@@ -11,27 +11,37 @@ namespace au
         RESTServiceCommand::RESTServiceCommand()
         {
             http_state = 200; // By default 200 response
+            
+            // No data by default 
+            data = NULL;
+            data_size = 0;
+        }
+        
+        RESTServiceCommand::~RESTServiceCommand()
+        {
+            if( data )
+            {
+                free( data );
+                data = NULL;
+            }
         }
         
         // Read command from a socket
         au::Status RESTServiceCommand::read( SocketConnection* socket_connection )
         {
+            
+            LM_T(LmtRest , ("Start reading a REST request from socket %s" , socket_connection->getHostAndPort().c_str()));
+            
             // Read a line from socket
             char line[1024];
             au::Status s = socket_connection->readLine( line , sizeof(line) , 10 );
             
             if (s == au::OK)
             {
+                LM_T(LmtRest, ("REST FIRST Head line: %s", line ));
+                
                 // Remove last "\n" "\r" characters.
                 au::remove_return_chars( line );
-                
-                // Read the rest of the REST Request, but without parsing it ...
-                char flags[1024];
-                s = socket_connection->readBuffer(flags, sizeof(flags), 1);
-                if (s == au::OK)
-                    LM_T(LmtRest, ("Rest of GET:\n%s", flags));
-                else
-                    LM_W(("error reading rest of REST request"));
                 
                 // Process incomming line with cmdLine
                 au::CommandLine cmdLine;
@@ -66,8 +76,67 @@ namespace au
                 else
                     format == "";
                 
+                // Read the rest of the REST Request
+                while ( s == au::OK )
+                {
+                    s = socket_connection->readLine( line , sizeof(line) , 10 );
+                    au::remove_return_chars( line );
+                    
+                    if( strlen(line) == 0 )
+                    {
+                        LM_T(LmtRest, ("REST End of header" ));
+                        break;
+                    }
+                    
+                    if( s == au::OK )
+                    {
+                        std::string header_line = line;
+                        size_t pos = header_line.find(":");
+                        
+                        if( pos == std::string::npos )
+                        {
+                            error.set( au::str( "No valid HTTP header field: %s" , line ) );
+                            return au::Error;
+                        }
+                        
+                        std::string concept = header_line.substr( 0 , pos);
+                        std::string value = header_line.substr( pos + 2 ); 
+                        header.set( concept  , value );
+                        
+                        LM_T(LmtRest, ("REST Head line: '%s' [%s=%s]", line , concept.c_str() , value.c_str() ));
+                    }
+                    else
+                    {
+                        error.set( "No valid HTTP header" );
+                        return au::Error;
+                    }
+                }
                 
-                
+                // Read data if any....
+                if( header.isSet("Content-Length") )
+                {
+                    size_t size = header.getSizeT("Content-Length", 0);
+                    if( size > 0 )
+                    {
+                        LM_T(LmtRest, ("REST Reading body of %lu bytes", size ));
+
+                        if( data )
+                            free( data );
+
+                        data = (char*) malloc( size );
+                        data_size = size;
+
+                        s = socket_connection->readBuffer(data, size, 10 );
+                        
+                        if( s != au::OK )
+                        {
+                            error.set( au::str("Error reading REST body (%lu bytes)" , size) );
+                            return au::Error;
+                        }
+                        
+                    }
+                }
+
                 return au::OK;
             }
             else
@@ -75,6 +144,7 @@ namespace au
                 error.set( "Error reading incomming command" );
                 return au::Error;
             }
+            
         }
         
         // Write answer to the socket
@@ -212,7 +282,7 @@ namespace au
             au::Status s = command.read(socket_connection);
             if( s != au::OK )
             {
-                LM_W(("Error in REST interface (%s)" , status(s)));
+                LM_W(("Error in REST interface ( %s / %s )" , status(s) , command.getErrorMessage().c_str() ));
                 socket_connection->close();
                 return;
             }
@@ -224,7 +294,7 @@ namespace au
             s = command.write( socket_connection );
             if( s != au::OK )
             {
-                LM_W(("Error in REST interface (%s)" , status(s)));
+                LM_W(("Error in REST interface ( %s / %s )" , status(s) , command.getErrorMessage().c_str() ));
                 socket_connection->close();
                 return;
             }

@@ -49,7 +49,6 @@ void Object::notify( Notification* notification )
     LM_W(("Notification %s not handled since it has not been overwritted method notify" , notification->getDescription().c_str() ));
 }
 
-
 void Object::listen( const char* notification_name )
 {
     Engine::shared()->register_object_for_channel( this,  notification_name );

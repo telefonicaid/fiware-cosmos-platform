@@ -38,6 +38,13 @@ namespace au
             StringVector path_components;  // Paths in the url
             std::string format;            // Extension of the resource (.xml , .json , .html )
             
+            // Header environment
+            au::Environment header;
+            
+            // Body
+            char * data;
+            size_t data_size;
+            
             // Error manager
             au::ErrorManager error;
             
@@ -47,8 +54,10 @@ namespace au
             
             // Redirect location ( if any, output is ignored )
             std::string redirect;
-            
+
+            // Constructor
             RESTServiceCommand();
+            ~RESTServiceCommand();
             
             // Read command from a socket
             au::Status read( SocketConnection* socket_connection );
@@ -67,6 +76,11 @@ namespace au
             void appendFormatedError( int _http_state , std::string message );
 
             void set_redirect( std::string redirect_resource );
+            
+            std::string getErrorMessage()
+            {
+                return error.getMessage();
+            }
             
         };
         

@@ -488,13 +488,14 @@ namespace samson {
         
     }
     
-    std::string SamsonWorker::process_logging( au::network::RESTServiceCommand* command)
+    std::string SamsonWorker::process_logging(au::network::RESTServiceCommand* command)
     {
         std::ostringstream  logdata;
         std::string         logCommand  = "";
         std::string         sub         = "";
         std::string         arg         = "";
-        int                 http_state  = 200;
+
+        command->http_state = 200;
 
         if (command->path_components.size() > 2)
             logCommand = command->path_components[2];
@@ -509,7 +510,7 @@ namespace samson {
         
         if (logCommand == "")
         {
-            http_state = 400;
+            command->http_state = 400;
             
             if (command->format == "xml")
                 au::xml_simple(logdata, "message", au::str("no logging subcommand"));
@@ -518,7 +519,7 @@ namespace samson {
         }
         else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "trace") && (logCommand != "verbose") && (logCommand != "debug"))
         {
-            http_state = 400;
+            command->http_state = 400;
             
             if (command->format == "xml")
                 au::xml_simple(logdata, "message", au::str("bad logging command: '%s'", logCommand.c_str()));
@@ -527,7 +528,7 @@ namespace samson {
         }
         else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off"))
         {
-            http_state = 400;
+            command->http_state = 400;
             
             if (command->format == "xml")
                 au::xml_simple(logdata, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
@@ -536,7 +537,7 @@ namespace samson {
         }
         else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off"))
         {
-            http_state = 400;
+            command->http_state = 400;
             
             if (command->format == "xml")
                 au::xml_simple(logdata, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
@@ -545,7 +546,7 @@ namespace samson {
         }
         else if ((logCommand == "verbose") && (sub == "set") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") && (arg != "5"))
         {
-            http_state = 400;
+            command->http_state = 400;
             
             if (command->format == "xml")
                 au::xml_simple(logdata, "message", au::str("bad logging argument for 'trace/set': %s", arg.c_str()));
@@ -554,7 +555,7 @@ namespace samson {
         }
         else if ((logCommand == "trace") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off"))
         {
-            http_state = 400;
+            command->http_state = 400;
             
             if (command->format == "xml")
                 au::xml_simple(logdata, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
@@ -563,7 +564,7 @@ namespace samson {
         }
         else if (sub == "")
         {
-            http_state = 400;
+            command->http_state = 400;
             
             if (command->format == "xml")
                 au::xml_simple(logdata, "message", au::str("logging subcommand for '%s' missing", logCommand.c_str()));
@@ -574,7 +575,7 @@ namespace samson {
         {
             if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
             {
-                http_state = 400;
+                command->http_state = 400;
                 
                 if (command->format == "xml")
                     au::xml_simple(logdata, "message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
@@ -583,7 +584,7 @@ namespace samson {
             }
         }
         
-        if (http_state != 200)
+        if (command->http_state != 200)
             return logdata.str();
         
         //
@@ -823,6 +824,12 @@ namespace samson {
             command->appendFormatedElement("version", au::str("SAMSON v %s" , SAMSON_VERSION ));
             return;
         }
+        else if (main_command == "status")
+        {
+            command->appendFormatedElement("status", "OK");
+            return;
+        }
+#if 0
         else if( ( main_command == "state" ) || ( main_command == "queue" ) ) 
         {
              /* /samson/state/queue/key */
@@ -833,6 +840,7 @@ namespace samson {
 
             return;
         }
+#endif
         else if( main_command == "data_test" )
         {
             command->appendFormatedElement("data_size", au::str("%lu" , command->data_size));
@@ -851,7 +859,23 @@ namespace samson {
         }
         else if( main_command == "queues" )
         {
-            process_delilah_command( "ls -group name -sort name" , command );
+            char delilahCommand[256];
+
+            if (command->path_components.size() == 2)
+                process_delilah_command( "ls -group name -sort name" , command );
+            else if (command->path_components.size() == 3)
+            {
+                snprintf(delilahCommand, sizeof(delilahCommand), "ls %s", command->path_components[2].c_str());
+                process_delilah_command(delilahCommand, command);
+            }
+            else if ((command->path_components.size() == 4) && (command->path_components[3] == "delete"))
+            {
+                snprintf(delilahCommand, sizeof(delilahCommand), "rm %s", command->path_components[2].c_str());
+                process_delilah_command(delilahCommand, command);
+            }
+            else if ((command->path_components.size() == 5) && (command->path_components[3] == "state"))
+                streamManager->process( command );             // Get this from the stream manager
+
             return;
         }
         else if (main_command == "command" ) /* /samson/command */
@@ -865,8 +889,73 @@ namespace samson {
         else if (main_command == "cluster" ) /* /samson/cluster */
         {
             std::ostringstream data;
-            network->getInfo(data, "cluster", command->format);
-            command->append( data.str() );
+
+            if ((command->command == "GET") && (command->path_components.size() == 2))
+                network->getInfo(data, "cluster", command->format);
+            else if ((command->command == "PUT") && (command->path_components.size() == 3) && (command->path_components[2] == "add_node"))
+            {
+                char delilahCommand[256];
+
+                LM_M(("Adding a node - check the data of this REST command ..."));
+                snprintf(delilahCommand, sizeof(delilahCommand), "cluster add %s %d", "localhost", 1234);
+                process_delilah_command(delilahCommand, command);
+            }
+            else if ((command->command == "DELETE") && (command->path_components.size() == 3) && (command->path_components[2] == "remove_node"))
+            {
+                char delilahCommand[256];
+
+                LM_M(("Adding a node - check the data of this REST command ..."));
+                snprintf(delilahCommand, sizeof(delilahCommand), "cluster remove %s %d", "localhost", 1234);
+                process_delilah_command(delilahCommand, command);
+            }
+            else
+                command->appendFormatedError(404, au::str("bad verb/path"));
+        }
+        else if (main_command == "modules" )  /* /samson/modules */
+        {
+            char delilahCommand[256];
+
+            if (command->command != "GET")
+                command->appendFormatedError(404, au::str("bad verb"));
+            else if (command->path_components.size() == 2)
+            {
+                snprintf(delilahCommand, sizeof(delilahCommand), "ls_modules");
+                process_delilah_command(delilahCommand, command);
+            }
+            else if (command->path_components.size() == 3)
+            {
+                snprintf(delilahCommand, sizeof(delilahCommand), "ls_modules %s", command->path_components[2].c_str());
+                process_delilah_command(delilahCommand, command);
+            }
+            else
+                command->appendFormatedError(404, au::str("bad path"));
+        }
+        else if (main_command == "operations" )  /* /samson/operations */
+        {
+            char delilahCommand[256];
+
+            if ((command->command == "GET") && (command->path_components.size() == 2))
+            {
+                snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations");
+                process_delilah_command(delilahCommand, command);
+            }
+            else if ((command->command == "GET") && (command->path_components.size() == 3))
+            {
+                snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations %s", command->path_components[2].c_str());
+                process_delilah_command(delilahCommand, command);
+            }
+            else if ((command->command == "PUT") && (command->path_components.size() == 3))
+            {
+                // Need to parse the XML here ...
+                command->appendFormatedError(400, au::str("Not Implemented"));
+            }
+            else if ((command->command == "DELETE") && (command->path_components.size() == 4) && (command->path_components[2] == "remove"))
+            {
+                snprintf(delilahCommand, sizeof(delilahCommand), "rm_stream_operation %s", command->path_components[3].c_str());
+                process_delilah_command(delilahCommand, command);
+            }
+            else
+                command->appendFormatedError(404, au::str("bad path/verb"));
         }
         else if (main_command == "logging" )  /* /samson/logging */
         {

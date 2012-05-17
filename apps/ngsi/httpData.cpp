@@ -56,7 +56,7 @@ bool httpDataParse(char** input, int lines, bool continued)
 		else if (strncmp(input[ix], "Expect: 100-continue", 19) == 0)
 		{
 			dataSeparate = true;
-			LM_T(LmtHttpHeader, ("Data comes ion a separste package"));
+			LM_T(LmtHttpHeader, ("Data comes in a separate package"));
 		}
 		else if (strncmp(input[ix], "Accept: ", 8) == 0)
 		{

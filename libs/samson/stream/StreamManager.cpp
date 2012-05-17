@@ -1206,7 +1206,7 @@ namespace samson {
         {
 
             std::string queue_name = command->path_components[2];
-            std::string key = command->path_components[3];
+            std::string key = command->path_components[4];
 
             LM_T(LmtRest, ("looking up key '%s' in queue '%s'", key.c_str() , queue_name.c_str() ));
             

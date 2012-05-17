@@ -23,6 +23,7 @@
         </pluginManagement>
     </build>
     <modules>
+        <module>data-injection-tests</module>
         <module>e2e-tests</module>
         <module>frontend-tests</module>
         <module>hadoopjobs</module>

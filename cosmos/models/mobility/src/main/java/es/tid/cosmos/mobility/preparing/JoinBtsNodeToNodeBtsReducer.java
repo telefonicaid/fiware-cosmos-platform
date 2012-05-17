@@ -1,7 +1,6 @@
 package es.tid.cosmos.mobility.preparing;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
@@ -12,11 +11,11 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
@@ -43,12 +42,7 @@ public class JoinBtsNodeToNodeBtsReducer extends Reducer<LongWritable,
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        List<Cell> filteredCells = new LinkedList<Cell>();
-        for (Cell cell : cells) {
-            if (cell.getCellId() == key.get()) {
-                filteredCells.add(cell);
-            }
-        }
+        List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
         if (filteredCells.isEmpty()) {
             return;
         }

@@ -5,16 +5,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import es.tid.cosmos.mobility.data.MobDataUtil;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.MobVars;
-import es.tid.cosmos.mobility.data.MobProtocol.MobViMobVars;
-import es.tid.cosmos.mobility.data.MobProtocol.PoiPos;
-import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
  * Input: <Long, PoiPos|MobViMobVars>
@@ -48,34 +48,30 @@ public class PoiJoinPoisViToTwoIntReducer extends Reducer<LongWritable,
         }
 
         for (PoiPos poiPos : poiPosList) {
+            PoiPos.Builder outputPoiPos = PoiPos.newBuilder(poiPos);
             for (MobViMobVars indvars : mobVIVarsList) {
-                PoiPos.Builder outputPoiPos = PoiPos.newBuilder(poiPos);
                 for (MobVars vars : indvars.getVarsList()) {
                     double distx = poiPos.getPosx() - vars.getMasscenterUtmx();
                     double disty = poiPos.getPosy() - vars.getMasscenterUtmy();
                     double dist = Math.sqrt(distx * distx + disty * disty);
-
-                    // Individual variables Monday - Friday
                     if (vars.getWorkingday()) {
+                        // Individual variables Monday - Friday
                         outputPoiPos.setInoutWeek(
                                 dist <= vars.getRadius() ? 1 : 0);
-                        outputPoiPos.setRadiusWeek(vars.getRadius());
-                        outputPoiPos.setDistCMWeek(dist);
-                    }
-                    // Individual variables Saturday - Sunday
-                    if (!vars.getWorkingday()) {
+                    } else {
+                        // Individual variables Saturday - Sunday
                         outputPoiPos.setInoutWend(
                                 dist <= vars.getRadius() ? 1 : 0);
-                        outputPoiPos.setRadiusWend(vars.getRadius());
-                        outputPoiPos.setDistCMWend(dist);
                     }
+                    outputPoiPos.setRadiusWeek(vars.getRadius());
+                    outputPoiPos.setDistCMWeek(dist);
                 }
+                context.write(TwoIntUtil.createAndWrap(outputPoiPos.getNode(),
+                                                       outputPoiPos.getBts()),
+                            MobDataUtil.createAndWrap(TwoIntUtil.create(
+                                    outputPoiPos.getInoutWeek(),
+                                    outputPoiPos.getInoutWend())));
             }
-            context.write(TwoIntUtil.createAndWrap(poiPos.getNode(),
-                                                   poiPos.getBts()),
-                          MobDataUtil.createAndWrap(
-                                  TwoIntUtil.create(poiPos.getInoutWeek(),
-                                                    poiPos.getInoutWend())));
         }
     }
 }

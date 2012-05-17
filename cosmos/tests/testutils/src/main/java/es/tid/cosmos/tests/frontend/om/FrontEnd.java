@@ -12,8 +12,8 @@ import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
 import es.tid.cosmos.tests.tasks.Environment;
+import es.tid.cosmos.tests.tasks.EnvironmentSetting;
 import static es.tid.cosmos.tests.tasks.EnvironmentSetting.CosmosRelativeUrl;
-import static es.tid.cosmos.tests.tasks.EnvironmentSetting.FrontendUrl;
 import es.tid.cosmos.tests.tasks.TaskStatus;
 import es.tid.cosmos.tests.tasks.TestException;
 
@@ -31,11 +31,10 @@ public class FrontEnd {
     public static final String RESULT_ACTION_CLASS = "results";
     public static final String RESULT_NAME_CLASS = "result-name";
     public static final String RESULT_STATUS_CLASS = "result-status";
-    public static final String USERNAME_INPUT_NAME = "username";
-    public static final String PASSWORD_INPUT_NAME = "password";
-    // Default login info
-    public static final String DEFAULT_USER = "test";
-    private static final String DEFAULT_PASSWRD = "cosmostest";
+    public static final String USERNAME_INPUT_ID = "id_username";
+    public static final String PASSWORD_INPUT_ID = "id_password";
+    private static final String DEFAULT_HTTP_PORT = "80";
+    
     private WebDriver driver;
     private final String username;
     private final String password;
@@ -44,7 +43,8 @@ public class FrontEnd {
     private final Environment environment;
 
     public FrontEnd(Environment env) {
-        this(env, DEFAULT_USER, DEFAULT_PASSWRD);
+        this(env, env.getProperty(EnvironmentSetting.DefaultUser),
+             env.getProperty(EnvironmentSetting.DefaultPassword));
     }
 
     public FrontEnd(Environment env, String username, String password) {
@@ -52,7 +52,16 @@ public class FrontEnd {
         this.username = username;
         this.password = password;
         this.environment = env;
-        this.baseUrl = this.environment.getProperty(FrontendUrl);
+        String frontendServer = this.environment.getProperty(
+                EnvironmentSetting.FrontendServer);
+        String frontendPort = this.environment.getProperty(
+                EnvironmentSetting.FrontendHttpPort);
+        if (frontendPort.equals(DEFAULT_HTTP_PORT)) {
+            frontendPort = "";
+        } else {
+            frontendPort = ":" + frontendPort;
+        }
+        this.baseUrl = "http://" + frontendServer + frontendPort;
         try {
             URL base = new URL(baseUrl);
             this.cosmosUrl = new URL(
@@ -90,9 +99,9 @@ public class FrontEnd {
         }
 
         WebElement userElement = this.driver.findElement(
-                By.name(USERNAME_INPUT_NAME));
+                By.id(USERNAME_INPUT_ID));
         userElement.sendKeys(user);
-        this.driver.findElement(By.name(PASSWORD_INPUT_NAME)).sendKeys(pass);
+        this.driver.findElement(By.id(PASSWORD_INPUT_ID)).sendKeys(pass);
 
         userElement.submit();
         if (this.needLogin()) {
@@ -125,7 +134,8 @@ public class FrontEnd {
     }
 
     private WebElement getTaskLink(String taskId, String expectedClass) {
-        WebElement taskLink = this.getTaskRow(taskId).findElement(By.className(JOB_ACTION_CLASS));
+        WebElement taskLink = this.getTaskRow(taskId).findElement(
+                By.className(JOB_ACTION_CLASS));
 
         boolean isExpectedLink = false;
         for (String elementClass : taskLink.getAttribute("class").split("\\s")) {
@@ -144,7 +154,8 @@ public class FrontEnd {
      */
     private WebElement getTaskRow(String taskId) {
         WebElement table = this.driver.findElement(By.id(TASK_STATUS_TABLE_ID));
-        List<WebElement> rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"));
+        List<WebElement> rows = table.findElement(
+                By.tagName("tbody")).findElements(By.tagName("tr"));
         for (WebElement row : rows) {
             WebElement nameElement = row.findElement(
                     By.className(RESULT_NAME_CLASS));

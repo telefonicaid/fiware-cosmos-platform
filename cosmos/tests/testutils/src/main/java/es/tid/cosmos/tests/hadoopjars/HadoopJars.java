@@ -21,6 +21,9 @@ public class HadoopJars {
         }
     }
     
+    private HadoopJars() {
+    }
+    
     public static String getPath(JarNames jar) {
         return props.getProperty(jar.toString());
     }

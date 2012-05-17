@@ -8,10 +8,10 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
-import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
  * Input: <TwoInt, Cluster>
@@ -57,9 +57,9 @@ public class PoiNormalizePoiVectorReducer extends Reducer<
             double coms = clusterSum.getCoords().getComs(i);
             if (i < 24) {
                 // Mondays, Tuesday, Wednesday and Thursday --> Total: 103 days
-                coms /= 121.0D;
+                coms /= 103.0D;
             } else {
-                coms /= 31.0D;
+                coms /= 26.0D;
             }
             sumValues += coms;
             clusterDivCoordsBuilder.addComs(coms);

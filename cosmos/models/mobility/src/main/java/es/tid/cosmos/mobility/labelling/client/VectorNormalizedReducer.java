@@ -7,9 +7,9 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 
 /**
  * Input: <NodeBts, ClusterVector>
@@ -33,10 +33,11 @@ public class VectorNormalizedReducer extends Reducer<ProtobufWritable<NodeBts>,
             for (int j = 0; j < clusterVector.getComsCount(); j++) {
                 double elem = clusterVector.getComs(j);
                 if (j < 24) {
-                    // Mondays, Tuesday, Wednesday and Thursday. Total: 121 days
-                    elem /= 121.0D;
+                    // Mondays, Tuesday, Wednesday and Thursday. Total: 103 days
+                    elem /= 103.0D;
                 } else {
-                    elem /= 31.0D;
+                    // Friday, Saturdays or Sundays --> 26
+                    elem /= 26.0D;
                 }
                 sumvalues += elem;
                 divBuilder.addComs(elem);

@@ -23,14 +23,14 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import es.tid.cosmos.mobility.data.BaseProtocol.Date;
-import es.tid.cosmos.mobility.data.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.CellUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
+import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
+import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
@@ -40,12 +40,13 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(CellsCatalogue.class)
 public class JoinBtsNodeToNodeBtsReducerTest {
+    private List<Cell> cells;
     private ReduceDriver<LongWritable, ProtobufWritable<MobData>,
             ProtobufWritable<NodeBts>, ProtobufWritable<MobData>> driver;
     
     @Before
     public void setUp() throws IOException {
-        List<Cell> cells = new LinkedList<Cell>();
+        this.cells = new LinkedList<Cell>();
         cells.add(CellUtil.create(1L, 2L, 3, 4, 5L, 6L));
         cells.add(CellUtil.create(10L, 20L, 30, 40, 50L, 60L));
         cells.add(CellUtil.create(33L, 200L, 300, 400, 500L, 600L));
@@ -61,6 +62,8 @@ public class JoinBtsNodeToNodeBtsReducerTest {
 
     @Test
     public void testEmptyOutput() throws IOException {
+        List<Cell> filteredCells = new LinkedList<Cell>();
+        when(CellsCatalogue.filter(this.cells, 57L)).thenReturn(filteredCells);
         final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
                 CdrUtil.create(1L, 2L, Date.getDefaultInstance(),
                                Time.getDefaultInstance()));
@@ -78,6 +81,10 @@ public class JoinBtsNodeToNodeBtsReducerTest {
     
     @Test
     public void testNonEmptyOutput() throws IOException {
+        List<Cell> filteredCells = new LinkedList<Cell>();
+        filteredCells.add(this.cells.get(0));
+        filteredCells.add(this.cells.get(2));
+        when(CellsCatalogue.filter(this.cells, 10L)).thenReturn(filteredCells);
         final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
                 CdrUtil.create(1L, 2L, Date.getDefaultInstance(),
                                Time.getDefaultInstance()));

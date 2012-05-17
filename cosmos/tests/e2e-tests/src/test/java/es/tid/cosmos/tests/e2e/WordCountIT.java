@@ -15,7 +15,8 @@ import es.tid.cosmos.tests.hadoopjars.JarNames;
 import es.tid.cosmos.tests.tasks.*;
 
 public class WordCountIT {
-    private static final String WORDCOUNT_PATH = HadoopJars.getPath(JarNames.Wordcount);
+    private static final String WORDCOUNT_PATH = HadoopJars.getPath(
+            JarNames.Wordcount);
 
     public class TestImpl {
         private String text;

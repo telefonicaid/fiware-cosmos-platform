@@ -114,9 +114,7 @@ public final class LabelJoiningRunner {
                     ClusterAggPotPoiPoisToPoiReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                pointsOfInterestTemp2Path,
-                vectorClientbtsClusterPath,
-                poisLabeledPath });
+                pointsOfInterestTemp2Path, poisLabeledPath });
             FileOutputFormat.setOutputPath(job, pointsOfInterestTemp3Path);
             job.waitForCompletion(true);
         }
@@ -130,9 +128,7 @@ public final class LabelJoiningRunner {
                     ClusterAggPotPoiPoisToClusterReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                pointsOfInterestTemp2Path,
-                vectorClientbtsClusterPath,
-                poisLabeledPath });
+                vectorClientbtsClusterPath, poisLabeledPath });
             FileOutputFormat.setOutputPath(job, vectorClientbtsClusterAddPath);
             job.waitForCompletion(true);
         }

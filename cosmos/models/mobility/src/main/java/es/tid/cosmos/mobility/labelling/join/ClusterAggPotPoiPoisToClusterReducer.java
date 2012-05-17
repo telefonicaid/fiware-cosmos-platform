@@ -6,12 +6,12 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.TwoInt;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
- * Input: <TwoInt, Poi|Cluster|Null>
+ * Input: <TwoInt, Cluster|Null>
  * Output: <TwoInt, Cluster>
  * 
  * @author dmicol
@@ -29,8 +29,6 @@ public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
             switch (mobData.getType()) {
-                case POI:
-                    break;
                 case CLUSTER:
                     if (cluster == null) {
                         cluster = mobData.getCluster();
@@ -47,7 +45,9 @@ public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
                 break;
             }
         }
-        
+        if (cluster == null) {
+            return;
+        }
         Cluster.Builder outputCluster = Cluster.newBuilder(cluster);
         if (hasNulls) {
             outputCluster.setConfident(1);

@@ -17,8 +17,7 @@ import es.tid.cosmos.tests.tasks.*;
  *
  * @author ximo
  */
-public class FrontEndTask implements Task {
-    private static final int SLEEP_TIME = 30000; // 30 seconds
+public class FrontEndTask extends Task {
     private static final String FILE_BROWSER_URL = "TODO"; // TODO
     private boolean isRun;
     private final FrontEnd frontend;
@@ -55,7 +54,8 @@ public class FrontEndTask implements Task {
     private static boolean fileExists(Environment env, String hdfsPath,
                                       String fileName) {
         WebDriver driver = new HtmlUnitDriver();
-        driver.get(env.getProperty(EnvironmentSetting.FrontendUrl) + "/"
+        driver.get("http://"
+                + env.getProperty(EnvironmentSetting.FrontendServer) + "/"
                 + FILE_BROWSER_URL + hdfsPath);
         List<WebElement> files = driver.findElements(By.className("fb-file"));
         for (WebElement file : files) {
@@ -115,7 +115,7 @@ public class FrontEndTask implements Task {
         this.inputHdfsPath = null;
     }
 
-    public static FrontEndTask CreateFromExistingTaskId(Environment env,
+    public static FrontEndTask createFromExistingTaskId(Environment env,
                                                         String taskId) {
         return new FrontEndTask(env, taskId);
     }
@@ -134,26 +134,10 @@ public class FrontEndTask implements Task {
     }
 
     @Override
-    public void waitForCompletion() {
-        if (!this.isRun) {
-            this.run();
-        }
-        while (true) {
-            TaskStatus status = this.frontend.getTaskStatus(taskId);
-            if (status != TaskStatus.Running) {
-                break;
-            }
-            try {
-                Thread.sleep(SLEEP_TIME);
-            } catch (InterruptedException ex) {
-                throw new TestException("[InterruptedException] "
-                        + ex.getMessage());
-            }
-        }
-    }
-
-    @Override
     public TaskStatus getStatus() {
+        if(!this.isRun) {
+            return TaskStatus.Created;
+        }
         return this.frontend.getTaskStatus(taskId);
     }
 

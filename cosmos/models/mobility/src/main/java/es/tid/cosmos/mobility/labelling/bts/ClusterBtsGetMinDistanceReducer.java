@@ -11,10 +11,10 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.MobProtocol.Cluster;
-import es.tid.cosmos.mobility.data.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.MobProtocol.MobData;
-import es.tid.cosmos.mobility.data.MobProtocol.NodeBts;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.util.CentroidsCatalogue;
 
 /**
@@ -66,7 +66,7 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
             Cluster outputCluster = ClusterUtil.create(
                             minDistCluster.getLabel(),
                             minDistCluster.getLabelgroup(),
-                            mindist > minDistCluster.getMean() ? 0 : 1,
+                            1,
                             0D,
                             mindist,
                             clusVector);

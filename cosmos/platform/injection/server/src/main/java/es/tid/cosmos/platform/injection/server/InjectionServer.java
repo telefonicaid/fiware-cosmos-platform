@@ -1,13 +1,11 @@
 package es.tid.cosmos.platform.injection.server;
 
 import java.io.IOException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
-import org.apache.hadoop.conf.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.sshd.SshServer;
 import org.apache.sshd.common.NamedFactory;
 import org.apache.sshd.server.Command;
@@ -26,16 +24,11 @@ import es.tid.cosmos.base.util.Logger;
  * @since  CTP 2
  */
 public class InjectionServer {
-    private static final String CONFIG_FILE = "/injection_server.dev.properties";
+    private static final org.apache.log4j.Logger LOG =
+            Logger.get(InjectionServer.class);
 
     private HadoopFileSystemFactory hadoopFileSystemFactory;
-    private final String frontendDbUrl;
-    private final int serverSocketPort;
-    private final String dbName;
-    private final String dbUser;
-    private final String dbPassword;
-    private final org.apache.log4j.Logger LOG =
-            Logger.get(InjectionServer.class);
+    private final Configuration configuration;
 
     /**
      * Constructs this instance from the configured values
@@ -43,21 +36,15 @@ public class InjectionServer {
      * @throws IOException
      * @throws URISyntaxException
      */
-    public InjectionServer() throws IOException, URISyntaxException {
-        Properties props = new Properties();
-        props.load(InjectionServer.class.getResource(CONFIG_FILE).openStream());
-        URI hdfsURI = new URI(props.getProperty("HDFS_URL"));
-        this.serverSocketPort = Integer.parseInt(
-                props.getProperty("SERVER_SOCKET_PORT"));
-        String jobtrackerUrl = props.getProperty("JOBTRACKER_URL");
-        this.frontendDbUrl = props.getProperty("FRONTEND_DB");
-        this.dbName = props.getProperty("DB_NAME");
-        this.dbUser = props.getProperty("DB_USER");
-        this.dbPassword = props.getProperty("DB_PASS");
-        Configuration conf = new Configuration();
-        conf.set("fs.default.name", hdfsURI.toString());
-        conf.set("mapred.job.tracker", jobtrackerUrl);
-        this.hadoopFileSystemFactory = new HadoopFileSystemFactory(conf);
+    public InjectionServer(Configuration serverConfig)
+            throws IOException, URISyntaxException, ConfigurationException {
+        this.configuration = serverConfig;
+        org.apache.hadoop.conf.Configuration hadoopConfig =
+                new org.apache.hadoop.conf.Configuration();
+        hadoopConfig.set("fs.default.name", serverConfig.getHdfsUrl()
+                                                        .toString());
+        hadoopConfig.set("mapred.job.tracker", serverConfig.getJobTrackerUrl());
+        this.hadoopFileSystemFactory = new HadoopFileSystemFactory(hadoopConfig);
     }
 
     /**
@@ -67,14 +54,11 @@ public class InjectionServer {
         SshServer sshd = SshServer.setUpDefaultServer();
         // General settings
         sshd.setFileSystemFactory(hadoopFileSystemFactory);
-        sshd.setPort(this.serverSocketPort);
+        sshd.setPort(this.configuration.getPort());
         sshd.setKeyPairProvider(
                 new SimpleGeneratorHostKeyProvider("hostkey.ser"));
         // User authentication settings
-        FrontendPassword passwordAuthenticator = new FrontendPassword();
-        passwordAuthenticator.setFrontendCredentials(this.frontendDbUrl,
-                this.dbName, this.dbUser, this.dbPassword);
-        sshd.setPasswordAuthenticator(passwordAuthenticator);
+        sshd.setPasswordAuthenticator(setupPasswordAuthenticator());
         List<NamedFactory<UserAuth>> userAuthFactories =
                 new ArrayList<NamedFactory<UserAuth>>();
         userAuthFactories.add(new UserAuthPassword.Factory());
@@ -92,5 +76,15 @@ public class InjectionServer {
         } catch (Exception e) {
             LOG.error(e.getLocalizedMessage());
         }
+    }
+
+    private FrontendPassword setupPasswordAuthenticator() {
+        FrontendPassword passwordAuthenticator = new FrontendPassword();
+        passwordAuthenticator.setFrontendCredentials(
+                this.configuration.getFrontendDbUrl(),
+                this.configuration.getDbName(),
+                this.configuration.getDbUser(),
+                this.configuration.getDbPassword());
+        return passwordAuthenticator;
     }
 }

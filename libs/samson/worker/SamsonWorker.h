@@ -105,7 +105,8 @@ namespace samson {
         void process( au::network::RESTServiceCommand* command );
         void intern_process( au::network::RESTServiceCommand* command );
         void process_delilah_command( std::string delilah_command , au::network::RESTServiceCommand* command  );
-        void process_loggin( au::network::RESTServiceCommand* command );
+
+        std::string process_logging( au::network::RESTServiceCommand* command);
 
         
         void stop()

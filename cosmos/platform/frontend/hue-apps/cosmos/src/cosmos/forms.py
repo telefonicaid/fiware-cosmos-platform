@@ -11,9 +11,8 @@ from cosmos import models
 
 
 ID_VALIDATOR = validators.RegexValidator(
-    regex=re.compile(r'^[a-z][a-z0-9\-_]*$', re.IGNORECASE),
-    message='Enter a valid identifier (only letters, numbers and dashes' +
-            'starting by a letter)')
+    regex=re.compile(r'^[a-z0-9\-_]+$', re.IGNORECASE),
+    message='Enter a valid identifier (only letters, numbers and dashes)')
 
 
 ABSOLUTE_PATH_VALIDATOR = validators.RegexValidator(

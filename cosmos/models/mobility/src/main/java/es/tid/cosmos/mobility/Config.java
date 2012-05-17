@@ -16,7 +16,6 @@ public abstract class Config {
     public static final String MAX_BTS_AREA = "mob.max_bts_area";
     public static final String MAX_COMMS_BTS = "mob.max_comms_bts";
     public static final String HOME_LABELGROUP_ID = "mob.home_labelgroup_id";
-    public static final String WORK_LABELGROUP_ID = "mob.work_labelgroup_id";
     public static final String MIN_DIST_SECOND_HOME =
             "mob.min_dist_second_home";
     public static final String MIN_PERC_REP_BTS = "mob.min_perc_rep_bts";
@@ -48,8 +47,6 @@ public abstract class Config {
                 MAX_COMMS_BTS)));
         conf.setInt(HOME_LABELGROUP_ID, Integer.parseInt(props.getProperty(
                 HOME_LABELGROUP_ID)));
-        conf.setInt(WORK_LABELGROUP_ID, Integer.parseInt(props.getProperty(
-                WORK_LABELGROUP_ID)));
         // Unfortunate since Hadoop's Configuration doesn't have setDouble
         conf.set(MIN_DIST_SECOND_HOME, props.getProperty(MIN_DIST_SECOND_HOME));
         conf.setInt(MIN_PERC_REP_BTS, Integer.parseInt(props.getProperty(

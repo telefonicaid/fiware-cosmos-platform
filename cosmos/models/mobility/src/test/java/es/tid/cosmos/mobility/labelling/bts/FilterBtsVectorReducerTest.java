@@ -36,12 +36,12 @@ public class FilterBtsVectorReducerTest {
     }
 
     @Test
-    public void testNoConfidentOutput() {
+    public void testNonConfidentOutput() {
         final LongWritable key = new LongWritable(57L);
         final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
-                BtsUtil.create(1, 50000, 2, 3, 4, asList(5L, 6L, 7L)));
+                BtsUtil.create(1, 50000, 2, 3, 6, asList(5L, 6L, 7L)));
         final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
-                ClusterUtil.create(1, 2, 0, 4, 5,
+                ClusterUtil.create(1, 2, 1, 4, 5,
                                    ClusterVector.getDefaultInstance()));
         final ProtobufWritable<MobData> outValue = MobDataUtil.createAndWrap(
                 ClusterUtil.create(1, 2, 0, 4, 5,
@@ -58,7 +58,7 @@ public class FilterBtsVectorReducerTest {
         final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
                 BtsUtil.create(1, 80000, 2, 3, 4, asList(5L, 6L, 7L)));
         final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
-                ClusterUtil.create(1, 2, 0, 4, 5,
+                ClusterUtil.create(1, 2, 1, 4, 5,
                                    ClusterVector.getDefaultInstance()));
         final ProtobufWritable<MobData> outValue = MobDataUtil.createAndWrap(
                 ClusterUtil.create(1, 2, 1, 4, 5,

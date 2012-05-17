@@ -48,34 +48,30 @@ public class PoiJoinPoisViToTwoIntReducer extends Reducer<LongWritable,
         }
 
         for (PoiPos poiPos : poiPosList) {
+            PoiPos.Builder outputPoiPos = PoiPos.newBuilder(poiPos);
             for (MobViMobVars indvars : mobVIVarsList) {
-                PoiPos.Builder outputPoiPos = PoiPos.newBuilder(poiPos);
                 for (MobVars vars : indvars.getVarsList()) {
                     double distx = poiPos.getPosx() - vars.getMasscenterUtmx();
                     double disty = poiPos.getPosy() - vars.getMasscenterUtmy();
                     double dist = Math.sqrt(distx * distx + disty * disty);
-
-                    // Individual variables Monday - Friday
                     if (vars.getWorkingday()) {
+                        // Individual variables Monday - Friday
                         outputPoiPos.setInoutWeek(
                                 dist <= vars.getRadius() ? 1 : 0);
-                        outputPoiPos.setRadiusWeek(vars.getRadius());
-                        outputPoiPos.setDistCMWeek(dist);
-                    }
-                    // Individual variables Saturday - Sunday
-                    if (!vars.getWorkingday()) {
+                    } else {
+                        // Individual variables Saturday - Sunday
                         outputPoiPos.setInoutWend(
                                 dist <= vars.getRadius() ? 1 : 0);
-                        outputPoiPos.setRadiusWend(vars.getRadius());
-                        outputPoiPos.setDistCMWend(dist);
                     }
+                    outputPoiPos.setRadiusWeek(vars.getRadius());
+                    outputPoiPos.setDistCMWeek(dist);
                 }
+                context.write(TwoIntUtil.createAndWrap(outputPoiPos.getNode(),
+                                                       outputPoiPos.getBts()),
+                            MobDataUtil.createAndWrap(TwoIntUtil.create(
+                                    outputPoiPos.getInoutWeek(),
+                                    outputPoiPos.getInoutWend())));
             }
-            context.write(TwoIntUtil.createAndWrap(poiPos.getNode(),
-                                                   poiPos.getBts()),
-                          MobDataUtil.createAndWrap(
-                                  TwoIntUtil.create(poiPos.getInoutWeek(),
-                                                    poiPos.getInoutWend())));
         }
     }
 }

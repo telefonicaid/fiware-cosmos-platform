@@ -26,7 +26,6 @@ public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
         ProtobufWritable<MobData>> {
     private int homeLabelgroupId;
-    private int workLabelgroupId;
     private double minDistSecondHome;
     
     @Override
@@ -34,8 +33,6 @@ public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
         this.homeLabelgroupId = conf.getInt(Config.HOME_LABELGROUP_ID,
-                                            Integer.MAX_VALUE);
-        this.workLabelgroupId = conf.getInt(Config.WORK_LABELGROUP_ID,
                                             Integer.MAX_VALUE);
         this.minDistSecondHome = Double.parseDouble(conf.get(
                 Config.MIN_DIST_SECOND_HOME));
@@ -53,12 +50,10 @@ public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
 
         for (PoiPos poiIn : poiPosList) {
             if (poiIn.getInoutWeek() == 1 &&
-                    (poiIn.getLabel() == this.homeLabelgroupId ||
-                     poiIn.getLabel() == this.workLabelgroupId)) {
+                    poiIn.getLabel() == this.homeLabelgroupId) {
                 for (PoiPos poiOut : poiPosList) {
                     if (poiOut.getInoutWeek() == 0 &&
-                            (poiOut.getLabel() == this.homeLabelgroupId ||
-                             poiOut.getLabel() == this.workLabelgroupId)) {
+                            poiOut.getLabel() == this.homeLabelgroupId) {
                         double distx = poiIn.getPosx() - poiOut.getPosx();
                         double disty = poiIn.getPosy() - poiOut.getPosy();
                         double dist = Math.sqrt(distx * distx + disty * disty);

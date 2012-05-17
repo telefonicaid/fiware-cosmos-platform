@@ -59,9 +59,9 @@ public class FilterBtsVectorReducer extends Reducer<LongWritable,
         for (Bts bts : btsList) {
             for (Cluster cluster : clusterList) {
                 int confident = cluster.getConfident();
-                if (bts.getArea() <= this.maxBtsArea &&
-                        bts.getComms() >= this.maxCommsBts) {
-                    confident = 1;
+                if (bts.getComms() < this.maxCommsBts &&
+                        bts.getArea() > this.maxBtsArea) {
+                    confident = 0;
                 }
                 Cluster.Builder outputCluster = Cluster.newBuilder(cluster);
                 outputCluster.setConfident(confident);

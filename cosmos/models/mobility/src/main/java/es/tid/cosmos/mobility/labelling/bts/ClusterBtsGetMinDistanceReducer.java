@@ -66,7 +66,7 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
             Cluster outputCluster = ClusterUtil.create(
                             minDistCluster.getLabel(),
                             minDistCluster.getLabelgroup(),
-                            mindist > minDistCluster.getMean() ? 0 : 1,
+                            1,
                             0D,
                             mindist,
                             clusVector);

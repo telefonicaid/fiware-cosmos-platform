@@ -28,14 +28,14 @@ void MACRO_mobmx_vector_normalized::run( KVSet* inputs, int num_inputs , KVWrite
 		///// Div on total number of days of the group /////
 		for(int j=0; j<vector_in.coms_length; j++)
 		{
-			if(j < 24) // Mondays, Tuesday, Wednesday and Thursday --> Total: 121 days
+			if(j < 24) // Mondays, Tuesday, Wednesday and Thursday --> Total: 103 days
 			{	
-				elem.value = vector_in.coms[j].value / 121.0;
+				elem.value = vector_in.coms[j].value / 103.0;
 				sumvalues += elem.value;
 			}
-			else
+			else  // Friday, Saturdays or Sundays --> 26
 			{
-				elem.value = vector_in.coms[j].value / 31.0;
+				elem.value = vector_in.coms[j].value / 26.0;
 				sumvalues += elem.value;
 			}
 			div.comsAdd()->copyFrom(&elem);
@@ -89,11 +89,11 @@ void MACRO_mobmx_poi_normalize_poi_vector::run( KVSet* inputs, int num_inputs , 
 	{
 		if(i < 24) // Mondays, Tuesday, Wednesday and Thursday --> Total: 103 days
 		{
-			coms.value = cluster_sum.coords.coms[i].value/121.0;
+			coms.value = cluster_sum.coords.coms[i].value/103.0;
 		}
 		else
 		{
-			coms.value = cluster_sum.coords.coms[i].value/31.0;
+			coms.value = cluster_sum.coords.coms[i].value/26.0;
 		}
 		sum_values += coms.value;
 		cluster_div.coords.comsAdd()->copyFrom(&coms);

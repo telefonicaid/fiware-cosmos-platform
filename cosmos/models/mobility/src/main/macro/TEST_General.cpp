@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////////////
 #define mob_conf_min_number_total_calls 200
 #define mob_conf_max_number_total_calls 5000
-#define mob_conf_min_number_calls_bts 14
+#define mob_conf_min_number_calls_bts 12
 #define mob_conf_min_perc_rep_bts 5
 
 ////////////////////////////////////////////////////////////////////////////////

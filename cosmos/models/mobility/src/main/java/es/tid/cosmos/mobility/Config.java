@@ -23,6 +23,11 @@ public abstract class Config {
     public static final String MIN_NUMBER_CALLS_BTS =
             "mob.min_number_calls_bts";
     public static final String MAX_CDRS = "mob.max_cdrs";
+    public static final String PERC_ABSOLUTE_MAX = "mob.perc_absolute_max";
+    public static final String MAX_MINUTES_IN_MOVES =
+            "mob.max_minutes_in_moves";
+    public static final String MIN_MINUTES_IN_MOVES =
+            "mob.min_minutes_in_moves";
     
     private Config() {
     }
@@ -53,6 +58,12 @@ public abstract class Config {
                 MIN_NUMBER_CALLS_BTS)));
         conf.setInt(MAX_CDRS, Integer.parseInt(props.getProperty(
                 MAX_CDRS)));
+        // Unfortunate since Hadoop's Configuration doesn't have setDouble
+        conf.set(PERC_ABSOLUTE_MAX, props.getProperty(PERC_ABSOLUTE_MAX));
+        conf.setInt(MAX_MINUTES_IN_MOVES, Integer.parseInt(props.getProperty(
+                MAX_MINUTES_IN_MOVES)));
+        conf.setInt(MIN_MINUTES_IN_MOVES, Integer.parseInt(props.getProperty(
+                MIN_MINUTES_IN_MOVES)));
         return conf;
     }
 }

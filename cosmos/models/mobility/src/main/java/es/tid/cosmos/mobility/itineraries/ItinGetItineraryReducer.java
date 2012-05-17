@@ -46,21 +46,19 @@ public class ItinGetItineraryReducer extends Reducer<
             ClusterVector.Builder peaksMoves = ClusterVector.newBuilder();
             // Vector normalization
             for (int j = 0; j < distMoves.getComsCount(); j++) {
-                if (j >= 24 && j <= 95) {
-                    double elem;
-                    // 30 Tuesdays, Wednesdays and Thursdays in the period
-                    if (j < 72 || j > 95) {
-                        elem = distMoves.getComs(j) / 30.0D;
-                    } else {
-                        // 31 Mondays, Fridays, Saturdays and Sundays in the
-                        // period
-                        elem = distMoves.getComs(j) / 31.0D;
-                    }
-                    peaksMoves.addComs(elem);
-                    // Get absolute maximum
-                    if (elem > absMax) {
-                        absMax = elem;
-                    }
+                double elem;
+                if (j >= 72 && j <= 95) {
+                    // 25 Thursdays in the period
+                    elem = distMoves.getComs(j) / 25.0D;
+                } else {
+                    // 26 Mondays, Tuesdays, Wednesdays, Fridays, Saturdays and
+                    // Sundays in the period
+                    elem = distMoves.getComs(j) / 26.0D;
+                }
+                peaksMoves.addComs(elem);
+                // Get absolute maximum
+                if (elem > absMax) {
+                    absMax = elem;
                 }
             }
             // Filter small movements

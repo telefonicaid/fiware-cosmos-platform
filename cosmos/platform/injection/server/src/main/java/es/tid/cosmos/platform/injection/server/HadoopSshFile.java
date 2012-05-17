@@ -1,17 +1,14 @@
 package es.tid.cosmos.platform.injection.server;
 
+import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.AccessControlException;
@@ -39,6 +36,8 @@ public class HadoopSshFile implements SshFile {
         this.hadoopPath = new Path(fileName);
         this.userName = userName;
         this.hadoopFS = hadoopFS;
+        this.fsDataInputStream = null;
+        this.fsDataOutputStream = null;
     }
 
     /**
@@ -258,17 +257,11 @@ public class HadoopSshFile implements SshFile {
     @Override
     public long getSize() {
         try {
-            if (this.doesExist()) {
-                FileStatus fileStatus =
-                        this.hadoopFS.getFileStatus(this.hadoopPath);
-                return fileStatus.getLen();
-            } else {
-                return 0L;
-            }
+            return this.hadoopFS.getFileStatus(this.hadoopPath).getLen();
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
+            return 0L;
         }
-        return 0L;
     }
 
     /**
@@ -282,12 +275,15 @@ public class HadoopSshFile implements SshFile {
             if (this.getParentFile().doesExist() &&
                     this.getParentFile().isWritable()) {
                 if (this.hadoopFS.mkdirs(this.hadoopPath)) {
+                    LOG.info("directory " + this.getAbsolutePath() +
+                             "created by user" + this.userName);
                     return true;
                 }
             }
             return false;
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOG.error(String.format("cannot create dir: %s because of %s",
+                      this.getAbsolutePath(), e.getMessage()), e);
             return false;
         }
     }
@@ -302,7 +298,8 @@ public class HadoopSshFile implements SshFile {
         try {
             return this.hadoopFS.delete(this.hadoopPath, this.isDirectory());
         } catch (IOException e) {
-            LOG.error(e.getMessage(), e);
+            LOG.error(String.format("cannot delete path: %s because of %s",
+                                    this.getAbsolutePath(),e.getMessage()), e);
             return false;
         }
     }
@@ -326,8 +323,7 @@ public class HadoopSshFile implements SshFile {
      */
     @Override
     public void truncate() throws IOException {
-        FSDataOutputStream tmp = this.hadoopFS.create(this.hadoopPath, true);
-        tmp.close();
+        this.hadoopFS.create(this.hadoopPath, true).close();
     }
 
     /**
@@ -363,7 +359,7 @@ public class HadoopSshFile implements SshFile {
             LinkedList<SshFile> files = new LinkedList<SshFile>();
             for (FileStatus fileStatus : fileStatuses) {
                 String fileName = fileStatus.getPath().getName();
-                files.add(new HadoopSshFile(this.joinToThisPath(fileName),
+                files.add(new HadoopSshFile(this.appendToPath(fileName),
                         this.userName, this.hadoopFS));
             }
             // TODO: sort in alphabetical order before returning?
@@ -387,11 +383,10 @@ public class HadoopSshFile implements SshFile {
         return null;
     }
 
-    private String joinToThisPath(String fileName) {
+    private String appendToPath(String fileName) {
         String absPath = this.getAbsolutePath();
-        return ((absPath.endsWith(
-                 Path.SEPARATOR)) ? absPath
-                                  : (absPath + Path.SEPARATOR)) + fileName;
+        return ((absPath.endsWith(Path.SEPARATOR)) ?
+                         absPath : (absPath + Path.SEPARATOR)) + fileName;
     }
 
     /**

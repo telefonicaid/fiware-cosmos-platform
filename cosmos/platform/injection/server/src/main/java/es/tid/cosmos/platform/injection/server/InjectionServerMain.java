@@ -5,6 +5,8 @@ import java.io.File;
 import org.apache.commons.cli.*;
 import org.apache.commons.configuration.ConfigurationException;
 
+import es.tid.cosmos.base.util.Logger;
+
 /**
  * InjectionServerMain is the main entry point to this application
  *
@@ -12,11 +14,13 @@ import org.apache.commons.configuration.ConfigurationException;
  * @since  CTP 2
  */
 public final class InjectionServerMain {
-    private String appName = "Injection Server";
+    private static final String appName = "Injection Server";
     private static final String DEFAULT_EXTERNAL_CONFIGURATION =
             "file:///etc/cosmos/injection.properties";
     private static final String INTERNAL_CONFIGURATION =
             "/injection_server.prod.properties";
+    private static final org.apache.log4j.Logger LOG =
+            Logger.get(InjectionServerMain.class);
 
     private InjectionServerMain() {
     }
@@ -48,6 +52,7 @@ public final class InjectionServerMain {
             InjectionServer server = new InjectionServer(config);
             server.setupSftpServer();
         } catch (Exception ex) {
+            LOG.error(ex.getMessage(), ex);
             System.exit(1);
         }
     }

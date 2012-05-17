@@ -18,11 +18,12 @@ import es.tid.cosmos.base.util.Logger;
  * @since  CTP 2
  */
 public class HadoopFileSystemView implements FileSystemView {
+    private static final org.apache.log4j.Logger LOG =
+            Logger.get(HadoopFileSystemView.class);
+
     private String homePath;
     private FileSystem hadoopFS;
     private final String userName;
-    private final org.apache.log4j.Logger LOG =
-            Logger.get(HadoopFileSystemView.class);
 
     public HadoopFileSystemView(String userName, Configuration configuration)
             throws IOException, InterruptedException {
@@ -44,7 +45,6 @@ public class HadoopFileSystemView implements FileSystemView {
 
     @Override
     public HadoopSshFile getFile(String file) {
-        LOG.trace("view asked for file " + file);
         try {
             return this.getFile("", file);
         } catch (IOException e) {
@@ -57,8 +57,6 @@ public class HadoopFileSystemView implements FileSystemView {
 
     @Override
     public HadoopSshFile getFile(SshFile baseDir, String file) {
-        LOG.trace("view asked for ssh path " + baseDir.toString() +
-                " and file " + file);
         try {
             return this.getFile(baseDir.getAbsolutePath(), file);
         } catch (IOException e) {
@@ -71,7 +69,6 @@ public class HadoopFileSystemView implements FileSystemView {
 
     private HadoopSshFile getFile(String baseDir, String file)
             throws IOException, InterruptedException {
-        LOG.trace("view asked for dir " + baseDir + " and file " + file);
         if (baseDir.isEmpty()){
             if (file.isEmpty()) {
             throw new IllegalArgumentException(
@@ -87,7 +84,6 @@ public class HadoopFileSystemView implements FileSystemView {
                 !file.startsWith(Path.SEPARATOR)) {
             wholePath = baseDir + Path.SEPARATOR + file;
         }
-        LOG.trace("trying to get a view for path: " + wholePath);
         return new HadoopSshFile(wholePath, this.userName, this.hadoopFS);
     }
 }

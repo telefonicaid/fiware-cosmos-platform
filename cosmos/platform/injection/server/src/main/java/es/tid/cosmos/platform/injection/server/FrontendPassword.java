@@ -17,17 +17,18 @@ import es.tid.cosmos.base.util.Logger;
  */
 public class FrontendPassword implements PasswordAuthenticator {
     private static final String djangoSeparator = "$";
+    private static final org.apache.log4j.Logger LOG =
+            Logger.get(FrontendPassword.class);
 
     private String frontendDbUrl;
     private String dbName;
     private String dbUserName;
     private String dbPassword;
     private Connection connection;
-    private final org.apache.log4j.Logger LOG = Logger.get(FrontendPassword.class);
 
     @Override
-    public boolean authenticate(String username,
-                                String password, ServerSession session) {
+    public boolean authenticate(String username, String password,
+                                ServerSession session) {
         LOG.debug(String.format("received %s as username, %d chars as password",
                 username, password.length()));
         boolean ans = false;

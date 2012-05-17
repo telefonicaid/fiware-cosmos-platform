@@ -31,6 +31,13 @@ public abstract class MobDataUtil {
                 .build();
     }
     
+    public static MobData create(double value) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.DOUBLE)
+                .setDouble(value)
+                .build();
+    }
+    
     public static MobData create(Cdr cdr) {
         return MobData.newBuilder()
                 .setType(MobData.Type.CDR)
@@ -136,6 +143,41 @@ public abstract class MobDataUtil {
                 .build();
     }
     
+    public static MobData create(ItinTime itinTime) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.ITIN_TIME)
+                .setItinTime(itinTime)
+                .build();
+    }
+
+    public static MobData create(ItinMovement itinMovement) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.ITIN_MOVEMENT)
+                .setItinMovement(itinMovement)
+                .build();
+    }
+
+    public static MobData create(ItinRange itinRange) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.ITIN_RANGE)
+                .setItinRange(itinRange)
+                .build();
+    }
+
+    public static MobData create(ItinPercMove itinPercMove) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.ITIN_PERC_MOVE)
+                .setItinPercMove(itinPercMove)
+                .build();
+    }
+
+    public static MobData create(Itinerary itinerary) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.ITINERARY)
+                .setItinerary(itinerary)
+                .build();
+    }
+    
     public static ProtobufWritable<MobData> wrap(MobData obj) {
         ProtobufWritable<MobData> wrapper = ProtobufWritable.newInstance(
                 MobData.class);
@@ -152,6 +194,10 @@ public abstract class MobDataUtil {
     }
     
     public static ProtobufWritable<MobData> createAndWrap(long obj) {
+        return wrap(create(obj));
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(double obj) {
         return wrap(create(obj));
     }
     
@@ -212,6 +258,26 @@ public abstract class MobDataUtil {
     }
 
     public static ProtobufWritable<MobData> createAndWrap(MobVars obj) {
+        return wrap(create(obj));
+    }
+    
+    public static ProtobufWritable<MobData> createAndWrap(ItinTime obj) {
+        return wrap(create(obj));
+    }
+    
+    public static ProtobufWritable<MobData> createAndWrap(ItinMovement obj) {
+        return wrap(create(obj));
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(ItinRange obj) {
+        return wrap(create(obj));
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(ItinPercMove obj) {
+        return wrap(create(obj));
+    }
+
+    public static ProtobufWritable<MobData> createAndWrap(Itinerary obj) {
         return wrap(create(obj));
     }
     

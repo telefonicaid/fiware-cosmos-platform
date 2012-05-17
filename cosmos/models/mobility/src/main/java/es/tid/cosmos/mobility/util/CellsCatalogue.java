@@ -12,6 +12,7 @@ import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
+import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.parsing.CellParser;
 
@@ -30,7 +31,7 @@ public abstract class CellsCatalogue {
             reader = new InputStreamReader(in);
             return load(reader);
         } catch (Exception ex) {
-            Logger.get().fatal(ex);
+            Logger.get(CellsCatalogue.class).fatal(ex);
             throw new IOException(ex);
         } finally {
             if (reader != null) {
@@ -57,5 +58,15 @@ public abstract class CellsCatalogue {
             cells.add(cell);
         }
         return cells;
+    }
+    
+    public static List<Cell> filter(List<Cell> cells, long cellId) {
+        List<Cell> filteredCells = new LinkedList<Cell>();
+        for (Cell cell : cells) {
+            if (cell.getCellId() == cellId) {
+                filteredCells.add(cell);
+            }
+        }
+        return filteredCells;
     }
 }

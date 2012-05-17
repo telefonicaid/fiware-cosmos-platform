@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.labelling.bts;
 
+import java.io.InputStream;
+import java.io.IOException;
 import static java.util.Arrays.asList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
@@ -8,6 +10,7 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.BtsUtil;
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
@@ -21,12 +24,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 public class FilterBtsVectorReducerTest {
     private ReduceDriver<LongWritable, ProtobufWritable<MobData>, LongWritable,
             ProtobufWritable<MobData>> driver;
-    
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
                 LongWritable, ProtobufWritable<MobData>>(
                         new FilterBtsVectorReducer());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                this.driver.getConfiguration()));
     }
 
     @Test

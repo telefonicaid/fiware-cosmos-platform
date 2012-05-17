@@ -3,9 +3,11 @@ package es.tid.cosmos.mobility.pois;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
@@ -18,8 +20,18 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
  */
 public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
-    private static final int MIN_TOTAL_CALLS = 200;
-    private static final int MAX_TOTAL_CALLS = 5000;
+    private int minTotalCalls;
+    private int maxTotalCalls;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final Configuration conf = context.getConfiguration();
+        this.minTotalCalls = conf.getInt(Config.MIN_TOTAL_CALLS,
+                                         Integer.MIN_VALUE);
+        this.maxTotalCalls = conf.getInt(Config.MAX_TOTAL_CALLS,
+                                         Integer.MAX_VALUE);
+    }
 
     @Override
     public void reduce(LongWritable key,
@@ -44,7 +56,8 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
             }
         }
         int totalComms = numCommsInfo + numCommsNoInfoOrNoBts;
-        if (totalComms >= MIN_TOTAL_CALLS && totalComms <= MAX_TOTAL_CALLS) {
+        if (totalComms >= this.minTotalCalls &&
+                totalComms <= this.maxTotalCalls) {
             context.write(key, MobDataUtil.createAndWrap(numCommsInfo));
         }
     }

@@ -39,6 +39,14 @@ public class MobDataUtilTest {
         }
 
         {
+            ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(57D);
+            wrapper.setConverter(MobData.class);
+            MobData mobData = wrapper.get();
+            assertEquals(MobData.Type.DOUBLE, mobData.getType());
+            assertEquals(57D, mobData.getDouble(), 0.0D);
+        }
+
+        {
             ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(
                     Cdr.getDefaultInstance());
             wrapper.setConverter(MobData.class);
@@ -178,6 +186,55 @@ public class MobDataUtilTest {
             MobData mobData = wrapper.get();
             assertEquals(MobData.Type.MOB_VARS, mobData.getType());
             assertEquals(MobVars.getDefaultInstance(), mobData.getMobVars());
+        }
+
+        {
+            ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(
+                    ItinTime.getDefaultInstance());
+            wrapper.setConverter(MobData.class);
+            MobData mobData = wrapper.get();
+            assertEquals(MobData.Type.ITIN_TIME, mobData.getType());
+            assertEquals(ItinTime.getDefaultInstance(), mobData.getItinTime());
+        }
+
+        {
+            ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(
+                    ItinMovement.getDefaultInstance());
+            wrapper.setConverter(MobData.class);
+            MobData mobData = wrapper.get();
+            assertEquals(MobData.Type.ITIN_MOVEMENT, mobData.getType());
+            assertEquals(ItinMovement.getDefaultInstance(),
+                         mobData.getItinMovement());
+        }
+
+        {
+            ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(
+                    ItinRange.getDefaultInstance());
+            wrapper.setConverter(MobData.class);
+            MobData mobData = wrapper.get();
+            assertEquals(MobData.Type.ITIN_RANGE, mobData.getType());
+            assertEquals(ItinRange.getDefaultInstance(),
+                         mobData.getItinRange());
+        }
+
+        {
+            ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(
+                    ItinPercMove.getDefaultInstance());
+            wrapper.setConverter(MobData.class);
+            MobData mobData = wrapper.get();
+            assertEquals(MobData.Type.ITIN_PERC_MOVE, mobData.getType());
+            assertEquals(ItinPercMove.getDefaultInstance(),
+                         mobData.getItinPercMove());
+        }
+
+        {
+            ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(
+                    Itinerary.getDefaultInstance());
+            wrapper.setConverter(MobData.class);
+            MobData mobData = wrapper.get();
+            assertEquals(MobData.Type.ITINERARY, mobData.getType());
+            assertEquals(Itinerary.getDefaultInstance(),
+                         mobData.getItinerary());
         }
     }
 }

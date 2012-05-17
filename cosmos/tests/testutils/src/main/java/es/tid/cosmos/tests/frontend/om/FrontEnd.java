@@ -32,6 +32,8 @@ public class FrontEnd {
     public static final String RESULT_STATUS_CLASS = "result-status";
     public static final String USERNAME_INPUT_ID = "id_username";
     public static final String PASSWORD_INPUT_ID = "id_password";
+    private static final String DEFAULT_HTTP_PORT = "80";
+    
     private WebDriver driver;
     private final String username;
     private final String password;
@@ -48,8 +50,16 @@ public class FrontEnd {
         this.username = username;
         this.password = password;
         this.environment = env;
-        this.homeUrl = this.environment.getProperty(
-                EnvironmentSetting.FRONTEND_URL);
+        String frontendServer = this.environment.getProperty(
+                EnvironmentSetting.FRONTEND_SERVER);
+        String frontendPort = this.environment.getProperty(
+                EnvironmentSetting.FRONTEND_HTTP_PORT);
+        if (frontendPort.equals(DEFAULT_HTTP_PORT)) {
+            frontendPort = "";
+        } else {
+            frontendPort = ":" + frontendPort;
+        }
+        this.homeUrl = "http://" + frontendServer + frontendPort;
     }
 
     public String getHomeUrl() {
@@ -113,7 +123,8 @@ public class FrontEnd {
     }
 
     private WebElement getTaskLink(String taskId, String expectedClass) {
-        WebElement taskLink = this.getTaskRow(taskId).findElement(By.className(JOB_ACTION_CLASS));
+        WebElement taskLink = this.getTaskRow(taskId).findElement(
+                By.className(JOB_ACTION_CLASS));
 
         boolean isExpectedLink = false;
         for (String elementClass : taskLink.getAttribute("class").split("\\s")) {
@@ -132,7 +143,8 @@ public class FrontEnd {
      */
     private WebElement getTaskRow(String taskId) {
         WebElement table = this.driver.findElement(By.id(TASK_STATUS_TABLE_ID));
-        List<WebElement> rows = table.findElement(By.tagName("tbody")).findElements(By.tagName("tr"));
+        List<WebElement> rows = table.findElement(
+                By.tagName("tbody")).findElements(By.tagName("tr"));
         for (WebElement row : rows) {
             WebElement nameElement = row.findElement(
                     By.className(RESULT_NAME_CLASS));

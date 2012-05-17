@@ -16,15 +16,23 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
  */
 public class CellsCatalogueTest {
     @Test
-    public void testLoad() throws IOException {
+    public void testLoadAndfilter() throws IOException {
         String text = "334305|2221436242|12|34|56|78\n"
                 + "334306|2221436242|12|34|56|78\n"
-                + "334307|2221436242|12|34|56|78";
+                + "334307|2221436242|12|34|56|78\n"
+                + "334305|2221436242|12|34|56|78";
         List<Cell> cells = CellsCatalogue.load(new StringReader(text));
         assertNotNull(cells);
-        assertEquals(3, cells.size());
+        assertEquals(4, cells.size());
         assertEquals(3359493L, cells.get(0).getCellId());
         assertEquals(3359494L, cells.get(1).getCellId());
         assertEquals(3359495L, cells.get(2).getCellId());
+        assertEquals(3359493L, cells.get(3).getCellId());
+        
+        List<Cell> filteredCells = CellsCatalogue.filter(cells, 3359493L);
+        assertEquals(2, filteredCells.size());
+        for (Cell cell : filteredCells) {
+            assertEquals(3359493L, cell.getCellId());
+        }
     }
 }

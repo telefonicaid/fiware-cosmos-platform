@@ -253,8 +253,13 @@ int main( int argC , const char *argV[] )
   {
     sleep(100);
     manager.ReviewDatasets();
-    LM_M(("samsonPushLogs reading and waiting as times go by with %lu  datasets and %lu active" , port , datasets_vector.size(), manager.GetNumDataSets() ));
+    LM_M(("samsonPushLogs reading and waiting as times go by with %lu  datasets and %lu active" , datasets_vector.size(), manager.GetNumDataSets() ));
 
+    if (manager.GetNumDataSets() == 0)
+    {
+        LM_M(("Read all datasets"));
+        break;
+    }
   }
 
   // Wait until all operations are complete

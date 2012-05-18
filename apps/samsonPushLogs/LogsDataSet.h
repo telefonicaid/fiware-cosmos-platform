@@ -7,9 +7,9 @@
 #include <vector>
 
 /* ****************************************************************************
-*
-* File -
-*/
+ *
+ * File -
+ */
 typedef struct File
 {
     char       name[256];
@@ -42,15 +42,18 @@ class LogsDataSet
     int timestamp_type_;
     time_t first_timestamp_;
     char *queue_name_;
-    
+    bool finished_;
+
 public:
     LogsDataSet( const char *dir_path, const char *extension, int num_fields, int timestamp_position, int timestamp_position_alt, int timestamp_type, const char *queue_name);
     ~LogsDataSet();
-    
+
     bool InitDir();
     bool GetLogLineEntry(char **log, time_t *timestamp);
     bool LookAtNextLogLineEntry(char **log, time_t *timestamp);
     bool Synchronize(time_t time_init);
+
+    bool finished() const {return finished_;}
 
 
     time_t GetFirstTimestamp(){ LM_M(("For queue:%s, Get first_timestamp:%s", queue_name_, ctimeUTC(&first_timestamp_))); return first_timestamp_;};

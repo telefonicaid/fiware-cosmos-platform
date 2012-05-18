@@ -71,7 +71,10 @@ public:
             if ( connection->IsFinished() )
             {
                 LM_M(("Dataset:%s finished", connection->GetQueueName()));
+                delete connection;
                 connections_.erase( it_connections );
+                LM_M(("New connections_.size():%d", connections_.size()));
+                return;
             }
         }
     }

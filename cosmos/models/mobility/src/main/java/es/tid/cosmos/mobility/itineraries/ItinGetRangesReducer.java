@@ -34,6 +34,7 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
             final ItinTime source = move.getSource();
             final ItinTime target = move.getTarget();
             ItinRange.Builder moveRange = ItinRange.newBuilder();
+            ItinRange.Builder moveRangeFinal;
             moveRange.setNode(node);
             moveRange.setPoiSrc(source.getBts());
             moveRange.setPoiTgt(target.getBts());
@@ -50,7 +51,8 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
                 // Source hour and target hour are the same.
                 moveRange.setRange(source.getTime().getHour());
                 moveRange.setGroup(source.getDate().getWeekday());
-                context.write(ItinRangeUtil.wrap(moveRange.build()),
+                moveRangeFinal = moveRange.clone();
+                context.write(ItinRangeUtil.wrap(moveRangeFinal.build()),
                               MobDataUtil.createAndWrap(1.0D));
             } else {
                 int minutSrc = source.getTime().getMinute();
@@ -60,14 +62,16 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
                 moveRange.setRange(source.getTime().getHour());
                 moveRange.setGroup(source.getDate().getWeekday());
                 double percMoves = (60 - minutSrc) / dur;
-                context.write(ItinRangeUtil.wrap(moveRange.build()),
+                moveRangeFinal = moveRange.clone();
+                context.write(ItinRangeUtil.wrap(moveRangeFinal.build()),
                               MobDataUtil.createAndWrap(percMoves));
                 
                 // Comunication in target hour
                 moveRange.setRange(target.getTime().getHour());
                 moveRange.setGroup(target.getDate().getWeekday());
                 percMoves = minutTgt / dur;
-                context.write(ItinRangeUtil.wrap(moveRange.build()),
+                moveRangeFinal = moveRange.clone();
+                context.write(ItinRangeUtil.wrap(moveRangeFinal.build()),
                               MobDataUtil.createAndWrap(percMoves));
                 
                 // Fill the intermediate hours
@@ -81,7 +85,8 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
                     moveRange.setRange(range);
                     moveRange.setGroup(group);
                     percMoves = 60 / dur;
-                    context.write(ItinRangeUtil.wrap(moveRange.build()),
+                    moveRangeFinal = moveRange.clone();
+                    context.write(ItinRangeUtil.wrap(moveRangeFinal.build()),
                                   MobDataUtil.createAndWrap(percMoves));
                 }
             }

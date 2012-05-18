@@ -30,7 +30,7 @@ public class FrontendPassword implements PasswordAuthenticator {
     public boolean authenticate(String username, String password,
                                 ServerSession session) {
         LOG.debug(String.format("received %s as username, %d chars as password",
-                username, password.length()));
+                                username, password.length()));
         boolean ans = false;
         ResultSet resultSet = null;
         PreparedStatement preparedStatement = null;

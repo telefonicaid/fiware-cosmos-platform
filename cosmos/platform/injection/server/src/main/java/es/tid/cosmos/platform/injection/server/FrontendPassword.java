@@ -65,13 +65,15 @@ public class FrontendPassword implements PasswordAuthenticator {
             if (resultSet != null ) {
                 try {
                     resultSet.close();
-                } catch (SQLException ignored) {
+                } catch (SQLException e) {
+                    LOG.error("could not close a result set", e);
                 }
             }
             if (preparedStatement != null) {
                 try {
                     preparedStatement.close();
-                } catch (SQLException ignored) {
+                } catch (SQLException e) {
+                    LOG.error("could not close a database statement", e);
                 }
             }
         }

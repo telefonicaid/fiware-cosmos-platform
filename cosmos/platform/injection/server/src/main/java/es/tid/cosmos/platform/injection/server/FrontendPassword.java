@@ -32,14 +32,15 @@ public class FrontendPassword implements PasswordAuthenticator {
         LOG.debug(String.format("received %s as username, %d chars as password",
                 username, password.length()));
         boolean ans = false;
+        ResultSet resultSet = null;
+        PreparedStatement preparedStatement = null;
         try {
             this.connect(this.frontendDbUrl, this.dbName, this.dbUserName,
-                    this.dbPassword);
+                         this.dbPassword);
             String sql = "SELECT password FROM auth_user WHERE username = ?";
-            PreparedStatement preparedStatement =
-                    this.connection.prepareStatement(sql);
+            preparedStatement = this.connection.prepareStatement(sql);
             preparedStatement.setString(1, username);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             String algorithm = "";
             String hash = "";
             String salt = "";
@@ -54,13 +55,25 @@ public class FrontendPassword implements PasswordAuthenticator {
                 ans = hash.equals(DigestUtils.shaHex(salt + password));
             } else if (algorithm.equals("md5")) {
                 ans = hash.equals(DigestUtils.md5Hex(salt + password));
+            } else {
+                LOG.warn("Unknown algorithm found in DB: " + algorithm);
             }
-            resultSet.close();
-            preparedStatement.close();
-            this.connection.close();
         } catch (SQLException e) {
             LOG.error(e.getMessage(), e);
             return false;
+        } finally {
+            if (resultSet != null ) {
+                try {
+                    resultSet.close();
+                } catch (SQLException ignored) {
+                }
+            }
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException ignored) {
+                }
+            }
         }
         return ans;
     }

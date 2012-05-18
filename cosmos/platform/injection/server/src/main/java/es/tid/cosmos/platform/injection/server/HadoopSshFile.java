@@ -1,6 +1,5 @@
 package es.tid.cosmos.platform.injection.server;
 
-import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;

@@ -14,7 +14,6 @@ import es.tid.cosmos.base.util.Logger;
  * @since  CTP 2
  */
 public final class InjectionServerMain {
-    private static final String appName = "Injection Server";
     private static final String DEFAULT_EXTERNAL_CONFIGURATION =
             "file:///etc/cosmos/injection.properties";
     private static final String INTERNAL_CONFIGURATION =

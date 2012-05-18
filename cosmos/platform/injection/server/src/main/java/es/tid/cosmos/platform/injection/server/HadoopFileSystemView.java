@@ -69,20 +69,22 @@ public class HadoopFileSystemView implements FileSystemView {
 
     private HadoopSshFile getFile(String baseDir, String file)
             throws IOException, InterruptedException {
-        if (baseDir.isEmpty()){
-            if (file.isEmpty()) {
+        String requestedDir = baseDir;
+        String requestedFile = file;
+        if (requestedDir.isEmpty()){
+            if (requestedFile.isEmpty()) {
             throw new IllegalArgumentException(
                     "filesystem view impossible for empty dir and filename!");
-            } else if (file.equals(Path.CUR_DIR)) {
-                baseDir = this.homePath;
-                file = "";
+            } else if (requestedFile.equals(Path.CUR_DIR)) {
+                requestedDir = this.homePath;
+                requestedFile = "";
                 LOG.debug("redirecting to home path: " + this.homePath);
             }
         }
-        String wholePath = baseDir + file;
-        if (!baseDir.endsWith(Path.SEPARATOR) &&
-                !file.startsWith(Path.SEPARATOR)) {
-            wholePath = baseDir + Path.SEPARATOR + file;
+        String wholePath = requestedDir + requestedFile;
+        if (!requestedDir.endsWith(Path.SEPARATOR) &&
+                !requestedFile.startsWith(Path.SEPARATOR)) {
+            wholePath = requestedDir + Path.SEPARATOR + requestedFile;
         }
         return new HadoopSshFile(wholePath, this.userName, this.hadoopFS);
     }

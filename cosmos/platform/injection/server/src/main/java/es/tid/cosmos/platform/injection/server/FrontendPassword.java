@@ -16,7 +16,7 @@ import es.tid.cosmos.base.util.Logger;
  * @since  CTP 2
  */
 public class FrontendPassword implements PasswordAuthenticator {
-    private static final String djangoSeparator = "$";
+    private static final String DJANGO_SEPARATOR = "$";
     private static final org.apache.log4j.Logger LOG =
             Logger.get(FrontendPassword.class);
 
@@ -34,7 +34,7 @@ public class FrontendPassword implements PasswordAuthenticator {
         boolean ans = false;
         try {
             this.connect(this.frontendDbUrl, this.dbName, this.dbUserName,
-                         this.dbPassword);
+                    this.dbPassword);
             String sql = "SELECT password FROM auth_user WHERE username = ?";
             PreparedStatement preparedStatement =
                     this.connection.prepareStatement(sql);
@@ -45,7 +45,7 @@ public class FrontendPassword implements PasswordAuthenticator {
             String salt = "";
             while (resultSet.next()) {
                 StringTokenizer algorithmSaltHash = new StringTokenizer(
-                        resultSet.getString(1), djangoSeparator);
+                        resultSet.getString(1), DJANGO_SEPARATOR);
                 algorithm = algorithmSaltHash.nextToken();
                 salt = algorithmSaltHash.nextToken();
                 hash = algorithmSaltHash.nextToken();
@@ -55,6 +55,9 @@ public class FrontendPassword implements PasswordAuthenticator {
             } else if (algorithm.equals("md5")) {
                 ans = hash.equals(DigestUtils.md5Hex(salt + password));
             }
+            resultSet.close();
+            preparedStatement.close();
+            this.connection.close();
         } catch (SQLException e) {
             LOG.error(e.getMessage(), e);
             return false;

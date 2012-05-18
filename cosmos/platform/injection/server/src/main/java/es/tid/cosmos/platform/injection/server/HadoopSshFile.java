@@ -23,10 +23,12 @@ import es.tid.cosmos.base.util.Logger;
  * @since  CTP 2
  */
 public class HadoopSshFile implements SshFile {
+    private static final org.apache.log4j.Logger LOG =
+            Logger.get(HadoopSshFile.class);
+
     private final String userName;
     private final Path hadoopPath;
     private final FileSystem hadoopFS;
-    private final org.apache.log4j.Logger LOG = Logger.get(HadoopSshFile.class);
     private FSDataOutputStream fsDataOutputStream;
     private FSDataInputStream fsDataInputStream;
 
@@ -273,12 +275,11 @@ public class HadoopSshFile implements SshFile {
     public boolean mkdir() {
         try {
             if (this.getParentFile().doesExist() &&
-                    this.getParentFile().isWritable()) {
-                if (this.hadoopFS.mkdirs(this.hadoopPath)) {
-                    LOG.info("directory " + this.getAbsolutePath() +
-                             "created by user" + this.userName);
-                    return true;
-                }
+                    this.getParentFile().isWritable() &&
+                    this.hadoopFS.mkdirs(this.hadoopPath)) {
+                LOG.info("directory " + this.getAbsolutePath() +
+                         "created by user" + this.userName);
+                return true;
             }
             return false;
         } catch (IOException e) {

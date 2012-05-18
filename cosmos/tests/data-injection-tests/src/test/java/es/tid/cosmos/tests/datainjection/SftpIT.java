@@ -64,7 +64,7 @@ public class SftpIT {
     }
 
     private String getDefaultDir() {
-        return "/user/" + this.env.getProperty(EnvironmentSetting.DEFAULT_USER);
+        return "/user/" + this.env.getProperty(EnvironmentSetting.DefaultUser);
     }
 
     @Test(expectedExceptions = SftpException.class)
@@ -149,7 +149,7 @@ public class SftpIT {
     public void testUserAuth1() throws Exception {
         CosmosSftp.createSession(
                 this.env,
-                this.env.getProperty(EnvironmentSetting.DEFAULT_USER),
+                this.env.getProperty(EnvironmentSetting.DefaultUser),
                 "BadPassword");
     }
 

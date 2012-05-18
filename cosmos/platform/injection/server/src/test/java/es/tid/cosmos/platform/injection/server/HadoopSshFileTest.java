@@ -210,7 +210,6 @@ public class HadoopSshFileTest {
         assertEquals(11, this.hfoo.getSize());
     }
 
-    @Ignore
     @Test
     public void testCreateInputStream() throws Exception {
         this.hfoo.create();

@@ -112,6 +112,13 @@ public class FrontendIT {
         }
     }
 
+    public void verifyFeedbackLink() {
+        this.frontend.gotoHueHome();
+        WebDriver driver = this.frontend.getDriver();
+        WebElement link = driver.findElement(By.id("hue-feedback"));
+        assertEquals(link.getAttribute("href"), "mailto:cosmos@tid.es");
+    }
+
     private void verifyLinks() {
         WebDriver driver = this.frontend.getDriver();
         List<WebElement> links = driver.findElements(By.tagName("a"));

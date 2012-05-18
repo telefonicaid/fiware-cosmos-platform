@@ -84,6 +84,11 @@ public class FrontEnd {
         return new URL(new URL(this.driver.getCurrentUrl()), verbatimUrl);
     }
 
+    public void gotoHueHome() {
+        this.driver.get(this.baseUrl);
+        this.login(this.username, this.password);
+    }
+
     public void gotoCosmosHome() {
         this.driver.get(this.cosmosUrl);
         this.login(this.username, this.password);

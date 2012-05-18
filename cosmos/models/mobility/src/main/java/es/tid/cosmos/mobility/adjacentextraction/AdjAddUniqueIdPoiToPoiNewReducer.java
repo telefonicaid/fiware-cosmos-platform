@@ -37,7 +37,7 @@ public class AdjAddUniqueIdPoiToPoiNewReducer extends Reducer<
             PoiNew poiId = PoiNewUtil.create(
                     (int)(MAX_NUM_PARTITIONS * counter++) + hash,
                     poi.getNode(), poi.getBts(),
-                    poi.getConfidentnodebts() == 1 ?
+                    (poi.getConfidentnodebts() == 1) ?
                             poi.getLabelgroupnodebts() : 0,
                     poi.getConfidentnodebts());
             ProtobufWritable<TwoInt> nodLbl = TwoIntUtil.createAndWrap(

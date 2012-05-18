@@ -6,9 +6,10 @@
 #ifndef _H_SAMSON_system_String
 #define _H_SAMSON_system_String
 
+#include <iostream>
+#include <sstream>
 
 #ifdef DEBUG_FILES
-#include <iostream>
 #include <fstream>
 #endif /* de DEBUG_FILES */
 
@@ -285,6 +286,7 @@ public:
             break;
             break;
         };
+        return "_ERROR_";
     }
 
     static const char *getTypeStatic()
@@ -347,6 +349,7 @@ public:
             return (NULL);
             break;
         };
+        return NULL;
     }
 
     void copyFrom( String *other ){
@@ -372,6 +375,22 @@ public:
         o << "{" << "\"" << _varNameInternal << "\":" << "\"" << strEscaped.value << "\"" << "}";
         return o.str();
     }
+
+    std::string strJSON(){
+         std::ostringstream o;
+         String strEscaped;
+         strEscaped.value = value;;
+         strEscaped.findAndReplace("\\", "\\\\");
+         strEscaped.findAndReplace("\"", "\\\"");
+         //strEscaped.findAndReplace("\/", "\\/");
+         strEscaped.findAndReplace("\b", "\\b");
+         strEscaped.findAndReplace("\f", "\\f");
+         strEscaped.findAndReplace("\n", "\\n");
+         strEscaped.findAndReplace("\r", "\\r");
+         strEscaped.findAndReplace("\t", "\\t");
+         o << "\""  << strEscaped.value << "\"";
+         return o.str();
+     }
 
     std::string strJSONInternal(std::string _varNameInternal, bool vectorMember){
         std::ostringstream o;
@@ -404,12 +423,120 @@ public:
         return o.str();
     }
 
+    std::string strXML(){
+        std::ostringstream o;
+        o << "<![CDATA[" << value << "]]>" << "\n";
+        return o.str();
+    }
+
     std::string strXMLInternal(std::string _varNameInternal){
         std::ostringstream o;
         o << "<" << _varNameInternal << ">" << "<![CDATA[" << value << "]]>" << "</" << _varNameInternal << ">\n";
         return o.str();
     }
 
+    std::string strHTML(std::string _varNameInternal, int level_html_heading){
+        std::ostringstream o;
+        o << strHTMLInternal(_varNameInternal, level_html_heading);
+        return o.str();
+    }
+
+    std::string strHTML(int level_html_heading){
+        std::ostringstream o;
+        o   << str();
+        //o << "<h" <<  level_html_heading << ">" << value << "</h" << level_html_heading << ">";
+        return o.str();
+    }
+
+    std::string strHTMLInternal(std::string _varNameInternal, int level_html_heading){
+        std::ostringstream o;
+        o << "<h" <<  level_html_heading << ">" << _varNameInternal << " </h" <<  level_html_heading << ">" << str();
+        //o << _varNameInternal << ": "  << str();
+
+        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << " <h" <<  level_html_heading+1 << ">" << str() << "</h" << level_html_heading+1 << "></h" << level_html_heading << ">";
+        return o.str();
+    }
+
+    std::string strHTMLTable(std::string _varNameInternal){
+        std::ostringstream o;
+        o << "<table border=\"1\">\n";
+         o << "<caption>" <<  _varNameInternal << "</caption>\n";
+         o << "<tr>\n";
+         o << "<th>" << _varNameInternal << "</th>\n";
+         o << "</tr>\n";
+         o << "<tr>\n";
+         o << "<th>" << getName() << "</th>\n";
+         o << "</tr>\n";
+         o << "<td>" << str() << "</td>\n";
+         o << "</tr>\n";
+         o << "<table>\n";
+        return o.str();
+    }
+
+    std::string strHTMLTable(){
+        std::ostringstream o;
+        o   << str();
+        //o << "<h" <<  level_html_heading << ">" << value << "</h" << level_html_heading << ">";
+        return o.str();
+    }
+
+    std::string strHTMLTableInternal(std::string _varNameInternal){
+        std::ostringstream o;
+        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << " </h" <<  level_html_heading << ">" << str();
+        //o << _varNameInternal << ": "  << str();
+
+        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << " <h" <<  level_html_heading+1 << ">" << str() << "</h" << level_html_heading+1 << "></h" << level_html_heading << ">";
+        return o.str();
+    }
+
+    std::string paint_header(int init_col)
+    {
+        return "Term";
+    }
+
+    std::string paint_header_basic(int init_col)
+    {
+        return "Term";
+    }
+
+    std::string paint_value(int index_row)
+    {
+        std::ostringstream o;
+        if (index_row >= 0)
+        {
+            o  << "<td>" << str() << "</td>";
+        }
+        else
+        {
+            o  << "<td></td>";
+        }
+        return o.str();
+    }
+
+    int num_fields()
+    {
+        return 1;
+    }
+
+    int num_basic_fields()
+    {
+        return 1;
+    }
+
+    int max_depth()
+    {
+        return 1;
+    }
+
+    int max_num_values()
+    {
+        return 1;
+    }
+
+    bool is_terminal()
+    {
+        return true;
+    }
     void operator= (std::string &_value) {
         value = _value;
     }

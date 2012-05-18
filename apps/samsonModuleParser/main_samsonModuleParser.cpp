@@ -44,6 +44,8 @@ int  tsCompare ( struct  timespec  time1, struct  timespec  time2)
 }
 #endif
 
+bool verbose;
+
 /** 
  Main function to parse everything 
  */
@@ -92,7 +94,7 @@ int main( int argC , const char *argV[])
     int res_stat1 = stat( output1_filename.c_str() , &stat_output1);
     int res_stat2 = stat( output2_filename.c_str() , &stat_output2);
 
-    bool verbose = cmdLine.get_flag_bool("v");
+    verbose = cmdLine.get_flag_bool("v");
     
     if( ( res_stat1 == 0) && ( res_stat2 == 0) )
     {

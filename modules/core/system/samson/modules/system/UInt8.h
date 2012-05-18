@@ -41,7 +41,7 @@ public:
 
     std::string str(){
         std::ostringstream o;
-        o << (int)value << " ";
+        o <<  (unsigned int)value;
         return o.str();
     }
 
@@ -220,6 +220,7 @@ public:
             return ("_ERROR_");
             break;
         };
+        return ("_ERROR_");
     }
 
     static const char *getTypeStatic()
@@ -282,6 +283,7 @@ public:
             return (NULL);
             break;
         };
+        return (NULL);
     }
 
 

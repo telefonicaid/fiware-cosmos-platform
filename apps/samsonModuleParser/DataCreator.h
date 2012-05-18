@@ -31,7 +31,6 @@ namespace samson {
 	
 	class ModuleInformation
 	{
-        
 	 public:
 		
 		// Information about the module
@@ -42,6 +41,8 @@ namespace samson {
         
         // List of Operations
 		vector <OperationContainer> operations;
+
+
 
          // Parse content of a module file to get list of datas , operations ,  ...
 		static ModuleInformation* parse( std::string module_file , au::ErrorManager* error );

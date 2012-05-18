@@ -167,6 +167,7 @@ public:
             return ("_ERROR_");
             break;
         };
+        return NULL;
     }
 
     static const char *getTypeStatic()
@@ -229,6 +230,7 @@ public:
             return (NULL);
             break;
         };
+        return NULL;
     }
 
 };

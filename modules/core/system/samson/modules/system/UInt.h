@@ -7,9 +7,12 @@
 #define _H_SAMSON_system_UInt
 
 
+#include <iostream>
+#include <sstream>
+
+
 #undef DEBUG_FILES
 #ifdef DEBUG_FILES
-#include <iostream>
 #include <fstream>
 #endif /* de DEBUG_FILES */
 #undef DEBUG_FILES
@@ -27,7 +30,7 @@ namespace system{
 
 class UInt : public samson::DataInstance {
 
-public:
+    public:
 
     size_t value;
 
@@ -215,24 +218,25 @@ public:
     static std::string getTypeFromPathStatic(const int *dataPathIntP){
         switch(*dataPathIntP)
         {
-        case -1:
+            case -1:
 #undef DEBUG_FILES
 #ifdef DEBUG_FILES
-        {
-            std::string filename = "/tmp/debug_UInt.log";
-            std::ofstream fs(filename.c_str(), std::ios::app);
-            fs << "In  getTypeFromPathStatic found: '" << "system.UInt" << "'" << std::endl;
-            fs.close();
-        }
+            {
+                std::string filename = "/tmp/debug_UInt.log";
+                std::ofstream fs(filename.c_str(), std::ios::app);
+                fs << "In  getTypeFromPathStatic found: '" << "system.UInt" << "'" << std::endl;
+                fs.close();
+            }
 #endif /* de DEBUG_FILES */
 #undef DEBUG_FILES
 
-        return ("system.UInt");
-        break;
-        default:
-            return ("_ERROR_");
+            return ("system.UInt");
             break;
+            default:
+                return ("_ERROR_");
+                break;
         };
+        return "_ERROR_";
     }
 
     static const char *getTypeStatic()
@@ -300,13 +304,14 @@ public:
 
         switch(*dataPathIntP)
         {
-        case -1:
-            return (this);
-            break;
-        default:
-            return (NULL);
-            break;
+            case -1:
+                return (this);
+                break;
+            default:
+                return (NULL);
+                break;
         };
+        return NULL;
     }
 
     void copyFrom( UInt *other ){
@@ -322,6 +327,12 @@ public:
     std::string strJSON(std::string _varNameInternal){
         std::ostringstream o;
         o << "{" << "\"" << _varNameInternal << "\":" << value << "}";
+        return o.str();
+    }
+
+    std::string strJSON(){
+        std::ostringstream o;
+        o << "{" << "\"" << "value" << "\":" << value << "}";
         return o.str();
     }
 
@@ -345,10 +356,118 @@ public:
         return o.str();
     }
 
+    std::string strXML(){
+        std::ostringstream o;
+        o << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
+        o << strXMLInternal("value");
+        return o.str();
+    }
+
     std::string strXMLInternal(std::string _varNameInternal){
         std::ostringstream o;
         o << "<" << _varNameInternal << ">" << value << "</" << _varNameInternal << ">\n";
         return o.str();
+    }
+
+    std::string strHTML(std::string _varNameInternal, int level_html_heading){
+        std::ostringstream o;
+        o << strHTMLInternal(_varNameInternal, level_html_heading);
+        return o.str();
+    }
+
+    std::string strHTML(int level_html_heading){
+        std::ostringstream o;
+        //o << "<h" <<  level_html_heading << ">" <<  value << "</h" << level_html_heading << ">";
+        o   << str();
+        return o.str();
+    }
+
+    std::string strHTMLInternal(std::string _varNameInternal, int level_html_heading){
+        std::ostringstream o;
+        o << "<h" <<  level_html_heading << ">" << _varNameInternal << " </h" <<  level_html_heading << ">" << str();
+        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << " <h" <<  level_html_heading+1 << ">" << str() << "</h" << level_html_heading+1 << "></h" << level_html_heading << ">";
+        //o  << _varNameInternal << ": "  << str();
+        return o.str();
+    }
+
+    std::string strHTMLTable(std::string _varNameInternal){
+        std::ostringstream o;
+        o << "<table border=\"1\">\n";
+        o << "<caption>" <<  _varNameInternal << "</caption>\n";
+        o << "<tr>\n";
+        o << "<th>" << _varNameInternal << "</th>\n";
+        o << "</tr>\n";
+        o << "<tr>\n";
+        o << "<th>" << getName() << "</th>\n";
+        o << "</tr>\n";
+        o << "<td>" << str() << "</td>\n";
+        o << "</tr>\n";
+        o << "<table>\n";
+        return o.str();
+    }
+
+    std::string strHTMLTable(){
+        std::ostringstream o;
+        //o << "<h" <<  level_html_heading << ">" <<  value << "</h" << level_html_heading << ">";
+        o   << str();
+        return o.str();
+    }
+
+    std::string strHTMLTableInternal(std::string _varNameInternal){
+        std::ostringstream o;
+        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << " </h" <<  level_html_heading << ">" << str();
+        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << " <h" <<  level_html_heading+1 << ">" << str() << "</h" << level_html_heading+1 << "></h" << level_html_heading << ">";
+        //o  << _varNameInternal << ": "  << str();
+        return o.str();
+    }
+
+    std::string paint_header(int init_col)
+    {
+        return "Term";
+    }
+
+    std::string paint_header_basic(int init_col)
+    {
+        return "Term";
+    }
+
+    std::string paint_value(int index_row)
+    {
+        std::ostringstream o;
+        if (index_row >= 0)
+        {
+            o  << "<td>" << str() << "</td>";
+        }
+        else
+        {
+            o  << "<td></td>";
+        }
+        return o.str();
+    }
+
+    int num_fields()
+    {
+        return 1;
+    }
+
+    int num_basic_fields()
+    {
+        return 1;
+    }
+
+    int max_depth()
+    {
+        return 1;
+    }
+
+    int max_num_values()
+    {
+        return 1;
+    }
+
+    bool is_terminal()
+    {
+        return true;
     }
 
     /*

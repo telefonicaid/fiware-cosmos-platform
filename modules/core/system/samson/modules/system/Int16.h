@@ -125,6 +125,7 @@ public:
             break;
             break;
         };
+        return NULL;
     }
 
     static const char *getTypeStatic()
@@ -187,6 +188,7 @@ public:
             return (NULL);
             break;
         };
+        return NULL;
     }
 
 

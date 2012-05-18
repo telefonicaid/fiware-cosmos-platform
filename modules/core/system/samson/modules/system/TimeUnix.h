@@ -9,6 +9,9 @@
 #include <limits.h>
 #include <stdint.h>
 
+#include <iostream>
+#include <sstream>
+
 #include <samson/modules/system/FixedLengthDataInstance.h>
 #include <samson/modules/system/Date.h>
 #include <samson/modules/system/DateComplete.h>
@@ -16,7 +19,6 @@
 
 #undef DEBUG_FILES
 #ifdef DEBUG_FILES
-#include <iostream>
 #include <fstream>
 #endif /* de DEBUG_FILES */
 #undef DEBUG_FILES
@@ -80,18 +82,6 @@ public:
     return false;
   }
   bool operator!=(int64_t _value)
-  {
-    if (value != _value)
-      return true;
-    return false;
-  }
-  bool operator==(int _value)
-  {
-    if (value == _value)
-      return true;
-    return false;
-  }
-  bool operator!=(int _value)
   {
     if (value != _value)
       return true;
@@ -195,6 +185,7 @@ public:
       return ("_ERROR_");
       break;
     };
+    return "_ERROR_";
   }
 
   static const char *getTypeStatic()
@@ -264,6 +255,7 @@ public:
       return (NULL);
       break;
     };
+    return NULL;
   }
 
   std::string str()
@@ -282,6 +274,13 @@ public:
   {
     std::ostringstream o;
     o << "{" << "\"" << _varNameInternal << "\":" << "\"" << str() << "\"" << "}";
+    return o.str();
+  }
+
+  std::string strJSON()
+  {
+    std::ostringstream o;
+    o << "{" << "\"" << "time" << "\":" << "\"" << str() << "\"" << "}";
     return o.str();
   }
 
@@ -307,11 +306,116 @@ public:
     return o.str();
   }
 
+  std::string strXML()
+  {
+    std::ostringstream o;
+    o << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
+    o << strXMLInternal("time");
+    return o.str();
+  }
+
   std::string strXMLInternal(std::string _varNameInternal)
   {
     std::ostringstream o;
-    o << "<" << _varNameInternal << ">" << value << "</" << _varNameInternal << ">\n";
+    o << "<" << _varNameInternal << ">" << str() << "</" << _varNameInternal << ">\n";
     return o.str();
+  }
+
+  std::string strHTML(std::string _varNameInternal, int level_html_heading)
+  {
+    std::ostringstream o;
+    o << strHTMLInternal(_varNameInternal, level_html_heading);
+    return o.str();
+  }
+
+  std::string strHTML(int level_html_heading)
+  {
+    std::ostringstream o;
+    o  <<  str();
+    //o << "<h" <<  level_html_heading << ">" <<  str() << "</h" << level_html_heading << ">";
+    return o.str();
+  }
+
+  std::string strHTMLInternal(std::string _varNameInternal, int level_html_heading)
+  {
+    std::ostringstream o;
+    o << "<h" <<  level_html_heading << ">" << _varNameInternal << "</h" << level_html_heading << ">" <<  str() ;
+    //o  << _varNameInternal << ": " <<  str();
+    //o << "<h" <<  level_html_heading << ">" << _varNameInternal << ": " <<  str() << "</h" << level_html_heading << ">";
+    return o.str();
+  }
+
+  std::string strHTMLTable(std::string _varNameInternal)
+  {
+    std::ostringstream o;
+    //o << strHTMLInternal(_varNameInternal, level_html_heading);
+    return o.str();
+  }
+
+  std::string strHTMLTable()
+  {
+    std::ostringstream o;
+    o  <<  str();
+    //o << "<h" <<  level_html_heading << ">" <<  str() << "</h" << level_html_heading << ">";
+    return o.str();
+  }
+
+  std::string strHTMLTableInternal(std::string _varNameInternal)
+  {
+    std::ostringstream o;
+    //o << "<h" <<  level_html_heading << ">" << _varNameInternal << "</h" << level_html_heading << ">" <<  str() ;
+    //o  << _varNameInternal << ": " <<  str();
+    //o << "<h" <<  level_html_heading << ">" << _varNameInternal << ": " <<  str() << "</h" << level_html_heading << ">";
+    return o.str();
+  }
+
+
+  std::string paint_header(int init_col)
+  {
+      return "Term";
+  }
+
+  std::string paint_header_basic(int init_col)
+  {
+      return "Term";
+  }
+
+  std::string paint_value(int index_row)
+  {
+      std::ostringstream o;
+      if (index_row >= 0)
+      {
+          o  << "<td>" << str() << "</td>";
+      }
+      else
+      {
+          o  << "<td></td>";
+      }
+      return o.str();
+  }
+  int num_fields()
+  {
+      return 1;
+  }
+
+  int num_basic_fields()
+  {
+      return 1;
+  }
+
+  int max_depth()
+  {
+      return 1;
+  }
+
+  int max_num_values()
+  {
+      return 1;
+  }
+
+  bool is_terminal()
+  {
+      return true;
   }
 
   void getTimeFromCalendar(struct tm *tm)

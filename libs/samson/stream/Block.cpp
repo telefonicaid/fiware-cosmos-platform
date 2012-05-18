@@ -142,11 +142,12 @@ namespace samson {
             DataInstance*  keyDataInstance     = (DataInstance*) keyData->getInstance();
             int            compare;
             
-            LM_T(LmtRest, ("looking up key '%s'", key));
+
             keyDataInstance->setFromString(key);
             
             keySize      = keyDataInstance->serialize(keyName);
             hashGroup    = keyDataInstance->hash(KVFILE_NUM_HASHGROUPS);
+            LM_T(LmtRest, ("looking up key '%s'(keyDataInstance:name:%s, val:%s) in hashgroup:%d", key, keyDataInstance->getName().c_str(), keyDataInstance->str().c_str(), hashGroup));
             
             int startIx  = hashInfo[hashGroup].startIx;
             int endIx    = hashInfo[hashGroup].endIx;
@@ -167,6 +168,8 @@ namespace samson {
                     
                     valueDataInstance->parse(valueP);
                     
+                    LM_T(LmtRest, ("Match key '%s' - at ix %d (testKeySize:%d, name:%s, path:%s)", key, testIx, testKeySize, valueDataInstance->getName().c_str(), valueDataInstance->getType()));
+
                     if (outputFormat == "xml")
                     {
                         std::ostringstream output;
@@ -181,10 +184,20 @@ namespace samson {
                     if (outputFormat == "html")
                     {
                         std::ostringstream output;
-                        output << "<h1>key</h1>\n";
-                        output << keyDataInstance->strHTML();
-                        output << "<h1>value</h1>\n";
-                        output << valueDataInstance->strHTML();
+                        //output << "<h1>key</h1>\n";
+                        output << keyDataInstance->strHTML("key", 1);
+                        //output << "<h1>value</h1>\n";
+                        output << valueDataInstance->strHTML("value", 1);
+                        return output.str();
+                    }
+                    if (outputFormat == "thtml")
+                    {
+                        std::ostringstream output;
+
+                        output << keyDataInstance->strHTMLTable("key");
+
+                        output << valueDataInstance->strHTMLTable("value");
+
                         return output.str();
                     }
                     else

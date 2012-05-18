@@ -5,6 +5,10 @@
 #include <samson/module/var_int.h>
 #include <samson/module/DataInstance.h>
 
+#include <iostream>
+#include <sstream>
+
+
 namespace samson {
 
 namespace system {
@@ -12,10 +16,10 @@ namespace system {
 template <typename T>
 class FixedLengthDataInstance : public samson::DataInstance
 {
-public:
+    public:
     T value;
 
-public:
+    public:
     FixedLengthDataInstance() : samson::DataInstance(){
     }
 
@@ -79,6 +83,12 @@ public:
         return o.str();
     }
 
+    std::string strJSON(){
+        std::ostringstream o;
+        o << value;
+        return o.str();
+    }
+
     std::string strJSONInternal(std::string _varNameInternal, bool vectorMember){
         std::ostringstream o;
         if (vectorMember)
@@ -99,10 +109,118 @@ public:
         return o.str();
     }
 
+    std::string strXML(){
+        std::ostringstream o;
+        o << value << "\n";
+        return o.str();
+    }
+
     std::string strXMLInternal(std::string _varNameInternal){
         std::ostringstream o;
         o << "<" << _varNameInternal << ">" << value << "</" << _varNameInternal << ">\n";
         return o.str();
+    }
+
+    std::string strHTML(std::string _varNameInternal, int level_html_heading){
+        std::ostringstream o;
+        o << strHTMLInternal(_varNameInternal, level_html_heading);
+        return o.str();
+    }
+
+    std::string strHTML(int level_html_heading){
+        std::ostringstream o;
+        o  << str();
+        //o << "<h" <<  level_html_heading << ">" << str() << "</h" << level_html_heading << ">";
+        return o.str();
+    }
+
+    std::string strHTMLInternal(std::string _varNameInternal, int level_html_heading){
+        std::ostringstream o;
+        o << "<h" <<  level_html_heading << ">" << _varNameInternal << " </h" <<  level_html_heading << ">" << str();
+        o <<  _varNameInternal << ": " << str();
+        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << " <h" <<  level_html_heading+1 << ">" << str() << "</h" << level_html_heading+1 << "></h" << level_html_heading << ">";
+        return o.str();
+    }
+
+    std::string strHTMLTable(std::string _varNameInternal){
+        std::ostringstream o;
+        o << "<table border=\"1\">\n";
+         o << "<caption>" <<  _varNameInternal << "</caption>\n";
+         o << "<tr>\n";
+         o << "<th>" << _varNameInternal << "</th>\n";
+         o << "</tr>\n";
+         o << "<tr>\n";
+         o << "<th>" << getName() << "</th>\n";
+         o << "</tr>\n";
+         o << "<td>" << str() << "</td>\n";
+         o << "</tr>\n";
+         o << "<table>\n";
+        return o.str();
+    }
+
+    std::string strHTMLTable(){
+        std::ostringstream o;
+        o  << str();
+        //o << "<h" <<  level_html_heading << ">" << str() << "</h" << level_html_heading << ">";
+        return o.str();
+    }
+
+    std::string strHTMLTableInternal(std::string _varNameInternal){
+        std::ostringstream o;
+        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << " </h" <<  level_html_heading << ">" << str();
+        o <<  _varNameInternal << ": " << str();
+        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << " <h" <<  level_html_heading+1 << ">" << str() << "</h" << level_html_heading+1 << "></h" << level_html_heading << ">";
+        return o.str();
+    }
+
+    std::string paint_header(int init_col)
+    {
+        return "Term";
+    }
+
+    std::string paint_header_basic(int init_col)
+    {
+        return "Term";
+    }
+
+    std::string paint_value(int index_row)
+    {
+        std::ostringstream o;
+        if (index_row >= 0)
+        {
+            o  << "<td>" << str() << "</td>";
+        }
+        else
+        {
+            o  << "<td></td>";
+        }
+        return o.str();
+    }
+
+    int num_fields()
+    {
+        return 1;
+
+    }
+
+    int num_basic_fields()
+    {
+        return 1;
+    }
+
+    int max_depth()
+    {
+        return 1;
+    }
+
+    int max_num_values()
+    {
+        return 1;
+    }
+
+    bool is_terminal()
+    {
+        return true;
     }
 
 };

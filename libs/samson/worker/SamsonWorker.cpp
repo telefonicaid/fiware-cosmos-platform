@@ -11,6 +11,7 @@
 #include "au/string.h"                            // au::Format
 #include "au/time.h"                              // au::todayString
 #include "au/ThreadManager.h"
+#include "au/tables/pugixml.hpp"                  // pugixml
 
 #include "engine/Notification.h"                  // engine::Notification
 
@@ -420,7 +421,8 @@ namespace samson {
             
             if( error.isActivated() )
             {
-                command->appendFormatedError( au::str("Error connecting rest client (%s)" , error.getMessage().c_str() ) );
+                command->appendFormatedError( au::str("Error connecting to rest client (%s)" , error.getMessage().c_str() ) );
+                LM_E(("Error connecting to rest client (%s)", error.getMessage().c_str()));
                 return;
             }
         }
@@ -433,7 +435,8 @@ namespace samson {
                 usleep(10000);
                 if( c.diffTimeInSeconds() > 0.5 )
                 {
-                    command->appendFormatedError( "Timeout connecting REST client" );
+                    command->appendFormatedError( "Timeout connecting to REST client" );
+                    LM_E(("Timeout connecting to REST client"));
                     return;
                 }
             }
@@ -450,7 +453,8 @@ namespace samson {
                 usleep(10000);
                 if( c.diffTimeInSeconds() > 2 )
                 {
-                    command->appendFormatedError( au::str( "Timeout waiting response from REST client (task %lu)" , command_id ));
+                    command->appendFormatedError( au::str( "Timeout awaiting response from REST client (task %lu)" , command_id ));
+                    LM_E(("Timeout awaiting response from REST client"));
                     return;
                 }
             }
@@ -461,6 +465,7 @@ namespace samson {
         if( !component )
         {
             command->appendFormatedError( "Internal error recovering answer from REST client" );
+            LM_E(("Internal error recovering answer from REST client"));
             return;
         }
         
@@ -470,11 +475,14 @@ namespace samson {
         if( !table )
         {
             command->appendFormatedError( "No content in answer from REST client" );
+            LM_E(("No content in answer from REST client"));
             return;
         }
         
         std::string output;
         
+        LM_T(LmtRest, ("appending delilah output to command: '%s'", table->str().c_str()));
+
         if( command->format == "xml" )
             command->append( table->str_xml() );
         else if( command->format == "json" )
@@ -819,6 +827,7 @@ namespace samson {
         // Get the main command for the first path component before /samson/
         std::string main_command = command->path_components[1];
 
+        LM_T(LmtRest, ("main REST command: '%s'", main_command.c_str()));
         if (main_command == "version")
         {
             command->appendFormatedElement("version", au::str("SAMSON v %s" , SAMSON_VERSION ));
@@ -880,33 +889,104 @@ namespace samson {
         }
         else if (main_command == "command" ) /* /samson/command */
         {
-            std::string delilah_command = "ls"; // default command
-            if( command->path_components.size() > 2 )
+            std::string delilah_command = "";
+
+            if (command->command != "GET")
+            {
+                command->appendFormatedError(404, au::str("bad VERB for command"));
+                return;
+            }
+
+            if (command->path_components.size() == 2)
+                delilah_command = "ls"; // 'ls' is the default command
+            else if (command->path_components.size() == 3)
                 delilah_command = command->path_components[2];
-            process_delilah_command( delilah_command , command );
-            return;
+
+            if (delilah_command != "")
+                process_delilah_command(delilah_command, command);
+            else
+                command->appendFormatedError(404, au::str("bad path for command"));
         }
         else if (main_command == "cluster" ) /* /samson/cluster */
         {
             std::ostringstream data;
 
+            LM_T(LmtRest, ("cluster command"));
+
             if ((command->command == "GET") && (command->path_components.size() == 2))
                 network->getInfo(data, "cluster", command->format);
-            else if ((command->command == "PUT") && (command->path_components.size() == 3) && (command->path_components[2] == "add_node"))
+            else if ((command->command == "POST") && (command->path_components.size() == 3) && (command->path_components[2] == "add_node"))
             {
                 char delilahCommand[256];
 
-                LM_M(("Adding a node - check the data of this REST command ..."));
-                snprintf(delilahCommand, sizeof(delilahCommand), "cluster add %s %d", "localhost", 1234);
-                process_delilah_command(delilahCommand, command);
+                if (command->data == NULL)
+                {
+                    command->appendFormatedError(404, au::str("no data"));
+                }
+                else
+                {
+                    char*                   commandData = (char*) malloc(command->data_size + 1);
+                    pugi::xml_document      doc;
+                    pugi::xml_parse_result  pugiResult;
+                   
+                    strncpy(commandData, command->data, command->data_size);
+                    commandData[command->data_size] = 0;
+
+                    LM_T(LmtRest, ("Adding a node - parse the data '%s' of size %d", commandData, command->data_size));
+                    pugiResult = doc.load(commandData);
+                    free(commandData);
+                    if (!pugiResult)
+                    {
+                        command->appendFormatedError(404, au::str("error in XML data: '%s'", pugiResult.description()));
+                    }
+                    else
+                    {
+                        pugi::xml_node samson = doc.child("samson");
+
+                        char* host = (char*) samson.child_value("host");
+                        char* port = (char*) samson.child_value("port");
+
+                        snprintf(delilahCommand, sizeof(delilahCommand), "cluster add %s %s", host, port);
+                        LM_T(LmtRest, ("processing delilah command '%s'", delilahCommand));
+                        process_delilah_command(delilahCommand, command);
+                    }
+                }
             }
             else if ((command->command == "DELETE") && (command->path_components.size() == 3) && (command->path_components[2] == "remove_node"))
             {
                 char delilahCommand[256];
 
-                LM_M(("Adding a node - check the data of this REST command ..."));
-                snprintf(delilahCommand, sizeof(delilahCommand), "cluster remove %s %d", "localhost", 1234);
-                process_delilah_command(delilahCommand, command);
+                if (command->data == NULL)
+                {
+                    command->appendFormatedError(404, au::str("no data"));
+                }
+                else
+                {
+                    char*                   commandData = (char*) malloc(command->data_size + 1);
+                    pugi::xml_document      doc;
+                    pugi::xml_parse_result  pugiResult;
+                   
+                    strncpy(commandData, command->data, command->data_size);
+                    commandData[command->data_size] = 0;
+
+                    LM_T(LmtRest, ("Removing a node - parse the data '%s' of size %d", commandData, command->data_size));
+                    pugiResult = doc.load(commandData);
+                    free(commandData);
+                    if (!pugiResult)
+                    {
+                        command->appendFormatedError(404, au::str("error in XML data: '%s'", pugiResult.description()));
+                    }
+                    else
+                    {
+                        pugi::xml_node samson = doc.child("samson");
+
+                        char* host = (char*) samson.child_value("host");
+                        char* port = (char*) samson.child_value("port");
+
+                        snprintf(delilahCommand, sizeof(delilahCommand), "cluster remove %s %s", host, port);
+                        process_delilah_command(delilahCommand, command);
+                    }
+                }
             }
             else
                 command->appendFormatedError(404, au::str("bad verb/path"));
@@ -972,7 +1052,6 @@ namespace samson {
         {
             command->appendFormatedError(404, au::str("unknown path component '%s'" , main_command.c_str() ) );
         }
-        
     }
     
     void SamsonWorker::process_node(  au::network::RESTServiceCommand* command  )

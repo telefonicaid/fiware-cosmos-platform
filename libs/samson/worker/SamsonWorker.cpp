@@ -923,7 +923,7 @@ namespace samson {
                 {
                     command->appendFormatedError(404, au::str("no data"));
                 }
-                else
+                else if (command->format == "xml")
                 {
                     char*                   commandData = (char*) malloc(command->data_size + 1);
                     pugi::xml_document      doc;
@@ -945,11 +945,24 @@ namespace samson {
 
                         char* host = (char*) samson.child_value("host");
                         char* port = (char*) samson.child_value("port");
-
+                            
                         snprintf(delilahCommand, sizeof(delilahCommand), "cluster add %s %s", host, port);
                         LM_T(LmtRest, ("processing delilah command '%s'", delilahCommand));
                         process_delilah_command(delilahCommand, command);
+
+                        // How do I know that the 'cluster add' command worked ... ?
+                        // command->error ?
+
+                        // Now, as there is no output from this command, I need to 'reset' the return buffer
+                        command->output.str("");
+
+                        // And as the trailing '</samson>' is appended, I start the chain here ...
+                        command->output << "<samson>" << "\n" << "<result>OK</result>";
                     }
+                }
+                else if (command->format == "json")
+                {
+                    command->appendFormatedError(404, au::str("sorry, JSON parsing not implemented yet"));
                 }
             }
             else if ((command->command == "DELETE") && (command->path_components.size() == 3) && (command->path_components[2] == "remove_node"))

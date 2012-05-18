@@ -121,7 +121,7 @@ ModuleInformation* ModuleInformation::parse( std::string module_file , au::Error
 
 
 
-            std::cout << "Processing Data " << name << " in module file " << module_file << std::endl;
+            //std::cout << "Processing Data " << name << " in module file " << module_file << std::endl;
 
 
             DataContainer data_container( module_information->module.name , name );
@@ -177,7 +177,7 @@ void ModuleInformation::printMainHeaderFile( std::string outputFileName )
 
     std::string data_file_name =  outputFileName + ".h";
 
-    std::cout << "Creating file " << data_file_name << "\n";
+    //std::cout << "Creating file " << data_file_name << "\n";
 
 
     std::ofstream output( data_file_name.c_str() );
@@ -262,7 +262,7 @@ void ModuleInformation::printMainFile( std::string outputFileName )
     // Print .cpp file for module definition
     std::string output_filename_cpp =  outputFileName + ".cpp";
 
-    std::cout << "Creating file " << output_filename_cpp << "\n";
+    //std::cout << "Creating file " << output_filename_cpp << "\n";
 
 
     std::ofstream output( output_filename_cpp.c_str() );

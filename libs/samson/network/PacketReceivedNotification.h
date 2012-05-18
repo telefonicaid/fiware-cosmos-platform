@@ -42,14 +42,14 @@ namespace samson
         {
             if( ! receiver )
             {
-                LM_W(("Packet %s lost since ntework interface is still not activated." , packet->str().c_str() ));
-                delete packet;// Remove the packet recieved from the network
+                LM_W(("Packet %s lost since network interface is still not activated." , packet->str().c_str() ));
+                delete packet;// Remove the packet received from the network
                 return;
             }
             else
             {
                 receiver->receive( packet );
-                delete packet; // Remove the packet recieved from the network ( releasing internal buffer )
+                delete packet; // Remove the packet received from the network ( releasing internal buffer )
             }
         }
         

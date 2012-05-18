@@ -176,7 +176,8 @@ namespace samson
                 
                 LM_E(("Error parsing Google Protocol Buffer of %d bytes because a message %s is not initialized!",
                       header.gbufLen, samson::Message::messageCode(header.code)));
-                // Close connection ( We close here since it is not a io error, is a protocol error )                
+                // Close connection ( We close here since it is not a io error, is a protocol error )
+                free(dataP);
                 fd->close();
                 return au::Error; // Generic error
             }

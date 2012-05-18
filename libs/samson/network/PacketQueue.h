@@ -117,6 +117,11 @@ namespace samson {
             
         }
         
+        ~MultiPacketQueue()
+        {
+            packet_queues.clearMap();
+        }
+
         void clear()
         {
             au::TokenTaker tt(&token_packet_queues);

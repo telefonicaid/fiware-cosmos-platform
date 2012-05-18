@@ -38,6 +38,13 @@ public:
     
     DataBase();
     
+   ~DataBase()
+   {
+       tables.clearMap();
+       trees.clearMap();
+       collections.clearMap();
+   }
+
     // Add a table, tree or collection to this database
     void addTable( std::string name , Table* table );
     void addTree( std::string name , TreeItem* tree );

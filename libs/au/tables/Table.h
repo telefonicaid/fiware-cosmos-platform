@@ -191,6 +191,11 @@ namespace au
             TableRow( StringVector _columns , StringVector _values );
             TableRow( TableRow* table_row );
             
+            ~TableRow()
+            {
+                cells.clearMap();
+            }
+
             // Single value set
             void set( std::string name , std::string value );
             void set( std::string name , TableCell* cell );

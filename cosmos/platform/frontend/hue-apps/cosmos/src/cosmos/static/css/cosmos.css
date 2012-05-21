@@ -208,14 +208,21 @@
 .cos-prev_page {
     background: url("/static/art/icons/control_previous.png") no-repeat scroll 0 0 transparent;
 }
+.cosmos .pagination {
+/*    padding: 3px 0 0 0; */
+}
 .cosmos .step-links a {
-    float: right;
+    line-height: 19px;
+}
+.cosmos .step-links a {
+    float: none;
+    display: inline-block;
     height: 16px;
     width: 16px;
     padding: 0;
+    margin: 0;
+    vertical-align: text-bottom;
     text-indent: -500px;
-    position: relative;
-    top: 3px;
     overflow: hidden;
 }
 

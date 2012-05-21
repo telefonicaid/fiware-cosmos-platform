@@ -1212,6 +1212,7 @@ namespace samson {
             
             if (!queue)
             {
+                LM_E(("Queue '%s' not found for REST query", queue_name.c_str()));
                 command->appendFormatedError( au::str("Queue '%s' not found", queue_name.c_str() ) );
                 return;
             }
@@ -1219,8 +1220,8 @@ namespace samson {
             KVFormat format = queue->getFormat();
             if ( format.isGenericKVFormat() )
             {
-                std::string m = au::str("Queue '%s' is of generic format '%s'" 
-                                        , queue_name.c_str() , format.str().c_str());
+                LM_E(("Queue '%s' is of generic format '%s' for REST query", queue_name.c_str() , format.str().c_str()));
+                std::string m = au::str("Queue '%s' is of generic format '%s'", queue_name.c_str() , format.str().c_str());
                 command->appendFormatedError(m);
                 return;
             }
@@ -1231,6 +1232,7 @@ namespace samson {
 
             if (!key_data || !value_data )
             {
+                LM_E(("Queue '%s' has wrong format for REST query" , queue_name.c_str()));
                 std::string m = au::str("Queue '%s' has wrong format" , queue_name.c_str());
                 command->appendFormatedError(m);
                 return;
@@ -1250,12 +1252,16 @@ namespace samson {
 
             // Cluster information to discover if we redirect this query
             std::vector<size_t> worker_ids    = worker->network->getWorkerIds();
-            int                 server        = reference_key_data_instance->partition(  worker_ids.size() );
+            // New way to determine the server from the hashgroup, instead of partition function
+            //int                 server        = reference_key_data_instance->partition(  worker_ids.size() );
+            int                   server = hg%worker_ids.size();
             size_t              worker_id     = worker_ids[server];
             size_t              my_worker_id  = worker->network->getMynodeIdentifier().id;
 
+            LM_T(LmtRest, ("Checking worker_ids[server(%d)](%lu) against my_worker_id(%lu) ", server, worker_ids[server], my_worker_id));
             if (worker_ids[server] != my_worker_id)
             {
+                LM_T(LmtRest, ("worker_ids[server(%d)](%lu) != my_worker_id(%lu) ", server, worker_ids[server], my_worker_id));
                 std::string     host = worker->network->getHostForWorker( worker_id );
                 //unsigned short  port = worker->network->getPortForWorker( worker_id );
                 unsigned short  port = web_port; // We have to use to REST port, not the connections port

@@ -30,7 +30,6 @@ public class HadoopFileSystemViewTest {
         this.hadoopFileSystemView = new HadoopFileSystemView(userName, conf);
     }
 
-    @Test(expected = IllegalArgumentException.class)
     public void testGetFileWithEmptyFilename() throws Exception {
         this.hadoopFileSystemView.getFile("");
     }

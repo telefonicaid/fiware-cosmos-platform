@@ -20,12 +20,26 @@ LOGGER = logging.getLogger(__name__)
 TEMP_JAR = "tmp.jar"
 DEFAULT_PAGE = 1
 
+
+def refresh_state(job_run):
+    """Poll the helper Java process for a fresh state."""
+
+    submission = job_run.submission
+    if submission is not None:
+        job_data = jobsub.get_client().get_job_data(submission.submission_handle)
+        submission.last_seen_state = job_data.state
+        submission.save()
+
+
 def index(request):
     """List job runs."""
 
+    job_runs = JobRun.objects.filter(user=request.user).order_by('-start_date')
+    for job_run in job_runs:
+        refresh_state(job_run)
+
     return render('index.mako', request, dict(
-        job_runs=JobRun.objects.filter(user=request.user)
-                               .order_by('-start_date')
+        job_runs=job_runs
     ))
 
 

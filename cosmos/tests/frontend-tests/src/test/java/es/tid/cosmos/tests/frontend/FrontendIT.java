@@ -37,7 +37,6 @@ public class FrontendIT {
     private static final String SIMPLE_TEXT = "Very simple text file";
     private static final String PRIMES_TEXT = "2 3 4 5 6 7 8 9 123\n19283";
     private static final int TASK_COUNT = 4;
-    
     private FrontEnd frontend;
     private String wordcountHdfsPath;
     private String mapperFailHdfsPath;
@@ -62,13 +61,12 @@ public class FrontendIT {
     }
 
     private static String ensureJar(FrontEnd frontend, String localPath) {
-        final String username = frontend.getUsername();
-        if (!FrontEndTask.jarExists(frontend.getEnvironment(), username,
-                                    localPath)) {
+        final String fileName = new File(localPath).getName();
+        if (!FrontEndTask.jarExists(frontend, fileName)) {
             FrontEndTask.uploadJar(frontend, localPath);
         }
 
-        return FrontEndTask.getJarHdfsPath(username, localPath);
+        return FrontEndTask.getJarHdfsPath(frontend.getUsername(), fileName);
     }
 
     private String ensureJar(String localPath) {
@@ -76,13 +74,12 @@ public class FrontendIT {
     }
 
     private static String ensureData(FrontEnd frontend, String localPath) {
-        final String username = frontend.getUsername();
-        if (!FrontEndTask.dataSetExists(frontend.getEnvironment(), username,
-                                        localPath)) {
+        final String fileName = new File(localPath).getName();
+        if (!FrontEndTask.dataSetExists(frontend, fileName)) {
             FrontEndTask.uploadData(frontend, localPath);
         }
 
-        return FrontEndTask.getDataHdfsPath(username, localPath);
+        return FrontEndTask.getDataHdfsPath(frontend.getUsername(), fileName);
     }
 
     private String ensureData(String localPath) {
@@ -125,7 +122,7 @@ public class FrontendIT {
         try {
             for (WebElement link : links) {
                 String verbatimUrl = link.getAttribute("href");
-                if (verbatimUrl.startsWith("javascript")) {
+                if (verbatimUrl == null || verbatimUrl.startsWith("javascript")) {
                     return;
                 }
                 String linkUrl = this.frontend.resolveURL(verbatimUrl).toString();
@@ -145,7 +142,8 @@ public class FrontendIT {
     }
 
     public void testUploadJarNoFile() {
-        UploadJarPage uploadJarPage = this.frontend.goToUploadJar();
+        UploadPage uploadPage = this.frontend.goToUpload();
+        UploadJarPage uploadJarPage = uploadPage.goToUploadJar();
         uploadJarPage.submitForm();
         assertTrue(uploadJarPage.getErrorText().contains("empty"),
                    "Verifying page errors if no file is submitted");
@@ -154,7 +152,24 @@ public class FrontendIT {
     public void testUploadJarExistingFile() throws IOException {
         String localTmpFile = FrontendIT.createAutoDeleteFile(SIMPLE_TEXT);
         this.ensureJar(localTmpFile);
-        UploadJarPage uploadJarPage = this.frontend.goToUploadJar();
+        UploadPage uploadPage = this.frontend.goToUpload();
+        verifyLinks();
+        UploadJarPage uploadJarPage = uploadPage.goToUploadJar();
+        verifyLinks();
+        uploadJarPage.setName(new File(localTmpFile).getName());
+        uploadJarPage.setJarFile(localTmpFile);
+        uploadJarPage.submitForm();
+        assertTrue(uploadJarPage.getErrorText().contains("exists"),
+                   "Verifying page errors if file already exists");
+    }
+
+    public void testUploadJarSubDirectory() throws IOException {
+        String localTmpFile = FrontendIT.createAutoDeleteFile(SIMPLE_TEXT);
+        UploadPage uploadPage = this.frontend.goToUpload();
+        verifyLinks();
+        UploadJarPage uploadJarPage = uploadPage.goToUploadJar();
+        verifyLinks();
+        uploadJarPage.setName("sub/" + new File(localTmpFile).getName());
         uploadJarPage.setJarFile(localTmpFile);
         uploadJarPage.submitForm();
         assertTrue(uploadJarPage.getErrorText().contains("exists"),
@@ -162,7 +177,8 @@ public class FrontendIT {
     }
 
     public void testUploadDataNoFile() {
-        UploadDataPage uploadDataPage = this.frontend.goToUploadData();
+        UploadPage uploadPage = this.frontend.goToUpload();
+        UploadDataPage uploadDataPage = uploadPage.goToUploadData();
         uploadDataPage.submitForm();
         assertTrue(uploadDataPage.getErrorText().contains("empty"),
                    "Verifying page errors if no file is submitted");
@@ -171,7 +187,11 @@ public class FrontendIT {
     public void testUploadDataExistingFile() throws IOException {
         String localTmpFile = FrontendIT.createAutoDeleteFile(SIMPLE_TEXT);
         this.ensureData(localTmpFile);
-        UploadDataPage uploadDataPage = this.frontend.goToUploadData();
+        UploadPage uploadPage = this.frontend.goToUpload();
+        verifyLinks();
+        UploadDataPage uploadDataPage = uploadPage.goToUploadData();
+        uploadDataPage.setName(new File(localTmpFile).getName());
+        verifyLinks();
         uploadDataPage.setDataFile(localTmpFile);
         uploadDataPage.submitForm();
         assertTrue(uploadDataPage.getErrorText().contains("exists"),

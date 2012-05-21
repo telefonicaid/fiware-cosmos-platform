@@ -3,6 +3,7 @@ package es.tid.cosmos.tests.frontend.om;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import java.util.Set;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -23,18 +24,16 @@ import es.tid.cosmos.tests.tasks.TestException;
  */
 public class FrontEnd {
     // HTML classes and ids
-    public static final String UPLOAD_JAR_ID = "upload-jar";
-    public static final String UPLOAD_DATA_ID = "upload-data";
-    public static final String CREATE_JOB_ID = "create-job";
-    public static final String TASK_STATUS_TABLE_ID = "jobs-table";
-    public static final String JOB_ACTION_CLASS = "jobaction";
+    public static final String UPLOAD_CLASS = "cos-upload_nav";
+    public static final String CREATE_JOB_CLASS = "cos-runjob";
+    public static final String TASK_STATUS_TABLE_CLASS = "job-listing";
+    public static final String JOB_ACTION_CLASS = "job-actions";
     public static final String RESULT_ACTION_CLASS = "results";
-    public static final String RESULT_NAME_CLASS = "result-name";
-    public static final String RESULT_STATUS_CLASS = "result-status";
+    public static final String RESULT_NAME_CLASS = "job-name";
+    public static final String RESULT_STATUS_CLASS = "job-status";
     public static final String USERNAME_INPUT_ID = "id_username";
     public static final String PASSWORD_INPUT_ID = "id_password";
     private static final String DEFAULT_HTTP_PORT = "80";
-    
     private WebDriver driver;
     private final String username;
     private final String password;
@@ -52,16 +51,7 @@ public class FrontEnd {
         this.username = username;
         this.password = password;
         this.environment = env;
-        String frontendServer = this.environment.getProperty(
-                EnvironmentSetting.FrontendServer);
-        String frontendPort = this.environment.getProperty(
-                EnvironmentSetting.FrontendHttpPort);
-        if (frontendPort.equals(DEFAULT_HTTP_PORT)) {
-            frontendPort = "";
-        } else {
-            frontendPort = ":" + frontendPort;
-        }
-        this.baseUrl = "http://" + frontendServer + frontendPort;
+        this.baseUrl = FrontEnd.getBaseUrl(this.environment);
         try {
             URL base = new URL(baseUrl);
             this.cosmosUrl = new URL(
@@ -70,6 +60,23 @@ public class FrontEnd {
         } catch (MalformedURLException ex) {
             throw new TestException("[Test bug] Malformed URL for frontend. " + ex.toString());
         }
+    }
+
+    public static String getBaseUrl(Environment env) {
+        String frontendServer = env.getProperty(
+                EnvironmentSetting.FrontendServer);
+        String frontendPort = env.getProperty(
+                EnvironmentSetting.FrontendHttpPort);
+        if (frontendPort.equals(DEFAULT_HTTP_PORT)) {
+            frontendPort = "";
+        } else {
+            frontendPort = ":" + frontendPort;
+        }
+        return "http://" + frontendServer + frontendPort;
+    }
+
+    public String getBaseUrl() {
+        return this.baseUrl;
     }
 
     public Environment getEnvironment() {
@@ -90,6 +97,7 @@ public class FrontEnd {
     }
 
     public void gotoCosmosHome() {
+        this.purgePopups();
         this.driver.get(this.cosmosUrl);
         this.login(this.username, this.password);
     }
@@ -158,7 +166,8 @@ public class FrontEnd {
      * Returns the first row that has the taskId
      */
     private WebElement getTaskRow(String taskId) {
-        WebElement table = this.driver.findElement(By.id(TASK_STATUS_TABLE_ID));
+        WebElement table = this.driver.findElement(
+                By.className(TASK_STATUS_TABLE_CLASS));
         List<WebElement> rows = table.findElement(
                 By.tagName("tbody")).findElements(By.tagName("tr"));
         for (WebElement row : rows) {
@@ -203,28 +212,31 @@ public class FrontEnd {
     public CreateJobPage goToCreateNewJob() {
         this.gotoCosmosHome();
         WebElement createJobElement = this.driver.findElement(
-                By.id(CREATE_JOB_ID));
+                By.className(CREATE_JOB_CLASS));
         createJobElement.click();
         return new CreateJobPage(this.driver);
     }
 
-    public UploadJarPage goToUploadJar() {
+    public UploadPage goToUpload() {
         this.gotoCosmosHome();
         WebElement createJobElement = this.driver.findElement(
-                By.id(UPLOAD_JAR_ID));
+                By.className(UPLOAD_CLASS));
         createJobElement.click();
-        return new UploadJarPage(this.driver);
-    }
-
-    public UploadDataPage goToUploadData() {
-        this.gotoCosmosHome();
-        WebElement createJobElement = this.driver.findElement(
-                By.id(UPLOAD_DATA_ID));
-        createJobElement.click();
-        return new UploadDataPage(this.driver);
+        return new UploadPage(this.driver);
     }
 
     public WebDriver getDriver() {
         return this.driver;
+    }
+
+    private void purgePopups() {
+        for (Set<String> handles = this.driver.getWindowHandles();
+                handles.size() > 1;
+                handles = this.driver.getWindowHandles()) {
+            this.driver.switchTo().window(handles.iterator().next()).close();
+        }
+
+        this.driver.switchTo().window(
+                this.driver.getWindowHandles().iterator().next());
     }
 }

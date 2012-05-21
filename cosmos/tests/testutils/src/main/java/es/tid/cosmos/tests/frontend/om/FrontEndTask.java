@@ -1,5 +1,6 @@
 package es.tid.cosmos.tests.frontend.om;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -7,12 +8,10 @@ import java.util.UUID;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
 import es.tid.cosmos.tests.tasks.Environment;
-import es.tid.cosmos.tests.tasks.EnvironmentSetting;
 import es.tid.cosmos.tests.tasks.Task;
 import es.tid.cosmos.tests.tasks.TaskStatus;
 
@@ -21,9 +20,7 @@ import es.tid.cosmos.tests.tasks.TaskStatus;
  * @author ximo
  */
 public class FrontEndTask extends Task {
-    private static final String FILE_BROWSER_URL = "TODO";
-        // TODO: Put correct value once deployment happens
-    
+    private static final String FILE_BROWSER_URL = "filebrowser/view/";
     private boolean isRun;
     private final FrontEnd frontend;
     private final String taskId;
@@ -46,22 +43,21 @@ public class FrontEndTask extends Task {
         return getDataHdfsPath(user, "");
     }
 
-    public static boolean jarExists(Environment env, String user,
-                                    String jarName) {
-        return fileExists(env, getJarHdfsPath(user), jarName);
+    public static boolean jarExists(FrontEnd frontend, String jarName) {
+        return fileExists(frontend, getJarHdfsPath(frontend.getUsername()),
+                          jarName);
     }
 
-    public static boolean dataSetExists(Environment env, String user,
-                                        String dataSetName) {
-        return fileExists(env, getJarHdfsPath(user), dataSetName);
+    public static boolean dataSetExists(FrontEnd frontend,  String dataSetName) {
+        return fileExists(frontend, getDataHdfsPath(frontend.getUsername()),
+                          dataSetName);
     }
 
-    private static boolean fileExists(Environment env, String hdfsPath,
+    private static boolean fileExists(FrontEnd frontend, String hdfsPath,
                                       String fileName) {
-        WebDriver driver = new HtmlUnitDriver();
-        driver.get("http://"
-                + env.getProperty(EnvironmentSetting.FrontendServer) + "/"
-                + FILE_BROWSER_URL + hdfsPath);
+        frontend.gotoCosmosHome();
+        WebDriver driver = frontend.getDriver();
+        driver.get(frontend.getBaseUrl() + "/" + FILE_BROWSER_URL + hdfsPath);
         List<WebElement> files = driver.findElements(By.className("fb-file"));
         for (WebElement file : files) {
             if (file.getText().equals(fileName)) {
@@ -72,14 +68,17 @@ public class FrontEndTask extends Task {
     }
 
     public static void uploadJar(FrontEnd frontend, String filePath) {
-        UploadJarPage uploadJarPage = frontend.goToUploadJar();
+        UploadPage uploadPage = frontend.goToUpload();
+        UploadJarPage uploadJarPage = uploadPage.goToUploadJar();
+        uploadJarPage.setName(new File(filePath).getName());
         uploadJarPage.setJarFile(filePath);
         uploadJarPage.submitForm();
-        throw new UnsupportedOperationException("Need to implement return value");
     }
 
     public static void uploadData(FrontEnd frontend, String filePath) {
-        UploadDataPage uploadDataPage = frontend.goToUploadData();
+        UploadPage uploadPage = frontend.goToUpload();
+        UploadDataPage uploadDataPage = uploadPage.goToUploadData();
+        uploadDataPage.setName(new File(filePath).getName());
         uploadDataPage.setDataFile(filePath);
         uploadDataPage.submitForm();
     }

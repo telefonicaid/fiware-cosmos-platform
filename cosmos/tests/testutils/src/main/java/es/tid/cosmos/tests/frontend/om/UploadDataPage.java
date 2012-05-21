@@ -1,9 +1,16 @@
 package es.tid.cosmos.tests.frontend.om;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import static org.testng.Assert.assertEquals;
+
+import es.tid.cosmos.tests.tasks.TestException;
 
 /**
  *
@@ -11,27 +18,47 @@ import static org.testng.Assert.assertEquals;
  */
 public class UploadDataPage {
     // HTML classes and ids
-    public static final String DATA_FILE_HTML_ID = "id_jar";
+    public static final String DATA_FILE_HTML_ID = "id_hdfs_file";
+    public static final String DATA_NAME_HTML_NAME = "dest";
     public static final String ERROR_HTML_ID = "error";
+    private static final String UTF8 = "UTF-8";
     private WebDriver driver;
-    private final String uploadDataUrl = "TODO";
-        // TODO: Put correct value once deployment happens
+    private final String uploadDataUrl;
 
     private void assertCorrectUrl() {
-        assertEquals(this.driver.getCurrentUrl(), this.uploadDataUrl);
+        try {
+            assertEquals(
+                    URLDecoder.decode(this.driver.getCurrentUrl(), UTF8),
+                    this.uploadDataUrl);
+        } catch (UnsupportedEncodingException ex) {
+            throw new TestException("Test bug", ex);
+        }
     }
 
     public UploadDataPage(WebDriver driver) {
         this.driver = driver;
+        try {
+            this.uploadDataUrl = URLDecoder.decode(
+                    this.driver.getCurrentUrl(), UTF8);
+        } catch (UnsupportedEncodingException ex) {
+            throw new TestException("Test bug", ex);
+        }
     }
-    
+
+    public void setName(String fileName) {
+        assertCorrectUrl();
+        WebElement nameElement = this.driver.findElement(
+                By.name(DATA_NAME_HTML_NAME));
+        nameElement.sendKeys(fileName);
+    }
+
     public void setDataFile(String filePath) {
         assertCorrectUrl();
         WebElement inputElement = this.driver.findElement(
                 By.id(DATA_FILE_HTML_ID));
         inputElement.sendKeys(filePath);
     }
-    
+
     public void submitForm() {
         assertCorrectUrl();
         WebElement inputElement = this.driver.findElement(

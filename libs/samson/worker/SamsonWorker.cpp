@@ -1282,19 +1282,15 @@ namespace samson {
         size_t network_read_rate = (size_t) samsonWorker_->network->get_rate_in();
         size_t network_write_rate = (size_t) samsonWorker_->network->get_rate_out();
 
-        cpu.push( (double) num_processes / (double) max_processes );
-        memory.push( (double) used_memory / (double) max_memory );
+        cpu.push( 100.0 *  (double)  num_processes / (double)  max_processes );
+        memory.push( 100.0 * (double) used_memory / (double)  max_memory );
 
-        disk_in.push( (double) disk_read_rate / (double) 1000000 );
-        disk_out.push( (double) disk_write_rate / (double) 1000000 );
+        disk_in.push( disk_read_rate / 1000000  );
+		disk_out.push( disk_write_rate / 1000000  );
 
-        net_in.push( (double) network_read_rate / (double) 1000000 );
-        net_out.push( (double) network_write_rate / (double) 100000000 );
-        
-    
-        
+        net_in.push( network_read_rate / 1000000  );
+		net_out.push( network_write_rate / 1000000 );
+                    
     }
 
-    
-    
 }

@@ -192,7 +192,7 @@ namespace samson {
             output << "[";
             for ( int i = 0 ; i < n ; i++ )
             {
-                output << "[" << (i-n+1) << "," << values[i] << "]";
+			   output << "[" << (i-n+1) << "," << ((int)values[i]) << "]";
                 if( i != (n-1) )
                     output << ",";
             }

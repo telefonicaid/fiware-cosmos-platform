@@ -22,6 +22,7 @@ ${shared.header("Cosmos - " + title)}
         % endif
         </li>
 
+        % if page:
         <li class="pagination">
             <span class="step-links">
                 Page ${ page.number } of ${ page.paginator.num_pages } &nbsp;
@@ -37,6 +38,7 @@ ${shared.header("Cosmos - " + title)}
                 % endif
             </span>
         </li>
+        % endif
     </ul>
 </div>
 

@@ -58,11 +58,12 @@ def submit(job):
     job.submission = submission
     job.save()
     try:
-        submission.submission_handle = jobsub.get_client().submit(plan)
-    except Exception:
-        import ipdb; ipdb.set_trace()
-        submission.last_seen_state = State.ERROR
-        raise
+        try:
+            submission.submission_handle = jobsub.get_client().submit(plan)
+        except Exception:
+            import ipdb; ipdb.set_trace()
+            submission.last_seen_state = State.ERROR
+            raise
     finally:
         submission.save()
 

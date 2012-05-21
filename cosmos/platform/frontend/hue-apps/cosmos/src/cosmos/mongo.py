@@ -3,7 +3,7 @@ Module mongo.py -
 
 This module holds functionality to retrieve job results from a mongoDB.
 """
-import json
+import simplejson as json
 from types import ListType, DictType
 
 from django.core.paginator import Paginator, Page
@@ -87,7 +87,8 @@ def retrieve_results(job_id, primary_key=None):
     ans = []
     job = JobRun.objects.get(pk=job_id)
     try:
-        with Connection(job.mongo_url()) as connection:
+        connection = Connection(job.mongo_url())
+        try:
             db = connection[job.mongo_db()]
             collection = db[job.mongo_collection()]
             if primary_key is None:
@@ -95,5 +96,7 @@ def retrieve_results(job_id, primary_key=None):
             return MongoPaginator(collection.find().sort(primary_key),
                                   conf.RESULTS_PER_PAGE.get(),
                                   primary_key)
+        finally:
+            connection.close()
     except (AutoReconnect, ConnectionFailure):
         raise NoConnectionError

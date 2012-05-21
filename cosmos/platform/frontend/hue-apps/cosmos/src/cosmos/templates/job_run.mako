@@ -5,12 +5,22 @@
   </div>
 </%def>
 
-${shared.simple_header("Run new job")}
+${shared.header("Run new job")}
 
-<div class="prompt_popup">
+<div id="run_job" class="jframe_padded view">
     <form action="${ url('run_job') }" method="POST" class="cos-run_job_form"
           enctype="multipart/form-data">
-       <h4 class="jframe-hidden">Run new job</h4>
+	<h4 class="jframe-hidden">Run new job</h4>
+
+	<p>
+	You are creating a new custom job by uploading a custom Hadoop mapreduce
+	JAR.  Try the <a id="sample-jar-link" target="_blank"
+	href="/cosmos/static/samples/wordcount.jar">wordcount example</a> (<a 
+        id="sample-jar-sources" href="/cosmos/static/samples/wordcount.tgz"
+	target="_blank">sources</a>) or read about the
+	<a id="jar-restrictions" href="/cosmos/static/custom_readme.html"
+	target="_blank">custom job requirements</a>.
+	</p>
 
         % for err in form.non_field_errors():
         ${render_error(err)}
@@ -46,7 +56,8 @@ ${shared.simple_header("Run new job")}
 	    </dd>
         </dl>
 
-	<input class="jframe-hidden" type="submit" value="Submit" />
+	<br/>
+	<input class="submit" type="submit" value="Run job" />
     </form>
 </div>
 

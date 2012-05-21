@@ -181,16 +181,24 @@
     text-align: right;
     margin-right: 1ex;
     width: 90px;
+    margin: 1ex;
 }
 .cos-run_job_form dd {
     float: left;
     text-align: left;
+    margin: 1ex;
 }
-.cos-run_job_form input {
+.cos-run_job_form dl input {
     width: 145px;
 }
 .cos-run_job_form .file_finder input {
     width: 120px;
+}
+.cos-run_job_form br {
+    clear: both;
+}
+.cos-run_job_form .submit {
+    margin: 1em 10em;
 }
 
 /* Navigation */

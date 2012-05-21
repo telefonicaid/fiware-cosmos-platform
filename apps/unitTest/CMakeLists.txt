@@ -49,10 +49,10 @@ SET (HEADERS
 SET (STATIC_LIBS
      ${HAVE_GTEST}
      ${GTESTMAIN_LIBRARY}
-     engine
      delilahLib
      pa
      lm
+     engine
      protobuf
      pthread
      samsonNetwork

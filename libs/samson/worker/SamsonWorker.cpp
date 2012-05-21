@@ -1145,6 +1145,9 @@ namespace samson {
         
         if ( main_command == "quit" )
             quitConsole();
+
+        if ( main_command == "exit" )
+            quitConsole();
         
         if ( main_command == "threads" )
             writeOnConsole( au::ThreadManager::shared()->str() );

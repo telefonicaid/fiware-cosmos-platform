@@ -57,8 +57,6 @@ namespace samson {
             for ( size_t i = 0 ; i < nodes.size() ; i++ )
             {
                 std::string name = NodeIdentifier( WorkerNode , nodes[i]->id ).getCodeName();
-
-                LM_W(("Checking connection %s" , name.c_str() ));
                 
                 if ( !NetworkManager::isConnected(name) )
                 {

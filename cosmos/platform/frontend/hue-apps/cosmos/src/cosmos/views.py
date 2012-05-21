@@ -94,12 +94,29 @@ def run_job(request):
     ))
 
 
+def ensure_dir(fs, path):
+    """Makes sure a directory with a given path exists or it is created.
+       Raises a popup if a file is in the way"""
+    if fs.isdir(path):
+        return
+    if fs.exists(path):
+        raise PopupException(('A file named "%s" is preventing the creation ' + 
+                              'of the upload directory. Please, rename it to ' +
+                              'proceed.') % path)
+    else:
+        fs.mkdir(path)
+
+
 def upload_index(request):
     """Allows to upload datasets and jars."""
-
+    
+    datasets_base = paths.datasets_base(request.user)
+    ensure_dir(request.fs, datasets_base)
+    jars_base = paths.jars_base(request.user)
+    ensure_dir(request.fs, jars_base)
     return render('upload_index.mako', request, dict(
-        datasets_base=paths.datasets_base(request.user),
-        jars_base=paths.jars_base(request.user)
+        datasets_base=datasets_base,
+        jars_base=jars_base
     ))
 
 

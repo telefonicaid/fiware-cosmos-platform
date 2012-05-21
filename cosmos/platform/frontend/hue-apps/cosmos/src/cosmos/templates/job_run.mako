@@ -5,7 +5,7 @@
   </div>
 </%def>
 
-${shared.header("Run new job")}
+${shared.header("Run new job", section="run_job")}
 
 <div id="run_job" class="jframe_padded view">
     <form action="${ url('run_job') }" method="POST" class="cos-run_job_form"

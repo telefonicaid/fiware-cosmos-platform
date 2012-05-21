@@ -208,9 +208,6 @@
 .cos-prev_page {
     background: url("/static/art/icons/control_previous.png") no-repeat scroll 0 0 transparent;
 }
-.cosmos .pagination {
-/*    padding: 3px 0 0 0; */
-}
 .cosmos .step-links a {
     line-height: 19px;
 }

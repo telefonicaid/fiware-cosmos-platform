@@ -1,6 +1,5 @@
 package es.tid.cosmos.platform.injection.server;
 
-import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -23,16 +22,15 @@ import es.tid.cosmos.base.util.Logger;
  * @since  CTP 2
  */
 public class HadoopSshFile implements SshFile {
-    private final String userName;
     private final Path hadoopPath;
+    private final String userName;
     private final FileSystem hadoopFS;
     private final org.apache.log4j.Logger LOG = Logger.get(HadoopSshFile.class);
     private FSDataOutputStream fsDataOutputStream;
     private FSDataInputStream fsDataInputStream;
 
-    protected HadoopSshFile(final String fileName, final String userName,
-                            FileSystem hadoopFS)
-            throws IOException, InterruptedException {
+    protected HadoopSshFile(final String fileName, String userName,
+            FileSystem hadoopFS) throws IOException, InterruptedException {
         this.hadoopPath = new Path(fileName);
         this.userName = userName;
         this.hadoopFS = hadoopFS;
@@ -61,6 +59,16 @@ public class HadoopSshFile implements SshFile {
         return this.hadoopPath.getName();
     }
 
+    @Override
+    public String getOwner() {
+        try {
+            return this.hadoopFS.getFileStatus(this.hadoopPath).getOwner();
+        } catch (IOException e) {
+            LOG.error(e.getMessage(), e);
+            return null;
+        }
+    }
+    
     /**
      * Answer if the current path is a directory path
      *
@@ -200,7 +208,7 @@ public class HadoopSshFile implements SshFile {
     public SshFile getParentFile() {
         try {
             return new HadoopSshFile(this.hadoopPath.getParent().toString(),
-                    this.userName, this.hadoopFS);
+                                     this.userName, this.hadoopFS);
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
             return null;
@@ -218,7 +226,8 @@ public class HadoopSshFile implements SshFile {
     @Override
     public long getLastModified() {
         try {
-            FileStatus fileStatus = this.hadoopFS.getFileStatus(this.hadoopPath);
+            FileStatus fileStatus = this.hadoopFS.getFileStatus(
+                    this.hadoopPath);
             return fileStatus.getModificationTime();
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
@@ -355,21 +364,20 @@ public class HadoopSshFile implements SshFile {
             return null;
         }
         try {
-            FileStatus[] fileStatuses = this.hadoopFS.listStatus(this.hadoopPath);
+            FileStatus[] fileStatuses = this.hadoopFS.listStatus(
+                    this.hadoopPath);
             LinkedList<SshFile> files = new LinkedList<SshFile>();
             for (FileStatus fileStatus : fileStatuses) {
                 String fileName = fileStatus.getPath().getName();
                 files.add(new HadoopSshFile(this.appendToPath(fileName),
-                        this.userName, this.hadoopFS));
+                          this.userName, this.hadoopFS));
             }
-            // TODO: sort in alphabetical order before returning?
             return Collections.unmodifiableList(files);
         } catch (AccessControlException e) {
             LOG.error(e.getMessage(), e);
             try {
-                return Collections.singletonList((SshFile)
-                        new HadoopSshFile(Path.CUR_DIR, this.userName,
-                                          this.hadoopFS));
+                return Collections.singletonList((SshFile)new HadoopSshFile(
+                        Path.CUR_DIR, this.userName, this.hadoopFS));
             } catch (IOException e1) {
                 LOG.error(e1.getMessage(), e);
             } catch (InterruptedException e1) {

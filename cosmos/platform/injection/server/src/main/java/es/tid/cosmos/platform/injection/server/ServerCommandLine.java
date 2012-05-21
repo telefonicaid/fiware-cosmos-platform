@@ -19,7 +19,7 @@ public class ServerCommandLine {
     }
 
     public void parse(String[] args) throws ParseException {
-        this.commandLine = this.parser.parse(this.options, args);
+        this.commandLine = this.parser.parse(this.options, args.clone());
     }
 
     public void printUsage() {

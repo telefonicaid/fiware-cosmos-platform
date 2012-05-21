@@ -59,7 +59,7 @@ var Cosmos = new Class({
     options: {
         className: 'art browser logo_header cosmos',
         autoreloaded_views: ['index'],
-        autoreload_period: 30
+        autoreload_period: 20
     },
 
     initialize: function(path, options){

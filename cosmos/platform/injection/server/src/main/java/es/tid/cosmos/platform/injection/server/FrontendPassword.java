@@ -16,7 +16,7 @@ import es.tid.cosmos.base.util.Logger;
  * @since  CTP 2
  */
 public class FrontendPassword implements PasswordAuthenticator {
-    private static final String djangoSeparator = "$";
+    private static final String DJANGO_SEPARATOR = "$";
     private static final org.apache.log4j.Logger LOG =
             Logger.get(FrontendPassword.class);
 
@@ -30,22 +30,23 @@ public class FrontendPassword implements PasswordAuthenticator {
     public boolean authenticate(String username, String password,
                                 ServerSession session) {
         LOG.debug(String.format("received %s as username, %d chars as password",
-                username, password.length()));
+                                username, password.length()));
         boolean ans = false;
+        ResultSet resultSet = null;
+        PreparedStatement preparedStatement = null;
         try {
             this.connect(this.frontendDbUrl, this.dbName, this.dbUserName,
                          this.dbPassword);
             String sql = "SELECT password FROM auth_user WHERE username = ?";
-            PreparedStatement preparedStatement =
-                    this.connection.prepareStatement(sql);
+            preparedStatement = this.connection.prepareStatement(sql);
             preparedStatement.setString(1, username);
-            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet = preparedStatement.executeQuery();
             String algorithm = "";
             String hash = "";
             String salt = "";
             while (resultSet.next()) {
                 StringTokenizer algorithmSaltHash = new StringTokenizer(
-                        resultSet.getString(1), djangoSeparator);
+                        resultSet.getString(1), DJANGO_SEPARATOR);
                 algorithm = algorithmSaltHash.nextToken();
                 salt = algorithmSaltHash.nextToken();
                 hash = algorithmSaltHash.nextToken();
@@ -54,10 +55,27 @@ public class FrontendPassword implements PasswordAuthenticator {
                 ans = hash.equals(DigestUtils.shaHex(salt + password));
             } else if (algorithm.equals("md5")) {
                 ans = hash.equals(DigestUtils.md5Hex(salt + password));
+            } else {
+                LOG.warn("Unknown algorithm found in DB: " + algorithm);
             }
         } catch (SQLException e) {
             LOG.error(e.getMessage(), e);
             return false;
+        } finally {
+            if (resultSet != null ) {
+                try {
+                    resultSet.close();
+                } catch (SQLException e) {
+                    LOG.error("could not close a result set", e);
+                }
+            }
+            if (preparedStatement != null) {
+                try {
+                    preparedStatement.close();
+                } catch (SQLException e) {
+                    LOG.error("could not close a database statement", e);
+                }
+            }
         }
         return ans;
     }

@@ -18,8 +18,8 @@ ${shared.header("Cosmos", section="job_runs")}
 
 ## the class 'jframe_padded' will give the contents of your window a standard padding
 <div id="index" class="view">
-  <table data-filters="HtmlTable" class="selectable sortable" cellpadding="0"
-         cellspacing="0">
+  <table data-filters="HtmlTable" class="job-listing selectable sortable"
+         cellpadding="0" cellspacing="0">
     <thead>
       <tr>
         <th>Date</th>

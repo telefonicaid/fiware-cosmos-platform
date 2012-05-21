@@ -157,6 +157,8 @@ namespace samson {
                 packet->message->mutable_hello()->mutable_cluster_information()->set_assigned_id( 0 );
                 
                 connection->push(packet);
+                packet->release();
+                
                 // ---------------------------------------------------------------
                 
                 message(
@@ -194,7 +196,11 @@ namespace samson {
 
                 // Send hello back if necessary
                 if( packet->message->hello().answer_hello_required() )
-                    connection->push( helloMessage( connection ) );
+                {
+                    Packet* hello_packet = helloMessage( connection );
+                    connection->push( hello_packet );
+                    hello_packet->release();
+                }
 
                 // Relocation of this connection to the rigth place
                 connection->setNodeIdentifier( new_node_identifier );
@@ -254,6 +260,7 @@ namespace samson {
             Packet * packet = helloMessage( connection );
             packet->message->mutable_hello()->mutable_cluster_information()->set_assigned_id( assigned_id );
             connection->push(packet);
+            packet->release();
             // ------------------------------------------------------------     
             
             // Send Hello to the rest of nodes
@@ -264,6 +271,7 @@ namespace samson {
                     Packet *packet = helloMessage(NULL);
                     packet->to = NodeIdentifier( WorkerNode , ids[i] );
                     send(packet);
+                    packet->release();
                 }
 
             // Recolocation of connection 
@@ -304,7 +312,11 @@ namespace samson {
         // -----------------------------------------------------------------------------------------------
         
         if( packet->message->hello().answer_hello_required() )
-            connection->push( helloMessage( connection ) );
+        {
+            Packet* hello_packet = helloMessage( connection );
+            connection->push( hello_packet );
+            hello_packet->release();
+        }
     }
     
     std::string DelilahNetwork::cluster_command( std::string command )
@@ -447,8 +459,8 @@ namespace samson {
                 Packet* packet = helloMessage( NULL );
                 packet->message->mutable_hello()->set_reset_cluster_information(true);
                 packet->to = _node_identifier;
-                
                 NetworkManager::send(packet);
+                packet->release();
             }
             else
             {
@@ -466,6 +478,7 @@ namespace samson {
                 Packet * packet = helloMessage(NULL);
                 packet->to = NodeIdentifier( WorkerNode , ids[i] );
                 send( packet );
+                packet->release();
             }
             
             output << au::str("OK. Worker %lu eliminated from cluster. Now it has %lu nodes\n" , 
@@ -482,7 +495,9 @@ namespace samson {
     
     void DelilahNetwork::message( std::string txt )
     {
-        network_interface_receiver->receive( Packet::messagePacket( txt + "\n" ) );
+        Packet* packet = Packet::messagePacket( txt + "\n" );
+        network_interface_receiver->receive( packet );
+        packet->release();
     }
 
     

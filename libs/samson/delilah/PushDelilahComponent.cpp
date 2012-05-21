@@ -143,7 +143,7 @@ namespace samson
         {
             // New buffer to be used to send data to the workers
         	//LM_M(("PushDelilahComponent::notify: Received notification from memory request"));
-            engine::MemoryRequest *memoryRequest = (engine::MemoryRequest *) notification->extractObject();
+            engine::MemoryRequest *memoryRequest = (engine::MemoryRequest *) notification->getObject();
 
             if( !memoryRequest )
                 LM_X(1, ("Internal error: Memory request returns without a buffer"));
@@ -154,10 +154,10 @@ namespace samson
                 setComponentFinishedWithError( "Memory request returned without the allocated buffer" );
                 return;
             }
-            
-            engine::Buffer *buffer = memoryRequest->buffer;
-            delete memoryRequest;
 
+            // Recover the buffer from memory request
+            engine::Buffer *buffer = memoryRequest->buffer;
+            
             // Skip to write the header at the end
             buffer->skipWrite( sizeof(KVHeader) );
             
@@ -171,7 +171,6 @@ namespace samson
             // Set the header    
             KVHeader *header = (KVHeader*) buffer->getData();
             header->initForTxt( buffer->getSize() - sizeof(KVHeader) );
-
             
             // Get the size to update the total process info
             processedSize += buffer->getSize();
@@ -200,6 +199,10 @@ namespace samson
             
             // Send packet
             delilah->send( packet , &error );
+            
+            // Release packet
+            packet->release();
+            
             if( error.isActivated() )
                 setComponentFinished();
             
@@ -334,6 +337,9 @@ namespace samson
         // Send packet
         delilah->send( packet , &error );
 
+        // Release packet
+        packet->release();
+        
         // If error sending packet, just finish
         if( error.isActivated() )
             setComponentFinished();

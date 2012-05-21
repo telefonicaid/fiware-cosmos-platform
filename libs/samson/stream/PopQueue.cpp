@@ -101,6 +101,8 @@ namespace samson {
             engine::Notification *notification = new engine::Notification( notification_samson_worker_send_packet , packet );
             engine::Engine::shared()->notify( notification );
             
+            // Release the packet ( now it is retained by, at least, the notification )
+            packet->release();
         }
 
 

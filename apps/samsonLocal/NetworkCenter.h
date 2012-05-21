@@ -159,12 +159,10 @@ namespace samson {
 			
 		}
 		
-		
 		void processPendingPacket( Packet *packet )
 		{
 			NetworkFake* network = getNetwork( packet->to );
-            
-			network->network_interface_receiver->schedule_receive( packet );			
+			network->schedule_receive( packet );			
 		}
 	};
 }

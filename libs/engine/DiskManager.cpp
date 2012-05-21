@@ -119,6 +119,9 @@ void DiskManager::add( DiskOperation *operation )
     
     // Set the pointer to myself
     operation->diskManager = this;
+
+    // Retain operation
+    operation->retain();
     
     // Insert the operation in the queue of pending operations
     pending_operations.insert( _find_pos(operation), operation );
@@ -134,6 +137,9 @@ void DiskManager::cancel( DiskOperation *operation )
         Notification *notification = new Notification( notification_disk_operation_request_response , operation , operation->listeners );
         notification->environment.copyFrom( &operation->environment );        // Recover the environment variables to identify this request
         Engine::shared()->notify(notification);            
+        
+        // Release object
+        operation->release();
     }
 }
 
@@ -164,6 +170,9 @@ void DiskManager::finishDiskOperation( DiskOperation *operation )
     
     LM_T( LmtDisk , ("DiskManager::finishDiskOperation notification sent on file:%s and ready to share and checkDiskOperations", operation->fileName.c_str() ));
     Engine::shared()->notify(notification);    
+    
+    // Release object
+    operation->release();
 }
 
 

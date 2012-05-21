@@ -1,9 +1,10 @@
 #ifndef _H_PACKET_RECEIVER_NOTIFICATION
 #define _H_PACKET_RECEIVER_NOTIFICATION
 
+#include "au/Object.h"
+
 #include "engine/EngineElement.h"// samson::EngineElement
 #include "engine/MemoryManager.h"
-
 #include "samson/network/NetworkInterface.h"
 #include "samson/network/Packet.h"			// samson::Packet
 
@@ -21,18 +22,21 @@ namespace samson
     {
         
         NetworkInterfaceReceiver* receiver;
-        Packet *packet;
+        au::ClassObjectContainer<Packet> packet_container; // Container keeping packet retained
         
     public:
         
         PacketReceivedNotification( NetworkInterfaceReceiver* _receiver , Packet *_packet )
         {
+            if( !_packet )
+                LM_X(1,("Internal error"));
+            
             receiver = _receiver;
-            packet = _packet; 
+            packet_container.setObject( _packet );
             
             std::ostringstream txt;
             txt << "PacketReceivedNotification: ";
-            txt << " Packet: " << packet->str() << "";
+            txt << " Packet: " << packet_container.getObject()->str() << "";
             description = txt.str();
             shortDescription = "Packet";
             
@@ -41,16 +45,9 @@ namespace samson
         void run()
         {
             if( ! receiver )
-            {
-                LM_W(("Packet %s lost since network interface is still not activated." , packet->str().c_str() ));
-                delete packet;// Remove the packet received from the network
-                return;
-            }
+                LM_W(("Packet %s lost since network interface is still not activated." , packet_container.getObject()->str().c_str() ));
             else
-            {
-                receiver->receive( packet );
-                delete packet; // Remove the packet received from the network ( releasing internal buffer )
-            }
+                receiver->receive( packet_container.getObject() );
         }
         
     };

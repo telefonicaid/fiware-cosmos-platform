@@ -163,8 +163,6 @@ namespace samson {
             {
                 // Delilah messages, just discard them
                 LM_W(("Packet %s destroyed since connection %s is not available" , packet->str().c_str(), name.c_str() ));
-                
-                delete packet;
                 return Error;
             }
         }

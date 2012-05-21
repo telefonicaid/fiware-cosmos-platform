@@ -39,7 +39,6 @@ char file_name[1024];
 
 SAMSON_ARG_VARS;
 
-#define S01 (long int) "samson01:1234"
 /* ****************************************************************************
  *
  * parse arguments

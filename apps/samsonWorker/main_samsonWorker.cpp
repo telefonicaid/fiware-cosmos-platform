@@ -209,6 +209,10 @@ void cleanup(void)
     LM_T(LmtCleanup, ("Calling lmCleanProgName"));
     lmCleanProgName();
     LM_T(LmtCleanup, ("Cleanup DONE"));
+    
+    // Stop logging to server
+    au::stop_log_to_server();
+
 }
 
 

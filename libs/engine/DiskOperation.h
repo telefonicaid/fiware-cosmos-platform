@@ -44,14 +44,14 @@
 #include "engine/MemoryManager.h"       // engine::BufferContainer
 #include "engine/Buffer.h"              // engine::Buffer
 #include "engine/BufferContainer.h"
-#include "engine/Object.h"  // engine::EngineNotification
+#include "au/Object.h" 
 
 
 NAMESPACE_BEGIN(engine)
 
 class DiskManager;
 
-class DiskOperation : public Object
+class DiskOperation : public au::Object
 {
     
 public:

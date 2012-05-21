@@ -73,7 +73,9 @@ namespace au
         
         Status partWrite( const void* dataP, int dataLen, const char* what, int retries = 300, int tv_sec = 1, int tv_usec = 0);
         Status partRead( void* vbuf, size_t bufLen, const char* what , int max_seconds , size_t * readed_size = NULL );
-        
+    
+        // Invalidate: Put fd = -1 without closing to reuse this connection in other place
+        int getFdAndinvalidate();
     };
     
     

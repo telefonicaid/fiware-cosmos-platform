@@ -13,7 +13,7 @@
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 #include "au/ThreadManager.h"
-
+#include "au/containers/set.h"
 #include "au/log/LogToServer.h"
 
 #include "engine/MemoryManager.h"			// engine::MemoryManager
@@ -103,13 +103,23 @@ namespace samson
     class PidCollection
     {
         au::Token token;
-        std::set<PidElement*> pids;
+        au::set<PidElement> pids;
         
-        public:
+    public:
         
         PidCollection() : token("PidCollection")
         {
             
+        }
+        
+        ~PidCollection()
+        {
+            // Remove pending information
+            if( pids.size() > 0 )
+            {
+                LM_W(("Removing information about %lu background processes. Still waiting to finish in PidCollection" , pids.size() ));
+                pids.clearSet();
+            }
         }
         
         void add( pid_t pid )

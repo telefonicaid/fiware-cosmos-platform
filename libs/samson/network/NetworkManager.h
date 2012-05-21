@@ -37,7 +37,6 @@ namespace samson {
         // All managed connection
         au::map<std::string , NetworkConnection> connections;
         
-        
     public:
         
         NetworkManager()

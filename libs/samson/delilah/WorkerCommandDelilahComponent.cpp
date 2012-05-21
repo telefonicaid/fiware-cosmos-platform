@@ -156,6 +156,10 @@ namespace samson {
 
             // Send message
             delilah->send( p , &error );                        
+            
+            // Release created packet
+            p->release();
+            
             if( error.isActivated() )
                 setComponentFinished();
             

@@ -117,11 +117,10 @@ namespace samson {
             if( s == au::OK )
                 network_manager->receive( this , packet );
             else
-            {
-                delete packet;
                 socket_connection->close(); // Close connection since a packet has not been received correctly
-            }
-                
+            
+            // Release the created packet
+            packet->release();            
         }
         
     }
@@ -153,13 +152,7 @@ namespace samson {
                 rate_out.push(total_write);
 
                 if( s == au::OK )
-                {
-                    // delete packet
-                    delete packet;
-                    
                     packet_queue.pop(); // If not ok, packet is still in the queue
-                }
-                    
             }
             else
             {

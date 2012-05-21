@@ -144,6 +144,7 @@ string/split.cpp
 
 SET (HEADERS
 Status.h
+Object.h
 au.pb.h
 TemporalBuffer.h
 namespace.h
@@ -184,6 +185,7 @@ daemonize.h
 
 SET (SOURCES
 Status.cpp
+Object.cpp
 au.pb.cc
 TemporalBuffer.cpp
 charset.cpp

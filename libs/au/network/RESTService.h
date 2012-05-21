@@ -104,7 +104,7 @@ namespace au
             au::Status initRESTService();
             
             // Stop background thread
-            void stop();
+            void stop( bool wait);
             
             // Service interface
             void run( SocketConnection * socket_connection , bool *quit );

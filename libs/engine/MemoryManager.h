@@ -144,9 +144,6 @@ private:
     
 public:
     
-    // get xml information
-    void getInfo( std::ostringstream& output);
-    
     au::tables::Table getTableOfBuffers();    
 };
 

@@ -20,6 +20,15 @@
 
 namespace au {
     
+    int FileDescriptor::getFdAndinvalidate()
+    {
+        au::TokenTaker tt(&token);
+        int r = fd;
+        fd = -1;
+
+        return r;
+    }
+    
     // Disconnect
     void FileDescriptor::close()
     {

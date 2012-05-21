@@ -267,9 +267,9 @@ namespace au
             return initService();
         }
         
-        void RESTService::stop()
+        void RESTService::stop( bool wait)
         {
-            Service::stop();
+            Service::stop( wait );
         }
         
         void RESTService::run( SocketConnection * socket_connection , bool *quit )

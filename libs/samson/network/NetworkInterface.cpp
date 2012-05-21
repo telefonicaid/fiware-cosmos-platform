@@ -22,39 +22,24 @@
 namespace samson
 {
 
-
+    
     /* ****************************************************************************
      *
-     * NetworkInterface - 
-     */
-
-    NetworkInterface::NetworkInterface()
-    {
-    }
-
-    /* ****************************************************************************
-     *
-     * ~NetworkInterface - 
+     * send - send a packet
      */
     
-    
-    NetworkInterface::~NetworkInterface()
+    void NetworkInterfaceBase::schedule_receive( Packet* packet )
     {
+        if( !network_interface_receiver )
+        {
+            LM_W(("Not possible to send packet %s since receiver is still not defined" , packet->str().c_str() ));
+            return;
+        }
+        
+        // Using the engine to call the packet receiver asynchronously in a unique thread form
+        LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet type %s",messageCode(packet->msgCode)));
+        engine::Engine::shared()->add( new PacketReceivedNotification( network_interface_receiver , packet ) );
     }
-    
-
-
-/* ****************************************************************************
-*
-* send - send a packet
-*/
-void NetworkInterfaceReceiver::schedule_receive(Packet* packet)
-{
-    
-	// Using the engine to call the packet receiver asynchronously in a unique thread form
-	LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet type %s",messageCode(packet->msgCode)));
-	engine::Engine::shared()->add( new PacketReceivedNotification( this , packet ) );
-}
     
     
     // Auxiliar function to get generic engine - wide information
@@ -63,14 +48,13 @@ void NetworkInterfaceReceiver::schedule_receive(Packet* packet)
     {
         if (network == NULL)
             LM_D(("network == NULL"));
-
+        
         au::xml_open(output, "engine_system");
-        engine::MemoryManager::shared()->getInfo( output );
         engine::DiskManager::shared()->getInfo( output  );
         engine::ProcessManager::shared()->getInfo( output );
         size_t uptime = engine::Engine::shared()->uptime.diffTimeInSeconds();
         au::xml_simple( output , "uptime" , uptime );
-                
+        
         au::xml_close(output, "engine_system");
         
     }

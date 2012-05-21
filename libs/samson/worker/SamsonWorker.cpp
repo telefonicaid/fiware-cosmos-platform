@@ -223,6 +223,8 @@ namespace samson {
                 p->to = packet->from;
                 
                 network->send( p );
+                
+                p->release();
             }
             return;
         }
@@ -307,6 +309,9 @@ namespace samson {
                 
                 // Send this message to all delilahs connected
                 network->send( p );
+                
+                // Release created packet
+                p->release();
             }
             
             // Send this message to all workers ( even me ;) )
@@ -326,6 +331,9 @@ namespace samson {
                 
                 // Send this message to all delilahs connected
                 network->send( p );
+                
+                // Release packet
+                p->release();
             }
             
             // Some ancient samson-0.6 useful Status information
@@ -362,7 +370,7 @@ namespace samson {
             }
             else
             {
-                Packet *packet = (Packet *) notification->extractObject();
+                Packet *packet = (Packet *) notification->getObject();
                 network->send( packet );
             }
         }
@@ -1178,6 +1186,9 @@ namespace samson {
             
             // Send packet
             network->send( p );
+            
+            //  Release created packet
+            p->release();
         }            
         
     }
@@ -1275,7 +1286,7 @@ namespace samson {
         disk_out.push( (double) disk_write_rate / (double) 1000000 );
 
         net_in.push( (double) network_read_rate / (double) 1000000 );
-        net_out.push( (double) network_write_rate / (double) 1000000 );
+        net_out.push( (double) network_write_rate / (double) 100000000 );
         
     
         

@@ -21,149 +21,135 @@
 #include <cstring>			// size_t
 #include <cstdlib>			// malloc, ...
 #include <fstream>			// std::ifstream
+
+#include "au/mutex/Token.h"
+#include "au/Object.h"
 #include "engine/SimpleBuffer.h"        // engine::SimpleBuffer
 #include "engine/Object.h"  // engine::EngineNotificationObject
-#include "au/namespace.h"
 
-NAMESPACE_BEGIN(engine)
 
-/**
- Buffer class to hold data managed by MemoryManager
- */
-
-class Buffer : public Object
+namespace engine 
 {
     
-    char * _data;			// Buffer of data
-    size_t _max_size;		// Maximum size of this buffer
-
-    std::string _name;		// Internal name for debugging
-    std::string _type;      // Identifier of groups of blocks
-    
     /**
-     Current size used in this buffer 
-     This is the one that should be used when transmitting the buffer across the network
-     This variable is updated with calls to "write"
+     Buffer class to hold data managed by MemoryManager
      */
     
-    size_t _size;			
-    
-    /**
-     Internal variable used for the read process
-     */
-    
-    size_t _offset;
-    
-    // Private constructor/destructors since it can be only access by MemoryManager
-    
-    Buffer( std::string name , std::string type , size_t max_size );
-    ~Buffer();
-    
-    // Free internal buffer
-    void free();
+    class Buffer : public au::Object
+    {
+        
+        char * _data;			// Buffer of data
+        size_t _max_size;		// Maximum size of this buffer
+        
+        std::string _name;		// Internal name for debugging
+        std::string _type;      // Identifier of groups of blocks
+        
+        /**
+         Current size used in this buffer 
+         This is the one that should be used when transmitting the buffer across the network
+         This variable is updated with calls to "write" or set manually in setSize
+         */
+        
+        size_t _size;			
+        
+        /**
+         Internal variable used for the read process
+         */
+        
+        size_t _offset;
+        
+        // Private constructor/destructors since it can be only access by MemoryManager
+        Buffer( std::string name , std::string type , size_t max_size );
+        ~Buffer();
+        
+        // Free internal buffer
+        void free();
+        
+        
+        // Managed from Memory manager class
+        friend class MemoryManager;
+        
+    public:
 
-    // Managed from Memory manager class
-    friend class MemoryManager;
-    
-    int retain_counter;
-    
-public:
-    
-    // Get the maximum size of the buffer
-    size_t getMaxSize();
-    
-    // Get used size of this buffer ( not necessary the maximum )
-    size_t getSize();
+        // au::Object implementtion
+        void self_destroy();
 
-    // Get internal name for debuggin
-    std::string getName();
+        // Get the maximum size of the buffer
+        size_t getMaxSize();
+        
+        // Get used size of this buffer ( not necessary the maximum )
+        size_t getSize();
+        
+        // Get internal name for debuggin
+        std::string getName();
+        
+        // Get internal type for debuggin
+        std::string getType();
+        
+        // Get a description of the buffer ( debugging )
+        std::string str();
+        
+        // Set internal name and type for debuggin
+        void setNameAndType( std::string name , std::string type );
+        
+        // Add string to the internal name
+        void addToName( std::string description );
+                
+        // Write content to this buffer
+        bool write( char * input_buffer , size_t input_size );
+        
+        // Skip some space without writing anything ( usefull to fix-size headers )
+        bool skipWrite( size_t size );
+        
+        // Write on the buffer the maximum possible ammount of data
+        void write( std::ifstream &inputStream );
+        
+        // Get available space to write with "write call"
+        size_t getAvailableWrite();
+        
+        // Reading content from the buffer
+        // ------------------------------------------
+        
+        // Skip some space without reading
+        size_t skipRead( size_t size );
+        
+        // Read command
+        size_t read( char *output_buffer, size_t output_size);
+        
+        // Get pending bytes to be read
+        size_t getSizePendingRead();
+        
+        // Manual manipulation of data
+        // ------------------------------------------
+        
+        // Get a pointer to the data full space ( not related with write calls )
+        char *getData();
+        
+        // Set used size manually
+        void setSize( size_t size );
+        
+        // Interface with SimpleBuffer ( simplified view of the internal buffer )
+        // ------------------------------------------
+        
+        SimpleBuffer getSimpleBuffer();
+        SimpleBuffer getSimpleBufferAtOffset(size_t offset);
+        
+        // Spetial functions
+        // ------------------------------------------
+        
+        // Remove the last characters of an unfinished line and put them in buffer.
+        int removeLastUnfinishedLine( char *& buffer , size_t& buffer_size);
+        
+        
+        // Public identifiers to be removed
+        
+        int worker;     // Identifier of the worker
+        int hg_set;     // Identifier of ther hash_group-set
+        bool finish;    // Flag ot the finish hash-group-set
+        
+    };
     
-    // Get internal type for debuggin
-    std::string getType();
-
-    // Get a description of the buffer ( debugging )
-    std::string str();
-
-    // Set internal name and type for debuggin
-    void setNameAndType( std::string name , std::string type );
     
-    // Add string to the internal name
-    void addToName( std::string description );
-
-    // Retain-Release mechanism for buffers
-    // ------------------------------------------
-    
-    void release();
-    void retain();
-    
-    
-    // Writing content to the buffer
-    // ------------------------------------------
-    
-    /**
-     Function to write content updating the internal size variable
-     If it is not possible to write the entire input buffer, it return false
-     */
-    
-    bool write( char * input_buffer , size_t input_size );
-    
-    // Skip some space without writing anything ( usefull to fix-size headers )
-    bool skipWrite( size_t size );
-    
-    // Write on the buffer the maximum possible ammount of data
-    void write( std::ifstream &inputStream );
-    
-    // Get available space to write with "write call"
-    size_t getAvailableWrite();
-    
-    // Reading content from the buffer
-    // ------------------------------------------
-    
-    // Skip some space without reading
-    size_t skipRead( size_t size );
-    
-    // Read command
-    size_t read( char *output_buffer, size_t output_size);
-    
-    // Get pending bytes to be read
-    size_t getSizePendingRead();
-    
-    // Manual manipulation of data
-    // ------------------------------------------
-    
-    // Get a pointer to the data full space ( not related with write calls )
-    char *getData();
-    
-    // Set used size manually
-    void setSize( size_t size );
-    
-    // Interface with SimpleBuffer ( simplified view of the internal buffer )
-    // ------------------------------------------
-    
-    SimpleBuffer getSimpleBuffer();
-    SimpleBuffer getSimpleBufferAtOffset(size_t offset);
-    
-    // Spetial functions
-    // ------------------------------------------
-    
-    // Remove the last characters of an unfinished line and put them in buffer.
-    int removeLastUnfinishedLine( char *& buffer , size_t& buffer_size);
-    
-    
-public:
-    
-    // get xml information
-    void getInfo( std::ostringstream& output);
-    
-    // Public identifiers to be removed
-    
-    int worker;     // Identifier of the worker
-    int hg_set;     // Identifier of ther hash_group-set
-    bool finish;    // Flag ot the finish hash-group-set
-    
-};
-
-
-NAMESPACE_END
+}
 
 #endif

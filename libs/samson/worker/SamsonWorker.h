@@ -323,7 +323,8 @@ namespace samson {
         
         void stop()
         {
-            rest_service->stop();
+            // Stop the rest waiting for all connections to finish ( even the thread for the listener )
+            rest_service->stop( true );
         }
         
     private:

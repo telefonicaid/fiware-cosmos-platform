@@ -125,6 +125,10 @@ namespace samson {
             distribution_information.network->send( packet );
             
             
+            // Release created packet
+            packet->release();
+            
+            
         }
         
         

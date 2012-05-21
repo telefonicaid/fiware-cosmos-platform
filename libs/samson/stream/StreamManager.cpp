@@ -185,9 +185,6 @@ namespace samson {
                     LM_W(("Unknown disk notifiction in stream manafer %s" , notification->getDescription().c_str() ));
                 }
                 
-                engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
-                if( operation )
-                    delete operation;
                 return;
             }
             
@@ -621,6 +618,7 @@ namespace samson {
             engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer  ,  fileName , getEngineId()  );
             operation->environment.set("save_stream_state" , "yes" );
             engine::DiskManager::shared()->add( operation );
+            operation->release(); // It is now retained by diskmanager
             
             // Release the buffer we have just created ( it is retained inside te DiskOperation )
             buffer->release();

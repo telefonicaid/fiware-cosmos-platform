@@ -38,6 +38,9 @@ namespace au
             friend void* run_service_item( void*p );
             friend class Service;
             
+            // Information thread running
+            bool thread_running;
+            
         public:
             
             ServiceItem( Service * _service , SocketConnection * _socket_connection )
@@ -50,17 +53,20 @@ namespace au
                 
                 // By default, do not quit
                 quit = false;
+                
+                // Information the background thread running
+                thread_running = false;
             }
             
             virtual ~ServiceItem()
             {
+                // Make sure this connection is closed
+                socket_connection->close();
                 delete socket_connection;
             }
             
-            void stop()
-            {
-                quit = true;
-            }
+            // Stop this connection
+            void stop();
             
             void runInBackground();
             
@@ -76,7 +82,7 @@ namespace au
             NetworkListener listener;      // Listener to receive connections
             au::set< ServiceItem > items;  // Connected items 
 
-            au::Token token;               // Mutex protection
+            au::Token token;               // Mutex protection ( list of items )
             
             friend class ServiceItem;
             friend void* run_service_item( void*p );
@@ -99,16 +105,47 @@ namespace au
                 return s;
             }
             
-            void stop()
+            std::string str()
+            {
+                return au::str("Server on port %d" , port);
+            }
+            
+            void stop( bool wait )
             {
                 {
                     au::TokenTaker tt(&token);
+                    
                     au::set< ServiceItem >::iterator it_items;
                     for (it_items = items.begin() ; it_items != items.end() ; it_items ++ )
                         (*it_items)->stop();
+                    
                 }
                 
-                listener.stop(true);
+                // Stop the main listener
+                listener.stop( wait );
+                
+                // Wait until all connections are gone...
+                size_t num_items = 0;
+                {
+                    au::Cronometer c;
+                    while( true )
+                    {
+                        {
+                            au::TokenTaker tt(&token);
+                            num_items = items.size();
+                            if( num_items == 0 )
+                                return;
+                        }
+                        
+                        if( c.diffTime() > 1 )
+                        {
+                            c.reset();
+                            LM_W(("Still %lu ServiceItems do not finish after closing its associated sockets in Server %s" , num_items , str().c_str() ));
+                        }
+                        
+                        usleep(10000);
+                    }
+                }
             }
             
             void newSocketConnection( NetworkListener* _listener , SocketConnection * socket_connetion )

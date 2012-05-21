@@ -18,6 +18,8 @@ namespace samson {
     
     class NetworkManager;
     
+    // List of packets ( retained )
+    
     class PacketQueue
     {
         au::Token            token;
@@ -29,6 +31,12 @@ namespace samson {
         
         PacketQueue() : token("PacketQueue") 
         {
+        }
+        
+        ~PacketQueue()
+        {
+            // Remove pending packets
+            clear();
         }
 
         size_t getSeconds()
@@ -56,9 +64,10 @@ namespace samson {
             return total;
         }
         
-        void push( Packet* p)
+        void push( Packet* p )
         {
             au::TokenTaker tt(&token);
+            p->retain();
             queue.push_back(p);
         }
         
@@ -69,19 +78,19 @@ namespace samson {
             return packet;
         }
         
-        Packet* extract()
-        {
-            au::TokenTaker tt(&token);
-            return queue.extractFront();
-        }
-        
         void pop()
         {
             au::TokenTaker tt(&token);
             Packet* packet = queue.extractFront();
             
             if( !packet )
+            {
                 LM_W(("pop without packet called at PacketQueue"));
+                return;
+            }
+
+            packet->release();
+            
         }
         
         std::string str()
@@ -96,10 +105,31 @@ namespace samson {
             // Clear queues, removing packages and alloc buffers
             au::TokenTaker tt(&token);
             
+            // Release all packets
+            au::list<Packet>::iterator it_queue;
+            for ( it_queue = queue.begin() ; it_queue != queue.end() ; it_queue++ )
+                (*it_queue)->release();
+            
             // Remove elements calling delete to all of them ( Not that buffer inside packets are relased )
             queue.clearList();
         }
         
+        void pushTo( PacketQueue* target_packet_queue )
+        {
+            // Etxratc all packets pushing them to another packet_queue
+            while( true )
+            {
+                Packet* packet = next();
+                
+                if( packet )
+                {
+                    target_packet_queue->push( packet );
+                    pop();
+                }
+                else
+                    return;
+            }
+        }
         
     };    
     
@@ -141,7 +171,6 @@ namespace samson {
             {
                 LM_W(("Destroying packet %s for unconnected node (%s) since it is not a worker" 
                       , packet->str().c_str(), name.c_str() ));
-                delete packet;
             }
         }
         
@@ -150,33 +179,15 @@ namespace samson {
             std::string prefix = "worker_";
             if( name.substr( 0 , prefix.length() ) == prefix )
             {
-
                 au::TokenTaker tt(&token_packet_queues);
                 PacketQueue * target_paquet_queue = packet_queues.findOrCreate(name);                
-                
-                while( true )
-                {
-                    Packet * packet = packet_queue->extract();
-                    if( !packet )
-                        return;
-                    
-                    target_paquet_queue->push(packet);
-                    
-                }
+
+                // Move all packets to the target queue
+                packet_queue->pushTo(target_paquet_queue);                
             }
             else
             {
-                while( true )
-                {
-                    Packet * packet = packet_queue->extract();
-                    if( !packet )
-                        
-                        return;
-                    LM_W(("Destroying packet %s for unconnected node (%s) since it is not a worker" 
-                          , packet->str().c_str() , name.c_str() )); 
-                    
-                    delete packet;
-                }
+                packet_queue->clear();
             }
         }
         
@@ -190,18 +201,11 @@ namespace samson {
             if( !source_paquet_queue )
                 return; // No pending packets
             
-            while( true )
-            {
-                Packet * packet = source_paquet_queue->extract();
-                if( !packet )
-                    break;
-                
-                packet_queue->push(packet);
-            }
-            
+            // Push packets to the provided queue
+            source_paquet_queue->pushTo(packet_queue);
+
             // remove the original paquet queue
             delete source_paquet_queue;
-            
         }
         
         au::tables::Table * getPendingPacketsTable()

@@ -117,10 +117,7 @@ namespace samson
         if( network )
             network->send( packet );
         else
-        {
             error->set( au::str("Not connected to any SAMSON System") );
-            delete packet;
-        }
     }
     
     std::vector<size_t> DelilahBaseConnection::getConnectedWorkerIds( au::ErrorManager * error )

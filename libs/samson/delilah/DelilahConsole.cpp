@@ -600,7 +600,7 @@ namespace samson
 		au::CommandLine commandLine;
 		commandLine.set_flag_string("user", "anonymous");
 		commandLine.set_flag_string("password", "anonymous");
-        commandLine.set_flag_int("port", 1234); // Default port for SAMSON
+        commandLine.set_flag_int("port", SAMSON_WORKER_PORT); // Default port for SAMSON
         
 		commandLine.set_flag_string("name", "null");
 		commandLine.set_flag_string("begin", "null");           
@@ -1579,6 +1579,7 @@ namespace samson
         // Disk operation....
         engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer ,  fileName , getEngineId()  );
         engine::DiskManager::shared()->add( operation );        
+        operation->release();
     }
     
     

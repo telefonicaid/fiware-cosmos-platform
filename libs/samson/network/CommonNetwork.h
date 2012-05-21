@@ -36,8 +36,7 @@ namespace samson {
         std::string connection_type;
 
         // List of packets for me ( accumulated when receiver is still not set )
-        au::list<Packet> pending_packets_for_me;
-
+        PacketQueue pending_packets_for_me;
         
     public:
         
@@ -45,17 +44,14 @@ namespace samson {
         {
             
             // Listen notifications for network manager
-            listen("network_manager_review");
+            listen("notification_network_manager_review");
             
             // Create a periodic notification to review connections
-            engine::Engine::shared()->notify( new engine::Notification( "network_manager_review" ) , 1  );
+            engine::Engine::shared()->notify( new engine::Notification( "notification_network_manager_review" ) , 1  );
         }
-        
         
         ~CommonNetwork()
         {
-            // Remove pending packets for me when removing
-            pending_packets_for_me.clearList();
         }
         
         // Engine notification interface

@@ -49,10 +49,6 @@ namespace samson {
             
             // Check if it is necessary to run a task
             reviewPendingQueueTasks();
-            
-            // Review block manager
-            //LM_T(LmtBlockManager, ("Calling BlockManager::shared()->review()"));
-            //BlockManager::shared()->review();
         }
         
         void QueueTaskManager::add( SystemQueueTask* task )
@@ -62,10 +58,6 @@ namespace samson {
             
             // Check if it is necessary to run a task
             reviewPendingQueueTasks();
-            
-            // Review block manager
-            //LM_T(LmtBlockManager, ("Calling BlockManager::shared()->review()"));
-            //BlockManager::shared()->review();
         }
 
         void QueueTaskManager::cancelForWorkerCommandId( std::string worker_command_id )
@@ -79,7 +71,7 @@ namespace samson {
                 if( queue_task->environment.get("worker_command_id", "no_id") == worker_command_id )
                 {
                     it_queueTasks = queueTasks.erase(it_queueTasks);
-                    delete queue_task;
+                    queue_task->release();
                 }
                 else
                     it_queueTasks++;
@@ -92,7 +84,7 @@ namespace samson {
                 if( system_queue_task->environment.get("worker_command_id", "no_id") == worker_command_id )
                 {
                     it_systemQueueTasks = systemQueueTasks.erase(it_systemQueueTasks);
-                    delete system_queue_task;
+                    system_queue_task->release();
                 }
                 else
                     it_systemQueueTasks++;
@@ -115,10 +107,6 @@ namespace samson {
             }
             else if ( notification->isName(notification_process_request_response) )
             {
-                
-                // Extract the object to not be automatically removed ( this is a queueTask or a systemQueueTask )
-                notification->extractObject();
-
                 // Get the identifier of this
                 size_t _id       = notification->environment.getSizeT("system.queue_task_id", 0);
                 
@@ -140,7 +128,7 @@ namespace samson {
                         streamManager->notifyFinishTask( _task );
                         
                         //LM_M(("Destroying task"));
-                        delete _task;
+                        _task->release();
                         
                     }
                     else
@@ -162,8 +150,7 @@ namespace samson {
                         streamManager->notifyFinishTask( _task );
                         
                         //LM_M(("Destroying task"));
-                        delete _task;
-                        
+                        _task->release();
                         
                     }
                     else
@@ -220,8 +207,6 @@ namespace samson {
             // Trying to search for the first task ready, instead of stopping at the front
             for ( au::list<QueueTask>::iterator t = queueTasks.begin() ; t != queueTasks.end() ; t++ )
             {
-                
-                
                 //QueueTask * task = queueTasks.front();  // Take the front task
             	QueueTask * task = *t;  // Take the front task
                 

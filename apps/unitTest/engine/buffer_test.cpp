@@ -349,29 +349,3 @@ TEST(bufferTest, removeLastUnfinishedLineTest)
     close_engine_test();
 }    
     
-// get xml information
-//Test void getInfo( std::ostringstream& output);
-TEST(bufferTest, getInfoTest) 
-{
-    init_engine_test();
-    
-    engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15);
-    char data[21] ="0123456789";
-    buffer1->write(data, 10);
-    buffer1->skipRead(2);
-    
-    std::ostringstream info;
-    buffer1->getInfo( info );
-    
-    //read and check xml
-    XMLNode xMainNode=XMLNode::parseString(info.str().c_str(),"buffer");
-    EXPECT_EQ(std::string(xMainNode.getChildNode("max_size").getClear().lpszValue), "15") << "Error writing max_size tag";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("size").getClear().lpszValue), "10") << "Error writing size tag";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("offset").getClear().lpszValue), "2") << "Error writing offset tag";
-    EXPECT_EQ(std::string(xMainNode.getChildNode("name").getClear().lpszValue), "buffer1") << "Error writing name tag";
-
-    buffer1->release();
-    
-    close_engine_test();
-}
-

@@ -44,6 +44,8 @@ typedef enum TraceLevels
 	LmtProcessManager         = 204,
 	LmtBlockManager           = 205,
 
+    LmtBuffer                 = 206, 
+
 	LmtModuleManager          = 210,                // Module Manager component
 
     

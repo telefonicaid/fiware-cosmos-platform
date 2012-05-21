@@ -27,7 +27,7 @@
 #include "au/ErrorManager.h"           // au::ErrorManager
 #include "au/namespace.h"
 
-#include "engine/Object.h"              // engine::Object
+#include "au/Object.h"
 
 #define PI_PRIORITY_NORMAL_OPERATION	1
 #define PI_PRIORITY_NORMAL_COMPACT		5		// Compact operation
@@ -51,7 +51,7 @@ class ProcessItem;
 class ProcessManagerDelegate;
 class ProcessManager;
 
-class ProcessItem  : public Object
+class ProcessItem  : public au::Object
 {
     
     // Identifiers of the listeners that should be notified when operation is finished

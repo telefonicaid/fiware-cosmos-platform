@@ -20,8 +20,7 @@
 #include <cstring>
 
 #include "au/namespace.h"
-
-#include "engine/Object.h"      // engine::Object
+#include "au/Object.h"
 
 NAMESPACE_BEGIN(engine)
 
@@ -31,7 +30,7 @@ NAMESPACE_BEGIN(engine)
 
 class Buffer;
 
-class MemoryRequest : public Object
+class MemoryRequest : public au::Object
 {
     
 public:

@@ -212,7 +212,7 @@ namespace samson
         return au::OK;
     }
     
-    Packet*  Packet::messagePacket( std::string message )
+    Packet* Packet::messagePacket( std::string message )
     {
         Packet * packet = new Packet( Message::Message );
         packet->message->set_message(message);

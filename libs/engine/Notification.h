@@ -26,6 +26,7 @@
 
 #include "au/Environment.h"     // au::Enrivonment
 #include "au/namespace.h"
+#include "au/Object.h"
 
 #include <string.h>
 
@@ -43,7 +44,8 @@ class Notification
     friend class ObjectsManager;
     
     const char* name;                       // Name of the notification
-    Object* object;                         // Single object to be used as parameter
+    
+    au::ObjectContainer object_container;   // Single object to be used as parameter ( note retain / release model associated to au::Object )
     
     std::set<size_t> targets;               // Identifiers that should receive this notification
     
@@ -65,13 +67,13 @@ public:
     Notification( const char* _name );
     
     // Constructor with one object as "main"
-    Notification( const char* _name , Object * _object );
+    Notification( const char* _name , au::Object * _object );
     
     // Constructor with one object and a target listener
-    Notification( const char* _name , Object * _object , size_t _listener_id );
+    Notification( const char* _name , au::Object * _object , size_t _listener_id );
     
     // Constructor with one object and a multiple targets listener
-    Notification( const char* _name , Object * _object , std::set<size_t>& _listeners_id );
+    Notification( const char* _name , au::Object * _object , std::set<size_t>& _listeners_id );
     
     // Destructor
     ~Notification();
@@ -80,11 +82,8 @@ public:
     std::string getDescription();
     std::string getShortDescription();
     
-    // Destroy pending objects ( not processed by any listener )
-    void destroyObjects();
-    
     // Extract the object of this notification
-    Object* extractObject();
+    au::Object* getObject();
     
     // Check if there is an object in this notification
     bool containsObject();

@@ -154,10 +154,7 @@ namespace samson {
                 }
                 else if( type == "remove" )
                 {
-                    // operation has to be removed since we are the only one in the notifier list
-                    engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
-                    if( operation )
-                        delete operation;
+                    // Nothing to do here...
                 }
             }
             else 
@@ -221,7 +218,7 @@ namespace samson {
                         engine::DiskOperation * operation = 
                         engine::DiskOperation::newRemoveOperation( block->getFileName() , getEngineId() );
                         engine::DiskManager::shared()->add( operation );
-                        
+                        operation->release(); // It is now retained by disk manager
                         LM_T(LmtBlockManager,("In check, removing block:'%s'", block->str().c_str()));
                         
                         if( block->isWriting() || block->isReading() )

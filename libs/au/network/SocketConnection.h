@@ -46,6 +46,17 @@ namespace au
             return cronometer.diffTimeInSeconds();
         }
         
+        // Duplicate this socket connection invalidating this instance
+        // It is a mechanism to extrat this connection and avoid this one to close the socket
+        SocketConnection* duplicateAndInvalidate()
+        {
+            int fd = getFdAndinvalidate();
+            if( fd == -1 )
+                return NULL;
+            
+            return new SocketConnection( fd , host , port );
+        }
+        
     };
     
 }

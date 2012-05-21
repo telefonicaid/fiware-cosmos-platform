@@ -97,11 +97,8 @@ namespace samson {
         
         if( notification->isName(notification_disk_operation_request_response) )
         {
-            // Remove the operation
-            engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
-            if( operation )
-                delete operation;
-
+            // Nothing to do here...
+            
             return;
         }        
         
@@ -139,6 +136,9 @@ namespace samson {
                 
                 // Send this message to all delilahs connected
                 send( p , &error );
+                
+                // Release packet
+                p->release();
                 
                 if( error.isActivated() )
                     return;

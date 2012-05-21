@@ -525,6 +525,9 @@ namespace samson {
             diskOperation->environment.set("operation_size", getSize() );
 
             engine::DiskManager::shared()->add( diskOperation );
+            
+            // Relase object since now it is retained by DiskManager....
+            diskOperation->release();
         }
 
         void Block::read()
@@ -558,6 +561,8 @@ namespace samson {
             diskOperation->environment.set("operation_size", getSize() );
             engine::DiskManager::shared()->add( diskOperation );
          
+            // Relase object since now it is retained by DiskManager....
+            diskOperation->release();
             
         }
                 
@@ -609,9 +614,6 @@ namespace samson {
             // A response for a disk operation?
             if( notification->isName( notification_disk_operation_request_response ) )
             {
-                // Notify a read or write
-                engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
-                delete operation;
 
                 // Whatever operation it was it is always ready ( comming from reading or writing )
                 state = ready;
@@ -622,15 +624,17 @@ namespace samson {
             
             if( notification->isName( notification_process_request_response ) )
             {
-                BlockBuilder* block_builder = (BlockBuilder*) notification->extractObject();
+                BlockBuilder* block_builder = (BlockBuilder*) notification->getObject();
+                
                 if( block_builder )
                 {
+                    
                     if( block_builder->error.isActivated() )
                     {
                         LM_W(("Error received when creating a block: %s" , 
                               block_builder->error.getMessage().c_str() ));
                     }
-                    delete block_builder;
+                    
                 }
                 else
                     LM_W(("No block_builder in a process item operation notification received in a Block"));

@@ -55,26 +55,30 @@ namespace samson {
         // Virtual destructor for correct memory deallocation
         virtual ~NetworkInterfaceReceiver() { };
         
-        // Convenient way to run the receive methods using Engine system
-        void schedule_receive( Packet* packet );
-
         
     };
 	
     
+    /* ****************************************************************************
+     *
+     * NetworkInterfaceBase - Interaction with NetworkInterfaceReceiver
+     */
     
     class NetworkInterfaceBase
     {
         
     public:
         
-        NetworkInterfaceReceiver* network_interface_receiver;       // Received to get packages
-
-        void  setReceiver(NetworkInterfaceReceiver* receiver)
+        NetworkInterfaceReceiver* network_interface_receiver;       // Receiver for incomming packages
+        
+        void  setReceiver( NetworkInterfaceReceiver* receiver )
         {
             network_interface_receiver = receiver;            
         }
         
+        // Convenient way to run the receive methods using Engine system
+        void schedule_receive( Packet* packet );
+
     };
     
     /* ****************************************************************************
@@ -86,34 +90,29 @@ namespace samson {
     {
         
     public:
-        
- 
-        NetworkInterface();
-        virtual ~NetworkInterface();
+
+        // Constructor and destructor
+        NetworkInterface(){};
+        virtual ~NetworkInterface(){};
 
         // Send packet to an element in the samson cluster ( delilah or worker )
         virtual Status send( Packet* packet )
         {
-            if (packet == NULL) {}
             LM_X(1, ("NetworkInterface method not implemented"));
             return Error;
         }
-        
-        // Get information about network state
-        virtual void getInfo( ::std::ostringstream& output , std::string command , std::string format = "xml")
-        {
-			if (output != output)
-				LM_W(("NADA!"));
-            LM_W(("NetworkInterface method not implemented (%s)", command.c_str()));
-        }
     
-        // Suspend the network elements implemented behind NetworkInterface
-        // Close everything and return the "run" call
+        // Close all threads and return the "run" call
         virtual void quit(void)
         {
             LM_W(("NetworkInterface method not implemented"));
         }
       
+        virtual void stop()
+        {
+            LM_W(("NetworkInterface method not implemented"));
+        }
+        
         // Basic information about the cluster ( list of workers and delilahs )
         virtual std::vector<size_t> getWorkerIds()
         {
@@ -138,12 +137,6 @@ namespace samson {
             LM_W(("NetworkInterface method not implemented (%s)", command.c_str()));
             return "";
         }
-
-        virtual void stop()
-        {
-            LM_W(("NetworkInterface method not implemented"));
-        }
-        
         
         virtual std::string getLoginInfo()
         {
@@ -152,7 +145,6 @@ namespace samson {
         
         virtual network::Collection* getConnectionsCollection( Visualization* visualization )
         {
-			if (visualization == NULL) {}
             return NULL;
         }
         
@@ -163,6 +155,12 @@ namespace samson {
         virtual size_t get_rate_out()
         {
             return 0;
+        }
+        
+        // Get information about network state
+        virtual void getInfo( ::std::ostringstream& output , std::string command , std::string format = "xml")
+        {
+            LM_W(("NetworkInterface method not implemented (%s)", command.c_str()));
         }
         
         virtual NodeIdentifier getMynodeIdentifier()=0;
@@ -192,7 +190,6 @@ namespace samson {
         {
             return true;
         }
-
         
     };
     

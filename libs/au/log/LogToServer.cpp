@@ -26,8 +26,8 @@
 extern char            lsHost[64];
 extern unsigned short  lsPort;
 
-namespace au {
-    
+namespace au 
+{
     
     class LogConnection
     {
@@ -58,7 +58,7 @@ namespace au {
         {
             host = _host;
             port = _port;
-            time_reconnect = 1; // Initial time to reconnect
+            time_reconnect = 60; // Initial time to reconnect
             local_file = _local_file;
             
             // By default both connections are NULL
@@ -67,6 +67,30 @@ namespace au {
             
             // Connect the first time
             try_connect();
+        }
+        
+        ~LogConnection()
+        {
+            // Remove pending logs
+            if( logs.size() > 0 )
+            {
+                LM_W(("Removed %lu logs not saved to disk to sent to server" , logs.size() ));
+                logs.clearList();
+            }
+            
+            // Close connections
+            if( socket_connection ) 
+            {
+                socket_connection->close();
+                delete socket_connection;
+            }
+
+            if( local_file_descriptor ) 
+            {
+                local_file_descriptor->close();
+                delete local_file_descriptor;
+            }
+            
         }
         
         int getFd()
@@ -81,83 +105,75 @@ namespace au {
         
         void write( Log *log )
         {
-            
             au::TokenTaker tt(&token);
-            //LM_LV(("Writing log..."));
             
             // Check if the estabished connection should be canceled
-            check_disconnection();
-
-            // Reconnect if time is acceptable
-            if( !socket_connection && ( time_since_last_try.diffTimeInSeconds() >= time_reconnect ) )
-                try_connect();
-            
-            
-            // Write the lock
-            if( socket_connection )
-            {
-                // Push log into the queue to be sent
-                logs.push_back(log);
-
-                // Keep a maximum of 100K logs
-                // Limit the number of logs to be in memory
-                while( logs.size() > 100000 )
-                    delete logs.extractFront();
-
-                au::Cronometer c;
-                while( logs.size() > 0 )
-                {
-                    if( c.diffTimeInSeconds() > 1 )
-                        return; // Never spent more than one second sending traces...
-                    
-                    Log* tmp_log = logs.extractFront();
-                    if( !tmp_log->write( socket_connection ) )
-                    {
-                        // Puhs back into the queue
-                        logs.push_front(tmp_log);
-                        
-                        // Close if not possible to write the log
-                        socket_connection->close();
-                        delete socket_connection;
-                        socket_connection = NULL;
-                        time_since_last_try.reset();
-                        return;
-                    }
-                    
-                    delete tmp_log;
-                    
-                }
-                
-            }
-            else
-            {
-                // write the log to a local file....
-                open_local_file();
-
-                if( local_file_descriptor )
-                    if( !log->write(local_file_descriptor ) )
-                    {
-                        delete local_file_descriptor;
-                        local_file_descriptor = NULL;
-                    }
-                
-            }
-        }
-        
-    private:
-        
-        void check_disconnection()
-        {
-            //LM_LV(("Check if we are still connected with log server..."));
-
             if( socket_connection && socket_connection->isDisconnected() )
             {
                 delete socket_connection;
                 socket_connection = NULL;
                 time_since_last_try.reset();
             }
+
+            // Reconnect to server if time is acceptable
+            if( !socket_connection && ( time_since_last_try.diffTimeInSeconds() >= time_reconnect ) )
+                try_connect();
             
+            // Push log into the queue to be sent ( to server or disk )
+            logs.push_back(log);
+            
+            // Keep a maximum of 100KB logs
+            while( logs.size() > 100000 )
+                delete logs.extractFront();
+            
+            // General cronometer to never spend more than 1 second to send a trace...
+            au::Cronometer c;
+            
+            // Write the log to the server if we are connected
+            while( logs.size() > 0 )
+            {
+                if( c.diffTimeInSeconds() > 1 )
+                    return; // Never spent more than one second sending a trace...
+                
+                // Get the next log to be sent
+                Log* tmp_log = logs.extractFront();
+                
+                if( socket_connection )
+                {
+                    if( !tmp_log->write( socket_connection ) )
+                    {
+                        // Push back into the queue of logs to be sent
+                        logs.push_front(tmp_log);
+                        
+                        // Close and remove socket connection
+                        socket_connection->close();
+                        delete socket_connection;
+                        socket_connection = NULL;
+                        time_since_last_try.reset();
+                        return;
+                    }
+                    else
+                        delete tmp_log; // Correctly send to the server
+                }
+                else
+                {
+                    // write the log to a local file....
+                    open_local_file(); // Make sure, this is open
+                    
+                    if( local_file_descriptor && log->write(local_file_descriptor ) )
+                        delete tmp_log; // Correctly saved to disk
+                    else
+                    {
+                        // Push back into the queue of logs to be sent
+                        logs.push_front(tmp_log);
+
+                    }
+                    
+                }
+            }                
         }
+        
+    private:
         
         void try_connect()
         {
@@ -200,7 +216,12 @@ namespace au {
         
         void open_local_file()
         {
-
+            if( local_file_descriptor && local_file_descriptor->isDisconnected() )
+            {
+                delete local_file_descriptor;
+                local_file_descriptor = NULL;
+            }
+            
             if( local_file_descriptor )
                 return;
             
@@ -220,8 +241,8 @@ namespace au {
         }
     };
     
+    // Common log connection
     au::LogConnection * log_connection = NULL;
-    
     
     int getLogServerConnectionFd()
     {
@@ -246,6 +267,16 @@ namespace au {
         
     }
     
+    void stop_log_to_server( )
+    {
+        if( log_connection )
+        {
+            delete log_connection;
+            log_connection = NULL;
+        }
+    }
+
+    
     /* ****************************************************************************
      *
      * logToLogServer - 
@@ -253,7 +284,9 @@ namespace au {
     
     void logToLogServer(void* vP, char* text, char type, time_t secondsNow, int timezone, int dst, const char* file, int lineNo, const char* fName, int tLev, const char* stre )
     {
-        
+        if( !log_connection )
+            return; // Nothing to do if connection is not activated
+
         // Create the log to be sent
         Log* log = new Log();
         

@@ -13,13 +13,13 @@ namespace samson {
     
     void CommonNetwork::notify( engine::Notification* notification )
     {
+        
         if (notification == NULL)
             LM_D(("notification == NULL"));
 
         // Check pennding packets to be removed after 1 minute disconnected
         // -------------------------------------------------------------------------------------
         NetworkManager::check();
-          
         
         // Check disconnected elements to be removed ( if possible no threads or pending packets )
         // ----------------------------------------------------------------------------------------
@@ -50,24 +50,26 @@ namespace samson {
         
         if( cluster_information.getId() != 0 )
         {
+            
             // Get a duplicate of current nodes involved in this cluster to connect to all of them
             au::vector<ClusterNode> nodes = cluster_information.getNodesToConnect( node_identifier );
-            
+
             for ( size_t i = 0 ; i < nodes.size() ; i++ )
             {
-                
                 std::string name = NodeIdentifier( WorkerNode , nodes[i]->id ).getCodeName();
+
+                LM_W(("Checking connection %s" , name.c_str() ));
                 
                 if ( !NetworkManager::isConnected(name) )
                 {
+                    
                     // Connect with this worker....
                     std::string host = nodes[i]->host;
                     int port = nodes[i]->port;
                     size_t worker_id = nodes[i]->id;
-                    
+
                     addWorkerConnection(worker_id, host, port);
                 }
-                
                 
             }
             
@@ -147,7 +149,9 @@ namespace samson {
         network_connection->setNodeIdentifier( node_identifier );
 
         // Sent hello packages rigth now to make sure if identity us
-        network_connection->push( helloMessage( network_connection ) );
+        Packet *hello_packet = helloMessage( network_connection );
+        network_connection->push( hello_packet );
+        hello_packet->release();
 
         // Add this new connection
         Status ss = NetworkManager::add( network_connection );
@@ -210,7 +214,7 @@ namespace samson {
         {
             // Local loop
             packet->from = node_identifier;
-            network_interface_receiver->schedule_receive( packet );
+            schedule_receive( packet );
             return OK;
         }
         
@@ -225,7 +229,6 @@ namespace samson {
         if( packet->msgCode == Message::Hello )
         {
             processHello(connection, packet);
-            delete packet;
             return;
         }
         
@@ -239,26 +242,25 @@ namespace samson {
         
         // Common interface to receive packets
         packet->from = connection->getNodeIdentifier();
-        
 
-        // Flush previous packets for me ( if any )
         if( network_interface_receiver )
         {
-            while( pending_packets_for_me.size() > 0 )
+            // Flush previous packets for me ( if any )
+            while( pending_packets_for_me.getNumPackets() > 0 )
             {
-                Packet * previous_packet = pending_packets_for_me.front();
-                pending_packets_for_me.pop_front();
-                network_interface_receiver->schedule_receive( previous_packet );
+                // Process next packet
+                Packet * previous_packet = pending_packets_for_me.next();
+                schedule_receive( previous_packet );
+                pending_packets_for_me.pop();
             }
 
             // Schedule the new packet
-            network_interface_receiver->schedule_receive( packet );
+            schedule_receive( packet );
         }
         else
-            pending_packets_for_me.push_back( packet );
+            pending_packets_for_me.push( packet );
         
     }
-
     
     void CommonNetwork::getInfo( ::std::ostringstream& output , std::string command , std::string format)
     {
@@ -281,30 +283,33 @@ namespace samson {
     {
         Packet * packet = new Packet( Message::NetworkNotification );
         packet->message->mutable_network_notification()->set_connected_worker_id(id);
-        network_interface_receiver->schedule_receive( packet );
+        schedule_receive( packet );
+        packet->release();
     }
     
     void CommonNetwork::report_worker_disconnected( size_t id )
     {
         Packet * packet = new Packet( Message::NetworkNotification );
         packet->message->mutable_network_notification()->set_disconnected_worker_id(id);
-        network_interface_receiver->schedule_receive( packet );
+        schedule_receive( packet );
+        packet->release();
     }
     
     void CommonNetwork::report_delilah_connected( size_t id )
     {
         Packet * packet = new Packet( Message::NetworkNotification );
         packet->message->mutable_network_notification()->set_connected_delilah_id(id);
-        network_interface_receiver->schedule_receive( packet );
+        schedule_receive( packet );
+        packet->release();
     }
     
     void CommonNetwork::report_delilah_disconnected( size_t id )
     {
         Packet * packet = new Packet( Message::NetworkNotification );
         packet->message->mutable_network_notification()->set_disconnected_delilah_id(id);
-        network_interface_receiver->schedule_receive( packet );
+        schedule_receive( packet );
+        packet->release();
     }
-    
     
     NodeIdentifier CommonNetwork::getMynodeIdentifier()
     {

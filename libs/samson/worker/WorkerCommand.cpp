@@ -762,6 +762,8 @@ typedef struct LogLineInfo
             engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation(buffer, file_name, getEngineId() );
             operation->environment.set("push_module", "yes");
             engine::DiskManager::shared()->add( operation );
+            operation->release(); // It is now retained by disk manager
+            
             num_pending_disk_operations++;
             
             // Buffer will be destroyed by the disk operation
@@ -1652,6 +1654,9 @@ typedef struct LogLineInfo
             
             // Send the packet
             samsonWorker->network->send( p );
+            
+            // Release created packet
+            p->release();
         }
         
         // Set the finished flag
@@ -1703,7 +1708,7 @@ typedef struct LogLineInfo
         
         if( notification->isName( notification_disk_operation_request_response ) )
         {
-            engine::DiskOperation* operation = (engine::DiskOperation*) notification->extractObject();
+            engine::DiskOperation* operation = (engine::DiskOperation*) notification->getObject();
             
             num_pending_disk_operations--;
             if( notification->environment.isSet("error") )
@@ -1714,9 +1719,7 @@ typedef struct LogLineInfo
             {
                 ModulesManager::shared()->reloadModules();
             }
-            
-            delete operation;
-            
+                        
             checkFinish();
             return;
         }

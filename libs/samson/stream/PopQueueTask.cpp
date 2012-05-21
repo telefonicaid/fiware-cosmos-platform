@@ -70,6 +70,10 @@ namespace samson {
             // Send a notification
             engine::Notification *notification = new engine::Notification( notification_samson_worker_send_packet , packet );
             engine::Engine::shared()->notify( notification );            
+            
+            // Release the packet ( now it is retained by, at least, the notification )
+            packet->release();
+
         }
         
         void PopQueueTask::run()
@@ -131,6 +135,10 @@ namespace samson {
             
             // Send a notification
             engine::Engine::shared()->notify( notification );            
+            
+            // Release the packet ( now it is retained by, at least, the notification )
+            packet->release();
+
         }
         
         void StreamOutQueueTask::run()

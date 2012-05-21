@@ -318,30 +318,4 @@ namespace samson
         type = _type;
     }
     
-    /*
-    void ProcessIsolated::sendAlert( samson::network::Alert& alert )
-    {
-        std::vector<size_t> delilahs = distribution_information.network->getDelilahIds();
-        
-        for ( size_t i = 0 ; i < delilahs.size() ; i++ )
-        {
-            
-            Packet * p = new Packet( Message::Alert );
-            
-            p->message->mutable_alert()->CopyFrom( alert );
-            p->message->set_delilah_component_id( (size_t)-1 );
-            
-            
-            // Direction of this paket
-            p->to.node_type = DelilahNode;
-            p->to.id = delilahs[i];
-            
-            // Send packet
-            distribution_information.network->send( p );
-            
-        }
-    }
-     */
-    
-    
 }

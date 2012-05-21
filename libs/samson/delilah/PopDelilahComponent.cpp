@@ -109,6 +109,9 @@ namespace samson
             // Send message
             delilah->send( p , &error );
             
+            // Release packet
+            p->release();
+            
             if (error.isActivated() )
                 setComponentFinishedWithError( error.getMessage() );
 
@@ -121,10 +124,8 @@ namespace samson
     {
         if( packet->msgCode != Message::PopQueueResponse )
         {
-            delete packet;
             return;
         }
-        
         
         engine::Buffer* buffer = packet->getBuffer();
         
@@ -139,6 +140,7 @@ namespace samson
 
             engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation( buffer , _fileName , getEngineId() );
             engine::DiskManager::shared()->add( operation );                
+            operation->release();
             
         }
         
@@ -162,9 +164,6 @@ namespace samson
     {
         if( notification->isName(notification_disk_operation_request_response) )
         {
-            // Delete operation
-            engine::DiskOperation *operation = (engine::DiskOperation*) notification->extractObject();
-            delete operation;
 
             num_write_operations--;
             check();

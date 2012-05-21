@@ -85,7 +85,9 @@ namespace samson {
             NetworkManager::add( network_connection );
             
             // Send Hello packet
-            network_connection->push( helloMessage( network_connection ) );
+            Packet* hello_packet =helloMessage( network_connection );
+            network_connection->push( hello_packet );
+            hello_packet->release();
         }
         else
         {
@@ -157,6 +159,7 @@ namespace samson {
                 packet->from = NodeIdentifier( DelilahNode , 0 );
                 packet->to = node_identifier;
                 network_interface_receiver->receive(  packet );
+                packet->release();
                 // ------------------------------------------------------------
                 
             }
@@ -259,7 +262,11 @@ namespace samson {
         // -----------------------------------------------------------------------------------------------
 
         if( packet->message->hello().answer_hello_required() )
-            connection->push( helloMessage( connection ) );
+        {
+            Packet * hello_packet = helloMessage( connection );
+            connection->push( hello_packet );
+            hello_packet->release();
+        }
     }
     
     void WorkerNetwork::update_cluster_information( ClusterInformation * new_cluster_information )

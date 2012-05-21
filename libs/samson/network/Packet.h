@@ -14,12 +14,12 @@
 #include "au/utils.h"
 #include "au/network/FileDescriptor.h"
 #include "au/Status.h"
+#include "au/Object.h"
 
 #include "samson/common/samson.pb.h"     // google protocol buffers
 #include "samson/common/EnvironmentOperations.h"        // str( network::Message* )
 
 #include "engine/MemoryManager.h"        // MemoryManager
-#include "engine/Object.h"
 #include "engine/Engine.h"               // engine::Engine
 #include "engine/Buffer.h"               // engine::Buffer
 #include "engine/BufferContainer.h"
@@ -36,7 +36,7 @@ namespace samson
 	 */
     
     
-	class Packet : public engine::Object
+	class Packet : public au::Object
 	{
 
         engine::BufferContainer buffer_container;
@@ -54,7 +54,7 @@ namespace samson
         
 		Packet();
 		Packet(Message::MessageCode _msgCode);
-		Packet(Packet* p);
+		Packet( Packet* p );
 
 		~Packet();
 
@@ -76,7 +76,7 @@ namespace samson
         au::Status write( au::FileDescriptor *fd , size_t *size );
 
         
-	};
+	}; 
 }
 
 #endif

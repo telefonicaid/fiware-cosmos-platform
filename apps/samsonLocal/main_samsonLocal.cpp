@@ -58,7 +58,6 @@ int port;             // Not used but decessary to compile with samsonWorker
 //bool             delilah_qt;
 
 
-#define S01 (long int) "samson01:1234"
 /* ****************************************************************************
  *
  * parse arguments

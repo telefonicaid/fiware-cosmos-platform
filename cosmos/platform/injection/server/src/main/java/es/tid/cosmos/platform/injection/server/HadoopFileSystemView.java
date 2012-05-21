@@ -72,10 +72,7 @@ public class HadoopFileSystemView implements FileSystemView {
         String requestedDir = baseDir;
         String requestedFile = file;
         if (requestedDir.isEmpty()){
-            if (requestedFile.isEmpty()) {
-                throw new IllegalArgumentException("filesystem view impossible" +
-                        " for empty dir and filename!");
-            } else if (requestedFile.equals(Path.CUR_DIR)) {
+            if (requestedFile.isEmpty() || requestedFile.equals(Path.CUR_DIR)) {
                 requestedDir = this.homePath;
                 requestedFile = "";
                 LOG.debug("redirecting to home path: " + this.homePath);

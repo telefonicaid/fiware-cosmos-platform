@@ -18,8 +18,8 @@ ${shared.header("Run new job", section="run_job")}
 	href="/cosmos/static/samples/wordcount.jar">wordcount example</a> (<a 
         id="sample-jar-sources" href="/cosmos/static/samples/wordcount.tgz"
 	target="_blank">sources</a>) or read about the
-	<a id="jar-restrictions" href="/cosmos/static/custom_readme.html"
-	target="_blank">custom job requirements</a>.
+	<a id="jar-restrictions" href="/help/cosmos/"
+	target="Help">custom job requirements</a>.
 	</p>
 
         % for err in form.non_field_errors():

@@ -173,7 +173,7 @@ public class SftpIT {
         try {
             assertEquals(sftpChannel.pwd(), this.getDefaultDir());
             sftpChannel.cd("/");
-            sftpChannel.cd("");
+            sftpChannel.cd(sftpChannel.getHome());
             assertEquals(sftpChannel.pwd(), this.getDefaultDir());
         } finally {
             sftpChannel.exit();
@@ -228,7 +228,7 @@ public class SftpIT {
                            "Verifying ls returns permissions data");
             }
         } finally {
-            sftpChannel.cd("");
+            sftpChannel.cd(sftpChannel.getHome());
             sftpChannel.rmdir(dirName);
             sftpChannel.exit();
             session.disconnect();

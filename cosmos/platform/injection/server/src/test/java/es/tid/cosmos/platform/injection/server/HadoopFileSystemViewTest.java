@@ -21,18 +21,28 @@ import static org.mockito.Mockito.when;
  * @since 15/05/12
  */
 public class HadoopFileSystemViewTest {
+    private String userName;
+    private Configuration conf;
     private HadoopFileSystemView hadoopFileSystemView;
 
     @Before
     public void setUp() throws Exception {
-        String userName = "test";
-        Configuration conf = new Configuration();
+        this.userName = "test";
+        this.conf = new Configuration();
         this.hadoopFileSystemView = new HadoopFileSystemView(userName, conf);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testGetFileWithEmptyFilename() throws Exception {
-        this.hadoopFileSystemView.getFile("");
+        HadoopSshFile file = this.hadoopFileSystemView.getFile("");
+        FileSystem hadoopFS = FileSystem.get(
+                URI.create(this.conf.get("fs.default.name")),
+                           this.conf, this.userName);
+        String homePath = hadoopFS.getHomeDirectory().toString()
+                .replaceFirst(hadoopFS.getUri().toString(), "");
+        assertEquals(homePath, file.getAbsolutePath());
+        assertEquals(homePath.substring(homePath.lastIndexOf("/") + 1),
+                     file.getName());
     }
 
     @Test

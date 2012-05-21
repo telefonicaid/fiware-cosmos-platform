@@ -110,8 +110,9 @@ namespace samson {
             for ( it_queue = queue.begin() ; it_queue != queue.end() ; it_queue++ )
                 (*it_queue)->release();
             
-            // Remove elements calling delete to all of them ( Not that buffer inside packets are relased )
-            queue.clearList();
+            // Note that this is not clearList since elements should not be deleted
+            // We have a retain/release model over instances of Packet
+            queue.clear();
         }
         
         void pushTo( PacketQueue* target_packet_queue )

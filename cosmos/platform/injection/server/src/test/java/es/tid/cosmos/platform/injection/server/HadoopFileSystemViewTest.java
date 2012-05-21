@@ -31,7 +31,8 @@ public class HadoopFileSystemViewTest {
     }
 
     public void testGetFileWithEmptyFilename() throws Exception {
-        this.hadoopFileSystemView.getFile("");
+        HadoopSshFile file = this.hadoopFileSystemView.getFile("");
+        assertEquals("", file.getName());
     }
 
     @Test

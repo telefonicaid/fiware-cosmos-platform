@@ -15,8 +15,9 @@ import org.apache.sshd.server.FileSystemView;
  * @since  CTP 2
  */
 public class HadoopFileSystemFactory implements FileSystemFactory {
-    private final org.apache.log4j.Logger LOG =
+    private static final org.apache.log4j.Logger LOG =
             Logger.get(HadoopFileSystemFactory.class);
+
     private final Configuration configuration;
 
     public HadoopFileSystemFactory(Configuration configuration) {

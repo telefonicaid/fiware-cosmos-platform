@@ -11,7 +11,7 @@ import org.apache.hadoop.fs.*;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.AccessControlException;
-import org.apache.shd.server.SshFile;
+import org.apache.sshd.server.SshFile;
 
 import es.tid.cosmos.base.util.Logger;
 

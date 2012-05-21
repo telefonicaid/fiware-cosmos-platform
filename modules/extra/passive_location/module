@@ -362,7 +362,7 @@ script init_stream_operations
 
 		add_stream_operation  [update_tmsi]        passive_location.update_tmsi_imsi_table                  [tmsi_imsi] [tmsi_table]            [tmsi_table];
 		#set_stream_operation_property   [update_tmsi]  pl.tmps_age.timespan         86400;  # Keeping only mappings younger than 1 day (24 * 3600)
-		#add_stream_operation  [update_tmsi_new]    passive_location.update_tmsi_imsi_table_with_new_tmsi                  [new_tmsi] [tmsi_table]            [tmsi_table];
+		add_stream_operation  [update_tmsi_new]    passive_location.update_tmsi_imsi_table_with_new_tmsi                  [new_tmsi] [tmsi_table]            [tmsi_table];
 		#set_stream_operation_property   [update_tmsi_new]  pl.tmps_age.timespan         86400;  # Keeping only mappings younger than 1 day (24 * 3600)
 
 		add_stream_operation  [join_tmsi_imsi]    passive_location.reduce_user_imsi_by_tmsi        [records_imsi0] [tmsi_table]           [records],[records].bkup_tmsi [records_imsi0].reinjected [nouser_imsi_from_tmsi] -forward;
@@ -370,23 +370,24 @@ script init_stream_operations
 		set_stream_operation_property   [join_tmsi_imsi] pl.TMSI.timespan 3600; # Apply TMSI->IMSI only when closer than 1 hour
 		
 		add_stream_operation  [join_imsi_msisdn]   passive_location.reduce_user_msisdn_by_imsi     [records] [users_imsi]          [records_cell] [nouser_msisdn_from_imsi] -forward;
+		#imei field does not provide any further information when no imsi found
 		#add_stream_operation  [join_imei_msisdn]  passive_location.reduce_user_msisdn_by_imei     [nouser_imsi] [users_imei]         [records_cell] [records_noimsi_noimei] -forward;
 		
 		add_stream_operation  [get_cell_records]  passive_location.get_mobility_cell_records      [records_cell]              [redrecords],[redrecords].bkup;
 		add_stream_operation  [join_cells]        passive_location.reduce_cell_latitude_longitude [redrecords] [cells]     [redrecords_history],[redrecords_lkl],[redrecords_history].1,[redrecords_history].2,[redrecords_history].bkup [redrecords_nocell] -forward;
-		#add_stream_operation  [export_history]    passive_location.mongo_location_export          [redrecords_history];
-		#add_stream_operation  [export_lkl]        passive_location.mongo_location_export          [redrecords_lkl];
+		add_stream_operation  [export_history]    passive_location.mongo_location_export          [redrecords_history];
+		add_stream_operation  [export_lkl]        passive_location.mongo_location_export          [redrecords_lkl];
 
 		#set_stream_operation_property   [export_history]      mongo.ip                  samson05;  #TID's cluster
-		#set_stream_operation_property   [export_history]      mongo.ip                  localhost;  #PassiveLocation cluster
-		#set_stream_operation_property   [export_history]      mongo.db                  PassiveLocation;
-		#set_stream_operation_property   [export_history]      mongo.collection          History;
+		set_stream_operation_property   [export_history]      mongo.ip                  localhost;  #PassiveLocation cluster
+		set_stream_operation_property   [export_history]      mongo.db                  PassiveLocation;
+		set_stream_operation_property   [export_history]      mongo.collection          History;
 
 		#set_stream_operation_property   [export_lkl]  mongo.ip                  samson08;  #TID's cluster
-		#set_stream_operation_property   [export_lkl]  mongo.ip                  localhost; 	#PassiveLocation cluster	
-		#set_stream_operation_property   [export_lkl]  mongo.db                  PassiveLocation;
-		#set_stream_operation_property   [export_lkl]  mongo.collection          LastKnownLocation;
-		#set_stream_operation_property   [export_lkl]  mongo.history             0;
+		set_stream_operation_property   [export_lkl]  mongo.ip                  localhost; 	#PassiveLocation cluster	
+		set_stream_operation_property   [export_lkl]  mongo.db                  PassiveLocation;
+		set_stream_operation_property   [export_lkl]  mongo.collection          LastKnownLocation;
+		set_stream_operation_property   [export_lkl]  mongo.history             0;
 		
 		add_stream_operation [eval_location] passive_location.eval_location [redrecords_history].2 [loc_state]        [loc_commands],[loc_commands].bkup [loc_state];
 		#set_stream_operation_property [eval_location] pasloc.conf.ref_day 4400;

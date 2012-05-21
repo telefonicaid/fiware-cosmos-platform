@@ -88,14 +88,15 @@ def retrieve_results(job_id, primary_key=None):
     job = JobRun.objects.get(pk=job_id)
     try:
         connection = Connection(job.mongo_url())
-        db = connection[job.mongo_db()]
-        collection = db[job.mongo_collection()]
-        if primary_key is None:
-            primary_key = choose_default_primary_key(collection)
-        paginator = MongoPaginator(collection.find().sort(primary_key),
-                                   conf.RESULTS_PER_PAGE.get(),
-                                   primary_key)
-        connection.close()
-        return paginator
+        try:
+            db = connection[job.mongo_db()]
+            collection = db[job.mongo_collection()]
+            if primary_key is None:
+                primary_key = choose_default_primary_key(collection)
+            return MongoPaginator(collection.find().sort(primary_key),
+                                  conf.RESULTS_PER_PAGE.get(),
+                                  primary_key)
+        finally:
+            connection.close()
     except (AutoReconnect, ConnectionFailure):
         raise NoConnectionError

@@ -10,6 +10,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.MapJob;
+import es.tid.cosmos.base.mapreduce.MapReduceJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.mobility.util.*;
 
@@ -29,9 +30,11 @@ public final class AdjacentExtractionRunner {
         
         Path poisIdPath = new Path(tmpDirPath, "pois_id");
         {
-            MapJob job = MapJob.create(conf, "AdjAddUniqueIdPoiToPoiNew",
+            MapReduceJob job = MapReduceJob.create(conf,
+                    "AdjAddUniqueIdPoiToPoiNew",
                     SequenceFileInputFormat.class,
-                    AdjAddUniqueIdPoiToPoiNewMapper.class,
+                    AdjAddUniqueIdPoiMapper.class,
+                    AdjAddUniqueIdPoiToPoiNewReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestPath);
             FileOutputFormat.setOutputPath(job, poisIdPath);
@@ -40,9 +43,11 @@ public final class AdjacentExtractionRunner {
 
         Path poisTablePath = new Path(tmpDirPath, "pois_table");
         {
-            MapJob job = MapJob.create(conf, "AdjAddUniqueIdPoiToTwoInt",
+            MapReduceJob job = MapReduceJob.create(conf, 
+                    "AdjAddUniqueIdPoiToTwoInt",
                     SequenceFileInputFormat.class,
-                    AdjAddUniqueIdPoiToTwoIntMapper.class,
+                    AdjAddUniqueIdPoiMapper.class,
+                    AdjAddUniqueIdPoiToTwoIntReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestPath);
             FileOutputFormat.setOutputPath(job, poisTablePath);

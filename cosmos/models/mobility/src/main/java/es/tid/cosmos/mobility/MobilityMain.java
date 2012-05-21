@@ -229,7 +229,7 @@ public class MobilityMain extends Configured implements Tool {
             PopulationDensityProfileRunner.run(clientProfilePath,
                                                clientsInfoPath,
                                                populationDensityProfileOutPath,
-                                               tmpPopulationDensityPath,
+                                               tmpPopulationDensityProfilePath,
                                                isDebug, conf);
         }
         

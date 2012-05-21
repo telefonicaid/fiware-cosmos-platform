@@ -63,7 +63,7 @@ public class ItinGetItineraryReducer extends Reducer<
             }
             // Filter small movements
             for (int j = 0; j < peaksMoves.getComsCount(); j++) {
-                if (peaksMoves.getComs(j) < absMax * percAbsoluteMax / 100.0) {
+                if (peaksMoves.getComs(j) < absMax * percAbsoluteMax / 100.0D) {
                     peaksMoves.setComs(j, 0.0D);
                 }
             }
@@ -105,8 +105,9 @@ public class ItinGetItineraryReducer extends Reducer<
                     itin.setRangePeakInit(itin.getRangePeakInit() % 24);
                     itin.setRangePeakFin(itin.getRangePeakFin() % 24);
                     itin.setRangeFin(itin.getRangeFin() % 24);
+                    Itinerary.Builder itinFinal = itin.clone();
                     context.write(new LongWritable(moveRange.getNode()),
-                                  MobDataUtil.createAndWrap(itin.build()));
+                                  MobDataUtil.createAndWrap(itinFinal.build()));
                 }
             }
         }

@@ -1,18 +1,13 @@
 package es.tid.cosmos.platform.injection.server;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.URI;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.junit.Before;
 import org.junit.Test;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * HadoopFileSystemViewTest
@@ -29,7 +24,8 @@ public class HadoopFileSystemViewTest {
     public void setUp() throws Exception {
         this.userName = "test";
         this.conf = new Configuration();
-        this.hadoopFileSystemView = new HadoopFileSystemView(userName, conf);
+        this.hadoopFileSystemView = new HadoopFileSystemView(this.userName,
+                                                             this.conf);
     }
 
     @Test
@@ -60,9 +56,8 @@ public class HadoopFileSystemViewTest {
 
     @Test
     public void testRedirectionToHomePath() throws Exception {
-        Configuration conf = new Configuration();
-        FileSystem fs = FileSystem.get(URI.create(conf.get("fs.default.name")),
-                conf, "test");
+        FileSystem fs = FileSystem.get(URI.create(
+                this.conf.get("fs.default.name")), this.conf, "test");
         String homePath = fs.getHomeDirectory().toString().replaceFirst(
                 fs.getUri().toString(), "");
         HadoopSshFile init = this.hadoopFileSystemView.getFile(

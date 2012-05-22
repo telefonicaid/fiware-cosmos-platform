@@ -13,20 +13,17 @@ import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.SshFile;
 import org.junit.After;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
-import es.tid.cosmos.base.util.Logger;
 
 /**
  * @author logc
  */
 public class HadoopSshFileTest {
-    private final org.apache.log4j.Logger LOG = Logger.get(HadoopSshFileTest.class);
     private HadoopSshFile hfoo;
     private HadoopSshFile hdir;
     private FileSystem hadoopFS;
@@ -138,7 +135,6 @@ public class HadoopSshFileTest {
         // mismatch between HDFS and System.currentTimeMillis; we try to
         // write with more decimal places than can be read. What we can say is
         // that this difference has an upper limit.
-        //
         assertTrue(fixedTime - this.hfoo.getLastModified() < 1000);
     }
 
@@ -224,7 +220,7 @@ public class HadoopSshFileTest {
         outputStream.close();
         InputStream inputStream = this.hfoo.createInputStream(0);
         StringWriter writer = new StringWriter();
-        int byteRead = 0;
+        int byteRead;
         while ((byteRead = inputStream.read()) != -1) {
             writer.write(byteRead);
         }

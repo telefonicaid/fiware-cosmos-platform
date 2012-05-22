@@ -8,7 +8,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
@@ -19,12 +18,13 @@ import static junit.framework.Assert.assertTrue;
  * @since 15/05/12
  */
 public class FrontendPasswordTest {
+    private static final Logger LOG = LoggerFactory.getLogger(
+            FrontendPasswordTest.class);
+    
     private FrontendPassword instance;
     private String fileName;
     private String frontendDbUrl;
     private Connection connection;
-    private final Logger LOG = LoggerFactory.getLogger(
-            FrontendPasswordTest.class);
 
     @Before
     public void setUp() throws Exception {
@@ -45,16 +45,18 @@ public class FrontendPasswordTest {
                 "    \"password\" varchar(128) NOT NULL\n" +
                 ");";
         stat.executeUpdate(createStatement);
-        /* as dumped from frontend temporary database on 2012-05-15 with the
-         * following commands:
-         * > SELECT username, password FROM auth_user;
-         */
+        // as dumped from frontend temporary database on 2012-05-15 with the
+        // following commands:
+        // > SELECT username, password FROM auth_user;
         String usernameColContent1 = "test";
-        String passwordColContent1 = "sha1$a49dc$b234ed692454a6164983c3fae6d8b4ca0f69b219";
+        String passwordColContent1 =
+                "sha1$a49dc$b234ed692454a6164983c3fae6d8b4ca0f69b219";
         String usernameColContent2 = "testMd5";
-        String passwordColContent2 = "md5$a49dc$de03e38fd7240af348801f09ab2ed616";
+        String passwordColContent2 =
+                "md5$a49dc$de03e38fd7240af348801f09ab2ed616";
         String usernameColContent3 = "testSenselessContent";
-        String passwordColContent3 = "colt45$a49dc$de03e38fd7240af348801f09ab2ed616";
+        String passwordColContent3 =
+                "colt45$a49dc$de03e38fd7240af348801f09ab2ed616";
 
         this.insertIntoTestDb(usernameColContent1, passwordColContent1);
         this.insertIntoTestDb(usernameColContent2, passwordColContent2);
@@ -135,6 +137,7 @@ public class FrontendPasswordTest {
      * exception and do not allow to authenticate.
      * @throws Exception
      */
+    @Test
     public void testAuthenticationWhenDbConfigWrong() throws Exception {
         this.instance.setFrontendCredentials("jdbc:superdb:cosmos.db", "", "",
                 "");

@@ -47,7 +47,10 @@ public class ResultsPage {
                 .findElements(By.tagName("th"));
         List<String> keys = new ArrayList<String>(keysHtml.size());
         for (WebElement keyHtml : keysHtml) {
-            keys.add(keyHtml.getText());
+            final String key = keyHtml.getText();
+            if(!"_id".equals(key)) {
+                keys.add(keyHtml.getText());
+            }
         }
         
         // Get results

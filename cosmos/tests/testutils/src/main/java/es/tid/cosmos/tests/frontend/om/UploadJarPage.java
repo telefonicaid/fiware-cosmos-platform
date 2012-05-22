@@ -2,6 +2,7 @@ package es.tid.cosmos.tests.frontend.om;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -17,7 +18,8 @@ public class UploadJarPage {
     // HTML classes and ids
     public static final String JAR_FILE_HTML_ID = "id_hdfs_file";
     public static final String DATA_NAME_HTML_NAME = "dest";
-    public static final String ERROR_HTML_ID = "error";
+    public static final String ERROR_HTML_CLASS = "jframe-error-popup";
+    public static final String FORMERROR_HTML_CLASS = "errorlist";
     private static final String UTF8 = "UTF-8";
     private WebDriver driver;
     private final String uploadJarUrl;
@@ -64,9 +66,14 @@ public class UploadJarPage {
     }
 
     public String getErrorText() {
-        assertCorrectUrl();
         WebElement errorElement = this.driver.findElement(
-                By.id(ERROR_HTML_ID));
+                By.className(ERROR_HTML_CLASS));
+        return errorElement.getText();
+    }
+
+    public String getFormErrorText() {
+        WebElement errorElement = this.driver.findElement(
+                By.className(FORMERROR_HTML_CLASS));
         return errorElement.getText();
     }
 }

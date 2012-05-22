@@ -11,7 +11,6 @@ import org.junit.Test;
  * @author sortega
  */
 public class ConfigurationTest {
-
     @Test(expected = ConfigurationException.class)
     public void shouldThrowExceptionWhenNotFound() throws Exception {
         new Configuration(getClass().getResource("/not/existing"));

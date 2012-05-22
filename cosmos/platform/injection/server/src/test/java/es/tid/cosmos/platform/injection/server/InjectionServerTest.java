@@ -2,8 +2,8 @@ package es.tid.cosmos.platform.injection.server;
 
 import java.io.File;
 
-import org.junit.*;
 import static junit.framework.Assert.assertTrue;
+import org.junit.*;
 
 /**
  * InjectionServerTest
@@ -20,11 +20,6 @@ public class InjectionServerTest {
                 InjectionServerMain.class
                         .getResource("/injection_server.dev.properties"));
         this.instance = new InjectionServer(configuration);
-    }
-
-    @After
-    public void tearDown() throws Exception {
-
     }
 
     @Test

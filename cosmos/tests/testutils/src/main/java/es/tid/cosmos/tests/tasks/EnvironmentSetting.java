@@ -9,6 +9,7 @@ public enum EnvironmentSetting {
     FrontendHttpPort,
     FrontendThriftPort,
     SftpUrl,
+    SftpPort,
     DefaultUser,
     DefaultPassword,
     CosmosRelativeUrl

@@ -44,9 +44,10 @@ public class SftpIT {
 
     public void testFileUploadOverwrite() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
+        final String fileName = "testFileUpload";
         try {
-            this.putAndVerifyFile(session, "testFileUpload", new Data(5));
-            this.putAndVerifyFile(session, "testFileUpload", new Data(8));
+            this.putAndVerifyFile(session, fileName, new Data(5));
+            this.putAndVerifyFile(session, fileName, new Data(8));
         } finally {
             session.disconnect();
         }
@@ -118,12 +119,13 @@ public class SftpIT {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
         final String dirName = "myDummyDir";
+        final String fileName = "testEscapedUpload";
         try {
             Data data = new Data(Byte.MAX_VALUE / 4);
             sftpChannel.mkdir(dirName);
-            this.putFile(sftpChannel, dirName + "/../testEscapedUpload", data);
-            this.verifyFile(sftpChannel, dirName + "/../testEscapedUpload", data);
-            this.verifyFile(sftpChannel, "testEscapedUpload", data);
+            this.putFile(sftpChannel, dirName + "/../" + fileName, data);
+            this.verifyFile(sftpChannel, dirName + "/../" + fileName, data);
+            this.verifyFile(sftpChannel, fileName, data);
             sftpChannel.rmdir(dirName);
         } finally {
             sftpChannel.exit();
@@ -181,7 +183,8 @@ public class SftpIT {
         }
     }
 
-    @Test(expectedExceptions = JSchException.class)
+    @Test(expectedExceptions = JSchException.class,
+          description="Verify existing user cannot log in with bad password")
     public void testUserAuth1() throws Exception {
         CosmosSftp.createSession(
                 this.env,
@@ -189,27 +192,32 @@ public class SftpIT {
                 "BadPassword");
     }
 
-    @Test(expectedExceptions = JSchException.class)
+    @Test(expectedExceptions = JSchException.class,
+          description="Verify non-existing user cannot log in")
     public void testUserAuth2() throws Exception {
         CosmosSftp.createSession(this.env, "BadUser", "BadPassword");
     }
 
-    @Test(expectedExceptions = JSchException.class)
+    @Test(expectedExceptions = JSchException.class,
+          description="Verify root does not have easy passowrd")
     public void testUserAuth3() throws Exception {
         CosmosSftp.createSession(this.env, "root", "root");
     }
 
-    @Test(expectedExceptions = JSchException.class)
+    @Test(expectedExceptions = JSchException.class,
+          description="Verify root does not have easy passowrd")
     public void testUserAuth4() throws Exception {
         CosmosSftp.createSession(this.env, "root", "1234");
     }
 
-    @Test(expectedExceptions = JSchException.class)
+    @Test(expectedExceptions = JSchException.class,
+          description="Verify default clouder user/pass does not exist")
     public void testUserAuth5() throws Exception {
         CosmosSftp.createSession(this.env, "cloudera", "cloudera");
     }
 
-    @Test(expectedExceptions = JSchException.class)
+    @Test(expectedExceptions = JSchException.class,
+          description="Verify admin does not have easy passowrd")
     public void testUserAuth6() throws Exception {
         CosmosSftp.createSession(this.env, "admin", "admin");
     }

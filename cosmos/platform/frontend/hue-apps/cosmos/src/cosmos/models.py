@@ -61,6 +61,10 @@ class JobRun(models.Model):
         else:
             return STATE_NAMES[self.submission.last_seen_state]
 
+    def is_final(self):
+        return (self.submission is None or
+                self.submission.last_seen_state > 2)
+
     def action_links(self):
         """
         Creates a vector of links to actions related to the job run.

@@ -24,11 +24,13 @@ DEFAULT_PAGE = 1
 def refresh_state(job_run):
     """Poll the helper Java process for a fresh state."""
 
+    if job_run.is_final():
+        return
+
     submission = job_run.submission
-    if submission is not None:
-        job_data = jobsub.get_client().get_job_data(submission.submission_handle)
-        submission.last_seen_state = job_data.state
-        submission.save()
+    job_data = jobsub.get_client().get_job_data(submission.submission_handle)
+    submission.last_seen_state = job_data.state
+    submission.save()
 
 
 def index(request):

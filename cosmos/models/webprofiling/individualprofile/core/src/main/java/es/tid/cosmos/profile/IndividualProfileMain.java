@@ -44,8 +44,8 @@ public class IndividualProfileMain extends Configured implements Tool {
     private static final String CATEGORIES_DIR = "categories";
     private static final String PROFILE_DIR = "profile";
 
-    private Path profilePath;
     private Path categoriesPath;
+    private Path profilePath;
 
     @Override
     public int run(String[] args) throws Exception {

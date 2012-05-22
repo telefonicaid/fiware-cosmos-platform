@@ -1,4 +1,4 @@
-package es.tid.cosmos.samples.wordcount.export.mongodb;
+package es.tid.cosmos.samples.wordcount;
 
 import java.io.IOException;
 
@@ -10,8 +10,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-
-import es.tid.cosmos.samples.wordcount.WordCountMain;
 
 /**
  * Export user profiles to mongodb

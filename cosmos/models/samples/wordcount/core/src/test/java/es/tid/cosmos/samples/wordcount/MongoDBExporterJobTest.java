@@ -1,4 +1,4 @@
-package es.tid.cosmos.samples.wordcount.export.mongodb;
+package es.tid.cosmos.samples.wordcount;
 
 import java.io.IOException;
 

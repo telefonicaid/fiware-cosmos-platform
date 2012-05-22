@@ -44,9 +44,10 @@ public class SftpIT {
 
     public void testFileUploadOverwrite() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
+        final String fileName = "testFileUpload";
         try {
-            this.putAndVerifyFile(session, "testFileUpload", new Data(5));
-            this.putAndVerifyFile(session, "testFileUpload", new Data(8));
+            this.putAndVerifyFile(session, fileName, new Data(5));
+            this.putAndVerifyFile(session, fileName, new Data(8));
         } finally {
             session.disconnect();
         }
@@ -58,6 +59,9 @@ public class SftpIT {
         try {
             this.putAndVerifyFile(session, "../testOutOfDirectoryUpload",
                                   new Data(1));
+        } catch (SftpException e) {
+            assertEquals(e.id, ChannelSftp.SSH_FX_PERMISSION_DENIED);
+            throw e;
         } finally {
             session.disconnect();
         }
@@ -75,6 +79,9 @@ public class SftpIT {
                     session,
                     this.getDefaultDir() + "/../testOutOfDirectoryUpload",
                     new Data(1));
+        } catch (SftpException e) {
+            assertEquals(e.id, ChannelSftp.SSH_FX_PERMISSION_DENIED);
+            throw e;
         } finally {
             session.disconnect();
         }
@@ -88,6 +95,9 @@ public class SftpIT {
                     session,
                     "/testOutOfDirectoryUpload",
                     new Data(1));
+        } catch (SftpException e) {
+            assertEquals(e.id, ChannelSftp.SSH_FX_PERMISSION_DENIED);
+            throw e;
         } finally {
             session.disconnect();
         }
@@ -108,13 +118,14 @@ public class SftpIT {
     public void testFileUploadWithEscaping2() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
-        final String dirName = "myDumyDir";
+        final String dirName = "myDummyDir";
+        final String fileName = "testEscapedUpload";
         try {
             Data data = new Data(Byte.MAX_VALUE / 4);
             sftpChannel.mkdir(dirName);
-            this.putFile(sftpChannel, dirName + "../testEscapedUpload", data);
-            this.verifyFile(sftpChannel, dirName + "../testEscapedUpload", data);
-            this.verifyFile(sftpChannel, "testEscapedUpload", data);
+            this.putFile(sftpChannel, dirName + "/../" + fileName, data);
+            this.verifyFile(sftpChannel, dirName + "/../" + fileName, data);
+            this.verifyFile(sftpChannel, fileName, data);
             sftpChannel.rmdir(dirName);
         } finally {
             sftpChannel.exit();
@@ -123,12 +134,36 @@ public class SftpIT {
     }
 
     @Test(expectedExceptions = SftpException.class)
-    public void testListRoot() throws Exception {
+    public void testRemoveDirAsFile() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
+        final String dirName = "test";
         try {
-            sftpChannel.ls("/");
+            sftpChannel.mkdir(dirName);
+            sftpChannel.rm(dirName);
+        } catch (SftpException e) {
+            assertEquals(e.id, ChannelSftp.SSH_FX_NO_SUCH_FILE);
+            throw e;
         } finally {
+            sftpChannel.rmdir(dirName);
+            sftpChannel.exit();
+            session.disconnect();
+        }
+    }
+
+    @Test(expectedExceptions = SftpException.class)
+    public void testRemoveFileAsDir() throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
+        final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
+        final String fileName = "testFile";
+        try {
+            this.putFile(sftpChannel, fileName, new Data(10));
+            sftpChannel.rmdir(fileName);
+        } catch (SftpException e) {
+            assertEquals(e.id, ChannelSftp.SSH_FX_NO_SUCH_FILE);
+            throw e;
+        } finally {
+            sftpChannel.rm(fileName);
             sftpChannel.exit();
             session.disconnect();
         }
@@ -139,13 +174,17 @@ public class SftpIT {
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
         try {
             assertEquals(sftpChannel.pwd(), this.getDefaultDir());
+            sftpChannel.cd("/");
+            sftpChannel.cd(sftpChannel.getHome());
+            assertEquals(sftpChannel.pwd(), this.getDefaultDir());
         } finally {
             sftpChannel.exit();
             session.disconnect();
         }
     }
 
-    @Test(expectedExceptions = JSchException.class)
+    @Test(expectedExceptions = JSchException.class,
+          description="Verify existing user cannot log in with bad password")
     public void testUserAuth1() throws Exception {
         CosmosSftp.createSession(
                 this.env,
@@ -153,25 +192,40 @@ public class SftpIT {
                 "BadPassword");
     }
 
-    @Test(expectedExceptions = JSchException.class)
+    @Test(expectedExceptions = JSchException.class,
+          description="Verify non-existing user cannot log in")
     public void testUserAuth2() throws Exception {
         CosmosSftp.createSession(this.env, "BadUser", "BadPassword");
     }
 
-    @Test(expectedExceptions = JSchException.class)
+    @Test(expectedExceptions = JSchException.class,
+          description="Verify root does not have easy passowrd")
     public void testUserAuth3() throws Exception {
         CosmosSftp.createSession(this.env, "root", "root");
     }
 
-    @Test(expectedExceptions = JSchException.class)
+    @Test(expectedExceptions = JSchException.class,
+          description="Verify root does not have easy passowrd")
     public void testUserAuth4() throws Exception {
         CosmosSftp.createSession(this.env, "root", "1234");
     }
 
-    public void testDirCommands() throws Exception {
+    @Test(expectedExceptions = JSchException.class,
+          description="Verify default clouder user/pass does not exist")
+    public void testUserAuth5() throws Exception {
+        CosmosSftp.createSession(this.env, "cloudera", "cloudera");
+    }
+
+    @Test(expectedExceptions = JSchException.class,
+          description="Verify admin does not have easy passowrd")
+    public void testUserAuth6() throws Exception {
+        CosmosSftp.createSession(this.env, "admin", "admin");
+    }
+
+    public void testDirCommands1() throws Exception {
         final Session session = CosmosSftp.createSession(this.env);
         final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
-        final String dirName = "myTempDir";
+        final String dirName = "myTempDir..";
         try {
             sftpChannel.mkdir(dirName);
             sftpChannel.cd(dirName);
@@ -181,8 +235,23 @@ public class SftpIT {
                 assertTrue(entry.getLongname().contains("rw"),
                            "Verifying ls returns permissions data");
             }
-            sftpChannel.cd("..");
+        } finally {
+            sftpChannel.cd(sftpChannel.getHome());
             sftpChannel.rmdir(dirName);
+            sftpChannel.exit();
+            session.disconnect();
+        }
+    }
+
+    @Test(expectedExceptions = SftpException.class)
+    public void testDirCommands2() throws Exception {
+        final Session session = CosmosSftp.createSession(this.env);
+        final ChannelSftp sftpChannel = CosmosSftp.connectToSftp(session);
+        try {
+            sftpChannel.cd("/I_dont_exist");
+        } catch (SftpException e) {
+            assertEquals(e.id, ChannelSftp.SSH_FX_NO_SUCH_FILE);
+            throw e;
         } finally {
             sftpChannel.exit();
             session.disconnect();
@@ -219,7 +288,9 @@ public class SftpIT {
 
         try {
             final String currentDir = sftpChannel.pwd();
-            final String filePath = currentDir + Path.SEPARATOR + fileName;
+            final String filePath = (fileName.startsWith(Path.SEPARATOR))
+                    ? fileName
+                    : currentDir + Path.SEPARATOR + fileName;
 
             this.putFile(sftpChannel, filePath, data);
             this.verifyFile(sftpChannel, filePath, data);

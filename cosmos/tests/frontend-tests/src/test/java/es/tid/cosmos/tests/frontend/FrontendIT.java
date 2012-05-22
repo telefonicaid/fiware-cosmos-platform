@@ -35,15 +35,16 @@ import es.tid.cosmos.tests.tasks.TaskStatus;
 @Test(singleThreaded = true)
 public class FrontendIT {
     private static final String SIMPLE_TEXT = "Very simple text file";
+    private static final String WHITESPACE_TEXT = "   \t\n    ";
     private static final String PRIMES_TEXT = "2 3 4 5 6 7 8 9 123\n19283";
     private static final int TASK_COUNT = 4;
-    
     private FrontEnd frontend;
     private String wordcountHdfsPath;
     private String mapperFailHdfsPath;
     private String printPrimesHdfsPath;
     private String invalidJarHdfsPath;
     private String simpleTextHdfsPath;
+    private String whitespaceTextHdfsPath;
 
     @Parameters("environment")
     @BeforeClass
@@ -56,19 +57,20 @@ public class FrontendIT {
         this.printPrimesHdfsPath = this.ensureJar(
                 HadoopJars.getPath(JarNames.PrintPrimes));
         this.invalidJarHdfsPath = this.ensureJar(
-                FrontendIT.createAutoDeleteFile("Invalid Jar"));
+                FrontendIT.createAutoDeleteFile("Invalid Jar", ".jar"));
         this.simpleTextHdfsPath = this.ensureData(
                 FrontendIT.createAutoDeleteFile(SIMPLE_TEXT));
+        this.whitespaceTextHdfsPath = this.ensureData(
+                FrontendIT.createAutoDeleteFile(WHITESPACE_TEXT));
     }
 
     private static String ensureJar(FrontEnd frontend, String localPath) {
-        final String username = frontend.getUsername();
-        if (!FrontEndTask.jarExists(frontend.getEnvironment(), username,
-                                    localPath)) {
+        final String fileName = new File(localPath).getName();
+        if (!FrontEndTask.jarExists(frontend, fileName)) {
             FrontEndTask.uploadJar(frontend, localPath);
         }
 
-        return FrontEndTask.getJarHdfsPath(username, localPath);
+        return FrontEndTask.getJarHdfsPath(frontend.getUsername(), fileName);
     }
 
     private String ensureJar(String localPath) {
@@ -76,13 +78,12 @@ public class FrontendIT {
     }
 
     private static String ensureData(FrontEnd frontend, String localPath) {
-        final String username = frontend.getUsername();
-        if (!FrontEndTask.dataSetExists(frontend.getEnvironment(), username,
-                                        localPath)) {
+        final String fileName = new File(localPath).getName();
+        if (!FrontEndTask.dataSetExists(frontend, fileName)) {
             FrontEndTask.uploadData(frontend, localPath);
         }
 
-        return FrontEndTask.getDataHdfsPath(username, localPath);
+        return FrontEndTask.getDataHdfsPath(frontend.getUsername(), fileName);
     }
 
     private String ensureData(String localPath) {
@@ -112,13 +113,20 @@ public class FrontendIT {
         }
     }
 
+    public void verifyFeedbackLink() {
+        this.frontend.gotoHueHome();
+        WebDriver driver = this.frontend.getDriver();
+        WebElement link = driver.findElement(By.id("hue-feedback"));
+        assertEquals(link.getAttribute("href"), "mailto:cosmos@tid.es");
+    }
+
     private void verifyLinks() {
         WebDriver driver = this.frontend.getDriver();
         List<WebElement> links = driver.findElements(By.tagName("a"));
         try {
             for (WebElement link : links) {
                 String verbatimUrl = link.getAttribute("href");
-                if (verbatimUrl.startsWith("javascript")) {
+                if (verbatimUrl == null || verbatimUrl.startsWith("javascript")) {
                     return;
                 }
                 String linkUrl = this.frontend.resolveURL(verbatimUrl).toString();
@@ -138,36 +146,59 @@ public class FrontendIT {
     }
 
     public void testUploadJarNoFile() {
-        UploadJarPage uploadJarPage = this.frontend.goToUploadJar();
+        UploadPage uploadPage = this.frontend.goToUpload();
+        UploadJarPage uploadJarPage = uploadPage.goToUploadJar();
         uploadJarPage.submitForm();
-        assertTrue(uploadJarPage.getErrorText().contains("empty"),
+        assertTrue(uploadJarPage.getFormErrorText().contains("required"),
                    "Verifying page errors if no file is submitted");
     }
 
     public void testUploadJarExistingFile() throws IOException {
         String localTmpFile = FrontendIT.createAutoDeleteFile(SIMPLE_TEXT);
         this.ensureJar(localTmpFile);
-        UploadJarPage uploadJarPage = this.frontend.goToUploadJar();
+        UploadPage uploadPage = this.frontend.goToUpload();
+        verifyLinks();
+        UploadJarPage uploadJarPage = uploadPage.goToUploadJar();
+        verifyLinks();
+        uploadJarPage.setName(new File(localTmpFile).getName());
         uploadJarPage.setJarFile(localTmpFile);
         uploadJarPage.submitForm();
-        assertTrue(uploadJarPage.getErrorText().contains("exists"),
+        assertTrue(uploadJarPage.getErrorText().contains("rename"),
+                   "Verifying page errors if file already exists");
+    }
+
+    public void testUploadJarSubDirectory() throws IOException {
+        String localTmpFile = FrontendIT.createAutoDeleteFile(SIMPLE_TEXT);
+        UploadPage uploadPage = this.frontend.goToUpload();
+        verifyLinks();
+        UploadJarPage uploadJarPage = uploadPage.goToUploadJar();
+        verifyLinks();
+        uploadJarPage.setName("sub/" + new File(localTmpFile).getName());
+        uploadJarPage.setJarFile(localTmpFile);
+        uploadJarPage.submitForm();
+        assertTrue(uploadJarPage.getErrorText().contains("rename"),
                    "Verifying page errors if file already exists");
     }
 
     public void testUploadDataNoFile() {
-        UploadDataPage uploadDataPage = this.frontend.goToUploadData();
+        UploadPage uploadPage = this.frontend.goToUpload();
+        UploadDataPage uploadDataPage = uploadPage.goToUploadData();
         uploadDataPage.submitForm();
-        assertTrue(uploadDataPage.getErrorText().contains("empty"),
+        assertTrue(uploadDataPage.getFormErrorText().contains("required"),
                    "Verifying page errors if no file is submitted");
     }
 
     public void testUploadDataExistingFile() throws IOException {
         String localTmpFile = FrontendIT.createAutoDeleteFile(SIMPLE_TEXT);
         this.ensureData(localTmpFile);
-        UploadDataPage uploadDataPage = this.frontend.goToUploadData();
+        UploadPage uploadPage = this.frontend.goToUpload();
+        verifyLinks();
+        UploadDataPage uploadDataPage = uploadPage.goToUploadData();
+        uploadDataPage.setName(new File(localTmpFile).getName());
+        verifyLinks();
         uploadDataPage.setDataFile(localTmpFile);
         uploadDataPage.submitForm();
-        assertTrue(uploadDataPage.getErrorText().contains("exists"),
+        assertTrue(uploadDataPage.getErrorText().contains("rename"),
                    "Verifying page errors if file already exists");
     }
 
@@ -247,11 +278,11 @@ public class FrontendIT {
             rbc.close();
             fos.close();
         }
-
         // Submit job with sample JAR
+        String hdfsSamplePath = FrontendIT.ensureJar(this.frontend, jarName);
         Task task = new FrontEndTask(this.frontend.getEnvironment(),
                                      this.simpleTextHdfsPath,
-                                     jarName);
+                                     hdfsSamplePath);
         task.run();
         task.waitForCompletion();
         assertEquals(task.getStatus(),
@@ -271,9 +302,9 @@ public class FrontendIT {
                 "Verifying restrictions mention the Tool interface");
     }
 
-    private static String createAutoDeleteFile(String text)
+    private static String createAutoDeleteFile(String text, String extension)
             throws IOException {
-        File tmpFile = File.createTempFile("webui-", ".tmp");
+        File tmpFile = File.createTempFile("webui-", extension);
         tmpFile.deleteOnExit();
 
         PrintWriter writer = new PrintWriter(tmpFile);
@@ -286,6 +317,11 @@ public class FrontendIT {
         return tmpFile.getAbsolutePath();
     }
 
+    private static String createAutoDeleteFile(String text)
+            throws IOException {
+        return createAutoDeleteFile(text, ".tmp");
+    }
+
     public void testSimpleTask() throws IOException {
         Task task = new FrontEndTask(this.frontend.getEnvironment(),
                                      this.simpleTextHdfsPath,
@@ -296,6 +332,20 @@ public class FrontendIT {
                      TaskStatus.Completed,
                      "Verifying task completed successfully. Task: " + task);
         task.getResults();     // Just verifying results can be accessed
+    }
+
+    public void testNoResultsTask() throws IOException {
+        Task task = new FrontEndTask(this.frontend.getEnvironment(),
+                                     this.whitespaceTextHdfsPath,
+                                     this.wordcountHdfsPath);
+        task.run();
+        task.waitForCompletion();
+        assertEquals(task.getStatus(),
+                     TaskStatus.Completed,
+                     "Verifying task completed successfully. Task: " + task);
+        List<Map<String, String>> results = task.getResults();
+        assertEquals(results.size(), 0,
+                     "Verifying no results have been generated");
     }
 
     public void testParallelTasks() throws IOException {
@@ -343,8 +393,8 @@ public class FrontendIT {
                    "Verifying task is in running or error state."
                 + " Task: " + task);
         task.waitForCompletion();
-        assertTrue(task.getStatus() == TaskStatus.Error,
-                   "Verifying task is in error state."
+        assertEquals(task.getStatus(), TaskStatus.Error,
+                     "Verifying task is in error state."
                 + " Task: " + task);
         verifyLinks();
     }
@@ -360,8 +410,8 @@ public class FrontendIT {
                    "Verifying task is in running or error state."
                 + " Task: " + task);
         task.waitForCompletion();
-        assertTrue(task.getStatus() == TaskStatus.Error,
-                   "Verifying task is in error state."
+        assertEquals(task.getStatus(), TaskStatus.Error,
+                     "Verifying task is in error state."
                 + " Task: " + task);
         verifyLinks();
     }
@@ -379,8 +429,8 @@ public class FrontendIT {
                    "Verifying task is in running or completed state."
                 + " Task: " + task);
         task.waitForCompletion();
-        assertTrue(task.getStatus() == TaskStatus.Completed,
-                   "Verifying task is in the completed state."
+        assertEquals(task.getStatus(), TaskStatus.Completed,
+                     "Verifying task is in the completed state."
                 + " Task: " + task);
         verifyLinks();
         List<Map<String, String>> results = task.getResults();
@@ -388,27 +438,5 @@ public class FrontendIT {
                      "[2, 3, 5, 7]",
                      "Verifying result is correct");
 
-    }
-
-    public void testDotsInName() throws IOException {
-        final String taskIdPrefix = "../1|<b>W</b>._1!!&nbsp;%20~€";
-        final String user = "test@.2";
-        final String password = "cosmostest@.2";
-        String taskId = taskIdPrefix + UUID.randomUUID().toString().substring(25);
-        FrontEnd front = new FrontEnd(this.frontend.getEnvironment(),
-                                      user, password);
-        final String inputHdfsPath = FrontendIT.ensureData(
-                front, FrontendIT.createAutoDeleteFile(PRIMES_TEXT));
-        String jarHdfsPath = FrontendIT.ensureJar(
-                front, HadoopJars.getPath(JarNames.PrintPrimes));
-        Task task = new FrontEndTask(front, inputHdfsPath, jarHdfsPath,
-                                     taskId);
-        task.run();
-        task.waitForCompletion();
-        assertTrue(task.getStatus() == TaskStatus.Completed,
-                   "Verifying task is in the completed state."
-                + " TaskId: " + taskId);
-        verifyLinks();
-        List<Map<String, String>> results = task.getResults();
     }
 }

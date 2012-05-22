@@ -24,7 +24,7 @@ DEFAULT_PAGE = 1
 def refresh_state(job_run):
     """Poll the helper Java process for a fresh state."""
 
-    if job_run.is_final():
+    if job_run.in_final_state():
         return
 
     submission = job_run.submission

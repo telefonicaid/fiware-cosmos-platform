@@ -61,7 +61,7 @@ class JobRun(models.Model):
         else:
             return STATE_NAMES[self.submission.last_seen_state]
 
-    def is_final(self):
+    def in_final_state(self):
         return (self.submission is None or
                 self.submission.last_seen_state > 2)
 

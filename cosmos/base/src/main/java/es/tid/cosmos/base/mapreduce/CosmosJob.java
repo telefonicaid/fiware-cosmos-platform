@@ -88,7 +88,7 @@ public abstract class CosmosJob extends Job {
      * @throws JobExecutionException
      */
     @Override
-    public final boolean waitForCompletion(boolean verbose)
+    public synchronized final boolean waitForCompletion(boolean verbose)
             throws IOException, InterruptedException, ClassNotFoundException {
         for (CosmosJob dependency : this.dependencies) {
             dependency.internalSubmit();

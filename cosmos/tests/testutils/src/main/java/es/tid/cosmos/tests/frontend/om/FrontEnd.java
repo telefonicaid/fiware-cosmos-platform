@@ -25,9 +25,9 @@ import es.tid.cosmos.tests.tasks.TestException;
 public class FrontEnd {
     // HTML classes and ids
     public static final String UPLOAD_CLASS = "cos-upload_nav";
-    public static final String CREATE_JOB_CLASS = "cos-runjob";
+    public static final String CREATE_JOB_CLASS = "cos-run_job_nav";
     public static final String TASK_STATUS_TABLE_CLASS = "job-listing";
-    public static final String JOB_ACTION_CLASS = "job-actions";
+    public static final String JOB_ACTION_CLASS = "job-action";
     public static final String RESULT_ACTION_CLASS = "results";
     public static final String RESULT_NAME_CLASS = "job-name";
     public static final String RESULT_STATUS_CLASS = "job-status";
@@ -134,11 +134,11 @@ public class FrontEnd {
 
         String statusText = row.findElement(
                 By.className(RESULT_STATUS_CLASS)).getText();
-        if (statusText.equals("Running")) {
+        if (statusText.equals("running")) {
             return TaskStatus.Running;
-        } else if (statusText.equals("Successful")) {
+        } else if (statusText.equals("successful")) {
             return TaskStatus.Completed;
-        } else if (statusText.equals("Failed")) {
+        } else if (statusText.equals("failed")) {
             return TaskStatus.Error;
         } else {
             throw new IllegalStateException("Task does not have a known state."

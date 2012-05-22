@@ -35,6 +35,7 @@ import es.tid.cosmos.tests.tasks.TaskStatus;
 @Test(singleThreaded = true)
 public class FrontendIT {
     private static final String SIMPLE_TEXT = "Very simple text file";
+    private static final String WHITESPACE_TEXT = "   \t\n    ";
     private static final String PRIMES_TEXT = "2 3 4 5 6 7 8 9 123\n19283";
     private static final int TASK_COUNT = 4;
     private FrontEnd frontend;
@@ -43,6 +44,7 @@ public class FrontendIT {
     private String printPrimesHdfsPath;
     private String invalidJarHdfsPath;
     private String simpleTextHdfsPath;
+    private String whitespaceTextHdfsPath;
 
     @Parameters("environment")
     @BeforeClass
@@ -58,6 +60,8 @@ public class FrontendIT {
                 FrontendIT.createAutoDeleteFile("Invalid Jar", ".jar"));
         this.simpleTextHdfsPath = this.ensureData(
                 FrontendIT.createAutoDeleteFile(SIMPLE_TEXT));
+        this.whitespaceTextHdfsPath = this.ensureData(
+                FrontendIT.createAutoDeleteFile(WHITESPACE_TEXT));
     }
 
     private static String ensureJar(FrontEnd frontend, String localPath) {
@@ -328,6 +332,20 @@ public class FrontendIT {
                      TaskStatus.Completed,
                      "Verifying task completed successfully. Task: " + task);
         task.getResults();     // Just verifying results can be accessed
+    }
+
+    public void testNoResultsTask() throws IOException {
+        Task task = new FrontEndTask(this.frontend.getEnvironment(),
+                                     this.whitespaceTextHdfsPath,
+                                     this.wordcountHdfsPath);
+        task.run();
+        task.waitForCompletion();
+        assertEquals(task.getStatus(),
+                     TaskStatus.Completed,
+                     "Verifying task completed successfully. Task: " + task);
+        List<Map<String, String>> results = task.getResults();
+        assertEquals(results.size(), 0,
+                     "Verifying no results have been generated");
     }
 
     public void testParallelTasks() throws IOException {

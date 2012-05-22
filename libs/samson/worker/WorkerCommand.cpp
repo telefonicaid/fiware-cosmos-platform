@@ -800,6 +800,15 @@ typedef struct LogLineInfo
             return;
         }
         
+        if( main_command == "ls_pop_connections" )
+        {
+            network::Collection * c = streamManager->getCollectionForPopConnections(&visualitzation);
+            c->set_title( command  );
+            collections.push_back( c );
+            finishWorkerTask();
+            return;
+        }
+        
         if( main_command == "ls_stream_operations" )
         {
             network::Collection * c = streamManager->getCollectionForStreamOperations( visualitzation_options,pattern );

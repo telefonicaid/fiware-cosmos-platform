@@ -127,7 +127,7 @@ namespace samson {
             void flushBuffers();
             
             // ------------------------------------------------------------
-            // pop queue operations
+            // pop and stream out from queue 
             // ------------------------------------------------------------
             
             // Add a pop queue operation
@@ -137,6 +137,9 @@ namespace samson {
             void connect_to_queue( size_t fromId , std::string queue , bool flag_new , bool flag_remove );
             void disconnect_from_queue( size_t fromId , std::string queue );
 
+            // Notification of a disconnected delilah
+            void notify_delilah_disconnection( size_t delilah_id );
+            
             // ------------------------------------------------------------
             // Operations over stream operations
             // ------------------------------------------------------------
@@ -153,7 +156,7 @@ namespace samson {
             
             void add_queue_connection( std::string source_queue , std::string target_queue );
             void remove_queue_connection( std::string source_queue , std::string target_queue );
-            
+
             
             // Get information for monitoring
             void getInfo( std::ostringstream& output);
@@ -179,6 +182,7 @@ namespace samson {
             samson::network::Collection* getCollectionForStreamOperations(VisualitzationOptions options ,  std::string pattern );
             samson::network::Collection* getCollectionForQueueConnections( Visualization* visualizaton );
             samson::network::Collection* getCollectionForStreamBlock( std::string path , Visualization* visualizaton );
+            samson::network::Collection* getCollectionForPopConnections( Visualization* visualizaton );
             
             
             // Get a pointer to a particular queue

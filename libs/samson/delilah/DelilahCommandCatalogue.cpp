@@ -305,6 +305,10 @@ namespace samson
             "disconnect_from_queue queue"
             );
         
+        add( "ls_pop_connections" , "push&pop"  
+            , "Show a list of connections to receive live data from SAMSON."
+            , "ls_pop_connections" );
+        
         
         add("ls_local_queues", "push&pop", 
             "Show a list of local queues ( current directory ).");

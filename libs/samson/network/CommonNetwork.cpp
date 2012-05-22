@@ -14,6 +14,8 @@ namespace samson {
     void CommonNetwork::notify( engine::Notification* notification )
     {
         
+        LM_T( LmtNetworkConnection , ("Review common network..." ));
+        
         if (notification == NULL)
             LM_D(("notification == NULL"));
 
@@ -66,6 +68,14 @@ namespace samson {
                     int port = nodes[i]->port;
                     size_t worker_id = nodes[i]->id;
 
+                    LM_T( LmtNetworkConnection , ("Worker %lu ( %s ) not connected. Trying to connect to %s:%d..."
+                                                  , worker_id
+                                                  , name.c_str()
+                                                  , host.c_str()
+                                                  , port
+                                                  ));
+                    
+                    
                     addWorkerConnection(worker_id, host, port);
                 }
                 

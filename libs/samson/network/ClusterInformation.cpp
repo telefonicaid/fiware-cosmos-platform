@@ -50,6 +50,8 @@ namespace samson {
         }
     }
     
+
+    
     std::string ClusterNode::str()
     {
         std::ostringstream output;

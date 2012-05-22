@@ -89,6 +89,15 @@ namespace samson {
             return 2;   // Just for testing...
         }
         
+        void StreamManager::notify_delilah_disconnection( size_t delilah_id )
+        {
+            // Notification to be removed "notification_network_diconnected"
+            StreamOutConnection* stream_out = stream_out_connections.extractFromMap( delilah_id );
+            if( stream_out ) 
+                delete stream_out;
+        }
+
+        
         void StreamManager::notify( engine::Notification* notification )
         {
             
@@ -101,13 +110,6 @@ namespace samson {
                 return;
             }
             
-            if( notification->isName( notification_network_diconnected ) )
-            {
-                int id = notification->environment.getInt("id",-1);
-                //LM_M(("Removing stream out queue for id %d", id ));
-                stream_out_connections.removeInMap( id );
-                return;
-            }
             
             if ( notification->isName(notification_review_stream_manager_fast) )
             {
@@ -884,6 +886,21 @@ namespace samson {
             }
         }
         
+        samson::network::Collection* StreamManager::getCollectionForPopConnections( Visualization* visualizaton )
+        {
+            samson::network::Collection* collection = new samson::network::Collection();
+            collection->set_name("pop_connections");
+            au::map< size_t , StreamOutConnection >::iterator it;
+            for( it = stream_out_connections.begin() ; it != stream_out_connections.end() ; it++ )
+            {
+                //std::string name = it->second->name;
+                //if( match( visualizaton->pattern , name ) )
+                  
+                it->second->fill( collection->add_record() , visualizaton );
+            }
+            return collection;
+        }
+
         samson::network::Collection* StreamManager::getCollection( Visualization* visualizaton )
         {
             samson::network::Collection* collection = new samson::network::Collection();

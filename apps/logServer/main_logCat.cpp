@@ -8,7 +8,7 @@
 #include "au/log/LogFile.h"
 #include "au/log/TableLogFormatter.h"
 
-#define DEF_FORMAT "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT"
+#define DEF_FORMAT "TYPE : date : time : EXEC : FILE[LINE] : FUNC : TEXT"
 
 char format[1024];
 char pattern[1024];

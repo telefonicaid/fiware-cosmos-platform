@@ -146,27 +146,27 @@ namespace samson {
                 {
                     size_t worker_id = packet->message->network_notification().connected_worker_id();
                     LM_M(( "Connected worker %lu\n", worker_id ));
-                }
-                
-                if( packet->message->network_notification().has_disconnected_worker_id() )
+                } else if( packet->message->network_notification().has_disconnected_worker_id() )
                 {
                     size_t worker_id = packet->message->network_notification().disconnected_worker_id();
                     LM_M(( "Disconnected worker %lu\n", worker_id ));
-                }
-                
-                if( packet->message->network_notification().has_connected_delilah_id() )
+                } else if( packet->message->network_notification().has_connected_delilah_id() )
                 {
-                    size_t worker_id = packet->message->network_notification().connected_delilah_id();
-                    LM_M(( "Connected delilah %lu\n", worker_id ));
-                }
-                
-                if( packet->message->network_notification().has_disconnected_delilah_id() )
+                    size_t delilah_id = packet->message->network_notification().connected_delilah_id();
+                    LM_M(( "Connected delilah %lu\n", delilah_id ));
+                } else if( packet->message->network_notification().has_disconnected_delilah_id() )
                 {
-                    size_t worker_id = packet->message->network_notification().disconnected_delilah_id();
-                    LM_M(( "Disconnected delilah %lu\n", worker_id ));
+                    size_t delilah_id = packet->message->network_notification().disconnected_delilah_id();
+                    LM_M(( "Disconnected delilah %lu\n", delilah_id ));
+                    streamManager->notify_delilah_disconnection( delilah_id );
+                    
                 }
+                else
+                    LM_W(("Notification from network without required information"));
                 
             }
+            else
+                LM_W(("Notification from network without required information"));
             
             return;
         }        

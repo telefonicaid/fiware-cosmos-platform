@@ -190,9 +190,9 @@ namespace samson {
         
         if ( msgCode == Message::NetworkNotification )
         {
+            
             if( packet->message->has_network_notification() )
             {
-                
                 if( packet->message->network_notification().has_connected_worker_id() )
                 {
                     size_t worker_id = packet->message->network_notification().connected_worker_id();
@@ -201,15 +201,18 @@ namespace samson {
                     //Update operations every time a worker is connected
                     sendWorkerCommand( au::str("ls_operations -hidden -save"), NULL);
                     
-                }
-
-                if( packet->message->network_notification().has_disconnected_worker_id() )
+                } else if( packet->message->network_notification().has_disconnected_worker_id() )
                 {
                     size_t worker_id = packet->message->network_notification().disconnected_worker_id();
                     showWarningMessage( au::str("Disconnected worker %lu\n", worker_id) );
                 }
+                else
+                    LM_W(("NetworkNotification without required information..."));
+                    
                 
             }
+            else
+                LM_W(("NetworkNotification without required information"));
             
             return;
         }

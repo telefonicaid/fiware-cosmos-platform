@@ -226,18 +226,17 @@ namespace au
                 return;
             
             // Name of the logs based on the pid of this process
-            std::string tmp_local_file = au::str("%s_%d" , local_file.c_str() , (int) getpid() );
 
-            int fd = open( tmp_local_file.c_str() , O_WRONLY | O_CREAT , 0644 );
+            int fd = open( local_file.c_str() , O_WRONLY | O_CREAT , 0644 );
             LM_T(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
             
             if( fd >= 0 )
             {
                 local_file_descriptor = new FileDescriptor("local_log", fd );
-                LM_LW(("Open local log file %s.",tmp_local_file.c_str() ));
+                LM_LW(("Open local log file %s.",local_file.c_str() ));
             }
             else
-                LM_LW(("Not possible to open local log file %s. Logs will be definitely lost",tmp_local_file.c_str() ));
+                LM_LW(("Not possible to open local log file %s. Logs will be definitely lost", local_file.c_str() ));
         }
     };
     

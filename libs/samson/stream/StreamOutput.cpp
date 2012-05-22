@@ -145,5 +145,22 @@ namespace samson {
         }
         
         
+        void StreamOutConnection::fill( samson::network::CollectionRecord* record , Visualization* visualization )
+        {
+            // Delilah identifier
+            add( record , "delilah" , au::code64_str( fromId ) , "left,different" );
+
+            // List of queues with pending size
+            std::ostringstream queues_description;
+            au::map<std::string,StreamOutQueue>::iterator it;
+            for (it = stream_out_queues.begin() ; it != stream_out_queues.end() ; it++ )
+                queues_description << it->second->str() << " ";
+                
+            add( record , "queues" , queues_description.str() , "left,different" );
+
+            // Max number of operations for this connection
+            add( record , "Max pop operations" , max_num_stream_out_queue_tasks , "f=uint64,sum" );
+        }
+        
     }
 }

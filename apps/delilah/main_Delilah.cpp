@@ -62,6 +62,7 @@ int              load_buffer_size_mb;
 char             commandFileName[1024];
 bool             monitorization;
 char             command[1024]; 
+char             log_file[1024]; 
 
 
 #define LOC "localhost"
@@ -76,7 +77,8 @@ PaArgument paArgs[] =
     { "-memory",           &memory_gb,            "MEMORY",                 PaInt,    PaOpt, 1,                   1,    100,   "memory in GBytes"                       },
     { "-load_buffer_size", &load_buffer_size_mb,  "LOAD_BUFFER_SIZE",       PaInt,    PaOpt, 64,                  64,   2048,  "load buffer size in MBytes"             },
     { "-f",                commandFileName,       "FILE_NAME",              PaString, PaOpt, _i "",               PaNL, PaNL,  "File with commands to run"              },
-    { "-command",          command,               "MONITORIZATION_COMMAND", PaString, PaOpt, _i "",               PaNL, PaNL,  "Single command to be executed"          },
+    { "-command",          command,               "", PaString, PaOpt, _i "",               PaNL, PaNL,  "Single command to be executed"          },
+    { "-log_file",          log_file,             "", PaString, PaOpt, _i "",               PaNL, PaNL,  "Local file to log if not possible to connect with log server"          },
     { "",                  target_host,           "",                       PaString, PaOpt, _i LOC,              PaNL, PaNL,  "SAMSON server hostname"                 },
     { "",                 &target_port,           "",                       PaInt,    PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
 
@@ -224,8 +226,18 @@ int main(int argC, const char *argV[])
     // Clean up function
     atexit(cleanup);
 
-    // Start log to server
-    std::string local_log_file = au::str("%s/delilahLog_%s" , paLogDir , au::code64_str( delilah_random_code ).c_str() );
+    // Start connection with log server....
+    std::string local_log_file;
+    if( strlen(log_file) > 0 )
+    {
+        local_log_file = log_file;
+    }
+    else
+        local_log_file = au::str("%s/delilahLog_%s_%d" , paLogDir 
+                                                       , au::code64_str( delilah_random_code ).c_str() 
+                                                       , (int) getpid() );
+    
+    LM_W(("Starting connection with log server (Local log_file: %s)" , local_log_file.c_str()));
     au::start_log_to_server( paLsHost , paLsPort , local_log_file );
 
     if ((strcmp(target_host, "localhost") == 0) || (strcmp(target_host, "127.0.0.1") == 0))

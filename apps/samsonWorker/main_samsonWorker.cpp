@@ -276,9 +276,9 @@ int main(int argC, const char *argV[])
 
     if (logServerUsed == true)
     {
-       // Log system
-       std::string local_log_file = au::str("%s/samsonWorkerLog" , paLogDir );
-       au::start_log_to_server( paLsHost , paLsPort , local_log_file );
+        // Log system
+        std::string local_log_file = au::str("%s/samsonWorkerLog_%d" , paLogDir , (int) getpid() );
+        au::start_log_to_server( paLsHost , paLsPort , local_log_file );
     }
 
     // Only add in foreground to avoid warning / error messages at the stdout

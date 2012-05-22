@@ -78,12 +78,18 @@ namespace samson {
                 au::xml_close(output , "stream_out_queue"); 
             }
             
+            std::string str()
+            {
+                return au::str("%s [%s]" , queue.c_str() , au::str( list->getBlockInfo().info.size , "B" ).c_str() );
+            }
+            
             
         };
         
         class StreamOutConnection
         {
             size_t fromId;                                                       // Identifier of this element ( network library )
+            
             au::map<std::string,StreamOutQueue> stream_out_queues;               // List of queues you are connected to
             
             std::set< StreamOutQueueTask* > running_stream_out_queue_tasks;      // List of running tasks
@@ -111,6 +117,9 @@ namespace samson {
             // Get XML monitoring information
             void getInfo( std::ostringstream& output);
             
+            // Fill with records for monitorization
+            void fill( samson::network::CollectionRecord* record , Visualization* visualization );
+                
         };
 
     }

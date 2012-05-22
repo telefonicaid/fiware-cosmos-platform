@@ -3,6 +3,7 @@ Data models.
 
 """
 import logging
+from datetime import datetime
 
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
@@ -23,6 +24,7 @@ STATE_NAMES = {
     5: 'failed'   # jobsub model has two failed states that we map to failed
 }
 
+
 class JobRun(models.Model):
     """JobRun corresponds with an execution of a given model."""
 
@@ -36,6 +38,7 @@ class JobRun(models.Model):
     jar_path = models.CharField(max_length=PATH_MAX_LENGTH)
     start_date = models.DateTimeField(auto_now=True)
     submission = models.ForeignKey(Submission, null=True)
+    last_submission_refresh = models.DateTimeField(auto_now=True)
 
     def __unicode__(self):
         return self.name
@@ -55,7 +58,7 @@ class JobRun(models.Model):
         output_path = '/user/%s/tmp/job_%d/' % (self.user.username, self.id)
         return ['jar', jar_name, input_path, output_path, self.mongo_url()]
 
-    def status(self):
+    def state(self):
         if self.submission is None:
             return 'unsubmitted'
         else:
@@ -64,6 +67,25 @@ class JobRun(models.Model):
     def in_final_state(self):
         return (self.submission is None or
                 self.submission.last_seen_state > 2)
+
+    def refresh_state(self):
+        """Poll the helper Java process for a fresh state."""
+
+        if self.in_final_state():
+            return
+
+        now = datetime.now()
+        if ((now - self.last_submission_refresh).seconds <
+            conf.MIN_POLLING_INTERVAL):
+            return
+
+        submission = job_run.submission
+        job_data = jobsub.get_client().get_job_data(submission.submission_handle)
+        submission.last_seen_state = job_data.state
+        submission.save()
+        self.last_submission_refresh = now
+        self.save()
+
 
     def action_links(self):
         """

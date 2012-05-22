@@ -11,8 +11,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.samples.wordcount.export.mongodb.MongoDBExporterReducer;
-
 /**
  * Use case for ExporterReducer
  *

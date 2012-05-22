@@ -106,8 +106,8 @@ public class FrontendPassword implements PasswordAuthenticator {
             }
             Class.forName(driver).newInstance();
             this.connection = DriverManager.getConnection(url + dbName,
-                                                        userName,
-                                                        password);
+                                                          userName,
+                                                          password);
         } catch (Exception e) {
             LOG.error(e.getMessage(), e);
             throw new SQLException(e);

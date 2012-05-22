@@ -1,17 +1,17 @@
-package es.tid.cosmos.samples.wordcount.export.mongodb;
+package es.tid.cosmos.samples.wordcount;
 
 import static java.util.Arrays.asList;
 import java.util.List;
 
-import com.mongodb.hadoop.io.BSONWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
+
+import es.tid.cosmos.samples.wordcount.export.mongodb.MongoDBExporterReducer;
 
 /**
  * Use case for ExporterReducer

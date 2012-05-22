@@ -1,4 +1,4 @@
-package es.tid.cosmos.samples.wordcount.export.mongodb;
+package es.tid.cosmos.samples.wordcount;
 
 import java.io.IOException;
 
@@ -9,6 +9,8 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
+
+import es.tid.cosmos.samples.wordcount.export.mongodb.MongoDBExporterJob;
 
 /**
  *

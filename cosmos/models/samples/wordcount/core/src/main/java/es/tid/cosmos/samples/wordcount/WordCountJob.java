@@ -33,8 +33,7 @@ public class WordCountJob extends Job {
         this.setReducerClass(WordCountReducer.class);
     }
 
-    public void configure(Path textPath, Path outputPath)
-            throws IOException {
+    public void configure(Path textPath, Path outputPath) throws IOException {
         this.setInputFormatClass(TextInputFormat.class);
         FileInputFormat.setInputPaths(this, textPath);
         this.setOutputFormatClass(TextOutputFormat.class);

@@ -62,7 +62,9 @@ TEST(bufferTest, strTest)
     engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
     buffer1->setSize(5);
 
-    EXPECT_EQ(buffer1->str(), "[ Buffer (buffer1 / test) MaxSize: 15 Size: 5 Offset 0 ]") << "Error in str()";
+#define RETURN_STRING "[ Buffer (buffer1 / test) Size: 5/15 Read_offset 5 Retain Counter 0"
+    EXPECT_EQ(buffer1->str().compare(0,strlen(RETURN_STRING), RETURN_STRING), 0) << "Error in str()" << ". Should be: '" << RETURN_STRING << "', not :'" << buffer1->str() << "'";
+#undef RETURN_STRING
 
     buffer1->release();
 

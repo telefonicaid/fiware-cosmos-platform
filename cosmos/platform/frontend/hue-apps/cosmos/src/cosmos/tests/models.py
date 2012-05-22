@@ -33,7 +33,7 @@ class JobRunTestCase(test.TestCase):
             links = self.job.action_links()
             self.assertTrue(link in links, msg=('Should have "%s" link in "%s"' +
                             ' state (actual links: %s)') %
-                            (link['name'], self.job.status(), links))
+                            (link['name'], self.job.state(), links))
 
 
     def test_action_links(self):

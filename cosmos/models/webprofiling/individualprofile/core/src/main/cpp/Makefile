@@ -1,4 +1,4 @@
-COMSCOREDIR=../../../../../../third-party/comscore-dictionary
+COMSCOREDIR=../../../../../../../../third-party/comscore-dictionary
 CXXFLAGS=-shared -fpic
 LDDFLAGS=-I/usr/java/default/include -I$(COMSCOREDIR) \
 	 -I/usr/java/default/include/linux \

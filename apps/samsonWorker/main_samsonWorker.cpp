@@ -15,6 +15,8 @@
 #include <netinet/tcp.h>        // TCP_NODELAY
 #include <signal.h>
 
+#include <locale.h>             // setlocale
+
 #include "parseArgs/parseArgs.h"
 #include "parseArgs/paBuiltin.h"  // paLsHost, paLsPort
 #include "parseArgs/paIsSet.h"
@@ -256,6 +258,9 @@ bool find_flag( int argc , const char * argV[] , const char* flag )
 
 int main(int argC, const char *argV[])
 {
+
+    char *oldlocale = setlocale(LC_ALL, "C");
+
     paConfig("builtin prefix",                    (void*) "SS_WORKER_");
     paConfig("usage and exit on any warning",     (void*) true);
 
@@ -420,6 +425,8 @@ int main(int argC, const char *argV[])
     }
 
     worker->runConsole();
+
+    setlocale(LC_ALL, oldlocale);
 
     return 0;
 }

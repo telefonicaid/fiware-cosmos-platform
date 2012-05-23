@@ -10,6 +10,7 @@
 */
 
 #include <iostream>				                // std::cout
+#include <iomanip>                              // setiosflags()
 
 #include "logMsg/logMsg.h"				        // 
 
@@ -192,7 +193,7 @@ namespace samson {
             output << "[";
             for ( int i = 0 ; i < n ; i++ )
             {
-			   output << "[" << (i-n+1) << "," << ((int)values[i]) << "]";
+			   output << "[" << (i-n+1) << "," << std::setiosflags(std::ios::fixed) << std::setprecision(2) << values[i] << "]";
                 if( i != (n-1) )
                     output << ",";
             }

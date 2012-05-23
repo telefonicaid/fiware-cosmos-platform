@@ -209,6 +209,8 @@ namespace au
             
             void finish( ServiceItem * item )
             {
+                au::TokenTaker tt(&token);
+                
                 // Notify this has finished
                 items.erase( item );
             }

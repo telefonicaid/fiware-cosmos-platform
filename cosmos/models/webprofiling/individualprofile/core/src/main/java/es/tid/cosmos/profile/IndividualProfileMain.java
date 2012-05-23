@@ -19,6 +19,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
+import es.tid.cosmos.base.mapreduce.JobList;
 import es.tid.cosmos.base.mapreduce.MapReduceJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.profile.categoryextraction.CategoryExtractionReducer;
@@ -86,7 +87,6 @@ public class IndividualProfileMain extends Configured implements Tool {
         TextInputFormat.setInputPaths(exTextJob, this.profilePath);
         FileOutputFormat.setOutputPath(exTextJob, textOutputPath);
         exTextJob.addDependentJob(upJob);
-        exTextJob.waitForCompletion(true);
         
         ReduceJob exMongoJob = ReduceJob.create(this.getConf(),
                 "MongoDBExporter",
@@ -96,7 +96,11 @@ public class IndividualProfileMain extends Configured implements Tool {
         TextInputFormat.setInputPaths(exMongoJob, this.profilePath);
         MongoConfigUtil.setOutputURI(exMongoJob.getConfiguration(), mongoUrl);
         exMongoJob.addDependentJob(upJob);
-        exMongoJob.waitForCompletion(true);
+        
+        JobList jobList = new JobList();
+        jobList.add(exTextJob);
+        jobList.add(exMongoJob);
+        jobList.waitForCompletion(true);
 
         return 0;
     }

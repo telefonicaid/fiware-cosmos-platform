@@ -3,7 +3,6 @@ package es.tid.cosmos.profile;
 import java.io.IOException;
 import java.util.Calendar;
 
-import com.hadoop.mapreduce.LzoTextInputFormat;
 import com.mongodb.hadoop.MongoOutputFormat;
 import com.mongodb.hadoop.util.MongoConfigUtil;
 import org.apache.hadoop.conf.Configuration;
@@ -59,7 +58,7 @@ public class IndividualProfileMain extends Configured implements Tool {
 
         MapReduceJob ceJob = MapReduceJob.create(this.getConf(),
                 "CategoryExtraction",
-                LzoTextInputFormat.class,
+                TextInputFormat.class,
                 TextCategoryExtractionMapper.class,
                 CategoryExtractionReducer.class,
                 SequenceFileOutputFormat.class);

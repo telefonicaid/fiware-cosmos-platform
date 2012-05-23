@@ -25,11 +25,11 @@ public class JobList extends LinkedList<Job> {
      */
     public void waitForCompletion(boolean verbose)
             throws IOException, InterruptedException, ClassNotFoundException {
-        for (Job j : this) {
-            j.submit();
+        for (Job job : this) {
+            job.submit();
         }
-        for (Job j : this) {
-            j.waitForCompletion(verbose);
+        for (Job job : this) {
+            job.waitForCompletion(verbose);
         }
     }
 }

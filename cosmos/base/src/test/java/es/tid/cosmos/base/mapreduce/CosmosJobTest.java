@@ -67,7 +67,7 @@ public class CosmosJobTest {
         }
 
         private Thread internalSubmit() throws InterruptedException {
-            if(this.submitCalledTime != null) {
+            if (this.submitCalledTime != null) {
                 Thread dummy = new Thread();
                 dummy.start();
                 return dummy;

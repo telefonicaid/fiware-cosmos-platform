@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
@@ -17,14 +15,14 @@ import org.apache.hadoop.mapreduce.Job;
 public abstract class CosmosJob extends Job {
     private volatile ExceptionedThread submittedThread;
     private boolean deleteOutputOnExit;
-    private List<CosmosJob> dependencies;
+    private JobList dependencies;
 
     public CosmosJob(Configuration conf, String jobName)
             throws IOException {
         super(conf, jobName);
         this.submittedThread = null;
         this.deleteOutputOnExit = false;
-        this.dependencies = new LinkedList<CosmosJob>();
+        this.dependencies = new JobList();
     }
 
     /**
@@ -90,11 +88,13 @@ public abstract class CosmosJob extends Job {
     @Override
     public final boolean waitForCompletion(boolean verbose)
             throws IOException, InterruptedException, ClassNotFoundException {
-        this.submitIfNecessary();
+        this.submit(verbose);
 
         this.submittedThread.join();
         this.submittedThread.throwErrors();
-        this.callSuperWaitForCompletion(verbose);
+        if(!this.callSuperWaitForCompletion(verbose)) {
+            throw new JobExecutionException("Job failed: " + this.getJobName());
+        }
 
         if (this.deleteOutputOnExit) {
             Class outputFormat = this.getOutputFormatClass();
@@ -147,24 +147,14 @@ public abstract class CosmosJob extends Job {
         }
     }
 
-    private synchronized void submitIfNecessary() {
+    @Override
+    public void submit() {
+        this.submit(true);
+    }
+
+    public synchronized void submit(final boolean verbose) {
         if (this.submittedThread != null) {
             return;
-        }
-
-        // Create thread objects for dependencies
-        final List<ExceptionedThread> threads = new LinkedList<ExceptionedThread>();
-        for (final CosmosJob dependency : this.dependencies) {
-            threads.add(new ExceptionedThread() {
-                @Override
-                public void run() {
-                    try {
-                        dependency.waitForCompletion(true);
-                    } catch (Exception ex) {
-                        this.setException(ex);
-                    }
-                }
-            });
         }
 
         // Create thread for current job
@@ -172,13 +162,7 @@ public abstract class CosmosJob extends Job {
             @Override
             public void run() {
                 try {
-                    for (ExceptionedThread t : threads) {
-                        t.start();
-                    }
-                    for (ExceptionedThread t : threads) {
-                        t.join();
-                        t.throwErrors();
-                    }
+                    CosmosJob.this.dependencies.waitForCompletion(verbose);
                     CosmosJob.this.callSuperSubmit();
                 } catch (Exception ex) {
                     this.setException(ex);
@@ -187,15 +171,6 @@ public abstract class CosmosJob extends Job {
         };
 
         this.submittedThread.start();
-    }
-
-    @Override
-    public void submit() {
-        if (this.submittedThread != null) {
-            throw new IllegalStateException("Cannot submit job twice");
-        }
-
-        this.submitIfNecessary();
     }
 
     /**

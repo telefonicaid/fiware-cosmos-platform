@@ -15,7 +15,8 @@ import org.junit.Test;
  * @author ximo
  */
 public class CosmosJobTest {
-    private static final Path NON_EXISITING_PATH = new Path("badproto://i/dont/exist");
+    private static final Path NON_EXISITING_PATH = new Path(
+            "badproto://i/dont/exist");
 
     private static abstract class Generic<T, U> {
     }
@@ -46,7 +47,7 @@ public class CosmosJobTest {
 
     private static class FakeJob extends CosmosJob {
         private boolean waitForCompletionCalled;
-        private Long submitCalledTime;
+        private volatile Long submitCalledTime;
         private final boolean waitResult;
 
         public FakeJob(Configuration conf, String jobName, boolean waitResult)
@@ -58,18 +59,50 @@ public class CosmosJobTest {
         }
 
         @Override
-        protected boolean callSuperWaitForCompletion(boolean verbose) {
+        protected boolean callSuperWaitForCompletion(boolean verbose)
+                throws InterruptedException {
+            this.internalSubmit().join();
             this.waitForCompletionCalled = true;
             return this.waitResult;
         }
 
-        @Override
-        protected void callSuperSubmit() throws InterruptedException {
+        private Thread internalSubmit() throws InterruptedException {
+            if(this.submitCalledTime != null) {
+                Thread dummy = new Thread();
+                dummy.start();
+                return dummy;
+            }
+            // Sleeping a bit to make sure currentTimeMillis changes between calls
+            Thread.sleep(100);
             this.submitCalledTime = System.currentTimeMillis();
-            Thread.sleep(10);
+            Thread t = new Thread() {
+                private static final long MAX_TIME = 100;
+                private static final long MIN_TIME = 100;
+
+                @Override
+                public void run() {
+                    try {
+                        Thread.sleep(MIN_TIME
+                                + (long)Math.random() * (MAX_TIME - MIN_TIME));
+                    } catch (InterruptedException ex) {
+                        // Ignore
+                    }
+                }
+            };
+            t.start();
+            return t;
         }
 
-        public Long getSubmitCallTime() {
+        @Override
+        protected void callSuperSubmit() throws InterruptedException {
+            this.internalSubmit();
+        }
+
+        public Long getSubmitCallTime() throws InterruptedException {
+            // Busy wait for submit to get called. Max wait is ~1.5 mins
+            for (int i = 0;
+                    i < 1000 && this.submitCalledTime == null;
+                    i++, Thread.sleep(100));
             return this.submitCalledTime;
         }
 
@@ -141,7 +174,7 @@ public class CosmosJobTest {
     @Test(expected = JobExecutionException.class)
     public void testWaitForCompletion7() throws Exception {
         FakeJob job = new FakeJob(new Configuration(), "Test", true);
-        FakeJob job2 = new FakeJob(new Configuration(), "Test", false);
+        FakeJob job2 = new FakeJob(new Configuration(), "Test2", false);
         job.addDependentJob(job2);
         job.waitForCompletion(true);
     }
@@ -149,10 +182,10 @@ public class CosmosJobTest {
     @Test
     public void testWaitForCompletion8() throws Exception {
         FakeJob job = new FakeJob(new Configuration(), "Test", true);
-        FakeJob job2 = new FakeJob(new Configuration(), "Test", true);
-        FakeJob job3 = new FakeJob(new Configuration(), "Test", true);
-        FakeJob job4 = new FakeJob(new Configuration(), "Test", true);
-        FakeJob job5 = new FakeJob(new Configuration(), "Test", true);
+        FakeJob job2 = new FakeJob(new Configuration(), "Test2", true);
+        FakeJob job3 = new FakeJob(new Configuration(), "Test3", true);
+        FakeJob job4 = new FakeJob(new Configuration(), "Test4", true);
+        FakeJob job5 = new FakeJob(new Configuration(), "Test5", true);
         job.addDependentJob(job2);
         job.addDependentJob(job3);
         job2.addDependentJob(job3);
@@ -178,10 +211,10 @@ public class CosmosJobTest {
     @Test
     public void testWaitForCompletion9() throws Exception {
         FakeJob job = new FakeJob(new Configuration(), "Test", true);
-        FakeJob job2 = new FakeJob(new Configuration(), "Test", true);
-        FakeJob job3 = new FakeJob(new Configuration(), "Test", true);
-        FakeJob job4 = new FakeJob(new Configuration(), "Test", true);
-        FakeJob job5 = new FakeJob(new Configuration(), "Test", true);
+        FakeJob job2 = new FakeJob(new Configuration(), "Test2", true);
+        FakeJob job3 = new FakeJob(new Configuration(), "Test3", true);
+        FakeJob job4 = new FakeJob(new Configuration(), "Test4", true);
+        FakeJob job5 = new FakeJob(new Configuration(), "Test5", true);
         job.addDependentJob(job2);
         job2.addDependentJob(job3);
         job3.addDependentJob(job4);
@@ -203,11 +236,11 @@ public class CosmosJobTest {
         assertTrue(job.getWaitForCompletionCalled());
     }
 
-    @Test(expected = IllegalStateException.class)
     public void testSubmit() throws Exception {
         FakeJob job = new FakeJob(new Configuration(), "Test", true);
-        FakeJob job2 = new FakeJob(new Configuration(), "Test", false);
+        FakeJob job2 = new FakeJob(new Configuration(), "Test2", false);
         job.addDependentJob(job2);
         job.submit();
+        assertTrue(job2.getSubmitCallTime() < job.getSubmitCallTime());
     }
 }

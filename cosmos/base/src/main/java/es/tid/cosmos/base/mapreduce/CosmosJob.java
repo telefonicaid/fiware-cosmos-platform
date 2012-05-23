@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
@@ -15,16 +13,16 @@ import org.apache.hadoop.mapreduce.Job;
  * @author ximo
  */
 public abstract class CosmosJob extends Job {
-    private boolean isSubmitted;
+    private volatile ExceptionedThread submittedThread;
     private boolean deleteOutputOnExit;
-    private List<CosmosJob> dependencies;
+    private JobList dependencies;
 
     public CosmosJob(Configuration conf, String jobName)
             throws IOException {
         super(conf, jobName);
-        this.isSubmitted = false;
+        this.submittedThread = null;
         this.deleteOutputOnExit = false;
-        this.dependencies = new LinkedList<CosmosJob>();
+        this.dependencies = new JobList();
     }
 
     /**
@@ -90,16 +88,13 @@ public abstract class CosmosJob extends Job {
     @Override
     public final boolean waitForCompletion(boolean verbose)
             throws IOException, InterruptedException, ClassNotFoundException {
-        for (CosmosJob dependency : this.dependencies) {
-            dependency.internalSubmit();
+        this.submit(verbose);
+
+        this.submittedThread.join();
+        this.submittedThread.throwErrors();
+        if(!this.callSuperWaitForCompletion(verbose)) {
+            throw new JobExecutionException("Job failed: " + this.getJobName());
         }
-        for (CosmosJob dependency : this.dependencies) {
-            dependency.waitForCompletion(verbose);
-        }
-        if (!this.callSuperWaitForCompletion(verbose)) {
-            throw new JobExecutionException("Failed to run " + this.getJobName());
-        }
-        this.isSubmitted = true;
 
         if (this.deleteOutputOnExit) {
             Class outputFormat = this.getOutputFormatClass();
@@ -124,15 +119,58 @@ public abstract class CosmosJob extends Job {
         return this.deleteOutputOnExit;
     }
 
-    @Override
-    public void submit() throws IOException, InterruptedException,
-                                ClassNotFoundException {
-        if (!this.dependencies.isEmpty()) {
-            throw new IllegalStateException("Cannot submit a job that has"
-                    + " dependencies. Please use waitForCompletion");
+    private static abstract class ExceptionedThread extends Thread {
+        private Exception exception;
+
+        protected void setException(Exception e) {
+            this.exception = e;
         }
-        this.callSuperSubmit();
-        this.isSubmitted = true;
+
+        public void throwErrors() throws IOException, InterruptedException,
+                                         ClassNotFoundException {
+            if (this.exception == null) {
+                return;
+            }
+
+            if (this.exception instanceof RuntimeException) {
+                throw (RuntimeException)this.exception;
+            } else if (this.exception instanceof IOException) {
+                throw (IOException)this.exception;
+            } else if (this.exception instanceof InterruptedException) {
+                throw (InterruptedException)this.exception;
+            } else if (this.exception instanceof ClassNotFoundException) {
+                throw (ClassNotFoundException)this.exception;
+            } else {
+                throw new RuntimeException("Unexpected exception thrown",
+                                           this.exception);
+            }
+        }
+    }
+
+    @Override
+    public void submit() {
+        this.submit(true);
+    }
+
+    public synchronized void submit(final boolean verbose) {
+        if (this.submittedThread != null) {
+            return;
+        }
+
+        // Create thread for current job
+        this.submittedThread = new ExceptionedThread() {
+            @Override
+            public void run() {
+                try {
+                    CosmosJob.this.dependencies.waitForCompletion(verbose);
+                    CosmosJob.this.callSuperSubmit();
+                } catch (Exception ex) {
+                    this.setException(ex);
+                }
+            }
+        };
+
+        this.submittedThread.start();
     }
 
     /**
@@ -151,20 +189,8 @@ public abstract class CosmosJob extends Job {
         return super.waitForCompletion(verbose);
     }
 
-    private void internalSubmit() throws IOException, InterruptedException,
-                                         ClassNotFoundException {
-        if (this.isSubmitted) {
-            return;
-        }
-        for (CosmosJob dependency : this.dependencies) {
-            dependency.internalSubmit();
-        }
-        this.callSuperSubmit();
-        this.isSubmitted = true;
-    }
-
     public void addDependentJob(CosmosJob job) {
-        if (this.isSubmitted) {
+        if (this.submittedThread != null) {
             throw new IllegalStateException("Cannot add a dependent job to a"
                     + "job if that job has been already submitted");
         }

@@ -38,7 +38,7 @@ public final class WebProfilingLogUtil {
                 .build();
     }
 
-    public static ProtobufWritable createAndWrap(
+    public static ProtobufWritable<WebProfilingLog> createAndWrap(
             String visitorId, String protocol, String fullUrl, String urlDomain,
             String urlPath, String urlQuery, String date, String userAgent,
             String browser, String device, String operSys, String method,

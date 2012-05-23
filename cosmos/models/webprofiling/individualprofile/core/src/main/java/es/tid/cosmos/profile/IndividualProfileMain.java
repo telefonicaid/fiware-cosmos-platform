@@ -6,7 +6,6 @@ import java.util.Calendar;
 import com.hadoop.mapreduce.LzoTextInputFormat;
 import com.mongodb.hadoop.MongoOutputFormat;
 import com.mongodb.hadoop.util.MongoConfigUtil;
-import com.twitter.elephantbird.mapreduce.input.LzoProtobufB64LineInputFormat;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
@@ -16,6 +15,7 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
@@ -23,10 +23,9 @@ import org.apache.log4j.Logger;
 import es.tid.cosmos.base.mapreduce.MapReduceJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.profile.categoryextraction.CategoryExtractionReducer;
-import es.tid.cosmos.profile.categoryextraction.ProtobufCategoryExtractionMapper;
 import es.tid.cosmos.profile.categoryextraction.TextCategoryExtractionMapper;
 import es.tid.cosmos.profile.export.mongodb.MongoDBExporterReducer;
-import es.tid.cosmos.profile.generated.data.ProfileProtocol.WebProfilingLog;
+import es.tid.cosmos.profile.export.text.TextExporterReducer;
 import es.tid.cosmos.profile.userprofile.UserProfileMapper;
 import es.tid.cosmos.profile.userprofile.UserProfileReducer;
 
@@ -38,8 +37,6 @@ import es.tid.cosmos.profile.userprofile.UserProfileReducer;
 public class IndividualProfileMain extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(
             IndividualProfileMain.class);
-    private static final String INPUT_SERIALIZATION = "input.serialization";
-    private static final String PROTOBUF_SERIALIZATION = "protobuf";
     private static final String TMP_DIR = "tmp";
     private static final String CATEGORIES_DIR = "categories";
     private static final String PROFILE_DIR = "profile";
@@ -49,36 +46,22 @@ public class IndividualProfileMain extends Configured implements Tool {
 
     @Override
     public int run(String[] args) throws Exception {
-        if (args.length != 2) {
+        if (args.length != 3) {
             throw new IllegalArgumentException("Mandatory parameters: "
-                    + "[-D input.serialization=text|protobuf] "
-                    + "weblogs_path mongo_url\n"
-                    + "\tDefault input serialization is protobuf");
+                    + "weblogs_path textoutput_path mongo_url");
         }
 
         this.initTempPaths();
         final Path webLogsPath = new Path(args[0]);
-        final String mongoUrl = args[1];
-        final boolean isProtobufInput = this.getConf().get(INPUT_SERIALIZATION,
-                PROTOBUF_SERIALIZATION).equals(PROTOBUF_SERIALIZATION);
+        final Path textOutputPath = new Path(args[1]);
+        final String mongoUrl = args[2];
 
-        MapReduceJob ceJob;
-        if (isProtobufInput) {
-            ceJob = MapReduceJob.create(this.getConf(),
-                "CategoryExtraction",
-                LzoProtobufB64LineInputFormat.getInputFormatClass(
-                        WebProfilingLog.class, this.getConf()),
-                ProtobufCategoryExtractionMapper.class,
-                CategoryExtractionReducer.class,
-                SequenceFileOutputFormat.class);
-        } else {
-            ceJob = MapReduceJob.create(this.getConf(),
+        MapReduceJob ceJob = MapReduceJob.create(this.getConf(),
                 "CategoryExtraction",
                 LzoTextInputFormat.class,
                 TextCategoryExtractionMapper.class,
                 CategoryExtractionReducer.class,
                 SequenceFileOutputFormat.class);
-        }
         FileInputFormat.setInputPaths(ceJob, webLogsPath);
         FileOutputFormat.setOutputPath(ceJob, this.categoriesPath);
 
@@ -92,6 +75,16 @@ public class IndividualProfileMain extends Configured implements Tool {
         FileOutputFormat.setOutputPath(upJob, this.profilePath);
         upJob.addDependentJob(ceJob);
 
+        ReduceJob exTextJob = ReduceJob.create(this.getConf(),
+                "TextExporter",
+                SequenceFileInputFormat.class,
+                TextExporterReducer.class,
+                TextOutputFormat.class);
+        TextInputFormat.setInputPaths(exTextJob, this.profilePath);
+        FileOutputFormat.setOutputPath(exTextJob, textOutputPath);
+        exTextJob.addDependentJob(upJob);
+        exTextJob.waitForCompletion(true);
+        
         ReduceJob exMongoJob = ReduceJob.create(this.getConf(),
                 "MongoDBExporter",
                 SequenceFileInputFormat.class,

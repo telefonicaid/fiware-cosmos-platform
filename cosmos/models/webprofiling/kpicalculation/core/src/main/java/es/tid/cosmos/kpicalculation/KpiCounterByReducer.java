@@ -6,6 +6,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.mapreduce.BinaryKey;
 import es.tid.cosmos.base.mapreduce.CompositeKey;
 
 /**
@@ -66,13 +67,13 @@ public class KpiCounterByReducer extends
     @Override
     protected void reduce(CompositeKey key, Iterable<IntWritable> values,
             Context context) throws IOException, InterruptedException {
-        final String primaryKey = key.get(0);
-        if (!primaryKey.equals(this.currentKey)) {
+        final BinaryKey binaryKey = (BinaryKey)key;
+        if (!binaryKey.getPrimaryKey().equals(this.currentKey)) {
             if (!this.currentKey.isEmpty()) {
                 this.setValues();
                 context.write(this.text, this.counter);
             }
-            this.currentKey = primaryKey;
+            this.currentKey = binaryKey.getPrimaryKey();
             this.currentHashCode = key.hashCode();
             this.currentValue = 1;
         } else {

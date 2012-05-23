@@ -67,7 +67,7 @@ public class HadoopSshFile implements SshFile {
             return this.hadoopFS.getFileStatus(this.hadoopPath).getOwner();
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
-            return null;
+            return this.userName;
         }
     }
     

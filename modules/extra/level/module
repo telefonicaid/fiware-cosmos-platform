@@ -23,6 +23,24 @@ data GroupItems
 	vector level.Item items;
 }
 
+data Coordinate
+{
+    system.Int32 x;
+    system.Int32 y;
+}
+
+data GraphLine
+{
+    system.Int32 NUMBER_OF_SECONDS;
+    system.Int32 NUMBER_OF_MINUTES;
+    system.Int32 NUMBER_OF_HOURS;
+    system.Int32 NUMBER_OF_POINTS;
+    system.TimeUnix prev_timestamp;
+    system.Int32 nsecs_since_shift;
+    system.Int32 nmins_since_shift;
+    vector level.Coordinate coord;
+}
+
 
 # ------------------------------------------------------------
 # Reduce to update a Level
@@ -86,6 +104,13 @@ parserOut publish_valTimed_levels
 	helpLine "Get a txt version of content"
 }
 
+reduce update_valTimed_graph
+{
+    in system.String level.ValTimed
+    in system.String level.GraphLine
+    out system.String level.GraphLine
+}
+
 # ------------------------------------------------------------
 # Init Stream
 # ------------------------------------------------------------
@@ -100,9 +125,11 @@ script init_stream_operations
 		alias [output]     03.levels_updates;
 		alias [output_txt] 04.levels_updates_txt; 
 		
+		
 		# Operations
 		alias [o1] 01.update;
 		alias [o2] 02.publish;
+		
 
 		# Remove queues and operations
 		rm [input] [state] [output] [output_txt] -f;
@@ -114,6 +141,7 @@ script init_stream_operations
 		# Definitions
 		aso [o1]  level.update_int32_levels    [input] [state]       [output] [state];
 		aso [o2]  level.publish_int32_levels    [output]              [output_txt];
+		
 	}
 }
 
@@ -126,22 +154,30 @@ script init_stream_operations_timed
 		alias [state]      02.levels;
 		alias [output]     03.levels_updates;
 		alias [output_txt] 04.levels_updates_txt; 
+		alias [graph]      05.graph;
 		
 		# Operations
 		alias [o1] 01.update;
 		alias [o2] 02.publish;
+		alias [o3] 03.update_graph;
 
 		# Remove queues and operations
 		rm [input] [state] [output] [output_txt] -f;
 		rm_stream_operation [o1] [o2] -f;
 
 		# Properties for output queues
-		set_queue_property [input] max_size 1;
-		set_queue_property [output] max_size 1;
-		set_queue_property [output_txt] max_size 1;
+		#set_queue_property [input] max_size 1;
+		#set_queue_property [output] max_size 1;
+		#set_queue_property [output_txt] max_size 1;
 
 		# Definitions
 		aso [o1]  level.update_valTimed_levels    [input] [state]       [output] [state];
+		#set_stream_operation_property [o1]   priority 7;
+		set_stream_operation_property [o1]   max_latency 20;
+		add_queue_connection [output]   [output].bis;
 		aso [o2]  level.publish_valTimed_levels    [output]              [output_txt];
+		aso [o3]  level.update_valTimed_graph   [output].bis [graph]        [graph];
+		#set_stream_operation_property [o3]   priority 9;
+		set_stream_operation_property [o3]   max_latency 20;
 	}
 }

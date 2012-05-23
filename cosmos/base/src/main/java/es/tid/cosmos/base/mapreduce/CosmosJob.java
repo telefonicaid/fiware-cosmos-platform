@@ -86,7 +86,7 @@ public abstract class CosmosJob extends Job {
      * @throws JobExecutionException
      */
     @Override
-    public synchronized final boolean waitForCompletion(boolean verbose)
+    public final boolean waitForCompletion(boolean verbose)
             throws IOException, InterruptedException, ClassNotFoundException {
         this.submit(verbose);
 

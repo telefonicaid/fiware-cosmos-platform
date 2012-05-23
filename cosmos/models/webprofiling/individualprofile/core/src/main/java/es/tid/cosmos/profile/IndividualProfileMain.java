@@ -24,6 +24,7 @@ import es.tid.cosmos.base.mapreduce.MapReduceJob;
 import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.profile.categoryextraction.CategoryExtractionReducer;
 import es.tid.cosmos.profile.categoryextraction.TextCategoryExtractionMapper;
+import es.tid.cosmos.profile.dictionary.comscore.DistributedCacheDictionary;
 import es.tid.cosmos.profile.export.mongodb.MongoDBExporterReducer;
 import es.tid.cosmos.profile.export.text.TextExporterReducer;
 import es.tid.cosmos.profile.userprofile.UserProfileMapper;
@@ -64,6 +65,8 @@ public class IndividualProfileMain extends Configured implements Tool {
                 SequenceFileOutputFormat.class);
         FileInputFormat.setInputPaths(ceJob, webLogsPath);
         FileOutputFormat.setOutputPath(ceJob, this.categoriesPath);
+        DistributedCacheDictionary.cacheDictionary(ceJob,
+                DistributedCacheDictionary.LATEST_DICTIONARY);
 
         MapReduceJob upJob = MapReduceJob.create(this.getConf(),
                 "UserProfile",

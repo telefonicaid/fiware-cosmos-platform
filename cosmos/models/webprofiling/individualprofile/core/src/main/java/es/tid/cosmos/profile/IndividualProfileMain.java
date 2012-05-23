@@ -82,6 +82,7 @@ public class IndividualProfileMain extends Configured implements Tool {
                 "TextExporter",
                 SequenceFileInputFormat.class,
                 TextExporterReducer.class,
+                1,
                 TextOutputFormat.class);
         TextInputFormat.setInputPaths(exTextJob, this.profilePath);
         FileOutputFormat.setOutputPath(exTextJob, textOutputPath);

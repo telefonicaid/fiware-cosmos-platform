@@ -71,12 +71,11 @@ public class HadoopFileSystemView implements FileSystemView {
             throws IOException, InterruptedException {
         String requestedDir = baseDir;
         String requestedFile = file;
-        if (requestedDir.isEmpty()){
-            if (requestedFile.isEmpty() || requestedFile.equals(Path.CUR_DIR)) {
-                requestedDir = this.homePath;
-                requestedFile = "";
-                LOG.debug("redirecting to home path: " + this.homePath);
-            }
+        if (requestedDir.isEmpty() && (requestedFile.isEmpty() ||
+                requestedFile.equals(Path.CUR_DIR))) {
+            requestedDir = this.homePath;
+            requestedFile = "";
+            LOG.debug("redirecting to home path: " + this.homePath);
         }
         String wholePath = requestedDir + requestedFile;
         if (!requestedDir.endsWith(Path.SEPARATOR) &&

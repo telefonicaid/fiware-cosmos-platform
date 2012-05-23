@@ -13,7 +13,7 @@ import java.util.Locale;
  * @author javierb
  */
 public class KpiCalculationDateFormatter {
-    private final String DELIMITER = "/";
+    private static final String DELIMITER = "/";
     
     private SimpleDateFormat inputFormat;
     private SimpleDateFormat dateFormat;

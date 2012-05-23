@@ -1,10 +1,11 @@
 package es.tid.cosmos.profile.export.mongodb;
 
-import com.mongodb.DBObject;
-import com.mongodb.hadoop.MongoOutput;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+
+import com.mongodb.DBObject;
+import com.mongodb.hadoop.MongoOutput;
 import org.apache.hadoop.io.WritableComparable;
 
 /**

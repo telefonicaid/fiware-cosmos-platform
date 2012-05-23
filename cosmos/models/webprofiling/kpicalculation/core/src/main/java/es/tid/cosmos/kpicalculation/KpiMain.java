@@ -101,6 +101,7 @@ public class KpiMain extends Configured implements Tool {
             exporterJob.addDependentJob(aggregationJob);
             jobList.add(exporterJob);
         }
+        jobList.waitForCompletion(true);
 
         return 0;
     }

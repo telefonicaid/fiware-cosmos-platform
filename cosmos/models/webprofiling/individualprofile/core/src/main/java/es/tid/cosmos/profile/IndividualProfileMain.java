@@ -3,18 +3,32 @@ package es.tid.cosmos.profile;
 import java.io.IOException;
 import java.util.Calendar;
 
+import com.mongodb.hadoop.MongoOutputFormat;
+import com.mongodb.hadoop.util.MongoConfigUtil;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import es.tid.cosmos.profile.categoryextraction.CategoryExtractionJob;
-import es.tid.cosmos.profile.export.mongodb.MongoDBExporterJob;
-import es.tid.cosmos.profile.export.ps.PSExporterJob;
-import es.tid.cosmos.profile.userprofile.UserProfileJob;
+import es.tid.cosmos.base.mapreduce.JobList;
+import es.tid.cosmos.base.mapreduce.MapReduceJob;
+import es.tid.cosmos.base.mapreduce.ReduceJob;
+import es.tid.cosmos.profile.categoryextraction.CategoryExtractionReducer;
+import es.tid.cosmos.profile.categoryextraction.TextCategoryExtractionMapper;
+import es.tid.cosmos.profile.dictionary.comscore.DistributedCacheDictionary;
+import es.tid.cosmos.profile.export.mongodb.MongoDBExporterReducer;
+import es.tid.cosmos.profile.export.text.TextExporterReducer;
+import es.tid.cosmos.profile.userprofile.UserProfileMapper;
+import es.tid.cosmos.profile.userprofile.UserProfileReducer;
 
 /**
  * Application entry point. Configures and chains mapreduce jobs.
@@ -24,72 +38,74 @@ import es.tid.cosmos.profile.userprofile.UserProfileJob;
 public class IndividualProfileMain extends Configured implements Tool {
     private static final Logger LOG = Logger.getLogger(
             IndividualProfileMain.class);
-    private static final int MIN_ARGS = 2;
-    private static final int MAX_ARGS = 3;
-
-    private static final String INPUT_SERIALIZATION = "input.serialization";
-    private static final String PROTOBUF_SERIALIZATION = "protobuf";
     private static final String TMP_DIR = "tmp";
     private static final String CATEGORIES_DIR = "categories";
     private static final String PROFILE_DIR = "profile";
 
     private Path categoriesPath;
     private Path profilePath;
-    private Path webLogsPath;
 
     @Override
     public int run(String[] args) throws Exception {
-        if (args.length < MIN_ARGS || args.length > MAX_ARGS) {
+        if (args.length != 3) {
             throw new IllegalArgumentException("Mandatory parameters: "
-                    + "[-D input.serialization=text|protobuf] "
-                    + "weblogs_path psoutput_path [mongo_url]\n"
-                    + "\tDefault input serialization is protobuf");
+                    + "weblogs_path textoutput_path mongo_url");
         }
 
-        this.initPaths(args[0]);
+        this.initTempPaths();
+        final Path webLogsPath = new Path(args[0]);
+        final Path textOutputPath = new Path(args[1]);
+        final String mongoUrl = args[2];
 
-        CategoryExtractionJob ceJob = new CategoryExtractionJob(this.getConf());
-        if (this.getConf().get(INPUT_SERIALIZATION, PROTOBUF_SERIALIZATION)
-                .equals(PROTOBUF_SERIALIZATION)) {
-            LOG.info("Protobuf input");
-            ceJob.configureProtobufInput();
-        } else {
-            LOG.info("Text input");
-            ceJob.configureTextInput();
-        }
-        ceJob.configurePaths(this.webLogsPath, this.categoriesPath);
-        if (!ceJob.waitForCompletion(true)) {
-            throw new Exception("Failed to extract categories");
-        }
+        MapReduceJob ceJob = MapReduceJob.create(this.getConf(),
+                "CategoryExtraction",
+                TextInputFormat.class,
+                TextCategoryExtractionMapper.class,
+                CategoryExtractionReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(ceJob, webLogsPath);
+        FileOutputFormat.setOutputPath(ceJob, this.categoriesPath);
+        DistributedCacheDictionary.cacheDictionary(ceJob,
+                DistributedCacheDictionary.LATEST_DICTIONARY);
 
-        UserProfileJob upJob = new UserProfileJob(this.getConf());
-        upJob.configure(this.categoriesPath, this.profilePath);
-        if (!upJob.waitForCompletion(true)) {
-            throw new Exception("Failed to calculate user profiles");
-        }
+        MapReduceJob upJob = MapReduceJob.create(this.getConf(),
+                "UserProfile",
+                SequenceFileInputFormat.class,
+                UserProfileMapper.class,
+                UserProfileReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(upJob, this.categoriesPath);
+        FileOutputFormat.setOutputPath(upJob, this.profilePath);
+        upJob.addDependentJob(ceJob);
 
-        String psOutputFile = args[1];
-        PSExporterJob exPsJob = new PSExporterJob(this.getConf());
-        exPsJob.configure(this.profilePath, new Path(psOutputFile));
-        if (!exPsJob.waitForCompletion(true)) {
-            throw new Exception("Failed to export to PS");
-        }
-
-        // Perform the MongoDB export.
-        if (args.length == MAX_ARGS) {
-            String mongoUrl = args[2];
-            MongoDBExporterJob exMongoJob = new MongoDBExporterJob(
-                    this.getConf());
-            exMongoJob.configure(this.profilePath, mongoUrl);
-            if (!exMongoJob.waitForCompletion(true)) {
-                throw new Exception("Failed to export to MongoDB");
-            }
-        }
+        ReduceJob exTextJob = ReduceJob.create(this.getConf(),
+                "TextExporter",
+                SequenceFileInputFormat.class,
+                TextExporterReducer.class,
+                1,
+                TextOutputFormat.class);
+        TextInputFormat.setInputPaths(exTextJob, this.profilePath);
+        FileOutputFormat.setOutputPath(exTextJob, textOutputPath);
+        exTextJob.addDependentJob(upJob);
+        
+        ReduceJob exMongoJob = ReduceJob.create(this.getConf(),
+                "MongoDBExporter",
+                SequenceFileInputFormat.class,
+                MongoDBExporterReducer.class,
+                MongoOutputFormat.class);
+        TextInputFormat.setInputPaths(exMongoJob, this.profilePath);
+        MongoConfigUtil.setOutputURI(exMongoJob.getConfiguration(), mongoUrl);
+        exMongoJob.addDependentJob(upJob);
+        
+        JobList jobList = new JobList();
+        jobList.add(exTextJob);
+        jobList.add(exMongoJob);
+        jobList.waitForCompletion(true);
 
         return 0;
     }
 
-    private void initPaths(String inputPath) throws IOException {
+    private void initTempPaths() throws IOException {
         FileSystem fs = FileSystem.get(this.getConf());
         Path tmpDir = new Path(getTmpDir());
         if (!fs.mkdirs(tmpDir)) {
@@ -99,7 +115,6 @@ public class IndividualProfileMain extends Configured implements Tool {
         if (!fs.deleteOnExit(tmpDir)) {
             LOG.warn("Could not set temp directory for automatic deletion");
         }
-        this.webLogsPath = new Path(inputPath);
         this.categoriesPath = new Path(tmpDir + Path.SEPARATOR +
                                        CATEGORIES_DIR);
         this.profilePath = new Path(tmpDir + Path.SEPARATOR + PROFILE_DIR);

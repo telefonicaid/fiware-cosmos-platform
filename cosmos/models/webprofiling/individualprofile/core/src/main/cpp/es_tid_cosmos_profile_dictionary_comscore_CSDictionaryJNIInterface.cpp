@@ -17,8 +17,8 @@
 
 #include "Interface.h"
 
-JNIEXPORT jboolean JNICALL Java_es_tid_cosmos_profile_dictionary_comscore_CSDictionaryJNIInterface_initFromTermsInDomainFlatFile
-  (JNIEnv *env, jobject obj, jint iMode, jstring szTermsInDomainFlatFileName) {
+JNIEXPORT jboolean JNICALL Java_es_tid_cosmos_profile_dictionary_comscore_CSDictionaryJNIInterface_initFromTermsInDomainFlatFile(
+    JNIEnv *env, jobject obj, jint iMode, jstring szTermsInDomainFlatFileName) {
   bool retVal = false;
   const char *nativeTermsInDomainFlatFileName =
     (*env).GetStringUTFChars(szTermsInDomainFlatFileName, 0);
@@ -29,9 +29,9 @@ JNIEXPORT jboolean JNICALL Java_es_tid_cosmos_profile_dictionary_comscore_CSDict
   return retVal;
 }
 
-JNIEXPORT jboolean JNICALL Java_es_tid_cosmos_profile_dictionary_comscore_CSDictionaryJNIInterface_loadCSDictionary
-  (JNIEnv *env, jobject obj, jint iMode,
-  jstring szTermsInDomainFlatFileName, jstring szDictionaryName) {
+JNIEXPORT jboolean JNICALL Java_es_tid_cosmos_profile_dictionary_comscore_CSDictionaryJNIInterface_loadCSDictionary(
+    JNIEnv *env, jobject obj, jint iMode, jstring szTermsInDomainFlatFileName,
+    jstring szDictionaryName) {
   bool retVal = false;
   const char *nativeTermsInDomainFlatFileName =
     (*env).GetStringUTFChars(szTermsInDomainFlatFileName, 0);
@@ -46,8 +46,8 @@ JNIEXPORT jboolean JNICALL Java_es_tid_cosmos_profile_dictionary_comscore_CSDict
   return retVal;
 }
 
-JNIEXPORT jlong JNICALL Java_es_tid_cosmos_profile_dictionary_comscore_CSDictionaryJNIInterface_applyDictionaryUsingUrl
-  (JNIEnv *env, jobject jobj, jstring szURL) {
+JNIEXPORT jlong JNICALL Java_es_tid_cosmos_profile_dictionary_comscore_CSDictionaryJNIInterface_applyDictionaryUsingUrl(
+    JNIEnv *env, jobject jobj, jstring szURL) {
   long retVal;
   const char *nativeURL = (*env).GetStringUTFChars(szURL, 0);
   long lPatternID;

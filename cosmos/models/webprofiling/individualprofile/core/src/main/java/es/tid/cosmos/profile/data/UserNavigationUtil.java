@@ -6,7 +6,7 @@ import es.tid.cosmos.profile.generated.data.ProfileProtocol;
 import es.tid.cosmos.profile.generated.data.ProfileProtocol.UserNavigation;
 
 /**
- * Construction utils for UserNavigation class.
+ * Utils for UserNavigation class.
  *
  * Extracts vititor and fullUrl fields from a log lines.
  *
@@ -30,8 +30,8 @@ public final class UserNavigationUtil {
                 setDate(date).build();
     }
 
-    public static ProtobufWritable createAndWrap(String visitorId,
-            String fullUrl, String date) {
+    public static ProtobufWritable<UserNavigation> createAndWrap(
+            String visitorId, String fullUrl, String date) {
         ProtobufWritable<ProfileProtocol.UserNavigation> wrapper =
                 ProtobufWritable.newInstance(UserNavigation.class);
         wrapper.set(create(visitorId, fullUrl, date));

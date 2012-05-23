@@ -24,7 +24,7 @@ ${shared.header("Cosmos", section="job_runs")}
         <td class="job-start">${job_run.start_date | h}</td>
         <td class="job-name">${job_run.name | h}</td>
         <td class="job-description">${job_run.description | h}</td>
-        <td class="job-status">${job_run.status() | h}</td>
+        <td class="job-status">${job_run.state() | h}</td>
 	<td class="job-actions">
 	    % for i, link in enumerate(job_run.action_links()):
 	    % if i > 0:

@@ -7,7 +7,6 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import es.tid.cosmos.samples.wordcount.export.mongodb.MongoDBExporterJob;
 
 /**
  * Application entry point. Runs a job that counts each different word

@@ -174,10 +174,10 @@ namespace samson {
                     {
                         std::ostringstream output;
                         output << "<key>\n";
-                        output << keyDataInstance->strXMLInternal("key");
+                        output << keyDataInstance->strXML();
                         output << "</key>\n";
                         output << "<value>\n";
-                        output << valueDataInstance->strXMLInternal("value");
+                        output << valueDataInstance->strXML();
                         output << "</value>\n";
                         return output.str();
                     }
@@ -204,9 +204,9 @@ namespace samson {
                     {
                         std::ostringstream output;
                         output << "{ \"key\" : ";
-                        output << keyDataInstance->strJSON("key");
+                        output << keyDataInstance->strJSON();
                         output << " \"value\" : ";
-                        output << valueDataInstance->strJSON("value");
+                        output << valueDataInstance->strJSON();
                         output << " } ";
                         return output.str();
                     }

@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.mapreduce.BinaryKey;
+import es.tid.cosmos.base.mapreduce.CompositeKey;
 
 /**
  * Test cases for the KpiCounterByReducer class
@@ -19,12 +20,12 @@ import es.tid.cosmos.base.mapreduce.BinaryKey;
 public class KpiCounterByReducerTest {
 
     private KpiCounterByReducer reducer;
-    private ReduceDriver<BinaryKey, IntWritable, Text, IntWritable> driver;
+    private ReduceDriver<CompositeKey, IntWritable, Text, IntWritable> driver;
 
     @Before
     public void setUp() {
         this.reducer = new KpiCounterByReducer();
-        this.driver = new ReduceDriver<BinaryKey, IntWritable, Text,
+        this.driver = new ReduceDriver<CompositeKey, IntWritable, Text,
                                        IntWritable>(this.reducer);
 
         this.driver.getConfiguration().setStrings("kpi.aggregation.fields",

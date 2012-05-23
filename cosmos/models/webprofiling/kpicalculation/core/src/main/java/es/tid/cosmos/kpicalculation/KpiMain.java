@@ -11,9 +11,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -79,21 +76,18 @@ public class KpiMain extends Configured implements Tool {
         FileInputFormat.setInputPaths(cleanerJob, inputPath);
         FileOutputFormat.setOutputPath(cleanerJob, tmpPath);
         cleanerJob.setDeleteOutputOnExit(true);
-        cleanerJob.waitForCompletion(true);
 
         KpiConfig config = new KpiConfig();
         config.read(KPI_DEFINITIONS);
 
+        JobList jobList = new JobList();
         for (KpiFeature features : config.getKpiFeatures()) {
             Path kpiOutputPath = outputPath.suffix("/" + timeFolder + "/"
                     + features.getName());
 
-            Job aggregationJob = createAggregationJob(conf, features,
-                                                      tmpPath, kpiOutputPath);
-            if (!aggregationJob.waitForCompletion(true)) {
-                throw new Exception("Failed to aggregate "
-                        + features.getName());
-            }
+            MapReduceJob aggregationJob = createAggregationJob(conf, features,
+                    tmpPath, kpiOutputPath);
+            aggregationJob.addDependentJob(cleanerJob);
 
             ReduceJob exporterJob = ReduceJob.create(conf, "MongoDBExporterJob",
                     TextInputFormat.class,
@@ -104,49 +98,48 @@ public class KpiMain extends Configured implements Tool {
             MongoConfigUtil.setOutputURI(exporterConf, mongoUrl);
             exporterConf.set("name", features.getName());
             exporterConf.setStrings("fields", features.getFields());
-            exporterJob.waitForCompletion(true);
+            exporterJob.addDependentJob(aggregationJob);
+            jobList.add(exporterJob);
         }
 
         return 0;
     }
 
-    private Job createAggregationJob(Configuration conf, KpiFeature features,
-                                     Path inputPath, Path outputPath)
-            throws IOException {
-        Job aggregationJob = new Job(conf, "Aggregation Job ..."
-                + features.getName());
-
-        aggregationJob.getConfiguration().setStrings(
-                "kpi.aggregation.fields", features.getFields());
-
+    private MapReduceJob createAggregationJob(Configuration conf,
+                                              KpiFeature features,
+                                              Path inputPath, Path outputPath)
+            throws Exception {
+        MapReduceJob aggregationJob;
         if (features.getGroup() != null) {
+            aggregationJob = MapReduceJob.create(conf,
+                    "Aggregation Job ..." + features.getName(),
+                    SequenceFileInputFormat.class,
+                    KpiGenericMapper.class,
+                    KpiCounterByReducer.class,
+                    TextOutputFormat.class);
             aggregationJob.getConfiguration().setStrings(
                     "kpi.aggregation.group", features.getGroup());
-            aggregationJob.setMapOutputKeyClass(BinaryKey.class);
             aggregationJob.setCombinerClass(KpiCounterByCombiner.class);
-            aggregationJob.setReducerClass(KpiCounterByReducer.class);
             aggregationJob.setSortComparatorClass(
                     PageViewKpiCounterGroupedComparator.class);
             aggregationJob.setGroupingComparatorClass(
                     PageViewKpiCounterGroupedComparator.class);
         } else {
-            aggregationJob.setMapOutputKeyClass(SingleKey.class);
+            aggregationJob = MapReduceJob.create(conf,
+                    "Aggregation Job ..." + features.getName(),
+                    SequenceFileInputFormat.class,
+                    KpiGenericMapper.class,
+                    KpiCounterReducer.class,
+                    TextOutputFormat.class);
             aggregationJob.setCombinerClass(KpiCounterCombiner.class);
-            aggregationJob.setReducerClass(KpiCounterReducer.class);
             aggregationJob.setSortComparatorClass(
                     PageViewKpiCounterComparator.class);
             aggregationJob.setGroupingComparatorClass(
                     PageViewKpiCounterComparator.class);
         }
-
-        aggregationJob.setJarByClass(KpiMain.class);
-        aggregationJob.setMapperClass(KpiGenericMapper.class);
         aggregationJob.setPartitionerClass(KpiPartitioner.class);
-        aggregationJob.setInputFormatClass(SequenceFileInputFormat.class);
-        aggregationJob.setMapOutputValueClass(IntWritable.class);
-        aggregationJob.setOutputKeyClass(Text.class);
-        aggregationJob.setOutputValueClass(IntWritable.class);
-        aggregationJob.setOutputFormatClass(TextOutputFormat.class);
+        aggregationJob.getConfiguration().setStrings(
+                "kpi.aggregation.fields", features.getFields());
 
         // Input and Output configuration
         FileInputFormat.setInputPaths(aggregationJob, inputPath);

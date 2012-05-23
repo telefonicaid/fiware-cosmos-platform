@@ -4,7 +4,7 @@
 
 namespace au {
     
-    const char*log_reseved_words[] = {"HOST","TYPE","PID","TID","DATE","date","TIME","time","LINE","TLEV","EXEC","AUX","FILE","TEXT","text","FUNC","STRE","time_unix",NULL};
+    const char*log_reseved_words[] = {"HOST","TYPE","PID","TID","DATE","date","TIME","time","LINE","TLEV","EXEC","AUX","FILE","TEXT","text","FUNC","STRE","time_unix","channel",NULL};
 
     
     void Log::add_field( std::string field_name , std::string field_value )
@@ -90,9 +90,11 @@ namespace au {
         output << "TimeZone:" << log_data.timezone << ",";
         output << "Dst:" << log_data.dst << ",";
         
+        output << "[ ";
         std::map<std::string, std::string>::iterator it_fields;
         for ( it_fields = fields.begin() ; it_fields != fields.end() ; it_fields++ )
-            output << it_fields->first << ":" << it_fields->second;
+            output << it_fields->first << ":" << it_fields->second << " ";
+        output << "}";
         
         return output.str();
     }
@@ -105,7 +107,6 @@ namespace au {
         
         if( name == "HOST" )
             return getField( "host" , "" ); 
-        
         if( name == "TYPE" )
             return au::str("%c" , log_data.type ); 
         if( name == "PID" )
@@ -175,7 +176,7 @@ namespace au {
             return getField( "stre" , "" ); 
         
         // Generl look up in the strings...
-        std::map<std::string, std::string>::iterator it_fields = fields.find("name");
+        std::map<std::string, std::string>::iterator it_fields = fields.find(name);
         if( it_fields != fields.end() )
             return it_fields->second;
         

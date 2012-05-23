@@ -57,11 +57,15 @@ int main( int argC , const char *argV[] )
     paParse(paArgs, argC, (char**) argV, 1, false);
     logFd = lmFirstDiskFileDescriptor();
     
-
-    
     au::network::ConsoleServiceClient console( sc_console_port );  // Default port for this client
+    
     if( strcmp( host , "" ) != 0 ) 
-        console.connect( host );    // Connect to the given host
+    {
+        au::ErrorManager error;
+        console.connect( host , &error );    // Connect to the given host
+        if( error.isActivated() )
+            LM_X(1, ("Error: %s" , error.getMessage().c_str() ));
+    }
     
     // Run console
     console.runConsole();

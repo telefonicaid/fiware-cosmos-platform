@@ -11,6 +11,8 @@
 #include "au/namespace.h"
 #include "au/console/ConsoleEntry.h"
 #include "au/ErrorManager.h"
+#include "au/log/LogPlugin.h"
+#include "au/log/LogFormatter.h"
 #include "ConsoleEscapeSequence.h"
 
 NAMESPACE_BEGIN(au)
@@ -19,7 +21,8 @@ class Console;
 class ConsoleAutoComplete;
 class ConsoleCommandHistory;
 
-class Console
+
+class Console : public LogPlugin
 {
     // History information ( all commands introduced before )
     ConsoleCommandHistory *command_history;
@@ -40,6 +43,10 @@ class Console
 
     // Detector of scape sequences
     ConsoleEscapeSequence escape_sequence;
+    
+    // Default method to print logs if added as plugin
+    LogFormatter log_formatter;
+    virtual void process_log( Log* log );
     
 public:
     
@@ -81,7 +88,7 @@ public:
     
     // Get the history string
     std::string str_history( int limit );
-    
+        
 private:
     
     void print_command();

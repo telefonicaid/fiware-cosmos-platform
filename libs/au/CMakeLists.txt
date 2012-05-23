@@ -22,6 +22,8 @@ mutex/TokenTaker.cpp
 SET( LOG_FILES
 log/log_server_common.h
 
+log/LogCentral.h
+log/LogPlugin.h
 log/Log.h
 log/LogClient.h
 log/LogServer.h
@@ -32,6 +34,8 @@ log/LogFile.h
 log/LogFormatter.h
 log/TableLogFormatter.h
 
+log/LogCentral.cpp
+log/LogPlugin.cpp
 log/Log.cpp
 log/LogClient.cpp
 log/LogServer.cpp

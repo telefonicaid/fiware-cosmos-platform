@@ -21,11 +21,15 @@
 #include "au/tables/Tree.h"                    // au::tables::TreeItem
 #include "au/tables/Table.h"
 
+#include "au/log/LogToServer.h" 
+
 #include "engine/MemoryManager.h"                   // samson::MemoryManager
 #include "engine/Notification.h"                   // samson::Notification
 
 #include "au/tables/pugi.h"                  // pugi::Pugi
 #include "au/tables/pugixml.hpp"             // pugi:...
+
+#include "au/log/log_server_common.h"
 
 #include "samson/common/EnvironmentOperations.h"	// Environment operations (CopyFrom)
 #include "samson/common/NotificationMessages.h"
@@ -60,9 +64,11 @@ namespace samson
     
     const char* auths = "Andreu Urruela, J.Gregorio Escalada & Ken Zangelin";
     
-    DelilahConsole::DelilahConsole( )
+    DelilahConsole::DelilahConsole( ) : log_client( AU_LOG_SERVER_QUERY_PORT )
     {
         // Default values
+        show_local_logs = false;
+        show_server_logs = false;
         show_alerts = false;
         verbose = true;
         
@@ -283,7 +289,6 @@ namespace samson
             return log_client.autoComplete(info);
         }
             
-        
         if ( info->completingFirstWord() )
         {
             // Add console commands
@@ -449,6 +454,18 @@ namespace samson
                 info->add("on");
         }
 
+        if (info->completingSecondWord("local_logs") )
+        {
+            info->add("off");
+            info->add("on");
+        }
+        
+        if (info->completingSecondWord("server_logs") )
+        {
+            info->add("off");
+            info->add("on");
+        }
+        
         if (info->completingSecondWord("trace") )
         {
             info->add("off");
@@ -620,7 +637,7 @@ namespace samson
 			return 0;	// Zero means no pending operation to check
 
         std::string mainCommand = commandLine.get_argument(0);
-
+        
         // Common command in all modes
         if( mainCommand == "set_mode" )
         {
@@ -654,7 +671,9 @@ namespace samson
         // Spetial mode
         if( mode == mode_logs )
         {
-            log_client.evalCommand(command, this);
+            au::ErrorManager error;
+            log_client.evalCommand(command, &error);
+            write( &error ); // Console method to write all the answers
             return 0;
         }
         
@@ -666,6 +685,7 @@ namespace samson
             return 0;
         }
 
+        
         if( mainCommand == "connect" )
         {
             if( commandLine.get_num_arguments() < 2 )
@@ -701,6 +721,7 @@ namespace samson
             return 0;
         }
         
+
         
         if( mainCommand == "history" )
         {
@@ -863,6 +884,54 @@ namespace samson
             
             return 0;
         }	
+
+        if( mainCommand == "example_warning" )
+        {
+            LM_W(("This is just an example of warning"));
+            return 0;
+        }
+        
+        if( mainCommand == "local_logs" )
+        {
+            if ( commandLine.get_num_arguments() == 1)
+            {
+                if( show_local_logs )
+                    writeOnConsole( "Local logs are activated\n" );
+                else
+                    writeOnConsole( "Local logs are NOT activated\n" );
+                return 0;
+            }
+            
+            if( commandLine.get_argument(1) == "on" )
+            {
+                if( !show_local_logs )
+                {
+                    // Connect plugin
+                    add_log_plugin( this );
+                }
+                
+                show_local_logs = true;
+                writeOnConsole( "Local logs are now activated\n" );
+                return 0;
+            }
+            if( commandLine.get_argument(1) == "off" )
+            {
+                if( show_local_logs )
+                {
+                    // Disconnec plugin
+                    remove_log_plugin( this );
+                }
+                
+                show_local_logs = false;
+                writeOnConsole( "Local logs are now NOT activated\n" );
+                return 0;
+            }
+            
+            writeErrorOnConsole("Usage: alerts on/off\n");
+            return 0;
+            
+        }
+
         
         if ( mainCommand == "alerts")
         {

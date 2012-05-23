@@ -466,6 +466,7 @@ do {                                                                       \
 *
 * LM_E - log error message
 */
+
 #define LM_E(s)                                                            \
 do {                                                                       \
    char* text;                                                             \
@@ -476,7 +477,20 @@ do {                                                                       \
       ::free(text);                                                          \
    }                                                                       \
 } while (0)
+
+#define LM_LE(s)                                                            \
+do {                                                                       \
+char* text;                                                             \
+\
+if ((text = lmTextGet s) != NULL)                                       \
+{                                                                       \
+lmOut(text, 'E', __FILE__, __LINE__, (char*) __FUNCTION__, 0, NULL,false); \
+::free(text);                                                          \
+}                                                                       \
+} while (0)
+
 #endif
+
 
 #ifdef LM_NO_P
 #define LM_P(s)
@@ -711,7 +725,20 @@ do {                                                                       \
       ::free(text);                                                          \
    }                                                                       \
 } while (0)
+
+#define LM_LX(c, s)                                                         \
+do {                                                                       \
+char* text;                                                             \
+\
+if ((text = lmTextGet s) != NULL)                                       \
+{                                                                       \
+lmOut(text, 'X', __FILE__, __LINE__, (char*) __FUNCTION__, c, NULL,false); \
+::free(text);                                                          \
+}                                                                       \
+} while (0)
+
 #endif
+
 
 
 #ifdef LM_NO_XP

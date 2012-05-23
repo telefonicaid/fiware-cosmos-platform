@@ -36,6 +36,17 @@ namespace samson
             "trace <on> <off>"
             );
         
+        add( "local_logs" , "delilah", 
+            "Activate or disactivate logs for this delilah",
+            "local_logss <on> <off>"
+            );
+
+        
+        add( "set_log_server" , "delilah",
+            "Set log server for all workers",
+            "set_log_server host [port]"
+            );
+        
         add( "log" , "delilah", 
              "log - view lines of the log files of the workers (last 20 lines by default - change using option '-lines')",
              "  log 'pattern'     only lines that match 'pattern'\n"

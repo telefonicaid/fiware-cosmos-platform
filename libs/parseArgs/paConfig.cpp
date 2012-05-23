@@ -570,7 +570,6 @@ int paConfig(const char* item, const void* value, const void* value2)
         {
             // extern char paLsHost[64];
             // printf("varP for option '%s' at %p. value: '%s' (paLsHost at %p)\n", argP->name, argP->varP, (char*) val, paLsHost);
-            strcpy(paLsHost, "PRUEBA");
             // printf("varP for option '%s' at %p. value: '%s' (paLsHost at %p)\n", argP->name, argP->varP, (char*) val, paLsHost);
             strcpy((char*) argP->varP, val);
             argP->def = (long long) argP->varP;

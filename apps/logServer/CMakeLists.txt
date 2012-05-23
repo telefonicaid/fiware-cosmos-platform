@@ -3,6 +3,7 @@ SET( STATIC_LIBS
 	 pa
      au
      lm
+	 protobuf
      pthread
 )
 

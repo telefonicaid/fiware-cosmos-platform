@@ -21,7 +21,6 @@
 
 #include "au/console/Console.h"  // Own interface
 
-
 struct termios old_tio, new_tio;
 
 void finish_console_mode()
@@ -797,6 +796,21 @@ void handle_tstp(int sig)
         init_console_mode();
     }
 }
+
+void Console::process_log( Log* log )
+{
+    // Print a warning on screen
+
+    std::string type = log->get("type");
     
+    if(( type == "E" ) || ( type == "X" ) )
+        writeErrorOnConsole( "TRACE: " + log_formatter.get(log) + "\n" );
+    else if( type == "W" )
+        writeWarningOnConsole( "TRACE: " + log_formatter.get(log) + "\n" );
+    else
+        writeOnConsole( "TRACE: " + log_formatter.get(log) + "\n" );
+    
+}
+
 
 NAMESPACE_END

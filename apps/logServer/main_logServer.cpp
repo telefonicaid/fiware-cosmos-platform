@@ -7,9 +7,9 @@
 
 #define LOC "localhost"
 
-#define LS_PORT LOG_SERVER_DEFAULT_CHANNEL_PORT
-#define LS_QUERY_PORT LOG_SERVER_DEFAULT_QUERY_CHANNEL_PORT
-#define LS_LOG_DIR LOG_SERVER_DEFAULT_CHANNEL_DIRECTORY
+#define LS_PORT       AU_LOG_SERVER_PORT
+#define LS_QUERY_PORT AU_LOG_SERVER_QUERY_PORT
+#define LS_LOG_DIR    AU_LOG_SERVER_DIRECTORY
 
 bool fg;
 int query_port;
@@ -79,19 +79,6 @@ int main(int argC, const char *argV[])
     // Log server
     au::LogServer log_server;
 
-    // Add default query channel
-    bool s = log_server.add_query_channel( LOG_SERVER_DEFAULT_QUERY_CHANNEL_PORT );
-
-    if( !s )
-        LM_X(1, ( "Not possible to open query channel on port %d\n" , LOG_SERVER_DEFAULT_QUERY_CHANNEL_PORT ));
-    
-    // Add default channel connections
-    au::ErrorManager error;
-    log_server.add_channel(LOG_SERVER_DEFAULT_CHANNEL_NAME, target_port, log_directory , &error);
-    
-    if( error.isActivated() )
-        LM_X(1, ("Not possible to add default channel.%s\n" , error.getMessage().c_str() ));
-    
     // Sleep forever
     while (true) 
         sleep(1);

@@ -26,6 +26,7 @@
 #include "au/ThreadManager.h"
 #include "au/log/LogToServer.h"
 #include "au/log/Log.h"
+#include "au/log/log_server_common.h"
 #include "au/daemonize.h"
 
 #include "engine/MemoryManager.h"
@@ -43,7 +44,7 @@
 #include "samson/stream/BlockManager.h"
 #include "samson/module/ModulesManager.h"
 
-
+#include <string.h>
 
 /* ****************************************************************************
 *
@@ -57,8 +58,13 @@ int             valgrind;
 int             port;
 int             web_port;
 
+char             log_file[1024]; 
+char             log_host[1024];
+bool             log_classic;
+int              log_port; 
 
-#define LOG_PORT LOG_SERVER_DEFAULT_CHANNEL_PORT
+
+#define LOG_PORT AU_LOG_SERVER_PORT
 
 /* ****************************************************************************
 *
@@ -67,6 +73,12 @@ int             web_port;
 PaArgument paArgs[] =
 {
     SAMSON_ARGS,
+    
+    { "-log_classic",       &log_classic,         "", PaBool,   PaOpt, false,          false, true, "Classical log file"   },
+    { "-log_host",          log_host,             "", PaString, PaOpt, _i "localhost", PaNL, PaNL,  "log server host"  },
+    { "-log_port",          &log_port,            "", PaInt,    PaOpt,  LOG_PORT,      0, 10000,    "log server port"  },
+    { "-log_file",          log_file,             "", PaString, PaOpt, _i "",          PaNL, PaNL,  "Local log file"   },
+
     { "-fg",        &fg,        "SAMSON_WORKER_FOREGROUND", PaBool,   PaOpt, false,                  false,  true,  "don't start as daemon"             },
     { "-monit",     &monit,     "SAMSON_WORKER_MONIT",      PaBool,   PaOpt, false,                  false,  true,  "to use with monit"                 },
     { "-port",      &port,      "",                         PaInt,    PaOpt, SAMSON_WORKER_PORT,     1,      9999,  "Port to receive new connections"   },
@@ -225,7 +237,16 @@ static void valgrindExit(int v)
     }
 }
 
-
+// Handy function to find a flag in command line without starting paParse
+bool find_flag( int argc , const char * argV[] , const char* flag )
+{
+    for ( int i = 0 ; i < argc ; i++ )
+    {
+        if( strcmp(argV[i], flag) == 0 )
+            return true;
+    }
+    return false;
+}
 
 
 /* ****************************************************************************
@@ -246,9 +267,15 @@ int main(int argC, const char *argV[])
     paConfig("screen line format",                (void*) "TYPE@TIME  EXEC: TEXT");
 
     paConfig("default value", "-logDir",          (void*) "/var/log/samson");
-    paConfig("default value", "-lsHost",          (void*) "localhost");
-    paConfig("default value", "-lsPort",          (void*) 6001);
-    paConfig("if hook active, no traces to file", (void*) true);
+
+    
+    if( find_flag( argC , argV , "-log_classic" ) )
+    {
+        paConfig("if hook active, no traces to file", (void*) false);
+        paConfig("log to file",                       (void*) true);
+    }
+    else
+        paConfig("if hook active, no traces to file", (void*) true);
 
     paConfig("man synopsis",                      (void*) manSynopsis);
     paConfig("man shortdescription",              (void*) manShortDescription);
@@ -259,27 +286,17 @@ int main(int argC, const char *argV[])
     paConfig("man copyright",                     (void*) manCopyright);
     paConfig("man version",                       (void*) manVersion);
 
-    const char* xxhost         = paIsSetSoGet(argC, (char**) argV, "-lsHost");
-    bool        logServerUsed  = true;
-
-    if (xxhost != NULL)
-    {
-        if (strcmp(xxhost, "NO") == 0) // No Log Server wanted - turn on log file ...
-        {
-            paConfig("log to file",                       (void*) true);
-            logServerUsed = false;
-        }
-    }
-
     const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
 
-    if (logServerUsed == true)
-    {
-        // Log system
-        std::string local_log_file = au::str("%s/samsonWorkerLog_%d" , paLogDir , (int) getpid() );
-        au::start_log_to_server( paLsHost , paLsPort , local_log_file );
-    }
+    // Log system
+    std::string local_log_file;
+    if( strlen(log_file) > 0 )
+        local_log_file = log_file;
+    else
+        local_log_file = au::str("%s/samsonWorkerLog_%d" , paLogDir , (int) getpid() );
+    
+    au::start_log_to_server( log_host , log_port , local_log_file );
 
     // Only add in foreground to avoid warning / error messages at the stdout
     if (fg)

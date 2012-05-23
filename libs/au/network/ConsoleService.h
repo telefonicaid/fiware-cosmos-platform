@@ -24,24 +24,24 @@ namespace au
         class Service;
         
         
-        class ConsoleServiceClient : public Console
+        class ConsoleServiceClientBase
         {
             int port;
             SocketConnection * socket_connection;
             
         public:
             
-            ConsoleServiceClient( int _port )
+            ConsoleServiceClientBase( int _port )
             {
                 port = _port;
                 socket_connection = NULL;
             }
             
-            bool write( au::gpb::ConsolePacket* packet )
+            bool write( au::gpb::ConsolePacket* packet , au::ErrorManager *error )
             {
                 if( !socket_connection )
                 {
-                    writeErrorOnConsole("Not connected to any host");
+                    error->add_error("Not connected to any host");
                     return false;
                 }
                 
@@ -50,32 +50,30 @@ namespace au
                 
                 if( s != OK )
                 {
-                    writeErrorOnConsole(au::str("Not possible to sent message (%s). Disconnecting...",status(s)));
-                    disconnect();
+                    error->add_error(au::str("Not possible to sent message (%s). Disconnecting...",status(s)));
+                    disconnect(error);
                     return false;
                 }
                 return true;
             }
             
-            bool read( au::gpb::ConsolePacket** packet )
+            bool read( au::gpb::ConsolePacket** packet , au::ErrorManager *error )
             {
                 if( !socket_connection )
                 {
-                    writeErrorOnConsole("Not connected to any host");
+                    error->add_error("Not connected to any host");
                     return false;
                 }
                 
                 Status s = readGPB( socket_connection->getFd() , packet , -1);
                 if( s != OK )
                 {
-                    writeErrorOnConsole(au::str("Not possible to receive answer (%s). Disconnecting...",status(s)));
-                    disconnect();
+                    error->add_error(au::str("Not possible to receive answer (%s). Disconnecting...",status(s)));
+                    disconnect(error);
                     return false;
                 }
                 return true;
             }
-            
-            
             
             void fill_message( au::gpb::ConsolePacket* message , au::ErrorManager* error )
             {
@@ -99,12 +97,11 @@ namespace au
                 }
             }
             
-            void disconnect()
+            void disconnect( au::ErrorManager * error )
             {
                 if( socket_connection )
                 {
-                    writeWarningOnConsole(
-                                          au::str("Closing connection with %s\n" 
+                    error->add_warning( au::str("Closing connection with %s\n" 
                                                   , socket_connection->getHostAndPort().c_str() ));
                     
                     socket_connection->close();
@@ -114,29 +111,32 @@ namespace au
                 }
             }
             
-            void connect( std::string host )
+            void connect( std::string host , au::ErrorManager * error )
             {
                 // Disconnect from previos one if any...
-                disconnect(); 
+                disconnect( error ); 
+                
+                if( error->isActivated() )
+                    return;
                 
                 // Try connection
                 au::Status s = SocketConnection::newSocketConnection(host, port, &socket_connection);
                 if( s != OK )
                 {
-                    disconnect();
-                    writeErrorOnConsole( au::str("Not possible to connect with %s (%s)\n" , host.c_str() , status(s) ) );
+                    disconnect(error);
+                    error->add_error( au::str("Not possible to connect with %s (%s)\n" , host.c_str() , status(s) ) );
                 }
                 else
-                    writeWarningOnConsole( au::str("Connection stablished with %s\n" , host.c_str() ) );
+                    error->add_warning( au::str("Connection stablished with %s\n" , host.c_str() ) );
             }
             
-            virtual std::string getPrompt()
+            std::string getPrompt()
             {
-                // Still not implemented the remove-prompt mechanism...
+                // Still not implemented the remote-prompt mechanism...
                 return ">>";
             }
             
-            virtual void evalCommand( std::string command )
+            void evalCommand( std::string command , au::ErrorManager *error )
             {
                 
                 // Establish connection
@@ -150,7 +150,7 @@ namespace au
                 
                 if( main_command == "disconnect" )
                 {
-                    disconnect();
+                    disconnect(error);
                     return;
                 }
                 
@@ -158,16 +158,16 @@ namespace au
                 {
                     if( cmdLine.get_num_arguments() < 2 )
                     {
-                        writeErrorOnConsole("Usage: connect host");
+                        error->add_error("Usage: connect host");
                         return;
                     }
-                    connect( cmdLine.get_argument(1) );
+                    connect( cmdLine.get_argument(1) , error );
                     return;
                 }
                 
                 if( !socket_connection )
                 {
-                    writeErrorOnConsole("Not connected to any host. Type connect 'host'");
+                    error->add_error("Not connected to any host. Type connect 'host'");
                     return;
                 }
                 else
@@ -175,23 +175,19 @@ namespace au
                     // Write command to the server
                     au::gpb::ConsolePacket m;
                     m.set_command( command );
-                    if(! write(&m) )
+                    if(! write(&m , error ) )
                         return;
                     
                     // Read answer
                     au::gpb::ConsolePacket *answer;
                     
-                    if( !read( &answer ) )
+                    if( !read( &answer , error ) )
                         return;
                     
                     
                     // Transform into a au::ErrorManager
-                    au::ErrorManager error;
-                    fill_message( answer , &error );
+                    fill_message( answer , error );
                     delete answer;
-                    
-                    // Write all messages on console
-                    Console::write( &error );
                     
                 }
                 
@@ -211,13 +207,15 @@ namespace au
                 au::gpb::ConsolePacket m;
                 m.set_auto_complettion_command( info->getCurrentCommand() );
                 
+                au::ErrorManager error; // Not used error
+                
                 // Send to server
-                if(! write(&m) )
+                if(! write(&m , &error) )
                     return;
                 
                 // Read answer from server
                 au::gpb::ConsolePacket *answer;                
-                if( !read( &answer ) )
+                if( !read( &answer , &error ) )
                     return;
                 
                 // Fill info structure with received information
@@ -241,8 +239,41 @@ namespace au
             { 
             }
             
-            
         };
+
+        // Simple console to interact with the client
+        
+        class ConsoleServiceClient : public ConsoleServiceClientBase , public Console
+        {
+            
+        public:
+            
+            ConsoleServiceClient( int port ) : ConsoleServiceClientBase( port )
+            {
+                
+            }
+            
+            // Write all messages on console
+            void evalCommand( std::string command )
+            {
+                au::ErrorManager error;
+                ConsoleServiceClientBase::evalCommand(command , &error );
+                Console::write( &error );
+            }
+            
+            void autoComplete( ConsoleAutoComplete* info )
+            {
+                ConsoleServiceClientBase::autoComplete(info);
+            }
+
+            std::string getPrompt()
+            {
+                return ConsoleServiceClientBase::getPrompt();
+            }
+
+        };
+        
+        
         
         // Service based on a remote console
         

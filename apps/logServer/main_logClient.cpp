@@ -7,7 +7,7 @@
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/network/SocketConnection.h"
 
-#include "au/log/LogClient.h"
+#include "au/network/ConsoleService.h"
 #include "au/log/log_server_common.h"
 
 
@@ -17,7 +17,7 @@ char format[1024];
 int target_port;
 
 #define LOC "localhost"
-#define LS_PORT LOG_SERVER_DEFAULT_QUERY_CHANNEL_PORT
+#define LS_PORT AU_LOG_SERVER_QUERY_PORT
 
 
 PaArgument paArgs[] =
@@ -46,7 +46,6 @@ static const char* manVersion       = "0.1";
 
 
 int logFd=-1;
-au::LogClient log_client;
 
 int main(int argC, const char *argV[])
 {
@@ -72,34 +71,20 @@ int main(int argC, const char *argV[])
     logFd = lmFirstDiskFileDescriptor();
     
     LM_V(("Connecting to log server at %s:%d" , target_host , target_port ));
-    
-    // Init main log client
-    au::ErrorManager error;
-    log_client.connect( target_host , target_port , &error );
 
-    // Not tolerant on errors in first connection
-    if( error.isActivated() )
-        LM_X(1 , ("%s" , error.getMessage().c_str() ));
+    // Default port for this client
+    au::network::ConsoleServiceClient console( target_port );  
     
-    if( strcmp(command, "") != 0 )
+    if( strcmp( target_host , "" ) != 0 ) 
     {
-        // Sent a single command
-        log_client.sent_command(command, &error);
-
+        au::ErrorManager error;
+        console.connect( target_host , &error );    // Connect to the given host
         if( error.isActivated() )
-            LM_X(1 , ("%s" , error.getMessage().c_str() ));
-
-        std::string answer = log_client.getMessageFromLogServer(&error);
-
-        if( error.isActivated() )
-            LM_X(1 , ("%s" , error.getMessage().c_str() ));
-
-        printf("%s" , answer.c_str() );
-        exit(0);
+            LM_X(1, ("Error: %s" , error.getMessage().c_str() ));
     }
     
-    // Run console in iterative mode
-    log_client.runConsole();
+    // Run console
+    console.runConsole();
     
    return 0;
 }

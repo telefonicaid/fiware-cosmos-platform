@@ -2,8 +2,6 @@
 #ifndef _H_AU_LOG
 #define _H_AU_LOG
 
-#define LOG_SERVER_DEFAULT_CHANNEL_PORT            6001
-#define LOG_SERVER_DEFAULT_CHANNEL_NAME            "default"
 
 #define DATE_FORMAT "%A %d %h %H:%M:%S %Y"
 

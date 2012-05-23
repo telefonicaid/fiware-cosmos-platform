@@ -65,6 +65,9 @@ namespace au
         // Pattern comparison
         Pattern* pattern;
 
+        // Filter to only this Channel 
+        std::string channel;
+        
         // Reference time to filter logs
         time_t ref_time;
         
@@ -111,6 +114,7 @@ namespace au
         void set_time( std::string _str_time );
         void set_date( std::string _str_date );
         void set_type( std::string _str_type );        
+        void set_channel( std::string channel );
         
         // Push a new log into the table to be print
         void add( Log* log );

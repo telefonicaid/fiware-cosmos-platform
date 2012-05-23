@@ -4,6 +4,8 @@
 #define _H_AU_LOG_FORMATTER
 
 
+#define DEFAULT_FORMAT "TYPE : date : time : EXEC : FILE[LINE] : FUNC : TEXT"
+
 namespace au 
 {
     
@@ -15,7 +17,7 @@ namespace au
         
     public:
         
-        LogFormatter( std::string _definition );        
+        LogFormatter( std::string _definition = DEFAULT_FORMAT );        
         std::string get( Log* log );
         
     };

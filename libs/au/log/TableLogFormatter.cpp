@@ -52,6 +52,11 @@ namespace au
         is_table = _is_table;
     }
     
+    void TableLogFormatter::set_channel( std::string _channel )
+    {
+        channel = _channel;
+    }
+    
     void TableLogFormatter::set_reverse( bool _is_reverse )
     {
         if( flag_init )
@@ -247,6 +252,10 @@ namespace au
             if( log->log_data.type != str_type[0] )
                 return false;
 
+        if( channel != "" )
+            if( log->get("channel") != channel )
+                return false;
+        
         return true;
     }
     

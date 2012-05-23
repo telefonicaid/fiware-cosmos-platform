@@ -16,6 +16,7 @@
 
 #include "au/log/Log.h"
 
+/*
 namespace au {
     
     class LogServer;
@@ -46,4 +47,5 @@ namespace au {
     };
 
 }
+ */
 #endif

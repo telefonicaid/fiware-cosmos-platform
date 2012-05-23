@@ -20,6 +20,7 @@
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
 #include "au/ThreadManager.h"
 #include "au/log/LogToServer.h"
+#include "au/log/log_server_common.h"
 
 
 #include "engine/MemoryManager.h"
@@ -62,28 +63,36 @@ int              load_buffer_size_mb;
 char             commandFileName[1024];
 bool             monitorization;
 char             command[1024]; 
+
 char             log_file[1024]; 
+char             log_host[1024];
+unsigned short   log_port; 
 
 
 #define LOC "localhost"
+#define LOG_PORT AU_LOG_SERVER_PORT
 /* ****************************************************************************
 *
 * parse arguments
 */
 PaArgument paArgs[] =
 {
+    { "-log_host",          log_host,             "", PaString, PaOpt, _i "localhost", PaNL, PaNL,  "log server host"  },
+    { "-log_port",          &log_port,            "", PaInt,    PaOpt,  LOG_PORT,      0, 10000,  "log server port"    },
+    { "-log_file",          log_file,             "", PaString, PaOpt, _i "",          PaNL, PaNL,  "Local log file"   },
+    
     { "-user",             user,                  "",                       PaString, PaOpt, _i "anonymous",      PaNL, PaNL,  "User to connect to SAMSON cluster"      },
     { "-password",         password,              "",                       PaString, PaOpt, _i "anonymous",      PaNL, PaNL,  "Password to connect to SAMSON cluster"  },
     { "-memory",           &memory_gb,            "MEMORY",                 PaInt,    PaOpt, 1,                   1,    100,   "memory in GBytes"                       },
     { "-load_buffer_size", &load_buffer_size_mb,  "LOAD_BUFFER_SIZE",       PaInt,    PaOpt, 64,                  64,   2048,  "load buffer size in MBytes"             },
     { "-f",                commandFileName,       "FILE_NAME",              PaString, PaOpt, _i "",               PaNL, PaNL,  "File with commands to run"              },
     { "-command",          command,               "", PaString, PaOpt, _i "",               PaNL, PaNL,  "Single command to be executed"          },
-    { "-log_file",          log_file,             "", PaString, PaOpt, _i "",               PaNL, PaNL,  "Local file to log if not possible to connect with log server"          },
     { "",                  target_host,           "",                       PaString, PaOpt, _i LOC,              PaNL, PaNL,  "SAMSON server hostname"                 },
     { "",                 &target_port,           "",                       PaInt,    PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
 
     PA_END_OF_ARGS
 };
+
 
 /* ****************************************************************************
 *
@@ -182,8 +191,7 @@ extern size_t delilah_random_code;
 *
 * main - 
 */
-char           lsHost[64];
-unsigned short lsPort;
+
 int main(int argC, const char *argV[])
 {
 
@@ -205,8 +213,6 @@ int main(int argC, const char *argV[])
     paConfig("man version",                   (void*) manVersion);
 
     paConfig("default value", "-logDir", (void*) "/var/log/samson");
-    paConfig("default value", "-lsHost", (void*) "NO");
-    paConfig("default value", "-lsPort", (void*) 6001);
     paConfig("if hook active, no traces to file", (void*) true);
 
     // Random initialization
@@ -237,8 +243,7 @@ int main(int argC, const char *argV[])
                                                        , au::code64_str( delilah_random_code ).c_str() 
                                                        , (int) getpid() );
     
-    LM_W(("Starting connection with log server (Local log_file: %s)" , local_log_file.c_str()));
-    au::start_log_to_server( paLsHost , paLsPort , local_log_file );
+    au::start_log_to_server( log_host , log_port , local_log_file );
 
     if ((strcmp(target_host, "localhost") == 0) || (strcmp(target_host, "127.0.0.1") == 0))
     {

@@ -20,7 +20,7 @@
 
 #include "logMsg/logMsg.h"				
 
-#include "au/log/LogClient.h"
+#include "au/network/ConsoleService.h"
 
 #include "au/mutex/TokenTaker.h"                  // au::TokenTake
 #include "au/console/Console.h"                     // au::Console
@@ -64,6 +64,8 @@ namespace samson {
 
         // Flag to indicate if we are shoing traces
         bool show_alerts;
+        bool show_local_logs;
+        bool show_server_logs;
         
         // Flag to show on screen certain messages
         bool verbose;
@@ -78,7 +80,7 @@ namespace samson {
         au::simple_map< std::string , std::string > aliases;
 
         // LogClient used when working in log_client mode
-        au::LogClient log_client;
+        au::network::ConsoleServiceClientBase log_client;
         
 	public:		
         

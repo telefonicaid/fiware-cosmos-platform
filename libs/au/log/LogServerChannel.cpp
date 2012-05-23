@@ -2,17 +2,17 @@
 #include "LogServerChannel.h" // Own interface
 #define Char_to_int(x) ((x)-48)
 
+#include "au/Descriptors.h"
+#include "au/containers/vector.h"
 #include "logMsg/logMsg.h"                                              // LM_T
 #include "logMsg/traceLevels.h"            // LmtFileDescriptors, etc.
 
 namespace au 
 {
-    LogServerChannel::LogServerChannel( std::string _name , int port , std::string _directory ) 
+    LogServerChannel::LogServerChannel( int port , std::string _directory ) 
     : network::Service( port ) , token("LogServerChannel")
     {
-        name = _name;
         directory = _directory;
-        
     }
     
     LogServerChannel::~LogServerChannel()
@@ -108,11 +108,18 @@ namespace au
             
             if( !log->read( socket_connection ) )
             {
-                return; // Not possible to read a log...
-                
                 LM_V(("Closed connection from %s" , socket_connection->getHostAndPort().c_str() ));
+                return; // Not possible to read a log...
             }
             
+            // Add channel information to keep logs separated
+            std::string exec_name = log->get("EXEC");
+            std::string channel = au::str("%s_%s_%d"
+                                          , exec_name.c_str()
+                                          , socket_connection->getHostAndPort().c_str() 
+                                          , log->log_data.pid );
+            log->add_field("channel", channel );
+
             // Add log...
             add( log );
             
@@ -136,14 +143,6 @@ namespace au
         
     }
     
-    std::string LogServerChannel::getName()
-    {
-        return name;
-    }
-    
-    
-
-    
     void LogServerChannel::addNewSession()
     {
         Log log;
@@ -153,12 +152,161 @@ namespace au
         add(&log);
     }
     
+    class ChannelInfo
+    {
+    public:
+        
+        std::string name_;
+        
+        int logs_;      // Number of logs
+        size_t size_;   // Total size
+
+        au::Descriptors descriptors_;
+        
+        std::string time_; // Most recent time stamp
+        
+        ChannelInfo( std::string name , Log* log )
+        {
+            name_ = name;
+            
+            logs_ = 0;
+            size_ = 0;
+            
+            // First time
+            time_ = log->get("date") + " " + log->get("time");
+            
+            add_log( log );
+        }
+        
+        void add_log( Log* log )
+        {
+            logs_ ++;
+            size_ += log->getTotalSerialitzationSize();
+
+            std::string type = log->get("TYPE");
+            if( type == "" )
+                type = "?";
+            descriptors_.add(type);
+        }
+    };
     
+    class ChannelsInfo
+    {
+        au::vector<ChannelInfo> channel_info;
+        
+    public:
+        
+        void add_channel( std::string channel , Log* log )
+        {
+            for( size_t i = 0 ; i < channel_info.size() ; i++)
+                if( channel_info[i]->name_ == channel )
+                {
+                    channel_info[i]->add_log( log );
+                    return;
+                }
+            // Create a new one
+            ChannelInfo* _channel_info = new ChannelInfo( channel , log );
+            channel_info.push_back( _channel_info );
+            
+        }
+        
+        std::string getTable()
+        {
+            au::tables::Table table( "Channel|Last time|#Logs|Type|Size,f=uint64" );
+            table.setTitle("Channels");
+            for( size_t i = 0 ; i < channel_info.size() ; i++ )
+            {
+                au::StringVector values;
+
+                values.push_back( channel_info[i]->name_ );
+                values.push_back( channel_info[i]->time_ );
+                
+                values.push_back( au::str("%d" , channel_info[i]->logs_ ) );
+                values.push_back( channel_info[i]->descriptors_.str() );
+                values.push_back( au::str("%lu" , channel_info[i]->size_ ) );
+                
+                table.addRow( values );
+            }
+            return table.str();
+        }
+        
+        size_t getNumChannels()
+        {
+            return channel_info.size();
+        }
+    };
+    
+    
+    std::string  LogServerChannel::getChannelsTable( au::CommandLine * cmdLine )
+    {
+        // Get formats from 
+        int limit             = cmdLine->get_flag_int("limit");
+        bool is_multi_session = cmdLine->get_flag_bool("multi_session");        
+        
+        
+        // Get current log file
+        int tmp_file_counter = file_counter;
+        
+        //Vector of channels
+        ChannelsInfo channel_info;
+        
+        // Push logs while not enougth
+        bool finish = false;
+        while( !finish )
+        {
+            LogFile* log_file = NULL;
+            std::string file_name = getFileNameForLogFile( tmp_file_counter );
+            Status s = LogFile::read( file_name , &log_file );
+            
+            if( s == OK )
+            {
+                // Scan logs for this channel
+                size_t num_logs = log_file->logs.size();
+                for( size_t i = 0 ; i < num_logs ; i++ )
+                {
+                    // Get log and add to the table log formatter
+                    Log* log = log_file->logs[ num_logs - i - 1 ];
+                    
+                    if( !is_multi_session && log->is_new_session() )
+                    {
+                        finish = true;
+                        break;
+                    }
+                    
+                    // Get channel
+                    std::string channel = log->get("channel");
+
+                    // Collect this information
+                    channel_info.add_channel( channel , log );
+                    
+                    if( limit > 0 )
+                        if( ((int)channel_info.getNumChannels()) >= limit )
+                        {
+                            finish =true;
+                            break;
+                        }
+                        
+                }
+                
+                // Delete the openen file
+                delete log_file;
+            }
+            
+            // Move to the previous log file
+            tmp_file_counter--;
+            
+            // Finish if no more files to scan
+            if( tmp_file_counter < 0 )
+                break;
+            
+        }
+        
+        return channel_info.getTable();
+    }
+
     std::string LogServerChannel::getTable( au::CommandLine * cmdLine )
     {
-        LM_V(("Get table..."));
-        
-        // Mutex protection ( not necessary any more since it is based on files )
+        // Mutex protection is not necessary any more since it is based on files
         //au::TokenTaker tt(&token); 
         
         // Get formats from 
@@ -172,7 +320,7 @@ namespace au
         std::string str_time = cmdLine->get_flag_string("time");
         std::string str_date = cmdLine->get_flag_string("date");
         std::string str_type = cmdLine->get_flag_string("type");
-        
+        std::string channel = cmdLine->get_flag_string("channel");
         // Formatter to create table
         TableLogFormatter table_log_formater( format );
 
@@ -184,6 +332,8 @@ namespace au
         table_log_formater.set_reverse( is_reverse );
         table_log_formater.set_as_multi_session( is_multi_session );
         table_log_formater.set_limit( limit );
+        table_log_formater.set_channel( channel );
+        table_log_formater.set_type(str_type);
         
         au::ErrorManager error;
         table_log_formater.init(&error);

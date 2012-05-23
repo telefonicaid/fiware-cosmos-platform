@@ -21,7 +21,6 @@ namespace au
         // Read a file
         static au::Status read( std::string file_name , LogFile** logFile );
         
-        
     };
     
 }

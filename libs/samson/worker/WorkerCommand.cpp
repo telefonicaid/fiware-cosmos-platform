@@ -4,6 +4,7 @@
 #include "au/utils.h"
 #include "au/ErrorManager.h"
 #include "au/string.h"
+#include "au/log/LogToServer.h"
 
 #include "engine/Notification.h"
 #include "engine/ProcessManager.h"  
@@ -335,6 +336,30 @@ namespace samson {
             return;
             
             
+        }
+        
+        if( main_command == "set_log_server" )
+        {
+            if( cmd.get_num_arguments() < 2 )
+            {
+                error->set( "Usage: set_log_server host [port]" );
+                return;
+            }
+            
+            if( cmd.get_num_arguments() == 2 )
+            {
+                std::string host = cmd.get_argument(1);
+                au::set_log_server( host );
+                return;
+            }
+            
+            if( cmd.get_num_arguments() > 2 )
+            {
+                std::string host = cmd.get_argument(1);
+                int port = atoi( cmd.get_argument(2).c_str() );
+                au::set_log_server( host , port );
+                return;
+            }
         }
         
         if( main_command == "remove_all_stream" )

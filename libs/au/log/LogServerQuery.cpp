@@ -8,13 +8,13 @@
 
 #include "LogServerQuery.h" // Own interface
 
+/*
 namespace au 
 {
     
     std::string LogServerQuery::getAnswer( std::string command )
     {
         CommandLine cmdLine;
-        cmdLine.set_flag_string("channel", LOG_SERVER_DEFAULT_CHANNEL_NAME);
         cmdLine.set_flag_string("format", "TYPE:time:TEXT");       // Format of each log
         cmdLine.set_flag_int("limit", 0);                     // Max number of logs
         cmdLine.set_flag_string("pattern", "");               // Pattern for strings...
@@ -36,15 +36,16 @@ namespace au
         
         if( main_command == "new_session" )
         {
-            return log_server->newSessionCommand( &cmdLine );
+            return log_server->newSessionCommand( );
         }
         
         if( main_command == "show_connections" )
             return log_server->getConnectionsTables();
-        
+
+        // Show logs
         if( main_command == "show_channels" )
-            return log_server->getChannelsTables();
-        
+            return log_server->getLogsTable( &cmdLine );
+
         // Show logs
         if( main_command == "show" )
             return log_server->getLogsTable( &cmdLine );
@@ -89,3 +90,4 @@ namespace au
     }
     
 }
+*/

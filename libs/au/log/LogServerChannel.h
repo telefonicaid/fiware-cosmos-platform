@@ -25,30 +25,26 @@ namespace au
     class LogServer;
     class LogServerQuery;
     
-    // Service to add logs
     class LogServerChannel : public network::Service
     {
-        std::string name;
-        std::string directory;
-        
+        std::string directory;   // Directory to save data in
         
         au::Token token;         // Mutex protection ( multithread since we receive multiple connections )
+        
         int file_counter;        // Used to write over a file
         size_t current_size;     // Current written size
-        au::FileDescriptor *fd;
+        
+        au::FileDescriptor *fd;  // Current file descriptor to save data
         
     public:
-        
-        au::rate::Rate rate;
+
+        au::rate::Rate rate;     // Estimated data rate for this channel
 
         // Constructor & destructor
-        LogServerChannel( std::string _name , int port , std::string _directory );
+        LogServerChannel( int port , std::string _directory );
         virtual ~LogServerChannel();
         
-        // Get the name of the channel        
-        std::string getName();
-
-        // Funciton to init
+        // Init service 
         void initLogServerChannel( au::ErrorManager * error );
 
         // network::Service interface : main function for every active connection
@@ -56,6 +52,9 @@ namespace au
         
         // Generic function to get a table of logs ( based on disk files )
         std::string  getTable( au::CommandLine * cmdLine );
+
+        // Generic function to get a table of channels ( log connections )
+        std::string  getChannelsTable( au::CommandLine * cmdLine );
         
         // Add a new session mark ( used in future queries )
         void addNewSession();

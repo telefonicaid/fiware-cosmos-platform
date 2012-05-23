@@ -43,8 +43,6 @@ char            paTerm[128];
 char            paSystem[128];
 char            paVisual[128];
 char            paLogDir[256];
-char            paLsHost[64];
-unsigned short  paLsPort        = 0;
 
 
 #define T (int) true
@@ -112,9 +110,6 @@ PaiArgument paBuiltin[] =
  { "-lmkl",     &paKeepLines,    "KEEP_LINES",       PaInt,    PaOpt,     -1,  PaNL,  PaNL,  "clear 'keep lines'",          PAI_REST },
  { "-lmll",     &paLastLines,    "LAST_LINES",       PaInt,    PaOpt,     -1,  PaNL,  PaNL,  "clear 'last lines'",          PAI_REST },
  { "-assert",   &paAssertAtExit, "ASSERT_AT_EXIT",   PaBool,   PaOpt,      F,     T,     F,  "assert instead of exiting",   PAI_REST },
- { "-lsHost",   paLsHost,        "LOG_SERVER_HOST",  PaStr,    PaOpt,      0,  PaNL,  PaNL,  "log server host",             PAI_REST_IN_USAGE },
- { "-lsPort",   &paLsPort,       "LOG_SERVER_PORT",  PaUShort, PaOpt,      0,  PaNL,  PaNL,  "log server port",             PAI_REST_IN_USAGE },
-
  PAI_END_OF_ARGS
 };
 

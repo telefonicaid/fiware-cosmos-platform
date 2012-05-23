@@ -14,12 +14,10 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
  */
 abstract class OutputEraser {
     private static final Map<Class<? extends OutputFormat>,
-                             Class<? extends OutputEraser>> ERASERS;
-
-    static {
-        ERASERS = new HashMap();
-        ERASERS.put(FileOutputFormat.class, FileDataEraser.class);
-    }
+                             Class<? extends OutputEraser>> ERASERS =
+        new HashMap() {{
+            put(FileOutputFormat.class, FileDataEraser.class);
+        }};
 
     public static OutputEraser getEraser(Class c) {
         if (!ERASERS.containsKey(c)) {

@@ -139,7 +139,7 @@ namespace samson {
             if( key_size > key_size2 )
                 return 1;
             
-            for (int i = 0 ; i < key_size ; i++ )
+            for (size_t i = 0 ; i < key_size ; i++ )
             {
                 
                 if( key[i] < key2[i] )

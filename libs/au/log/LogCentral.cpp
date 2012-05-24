@@ -7,6 +7,7 @@ namespace au
     LogCentral::LogCentral( std::string _host , int _port , std::string _local_file ) 
     : token("PermanentSocketConnection")
     , token_plugins("token_plugins")
+    , token_current_thread("token_current_thread")
     {
         host = _host;
         port = _port;
@@ -60,7 +61,9 @@ namespace au
         // Reconnect to this server if possible
         time_reconnect = 60; // Initial time to reconnect
         try_connect();
-        
+     
+        current_thread_activated = false;
+
     }
     
     int LogCentral::getFd()
@@ -74,12 +77,61 @@ namespace au
         
         return -1;
     }
-    void LogCentral::write( Log *log )
+    
+    
+    void LogCentral::write( Log* log )
     {
-        au::TokenTaker tt(&token);
+        // If we are the writing thread, just return ( otherwise it will be locked )
+        // If the system is taken, just wait
+        while( true )
+        {
+            {
+                // Mutex protection
+                au::TokenTaker tt(&token_current_thread);
+                
+                // Get my thread id
+                pthread_t my_thread_id = pthread_self();
+                
+                // Check if I am blocking this log
+                if( current_thread_activated )
+                {
+                    if( current_thread == my_thread_id )
+                        return; // Secondary log...
+                }
+                else
+                {
+                    current_thread = my_thread_id;
+                    break;
+                }
+            }
+            
+            // Sleep waiting to send traces
+            usleep(10000);
+        }
         
-        write_to_plugins(log);
-        write_to_server_or_file(log); // Log is accumulated and finally removed
+        // Real write operation
+        internal_write(log);
+        
+        {
+            // Mutex protection
+            au::TokenTaker tt(&token_current_thread);
+
+            // Deactivate this lock
+            current_thread_activated = false;
+        }
+        
+        
+    }
+    
+    void LogCentral::internal_write( Log *log )
+    {
+        
+        {
+            au::TokenTaker tt(&token);
+            
+            write_to_plugins(log);
+            write_to_server_or_file(log); // Log is accumulated and finally removed
+        }
     }
     
     void LogCentral::addPlugin( LogPlugin* p )

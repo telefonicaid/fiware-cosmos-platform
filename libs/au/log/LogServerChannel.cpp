@@ -54,7 +54,6 @@ namespace au
                 if( s == 0 ) 
                     continue; // File exist, so let's try the next number...
                 
-                LM_V(("Opening log file %s" , current_file_name.c_str()));
                 int _fd = open( current_file_name.c_str() , O_CREAT | O_WRONLY , 0644 );
                 LM_LT(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
                 
@@ -102,7 +101,6 @@ namespace au
     
     void LogServerChannel::run( au::SocketConnection * socket_connection , bool *quit )
     {
-        LM_V(("New connection from %s" , socket_connection->getHostAndPort().c_str() ));
         
         while( !*quit )
         {

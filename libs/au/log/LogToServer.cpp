@@ -60,6 +60,24 @@ namespace au
         
     }
     
+    void restart_log_to_server( std::string local_log_file )
+    {
+        // Only caled in single-thread ( after fork )
+        if( log_central )
+        {
+            // Keep interesting information
+            std::string log_host = log_central->getHost();
+            int log_port = log_central->getPort();
+
+            // Delete the old log central
+            delete log_central;
+
+            // Create  a new log central element
+            log_central = new LogCentral( log_host , log_port , local_log_file ); 
+        }
+        
+    }
+    
     void stop_log_to_server( )
     {
         if( log_central )

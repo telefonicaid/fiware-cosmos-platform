@@ -52,6 +52,12 @@ namespace au
         au::Token token_plugins;
         au::set<LogPlugin> plugins;
         
+        
+        // Current thread loging
+        au::Token token_current_thread;
+        pthread_t current_thread;
+        bool current_thread_activated;
+        
     public:
         
         LogCentral( std::string _host , int _port , std::string _local_file );
@@ -65,10 +71,22 @@ namespace au
         
         // Write log
         void write( Log *log );
+        void internal_write( Log *log );
         
         // Plugins
         void addPlugin( LogPlugin* p );
         void removePlugin( LogPlugin* p );
+        
+        // Get host
+        std::string getHost()
+        {
+            return host;
+        }
+        
+        int getPort()
+        {
+            return port;
+        }
         
     private:
         

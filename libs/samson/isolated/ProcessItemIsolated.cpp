@@ -683,6 +683,9 @@ namespace samson
 	
 	void ProcessItemIsolated::runBackgroundProcessRun()
 	{
+        // Restart the log system to avoid logs
+        au::restart_log_to_server( au::str("/tmp/samsonWorker_chield_%d" , getpid() ) );
+        
         LM_T(LmtIsolated,("Running runBackgroundProcessRun..."));
 
 		// Close the other side of the pipes ( if it is in thread-mode, we cannot close)

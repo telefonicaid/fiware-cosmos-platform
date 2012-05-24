@@ -33,8 +33,9 @@ class GraphLine : public GraphLine_base
         coordSetLength(NUMBER_OF_POINTS.value);
         for (int i = 0; (i < NUMBER_OF_POINTS.value); i++)
         {
-            coord[i].x.value = -1 * i;
-            coord[i].y.value = 0;
+            coord[i].xSetLength(2);
+            coord[i].x[0].value = -1 * i;
+            coord[i].x[1].value = 0;
         }
 
 //        p_coord_seconds.value = reinterpret_cast<uint64_t> (coord);
@@ -54,13 +55,13 @@ class GraphLine : public GraphLine_base
         }
         for (int i = (end_hours - 1); (i >= (init_hours + num_items_shifted)); i--)
         {
-            //LM_M(("Shift last hours from index %d to index:%d(val:%d)", i - num_items_shifted, i, coord[i - num_items_shifted].y.value));
-            coord[i].y.value = coord[i - num_items_shifted].y.value;
+            //LM_M(("Shift last hours from index %d to index:%d(val:%d)", i - num_items_shifted, i, coord[i - num_items_shifted].x[1].value));
+            coord[i].x[1].value = coord[i - num_items_shifted].x[1].value;
         }
         for (int i = (init_hours + num_items_shifted-1); (i > init_hours); i--)
         {
-            //LM_M(("Shift first hours from index %d to index:%d(val:%d)", init_hours, i, coord[init_hours].y.value));
-            coord[i].y.value = coord[init_hours].y.value;
+            //LM_M(("Shift first hours from index %d to index:%d(val:%d)", init_hours, i, coord[init_hours].x[1].value));
+            coord[i].x[1].value = coord[init_hours].x[1].value;
         }
     }
     void shift_minutes(int num_items_shifted)
@@ -75,13 +76,13 @@ class GraphLine : public GraphLine_base
         }
         for (int i = (end_minutes - 1); (i >= (init_minutes + num_items_shifted)); i--)
         {
-            //LM_M(("Shift last minutes from index %d to index:%d(val:%d)", i - num_items_shifted, i, coord[i - num_items_shifted].y.value));
-            coord[i].y.value = coord[i - num_items_shifted].y.value;
+            //LM_M(("Shift last minutes from index %d to index:%d(val:%d)", i - num_items_shifted, i, coord[i - num_items_shifted].x[1].value));
+            coord[i].x[1].value = coord[i - num_items_shifted].x[1].value;
         }
         for (int i = (init_minutes + num_items_shifted-1); (i > init_minutes); i--)
         {
-            //LM_M(("Shift first minutes from index %d to index:%d(val:%d)", init_minutes, i, coord[init_minutes].y.value));
-            coord[i].y.value = coord[init_minutes].y.value;
+            //LM_M(("Shift first minutes from index %d to index:%d(val:%d)", init_minutes, i, coord[init_minutes].x[1].value));
+            coord[i].x[1].value = coord[init_minutes].x[1].value;
         }
     }
     void shift_seconds(int num_items_shifted)
@@ -96,13 +97,13 @@ class GraphLine : public GraphLine_base
         }
         for (int i = (end_seconds - 1); (i >= (init_seconds + num_items_shifted)); i--)
         {
-            //LM_M(("Shift last seconds from index %d to index:%d(val:%d)", i - num_items_shifted, i, coord[i - num_items_shifted].y.value));
-            coord[i].y.value = coord[i - num_items_shifted].y.value;
+            //LM_M(("Shift last seconds from index %d to index:%d(val:%d)", i - num_items_shifted, i, coord[i - num_items_shifted].x[1].value));
+            coord[i].x[1].value = coord[i - num_items_shifted].x[1].value;
         }
         for (int i = (init_seconds + num_items_shifted-1); (i > init_seconds); i--)
         {
-            //LM_M(("Shift first seconds from index %d to index:%d(val:%d)", init_seconds, i, coord[init_seconds].y.value));
-            coord[i].y.value = coord[init_seconds].y.value;
+            //LM_M(("Shift first seconds from index %d to index:%d(val:%d)", init_seconds, i, coord[init_seconds].x[1].value));
+            coord[i].x[1].value = coord[init_seconds].x[1].value;
         }
     }
     int average(samson::level::Coordinate *p_init_window, const int window_length)
@@ -110,7 +111,7 @@ class GraphLine : public GraphLine_base
         uint64_t acum_value = 0;
         for (int i = 0; (i < window_length); i++)
         {
-            acum_value += p_init_window[i].y.value;
+            acum_value += p_init_window[i].x[1].value;
         }
         //LM_M(("Return average:%d (acum(%d)/window_length(%d))", (acum_value / window_length),  acum_value, window_length));
         return (acum_value / window_length);

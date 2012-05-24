@@ -18,6 +18,8 @@
 
 #include <time.h>
 
+#include "logMsg/logMsg.h"
+
 namespace samson
 {
 namespace OTTstream
@@ -44,7 +46,7 @@ class red_update_last_user_profile: public samson::Reduce
 #define MAX_STR_LEN 20
     char line[MAX_STR_LEN];
 
-public:
+    public:
 
     //  INFO_MODULE
     // If interface changes and you do not recreate this file, you will have to update this information (and of course, the module file)
@@ -58,6 +60,219 @@ public:
     //
     // helpLine: Update the latest user profile
     //  END_INFO_MODULE
+
+    std::string decode_serviceId(uint64_t serviceId)
+    {
+        if (serviceId == 10)
+        {
+            return "COMMS";
+        }
+        if (serviceId == 11)
+        {
+            return "Skype";
+        }
+        if (serviceId == 12)
+        {
+            return "Viber";
+        }
+        if (serviceId == 13)
+        {
+            return "GTalk";
+        }
+        if (serviceId == 14)
+        {
+            return "WhatsApp";
+        }
+        if (serviceId == 15)
+        {
+            return "faceTime";
+        }
+        if (serviceId == 16)
+        {
+            return "iphoneMessage";
+        }
+        if (serviceId == 17)
+        {
+            return "Tango";
+        }
+        if (serviceId == 20)
+        {
+            return "SOCIAL";
+        }
+        if (serviceId == 21)
+        {
+            return "Facebook";
+        }
+        if (serviceId == 22)
+        {
+            return "Tuenti";
+        }
+        if (serviceId == 23)
+        {
+            return "Google+";
+        }
+        if (serviceId == 100)
+        {
+            return "Vodafone";
+        }
+        if (serviceId == 101)
+        {
+            return "VodafoneADSL";
+        }
+        if (serviceId == 102)
+        {
+            return "VodafoneClientes";
+        }
+        if (serviceId == 103)
+        {
+            return "VodafoneOnline";
+        }
+        if (serviceId == 104)
+        {
+            return "VodafoneContacto";
+        }
+        if (serviceId == 105)
+        {
+            return "VodafoneEmpresas";
+        }
+        if (serviceId == 106)
+        {
+            return "VodafoneInternetMovil";
+        }
+        if (serviceId == 107)
+        {
+            return "VodafoneMovilFijo";
+        }
+        if (serviceId == 108)
+        {
+            return "VodafoneTV";
+        }
+        if (serviceId == 109)
+        {
+            return "VodafoneTienda";
+        }
+        if (serviceId == 200)
+        {
+            return "Orange";
+        }
+        if (serviceId == 201)
+        {
+            return "OrangeClientes";
+        }
+        if (serviceId == 202)
+        {
+            return "OrangeOnline";
+        }
+        if (serviceId == 203)
+        {
+            return "OrangeEmpresas";
+        }
+        if (serviceId == 204)
+        {
+            return "OrangeADSL";
+        }
+        if (serviceId == 205)
+        {
+            return "OrangeInfoMovil";
+        }
+        if (serviceId == 206)
+        {
+            return "OrangePortabilidad";
+        }
+        if (serviceId == 207)
+        {
+            return "OrangeTienda";
+        }
+        if (serviceId == 208)
+        {
+            return "OrangeTonos";
+        }
+        if (serviceId == 300)
+        {
+            return "Yoigo";
+        }
+        if (serviceId == 301)
+        {
+            return "YoigoClientes";
+        }
+        if (serviceId == 302)
+        {
+            return "YoigoBlogs";
+        }
+        if (serviceId == 303)
+        {
+            return "YoigoOnline";
+        }
+        if (serviceId == 304)
+        {
+            return "YoigoCobertura";
+        }
+        if (serviceId == 305)
+        {
+            return "YoigoComparadorMoviles";
+        }
+        if (serviceId == 306)
+        {
+            return "YoigoCondiciones";
+        }
+        if (serviceId == 307)
+        {
+            return "YoigoInternet";
+        }
+        if (serviceId == 308)
+        {
+            return "YoigoRecarga";
+        }
+        if (serviceId == 309)
+        {
+            return "YoigoRevista";
+        }
+        if (serviceId == 310)
+        {
+            return "YoigoServicios";
+        }
+        if (serviceId == 311)
+        {
+            return "YoigoTarifas";
+        }
+        if (serviceId == 312)
+        {
+            return "YoigoTiendasFisicas";
+        }
+        if (serviceId == 1000)
+        {
+            return "CORE";
+        }
+        if (serviceId == 1001)
+        {
+            return "voice";
+        }
+        if (serviceId == 1002)
+        {
+            return "sms";
+        }
+        if (serviceId == 2000)
+        {
+            return "SEQS";
+        }
+        if (serviceId == 2001)
+        {
+            return "seqLargaGTalk";
+        }
+        if (serviceId == 2002)
+        {
+            return "seqCortaGTalk";
+        }
+        if (serviceId == 2003)
+        {
+            return "seqWhatsApp";
+        }
+        {
+            LM_E(("Unknown state service:%lu", serviceId));
+            return "other";
+        }
+    }
+
 
     void init(samson::KVWriter *writer)
     {
@@ -79,24 +294,42 @@ public:
     {
         if (inputs[1].num_kvs == 0)
         {
+
             user.parse(inputs[0].kvs[0]->key);
+
             //LM_M(("New state for userId:%lu", user.value));
             // New user state
             activity.Init();
             {
                 int seqId = 2000;
-                const char *seq_name = "seq1";
-                unsigned long time_window = 1200;
+                const char *seq_name = "seqLargaGTalk";
+                unsigned long time_window = 3600;
                 const char *events = "40,1000,40,1000";
                 int strict = 0;
                 activity.AddSequence(seqId, seq_name, time_window, events, strict);
             }
             {
                 int seqId = 2001;
-                const char *seq_name = "seq2";
+                const char *seq_name = "seqCortaGTalk";
                 unsigned long time_window = 300;
                 const char *events = "40,1000";
                 int strict = 1;
+                activity.AddSequence(seqId, seq_name, time_window, events, strict);
+            }
+            {
+                int seqId = 2002;
+                const char *seq_name = "seqWhatsApp";
+                unsigned long time_window = 600;
+                const char *events = "50,1000";
+                int strict = 0;
+                activity.AddSequence(seqId, seq_name, time_window, events, strict);
+            }
+            {
+                int seqId = 2002;
+                const char *seq_name = "seqWhatsApp";
+                unsigned long time_window = 600;
+                const char *events = "1000,50";
+                int strict = 0;
                 activity.AddSequence(seqId, seq_name, time_window, events, strict);
             }
         }
@@ -122,70 +355,17 @@ public:
                 {
                     //LM_M(("Checking old serviceId:'%s because no activity:  count:%d, userId:%lu, oldestHit:%s, prev:%s",serviceStr.value.c_str(), decOne.value, userId.value,  oldestHit.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
 
-                    if ((oldestHit.value > (activity.servActivity[j].timestamp.value + 3*timespan))
-                            && (activity.servActivity[j].inCount.value == 1))
+                    if ((oldestHit.value > (activity.servActivity[j].timestamp.value + 10*timespan)) && (activity.servActivity[j].inCount.value == 1))
                     {
-                        serviceStr.value = activity.servActivity[j].serviceId.str();
-                        if (activity.servActivity[j].serviceId.value == 10)
-                        {
-                            serviceStr.value = "Skype";
-                        }
-                        else if (activity.servActivity[j].serviceId.value == 20)
-                        {
-                            serviceStr.value = "Viber";
-                        }
-                        else if (activity.servActivity[j].serviceId.value == 30)
-                        {
-                            serviceStr.value = "Facebook";
-                        }
-                        else if (activity.servActivity[j].serviceId.value == 40)
-                        {
-                            serviceStr.value = "GTalk";
-                        }
-                        else if (activity.servActivity[j].serviceId.value == 50)
-                        {
-                            serviceStr.value = "WhatsApp";
-                        }
-                        else if (activity.servActivity[j].serviceId.value == 60)
-                        {
-                            serviceStr.value = "faceTime";
-                        }
-                        else if (activity.servActivity[j].serviceId.value == 70)
-                        {
-                            serviceStr.value = "iphoneMessage";
-                        }
-                        else if (activity.servActivity[j].serviceId.value == 80)
-                        {
-                            serviceStr.value = "Tango";
-                        }
-                        else if (activity.servActivity[j].serviceId.value == 90)
-                        {
-                            serviceStr.value = "Tuenti";
-                        }
-                        else if (activity.servActivity[j].serviceId.value == 100)
-                        {
-                            serviceStr.value = "Google+";
-                        }
-                        else if (activity.servActivity[j].serviceId.value == 1000)
-                        {
-                            serviceStr.value = "voice";
-                        }
-                        else if (activity.servActivity[j].serviceId.value == 1100)
-                        {
-                            serviceStr.value = "SMS";
-                        }
-                        else
-                        {
-                            LM_E(("Unknown state service:%lu for user:%lu", activity.servActivity[j].serviceId.value, user.value));
-                            serviceStr.value = "other";
-                        }
+                        serviceStr.value = decode_serviceId(activity.servActivity[j].serviceId.value);
 
                         outVal.val.value = decOne.value;
                         outVal.t.value = hit.timestamp.value;
+
                         writer->emit(0, &serviceStr, &outVal);
-                        if (serviceStr.value == "GTalk")
+                        if (serviceStr.value == "WhatsApp")
                         {
-                            //LM_M(("Reset serviceId:'%s because no activity:  count:%d, userId:%lu, oldestHit:%s, prev:%s",serviceStr.value.c_str(), decOne.value, user.value, oldestHit.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
+                            LM_M(("Reset serviceId:'%s because no activity:  count:%d, userId:%lu, oldestHit:%s, prev:%s",serviceStr.value.c_str(), decOne.value, user.value, oldestHit.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
                         }
                         //LM_M(("Reset serviceId:'%s because no activity:  count:%d, userId:%lu, oldestHit:%s, prev:%s",serviceStr.value.c_str(), decOne.value, user.value,  oldestHit.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
                         activity.servActivity[j].inCount.value = 0;
@@ -214,60 +394,7 @@ public:
             for (int j = 0; (j < activity.servActivity_length); j++)
             {
                 //LM_M(("Check for userId:%lu hit.serviceId:%lu activity.serviceId:%lu at pos:%d", user.value, hit.serviceId.value, activity.servActivity[j].serviceId.value, j));
-                serviceStr.value = activity.servActivity[j].serviceId.str();
-                if (activity.servActivity[j].serviceId.value == 10)
-                {
-                    serviceStr.value = "Skype";
-                }
-                else if (activity.servActivity[j].serviceId.value == 20)
-                {
-                    serviceStr.value = "Viber";
-                }
-                else if (activity.servActivity[j].serviceId.value == 30)
-                {
-                    serviceStr.value = "Facebook";
-                }
-                else if (activity.servActivity[j].serviceId.value == 40)
-                {
-                    serviceStr.value = "GTalk";
-                }
-                else if (activity.servActivity[j].serviceId.value == 50)
-                {
-                    serviceStr.value = "WhatsApp";
-                }
-                else if (activity.servActivity[j].serviceId.value == 60)
-                {
-                    serviceStr.value = "faceTime";
-                }
-                else if (activity.servActivity[j].serviceId.value == 70)
-                {
-                    serviceStr.value = "iphoneMessage";
-                }
-                else if (activity.servActivity[j].serviceId.value == 80)
-                {
-                    serviceStr.value = "Tango";
-                }
-                else if (activity.servActivity[j].serviceId.value == 90)
-                {
-                    serviceStr.value = "Tuenti";
-                }
-                else if (activity.servActivity[j].serviceId.value == 100)
-                {
-                    serviceStr.value = "Google+";
-                }
-                else if (activity.servActivity[j].serviceId.value == 1000)
-                {
-                    serviceStr.value = "voice";
-                }
-                else if (activity.servActivity[j].serviceId.value == 1100)
-                {
-                    serviceStr.value = "SMS";
-                }
-                else
-                {
-                    LM_E( ("Unknown state service:%lu for user:%lu", activity.servActivity[j].serviceId.value, user.value));
-                    serviceStr.value = "other";
-                }
+                serviceStr.value = decode_serviceId(activity.servActivity[j].serviceId.value);
 
                 //LM_M(("Same check service and time: serviceId:'%s'(%lu) at pos:%d by hit:%lu, state:%d, userId:%lu, ts:%s, prev:%s",serviceStr.value.c_str(), activity.servActivity[j].serviceId.value, j, hit.serviceId.value, activity.servActivity[j].inCount.value, user.value,  hit.timestamp.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
                 if (hit.serviceId.value == activity.servActivity[j].serviceId.value)
@@ -280,9 +407,9 @@ public:
                             outVal.val.value = incOne.value;
                             outVal.t.value = hit.timestamp.value;
                             writer->emit(0, &serviceStr, &outVal);
-                            if (serviceStr.value == "GTalk")
+                            if (serviceStr.value == "WhatsApp")
                             {
-                                //LM_M(("Emit inc serviceId:'%s' at pos:%d, count:%d, userId:%lu, ts:%s, prv:%s",serviceStr.value.c_str(), j, incOne.value, user.value, hit.timestamp.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
+                                LM_M(("Emit inc serviceId:'%s' at pos:%d, count:%d, userId:%lu, ts:%s, prv:%s",serviceStr.value.c_str(), j, incOne.value, user.value, hit.timestamp.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
                             }
                             //LM_M(("Emit inc serviceId:'%s' at pos:%d, count:%d, userId:%lu, ts:%s, prv:%s",serviceStr.value.c_str(), j, incOne.value, user.value, hit.timestamp.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
                             activity.servActivity[j].inCount.value = 1;
@@ -300,9 +427,9 @@ public:
                         outVal.val.value = decOne.value;
                         outVal.t.value = hit.timestamp.value;
                         writer->emit(0, &serviceStr, &outVal);
-                        if (serviceStr.value == "GTalk")
+                        if (serviceStr.value == "WhatsApp")
                         {
-                            //LM_M(("Emit dec serviceId:'%s'(%lu) at pos:%d by hit:%lu, count:%d, userId:%lu, ts:%s, prev:%s",serviceStr.value.c_str(), activity.servActivity[j].serviceId.value, j, hit.serviceId.value, decOne.value, user.value, hit.timestamp.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
+                            LM_M(("Emit dec serviceId:'%s'(%lu) at pos:%d by hit:%lu, count:%d, userId:%lu, ts:%s, prev:%s",serviceStr.value.c_str(), activity.servActivity[j].serviceId.value, j, hit.serviceId.value, decOne.value, user.value, hit.timestamp.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
                         }
                         //LM_M(("Emit dec serviceId:'%s'(%lu) at pos:%d by hit:%lu, count:%d, userId:%lu, ts:%s, prev:%s",serviceStr.value.c_str(), activity.servActivity[j].serviceId.value, j, hit.serviceId.value, decOne.value, user.value,  hit.timestamp.str().c_str(), activity.servActivity[j].timestamp.str().c_str()));
                         activity.servActivity[j].inCount.value = 0;
@@ -316,67 +443,15 @@ public:
             if ((serviceFound == false) && (hit.serviceId.value != 0))
             {
                 //serviceStr.value = hit.serviceId.str();
-                if (hit.serviceId.value == 10)
-                {
-                    serviceStr.value = "Skype";
-                }
-                else if (hit.serviceId.value == 20)
-                {
-                    serviceStr.value = "Viber";
-                }
-                else if (hit.serviceId.value == 30)
-                {
-                    serviceStr.value = "Facebook";
-                }
-                else if (hit.serviceId.value == 40)
-                {
-                    serviceStr.value = "GTalk";
-                }
-                else if (hit.serviceId.value == 50)
-                {
-                    serviceStr.value = "WhatsApp";
-                }
-                else if (hit.serviceId.value == 60)
-                {
-                    serviceStr.value = "faceTime";
-                }
-                else if (hit.serviceId.value == 70)
-                {
-                    serviceStr.value = "iphoneMessage";
-                }
-                else if (hit.serviceId.value == 80)
-                {
-                    serviceStr.value = "Tango";
-                }
-                else if (hit.serviceId.value == 90)
-                {
-                    serviceStr.value = "Tuenti";
-                }
-                else if (hit.serviceId.value == 100)
-                {
-                    serviceStr.value = "Google+";
-                }
-                else if (hit.serviceId.value == 1000)
-                {
-                    serviceStr.value = "voice";
-                }
-                else if (hit.serviceId.value == 1100)
-                {
-                    serviceStr.value = "SMS";
-                }
-                else
-                {
-                    LM_E(("Unknown hit service:%lu for userId:%lu", hit.serviceId.value, user.value));
-                    serviceStr.value = "other";
-                }
+                serviceStr.value = decode_serviceId(hit.serviceId.value);
 
                 outVal.val.value = incOne.value;
                 outVal.t.value = hit.timestamp.value;
                 writer->emit(0, &serviceStr, &outVal);
                 //LM_M(("Emit first serviceId:'%s', count:%d, userId:%lu",serviceStr.value.c_str(), incOne.value, user.value ));
-                if (serviceStr.value == "GTalk")
+                if (serviceStr.value == "WhatsApp")
                 {
-                    //LM_M(("Emit first serviceId:'%s', count:%d, userId:%lu at %s",serviceStr.value.c_str(), incOne.value, user.value, hit.timestamp.str().c_str() ));
+                    LM_M(("Emit first serviceId:'%s', count:%d, userId:%lu at %s",serviceStr.value.c_str(), incOne.value, user.value, hit.timestamp.str().c_str() ));
                 }
 
                 //LM_M(("Create serviceId:%lu, count:%d, userId:%lu, at ts:%s(%lu)",hit.serviceId.value, 1, user.value,  hit.timestamp.str().c_str(), hit.timestamp.value));
@@ -428,7 +503,7 @@ public:
                         {
                             //LM_M(("Cloned and clone  disabled for userId:%lu hit.serviceId:%lu activity.ev[0].serviceId:%lu at pos:%d of %d", user.value, hit.serviceId.value, activity.sequences[j].events[0].expected_serviceId.value, j, activity.sequences_length));
                             activity.sequences[j].clonable.value = samson::OTTstream::Sequence::CLONE_DISABLED;
-                            activity.AddAndCloneSequence(&(activity.sequences[j]));
+                            activity.AddAndCloneSequence(j);
                             //LM_M(("After cloning new sequence length for userId:%lu, length:%d", user.value, activity.sequences_length));
                         }
                     }
@@ -502,11 +577,14 @@ public:
                 }
             }
 
-            if ((hit.serviceId.value != 0) && (hit.serviceId.value != 1000) && (hit.serviceId.value != 1100))
+            if ((hit.serviceId.value != 0) && (hit.serviceId.value != 1000) && (hit.serviceId.value != 1001) && (hit.serviceId.value != 1002))
             {
                 writer->emit(1, &user, &hit);
             }
         }
+
+
+
         if (activity.sequences_length > 2)
         {
             //LM_M(("Update userId:%lu state with %d services and %d sequences", user.value, activity.servActivity_length, activity.sequences_length));

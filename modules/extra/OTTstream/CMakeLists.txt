@@ -108,6 +108,7 @@ MESSAGE( "Creating module ${MODULE_NAME}" )
 MESSAGE( "----------------------------------------------------------------------------")
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES}  )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_comscore )
 TARGET_LINK_LIBRARIES( ${MODULE_NAME}  lm au )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)

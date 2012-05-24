@@ -25,8 +25,7 @@ data GroupItems
 
 data Coordinate
 {
-    system.Int32 x;
-    system.Int32 y;
+    vector system.Int32 x;
 }
 
 data GraphLine

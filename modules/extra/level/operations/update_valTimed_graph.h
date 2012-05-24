@@ -96,17 +96,17 @@ class update_valTimed_graph : public samson::Reduce
                     {
                         curve.shift_hours(1);
                         //LM_M(("Shift hours for key:'%s'", key.value.c_str()));
-                        curve.coord[pos_hours].y.value = curve.average(&(curve.coord[pos_minutes]), curve.NUMBER_OF_MINUTES.value);
-                        //LM_M(("For key:'%s', initial hour assigned to coord[%d]:%d", key.value.c_str(), pos_hours, curve.coord[pos_hours].y.value));
+                        curve.coord[pos_hours].x[1].value = curve.average(&(curve.coord[pos_minutes]), curve.NUMBER_OF_MINUTES.value);
+                        //LM_M(("For key:'%s', initial hour assigned to coord[%d]:%d", key.value.c_str(), pos_hours, curve.coord[pos_hours].x[1].value));
                         curve.nmins_since_shift.value -= curve.NUMBER_OF_MINUTES.value;
                     }
                     //LM_M(("pos_minutes:%d, pos_hours:%d", pos_minutes, pos_hours));
                     curve.shift_minutes(1);
                     //LM_M(("pos_minutes:%d, pos_hours:%d", pos_minutes, pos_hours));
                     //LM_M(("Shift minutes for key:'%s'", key.value.c_str()));
-                    curve.coord[pos_minutes].y.value = curve.average(&(curve.coord[0]), curve.NUMBER_OF_SECONDS.value);
+                    curve.coord[pos_minutes].x[1].value = curve.average(&(curve.coord[0]), curve.NUMBER_OF_SECONDS.value);
                     //LM_M(("pos_minutes:%d, pos_hours:%d", pos_minutes, pos_hours));
-                    //LM_M(("For key:'%s', initial minute assigned to coord[%d]:%d", key.value.c_str(), pos_minutes, curve.coord[pos_minutes].y.value));
+                    //LM_M(("For key:'%s', initial minute assigned to coord[%d]:%d", key.value.c_str(), pos_minutes, curve.coord[pos_minutes].x[1].value));
                     curve.nsecs_since_shift.value -= curve.NUMBER_OF_SECONDS.value;
                 }
                 if (inc_time > static_cast<uint64_t>(curve.NUMBER_OF_SECONDS.value))
@@ -118,8 +118,8 @@ class update_valTimed_graph : public samson::Reduce
                 curve.shift_seconds(inc_time);
                 //LM_M(("Shift seconds for key:'%s'", key.value.c_str()));
             }
-            curve.coord[0].y.value = value.val.value;
-            //LM_M(("For key:'%s', initial second assigned to coord[%d]:%d", key.value.c_str(), 0, curve.coord[0].y.value));
+            curve.coord[0].x[1].value = value.val.value;
+            //LM_M(("For key:'%s', initial second assigned to coord[%d]:%d", key.value.c_str(), 0, curve.coord[0].x[1].value));
             curve.prev_timestamp.value = value.t.value;
         }
 

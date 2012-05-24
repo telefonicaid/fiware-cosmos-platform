@@ -7,10 +7,13 @@
 
 #include <samson/module/samson.h>
 #include <samson/modules/OTTstream/ServiceHit.h>
+#include <samson/modules/OTTstream/WebCategoryHit.h>
 #include <samson/modules/OTTstream/UserHit.h>
 #include <samson/modules/system/UInt.h>
 #include <samson/modules/system/String.h>
 #include <samson/modules/system/SimpleParser.h>
+
+#include "comscore/SamsonComscoreDictionary.h"
 
 #include "OTTService.h"
 
@@ -24,7 +27,7 @@ namespace OTTstream
 class parse_logs: public samson::system::SimpleParser
 {
 
-    bool (parse_logs::*_parseFunction)(char*line, samson::system::UInt *userId, ServiceHit *hit, samson::system::String *url);
+    bool (parse_logs::*_parseFunction)(char*line, samson::system::UInt *userId, ServiceHit *hit, ServiceHit *group_hit, samson::system::String *url);
 
     std::vector<char*> fields;
     char sep;
@@ -38,18 +41,23 @@ class parse_logs: public samson::system::SimpleParser
     samson::system::String url;
     samson::system::UInt count;
     samson::OTTstream::ServiceHit service_hit;
-    samson::OTTstream::UserHit user_hit;
+    samson::OTTstream::ServiceHit group_service_hit;
+    samson::OTTstream::WebCategoryHit web_hit;
     samson::system::String command;
 
-public:
+    samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;
+    samson::system::String output_key;
+
+    public:
 
     //  INFO_MODULE
     // If interface changes and you do not recreate this file, you will have to update this information (and of course, the module file)
     // Please, do not remove this comments, as it will be used to check consistency on module declaration
     //
     //  output: system.UInt OTTstream.ServiceHit
+    //  output: system.UInt OTTstream.WebCategoryHit
     //  output: system.UInt system.String
-    // output: system.String system.UInt
+    //  output: system.String system.UInt
     //
     // helpLine: parse input logs from http, and emit service use with userId as key
     //  END_INFO_MODULE
@@ -82,48 +90,48 @@ public:
         return phone;
     }
 
-    uint64_t classify_http(const char *url, const char *domain)
+    OTTService *classify_http(const char *url, const char *domain)
     {
         for (unsigned int i = 0; (i < services.size()); i++)
         {
             if (services[i]->checkHTTP(url, domain))
             {
                 //LM_M(("url:'%s', domain:'%s' identified as service:'%s' by category:%d", url, domain, services[i]->name.c_str(), services[i]->category));
-                return services[i]->serviceId;
+                return services[i];
             }
         }
         //LM_M(("unknow url:'%s', domain:'%s'", url, domain));
-        return 0;
+        return services[0];
     }
 
-    uint64_t classify_dns(const char *url)
+    OTTService *classify_dns(const char *url)
     {
         for (unsigned int i = 0; (i < services.size()); i++)
         {
             if (services[i]->checkDNS(url))
             {
                 //LM_M(("url:'%s' identified as service:'%s'", url, services[i]->name.c_str()));
-                return services[i]->serviceId;
+                return services[i];
             }
         }
         //LM_M(("unknow url:'%s'", url));
-        return 0;
+        return services[0];
     }
 
-    uint64_t classify_name(const char *name)
+    OTTService *classify_name(const char *name)
     {
         for (unsigned int i = 0; (i < services.size()); i++)
         {
             if (services[i]->checkName(name))
             {
-                return services[i]->serviceId;
+                return services[i];
             }
         }
         //LM_M(("unknow name:'%s'", name));
-        return 0;
+        return services[0];
     }
 
-    bool parseLine_HTTP(char * line, samson::system::UInt *userId, ServiceHit *hit, samson::system::String *url)
+    bool parseLine_HTTP(char * line, samson::system::UInt *userId, ServiceHit *hit, ServiceHit *group_hit, samson::system::String *url)
     {
         int maxDigits = 9;
 
@@ -149,6 +157,8 @@ public:
 
         userId->value = 0;
         hit->serviceId.value = 0;
+        group_hit->serviceId.value = 0;
+
 
         char *p_url;
         const char *p_domain;
@@ -170,7 +180,13 @@ public:
         p_domain = fields[2];
         p_url = fields[8];
 
-        hit->serviceId.value = classify_http(p_url, p_domain);
+        OTTService *detected_service = classify_http(p_url, p_domain);
+        if (detected_service == NULL)
+        {
+            return false;
+        }
+        hit->serviceId.value = detected_service->serviceId;
+        group_hit->serviceId.value = detected_service->group_serviceId;
 
         if (hit->serviceId.value == 0)
         {
@@ -184,13 +200,14 @@ public:
         }
         url->value = p_url;
         hit->timestamp.setFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[9]);
+        group_hit->timestamp.value = hit->timestamp.value;
         //LM_M(("input_time:'%s', timeUnix:%lu, '%s'", fields[9], hit->timestamp.value, hit->timestamp.str().c_str()));
 
         return true;
 
     }
 
-    bool parseLine_DNS(char * line, samson::system::UInt *userId, ServiceHit *hit, samson::system::String *url)
+    bool parseLine_DNS(char * line, samson::system::UInt *userId, ServiceHit *hit, ServiceHit *group_hit, samson::system::String *url)
     {
         int maxDigits = 9;
 
@@ -210,6 +227,7 @@ public:
 
         userId->value = 0;
         hit->serviceId.value = 0;
+        group_hit->serviceId.value = 0;
 
         const char *p_domain;
 
@@ -230,7 +248,14 @@ public:
 
         p_domain = fields[9];
 
-        hit->serviceId.value = classify_dns(p_domain);
+        OTTService *detected_service = classify_dns(p_domain);
+        if (detected_service == NULL)
+        {
+            return false;
+        }
+        hit->serviceId.value = detected_service->serviceId;
+        group_hit->serviceId.value = detected_service->group_serviceId;
+
 
         if (hit->serviceId.value == 0)
         {
@@ -238,12 +263,13 @@ public:
         }
 
         hit->timestamp.setFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[4]);
+        group_hit->timestamp.value = hit->timestamp.value;
 
         return true;
 
     }
 
-    bool parseLine_SMS(char * line, samson::system::UInt *userId, ServiceHit *hit, samson::system::String *url)
+    bool parseLine_SMS(char * line, samson::system::UInt *userId, ServiceHit *hit, ServiceHit *group_hit, samson::system::String *url)
     {
         /*
      --- SMS Type 1 (RECIVE SMS?) ----
@@ -310,6 +336,7 @@ public:
             }
 
             hit->timestamp.setFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[12]);
+            group_hit->timestamp.value = hit->timestamp.value;
         }
         else if (type == 2)
         {
@@ -322,18 +349,20 @@ public:
             }
 
             hit->timestamp.setFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[14]);
+            group_hit->timestamp.value = hit->timestamp.value;
         }
         else
         {
             return false;
         }
 
-        hit->serviceId.value = 1100; //SMS
+        hit->serviceId.value = 1002; //SMS
+        group_hit->serviceId.value = 1000;  // CORE
         return true;
 
     }
 
-    bool parseLine_voice(char * line, samson::system::UInt *userId, ServiceHit *hit, samson::system::String *url)
+    bool parseLine_voice(char * line, samson::system::UInt *userId, ServiceHit *hit, ServiceHit *group_hit, samson::system::String *url)
     {
         /*
      REPORT_REASON
@@ -392,9 +421,11 @@ public:
 
 
         hit->timestamp.setFromStrTimeDate_YYYY_mm_dd_24H(fields[1]);
+        group_hit->timestamp.value = hit->timestamp.value;
         //LM_M(("input_time:'%s', timeUnix:%lu, '%s'", fields[1], hit->timestamp.value, hit->timestamp.str().c_str()));
 
-        hit->serviceId.value = 1000; //voice
+        hit->serviceId.value = 1001; //voice
+        group_hit->serviceId.value = 1000;  // CORE
         return true;
     }
 
@@ -409,7 +440,13 @@ public:
             return false;
         }
 
-        serviceId->value = classify_name(service_name);
+        OTTService *detected_service = classify_name(service_name);
+        if (detected_service == NULL)
+        {
+            return false;
+        }
+        serviceId->value = detected_service->serviceId;
+
         LM_M(("Parsing command, service:%s(%lu), command:'%s'", service_name, serviceId->value, command_str));
 
         if (serviceId->value == 0)
@@ -423,6 +460,7 @@ public:
             }
         }
         command->value = command_str;
+        LM_M(("Emit command, service:%s(%lu), command:'%s'", service_name, serviceId->value, command_str));
         return true;
     }
 
@@ -455,20 +493,66 @@ public:
         sep = '\t';
 
         {
-            OTTService *newService = new OTTService("Skype", 10, false);
+            OTTService *newService = new OTTService("web", 0, 0, false);
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("Skype", 11, 10, false);
             newService->addHTTPPattern("http://ui.skype.com/%/getlatestversion?%");
             newService->addHTTPPattern("http://apps.skype.com/countrycode");
             newService->addHTTPPattern("http://conn.skype.com");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("Viber", 20, false);
+            OTTService *newService = new OTTService("Viber", 12, 10, false);
             newService->addHTTPPattern("http://www.cdn.viber.com/ok.txt");
             newService->addHTTPPattern("http://www.cdn.viber.com/android_version.txt");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("Facebook", 30, false);
+            OTTService *newService = new OTTService("GTalk", 13, 10, true);
+            newService->addHTTPPattern("talkgadget.google.com");
+            newService->addHTTPPattern("talkgadget.google");
+            newService->addHTTPPattern("hostedtalkgadget.google.com");
+            newService->addHTTPPattern("dl.google.com");
+            newService->addHTTPPattern("tc.v%.cache%.c.pack.google.com");
+            newService->addDNSPattern("talkgadget.google.com");
+            newService->addDNSPattern("talkgadget.l.google.com");
+            newService->addDNSPattern("hostedtalkgadget.google.com");
+            newService->addDNSPattern("%.talkgadget.google.com");
+            newService->addDNSPattern("mtalk.google.com");
+            newService->addDNSPattern("talk.google.com");
+            newService->addDNSPattern("mtalk.google.com.%");
+            newService->addDNSPattern("talk.google.com.%");
+            newService->addDNSPattern("talk.%.google.com");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("WhatsApp", 14, 10, true);
+            newService->addDNSPattern("sro.whatsapp.net");
+            newService->addDNSPattern("bin-short.whatsapp.net");
+            newService->addDNSPattern("bin-nokia.whatsapp.net");
+            newService->addDNSPattern("mms.whatsapp.net");
+            newService->addDNSPattern("mms40%.whatsapp.net");
+            newService->addDNSPattern("mms30%.whatsapp.net");
+            newService->addDNSPattern("mms20%.whatsapp.net");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("faceTime", 15, 10, true);
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("iphoneMessage", 16, 10, true);
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("Tango", 17, 10, true);
+            newService->addDNSPattern("%.cm.tango.me");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("Facebook", 21, 20, false);
             newService->addHTTPPattern("http://www.facebook.com/ajax/messaging/typ.php?__a=1");
             newService->addHTTPPattern("http://apps.facebook.com/ajax/messaging/typ.php?__a=1");
             newService->addHTTPPattern("http://es-es.facebook.com/ajax/messaging/typ.php?__a=1");
@@ -490,49 +574,7 @@ public:
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("GTalk", 40, true);
-            newService->addHTTPPattern("talkgadget.google.com");
-            newService->addHTTPPattern("talkgadget.google");
-            newService->addHTTPPattern("hostedtalkgadget.google.com");
-            newService->addHTTPPattern("dl.google.com");
-            newService->addHTTPPattern("tc.v%.cache%.c.pack.google.com");
-            newService->addDNSPattern("talkgadget.google.com");
-            newService->addDNSPattern("talkgadget.l.google.com");
-            newService->addDNSPattern("hostedtalkgadget.google.com");
-            newService->addDNSPattern("%.talkgadget.google.com");
-            newService->addDNSPattern("mtalk.google.com");
-            newService->addDNSPattern("talk.google.com");
-            newService->addDNSPattern("mtalk.google.com.%");
-            newService->addDNSPattern("talk.google.com.%");
-            newService->addDNSPattern("talk.%.google.com");
-            services.push_back(newService);
-        }
-        {
-            OTTService *newService = new OTTService("WhatsApp", 50, true);
-            newService->addDNSPattern("sro.whatsapp.net");
-            newService->addDNSPattern("bin-short.whatsapp.net");
-            newService->addDNSPattern("bin-nokia.whatsapp.net");
-            newService->addDNSPattern("mms.whatsapp.net");
-            newService->addDNSPattern("mms40%.whatsapp.net");
-            newService->addDNSPattern("mms30%.whatsapp.net");
-            newService->addDNSPattern("mms20%.whatsapp.net");
-            services.push_back(newService);
-        }
-        {
-            OTTService *newService = new OTTService("faceTime", 60, true);
-            services.push_back(newService);
-        }
-        {
-            OTTService *newService = new OTTService("iphoneMessage", 70, true);
-            services.push_back(newService);
-        }
-        {
-            OTTService *newService = new OTTService("Tango", 80, true);
-            newService->addDNSPattern("%.cm.tango.me");
-            services.push_back(newService);
-        }
-        {
-            OTTService *newService = new OTTService("Tuenti", 90, true);
+            OTTService *newService = new OTTService("Tuenti", 22, 20, true);
             newService->addHTTPPattern("m.tuenti.com");
             newService->addHTTPPattern("xmpp%.tuenti.com");
             newService->addHTTPPattern("api.tuenti.com");
@@ -541,29 +583,281 @@ public:
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("Google+", 100, true);
+            OTTService *newService = new OTTService("Google+", 23, 20, true);
             newService->addDNSPattern("plus.google.com");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("VodafoneADSL", 101, 100, true);
+            newService->addHTTPPattern("%vodafone%/%internet-y-tv/adsl%");
+            newService->addHTTPPattern("%adsl-vodafone%");
+            newService->addHTTPPattern("%internetvodafone%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("VodafoneClientes", 102, 100, true);
+            newService->addHTTPPattern("%club2020.mi.vodafone%");
+            newService->addHTTPPattern("%mivodafone%");
+            newService->addHTTPPattern("%vodafone.es/%amigo%");
+            newService->addHTTPPattern("%mi-vodafone%");
+            newService->addHTTPPattern("%vodafone.es/miregalo%");
+            newService->addHTTPPattern("%vodafone.es/%programa%");
+            newService->addHTTPPattern("%vodafone.es/%trae-un-amigo%");
+            newService->addHTTPPattern("%vodafone.es/%promociones%");
+            newService->addHTTPPattern("%vodafone.es/%puntos%");
+            newService->addHTTPPattern("%areaclientes.vodafone%");
+            newService->addHTTPPattern("%zonaclientes.vodafone%");
+
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("VodafoneOnline", 103, 100, true);
+            newService->addHTTPPattern("%atencionalcliente.vodafone%");
+            newService->addHTTPPattern("%ayudacliente.vodafone%");
+            newService->addHTTPPattern("%canalonline.vodafone%");
+            newService->addHTTPPattern("%foro.vodafone%");
+            newService->addHTTPPattern("%manuales.vodafone%");
+            newService->addHTTPPattern("%vodafone%/%atencion-cliente%");
+            newService->addHTTPPattern("%vodafone%/%ayuda%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("VodafoneContacto", 104, 100, true);
+            newService->addHTTPPattern("%vodafone%/conocenos%");
+            newService->addHTTPPattern("%vodafone%/%app%-y-descargas%");
+            newService->addHTTPPattern("%vodafone%/%zonadescargas%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("VodafoneEmpresas", 105, 100, true);
+            newService->addHTTPPattern("%mensaredempresas.vodafone%");
+            newService->addHTTPPattern("%vodafone%/autonomos%");
+            newService->addHTTPPattern("%vodafone%/empresas%");
+            newService->addHTTPPattern("%vodafone%/puntosempresa%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("VodafoneInternetMovil", 106, 100, true);
+            newService->addHTTPPattern("%vodafone%/%internet-y-correo%");
+            newService->addHTTPPattern("%vodafone%/%internet-movil%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("VodafoneMovilFijo", 107, 100, true);
+            newService->addHTTPPattern("%vodafone%/%/moviles-%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("VodafoneTV", 108, 100, true);
+            newService->addHTTPPattern("%vodafone%/%internet-y-tv/television%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("VodafoneTienda", 109, 100, true);
+            newService->addHTTPPattern("%tienda%.vodafone%");
+            newService->addHTTPPattern("%tiendaempresasvodafone%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("OrangeClientes", 201, 200, true);
+            newService->addHTTPPattern("%area%clientes.orange.es%");
+            newService->addHTTPPattern("%areaprivada.orange.es%");
+            newService->addHTTPPattern("%clientes%.orange.es%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("OrangeOnline", 202, 200, true);
+            newService->addHTTPPattern("%ayuda.orange.es%");
+            newService->addHTTPPattern("%configuratumovil.orange.es%");
+            newService->addHTTPPattern("%foros.%orange.es%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("OrangeEmpresas", 203, 200, true);
+            newService->addHTTPPattern("%orange.es/empresas%");
+            newService->addHTTPPattern("%orange.es%/autonomos%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("OrangeADSL", 204, 200, true);
+            newService->addHTTPPattern("%internet.orange.es%");
+            newService->addHTTPPattern("%orange.es/internet%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("OrangeInfoMovil", 205, 200, true);
+            newService->addHTTPPattern("%movil.orange.es%");
+            newService->addHTTPPattern("%orange.es/movil%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("OrangePortabilidad", 206, 200, true);
+            newService->addHTTPPattern("%portabilidad%orange.es%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("OrangeTienda", 207, 200, true);
+            newService->addHTTPPattern("%tienda%orange.es%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("OrangeTonos", 208, 200, true);
+            newService->addHTTPPattern("%tonosdeespera%orange%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("YoigoClientes", 301, 300, true);
+            newService->addHTTPPattern("%miyoigo.yoigo%");
+            newService->addHTTPPattern("%yoigo.com/mequedo%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("YoigoBlogs", 302, 300, true);
+            newService->addHTTPPattern("%yoigo.blogspot%");
+            newService->addHTTPPattern("%foroyoigo%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("YoigoOnline", 303, 300, true);
+            newService->addHTTPPattern("%yoigo.com/ayuda-al-cliente%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("YoigoCobertura", 304, 300, true);
+            newService->addHTTPPattern("%cobertura.yoigo.com%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("YoigoComparadorMoviles", 305, 300, true);
+            newService->addHTTPPattern("%yoigo.com/comparador%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("YoigoCondiciones", 306, 300, true);
+            newService->addHTTPPattern("%yoigo.com/%condiciones%");
+            newService->addHTTPPattern("%yoigo.com/preguntas%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("YoigoInternet", 307, 300, true);
+
+            newService->addHTTPPattern("%yoigo.com/internet%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("YoigoRecarga", 308, 300, true);
+            newService->addHTTPPattern("%yoigo.com/recarga%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("YoigoRevista", 309, 300, true);
+            newService->addHTTPPattern("%yoigo.com/revista%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("YoigoServicios", 310, 300, true);
+            newService->addHTTPPattern("%yoigo.com/servicios%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("YoigoTarifas", 311, 300, true);
+            newService->addHTTPPattern("%yoigo.com/tarifas%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("YoigoTiendasFisicas", 312, 300, true);
+            newService->addHTTPPattern("%yoigo.com/tiendasyoigo%");
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("voice", 1001, 1000, true);
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("SMS", 1002, 1000, true);
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("seqLargaGTalk", 2001, 2000, true);
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("seqCortaGTalk", 2002, 2000, true);
+            services.push_back(newService);
+        }
+        {
+            OTTService *newService = new OTTService("seqWhatsApp", 2003, 2000, true);
             services.push_back(newService);
         }
 
         count.value = 1;
+
+        samson_comscore_dictionary.read( "/var/comscore/samson_comscore_dictionary.bin" );
     }
 
     void parseLine(char * line, samson::KVWriter *writer)
     {
-
         if ((source != "commands") && (source != "command"))
         {
-            if ((this->*_parseFunction)(line, &userId, &service_hit, &url))
+            if ((this->*_parseFunction)(line, &userId, &service_hit, &group_service_hit, &url))
             {
                 //LM_M(("User:%lu detected serviceId:%lu at time:%s", userId.value, hit.serviceId.value, hit.timestamp.str().c_str()));
                 writer->emit(0, &userId, &service_hit);
 
+                if (group_service_hit.serviceId.value > 0)
+                {
+                    writer->emit(0, &userId, &group_service_hit);
+                }
+
                 if (source == "HTTP")
                 {
+                    //LM_M(("Ready to process an URL"));
                     if ((url.value != " ") && (url.value != ""))
                     {
-                        writer->emit(2, &url, &count);
+                        // Remove protocol information ( if any )
+                        size_t pos = url.value.find("://");
+                        if( pos != std::string::npos )
+                            url.value = url.value.substr( pos+3 );
+
+                        // Emit an output to track popular urls
+                        output_key.value = au::str("url %s" , url.value.c_str() );
+                        //LM_M(("Emit topic:'%s'", output_key.value.c_str()));
+                        writer->emit( 3 , &output_key , &count );
+
+                        // Extract domain to get the most popular domains
+                        {
+                            size_t pos = url.value.find("/");
+
+                            if( pos == std::string::npos )
+                                output_key.value = au::str("domain %s" , url.value.c_str() );
+                            else
+                                output_key.value = au::str("domain %s" , url.value.substr(0,pos).c_str() );
+                            //LM_M(("Emit topic:'%s'", output_key.value.c_str()));
+                            writer->emit( 3 , &output_key , &count );
+                        }
+
+                        // Get all categories for this url
+                        std::vector<uint> categories_ids = samson_comscore_dictionary.getCategories( url.value.c_str() );
+                        for ( size_t i = 0 ; i < categories_ids.size() ; i++ )
+                        {
+                            std::string name = samson_comscore_dictionary.getCategoryName( categories_ids[i] );
+
+                            // Replace spaces by "_"s
+                            for ( size_t s = 0 ; s < name.length() ; s++ )
+                                if( name[s] == ' ')
+                                    name[s] = '_';
+
+                            // Emit an output for each category that has received a hit
+			    output_key.value = au::str("category %s" , name.c_str() );
+                            //LM_M(("Emit topic:'%s'", output_key.value.c_str()));
+                            writer->emit( 3 , &output_key , &count );
+
+                            // We also emit the categories per user, for the web profiling
+                            web_hit.category.value = name;
+                            web_hit.timestamp.value = service_hit.timestamp.value;
+                            //LM_M(("Emit hit for user:%lu, category:'%s'", userId.value, output_key.value.c_str()));
+                            writer->emit(1, &userId, &web_hit);
+                        }
                     }
                 }
             }
@@ -573,7 +867,7 @@ public:
             if (parseLine_commands(line, &serviceId, &command))
             {
                 LM_M(("Emit command:'%s' on serviceId:%lu to the command queue", command.value.c_str(), serviceId.value));
-                writer->emit(1, &serviceId, &command);
+                writer->emit(2, &serviceId, &command);
             }
         }
 

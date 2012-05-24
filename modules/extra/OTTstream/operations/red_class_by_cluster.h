@@ -71,6 +71,7 @@ namespace OTTstream{
 	        }
 	        user.userId = userId;
 	        user.clusterId = clusterId;
+	        user.sensitive.value = 0;
 
 	        //LM_M(("Processing userId:%lu with clusterId:%lu and inputs[0].num_kvs:%lu", userId.value, clusterId.value, inputs[0].num_kvs));
 	        for ( uint64_t i = 0 ; i< inputs[0].num_kvs; i++)

@@ -12,12 +12,14 @@ public:
     
     std::string name;
     int serviceId;
+    int group_serviceId;
     bool category;
     
-    OTTService( std::string _name, int _serviceId, bool _category )
+    OTTService( std::string _name, int _serviceId, int _group_serviceId, bool _category )
     {
         name = _name;
         serviceId = _serviceId;
+        group_serviceId = _group_serviceId;
         category = _category;
     }
     

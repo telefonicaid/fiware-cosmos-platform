@@ -131,7 +131,7 @@ public:
                     LM_M(("Checking NEWER for user:%lu with timestamp:%lu, (newest_time - time_window):%lu", activity.user_activity[j].user.userId.value, activity.user_activity[j].last_timestamp.value, (newest_time - time_window)));
                     if ((activity.user_activity[j].last_timestamp.value > (newest_time - time_window)) && (activity.user_activity[j].count.value > static_cast<unsigned long>(min_count)) && ((clusterId == -1) || (clusterId == static_cast<int>(activity.user_activity[j].user.clusterId.value))))
                     {
-                        LM_M(("Emit userId:%lu", activity.user_activity[j].user.userId.value));
+                        LM_M(("Emit service:%lu userId:%lu", serviceId.value, activity.user_activity[j].user.userId.value));
                         writer->emit(0, &serviceId, &(activity.user_activity[j]));
                     }
                 }
@@ -140,7 +140,7 @@ public:
                     LM_M(("Checking OLDER for user:%lu with timestamp:%lu, (newest_time - time_window):%lu", activity.user_activity[j].user.userId.value, activity.user_activity[j].last_timestamp.value, (newest_time - time_window)));
                     if ((activity.user_activity[j].last_timestamp.value < (newest_time - time_window)) && (activity.user_activity[j].count.value > static_cast<unsigned long>(min_count)) && ((clusterId == -1) || (clusterId == static_cast<int>(activity.user_activity[j].user.clusterId.value))))
                     {
-                        LM_M(("Emit userId:%lu", activity.user_activity[j].user.userId.value));
+                        LM_M(("Emit serviceId:%lu userId:%lu", serviceId.value, activity.user_activity[j].user.userId.value));
                         writer->emit(0, &serviceId, &(activity.user_activity[j]));
                     }
                 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -234,6 +235,45 @@ public class CosmosJobTest {
         assertTrue(job3.getWaitForCompletionCalled());
         assertTrue(job2.getWaitForCompletionCalled());
         assertTrue(job.getWaitForCompletionCalled());
+    }
+
+    @Test
+    public void testWaitForCompletion10() throws Exception {
+        FakeJob main = new FakeJob(new Configuration(), "Main", true);
+        FakeJob agg = new FakeJob(new Configuration(), "Agg", true);
+        FakeJob agg2 = new FakeJob(new Configuration(), "Agg2", true);
+        FakeJob agg3 = new FakeJob(new Configuration(), "Agg3", true);
+        FakeJob exp = new FakeJob(new Configuration(), "Exp", true);
+        FakeJob exp2 = new FakeJob(new Configuration(), "Exp2", true);
+        FakeJob exp3 = new FakeJob(new Configuration(), "Exp3", true);
+        agg.addDependentJob(main);
+        agg2.addDependentJob(main);
+        agg3.addDependentJob(main);
+        exp.addDependentJob(agg);
+        exp2.addDependentJob(agg2);
+        exp3.addDependentJob(agg3);
+
+        JobList j = new JobList();
+        j.add(exp);
+        j.add(exp2);
+        j.add(exp3);
+
+        j.waitForCompletion(true);
+
+        assertTrue(main.getSubmitCallTime() < agg.getSubmitCallTime());
+        assertTrue(main.getSubmitCallTime() < agg2.getSubmitCallTime());
+        assertTrue(main.getSubmitCallTime() < agg3.getSubmitCallTime());
+        assertTrue(agg.getSubmitCallTime() < exp.getSubmitCallTime());
+        assertTrue(agg2.getSubmitCallTime() < exp2.getSubmitCallTime());
+        assertTrue(agg3.getSubmitCallTime() < exp3.getSubmitCallTime());
+
+        assertTrue(main.getWaitForCompletionCalled());
+        assertTrue(agg.getWaitForCompletionCalled());
+        assertTrue(agg2.getWaitForCompletionCalled());
+        assertTrue(agg3.getWaitForCompletionCalled());
+        assertTrue(exp.getWaitForCompletionCalled());
+        assertTrue(exp2.getWaitForCompletionCalled());
+        assertTrue(exp3.getWaitForCompletionCalled());
     }
 
     public void testSubmit() throws Exception {

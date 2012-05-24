@@ -206,7 +206,7 @@ namespace au
         // Name of the logs based on the pid of this process
         
         int fd = open( local_file.c_str() , O_WRONLY | O_CREAT , 0644 );
-        LM_T(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
+        LM_LT(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
         
         if( fd >= 0 )
         {

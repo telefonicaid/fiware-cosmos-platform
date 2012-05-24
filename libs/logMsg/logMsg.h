@@ -873,6 +873,20 @@ do {                                                                            
    }                                                                             \
 } while (0)
 
+#define LM_LT(tLev, s)                                                            \
+do {                                                                             \
+char* text;                                                                   \
+\
+if (lmOk('T', tLev) == LmsOk)                                                 \
+{                                                                             \
+if ((text = lmTextGet s) != NULL)                                          \
+{                                                                          \
+lmOut(text, 'T', __FILE__, __LINE__, (char*) __FUNCTION__, tLev, NULL, false); \
+::free(text);                                                             \
+}                                                                          \
+}                                                                             \
+} while (0)
+
 
 
 /* ****************************************************************************

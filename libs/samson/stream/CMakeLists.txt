@@ -4,6 +4,7 @@ SET (HEADERS
     BlockManager.h
     BlockList.h
     Block.h
+	BlockLookupList.h
     StreamManager.h
 	BlockListContainer.h
     StreamOperation.h
@@ -28,6 +29,7 @@ SET (SOURCES
     BlockManager.cpp
     BlockList.cpp
     Block.cpp
+	BlockLookupList.cpp
     StreamManager.cpp
 	BlockListContainer.cpp
     StreamOperation.cpp

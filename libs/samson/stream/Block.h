@@ -33,6 +33,7 @@
 #include "samson/module/KVSetStruct.h"              // samson::KVSetStruct
 
 #include "BlockInfo.h"                              // struct BlockInfo
+#include "BlockLookupList.h"
 
 #include <set>
 
@@ -42,43 +43,7 @@ namespace samson
     {
         
         class BlockList;
-        
-        /**
-         Main class to hold a block in memory
-         */
-        
-        typedef struct BlockLookupRecord
-        {
-            char* keyP;
-        } BlockLookupRecord;
-
-        typedef struct BlockHashLookupRecord
-        {
-            size_t  startIx;
-            size_t  endIx;
-        } BlockHashLookupRecord;
-
-        
-        class Block;
-        class BlockLookupList
-        {
-            
-            BlockLookupRecord*      head;
-            size_t                  size;
-            BlockHashLookupRecord*  hashInfo;
-            KVFormat                kvFormat;
-            
-        public:
-
-            au::ErrorManager error;
-
-            BlockLookupList( Block* _block );
-            ~BlockLookupList();
-            
-            std::string lookup(const char* key, std::string outputFormat);
-            
-        };
-
+ 
         class Block :  public engine::Object
         {
             

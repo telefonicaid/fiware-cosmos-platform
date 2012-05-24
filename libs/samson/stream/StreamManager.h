@@ -149,6 +149,7 @@ namespace samson {
             Status set_stream_operation_property( std::string name , std::string property, std::string value );
             Status unset_stream_operation_property( std::string name , std::string property );
             StreamOperation* getStreamOperation( std::string name );
+            KVFormat expected_format_for_queue( std::string queue );
 
             // ------------------------------------------------------------
             // Operations over queue connections
@@ -194,9 +195,7 @@ namespace samson {
         private:
             
             void reviewStreamOperations();
-
             void review_connections();
-            
             void saveStateToDisk();
             void recoverStateFromDisk();
             

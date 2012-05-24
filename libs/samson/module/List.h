@@ -346,8 +346,8 @@ public:
     {
         std::ostringstream output;
 
-        int n_basic_fields = num_basic_fields();
-        int m_depth = max_depth();
+        //int n_basic_fields = num_basic_fields();
+        //int m_depth = max_depth();
 
         output << "<table>\n";
         output << "<caption>" <<  name << "</caption>\n";

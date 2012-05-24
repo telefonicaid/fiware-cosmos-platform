@@ -265,8 +265,25 @@ namespace samson {
             return my_stream_operations;
         }
         
-        
-
+        KVFormat StreamManager::expected_format_for_queue( std::string queue )
+        {
+            
+            au::map <std::string , StreamOperation>::iterator it_stream_operations;
+            for (it_stream_operations = stream_operations.begin() ; it_stream_operations != stream_operations.end() ; it_stream_operations++ )
+            {
+                StreamOperation *stream_operation = it_stream_operations->second;
+                
+                for( size_t i = 0 ; i < stream_operation->output_queues.size() ; i++ )
+                    if( stream_operation->output_queues[i] == queue )
+                    {
+                        Operation* operation = stream_operation->getOperation();
+                        if( operation )
+                            return operation->getOutputFormat(i);
+                    }
+            }
+            // No idea about this format
+            return KVFormat::generic();
+        }
         
         void StreamManager::addBuffer( std::string queue_name ,  engine::Buffer *buffer )
         {
@@ -1235,6 +1252,13 @@ namespace samson {
             }
             
             KVFormat format = queue->getFormat();
+
+            if ( format.isGenericKVFormat() )
+            {
+                // Let's try to discover format for this queue
+                format = expected_format_for_queue( queue_name );
+            }
+            
             if ( format.isGenericKVFormat() )
             {
                 LM_E(("Queue '%s' is of generic format '%s' for REST query", queue_name.c_str() , format.str().c_str()));

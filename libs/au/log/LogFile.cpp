@@ -12,7 +12,7 @@ namespace au
     au::Status LogFile::read( std::string file_name , LogFile** logFile )
     {
         int fd = open( file_name.c_str() , O_RDONLY );
-        LM_T(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
+        LM_LT(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
         if( fd < 0 )
             return OpenError;
         

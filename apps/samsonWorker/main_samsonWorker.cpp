@@ -201,8 +201,9 @@ int main(int argC, const char *argV[])
 
     paConfig("default value", "-logDir",          (void*) "/var/log/samson");
 
+    bool flag_log_classic = find_flag( argC , argV , "-log_classic" );
     
-    if( find_flag( argC , argV , "-log_classic" ) )
+    if( flag_log_classic )
     {
         paConfig("if hook active, no traces to file", (void*) false);
         paConfig("log to file",                       (void*) true);
@@ -232,13 +233,15 @@ int main(int argC, const char *argV[])
 
     
     // Log system
-    std::string local_log_file;
-    if( strlen(log_file) > 0 )
-        local_log_file = log_file;
-    else
-        local_log_file = au::str("%s/samsonWorkerLog_%d" , paLogDir , (int) getpid() );
-    
-    au::start_log_to_server( log_host , log_port , local_log_file );
+    if( !flag_log_classic )
+    {
+        std::string local_log_file;
+        if( strlen(log_file) > 0 )
+            local_log_file = log_file;
+        else
+            local_log_file = au::str("%s/samsonWorkerLog_%d" , paLogDir , (int) getpid() );
+        au::start_log_to_server( log_host , log_port , local_log_file );
+    }
 
     lmAux((char*) "father");
 

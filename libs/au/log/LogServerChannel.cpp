@@ -56,7 +56,7 @@ namespace au
                 
                 LM_V(("Opening log file %s" , current_file_name.c_str()));
                 int _fd = open( current_file_name.c_str() , O_CREAT | O_WRONLY , 0644 );
-                LM_T(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
+                LM_LT(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
                 
                 if( _fd < 0 )
                 {

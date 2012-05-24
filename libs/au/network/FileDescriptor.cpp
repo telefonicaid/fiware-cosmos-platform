@@ -35,7 +35,7 @@ namespace au {
         au::TokenTaker tt(&token);
         if( fd != -1 )
         {
-            LM_T(LmtFileDescriptors, ("Closing FileDescriptor fd:%d", fd));
+            LM_LT(LmtFileDescriptors, ("Closing FileDescriptor fd:%d", fd));
             ::close(fd);
             fd = -1;
         }
@@ -173,7 +173,7 @@ namespace au {
         else if ((fds > 0) && (FD_ISSET(fd, &rFds)))
             return OK;
         
-        LM_X(1, ("Very strange error awaiting '%s' from '%s'", what, name.c_str()));
+        LM_LX(1, ("Very strange error awaiting '%s' from '%s'", what, name.c_str()));
         
         return Error;
     }
@@ -291,10 +291,14 @@ namespace au {
             if (nb == -1)
             {
                 if (errno == EBADF)
-                    LM_RE(ConnectionClosed, ("read: %s (treating as Connection Closed), expecting '%s' from %s"
+                {
+                    LM_LE(("read: %s (treating as Connection Closed), expecting '%s' from %s"
                                              , strerror(errno), what, name.c_str()));
+                    return ConnectionClosed;
+                }
                 
-                LM_RE(ConnectionClosed, ("read: %s, expecting '%s' from %s", strerror(errno), what, name.c_str()));
+                LM_LE(("read: %s, expecting '%s' from %s", strerror(errno), what, name.c_str()));
+                return ConnectionClosed;
             }
             else if (nb == 0)
             {

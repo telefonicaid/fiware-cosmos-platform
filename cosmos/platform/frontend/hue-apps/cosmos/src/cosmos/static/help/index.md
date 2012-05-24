@@ -33,6 +33,9 @@ optionally port 22 in the Quickconnect bar of FileZilla. Press 'Quickconnect'.
 Use the left window pane to browse your local files and the right window pane to
 browse the remote files. You can drag and drop files between both.
 
+If you choose to use FireFTP for Firefox, remember to set 'Security' equal to
+SFTP in the 'Connection' tab of your new connection.
+
 From command line
 -----------------
 

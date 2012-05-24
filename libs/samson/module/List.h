@@ -218,18 +218,6 @@ public:
         return output.str();
     }
 
-    std::string strJSON(std::string name)
-    {
-        std::ostringstream output;
-        output << "[ ";
-
-        typename std::list<T*>::iterator it_elements;
-        for (it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
-            output << (*it_elements)->str() << " ";
-        output << "]";
-        return output.str();
-    }
-
     std::string strJSON()
     {
         std::ostringstream output;
@@ -242,67 +230,14 @@ public:
         return output.str();
     }
 
-    std::string strJSONInternal(std::string name, bool _vectorMember)
-    {
-        std::ostringstream output;
-        output << "[ ";
-
-        typename std::list<T*>::iterator it_elements;
-        for (it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
-            output << (*it_elements)->str() << " ";
-        output << "]";
-        return output.str();
-    }
-
-    std::string strXML(std::string name)
-    {
-        std::ostringstream output;
-        output << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>";
-        typename std::list<T*>::iterator it_elements;
-        for (it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
-        {
-            output << (*it_elements)->strXMLInternal(name);
-        }
-        return output.str();
-    }
-
     std::string strXML()
     {
         std::ostringstream output;
         typename std::list<T*>::iterator it_elements;
         for (it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
         {
-            output << (*it_elements)->strXMLInternal("");
+            output << "<item>" << (*it_elements)->strXML() << "</item>\n";
         }
-        return output.str();
-    }
-
-    std::string strXMLInternal(std::string name)
-    {
-        std::ostringstream output;
-        typename std::list<T*>::iterator it_elements;
-        for (it_elements = elements.begin() ; it_elements != elements.end() ; it_elements++ )
-        {
-            output << (*it_elements)->strXMLInternal(name);
-        }
-        return output.str();
-    }
-
-    std::string strHTML(std::string name, int level_html_heading)
-    {
-        std::ostringstream output;
-        output << "<h" << level_html_heading << ">" << name;
-        level_html_heading++;
-        typename std::list<T*>::iterator it_elements;
-        int i;
-        for (it_elements = elements.begin(),  i = 0 ; it_elements != elements.end() ; it_elements++, i++ )
-        {
-            output << "<h" <<level_html_heading << ">" << name << "[" << i << "]";
-            output << (*it_elements)->strHTML(level_html_heading+1);
-            output << "</h" << level_html_heading << ">\n";
-        }
-        level_html_heading--;
-        output << "</h" << level_html_heading << ">\n";
         return output.str();
     }
 
@@ -324,30 +259,9 @@ public:
         return output.str();
     }
 
-    std::string strHTMLInternal(std::string name, int level_html_heading)
-    {
-        std::ostringstream output;
-        output << "<h" << level_html_heading << ">" << name;
-        level_html_heading++;
-        typename std::list<T*>::iterator it_elements;
-        int i;
-        for (it_elements = elements.begin(),  i = 0 ; it_elements != elements.end() ; it_elements++, i++ )
-        {
-            output << "<h" <<level_html_heading << ">" << name << "[" << i << "]";
-            output << (*it_elements)->strHTML(level_html_heading+1);
-            output << "</h" << level_html_heading << ">\n";
-        }
-        level_html_heading--;
-        output << "</h" << level_html_heading << ">\n";
-        return output.str();
-    }
-
     std::string strHTMLTable(std::string name)
     {
         std::ostringstream output;
-
-        //int n_basic_fields = num_basic_fields();
-        //int m_depth = max_depth();
 
         output << "<table>\n";
         output << "<caption>" <<  name << "</caption>\n";
@@ -377,42 +291,6 @@ public:
 
         output << "<table>\n";
 
-        return output.str();
-    }
-
-    std::string strHTMLTable()
-    {
-        std::ostringstream output;
-        //            output << "<h" << level_html_heading << ">" << "List";
-        //             level_html_heading++;
-        //             typename std::list<T*>::iterator it_elements;
-        //             int i;
-        //             for (it_elements = elements.begin(), i = 0; it_elements != elements.end() ; it_elements++, i++ )
-        //             {
-        //                 output << "<h" <<level_html_heading << ">" << "List" << "[" << i << "]";
-        //                 output << (*it_elements)->strHTML(level_html_heading+1);
-        //                 output << "</h" << level_html_heading << ">\n";
-        //             }
-        //             level_html_heading--;
-        //             output << "</h" << level_html_heading << ">\n";
-                    return output.str();
-    }
-
-    std::string strHTMTableLInternal(std::string name)
-    {
-        std::ostringstream output;
-        //            output << "<h" << level_html_heading << ">" << name;
-        //            level_html_heading++;
-        //            typename std::list<T*>::iterator it_elements;
-        //            int i;
-        //            for (it_elements = elements.begin(),  i = 0 ; it_elements != elements.end() ; it_elements++, i++ )
-        //            {
-        //                output << "<h" <<level_html_heading << ">" << name << "[" << i << "]";
-        //                output << (*it_elements)->strHTML(level_html_heading+1);
-        //                output << "</h" << level_html_heading << ">\n";
-        //            }
-        //            level_html_heading--;
-        //            output << "</h" << level_html_heading << ">\n";
         return output.str();
     }
 

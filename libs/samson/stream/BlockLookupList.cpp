@@ -206,10 +206,10 @@ namespace samson {
                     if (outputFormat == "html")
                     {
                         std::ostringstream output;
-                        //output << "<h1>key</h1>\n";
-                        output << keyDataInstance->strHTML("key", 1);
-                        //output << "<h1>value</h1>\n";
-                        output << valueDataInstance->strHTML("value", 1);
+                        output << "<h1>key</h1>\n";
+                        output << keyDataInstance->strHTML(2);
+                        output << "<h1>value</h1>\n";
+                        output << valueDataInstance->strHTML(2);
                         return output.str();
                     }
                     if (outputFormat == "thtml")

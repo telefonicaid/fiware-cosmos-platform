@@ -130,49 +130,26 @@ public:
     string getToStringCommandVector(string pre_line, string _name);
     string getToStringCommand( string pre_line );
 
-    string getToStringJSONCommandIndividual(string pre_line, string _name);
-    string getToStringJSONCommandVector(string pre_line, string _name);
     string getToStringJSONCommand( string pre_line );
 
-    string getToStringXMLCommandIndividual(string pre_line, string _name);
-    string getToStringXMLCommandVector(string pre_line, string _name);
     string getToStringXMLCommand( string pre_line );
 
-    string getToStringHTMLCommandIndividual(string pre_line, string _name);
-    string getToStringHTMLCommandVector(string pre_line, string _name);
     string getToStringHTMLCommand( string pre_line );
 
-    string getToStringHTMLTableCommandIndividual(string pre_line, string _name);
-    string getToStringHTMLTableCommandVector(string pre_line, string _name);
-    string getToStringHTMLTableCommand( string pre_line );
-
-    string getTo_paint_header_CommandIndividual(string pre_line, string _name);
-    string getTo_paint_header_CommandVector(string pre_line, string _name);
     string getTo_paint_header_Command(string pre_line);
 
-    string getTo_paint_header_basic_CommandIndividual(string pre_line, string _name);
-    string getTo_paint_header_basic_CommandVector(string pre_line, string _name);
     string getTo_paint_header_basic_Command(string pre_line);
 
-    string getTo_paint_value_CommandIndividual(string pre_line, string _name);
-     string getTo_paint_value_CommandVector(string pre_line, string _name);
      string getTo_paint_value_Command( string pre_line );
 
-     string getTo_num_basic_fields_CommandIndividual(string pre_line, string _name);
-     string getTo_num_basic_fields_CommandVector(string pre_line, string _name);
      string getTo_num_basic_fields_Command(string pre_line);
 
-     string getTo_max_depth_CommandIndividual(string pre_line, string _name);
-     string getTo_max_depth_CommandVector(string pre_line, string _name);
      string getTo_max_depth_Command(string pre_line);
 
-     string getTo_max_num_values_CommandIndividual(string pre_line, string _name);
-     string getTo_max_num_values_CommandVector(string pre_line, string _name);
      string getTo_max_num_values_Command(string pre_line);
 
     string getCopyFromCommandIndividual(string pre_line, string _name);
     string getCopyFromCommandVector(string pre_line, string _name);
-
     string getCopyFromCommand(string pre_line);
 
 

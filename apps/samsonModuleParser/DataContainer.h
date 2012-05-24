@@ -627,22 +627,9 @@ class DataContainer
             file <<"\t}\n\n";
 
             // strJSON
-            file << "\n\tstd::string strJSON(std::string _varNameInternal){\n";
-            file << "\t\tstd::ostringstream o;\n";
-            file << "\t\to << \"{\" << \"\\\"\" << _varNameInternal << \"\\\"\" << \":\";\n";
-            file << "\t\to << strJSON();\n";
-            file << "\t\to << \"}\";\n";
-            file <<"\t\treturn o.str();\n";
-            file <<"\t}\n\n";
-
-            // strJSON
             file << "\n\tstd::string strJSON(){\n";
             file << "\t\tstd::ostringstream o;\n";
-            file << "\t\tbool _vectorMember = false;\n";
-            if (items.size() != 1 || items.begin()->isVector() == false)
-            {
-                file << "\t\to << \"{\";\n";
-            }
+            file << "\t\to << \"{\";\n";
             for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
             {
                 if (field != items.begin())
@@ -651,48 +638,7 @@ class DataContainer
                 }
                 file << (*field).getToStringJSONCommand("\t\t") ;
             }
-            if (items.size() != 1 || items.begin()->isVector() == false)
-            {
-                file << "\t\to << \"}\";\n";
-            }
-            file <<"\t\treturn o.str();\n";
-            file <<"\t}\n\n";
-
-            // strJSONInternal
-            file << "\n\tstd::string strJSONInternal(std::string _varNameInternal, bool _vectorMember){\n";
-            file << "\t\tstd::ostringstream o;\n";
-            file << "\t\tif (_vectorMember == false)\n";
-            file << "\t\t{\n";
-            file << "\t\t\to << \"\\\"\" << _varNameInternal << \"\\\"\" << \":\";\n";
-            file << "\t\t}\n";
-            file << "\t\t_vectorMember = false;\n\n";
-            if (items.size() != 1 || items.begin()->isVector() == false)
-            {
-                file << "\t\to << \"{\";\n";
-            }
-            for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
-            {
-                if (field != items.begin())
-                {
-                    file << "\t\to<<\",\";\n";
-                }
-                file << (*field).getToStringJSONCommand("\t\t") ;
-            }
-            if (items.size() != 1 || items.begin()->isVector() == false)
-            {
-                file << "\to << \"}\";\n";
-            }
             file << "\t\to << \"}\";\n";
-            file <<"\t\treturn o.str();\n";
-            file <<"\t}\n\n";
-
-            // strXML
-            file << "\n\tstd::string strXML(std::string _varNameInternal){\n";
-            file << "\t\tstd::ostringstream o;\n";
-            file << "\t\to << \"<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\" ?>\";\n";
-            file << "\t\to << \"<\" << _varNameInternal << \">\";\n";
-            file << "\t\to << strXML();\n";
-            file << "\t\to << \"</\" << _varNameInternal << \">\";\n";
             file <<"\t\treturn o.str();\n";
             file <<"\t}\n\n";
 
@@ -706,29 +652,6 @@ class DataContainer
             file <<"\t\treturn o.str();\n";
             file <<"\t}\n\n";
 
-
-            // strXMLInternal
-            file << "\n\tstd::string strXMLInternal(std::string _varNameInternal){\n";
-            file << "\t\tstd::ostringstream o;\n";
-            file << "\t\to << \"<\" << _varNameInternal << \">\";\n";
-            for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
-            {
-                file << (*field).getToStringXMLCommand("\t\t") ;
-            }
-            file << "\t\to << \"</\" << _varNameInternal << \">\";\n";
-            file <<"\t\treturn o.str();\n";
-            file <<"\t}\n\n";
-
-            // strHTML
-            file << "\n\tstd::string strHTML(std::string _varNameInternal, int level_html_heading){\n";
-            file << "\t\tstd::ostringstream o;\n";
-
-            file << "\t\to << \"<h\" << level_html_heading << \"> \" << _varNameInternal << \"</h\" << level_html_heading << \">\\n\";\n";
-            file << "\t\to << strHTML(level_html_heading+1);\n";
-            //file << "\t\to << \"</h\" << level_html_heading << \">\\n\";\n";
-            file <<"\t\treturn o.str();\n";
-            file <<"\t}\n\n";
-
             // strHTML
             file << "\n\tstd::string strHTML(int level_html_heading){\n";
             file << "\t\tstd::ostringstream o;\n";
@@ -736,13 +659,6 @@ class DataContainer
             {
                 file << (*field).getToStringHTMLCommand("\t\t") ;
             }
-            file <<"\t\treturn o.str();\n";
-            file <<"\t}\n\n";
-
-            // strHTMLInternal
-            file << "\n\tstd::string strHTMLInternal(std::string _varNameInternal,  int level_html_heading){\n";
-            file << "\t\tstd::ostringstream o;\n";
-            file << "\t\to << strHTML(level_html_heading);\n";
             file <<"\t\treturn o.str();\n";
             file <<"\t}\n\n";
 
@@ -782,62 +698,6 @@ class DataContainer
             file << "\t\to << \"</tr>\\n\";\n";
             file << "\t}\n";
 
-            file << "\to << \"<table>\\n\";\n";
-            file <<"\t\treturn o.str();\n";
-            file <<"\t}\n\n";
-
-            // strHTMLTable
-            file << "\n\tstd::string strHTMLTable(){\n";
-            file << "\t\tstd::ostringstream o;\n";
-            //        file << "\tint n_basic_fields = num_basic_fields();\n";
-            //        file << "\tint m_depth = max_depth();\n";
-            //        file << "\to << \"<table>\\n\";\n";
-            //        //file << "\to << \"<caption>\" <<  _varNameInternal << \"</caption>;\\n\"\n";
-            //        file << "\to << \"int init_col = 0\";\n";
-            file << "\to << \"<tr>\\n\";\n";
-            for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
-            {
-                //file << "\t\to << \"<th>\" << (*field).name << \"</th>\\n\";\n";
-            }
-            file << "\to << \"<tr>\\n\";\n";
-            for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
-            {
-                //file  << "\t\to << (*field).paint_header(init_col);\n";
-                //file << "\t\to << init_col += (*field).num_basic_fields();\n";
-            }
-            for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
-            {
-                //file  << "\t\to << (*field).paint_value(init_col);\\n\";\n";
-                //file << "\t\to << init_col += (*field).num_basic_fields()\\n\";\n";
-            }
-            file << "\to << \"<table>\\n\";\n";
-            file <<"\t\treturn o.str();\n";
-            file <<"\t}\n\n";
-
-            // strHTMLTableInternal
-            file << "\n\tstd::string strHTMLTableInternal(std::string _varNameInternal){\n";
-            file << "\t\tstd::ostringstream o;\n";
-            //file << "\tint n_basic_fields = num_basic_fields();\n";
-            //file << "\tint m_depth = max_depth();\n";
-            //file << "\to << \"<table>\\n\";\n";
-            //file << "\to << \"<caption>\" <<  _varNameInternal << \"</caption>;\\n\"\n";
-            //file << "\to << \"int init_col = 0\";\n";
-            file << "\to << \"<tr>\\n\";\n";
-            for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
-            {
-                //file << "\t\to << \"<th>\" << (*field).name << \"</th>\\n\";\n";
-            }
-            file << "\to << \"<tr>\\n\";\n";
-            for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
-            {
-                //file  << "\t\to << (*field).paint_header(init_col);\n";
-                //file << "\t\to << init_col += (*field).num_basic_fields();\n";
-            }
-            for (vector <DataType>::iterator field = items.begin() ; field != items.end() ; field++)
-            {
-                //file  << "\t\to << (*field).paint_value(init_col);\\n\";\n";
-                //file << "\t\to << init_col += (*field).num_basic_fields()\\n\";\n";
-            }
             file << "\to << \"<table>\\n\";\n";
             file <<"\t\treturn o.str();\n";
             file <<"\t}\n\n";

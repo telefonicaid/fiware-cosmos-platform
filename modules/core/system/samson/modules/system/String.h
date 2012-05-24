@@ -360,22 +360,6 @@ public:
         return ("\""+value+"\"");
     }
 
-    std::string strJSON(std::string _varNameInternal){
-        std::ostringstream o;
-        String strEscaped;
-        strEscaped.value = value;;
-        strEscaped.findAndReplace("\\", "\\\\");
-        strEscaped.findAndReplace("\"", "\\\"");
-        //strEscaped.findAndReplace("\/", "\\/");
-        strEscaped.findAndReplace("\b", "\\b");
-        strEscaped.findAndReplace("\f", "\\f");
-        strEscaped.findAndReplace("\n", "\\n");
-        strEscaped.findAndReplace("\r", "\\r");
-        strEscaped.findAndReplace("\t", "\\t");
-        o << "{" << "\"" << _varNameInternal << "\":" << "\"" << strEscaped.value << "\"" << "}";
-        return o.str();
-    }
-
     std::string strJSON(){
          std::ostringstream o;
          String strEscaped;
@@ -392,36 +376,6 @@ public:
          return o.str();
      }
 
-    std::string strJSONInternal(std::string _varNameInternal, bool vectorMember){
-        std::ostringstream o;
-        String strEscaped;
-        strEscaped.value = value;;
-        strEscaped.findAndReplace("\\", "\\\\");
-        strEscaped.findAndReplace("\"", "\\\"");
-        //strEscaped.findAndReplace("\/", "\\/");
-        strEscaped.findAndReplace("\b", "\\b");
-        strEscaped.findAndReplace("\f", "\\f");
-        strEscaped.findAndReplace("\n", "\\n");
-        strEscaped.findAndReplace("\r", "\\r");
-        strEscaped.findAndReplace("\t", "\\t");
-        if (vectorMember)
-        {
-            o << "\""  << strEscaped.value << "\"";
-        }
-        else
-        {
-            o << "\"" << _varNameInternal << "\":" << "\"" << strEscaped.value << "\"";
-        }
-        return o.str();
-    }
-
-
-    std::string strXML(std::string _varNameInternal){
-        std::ostringstream o;
-        o << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
-        o << strXMLInternal(_varNameInternal);
-        return o.str();
-    }
 
     std::string strXML(){
         std::ostringstream o;
@@ -429,32 +383,11 @@ public:
         return o.str();
     }
 
-    std::string strXMLInternal(std::string _varNameInternal){
-        std::ostringstream o;
-        o << "<" << _varNameInternal << ">" << "<![CDATA[" << value << "]]>" << "</" << _varNameInternal << ">\n";
-        return o.str();
-    }
-
-    std::string strHTML(std::string _varNameInternal, int level_html_heading){
-        std::ostringstream o;
-        o << strHTMLInternal(_varNameInternal, level_html_heading);
-        return o.str();
-    }
-
     std::string strHTML(int level_html_heading){
-        std::ostringstream o;
-        o   << str();
+//        std::ostringstream o;
+//        o   << str();
         //o << "<h" <<  level_html_heading << ">" << value << "</h" << level_html_heading << ">";
-        return o.str();
-    }
-
-    std::string strHTMLInternal(std::string _varNameInternal, int level_html_heading){
-        std::ostringstream o;
-        o << "<h" <<  level_html_heading << ">" << _varNameInternal << " </h" <<  level_html_heading << ">" << str();
-        //o << _varNameInternal << ": "  << str();
-
-        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << " <h" <<  level_html_heading+1 << ">" << str() << "</h" << level_html_heading+1 << "></h" << level_html_heading << ">";
-        return o.str();
+        return str();
     }
 
     std::string strHTMLTable(std::string _varNameInternal){
@@ -470,22 +403,6 @@ public:
          o << "<td>" << str() << "</td>\n";
          o << "</tr>\n";
          o << "<table>\n";
-        return o.str();
-    }
-
-    std::string strHTMLTable(){
-        std::ostringstream o;
-        o   << str();
-        //o << "<h" <<  level_html_heading << ">" << value << "</h" << level_html_heading << ">";
-        return o.str();
-    }
-
-    std::string strHTMLTableInternal(std::string _varNameInternal){
-        std::ostringstream o;
-        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << " </h" <<  level_html_heading << ">" << str();
-        //o << _varNameInternal << ": "  << str();
-
-        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << " <h" <<  level_html_heading+1 << ">" << str() << "</h" << level_html_heading+1 << "></h" << level_html_heading << ">";
         return o.str();
     }
 

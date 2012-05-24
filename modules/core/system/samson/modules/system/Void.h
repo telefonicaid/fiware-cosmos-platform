@@ -229,70 +229,19 @@ public:
     };
 
     std::string str(){
-        return "";
-    }
-
-    std::string strJSON(std::string _varNameInternal){
-        std::ostringstream o;
-        o << "{" << "\"" << _varNameInternal << "\":" << "\"" << "\""<< "}";
-        return o.str();
+        return "_void_";
     }
 
     std::string strJSON(){
-        std::ostringstream o;
-        o << "{" << "\"" << "void" << "\":" << "\"" << "\""<< "}";
-        return o.str();
-    }
-    std::string strJSONInternal(std::string _varNameInternal, bool vectorMember){
-        std::ostringstream o;
-        if (vectorMember)
-        {
-            o << "\"" << "\"";
-        }
-        else
-        {
-            o << "\"" << _varNameInternal << "\":" << "\"" << "\"";
-        }
-        return o.str();
-    }
-
-    std::string strXML(std::string _varNameInternal){
-        std::ostringstream o;
-        o << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
-        o << strXMLInternal(_varNameInternal);
-        return o.str();
+        return str();
     }
 
     std::string strXML(){
-        std::ostringstream o;
-        o << "<" << "void" << ">" << "</" << "void" << ">\n";
-        return o.str();
-    }
-
-    std::string strXMLInternal(std::string _varNameInternal){
-        std::ostringstream o;
-        o << "<" << _varNameInternal << ">" << "</" << _varNameInternal << ">\n";
-        return o.str();
-    }
-
-    std::string strHTML(std::string _varNameInternal, int level_html_heading){
-        std::ostringstream o;
-        o << strHTMLInternal(_varNameInternal, level_html_heading);
-        return o.str();
+        return str();
     }
 
     std::string strHTML(int level_html_heading){
-        std::ostringstream o;
-        o << strHTMLInternal("void", level_html_heading);
-        return o.str();
-    }
-
-    std::string strHTMLInternal(std::string _varNameInternal, int level_html_heading){
-        std::ostringstream o;
-        o << "<h" <<  level_html_heading << ">" << _varNameInternal << ":" << "void" << "</h" << level_html_heading << ">";
-        //o  << "void";
-        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << ":" << "void" << "</h" << level_html_heading << ">";
-        return o.str();
+        return str();
     }
 
     std::string strHTMLTable(std::string _varNameInternal){
@@ -308,20 +257,6 @@ public:
          o << "<td>" << str() << "</td>\n";
          o << "</tr>\n";
          o << "<table>\n";
-        return o.str();
-    }
-
-    std::string strHTMLTable(){
-        std::ostringstream o;
-        //o << strHTMLInternal("void", level_html_heading);
-        return o.str();
-    }
-
-    std::string strHTMLTableInternal(std::string _varNameInternal){
-        std::ostringstream o;
-        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << ":" << "void" << "</h" << level_html_heading << ">";
-        //o  << "void";
-        //o << "<h" <<  level_html_heading << ">" << _varNameInternal << ":" << "void" << "</h" << level_html_heading << ">";
         return o.str();
     }
 

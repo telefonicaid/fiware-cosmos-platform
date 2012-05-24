@@ -199,7 +199,10 @@ namespace samson {
         Block::~Block()
         {
             if( lookupList )
+            {
                 delete lookupList;
+                lookupList = NULL;
+            }
 
             if (header != NULL)
             {
@@ -756,11 +759,15 @@ namespace samson {
                 // Detect error during creating
                 if( lookupList->error.isActivated() )
                 {
-                    LM_W(("Error creating BlockLookupList (%s)" , lookupList->error.getMessage().c_str()));
+                    LM_E(("Error creating BlockLookupList (%s)" , lookupList->error.getMessage().c_str()));
                     delete lookupList;
                     lookupList = NULL;
                     return au::xml_simple("error", "Error creating BlockLookupList");
                 }
+            }
+            else
+            {
+                LM_M(("lookupList already created for block:%lu", id));
             }
             
             return lookupList->lookup(key, outputFormat);

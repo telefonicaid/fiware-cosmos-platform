@@ -1270,11 +1270,6 @@ std::string Value::str()
     return "unknown";
 }
 
-std::string Value::strJSON(std::string _varNameInternal)
-{
-    return strJSON();
-}
-
 std::string Value::strJSON()
 {
     std::ostringstream output;
@@ -1327,27 +1322,7 @@ void Value::_strJSON( std::ostream &output )
 
 }
 
-std::string Value::strJSONInternal(std::string _varNameInternal, bool vectorMember)
-{
-    return "TO BE DEFINED";
-}
-
-std::string Value::strXML(std::string _varNameInternal)
-{
-    return "TO BE DEFINED";
-}
-
 std::string Value::strXML()
-{
-    return "TO BE DEFINED";
-}
-
-std::string Value::strXMLInternal(std::string _varNameInternal)
-{
-    return "TO BE DEFINED";
-}
-
-std::string Value::strHTML(std::string _varNameInternal, int level_html_heading)
 {
     return "TO BE DEFINED";
 }
@@ -1357,22 +1332,7 @@ std::string Value::strHTML(int level_html_heading)
     return "TO BE DEFINED";
 }
 
-std::string Value::strHTMLInternal(std::string _varNameInternal, int level_html_heading)
-{
-    return "TO BE DEFINED";
-}
-
 std::string Value::strHTMLTable(std::string _varNameInternal)
-{
-    return "TO BE DEFINED";
-}
-
-std::string Value::strHTMLTable()
-{
-    return "TO BE DEFINED";
-}
-
-std::string Value::strHTMLTableInternal(std::string _varNameInternal)
 {
     return "TO BE DEFINED";
 }

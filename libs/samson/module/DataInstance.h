@@ -60,24 +60,16 @@ namespace samson {
 		virtual std::string  str()= 0;		
         
         // JSON Version of this data instance
-		virtual std::string strJSON(std::string name)=0;
 		virtual std::string strJSON()=0;
-		virtual std::string strJSONInternal(std::string name, bool vectorMember)=0;
         
         // XML Version of this data instance
-        virtual std::string strXML(std::string name)=0;
         virtual std::string strXML()=0;
-        virtual std::string strXMLInternal(std::string name)=0;
 
         // HTML version of this data type
-        virtual std::string strHTML(std::string name, int level_html_heading)=0;
         virtual std::string strHTML(int level_html_heading)=0;
-        virtual std::string strHTMLInternal(std::string name, int level_html_heading)=0;
         
         // HTML table version of this data type
         virtual std::string strHTMLTable(std::string name)=0;
-        virtual std::string strHTMLTable()=0;
-        virtual std::string strHTMLTableInternal(std::string name)=0;
 
         virtual std::string paint_header(int init_col)=0;
         virtual std::string paint_header_basic(int init_col)=0;

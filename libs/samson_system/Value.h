@@ -246,22 +246,14 @@ public:
     // JSON & XML Functions
     // ------------------------------------------------------------
 
-    std::string strJSONInternal(std::string _varNameInternal, bool vectorMember);
-    std::string strJSON(std::string _varNameInternal);
     std::string strJSON();
     void _strJSON( std::ostream &output );
 
-    std::string strXML(std::string _varNameInternal);
     std::string strXML();
-    std::string strXMLInternal(std::string _varNameInternal);
 
-    std::string strHTML(std::string _varNameInternal, int level_html_heading);
     std::string strHTML(int level_html_heading);
-    std::string strHTMLInternal(std::string _varNameInternal, int level_html_heading);
 
     std::string strHTMLTable(std::string _varNameInternal);
-    std::string strHTMLTable();
-    std::string strHTMLTableInternal(std::string _varNameInternal);
 
     std::string paint_header(int init_col);
     std::string paint_header_basic(int init_col);

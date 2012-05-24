@@ -183,12 +183,11 @@ namespace  samson
                 }
                 else if (strcmp(outputFormat, "json") == 0)
                 {
-                    bool vectorMember  = false;
-                    output << "[" << time_string << "] " << "{" << key->strJSONInternal("key", vectorMember) << "," << value->strJSONInternal("value", vectorMember) << "}" << std::endl;
+                    output << "[" << time_string << "] " << "{\"key\":" << key->strJSON() << ", \"value\":" << value->strJSON() << "}" << std::endl;
                 }
                 else if (strcmp(outputFormat, "xml") == 0)
                 {
-                    output << "[" << time_string << "] " << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><key-value>" << key->strXMLInternal("key") << value->strXMLInternal("value") << "</key-value>" << std::endl;
+                    output << "[" << time_string << "] " << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><key-value>\n<key>" << key->strXML() << "</key>\n<value>" << value->strXML() << "</value>\n</key-value>" << std::endl;
                 }
                 else
                 {

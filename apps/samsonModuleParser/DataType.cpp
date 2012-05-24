@@ -696,39 +696,6 @@ string DataType::getToStringCommand( string pre_line )
 }
 
 
-// getToStringJSONCommand Command
-
-string DataType::getToStringJSONCommandIndividual(string pre_line, string _name)
-{
-    ostringstream o;
-    o << pre_line << "{ // toStringJSON "<<name<<"\n";
-    o << pre_line << "\to << " << _name << ".strJSONInternal(" << "\"" << _name << "\"" << ", _vectorMember);\n";
-    o << pre_line << "}\n";
-    return o.str();
-}
-
-string DataType::getToStringJSONCommandVector(string pre_line, string _name)
-{
-    ostringstream o;
-    string pre_line_local;
-
-    o << pre_line << "{ // toStringJSON of vector " << name << "\n";
-    o << pre_line << "\to << \"\\\"" << _name << "\\\":\"" << ";\n";
-    o << pre_line << "\to << \"[\" ;\n";
-    o << pre_line << "\tfor (int i = 0 ; i < " << name << "_length ; i++)\n";
-    o << pre_line << "\t{\n";
-    o << pre_line << "\t\t_vectorMember = true;\n";
-    o << pre_line << "\t\tif (i != 0) o << \",\";\n";
-    pre_line_local = pre_line + "\t\t";
-    o << getToStringJSONCommandIndividual(pre_line_local, name+"[i]");
-    o << pre_line << "\t\t_vectorMember = false;\n";
-    o << pre_line << "\t}\n";
-    o << pre_line << "\to << \"]\" ;\n";
-
-    o << pre_line << "}\n";
-    return o.str();
-}
-
 string DataType::getToStringJSONCommand( string pre_line )
 {
 
@@ -743,11 +710,25 @@ string DataType::getToStringJSONCommand( string pre_line )
 
     if( isVector() )
     {
-        o << getToStringJSONCommandVector(pre_line, name);
+        o << pre_line << "{ // toStringJSON of vector " << name << "\n";
+        o << pre_line << "\to << \"\\\"" << name << "\\\": \"" << ";\n";
+        o << pre_line << "\to << \"[\" ;\n";
+        o << pre_line << "\tfor (int i = 0 ; i < " << name << "_length ; i++)\n";
+        o << pre_line << "\t{\n";
+        o << pre_line << "\t\to << " << name << "[i].strJSON();\n";
+        o << pre_line << "\t\tif (i != " << name << "_length-1)\n";
+        o << pre_line << "\t\t{\n";
+        o << pre_line << "\t\t\to << \",\";\n";
+        o << pre_line << "\t\t}\n";
+        o << pre_line << "\t}\n";
+        o << pre_line << "\to << \"]\" ;\n";
+        o << pre_line << "}\n";
     }
     else
     {
-        o << getToStringJSONCommandIndividual(pre_line, name);
+        o << pre_line << "{ // toStringJSON "<<name<<"\n";
+        o << pre_line << "\to << \"\\\"" << name << "\\\": \"<<" <<  name << ".strJSON();\n";
+        o << pre_line << "}\n";
     }
 
     return o.str();
@@ -755,35 +736,6 @@ string DataType::getToStringJSONCommand( string pre_line )
 }
 
 // getToStringXMLCommand Command
-
-string DataType::getToStringXMLCommandIndividual(string pre_line, string _name)
-{
-    ostringstream o;
-    o << pre_line << "{ // toStringXML "<<name<<"\n";
-    o << pre_line << "\to << " << _name << ".strXMLInternal(" << "\"" << name << "\");\n";
-    o << pre_line << "}\n";
-    return o.str();
-}
-
-string DataType::getToStringXMLCommandVector(string pre_line, string _name)
-{
-    ostringstream o;
-    string pre_line_local;
-
-    _name  = "not used";
-
-    o << pre_line << "{ // toStringXML of vector " << name << "\n";
-
-    o << pre_line << "\tfor(int i = 0 ; i < " << name << "_length ; i++)\n";
-    o << pre_line << "\t{\n";
-    pre_line_local = pre_line + "\t\t";
-    o << getToStringXMLCommandIndividual(pre_line_local, name+"[i]");
-    o << pre_line << "\t}\n";
-
-    o << pre_line << "}\n";
-    return o.str();
-}
-
 string DataType::getToStringXMLCommand( string pre_line )
 {
     ostringstream o;
@@ -796,171 +748,61 @@ string DataType::getToStringXMLCommand( string pre_line )
     }
     if( isVector() )
     {
-        o << getToStringXMLCommandVector(pre_line, name);
+        o << pre_line << "{ // toStringXML of vector " << name << "\n";
+        o << pre_line << "\tfor(int i = 0 ; i < " << name << "_length ; i++)\n";
+        o << pre_line << "\t{\n";
+        o << pre_line << "\t\to << \"<" << name << ">\" << " << name << "[i].strXML() << \"</" << name << ">\\n\";\n";
+        o << pre_line << "\t}\n";
+        o << pre_line << "}\n";
     }
     else
     {
-        o << getToStringXMLCommandIndividual(pre_line, name);
+        o << pre_line << "{ // toStringXML "<<name<<"\n";
+        o << pre_line << "\to << \"<" << name << ">\" << " << name << ".strXML() << \"</" << name << ">\\n\";\n";
+        o << pre_line << "}\n";
     }
     return o.str();
 }
 
 // getToStringHTMLCommand Command
-string DataType::getToStringHTMLCommandIndividual(string pre_line, string _name)
-{
-    ostringstream o;
-    o << pre_line << "{ // toStringHTML "<<name<<"\n";
-    o << pre_line << "\to << \"<h\" <<level_html_heading << \">\" <<" << "\"" << _name << "</h\" << level_html_heading << \">\\n\";\n";
-    o << pre_line << "\to << " << _name << ".strHTML(level_html_heading+1);\n";
-    o << pre_line << "\to << \"\\n\";\n";
-    //o << pre_line << "\t\to << \"</h\" << level_html_heading << \">\\n\";\n";
-    o << pre_line << "}\n";
-    return o.str();
-}
-
-string DataType::getToStringHTMLCommandVector(string pre_line, string _name)
-{
-    ostringstream o;
-    string pre_line_local;
-
-    o << pre_line << "{ // toStringHTML of vector " << name << "\n";
-    o << pre_line << "\to << \"<h\" << level_html_heading << \">\" <<" << "\"" << name << "</h\" << level_html_heading << \">\\n\";\n";
-    o << pre_line << "\tlevel_html_heading++;\n";
-    o << pre_line << "\tfor (int i = 0 ; i < " << name << "_length ; i++)\n";
-    o << pre_line << "\t{\n";
-    pre_line_local = pre_line + "\t\t";
-    string name_component = name+"[i]";
-    o << pre_line_local << "{ // toStringHTML "<<name<<"\n";
-    o << pre_line_local << "\to << \"<h\" <<level_html_heading << \">\" <<" << "\"" << name << "[\" << i << \"]\" << \"</h\" << level_html_heading << \">\\n\";\n";
-    o << pre_line_local << "\to << " << name_component << ".strHTML(level_html_heading+1);\n";
-    o << pre_line_local << "\to << \"\\n\";\n";
-    //o << pre_line_local << "\t\to << \"</h\" << level_html_heading << \">\\n\";\n";
-    o << pre_line_local << "}\n";
-    //o << getToStringHTMLCommandIndividual(pre_line_local, name+"[i]");
-    o << pre_line << "\t}\n";
-    o << pre_line << "\to << \"\\n\";\n";
-    //o << pre_line << "\tlevel_html_heading--;\n";
-    //o << pre_line << "\to << \"</h\" << level_html_heading << \">\\n\";\n";
-
-    o << pre_line << "}\n";
-    return o.str();
-}
-
 string DataType::getToStringHTMLCommand( string pre_line )
 {
 
     ostringstream o;
-    string add_despl = "";
 
     if (optional)
     {
         o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-        add_despl = "\t";
     }
 
     if( isVector() )
     {
-        o << getToStringHTMLCommandVector(pre_line, name);
+        o << pre_line << "{ // toStringHTML of vector " << name << "\n";
+        o << pre_line << "\to << \"<h\" << level_html_heading << \">\" <<" << "\"" << name << "</h\" << level_html_heading << \">\\n\";\n";
+        o << pre_line << "\tlevel_html_heading++;\n";
+        o << pre_line << "\tfor (int i = 0 ; i < " << name << "_length ; i++)\n";
+        o << pre_line << "\t{\n";
+        string name_component = name+"[i]";
+        o << pre_line << "\t\t{ // toStringHTML "<<name<<"\n";
+        o << pre_line << "\t\t\to << \"<h\" <<level_html_heading << \">\" <<" << "\"" << name << "[\" << i << \"]\" << \"</h\" << level_html_heading << \">\\n\";\n";
+        o << pre_line << "\t\t\to << " << name_component << ".strHTML(level_html_heading+1);\n";
+        o << pre_line << "\t\t\to << \"\\n\";\n";
+        o << pre_line << "\t\t}\n";
+        o << pre_line << "\t}\n";
+        o << pre_line << "}\n";
+        o << pre_line << "\to << \"\\n\";\n";
     }
     else
     {
-        o << getToStringHTMLCommandIndividual(pre_line, name);
+        o << pre_line << "{ // toStringHTML "<<name<<"\n";
+        o << pre_line << "\to << \"<h\" <<level_html_heading << \">\" <<" << "\"" << name << "</h\" << level_html_heading << \">\\n\";\n";
+        o << pre_line << "\to << " << name << ".strHTML(level_html_heading+1);\n";
+        o << pre_line << "\to << \"\\n\";\n";
+        o << pre_line << "}\n";
     }
 
     return o.str();
 
-}
-
-
-// getToStringHTMLTableCommand Command
-string DataType::getToStringHTMLTableCommandIndividual(string pre_line, string _name)
-{
-    ostringstream o;
-    o << pre_line << "{ // toStringHTML "<<name<<"\n";
-    o << pre_line << "\to << \"<h\" <<level_html_heading << \">\" <<" << "\"" << _name << "</h\" << level_html_heading << \">\\n\";\n";
-    o << pre_line << "\to << " << _name << ".strHTML(level_html_heading+1);\n";
-    o << pre_line << "\to << \"\\n\";\n";
-    //o << pre_line << "\t\to << \"</h\" << level_html_heading << \">\\n\";\n";
-    o << pre_line << "}\n";
-    return o.str();
-}
-
-string DataType::getToStringHTMLTableCommandVector(string pre_line, string _name)
-{
-    ostringstream o;
-    string pre_line_local;
-
-    o << pre_line << "{ // toStringHTML of vector " << name << "\n";
-    o << pre_line << "\to << \"<h\" << level_html_heading << \">\" <<" << "\"" << name << "</h\" << level_html_heading << \">\\n\";\n";
-    o << pre_line << "\tlevel_html_heading++;\n";
-    o << pre_line << "\tfor (int i = 0 ; i < " << name << "_length ; i++)\n";
-    o << pre_line << "\t{\n";
-    pre_line_local = pre_line + "\t\t";
-    string name_component = name+"[i]";
-    o << pre_line_local << "{ // toStringHTML "<<name<<"\n";
-    o << pre_line_local << "\to << \"<h\" <<level_html_heading << \">\" <<" << "\"" << name << "[\" << i << \"]\" << \"</h\" << level_html_heading << \">\\n\";\n";
-    o << pre_line_local << "\to << " << name_component << ".strHTML(level_html_heading+1);\n";
-    o << pre_line_local << "\to << \"\\n\";\n";
-    //o << pre_line_local << "\t\to << \"</h\" << level_html_heading << \">\\n\";\n";
-    o << pre_line_local << "}\n";
-    //o << getToStringHTMLCommandIndividual(pre_line_local, name+"[i]");
-    o << pre_line << "\t}\n";
-    o << pre_line << "\to << \"\\n\";\n";
-    //o << pre_line << "\tlevel_html_heading--;\n";
-    //o << pre_line << "\to << \"</h\" << level_html_heading << \">\\n\";\n";
-
-    o << pre_line << "}\n";
-    return o.str();
-}
-
-string DataType::getToStringHTMLTableCommand( string pre_line )
-{
-
-    ostringstream o;
-    string add_despl = "";
-
-    if (optional)
-    {
-        o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-        add_despl = "\t";
-    }
-
-    if( isVector() )
-    {
-        o << getToStringHTMLTableCommandVector(pre_line, name);
-    }
-    else
-    {
-        o << getToStringHTMLTableCommandIndividual(pre_line, name);
-    }
-
-    return o.str();
-
-}
-
-
-// getTo_paint_header_commandIndividual
-string DataType::getTo_paint_header_CommandIndividual(string pre_line, string _name)
-{
-    ostringstream o;
-    o << pre_line << "{ // paint_header  "<<name<<"\n";
-    o << pre_line << "\tend_col = init_col +  " << _name << ".num_basic_fields();\n";
-    o << pre_line << "\to << \"<th colspan=end_col>" << _name << "</th>\\n\";\n";
-    o << pre_line << "\tinit_col = end_col + 1;\n";
-    o << pre_line << "}\n";
-    return o.str();
-}
-
-// getTo_paint_header_commandVector
-string DataType::getTo_paint_header_CommandVector(string pre_line, string _name)
-{
-    ostringstream o;
-    o << pre_line << "{ // paint_header  vector "<<name<<"\n";
-    o << pre_line << "\tend_col = init_col +  " << _name << "[0].num_basic_fields();\n";
-    o << pre_line << "\to << \"<th colspan=\" << end_col << \">" << _name << "</th>\\n\";\n";
-    o << pre_line << "\tinit_col = end_col + 1;\n";
-    o << pre_line << "}\n";
-    return o.str();
 }
 
 string DataType::getTo_paint_header_Command( string pre_line )
@@ -975,50 +817,24 @@ string DataType::getTo_paint_header_Command( string pre_line )
     }
     if( isVector() )
     {
-        o << getTo_paint_header_CommandVector(pre_line, name);
+        o << pre_line << "{ // paint_header  vector "<<name<<"\n";
+        o << pre_line << "\tend_col = init_col +  " << name << "[0].num_basic_fields();\n";
+        o << pre_line << "\to << \"<th colspan=\" << end_col << \">" << name << "</th>\\n\";\n";
+        o << pre_line << "\tinit_col = end_col + 1;\n";
+        o << pre_line << "}\n";
     }
     else
     {
-        o << getTo_paint_header_CommandIndividual(pre_line, name);
+        o << pre_line << "{ // paint_header  "<<name<<"\n";
+        o << pre_line << "\tend_col = init_col +  " << name << ".num_basic_fields();\n";
+        o << pre_line << "\to << \"<th colspan=end_col>" << name << "</th>\\n\";\n";
+        o << pre_line << "\tinit_col = end_col + 1;\n";
+        o << pre_line << "}\n";
     }
 
     return o.str();
 }
 
-// getTo_paint_header_commandIndividual
-string DataType::getTo_paint_header_basic_CommandIndividual(string pre_line, string _name)
-{
-    ostringstream o;
-    o << pre_line << "{ // paint_header_basic  "<<name<<"\n";
-    o << pre_line << "\tif (" << _name << ".is_terminal())\n";
-    o << pre_line << "\t{\n";
-    o << pre_line << "\t\to << \"<th>" << _name << "</th>\\n\";\n";
-    o << pre_line << "\t}\n";
-    o << pre_line << "\telse\n";
-    o << pre_line << "\t{\n";
-    o << pre_line << "\t\to << " << _name << ".paint_header_basic(init_col);\n";
-    o << pre_line << "\t}\n";
-    o << pre_line << "}\n";
-    return o.str();
-}
-
-// getTo_paint_header_commandIndividual
-string DataType::getTo_paint_header_basic_CommandVector(string pre_line, string _name)
-{
-    ostringstream o;
-    o << pre_line << "{ // paint_header_basic  vector "<<name<<"\n";
-    o << pre_line << "\tif (" << _name << "[0].is_terminal())\n";
-    o << pre_line << "\t{\n";
-    o << pre_line << "\t\to << \"<th>" << _name << "</th>\\n\";\n";
-    o << pre_line << "\t}\n";
-    o << pre_line << "\telse\n";
-    o << pre_line << "\t{\n";
-    o << pre_line << "\t\to << " << _name << "[0].paint_header_basic(init_col);\n";
-    o << pre_line << "\t}\n";
-    //o << pre_line << "\t;\n";
-    o << pre_line << "}\n";
-    return o.str();
-}
 
 string DataType::getTo_paint_header_basic_Command( string pre_line )
 {
@@ -1032,59 +848,37 @@ string DataType::getTo_paint_header_basic_Command( string pre_line )
     }
     if( isVector() )
     {
-        o << getTo_paint_header_basic_CommandVector(pre_line, name);
+        o << pre_line << "{ // paint_header_basic  vector "<<name<<"\n";
+        o << pre_line << "\tif (" << name << "[0].is_terminal())\n";
+        o << pre_line << "\t{\n";
+        o << pre_line << "\t\to << \"<th>" << name << "</th>\\n\";\n";
+        o << pre_line << "\t}\n";
+        o << pre_line << "\telse\n";
+        o << pre_line << "\t{\n";
+        o << pre_line << "\t\to << " << name << "[0].paint_header_basic(init_col);\n";
+        o << pre_line << "\t}\n";
+        o << pre_line << "}\n";
+
+
     }
     else
     {
-        o << getTo_paint_header_basic_CommandIndividual(pre_line, name);
+        o << pre_line << "{ // paint_header_basic  "<<name<<"\n";
+        o << pre_line << "\tif (" << name << ".is_terminal())\n";
+        o << pre_line << "\t{\n";
+        o << pre_line << "\t\to << \"<th>" << name << "</th>\\n\";\n";
+        o << pre_line << "\t}\n";
+        o << pre_line << "\telse\n";
+        o << pre_line << "\t{\n";
+        o << pre_line << "\t\to << " << name << ".paint_header_basic(init_col);\n";
+        o << pre_line << "\t}\n";
+        o << pre_line << "}\n";
     }
 
     return o.str();
 }
 
 
-
-// getTo_paint_value_CommandIndividual Command
-string DataType::getTo_paint_value_CommandIndividual(string pre_line, string _name)
-{
-    ostringstream o;
-    o << pre_line << "{ // paint_value "<<name<<"\n";
-    o << pre_line << "\t\tif (index_row < " << _name << ".max_num_values())\n";
-    o << pre_line << "\t\t{\n";
-    o << pre_line << "\t\t\to << " << _name << ".paint_value(index_row) << \"\\n\";\n";
-    o << pre_line << "\t\t}\n";
-    o << pre_line << "\t\telse\n";
-    o << pre_line << "\t\t{\n";
-    o << pre_line << "\t\t\to << \"<td></td>\\n\";\n";
-    o << pre_line << "\t\t}\n";
-//    o << pre_line << "\t}\n";
-    o << pre_line << "}\n";
-    return o.str();
-}
-
-string DataType::getTo_paint_value_CommandVector(string pre_line, string _name)
-{
-    ostringstream o;
-    string pre_line_local;
-    o << pre_line << "{ // paint_value of vector " << name << "\n";
-    o << pre_line << "\t\tif (index_row < " << _name << "_length)\n";
-    o << pre_line << "\t\t{\n";
-    o << pre_line << "\t\t\to << " << _name << "[index_row].paint_value(0) << \"\\n\";\n";
-    o << pre_line << "\t\t}\n";
-    o << pre_line << "\t\telse\n";
-    o << pre_line << "\t\t{\n";
-    o << pre_line << "\t\t\tif (" << _name << "_length > 0)\n";
-    o << pre_line << "\t\t\t{\n";
-    o << pre_line << "\t\t\t\to << " << _name << "[0].paint_value(-1) << \"\\n\";\n";
-    o << pre_line << "\t\t\t}\n";
-    o << pre_line << "\t\t\telse\n";
-    o << pre_line << "\t\t\t{\n";
-    o << pre_line << "\t\t\t\to << \"<td></td>\\n\";\n";
-    o << pre_line << "\t\t\t}\n";
-    o << pre_line << "\t\t}\n";
-    o << pre_line << "}\n";
-    return o.str();
-}
 
 string DataType::getTo_paint_value_Command( string pre_line )
 {
@@ -1097,32 +891,37 @@ string DataType::getTo_paint_value_Command( string pre_line )
     }
     if( isVector() )
     {
-        o << getTo_paint_value_CommandVector(pre_line, name);
+        o << pre_line << "{ // paint_value of vector " << name << "\n";
+        o << pre_line << "\t\tif (index_row < " << name << "_length)\n";
+        o << pre_line << "\t\t{\n";
+        o << pre_line << "\t\t\to << " << name << "[index_row].paint_value(0) << \"\\n\";\n";
+        o << pre_line << "\t\t}\n";
+        o << pre_line << "\t\telse\n";
+        o << pre_line << "\t\t{\n";
+        o << pre_line << "\t\t\tif (" << name << "_length > 0)\n";
+        o << pre_line << "\t\t\t{\n";
+        o << pre_line << "\t\t\t\to << " << name << "[0].paint_value(-1) << \"\\n\";\n";
+        o << pre_line << "\t\t\t}\n";
+        o << pre_line << "\t\t\telse\n";
+        o << pre_line << "\t\t\t{\n";
+        o << pre_line << "\t\t\t\to << \"<td></td>\\n\";\n";
+        o << pre_line << "\t\t\t}\n";
+        o << pre_line << "\t\t}\n";
+        o << pre_line << "}\n";
     }
     else
     {
-        o << getTo_paint_value_CommandIndividual(pre_line, name);
+        o << pre_line << "{ // paint_value "<<name<<"\n";
+        o << pre_line << "\t\tif (index_row < " << name << ".max_num_values())\n";
+        o << pre_line << "\t\t{\n";
+        o << pre_line << "\t\t\to << " << name << ".paint_value(index_row) << \"\\n\";\n";
+        o << pre_line << "\t\t}\n";
+        o << pre_line << "\t\telse\n";
+        o << pre_line << "\t\t{\n";
+        o << pre_line << "\t\t\to << \"<td></td>\\n\";\n";
+        o << pre_line << "\t\t}\n";
+        o << pre_line << "}\n";
     }
-    return o.str();
-}
-
-// getTo_num_basic_fields_CommandIndividual Command
-string DataType::getTo_num_basic_fields_CommandIndividual(string pre_line, string _name)
-{
-    ostringstream o;
-    o << pre_line << "{ // num_basic_fields "<<name<<"\n";
-    o << pre_line << "\t\tn_basic_fields += " << _name << ".num_basic_fields();\n";
-    o << pre_line << "}\n";
-    return o.str();
-}
-
-string DataType::getTo_num_basic_fields_CommandVector(string pre_line, string _name)
-{
-    ostringstream o;
-    string pre_line_local;
-    o << pre_line << "{ // num_basic_fields of vector " << name << "\n";
-    o << pre_line << "\t\tn_basic_fields += " << _name << "[0].num_basic_fields();\n";
-    o << pre_line << "}\n";
     return o.str();
 }
 
@@ -1137,37 +936,19 @@ string DataType::getTo_num_basic_fields_Command( string pre_line )
     }
     if( isVector() )
     {
-        o << getTo_num_basic_fields_CommandVector(pre_line, name);
+        o << pre_line << "{ // num_basic_fields of vector " << name << "\n";
+        o << pre_line << "\t\tn_basic_fields += " << name << "[0].num_basic_fields();\n";
+        o << pre_line << "}\n";
     }
     else
     {
-        o << getTo_num_basic_fields_CommandIndividual(pre_line, name);
+        o << pre_line << "{ // num_basic_fields "<<name<<"\n";
+        o << pre_line << "\t\tn_basic_fields += " << name << ".num_basic_fields();\n";
+        o << pre_line << "}\n";
     }
     return o.str();
 }
 
-
-// getTo_max_depth_CommandIndividual Command
-string DataType::getTo_max_depth_CommandIndividual(string pre_line, string _name)
-{
-    ostringstream o;
-    o << pre_line << "{ // max_depth "<<name<<"\n";
-    o << pre_line << "\t\tint depth = " << _name << ".max_depth();\n";
-    o << pre_line << "\t\tif (depth > m_depth) m_depth = depth; \n";
-    o << pre_line << "}\n";
-    return o.str();
-}
-
-string DataType::getTo_max_depth_CommandVector(string pre_line, string _name)
-{
-    ostringstream o;
-    string pre_line_local;
-    o << pre_line << "{ // max_depth of vector " << name << "\n";
-    o << pre_line << "\t\tint depth = " << _name << "[0].max_depth();\n";
-    o << pre_line << "\t\tif (depth > m_depth) m_depth = depth; \n";
-    o << pre_line << "}\n";
-    return o.str();
-}
 
 string DataType::getTo_max_depth_Command( string pre_line )
 {
@@ -1180,37 +961,21 @@ string DataType::getTo_max_depth_Command( string pre_line )
     }
     if( isVector() )
     {
-        o << getTo_max_depth_CommandVector(pre_line, name);
+        o << pre_line << "{ // max_depth of vector " << name << "\n";
+        o << pre_line << "\t\tint depth = " << name << "[0].max_depth();\n";
+        o << pre_line << "\t\tif (depth > m_depth) m_depth = depth; \n";
+        o << pre_line << "}\n";
     }
     else
     {
-        o << getTo_max_depth_CommandIndividual(pre_line, name);
+        o << pre_line << "{ // max_depth "<<name<<"\n";
+        o << pre_line << "\t\tint depth = " << name << ".max_depth();\n";
+        o << pre_line << "\t\tif (depth > m_depth) m_depth = depth; \n";
+        o << pre_line << "}\n";
     }
     return o.str();
 }
 
-
-// getTo_max_num_values_CommandIndividual Command
-string DataType::getTo_max_num_values_CommandIndividual(string pre_line, string _name)
-{
-    ostringstream o;
-    o << pre_line << "{ // max_num_values "<<name<<"\n";
-    o << pre_line << "\t\tint num_values = " << _name << ".max_num_values();\n";
-    o << pre_line << "\t\tif (num_values > m_num_values) m_num_values = num_values; \n";
-    o << pre_line << "}\n";
-    return o.str();
-}
-
-string DataType::getTo_max_num_values_CommandVector(string pre_line, string _name)
-{
-    ostringstream o;
-    string pre_line_local;
-    o << pre_line << "{ // max_num_values of vector " << name << "\n";
-    o << pre_line << "\t\tint num_values = " << _name << "_length;\n";
-    o << pre_line << "\t\tif (num_values > m_num_values) m_num_values = num_values; \n";
-    o << pre_line << "}\n";
-    return o.str();
-}
 
 string DataType::getTo_max_num_values_Command( string pre_line )
 {
@@ -1223,11 +988,17 @@ string DataType::getTo_max_num_values_Command( string pre_line )
     }
     if( isVector() )
     {
-        o << getTo_max_num_values_CommandVector(pre_line, name);
+        o << pre_line << "{ // max_num_values of vector " << name << "\n";
+        o << pre_line << "\t\tint num_values = " << name << "_length;\n";
+        o << pre_line << "\t\tif (num_values > m_num_values) m_num_values = num_values; \n";
+        o << pre_line << "}\n";
     }
     else
     {
-        o << getTo_max_num_values_CommandIndividual(pre_line, name);
+        o << pre_line << "{ // max_num_values "<<name<<"\n";
+        o << pre_line << "\t\tint num_values = " << name << ".max_num_values();\n";
+        o << pre_line << "\t\tif (num_values > m_num_values) m_num_values = num_values; \n";
+        o << pre_line << "}\n";
     }
     return o.str();
 }

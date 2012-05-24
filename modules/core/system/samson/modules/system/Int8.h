@@ -47,44 +47,18 @@ public:
 
     std::string str(){
         std::ostringstream o;
-        o << (int)value << " ";
+        o << static_cast<int>(value) << " ";
         return o.str();
     }
 
-    std::string strJSON(std::string _varNameInternal){
+    std::string strJSON(){
         std::ostringstream o;
-        o << "{" << "\"" << _varNameInternal << "\":" << (int)value << "}";
+        o << static_cast<int>(value);
         return o.str();
     }
 
-    std::string strJSONInternal(std::string _varNameInternal, bool vectorMember){
-        std::ostringstream o;
-        if (vectorMember)
-        {
-            o << (int)value;
-        }
-        else
-        {
-            o << "\"" << _varNameInternal << "\":" << (int)value;
-        }
-        return o.str();
-    }
-
-    std::string strXML(std::string _varNameInternal){
-        std::ostringstream o;
-        o << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
-        o << strXMLInternal(_varNameInternal);
-        return o.str();
-    }
-
-    std::string strXMLInternal(std::string _varNameInternal){
-        std::ostringstream o;
-        o << "<" << _varNameInternal << ">" << (int)value << "</" << _varNameInternal << ">\n";
-        return o.str();
-    }
-
-    int *getDataPath(const std::string &dataPathString){
-        return(getDataPathStatic(dataPathString));
+    std::string strXML(){
+        return str();
     }
 
     static int *getDataPathStatic(const std::string &dataPathString){

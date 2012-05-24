@@ -45,38 +45,12 @@ public:
         return o.str();
     }
 
-    std::string strJSON(std::string _varNameInternal){
-        std::ostringstream o;
-        o << "{" << "\"" << _varNameInternal << "\":" << (unsigned int)value << "}";
-        return o.str();
+    std::string strJSON(){
+        return str();
     }
 
-    std::string strJSONInternal(std::string _varNameInternal, bool vectorMember){
-        std::ostringstream o;
-        //o << "{" << "\"" << _varNameInternal << "\":" << "\"" << (int)value << "\"" << "}";
-        if (vectorMember)
-        {
-            o <<  (unsigned int)value;
-        }
-        else
-        {
-            o << "\"" << _varNameInternal << "\":" << (unsigned int)value;
-        }
-
-        return o.str();
-    }
-
-    std::string strXML(std::string _varNameInternal){
-        std::ostringstream o;
-        o << "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n";
-        o << strXMLInternal(_varNameInternal);
-        return o.str();
-    }
-
-    std::string strXMLInternal(std::string _varNameInternal){
-        std::ostringstream o;
-        o << "<" << _varNameInternal << ">" << (unsigned int)value << "</" << _varNameInternal << ">\n";
-        return o.str();
+    std::string strXML(){
+        return str();
     }
 
 

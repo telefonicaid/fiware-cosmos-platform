@@ -44,7 +44,7 @@ namespace au
                 if( c.diffTimeInSeconds() > 2 )
                 {
                     c.reset();
-                    std::cerr << "Waiting listener on port " << port << " to finish...\n";
+                    LM_LW(( "Waiting listener on port %d to finish...\n" , port ));
                 }
                 
                 usleep(100000);

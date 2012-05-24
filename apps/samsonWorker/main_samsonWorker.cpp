@@ -155,81 +155,6 @@ void captureSIGTERM( int s )
 }
 
 
-
-void cleanup(void)
-{
-    
-    // Stop all threads to clean up
-    engine::Engine::stop();
-    engine::DiskManager::stop();
-    engine::ProcessManager::stop();
-    if( networkP )
-        networkP->stop();
-    
-    if( worker ) 
-        worker->stop();
-    
-    // Wait all threads to finsih
-    au::ThreadManager::shared()->wait("samsonWorker");
-    
-    google::protobuf::ShutdownProtobufLibrary();
-
-    // Delete worker network
-    LM_T(LmtCleanup, ("Clean up network"));
-    if( networkP ) 
-        delete networkP;
-    
-    LM_T(LmtCleanup, ("Shutting down worker components (worker at %p)", worker));
-    if (worker != NULL)
-    {
-        LM_T(LmtCleanup, ("deleting worker"));
-        delete worker;
-        worker = NULL;
-    }
-    
-    LM_T(LmtCleanup, ("Shutting down LockDebugger"));
-    au::LockDebugger::destroy();
-
-    if (smManager != NULL)
-    {
-        LM_T(LmtCleanup, ("Shutting down Shared Memory Manager"));
-        delete smManager;
-        smManager = NULL;
-    }
-    
-    LM_T(LmtCleanup, ("destroying BlockManager"));
-    samson::stream::BlockManager::destroy();
-
-    LM_T(LmtCleanup, ("destroying ModulesManager"));
-    samson::ModulesManager::destroy();
-
-    LM_T(LmtCleanup, ("destroying ProcessManager"));
-    engine::ProcessManager::destroy();
-
-    LM_T(LmtCleanup, ("destroying DiskManager"));
-    engine::DiskManager::destroy();
-
-    LM_T(LmtCleanup, ("destroying MemoryManager"));
-    engine::MemoryManager::destroy();
-
-    LM_T(LmtCleanup, ("destroying Engine"));
-    engine::Engine::destroy();
-
-    LM_T(LmtCleanup, ("Shutting down SamsonSetup"));
-    samson::SamsonSetup::destroy();
-    
-    LM_T(LmtCleanup, ("Calling paConfigCleanup"));
-    paConfigCleanup();
-    LM_T(LmtCleanup, ("Calling lmCleanProgName"));
-    lmCleanProgName();
-    LM_T(LmtCleanup, ("Cleanup DONE"));
-    
-    // Stop logging to server
-    au::stop_log_to_server();
-
-}
-
-
 static void valgrindExit(int v)
 {
     if (v == valgrind)
@@ -302,10 +227,6 @@ int main(int argC, const char *argV[])
         local_log_file = au::str("%s/samsonWorkerLog_%d" , paLogDir , (int) getpid() );
     
     au::start_log_to_server( log_host , log_port , local_log_file );
-
-    // Only add in foreground to avoid warning / error messages at the stdout
-    if (fg)
-        atexit(cleanup);
 
     lmAux((char*) "father");
 
@@ -415,6 +336,11 @@ int main(int argC, const char *argV[])
     LM_D(("worker at %p", worker));
     valgrindExit(13);
 
+    
+    // Change locale
+    setlocale(LC_ALL, oldlocale);
+
+    // Put in background if necessary
     if (fg == false)
     {
         std::cout << "OK. samsonWorker is now working in background.\n";
@@ -424,9 +350,78 @@ int main(int argC, const char *argV[])
             sleep(10);
     }
 
+    // Run worker console
     worker->runConsole();
 
-    setlocale(LC_ALL, oldlocale);
-
+    // Stop all threads to clean up
+    // ---------------------------------------------------------------------------
+    engine::Engine::stop();
+    engine::DiskManager::stop();
+    engine::ProcessManager::stop();
+    if( networkP )
+        networkP->stop();
+    
+    if( worker ) 
+        worker->stop();
+    
+    // Wait all threads to finsih
+    au::ThreadManager::shared()->wait("samsonWorker");
+    
+    google::protobuf::ShutdownProtobufLibrary();
+    
+    // Delete worker network
+    LM_T(LmtCleanup, ("Clean up network"));
+    if( networkP ) 
+        delete networkP;
+    
+    LM_T(LmtCleanup, ("Shutting down worker components (worker at %p)", worker));
+    if (worker != NULL)
+    {
+        LM_T(LmtCleanup, ("deleting worker"));
+        delete worker;
+        worker = NULL;
+    }
+    
+    LM_T(LmtCleanup, ("Shutting down LockDebugger"));
+    au::LockDebugger::destroy();
+    
+    if (smManager != NULL)
+    {
+        LM_T(LmtCleanup, ("Shutting down Shared Memory Manager"));
+        delete smManager;
+        smManager = NULL;
+    }
+    
+    LM_T(LmtCleanup, ("destroying BlockManager"));
+    samson::stream::BlockManager::destroy();
+    
+    LM_T(LmtCleanup, ("destroying ModulesManager"));
+    samson::ModulesManager::destroy();
+    
+    LM_T(LmtCleanup, ("destroying ProcessManager"));
+    engine::ProcessManager::destroy();
+    
+    LM_T(LmtCleanup, ("destroying DiskManager"));
+    engine::DiskManager::destroy();
+    
+    LM_T(LmtCleanup, ("destroying MemoryManager"));
+    engine::MemoryManager::destroy();
+    
+    LM_T(LmtCleanup, ("destroying Engine"));
+    engine::Engine::destroy();
+    
+    LM_T(LmtCleanup, ("Shutting down SamsonSetup"));
+    samson::SamsonSetup::destroy();
+    
+    LM_T(LmtCleanup, ("Calling paConfigCleanup"));
+    paConfigCleanup();
+    LM_T(LmtCleanup, ("Calling lmCleanProgName"));
+    lmCleanProgName();
+    LM_T(LmtCleanup, ("Cleanup DONE"));
+    
+    // Stop logging to server
+    au::stop_log_to_server();    
+    
+    
     return 0;
 }

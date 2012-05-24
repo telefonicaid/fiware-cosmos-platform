@@ -12,6 +12,7 @@ namespace au
     LogServerChannel::LogServerChannel( int port , std::string _directory ) 
     : network::Service( port ) , token("LogServerChannel")
     {
+        fd = NULL;
         directory = _directory;
     }
     

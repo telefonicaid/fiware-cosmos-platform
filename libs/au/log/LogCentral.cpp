@@ -20,6 +20,9 @@ namespace au
         
         // Connect the first time
         try_connect();
+        
+        // No current thread by defautl
+        current_thread_activated = false;
     }
     
     LogCentral::~LogCentral()

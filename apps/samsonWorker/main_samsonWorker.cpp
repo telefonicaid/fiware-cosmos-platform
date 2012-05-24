@@ -43,6 +43,7 @@
 #include "samson/network/WorkerNetwork.h"
 #include "samson/worker/SamsonWorker.h"
 #include "samson/isolated/SharedMemoryManager.h"
+#include "samson/isolated/ProcessItemIsolated.h"    // isolated_process_as_tread to put background process in thread mode
 #include "samson/stream/BlockManager.h"
 #include "samson/module/ModulesManager.h"
 
@@ -64,6 +65,7 @@ char             log_file[1024];
 char             log_host[1024];
 bool             log_classic;
 int              log_port; 
+bool             thread_mode;
 
 
 #define LOG_PORT AU_LOG_SERVER_PORT
@@ -86,6 +88,7 @@ PaArgument paArgs[] =
     { "-port",      &port,      "",                         PaInt,    PaOpt, SAMSON_WORKER_PORT,     1,      9999,  "Port to receive new connections"   },
     { "-web_port",  &web_port,  "",                         PaInt,    PaOpt, SAMSON_WORKER_WEB_PORT, 1,      9999,  "Port to receive web connections"   },
     { "-valgrind",  &valgrind,  "SAMSON_WORKER_VALGRIND",   PaInt,    PaOpt, 0,                      0,        20,  "help valgrind debug process"       },
+	{ "-thread_mode", &thread_mode,     "THREAD_MODE", PaBool,    PaOpt,    false,  false,   true,  "thread_mode"               },
 
     PA_END_OF_ARGS
 };
@@ -219,6 +222,15 @@ int main(int argC, const char *argV[])
     const char* extra = paIsSetSoGet(argC, (char**) argV, "-port");
     paParse(paArgs, argC, (char**) argV, 1, false, extra);
 
+    
+    // Thread mode
+    if( thread_mode )
+    {
+        LM_M(("Started in thread mode"));
+        samson::ProcessItemIsolated::isolated_process_as_tread = true;
+    }
+
+    
     // Log system
     std::string local_log_file;
     if( strlen(log_file) > 0 )

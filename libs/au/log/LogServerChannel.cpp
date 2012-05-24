@@ -12,8 +12,11 @@ namespace au
     LogServerChannel::LogServerChannel( int port , std::string _directory ) 
     : network::Service( port ) , token("LogServerChannel")
     {
-        fd = NULL;
         directory = _directory;
+        
+        file_counter = 0;
+        current_size = 0;
+        fd = NULL;
     }
     
     LogServerChannel::~LogServerChannel()
@@ -134,6 +137,28 @@ namespace au
         au::TokenTaker tt(&token); 
         
         LM_V(("Received log: %s" , log->str().c_str() ));
+
+        // Check max size
+        if( fd )
+            if( current_size > 64000000 )
+            {
+                fd->close();
+                delete fd;
+                fd = NULL;
+            }
+        
+        // Open if necessary
+        if (!fd )
+        {
+        
+            au::ErrorManager error;
+            openFileDescriptor(&error);        
+            if( error.isActivated() )
+            {
+                LM_LW(("Not possible to open local file to save logs. Logs will be deninitelly lost"));
+                return;
+            }
+        }
         
         // Write to file
         if( fd )
@@ -141,6 +166,8 @@ namespace au
         
         // Monitorize rate of logs
         rate.push( log->getTotalSerialitzationSize() );
+        
+        current_size += log->getTotalSerialitzationSize();
         
     }
     

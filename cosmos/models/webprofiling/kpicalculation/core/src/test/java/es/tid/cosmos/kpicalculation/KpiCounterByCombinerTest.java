@@ -8,7 +8,7 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.base.mapreduce.BinaryKey;
+import es.tid.cosmos.base.mapreduce.CompositeKey;
 
 /**
  *
@@ -16,18 +16,21 @@ import es.tid.cosmos.base.mapreduce.BinaryKey;
  */
 public class KpiCounterByCombinerTest {
     private KpiCounterByCombiner instance;
-    private ReduceDriver<BinaryKey, IntWritable, BinaryKey, IntWritable> driver;
+    private ReduceDriver<CompositeKey, IntWritable, CompositeKey, IntWritable>
+            driver;
     
     @Before
     public void setUp() {
         this.instance = new KpiCounterByCombiner();
-        this.driver = new ReduceDriver<BinaryKey, IntWritable,
-                                       BinaryKey, IntWritable>(this.instance);
+        this.driver = new ReduceDriver<CompositeKey, IntWritable, CompositeKey,
+                IntWritable>(this.instance);
     }
     
     @Test
     public void testReduce() throws IOException {
-        BinaryKey key = new BinaryKey("a", "b");
+        CompositeKey key = new CompositeKey(2);
+        key.set(0, "a");
+        key.set(1, "b");
         this.driver
                 .withInput(key, asList(new IntWritable(2), new IntWritable(3)))
                 .withOutput(key, new IntWritable(1))

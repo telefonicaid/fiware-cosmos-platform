@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.base.mapreduce.SingleKey;
+import es.tid.cosmos.base.mapreduce.CompositeKey;
 
 /**
  * This class makes the combining phase in the simple kpi aggregates calculation
@@ -19,7 +19,7 @@ import es.tid.cosmos.base.mapreduce.SingleKey;
  * @author javierb
  */
 public class KpiCounterCombiner extends
-        Reducer<SingleKey, IntWritable, SingleKey, IntWritable> {
+        Reducer<CompositeKey, IntWritable, CompositeKey, IntWritable> {
     private IntWritable counter;
 
     /**
@@ -43,7 +43,7 @@ public class KpiCounterCombiner extends
      *            contains the context of the job run
      */
     @Override
-    protected void reduce(SingleKey key, Iterable<IntWritable> values,
+    protected void reduce(CompositeKey key, Iterable<IntWritable> values,
             Context context) throws IOException, InterruptedException {
         int count = 0;
         while (values.iterator().hasNext()) {

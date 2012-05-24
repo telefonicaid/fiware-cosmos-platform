@@ -68,11 +68,7 @@ public class KpiGenericMapper extends Mapper<NullWritable,
     protected void setup(Context context) throws IOException,
             InterruptedException {
         initDescriptors(context.getConfiguration());
-        if (this.secondaryDescriptor == null) {
-            this.key = new SingleKey();
-        } else {
-            this.key = new BinaryKey();
-        }
+        this.key = new CompositeKey((this.secondaryDescriptor == null) ? 1 : 2);
     }
 
     /**

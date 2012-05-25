@@ -94,6 +94,7 @@ namespace au
                 else
                 {
                     current_thread = my_thread_id;
+                    current_thread_activated = true;
                     break;
                 }
             }

@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.populationdensity;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,7 +11,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.ReduceJob;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
 
 /**
  *
@@ -21,10 +23,10 @@ public final class PopulationDensityRunner {
     
     public static void run(Path clientsInfoPath, Path populationDensityOutPath,
                            Path tmpDirPath, boolean isDebug, Configuration conf)
-            throws Exception {
+            throws IOException, InterruptedException, ClassNotFoundException {
         Path popdenBtsPath = new Path(tmpDirPath, "popden_bts");
         {
-            ReduceJob job = ReduceJob.create(conf, "PopdenSpreadArray",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenSpreadArray",
                     SequenceFileInputFormat.class,
                     PopdenSpreadArrayReducer.class,
                     SequenceFileOutputFormat.class);
@@ -35,7 +37,7 @@ public final class PopulationDensityRunner {
 
         Path popdenBtsCountPath = new Path(tmpDirPath, "popden_bts_count");
         {
-            ReduceJob job = ReduceJob.create(conf, "PopdenSumComms",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenSumComms",
                     SequenceFileInputFormat.class,
                     PopdenSumCommsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -46,7 +48,7 @@ public final class PopulationDensityRunner {
 
         Path populationDensityPath = new Path(tmpDirPath, "population_density");
         {
-            ReduceJob job = ReduceJob.create(conf, "PopdenCreateVector",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenCreateVector",
                     SequenceFileInputFormat.class,
                     PopdenCreateVectorReducer.class,
                     SequenceFileOutputFormat.class);
@@ -56,7 +58,7 @@ public final class PopulationDensityRunner {
         }
 
         {
-            ReduceJob job = ReduceJob.create(conf, "PopdenProfileGetOut",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenProfileGetOut",
                     SequenceFileInputFormat.class,
                     PopdenProfileGetOutReducer.class,
                     1,

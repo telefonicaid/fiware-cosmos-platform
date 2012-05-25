@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.preparing;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -7,8 +9,7 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.MapJob;
-import es.tid.cosmos.base.mapreduce.ReduceJob;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
 
 /**
  *
@@ -22,9 +23,10 @@ public final class PreparingRunner {
                            Path cdrsNoinfoPath, Path cellsPath,
                            Path clientsBtsPath, Path btsCommsPath,
                            Path cdrsNoBtsPath, Path viTelmonthBtsPath,
-                           Configuration conf) throws Exception {
+                           Configuration conf)
+            throws IOException, InterruptedException, ClassNotFoundException {
         {
-            MapJob job = MapJob.create(conf, "FilterCellnoinfoMapper",
+            CosmosJob job = CosmosJob.createMapJob(conf, "FilterCellnoinfoMapper",
                     SequenceFileInputFormat.class,
                     FilterCellnoinfoMapper.class,
                     SequenceFileOutputFormat.class);
@@ -34,7 +36,7 @@ public final class PreparingRunner {
         }
         
         {
-            MapJob job = MapJob.create(conf, "FilterCellnoinfoMapper",
+            CosmosJob job = CosmosJob.createMapJob(conf, "FilterCellnoinfoMapper",
                     SequenceFileInputFormat.class,
                     FilterCellnoinfoMapper.class,
                     SequenceFileOutputFormat.class);
@@ -44,7 +46,7 @@ public final class PreparingRunner {
         }
 
         {
-            ReduceJob job = ReduceJob.create(conf, "JoinBtsNodeToNodeBts",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "JoinBtsNodeToNodeBts",
                     SequenceFileInputFormat.class,
                     JoinBtsNodeToNodeBtsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -55,7 +57,7 @@ public final class PreparingRunner {
         }
 
         {
-            ReduceJob job = ReduceJob.create(conf, "JoinBtsNodeToBtsDayRange",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "JoinBtsNodeToBtsDayRange",
                     SequenceFileInputFormat.class,
                     JoinBtsNodeToBtsDayRangeReducer.class,
                     SequenceFileOutputFormat.class);
@@ -66,7 +68,7 @@ public final class PreparingRunner {
         }
 
         {
-            ReduceJob job = ReduceJob.create(conf, "JoinBtsNodeToCdr",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "JoinBtsNodeToCdr",
                     SequenceFileInputFormat.class,
                     JoinBtsNodeToCdrReducer.class,
                     SequenceFileOutputFormat.class);
@@ -77,7 +79,7 @@ public final class PreparingRunner {
         }
 
         {
-            ReduceJob job = ReduceJob.create(conf,
+            CosmosJob job = CosmosJob.createReduceJob(conf,
                     "JoinBtsNodeToTelMonthAndCell",
                     SequenceFileInputFormat.class,
                     JoinBtsNodeToTelMonthAndCellReducer.class,

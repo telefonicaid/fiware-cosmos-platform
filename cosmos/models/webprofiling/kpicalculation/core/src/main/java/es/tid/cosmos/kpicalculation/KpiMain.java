@@ -21,7 +21,9 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import es.tid.cosmos.base.mapreduce.*;
+import es.tid.cosmos.base.mapreduce.BinaryKey;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.base.mapreduce.SingleKey;
 import es.tid.cosmos.kpicalculation.config.KpiConfig;
 import es.tid.cosmos.kpicalculation.config.KpiFeature;
 import es.tid.cosmos.kpicalculation.export.mongodb.MongoDBExporterReducer;
@@ -68,7 +70,7 @@ public class KpiMain extends Configured implements Tool {
         conf.addResource("kpi-filtering.xml");
 
         // Process that filters and formats input logs
-        MapJob cleanerJob = MapJob.create(
+        CosmosJob cleanerJob = CosmosJob.createMapJob(
                 conf, "Web Profiling ...",
                 LzoTextInputFormat.class,
                 KpiCleanerMapper.class,
@@ -89,7 +91,7 @@ public class KpiMain extends Configured implements Tool {
                     tmpPath, kpiOutputPath);
             aggregationJob.addDependentJob(cleanerJob);
 
-            ReduceJob exporterJob = ReduceJob.create(conf, "MongoDBExporterJob",
+            CosmosJob exporterJob = CosmosJob.createReduceJob(conf, "MongoDBExporterJob",
                     TextInputFormat.class,
                     MongoDBExporterReducer.class,
                     MongoOutputFormat.class);

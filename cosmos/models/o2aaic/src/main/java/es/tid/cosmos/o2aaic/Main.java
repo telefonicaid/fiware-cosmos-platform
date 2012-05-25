@@ -20,6 +20,10 @@ import es.tid.cosmos.base.util.Logger;
 public class Main extends Configured implements Tool {
     @Override
     public int run(String[] args) throws Exception {
+        if (args.length != 2) {
+            throw new IllegalArgumentException("Invalid number of arguments");
+        }
+        
         final Path inetRawPath = new Path(args[0]);
         final Path inetIpmPath = new Path(args[1]);
         

@@ -30,18 +30,6 @@
             <artifactId>base</artifactId>
             <version>0.9.0.0-SNAPSHOT</version>
         </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
@@ -53,7 +41,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>es.tid.cosmos.mobility.MobilityMain</mainClass>
+                            <mainClass>es.tid.cosmos.o2aaic.Main</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -66,7 +54,7 @@
                     <transformers>
                         <transformer
                             implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                            <mainClass>es.tid.cosmos.mobility.MobilityMain</mainClass>
+                            <mainClass>es.tid.cosmos.o2aaic.Main</mainClass>
                         </transformer>
                     </transformers>
                 </configuration>
@@ -84,7 +72,7 @@
 
     <distributionManagement>
         <site>
-            <url>${repoSiteUrl}/${project.groupId}/mobility</url>
+            <url>${repoSiteUrl}/${project.groupId}/o2aaic</url>
         </site>
     </distributionManagement>
 </project>

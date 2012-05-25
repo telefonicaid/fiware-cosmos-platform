@@ -19,6 +19,7 @@ SET( STATIC_LIBS
     ${ICONV_LIB}
     pa
     lm
+au
     protobuf
     pthread
     dl

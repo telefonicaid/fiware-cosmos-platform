@@ -18,6 +18,7 @@ SET (LIBS
     au
     pa
     lm
+	au
     protobuf
     pthread
     dl

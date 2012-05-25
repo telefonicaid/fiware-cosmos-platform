@@ -29,6 +29,7 @@ SET (LIBS
     ${ICONV_LIB}
     pa
     lm
+	au
     protobuf
     pthread
     dl

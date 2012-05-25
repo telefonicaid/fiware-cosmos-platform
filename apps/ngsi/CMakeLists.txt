@@ -23,6 +23,7 @@ SET (HEADERS
 
 SET( STATIC_LIBS
      lm
+	au
      pa
 	 json
 	 xml2

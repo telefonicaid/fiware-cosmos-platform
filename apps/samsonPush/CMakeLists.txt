@@ -19,6 +19,7 @@ SET( STATIC_LIBS
      samsonCommon
      au
      lm
+	au
      pa
      protobuf
      dl

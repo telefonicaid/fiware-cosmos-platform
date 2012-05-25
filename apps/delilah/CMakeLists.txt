@@ -15,11 +15,11 @@ SET (STATIC_LIBS
      samsonNetwork
      samsonStream
      samsonModule
-	 samson_system
      dl
      engine
-     au
      samsonCommon	
+	 samson_system
+     au
      ${COMMON_SAMSON_LIBS}
 )
 

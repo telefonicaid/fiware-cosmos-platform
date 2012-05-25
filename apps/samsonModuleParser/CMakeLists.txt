@@ -23,6 +23,7 @@ pthread
 dl
 au
 lm
+au
 pa
 ${COMMON_SAMSON_LIBS}
 )

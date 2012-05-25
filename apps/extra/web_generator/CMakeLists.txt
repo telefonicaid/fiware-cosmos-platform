@@ -7,8 +7,9 @@ SET (HEADERS
 
 SET( STATIC_LIBS
      au
-     lm
      pa
+     lm
+     au
      dl
      pthread
 )

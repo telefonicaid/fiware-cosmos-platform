@@ -43,6 +43,7 @@ SET( STATIC_LIBS
 	samson_system
     au
     lm
+	au
     ${ICONV_LIB}
     pa
     protobuf

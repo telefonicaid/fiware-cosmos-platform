@@ -7,6 +7,7 @@ SET (SOURCES
     logMsg.cpp
 )
 
+
 # Include directories
 # -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")

@@ -8,6 +8,7 @@ SET (HEADERS
 SET (LIBS
     pa
     lm
+au
 )
 
 include_directories("${PROJECT_SOURCE_DIR}/libs")

@@ -540,9 +540,7 @@ namespace au
         }
         
         size_t Table::getColumn( std::string title )
-        {
-            LM_M(("SEARCH %s in %lu" , title.c_str() , columns.size() ));
-            
+        {            
             for( size_t i = 0 ; i < columns.size() ; i++ )
             {
                 if( columns[i]->getName() == title )

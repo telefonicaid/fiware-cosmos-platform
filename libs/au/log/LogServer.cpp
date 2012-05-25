@@ -36,6 +36,7 @@ namespace au
         cmdLine.set_flag_boolean("multi_session");            // Skip new_session marks
         cmdLine.set_flag_boolean("table");
         cmdLine.set_flag_boolean("reverse");
+        cmdLine.set_flag_boolean("file");
         cmdLine.set_flag_string("channel", "");
         cmdLine.parse(command);
         
@@ -47,7 +48,6 @@ namespace au
         
         // Get the main command
         std::string main_command = cmdLine.get_argument(0);
-        
         
         if( main_command == "help" )
         {
@@ -63,6 +63,10 @@ namespace au
             " * connect host: Connect to a logServer locate at provided host\n"\
             "\n \n"\
             " * disconnect: Disconnect from a logServer\n"\
+            "\n \n"\
+            " * info: Show general information about collected logs\n"\
+            "\n \n"\
+            " * show_channels: Show channels ( log sources )\n"\
             "\n \n"\
             " * show: Show logs on screen\n"\
             "\n \n"\
@@ -104,6 +108,9 @@ namespace au
             
             table.addRow( au::StringVector("time","Timestamp when trace was generated") );
             table.addRow( au::StringVector("TIME","More verbose timestamp") );
+
+            table.addRow( au::StringVector("timestamp","date + time") );
+            
             table.addRow( au::StringVector("unix_time","Timestamp in seconds since epoc 1 January 1970") );
             
             table.addRow( au::StringVector("FILE","Source file where trace was generated") );
@@ -148,7 +155,14 @@ namespace au
             return;
         }
         
-        // Show logs
+        
+        if( main_command == "info" )
+        {
+            error->add_message( channel->getInfo() );
+            return;
+        }
+        
+        // Show channels
         if( main_command == "show_channels" )
         {
             error->add_message( channel->getChannelsTable(&cmdLine) );
@@ -173,6 +187,8 @@ namespace au
         {
             info->add("help");
             info->add("show_format_fiels");
+
+            info->add("info");
 
             info->add("show");
             info->add("show_channels");
@@ -203,6 +219,12 @@ namespace au
         }
         
     }
+    
+    std::string LogServer::getPrompt()
+    {
+        return au::str("LogServer [%lu logs] >> " , channel->log_container.getSize() );
+    }
+
     
 
 }

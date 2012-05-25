@@ -29,14 +29,6 @@ namespace au
         }
         log_central->removePlugin(plugin);
     }
-
-    
-    int getLogServerConnectionFd()
-    {
-        if( log_central )
-            return log_central->getFd();
-        return -1;
-    }
     
     void start_log_to_server( std::string log_host , int log_port , std::string local_log_file )
     {
@@ -144,6 +136,9 @@ namespace au
         
         // Write over the log_server_connection
         log_central->write( log );
+        
+        // Release log
+        log->release();
         
     }
     

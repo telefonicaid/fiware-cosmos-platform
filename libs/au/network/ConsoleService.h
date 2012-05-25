@@ -132,8 +132,29 @@ namespace au
             
             std::string getPrompt()
             {
+                
+                // Prepare message to be send to server
+                au::gpb::ConsolePacket m;
+                m.set_prompt_request("yes");
+
+                // Send request to server
+                au::ErrorManager error;
+                // Send to server
+                if(! write(&m , &error) )
+                    return ">>";
+
+                
+                // Recover answer from server
+                // Read answer from server
+                au::gpb::ConsolePacket *answer;                
+                if( !read( &answer , &error ) )
+                    return ">>";
+                
+                std::string p = answer->prompt();
+                delete answer;
+                
                 // Still not implemented the remote-prompt mechanism...
-                return ">>";
+                return p;
             }
             
             void evalCommand( std::string command , au::ErrorManager *error )
@@ -297,6 +318,12 @@ namespace au
                 
             }
             
+            virtual std::string getPrompt()
+            {
+                return ">>";
+            }
+
+            
             void fill_message( au::ErrorManager* error , au::gpb::ConsolePacket* message )
             {
                 for ( size_t i = 0 ; i < error->getNumItems() ; i++ )
@@ -365,6 +392,11 @@ namespace au
                         }
                         
                         
+                    }
+                    else if( message->has_prompt_request() )
+                    {
+                        // Ignore prompt request fild.
+                        answer_message.set_prompt( getPrompt() );
                     }
                     else
                     {

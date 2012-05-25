@@ -686,6 +686,8 @@ namespace samson
         // Restart the log system to avoid logs
         au::restart_log_to_server( au::str("/tmp/samsonWorker_chield_%d" , getpid() ) );
         
+        LM_M(("Start background SAMSON isolated process: %s" , processItemIsolated_description.c_str() ));
+        
         LM_T(LmtIsolated,("Running runBackgroundProcessRun..."));
 
 		// Close the other side of the pipes ( if it is in thread-mode, we cannot close)
@@ -700,14 +702,11 @@ namespace samson
             LM_T(LmtFileDescriptors,("Child closing pipe descriptors not used. Child closes pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n", pipeFdPair1[0], pipeFdPair2[1]));
             LM_T(LmtFileDescriptors,("Child closing pipe descriptors not used. Child uses pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
 
-            int log_server_connection = au::getLogServerConnectionFd();
-            
-
             // Valgrind
             // Warning: Invalid file descriptor 1014 in syscal close()
             // So changing limit from 1024 to 1014
             for ( int i = 3 ;  i < 1014 ; i++ )
-                if( ( i != pipeFdPair1[1] ) && ( i != pipeFdPair2[0] ) && ( i != logFd ) && ( i != log_server_connection ) )
+                if( ( i != pipeFdPair1[1] ) && ( i != pipeFdPair2[0] ) && ( i != logFd ) )
                 {
                     
                     //Trazas Goyo
@@ -755,6 +754,10 @@ namespace samson
         
         LM_T(LmtIsolated, ("Finishing runBackgroundProcessRun..."));
         
+        LM_M(("Finish background SAMSON isolated process: %s" , processItemIsolated_description.c_str() ));
+        
+        // Stop the loging system ( make sure we close connection with log Server )
+        au::stop_log_to_server();
         
 	}	
 	

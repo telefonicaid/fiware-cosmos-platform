@@ -13,6 +13,8 @@
 #include "au/ThreadManager.h"
 #include "au/tables/pugixml.hpp"                  // pugixml
 
+#include "au/log/LogToServer.h"
+
 #include "engine/Notification.h"                  // engine::Notification
 
 #include "samson/common/SamsonSetup.h"            // samson::SamsonSetup
@@ -1154,6 +1156,17 @@ namespace samson {
         
         if ( main_command == "cluster" )
             writeOnConsole( network->cluster_command(command) );
+        
+        if( main_command == "show_logs" )
+        {
+            au::add_log_plugin( this );
+            writeOnConsole("OK\n");
+        }
+        if( main_command == "hide_logs" )
+        {
+            au::remove_log_plugin( this );
+            writeOnConsole("OK\n");
+        }
         
         // More command to check what is going on inside a worker
         

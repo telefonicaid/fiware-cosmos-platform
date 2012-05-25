@@ -2,7 +2,6 @@
 #include "LogServerChannel.h" // Own interface
 #define Char_to_int(x) ((x)-48)
 
-#include "au/Descriptors.h"
 #include "au/containers/vector.h"
 #include "logMsg/logMsg.h"                                              // LM_T
 #include "logMsg/traceLevels.h"            // LmtFileDescriptors, etc.
@@ -133,10 +132,14 @@ namespace au
     {
         // Mutex protection
         au::TokenTaker tt(&token); 
-        
-        LM_V(("Received log: %s" , log->str().c_str() ));
 
-        // Check max size
+        // Push log to the on-memory log
+        log_container.push( log );
+
+        // Monitorize rate of logs
+        rate.push( log->getTotalSerialitzationSize() );
+        
+        // Check max size for file
         if( fd )
             if( current_size > 64000000 )
             {
@@ -146,14 +149,15 @@ namespace au
             }
         
         // Open if necessary
-        if (!fd )
+        if (!fd)
         {
-        
+            current_size = 0;
+            
             au::ErrorManager error;
             openFileDescriptor(&error);        
             if( error.isActivated() )
             {
-                LM_LW(("Not possible to open local file to save logs. Logs will be deninitelly lost"));
+                LM_W(("Not possible to open local file to save logs. Logs will be deninitelly lost"));
                 return;
             }
         }
@@ -162,8 +166,6 @@ namespace au
         if( fd )
             log->write( fd );
         
-        // Monitorize rate of logs
-        rate.push( log->getTotalSerialitzationSize() );
         
         current_size += log->getTotalSerialitzationSize();
         
@@ -176,6 +178,10 @@ namespace au
         
         // Add is protected with the mutex
         add(&log);
+        
+        // Clear on memory logs
+        log_container.clear();
+        
     }
     
     class ChannelInfo
@@ -263,20 +269,52 @@ namespace au
     };
     
     
+    std::string LogServerChannel::getInfo()
+    {
+        return log_container.getInfo();
+    }
+    
     std::string  LogServerChannel::getChannelsTable( au::CommandLine * cmdLine )
     {
         // Get formats from 
         int limit             = cmdLine->get_flag_int("limit");
         bool is_multi_session = cmdLine->get_flag_bool("multi_session");        
+        bool file = cmdLine->get_flag_bool("file");
         
         
         // Get current log file
         int tmp_file_counter = file_counter;
         
-        //Vector of channels
+        // Information about channels
         ChannelsInfo channel_info;
         
-        // Push logs while not enougth
+        // Table based on on-memory logs
+        // --------------------------------------------------------
+        if( !file )
+        {
+            au::TokenTaker tt( &log_container.token );
+            
+            au::list<Log>::iterator it;
+            for( it = log_container.logs.begin() ; it != log_container.logs.end() ; it++ )
+            {
+                // Get the log
+                Log* log = *it;
+                
+                // Get channel
+                std::string channel = log->get("channel");
+                
+                // Collect this information
+                channel_info.add_channel( channel , log );
+                
+                if( limit > 0 )
+                    if( ((int)channel_info.getNumChannels()) >= limit )
+                        break;
+            }
+            return channel_info.getTable();
+        }
+        
+        // Table based on files
+        // --------------------------------------------------------
         bool finish = false;
         while( !finish )
         {
@@ -341,6 +379,7 @@ namespace au
         bool is_table = cmdLine->get_flag_bool("table");        
         bool is_reverse = cmdLine->get_flag_bool("reverse");        
         bool is_multi_session = cmdLine->get_flag_bool("multi_session");        
+        bool file = cmdLine->get_flag_bool("file");
 
         std::string pattern = cmdLine->get_flag_string("pattern");
         std::string str_time = cmdLine->get_flag_string("time");
@@ -369,8 +408,28 @@ namespace au
         
         // Get current log file
         int tmp_file_counter = file_counter;
+       
+        // Table based on on-memory logs
+        // --------------------------------------------------------
+        if( !file )
+        {
+            au::TokenTaker tt( &log_container.token );
+
+            au::list<Log>::iterator it;
+            for( it = log_container.logs.begin() ; it != log_container.logs.end() ; it++ )
+            {
+                // Add the log to the table formatter
+                table_log_formater.add( *it );
+
+                if( table_log_formater.enougthRecords() )
+                    break;
+            }
+            
+            return table_log_formater.str();
+        }
         
-        // Push logs while not enougth
+        // Table based on files
+        // --------------------------------------------------------
         while( !table_log_formater.enougthRecords() )
         {
             LogFile* log_file = NULL;
@@ -381,9 +440,6 @@ namespace au
             {
                 // Read logs from this file
                 size_t num_logs = log_file->logs.size();
-                
-                LM_V(("Getting %lu logs from %s" , num_logs,  file_name.c_str()));
-                
                 for( size_t i = 0 ; i < num_logs ; i++ )
                 {
                     // Get log and add to the table log formatter
@@ -401,10 +457,8 @@ namespace au
             // Finish if no more files to scan
             if( tmp_file_counter < 0 )
                 break;
-
         }
         
-        LM_V(("Returning table..."));
         return table_log_formater.str();
     }
 }

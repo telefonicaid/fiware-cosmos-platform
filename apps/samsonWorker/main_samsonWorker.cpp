@@ -132,15 +132,13 @@ static const char* manVersion       = SAMSON_VERSION;
 
 void captureSIGINT( int s )
 {
-    s = 3;
-    LM_LM(("Signal SIGINT"));
-    exit(1);
+    LM_LM(("Signal SIGINT %d" , s));
+    _exit(1);
 }
 
 void captureSIGPIPE( int s )
 {
-    s = 3;
-    LM_LM(("Captured SIGPIPE"));
+    LM_LM(("Captured SIGPIPE %d" , s));
 }
 
 void captureSIGTERM( int s )
@@ -154,7 +152,7 @@ void captureSIGTERM( int s )
     {
         LM_LW(("Error deleting the pid file %s", pid_file_name.c_str() ));
     }
-    exit(1);
+    _exit(1);
 }
 
 

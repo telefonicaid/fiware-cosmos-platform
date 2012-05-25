@@ -59,9 +59,6 @@ namespace au
                         const char* fName, 
                         int tLev, 
                         const char* stre);
-
-    // Get fd for logServer connection ( it is used to not be closed in isolated processes )
-    int getLogServerConnectionFd();
     
 }
 

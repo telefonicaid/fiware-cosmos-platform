@@ -4,7 +4,7 @@
 
 namespace au {
     
-    const char*log_reseved_words[] = {"HOST","TYPE","PID","TID","DATE","date","TIME","time","LINE","TLEV","EXEC","AUX","FILE","TEXT","text","FUNC","STRE","time_unix","channel",NULL};
+    const char*log_reseved_words[] = {"HOST","TYPE","PID","TID","DATE","date","TIME","time","timestamp","LINE","TLEV","EXEC","AUX","FILE","TEXT","text","FUNC","STRE","time_unix","channel",NULL};
 
     
     void Log::add_field( std::string field_name , std::string field_value )
@@ -137,6 +137,12 @@ namespace au {
             strftime (buffer_time,1024,"%X",&timeinfo);
             return std::string( buffer_time );
         }
+        
+        if( name == "timestamp" )
+        {
+            return get("date") + " " + get("time");
+        }
+        
         if( name == "time_unix" )
         {
             return au::str("%lu" , log_data.tv.tv_sec );

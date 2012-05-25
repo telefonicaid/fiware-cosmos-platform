@@ -28,6 +28,12 @@ Descriptors::~Descriptors()
     concepts.clearMap();
 }
 
+size_t Descriptors::size()
+{
+    return concepts.size();
+}
+
+
 void Descriptors::add( std::string txt )
 {
     DescriptorsCounter* counter = concepts.findInMap( txt );

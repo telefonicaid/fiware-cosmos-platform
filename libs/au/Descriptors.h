@@ -54,6 +54,8 @@ public:
     ~Descriptors();
     
     void add( std::string txt );
+
+    size_t size();
     
     std::string str();
     

@@ -11,38 +11,49 @@ namespace au
     {
         host = _host;
         port = _port;
-        time_reconnect = 60; // Initial time to reconnect
         local_file = _local_file;
         
         // By default both connections are NULL
         socket_connection = NULL;
         local_file_descriptor = NULL;
-        
-        // Connect the first time
-        try_connect();
-        
+
+        // Connect the next time a trace is sent
+        time_reconnect = 0;
+
         // No current thread by defautl
         current_thread_activated = false;
     }
     
     LogCentral::~LogCentral()
     {
-        
-        // Close connections
+        close_socket_connection();
+        close_local_file();
+    }
+
+    void LogCentral::close_socket_connection()
+    {
         if( socket_connection ) 
         {
             socket_connection->close();
             delete socket_connection;
             socket_connection = NULL;
+            
+            // This is the time counter since last connection
+            time_since_last_connection.reset();
+            
+            // Force try reconnect in next log
+            time_reconnect = 0; 
         }
-        
+    }
+    
+    void LogCentral::close_local_file()
+    {
         if( local_file_descriptor ) 
         {
             local_file_descriptor->close();
             delete local_file_descriptor;
             local_file_descriptor = NULL;
         }
-
     }
     
     void LogCentral::set_host_and_port( std::string _host , int _port )
@@ -54,33 +65,12 @@ namespace au
         port = _port;
 
         // Close previous connections ( if any )
-        if( socket_connection ) 
-        {
-            socket_connection->close();
-            delete socket_connection;
-            socket_connection = NULL;
-        }
+        close_socket_connection();
+        close_local_file();
         
-        // Reconnect to this server if possible
-        time_reconnect = 60; // Initial time to reconnect
-        try_connect();
-     
-        current_thread_activated = false;
-
+        // Connect the next time a trace is sent
+        time_reconnect = 0; 
     }
-    
-    int LogCentral::getFd()
-    {
-        au::TokenTaker tt(&token);
-        
-        if( socket_connection )
-            return socket_connection->getFd();
-        if( local_file_descriptor )
-            return local_file_descriptor->getFd();
-        
-        return -1;
-    }
-    
     
     void LogCentral::write( Log* log )
     {
@@ -113,7 +103,8 @@ namespace au
         }
         
         // Real write operation
-        internal_write(log);
+        write_to_plugins(log);
+        write_to_server_or_file(log); // Log is accumulated and finally removed
         
         {
             // Mutex protection
@@ -124,17 +115,6 @@ namespace au
         }
         
         
-    }
-    
-    void LogCentral::internal_write( Log *log )
-    {
-        
-        {
-            au::TokenTaker tt(&token);
-            
-            write_to_plugins(log);
-            write_to_server_or_file(log); // Log is accumulated and finally removed
-        }
     }
     
     void LogCentral::addPlugin( LogPlugin* p )
@@ -160,118 +140,75 @@ namespace au
     
     void LogCentral::write_to_server_or_file( Log *log )
     {
+        au::TokenTaker tt(&token);
+        
         // Check if the estabished connection should be canceled
         if( socket_connection && socket_connection->isDisconnected() )
-        {
-            delete socket_connection;
-            socket_connection = NULL;
-            time_since_last_try.reset();
-        }
+            close_socket_connection();
         
-        // Reconnect to server if time is acceptable
-        if( !socket_connection && ( time_since_last_try.diffTimeInSeconds() >= time_reconnect ) )
-            try_connect();
+        // Reconnect to server if necessary
+        size_t time = time_since_last_connection.diffTimeInSeconds();
+        if( !socket_connection && ( host != "" )  && ( time >= time_reconnect ) )
+        {
+            // Try new connection with the server
+            au::Status s = au::SocketConnection::newSocketConnection( host , port , &socket_connection );
+            
+            if( s != au::OK )
+            {
+                // Set the next time_reconnect
+                if( time == 0 )
+                    time_reconnect = 120;
                 
-        // General cronometer to never spend more than 1 second to send a trace...
-        au::Cronometer c;
+                if( time_reconnect < time )
+                    time_reconnect = time;
+                
+                time_reconnect *= 2; // Increase time to reconnect
 
-        // If socket connection
+                size_t next_try_time = time_reconnect - time;
+                
+                LM_W(("Not possible to connect with log server %s:%d (%s). Next try in %s" 
+                      , host.c_str() , port, au::status(s) , au::str_time(next_try_time).c_str() ));
+            }
+            else
+            {
+                if( time  > 10 )
+                    LM_LW(("Connected to log server after %s disconnected" , au::str_time(time).c_str() ));
+            }            
+        }
+
+        // Try socket first...
         if( socket_connection )
         {
             if( log->write( socket_connection ) )
                 return;
 
             // It was not possible to sent to server, close and remove socket connection
-            socket_connection->close();
-            delete socket_connection;
-            socket_connection = NULL;
-            
-            time_since_last_try.reset();
+            close_socket_connection();
         }
 
         // Make sure, local file is ready to write
-        open_local_file(); // Make sure, this is open
-                
+        
         if( !local_file_descriptor )
         {
-            LM_LW(("Local file for logs not ready"));
-            return;
+            int fd = open( local_file.c_str() , O_WRONLY | O_CREAT , 0644 );
+            LM_LT(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
+        
+            if( fd >= 0 )
+                local_file_descriptor = new FileDescriptor("local_log", fd );
+            else
+            {
+                LM_LW(("Not possible to open local log file %s. Logs will be definitely lost", local_file.c_str() ));
+                return;
+            }
         }
         
         if( !log->write(local_file_descriptor ) )
         {
-            LM_LW(("Error writing log to local file"));
+            close_local_file();
             return;
-            
         }
+        
     }
-    
-    void LogCentral::try_connect()
-    {
-        
-        //LM_LV(("try to connect with log server..."));
-        
-        if( socket_connection )
-            return ; // Already connected
-        
-        if( ( host == "" ) || ( host == "NO" ) || ( host == "no" ) )
-            return; // Not try to connect...
-        
-        // Try new connection
-        au::Status s = au::SocketConnection::newSocketConnection( host , port , &socket_connection );
-        
-        if( s!= au::OK )
-        {
-            time_reconnect *= 2;
-            
-            size_t time =  time_since_last_try.diffTimeInSeconds();
-            if( time < (size_t) time_reconnect )
-            {
-                size_t next_time = time_reconnect - time;
-                LM_LW(("Not possible to connect with log server %s:%d (%s). Next try in %s" 
-                       , host.c_str() , port, au::status(s) , au::str_time(next_time).c_str() ));
-            }
-            else
-                LM_LW(("Not possible to connect with log server %s:%d (%s)." 
-                       , host.c_str() , port, au::status(s) ));
-            
-        }
-        else
-        {
-            size_t time = time_since_last_try.diffTimeInSeconds();
-            if( time  > 10 )
-                LM_LW(("Connected to log server after %s disconnected" , au::str_time(time).c_str() ));
-            time_reconnect = 1;
-        }
-    }
-    
-    
-    
-    void LogCentral::open_local_file()
-    {
-        if( local_file_descriptor && local_file_descriptor->isDisconnected() )
-        {
-            delete local_file_descriptor;
-            local_file_descriptor = NULL;
-        }
-        
-        if( local_file_descriptor )
-            return;
-        
-        // Name of the logs based on the pid of this process
-        
-        int fd = open( local_file.c_str() , O_WRONLY | O_CREAT , 0644 );
-        LM_LT(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
-        
-        if( fd >= 0 )
-        {
-            local_file_descriptor = new FileDescriptor("local_log", fd );
-            LM_LW(("Open local log file %s.",local_file.c_str() ));
-        }
-        else
-            LM_LW(("Not possible to open local log file %s. Logs will be definitely lost", local_file.c_str() ));
-    }
-    
     
     
 }

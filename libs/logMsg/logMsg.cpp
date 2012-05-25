@@ -122,6 +122,12 @@ char         progNameV[512];         /* where to store progName            */
 * SUB -          value for subtracting levels
 * TRACE_LEVELS - number of trace levels
 */
+
+#ifdef LINE_MAX
+// This definition concflics with sys/syslimits.h
+#undef LINE_MAX
+#endif
+
 #define DELIMITER        ','
 #define ADD              0
 #define SUB              1

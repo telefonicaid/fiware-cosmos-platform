@@ -9,6 +9,7 @@
 #include <regex.h>
 
 #include "au/containers/vector.h"
+#include "au/Object.h"
 #include "au/Status.h"
 #include "au/containers/StringVector.h"
 #include "au/network/FileDescriptor.h"
@@ -56,7 +57,7 @@ namespace au {
     extern const char*log_reseved_words[];
     
     // Entry in the log
-    class Log
+    class Log : public au::Object
     {
         
     public:

@@ -38,9 +38,9 @@ namespace au
         int port;
         std::string local_file; // Name of the local file ( if not possible to connect with server )
                 
-        SocketConnection * socket_connection;    // Socket connection with the logServer
-        au::Cronometer time_since_last_try;      // Cronometer with the time since last connection
-        int time_reconnect;                      // time for the next reconnection
+        SocketConnection * socket_connection;       // Socket connection with the logServer
+        au::Cronometer time_since_last_connection;  // Cronometer with the time since last connection
+        int time_reconnect;                         // time for the next reconnection
         
         // Local file descriptor to write the log if not possible to connect
         FileDescriptor* local_file_descriptor; 
@@ -66,12 +66,8 @@ namespace au
         // Change the host and port
         void set_host_and_port( std::string log_host , int log_port = AU_LOG_SERVER_PORT );
 
-        // Get fd ( toa void closing it when working )
-        int getFd();
-        
         // Write log
         void write( Log *log );
-        void internal_write( Log *log );
         
         // Plugins
         void addPlugin( LogPlugin* p );
@@ -92,9 +88,9 @@ namespace au
         
         void write_to_server_or_file( Log *log );
         void write_to_plugins( Log *log );
-        
-        void try_connect();     // Try connection with server
-        void open_local_file();  // Open local file to save logs
+ 
+        void close_socket_connection();
+        void close_local_file();
         
     };
 }

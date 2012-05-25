@@ -182,20 +182,20 @@ script init_stream_operations
 		# Input queues
 		# ----------------------------------------------------------------
         
-        alias [input_http]           logs_http;
-        alias [input_dns]        	 logs_dns;
+        alias [input_http]          logs_http;
+        alias [input_dns]        	logs_dns;
         alias [input_sms]           logs_sms;
         alias [input_voice]         logs_voice;
-        alias [input_user_cluster]     input_user_cluster;
-        alias [input_commands] input_commands;
+        alias [input_user_cluster]  input_user_cluster;
+        alias [input_commands]      input_commands;
         
         # ----------------------------------------------------------------
 		# Output queues
 		# ----------------------------------------------------------------
-		alias [level_commands]			level_commands;
-		alias [service_users_txt]			service_users_txt;
-		alias [category_hits]			category_hits;
-		alias [alerts]                  alerts;
+		alias [level_commands]		level_commands;
+		alias [service_users_txt]   service_users_txt;
+		alias [category_hits]       category_hits;
+		alias [alerts]              alerts;
         
 		# ----------------------------------------------------------------
 		# Internal queues
@@ -203,63 +203,74 @@ script init_stream_operations
         
         alias [service_hits]              service_hits;
         alias [web_hits]                  web_hits;
-        alias [service_hits_filtered]   service_hits_filtered;
-        alias [user_clusters]           user_clusters;
-        alias [service_hits_w_cluster] service_hits_w_cluster;
-        alias [user_webprofile_state]  user_webprofile_state;
-        alias [user_hits]              user_hits;
-        alias [user_state]            user_state;
-        alias [service_state]            service_state;
-        alias [service_commands] service_commands;
-        alias [service_users]           service_users;
+        alias [service_hits_filtered]     service_hits_filtered;
+        alias [user_clusters]             user_clusters;
+        alias [service_hits_w_cluster]    service_hits_w_cluster;
+        alias [user_webprofile_state]     user_webprofile_state;
+        alias [user_hits]                 user_hits;
+        alias [user_state]                user_state;
+        alias [service_state]             service_state;
+        alias [service_commands]          service_commands;
+        alias [service_users]             service_users;
         
         # ----------------------------------------------------------------
 		# Operations
 		# ----------------------------------------------------------------
         
-        alias [parse_http]       		parse_http;
-        alias [parse_dns]       		parse_dns;
-        alias [parse_sms]       		parse_sms;
-        alias [parse_voice]       		parse_voice;
+        alias [parse_http]       	  parse_http;
+        alias [parse_dns]       	  parse_dns;
+        alias [parse_sms]       	  parse_sms;
+        alias [parse_voice]       	  parse_voice;
         alias [parse_clusters]        parse_clusters;
-        alias [red_user_cluster]    red_user_cluster;
-        alias [parse_commands]         parse_commands;
-        alias [update_web_profile]     update_web_profile;
-        alias [emit_service_levels]		emit_service_levels;
-        alias [publish_alerts]                publish_alerts;
-        alias [update_service_state]	update_service_state;
-        alias  [emit_service_users]		 emit_service_users;
+        alias [red_user_cluster]      red_user_cluster;
+        alias [parse_commands]        parse_commands;
+        alias [update_web_profile]    update_web_profile;
+        alias [emit_service_levels]	  emit_service_levels;
+        alias [publish_alerts]        publish_alerts;
+        alias [update_service_state]  update_service_state;
+        alias [emit_service_users]    emit_service_users;
  
         # ----------------------------------------------------------------
 		# Definitions
 		# ----------------------------------------------------------------
-        
-        add_stream_operation      [parse_http]			OTTstream.parse_logs				[input_http]       [service_hits] [web_hits] [service_commands] [category_hits];
-        set_stream_operation_property   [parse_http]      OTTstream.source          HTTP;
-        add_stream_operation      [parse_dns]			OTTstream.parse_logs				[input_dns]   		[service_hits] [web_hits] [service_commands] [category_hits];
+
+		# Parse operations        
+        add_stream_operation            [parse_http]	 OTTstream.parse_logs	[input_http]    [service_hits] [web_hits] [service_commands] [category_hits];
+        add_stream_operation            [parse_dns]		 OTTstream.parse_logs	[input_dns]     [service_hits] [web_hits] [service_commands] [category_hits];
+        add_stream_operation            [parse_sms]		 OTTstream.parse_logs	[input_sms]     [service_hits] [web_hits] [service_commands] [category_hits];
+        add_stream_operation            [parse_voice]	 OTTstream.parse_logs	[input_voice]   [service_hits] [web_hits] [service_commands] [category_hits];
+
+		# Setup parse operations
+        set_stream_operation_property   [parse_http]     OTTstream.source          HTTP;
         set_stream_operation_property   [parse_dns]      OTTstream.source          DNS;
-        add_stream_operation      [parse_sms]			OTTstream.parse_logs				[input_sms]   		[service_hits] [web_hits] [service_commands] [category_hits];
         set_stream_operation_property   [parse_sms]      OTTstream.source          SMS;
-        add_stream_operation      [parse_voice]			OTTstream.parse_logs				[input_voice]   		[service_hits] [web_hits] [service_commands] [category_hits];
-        set_stream_operation_property   [parse_voice]      OTTstream.source          voice;
-        
-        add_stream_operation   [parse_clusters]         OTTstream.parse_user_cluster         [input_user_cluster] [user_clusters];
+        set_stream_operation_property   [parse_voice]    OTTstream.source          voice;        
+
+		# Parse operation for cluster-user information
+        add_stream_operation        [parse_clusters]     OTTstream.parse_user_cluster         [input_user_cluster] [user_clusters];
+       
             
-        add_stream_operation   [update_web_profile]   OTTstream.red_update_user_web_profile  [web_hits] [user_webprofile_state]      [user_webprofile_state];
-            
-        add_stream_operation   [emit_service_levels]			OTTstream.red_update_last_user_profile	[service_hits] [user_state]		[level_commands] [service_hits_filtered] [user_state];
-        set_stream_operation_property [emit_service_levels] OTTstream.timespan 300;
+		# REDUCE information for every user ( information for all services )
+        #add_stream_operation          [emit_service_levels]	OTTstream.red_update_last_user_profile	[service_hits] [user_state]	        [level_commands] [service_hits_filtered] [user_state];
+        #set_stream_operation_property [emit_service_levels] OTTstream.timespan 300;
+
+		# Add cluster information to hits
+        #add_stream_operation      [red_user_cluster]      OTTstream.red_class_by_cluster        [service_hits_filtered] [user_clusters] [user_hits] -forward;
+
+		# REDUCE information for every service             
+        #add_stream_operation      [update_service_state]  OTTstream.red_update_service_profile	[user_hits] [service_state]	[alerts] [service_state];
+
+
+	    # Individual web profiling     
+        #add_stream_operation        [update_web_profile] OTTstream.red_update_user_web_profile  [web_hits] [user_webprofile_state]      [user_webprofile_state];
+
         
-        add_stream_operation     [red_user_cluster]      OTTstream.red_class_by_cluster     [service_hits_filtered] [user_clusters] [user_hits] -forward;
-             
-        add_stream_operation      [update_service_state]			OTTstream.red_update_service_profile	[user_hits] [service_state]	[alerts] [service_state];
-        
-        add_stream_operation      [parse_commands]          OTTstream.parse_logs                                    [input_commands]         [service_hits] [web_hits] [service_commands] [category_hits];
-        set_stream_operation_property   [parse_commands]      OTTstream.source          commands;
-        #set_queue_property [service_commands] max_size 1;
-        
-        add_stream_operation      [emit_service_users]          OTTstream.red_commands_on_service_profile [service_commands] [service_state] [service_users] -forward;
-        add_stream_operation      [publish_alerts]                   OTTstream.publish_alerts_on_services [service_users] [service_users_txt];
+        # Direct Command interface
+        #add_stream_operation      [parse_commands]          OTTstream.parse_logs                                    [input_commands]         [service_hits] [web_hits] [service_commands] [category_hits];
+        #set_stream_operation_property   [parse_commands]      OTTstream.source          commands;
+        #set_queue_property [service_commands] max_size 1;        
+        #add_stream_operation      [emit_service_users]          OTTstream.red_commands_on_service_profile [service_commands] [service_state] [service_users] -forward;
+        #add_stream_operation      [publish_alerts]                   OTTstream.publish_alerts_on_services [service_users] [service_users_txt];
 
     }
 
@@ -299,26 +310,36 @@ script demo
 		# ----------------------------------------------------------------
 		# OTTstream profiling stream block
 		# ----------------------------------------------------------------
+
         init_stream 01.OTTstream    OTTstream.init_stream_operations;
-        
-        # Connect with the level module to keep uptated the number of users active in last timespan, for every service        
-		init_stream 02.level level.init_stream_operations_timed;
-		
+
 		add_queue_connection [input_http]		01.OTTstream.logs_http;
 		add_queue_connection [input_dns]		01.OTTstream.logs_dns;
 		add_queue_connection [input_sms]		01.OTTstream.logs_sms;
 		add_queue_connection [input_voice]		01.OTTstream.logs_voice;
-		add_queue_connection [input_clusters]        01.OTTstream.input_user_cluster;
-		add_queue_connection [input_commands]		01.OTTstream.input_commands;
-		add_queue_connection [level_commands]		01.OTTstream.level_commands;
+		add_queue_connection [input_clusters]   01.OTTstream.input_user_cluster;
+		add_queue_connection [input_commands]   01.OTTstream.input_commands;
+		add_queue_connection [level_commands]   01.OTTstream.level_commands;
 		add_queue_connection 01.OTTstream.service_users_txt output_users_per_service;
-		add_queue_connection 01.OTTstream.level_commands 	02.level.01.input;
 		add_queue_connection 01.OTTstream.alerts  output_alerts;
+
+		# ----------------------------------------------------------------
+		# Level module
+		# ----------------------------------------------------------------
+        
+        # Connect with the level module to keep uptated the number of users active in last timespan, for every service        
+		# init_stream 02.level level.init_stream_operations_timed;
+		
 		add_queue_connection 02.level.04.levels_updates_txt    output_levels;
 		#add_queue_connection 02.level.05.graph    output_graph;
+		add_queue_connection 01.OTTstream.level_commands 	02.level.01.input;
+
+		# ----------------------------------------------------------------
+		# Hit module
+		# ----------------------------------------------------------------
 		
-		#Connect with the hit stream_block to accumulate topics
-		init_stream 03.hit hit.init_stream_operations;
+		# Connect with the hit stream_block to accumulate topics
+		# init_stream 03.hit hit.init_stream_operations;
 		
 		add_queue_connection category_hits 01.OTTstream.category_hits;
 		add_queue_connection 01.OTTstream.category_hits 03.hit.01.input;

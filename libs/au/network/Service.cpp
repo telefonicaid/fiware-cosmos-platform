@@ -158,10 +158,10 @@ namespace au
                 values.push_back( item->socket_connection->getHostAndPort() );
                 values.push_back( au::str("%lu", item->socket_connection->getTime() ) );
                 
-                values.push_back( au::str("%lu", item->socket_connection->rate_in.getTotalSize() ) );
-                values.push_back( au::str("%lu", item->socket_connection->rate_out.getTotalSize() ) );
-                values.push_back( au::str("%lu", item->socket_connection->rate_in.getRate() ) );
-                values.push_back( au::str("%lu", item->socket_connection->rate_out.getRate() ) );
+                values.push_back( au::str("%lu", (size_t)item->socket_connection->rate_in.getTotalSize() ) );
+                values.push_back( au::str("%lu", (size_t)item->socket_connection->rate_out.getTotalSize() ) );
+                values.push_back( au::str("%lu", (size_t)item->socket_connection->rate_in.getRate() ) );
+                values.push_back( au::str("%lu", (size_t)item->socket_connection->rate_out.getRate() ) );
                 
                 table->addRow( values );
             }

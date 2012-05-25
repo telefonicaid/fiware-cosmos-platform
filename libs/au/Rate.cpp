@@ -15,8 +15,8 @@ namespace au {
             
             // Init vectors
             num_samples_ = num_samples;
-            hits_ = (int*)malloc( num_samples_ * sizeof(int) );
-            size_ = (double*)malloc( num_samples_ * sizeof(double) );
+            hits_ = (int*) malloc( num_samples_ * sizeof(int) );
+            size_ = (double*) malloc( num_samples_ * sizeof(double) );
             
             for ( int i = 0 ; i < num_samples_ ; i++ )
             {
@@ -121,6 +121,9 @@ namespace au {
                 // Compute difference with the last reference
                 size_t diff = time - last_time_correction;
                 
+                if( diff == 0 )
+                    return;
+                
                 // Move samples
                 for( int i = 0 ; i < ( (int)num_samples_ - (int)diff ) ; i++ )
                 {
@@ -129,7 +132,7 @@ namespace au {
                 }
                 
                 // Init the new slots
-                for ( int i = 0 ; i < (int) diff ; i++ )
+                for ( int i = 0 ; ( i < (int) diff ) && ( i < num_samples_ ) ; i++ )
                 {
                     size_[i] = 0;
                     hits_[i] = 0;

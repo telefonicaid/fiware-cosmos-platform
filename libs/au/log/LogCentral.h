@@ -40,7 +40,7 @@ namespace au
                 
         SocketConnection * socket_connection;       // Socket connection with the logServer
         au::Cronometer time_since_last_connection;  // Cronometer with the time since last connection
-        int time_reconnect;                         // time for the next reconnection
+        size_t time_reconnect;                         // time for the next reconnection
         
         // Local file descriptor to write the log if not possible to connect
         FileDescriptor* local_file_descriptor; 

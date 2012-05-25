@@ -21,9 +21,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import es.tid.cosmos.base.mapreduce.BinaryKey;
 import es.tid.cosmos.base.mapreduce.CosmosJob;
-import es.tid.cosmos.base.mapreduce.SingleKey;
+import es.tid.cosmos.base.mapreduce.JobList;
 import es.tid.cosmos.kpicalculation.config.KpiConfig;
 import es.tid.cosmos.kpicalculation.config.KpiFeature;
 import es.tid.cosmos.kpicalculation.export.mongodb.MongoDBExporterReducer;
@@ -87,7 +86,7 @@ public class KpiMain extends Configured implements Tool {
             Path kpiOutputPath = outputPath.suffix("/" + timeFolder + "/"
                     + features.getName());
 
-            MapReduceJob aggregationJob = createAggregationJob(conf, features,
+            CosmosJob aggregationJob = createAggregationJob(conf, features,
                     tmpPath, kpiOutputPath);
             aggregationJob.addDependentJob(cleanerJob);
 
@@ -108,13 +107,13 @@ public class KpiMain extends Configured implements Tool {
         return 0;
     }
 
-    private MapReduceJob createAggregationJob(Configuration conf,
-                                              KpiFeature features,
-                                              Path inputPath, Path outputPath)
+    private CosmosJob createAggregationJob(Configuration conf,
+                                           KpiFeature features,
+                                           Path inputPath, Path outputPath)
             throws Exception {
-        MapReduceJob aggregationJob;
+        CosmosJob aggregationJob;
         if (features.getGroup() != null) {
-            aggregationJob = MapReduceJob.create(conf,
+            aggregationJob = CosmosJob.createMapReduceJob(conf,
                     "Aggregation Job ..." + features.getName(),
                     SequenceFileInputFormat.class,
                     KpiGenericMapper.class,
@@ -128,7 +127,7 @@ public class KpiMain extends Configured implements Tool {
             aggregationJob.setGroupingComparatorClass(
                     PageViewKpiCounterGroupedComparator.class);
         } else {
-            aggregationJob = MapReduceJob.create(conf,
+            aggregationJob = CosmosJob.createMapReduceJob(conf,
                     "Aggregation Job ..." + features.getName(),
                     SequenceFileInputFormat.class,
                     KpiGenericMapper.class,

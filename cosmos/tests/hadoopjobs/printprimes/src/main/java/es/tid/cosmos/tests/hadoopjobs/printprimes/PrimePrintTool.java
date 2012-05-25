@@ -1,5 +1,6 @@
 package es.tid.cosmos.tests.hadoopjobs.printprimes;
 
+import java.io.IOException;
 import java.security.InvalidParameterException;
 
 import com.mongodb.hadoop.MongoOutputFormat;
@@ -12,7 +13,7 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import es.tid.cosmos.base.mapreduce.MapReduceJob;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
 
 /**
  * @author ximo
@@ -20,12 +21,13 @@ import es.tid.cosmos.base.mapreduce.MapReduceJob;
  */
 public class PrimePrintTool extends Configured implements Tool {
     @Override
-    public int run(String[] args) throws Exception {
+    public int run(String[] args)
+            throws IOException, InterruptedException, ClassNotFoundException {
         if (args.length != 3) {
             throw new InvalidParameterException("Expecting 3 arguments."
                     + " Received: " + args.length);
         }
-        MapReduceJob testJob = MapReduceJob.create(
+        CosmosJob testJob = CosmosJob.createMapReduceJob(
                 this.getConf(), "TestJar", TextInputFormat.class,
                 PrimePrintMapper.class, PrimePrintReducer.class,
                 MongoOutputFormat.class);

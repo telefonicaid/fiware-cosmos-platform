@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.outpois;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,8 +11,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.MapJob;
-import es.tid.cosmos.base.mapreduce.ReduceJob;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
 
 /**
  *
@@ -24,13 +25,13 @@ public final class OutPoisRunner {
                            Path vectorClientClusterPath,
                            Path vectorBtsClusterPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
-            throws Exception {
+            throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
         
         Path vectorClientbtsSpreadPath = new Path(tmpDirPath,
                                                   "vector_clientbts_spread");
         {
-            MapJob job = MapJob.create(conf, "PoiSpreadNodebtsVector",
+            CosmosJob job = CosmosJob.createMapJob(conf, "PoiSpreadNodebtsVector",
                     SequenceFileInputFormat.class,
                     PoiSpreadNodebtsVectorMapper.class,
                     SequenceFileOutputFormat.class);
@@ -41,7 +42,7 @@ public final class OutPoisRunner {
 
         Path vectorClientpoiPath = new Path(tmpDirPath, "vector_clientpoi");
         {
-            ReduceJob job = ReduceJob.create(conf, "PoiJoinPoivectorPoi",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PoiJoinPoivectorPoi",
                     SequenceFileInputFormat.class,
                     PoiJoinPoivectorPoiReducer.class,
                     SequenceFileOutputFormat.class);
@@ -53,7 +54,7 @@ public final class OutPoisRunner {
         
         Path vectorPoiClusterPath = new Path(tmpDirPath, "vector_poi_cluster");
         {
-            ReduceJob job = ReduceJob.create(conf, "PoiNormalizePoiVector",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PoiNormalizePoiVector",
                     SequenceFileInputFormat.class,
                     PoiNormalizePoiVectorReducer.class,
                     SequenceFileOutputFormat.class);
@@ -65,7 +66,7 @@ public final class OutPoisRunner {
         Path pointsOfInterestIdTxtPath = new Path(tmpDirPath,
                                                   "pointsOfInterestIdTxt");
         {
-            ReduceJob job = ReduceJob.create(conf, "VectorPoisOut",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "VectorPoisOut",
                     SequenceFileInputFormat.class,
                     VectorPoisOutReducer.class,
                     1,
@@ -78,7 +79,7 @@ public final class OutPoisRunner {
         Path vectorCommClientTxtPath = new Path(tmpDirPath,
                                                 "vectorCommClientTxt");
         {
-            ReduceJob job = ReduceJob.create(conf, "VectorOneidOut",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "VectorOneidOut",
                     SequenceFileInputFormat.class,
                     VectorOneidOutReducer.class,
                     1,
@@ -90,7 +91,7 @@ public final class OutPoisRunner {
 
         Path vectorCommBtsTxtPath = new Path(tmpDirPath, "vectorCommBtsTxt");
         {
-            ReduceJob job = ReduceJob.create(conf, "VectorOneidOut",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "VectorOneidOut",
                     SequenceFileInputFormat.class,
                     VectorOneidOutReducer.class,
                     1,
@@ -102,7 +103,7 @@ public final class OutPoisRunner {
         
         Path vectorCommPoiTxtPath = new Path(tmpDirPath, "vectorCommPoiTxt");
         {
-            ReduceJob job = ReduceJob.create(conf, "VectorNodbtsOut",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "VectorNodbtsOut",
                     SequenceFileInputFormat.class,
                     VectorNodbtsOutReducer.class,
                     1,

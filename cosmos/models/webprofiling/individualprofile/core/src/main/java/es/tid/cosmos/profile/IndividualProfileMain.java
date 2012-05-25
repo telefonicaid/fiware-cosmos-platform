@@ -19,9 +19,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
+import es.tid.cosmos.base.mapreduce.CosmosJob;
 import es.tid.cosmos.base.mapreduce.JobList;
-import es.tid.cosmos.base.mapreduce.MapReduceJob;
-import es.tid.cosmos.base.mapreduce.ReduceJob;
 import es.tid.cosmos.profile.categoryextraction.CategoryExtractionReducer;
 import es.tid.cosmos.profile.categoryextraction.TextCategoryExtractionMapper;
 import es.tid.cosmos.profile.dictionary.comscore.DistributedCacheDictionary;
@@ -46,7 +45,8 @@ public class IndividualProfileMain extends Configured implements Tool {
     private Path profilePath;
 
     @Override
-    public int run(String[] args) throws Exception {
+    public int run(String[] args)
+            throws IOException, InterruptedException, ClassNotFoundException {
         if (args.length != 3) {
             throw new IllegalArgumentException("Mandatory parameters: "
                     + "weblogs_path textoutput_path mongo_url");
@@ -57,7 +57,7 @@ public class IndividualProfileMain extends Configured implements Tool {
         final Path textOutputPath = new Path(args[1]);
         final String mongoUrl = args[2];
 
-        MapReduceJob ceJob = MapReduceJob.create(this.getConf(),
+        CosmosJob ceJob = CosmosJob.createMapReduceJob(this.getConf(),
                 "CategoryExtraction",
                 TextInputFormat.class,
                 TextCategoryExtractionMapper.class,
@@ -68,7 +68,7 @@ public class IndividualProfileMain extends Configured implements Tool {
         DistributedCacheDictionary.cacheDictionary(ceJob,
                 DistributedCacheDictionary.LATEST_DICTIONARY);
 
-        MapReduceJob upJob = MapReduceJob.create(this.getConf(),
+        CosmosJob upJob = CosmosJob.createMapReduceJob(this.getConf(),
                 "UserProfile",
                 SequenceFileInputFormat.class,
                 UserProfileMapper.class,
@@ -78,7 +78,7 @@ public class IndividualProfileMain extends Configured implements Tool {
         FileOutputFormat.setOutputPath(upJob, this.profilePath);
         upJob.addDependentJob(ceJob);
 
-        ReduceJob exTextJob = ReduceJob.create(this.getConf(),
+        CosmosJob exTextJob = CosmosJob.createReduceJob(this.getConf(),
                 "TextExporter",
                 SequenceFileInputFormat.class,
                 TextExporterReducer.class,
@@ -88,7 +88,7 @@ public class IndividualProfileMain extends Configured implements Tool {
         FileOutputFormat.setOutputPath(exTextJob, textOutputPath);
         exTextJob.addDependentJob(upJob);
         
-        ReduceJob exMongoJob = ReduceJob.create(this.getConf(),
+        CosmosJob exMongoJob = CosmosJob.createReduceJob(this.getConf(),
                 "MongoDBExporter",
                 SequenceFileInputFormat.class,
                 MongoDBExporterReducer.class,

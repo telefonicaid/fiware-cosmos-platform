@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.labelling.secondhomes;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,9 +11,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.MapJob;
-import es.tid.cosmos.base.mapreduce.ReduceJob;
-import es.tid.cosmos.mobility.util.*;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.mobility.util.ExportPoiToTextByTwoIntReducer;
 
 /**
  *
@@ -25,12 +26,12 @@ public final class DetectSecondHomesRunner {
                            Path viClientFuseAccPath, Path pairbtsAdjPath,
                            Path pointsOfInterestPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
-            throws Exception {
+            throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
         
         Path btsMobPath = new Path(tmpDirPath, "bts_mob");
         {
-            MapJob job = MapJob.create(conf, "PoiCellToBts",
+            CosmosJob job = CosmosJob.createMapJob(conf, "PoiCellToBts",
                     SequenceFileInputFormat.class,
                     PoiCellToBtsMapper.class,
                     SequenceFileOutputFormat.class);
@@ -41,7 +42,7 @@ public final class DetectSecondHomesRunner {
         
         Path sechPoiPosPath = new Path(tmpDirPath, "sech_poi_pos");
         {
-            ReduceJob job = ReduceJob.create(conf,
+            CosmosJob job = CosmosJob.createReduceJob(conf,
                     "PoiJoinPoisBtscoordToPoiPos",
                     SequenceFileInputFormat.class,
                     PoiJoinPoisBtscoordToPoiPosReducer.class,
@@ -54,7 +55,7 @@ public final class DetectSecondHomesRunner {
 
         Path nodbtsPoiPath = new Path(tmpDirPath, "nodbts_poi");
         {
-            MapJob job = MapJob.create(conf, "PoiJoinPoisBtscoordToPoi",
+            CosmosJob job = CosmosJob.createMapJob(conf, "PoiJoinPoisBtscoordToPoi",
                     SequenceFileInputFormat.class,
                     PoiJoinPoisBtscoordToPoiMapper.class,
                     SequenceFileOutputFormat.class);
@@ -65,7 +66,7 @@ public final class DetectSecondHomesRunner {
         
         Path sechPoiInoutPath = new Path(tmpDirPath, "vector_bts");
         {
-            ReduceJob job = ReduceJob.create(conf, "PoiJoinPoisViToPoiPos",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PoiJoinPoisViToPoiPos",
                     SequenceFileInputFormat.class,
                     PoiJoinPoisViToPoiPosReducer.class,
                     SequenceFileOutputFormat.class);
@@ -77,7 +78,7 @@ public final class DetectSecondHomesRunner {
 
         Path nodbtsInoutPath = new Path(tmpDirPath, "nodbts_inout");
         {
-            ReduceJob job = ReduceJob.create(conf, "PoiJoinPoisViToTwoInt",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PoiJoinPoisViToTwoInt",
                     SequenceFileInputFormat.class,
                     PoiJoinPoisViToTwoIntReducer.class,
                     SequenceFileOutputFormat.class);
@@ -89,7 +90,7 @@ public final class DetectSecondHomesRunner {
 
         Path sechPotSecHomePath = new Path(tmpDirPath, "sech_pot_sec_home");
         {
-            ReduceJob job = ReduceJob.create(conf, "GetPairsSechomePois",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "GetPairsSechomePois",
                     SequenceFileInputFormat.class,
                     GetPairsSechomePoisReducer.class,
                     SequenceFileOutputFormat.class);
@@ -100,7 +101,7 @@ public final class DetectSecondHomesRunner {
         
         Path nodbtsSechomePath = new Path(tmpDirPath, "nodbts_sechome");
         {
-            ReduceJob job = ReduceJob.create(conf,
+            CosmosJob job = CosmosJob.createReduceJob(conf,
                     "PoiFilterSechomeAdjacent",
                     SequenceFileInputFormat.class,
                     PoiFilterSechomeAdjacentReducer.class,
@@ -114,7 +115,7 @@ public final class DetectSecondHomesRunner {
         Path nodbtsSechomeUniqPath = new Path(tmpDirPath,
                                               "nodbts_sechome_uniq");
         {
-            ReduceJob job = ReduceJob.create(conf, "PoiDeleteSechomeDuplicate",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PoiDeleteSechomeDuplicate",
                     SequenceFileInputFormat.class,
                     PoiDeleteSechomeDuplicateReducer.class,
                     SequenceFileOutputFormat.class);
@@ -124,7 +125,7 @@ public final class DetectSecondHomesRunner {
         }
         
         {
-            ReduceJob job = ReduceJob.create(conf, "PoiJoinSechomeResults",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PoiJoinSechomeResults",
                     SequenceFileInputFormat.class,
                     PoiJoinSechomeResultsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -140,7 +141,7 @@ public final class DetectSecondHomesRunner {
             Path pointsOfInterestTextPath = new Path(tmpDirPath,
                                                      "points_of_interest_text");
             {
-                ReduceJob job = ReduceJob.create(conf,
+                CosmosJob job = CosmosJob.createReduceJob(conf,
                         "ExportPoiToTextByTwoInt",
                         SequenceFileInputFormat.class,
                         ExportPoiToTextByTwoIntReducer.class,

@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.pois;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,9 +11,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.MapJob;
-import es.tid.cosmos.base.mapreduce.ReduceJob;
-import es.tid.cosmos.mobility.util.*;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.mobility.util.ExportBtsCounterToTextByTwoIntReducer;
 
 /**
  *
@@ -25,12 +26,13 @@ public final class PoisRunner {
                            Path clientsInfoPath, Path cdrsNoinfoPath,
                            Path cdrsNoBtsPath, Path clientsInfoFilteredPath,
                            Path clientsRepbtsPath, boolean isDebug,
-                           Configuration conf) throws Exception {
+                           Configuration conf)
+            throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
         
         Path clientsBtscounterPath = new Path(tmpDirPath, "clients_btscounter");
         {
-            ReduceJob job = ReduceJob.create(conf, "NodeBtsCounter",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "NodeBtsCounter",
                     SequenceFileInputFormat.class,
                     NodeBtsCounterReducer.class,
                     SequenceFileOutputFormat.class);
@@ -40,7 +42,7 @@ public final class PoisRunner {
         }
 
         {
-            ReduceJob job = ReduceJob.create(conf, "NodeMobInfo",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "NodeMobInfo",
                     SequenceFileInputFormat.class,
                     NodeMobInfoReducer.class,
                     SequenceFileOutputFormat.class);
@@ -52,7 +54,7 @@ public final class PoisRunner {
         Path clientsInfoSpreadPath = new Path(tmpDirPath,
                                               "clients_info_spread");
         {
-            MapJob job = MapJob.create(conf, "RepbtsSpreadNodebts",
+            CosmosJob job = CosmosJob.createMapJob(conf, "RepbtsSpreadNodebts",
                     SequenceFileInputFormat.class,
                     RepbtsSpreadNodebtsMapper.class,
                     SequenceFileOutputFormat.class);
@@ -64,7 +66,7 @@ public final class PoisRunner {
         Path clientsInfoAggbybtsPath = new Path(tmpDirPath,
                                                 "clients_info_aggbybts");
         {
-            ReduceJob job = ReduceJob.create(conf, "RepbtsAggbybts",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "RepbtsAggbybts",
                     SequenceFileInputFormat.class,
                     RepbtsAggbybtsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -74,7 +76,7 @@ public final class PoisRunner {
         }
         
         {
-            ReduceJob job = ReduceJob.create(conf, "RepbtsFilterNumComms",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "RepbtsFilterNumComms",
                     SequenceFileInputFormat.class,
                     RepbtsFilterNumCommsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -87,7 +89,7 @@ public final class PoisRunner {
         Path clientsInfoBtsPercPath = new Path(tmpDirPath,
                                                "clients_info_bts_perc");
         {
-            ReduceJob job = ReduceJob.create(conf, "RepbtsJoinDistComms",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "RepbtsJoinDistComms",
                     SequenceFileInputFormat.class,
                     RepbtsJoinDistCommsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -98,7 +100,7 @@ public final class PoisRunner {
         }
 
         {
-            MapJob job = MapJob.create(conf, "RepbtsGetRepresentativeBts",
+            CosmosJob job = CosmosJob.createMapJob(conf, "RepbtsGetRepresentativeBts",
                     SequenceFileInputFormat.class,
                     RepbtsGetRepresentativeBtsMapper.class,
                     SequenceFileOutputFormat.class);
@@ -111,7 +113,7 @@ public final class PoisRunner {
             Path clientsRepbtsTextPath = new Path(tmpDirPath,
                                                   "clients_repbts_text");
             {
-                ReduceJob job = ReduceJob.create(conf,
+                CosmosJob job = CosmosJob.createReduceJob(conf,
                         "ExportBtsCounterToTextByTwoInt",
                         SequenceFileInputFormat.class,
                         ExportBtsCounterToTextByTwoIntReducer.class,

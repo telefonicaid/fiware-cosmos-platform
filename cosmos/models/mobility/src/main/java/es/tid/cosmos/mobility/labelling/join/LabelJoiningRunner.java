@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.labelling.join;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,8 +11,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.ReduceJob;
-import es.tid.cosmos.mobility.util.*;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.mobility.util.ExportPoiToTextReducer;
 
 /**
  *
@@ -26,13 +28,13 @@ public final class LabelJoiningRunner {
                            Path vectorBtsClusterPath,
                            Path pointsOfInterestTemp4Path,
                            Path tmpDirPath, boolean isDebug, Configuration conf)
-            throws Exception {
+            throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
         
         Path pointsOfInterestTemp2Path = new Path(tmpDirPath,
                                                   "points_of_interest_temp2");
         {
-            ReduceJob job = ReduceJob.create(conf,
+            CosmosJob job = CosmosJob.createReduceJob(conf,
                     "ClusterAggNodeClusterByNodbts",
                     SequenceFileInputFormat.class,
                     ClusterAggNodeClusterByNodbtsReducer.class,
@@ -45,7 +47,7 @@ public final class LabelJoiningRunner {
 
         Path potpoiPath = new Path(tmpDirPath, "potpoi");
         { 
-            ReduceJob job = ReduceJob.create(conf,
+            CosmosJob job = CosmosJob.createReduceJob(conf,
                     "ClusterAggNodeClusterByNodlbl",
                     SequenceFileInputFormat.class,
                     ClusterAggNodeClusterByNodlblReducer.class,
@@ -59,7 +61,7 @@ public final class LabelJoiningRunner {
         Path clientbtsNodpoilblPath = new Path(tmpDirPath,
                                                "clientbts_nodpoilbl");
         { 
-            ReduceJob job = ReduceJob.create(conf,
+            CosmosJob job = CosmosJob.createReduceJob(conf,
                     "ClusterSpreadNodelblPoilbl",
                     SequenceFileInputFormat.class,
                     ClusterSpreadNodelblPoilblReducer.class,
@@ -72,7 +74,7 @@ public final class LabelJoiningRunner {
         Path clientbtsNodpoiCountPath = new Path(tmpDirPath,
                                                  "clientbts_nodpoi_count");
         {
-            ReduceJob job = ReduceJob.create(conf, "ClusterCountMajPoiByNode",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ClusterCountMajPoiByNode",
                     SequenceFileInputFormat.class,
                     ClusterCountMajPoiByNodeReducer.class,
                     SequenceFileOutputFormat.class);
@@ -84,7 +86,7 @@ public final class LabelJoiningRunner {
         Path clientbtsNodPoimajPath = new Path(tmpDirPath,
                                                "clientbts_nod_poimaj");
         {
-            ReduceJob job = ReduceJob.create(conf, "ClusterGetMajPoiByNode",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ClusterGetMajPoiByNode",
                     SequenceFileInputFormat.class,
                     ClusterGetMajPoiByNodeReducer.class,
                     SequenceFileOutputFormat.class);
@@ -95,7 +97,7 @@ public final class LabelJoiningRunner {
 
         Path poisLabeledPath = new Path(tmpDirPath, "pois_labeled");
         {
-            ReduceJob job = ReduceJob.create(conf, "ClusterJoinPotPoiLabel",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ClusterJoinPotPoiLabel",
                     SequenceFileInputFormat.class,
                     ClusterJoinPotPoiLabelReducer.class,
                     SequenceFileOutputFormat.class);
@@ -108,7 +110,7 @@ public final class LabelJoiningRunner {
         Path pointsOfInterestTemp3Path = new Path(tmpDirPath,
                                                   "points_of_interest_temp3");
         {
-            ReduceJob job = ReduceJob.create(conf,
+            CosmosJob job = CosmosJob.createReduceJob(conf,
                     "ClusterAggPotPoiPoisToPoi",
                     SequenceFileInputFormat.class,
                     ClusterAggPotPoiPoisToPoiReducer.class,
@@ -122,7 +124,7 @@ public final class LabelJoiningRunner {
         Path vectorClientbtsClusterAddPath = new Path(tmpDirPath,
                 "vector_clientbts_cluster_add");
         {
-            ReduceJob job = ReduceJob.create(conf,
+            CosmosJob job = CosmosJob.createReduceJob(conf,
                     "ClusterAggPotPoiPoisToCluster",
                     SequenceFileInputFormat.class,
                     ClusterAggPotPoiPoisToClusterReducer.class,
@@ -134,7 +136,7 @@ public final class LabelJoiningRunner {
         }
         
         {
-            ReduceJob job = ReduceJob.create(conf, "ClusterAggBtsCluster",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ClusterAggBtsCluster",
                     SequenceFileInputFormat.class,
                     ClusterAggBtsClusterReducer.class,
                     SequenceFileOutputFormat.class);
@@ -148,7 +150,7 @@ public final class LabelJoiningRunner {
             Path pointsOfInterestTemp4TextPath = new Path(tmpDirPath,
                     "points_of_interest_temp4_text");
             {
-                ReduceJob job = ReduceJob.create(conf, "ExportPoiToText",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "ExportPoiToText",
                         SequenceFileInputFormat.class,
                         ExportPoiToTextReducer.class,
                         1,

@@ -9,8 +9,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.base.util.Logger;
-import es.tid.cosmos.o2aaic.data.InetIpm;
-import es.tid.cosmos.o2aaic.data.InetRaw;
+import es.tid.cosmos.o2aaic.data.generated.InetProtocol.InetIpm;
+import es.tid.cosmos.o2aaic.data.generated.InetProtocol.InetRaw;
 import es.tid.cosmos.o2aaic.util.InetIpmUtil;
 import es.tid.cosmos.o2aaic.util.InetRawUtil;
 import es.tid.cosmos.o2aaic.util.SHAEncoder;
@@ -36,7 +36,7 @@ public class InetRawToIpmMapper extends Mapper<LongWritable, Text,
         }
         final String imeiTac = (inetRaw.getImei().length() == 15) ?
                 inetRaw.getImei().substring(0, 8) : "";
-        final InetIpm inetIpm = new InetIpm(inetRaw.getType(),
+        final InetIpm inetIpm = InetIpmUtil.create(inetRaw.getType(),
                 inetRaw.getCallType(), anonymisedImsi,
                 inetRaw.getFirstTempImsi(), inetRaw.getLastTempImsi(),
                 imeiTac, anonymisedImei, inetRaw.getLacod(),

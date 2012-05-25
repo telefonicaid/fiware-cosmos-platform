@@ -1,6 +1,6 @@
 package es.tid.cosmos.o2aaic.util;
 
-import es.tid.cosmos.o2aaic.data.InetIpm;
+import es.tid.cosmos.o2aaic.data.generated.InetProtocol.InetIpm;
 
 /**
  *
@@ -12,12 +12,35 @@ public abstract class InetIpmUtil {
     private InetIpmUtil() {
     }
     
+    public static InetIpm create(String type, String callType,
+            String anonymisedImsi, String firstTempImsi, String lastTempImsi,
+            String imeiTac, String anonymisedImei, String lacod, String cellId,
+            String eventDateTime, String dtapCause, String bssmapCause,
+            String ccCause, String mmCause, String ranapCause) {
+        return InetIpm.newBuilder()
+                .setType(type)
+                .setCallType(callType)
+                .setAnonymisedImsi(anonymisedImsi)
+                .setFirstTempImsi(firstTempImsi)
+                .setLastTempImsi(lastTempImsi)
+                .setImeiTac(imeiTac)
+                .setAnonymisedImei(anonymisedImei)
+                .setLacod(lacod)
+                .setCellId(cellId)
+                .setEventDateTime(eventDateTime)
+                .setDtapCause(dtapCause)
+                .setBssmapCause(bssmapCause)
+                .setCcCause(ccCause)
+                .setMmCause(mmCause)
+                .setRanapCause(ranapCause)
+                .build();
+    }
+    
     public static InetIpm parse(String line) {
         String[] fields = line.split(DELIMITER);
-        return new InetIpm(fields[0], fields[1], fields[2], fields[3],
-                fields[4], fields[5], fields[6], fields[7], fields[8],
-                fields[9], fields[10], fields[11], fields[12], fields[13],
-                fields[14]);
+        return create(fields[0], fields[1], fields[2], fields[3], fields[4],
+                fields[5], fields[6], fields[7], fields[8], fields[9],
+                fields[10], fields[11], fields[12], fields[13], fields[14]);
     }
     
     public static String toString(InetIpm inetIpm) {

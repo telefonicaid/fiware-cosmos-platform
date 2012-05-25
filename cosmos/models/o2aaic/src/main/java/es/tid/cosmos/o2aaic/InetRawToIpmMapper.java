@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
@@ -20,7 +19,7 @@ import es.tid.cosmos.o2aaic.util.SHAEncoder;
  * @author dmicol
  */
 public class InetRawToIpmMapper extends Mapper<LongWritable, Text,
-                                               NullWritable, Text> {
+                                               LongWritable, Text> {
     @Override
     protected void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
@@ -44,7 +43,6 @@ public class InetRawToIpmMapper extends Mapper<LongWritable, Text,
                 inetRaw.getDtapCause(), inetRaw.getBssmapCause(),
                 inetRaw.getCcCause(), inetRaw.getMmCause(),
                 inetRaw.getRanapCause());
-        context.write(NullWritable.get(),
-                      new Text(InetIpmUtil.toString(inetIpm)));
+        context.write(key, new Text(InetIpmUtil.toString(inetIpm)));
     }
 }

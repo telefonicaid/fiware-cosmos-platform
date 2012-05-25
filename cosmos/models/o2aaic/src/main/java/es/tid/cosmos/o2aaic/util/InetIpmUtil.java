@@ -44,15 +44,20 @@ public abstract class InetIpmUtil {
     }
     
     public static String toString(InetIpm inetIpm) {
-        return (inetIpm.getType() + DELIMITER + inetIpm.getCallType()
-                + DELIMITER + inetIpm.getAnonymisedImsi() + DELIMITER
+        return (inetIpm.getType() + DELIMITER
+                + inetIpm.getCallType() + DELIMITER
+                + inetIpm.getAnonymisedImsi() + DELIMITER
                 + inetIpm.getFirstTempImsi() + DELIMITER
-                + inetIpm.getLastTempImsi() + DELIMITER + inetIpm.getImeiTac()
-                + DELIMITER + inetIpm.getAnonymisedImei() + DELIMITER
-                + inetIpm.getLacod() + DELIMITER + inetIpm.getCellId()
-                + DELIMITER + inetIpm.getEventDateTime() + DELIMITER
-                + inetIpm.getDtapCause() + DELIMITER + inetIpm.getBssmapCause()
-                + DELIMITER + inetIpm.getCcCause() + DELIMITER
-                + inetIpm.getMmCause() + DELIMITER + inetIpm.getRanapCause());
+                + inetIpm.getLastTempImsi() + DELIMITER
+                + inetIpm.getImeiTac() + DELIMITER
+                + inetIpm.getAnonymisedImei() + DELIMITER
+                + inetIpm.getLacod() + DELIMITER
+                + inetIpm.getCellId() + DELIMITER
+                + inetIpm.getEventDateTime() + DELIMITER
+                + inetIpm.getDtapCause() + DELIMITER
+                + inetIpm.getBssmapCause() + DELIMITER
+                + inetIpm.getCcCause() + DELIMITER
+                + inetIpm.getMmCause() + DELIMITER
+                + inetIpm.getRanapCause());
     }
 }

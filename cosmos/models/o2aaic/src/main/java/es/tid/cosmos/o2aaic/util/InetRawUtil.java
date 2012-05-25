@@ -43,15 +43,19 @@ public abstract class InetRawUtil {
     }
     
     public static String toString(InetRaw InetRaw) {
-        return (InetRaw.getType() + DELIMITER + InetRaw.getCallType()
-                + DELIMITER + InetRaw.getImsi() + DELIMITER
+        return (InetRaw.getType() + DELIMITER
+                + InetRaw.getCallType() + DELIMITER
+                + InetRaw.getImsi() + DELIMITER
                 + InetRaw.getFirstTempImsi() + DELIMITER
-                + InetRaw.getLastTempImsi() + DELIMITER + InetRaw.getImei()
-                + DELIMITER + InetRaw.getLacod() + DELIMITER
-                + InetRaw.getCellId() + DELIMITER + InetRaw.getEventDateTime()
-                + DELIMITER + InetRaw.getDtapCause() + DELIMITER
-                + InetRaw.getBssmapCause() + DELIMITER + InetRaw.getCcCause()
-                + DELIMITER + InetRaw.getMmCause() + DELIMITER
+                + InetRaw.getLastTempImsi() + DELIMITER
+                + InetRaw.getImei() + DELIMITER
+                + InetRaw.getLacod() + DELIMITER
+                + InetRaw.getCellId() + DELIMITER
+                + InetRaw.getEventDateTime() + DELIMITER
+                + InetRaw.getDtapCause() + DELIMITER
+                + InetRaw.getBssmapCause() + DELIMITER
+                + InetRaw.getCcCause() + DELIMITER
+                + InetRaw.getMmCause() + DELIMITER
                 + InetRaw.getRanapCause());
     }
 }

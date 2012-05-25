@@ -1,0 +1,48 @@
+package base;
+
+option java_package = "es.tid.cosmos.o2aaic.data.generated";
+option java_outer_classname = "CrmProtocol";
+
+message CrmRaw {
+    optional string msisdn = 1;
+    optional string billingPostCode = 2;
+    optional string acornCode = 3;
+    optional string gender = 4;
+    optional string billingSystem = 5;
+    optional string mtrcPlSegment = 6;
+    optional string mpnStatus = 7;
+    optional string spid = 8;
+    optional string activeStatus = 9;
+    optional string needsSegmentation = 10;
+    optional string age = 11;
+    optional string ageBand = 12;
+    optional string imsi = 13;
+    optional string imei = 14;
+    optional string deviceType = 15;
+    optional string deviceManufacturer = 16;
+    optional string deviceModelName = 17;
+    optional string effectiveFromDate = 18;
+}
+
+message CrmIpm {
+    optional string anonymisedMsisdn = 1;
+    optional string anonymisedBillingPostCode = 2;
+    optional string billingPostCodePrefix = 3;
+    optional string acornCode = 4;
+    optional string gender = 5;
+    optional string billingSystem = 6;
+    optional string mtrcPlSegment = 7;
+    optional string mpnStatus = 8;
+    optional string spid = 9;
+    optional string activeStatus = 10;
+    optional string needsSegmentation = 11;
+    optional string age = 12;
+    optional string ageBand = 13;
+    optional string anonymisedImsi = 14;
+    optional string anonymisedImei = 15;
+    optional string imeiTac = 16;
+    optional string deviceType = 17;
+    optional string deviceManufacturer = 18;
+    optional string deviceModelName = 19;
+    optional string effectiveFromDate = 20;
+}

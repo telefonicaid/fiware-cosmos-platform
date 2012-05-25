@@ -286,7 +286,7 @@ int main( int argC , const char *argV[] )
 
 
         // Sleep if necessary
-        if ( rate_stdin.getGlobalRate() > (double) max_rate )
+        if ( rate_stdin.getRate() > (double) max_rate )
         {
             LM_V(("Stdin info: %s", rate_stdin.str().c_str())); 
             LM_V(("Sleeping respect max rate %s" , au::str( max_rate ).c_str() ));

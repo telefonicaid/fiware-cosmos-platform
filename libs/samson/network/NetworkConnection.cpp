@@ -51,10 +51,6 @@ namespace samson {
         running_t_read = false;
         running_t_write = false;
 
-        // Time window for rate estimation
-        rate_in.setTimeLength(60);
-        rate_out.setTimeLength(60);
-        
     }
 
     NetworkConnection::~NetworkConnection()

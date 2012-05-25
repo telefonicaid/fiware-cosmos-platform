@@ -28,57 +28,61 @@
 #include <list>
 #include <math.h>
 
-#include "au/xml.h"
+#include "au/Cronometer.h"
 #include "au/Cronometer.h"
 #include "au/string.h"
 
 #include "au/namespace.h"
+#include "au/mutex/Token.h"
 
 
 NAMESPACE_BEGIN(au)
 NAMESPACE_BEGIN(rate)
 
+
 class Rate
 {
-   size_t total_size;   // Total number of bytes
-   size_t total_num;    // Total number of hits
-   
-   double rate;         // Aprox Rate in bytes/sec
-   double rate_hits;    // Aprox Rate of hits/sec
-
-   au::Cronometer cronometer;
-   au::Cronometer global_cronometer;
+    size_t total_size_;   // Total number of bytes
+    size_t total_num_;    // Total number of hits
     
-    double factor; 
+    
+    int    *hits_;       // Number of hits accumulated in the last "N" seconds
+    double *size_;       // Total size accumulated in the last "N" seconds
+    
+    int num_samples_;    // Number of samples in hits_ and size_ vectors
+    
+    au::Cronometer c;
+    size_t last_time_correction;
+    
+    au::Token token;     // Mutex protection
+    
     
 public:
     
-    Rate();
+    // Constructor
+    Rate( int num_seconds_to_average = 10 );
+    ~Rate();
+
+    // Push new samples
     void push( size_t size );
+
+    // String to visualize this rate
     std::string str();
     std::string strAccumulatedAndRate();
 
+    // Get totals
     size_t getTotalNumberOfHits();
     size_t getTotalSize();
-    
+
+    // Get rates
     double getRate();
     double getHitRate();
-    double getGlobalRate();
-    
-    void setTimeLength( double t );
-
-    void update_values();
-    
-    void getInfo( std::ostringstream &output )
-    {
-        au::xml_simple(output , "size" , getTotalSize() );
-        au::xml_simple(output , "rate" , getRate() );
-    }        
     
 private:
-    
-    double transformRate( double value );
-    double correctedRate( double value );
+
+    void _update_time();
+    double _getRate();
+    double _getHitRate();
     
 };
 

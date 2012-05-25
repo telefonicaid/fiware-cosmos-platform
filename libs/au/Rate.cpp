@@ -1,120 +1,146 @@
 
 #include "au/string.h"
-#include "Rate.h"        // au::Rate
+#include "au/mutex/TokenTaker.h"
 
-NAMESPACE_BEGIN(au)
-NAMESPACE_BEGIN(rate)
+#include "Rate.h"        // Own interface
 
-Rate::Rate()
-{
-    total_size = 0;
-    total_num = 0;
-    
-    rate = 0;
-    rate_hits = 0;		
-    
-    setTimeLength( 60 ); // Default behaviour... last minute
+namespace au {
+    namespace rate {
+        
+        Rate::Rate( int num_samples ) : token("Rate")
+        {
+            // Init total counters
+            total_size_ = 0;
+            total_num_ = 0;
+            
+            // Init vectors
+            num_samples_ = num_samples;
+            hits_ = (int*)malloc( num_samples_ * sizeof(int) );
+            size_ = (double*)malloc( num_samples_ * sizeof(double) );
+            
+            for ( int i = 0 ; i < num_samples_ ; i++ )
+            {
+                hits_[i] = 0;
+                size_[i] = 0;
+            }
+
+            last_time_correction = 0;
+            
+        }
+        
+        Rate::~Rate( )
+        {
+            free( hits_ );
+            free( size_ );
+        }
+        
+        void Rate::push( size_t size )
+        {
+            au::TokenTaker tt(&token);
+            
+            _update_time();
+            
+            // Update only the first slot    
+            hits_[0]++;
+            size_[0]+= size;
+        }
+        
+        std::string Rate::str()
+        {
+            au::TokenTaker tt(&token);
+            
+            // Update slots if necessary
+            _update_time();
+            
+            //update_values();
+            return au::str("[ Currently %s %s ] [ Accumulated in %s %s with %s ]" 
+                           , au::str( _getHitRate()  , "hits/s" ).c_str() 
+                           , au::str( _getRate() , "B/s" ).c_str() 
+                           , au::str_detail( total_num_ , "hits" ).c_str() 
+                           , au::str_detail( total_size_ , "B" ).c_str() 
+                           );
+        }
+        
+        std::string Rate::strAccumulatedAndRate()
+        {
+            au::TokenTaker tt(&token);
+            
+            //update_values();
+            return au::str("[ Accumulated %s at %s ]" 
+                           , au::str_detail( total_size_ , "B" ).c_str() 
+                           , au::str( _getRate() , "B/s" ).c_str() 
+                           );
+        }
+        
+        size_t Rate::getTotalNumberOfHits()
+        {
+            return total_num_;
+        }
+        size_t Rate::getTotalSize()
+        {
+            return total_size_;
+        }
+        
+        double Rate::getRate()
+        {
+            au::TokenTaker tt(&token);
+            _update_time();
+            return  _getRate();
+        }
+        
+        double Rate::getHitRate()
+        {
+            au::TokenTaker tt(&token);
+            _update_time();
+            return  _getHitRate();
+        }
+        
+        double Rate::_getHitRate()
+        {
+            double total = 0;
+            for ( int i = 1 ; i < num_samples_ ; i++ )
+                total += hits_[i];
+            return  total / (double)(num_samples_-1);
+        }
+        
+        double Rate::_getRate()
+        {
+            double total = 0;
+            for ( int i = 1 ; i < num_samples_ ; i++ )
+                total += size_[i];
+            return  total / (double)(num_samples_-1);
+        }
+        
+        void Rate::_update_time()
+        {
+            // Take current time
+            time_t time = c.diffTimeInSeconds();
+            
+            if( time > last_time_correction )
+            {
+                // Compute difference with the last reference
+                size_t diff = time - last_time_correction;
+                
+                // Move samples
+                for( int i = 0 ; i < ( (int)num_samples_ - (int)diff ) ; i++ )
+                {
+                    size_[ num_samples_ - i - 1 ] = size_[ num_samples_ - i - 2 ];
+                    hits_[ num_samples_ - i - 1 ] = hits_[ num_samples_ - i - 2 ];
+                }
+                
+                // Init the new slots
+                for ( int i = 0 ; i < (int) diff ; i++ )
+                {
+                    size_[i] = 0;
+                    hits_[i] = 0;
+                }
+                
+                // Set the new reference
+                last_time_correction = time;                
+            }
+            
+
+        }
+ 
+    }
 }
-
-void Rate::setTimeLength( double t )
-{
-    factor = ( t - 1 ) / t;
-}
-
-
-void Rate::push( size_t size )
-{
-    // update the previous values ( forgetting factor... )
-    update_values();
-    
-    // Add to rates
-    rate += size;
-    rate_hits += 1;
-    
-    // Add new values
-    total_size += size;
-    total_num++;
-}
-
-std::string Rate::str()
-{
-   //update_values();
-    return au::str("[ Currently %s %s ] [ Last sample %s ] [ Accumulated in %s %s with %s ]" 
-                   , au::str( getHitRate()  , "hits/s" ).c_str() 
-                   , au::str( getRate() , "B/s" ).c_str() 
-                   , au::str_time( cronometer.diffTime() ).c_str()
-                   , au::str_time( global_cronometer.diffTime() ).c_str()
-                   , au::str_detail( total_num , "hits" ).c_str() 
-                   , au::str_detail( total_size , "B" ).c_str() 
-                   );
-}
-
-std::string Rate::strAccumulatedAndRate()
-{
-    //update_values();
-    return au::str("[ Accumulated %s at %s ]" 
-                   , au::str_detail( total_size , "B" ).c_str() 
-                   , au::str( getRate() , "B/s" ).c_str() 
-                   );
-}
-
-size_t Rate::getTotalNumberOfHits()
-{
-    return total_num;
-}
-size_t Rate::getTotalSize()
-{
-    return total_size;
-}
-
-double Rate::getRate()
-{
-    return transformRate( correctedRate(rate) );
-}
-
-double Rate::getHitRate()
-{
-    return transformRate( correctedRate(rate_hits) );
-}
-
-double Rate::getGlobalRate()
-{
-    double time = global_cronometer.diffTime();
-    if( time <= 0 )
-        time = 1;
-    
-    return ((double) total_size) / time;
-}
-
-void Rate::update_values()
-{
-    // Get time diferente since last update and reset cronometer
-    double time_diff = cronometer.diffTimeAndReset(); 
-    
-    rate      = rate * pow( factor  , time_diff );
-    rate_hits = rate_hits * pow( factor  , time_diff );
-}
-
-double Rate::transformRate( double value )
-{
-    double time_spam = 1.0 / ( 1.0 - factor );
-    double time = global_cronometer.diffTime();
-    
-    if( time == 0 )
-        time = 1;
-    
-    if( time < time_spam )
-        return value / time;
-    else
-        return (1.0-factor)*value;
-}
-
-double Rate::correctedRate( double value )
-{
-    double time_diff = cronometer.diffTime(); 
-    return value * pow( factor  , time_diff );
-}
-
-
-NAMESPACE_END
-NAMESPACE_END

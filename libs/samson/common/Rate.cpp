@@ -6,8 +6,6 @@ namespace samson {
     
     Rate::Rate()
     {
-        rate_kvs.setTimeLength( 60 );
-        rate_size.setTimeLength( 60 );
     }
     
     void Rate::push( size_t kvs , size_t size)

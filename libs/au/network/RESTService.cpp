@@ -1,5 +1,5 @@
 
-
+#include "au/xml.h"
 #include "RESTService.h" // Own interface
 
 

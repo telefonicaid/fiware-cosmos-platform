@@ -40,6 +40,12 @@ namespace au
     // After fork, this should be called to avoid deadlocks in log system
     void restart_log_to_server( std::string local_log_file );
     
+    // Set direct mode ( no blocking to reconnection )
+    void set_log_direct_mode( bool flag );
+    
+    // Get fd ( to avoid closing when forking )
+    int get_log_fd();
+    
     // Add and remove plugins
     void add_log_plugin( LogPlugin * plugin );
     void remove_log_plugin( LogPlugin * plugin );

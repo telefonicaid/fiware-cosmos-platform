@@ -70,6 +70,21 @@ namespace au
         
     }
     
+    void set_log_direct_mode( bool flag )
+    {
+        if( log_central )
+            log_central->set_direct_mode(flag);
+    }
+
+    
+    int get_log_fd()
+    {
+        if( log_central )
+            return log_central->getFd();
+        return -1;
+    }
+
+    
     void stop_log_to_server( )
     {
         if( log_central )

@@ -22,6 +22,12 @@ namespace au
 
         // No current thread by defautl
         current_thread_activated = false;
+        
+        // Direct mode flag
+        direct_mode = false;
+        
+        // Not using any fd here
+        fd = -1;
     }
     
     LogCentral::~LogCentral()
@@ -74,6 +80,17 @@ namespace au
     
     void LogCentral::write( Log* log )
     {
+        // In direct mode, we just try to send traces ( not reconnection, no blocking )
+        if( direct_mode )
+        {
+            if( socket_connection )
+                log->write( socket_connection );
+            else if( local_file_descriptor )
+                log->write(local_file_descriptor );
+
+            return;
+        }
+        
         // If we are the writing thread, just return ( otherwise it will be locked )
         // If the system is taken, just wait
         while( true )
@@ -143,9 +160,14 @@ namespace au
     {
         au::TokenTaker tt(&token);
         
+        // In direct mode, we do not reconnect
+        
         // Check if the estabished connection should be canceled
         if( socket_connection && socket_connection->isDisconnected() )
+        {
             close_socket_connection();
+            fd = -1;
+        }
         
         // Reconnect to server if necessary
         size_t time = time_since_last_connection.diffTimeInSeconds();
@@ -164,7 +186,7 @@ namespace au
                     time_reconnect = time;
                 
                 time_reconnect *= 2; // Increase time to reconnect
-
+                
                 size_t next_try_time = time_reconnect - time;
                 
                 LM_W(("Not possible to connect with log server %s:%d (%s). Next try in %s" 
@@ -172,11 +194,15 @@ namespace au
             }
             else
             {
+                // Set the used fd
+                fd = socket_connection->getFd();
+                
                 if( time  > 10 )
                     LM_LW(("Connected to log server after %s disconnected" , au::str_time(time).c_str() ));
             }            
         }
-
+        
+        
         // Try socket first...
         if( socket_connection )
         {
@@ -185,17 +211,20 @@ namespace au
 
             // It was not possible to sent to server, close and remove socket connection
             close_socket_connection();
+            fd = -1;
         }
 
         // Make sure, local file is ready to write
         
         if( !local_file_descriptor )
         {
-            int fd = open( local_file.c_str() , O_WRONLY | O_CREAT , 0644 );
+            fd = open( local_file.c_str() , O_WRONLY | O_CREAT , 0644 );
             LM_LT(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
         
             if( fd >= 0 )
+            {
                 local_file_descriptor = new FileDescriptor("local_log", fd );
+            }
             else
             {
                 LM_LW(("Not possible to open local log file %s. Logs will be definitely lost", local_file.c_str() ));
@@ -211,5 +240,11 @@ namespace au
         
     }
     
+    
+    void LogCentral::set_direct_mode( bool flag)
+    {
+        direct_mode = flag;
+    }
+
     
 }

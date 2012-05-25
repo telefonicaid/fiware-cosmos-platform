@@ -52,16 +52,24 @@ namespace au
         au::Token token_plugins;
         au::set<LogPlugin> plugins;
         
-        
         // Current thread loging
         au::Token token_current_thread;
         pthread_t current_thread;
         bool current_thread_activated;
+
+        // Bool direct mode is a non-blocking no-multi-thread no-reconnection way to send traces
+        bool direct_mode;
+
+        // Current fd we are using
+        int fd;
         
     public:
         
         LogCentral( std::string _host , int _port , std::string _local_file );
         ~LogCentral();
+        
+        // In direct mode, we just try to send traces ( not reconnection, no blocking )
+        void set_direct_mode( bool flag );
         
         // Change the host and port
         void set_host_and_port( std::string log_host , int log_port = AU_LOG_SERVER_PORT );
@@ -82,6 +90,11 @@ namespace au
         int getPort()
         {
             return port;
+        }
+        
+        int getFd()
+        {
+            return fd;
         }
         
     private:

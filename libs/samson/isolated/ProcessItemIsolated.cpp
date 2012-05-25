@@ -684,7 +684,9 @@ namespace samson
 	void ProcessItemIsolated::runBackgroundProcessRun()
 	{
         // Restart the log system to avoid logs
-        au::restart_log_to_server( au::str("/tmp/samsonWorker_chield_%d" , getpid() ) );
+        //au::restart_log_to_server( au::str("/tmp/samsonWorker_chield_%d" , getpid() ) );
+        au::set_log_direct_mode(true); // Direct mode means no-blocking // no reconnection
+        
         
         LM_M(("Start background SAMSON isolated process: %s" , processItemIsolated_description.c_str() ));
         
@@ -705,8 +707,9 @@ namespace samson
             // Valgrind
             // Warning: Invalid file descriptor 1014 in syscal close()
             // So changing limit from 1024 to 1014
+
             for ( int i = 3 ;  i < 1014 ; i++ )
-                if( ( i != pipeFdPair1[1] ) && ( i != pipeFdPair2[0] ) && ( i != logFd ) )
+                if( ( i != pipeFdPair1[1] ) && ( i != pipeFdPair2[0] ) && ( i != logFd ) && ( i!= au::get_log_fd() ) )
                 {
                     
                     //Trazas Goyo
@@ -714,6 +717,7 @@ namespace samson
                     
                     close( i );
                 }
+
         }
         
         LM_T(LmtIsolated,("Child sends the begin message"));
@@ -727,10 +731,10 @@ namespace samson
         LM_T(LmtIsolated,("Child begin message sent"));
 
         LM_T(LmtIsolated,("Running runIsolated"));
-        
+
  		runIsolated();
         
-        //LM_M(("Finishing runIsolated"));
+        LM_M(("Finish background SAMSON isolated process: %s" , processItemIsolated_description.c_str() ));
         
  		LM_T(LmtIsolated,("Child sends the end message"));
         // Send the "end" message
@@ -754,7 +758,6 @@ namespace samson
         
         LM_T(LmtIsolated, ("Finishing runBackgroundProcessRun..."));
         
-        LM_M(("Finish background SAMSON isolated process: %s" , processItemIsolated_description.c_str() ));
         
         // Stop the loging system ( make sure we close connection with log Server )
         au::stop_log_to_server();

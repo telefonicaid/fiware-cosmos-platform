@@ -39,8 +39,7 @@ public class CosmosJob extends Job {
         CosmosJob createMapReduceJob(Configuration conf, String jobName,
             Class<InputFormatClass> inputFormat, Class<MapperClass> mapper,
             Class<ReducerClass> reducer, Integer numReduceTasks,
-            Class<OutputFormatClass> outputFormat)
-            throws Exception {
+            Class<OutputFormatClass> outputFormat) throws IOException {
         CosmosJob job = new CosmosJob(conf, jobName);
         job.setInputFormatClass(inputFormat);
         Class outputKey = null;
@@ -82,6 +81,25 @@ public class CosmosJob extends Job {
         }
         return job;
     }
+    
+    public static <
+            InputFormatClass extends InputFormat<InputKeyClass, InputValueClass>,
+            MapperClass extends Mapper<InputKeyClass, InputValueClass,
+                                       ? extends ReducerInputKeyClass, ? extends ReducerInputValueClass>,
+            ReducerClass extends Reducer<ReducerInputKeyClass, ReducerInputValueClass,
+                                         OutputKeyClass, OutputValueClass>,
+            OutputFormatClass extends OutputFormat<OutputKeyClass,
+                                                   OutputValueClass>,
+            InputKeyClass, InputValueClass,
+            ReducerInputKeyClass, ReducerInputValueClass,
+            OutputKeyClass, OutputValueClass>
+        CosmosJob createMapReduceJob(Configuration conf, String jobName,
+            Class<InputFormatClass> inputFormat, Class<MapperClass> mapper,
+            Class<ReducerClass> reducer, Class<OutputFormatClass> outputFormat)
+            throws IOException {
+        return CosmosJob.createMapReduceJob(conf, jobName, inputFormat, mapper,
+                                            reducer, null, outputFormat);
+    }
 
     public static <
             InputFormatClass extends InputFormat<InputKeyClass, InputValueClass>,
@@ -93,7 +111,7 @@ public class CosmosJob extends Job {
         CosmosJob createMapJob(Configuration conf, String jobName,
             Class<InputFormatClass> inputFormat, Class<MapperClass> mapper,
             Class<OutputFormatClass> outputFormat)
-            throws Exception {
+            throws IOException {
         return CosmosJob.createMapReduceJob(conf, jobName, inputFormat, mapper,
                                             null, null, outputFormat);
     }
@@ -108,9 +126,25 @@ public class CosmosJob extends Job {
         CosmosJob createReduceJob(Configuration conf, String jobName,
             Class<InputFormatClass> inputFormat, Class<ReducerClass> reducer,
             Integer numReduceTasks, Class<OutputFormatClass> outputFormat)
-            throws Exception {
+            throws IOException {
         return CosmosJob.createMapReduceJob(
                 conf, jobName, inputFormat, null, reducer, numReduceTasks,
+                outputFormat);
+    }
+    
+    public static <
+            InputFormatClass extends InputFormat<InputKeyClass, InputValueClass>,
+            ReducerClass extends Reducer<InputKeyClass, InputValueClass,
+                                       OutputKeyClass, OutputValueClass>,
+            OutputFormatClass extends OutputFormat<OutputKeyClass, OutputValueClass>,
+            InputKeyClass, InputValueClass,
+            OutputKeyClass, OutputValueClass>
+        CosmosJob createReduceJob(Configuration conf, String jobName,
+            Class<InputFormatClass> inputFormat, Class<ReducerClass> reducer,
+            Class<OutputFormatClass> outputFormat)
+            throws IOException {
+        return CosmosJob.createMapReduceJob(
+                conf, jobName, inputFormat, null, reducer, null,
                 outputFormat);
     }
 
@@ -133,8 +167,7 @@ public class CosmosJob extends Job {
      * by "originalClass"
      * @throws Exception
      */
-    static Class[] getGenericParameters(Class originalClass)
-            throws Exception {
+    static Class[] getGenericParameters(Class originalClass) {
         try {
             Type parent = originalClass.getGenericSuperclass();
             Class superClass;
@@ -165,7 +198,7 @@ public class CosmosJob extends Job {
             }
             return getGenericParameters(superClass);
         } catch (Exception ex) {
-            throw new Exception("[Debug Info] originalClass: "
+            throw new RuntimeException("[Debug Info] originalClass: "
                     + originalClass.toString(), ex);
         }
     }

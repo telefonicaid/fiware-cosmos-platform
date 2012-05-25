@@ -301,7 +301,7 @@ public class CosmosJobTest {
         CosmosJob job = CosmosJob.createMapReduceJob(
                 new Configuration(), jobName,
                 TextInputFormat.class, DummyMapper.class,
-                DummyReducer.class, null, TextOutputFormat.class);
+                DummyReducer.class, TextOutputFormat.class);
         assertEquals(job.getJobName(), jobName);
         assertEquals(job.getInputFormatClass(), TextInputFormat.class);
         assertEquals(job.getMapOutputKeyClass(), NullWritable.class);
@@ -352,7 +352,7 @@ public class CosmosJobTest {
         final String jobName = "ReduceJobName";
         CosmosJob job = CosmosJob.createReduceJob(
                 new Configuration(), jobName, TextInputFormat.class,
-                DummyReducer2.class, null, TextOutputFormat.class);
+                DummyReducer2.class, TextOutputFormat.class);
         assertEquals(job.getJobName(), jobName);
         assertEquals(job.getInputFormatClass(), TextInputFormat.class);
         assertEquals(job.getMapOutputKeyClass(), LongWritable.class);

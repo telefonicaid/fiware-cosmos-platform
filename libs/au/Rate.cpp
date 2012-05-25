@@ -114,7 +114,7 @@ namespace au {
         void Rate::_update_time()
         {
             // Take current time
-            time_t time = c.diffTimeInSeconds();
+            size_t time = c.diffTimeInSeconds();
             
             if( time > last_time_correction )
             {

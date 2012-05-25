@@ -1,5 +1,6 @@
 package es.tid.cosmos.mobility.labelling.bts;
 
+import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,8 +10,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.MapJob;
-import es.tid.cosmos.base.mapreduce.ReduceJob;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
 import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourReducer;
 import es.tid.cosmos.mobility.labelling.client.VectorFuseNodeDaygroupReducer;
 import es.tid.cosmos.mobility.labelling.client.VectorNormalizedReducer;
@@ -27,12 +27,12 @@ public final class BtsLabellingRunner {
     public static void run(Path btsCommsPath, Path btsComareaPath,
                            Path centroidsPath, Path vectorBtsClusterPath,
                            Path tmpDirPath, boolean isDebug, Configuration conf)
-            throws Exception {
+            throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
         
         Path btsCountsPath = new Path(tmpDirPath, "bts_counts");
         {
-            MapJob job = MapJob.create(conf, "VectorFilterBts",
+            CosmosJob job = CosmosJob.createMapJob(conf, "VectorFilterBts",
                     SequenceFileInputFormat.class,
                     VectorFilterBtsMapper.class,
                     SequenceFileOutputFormat.class);
@@ -43,7 +43,8 @@ public final class BtsLabellingRunner {
 
         Path btsSumComsPath = new Path(tmpDirPath, "bts_sum_coms");
         {
-            ReduceJob job = ReduceJob.create(conf, "VectorSumComsBts",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "VectorSumComsBts",
                     SequenceFileInputFormat.class,
                     VectorSumComsBtsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -54,7 +55,8 @@ public final class BtsLabellingRunner {
 
         Path btsDayhourPath = new Path(tmpDirPath, "bts_dayhour");
         {
-            ReduceJob job = ReduceJob.create(conf, "VectorCreateNodeDayhour",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "VectorCreateNodeDayhour",
                     SequenceFileInputFormat.class,
                     VectorCreateNodeDayhourReducer.class,
                     SequenceFileOutputFormat.class);
@@ -65,7 +67,8 @@ public final class BtsLabellingRunner {
 
         Path vectorBtsPath = new Path(tmpDirPath, "vector_bts");
         {
-            ReduceJob job = ReduceJob.create(conf, "VectorFuseNodeDaygroup",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "VectorFuseNodeDaygroup",
                     SequenceFileInputFormat.class,
                     VectorFuseNodeDaygroupReducer.class,
                     SequenceFileOutputFormat.class);
@@ -76,7 +79,7 @@ public final class BtsLabellingRunner {
 
         Path vectorBtsNormPath = new Path(tmpDirPath, "vector_bts_norm");
         {
-            ReduceJob job = ReduceJob.create(conf, "VectorNormalized",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "VectorNormalized",
                     SequenceFileInputFormat.class,
                     VectorNormalizedReducer.class,
                     SequenceFileOutputFormat.class);
@@ -88,7 +91,8 @@ public final class BtsLabellingRunner {
         Path vectorBtsClusterSinfiltPath = new Path(tmpDirPath,
                 "vector_bts_cluster_sinfilt");
         {
-            ReduceJob job = ReduceJob.create(conf, "ClusterBtsGetMinDistance",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "ClusterBtsGetMinDistance",
                     SequenceFileInputFormat.class,
                     ClusterBtsGetMinDistanceReducer.class,
                     SequenceFileOutputFormat.class);
@@ -99,7 +103,7 @@ public final class BtsLabellingRunner {
         }
 
         {
-            ReduceJob job = ReduceJob.create(conf, "FilterBtsVector",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "FilterBtsVector",
                     SequenceFileInputFormat.class,
                     FilterBtsVectorReducer.class,
                     SequenceFileOutputFormat.class);
@@ -113,7 +117,8 @@ public final class BtsLabellingRunner {
             Path vectorBtsClusterTextPath = new Path(tmpDirPath,
                                                     "vector_bts_cluster_text");
             {
-                ReduceJob job = ReduceJob.create(conf, "ExportClusterToText",
+                CosmosJob job = CosmosJob.createReduceJob(conf,
+                        "ExportClusterToText",
                         SequenceFileInputFormat.class,
                         ExportClusterToTextReducer.class,
                         1,

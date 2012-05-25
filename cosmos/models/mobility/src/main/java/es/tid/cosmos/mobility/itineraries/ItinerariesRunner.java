@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.itineraries;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,7 +11,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.ReduceJob;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
 
 /**
  *
@@ -23,10 +25,10 @@ public final class ItinerariesRunner {
                            Path pointsOfInterestIdPath,
                            Path clientItinerariesTxtPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
-            throws Exception {
+            throws IOException, InterruptedException, ClassNotFoundException {
         Path itClientbtsTimePath = new Path(tmpDirPath, "it_clientbts_time");
         {
-            ReduceJob job = ReduceJob.create(conf, "ItinJoinCellBts",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ItinJoinCellBts",
                     SequenceFileInputFormat.class,
                     ItinJoinCellBtsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -38,7 +40,7 @@ public final class ItinerariesRunner {
 
         Path itClientpoiTimePath = new Path(tmpDirPath, "it_clientpoi_time");
         {
-            ReduceJob job = ReduceJob.create(conf, "ItinFilterPois",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ItinFilterPois",
                     SequenceFileInputFormat.class,
                     ItinFilterPoisReducer.class,
                     SequenceFileOutputFormat.class);
@@ -50,7 +52,7 @@ public final class ItinerariesRunner {
 
         Path itClientMovesPath = new Path(tmpDirPath, "it_client_moves");
         {
-            ReduceJob job = ReduceJob.create(conf, "ItinMoveClientPois",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ItinMoveClientPois",
                     SequenceFileInputFormat.class,
                     ItinMoveClientPoisReducer.class,
                     SequenceFileOutputFormat.class);
@@ -62,7 +64,7 @@ public final class ItinerariesRunner {
         Path itClientMovesRangesPath = new Path(tmpDirPath,
                                                 "it_client_moves_ranges");
         {
-            ReduceJob job = ReduceJob.create(conf, "ItinGetRanges",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ItinGetRanges",
                     SequenceFileInputFormat.class,
                     ItinGetRangesReducer.class,
                     SequenceFileOutputFormat.class);
@@ -74,7 +76,7 @@ public final class ItinerariesRunner {
         Path itClientMovesCountPath = new Path(tmpDirPath,
                                                "it_client_moves_count");
         {
-            ReduceJob job = ReduceJob.create(conf, "ItinCountRanges",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ItinCountRanges",
                     SequenceFileInputFormat.class,
                     ItinCountRangesReducer.class,
                     SequenceFileOutputFormat.class);
@@ -86,7 +88,7 @@ public final class ItinerariesRunner {
         Path itClientMovesVectorPath = new Path(tmpDirPath,
                                                 "it_client_moves_vector");
         {
-            ReduceJob job = ReduceJob.create(conf, "ItinGetVector",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ItinGetVector",
                     SequenceFileInputFormat.class,
                     ItinGetVectorReducer.class,
                     SequenceFileOutputFormat.class);
@@ -98,7 +100,7 @@ public final class ItinerariesRunner {
         Path itClientItinerariesPath = new Path(tmpDirPath,
                                                 "it_client_itineraries");
         {
-            ReduceJob job = ReduceJob.create(conf, "ItinGetItinerary",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ItinGetItinerary",
                     SequenceFileInputFormat.class,
                     ItinGetItineraryReducer.class,
                     SequenceFileOutputFormat.class);
@@ -108,7 +110,7 @@ public final class ItinerariesRunner {
         }
 
         {
-            ReduceJob job = ReduceJob.create(conf, "ItinItineraryOut",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ItinItineraryOut",
                     SequenceFileInputFormat.class,
                     ItinItineraryOutReducer.class,
                     1,

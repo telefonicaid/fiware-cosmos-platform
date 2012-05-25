@@ -1,5 +1,6 @@
 package es.tid.cosmos.tests.hadoopjobs.mapperfail;
 
+import java.io.IOException;
 import java.security.InvalidParameterException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -12,7 +13,7 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
-import es.tid.cosmos.base.mapreduce.MapJob;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
 
 /**
  * @author ximo
@@ -20,12 +21,13 @@ import es.tid.cosmos.base.mapreduce.MapJob;
  */
 public class MapperFailTool extends Configured implements Tool {
     @Override
-    public int run(String[] args) throws Exception {
+    public int run(String[] args)
+            throws IOException, InterruptedException, ClassNotFoundException {
         if (args.length != 3) {
             throw new InvalidParameterException("Expecting 3 arguments."
                     + " Received: " + args.length);
         }
-        MapJob testJob = MapJob.create(
+        CosmosJob testJob = CosmosJob.createMapJob(
                 this.getConf(), "TestJar", TextInputFormat.class,
                 MapperFailMapper.class, TextOutputFormat.class);
         FileInputFormat.setInputPaths(testJob, new Path(args[0]));

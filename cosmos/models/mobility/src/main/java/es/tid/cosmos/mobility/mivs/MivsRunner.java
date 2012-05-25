@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.mivs;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,8 +11,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.MapJob;
-import es.tid.cosmos.base.mapreduce.ReduceJob;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
 
 /**
  *
@@ -22,13 +23,13 @@ public final class MivsRunner {
 
     public static void run(Path viTelmonthBts, Path viClientFuseAcc,
                            Path tmpDir, boolean isDebug, Configuration conf)
-            throws Exception {
+            throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
         
         Path viTelmonthMobvars = new Path(tmpDir, "vi_telmonth_mobvars");
         {
             // Calculate individual variables by month
-            ReduceJob job = ReduceJob.create(conf, "ActivityAreaByMonth",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ActivityAreaByMonth",
                     SequenceFileInputFormat.class,
                     ActivityAreaReducer.class,
                     SequenceFileOutputFormat.class);
@@ -40,7 +41,7 @@ public final class MivsRunner {
         Path viClientFuse = new Path(tmpDir, "vi_client_fuse");
         {
             // Fuse in a set all user info
-            ReduceJob job = ReduceJob.create(conf, "FusionTotalVars",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "FusionTotalVars",
                     SequenceFileInputFormat.class,
                     FusionTotalVarsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -52,7 +53,7 @@ public final class MivsRunner {
         Path viTelmonthBtsAcc = new Path(tmpDir, "vi_telmonth_bts_acc");
         {
             // Delete months
-            MapJob job = MapJob.create(conf, "DeletePeriod",
+            CosmosJob job = CosmosJob.createMapJob(conf, "DeletePeriod",
                     SequenceFileInputFormat.class,
                     DeletePeriodMapper.class,
                     SequenceFileOutputFormat.class);
@@ -64,7 +65,7 @@ public final class MivsRunner {
         Path viTelmonthMobvarsAcc = new Path(tmpDir, "vi_telmonth_mobvars_acc");
         {
             // Calculate individual variables for every month
-            ReduceJob job = ReduceJob.create(conf, "ActivityAreaByMonth",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ActivityAreaByMonth",
                     SequenceFileInputFormat.class,
                     ActivityAreaReducer.class,
                     SequenceFileOutputFormat.class);
@@ -75,7 +76,7 @@ public final class MivsRunner {
 
         {
             // Fuse in a set all user info
-            ReduceJob job = ReduceJob.create(conf, "FusionTotalVars",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "FusionTotalVars",
                     SequenceFileInputFormat.class,
                     FusionTotalVarsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -87,7 +88,7 @@ public final class MivsRunner {
         if (isDebug) {
             Path viClientFuseText = new Path(tmpDir, "vi_client_fuse_text");
             {
-                ReduceJob job = ReduceJob.create(conf, "IndVarsOut",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "IndVarsOut",
                         SequenceFileInputFormat.class,
                         IndVarsOutReducer.class,
                         1,
@@ -100,7 +101,7 @@ public final class MivsRunner {
             Path viClientFuseAccText = new Path(tmpDir,
                                                 "vi_client_fuse_acc_text");
             {
-                ReduceJob job = ReduceJob.create(conf, "IndVarsOutAcc",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "IndVarsOutAcc",
                         SequenceFileInputFormat.class,
                         IndVarsOutAccReducer.class,
                         1,

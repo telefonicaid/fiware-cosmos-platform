@@ -14,20 +14,18 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
  */
 abstract class OutputEraser {
     private static final Map<Class<? extends OutputFormat>,
-                             Class<? extends OutputEraser>> erasers;
-
-    static {
-        erasers = new HashMap();
-        erasers.put(FileOutputFormat.class, FileDataEraser.class);
-    }
+                             Class<? extends OutputEraser>> ERASERS =
+        new HashMap() {{
+            put(FileOutputFormat.class, FileDataEraser.class);
+        }};
 
     public static OutputEraser getEraser(Class c) {
-        if (!erasers.containsKey(c)) {
+        if (!ERASERS.containsKey(c)) {
             Class superClass = c.getSuperclass();
             return superClass == null ? null : getEraser(superClass);
         }
         try {
-            return erasers.get(c).newInstance();
+            return ERASERS.get(c).newInstance();
         } catch (InstantiationException ex) {
             throw new IllegalArgumentException(
                     "Could not create instance of eraser class", ex);

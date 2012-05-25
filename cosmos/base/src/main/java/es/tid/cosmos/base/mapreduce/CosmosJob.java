@@ -249,7 +249,7 @@ public class CosmosJob extends Job {
         return this.deleteOutputOnExit;
     }
 
-    private static abstract class ExceptionedThread extends Thread {
+    private abstract static class ExceptionedThread extends Thread {
         private Exception exception;
 
         protected void setException(Exception e) {

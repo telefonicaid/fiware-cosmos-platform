@@ -132,6 +132,8 @@ namespace au
             
             std::string getPrompt()
             {
+                // Not used anymore since it get large delays...
+                return ">>";
                 
                 // Prepare message to be send to server
                 au::gpb::ConsolePacket m;

@@ -57,12 +57,12 @@ namespace au {
         header.dataLen = sizeof(LogData) + strings_size;
         
         // Write header
-        au::Status s = fd->partWrite(&header, sizeof(LogHeader), "log header");
+        au::Status s = fd->partWrite(&header, sizeof(LogHeader), "log header",1,1,0);
         if( s != au::OK )
             return false; // Just quit
         
         // Write data
-        s = fd->partWrite(&log_data, sizeof(LogData), "log data");
+        s = fd->partWrite(&log_data, sizeof(LogData), "log data",1,1,0);
         if( s != au::OK )
             return false; // Just quit
         
@@ -71,7 +71,7 @@ namespace au {
             TemporalBuffer buffer( strings_size );
             copyStrings( buffer.data );
             
-            s = fd->partWrite(buffer.data, strings_size , "log_strings");
+            s = fd->partWrite(buffer.data, strings_size , "log_strings",1,1,0);
             if( s != au::OK )
                 return false; // Just quit
         }

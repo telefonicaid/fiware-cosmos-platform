@@ -231,9 +231,7 @@ void DiskManager::run_worker()
         DiskOperation* operation = getNextDiskOperation();
         if (operation)
 		{
-            LM_T(LmtDisk,  ("START operation %s" , operation->getDescription().c_str() ));
             operation->run();
-            LM_T(LmtDisk, ("FINISH operation %s" , operation->getDescription().c_str() ));
 		}
         else
             usleep(100000);

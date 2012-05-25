@@ -11,9 +11,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -24,9 +21,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
-import es.tid.cosmos.base.mapreduce.BinaryKey;
 import es.tid.cosmos.base.mapreduce.CosmosJob;
-import es.tid.cosmos.base.mapreduce.SingleKey;
+import es.tid.cosmos.base.mapreduce.JobList;
 import es.tid.cosmos.kpicalculation.config.KpiConfig;
 import es.tid.cosmos.kpicalculation.config.KpiFeature;
 import es.tid.cosmos.kpicalculation.export.mongodb.MongoDBExporterReducer;
@@ -81,21 +77,18 @@ public class KpiMain extends Configured implements Tool {
         FileInputFormat.setInputPaths(cleanerJob, inputPath);
         FileOutputFormat.setOutputPath(cleanerJob, tmpPath);
         cleanerJob.setDeleteOutputOnExit(true);
-        cleanerJob.waitForCompletion(true);
 
         KpiConfig config = new KpiConfig();
         config.read(KPI_DEFINITIONS);
 
+        JobList jobList = new JobList();
         for (KpiFeature features : config.getKpiFeatures()) {
             Path kpiOutputPath = outputPath.suffix("/" + timeFolder + "/"
                     + features.getName());
 
-            Job aggregationJob = createAggregationJob(conf, features,
-                                                      tmpPath, kpiOutputPath);
-            if (!aggregationJob.waitForCompletion(true)) {
-                throw new Exception("Failed to aggregate "
-                        + features.getName());
-            }
+            CosmosJob aggregationJob = createAggregationJob(conf, features,
+                    tmpPath, kpiOutputPath);
+            aggregationJob.addDependentJob(cleanerJob);
 
             CosmosJob exporterJob = CosmosJob.createReduceJob(conf, "MongoDBExporterJob",
                     TextInputFormat.class,
@@ -106,49 +99,49 @@ public class KpiMain extends Configured implements Tool {
             MongoConfigUtil.setOutputURI(exporterConf, mongoUrl);
             exporterConf.set("name", features.getName());
             exporterConf.setStrings("fields", features.getFields());
-            exporterJob.waitForCompletion(true);
+            exporterJob.addDependentJob(aggregationJob);
+            jobList.add(exporterJob);
         }
+        jobList.waitForCompletion(true);
 
         return 0;
     }
 
-    private Job createAggregationJob(Configuration conf, KpiFeature features,
-                                     Path inputPath, Path outputPath)
-            throws IOException {
-        Job aggregationJob = new Job(conf, "Aggregation Job ..."
-                + features.getName());
-
-        aggregationJob.getConfiguration().setStrings(
-                "kpi.aggregation.fields", features.getFields());
-
+    private CosmosJob createAggregationJob(Configuration conf,
+                                           KpiFeature features,
+                                           Path inputPath, Path outputPath)
+            throws Exception {
+        CosmosJob aggregationJob;
         if (features.getGroup() != null) {
+            aggregationJob = CosmosJob.createMapReduceJob(conf,
+                    "Aggregation Job ..." + features.getName(),
+                    SequenceFileInputFormat.class,
+                    KpiGenericMapper.class,
+                    KpiCounterByReducer.class,
+                    TextOutputFormat.class);
             aggregationJob.getConfiguration().setStrings(
                     "kpi.aggregation.group", features.getGroup());
-            aggregationJob.setMapOutputKeyClass(BinaryKey.class);
             aggregationJob.setCombinerClass(KpiCounterByCombiner.class);
-            aggregationJob.setReducerClass(KpiCounterByReducer.class);
             aggregationJob.setSortComparatorClass(
                     PageViewKpiCounterGroupedComparator.class);
             aggregationJob.setGroupingComparatorClass(
                     PageViewKpiCounterGroupedComparator.class);
         } else {
-            aggregationJob.setMapOutputKeyClass(SingleKey.class);
+            aggregationJob = CosmosJob.createMapReduceJob(conf,
+                    "Aggregation Job ..." + features.getName(),
+                    SequenceFileInputFormat.class,
+                    KpiGenericMapper.class,
+                    KpiCounterReducer.class,
+                    TextOutputFormat.class);
             aggregationJob.setCombinerClass(KpiCounterCombiner.class);
-            aggregationJob.setReducerClass(KpiCounterReducer.class);
             aggregationJob.setSortComparatorClass(
                     PageViewKpiCounterComparator.class);
             aggregationJob.setGroupingComparatorClass(
                     PageViewKpiCounterComparator.class);
         }
-
-        aggregationJob.setJarByClass(KpiMain.class);
-        aggregationJob.setMapperClass(KpiGenericMapper.class);
         aggregationJob.setPartitionerClass(KpiPartitioner.class);
-        aggregationJob.setInputFormatClass(SequenceFileInputFormat.class);
-        aggregationJob.setMapOutputValueClass(IntWritable.class);
-        aggregationJob.setOutputKeyClass(Text.class);
-        aggregationJob.setOutputValueClass(IntWritable.class);
-        aggregationJob.setOutputFormatClass(TextOutputFormat.class);
+        aggregationJob.getConfiguration().setStrings(
+                "kpi.aggregation.fields", features.getFields());
 
         // Input and Output configuration
         FileInputFormat.setInputPaths(aggregationJob, inputPath);

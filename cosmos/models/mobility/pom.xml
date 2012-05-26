@@ -21,11 +21,6 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-core</artifactId>
-            <version>${org.apache.hadoop}</version>
-        </dependency>
-        <dependency>
             <groupId>es.tid.cosmos</groupId>
             <artifactId>base</artifactId>
             <version>0.9.0.0-SNAPSHOT</version>

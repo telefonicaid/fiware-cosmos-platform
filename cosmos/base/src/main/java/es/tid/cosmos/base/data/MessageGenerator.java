@@ -36,13 +36,13 @@ public abstract class MessageGenerator {
         return setFields(builder, descriptor, messageDescriptor);
     }
     
-    private static Message setFields(Builder builder, Descriptor desc,
+    private static Message setFields(Builder builder, Descriptor descriptor,
                                      MessageDescriptor messageDescriptor) {
         for (String fieldName : messageDescriptor.getFieldNames()) {
             if (fieldName.equals(TYPE_FIELD_NAME)) {
                 continue;
             }
-            FieldDescriptor fieldDesc = desc.findFieldByName(fieldName);
+            FieldDescriptor fieldDesc = descriptor.findFieldByName(fieldName);
             if (fieldDesc == null) {
                 throw new IllegalArgumentException("Invalid field name: "
                         + fieldName);

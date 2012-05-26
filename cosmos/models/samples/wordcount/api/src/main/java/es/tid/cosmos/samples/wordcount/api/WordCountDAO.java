@@ -1,10 +1,11 @@
 package es.tid.cosmos.samples.wordcount.api;
 
+import java.util.List;
+import javax.annotation.PostConstruct;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import java.util.List;
-import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

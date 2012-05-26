@@ -17,10 +17,11 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
  * @author dmicol, sortega
  */
 public class MongoDBExporterJob extends Job {
-    private static final String JOB_NAME = "MongoDBExporterJob";
+    private static final String JOB_NAME = "MongoDBExporter";
 
     public MongoDBExporterJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
+        
         this.setJarByClass(WordCountMain.class);
         this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(Text.class);
@@ -29,14 +30,6 @@ public class MongoDBExporterJob extends Job {
         this.setOutputValueClass(LongWritable.class);
     }
 
-    /**
-     * Configure inputs and outputs.
-     *
-     * @param inputPath HDFS input path
-     * @param outputUrl Mongodb output url,
-     *                  for instance mongodb://host/db.collection
-     * @throws IOException
-     */
     public void configure(Path inputPath, String outputUrl) throws IOException {
         this.setInputFormatClass(TextInputFormat.class);
         TextInputFormat.setInputPaths(this, inputPath);

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
+import es.tid.cosmos.base.data.generated.CdrProtocol.Uler;
 import es.tid.cosmos.base.data.generated.WebLogProtocol.WebLog;
 
 /**
@@ -27,8 +28,24 @@ public class MessageGeneratorTest {
         messageDescriptor.set("age", "28");
         messageDescriptor.set("gender", "male");
         messageDescriptor.set("socio_eco_state", "unknown");
-        messageDescriptor.set("home_city", "murxamel");
+        messageDescriptor.set("home_city", "mutxamel");
         messageDescriptor.set("home_zip_code", "03110");
+        Message message = MessageGenerator.generate(messageDescriptor);
+        assertTrue(message instanceof Uler);
+        final Uler uler = (Uler)message;
+        assertEquals("ABC", uler.getHashedUid());
+        assertEquals(76.3F, uler.getCellLat(), 0.0F);
+        assertEquals(0.5F, uler.getCellLong(), 0.0F);
+        assertEquals("27/05/2012", uler.getEventDay());
+        assertEquals("18:00", uler.getEventTime());
+        assertEquals("DEF", uler.getCellId());
+        assertEquals("call", uler.getEventType());
+        assertEquals("2:04", uler.getEventDuration());
+        assertEquals(28, uler.getAge());
+        assertEquals("male", uler.getGender());
+        assertEquals("unknown", uler.getSocioEcoState());
+        assertEquals("mutxamel", uler.getHomeCity());
+        assertEquals("03110", uler.getHomeZipCode());
     }
     
     @Test
@@ -50,6 +67,6 @@ public class MessageGeneratorTest {
     public void shouldFailOnInvalidType() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();
         messageDescriptor.set("type", "invalid");
-        Message message = MessageGenerator.generate(messageDescriptor);
+        MessageGenerator.generate(messageDescriptor);
     }
 }

@@ -1,0 +1,20 @@
+package cdr;
+
+option java_package = "es.tid.cosmos.base.data.generated";
+option java_outer_classname = "CdrProtocol";
+
+message Uler {
+    required string hashed_uid = 1;
+    required float cell_lat = 2;
+    required float cell_long = 3;
+    required string event_day = 4;
+    required string event_time = 5;
+    required string cell_id = 6;
+    required string event_type = 7;
+    required string event_duration = 8;
+    required int32 age = 9;
+    required string gender = 10;
+    required string socio_eco_state = 11;
+    required string home_city = 12;
+    required string home_zip_code = 13;
+}

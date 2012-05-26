@@ -31,7 +31,7 @@ public abstract class MessageGenerator {
             builder = WebLog.newBuilder();
             descriptor = WebLog.getDescriptor();
         } else {
-            throw new IllegalArgumentException("Invalid type");
+            throw new IllegalArgumentException("Invalid type: " + type);
         }
         return setFields(builder, descriptor, messageDescriptor);
     }

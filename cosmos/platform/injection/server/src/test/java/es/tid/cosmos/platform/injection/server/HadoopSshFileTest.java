@@ -168,10 +168,18 @@ public class HadoopSshFileTest {
         assertTrue(this.hadoopSshFile.isWritable());
     }
 
+    /**
+     * Show that there is no sense of an executable permission in HDFS. Anything
+     * is not executable before creation, and executable afterwards,
+     * even directories.
+     *
+     * @throws Exception
+     */
     @Test
     public void testIsExecutable() throws Exception {
         assertFalse(this.hadoopSshFile.isExecutable());
-        assertFalse(this.hadoopSshDir.isExecutable());
+        this.hadoopSshDir.mkdir();
+        assertTrue(this.hadoopSshDir.isExecutable());
     }
 
     @Test
@@ -190,7 +198,8 @@ public class HadoopSshFileTest {
 
     @Test
     public void testGetLastModified() throws Exception {
-        assertEquals(0, this.hadoopSshFile.getLastModified());
+        this.hadoopSshFile.create();
+        assertNotSame(0, this.hadoopSshFile.getLastModified());
     }
 
     @Test

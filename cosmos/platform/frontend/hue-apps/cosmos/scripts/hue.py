@@ -17,16 +17,6 @@ def make(hue, target):
     subprocess.check_call(['make', '-C', hue, target])
 
 
-def find_hue(parent_dir):
-    for path in os.listdir(parent_dir):
-        if re.match('hue-.*', path):
-            hue_path = os.path.join(parent_dir, path)
-            print "Hue found at %s" % hue_path
-            return hue_path
-
-    raise Error("Cannot find hue on %s" % parent_dir)
-
-
 def install_app(hue_path, app_path):
     print "Installing app %s" % app_path
     subprocess.check_call(['%s/build/env/bin/python' % hue_path, 
@@ -43,7 +33,7 @@ def link_hue_script(hue_path, bin_path):
 
 
 def configure_env(options, buildout):
-    hue = find_hue(options['hue'])
+    hue = options['hue']
     make(hue, 'virtual-env')
     for package in ['MySQL-python', 'pymongo', 'lxml', 'werkzeug', 'nose',
                     'windmill', 'django-jenkins', 'coverage', 'pep8', 'pylint']:

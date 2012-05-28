@@ -11,18 +11,17 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.AccessControlException;
-import org.apache.pig.builtin.LOG;
 import org.apache.sshd.server.SshFile;
 import org.junit.After;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Mockito.*;
 import org.junit.Before;
 import org.junit.Test;
+import static org.mockito.Mockito.*;
 import org.mockito.Matchers;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import es.tid.cosmos.base.util.Logger;
 
 /**
  * @author logc
@@ -259,7 +258,8 @@ public class HadoopSshFileTest {
         HadoopSshFile mockFile = mock(HadoopSshFile.class);
         when(mockFile.isDirectory()).thenReturn(true);
         mockFile.create();
-        when(this.mockedFileSystem.delete(Matchers.<Path>any(), anyBoolean()))
+        when(this.mockedFileSystem.delete(Matchers.<Path>any(),
+                                          Matchers.anyBoolean()))
                 .thenThrow(new IOException("could not delete path"));
         assertFalse(mockFile.delete());
     }

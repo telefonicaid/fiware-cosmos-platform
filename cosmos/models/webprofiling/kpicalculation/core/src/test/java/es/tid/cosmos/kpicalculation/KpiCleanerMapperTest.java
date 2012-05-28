@@ -46,7 +46,7 @@ public class KpiCleanerMapperTest {
         this.builder.setUrlDomain("tid.es");
         this.builder.setUrlPath("/index.html");
         this.builder.setUrlQuery("null");
-        this.builder.setDate("01/12/2010");
+        this.builder.setDate("2010-12-01");
         this.builder.setMimeType("application/pkix-crl");
         this.builder.setBrowser("-Microsoft-CryptoAPI/6.1");
         this.builder.setDevice("-Microsoft-CryptoAPI/6.1");

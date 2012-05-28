@@ -22,9 +22,9 @@ public abstract class MessageGenerator {
     public static Message generate(MessageDescriptor messageDescriptor,
                                    String line) {
         final String type = messageDescriptor.getMetaFieldValue(
-                MessageDescriptor.TYPE_FIELD_NAME);
+                MessageDescriptor.MetaFields.TYPE);
         final String delimiter = messageDescriptor.getMetaFieldValue(
-                MessageDescriptor.DELIMITER_FIELD_NAME);
+                MessageDescriptor.MetaFields.DELIMITER);
         String[] fields = line.split(delimiter);
         Builder builder;
         Descriptor descriptor;

@@ -16,8 +16,10 @@ public class MessageGeneratorTest {
     @Test
     public void shouldGenerateUler() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();
-        messageDescriptor.setMetaFieldValue("type", "uler");
-        messageDescriptor.setMetaFieldValue("delimiter", " ");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.TYPE, "uler");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.DELIMITER, " ");
         messageDescriptor.setFieldColumnIndex("hashed_uid", 0);
         messageDescriptor.setFieldColumnIndex("cell_lat", 2);
         messageDescriptor.setFieldColumnIndex("cell_long", 1);
@@ -54,8 +56,10 @@ public class MessageGeneratorTest {
     @Test
     public void shouldGenerateWebLog() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();
-        messageDescriptor.setMetaFieldValue("type", "weblog");
-        messageDescriptor.setMetaFieldValue("delimiter", "\t");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.TYPE, "weblog");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.DELIMITER, "\t");
         messageDescriptor.setFieldColumnIndex("user_id", 0);
         messageDescriptor.setFieldColumnIndex("url", 2);
         messageDescriptor.setFieldColumnIndex("date", 1);
@@ -71,8 +75,10 @@ public class MessageGeneratorTest {
     @Test(expected=IllegalArgumentException.class)
     public void shouldFailOnInvalidType() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();
-        messageDescriptor.setMetaFieldValue("type", "invalid");
-        messageDescriptor.setMetaFieldValue("delimiter", "\t");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.TYPE, "invalid");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.DELIMITER, "\t");
         final String line = "13213AB\t27/05/2012\thttp://www.google.com";
         MessageGenerator.generate(messageDescriptor, line);
     }
@@ -80,7 +86,8 @@ public class MessageGeneratorTest {
     @Test(expected=IllegalArgumentException.class)
     public void shouldFailOnMissingType() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();
-        messageDescriptor.setMetaFieldValue("delimiter", "\t");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.DELIMITER, " ");
         final String line = "13213AB\t27/05/2012\thttp://www.google.com";
         MessageGenerator.generate(messageDescriptor, line);
     }
@@ -88,7 +95,8 @@ public class MessageGeneratorTest {
     @Test(expected=IllegalArgumentException.class)
     public void shouldFailOnMissingDelimiter() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();
-        messageDescriptor.setMetaFieldValue("type", "invalid");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.TYPE, "invalid");
         final String line = "13213AB\t27/05/2012\thttp://www.google.com";
         MessageGenerator.generate(messageDescriptor, line);
     }
@@ -96,8 +104,10 @@ public class MessageGeneratorTest {
     @Test(expected=IllegalArgumentException.class)
     public void shouldFailOnInvalidColumnIndex() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();
-        messageDescriptor.setMetaFieldValue("type", "weblog");
-        messageDescriptor.setMetaFieldValue("delimiter", "\t");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.TYPE, "weblog");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.DELIMITER, "\t");
         messageDescriptor.setFieldColumnIndex("user_id", 0);
         messageDescriptor.setFieldColumnIndex("url", 3);
         messageDescriptor.setFieldColumnIndex("date", 1);

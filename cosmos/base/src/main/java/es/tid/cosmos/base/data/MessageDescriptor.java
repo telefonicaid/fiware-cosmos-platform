@@ -2,28 +2,23 @@ package es.tid.cosmos.base.data;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 /**
  * 
  * @author dmicol
  */
 public final class MessageDescriptor {
-    static final String TYPE_FIELD_NAME = "type";
-    static final String DELIMITER_FIELD_NAME = "delimiter";
+    public enum MetaFields {
+        TYPE,
+        DELIMITER
+    }
     
-    private static final String[] META_FIELDS = { TYPE_FIELD_NAME,
-                                                  DELIMITER_FIELD_NAME };
-    
-    private Map<String, String> metaInfo;
+    private Map<MetaFields, String> metaInfo;
     private Map<String, Integer> fieldColumnIndices;
     
     public MessageDescriptor() {
-        this.metaInfo = new HashMap<String, String>();
+        this.metaInfo = new EnumMap<MetaFields, String>(MetaFields.class);
         this.fieldColumnIndices = new HashMap<String, Integer>();
     }
     
@@ -33,29 +28,31 @@ public final class MessageDescriptor {
         props.load(configInput);
         for (String propertyName : props.stringPropertyNames()) {
             final String propertyValue = props.getProperty(propertyName);
-            if (Arrays.binarySearch(META_FIELDS, propertyName) >= 0) {
-                this.setMetaFieldValue(propertyName,
-                                       propertyValue.toLowerCase());
-            } else {
+            try {
+                this.setMetaFieldValue(
+                        MetaFields.valueOf(propertyName.toUpperCase()),
+                        propertyValue.toLowerCase());
+            } catch (IllegalArgumentException ex) {
                 this.setFieldColumnIndex(propertyName,
                                          Integer.parseInt(propertyValue));
             }
         }
     }
     
-    public String getMetaFieldValue(String fieldName) {
-        if (!this.metaInfo.containsKey(fieldName)) {
+    public String getMetaFieldValue(MetaFields metaField) {
+        if (!this.metaInfo.containsKey(metaField)) {
             throw new IllegalArgumentException("Not a meta field: "
-                    + fieldName);
+                    + metaField.name());
         }
-        return this.metaInfo.get(fieldName);
+        return this.metaInfo.get(metaField);
     }
 
-    public void setMetaFieldValue(String fieldName, String fieldValue) {
-        if (this.metaInfo.containsKey(fieldName)) {
-            throw new IllegalArgumentException("Repeated field " + fieldName);
+    public void setMetaFieldValue(MetaFields metaField, String fieldValue) {
+        if (this.metaInfo.containsKey(metaField)) {
+            throw new IllegalArgumentException("Repeated field "
+                    + metaField.name());
         }
-        this.metaInfo.put(fieldName, fieldValue);
+        this.metaInfo.put(metaField, fieldValue);
     }
     
     public int getFieldColumnIndex(String fieldName) {

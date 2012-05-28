@@ -38,7 +38,6 @@ public class FSMessageOutputStream extends FSDataOutputStream {
             final Message message = MessageGenerator.generate(this.descriptor,
                                                               this.buffer);
             message.writeTo(super.out);
-            this.written = super.written;
             this.buffer = "";
         } else {
             this.buffer += c;

@@ -16,21 +16,24 @@ public class MessageGeneratorTest {
     @Test
     public void shouldGenerateUler() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();
-        messageDescriptor.set("type", "uler");
-        messageDescriptor.set("hashed_uid", "ABC");
-        messageDescriptor.set("cell_lat", "76.3");
-        messageDescriptor.set("cell_long", "0.5");
-        messageDescriptor.set("event_day", "27/05/2012");
-        messageDescriptor.set("event_time", "18:00");
-        messageDescriptor.set("cell_id", "DEF");
-        messageDescriptor.set("event_type", "call");
-        messageDescriptor.set("event_duration", "2:04");
-        messageDescriptor.set("age", "28");
-        messageDescriptor.set("gender", "male");
-        messageDescriptor.set("socio_eco_state", "unknown");
-        messageDescriptor.set("home_city", "mutxamel");
-        messageDescriptor.set("home_zip_code", "03110");
-        Message message = MessageGenerator.generate(messageDescriptor);
+        messageDescriptor.setMetaFieldValue("type", "uler");
+        messageDescriptor.setMetaFieldValue("delimiter", " ");
+        messageDescriptor.setFieldColumnIndex("hashed_uid", 0);
+        messageDescriptor.setFieldColumnIndex("cell_lat", 2);
+        messageDescriptor.setFieldColumnIndex("cell_long", 1);
+        messageDescriptor.setFieldColumnIndex("event_day", 9);
+        messageDescriptor.setFieldColumnIndex("event_time", 8);
+        messageDescriptor.setFieldColumnIndex("cell_id", 10);
+        messageDescriptor.setFieldColumnIndex("event_type", 11);
+        messageDescriptor.setFieldColumnIndex("event_duration", 12);
+        messageDescriptor.setFieldColumnIndex("age", 6);
+        messageDescriptor.setFieldColumnIndex("gender", 7);
+        messageDescriptor.setFieldColumnIndex("socio_eco_state", 3);
+        messageDescriptor.setFieldColumnIndex("home_city", 4);
+        messageDescriptor.setFieldColumnIndex("home_zip_code", 5);
+        final String line = "ABC 0.5 76.3 unknown mutxamel 03110 28 male 18:00 "
+                + "27/05/2012 DEF call 2:04";
+        Message message = MessageGenerator.generate(messageDescriptor, line);
         assertTrue(message instanceof Uler);
         final Uler uler = (Uler)message;
         assertEquals("ABC", uler.getHashedUid());
@@ -51,11 +54,13 @@ public class MessageGeneratorTest {
     @Test
     public void shouldGenerateWebLog() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();
-        messageDescriptor.set("type", "weblog");
-        messageDescriptor.set("user_id", "13213AB");
-        messageDescriptor.set("url", "http://www.google.com");
-        messageDescriptor.set("date", "27/05/2012");
-        Message message = MessageGenerator.generate(messageDescriptor);
+        messageDescriptor.setMetaFieldValue("type", "weblog");
+        messageDescriptor.setMetaFieldValue("delimiter", "\t");
+        messageDescriptor.setFieldColumnIndex("user_id", 0);
+        messageDescriptor.setFieldColumnIndex("url", 2);
+        messageDescriptor.setFieldColumnIndex("date", 1);
+        final String line = "13213AB\t27/05/2012\thttp://www.google.com";
+        Message message = MessageGenerator.generate(messageDescriptor, line);
         assertTrue(message instanceof WebLog);
         final WebLog webLog = (WebLog)message;
         assertEquals("13213AB", webLog.getUserId());
@@ -66,7 +71,25 @@ public class MessageGeneratorTest {
     @Test(expected=IllegalArgumentException.class)
     public void shouldFailOnInvalidType() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();
-        messageDescriptor.set("type", "invalid");
-        MessageGenerator.generate(messageDescriptor);
+        messageDescriptor.setMetaFieldValue("type", "invalid");
+        messageDescriptor.setMetaFieldValue("delimiter", "\t");
+        final String line = "13213AB\t27/05/2012\thttp://www.google.com";
+        MessageGenerator.generate(messageDescriptor, line);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void shouldFailOnMissingType() {
+        MessageDescriptor messageDescriptor = new MessageDescriptor();
+        messageDescriptor.setMetaFieldValue("delimiter", "\t");
+        final String line = "13213AB\t27/05/2012\thttp://www.google.com";
+        MessageGenerator.generate(messageDescriptor, line);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void shouldFailOnMissingDelimiter() {
+        MessageDescriptor messageDescriptor = new MessageDescriptor();
+        messageDescriptor.setMetaFieldValue("type", "invalid");
+        final String line = "13213AB\t27/05/2012\thttp://www.google.com";
+        MessageGenerator.generate(messageDescriptor, line);
     }
 }

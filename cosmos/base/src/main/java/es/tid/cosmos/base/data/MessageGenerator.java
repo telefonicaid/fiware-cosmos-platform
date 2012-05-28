@@ -13,15 +13,19 @@ import es.tid.cosmos.base.data.generated.WebLogProtocol.WebLog;
  * @author dmicol
  */
 public abstract class MessageGenerator {
-    private static final String TYPE_FIELD_NAME = "type";
     private static final String ULER_TYPE_NAME = "uler";
     private static final String WEBLOG_TYPE_NAME = "weblog";
     
     private MessageGenerator() {
     }
     
-    public static Message generate(MessageDescriptor messageDescriptor) {
-        final String type = messageDescriptor.get(TYPE_FIELD_NAME);
+    public static Message generate(MessageDescriptor messageDescriptor,
+                                   String line) {
+        final String type = messageDescriptor.getMetaFieldValue(
+                MessageDescriptor.TYPE_FIELD_NAME);
+        final String delimiter = messageDescriptor.getMetaFieldValue(
+                MessageDescriptor.DELIMITER_FIELD_NAME);
+        String[] fields = line.split(delimiter);
         Builder builder;
         Descriptor descriptor;
         if (type.equals(ULER_TYPE_NAME)) {
@@ -33,22 +37,20 @@ public abstract class MessageGenerator {
         } else {
             throw new IllegalArgumentException("Invalid type: " + type);
         }
-        return setFields(builder, descriptor, messageDescriptor);
+        return setFields(builder, descriptor, messageDescriptor, fields);
     }
     
     private static Message setFields(Builder builder, Descriptor descriptor,
-                                     MessageDescriptor messageDescriptor) {
+                                     MessageDescriptor messageDescriptor,
+                                     String[] fields) {
         for (String fieldName : messageDescriptor.getFieldNames()) {
-            if (fieldName.equals(TYPE_FIELD_NAME)) {
-                continue;
-            }
             FieldDescriptor fieldDesc = descriptor.findFieldByName(fieldName);
             if (fieldDesc == null) {
                 throw new IllegalArgumentException("Invalid field name: "
                         + fieldName);
             }
-            builder.setField(fieldDesc,
-                             cast(fieldDesc, messageDescriptor.get(fieldName)));
+            builder.setField(fieldDesc, cast(fieldDesc,
+                    fields[messageDescriptor.getFieldColumnIndex(fieldName)]));
         }
         return builder.build();
     }

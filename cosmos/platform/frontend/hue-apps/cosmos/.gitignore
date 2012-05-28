@@ -1,0 +1,8 @@
+bin/
+eggs/
+develop-eggs/
+parts/
+logs/
+reports/
+.installed.cfg
+pip-log.txt

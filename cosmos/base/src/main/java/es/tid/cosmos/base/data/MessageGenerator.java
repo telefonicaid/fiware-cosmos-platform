@@ -49,8 +49,15 @@ public abstract class MessageGenerator {
                 throw new IllegalArgumentException("Invalid field name: "
                         + fieldName);
             }
-            builder.setField(fieldDesc, cast(fieldDesc,
-                    fields[messageDescriptor.getFieldColumnIndex(fieldName)]));
+            String fieldValue;
+            try {
+                fieldValue = fields[messageDescriptor.getFieldColumnIndex(
+                        fieldName)];
+            } catch (IndexOutOfBoundsException ex) {
+                throw new IllegalArgumentException("Invalid column index for "
+                        + "field " + fieldName);
+            }
+            builder.setField(fieldDesc, cast(fieldDesc, fieldValue));
         }
         return builder.build();
     }

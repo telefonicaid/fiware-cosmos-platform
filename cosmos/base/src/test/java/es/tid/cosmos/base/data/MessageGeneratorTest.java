@@ -92,4 +92,16 @@ public class MessageGeneratorTest {
         final String line = "13213AB\t27/05/2012\thttp://www.google.com";
         MessageGenerator.generate(messageDescriptor, line);
     }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void shouldFailOnInvalidColumnIndex() {
+        MessageDescriptor messageDescriptor = new MessageDescriptor();
+        messageDescriptor.setMetaFieldValue("type", "weblog");
+        messageDescriptor.setMetaFieldValue("delimiter", "\t");
+        messageDescriptor.setFieldColumnIndex("user_id", 0);
+        messageDescriptor.setFieldColumnIndex("url", 3);
+        messageDescriptor.setFieldColumnIndex("date", 1);
+        final String line = "13213AB\t27/05/2012\thttp://www.google.com";
+        MessageGenerator.generate(messageDescriptor, line);
+    }
 }

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 
+import es.tid.cosmos.base.util.Logger;
+
 /**
  * 
  * @author dmicol

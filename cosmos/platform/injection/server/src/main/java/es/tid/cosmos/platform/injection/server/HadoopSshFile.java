@@ -13,6 +13,7 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.security.AccessControlException;
 import org.apache.sshd.server.SshFile;
 
+import es.tid.cosmos.base.data.MessageDescriptor;
 import es.tid.cosmos.base.util.Logger;
 
 /**
@@ -28,16 +29,24 @@ public class HadoopSshFile implements SshFile {
     private final Path hadoopPath;
     private final String userName;
     private final FileSystem hadoopFS;
-    private FSDataOutputStream fsDataOutputStream;
     private FSDataInputStream fsDataInputStream;
+    private FSDataOutputStream fsDataOutputStream;
+    private MessageDescriptor descriptor;
 
     protected HadoopSshFile(final String fileName, String userName,
             FileSystem hadoopFS) throws IOException, InterruptedException {
+        this(fileName, userName, hadoopFS, null);
+    }
+    
+    protected HadoopSshFile(final String fileName, String userName,
+            FileSystem hadoopFS, MessageDescriptor descriptor)
+            throws IOException, InterruptedException {
         this.hadoopPath = new Path(fileName);
         this.userName = userName;
         this.hadoopFS = hadoopFS;
         this.fsDataInputStream = null;
         this.fsDataOutputStream = null;
+        this.descriptor = descriptor;
     }
 
     /**
@@ -412,7 +421,14 @@ public class HadoopSshFile implements SshFile {
                     this.getAbsolutePath());
         }
         // TODO: when offset != 0, append with bufferSize?
-        this.fsDataOutputStream = this.hadoopFS.create(this.hadoopPath);
+        if (this.descriptor == null) {
+            // Create plain text output
+            this.fsDataOutputStream = this.hadoopFS.create(this.hadoopPath);
+        } else {
+            // Create serialized output
+            this.fsDataOutputStream = new FSMessageOutputStream(
+                    this.hadoopFS.create(this.hadoopPath), this.descriptor);            
+        }
         return this.fsDataOutputStream;
     }
 

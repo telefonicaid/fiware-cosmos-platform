@@ -9,6 +9,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.sshd.server.FileSystemView;
 import org.apache.sshd.server.SshFile;
 
+import es.tid.cosmos.base.data.MessageDescriptor;
 import es.tid.cosmos.base.util.Logger;
 
 /**
@@ -20,10 +21,12 @@ import es.tid.cosmos.base.util.Logger;
 public class HadoopFileSystemView implements FileSystemView {
     private static final org.apache.log4j.Logger LOG =
             Logger.get(HadoopFileSystemView.class);
+    private static final String FORMAT_FILE = "format.properties";
 
     private String homePath;
     private FileSystem hadoopFS;
     private final String userName;
+    private MessageDescriptor descriptor;
 
     public HadoopFileSystemView(String userName, Configuration configuration)
             throws IOException, InterruptedException {
@@ -34,6 +37,12 @@ public class HadoopFileSystemView implements FileSystemView {
                     configuration, this.userName);
             this.homePath = this.hadoopFS.getHomeDirectory().toString()
                     .replaceFirst(this.hadoopFS.getUri().toString(), "");
+            HadoopSshFile descriptorFile = this.getFile(
+                    this.hadoopFS.getHomeDirectory().toString(), FORMAT_FILE);
+            if (descriptorFile.doesExist()) {
+                this.descriptor = new MessageDescriptor(
+                        descriptorFile.createInputStream(0L));
+            }
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);
             throw e;
@@ -82,6 +91,7 @@ public class HadoopFileSystemView implements FileSystemView {
                 !requestedFile.startsWith(Path.SEPARATOR)) {
             wholePath = requestedDir + Path.SEPARATOR + requestedFile;
         }
-        return new HadoopSshFile(wholePath, this.userName, this.hadoopFS);
+        return new HadoopSshFile(wholePath, this.userName,
+                                 this.hadoopFS, this.descriptor);
     }
 }

@@ -443,7 +443,7 @@ namespace samson {
             while( !delilah->isConnectionReady() )
             {
                 usleep(10000);
-                if( c.diffTimeInSeconds() > 0.5 )
+                if( c.diffTimeInSeconds() > 1.0 )
                 {
                     command->appendFormatedError( "Timeout connecting to REST client" );
                     LM_E(("Timeout connecting to REST client"));

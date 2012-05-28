@@ -140,11 +140,6 @@ set (CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Rogue")
 # Indicate this is an SVN build
 set (SVN_BUILD TRUE)
 
-if (BUILD_MODULES)
-    MESSAGE("Building platform analytical modules")
-    ADD_SUBDIRECTORY(modules)
-endif (BUILD_MODULES)
-
 #
 # Continuing if OK
 #
@@ -154,6 +149,11 @@ if (error EQUAL 0)
   ADD_SUBDIRECTORY(libs)
   ADD_SUBDIRECTORY(apps)
   ADD_SUBDIRECTORY(extern)
+  if (BUILD_MODULES)
+    MESSAGE("Building platform analytical modules")
+    ADD_SUBDIRECTORY(modules)
+  endif (BUILD_MODULES)
+
   
 else ()
     MESSAGE("cmake: NOT OK")

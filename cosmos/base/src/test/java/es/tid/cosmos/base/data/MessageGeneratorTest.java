@@ -39,14 +39,14 @@ public class MessageGeneratorTest {
         assertTrue(message instanceof Uler);
         final Uler uler = (Uler)message;
         assertEquals("ABC", uler.getHashedUid());
-        assertEquals(76.3F, uler.getCellLat(), 0.0F);
-        assertEquals(0.5F, uler.getCellLong(), 0.0F);
+        assertEquals("76.3", uler.getCellLat());
+        assertEquals("0.5", uler.getCellLong());
         assertEquals("27/05/2012", uler.getEventDay());
         assertEquals("18:00", uler.getEventTime());
         assertEquals("DEF", uler.getCellId());
         assertEquals("call", uler.getEventType());
         assertEquals("2:04", uler.getEventDuration());
-        assertEquals(28, uler.getAge());
+        assertEquals("28", uler.getAge());
         assertEquals("male", uler.getGender());
         assertEquals("unknown", uler.getSocioEcoState());
         assertEquals("mutxamel", uler.getHomeCity());

@@ -246,10 +246,12 @@ public class HadoopSshFile implements SshFile {
     @Override
     public boolean setLastModified(long time) {
         try {
-            // Filesystem.setTimes(path, modification time, access time)
-            //
-            // Here it is supposed that setting the modification time is an
-            // access to the file.
+            /*
+             * Filesystem.setTimes(path, modification time, access time)
+             *
+             * Here it is supposed that setting the modification time is an
+             * access to the file.
+             */
             this.hadoopFS.setTimes(this.hadoopPath, time,
                     System.currentTimeMillis());
             return true;

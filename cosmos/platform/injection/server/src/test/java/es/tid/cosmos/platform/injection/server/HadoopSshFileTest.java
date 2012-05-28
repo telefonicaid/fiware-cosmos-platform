@@ -29,6 +29,7 @@ import es.tid.cosmos.base.util.Logger;
 public class HadoopSshFileTest {
     private static final org.apache.log4j.Logger LOG =
             Logger.get(HadoopSshFile.class);
+
     private HadoopSshFile hadoopSshFile;
     private HadoopSshFile hadoopSshDir;
     private FileSystem hadoopFS;
@@ -218,9 +219,9 @@ public class HadoopSshFileTest {
     public void testSetLastModifiedDoesNotThrowException() throws Exception {
         doThrow(new IOException("times could not be set"))
                 .when(this.mockedFileSystem).setTimes(
-                Matchers.<Path>any(),
-                Matchers.anyLong(),
-                Matchers.anyLong());
+                        Matchers.<Path>any(),
+                        Matchers.anyLong(),
+                        Matchers.anyLong());
         assertFalse(this.neverExists.setLastModified(123L));
     }
 

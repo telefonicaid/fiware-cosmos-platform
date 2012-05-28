@@ -1,8 +1,8 @@
 from fabric.api import *
 
-env.hosts = ['192.168.56.102']
+env.hosts = ['10.95.101.201:2222']
 env.user = 'root'
-env.password = 'staging'
+env.password = 'admintid33'
 
 def deploy_hue():
     run("yum install hue")
@@ -20,6 +20,9 @@ def deploy_sftp():
     run("cat template.ini >> /root/injection/server.conf")
     run("update_config ?")
     run("/etc/init.d/injection start")
+    with lcd("../../cosmos/platform/injection/server/"):
+        local("mvn package")
+        put("target/injection*.jar ~/injection")
 
 def deploy_cdh():
     run("yum install cdh")

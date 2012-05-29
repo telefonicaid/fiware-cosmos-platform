@@ -27,12 +27,14 @@ public final class MessageDescriptor {
         Properties props = new Properties();
         props.load(configInput);
         for (String propertyName : props.stringPropertyNames()) {
+            final String normalizedPropertyName = propertyName.toUpperCase();
             final String propertyValue = props.getProperty(propertyName);
-            try {
+            if (Arrays.binarySearch(MetaFields.values(),
+                                    normalizedPropertyName) >= 0) {
                 this.setMetaFieldValue(
-                        MetaFields.valueOf(propertyName.toUpperCase()),
+                        MetaFields.valueOf(normalizedPropertyName),
                         propertyValue.toLowerCase());
-            } catch (IllegalArgumentException ex) {
+            } else {
                 this.setFieldColumnIndex(propertyName,
                                          Integer.parseInt(propertyValue));
             }

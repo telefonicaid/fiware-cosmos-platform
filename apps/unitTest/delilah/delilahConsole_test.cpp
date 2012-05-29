@@ -113,6 +113,8 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_NE(delilah_console->runAsyncCommand("push /bin/bash a"), 0) << "Wrong result from runAsyncCommand(push /bin/bash a)";
 
+    EXPECT_NE(delilah_console->runAsyncCommand("push /opt/samson/bin/samsonWorker b"), 0) << "Wrong result from runAsyncCommand(push /opt/samson/bin/samsonWorker b)";
+
     EXPECT_NE(delilah_console->runAsyncCommand("pop a /tmp/traces"), 0) << "Wrong result from runAsyncCommand(pop a /tmp/traces)";
 
     EXPECT_NE(delilah_console->runAsyncCommand("pop a /tmp/traces2"), 0) << "Wrong result from runAsyncCommand(pop a /tmp/traces2)";

@@ -5,6 +5,7 @@ causes Fabric to deploy each Cosmos component at a configured host.
 """
 import json
 from fabric.api import *
+from fabric.decorators import *
 from fabric.contrib import files
 from tempfile import TemporaryFile
 
@@ -15,7 +16,9 @@ env.user = config['user']
 env.password = config['password']
 env.roledefs = config['hosts']
 
+@roles('namenode')
 def deploy_hue():
+    """Deploy the HUE frontend from Clouder, plus our fixes and our apps"""
     pdihub = config['github']
     checkout_dir = config['hue_checkout']
     run("yum install hue") # at version 1.2.0.0+114.35
@@ -37,7 +40,7 @@ def deploy_sftp():
     run("/etc/init.d/injection start")
 
 def install_cdh():
-    # Install the latest Hadoop distribution in CDH3
+    """Install the latest Hadoop distribution in CDH3"""
     run('wget http://archive.cloudera.com/redhat/cdh/cdh3-repository-1.0-1.noarch.rpm')
     run('rpm -Fvh cdh3-repository-1.0-1.noarch.rpm')
     run('rpm --import http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera')

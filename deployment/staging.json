@@ -1,11 +1,11 @@
 {
     "hosts":
     {
-        "namenode": ["10.95.11.109"],
-        "jobtracker": ["10.95.11.109"],
-        "frontend": ["10.95.101.201"],
+        "namenode": ["10.95.111.109"],
+        "jobtracker": ["10.95.111.109"],
+        "frontend": ["10.95.101.201:2222"],
         "mongo": ["10.95.105.195"],
-        "datanodes": ["10.95.108.15", "10.95.109.190"]
+        "datanodes": ["10.95.108.15", "10.95.109.190"],
         "tasktrackers": ["10.95.108.15", "10.95.109.190"]
     },
     "cdh_config":
@@ -16,5 +16,5 @@
     "user": "root",
     "password": "admintid33",
     "github": "https://pdihub.hi.inet/Cosmos",
-    "hue_checkout": "/root/hue",
+    "hue_checkout": "/root/hue"
 }

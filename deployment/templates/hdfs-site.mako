@@ -1,4 +1,4 @@
-<?xml version="1.0">
+<?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
   <property>        
@@ -8,6 +8,7 @@
   <property>        
     <name>dfs.data.dir</name>
     <value>/data1/data</value>
+  </property>
   <!-- HUE integration -->
   <property>        
     <name>dfs.namenode.plugins</name>

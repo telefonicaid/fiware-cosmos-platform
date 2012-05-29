@@ -17,6 +17,13 @@ env.user = config['user']
 env.password = config['password']
 env.roledefs = config['hosts']
 
+def deploy():
+    execute(deploy_cdh)
+    execute(deploy_namenode_daemon)
+    execute(deploy_jobtracker_daemon)
+    execute(deploy_datanode_daemon)
+    execute(deploy_tasktracker_daemon)
+
 @roles('namenode')
 def deploy_hue():
     """Deploy the HUE frontend from Clouder, plus our fixes and our apps"""
@@ -62,7 +69,7 @@ def configure_hadoop():
     """Generate  Hadoop configuration files"""
     with cd('/etc/hadoop/conf'):
         coresite = StringIO()
-        template = Template(filename='core-site.mako')
+        template = Template(filename='templates/core-site.mako')
         coresite.write(template.render(namenode=config['hosts']['namenode'][0]))
         put(coresite, 'core-site.xml')
         
@@ -77,15 +84,15 @@ def configure_hadoop():
         put(slaves, 'slaves')
             
         mapredsite = StringIO()
-        template = Template(filename='mapred-site.mako')
+        template = Template(filename='templates/mapred-site.mako')
         mapredsite.write(template.render(jobtracker=config['hosts']['jobtracker'][0]))
         put(mapredsite, 'mapred-site.xml')
         
         hdfssite = StringIO()
-        template = Template(filename='hdfs-site.mako')
+        template = Template(filename='templates/hdfs-site.mako')
         hdfssite.write(template.render())
         put(hdfssite, 'hdfs-site.xml')
-
+       
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def deploy_cdh():
     install_cdh()
@@ -97,23 +104,32 @@ def deploy_daemon(daemon):
     if files.exists(daemonPath):
         run('%s stop' % daemonPath)
     run('yum -y install hadoop-0.20-%s' % daemon)
-    run('%s start' % daemonPath)
+
+def start_daemon(daemon):
+    run('/etc/init.d/hadoop-0.20-%s start' % daemon)
 
 @roles('datanodes')
 def deploy_datanode_daemon():
     deploy_daemon('datanode')
+    start_daemon('datanode')
 
 @roles('namenode')
 def deploy_namenode_daemon():
     deploy_daemon('namenode')
+    sudo('yes Y | hadoop namenode -format', user='hdfs')
+    start_daemon('namenode')
+    sudo('hadoop dfs -mkdir /hadoop/mapred/system', user='hdfs')
+    sudo('hadoop dfs -chown -R mapred /hadoop/mapred/', user='hdfs')
 
 @roles('jobtracker')
 def deploy_jobtracker_daemon():
     deploy_daemon('jobtracker')
+    start_daemon('jobtracker')
 
 @roles('tasktrackers')    
 def deploy_tasktracker_daemon():
     deploy_daemon('tasktracker')
+    start_daemon('tasktracker')
   
 @roles('mongo')  
 def deploy_mongo():

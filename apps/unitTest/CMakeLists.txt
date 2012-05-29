@@ -35,6 +35,8 @@ SET (SOURCES
 	#samson/client library
 	samson/client/SamsonClient_test.cpp
 
+	#samon/isolated library
+	samson/isolated/SharedMemoryManager_test.cpp
 )
 
 
@@ -66,6 +68,7 @@ SET (STATIC_LIBS
 	 samson_comscore
 	 samson_system
 	 samsonClient
+	 samsonIsolated
      au
      xmlmarkup
      xmlparser	

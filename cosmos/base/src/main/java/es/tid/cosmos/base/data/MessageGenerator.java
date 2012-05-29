@@ -57,34 +57,8 @@ public abstract class MessageGenerator {
                 throw new IllegalArgumentException("Invalid column index for "
                         + "field " + fieldName);
             }
-            builder.setField(fieldDesc, cast(fieldDesc, fieldValue));
+            builder.setField(fieldDesc, fieldValue);
         }
         return builder.build();
-    }
-    
-    private static Object cast(FieldDescriptor fieldDesc, String value) {
-        switch (fieldDesc.getType()) {
-            case BOOL:
-                return Boolean.parseBoolean(value);
-            case DOUBLE:
-                return Double.parseDouble(value);
-            case FIXED32:
-            case INT32:
-            case SINT32:
-            case UINT32:
-                return Integer.parseInt(value);
-            case FIXED64:
-            case INT64:
-            case SINT64:
-            case UINT64:
-                return Long.parseLong(value);
-            case FLOAT:
-                return Float.parseFloat(value);
-            case STRING:
-                return value;
-            default:
-                throw new IllegalArgumentException("Invalid type for field "
-                        + fieldDesc.getName());
-        }
     }
 }

@@ -19,6 +19,7 @@ def deploy_hue():
     pdihub = config['github']
     checkout_dir = config['hue_checkout']
     run("yum install hue") # at version 1.2.0.0+114.35
+    run("yum install git")
     run("git clone {0}/HUE {1}".format(pdihub, checkout_dir))
     #run("git apply <hue-fixes> <hue>")
 #     put("./cosmos/platform/frontend/hue/app/cosmos")

@@ -1,8 +1,18 @@
 {
-    "hosts": ["10.95.111.109"],
+    "hosts":
+    {
+        "namenode": "10.95.11.109",
+        "frontend": "10.95.101.201",
+        "mongo": "10.95.105.195",
+        "datanodes": ["10.95.108.15", "10.95.109.190"]
+    },
+    "cdh_config":
+    {
+        "masters": ["10.95.11.109"],
+        "slaves": ["10.95.108.15", "10.95.109.190"]
+    },
     "user": "root",
     "password": "admintid33",
     "github": "https://pdihub.hi.inet/Cosmos",
     "hue_checkout": "/root/hue",
-    "masters": [1, 2]
 }

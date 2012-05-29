@@ -1,4 +1,4 @@
-package es.tid.cosmos.platform.injection.ipm.util;
+package es.tid.o2aaic.util;
 
 import es.tid.cosmos.platform.injection.ipm.data.generated.InetProtocol.InetIpm;
 

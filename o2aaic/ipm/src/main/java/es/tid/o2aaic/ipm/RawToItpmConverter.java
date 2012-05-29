@@ -1,4 +1,4 @@
-package es.tid.cosmos.platform.injection.ipm;
+package es.tid.o2aaic.ipm;
 
 /**
  *

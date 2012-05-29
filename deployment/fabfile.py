@@ -24,21 +24,22 @@ def deploy():
     execute(deploy_datanode_daemon)
     execute(deploy_tasktracker_daemon)
 
-@roles('namenode')
+@roles('namenode') # frontend
 def deploy_hue():
     """Deploy the HUE frontend from Clouder, plus our fixes and our apps"""
     pdihub = config['github']
     checkout_dir = config['hue_checkout']
     run("yum install hue") # at version 1.2.0.0+114.35
     run("yum install git")
-    run("git clone {0}/HUE {1}".format(pdihub, checkout_dir))
-    #run("git apply <hue-fixes> <hue>")
+    run("git clone git@pdihub.hi.inet:Cosmos/HUE.git {0}".format(checkout_dir))
+    run("git apply {0} {1}".format(checkout_dir, "/tmp"))
 #     put("./cosmos/platform/frontend/hue/app/cosmos")
-    # remote cd ./cosmos/platform/frontend/hue-app/cosmos
+    # with cd ./cosmos/platform/frontend/hue-app/cosmos
 #     run("python bootstrap.py")
 #     run("bin/buildout -c buildout.prod.cfg")
 #     run("/etc/init.d/frontend start")
 
+@roles('namenode') # frontend
 def deploy_sftp():
     """Deploys the SFTP server as a Java JAR and starts it"""
     with cd("/root/injection"):

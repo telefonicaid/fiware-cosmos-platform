@@ -1,7 +1,7 @@
 """
-Automatic deployment Fabric file
+Cosmos automatic deployment Fabric file -
 
-causes Fabric to deploy each Cosmos component at a configured hosts.
+causes Fabric to deploy each Cosmos component at a configured host.
 """
 import json
 from fabric.api import *
@@ -19,6 +19,7 @@ def deploy_hue():
     pdihub = config['github']
     checkout_dir = config['hue_checkout']
     run("yum install hue") # at version 1.2.0.0+114.35
+    run("yum install git")
     run("git clone {0}/HUE {1}".format(pdihub, checkout_dir))
     #run("git apply <hue-fixes> <hue>")
 #     put("./cosmos/platform/frontend/hue/app/cosmos")
@@ -28,14 +29,12 @@ def deploy_hue():
 #     run("/etc/init.d/frontend start")
 
 def deploy_sftp():
-    # Jenkins builds JAR
-    put("target/injection*.jar")
-    run("cat template.ini >> /root/injection/server.conf")
-    run("update_config ?")
+    """Deploys the SFTP server as a Java JAR and starts it"""
+    with cd("/root/injection"):
+        put("target/injection*.jar")
+        local("cat template.ini >> /root/injection/server.conf")
+        run("update_config ?")
     run("/etc/init.d/injection start")
-    with lcd("../../cosmos/platform/injection/server/"):
-        local("mvn package")
-        put("target/injection*.jar ~/injection")
 
 def install_cdh():
     # Install the latest Hadoop distribution in CDH3

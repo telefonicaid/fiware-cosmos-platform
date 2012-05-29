@@ -1,9 +1,14 @@
+"""
+Automatic deployment Fabric file
+
+causes Fabric to deploy each Cosmos component at a configured hosts.
+"""
 import json
 from fabric.api import *
 from fabric.contrib import files
 from tempfile import TemporaryFile
 
-DEFAULT_CONFIG = 'staging1.json'
+DEFAULT_CONFIG = 'staging.json'
 
 config = json.loads(open(DEFAULT_CONFIG, 'r').read())
 env.hosts = config['hosts']
@@ -19,7 +24,7 @@ conf = Config('1', '2', ['1', '2'], ['1', '2'])
 def deploy_hue():
     pdihub = config['github']
     checkout_dir = config['hue_checkout']
-    run("yum install hue")
+    run("yum install hue") # at version 1.2.0.0+114.35
     run("git clone {0}/HUE {1}".format(pdihub, checkout_dir))
     #run("git apply <hue-fixes> <hue>")
 #     put("./cosmos/platform/frontend/hue/app/cosmos")
@@ -30,7 +35,7 @@ def deploy_hue():
 
 def deploy_sftp():
     # Jenkins builds JAR
-    run("scp target/* /root/injection")
+    put("target/injection*.jar")
     run("cat template.ini >> /root/injection/server.conf")
     run("update_config ?")
     run("/etc/init.d/injection start")
@@ -38,12 +43,14 @@ def deploy_sftp():
         local("mvn package")
         put("target/injection*.jar ~/injection")
 
-def deploy_cdh():
+def install_cdh():
     # Install the latest Hadoop distribution in CDH3
     run('wget http://archive.cloudera.com/redhat/cdh/cdh3-repository-1.0-1.noarch.rpm')
     run('rpm -Fvh cdh3-repository-1.0-1.noarch.rpm')
     run('rpm --import http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera')
     run('yum -y install hadoop-0.20 hadoop-0.20-native')
+
+def create_hadoop_dirs():
     # Create necessary directories for Hadoop
     run('rm -rf /data1')
     run('mkdir /data1')
@@ -53,6 +60,10 @@ def deploy_cdh():
     run('chown mapred:hadoop /data1/mapred')    
     run('mkdir -m 755 /data1/name')
     run('chown hdfs:hadoop /data1/name')
+
+def deploy_cdh():
+    install_cdh()
+    create_hadoop_dirs()
     # Configure Hadoop
     with cd('/etc/hadoop/conf'):
         with TemporaryFile() as coresite:
@@ -66,7 +77,7 @@ def deploy_cdh():
             coresite.write('</configuration>\n')
             put(coresite, 'core-site.xml')
         with TemporaryFile() as masters:
-            for master in conf.masters:
+            for master in config['masters']:
                 masters.write('%s\n' % master)
             put(masters, 'masters')
         with TemporaryFile() as slaves:

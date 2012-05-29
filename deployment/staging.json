@@ -1,7 +1,8 @@
 {
-    "hosts": ["10.95.101.201:2222", "10.95.111.109"],
+    "hosts": ["10.95.111.109"],
     "user": "root",
     "password": "admintid33",
     "github": "https://pdihub.hi.inet/Cosmos",
-    "hue_checkout": "/root/hue"
+    "hue_checkout": "/root/hue",
+    "masters": [1, 2]
 }

@@ -6,7 +6,8 @@ causes Fabric to deploy each Cosmos component at a configured host.
 import json
 from fabric.api import *
 from fabric.contrib import files
-from tempfile import TemporaryFile
+from StringIO import StringIO
+from mako.template import Template
 
 DEFAULT_CONFIG = 'staging.json'
 
@@ -60,90 +61,30 @@ def deploy_cdh():
     create_hadoop_dirs()
     # Configure Hadoop
     with cd('/etc/hadoop/conf'):
-        with TemporaryFile() as coresite:
-            coresite.write('<?xml version="1.0">\n')
-            coresite.write('<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>\n')
-            coresite.write('<configuration>\n')
-            coresite.write('  <property>\n')
-            coresite.write('    <name>fs.default.name</name>\n')
-            coresite.write('    <value>hdfs://%s</value>\n' % conf.namenode)
-            coresite.write('  </property>\n')
-            coresite.write('</configuration>\n')
-            put(coresite, 'core-site.xml')
-        with TemporaryFile() as masters:
-            for master in config['masters']:
-                masters.write('%s\n' % master)
-            put(masters, 'masters')
-        with TemporaryFile() as slaves:
-            for slave in conf.slaves:
-                slaves.write('%s\n' % slave)
-            put(slaves, 'slaves')
-        with TemporaryFile() as mapredsite:
-            mapredsite.write('<?xml version="1.0">\n')
-            mapredsite.write('<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>\n')
-            mapredsite.write('<configuration>\n')
-            mapredsite.write('  <property>\n')        
-            mapredsite.write('    <name>mapred.job.tracker</name>\n')
-            mapredsite.write('    <value>%s</value>\n' % conf.jobtracker)
-            mapredsite.write('  </property>\n')
-            mapredsite.write('  <property>\n')        
-            mapredsite.write('    <name>mapred.system.dir</name>\n')
-            mapredsite.write('    <value>/hadoop/mapred/system</value>\n')
-            mapredsite.write('  </property>\n')
-            mapredsite.write('  <property>\n')        
-            mapredsite.write('    <name>mapred.local.dir</name>\n')
-            mapredsite.write('    <value>/data1/mapred</value>\n')
-            mapredsite.write('  </property>\n')
-            mapredsite.write('  <property>\n')        
-            mapredsite.write('    <name>mapreduce.jobtracker.staging.root.dir</name>\n')
-            mapredsite.write('    <value>/user</value>\n')
-            mapredsite.write('  </property>\n')
-            mapredsite.write('  <!-- optional settings -->\n')
-            mapredsite.write('  <property>\n')
-            mapredsite.write('    <name>mapred.child.java.opts</name>\n')
-            mapredsite.write('    <value>-Xmx350m</value>\n')
-            mapredsite.write('  </property>\n')
-            mapredsite.write('  <property>\n')        
-            mapredsite.write('    <name>mapred.child.ulimit</name>\n')
-            mapredsite.write('    <value>420m</value>\n')
-            mapredsite.write('  </property>\n')
-            mapredsite.write('  <!-- HUE integration -->\n')
-            mapredsite.write('  <property>\n')        
-            mapredsite.write('    <name>jobtracker.thrift.address</name>\n')
-            mapredsite.write('    <value>0.0.0.0:9290</value>\n')
-            mapredsite.write('  </property>\n')
-            mapredsite.write('  <property>\n')        
-            mapredsite.write('    <name>mapred.jobtracker.plugins</name>\n')
-            mapredsite.write('    <value>org.apache.hadoop.thriftfs.ThriftJobTrackerPlugin</value>\n')
-            mapredsite.write('  </property>\n')
-            mapredsite.write('</configuration>\n')
-            put(mapredsite, 'mapred-site.xml')
-        with TemporaryFile() as hdfssite:
-            hdfssite.write('<?xml version="1.0">\n')
-            hdfssite.write('<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>\n')
-            hdfssite.write('<configuration>\n')
-            hdfssite.write('  <property>\n')        
-            hdfssite.write('    <name>dfs.name.dir</name>\n')
-            hdfssite.write('    <value>/data1/name</value>\n')
-            hdfssite.write('  </property>\n')
-            hdfssite.write('  <property>\n')        
-            hdfssite.write('    <name>dfs.data.dir</name>\n')
-            hdfssite.write('    <value>/data1/data</value>\n')
-            hdfssite.write('  <!-- HUE integration -->\n')
-            hdfssite.write('  <property>\n')        
-            hdfssite.write('    <name>dfs.namenode.plugins</name>\n')
-            hdfssite.write('    <value>org.apache.hadoop.thriftfs.NamenodePlugin</value>\n')
-            hdfssite.write('  </property>\n')
-            hdfssite.write('  <property>\n')        
-            hdfssite.write('    <name>dfs.datanode.plugins</name>\n')
-            hdfssite.write('    <value>org.apache.hadoop.thriftfs.DatanodePlugin</value>\n')
-            hdfssite.write('  </property>\n')
-            hdfssite.write('  <property>\n')        
-            hdfssite.write('    <name>dfs.thrift.address</name>\n')
-            hdfssite.write('    <value>0.0.0.0:10090</value>\n')
-            hdfssite.write('  </property>\n')
-            hdfssite.write('</configuration>\n')
-            put(hdfssite, 'hdfs-site.xml')
+        coresite = StringIO()
+        template = Template(filename='core-site.mako')
+        coresite.write(template.render(namenode=config['hosts']['namenode'][0]))
+        put(coresite, 'core-site.xml')
+        
+        masters = StringIO()
+        for master in set(config['hosts']['namenode'] + config['hosts']['jobtracker']):
+            masters.write('%s\n' % master)
+        put(masters, 'masters')
+        
+        slaves = StringIO()
+        for slave in set(config['hosts']['datanodes'] + config['hosts']['tasktrackers']):
+            slaves.write('%s\n' % slave)
+        put(slaves, 'slaves')
+            
+        mapredsite = StringIO()
+        template = Template(filename='mapred-site.mako')
+        mapredsite.write(template.render(jobtracker=config['hosts']['jobtracker'][0]))
+        put(mapredsite, 'mapred-site.xml')
+        
+        hdfssite = StringIO()
+        template = Template(filename='hdfs-site.mako')
+        hdfssite.write(template.render())
+        put(hdfssite, 'hdfs-site.xml')
     
 def deploy_daemon(daemon):
     daemonPath = '/etc/init.d/hadoop-0.20-%s' % daemon

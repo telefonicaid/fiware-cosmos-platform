@@ -1,5 +1,7 @@
 package es.tid.cosmos.base.data;
 
+import java.security.NoSuchAlgorithmException;
+
 import com.google.protobuf.Descriptors.Descriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
@@ -7,6 +9,7 @@ import com.google.protobuf.Message.Builder;
 
 import es.tid.cosmos.base.data.generated.CdrProtocol.Uler;
 import es.tid.cosmos.base.data.generated.WebLogProtocol.WebLog;
+import es.tid.cosmos.base.util.SHAEncoder;
 
 /**
  * 
@@ -57,7 +60,16 @@ public abstract class MessageGenerator {
                 throw new IllegalArgumentException("Invalid column index for "
                         + "field " + fieldName, ex);
             }
-            builder.setField(fieldDesc, fieldValue);
+            if (messageDescriptor.shouldAnonymiseField(fieldName)) {
+                try {
+                    builder.setField(fieldDesc, SHAEncoder.encode(fieldValue));
+                } catch (NoSuchAlgorithmException ex) {
+                    throw new IllegalArgumentException("Failed to anonymise "
+                            + fieldName, ex);
+                }
+            } else {
+                builder.setField(fieldDesc, fieldValue);
+            }
         }
         return builder.build();
     }

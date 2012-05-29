@@ -11,9 +11,9 @@ from tempfile import TemporaryFile
 DEFAULT_CONFIG = 'staging.json'
 
 config = json.loads(open(DEFAULT_CONFIG, 'r').read())
-env.hosts = config['hosts']
 env.user = config['user'] 
 env.password = config['password']
+env.roledefs = config['hosts']
 
 def deploy_hue():
     pdihub = config['github']
@@ -55,6 +55,7 @@ def create_hadoop_dirs():
     run('mkdir -m 755 /data1/name')
     run('chown hdfs:hadoop /data1/name')
 
+@roles('namenode', 'frontend', 'datanodes')
 def deploy_cdh():
     install_cdh()
     create_hadoop_dirs()
@@ -151,19 +152,24 @@ def deploy_daemon(daemon):
         run('%s stop' % daemonPath)
     run('yum -y install hadoop-0.20-%s' % daemon)
     run('%s start' % daemonPath)
-    
+
+@roles('datanodes')
 def deploy_datanode_daemon():
     deploy_daemon('datanode')
-    
+
+@roles('namenode')
 def deploy_namenode_daemon():
     deploy_daemon('namenode')
-    
+
+@roles('jobtracker')
 def deploy_jobtracker_daemon():
     deploy_daemon('jobtracker')
-    
+
+@roles('tasktrackers')    
 def deploy_tasktracker_daemon():
     deploy_daemon('tasktracker')
-    
+  
+@roles('mongo')  
 def deploy_mongo():
     pass
 

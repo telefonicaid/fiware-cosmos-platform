@@ -17,6 +17,7 @@
 #include "RegisterContextRequest.h"         // RegisterContextRequest
 #include "Attribute.h"                      // Attribute
 #include "Registration.h"                   // Registration, registrationIdGet, ...
+#include "Entity.h"                         // Entity, entityToDb
 #include "registerContext.h"                // Own interface
 
 using namespace std;
@@ -178,7 +179,10 @@ static void registerContextRequestNode(RegisterContextRequest* rcReqP, xmlNodePt
        rcReqP->registrationMetadataV[rMetaIx]->value = content;
 
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.providingApplication")
-       rcReqP->providingApplication = content;
+    {
+		rcReqP->providingApplication = content;
+		LM_M(("Got a providingApplication: %s", rcReqP->providingApplication.c_str()));
+	}
     else if (path == "registerContextRequest.duration")
        rcReqP->duration = content;
     else if (path == "registerContextRequest.registrationId")
@@ -255,28 +259,29 @@ static void registerContextRequest(RegisterContextRequest* rcReqP, xmlNodePtr no
 *
 * registerContextRequestToDatabase - 
 */
-static void registerContextRequestToDatabase(RegisterContextRequest* rcReqP, bool isUpdate)
+static int registerContextRequestToDatabase(RegisterContextRequest* rcReqP, bool isUpdate, std::string* errorString)
 {
-	unsigned int eIx;
-	unsigned int aIx;
-	unsigned int mIx;
-	unsigned int entities;
-	unsigned int attributes;
-	unsigned int metadatas;
+	unsigned int  eIx;
+	unsigned int  aIx;
+	unsigned int  mIx;
+	unsigned int  entities;
+	unsigned int  attributes;
+	unsigned int  metadatas;
+	int           s;
 
 	LM_T(LmtDbRegReq, ("------------ To DB ------------"));
 	entities = rcReqP->entityV.size();
 	for (eIx = 0; eIx < entities; eIx++)
 	{
 		if (isUpdate == true)
-		{
 			LM_T(LmtDbRegReq, ("Entity { '%s', '%s', '%s' } NOT to DB - this is an update", rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str(), TF(rcReqP->entityV[eIx]->isPattern)));
-			// what if 'isPattern' differs ... ?
-		}
-		else // Not an update
-		{
+		else
 			LM_T(LmtDbRegReq, ("Entity { '%s', '%s', '%s' } to DB", rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str(), TF(rcReqP->entityV[eIx]->isPattern)));
-		}
+
+		LM_M(("Sending entity %d to db. providing app: '%s'", eIx, rcReqP->entityV[eIx]->providingApplication.c_str()));
+		s = entityToDb(rcReqP->entityV[eIx], isUpdate, errorString);
+		if (s != 0)
+			LM_RE(-1, ("Error %s entity '%s:%s'", (isUpdate == true)? "updating" : "creating", rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str()));
 	}
 
 	attributes = rcReqP->attributeList.attributeV.size();
@@ -295,6 +300,8 @@ static void registerContextRequestToDatabase(RegisterContextRequest* rcReqP, boo
 							   rcReqP->attributeList.attributeV[aIx]->type.c_str()));
 		}
 	}
+
+	return 0;
 }
 
 
@@ -324,10 +331,13 @@ static RegisterContextRequest* registerContextRequestParse(xmlNodePtr nodeP)
 *
 * registerContextRequestTreat - add/update context entities
 *
-* RETURN VALUE
-*  o true     means that a REST Response has been sent, not that the request was correctly treated
+* This function always responds to the REST request 
 *
-* It's either ADD or UPDATE, no mix.
+* RETURN VALUE
+*  o true     OK
+*  o false    Error
+*
+* It's either ADD or UPDATE, never a mix.
 * If an 'update' request comes in with one entity that exists and another that doesn't,
 * nothing is done and an error is flagged
 * 
@@ -338,6 +348,8 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 	std::string   registrationId;
 	int           duration = 0;
 	bool          isUpdate = false;
+	Entity*       entityP;
+	std::string   errorString;
 
 	if (rcrP->registrationId == "")
 	{
@@ -345,7 +357,10 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 		
 		registrationId     = std::string(registrationIdGet(s, sizeof(s)));
 		if (dbRegistrationAdd(registrationId) != 0)
+		{
+			registerContextResponse(fd, format, 502, NULL, 502, "database error", "error adding a Registration to database");
 			LM_RE(false, ("error adding a Registration to database"));
+		}
 
 		lastRegistrationId = registrationId;
 	}
@@ -361,7 +376,7 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 		if (registrationP == NULL)
 		{
 			registerContextResponse(fd, format, 474, NULL, 474, "registration id not found", NULL);
-			return true;
+			return false;
 		}
 	}
 		
@@ -378,21 +393,19 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 	{
 		for (ix = 0; ix < rcrP->entityV.size(); ix++)
 		{
-			Entity* entityP;
-
 			if ((entityP = entityLookup(rcrP->entityV[ix]->id, rcrP->entityV[ix]->type)) == NULL)
 			{
-				std::string errorString = "Entity '" + entityP->id + "', type '" + entityP->type + "' not found in an Update Request";
+				errorString = "Entity '" + entityP->id + "', type '" + entityP->type + "' not found in an Update Request";
 				registerContextResponse(fd, format, 404, NULL, 404, "entity not found", errorString.c_str());
-				LM_RE(true, ("Cannot find entity with id '%s and type '%s'", rcrP->entityV[ix]->id.c_str(), rcrP->entityV[ix]->type.c_str()));
+				LM_RE(false, ("Cannot find entity with id '%s and type '%s'", rcrP->entityV[ix]->id.c_str(), rcrP->entityV[ix]->type.c_str()));
 			}
 
 			if (entityP->registrationId != registrationId)
 			{
-				std::string errorString = "bad registration id " + registrationId + ". Expected " + entityP->registrationId + " for entity '" + entityP->id + "', type '" + entityP->type + "'";
+				errorString = "bad registration id " + registrationId + ". Expected " + entityP->registrationId + " for entity '" + entityP->id + "', type '" + entityP->type + "'";
 				registerContextResponse(fd, format, 400, NULL, 400, "bad registration id", errorString.c_str());
-				LM_RE(true, ("Entity with id '%s and type '%s' has registration id '%s'. Incoming registration id was: '%s'",
-							 entityP->id.c_str(), entityP->type.c_str(), entityP->registrationId.c_str(), registrationId.c_str()));
+				LM_RE(false, ("Entity with id '%s and type '%s' has registration id '%s'. Incoming registration id was: '%s'",
+							  entityP->id.c_str(), entityP->type.c_str(), entityP->registrationId.c_str(), registrationId.c_str()));
 			}
 		}
 	}
@@ -407,9 +420,9 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 		{
 			if (entityLookup(rcrP->entityV[ix]->id, rcrP->entityV[ix]->type) != NULL)
 			{
-				std::string errorString = "Entity '" + rcrP->entityV[ix]->id + "', type '" + rcrP->entityV[ix]->type + "' already exists in a 'Create' Request";
+				errorString = "Entity '" + rcrP->entityV[ix]->id + "', type '" + rcrP->entityV[ix]->type + "' already exists in a 'Create' Request";
 				registerContextResponse(fd, format, 404, NULL, 404, "already exists", errorString.c_str());
-				LM_RE(true, ("entity with id '%s and type '%s' already exists", rcrP->entityV[ix]->id.c_str(), rcrP->entityV[ix]->type.c_str()));
+				LM_RE(false, ("entity with id '%s and type '%s' already exists", rcrP->entityV[ix]->id.c_str(), rcrP->entityV[ix]->type.c_str()));
 			}
 		}
 	}
@@ -420,18 +433,30 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 	//
 	for (ix = 0; ix < rcrP->entityV.size(); ix++)
 	{
+		std::string  errorString;
+
 		LM_T(LmtEntity, ("Adding entity '%s'", rcrP->entityV[ix]->id.c_str()));
 		if (isUpdate)
-			entityUpdate(rcrP->entityV[ix]->id, rcrP->entityV[ix]->type, rcrP->entityV[ix]->isPattern, rcrP->providingApplication, duration, registrationId, &rcrP->attributeList);
+			entityP = entityUpdate(rcrP->entityV[ix], rcrP->providingApplication, duration, registrationId, &rcrP->attributeList, &errorString);
 		else
-			entityAdd(rcrP->entityV[ix]->id,    rcrP->entityV[ix]->type, rcrP->entityV[ix]->isPattern, rcrP->providingApplication, duration, registrationId, &rcrP->attributeList);
+			entityP = entityAdd(rcrP->entityV[ix],    rcrP->providingApplication, duration, registrationId, &rcrP->attributeList, &errorString);
+
+		if (entityP == NULL)
+		{
+			registerContextResponse(fd, format, 404, NULL, 404, "error", errorString.c_str());
+			LM_RE(false, ("entityUpdate/entityAdd error: %s", errorString.c_str()));
+		}
 	}
 		
 
 	//
 	// Push request data to the DB
 	//
-	registerContextRequestToDatabase(rcrP, isUpdate);
+	if (registerContextRequestToDatabase(rcrP, isUpdate, &errorString) != 0)
+	{
+		registerContextResponse(fd, format, 500, NULL, 500, "db error", errorString.c_str());
+		LM_RE(false, ("error saving to database"));
+	}
 
 
 
@@ -520,11 +545,7 @@ static bool registerContextXmlDataParse(int fd, Format format, std::string buf)
 		rcrP = registerContextRequestParse(node);
 		if (rcrP != NULL)
 		{
-			if (registerContextRequestTreat(fd, format, rcrP) != true)  // if OK, responds to REST request
-			{
-				restReply(fd, format, 500, "status", "XML data treat error");
-				ret = false;
-			}
+			ret = registerContextRequestTreat(fd, format, rcrP);
 		}
 		else
 		{

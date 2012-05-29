@@ -32,7 +32,8 @@ typedef enum TraceLevels
 	LmtRestPath,
 
 	LmtDbTable   = 61,
-	LmtDbRegReq
+	LmtDbRegReq,
+	LmtDbEntity
 } TraceLevels;
 
 #endif

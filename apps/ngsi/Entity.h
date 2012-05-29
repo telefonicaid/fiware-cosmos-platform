@@ -48,7 +48,15 @@ extern void    entityInit(void);
 *
 * entityAdd - 
 */
-extern Entity* entityAdd(std::string id, std::string type, bool isPattern, std::string providingApplication, int duration, std::string registrationId, ContextRegistrationAttributeList* attributeList);
+extern Entity* entityAdd
+(
+    Entity*                            rcrEntity,
+	std::string                        providingApplication,
+	int                                duration,
+	std::string                        registrationId,
+	ContextRegistrationAttributeList*  attributeList,
+	std::string*                       errorString
+);
 
 
 
@@ -56,7 +64,15 @@ extern Entity* entityAdd(std::string id, std::string type, bool isPattern, std::
 *
 * entityUpdate - 
 */
-extern Entity* entityUpdate(std::string id, std::string type, bool isPattern, std::string providingApplication, int duration, std::string registrationId, ContextRegistrationAttributeList* attributeList);
+extern Entity* entityUpdate
+(
+    Entity*                            rcrEntity,
+	std::string                        providingApplication,
+	int                                duration,
+	std::string                        registrationId,
+	ContextRegistrationAttributeList*  attributeList,
+	std::string*                       errorString
+);
 
 
 
@@ -65,5 +81,13 @@ extern Entity* entityUpdate(std::string id, std::string type, bool isPattern, st
 * entityLookup -
 */
 extern Entity* entityLookup(std::string id, std::string type);
+
+
+
+/* ****************************************************************************
+*
+* entityToDb - 
+*/
+extern int entityToDb(Entity* entityP, bool update, std::string* errorString);
 
 #endif

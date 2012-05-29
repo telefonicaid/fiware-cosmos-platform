@@ -25,14 +25,14 @@
 *   PUT /x/y/z Content-type:test/plain
 *       Name=ShipStopped;ShipID=RTX33;Long=46; ...
 */
-#include <mysql.h>                          // mysql
+#include <mysql.h>                              // mysql
 
-#include "logMsg/logMsg.h"                  // LM_*
+#include "logMsg/logMsg.h"                      // LM_*
 
-#include "traceLevels.h"                    // Trace levels for log msg library
-#include "Registration.h"                   // Registration
-#include "Metadata.h"                       // Metadata 
-#include "database.h"                       // Own interface
+#include "traceLevels.h"                        // Trace levels for log msg library
+#include "Registration.h"                       // Registration
+#include "Metadata.h"                           // Metadata 
+#include "database.h"                           // Own interface
 
 
 
@@ -40,7 +40,7 @@
 *
 * db - database connection
 */
-static MYSQL*     db = NULL;
+MYSQL*     db = NULL;
 
 
 

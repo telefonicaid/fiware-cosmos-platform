@@ -19,7 +19,7 @@ public class IpmMain {
         final String input = args[0];
         final String output = args[1];
         final String type = args[2];
-        RawToItpmConverter converter;
+        RawToIpmConverter converter;
         if (type.equals(INET_TYPE)) {
              converter = new InetRawToIpmConverter();
         } else if (type.equals(CRM_TYPE)) {

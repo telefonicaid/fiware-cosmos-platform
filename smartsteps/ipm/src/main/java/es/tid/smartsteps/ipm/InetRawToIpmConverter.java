@@ -13,7 +13,7 @@ import es.tid.smartsteps.util.InetRawUtil;
  *
  * @author dmicol
  */
-public class InetRawToIpmConverter implements RawToItpmConverter {
+public class InetRawToIpmConverter implements RawToIpmConverter {
     public InetRawToIpmConverter() {
     }
     

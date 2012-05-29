@@ -13,7 +13,7 @@ import es.tid.smartsteps.util.CrmRawUtil;
  *
  * @author dmicol
  */
-public class CrmRawToIpmConverter implements RawToItpmConverter {
+public class CrmRawToIpmConverter implements RawToIpmConverter {
     public CrmRawToIpmConverter() {
     }
     

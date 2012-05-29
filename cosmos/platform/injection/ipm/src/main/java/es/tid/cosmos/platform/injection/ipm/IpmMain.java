@@ -45,8 +45,7 @@ public class IpmMain extends Configured implements Tool {
                 writer.write(converter.convert(line));
             }
         } catch (IOException ex) {
-            Logger.get(IpmMain.class).fatal(ex);
-            return 1;
+            throw ex;
         } finally {
             if (writer != null) {
                 writer.close();

@@ -1,7 +1,7 @@
 """
-Automatic deployment Fabric file
+Cosmos automatic deployment Fabric file -
 
-causes Fabric to deploy each Cosmos component at a configured hosts.
+causes Fabric to deploy each Cosmos component at a configured host.
 """
 import json
 from fabric.api import *

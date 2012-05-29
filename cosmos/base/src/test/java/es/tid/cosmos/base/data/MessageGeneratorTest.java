@@ -71,6 +71,25 @@ public class MessageGeneratorTest {
         assertEquals("http://www.google.com", webLog.getUrl());
         assertEquals("27/05/2012", webLog.getDate());
     }
+
+    @Test
+    public void shouldGenerateWebLogWithUnespacedDelimiter() {
+        MessageDescriptor messageDescriptor = new MessageDescriptor();
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.TYPE, "weblog");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.DELIMITER, "\\t");
+        messageDescriptor.setFieldColumnIndex("user_id", 0);
+        messageDescriptor.setFieldColumnIndex("url", 2);
+        messageDescriptor.setFieldColumnIndex("date", 1);
+        final String line = "13213AB\t27/05/2012\thttp://www.google.com";
+        Message message = MessageGenerator.generate(messageDescriptor, line);
+        assertTrue(message instanceof WebLog);
+        final WebLog webLog = (WebLog)message;
+        assertEquals("13213AB", webLog.getUserId());
+        assertEquals("http://www.google.com", webLog.getUrl());
+        assertEquals("27/05/2012", webLog.getDate());
+    }
     
     @Test(expected=IllegalArgumentException.class)
     public void shouldFailOnInvalidType() {

@@ -54,7 +54,11 @@ public final class MessageDescriptor {
             throw new IllegalArgumentException("Repeated field "
                     + metaField.name());
         }
-        this.metaInfo.put(metaField, fieldValue);
+        if (metaField == MetaFields.DELIMITER) {
+            this.metaInfo.put(metaField, fieldValue.replaceAll("\\\\", "\\"));
+        } else {
+            this.metaInfo.put(metaField, fieldValue);
+        }
     }
     
     public int getFieldColumnIndex(String fieldName) {

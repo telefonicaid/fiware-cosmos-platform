@@ -20,8 +20,8 @@ public class CrmRawToIpmConverter implements RawToItpmConverter {
     @Override
     public String convert(String line) {
         final CrmRaw crmRaw = CrmRawUtil.parse(line);
-        String anonymisedMsisdn;
-        String anonymisedBillingPostCode;
+        final String anonymisedMsisdn;
+        final String anonymisedBillingPostCode;
         final String anonymisedImsi;
         final String anonymisedImei;
         try {

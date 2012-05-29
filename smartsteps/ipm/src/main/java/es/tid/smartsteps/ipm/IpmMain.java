@@ -12,7 +12,8 @@ public class IpmMain {
     
     public static void main(String[] args) throws Exception {
         if (args.length != 3) {
-            throw new IllegalArgumentException("Invalid number of arguments");
+            throw new IllegalArgumentException("Invalid number of arguments.\n"
+                    + "Usage: ipm.jar input output <inet|crm>");
         }
         
         final String input = args[0];

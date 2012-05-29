@@ -12,7 +12,7 @@
 
 TEST(samson_client, test_1 ) 
 {
-   size_t total_memory = 10*1024*1024; // Use 10Mb for this test
+   size_t total_memory = 64*1024*1024; // Use 64Mb for this test
    samson::SamsonClient::general_init( total_memory );
 
    // Create client connection
@@ -33,7 +33,7 @@ TEST(samson_client, test_1 )
 
 TEST(samson_client, DISABLED_test_2 )
 {
-   size_t total_memory = 10*1024*1024; // Use 10Mb for this test
+   size_t total_memory = 64*1024*1024; // Use 64Mb for this test
    samson::SamsonClient::general_init( total_memory );
 
    // Create client connection

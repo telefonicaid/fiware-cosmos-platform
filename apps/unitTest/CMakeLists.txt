@@ -24,6 +24,9 @@ SET (SOURCES
 	#comscore library
 	comscore/comscore.cpp
 	
+	#common library
+	common/common_test.cpp
+
 	#delilah library
 	delilah/common_delilah_test.h
 	delilah/common_delilah_test.cpp

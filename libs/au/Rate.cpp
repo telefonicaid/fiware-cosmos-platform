@@ -40,6 +40,10 @@ namespace au {
             
             _update_time();
             
+            // Global counters
+            total_size_ += size;
+            total_num_++;
+
             // Update only the first slot    
             hits_[0]++;
             size_[0]+= size;

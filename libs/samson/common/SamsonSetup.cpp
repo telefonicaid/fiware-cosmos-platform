@@ -375,6 +375,11 @@ namespace samson
         load( setupFileName() );
 	}
 
+	void SamsonSetup::addItem(std::string _name , std::string _default_value , std::string _description , SamsonItemType type)
+	{
+	    add( _name ,  _default_value , _description , type);
+	}
+
     std::string SamsonSetup::setupFileName()
     {
         return _samson_working + "/etc/setup.txt";

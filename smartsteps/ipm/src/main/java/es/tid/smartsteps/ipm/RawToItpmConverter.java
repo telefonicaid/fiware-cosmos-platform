@@ -1,4 +1,4 @@
-package es.tid.o2aaic.ipm;
+package es.tid.smartsteps.ipm;
 
 /**
  *

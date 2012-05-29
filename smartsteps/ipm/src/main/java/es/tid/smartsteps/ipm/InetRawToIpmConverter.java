@@ -1,13 +1,13 @@
-package es.tid.o2aaic.ipm;
+package es.tid.smartsteps.ipm;
 
 import java.security.NoSuchAlgorithmException;
 
 import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.base.util.SHAEncoder;
-import es.tid.cosmos.platform.injection.ipm.data.generated.InetProtocol.InetIpm;
-import es.tid.cosmos.platform.injection.ipm.data.generated.InetProtocol.InetRaw;
-import es.tid.o2aaic.util.InetIpmUtil;
-import es.tid.o2aaic.util.InetRawUtil;
+import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetIpm;
+import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetRaw;
+import es.tid.smartsteps.util.InetIpmUtil;
+import es.tid.smartsteps.util.InetRawUtil;
 
 /**
  *

@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>es.tid.o2aaic</groupId>
-    <artifactId>o2aaic</artifactId>
+    <groupId>es.tid.smartsteps</groupId>
+    <artifactId>smartsteps</artifactId>
     <version>0.1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>o2aaic</name>
-    <description>O2 as an Information Company</description>
+    <name>smartsteps</name>
+    <description>SmartSteps</description>
     <organization>
         <name>Telefónica Digital</name>
         <url>http://www.tid.es</url>

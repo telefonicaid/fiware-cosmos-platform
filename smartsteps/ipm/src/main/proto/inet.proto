@@ -1,6 +1,6 @@
 package base;
 
-option java_package = "es.tid.cosmos.platform.injection.ipm.data.generated";
+option java_package = "es.tid.smartsteps.ipm.data.generated";
 option java_outer_classname = "InetProtocol";
 
 message InetRaw {

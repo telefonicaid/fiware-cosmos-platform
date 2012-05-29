@@ -1,6 +1,6 @@
-package es.tid.o2aaic.util;
+package es.tid.smartsteps.util;
 
-import es.tid.cosmos.platform.injection.ipm.data.generated.InetProtocol.InetIpm;
+import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetIpm;
 
 /**
  *

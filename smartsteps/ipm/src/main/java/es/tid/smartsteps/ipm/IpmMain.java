@@ -1,24 +1,16 @@
-package es.tid.o2aaic.ipm;
+package es.tid.smartsteps.ipm;
 
 import java.io.*;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
-
-import es.tid.cosmos.base.util.Logger;
 
 /**
  *
  * @author dmicol
  */
-public class IpmMain extends Configured implements Tool {
+public class IpmMain {
     private static final String INET_TYPE = "inet";
     private static final String CRM_TYPE = "crm";
     
-    @Override
-    public int run(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception {
         if (args.length != 3) {
             throw new IllegalArgumentException("Invalid number of arguments");
         }
@@ -53,20 +45,6 @@ public class IpmMain extends Configured implements Tool {
             if (reader != null) {
                 reader.close();
             }
-        }
-        
-        return 0;
-    }
-    
-    public static void main(String[] args) throws Exception {
-        try {
-            int res = ToolRunner.run(new Configuration(), new IpmMain(), args);
-            if (res != 0) {
-                throw new Exception("Unknown error");
-            }
-        } catch (Exception ex) {
-            Logger.get(IpmMain.class).fatal(ex);
-            throw ex;
         }
     }
 }

@@ -76,7 +76,7 @@ bool isOneOf( char c , std::string s );
 
 // Getting strings with format
 std::string str(const char* format, ...);
-std::string str( size_t value );
+std::string str( double value );
 std::string str_detail( size_t value );
 
 
@@ -84,7 +84,7 @@ std::string str_detail( size_t value );
 std::string str( Color color, const char* format, ...);
 
 // String with size_t content 
-std::string str( size_t value , std::string postfix );
+std::string str( double value , std::string postfix );
 std::string str_detail( size_t value , std::string postfix );
 
 // Indent a string text

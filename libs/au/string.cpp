@@ -285,6 +285,68 @@ std::string str( Color color, const char* format, ...)
 }
 
 
+std::string str_double( double value, char  letter )
+{
+    char line[2000];
+    
+    if ( value < 10 )
+        sprintf(line, " %4.2f%c",value,letter);
+    else if ( value < 100 )
+        sprintf(line, " %4.1f%c",value,letter);
+    else 
+        sprintf(line, " %4.0f%c",value,letter);
+    
+    return std::string( line );
+}
+
+
+
+std::string str( double value )
+{
+    if( value == 0 )
+        return "    0 ";
+    
+    if( value < 0 )
+    {
+        std::string tmp = str(-value);
+        size_t pos = tmp.find_first_not_of(" ");
+        if( (pos == std::string::npos) || ( pos == 0 ) )
+            return "ERROR";
+        
+        tmp[pos-1] = '-';
+        return tmp;
+    }
+    
+    if( value < 0.000000000000001 )
+        return "  EPS ";
+    else if( value < 0.000000000001)
+        return au::str_double( value* 1000000000000000.0 , 'f');
+    else if( value < 0.000000001)
+        return au::str_double( value* 1000000000000.0 , 'p');
+    else if( value < 0.000001)
+        return au::str_double( value* 1000000000.0 , 'n');
+    else if( value < 0.001)
+        return au::str_double( value* 1000000.0 , 'u');
+    else if( value < 1)
+        return au::str_double( value* 1000.0 , 'm');
+    else if (value < 1000)
+        return au::str_double( value , ' ');
+    else if( value < 1000000)
+        return au::str_double( value/ 1000.0 , 'K');
+    else if( value < 1000000000)
+        return au::str_double( value/ 1000000.0 , 'M');
+    else if( value < 1000000000000)
+        return au::str_double( value/ 1000000000.0 , 'G');
+    else if( value < 1000000000000000)
+        return au::str_double( value/ 1000000000000.0 , 'T');
+    else if( value < 1000000000000000000)
+        return au::str_double( value/ 1000000000000000.0 , 'P');
+    else 
+        return "  INF ";
+    
+}
+
+/*
 std::string str( size_t value )
 {
 
@@ -308,8 +370,9 @@ std::string str( size_t value )
         return au::str( (double)value/ 1000000000000000.0 , 'P');
 
 }    
+*/
 
-std::string str( size_t value , std::string postfix )
+std::string str( double value , std::string postfix )
 {
     return str( value ) + postfix;
 }

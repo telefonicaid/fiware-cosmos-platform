@@ -39,7 +39,12 @@ class EngineElement
         repeated,  // Repeated periodically
         extra,     // Executed when nothing else is necessary to be executed before
     } Type;
+
     
+    // Name of the element ( to do some statistics over it )
+    std::string name_;
+    
+    // Type of element
     Type type;
 
     // Fields in repeated type
@@ -59,8 +64,8 @@ public:
     virtual void run()=0;						// Run method to execute
     
     // Constructor for inmediate action or repeated actions
-    EngineElement( );
-    EngineElement( int seconds );
+    EngineElement( std::string name );
+    EngineElement( std::string name , int seconds );
 
     
     // Set as an extra element ( to be executed when nothing else has to be executed )
@@ -80,13 +85,17 @@ public:
     bool isExtra();
     bool isNormal();
     
+    // Recover name
+    std::string getName();
+    
     // Get a description string for debuggin
     std::string getDescription();
+    std::string str();
 
     // Get time to be executed ( in repeated task )
     double getTimeToTrigger();
-    
     double getWaitingTime();
+    double getPeriod();
     
     // get xml information
     void getInfo( std::ostringstream& output);
@@ -100,7 +109,7 @@ class EngineElementSleepTest : public EngineElement
     
 public:
     
-    EngineElementSleepTest() : EngineElement(10)
+    EngineElementSleepTest() : EngineElement( "sleep" , 10 )
     {
         description = au::str("Sleep element just to sleep %d seconds", 10 );    
         shortDescription = description;

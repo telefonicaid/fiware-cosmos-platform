@@ -8,7 +8,8 @@
 
 NAMESPACE_BEGIN(engine)
 
-NotificationElement::NotificationElement(  Notification * _notification )
+NotificationElement::NotificationElement(  Notification * _notification ) 
+: EngineElement( au::str("notification_%s" , _notification->getName()) )
 {
     notification      = _notification;
     description       =  notification->getDescription();
@@ -21,7 +22,8 @@ NotificationElement::~NotificationElement()
 }
 
 
-NotificationElement::NotificationElement(  Notification * _notification , int seconds ) : EngineElement( seconds )
+NotificationElement::NotificationElement(  Notification * _notification , int seconds ) 
+: EngineElement( au::str("notification_%s_repeated_%d" , _notification->getName()  , seconds ) , seconds )
 {
     notification = _notification;
     description = au::str("%s", notification->getDescription().c_str() );

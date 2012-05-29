@@ -1135,6 +1135,22 @@ namespace samson {
         
     }
     
+    void SamsonWorker::autoComplete( au::ConsoleAutoComplete* info )
+    {
+        if( info->completingFirstWord() )
+        {
+            info->add( "quit" );
+            info->add( "exit" );
+            info->add( "threads" );
+            info->add( "cluster" );
+            info->add( "show_logs" );
+            info->add( "hide_logs" );
+            info->add( "show_engine_statistics" );
+            info->add( "show_engine_last_items" );
+            info->add( "show_engine_elements" );
+        }
+    }
+    
     void SamsonWorker::evalCommand( std::string command )
     {
         au::CommandLine cmdLine;
@@ -1167,6 +1183,25 @@ namespace samson {
             au::remove_log_plugin( this );
             writeOnConsole("OK\n");
         }
+        
+        if( main_command == "show_engine_statistics" )
+        {
+            writeOnConsole( engine::Engine::shared()->get_activity_monitor()->str_elements() + "\n" );
+            return;
+        }
+        
+        if( main_command == "show_engine_last_items" )
+        {
+            writeOnConsole( engine::Engine::shared()->get_activity_monitor()->str_last_items() + "\n" );
+            return;
+        }
+        
+        if( main_command == "show_engine_elements" )
+        {
+            writeOnConsole( engine::Engine::shared()->getTableOfEngineElements() + "\n" );
+            return;
+        }
+        
         
         // More command to check what is going on inside a worker
         

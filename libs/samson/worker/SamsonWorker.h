@@ -305,6 +305,7 @@ namespace samson {
         void getInfo( std::ostringstream& output);
         
         // au::Console ( debug mode with fg )
+        void autoComplete( au::ConsoleAutoComplete* info );
         void evalCommand( std::string command );
         std::string getPrompt();
 

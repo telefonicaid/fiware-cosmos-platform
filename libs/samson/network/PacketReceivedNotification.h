@@ -27,6 +27,7 @@ namespace samson
     public:
         
         PacketReceivedNotification( NetworkInterfaceReceiver* _receiver , Packet *_packet )
+        : engine::EngineElement( "packet_received" )
         {
             if( !_packet )
                 LM_X(1,("Internal error"));

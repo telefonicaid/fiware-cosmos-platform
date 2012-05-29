@@ -1192,7 +1192,7 @@ namespace samson
                     {
                         
                         std::ostringstream message;
-                        message << "Including regular file " << fileName << " with " <<  au::str( buf.st_size ) <<" Bytes\n";
+                        message << "Including regular file " << fileName << " with " <<  au::str( (size_t) buf.st_size ) <<" Bytes\n";
                         showMessage( message.str() );
                     }
                     

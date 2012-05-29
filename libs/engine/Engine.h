@@ -21,6 +21,11 @@
 #include <string>
 #include <iostream>                         // std::cout
 #include <set>                              // std::set
+#include <math.h>
+
+#include "au/Object.h"
+#include "au/tables/Table.h"
+#include "au/statistics/ActivityMonitor.h"
 
 #include "au/containers/list.h"                        // au::list
 #include "au/mutex/Token.h"                       // au::Token
@@ -59,6 +64,8 @@ class Engine
     // Common engine instance
     static Engine* engine;
 
+    // Statistics
+    au::statistics::ActivityMonitor activity_monitor;
 
     // Collection of items
     EngineElementCollection engine_element_collection;
@@ -84,6 +91,7 @@ private:
 public:
     
     au::Cronometer uptime;                          // Total up time
+    double last_uptime_mark;                        // Last mark used to spent time
     
     ~Engine();
     
@@ -130,6 +138,18 @@ public:
     // Info functions 
     int getNumElementsInEngineStack();
     double getMaxWaitingTimeInEngineStack();
+
+    // Return activity monitor to print some statistics
+    au::statistics::ActivityMonitor * get_activity_monitor()
+    {
+        return &activity_monitor;
+    }
+    
+    // Get information about current elements in engine
+    std::string getTableOfEngineElements()
+    {
+        return engine_element_collection.getTableOfEngineElements();
+    }
     
 private:
     
@@ -141,8 +161,6 @@ private:
     
     // Run a particular engine element
     void runElement( EngineElement* running_element );
-
-
     
 };
 

@@ -109,6 +109,73 @@ namespace au
             return true;
         }
 
+        // ------------------------------------------------------------
+        // TableCell
+        // ------------------------------------------------------------
+
+        
+        int TableCell::compare( std::string v1 , std::string v2 , TableColumnFormat format )
+        {
+            switch ( format ) 
+            {
+                case format_uint64:
+                case format_uint:
+                case format_time:
+                case format_timestamp:
+                case format_double:
+                case format_percentadge:
+                {
+                    
+                    
+                    double _v1 = strtof( v1.c_str() , (char **)NULL ); 
+                    double _v2 = strtof( v2.c_str() , (char **)NULL ); 
+                    
+                    if ( _v1 < _v2 )
+                        return -1;
+                    else if ( _v1 > _v2 )
+                        return 1;
+                    else
+                        return 0;
+                    break;
+                }
+                case format_string:
+                {
+                    
+                    
+                    if ( v1 < v2 )
+                        return -1;
+                    else if ( v1 > v2 )
+                        return 1;
+                    else
+                        return 0;
+                    break;
+                }
+            }                
+            
+            return 0;
+        }
+        
+        
+        int TableCell::compare( TableCell* cell , TableColumnFormat format )
+        {
+            if( values.size() !=  cell->values.size() )
+                return values.size() - cell->values.size();
+            
+            
+            for( size_t i = 0 ; i < values.size() ; i ++)
+            {
+                std::string v1 = values[i];
+                std::string v2 = cell->values[i];
+                
+                int c = compare(v1, v2, format );
+                
+                if( c != 0 )
+                    return c;
+            }
+            
+            return 0;
+        }
+
         
         // ------------------------------------------------------------
         // TableRow
@@ -134,6 +201,28 @@ namespace au
                 std::string name = it_cells->first;
                 cells.insertInMap( name , new TableCell( it_cells->second ) );
             }
+        }
+        
+        int TableRow::compare( TableRow* row , std::vector<std::string> &fields )
+        {
+            for ( size_t i = 0 ; i < fields.size() ; i++ )
+            {
+                TableCell *cell1 = get( fields[i] );
+                TableCell *cell2 = row->get( fields[i] );
+                
+                if ( cell1 && !cell2 )
+                    return 1;
+                if ( !cell1 && cell2 )
+                    return -1;
+                
+                if( cell1 && cell2 )                    
+                {
+                    int c = cell1->compare(cell2, format_string );
+                    if( c != 0 )
+                        return c;
+                }
+            }
+            return 0;
         }
         
         void TableRow::set( std::string name , std::string value )
@@ -176,29 +265,6 @@ namespace au
             return type;
         }
         
-        
-        // Function to compare two rows
-        int TableRow::compare( TableRow* row , StringVector &sort_columns )
-        {
-            for ( size_t i = 0 ; i < sort_columns.size() ; i++ )
-            {
-                std::string column = sort_columns[i];
-                
-                TableCell* cell1 = get( column );
-                TableCell* cell2 = row->get( column );
-
-                if( !cell1 )
-                    return 1;
-                if( !cell2 )
-                    return -1;
-                
-                int c = cell1->compare(cell2);
-
-                if( c != 0 )
-                    return c;
-            }
-            return 0;
-        }
         
         Table* TableRow::getTable()
         {
@@ -355,8 +421,8 @@ namespace au
             {
                 case format_string:       return value;
                 case format_uint:         return value;
-                case format_uint64:       return au::str( strtoll( value.c_str() , (char **)NULL, 10) );
-                case format_double:       return au::str( "%0.2f", strtof( value.c_str() , (char **)NULL ));
+                case format_uint64:       return au::str( (size_t) strtoll( value.c_str() , (char **)NULL, 10) );
+                case format_double:       return au::str( strtof( value.c_str() , (char **)NULL ) );
                 case format_time:         return au::str_time( strtoll( value.c_str() , (char **)NULL, 10) );
                 case format_timestamp:    return au::str_timestamp( strtoll( value.c_str() , (char **)NULL, 10) );
                 case format_percentadge:  return au::str_percentage( atof( value.c_str() ) );
@@ -453,7 +519,7 @@ namespace au
                 
                 values.clear();
                 for ( size_t i = 0 ; i < _values.size() ; i++ )
-                    values.push_back( au::str("%f",_values[i] ) );
+                    values.push_back( au::str( _values[i] ) );
             }
         }
         
@@ -472,7 +538,7 @@ namespace au
                 size_t total = 0;
                 for( size_t i = 0 ; i < values.size() ; i++ )
                     total += strtof( values[i].c_str() , (char **)NULL);
-                return simple_transform( au::str("%f",total) );
+                return simple_transform( au::str( total ) );
             }
             
             return "<!sum>";
@@ -981,7 +1047,26 @@ namespace au
             for (size_t r = 0 ; r < rows.size() ; r++ )
                 for (size_t rr = r+1 ; rr < rows.size() ; rr++ )
                 {
-                    int c = rows[r]->compare(rows[rr], sort_columns );
+                    int c = 0;
+                    
+                    int pos_sort_columns = 0;
+                    while( (c==0) && (pos_sort_columns< sort_columns.size() ) )
+                    {
+                        std::string column_name = sort_columns[pos_sort_columns];
+                        size_t column_id = getColumn( column_name );
+                        if( column_id != -1 )
+                        {
+                            TableCell* cell1 = rows[r]->get( column_name );
+                            TableCell* cell2 = rows[rr]->get( column_name );
+                            
+                            // Use this column to resolve comparisson
+                            c = cell1->compare( cell2 , columns[column_id]->format );
+                        }
+                        
+                        pos_sort_columns++;
+                        
+                    }
+                    
                     if( c < 0 )
                     {
                         // Exchange r and rr

@@ -121,6 +121,7 @@ $(function ()
                 dataType: 'json',
                 error: function(jqXHR, textStatus, errorThrown) 
                 {
+                    alert( "Error parsing json " + textStatus );
                     plot_values[plot_number][plot_position] = { "label": label , "data": [] };
                 },
                 success: function( data ) 

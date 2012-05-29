@@ -75,7 +75,10 @@ namespace engine
         size_t getNumNormalEngineElements();
 
         size_t getMaxWaitingTimeInEngineStack();
+        
         void print_elements();
+        
+        std::string getTableOfEngineElements();
         
     private:
         

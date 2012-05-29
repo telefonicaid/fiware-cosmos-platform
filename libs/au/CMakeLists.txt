@@ -15,6 +15,16 @@ mutex/Token.cpp
 mutex/TokenTaker.cpp
 )
 
+
+# ---------------------------------------------------
+# statistics directory
+# ---------------------------------------------------
+
+SET( STATISTICS_FILES
+statistics/ActivityMonitor.h
+statistics/ActivityMonitor.cpp
+)
+
 # ---------------------------------------------------
 # log directory
 # ---------------------------------------------------
@@ -233,6 +243,7 @@ daemonize.cpp
 
 SOURCE_GROUP( mutex      FILES ${MUTEX_FILES} )
 SOURCE_GROUP( log        FILES ${LOG_FILES} )
+SOURCE_GROUP( statistics FILES ${STATISTICS_FILES} )
 SOURCE_GROUP( containers FILES ${CONTAINERS_FILES} )
 SOURCE_GROUP( tables     FILES ${TABLES_FILES} )
 SOURCE_GROUP( network    FILES ${NETWORK_FILES} )
@@ -253,18 +264,21 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 
 # Library declaration
 # -----------------------------------------------------------------
-ADD_LIBRARY(au STATIC ${SOURCES} ${HEADERS} ${MUTEX_FILES} ${LOG_FILES}
+ADD_LIBRARY(au STATIC ${SOURCES} ${HEADERS} ${MUTEX_FILES} ${LOG_FILES} ${STATISTICS_FILES}
 ${CONTAINERS_FILES} ${TABLES_FILES} ${NETWORK_FILES} ${CONSOLE_FILES}
 ${STRING_FILES})
+
 INSTALL(TARGETS au ARCHIVE DESTINATION lib)
-INSTALL(FILES ${HEADERS} DESTINATION include/au)
-INSTALL(FILES ${MUTEX_FILES} DESTINATION include/au/mutex)
-INSTALL(FILES ${LOG_FILES} DESTINATION include/au/log)
+INSTALL(FILES ${HEADERS}          DESTINATION include/au)
+INSTALL(FILES ${STATISTICS_FILES} DESTINATION include/au/statistics)
+INSTALL(FILES ${MUTEX_FILES}      DESTINATION include/au/mutex)
+INSTALL(FILES ${LOG_FILES}        DESTINATION include/au/log)
 INSTALL(FILES ${CONTAINERS_FILES} DESTINATION include/au/containers)
-INSTALL(FILES ${TABLES_FILES} DESTINATION include/au/tables)
-INSTALL(FILES ${NETWORK_FILES} DESTINATION include/au/network)
-INSTALL(FILES ${CONSOLE_FILES} DESTINATION include/au/console)
-INSTALL(FILES ${STRING_FILES} DESTINATION include/au/string)
+INSTALL(FILES ${TABLES_FILES}     DESTINATION include/au/tables)
+INSTALL(FILES ${NETWORK_FILES}    DESTINATION include/au/network)
+INSTALL(FILES ${CONSOLE_FILES}    DESTINATION include/au/console)
+INSTALL(FILES ${STRING_FILES}     DESTINATION include/au/string)
+
 SET (LIBAU ${PROJECT_BINARY_DIR}/libs/au/libau.a CACHE INTERNAL "")
 
 

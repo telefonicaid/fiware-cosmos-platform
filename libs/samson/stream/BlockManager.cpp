@@ -171,18 +171,17 @@ namespace samson {
             size_t max_scheduled_read_size = SamsonSetup::shared()->getUInt64("stream.max_scheduled_read_size");
             
             // No schedule new operations until all the previous one have finished
-            if( scheduled_read_size > max_scheduled_read_size/2 )
+            if( scheduled_read_size > 0 )
                 return;
-            if( scheduled_write_size > max_scheduled_write_size/2 )
+            if( scheduled_write_size > 0 )
                 return;
             
             LM_T( LmtBlockManager , ("Reviewing block manager"));
-
             
             // --------------------------------------------------------------------------------
             // Sort by priorities
             // --------------------------------------------------------------------------------
-            
+
             //au::ExecesiveTimeAlarm alarm("BlockManager::_review");
             {
                 au::ExecesiveTimeAlarm alarm("BlockManager::sort" , 0.10 );
@@ -195,8 +194,6 @@ namespace samson {
                 // Sort list of blocks according to id and min_task involved
                 blocks.sort( compare_blocks );
             }
-
-            
             
             // --------------------------------------------------------------------------------
             // Remove old blocks not included anywhere

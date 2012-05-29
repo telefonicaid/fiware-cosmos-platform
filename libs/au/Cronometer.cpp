@@ -48,11 +48,11 @@ double Cronometer::diffTime()
 {
     struct timeval t2;
     
-    if ( gettimeofday(&t2,NULL) != 0)
+    if ( gettimeofday(&t2,NULL) != 0 )
         LM_X(1, ("gettimeofday failed"));
     
-    
-    double diff = ( (double) t2.tv_sec ) + ((double)t2.tv_usec / 1000000.0) - ( (double) t.tv_sec ) - ((double)t.tv_usec / 1000000.0);
+    double diff = ( (double) t2.tv_sec ) + ((double)t2.tv_usec / (double)1000000.0 ) 
+    - ( (double) t.tv_sec ) - ((double)t.tv_usec / (double)1000000.0);
 
 /*    
     {

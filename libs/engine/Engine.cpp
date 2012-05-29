@@ -66,6 +66,7 @@ Engine::Engine()
 {
     quitting = false;               // Put this to "true" when destroying Engine
     running_thread = false;         // No running thread at the moment
+    last_uptime_mark = 0;           // Uptime mark used to count time for different activites
 }
 
 Engine::~Engine()
@@ -153,18 +154,21 @@ void sleep_select( double time )
 
 void Engine::runElement( EngineElement* running_element )
 {
+    activity_monitor.start_activity( running_element->getName() );
+    
     // Execute the item selected as running_element
-    LM_T( LmtEngineTime, ("[START] Engine:  executing %s" , running_element->getDescription().c_str() ));
+    LM_T( LmtEngineTime, ("[START] Engine:  executing %s" , running_element->str().c_str() ));
     
     // Print traces for debugging strange situations
     int waiting_time = running_element->getWaitingTime();
     if ( waiting_time > 10 )
     {
         LM_W(("Engine is running an element that has been waiting %d seconds", waiting_time ));
-        LM_W(("Engine element to execute now: %s" , running_element->getDescription().c_str() ));
+        LM_W(("Engine element to execute now: %s" , running_element->str().c_str() ));
+        
         if ( waiting_time > 100 )
         {
-            // Print all elements with traces for debuggin
+            // Print all elements with traces for debuggin...
             engine_element_collection.print_elements();
         }
     }
@@ -181,11 +185,14 @@ void Engine::runElement( EngineElement* running_element )
         if ( execution_time > 10 )
         {
             LM_W(("Engine has executed an item in %d seconds." , execution_time ));
-            LM_W(("Engine Executed item: %s" ,  running_element->getDescription().c_str()  ));
+            LM_W(("Engine Executed item: %s" ,  running_element->str().c_str()  ));
         }
     }
     
-    LM_T( LmtEngineTime, ("[DONE] Engine:  executing %s" , running_element->getDescription().c_str()));
+    LM_T( LmtEngineTime, ("[DONE] Engine:  executing %s" , running_element->str().c_str()));
+    
+    // Collect information about this execution
+    activity_monitor.start_activity( "engine_management" );
 }
 
 void Engine::run()
@@ -214,7 +221,8 @@ void Engine::run()
         // Warning if we have a lot of elements in the engine stack
         size_t num_engine_elements = engine_element_collection.getNumEngineElements();
         LM_T( LmtEngine, ("Number of elements in the engine stack %lu" , num_engine_elements ));
-        if( num_engine_elements > 300 )
+        
+        if( num_engine_elements > 10000 )
             LM_W(("Execesive number of elements in the engine stack %lu" , num_engine_elements ));
 
         // ------------------------------------------------------------------------------------
@@ -254,20 +262,27 @@ void Engine::run()
             element->Reschedule(); // reinit internal counters...
         }
 
-
-        // If no normal elements, sleep a but until next repeated item
-        
-        if( engine_element_collection.getNumNormalEngineElements() > 0 )
+        // If normal elements to be executed, do not sleep
+        size_t num_normal_elements =  engine_element_collection.getNumNormalEngineElements();
+        if( num_normal_elements > 0 )
+        {
+            LM_T( LmtEngine, ("Do not sleep since it seems there are %lu elements in the engine" , 
+                              num_normal_elements));
             continue; // Do not sleep here
+        }
         
-        // Get time for next repeated element
-        double t_sleep = engine_element_collection.getTimeForNextRepeatedEngineElement();
-        
-        if( t_sleep < 0.1 )
+        // If next repeated elements is close, do not sleep
+        double t_next_repeated_elements = engine_element_collection.getTimeForNextRepeatedEngineElement();
+        LM_T( LmtEngine, ("Engine: Next repeated item in %.2f secs ..." , t_next_repeated_elements));
+        if( t_next_repeated_elements < 0.01 )
             continue;
-        
-        LM_T( LmtEngine, ("Engine: Sleeping 0.1. Next repeated item in %.2f secs ..." , t_sleep));
+
+        activity_monitor.start_activity("sleep");
+
         sleep_select( 0.1 );
+
+        activity_monitor.start_activity( "engine_management" );
+
     }
 }
 
@@ -356,5 +371,6 @@ Object* Engine::getObjectByName( const char *name )
     return objectsManager.getObjectByName(name);
     
 }
+
 
 NAMESPACE_END

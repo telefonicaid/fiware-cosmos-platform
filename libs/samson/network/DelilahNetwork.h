@@ -98,7 +98,7 @@ namespace samson {
         
     public:
         
-        DelilahNetworkRemove( DelilahNetwork* _delilah_network )
+        DelilahNetworkRemove( DelilahNetwork* _delilah_network ) : engine::EngineElement("delilah_network_remove")
         {
             delilah_network = _delilah_network;
         }

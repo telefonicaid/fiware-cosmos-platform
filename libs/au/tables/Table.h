@@ -27,6 +27,28 @@ namespace au
         class SelectCondition;
         class TableRow;
         
+        typedef enum
+        {
+            sum,
+            max,
+            min,
+            min_max,
+            vector,
+            different
+        } TableColumnGroup;
+        
+        typedef enum
+        {
+            format_string,
+            format_uint64,
+            format_uint,
+            format_time,
+            format_timestamp,
+            format_double,
+            format_percentadge,
+        } TableColumnFormat;
+
+        
         // ------------------------------------------------------------
         // TableSelectCondition
         // ------------------------------------------------------------
@@ -98,8 +120,8 @@ namespace au
             // Internal values
             StringVector values;
         
-            
             friend class Table;
+            
         public:
 
             TableCell(  )
@@ -134,23 +156,9 @@ namespace au
                 values.clear();
                 values.push_back(value);
             }
-            
-            int compare( TableCell* cell )
-            {
-                if( values.size() !=  cell->values.size() )
-                    return values.size() - cell->values.size();
-                
-                for( size_t i = 0 ; i < values.size() ; i++ )
-                    if( values[i] != cell->values[i] )
-                    {
-                        if( values[i] < cell->values[i] )
-                            return -1;
-                        else
-                            return 1;
-                    }
-                
-                return 0;
-            }
+
+            int compare( std::string v1 , std::string v2 , TableColumnFormat format );            
+            int compare( TableCell* cell , TableColumnFormat format );            
             
             // to be printed as it is...
             std::string str()
@@ -200,14 +208,14 @@ namespace au
             void set( std::string name , std::string value );
             void set( std::string name , TableCell* cell );
 
+            int compare( TableRow* row , std::vector<std::string> &fields );
+            
+            
             // Get a particular cell
             TableCell* get( std::string name );
 
             // Get single value
             std::string getValue( std::string name );
-            
-            // Function to compare two rows
-            int compare( TableRow* row , StringVector &sort_columns );
             
             // Get type ( normal, separator, etc.. )
             Type getType();
@@ -234,27 +242,6 @@ namespace au
             
             
             friend class Table;
-            
-            typedef enum
-            {
-                sum,
-                max,
-                min,
-                min_max,
-                vector,
-                different
-            } TableColumnGroup;
-            
-            typedef enum
-            {
-                format_string,
-                format_uint64,
-                format_uint,
-                format_time,
-                format_timestamp,
-                format_double,
-                format_percentadge,
-            } TableColumnFormat;
 
             // Format properties
             bool left;
@@ -367,7 +354,7 @@ namespace au
             
             TableColumn* getSelectColumn( std::string description );
             void addColumn( TableColumn * column ); // Only used in select
-            
+
             
         };
         

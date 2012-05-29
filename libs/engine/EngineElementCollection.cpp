@@ -1,4 +1,6 @@
 
+#include "au/tables/Table.h"
+
 #include "engine/EngineElement.h"
 #include "engine/EngineElementCollection.h" // Own interface
 
@@ -25,7 +27,7 @@ namespace engine
         au::TokenTaker tt(&token);
         
         // Insert an element in the rigth queue
-        LM_T( LmtEngine, ("Adding Engineelement: %s", element->getDescription().c_str() ));
+        LM_T( LmtEngine, ("Adding Engineelement: %s", element->str().c_str() ));
         
         if( element->isRepeated() )
             repeated_elements.insert( _find_pos_in_repeated_elements( element ) ,  element );
@@ -117,6 +119,56 @@ namespace engine
         return normal_elements.size();
     }
     
+    std::string EngineElementCollection::getTableOfEngineElements()
+    {
+        au::TokenTaker tt(&token);
+        
+        au::tables::Table table("Type|Waiting,f=double|Period|Description,left");
+        
+        au::list<EngineElement>::iterator it_elements;
+        for( it_elements = repeated_elements.begin() ; it_elements != repeated_elements.end() ; it_elements++ )
+        {
+            EngineElement* element = *it_elements;
+            
+            au::StringVector values;
+            values.push_back("Repeat");
+            values.push_back(au::str( element->getWaitingTime() ));
+            values.push_back(au::str( element->getPeriod() ));
+            //values.push_back(element->getName());
+            values.push_back(element->getDescription());
+            table.addRow( values );
+        }
+        
+        for( it_elements = normal_elements.begin() ; it_elements != normal_elements.end() ; it_elements++ )
+        {
+            EngineElement* element = *it_elements;
+            
+            au::StringVector values;
+            values.push_back("Normal");
+            values.push_back(au::str( element->getWaitingTime() ));
+            values.push_back("X");
+            //values.push_back(element->getName());
+            values.push_back(element->getDescription());
+            table.addRow( values );
+        }
+        
+        for ( size_t i = 0 ; i < extra_elements.size() ; i++ )
+        {
+            EngineElement* element = extra_elements[i];
+            
+            au::StringVector values;
+            values.push_back("Extra");
+            values.push_back(au::str(  element->getWaitingTime() ) );
+            values.push_back("X");
+            //values.push_back(element->getName());
+            values.push_back(element->getDescription());
+            table.addRow( values );
+        }        
+        
+        return table.str();
+    }
+
+    
     void EngineElementCollection::print_elements()
     {
         au::TokenTaker tt(&token);
@@ -127,19 +179,19 @@ namespace engine
         for( it_elements = repeated_elements.begin() ; it_elements != repeated_elements.end() ; it_elements++ )
         {
             EngineElement* element = *it_elements;
-            LM_M(("ENGINE REPEATED ELEMENT: %s",element->getDescription().c_str()));
+            LM_M(("ENGINE REPEATED ELEMENT: %s",element->str().c_str()));
         }
         
         for( it_elements = normal_elements.begin() ; it_elements != normal_elements.end() ; it_elements++ )
         {
             EngineElement* element = *it_elements;
-            LM_M(("ENGINE NORMAL ELEMENT: %s",element->getDescription().c_str()));
+            LM_M(("ENGINE NORMAL ELEMENT: %s",element->str().c_str()));
         }
         
         for ( size_t i = 0 ; i < extra_elements.size() ; i++ )
         {
             EngineElement* element = extra_elements[i];
-            LM_M(("ENGINE EXTRA ELEMENT: %s",element->getDescription().c_str()));
+            LM_M(("ENGINE EXTRA ELEMENT: %s",element->str().c_str()));
         }
         
     }

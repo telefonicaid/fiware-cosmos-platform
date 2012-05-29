@@ -7,8 +7,11 @@
 NAMESPACE_BEGIN(engine)
 
 
-EngineElement::EngineElement()
+EngineElement::EngineElement( std::string name )
 {
+    // Keep tha name of this element
+    name_ = name;
+    
     // Flag to indicate that this element will be executed just once
     type = normal;
     
@@ -16,8 +19,12 @@ EngineElement::EngineElement()
     shortDescription = "Engine element to be executed once";
 }
 
-EngineElement::EngineElement( int seconds )
+EngineElement::EngineElement( std::string name , int seconds )
 {
+    
+    // Keep tha name of this element
+    name_ = name;
+    
     type = repeated;
     period = seconds;
     counter = 0;
@@ -44,8 +51,17 @@ double EngineElement::getTimeToTrigger()
 {
     // Time for the next execution
     if( type == repeated )
-        return period - cronometer.diffTime(); 
+    {
+        double t = cronometer.diffTime();
+        LM_T(LmtEngine, ("getTimeToTrigger: Period %d Cronometer: %f" , period , t ));
+        return period - t; 
+    }
     return 0;
+}
+
+double EngineElement::getPeriod()
+{
+    return period;
 }
 
 double EngineElement::getWaitingTime()
@@ -56,6 +72,11 @@ double EngineElement::getWaitingTime()
 
 
 std::string EngineElement::getDescription()
+{
+    return description;
+}
+
+std::string EngineElement::str()
 {
     if( type == repeated )
     {
@@ -77,9 +98,15 @@ std::string EngineElement::getDescription()
 void EngineElement::getInfo( std::ostringstream& output)
 {
     au::xml_open(output, "engine_element");
-    au::xml_simple(output, "description", getDescription() );
+    au::xml_simple(output, "description", str() );
     au::xml_close(output, "engine_element");
 }
+
+std::string EngineElement::getName()
+{
+    return name_;
+}
+
 
 bool EngineElement::isRepeated()
 {

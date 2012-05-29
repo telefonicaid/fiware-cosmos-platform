@@ -15,12 +15,6 @@ env.hosts = config['hosts']
 env.user = config['user'] 
 env.password = config['password']
 
-# Dummy code, need to remove before submitting
-from collections import namedtuple
-Config = namedtuple('Config', 'namenode, jobtracker, masters, slaves')
-conf = Config('1', '2', ['1', '2'], ['1', '2'])
-# End of dummy code
-
 def deploy_hue():
     pdihub = config['github']
     checkout_dir = config['hue_checkout']

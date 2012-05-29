@@ -26,7 +26,7 @@ def deploy():
 
 @roles('namenode') # frontend
 def deploy_hue():
-    """Deploy the HUE frontend from Clouder, plus our fixes and our apps"""
+    """Deploy the HUE frontend from Cloudera, plus our fixes and our apps"""
     pdihub = config['github']
     checkout_dir = config['hue_checkout']
     run("yum install hue") # at version 1.2.0.0+114.35

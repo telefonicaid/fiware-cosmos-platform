@@ -15,7 +15,6 @@
 
     <modules>
         <module>mobility</module>
-        <module>o2aaic</module>
         <module>samples</module>
         <module>webprofiling</module>
     </modules>

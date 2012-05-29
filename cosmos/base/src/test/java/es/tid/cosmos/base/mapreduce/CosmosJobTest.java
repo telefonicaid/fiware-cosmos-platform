@@ -2,9 +2,17 @@ package es.tid.cosmos.base.mapreduce;
 
 import java.io.IOException;
 
+import com.mongodb.hadoop.io.BSONWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -236,11 +244,150 @@ public class CosmosJobTest {
         assertTrue(job.getWaitForCompletionCalled());
     }
 
+    @Test
+    public void testWaitForCompletion10() throws Exception {
+        FakeJob main = new FakeJob(new Configuration(), "Main", true);
+        FakeJob agg = new FakeJob(new Configuration(), "Agg", true);
+        FakeJob agg2 = new FakeJob(new Configuration(), "Agg2", true);
+        FakeJob agg3 = new FakeJob(new Configuration(), "Agg3", true);
+        FakeJob exp = new FakeJob(new Configuration(), "Exp", true);
+        FakeJob exp2 = new FakeJob(new Configuration(), "Exp2", true);
+        FakeJob exp3 = new FakeJob(new Configuration(), "Exp3", true);
+        agg.addDependentJob(main);
+        agg2.addDependentJob(main);
+        agg3.addDependentJob(main);
+        exp.addDependentJob(agg);
+        exp2.addDependentJob(agg2);
+        exp3.addDependentJob(agg3);
+
+        JobList j = new JobList();
+        j.add(exp);
+        j.add(exp2);
+        j.add(exp3);
+
+        j.waitForCompletion(true);
+
+        assertTrue(main.getSubmitCallTime() < agg.getSubmitCallTime());
+        assertTrue(main.getSubmitCallTime() < agg2.getSubmitCallTime());
+        assertTrue(main.getSubmitCallTime() < agg3.getSubmitCallTime());
+        assertTrue(agg.getSubmitCallTime() < exp.getSubmitCallTime());
+        assertTrue(agg2.getSubmitCallTime() < exp2.getSubmitCallTime());
+        assertTrue(agg3.getSubmitCallTime() < exp3.getSubmitCallTime());
+
+        assertTrue(main.getWaitForCompletionCalled());
+        assertTrue(agg.getWaitForCompletionCalled());
+        assertTrue(agg2.getWaitForCompletionCalled());
+        assertTrue(agg3.getWaitForCompletionCalled());
+        assertTrue(exp.getWaitForCompletionCalled());
+        assertTrue(exp2.getWaitForCompletionCalled());
+        assertTrue(exp3.getWaitForCompletionCalled());
+    }
+
+    private static class DummyMapper
+            extends Mapper<LongWritable, Text, NullWritable, BSONWritable> {
+    }
+
+    private static class DummyReducer
+            extends Reducer<NullWritable, BSONWritable, Text, Text> {
+    }
+
+    private static class DummyReducer2
+            extends Reducer<LongWritable, Text, Text, Text> {
+    }
+
+    @Test
+    public void testCreate1() throws Exception {
+        final String jobName = "MapReduceJobName";
+        CosmosJob job = CosmosJob.createMapReduceJob(
+                new Configuration(), jobName,
+                TextInputFormat.class, DummyMapper.class,
+                DummyReducer.class, TextOutputFormat.class);
+        assertEquals(job.getJobName(), jobName);
+        assertEquals(job.getInputFormatClass(), TextInputFormat.class);
+        assertEquals(job.getMapOutputKeyClass(), NullWritable.class);
+        assertEquals(job.getMapOutputValueClass(), BSONWritable.class);
+        assertEquals(job.getOutputKeyClass(), Text.class);
+        assertEquals(job.getOutputValueClass(), Text.class);
+        assertEquals(job.getReducerClass(), DummyReducer.class);
+        assertEquals(job.getMapperClass(), DummyMapper.class);
+    }
+
+    @Test
+    public void testCreate2() throws Exception {
+        final String jobName = "MapReduceJobName";
+        final int reduceTasks = 8;
+        CosmosJob job = CosmosJob.createMapReduceJob(
+                new Configuration(), jobName,
+                TextInputFormat.class, DummyMapper.class,
+                DummyReducer.class, reduceTasks, TextOutputFormat.class);
+        assertEquals(job.getJobName(), jobName);
+        assertEquals(job.getInputFormatClass(), TextInputFormat.class);
+        assertEquals(job.getMapOutputKeyClass(), NullWritable.class);
+        assertEquals(job.getMapOutputValueClass(), BSONWritable.class);
+        assertEquals(job.getOutputKeyClass(), Text.class);
+        assertEquals(job.getOutputValueClass(), Text.class);
+        assertEquals(job.getReducerClass(), DummyReducer.class);
+        assertEquals(job.getMapperClass(), DummyMapper.class);
+        assertEquals(job.getNumReduceTasks(), reduceTasks);
+    }
+
+    @Test
+    public void testCreate3() throws Exception {
+        final String jobName = "MapperJobName";
+        CosmosJob job = CosmosJob.createMapJob(
+                new Configuration(), jobName, TextInputFormat.class,
+                DummyMapper.class, TextOutputFormat.class);
+        assertEquals(job.getJobName(), jobName);
+        assertEquals(job.getInputFormatClass(), TextInputFormat.class);
+        assertEquals(job.getMapOutputKeyClass(), NullWritable.class);
+        assertEquals(job.getMapOutputValueClass(), BSONWritable.class);
+        assertEquals(job.getOutputKeyClass(), NullWritable.class);
+        assertEquals(job.getOutputValueClass(), BSONWritable.class);
+        assertEquals(job.getReducerClass(), Reducer.class);
+        assertEquals(job.getMapperClass(), DummyMapper.class);
+    }
+
+    @Test
+    public void testCreate4() throws Exception {
+        final String jobName = "ReduceJobName";
+        CosmosJob job = CosmosJob.createReduceJob(
+                new Configuration(), jobName, TextInputFormat.class,
+                DummyReducer2.class, TextOutputFormat.class);
+        assertEquals(job.getJobName(), jobName);
+        assertEquals(job.getInputFormatClass(), TextInputFormat.class);
+        assertEquals(job.getMapOutputKeyClass(), LongWritable.class);
+        assertEquals(job.getMapOutputValueClass(), Text.class);
+        assertEquals(job.getOutputKeyClass(), Text.class);
+        assertEquals(job.getOutputValueClass(), Text.class);
+        assertEquals(job.getReducerClass(), DummyReducer2.class);
+        assertEquals(job.getMapperClass(), Mapper.class);
+    }
+
+    @Test
+    public void testCreate5() throws Exception {
+        final String jobName = "ReduceJobName";
+        final int reduceTasks = 4;
+        CosmosJob job = CosmosJob.createReduceJob(
+                new Configuration(), jobName, TextInputFormat.class,
+                DummyReducer2.class, reduceTasks, TextOutputFormat.class);
+        assertEquals(job.getJobName(), jobName);
+        assertEquals(job.getInputFormatClass(), TextInputFormat.class);
+        assertEquals(job.getMapOutputKeyClass(), LongWritable.class);
+        assertEquals(job.getMapOutputValueClass(), Text.class);
+        assertEquals(job.getOutputKeyClass(), Text.class);
+        assertEquals(job.getOutputValueClass(), Text.class);
+        assertEquals(job.getReducerClass(), DummyReducer2.class);
+        assertEquals(job.getMapperClass(), Mapper.class);
+        assertEquals(job.getNumReduceTasks(), reduceTasks);
+    }
+
+    @Test(expected=JobExecutionException.class)
     public void testSubmit() throws Exception {
         FakeJob job = new FakeJob(new Configuration(), "Test", true);
         FakeJob job2 = new FakeJob(new Configuration(), "Test2", false);
         job.addDependentJob(job2);
         job.submit();
-        assertTrue(job2.getSubmitCallTime() < job.getSubmitCallTime());
+        assertNotNull(job2.getSubmitCallTime());
+        job.waitForCompletion(true);
     }
 }

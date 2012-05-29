@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.adjacentextraction;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -9,10 +11,10 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.MapJob;
-import es.tid.cosmos.base.mapreduce.MapReduceJob;
-import es.tid.cosmos.base.mapreduce.ReduceJob;
-import es.tid.cosmos.mobility.util.*;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.mobility.util.ExportPoiToTextByTwoIntReducer;
+import es.tid.cosmos.mobility.util.SetMobDataInputIdByTwoIntReducer;
+import es.tid.cosmos.mobility.util.SetMobDataInputIdReducer;
 
 /**
  *
@@ -25,12 +27,12 @@ public final class AdjacentExtractionRunner {
     public static void run(Path pointsOfInterestPath, Path pairbtsAdjPath,
                            Path pointsOfInterestIdPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
-            throws Exception {
+            throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
         
         Path poisIdPath = new Path(tmpDirPath, "pois_id");
         {
-            MapReduceJob job = MapReduceJob.create(conf,
+            CosmosJob job = CosmosJob.createMapReduceJob(conf,
                     "AdjAddUniqueIdPoiToPoiNew",
                     SequenceFileInputFormat.class,
                     AdjAddUniqueIdPoiMapper.class,
@@ -43,7 +45,7 @@ public final class AdjacentExtractionRunner {
 
         Path poisTablePath = new Path(tmpDirPath, "pois_table");
         {
-            MapReduceJob job = MapReduceJob.create(conf, 
+            CosmosJob job = CosmosJob.createMapReduceJob(conf, 
                     "AdjAddUniqueIdPoiToTwoInt",
                     SequenceFileInputFormat.class,
                     AdjAddUniqueIdPoiMapper.class,
@@ -56,7 +58,7 @@ public final class AdjacentExtractionRunner {
 
         Path poiPairbtsPath = new Path(tmpDirPath, "poi_pairbts");
         {
-            ReduceJob job = ReduceJob.create(conf, "AdjGroupTypePoiClient",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "AdjGroupTypePoiClient",
                     SequenceFileInputFormat.class,
                     AdjGroupTypePoiClientReducer.class,
                     SequenceFileOutputFormat.class);
@@ -68,7 +70,7 @@ public final class AdjacentExtractionRunner {
         Path poiPairbtsWithInputIdPath = new Path(tmpDirPath,
                                                   "poi_pairbts_with_input_id");
         {
-            ReduceJob job = ReduceJob.create(conf, "SetMobDataInputIdByTwoInt",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "SetMobDataInputIdByTwoInt",
                     SequenceFileInputFormat.class,
                     SetMobDataInputIdByTwoIntReducer.class,
                     SequenceFileOutputFormat.class);
@@ -81,7 +83,7 @@ public final class AdjacentExtractionRunner {
         Path pairbtsAdjWithInputIdPath = new Path(tmpDirPath,
                                                   "pairbts_adj_with_input_id");
         {
-            ReduceJob job = ReduceJob.create(conf, "SetMobDataInputIdByTwoInt",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "SetMobDataInputIdByTwoInt",
                     SequenceFileInputFormat.class,
                     SetMobDataInputIdByTwoIntReducer.class,
                     SequenceFileOutputFormat.class);
@@ -93,7 +95,7 @@ public final class AdjacentExtractionRunner {
         
         Path poiPairbtsAdjPath = new Path(tmpDirPath, "poi_pairbts_adj");
         {
-            ReduceJob job = ReduceJob.create(conf, "AdjJoinPairbtsAdjbts",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "AdjJoinPairbtsAdjbts",
                     SequenceFileInputFormat.class,
                     AdjJoinPairbtsAdjbtsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -108,7 +110,7 @@ public final class AdjacentExtractionRunner {
             Path poiPairbtsIndexPath = new Path(tmpDirPath,
                                                 "poi_pairbts_index");
             {
-                ReduceJob job = ReduceJob.create(conf, "AdjPutMaxId",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "AdjPutMaxId",
                         SequenceFileInputFormat.class,
                         AdjPutMaxIdReducer.class,
                         SequenceFileOutputFormat.class);
@@ -120,7 +122,7 @@ public final class AdjacentExtractionRunner {
             Path poisTableWithInputIdPath = new Path(tmpDirPath,
                     "pois_table_with_input_id");
             {
-                ReduceJob job = ReduceJob.create(conf, "SetMobDataInputId",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "SetMobDataInputId",
                         SequenceFileInputFormat.class,
                         SetMobDataInputIdReducer.class,
                         SequenceFileOutputFormat.class);
@@ -133,7 +135,7 @@ public final class AdjacentExtractionRunner {
             Path poiPairbtsIndexWithInputIdPath = new Path(tmpDirPath,
                     "poi_pairbts_index_with_input_id");
             {
-                ReduceJob job = ReduceJob.create(conf, "SetMobDataInputId",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "SetMobDataInputId",
                         SequenceFileInputFormat.class,
                         SetMobDataInputIdReducer.class,
                         SequenceFileOutputFormat.class);
@@ -146,7 +148,7 @@ public final class AdjacentExtractionRunner {
             
             Path poisTableTmpPath = new Path(tmpDirPath, "pois_table_tmp");
             {
-                ReduceJob job = ReduceJob.create(conf, "AdjUpdatePoisTable",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "AdjUpdatePoisTable",
                         SequenceFileInputFormat.class,
                         AdjUpdatePoisTableReducer.class,
                         SequenceFileOutputFormat.class);
@@ -162,7 +164,7 @@ public final class AdjacentExtractionRunner {
             Path poiPairbtsAdjWithInputIdPath = new Path(tmpDirPath,
                     "poi_pairbts_adj_with_input_id");
             {
-                ReduceJob job = ReduceJob.create(conf, "SetMobDataInputId",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "SetMobDataInputId",
                         SequenceFileInputFormat.class,
                         SetMobDataInputIdReducer.class,
                         SequenceFileOutputFormat.class);
@@ -175,7 +177,7 @@ public final class AdjacentExtractionRunner {
             
             Path poiPairbtsCh1Path = new Path(tmpDirPath, "poi_pairbts_ch1");
             {
-                ReduceJob job = ReduceJob.create(conf, "AdjSwapPoiIdSt1",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "AdjSwapPoiIdSt1",
                         SequenceFileInputFormat.class,
                         AdjSwapPoiIdSt1Reducer.class,
                         SequenceFileOutputFormat.class);
@@ -192,7 +194,7 @@ public final class AdjacentExtractionRunner {
             Path poiPairbtsCh1WithInputIdPath = new Path(tmpDirPath,
                     "poi_pairbts_ch1_with_input_id");
             {
-                ReduceJob job = ReduceJob.create(conf, "SetMobDataInputId",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "SetMobDataInputId",
                         SequenceFileInputFormat.class,
                         SetMobDataInputIdReducer.class,
                         SequenceFileOutputFormat.class);
@@ -204,7 +206,7 @@ public final class AdjacentExtractionRunner {
             }
             
             {
-                ReduceJob job = ReduceJob.create(conf, "AdjSwapPoiIdSt2",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "AdjSwapPoiIdSt2",
                         SequenceFileInputFormat.class,
                         AdjSwapPoiIdSt2Reducer.class,
                         SequenceFileOutputFormat.class);
@@ -217,7 +219,7 @@ public final class AdjacentExtractionRunner {
             
             Path nindSpreadPath = new Path(tmpDirPath, "nind_spread");
             {
-                ReduceJob job = ReduceJob.create(conf, "AdjSpreadCount",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "AdjSpreadCount",
                         SequenceFileInputFormat.class,
                         AdjSpreadCountReducer.class,
                         SequenceFileOutputFormat.class);
@@ -228,7 +230,7 @@ public final class AdjacentExtractionRunner {
 
             Path numIndexPath = new Path(tmpDirPath, "num_index");
             {
-                ReduceJob job = ReduceJob.create(conf, "AdjCountIndexes",
+                CosmosJob job = CosmosJob.createReduceJob(conf, "AdjCountIndexes",
                         SequenceFileInputFormat.class,
                         AdjCountIndexesReducer.class,
                         SequenceFileOutputFormat.class);
@@ -242,7 +244,7 @@ public final class AdjacentExtractionRunner {
         
         Path poiPoimodPath = new Path(tmpDirPath, "poi_poimod");
         {
-            MapJob job = MapJob.create(conf, "AdjSpreadTableByPoiId",
+            CosmosJob job = CosmosJob.createMapJob(conf, "AdjSpreadTableByPoiId",
                     SequenceFileInputFormat.class,
                     AdjSpreadTableByPoiIdMapper.class,
                     SequenceFileOutputFormat.class);
@@ -253,7 +255,7 @@ public final class AdjacentExtractionRunner {
 
         Path poiIdPoiPath = new Path(tmpDirPath, "poiId_poi");
         {
-            MapJob job = MapJob.create(conf, "AdjSpreadPoisByPoiId",
+            CosmosJob job = CosmosJob.createMapJob(conf, "AdjSpreadPoisByPoiId",
                     SequenceFileInputFormat.class,
                     AdjSpreadPoisByPoiIdMapper.class,
                     SequenceFileOutputFormat.class);
@@ -265,7 +267,7 @@ public final class AdjacentExtractionRunner {
         Path pointsOfInterestModPath = new Path(tmpDirPath,
                                                 "points_of_interest_mod");
         {
-            ReduceJob job = ReduceJob.create(conf, "AdjJoinNewPoiId",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "AdjJoinNewPoiId",
                     SequenceFileInputFormat.class,
                     AdjJoinNewPoiIdReducer.class,
                     SequenceFileOutputFormat.class);
@@ -276,7 +278,7 @@ public final class AdjacentExtractionRunner {
         }
         
         {
-            ReduceJob job = ReduceJob.create(conf, "AdjChangePoisId",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "AdjChangePoisId",
                     SequenceFileInputFormat.class,
                     AdjChangePoisIdReducer.class,
                     SequenceFileOutputFormat.class);
@@ -290,7 +292,7 @@ public final class AdjacentExtractionRunner {
             Path pointsOfInterestIdTextPath = new Path(tmpDirPath,
                     "points_of_interest_id_text");
             {
-                ReduceJob job = ReduceJob.create(conf,
+                CosmosJob job = CosmosJob.createReduceJob(conf,
                         "ExportPoiToTextByTwoInt",
                         SequenceFileInputFormat.class,
                         ExportPoiToTextByTwoIntReducer.class,

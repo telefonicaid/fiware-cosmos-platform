@@ -6,16 +6,147 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.*;
 
 /**
  *
  * @author ximo
  */
-public abstract class CosmosJob extends Job {
+public class CosmosJob extends Job {
     private volatile ExceptionedThread submittedThread;
     private boolean deleteOutputOnExit;
     private JobList dependencies;
+
+    // Static create methods that configure the class automatically
+    // These are static methods instead of constructors to enable type inference
+    // in generic parameters by the Java compiler. Directs calls to constructors
+    // do not activate the type inference mechanism in the compiler, which causes
+    // the compiler to be called with Object as all its type parameters.
+    //
+    // This way, if you incorrectly call the creation function, you get a
+    // compile-time error instead of a runtime error.
+    public static <
+            InputFormatClass extends InputFormat<InputKeyClass, InputValueClass>,
+            MapperClass extends Mapper<InputKeyClass, InputValueClass,
+                                       ? extends ReducerInputKeyClass, ? extends ReducerInputValueClass>,
+            ReducerClass extends Reducer<ReducerInputKeyClass, ReducerInputValueClass,
+                                         OutputKeyClass, OutputValueClass>,
+            OutputFormatClass extends OutputFormat<OutputKeyClass,
+                                                   OutputValueClass>,
+            InputKeyClass, InputValueClass,
+            ReducerInputKeyClass, ReducerInputValueClass,
+            OutputKeyClass, OutputValueClass>
+        CosmosJob createMapReduceJob(Configuration conf, String jobName,
+            Class<InputFormatClass> inputFormat, Class<MapperClass> mapper,
+            Class<ReducerClass> reducer, Integer numReduceTasks,
+            Class<OutputFormatClass> outputFormat) throws IOException {
+        CosmosJob job = new CosmosJob(conf, jobName);
+        job.setInputFormatClass(inputFormat);
+        Class outputKey = null;
+        Class outputValue = null;
+        if (mapper != null) {
+            job.setJarByClass(mapper);
+
+            Class[] mapperClasses = getGenericParameters(mapper);
+            job.setMapperClass(mapper);
+            job.setMapOutputKeyClass(mapperClasses[2]);
+            job.setMapOutputValueClass(mapperClasses[3]);
+            outputKey = mapperClasses[2];
+            outputValue = mapperClasses[3];
+        }
+        if (reducer != null) {
+            job.setJarByClass(reducer);
+
+            Class[] reducerClasses = getGenericParameters(reducer);
+            job.setReducerClass(reducer);
+            outputKey = reducerClasses[2];
+            outputValue = reducerClasses[3];
+            if(mapper == null) {
+                job.setMapOutputKeyClass(reducerClasses[0]);
+                job.setMapOutputValueClass(reducerClasses[1]);
+            }
+        }
+
+        if (outputKey != null) {
+            job.setOutputKeyClass(outputKey);
+        }
+        if (outputValue != null) {
+            job.setOutputValueClass(outputValue);
+        }
+
+        job.setOutputFormatClass(outputFormat);
+
+        if (numReduceTasks != null) {
+            job.setNumReduceTasks(numReduceTasks);
+        }
+        return job;
+    }
+    
+    public static <
+            InputFormatClass extends InputFormat<InputKeyClass, InputValueClass>,
+            MapperClass extends Mapper<InputKeyClass, InputValueClass,
+                                       ? extends ReducerInputKeyClass, ? extends ReducerInputValueClass>,
+            ReducerClass extends Reducer<ReducerInputKeyClass, ReducerInputValueClass,
+                                         OutputKeyClass, OutputValueClass>,
+            OutputFormatClass extends OutputFormat<OutputKeyClass,
+                                                   OutputValueClass>,
+            InputKeyClass, InputValueClass,
+            ReducerInputKeyClass, ReducerInputValueClass,
+            OutputKeyClass, OutputValueClass>
+        CosmosJob createMapReduceJob(Configuration conf, String jobName,
+            Class<InputFormatClass> inputFormat, Class<MapperClass> mapper,
+            Class<ReducerClass> reducer, Class<OutputFormatClass> outputFormat)
+            throws IOException {
+        return CosmosJob.createMapReduceJob(conf, jobName, inputFormat, mapper,
+                                            reducer, null, outputFormat);
+    }
+
+    public static <
+            InputFormatClass extends InputFormat<InputKeyClass, InputValueClass>,
+            MapperClass extends Mapper<InputKeyClass, InputValueClass,
+                                       OutputKeyClass, OutputValueClass>,
+            OutputFormatClass extends OutputFormat<OutputKeyClass, OutputValueClass>,
+            InputKeyClass, InputValueClass,
+            OutputKeyClass, OutputValueClass>
+        CosmosJob createMapJob(Configuration conf, String jobName,
+            Class<InputFormatClass> inputFormat, Class<MapperClass> mapper,
+            Class<OutputFormatClass> outputFormat)
+            throws IOException {
+        return CosmosJob.createMapReduceJob(conf, jobName, inputFormat, mapper,
+                                            null, null, outputFormat);
+    }
+
+    public static <
+            InputFormatClass extends InputFormat<InputKeyClass, InputValueClass>,
+            ReducerClass extends Reducer<InputKeyClass, InputValueClass,
+                                       OutputKeyClass, OutputValueClass>,
+            OutputFormatClass extends OutputFormat<OutputKeyClass, OutputValueClass>,
+            InputKeyClass, InputValueClass,
+            OutputKeyClass, OutputValueClass>
+        CosmosJob createReduceJob(Configuration conf, String jobName,
+            Class<InputFormatClass> inputFormat, Class<ReducerClass> reducer,
+            Integer numReduceTasks, Class<OutputFormatClass> outputFormat)
+            throws IOException {
+        return CosmosJob.createMapReduceJob(
+                conf, jobName, inputFormat, null, reducer, numReduceTasks,
+                outputFormat);
+    }
+    
+    public static <
+            InputFormatClass extends InputFormat<InputKeyClass, InputValueClass>,
+            ReducerClass extends Reducer<InputKeyClass, InputValueClass,
+                                       OutputKeyClass, OutputValueClass>,
+            OutputFormatClass extends OutputFormat<OutputKeyClass, OutputValueClass>,
+            InputKeyClass, InputValueClass,
+            OutputKeyClass, OutputValueClass>
+        CosmosJob createReduceJob(Configuration conf, String jobName,
+            Class<InputFormatClass> inputFormat, Class<ReducerClass> reducer,
+            Class<OutputFormatClass> outputFormat)
+            throws IOException {
+        return CosmosJob.createMapReduceJob(
+                conf, jobName, inputFormat, null, reducer, null,
+                outputFormat);
+    }
 
     public CosmosJob(Configuration conf, String jobName)
             throws IOException {
@@ -36,8 +167,7 @@ public abstract class CosmosJob extends Job {
      * by "originalClass"
      * @throws Exception
      */
-    protected static Class[] getGenericParameters(Class originalClass)
-            throws Exception {
+    static Class[] getGenericParameters(Class originalClass) {
         try {
             Type parent = originalClass.getGenericSuperclass();
             Class superClass;
@@ -51,7 +181,7 @@ public abstract class CosmosJob extends Job {
                     } else if (arg instanceof ParameterizedType) {
                         retVal.add((Class)((ParameterizedType)arg).getRawType());
                     } else {
-                        throw new Exception("Unknown arg type");
+                        throw new Exception("Unknown arg type: " + arg.toString());
                     }
                 }
                 return retVal.toArray(new Class[0]);
@@ -68,7 +198,7 @@ public abstract class CosmosJob extends Job {
             }
             return getGenericParameters(superClass);
         } catch (Exception ex) {
-            throw new Exception("[Debug Info] originalClass: "
+            throw new RuntimeException("[Debug Info] originalClass: "
                     + originalClass.toString(), ex);
         }
     }
@@ -119,7 +249,7 @@ public abstract class CosmosJob extends Job {
         return this.deleteOutputOnExit;
     }
 
-    private static abstract class ExceptionedThread extends Thread {
+    private abstract static class ExceptionedThread extends Thread {
         private Exception exception;
 
         protected void setException(Exception e) {

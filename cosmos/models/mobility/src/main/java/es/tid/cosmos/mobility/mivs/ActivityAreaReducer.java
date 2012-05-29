@@ -27,13 +27,13 @@ public class ActivityAreaReducer extends Reducer<
         ProtobufWritable<TelMonth>, ProtobufWritable<MobData>,
         LongWritable, ProtobufWritable<MobData>> {
     private static class Accumulations {
-        public int difPos;
-        public int numBtss;
-        public int numMuns;
-        public int numStates;
-        public double massCenterX;
-        public double massCenterY;
-        public double radius;
+        int difPos;
+        int numBtss;
+        int numMuns;
+        int numStates;
+        double massCenterX;
+        double massCenterY;
+        double radius;
     }
     
     private Set<Long> allCells;

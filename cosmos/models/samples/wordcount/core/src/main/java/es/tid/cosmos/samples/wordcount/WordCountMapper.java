@@ -13,14 +13,15 @@ import org.apache.hadoop.mapreduce.Mapper;
  *
  * @author logc
  */
-public class WordCountMapper
-        extends Mapper<LongWritable, Text, Text, IntWritable> {
+public class WordCountMapper extends Mapper<LongWritable, Text,
+                                            Text, IntWritable> {
     private static final IntWritable ONE = new IntWritable(1);
+    
     private Text word;
 
     @Override
-    protected void setup(Context context)
-            throws IOException, InterruptedException {
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
         this.word = new Text();
     }
         
@@ -30,7 +31,7 @@ public class WordCountMapper
         StringTokenizer tokenizer = new StringTokenizer(value.toString());
         while (tokenizer.hasMoreTokens()) {
             this.word.set(tokenizer.nextToken());
-            context.write(this.word, this.ONE);
+            context.write(this.word, ONE);
         }
     }
 }

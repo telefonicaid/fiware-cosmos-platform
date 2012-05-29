@@ -1,0 +1,9 @@
+bin/
+develop-eggs/
+eggs/
+.installed.cfg
+logs/
+parts/
+pip-log.txt
+reports/
+target/

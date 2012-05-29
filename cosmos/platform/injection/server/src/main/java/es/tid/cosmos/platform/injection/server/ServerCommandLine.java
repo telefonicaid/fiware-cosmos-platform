@@ -6,7 +6,7 @@ import org.apache.commons.cli.*;
  * @author sortega
  */
 public class ServerCommandLine {
-    private static final char CONFIG_FILE = 'c';
+    private static final String CONFIG_FILE = "c";
 
     private final GnuParser parser;
     private final Options options;
@@ -14,7 +14,7 @@ public class ServerCommandLine {
 
     public ServerCommandLine() {
         this.parser = new GnuParser();
-        this.options = new Options().addOption("c", "config", true,
+        this.options = new Options().addOption(CONFIG_FILE, "config", true,
                                                "Configuration file");
     }
 

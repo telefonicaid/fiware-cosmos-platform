@@ -29,14 +29,12 @@ def deploy_hue():
 #     run("/etc/init.d/frontend start")
 
 def deploy_sftp():
-    # Jenkins builds JAR
-    put("target/injection*.jar")
-    run("cat template.ini >> /root/injection/server.conf")
-    run("update_config ?")
+    """Deploys the SFTP server as a Java JAR and starts it"""
+    with cd("/root/injection"):
+        put("target/injection*.jar")
+        local("cat template.ini >> /root/injection/server.conf")
+        run("update_config ?")
     run("/etc/init.d/injection start")
-    with lcd("../../cosmos/platform/injection/server/"):
-        local("mvn package")
-        put("target/injection*.jar ~/injection")
 
 def install_cdh():
     # Install the latest Hadoop distribution in CDH3

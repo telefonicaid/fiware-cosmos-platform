@@ -19,7 +19,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
  * @author logc
  */
 public class WordCountJob extends Job {
-    private static final String JOB_NAME = "WordCountJob";
+    private static final String JOB_NAME = "WordCount";
 
     public WordCountJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);

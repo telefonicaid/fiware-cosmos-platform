@@ -13,26 +13,21 @@ import org.junit.Test;
  * @author logc
  */
 public class WordCountTest {
-    private WordCountMapper mapper;
-    private WordCountReducer reducer;
-    private MapReduceDriver driver;
+    private MapReduceDriver<LongWritable, Text, Text, IntWritable, Text,
+            LongWritable> driver;
 
     @Before
     public void setUp() {
-        this.mapper = new WordCountMapper();
-        this.reducer = new WordCountReducer();
         this.driver = new MapReduceDriver<LongWritable, Text, Text,
-                IntWritable, Text, LongWritable>();
+                IntWritable, Text, LongWritable>(new WordCountMapper(),
+                                                 new WordCountReducer());
     }
 
     @Test
     public void shouldCountWords() {
-        Text aShortText = new Text("a string of text where a word is repeated");
-
         this.driver
-            .withInput(new LongWritable(1L), aShortText)
-            .withMapper(this.mapper)
-            .withReducer(this.reducer)
+            .withInput(new LongWritable(1L),
+                       new Text("a string of text where a word is repeated"))
             .withOutput(new Text("a"), new LongWritable(2))
             .withOutput(new Text("is"), new LongWritable(1))
             .withOutput(new Text("of"), new LongWritable(1))

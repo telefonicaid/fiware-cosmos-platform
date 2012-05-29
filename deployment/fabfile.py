@@ -1,10 +1,14 @@
+import json
 from fabric.api import *
 from fabric.contrib import files
 from tempfile import TemporaryFile
 
-env.hosts = ['10.95.111.109']
-env.user = 'root'
-env.password = 'admintid33'
+DEFAULT_CONFIG = 'staging1.json'
+
+config = json.loads(open(DEFAULT_CONFIG, 'r').read())
+env.hosts = config['hosts']
+env.user = config['user'] 
+env.password = config['password']
 
 # Dummy code, need to remove before submitting
 from collections import namedtuple
@@ -13,14 +17,16 @@ conf = Config('1', '2', ['1', '2'], ['1', '2'])
 # End of dummy code
 
 def deploy_hue():
+    pdihub = config['github']
+    checkout_dir = config['hue_checkout']
     run("yum install hue")
-    run("git clone <pdi hue-fixes> <checkout dir>")
-    run("git apply <hue-fixes> <hue>")
-    run("scp ./cosmos/platform/frontend/hue/app/cosmos")
+    run("git clone {0}/HUE {1}".format(pdihub, checkout_dir))
+    #run("git apply <hue-fixes> <hue>")
+#     put("./cosmos/platform/frontend/hue/app/cosmos")
     # remote cd ./cosmos/platform/frontend/hue-app/cosmos
-    run("python bootstrap.py")
-    run("bin/buildout -c buildout.prod.cfg")
-    run("/etc/init.d/frontend start")
+#     run("python bootstrap.py")
+#     run("bin/buildout -c buildout.prod.cfg")
+#     run("/etc/init.d/frontend start")
 
 def deploy_sftp():
     # Jenkins builds JAR

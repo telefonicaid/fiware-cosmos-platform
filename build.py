@@ -12,7 +12,7 @@ PYPROJECTS = ['cosmos/platform/frontend/hue-apps/cosmos/']
 
 def run():
     """
-    Main eintry point
+    Main entry point
     """
     parser = OptionParser()
     parser.add_option("-p", "--projects", dest="projects",

@@ -43,8 +43,12 @@ def deploy_sftp():
     """Deploys the SFTP server as a Java JAR and starts it"""
     with cd("/root/injection"):
         put("target/injection*.jar")
-        local("cat template.ini >> /root/injection/server.conf")
-        run("update_config ?")
+        injection_conf = StringIO()
+        template = Template(filename='injection.conf.mako')
+        injection_conf.write(template.render(namenode=config['hosts']['namenode'][0]))
+        put(injection_conf, "/etc/injection.cfg")
+        put("templates/injection.init.d", "/etc/init.d/injection")
+        #run("update_config ?")
     run("/etc/init.d/injection start")
 
 def install_cdh():

@@ -1050,11 +1050,11 @@ namespace au
                     int c = 0;
                     
                     int pos_sort_columns = 0;
-                    while( (c==0) && (pos_sort_columns< sort_columns.size() ) )
+                    while( (c==0) && (pos_sort_columns < (int) sort_columns.size() ) )
                     {
                         std::string column_name = sort_columns[pos_sort_columns];
                         size_t column_id = getColumn( column_name );
-                        if( column_id != -1 )
+                        if( column_id != (size_t) -1 )
                         {
                             TableCell* cell1 = rows[r]->get( column_name );
                             TableCell* cell2 = rows[rr]->get( column_name );

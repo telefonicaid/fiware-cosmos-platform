@@ -45,8 +45,11 @@ static void linesPresent(char** input, int lines)
 {
     int ix;
 
+	if (lmReads == false)
+		return;
+
     for (ix = 0; ix < lines; ix++)
-        LM_T(LmtInputLines, ("input: '%s'", input[ix]));
+        LM_F(("input: '%s'", input[ix]));
 }
 
 

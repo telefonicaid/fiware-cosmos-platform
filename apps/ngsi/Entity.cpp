@@ -50,27 +50,6 @@ void entityInit(void)
 
 /* ****************************************************************************
 *
-* entityLookup -
-*/
-Entity* entityLookup(std::string id, std::string type)
-{
-	Entity* entityP = entityV;
-
-	while (entityP != NULL)
-	{
-		if ((entityP->id == id) && (entityP->type == type))
-			return entityP;
-
-		entityP = entityP->next;
-	}
-
-	return NULL;
-}
-
-
-
-/* ****************************************************************************
-*
 * entityCreate - 
 */
 static Entity* entityCreate(std::string id, std::string type, bool isPattern, std::string providingApplication, int duration, std::string registrationId)
@@ -113,6 +92,89 @@ static void entityAppend(Entity* entity)
 		entityNext->next = entity;
 
 	entityNext = entity;
+}
+
+
+
+/* ****************************************************************************
+*
+* entityLookupInDb - 
+*/
+Entity* entityLookupInDb(std::string id, std::string type)
+{
+	MYSQL_RES*   result;
+	int          results;
+	MYSQL_ROW    row;
+	MYSQL_ROW    firstRow;
+	int          rows;
+	int          s;
+
+	std::string query = "SELECT * from entity WHERE id = '" + id + "' AND type = '" + type + "'";
+
+	s = mysql_query(db, query.c_str());
+	if (s != 0)
+	{
+		LM_E(("mysql_query(%s): %s", mysql_error(db)));
+		return NULL;
+	}
+
+	if ((result = mysql_store_result(db)) == 0)
+	{
+		LM_T(LmtDbTable, ("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
+		return NULL;
+	}
+
+	results = mysql_num_fields(result);
+	rows    = 0;
+	while ((row = mysql_fetch_row(result)))
+	{
+		if (rows == 0)
+			firstRow = row;
+		++rows;
+	}
+
+	mysql_free_result(result);
+	if (rows != 1)
+	{
+		char rowsV[30];
+
+		sprintf(rowsV, "%d", rows);
+
+		LM_T(LmtDbTable, ("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
+		return NULL;
+	}
+
+	bool    isPattern = (std::string(firstRow[3]) == "No")? false : true;
+		
+	Entity* entityP = entityCreate(firstRow[1], firstRow[2], isPattern, firstRow[4], atoi(firstRow[5]), firstRow[6]);
+
+	return entityP;
+}
+
+
+
+/* ****************************************************************************
+*
+* entityLookup -
+*/
+Entity* entityLookup(std::string id, std::string type)
+{
+	Entity* entityP = entityV;
+
+	while (entityP != NULL)
+	{
+		if ((entityP->id == id) && (entityP->type == type))
+			return entityP;
+
+		entityP = entityP->next;
+	}
+
+	entityP = entityLookupInDb(id, type);
+	if (entityP == NULL)
+		return NULL;
+
+	entityAppend(entityP);
+	return entityP;
 }
 
 
@@ -366,9 +428,33 @@ int entityToDb(Entity* entityP, bool update, std::string* errorString)
 		//
 		// Now, entity exists in DB - let's update it, if necessary ... ?
 		//
-		if ((entityP->isPattern != isPattern) || (entityP->providingApplication != providingApplication))
+		if ((entityP->isPattern != isPattern) || (entityP->providingApplication != providingApplication) || duration != 0)
 		{
+			char endTime[64];
+
 			LM_W(("diff in isPattern OR providingApplication - what do I do (send the change to DB or flag an error?)"));
+
+			std::string isPat = (isPattern == true)? "Yes" : "No";
+
+
+			std::string query = "UPDATE entity SET isPattern=" + isPat + ", providingApplication='" + providingApplication + "'";
+
+			if (duration != 0)
+			{
+				LM_W(("What startTime should I use to get endTime ... ?   Old one or new one? New one!"));
+				duration += entityP->startTime;
+				query    += std::string(", endTime=") + endTime;
+			}
+
+			query += " WHERE id='" + entityP->id + "' AND type='" + entityP->type + "'";
+			LM_T(LmtDbEntity, ("SQL to UPDATE an Entity: '%s'", query.c_str()));
+			s = mysql_query(db, query.c_str());
+			if (s != 0)
+			{
+				LM_E(("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
+				*errorString = std::string("SQL error: ") + mysql_error(db);
+				return -1;
+			}
 		}
 	}
 	else // Creation of a new entity - make sure it doesn't exist first

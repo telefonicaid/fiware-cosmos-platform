@@ -8,11 +8,6 @@
         "datanodes": ["10.95.108.15", "10.95.109.190"],
         "tasktrackers": ["10.95.108.15", "10.95.109.190"]
     },
-    "cdh_config":
-    {
-        "masters": ["10.95.111.109"],
-        "slaves": ["10.95.108.15", "10.95.109.190"]
-    },
     "user": "root",
     "password": "admintid33",
     "github": "https://pdihub.hi.inet/Cosmos",

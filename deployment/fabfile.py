@@ -48,7 +48,7 @@ def install_cdh():
     run('yum -y install hadoop-0.20 hadoop-0.20-native')
 
 def create_hadoop_dirs():
-    # Create necessary directories for Hadoop
+    """Create necessary directories for Hadoop"""
     run('rm -rf /data1')
     run('mkdir /data1')
     run('mkdir -m 700 /data1/data')
@@ -57,12 +57,9 @@ def create_hadoop_dirs():
     run('chown mapred:hadoop /data1/mapred')    
     run('mkdir -m 755 /data1/name')
     run('chown hdfs:hadoop /data1/name')
-
-@roles('namenode', 'frontend', 'datanodes')
-def deploy_cdh():
-    install_cdh()
-    create_hadoop_dirs()
-    # Configure Hadoop
+    
+def configure_hadoop():
+    """Generate  Hadoop configuration files"""
     with cd('/etc/hadoop/conf'):
         coresite = StringIO()
         template = Template(filename='core-site.mako')
@@ -88,6 +85,12 @@ def deploy_cdh():
         template = Template(filename='hdfs-site.mako')
         hdfssite.write(template.render())
         put(hdfssite, 'hdfs-site.xml')
+
+@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
+def deploy_cdh():
+    install_cdh()
+    create_hadoop_dirs()
+    configure_hadoop()
     
 def deploy_daemon(daemon):
     daemonPath = '/etc/init.d/hadoop-0.20-%s' % daemon

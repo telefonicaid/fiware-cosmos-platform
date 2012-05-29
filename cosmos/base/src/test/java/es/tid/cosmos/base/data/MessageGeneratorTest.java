@@ -90,6 +90,31 @@ public class MessageGeneratorTest {
         assertEquals("http://www.google.com", webLog.getUrl());
         assertEquals("27/05/2012", webLog.getDate());
     }
+
+    @Test
+    public void shouldGenerateAnonymisedWebLog() {
+        MessageDescriptor messageDescriptor = new MessageDescriptor();
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.TYPE, "weblog");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.DELIMITER, "\t");
+        messageDescriptor.setMetaFieldValue(
+                MessageDescriptor.MetaFields.ANONYMISE, "user_id,date");
+        messageDescriptor.setFieldColumnIndex("user_id", 0);
+        messageDescriptor.setFieldColumnIndex("url", 2);
+        messageDescriptor.setFieldColumnIndex("date", 1);
+        final String line = "13213AB\t27/05/2012\thttp://www.google.com";
+        Message message = MessageGenerator.generate(messageDescriptor, line);
+        assertTrue(message instanceof WebLog);
+        final WebLog webLog = (WebLog)message;
+        assertEquals("b8ae72c1563ddffbcf652224797ed7704bd2129eca1fc6e56900f7ddb"
+                + "1cd91e170e335ba65212ad2ed6f15a1eb2494b024efc783671bde830b420"
+                + "f05587ea100", webLog.getUserId());
+        assertEquals("http://www.google.com", webLog.getUrl());
+        assertEquals("e86668a751a0a75814cb774bdcdfb53858bfba1df43de0168c525164b"
+                + "e812afcd2851c9fed142efa6ce1fbda7fa4cf2d10ea633c06d77bb4a017b"
+                + "a65d2bd827d", webLog.getDate());
+    }
     
     @Test(expected=IllegalArgumentException.class)
     public void shouldFailOnInvalidType() {

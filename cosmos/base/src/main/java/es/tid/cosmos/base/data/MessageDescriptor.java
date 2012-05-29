@@ -11,14 +11,17 @@ import java.util.*;
 public final class MessageDescriptor {
     public enum MetaFields {
         TYPE,
-        DELIMITER
+        DELIMITER,
+        ANONYMISE
     }
     
     private Map<MetaFields, String> metaInfo;
+    private Set<String> fieldsToAnonymise;
     private Map<String, Integer> fieldColumnIndices;
     
     public MessageDescriptor() {
         this.metaInfo = new EnumMap<MetaFields, String>(MetaFields.class);
+        this.fieldsToAnonymise = new HashSet<String>();
         this.fieldColumnIndices = new HashMap<String, Integer>();
     }
     
@@ -39,6 +42,16 @@ public final class MessageDescriptor {
                                          Integer.parseInt(propertyValue));
             }
         }
+        this.checkForConsistency();
+    }
+    
+    private void checkForConsistency() {
+        for (String fieldToAnonymise : this.fieldsToAnonymise) {
+            if (!this.fieldColumnIndices.containsKey(fieldToAnonymise)) {
+                throw new IllegalArgumentException("Invalid field to "
+                        + "anonymise: " + fieldToAnonymise);
+            }
+        }
     }
     
     public String getMetaFieldValue(MetaFields metaField) {
@@ -54,11 +67,24 @@ public final class MessageDescriptor {
             throw new IllegalArgumentException("Repeated field "
                     + metaField.name());
         }
-        if (metaField == MetaFields.DELIMITER) {
-            this.metaInfo.put(metaField, fieldValue.replaceAll("\\\\", "\\"));
-        } else {
-            this.metaInfo.put(metaField, fieldValue);
+        switch (metaField) {
+            case TYPE:
+                this.metaInfo.put(metaField, fieldValue);
+                break;
+            case DELIMITER:
+                this.metaInfo.put(metaField, fieldValue.replace("\\\\", "\\"));
+                break;
+            case ANONYMISE:
+                this.fieldsToAnonymise.addAll(Arrays.asList(
+                        fieldValue.split(",")));
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported metadata type");
         }
+    }
+    
+    public boolean shouldAnonymiseField(String fieldName) {
+        return this.fieldsToAnonymise.contains(fieldName);
     }
     
     public int getFieldColumnIndex(String fieldName) {

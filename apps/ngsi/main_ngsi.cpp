@@ -209,7 +209,7 @@
 #include "logMsg/logMsg.h"                  // LM_*
 
 #include "traceLevels.h"                    // Trace levels for log msg library
-#include "database.h"                       // dbConnect, dbReset
+#include "database.h"                       // dbInit, dbReset
 #include "httpData.h"                       // httpDataParse
 #include "Attribute.h"                      // Attribute
 #include "Verb.h"                           // Verb
@@ -444,8 +444,8 @@ int main(int argC, const char *argV[])
 	//
 	// databse initialisation
 	//
-	if (dbConnect() != 0)
-		LM_X(1, ("error connecting to database"));
+	if (dbInit() != 0)
+		LM_X(1, ("error initializing database"));
 
 	if (reset == true)
 	{

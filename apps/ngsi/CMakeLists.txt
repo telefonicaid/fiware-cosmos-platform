@@ -21,6 +21,7 @@ SET (SOURCES
 SET (HEADERS
 )
 
+IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 SET( STATIC_LIBS
      lm
 	au
@@ -29,12 +30,44 @@ SET( STATIC_LIBS
 	 xml2
 	 mysqlclient
 	 z
-	 crypt
-	 nsl
+	 m
+	 cryptopp
+)
+ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+
+IF (${CMAKE_SYSTEM_TYPE} MATCHES "Ubuntu")
+SET( STATIC_LIBS
+     lm
+     pa
+	 json
+	 xml2
+	 mysqlclient
+	 z
 	 m
 	 ssl3
+	 nsl
+	 cryptopp
+)
+ENDIF (${CMAKE_SYSTEM_TYPE} MATCHES "Ubuntu")
+
+IF (${CMAKE_SYSTEM_TYPE} MATCHES "RedHat")
+SET( STATIC_LIBS
+     lm
+     pa
+	 json
+	 xml2
+	 mysqlclient
+	 z
+	 m
+	 ssl3
+	 nsl
 	 crypto++
 )
+ENDIF (${CMAKE_SYSTEM_TYPE} MATCHES "RedHat")
+
+ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # Include directories
 # ------------------------------------------------------------
@@ -44,6 +77,10 @@ include_directories("/usr/local/include/json")
 include_directories("/usr/include/json")
 include_directories("/usr/include/libxml2")
 include_directories("/usr/include/mysql")
+include_directories("/opt/local/include/json")
+include_directories("/usr/local/mysql-5.5.17-osx10.6-x86_64/include")
+
+link_directories("/usr/local/mysql-5.5.17-osx10.6-x86_64/lib")
 
 # Executable declaration
 # ------------------------------------------------------------

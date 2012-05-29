@@ -33,6 +33,7 @@ using namespace std;
 */
 static int traceRequest(int fd, Verb verb, Format format, int components, std::string* component)
 {
+	LM_M(("verb: %s, components: %d, %s", verbName(verb), components, component[0].c_str()));
 	if (verb == DELETE)
 	{
 		if (components == 2)
@@ -70,36 +71,55 @@ static int traceRequest(int fd, Verb verb, Format format, int components, std::s
 	{
 		char tLevels[256];
 
-		lmTraceGet(tLevels);
-		restReply(fd, format, 200, "trace levels", tLevels);
-		return 0;
+		if ((components == 3) && (component[2] == "get"))
+		{
+			lmTraceGet(tLevels);
+			restReply(fd, format, 200, "trace levels", tLevels);
+			return 0;
+		}
+
+		restReply(fd, format, 400, "error", "bad path");
+		return 1;
 	}
 	else if (verb == PUT)
 	{
-		if (components == 3)
-		{
-			const char* s = component[2].c_str();
-
-			if (strspn(s, "0123456789-'") == strlen(s))
-			{
-				char tLevels[256];
-				char reply[256];
-
-				lmTraceAdd(s);
-				lmTraceGet(tLevels);
-				snprintf(reply, sizeof(reply), "new trace levels: '%s'", tLevels);
-				restReply(fd, format, 200, "trace", reply);
-				return 0;
-			}
-			
-			restReply(fd, format, 400, "error", "bad request");
-			return -1;
-		}
-		else
+		if ((component[2] != "set") || (components != 4))
 		{
 			restReply(fd, format, 400, "error", "bad path");
 			return 1;
 		}
+
+		const char* s = component[3].c_str();
+
+		if (strspn(s, "0123456789-,") != strlen(s))
+		{
+			restReply(fd, format, 400, "error", "bad request");
+			return -1;
+		}
+
+		char tLevels[256];
+		char reply[256];
+
+		if (component[2] == "set")
+		{
+			LM_M(("Setting trace levels '%s'", s));
+			lmTraceSet(s);
+		}
+		else if (component[2] == "add")
+		{
+			LM_M(("Adding trace levels '%s'", s));
+			lmTraceAdd(s);
+		}
+		else
+		{
+			restReply(fd, format, 400, "error", "bad path");
+			return -1;
+		}
+
+		lmTraceGet(tLevels);
+		snprintf(reply, sizeof(reply), "new trace levels: '%s'", tLevels);
+		restReply(fd, format, 200, "trace", reply);
+		return 0;
 	}
 
 	allow = "PUT,GET,DELETE";

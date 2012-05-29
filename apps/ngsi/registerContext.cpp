@@ -28,6 +28,7 @@ using namespace std;
 * Globals
 */
 static int          entityIdIx         = -1;
+static int          craIx              = -1;
 static int          cralMetaIx         = -1;
 static int          rMetaIx            = -1;
 static std::string  lastRegistrationId = "";
@@ -122,29 +123,52 @@ static void registerContextRequestNode(RegisterContextRequest* rcReqP, xmlNodePt
     char*        contentP = (char*) xmlNodeGetContent(nodeP);
     std::string  content  = "emptycontent";
 
+	LM_T(LmtRestPath, ("Path: %s", path.c_str()));
+
     contentP = wsClean(contentP);
     if (contentP != NULL)
         content  = std::string(contentP);
 
     if (path == "registerContextRequest.contextRegistrationList.contextRegistration.entityIdList.entityId.id")
-        rcReqP->entityV[entityIdIx]->id = content;
-    else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.entityIdList.entityId.type")
+    {
+		LM_M(("Setting id to '%s' for entity id %d", content.c_str(), entityIdIx));
+		rcReqP->entityV[entityIdIx]->id = content;
+    }
+	else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.entityIdList.entityId.type")
+    {
+		LM_M(("Setting type to '%s' for entity id %d", content.c_str(), entityIdIx));
         rcReqP->entityV[entityIdIx]->type = content;
+    }
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.entityIdList.entityId.isPattern")
+    {
+		LM_M(("Setting isPattern to '%s' for entity id %d", content.c_str(), entityIdIx));
         rcReqP->entityV[entityIdIx]->isPattern = (content == "false")? false : true;
+    }
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.name")
-       rcReqP->attributeList.attributeV[0]->name = content;
+    {
+		rcReqP->attributeList.attributeV[craIx]->name = content;
+
+		for (int eIx = 0; eIx <= entityIdIx; eIx++)
+			LM_M(("Add attribute: '%s' to entity '%s:%s'", content.c_str(), rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str()));
+	}
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.type")
-       rcReqP->attributeList.attributeV[0]->type = content;
+       rcReqP->attributeList.attributeV[craIx]->type = content;
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.isDomain")
-       rcReqP->attributeList.attributeV[0]->isDomain = (content == "true")? true : false;
+       rcReqP->attributeList.attributeV[craIx]->isDomain = (content == "true")? true : false;
 
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.metaData.contextMetadata.name")
-       rcReqP->attributeList.attributeV[0]->metadataV[cralMetaIx]->name = content;
-    else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.metaData.contextMetadata.type")
-       rcReqP->attributeList.attributeV[0]->metadataV[cralMetaIx]->type = content;
+    {
+		LM_M(("metadata '%s' belongs to attribute '%s:%s'",
+			  content.c_str(),
+			  rcReqP->attributeList.attributeV[craIx]->name.c_str(),
+			  rcReqP->attributeList.attributeV[craIx]->type.c_str()));
+
+			  rcReqP->attributeList.attributeV[craIx]->metadataV[cralMetaIx]->name = content;
+    }
+	else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.metaData.contextMetadata.type")
+       rcReqP->attributeList.attributeV[craIx]->metadataV[cralMetaIx]->type = content;
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.metaData.contextMetadata.value")
-       rcReqP->attributeList.attributeV[0]->metadataV[cralMetaIx]->value = content;
+       rcReqP->attributeList.attributeV[craIx]->metadataV[cralMetaIx]->value = content;
 
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.registrationMetaData.contextMetadata.name")
        rcReqP->registrationMetadataV[rMetaIx]->name = content;
@@ -165,9 +189,30 @@ static void registerContextRequestNode(RegisterContextRequest* rcReqP, xmlNodePt
 
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.entityIdList.entityId")
     {
-        rcReqP->entityV.push_back(new Entity());
-        ++entityIdIx;
+		rcReqP->entityV.push_back(new Entity());
+		++entityIdIx;
+		LM_M(("Pushed back Entity for vector slot %d", entityIdIx));
+
+		if (content == "emptycontent")
+		{
+			char* id        = (char*) xmlGetProp(nodeP, (xmlChar*) "id");
+			char* type      = (char*) xmlGetProp(nodeP, (xmlChar*) "type");
+			char* isPattern = (char*) xmlGetProp(nodeP, (xmlChar*) "isPattern");
+
+			LM_M(("attribute entityId.id:        '%s'", id));
+			LM_M(("attribute entityId.type:      '%s'", type));
+			LM_M(("attribute entityId.isPattern: '%s'", isPattern));
+
+			rcReqP->entityV[entityIdIx]->id         = id;
+			rcReqP->entityV[entityIdIx]->type       = type;
+			rcReqP->entityV[entityIdIx]->isPattern  = isPattern;
+		}
     }
+    else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList")
+	{
+		rcReqP->attributeList.attributeV.push_back(new Attribute());
+		++craIx;
+	}
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.contextRegistrationAttributeList.metaData.contextMetadata")
     {
        rcReqP->attributeList.attributeV[0]->metadataV.push_back(new Metadata());
@@ -191,24 +236,65 @@ static void registerContextRequestNode(RegisterContextRequest* rcReqP, xmlNodePt
 *
 * registerContextRequest - 
 */
-static RegisterContextRequest* registerContextRequest(RegisterContextRequest* rcReqP, xmlNodePtr nodeP, int level)
+static void registerContextRequest(RegisterContextRequest* rcReqP, xmlNodePtr nodeP, int level)
 {
-    xmlNodePtr firstChild;
+    xmlNodePtr child = nodeP->children;;
 
-	rcReqP->attributeList.attributeV.push_back(new Attribute());
+	registerContextRequestNode(rcReqP, nodeP, level);
 
-    while (nodeP)
+	while (child != NULL)
+	{
+		registerContextRequest(rcReqP, child, level + 1);
+		child = child->next;
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* registerContextRequestToDatabase - 
+*/
+static void registerContextRequestToDatabase(RegisterContextRequest* rcReqP, bool isUpdate)
+{
+	unsigned int eIx;
+	unsigned int aIx;
+	unsigned int mIx;
+	unsigned int entities;
+	unsigned int attributes;
+	unsigned int metadatas;
+
+	LM_T(LmtDbRegReq, ("------------ To DB ------------"));
+	entities = rcReqP->entityV.size();
+	for (eIx = 0; eIx < entities; eIx++)
+	{
+		if (isUpdate == true)
+		{
+			LM_T(LmtDbRegReq, ("Entity { '%s', '%s', '%s' } NOT to DB - this is an update", rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str(), TF(rcReqP->entityV[eIx]->isPattern)));
+			// what if 'isPattern' differs ... ?
+		}
+		else // Not an update
+		{
+			LM_T(LmtDbRegReq, ("Entity { '%s', '%s', '%s' } to DB", rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str(), TF(rcReqP->entityV[eIx]->isPattern)));
+		}
+	}
+
+	attributes = rcReqP->attributeList.attributeV.size();
+	for (aIx = 0; aIx < attributes; aIx++)
     {
-        registerContextRequestNode(rcReqP, nodeP, level);
-        firstChild = nodeP->children;
+        LM_T(LmtDbRegReq, ("Attribute { '%s', '%s' } to DB for the %d entities", rcReqP->attributeList.attributeV[aIx]->name.c_str(), rcReqP->attributeList.attributeV[aIx]->type.c_str(), entities));
 
-        if (firstChild != NULL)
-            registerContextRequest(rcReqP, firstChild, level + 1);
-
-        nodeP = nodeP->next;
-    }
-
-    return rcReqP;
+		metadatas = rcReqP->attributeList.attributeV[aIx]->metadataV.size();
+		for (mIx = 0; mIx < attributes; mIx++)
+		{
+			LM_T(LmtDbRegReq, ("Metadata { '%s', '%s', '%s' } to DB for attribute { '%s', '%s' }",
+							   rcReqP->attributeList.attributeV[aIx]->metadataV[mIx]->name.c_str(),
+							   rcReqP->attributeList.attributeV[aIx]->metadataV[mIx]->type.c_str(),
+							   rcReqP->attributeList.attributeV[aIx]->metadataV[mIx]->value.c_str(),
+							   rcReqP->attributeList.attributeV[aIx]->name.c_str(),
+							   rcReqP->attributeList.attributeV[aIx]->type.c_str()));
+		}
+	}
 }
 
 
@@ -224,11 +310,11 @@ static RegisterContextRequest* registerContextRequestParse(xmlNodePtr nodeP)
 	LM_T(LmtRegisterContext, ("parsing XML data for a context registration"));
 
     entityIdIx  = -1;
+	craIx       = -1;
     cralMetaIx  = -1;
     rMetaIx     = -1;
 
     registerContextRequest(rcReqP, nodeP, 0);
-
     return rcReqP;
 }
 
@@ -296,13 +382,15 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 
 			if ((entityP = entityLookup(rcrP->entityV[ix]->id, rcrP->entityV[ix]->type)) == NULL)
 			{
-				restReply(fd, format, 404, "error", "entity not found");
+				std::string errorString = "Entity '" + entityP->id + "', type '" + entityP->type + "' not found in an Update Request";
+				registerContextResponse(fd, format, 404, NULL, 404, "entity not found", errorString.c_str());
 				LM_RE(true, ("Cannot find entity with id '%s and type '%s'", rcrP->entityV[ix]->id.c_str(), rcrP->entityV[ix]->type.c_str()));
 			}
 
 			if (entityP->registrationId != registrationId)
 			{
-				restReply(fd, format, 404, "error", "bad registration id");
+				std::string errorString = "bad registration id " + registrationId + ". Expected " + entityP->registrationId + " for entity '" + entityP->id + "', type '" + entityP->type + "'";
+				registerContextResponse(fd, format, 400, NULL, 400, "bad registration id", errorString.c_str());
 				LM_RE(true, ("Entity with id '%s and type '%s' has registration id '%s'. Incoming registration id was: '%s'",
 							 entityP->id.c_str(), entityP->type.c_str(), entityP->registrationId.c_str(), registrationId.c_str()));
 			}
@@ -319,8 +407,9 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 		{
 			if (entityLookup(rcrP->entityV[ix]->id, rcrP->entityV[ix]->type) != NULL)
 			{
-				restReply(fd, format, 404, "error", "entity already exists and no registration id supplied");
-				LM_RE(true, ("entity with id '%s and type '%s' does already exist", rcrP->entityV[ix]->id.c_str(), rcrP->entityV[ix]->type.c_str()));
+				std::string errorString = "Entity '" + rcrP->entityV[ix]->id + "', type '" + rcrP->entityV[ix]->type + "' already exists in a 'Create' Request";
+				registerContextResponse(fd, format, 404, NULL, 404, "already exists", errorString.c_str());
+				LM_RE(true, ("entity with id '%s and type '%s' already exists", rcrP->entityV[ix]->id.c_str(), rcrP->entityV[ix]->type.c_str()));
 			}
 		}
 	}
@@ -338,6 +427,13 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 			entityAdd(rcrP->entityV[ix]->id,    rcrP->entityV[ix]->type, rcrP->entityV[ix]->isPattern, rcrP->providingApplication, duration, registrationId, &rcrP->attributeList);
 	}
 		
+
+	//
+	// Push request data to the DB
+	//
+	registerContextRequestToDatabase(rcrP, isUpdate);
+
+
 
 	//
 	// Save the registration info
@@ -419,7 +515,7 @@ static bool registerContextXmlDataParse(int fd, Format format, std::string buf)
 		restReply(fd, format, 404, "status", "XML Data should be 'registerContextRequest'");
 		ret = false;
 	}
-	else
+	else // OK
 	{
 		rcrP = registerContextRequestParse(node);
 		if (rcrP != NULL)

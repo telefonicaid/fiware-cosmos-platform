@@ -14,17 +14,25 @@ typedef enum TraceLevels
 	LmtInputLines,
 	LmtComponents,
 	LmtSuffix,
-	LmtPeer,
+
+	LmtPeer = 31,
     LmtOperation,
     LmtParameters,
     LmtParameters2,
 	LmtHttpHeader,
-	LmtHttpData,
+
+	LmtHttpData = 41,
 	LmtHttpDataSeparate,
 	LmtEntity,
 	LmtRegisterContext,
 	LmtDuration,
-	LmtRegistration
+
+	LmtRegistration = 51,
+	LmtRest,
+	LmtRestPath,
+
+	LmtDbTable   = 61,
+	LmtDbRegReq
 } TraceLevels;
 
 #endif

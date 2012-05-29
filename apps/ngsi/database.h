@@ -17,9 +17,9 @@
 
 /* ****************************************************************************
 *
-* dbConnect - 
+* dbInit - 
 */
-extern int dbConnect(void);
+extern int dbInit(void);
 
 
 

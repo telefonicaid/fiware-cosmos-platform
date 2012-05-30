@@ -55,7 +55,10 @@ TEST(SamsonFileTest, samson_file)
     EXPECT_EQ(samson_file.printContent(10, std::cout), 0) << "Wrong printContent for /tmp/test_SamsonFile";
     EXPECT_EQ(strncmp(samson_file.getHashGroups().c_str(), "Error getting vector for hashgroups", strlen("Error getting vector for hashgroups")),0) << "Wrong getHashGroups for /tmp/test_SamsonFile";
 
-    system ("word_generator 1000 | samsonPush input");
+    if (system ("word_generator 1000 | samsonPush input") == -1)
+    {
+        std::cerr << "Error on word_generator system() command" << std::endl;
+    }
     delilah_console->runAsyncCommand("run txt.parser_words input words");
     sleep(1);
     delilah_console->runAsyncCommand("run txt.word_count_accumulate words words_count words_count");

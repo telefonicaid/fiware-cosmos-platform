@@ -14,7 +14,7 @@ Packager:   Samson Development <samson-dev@tid.es>
 URL:        http://wikis.hi.inet/samson
 Source:    http://www.tid.es/samson-SAMSON_VERSION.tar.gz
 BuildRoot: /var/tmp/%{name}-buildroot
-Requires: protobuf, ntp,tid-mongodb, samson-logserver == %{version}-%{release}
+Requires: protobuf, ntp,tid-mongodb, samson-logserver == %{version}-%{release}, json-c
 Requires(pre): shadow-utils
 
 %description

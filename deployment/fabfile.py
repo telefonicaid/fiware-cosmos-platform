@@ -126,6 +126,7 @@ def deploy_cdh():
     execute(hadoop_install.deploy_datanode_daemon)
     execute(hadoop_install.deploy_tasktracker_daemon)
   
+@task
 @roles('mongo')  
 def deploy_mongo():
     """Install the latest MongoDB distribution"""

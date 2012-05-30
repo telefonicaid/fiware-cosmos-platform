@@ -94,12 +94,7 @@ def deploy_sftp():
       
 @task
 def deploy_cdh():
-    """
-    Deploys the CDH distribution of Hadoop:
-
-    - Installs Hadoop
-    - Configures Hadoop
-    """
+    """Deploys the Cloudera Distribution for Hadoop"""
     execute(hadoop_install.install_cdh)
     execute(hadoop_install.create_hadoop_dirs)
     execute(hadoop_install.configure_hadoop, CONFIG)
@@ -126,6 +121,8 @@ def deploy_mongo():
 @task
 def deploy_models():
     """
+    Deploys the preconfigured statistical models
+
     This function is not ready for production. It is only here as a general
     idea on what is needed to deploy a model, but we currently have no models
     to deploy

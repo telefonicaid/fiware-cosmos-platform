@@ -3,19 +3,18 @@ Cosmos automatic deployment Fabric file -
 
 causes Fabric to deploy each Cosmos component at a configured host.
 """
-import os
 import json
 from StringIO import StringIO
 
 from fabric.api import run, execute, sudo, put, cd, env, local
 import fabric.context_managers as ctx
 from fabric.contrib import files
-from fabric.contrib.console import confirm
 from fabric.decorators import roles, task
 from fabric.utils import puts
 from mako.template import Template
 
 import hadoop_install
+import hue_deployment
 
 DEFAULT_CONFIG = 'staging.json'
 
@@ -23,6 +22,20 @@ CONFIG = json.loads(open(DEFAULT_CONFIG, 'r').read())
 env.user = CONFIG['user'] 
 env.password = CONFIG['password']
 env.roledefs = CONFIG['hosts']
+
+def has_package(pkg):
+    with ctx.hide('stdout'):
+        out = run('yum list -q installed | grep ^%s\\. || echo' % pkg)
+        return len(out.strip()) > 0
+
+def check_dependencies(pkg_list):
+    """
+    Checks that a list of dependencies is met using the OS package manager. If
+    a dependency is not met, it is installed.
+    """
+    for pkg_name in pkg_list:
+        if not has_package(pkg_name):
+            run("yum -y install {}".format(pkg_name))
 
 @task
 def deploy():
@@ -34,81 +47,16 @@ def deploy():
     deploy_models()
     deploy_sftp()
 
-def has_package(pkg):
-    with ctx.hide('stdout'):
-        out = run('yum list -q installed | grep ^%s\\. || echo' % pkg)
-        return len(out.strip()) > 0
-
-def patch_hue():
-    local_patch_path = os.path.join(CONFIG['hue_patch_dir'],
-                                    CONFIG['hue_patch_name'])
-    remote_patch_path = os.path.join('~', CONFIG['hue_patch_name'])
-    with ctx.hide('stdout'):
-        hue_pkgs = ["hue-common", "hue-filebrowser", "hue-help",
-                    "hue-jobbrowser", "hue-jobsub", "hue-plugins",
-                    "hue-proxy", "hue-server", "hue-shell"]
-        for pkg_name in hue_pkgs:
-            run("yum -y erase {0}".format(pkg_name))
-        run("yum -y install hue")
-        put(local_patch_path, remote_patch_path)
-        with cd("/usr/share/hue"):
-            run("git apply -p2 --reject {0}".format(remote_patch_path))
-
-def install_thrift(thrift_tarpath):
-    if files.exists('/usr/local/bin/thrift'):
-        puts("Thrift already installed, skipping ...")
-    else:
-        puts("Installing thrift")
-        with ctx.hide('stdout'):
-            run(("yum -y install automake libtool flex bison pkgconfig "
-                 "gcc-c++ boost-devel libevent-devel zlib-devel python-devel "
-                 "ruby-devel openssl-devel"))
-            put(thrift_tarpath)
-            run("tar xfz thrift-0.8.0.tar.gz")
-            with cd("thrift-0.8.0"):
-                run("./configure")
-                run("make")
-                run("make install")
-
-def install_cosmos_app():
-    cosmos_app_install_path = '/usr/share/hue/apps/cosmos/'
-    if files.exists(cosmos_app_install_path):
-        puts("Found an existing installation of Cosmos app!")
-        puts("Going to remove it")
-        run("rm -rf {0}".format(cosmos_app_install_path))
-    if files.exists("cosmos-app"):
-        run("rm -rf cosmos-app")
-    run("mkdir cosmos-app")
-    put("../cosmos/platform/frontend/hue-apps/cosmos", "cosmos-app")
-    with cd("cosmos-app/cosmos"):
-        puts("About to run buildout")
-        ## TODO: check the python version before running
-        run("python2.6 bootstrap.py")
-        run("bin/buildout -c buildout.prod.cfg")
-
-def check_dependencies(pkg_list):
-    """
-    Checks that a list of dependencies is met using the OS package manager
-    """
-    for pkg_name in pkg_list:
-        if not has_package(pkg_name):
-            run("yum -y install {}".format(pkg_name))
-
-def cleanup():
-    run("rm hue-patch-cdh3u4-r0.4.diff")
-    run("rm -rf cosmos-app")
-
 @task
-@roles('frontend')
 def deploy_hue(thrift_tarpath='~/install-dependencies/thrift-0.8.0.tar.gz'):
     """
     Deploys the HUE frontend from Cloudera, plus our fixes and our app
     """
     check_dependencies(['mysql', 'git'])
-    patch_hue()
-    install_thrift(thrift_tarpath)
-    install_cosmos_app()
-    cleanup()
+    execute(hue_deployment.patch_hue, CONFIG)
+    execute(hue_deployment.install_thrift, thrift_tarpath)
+    execute(hue_deployment.install_cosmos_app)
+    execute(hue_deployment.cleanup)
 
 @task
 @roles('frontend')

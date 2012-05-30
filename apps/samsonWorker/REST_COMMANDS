@@ -1,0 +1,102 @@
+WORKS
+Logging - working but only locally - to spread to entire cluster, we need new delilah command
+-------------------------------------------
+curl --request GET     localhost:1202/samson/version
+curl --request GET     localhost:1202/samson/version.json
+curl --request GET     localhost:1202/samson/modules
+curl --request GET     localhost:1202/samson/modules.json
+curl --request GET     localhost:1202/samson/module/MODULE
+curl --request GET     localhost:1202/samson/module/MODULE.json
+curl --request GET     localhost:1202/samson/queues
+curl --request GET     localhost:1202/samson/queues.json
+curl --request GET     localhost:1202/samson/queues/QNAME
+curl --request GET     localhost:1202/samson/queues/QNAME.json
+curl --request DELETE  localhost:1202/samson/queues/QNAME/delete
+curl --request DELETE  localhost:1202/samson/queues/QNAME/delete.json
+curl --request POST    localhost:1202/samson/logging/debug/on
+curl --request POST    localhost:1202/samson/logging/debug/on.json
+curl --request POST    localhost:1202/samson/logging/debug/off
+curl --request POST    localhost:1202/samson/logging/debug/off.json
+curl --request POST    localhost:1202/samson/logging/reads/on
+curl --request POST    localhost:1202/samson/logging/reads/on.json
+curl --request POST    localhost:1202/samson/logging/reads/off
+curl --request POST    localhost:1202/samson/logging/reads/off.json
+curl --request POST    localhost:1202/samson/logging/writes/on
+curl --request POST    localhost:1202/samson/logging/writes/on.json
+curl --request POST    localhost:1202/samson/logging/writes/off
+curl --request POST    localhost:1202/samson/logging/writes/off.json
+curl --request GET     localhost:1202/samson/logging/traces
+curl --request GET     localhost:1202/samson/logging/traces.json
+curl --request POST    localhost:1202/samson/logging/trace/off
+curl --request POST    localhost:1202/samson/logging/trace/off.json
+curl --request POST    localhost:1202/samson/logging/trace/set/1,56
+curl --request POST    localhost:1202/samson/logging/trace/set/1,56.json
+curl --request POST    localhost:1202/samson/logging/trace/add/2,57
+curl --request POST    localhost:1202/samson/logging/trace/add/2,57.json
+curl --request DELETE  localhost:1202/samson/logging/trace/remove/2
+curl --request DELETE  localhost:1202/samson/logging/trace/remove/2.json
+curl --request GET     localhost:1202/samson/logging/verbose
+curl --request GET     localhost:1202/samson/logging/verbose.json
+curl --request POST    localhost:1202/samson/logging/verbose/off
+curl --request POST    localhost:1202/samson/logging/verbose/off.json
+curl --request POST    localhost:1202/samson/logging/verbose/set/3
+curl --request POST    localhost:1202/samson/logging/verbose/set/3.json
+curl --request GET     localhost:1202/samson/operations
+curl --request GET     localhost:1202/samson/operations.json
+
+
+OK, but needs a new delilah command (or fixes in an existing)
+-------------------------------------------
+curl --request GET     localhost:1202/samson/status
+curl --request GET     localhost:1202/samson/status.json
+curl --request POST    localhost:1202/samson/cluster/add_node -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
+curl --request POST    localhost:1202/samson/cluster/add_node.json -d '{ "node" : { "name" : "localhost", "port" : "6666" } }'
+curl --request DELETE  localhost:1202/samson/cluster/remove_node -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
+curl --request DELETE  localhost:1202/samson/cluster/remove_node.json -d '{ "node" : { "name" : "localhost", "port" : "6666" } }'
+curl --request GET     localhost:1202/samson/cluster           - XLM gives no info if simple cluster, just '<samson></samson>'
+curl --request GET     localhost:1202/samson/cluster.json      - JSON gives a completely empty answer
+
+
+Queues
+-------------------------------------------
+curl --request GET     localhost:1202/samson/queues/QNAME/state/KEY
+curl --request GET     localhost:1202/samson/queues/QNAME/state/KEY.json
+
+
+Operations
+-------------------------------------------
+curl --request GET     localhost:1202/samson/operations/OPERATION
+curl --request GET     localhost:1202/samson/operations/OPERATION.json
+curl --request PUT     localhost:1202/samson/operations/add -d '<samson><operation><alias>{operation_alias}</alias><name>{operation_name}</name><input_queues><input>queue1</input><input>queue2</input></input_queues><output_queues><output>queue3</output></output_queues><parameters><parameter><parameter_name></parameter_name><parameter_value></parameter_value></parameter><parameter><parameter_name></parameter_name><parameter_value></parameter_value></parameter></parameters></operation><samson>'
+curl --request GET     localhost:1202/samson/operations/add.json -d '{ "operation" : { "alias" : "{operation_alias}", "name" : "{operation_name}" "input_queues" : ["queue1", "queue2"], "output_queues" : ["queue3"], "parameters" : [ {"{parameter_name}", "{parameter_value}"}, {"{parameter_name}", "{parameter_value}"} ] }'
+curl --request DELETE  localhost:1202/samson/operations/delete/OPERATION_ALIAS
+curl --request DELETE  localhost:1202/samson/operations/delete/OPERATION_ALIAS.json
+
+
+
+
+FATAL ERRORS
+-------------------------------------------
+o samsonWorker dies when I ask for a non-existing module:
+    % curl --request GET     localhost:1202/samson/modules/system2
+
+    SamsonWorker>  libprotobuf FATAL /usr/include/google/protobuf/repeated_field.h:659] CHECK failed: (index) < (size()):                                           
+    terminate called after throwing an instance of 'google::protobuf::FatalException'
+    what():  CHECK failed: (index) < (size()): 
+    Aborted (core dumped)
+
+o samsonWorker dies when I ask for a non-existing queue:
+    % curl --request GET     localhost:1202/samson/queues/input2
+
+    SamsonWorker>  libprotobuf FATAL /usr/include/google/protobuf/repeated_field.h:659] CHECK failed: (index) < (size()):                                           
+    terminate called after throwing an instance of 'google::protobuf::FatalException'
+    what():  CHECK failed: (index) < (size()): 
+    Aborted (core dumped)
+
+o samsonWorker dies when I ask for an operation that contains a dot '.' ...
+    % curl --request GET     localhost:1202/samson/operations/system.map
+
+    Here we have a bug.
+    The method RESTServiceCommand::read() destroys the input line ...
+    This must be changed !
+  

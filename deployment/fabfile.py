@@ -55,7 +55,7 @@ def deploy_sftp():
 def install_cdh():
     """Install the latest Hadoop distribution in CDH3"""
     run('wget http://archive.cloudera.com/redhat/cdh/cdh3-repository-1.0-1.noarch.rpm')
-    run('rpm -Fvh cdh3-repository-1.0-1.noarch.rpm')
+    run('rpm -Uvh --force cdh3-repository-1.0-1.noarch.rpm')
     run('rpm --import http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera')
     run('yum -y install hadoop-0.20 hadoop-0.20-native')
 
@@ -138,7 +138,16 @@ def deploy_tasktracker_daemon():
   
 @roles('mongo')  
 def deploy_mongo():
-    pass
+    with cd('/etc/yum.repos.d'):
+        if not files.exists('10gen.repo'):
+            put('templates/10gen.repo', '10gen.repo')
+    run('yum -y install mongo-10gen mongo-10gen-server')
+    run('service mongod start')
+    run('chkconfig mongod on')
+    run("mongo --eval \"db.adminCommand('listDatabases').databases.forEach(function (d) { "
+        "  if (d.name != 'local' && d.name != 'admin' && d.name != 'config')"
+        "    db.getSiblingDB(d.name).dropDatabase();"
+        "})\"")
 
 def deploy_models():
     pass

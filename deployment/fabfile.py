@@ -40,9 +40,9 @@ def has_package(pkg):
         return len(out.strip()) > 0
 
 def patch_hue():
-    ## TODO: extract to config
-    local_patch_path = "../cosmos/platform/frontend/hue-patches/hue-patch-cdh3u4-r0.4.diff"
-    remote_patch_path = "~/hue-patch-cdh3u4-r0.4.diff"
+    local_patch_path = os.path.join(CONFIG['hue_patch_dir'],
+                                    CONFIG['hue_patch_name'])
+    remote_patch_path = os.path.join('~', CONFIG['hue_patch_name'])
     with ctx.hide('stdout'):
         hue_pkgs = ["hue-common", "hue-filebrowser", "hue-help",
                     "hue-jobbrowser", "hue-jobsub", "hue-plugins",
@@ -55,7 +55,9 @@ def patch_hue():
             run("git apply -p2 --reject {0}".format(remote_patch_path))
 
 def install_thrift(thrift_tarpath):
-    if not files.exists('/usr/local/bin/thrift'):
+    if files.exists('/usr/local/bin/thrift'):
+        puts("Thrift already installed, skipping ...")
+    else:
         puts("Installing thrift")
         with ctx.hide('stdout'):
             run(("yum -y install automake libtool flex bison pkgconfig "
@@ -80,6 +82,7 @@ def install_cosmos_app():
     put("../cosmos/platform/frontend/hue-apps/cosmos", "cosmos-app")
     with cd("cosmos-app/cosmos"):
         puts("About to run buildout")
+        ## TODO: check the python version before running
         run("python2.6 bootstrap.py")
         run("bin/buildout -c buildout.prod.cfg")
 
@@ -91,6 +94,10 @@ def check_dependencies(pkg_list):
         if not has_package(pkg_name):
             run("yum -y install {}".format(pkg_name))
 
+def cleanup():
+    run("rm hue-patch-cdh3u4-r0.4.diff")
+    run("rm -rf cosmos-app")
+
 @task
 @roles('frontend')
 def deploy_hue(thrift_tarpath='~/install-dependencies/thrift-0.8.0.tar.gz'):
@@ -101,8 +108,7 @@ def deploy_hue(thrift_tarpath='~/install-dependencies/thrift-0.8.0.tar.gz'):
     patch_hue()
     install_thrift(thrift_tarpath)
     install_cosmos_app()
-    run("rm hue-patch-cdh3u4-r0.4.diff")
-    run("rm -rf cosmos-app")
+    cleanup()
 
 @task
 @roles('frontend')

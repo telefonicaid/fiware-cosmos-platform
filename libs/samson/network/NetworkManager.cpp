@@ -11,6 +11,8 @@ namespace samson {
 
     Status NetworkManager::move_connection( std::string connection_from , std::string connection_to )
     {
+        au::TokenTaker tt(&token_connections_);
+
         if( connections.findInMap(connection_to) != NULL )
             return Error;
         
@@ -30,6 +32,8 @@ namespace samson {
  
     Status NetworkManager::add( NetworkConnection * network_connection )
     {
+        au::TokenTaker tt(&token_connections_);
+
         std::string name = network_connection->getName();
 
         if( connections.findInMap( name ) != NULL )
@@ -52,12 +56,15 @@ namespace samson {
     
     bool NetworkManager::isConnected( std::string connection_name )
     {
+        au::TokenTaker tt(&token_connections_);
+
         return (connections.findInMap(connection_name) != NULL);
     }
     
     
     au::tables::Table * NetworkManager::getConnectionsTable()
     {
+        au::TokenTaker tt(&token_connections_);
         
         au::tables::Table* table = new au::tables::Table( au::StringVector( "Name" , "Host" , "In" , "Out" ) );
         
@@ -86,6 +93,8 @@ namespace samson {
     
     NetworkConnection* NetworkManager::extractNextDisconnectedConnection( )
     {
+        au::TokenTaker tt(&token_connections_);
+
         au::map<std::string , NetworkConnection>::iterator it_connections;
         for (it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
         {
@@ -106,6 +115,8 @@ namespace samson {
         // Return all connections with pattern delilah_X
         std::vector<size_t> ids;
         
+        au::TokenTaker tt(&token_connections_);
+
         au::map<std::string , NetworkConnection>::iterator it_connections;
         for ( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
         {
@@ -134,6 +145,8 @@ namespace samson {
     
     std::string NetworkManager::str()
     {
+        au::TokenTaker tt(&token_connections_);
+
         std::ostringstream output;
         
         au::map<std::string , NetworkConnection>::iterator it_connections;
@@ -145,6 +158,8 @@ namespace samson {
     
     Status NetworkManager::send( Packet* packet )
     {
+        au::TokenTaker tt(&token_connections_);
+
         // Recover connection name
         std::string name = packet->to.getCodeName();
         
@@ -176,6 +191,8 @@ namespace samson {
         network::Collection* collection = new network::Collection();
         collection->set_name("connections");
         
+        au::TokenTaker tt(&token_connections_);
+
         au::map<std::string , NetworkConnection>::iterator it_connections;
         
         for ( it_connections =connections.begin() ; it_connections != connections.end() ; it_connections++ )
@@ -190,6 +207,8 @@ namespace samson {
     
     void NetworkManager::reset()
     {
+        au::TokenTaker tt(&token_connections_);
+
         au::map<std::string , NetworkConnection>::iterator it_connections;
         for( it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
         {
@@ -221,6 +240,8 @@ namespace samson {
     
     size_t NetworkManager::get_rate_in()
     {
+        au::TokenTaker tt(&token_connections_);
+
         size_t total = 0;
         
         au::map<std::string , NetworkConnection>::iterator it_connections;
@@ -232,6 +253,8 @@ namespace samson {
     
     size_t NetworkManager::get_rate_out()
     {
+        au::TokenTaker tt(&token_connections_);
+
         size_t total = 0;
         
         au::map<std::string , NetworkConnection>::iterator it_connections;
@@ -243,6 +266,8 @@ namespace samson {
 
     std::string NetworkManager::getStatusForConnection( std::string connection_name )
     {
+        au::TokenTaker tt(&token_connections_);
+
         // Find this connection...
         NetworkConnection* connection = connections.findInMap( connection_name );
         

@@ -69,7 +69,10 @@ namespace samson {
         void ParserQueueTask::generateKeyValues( samson::ProcessWriter *writer )
         {
             // Handy class to emit traces
-            OperationTraces operation_traces( au::str( "[%lu] Parser %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
+            //OperationTraces operation_traces( au::str( "[%lu] Parser %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
+            OperationTraces operation_traces( au::str( "[%lu] Parser %s" , id,  operation_name.c_str() ) , 100 );
+
+
             
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );
@@ -172,7 +175,9 @@ namespace samson {
         void ParserOutQueueTask::generateTXT( TXTWriter *writer )
         {
             // Handy class to emit traces
-            OperationTraces operation_traces( au::str( "[%lu] Parserout %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
+            //OperationTraces operation_traces( au::str( "[%lu] Parserout %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
+            OperationTraces operation_traces( au::str( "[%lu] Parserout %s" , id,  operation_name.c_str() ) , 100 );
+
 
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );
@@ -262,9 +267,11 @@ namespace samson {
         void MapQueueTask::generateKeyValues( samson::ProcessWriter *writer )
         {
             // Handy class to emit traces
-            OperationTraces operation_traces( au::str( "[%lu] Map %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
+            //OperationTraces operation_traces( au::str( "[%lu] Map %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
+            OperationTraces operation_traces( au::str( "[%lu] Map %s" , id,  operation_name.c_str() ) , 100 );
 
             
+
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );
 
@@ -563,10 +570,14 @@ namespace samson {
             LM_T(LmtReduceOperation, ("Reduce %lu - %s KVRange %s" , id , operation_name.c_str() , range.str().c_str() ));
             
             // Handy class to emit traces
-            OperationTraces operation_traces( au::str( "[%lu] reduce %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
+            //OperationTraces operation_traces( au::str( "[%lu] reduce %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
+            OperationTraces operation_traces( au::str( "[%lu] reduce %s" , id,  operation_name.c_str() ) , 100 );
+
             
-            BlockInfo block_info;
-            update( block_info );
+            // Goyo Why do we make this update?
+            // deadlock problem detected, not starting operations
+            //BlockInfo block_info;
+            //update( block_info );
             
             // Get the operation
             Operation *operation = ModulesManager::shared()->getOperation( streamOperation->operation );

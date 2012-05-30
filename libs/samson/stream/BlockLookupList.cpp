@@ -227,7 +227,7 @@ namespace samson {
                         std::ostringstream output;
                         output << "{ \"key\" : ";
                         output << keyDataInstance->strJSON();
-                        output << " \"value\" : ";
+                        output << ",\"value\" : ";
                         output << valueDataInstance->strJSON();
                         output << " } ";
                         return output.str();

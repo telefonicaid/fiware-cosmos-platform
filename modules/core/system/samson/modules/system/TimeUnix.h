@@ -266,7 +266,7 @@ public:
     getCalendarFromTimeUTC(&timeExpanded);
     asctime_r(&timeExpanded, buffAscTime);
     buffAscTime[strlen(buffAscTime) - 1] = '\0';
-    o << buffAscTime << " ";
+    o << "\"" << buffAscTime << "\"";
     return o.str();
   }
 

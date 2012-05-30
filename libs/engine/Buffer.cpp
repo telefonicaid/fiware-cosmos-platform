@@ -63,7 +63,9 @@ namespace engine {
     
     void Buffer::self_destroy()
     {
-        MemoryManager::shared()->destroyBuffer(this);
+        MemoryManager*mm =  MemoryManager::shared();
+        if( mm )
+            mm->destroyBuffer(this);
     }
 
     std::string Buffer::str()

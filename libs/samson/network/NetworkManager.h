@@ -37,9 +37,12 @@ namespace samson {
         // All managed connection
         au::map<std::string , NetworkConnection> connections;
         
+        // Token to block add and move operations on connections
+        au::Token token_connections_;
+
     public:
         
-        NetworkManager()
+        NetworkManager():token_connections_("token_connections_")
         {
         }
                 

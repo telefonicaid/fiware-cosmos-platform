@@ -42,14 +42,13 @@ def has_package(pkg):
 def patch_hue():
     ## TODO: extract to config
     local_patch_path = "../cosmos/platform/frontend/hue-patches/hue-patch-cdh3u4-r0.4.diff"
-    remote_patch_path = "hue-patch-cdh3u4-r0.4.diff"
+    remote_patch_path = "~/hue-patch-cdh3u4-r0.4.diff"
     with ctx.hide('stdout'):
         hue_pkgs = ["hue-common", "hue-filebrowser", "hue-help",
                     "hue-jobbrowser", "hue-jobsub", "hue-plugins",
                     "hue-proxy", "hue-server", "hue-shell"]
         for pkg_name in hue_pkgs:
-            import ipdb; ipdb.set_trace()
-            run("yum erase -y {}".format(pkg_name))
+            run("yum -y erase {0}".format(pkg_name))
         run("yum -y install hue")
         put(local_patch_path, remote_patch_path)
         with cd("/usr/share/hue"):
@@ -70,6 +69,13 @@ def install_thrift(thrift_tarpath):
                 run("make install")
 
 def install_cosmos_app():
+    cosmos_app_install_path = '/usr/share/hue/apps/cosmos/'
+    if files.exists(cosmos_app_install_path):
+        puts("Found an existing installation of Cosmos app!")
+        puts("Going to remove it")
+        run("rm -rf {0}".format(cosmos_app_install_path))
+    if files.exists("cosmos-app"):
+        run("rm -rf cosmos-app")
     run("mkdir cosmos-app")
     put("../cosmos/platform/frontend/hue-apps/cosmos", "cosmos-app")
     with cd("cosmos-app/cosmos"):

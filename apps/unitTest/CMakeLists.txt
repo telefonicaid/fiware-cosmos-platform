@@ -32,6 +32,7 @@ SET (SOURCES
 	delilah/common_delilah_test.cpp
 	delilah/delilahConsole_test.cpp
 	delilah/SamsonFile_test.cpp
+	delilah/PushDelilahComponent_test.cpp
 	
 	#samson/client library
 	samson/client/SamsonClient_test.cpp

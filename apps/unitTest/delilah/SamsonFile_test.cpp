@@ -1,6 +1,6 @@
 /* ****************************************************************************
 *
-* FILE            delilah_test.cpp
+* FILE            SamsonFile_test.cpp
 *
 * AUTHOR         Gregorio Escalada
 *

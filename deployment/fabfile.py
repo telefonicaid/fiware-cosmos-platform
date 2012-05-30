@@ -5,12 +5,17 @@ causes Fabric to deploy each Cosmos component at a configured host.
 """
 import os
 import json
-import hadoop_install
-from fabric.api import run, execute, sudo, put, cd, env
-from fabric.decorators import roles
-from fabric.contrib import files
 from StringIO import StringIO
+
+from fabric.api import run, execute, sudo, put, cd, env, local
+import fabric.context_managers as ctx
+from fabric.contrib import files
+from fabric.contrib.console import confirm
+from fabric.decorators import roles, task
+from fabric.utils import puts
 from mako.template import Template
+
+import hadoop_install
 
 DEFAULT_CONFIG = 'staging.json'
 
@@ -63,10 +68,14 @@ def deploy_sftp():
         #run("update_config ?")
     run("/etc/init.d/injection start")
       
+@task
 def deploy_cdh():
-    """Deploys the CDH distribution of Hadoop:
-        - Installs Hadoop
-        - Configures Hadoop"""
+    """
+    Deploys the CDH distribution of Hadoop:
+
+    - Installs Hadoop
+    - Configures Hadoop
+    """
     execute(hadoop_install.install_cdh)
     execute(hadoop_install.create_hadoop_dirs)
     execute(hadoop_install.configure_hadoop, CONFIG)
@@ -90,10 +99,13 @@ def deploy_mongo():
         "    db.getSiblingDB(d.name).dropDatabase();"
         "})\"")
 
+@task
 def deploy_models():
-    """ This function is not ready for production. It is only here as a general
-    idea on what is needed to deploy a model, but we currently have no models to
-    deploy"""
+    """
+    This function is not ready for production. It is only here as a general
+    idea on what is needed to deploy a model, but we currently have no models
+    to deploy
+    """
     modelpaths = [] # Dummy variable, this should be part of
                     # the configuration or similar
     for model in modelpaths:

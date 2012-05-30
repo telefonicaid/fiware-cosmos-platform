@@ -101,8 +101,8 @@ namespace samson
         {
             int max = workers.size();
             int r = rand();
-            next_worker = r%max;
-            
+            if ( max != 0 )
+              next_worker = r%max;
         }
         
         next_worker++;

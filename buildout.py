@@ -4,7 +4,9 @@ Buildout to Jenkins adapter module.
 
 """
 import os
+import os.path
 import re
+from shutil import copytree, rmtree
 import sys
 import subprocess
 
@@ -17,9 +19,20 @@ class BuildOut(object):
 
     DEFAULT_CONFIG = 'buildout.devel.cfg'
 
-    def __init__(self, project_name, config=DEFAULT_CONFIG):
-        self.project = project_name
+    def __init__(self, project, build_path=None, config=DEFAULT_CONFIG):
+        self.project = project
         self.config = config
+
+        if build_path is None:
+            self.build_path = project
+        else:
+            self.build_path = os.path.join(build_path, self.project_name())
+            if os.path.isdir(self.build_path):
+                print ("Building dir %s already exists. Removing..." %
+                       self.build_path)
+                rmtree(self.build_path)
+            print "Copying files to %s" % self.build_path
+            copytree(project, self.build_path, symlinks=True)
 
     def build(self):
         """

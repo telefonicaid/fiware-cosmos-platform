@@ -29,7 +29,7 @@
 //Test void MemoryCheck();
 TEST(commonTest, MemoryCheck)
 {
-    samson::SamsonSetup::init("/opt/samson", "var/samson");
+    samson::SamsonSetup::init("/opt/samson", "/var/samson");
 
     EXPECT_EQ(samson::MemoryCheck(), true) << "Error in MemoryCheck test";
 
@@ -39,7 +39,7 @@ TEST(commonTest, MemoryCheck)
 //Test void MessagesOperations();
 TEST(commonTest, MessagesOperations)
 {
-    samson::SamsonSetup::init("/opt/samson", "var/samson");
+    samson::SamsonSetup::init("/opt/samson", "/var/samson");
 
     EXPECT_EQ(samson::filterName("OTTstream.parse_logs", "OTTstream", ""), true) << "Error in filterName positive test";
     EXPECT_EQ(samson::filterName("OTTstream.parse_logs", "system", ""), false) << "Error in filterName negative test";
@@ -57,7 +57,7 @@ TEST(commonTest, SamsonSetup)
     EXPECT_EQ(samson::createFullDirectory("/tmp/level1/level2/level3/testSamsonSetup"), samson::OK) << "Error in createFullDirectory test";
     EXPECT_EQ(samson::cannonical_path("/tmp/level1/level2/level3/"), "/tmp/level1/level2/level3") << "Error in cannonical_path test";
 
-    samson::SamsonSetup::init("/opt/samson", "var/samson");
+    samson::SamsonSetup::init("/opt/samson", "/var/samson");
 
     EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("isolated.timeout"), "300") << "Error in getValueForParameter for isolated.timeout";
 
@@ -108,7 +108,9 @@ TEST(commonTest, Rate)
     rate.push(10, 100);
 
     // We have to wait to update the internal representation
-    sleep(1);
+    sleep(2);
+
+    rate.push(10, 100);
 
     EXPECT_GT(rate.get_rate_size(), 0) << "Error in get_rate_size";
     EXPECT_GT(rate.get_rate_kvs(), 0) << "Error in get_rate_kvs";

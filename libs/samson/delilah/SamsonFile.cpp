@@ -180,6 +180,13 @@ namespace samson {
     {
         SimpleBuffer simple_buffer( fileName );
         
+        // If fileName could not be read, we must check simple_buffer.data
+        if (simple_buffer.data == NULL)
+        {
+            LM_E(("Error, no data for fileName:'%s'", fileName.c_str()));
+            return au::str("Error, no data for fileName:'%s'", fileName.c_str());
+        }
+
         au::ErrorManager error;
         KVInfo* info = createKVInfoVector( simple_buffer.data , &error );
 

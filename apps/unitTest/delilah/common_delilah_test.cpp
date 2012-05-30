@@ -26,7 +26,7 @@ samson::DelilahConsole *init_delilah_test()
     engine::DiskManager::init(1);
     engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
 
-    //samson::ModulesManager::init();         // Init the modules manager
+    samson::ModulesManager::init();         // Init the modules manager
 
 
     // Create a DelilahControler once network is ready
@@ -54,7 +54,7 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole)
     }
     
     au::LockDebugger::destroy();
-    //samson::ModulesManager::destroy();
+    samson::ModulesManager::destroy();
     engine::ProcessManager::destroy();
     engine::DiskManager::destroy();
     engine::MemoryManager::destroy();

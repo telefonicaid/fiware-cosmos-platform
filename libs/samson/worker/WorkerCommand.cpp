@@ -1617,7 +1617,7 @@ typedef struct LogLineInfo
                     
                 default:
                 {
-                    finishWorkerTaskWithError( au::str("'run' command OK, but it is still not implemented"  ) ); 
+                    finishWorkerTaskWithError( au::str("'run' command OK, but it is still not implemented (type:%s)", op->getTypeName().c_str()  ) );
                 }
                     break;
             }

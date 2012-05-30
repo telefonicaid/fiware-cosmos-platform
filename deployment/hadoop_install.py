@@ -11,20 +11,23 @@ from mako.template import Template
 @parallel
 def install_cdh():
     """Install the latest Hadoop distribution in CDH3"""
+    run('rm -rf /tmp/*')
     repo_rpm = ('http://archive.cloudera.com/redhat/cdh/'
                 'cdh3-repository-1.0-1.noarch.rpm')
     run('wget %s' % repo_rpm)
     run('rpm -Uvh --force cdh3-repository-1.0-1.noarch.rpm')
-    run(('rpm --import'
-         ' http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera'))
+    if not files.exists('/etc/pki/rpm-gpg/RPM-GPG-KEY-cloudera'):
+        run(('rpm --import'
+             ' http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera'))
     run('yum -y install hadoop-0.20 hadoop-0.20-native')
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 @parallel
 def create_hadoop_dirs():
     """Create necessary directories for Hadoop"""
-    run('rm -rf /data1')
-    run('mkdir /data1')
+    run('rm -rf /data1/*')
+    if not files.exists('/data1'):
+        run('mkdir /data1')
     run('mkdir -m 700 /data1/data')
     run('chown hdfs:hadoop /data1/data')
     run('mkdir -m 755 /data1/mapred')

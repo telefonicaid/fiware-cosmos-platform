@@ -75,6 +75,8 @@ namespace samson {
         
         ~WorkerCommandDelilahComponent()
         {
+            responses.clearMap();
+            collections.clearMap();
         }
 		
 		void receive( Packet* packet );

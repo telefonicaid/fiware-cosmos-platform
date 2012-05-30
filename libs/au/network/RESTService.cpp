@@ -33,23 +33,22 @@ namespace au
             LM_T(LmtRest , ("Start reading a REST request from socket %s" , socket_connection->getHostAndPort().c_str()));
             
             // Read a line from socket
-            char line[1024];
-            au::Status s = socket_connection->readLine( line , sizeof(line) , 10 );
+            au::Status s = socket_connection->readLine( request_line , sizeof(request_line) , 10 );
             
             if (s == au::OK)
             {
-                LM_T(LmtRest, ("REST FIRST Head line: %s", line ));
+                LM_T(LmtRest, ("REST FIRST Head line: %s", request_line ));
                 
                 // Remove last "\n" "\r" characters.
-                au::remove_return_chars( line );
+                au::remove_return_chars( request_line );
                 
                 // Process incomming line with cmdLine
                 au::CommandLine cmdLine;
-                cmdLine.parse( line );
+                cmdLine.parse( request_line );
                 
                 if( cmdLine.get_num_arguments() < 2 )
                 {
-                    error.set( au::str("Unexpected format. Incomming line %s" , line ));
+                    error.set( au::str("Unexpected format. Incomming line %s" , request_line ));
                     return au::Error;
                 }
                 
@@ -77,9 +76,10 @@ namespace au
                     format == "";
                 
                 // Read the rest of the REST Request
+                char line[1024];
                 while ( s == au::OK )
                 {
-                    s = socket_connection->readLine( line , sizeof(line) , 10 );
+                    s = socket_connection->readLine( line , sizeof(request_line) , 10 );
                     au::remove_return_chars( line );
                     
                     if( strlen(line) == 0 )

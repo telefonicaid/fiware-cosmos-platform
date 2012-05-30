@@ -262,8 +262,13 @@ namespace samson {
         if( collections.size() == 0 )
             return NULL;
 
+        network::Collection *collection = collections.begin()->second;
+        
+        if( collection->record_size() == 0 )
+            return NULL;
+
         // Get the first one
-        return getTable( collections.begin()->second );
+        return getTable( collection );
         
     }
     

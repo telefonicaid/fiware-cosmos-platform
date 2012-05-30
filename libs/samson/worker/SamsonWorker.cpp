@@ -805,7 +805,7 @@ namespace samson {
         }
 
         // Internal process of the command
-        intern_process(command);
+        process_intern(command);
         
         // Close data content
         // ---------------------------------------------------
@@ -947,7 +947,7 @@ static int jsonParse(char* in, char* host, char* port)
 *
 * clusterNodeAdd - 
 */
-void SamsonWorker::clusterNodeAdd(au::network::RESTServiceCommand* command)
+void SamsonWorker::process_clusterNodeAdd(au::network::RESTServiceCommand* command)
 {
     char delilahCommand[256];
 
@@ -1028,7 +1028,7 @@ void SamsonWorker::clusterNodeAdd(au::network::RESTServiceCommand* command)
 *
 * clusterNodeDelete - 
 */
-void SamsonWorker::clusterNodeDelete(au::network::RESTServiceCommand* command)
+void SamsonWorker::process_clusterNodeDelete(au::network::RESTServiceCommand* command)
 {
     char delilahCommand[256];
 
@@ -1103,9 +1103,7 @@ void SamsonWorker::clusterNodeDelete(au::network::RESTServiceCommand* command)
     }
 }
 
-
-
-void SamsonWorker::intern_process( au::network::RESTServiceCommand* command )
+void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
 {
     std::string         main_command  = command->path_components[1];
     std::string         path          = "";
@@ -1121,6 +1119,7 @@ void SamsonWorker::intern_process( au::network::RESTServiceCommand* command )
     //
     // Quick sanity check
     //
+    
     if (components < 2)
     {
         command->appendFormatedError(400 , "Only /samson/option paths are valid");
@@ -1133,11 +1132,10 @@ void SamsonWorker::intern_process( au::network::RESTServiceCommand* command )
         return;
     }
 
-
-
     //
     // Treat the message
     //
+    
     if ((path == "/samson/version") && (verb == "GET"))
     {
         command->appendFormatedElement("version", au::str("SAMSON v %s" , SAMSON_VERSION ));
@@ -1152,11 +1150,11 @@ void SamsonWorker::intern_process( au::network::RESTServiceCommand* command )
     }
     else if ((path == "/samson/cluster/add_node") && (verb == "POST"))
     {
-        clusterNodeAdd(command);
+        process_clusterNodeAdd(command);
     }
     else if ((path == "/samson/cluster/remove_node") && (verb == "DELETE"))
     {
-        clusterNodeDelete(command);
+        process_clusterNodeDelete(command);
     }
     else if (main_command == "logging")
     {

@@ -37,6 +37,9 @@ namespace au
             std::string resource;          // url... 
             StringVector path_components;  // Paths in the url
             std::string format;            // Extension of the resource (.xml , .json , .html )
+
+            // First line in request
+            char request_line[1024];
             
             // Header environment
             au::Environment header;

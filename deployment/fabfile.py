@@ -55,14 +55,14 @@ def patch_hue():
         with cd("/usr/share/hue"):
             run("git apply -p2 --reject {0}".format(remote_patch_path))
 
-def install_thrift():
+def install_thrift(thrift_tarpath):
     if not files.exists('/usr/local/bin/thrift'):
         puts("Installing thrift")
         with ctx.hide('stdout'):
             run(("yum -y install automake libtool flex bison pkgconfig "
                  "gcc-c++ boost-devel libevent-devel zlib-devel python-devel "
                  "ruby-devel openssl-devel"))
-            put("~/install-dependencies/thrift-0.8.0.tar.gz")
+            put(thrift_tarpath)
             run("tar xfz thrift-0.8.0.tar.gz")
             with cd("thrift-0.8.0"):
                 run("./configure")
@@ -87,13 +87,13 @@ def check_dependencies(pkg_list):
 
 @task
 @roles('frontend')
-def deploy_hue():
+def deploy_hue(thrift_tarpath='~/install-dependencies/thrift-0.8.0.tar.gz'):
     """
     Deploys the HUE frontend from Cloudera, plus our fixes and our app
     """
     check_dependencies(['mysql', 'git'])
     patch_hue()
-    install_thrift()
+    install_thrift(thrift_tarpath)
     install_cosmos_app()
     run("rm hue-patch-cdh3u4-r0.4.diff")
     run("rm -rf cosmos-app")

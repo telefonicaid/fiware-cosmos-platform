@@ -22,52 +22,75 @@ SET (HEADERS
 )
 
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-SET( STATIC_LIBS
-     lm
-	au
-     pa
-	 json
-	 xml2
-	 mysqlclient
-	 z
-	 m
-	 cryptopp
-)
+    SET (STATIC_LIBS
+         lm
+         au
+         pa
+         json
+         xml2
+         mysqlclient
+         z
+         m
+         cryptopp
+    )
+ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+    IF (${CMAKE_SYSTEM_TYPE} MATCHES "Ubuntu")
+        SET (STATIC_LIBS
+             lm
+             au
+             pa
+             json
+             xml2
+             mysqlclient
+             z
+             m
+             ssl3
+             nsl
+             cryptopp
+        )
+    ELSEIF (${CMAKE_SYSTEM_TYPE} MATCHES "RedHat")
+        SET (STATIC_LIBS
+             lm
+             au
+             pa
+             json
+             xml2
+             mysqlclient
+             z
+             m
+             ssl3
+             nsl
+             crypto++
+        )
+    ELSE (${CMAKE_SYSTEM_TYPE} MATCHES "Ubuntu")
+        SET (STATIC_LIBS
+             lm
+             au
+             pa
+             json
+             xml2
+             mysqlclient
+             z
+             m
+             ssl3
+             nsl
+             cryptopp
+        )
+    ENDIF (${CMAKE_SYSTEM_TYPE} MATCHES "Ubuntu")
+ELSE (${CMAKE_SYSTEM_TYPE} MATCHES "Darwin")
+    SET (STATIC_LIBS
+         lm
+         pa
+         json
+         xml2
+         mysqlclient
+         z
+         m
+         ssl3
+         nsl
+         cryptopp
+    )
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-
-IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
-IF (${CMAKE_SYSTEM_TYPE} MATCHES "Ubuntu")
-SET( STATIC_LIBS
-     lm
-     pa
-	 json
-	 xml2
-	 mysqlclient
-	 z
-	 m
-	 ssl3
-	 nsl
-	 cryptopp
-)
-ENDIF (${CMAKE_SYSTEM_TYPE} MATCHES "Ubuntu")
-
-IF (${CMAKE_SYSTEM_TYPE} MATCHES "RedHat")
-SET( STATIC_LIBS
-     lm
-     pa
-	 json
-	 xml2
-	 mysqlclient
-	 z
-	 m
-	 ssl3
-	 nsl
-	 crypto++
-)
-ENDIF (${CMAKE_SYSTEM_TYPE} MATCHES "RedHat")
-
-ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # Include directories
 # ------------------------------------------------------------

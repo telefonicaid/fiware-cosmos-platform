@@ -4,6 +4,8 @@
 #include <sys/types.h>
 #include <dirent.h>
 
+#include "json.h"
+
 #include "logMsg/logMsg.h"                        // lmInit, LM_*
 #include "logMsg/traceLevels.h"                   // Trace Levels
 
@@ -817,9 +819,137 @@ namespace samson {
     }
     
     
+/* ****************************************************************************
+*
+* jsonTypeName - 
+*/
+static const char* jsonTypeName(json_type type)
+{
+	switch (type)
+	{
+	case json_type_null:       return "json_type_null";
+	case json_type_boolean:    return "json_type_boolean";
+	case json_type_double:     return "json_type_double";
+	case json_type_int:        return "json_type_int";
+	case json_type_object:     return "json_type_object";
+	case json_type_array:      return "json_type_array";
+	case json_type_string:     return "json_type_string";
+	}
+
+	return "json_type_unknown";
+}
+
+
+
+/* ****************************************************************************
+*
+* jsonParse - 
+*/
+static int jsonParse(char* in, char* host, char* port)
+{
+	struct json_object* json;
+	struct json_object* jsonObj;
+	struct lh_table*    table;
+	lh_entry*           entry;
+	char*               key;
+
+	json  = json_tokener_parse(in);
+	table = json_object_get_object(json);
+	entry = table->head;
+	
+	while (entry != NULL)
+	{
+		key     = (char*) entry->k;
+		jsonObj = json_object_object_get(json, key);
+		
+		json_type type = json_object_get_type(jsonObj);
+
+        LM_T(LmtRestData, ("got a '%s'", jsonTypeName(type)));
+        if (type == json_type_object)
+        {
+            struct lh_table*    table2;
+            lh_entry*           entry2;
+
+            table2 = json_object_get_object(jsonObj);
+            entry2 = table2->head;
+
+            LM_T(LmtRestData, ("Starting while 2 (%p)", entry2));
+            while (entry2 != NULL)
+            {
+                char*                key2     = (char*) entry2->k;
+                struct json_object*  jsonObj2 = json_object_object_get(jsonObj, key2);
+                json_type            type2    = json_object_get_type(jsonObj2);
+
+                if (type2 == json_type_string)
+                {
+                    const char* s = json_object_get_string(jsonObj2);
+                    LM_T(LmtRestData, ("json: '%s' : %s (%s)", key2, s, jsonTypeName(type2)));
+
+                    if (strcmp(key2, "name") == 0)
+                        strcpy(host, s);
+                    else if (strcmp(key2, "port") == 0)
+                        strcpy(port, s);
+                }
+                else if (type2 == json_type_int)
+                {
+                    int i = json_object_get_int(jsonObj2);
+                    LM_T(LmtRestData, ("json: '%s' : %d (%s)", key2, i, jsonTypeName(type)));
+
+                    if (strcmp(key2, "port") == 0)
+                    {
+                        LM_T(LmtRestData, ("found an integer port: %d", i));
+                        sprintf(port, "%d", i);
+                        LM_T(LmtRestData, ("found an integer port: '%s'", port));
+                    }
+                }
+
+                entry2 = entry2->next;
+            }
+        }
+		else if (type == json_type_boolean)
+		{
+			bool b = json_object_get_boolean(jsonObj);
+			LM_T(LmtRestData, ("json: '%s' : %s (%s)", key, (b==true)? "true" : "false", jsonTypeName(type)));
+		}
+		else if (type == json_type_double)
+		{
+			double d = json_object_get_double(jsonObj);
+			LM_T(LmtRestData, ("json: '%s' : %f (%s)", key, d, jsonTypeName(type)));
+		}
+		else if (type == json_type_int)
+		{
+			int i = json_object_get_int(jsonObj);
+			LM_T(LmtRestData, ("json: '%s' : %d (%s)", key, i, jsonTypeName(type)));
+
+            if (strcmp(key, "port") == 0)
+                sprintf(port, "%d", i);
+		}
+		else if (type == json_type_string)
+		{
+			const char* s = json_object_get_string(jsonObj);
+			LM_T(LmtRestData, ("json: '%s' : %s (%s)", key, s, jsonTypeName(type)));
+
+            if (strcmp(key, "host") == 0)
+                strcpy(host, s);
+            else if (strcmp(key, "port") == 0)
+                strcpy(port, s);
+		}
+			
+		entry = entry->next;
+	}
+
+	return 0;
+}
+
+
+
     void SamsonWorker::intern_process( au::network::RESTServiceCommand* command )
     {
-        LM_T(LmtRest, ("Incoming REST request: '%s'", command->resource.c_str()));
+        std::string path = "";
+
+        for (unsigned int ix = 0; ix < command->path_components.size(); ix++)
+            path += std::string("/") + command->path_components[ix];
+        LM_T(LmtRest, ("Incoming REST request: %s '%s'", command->command.c_str(), path.c_str()));
 
         
         if( command->path_components.size() < 2 )
@@ -952,9 +1082,10 @@ namespace samson {
                     else
                     {
                         pugi::xml_node samson = doc.child("samson");
+                        pugi::xml_node node   = samson.child("node");
 
-                        char* host = (char*) samson.child_value("host");
-                        char* port = (char*) samson.child_value("port");
+                        char* host = (char*) node.child_value("name");
+                        char* port = (char*) node.child_value("port");
                             
                         snprintf(delilahCommand, sizeof(delilahCommand), "cluster add %s %s", host, port);
                         LM_T(LmtRest, ("processing delilah command '%s'", delilahCommand));
@@ -972,7 +1103,26 @@ namespace samson {
                 }
                 else if (command->format == "json")
                 {
-                    command->appendFormatedError(404, au::str("sorry, JSON parsing not implemented yet"));
+                    char* commandData = (char*) malloc(command->data_size + 1);
+                    char  host[256];
+                    char  port[32];
+
+                    strncpy(commandData, command->data, command->data_size);
+                    commandData[command->data_size] = 0;
+                    LM_T(LmtRestData, ("commandData: '%s'", commandData));
+
+                    if (jsonParse(commandData, host, port) != 0)
+                        command->appendFormatedError(404, au::str("JSON parse error"));
+
+                    LM_T(LmtRestData, ("host: '%s'", host));
+                    LM_T(LmtRestData, ("port: '%s'", port));
+
+                    snprintf(delilahCommand, sizeof(delilahCommand), "cluster add %s %s", host, port);
+                    LM_T(LmtRest, ("processing delilah command '%s'", delilahCommand));
+                    process_delilah_command(delilahCommand, command);
+
+                    command->output.str("");
+                    command->output << "{ \"result\" : \"OK\" }";
                 }
             }
             else if ((command->command == "DELETE") && (command->path_components.size() == 3) && (command->path_components[2] == "remove_node"))

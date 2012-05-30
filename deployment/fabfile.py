@@ -5,12 +5,17 @@ causes Fabric to deploy each Cosmos component at a configured host.
 """
 import os
 import json
-import hadoop_install
-from fabric.api import run, execute, sudo, put, cd, env
-from fabric.decorators import roles
-from fabric.contrib import files
 from StringIO import StringIO
+
+from fabric.api import run, execute, sudo, put, cd, env, local
+import fabric.context_managers as ctx
+from fabric.contrib import files
+from fabric.contrib.console import confirm
+from fabric.decorators import roles, task
+from fabric.utils import puts
 from mako.template import Template
+
+import hadoop_install
 
 DEFAULT_CONFIG = 'staging.json'
 
@@ -24,31 +29,55 @@ def deploy():
     deploy_cdh()
 
 def has_package(pkg):
-    out = run("rpm -qa | grep {}".format(pkg))
-    return len(out.strip()) > 0
+    with ctx.hide('stdout'):
+        out = run('yum list -q installed | grep ^%s\\. || echo' % pkg)
+        return len(out.strip()) > 0
 
-def has_hue():
-    return has_package('hue')
-
+@task
 @roles('frontend') # namenode
 def deploy_hue():
-    """Deploy the HUE frontend from Cloudera, plus our fixes and our apps"""
+    """Deploy the HUE frontend from Cloudera, plus our fixes and our app"""
     pdihub = CONFIG['github']
     checkout_dir = CONFIG['hue_checkout']
-    # Remaining Dependencies: MySQL, thrift
-    run("yum -y erase hue*")
-    run("yum -y install hue") # at version 1.2.0.0+114.35
-    run("yum -y install git")
-    put("hue-patch-cdh3u4-r0.4.diff", "/root/")
-    with cd("/usr/share/hue"):
-        run("git apply -p2 --reject {0}".format(os.path.join(
-                        checkout_dir, 'cosmos', 'platform', 'frontend',
-                        'hue-patches', 'hue-patch-cdh3u4-r0.4.diff' )))
-    #run("rm -rf {0}".format(checkout_dir))
-#     put("./cosmos/platform/frontend/hue/app/cosmos")
-    # with cd ./cosmos/platform/frontend/hue-app/cosmos
-#     run("hue.py")
+    hue_patch_path = "/root/hue-patch-cdh3u4-r0.4.diff"
+    has_hue = has_package('hue')
+    ## TODO: do the right thing without confirm
+    if has_hue and confirm('HUE already installed. Reinstall?'):
+        with ctx.hide('stdout'):
+            ## TODO: convert to explicit list of pkgs?
+            run(("for pkg in `yum -q list installed | grep hue | awk '{print "
+                 "$1}'`;do yum -y erase $pkg; done"))
+        run("yum -y install hue") # at version 1.2.0.0+114.35
+        ## TODO: extract path
+        put("../cosmos/platform/frontend/hue-patches/hue-patch-cdh3u4-r0.4.diff", 
+            hue_patch_path)
+        with cd("/usr/share/hue"):
+            run("git apply -p2 --reject {0}".format(hue_patch_path))
+    if not has_package('git'):
+        run("yum -y install git")
+    if not has_package('mysql'):
+        run("yum -y install mysql")
+    if not files.exists('/usr/local/bin/thrift'):
+        puts("installing thrift")
+        with ctx.hide('stdout'):
+            run(("yum -y install automake libtool flex bison pkgconfig "
+                 "gcc-c++ boost-devel libevent-devel zlib-devel python-devel "
+                 "ruby-devel openssl-devel"))
+            ## TODO: extract path
+            put("~/Applications/install-dependencies/thrift-0.8.0.tar.gz")
+            run("tar xfz thrift-0.8.0.tar.gz")
+            with cd("thrift-0.8.0"):
+                run("./configure")
+                run("make")
+                run("make install")
+    put("../cosmos/platform/frontend/hue-apps/cosmos", "cosmos-app")
+    with cd("cosmos-app/cosmos"):
+        puts("About to run buildout")
+        run("python2.6 bootstrap.py")
+        run("bin/buildout -c buildout.prod.cfg")
+    ## TODO: cleanup
 
+@task
 @roles('namenode') # frontend
 def deploy_sftp():
     """Deploys the SFTP server as a Java JAR and starts it"""
@@ -63,10 +92,14 @@ def deploy_sftp():
         #run("update_config ?")
     run("/etc/init.d/injection start")
       
+@task
 def deploy_cdh():
-    """Deploys the CDH distribution of Hadoop:
-        - Installs Hadoop
-        - Configures Hadoop"""
+    """
+    Deploys the CDH distribution of Hadoop:
+
+    - Installs Hadoop
+    - Configures Hadoop
+    """
     execute(hadoop_install.install_cdh)
     execute(hadoop_install.create_hadoop_dirs)
     execute(hadoop_install.configure_hadoop, CONFIG)
@@ -90,10 +123,13 @@ def deploy_mongo():
         "    db.getSiblingDB(d.name).dropDatabase();"
         "})\"")
 
+@task
 def deploy_models():
-    """ This function is not ready for production. It is only here as a general
-    idea on what is needed to deploy a model, but we currently have no models to
-    deploy"""
+    """
+    This function is not ready for production. It is only here as a general
+    idea on what is needed to deploy a model, but we currently have no models
+    to deploy
+    """
     modelpaths = [] # Dummy variable, this should be part of
                     # the configuration or similar
     for model in modelpaths:

@@ -24,63 +24,86 @@ env.user = CONFIG['user']
 env.password = CONFIG['password']
 env.roledefs = CONFIG['hosts']
 
+@task
 def deploy():
-    """Deploys all the necessary components to get a running Cosmos cluster"""
+    """
+    Deploys all the necessary components to get a running Cosmos cluster
+    """
     deploy_cdh()
+    deploy_hue()
+    deploy_models()
+    deploy_sftp()
 
 def has_package(pkg):
     with ctx.hide('stdout'):
         out = run('yum list -q installed | grep ^%s\\. || echo' % pkg)
         return len(out.strip()) > 0
 
-@task
-@roles('frontend') # namenode
-def deploy_hue():
-    """Deploy the HUE frontend from Cloudera, plus our fixes and our app"""
-    pdihub = CONFIG['github']
-    checkout_dir = CONFIG['hue_checkout']
-    hue_patch_path = "/root/hue-patch-cdh3u4-r0.4.diff"
-    has_hue = has_package('hue')
-    ## TODO: do the right thing without confirm
-    if has_hue and confirm('HUE already installed. Reinstall?'):
-        with ctx.hide('stdout'):
-            ## TODO: convert to explicit list of pkgs?
-            run(("for pkg in `yum -q list installed | grep hue | awk '{print "
-                 "$1}'`;do yum -y erase $pkg; done"))
-        run("yum -y install hue") # at version 1.2.0.0+114.35
-        ## TODO: extract path
-        put("../cosmos/platform/frontend/hue-patches/hue-patch-cdh3u4-r0.4.diff", 
-            hue_patch_path)
+def patch_hue():
+    ## TODO: extract to config
+    local_patch_path = "../cosmos/platform/frontend/hue-patches/hue-patch-cdh3u4-r0.4.diff"
+    remote_patch_path = "hue-patch-cdh3u4-r0.4.diff"
+    with ctx.hide('stdout'):
+        hue_pkgs = ["hue-common", "hue-filebrowser", "hue-help",
+                    "hue-jobbrowser", "hue-jobsub", "hue-plugins",
+                    "hue-proxy", "hue-server", "hue-shell"]
+        for pkg_name in hue_pkgs:
+            import ipdb; ipdb.set_trace()
+            run("yum erase -y {}".format(pkg_name))
+        run("yum -y install hue")
+        put(local_patch_path, remote_patch_path)
         with cd("/usr/share/hue"):
-            run("git apply -p2 --reject {0}".format(hue_patch_path))
-    if not has_package('git'):
-        run("yum -y install git")
-    if not has_package('mysql'):
-        run("yum -y install mysql")
+            run("git apply -p2 --reject {0}".format(remote_patch_path))
+
+def install_thrift():
     if not files.exists('/usr/local/bin/thrift'):
-        puts("installing thrift")
+        puts("Installing thrift")
         with ctx.hide('stdout'):
             run(("yum -y install automake libtool flex bison pkgconfig "
                  "gcc-c++ boost-devel libevent-devel zlib-devel python-devel "
                  "ruby-devel openssl-devel"))
-            ## TODO: extract path
-            put("~/Applications/install-dependencies/thrift-0.8.0.tar.gz")
+            put("~/install-dependencies/thrift-0.8.0.tar.gz")
             run("tar xfz thrift-0.8.0.tar.gz")
             with cd("thrift-0.8.0"):
                 run("./configure")
                 run("make")
                 run("make install")
+
+def install_cosmos_app():
+    run("mkdir cosmos-app")
     put("../cosmos/platform/frontend/hue-apps/cosmos", "cosmos-app")
     with cd("cosmos-app/cosmos"):
         puts("About to run buildout")
         run("python2.6 bootstrap.py")
         run("bin/buildout -c buildout.prod.cfg")
-    ## TODO: cleanup
+
+def check_dependencies(pkg_list):
+    """
+    Checks that a list of dependencies is met using the OS package manager
+    """
+    for pkg_name in pkg_list:
+        if not has_package(pkg_name):
+            run("yum -y install {}".format(pkg_name))
 
 @task
-@roles('namenode') # frontend
+@roles('frontend')
+def deploy_hue():
+    """
+    Deploys the HUE frontend from Cloudera, plus our fixes and our app
+    """
+    check_dependencies(['mysql', 'git'])
+    patch_hue()
+    install_thrift()
+    install_cosmos_app()
+    run("rm hue-patch-cdh3u4-r0.4.diff")
+    run("rm -rf cosmos-app")
+
+@task
+@roles('frontend')
 def deploy_sftp():
-    """Deploys the SFTP server as a Java JAR and starts it"""
+    """
+    Deploys the SFTP server as a Java JAR and starts it
+    """
     with cd("/root/injection"):
         put("target/injection*.jar")
         injection_conf = StringIO()

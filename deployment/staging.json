@@ -9,7 +9,5 @@
         "tasktrackers": ["10.95.108.15", "10.95.109.190", "10.95.108.201"]
     },
     "user": "root",
-    "password": "admintid33",
-    "github": "https://pdihub.hi.inet/Cosmos",
-    "hue_checkout": "/root/hue"
+    "password": "admintid33"
 }

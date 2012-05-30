@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.RawComparator;
 
-import es.tid.cosmos.base.mapreduce.BinaryKey;
 import es.tid.cosmos.base.mapreduce.CompositeKey;
 import es.tid.cosmos.kpicalculation.data.KpiCalculationComparationException;
 import es.tid.cosmos.kpicalculation.data.KpiCalculationCounter;
@@ -38,8 +37,8 @@ public class PageViewKpiCounterGroupedComparator implements
     @Override
     public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
         try {
-            CompositeKey o1 = new BinaryKey();
-            CompositeKey o2 = new BinaryKey();
+            CompositeKey o1 = new CompositeKey(2);
+            CompositeKey o2 = new CompositeKey(2);
             this.buffer.reset(b1, s1, l1);
             o1.readFields(buffer);
             this.buffer.reset(b2, s2, l2);

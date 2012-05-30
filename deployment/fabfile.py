@@ -3,6 +3,7 @@ Cosmos automatic deployment Fabric file -
 
 causes Fabric to deploy each Cosmos component at a configured host.
 """
+import os
 import json
 from fabric.api import run, execute, sudo, put, cd, env
 from fabric.decorators import roles
@@ -25,21 +26,33 @@ def deploy():
     execute(deploy_datanode_daemon)
     execute(deploy_tasktracker_daemon)
 
-@roles('namenode')
+def has_package(pkg):
+    out = run("rpm -qa | grep {}".format(pkg))
+    return len(out.strip()) > 0
+
+def has_hue():
+    return has_package('hue')
+
+@roles('frontend') # namenode
 def deploy_hue():
-    """Deploy the HUE frontend from Clouder, plus our fixes and our apps"""
+    """Deploy the HUE frontend from Cloudera, plus our fixes and our apps"""
     pdihub = CONFIG['github']
     checkout_dir = CONFIG['hue_checkout']
-    run("yum install hue") # at version 1.2.0.0+114.35
-    run("yum install git")
-    run("git clone {0}/HUE {1}".format(pdihub, checkout_dir))
-    #run("git apply <hue-fixes> <hue>")
+    # Remaining Dependencies: MySQL, thrift
+    run("yum -y erase hue*")
+    run("yum -y install hue") # at version 1.2.0.0+114.35
+    run("yum -y install git")
+    put("hue-patch-cdh3u4-r0.4.diff", "/root/")
+    with cd("/usr/share/hue"):
+        run("git apply -p2 --reject {0}".format(os.path.join(
+                        checkout_dir, 'cosmos', 'platform', 'frontend',
+                        'hue-patches', 'hue-patch-cdh3u4-r0.4.diff' )))
+    #run("rm -rf {0}".format(checkout_dir))
 #     put("./cosmos/platform/frontend/hue/app/cosmos")
-    # remote cd ./cosmos/platform/frontend/hue-app/cosmos
-#     run("python bootstrap.py")
-#     run("bin/buildout -c buildout.prod.cfg")
-#     run("/etc/init.d/frontend start")
+    # with cd ./cosmos/platform/frontend/hue-app/cosmos
+#     run("hue.py")
 
+@roles('namenode') # frontend
 def deploy_sftp():
     """Deploys the SFTP server as a Java JAR and starts it"""
     with cd("/root/injection"):
@@ -55,11 +68,12 @@ def deploy_sftp():
 
 def install_cdh():
     """Install the latest Hadoop distribution in CDH3"""
-    run('wget http://archive.cloudera.com/redhat'
-        '/cdh/cdh3-repository-1.0-1.noarch.rpm')
+    repo_rpm = ('http://archive.cloudera.com/redhat/cdh/'
+                'cdh3-repository-1.0-1.noarch.rpm')
+    run('wget {}'.format(repo_rpm))
     run('rpm -Uvh --force cdh3-repository-1.0-1.noarch.rpm')
-    run('rpm --import '
-        'http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera')
+    run(('rpm --import'
+         ' http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera'))
     run('yum -y install hadoop-0.20 hadoop-0.20-native')
 
 def create_hadoop_dirs():
@@ -78,18 +92,19 @@ def configure_hadoop():
     with cd('/etc/hadoop/conf'):
         coresite = StringIO()
         template = Template(filename='templates/core-site.mako')
-        coresite.write(template.render(namenode=CONFIG['hosts']['namenode'][0]))
+        coresite.write(template.render(
+                namenode=CONFIG['hosts']['namenode'][0]))
         put(coresite, 'core-site.xml')
         
         masters = StringIO()
-        for master in set(CONFIG['hosts']['namenode']
-                            + CONFIG['hosts']['jobtracker']):
+        for master in set(CONFIG['hosts']['namenode'] +\
+                          CONFIG['hosts']['jobtracker']):
             masters.write('%s\n' % master)
         put(masters, 'masters')
         
         slaves = StringIO()
-        for slave in set(CONFIG['hosts']['datanodes']
-                            + CONFIG['hosts']['tasktrackers']):
+        for slave in set(CONFIG['hosts']['datanodes'] +\
+                         CONFIG['hosts']['tasktrackers']):
             slaves.write('%s\n' % slave)
         put(slaves, 'slaves')
             

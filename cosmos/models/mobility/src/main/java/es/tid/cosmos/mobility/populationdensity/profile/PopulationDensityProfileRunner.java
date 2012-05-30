@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.populationdensity.profile;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -10,7 +12,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
-import es.tid.cosmos.base.mapreduce.ReduceJob;
+import es.tid.cosmos.base.mapreduce.CosmosJob;
 import es.tid.cosmos.mobility.parsing.ParserClientProfilesReducer;
 import es.tid.cosmos.mobility.populationdensity.PopdenCreateVectorReducer;
 import es.tid.cosmos.mobility.populationdensity.PopdenProfileGetOutReducer;
@@ -27,11 +29,11 @@ public final class PopulationDensityProfileRunner {
     public static void run(Path clientProfilePath, Path clientsInfoPath,
                            Path populationDensityProfileOut, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
-            throws Exception {
+            throws IOException, InterruptedException, ClassNotFoundException {
         Path clientProfileParsedPath = new Path(tmpDirPath,
                                                 "client_profile_parsed");
         {
-            ReduceJob job = ReduceJob.create(conf, "ParserClientProfiles",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ParserClientProfiles",
                     TextInputFormat.class,
                     ParserClientProfilesReducer.class,
                     SequenceFileOutputFormat.class);
@@ -42,7 +44,7 @@ public final class PopulationDensityProfileRunner {
 
         Path popdenprofBtsprofPath = new Path(tmpDirPath, "popdenprof_btsprof");
         {
-            ReduceJob job = ReduceJob.create(conf, "PopdenJoinArrayProfile",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenJoinArrayProfile",
                     SequenceFileInputFormat.class,
                     PopdenJoinArrayProfileReducer.class,
                     SequenceFileOutputFormat.class);
@@ -55,7 +57,7 @@ public final class PopulationDensityProfileRunner {
         Path popdenBtsprofCountPath = new Path(tmpDirPath,
                                                "popden_btsprof_count");
         {
-            ReduceJob job = ReduceJob.create(conf, "PopdenSumComms",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenSumComms",
                     SequenceFileInputFormat.class,
                     PopdenSumCommsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -67,7 +69,7 @@ public final class PopulationDensityProfileRunner {
         Path populationDensityProfilePath = new Path(tmpDirPath,
                 "population_density_profile");
         {
-            ReduceJob job = ReduceJob.create(conf, "PopdenCreateVector",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenCreateVector",
                     SequenceFileInputFormat.class,
                     PopdenCreateVectorReducer.class,
                     SequenceFileOutputFormat.class);
@@ -77,7 +79,7 @@ public final class PopulationDensityProfileRunner {
         }
         
         {
-            ReduceJob job = ReduceJob.create(conf, "PopdenProfileGetOut",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenProfileGetOut",
                     SequenceFileInputFormat.class,
                     PopdenProfileGetOutReducer.class,
                     1,

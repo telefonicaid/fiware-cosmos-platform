@@ -11,6 +11,7 @@ import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.base.mapreduce.CompositeKey;
 import es.tid.cosmos.base.mapreduce.SingleKey;
 
 /**
@@ -19,12 +20,12 @@ import es.tid.cosmos.base.mapreduce.SingleKey;
 
 public class KpiCounterReducerTest {
     private KpiCounterReducer reducer;
-    private ReduceDriver<SingleKey, IntWritable, Text, IntWritable> driver;
+    private ReduceDriver<CompositeKey, IntWritable, Text, IntWritable> driver;
 
     @Before
     public void setUp() {
         this.reducer = new KpiCounterReducer();
-        this.driver = new ReduceDriver<SingleKey, IntWritable, Text,
+        this.driver = new ReduceDriver<CompositeKey, IntWritable, Text,
                                        IntWritable>(this.reducer);
         this.driver.getConfiguration().setStrings("kpi.aggregation.fields",
                                                   "protocol,urlDomain");

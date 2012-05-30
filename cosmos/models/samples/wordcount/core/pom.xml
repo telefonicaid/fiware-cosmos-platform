@@ -14,8 +14,6 @@
     <name>wordcount-core</name>
     <packaging>jar</packaging>
 
-    <dependencies></dependencies>
-
     <build>
         <plugins>
             <plugin>

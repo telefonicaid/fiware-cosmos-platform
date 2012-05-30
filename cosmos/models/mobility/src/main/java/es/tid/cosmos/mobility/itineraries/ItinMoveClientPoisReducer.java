@@ -83,14 +83,12 @@ public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
                     minDistLoc = loc2;
                 }
             }
-            if (minDistLoc != null) {
-                // Filter movements by diff of time
-                if (minDistance <= maxMinutesInMoves &&
-                        minDistance >= minMinutesInMoves) {
-                    ProtobufWritable<MobData> move = MobDataUtil.createAndWrap(
-                            ItinMovementUtil.create(loc1, minDistLoc));
-                    context.write(key, move);
-                }
+            // Filter movements by diff of time
+            if (minDistLoc != null && minDistance <= maxMinutesInMoves &&
+                    minDistance >= minMinutesInMoves) {
+                ProtobufWritable<MobData> move = MobDataUtil.createAndWrap(
+                        ItinMovementUtil.create(loc1, minDistLoc));
+                context.write(key, move);
             }
         }
     }

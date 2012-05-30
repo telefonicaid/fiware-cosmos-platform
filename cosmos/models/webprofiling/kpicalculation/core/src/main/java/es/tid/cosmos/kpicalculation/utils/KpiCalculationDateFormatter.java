@@ -13,7 +13,7 @@ import java.util.Locale;
  * @author javierb
  */
 public class KpiCalculationDateFormatter {
-    private final String DELIMITER = "/";
+    private static final String DELIMITER = "-";
     
     private SimpleDateFormat inputFormat;
     private SimpleDateFormat dateFormat;
@@ -22,8 +22,8 @@ public class KpiCalculationDateFormatter {
     public KpiCalculationDateFormatter() {
         this.inputFormat = new SimpleDateFormat("ddMMMyyyyhhmmss",
                                                 Locale.ENGLISH);
-        this.dateFormat = new SimpleDateFormat("dd" + DELIMITER + "MM"
-                                               + DELIMITER + "yyyy");
+        this.dateFormat = new SimpleDateFormat("yyyy" + DELIMITER + "MM"
+                                               + DELIMITER + "dd");
         this.calendar = Calendar.getInstance();
     }
 

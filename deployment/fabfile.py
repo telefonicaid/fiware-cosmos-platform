@@ -3,6 +3,7 @@ Cosmos automatic deployment Fabric file -
 
 causes Fabric to deploy each Cosmos component at a configured host.
 """
+import os
 import json
 from fabric.api import *
 from fabric.decorators import *
@@ -24,20 +25,31 @@ def deploy():
     execute(deploy_datanode_daemon)
     execute(deploy_tasktracker_daemon)
 
-@roles('namenode') # frontend
+def has_package(pkg):
+    out = run("rpm -qa | grep {}".format(pkg))
+    return len(out.strip()) > 0
+
+def has_hue():
+    return has_package('hue')
+
+@roles('frontend') # namenode
 def deploy_hue():
     """Deploy the HUE frontend from Cloudera, plus our fixes and our apps"""
     pdihub = config['github']
     checkout_dir = config['hue_checkout']
-    run("yum install hue") # at version 1.2.0.0+114.35
-    run("yum install git")
-    run("git clone git@pdihub.hi.inet:Cosmos/HUE.git {0}".format(checkout_dir))
-    run("git apply {0} {1}".format(checkout_dir, "/tmp"))
+    # Remaining Dependencies: MySQL, thrift
+    run("yum -y erase hue*")
+    run("yum -y install hue") # at version 1.2.0.0+114.35
+    run("yum -y install git")
+    put("hue-patch-cdh3u4-r0.4.diff", "/root/")
+    with cd("/usr/share/hue"):
+        run("git apply -p2 --reject {0}".format(os.path.join(
+                        checkout_dir, 'cosmos', 'platform', 'frontend',
+                        'hue-patches', 'hue-patch-cdh3u4-r0.4.diff' )))
+    #run("rm -rf {0}".format(checkout_dir))
 #     put("./cosmos/platform/frontend/hue/app/cosmos")
     # with cd ./cosmos/platform/frontend/hue-app/cosmos
-#     run("python bootstrap.py")
-#     run("bin/buildout -c buildout.prod.cfg")
-#     run("/etc/init.d/frontend start")
+#     run("hue.py")
 
 @roles('namenode') # frontend
 def deploy_sftp():
@@ -46,7 +58,8 @@ def deploy_sftp():
         put("target/injection*.jar")
         injection_conf = StringIO()
         template = Template(filename='injection.conf.mako')
-        injection_conf.write(template.render(namenode=config['hosts']['namenode'][0]))
+        injection_conf.write(template.render(
+                namenode=config['hosts']['namenode'][0]))
         put(injection_conf, "/etc/injection.cfg")
         put("templates/injection.init.d", "/etc/init.d/injection")
         #run("update_config ?")
@@ -54,9 +67,12 @@ def deploy_sftp():
 
 def install_cdh():
     """Install the latest Hadoop distribution in CDH3"""
-    run('wget http://archive.cloudera.com/redhat/cdh/cdh3-repository-1.0-1.noarch.rpm')
+    repo_rpm = ('http://archive.cloudera.com/redhat/cdh/'
+                'cdh3-repository-1.0-1.noarch.rpm')
+    run('wget {}'.format(repo_rpm))
     run('rpm -Uvh --force cdh3-repository-1.0-1.noarch.rpm')
-    run('rpm --import http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera')
+    run(('rpm --import'
+         ' http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera'))
     run('yum -y install hadoop-0.20 hadoop-0.20-native')
 
 def create_hadoop_dirs():
@@ -75,22 +91,26 @@ def configure_hadoop():
     with cd('/etc/hadoop/conf'):
         coresite = StringIO()
         template = Template(filename='templates/core-site.mako')
-        coresite.write(template.render(namenode=config['hosts']['namenode'][0]))
+        coresite.write(template.render(
+                namenode=config['hosts']['namenode'][0]))
         put(coresite, 'core-site.xml')
         
         masters = StringIO()
-        for master in set(config['hosts']['namenode'] + config['hosts']['jobtracker']):
+        for master in set(config['hosts']['namenode'] +\
+                          config['hosts']['jobtracker']):
             masters.write('%s\n' % master)
         put(masters, 'masters')
         
         slaves = StringIO()
-        for slave in set(config['hosts']['datanodes'] + config['hosts']['tasktrackers']):
+        for slave in set(config['hosts']['datanodes'] +\
+                         config['hosts']['tasktrackers']):
             slaves.write('%s\n' % slave)
         put(slaves, 'slaves')
             
         mapredsite = StringIO()
         template = Template(filename='templates/mapred-site.mako')
-        mapredsite.write(template.render(jobtracker=config['hosts']['jobtracker'][0]))
+        mapredsite.write(template.render(
+                jobtracker=config['hosts']['jobtracker'][0]))
         put(mapredsite, 'mapred-site.xml')
         
         hdfssite = StringIO()

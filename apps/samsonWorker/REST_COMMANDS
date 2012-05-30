@@ -73,14 +73,32 @@ curl --request DELETE  localhost:1202/samson/operations/delete/OPERATION_ALIAS
 curl --request DELETE  localhost:1202/samson/operations/delete/OPERATION_ALIAS.json
 
 
+KNOWN ERRORS
+-------------------------------------------
+o curl --request POST    localhost:1202/samson/cluster/add_node -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
+  Says OK, but it doesn't do anything ...
+
+o Info on a specific operation
+  INPUT
+  % curl --request GET     localhost:1202/samson/operations/system.lines
+
+  OUTPUT:
+    error:
+    No content in answer from REST client
+
 
 
 FATAL ERRORS
 -------------------------------------------
+
+
+
+FIXED FATAL ERRORS
+-------------------------------------------
 o samsonWorker dies when I ask for a non-existing module:
     % curl --request GET     localhost:1202/samson/modules/system2
 
-    SamsonWorker>  libprotobuf FATAL /usr/include/google/protobuf/repeated_field.h:659] CHECK failed: (index) < (size()):                                           
+    SamsonWorker>  libprotobuf FATAL /usr/include/google/protobuf/repeated_field.h:659] CHECK failed: (index) < (size()):
     terminate called after throwing an instance of 'google::protobuf::FatalException'
     what():  CHECK failed: (index) < (size()): 
     Aborted (core dumped)
@@ -88,7 +106,7 @@ o samsonWorker dies when I ask for a non-existing module:
 o samsonWorker dies when I ask for a non-existing queue:
     % curl --request GET     localhost:1202/samson/queues/input2
 
-    SamsonWorker>  libprotobuf FATAL /usr/include/google/protobuf/repeated_field.h:659] CHECK failed: (index) < (size()):                                           
+    SamsonWorker>  libprotobuf FATAL /usr/include/google/protobuf/repeated_field.h:659] CHECK failed: (index) < (size()):
     terminate called after throwing an instance of 'google::protobuf::FatalException'
     what():  CHECK failed: (index) < (size()): 
     Aborted (core dumped)

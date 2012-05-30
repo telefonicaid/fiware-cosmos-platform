@@ -31,6 +31,7 @@ SET (SOURCES
 	delilah/common_delilah_test.h
 	delilah/common_delilah_test.cpp
 	delilah/delilahConsole_test.cpp
+	delilah/SamsonFile_test.cpp
 	
 	#samson/client library
 	samson/client/SamsonClient_test.cpp

@@ -104,9 +104,9 @@ TEST(diskOperationTest, getDescriptionTest)
     engine::DiskOperation* operation3 = engine::DiskOperation::newAppendOperation( engineBuffer , "test_filename.txt" , 2 );
     engine::DiskOperation* operation4 = engine::DiskOperation::newRemoveOperation( "test_filename.txt" , 2 );
     
-    EXPECT_EQ(operation1->getDescription(), "Read from file: 'test_filename.txt' Size:   6 B [6B] Offset:3") << "Description error";
-    EXPECT_EQ(operation2->getDescription(), "Write to file: 'test_filename.txt' Size:   0 B") << "Description error";
-    EXPECT_EQ(operation3->getDescription(), "Append to file: 'test_filename.txt' Size:   0 B") << "Description error";
+    EXPECT_EQ(operation1->getDescription(), "Read from file: 'test_filename.txt' Size: 6.00 B [6B] Offset:3") << "Description error";
+    EXPECT_EQ(operation2->getDescription(), "Write to file: 'test_filename.txt' Size:    0 B") << "Description error";
+    EXPECT_EQ(operation3->getDescription(), "Append to file: 'test_filename.txt' Size:    0 B") << "Description error";
     EXPECT_EQ(operation4->getDescription(), "Remove file: 'test_filename.txt'") << "Description error";
     
     engineBuffer->release();
@@ -128,9 +128,9 @@ TEST(diskOperationTest, getShortDescriptionTest)
     engine::DiskOperation* operation3 = engine::DiskOperation::newAppendOperation( engineBuffer , "test_filename.txt" , 2 );
     engine::DiskOperation* operation4 = engine::DiskOperation::newRemoveOperation( "test_filename.txt" , 2 );
     
-    EXPECT_EQ(operation1->getShortDescription(), "R:   6 ") << "Description error";
-    EXPECT_EQ(operation2->getShortDescription(), "W:   0 ") << "Description error";
-    EXPECT_EQ(operation3->getShortDescription(), "A:   0 ") << "Description error";
+    EXPECT_EQ(operation1->getShortDescription(), "R: 6.00 ") << "Description error";
+    EXPECT_EQ(operation2->getShortDescription(), "W:    0 ") << "Description error";
+    EXPECT_EQ(operation3->getShortDescription(), "A:    0 ") << "Description error";
     EXPECT_EQ(operation4->getShortDescription(), "X") << "Description error";
     
     engineBuffer->release();

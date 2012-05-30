@@ -129,7 +129,7 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("push_module"), 0) << "Wrong result from runAsyncCommand(push_module)";
 
-    EXPECT_NE(delilah_console->runAsyncCommand("push_module /tmp/libtxt.so txt"), 0) << "Wrong result from runAsyncCommand(push_module /opt/samson/modules/libtxt.so txt)";
+    EXPECT_NE(delilah_console->runAsyncCommand("push_module /tmp/libtxt.so txt"), 0) << "Wrong result from runAsyncCommand(push_module /tmp/libtxt.so txt)";
 
     EXPECT_NE(delilah_console->runAsyncCommand("ls"), 0) << "Wrong result from runAsyncCommand(ls)";
 

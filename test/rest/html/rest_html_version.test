@@ -1,0 +1,6 @@
+--NAME--
+REST HTML version
+--SHELL--
+curl http://localhost:1202/samson/version.html
+--EXPECT--
+<html><body><h1>version</h1>SAMSON v 0.6.1</body></html>

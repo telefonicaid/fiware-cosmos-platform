@@ -1,0 +1,22 @@
+--NAME--
+samsonSetup - show
+--SHELL--
+samsonSetup -show
+--EXPECT--
+/----------------------------------------------------------------------------------------------------------------------------------------------------\
+| Samson setup parameters                                                                                                                            |
+|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| Parameter                             | Default value | Current value |                                                                Description |
+|---------------------------------------+---------------+---------------+----------------------------------------------------------------------------|
+| general.memory                        |   10000000000 | 10000000000   |                                                   Global available memory  |
+| general.num_processess                |            16 | 16            |                                                            Number of cores |
+| general.shared_memory_size_per_buffer |     268435456 | 268435456     |                                         Size of the shared memory segments |
+| general.update_status_period          |             2 | 2             |                Period for the automatic update from workers to all delilah |
+| isolated.timeout                      |           300 | 300           |                                      Timeout for all 3rd partty operations |
+| load.buffer_size                      |      67108864 | 67108864      |                                 Size of the data block for load operations |
+| stream.max_operation_input_size       |     400000000 | 400000000     | Maximum input data ( in bytes ) to run an automatic stream processing task |
+| stream.max_scheduled_read_size        |     120000000 | 120000000     |                     Maximum size scheduled for writing in the BlockManager |
+| stream.max_scheduled_write_size       |     120000000 | 120000000     |                     Maximum size scheduled for writing in the BlockManager |
+| worker.period_check_finish_tasks      |             5 | 5             |   Period to review finished tasks in samsonWorker, to be clean from memory |
+\----------------------------------------------------------------------------------------------------------------------------------------------------/
+

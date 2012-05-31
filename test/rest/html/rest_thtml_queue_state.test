@@ -1,0 +1,33 @@
+--NAME--
+REST THTML queue_state
+--SHELL--
+delilah -command remove_all_stream 2> /dev/null
+delilah -command "add_stream_operation o1 txt.parser_words input words" 2> /dev/null
+delilah -command "add_stream_operation o2 txt.word_count_accumulate words words_count words_count" 2> /dev/null
+samsonPush input < input.txt
+sleep 1
+curl http://localhost:1202/samson/queues/words_count/state/015211078.thtml
+--EXPECT--
+<table border="1">
+<caption>key</caption>
+<tr>
+<th>key</th>
+</tr>
+<tr>
+<th>system.String</th>
+</tr>
+<td>"015211078"</td>
+</tr>
+<table>
+<table border="1">
+<caption>value</caption>
+<tr>
+<th>value</th>
+</tr>
+<tr>
+<th>system.UInt</th>
+</tr>
+<td>4</td>
+</tr>
+<table>
+

@@ -1,0 +1,32 @@
+--NAME--
+samsonPush - push_to_queue
+--SHELL--
+samsonPush -v input < input.txt
+--EXPECT--
+V:samsonPush: Setting memory for samson client  1.05GB
+V:samsonPush: DiskManager init with 1 max background operations
+V:samsonPush: ProcessManager init with 16 processes
+V:samsonPush: Init ModulesManager
+V:samsonPush: Connecting to localhost ...
+V:samsonPush: Conection to localhost OK
+V:samsonPush: Input parameter buffer_size  67.1M
+V:samsonPush: Input parameter break_sequence '\n' ( length 1 )
+V:samsonPush: Stdin info: [ Currently     0 hits/s     0 B/s ] [ Accumulated in  1.00 hits   100 B with d ]
+V:samsonPush: SamsonPushBuffer: Pushing   100 B to queue input
+
+V:samsonPush: Stdin info: [ Currently     0 hits/s     0 B/s ] [ Accumulated in  2.00 hits   100 B with d ]
+V:samsonPush: Memory used  67.1MB /  1.05GB ( 006.4% )
+V:samsonPush: --------------------------------------------------------------------------------
+V:samsonPush: Stdin info:        [ Currently     0 hits/s     0 B/s ] [ Accumulated in  2.00 hits   100 B with d ]
+V:samsonPush: PushBuffer info:   [ Currently     0 hits/s     0 B/s ] [ Accumulated in  1.00 hits   100 B with d ]
+V:samsonPush: SamsonClient info: [ Currently     0 hits/s     0 B/s ] [ Accumulated in  1.00 hits   100 B with d ]
+V:samsonPush: --------------------------------------------------------------------------------
+V:samsonPush: Waiting for all the push operations to complete...
+V:samsonPush: Waiting process 2: /------------------------------------------\
+| Pushing   100 bytes to queue/s input     |
+|------------------------------------------|
+|          Concept |    Size | Percentadge |
+|------------------+---------+-------------|
+|           Pushed |     0 B |      000.0% |
+| Confirmed Pushed |     0 B |      000.0% |
+\------------------------------------------/

@@ -1,0 +1,15 @@
+--NAME--
+samsonCat - queue_header
+--SHELL--
+delilah -command remove_all_stream 2> /dev/null
+samsonPush input < input.txt
+sleep 1
+delilah -command "run txt.parser_words input words" 2> /dev/null
+sleep 1
+delilah -command "run txt.word_count_accumulate words words_count words_count" 2> /dev/null
+sleep 1
+delilah -command "pop words_count /tmp/words_count -force"
+samsonCat -header /tmp/words_count
+--EXPECT--
+Total: ( 10 kvs [ 10.0 ] in 110 bytes [  110 ] )
+worker_000000_file_000001: KVHeader: (  10.0 kvs in   110 bytes )([15221 16031]) (system.String-system.UInt)

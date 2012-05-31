@@ -62,7 +62,7 @@ namespace samson
     const char* general_description = \
     "SAMSON is a distributed platform for efficient processing of unbounded streams of big data";
     
-    const char* auths = "Andreu Urruela, J.Gregorio Escalada & Ken Zangelin";
+    const char* auths = "Andreu Urruela, Grant Croker, J.Gregorio Escalada & Ken Zangelin";
     
     DelilahConsole::DelilahConsole( ) : log_client( AU_LOG_SERVER_QUERY_PORT )
     {

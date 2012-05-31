@@ -1,0 +1,16 @@
+--NAME--
+REST XML ls_queues
+--SHELL--
+delilah -command remove_all_stream 2> /dev/null
+delilah -command "add_stream_operation o1 txt.parser_words input words" 2> /dev/null
+delilah -command "add_stream_operation o2 txt.word_count_accumulate words words_count words_count" 2> /dev/null
+samsonPush input < input.txt
+sleep 1
+curl http://localhost:1202/samson/queues.xml
+--EXPECT--
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SAMSON Rest interface -->
+<samson>
+<table><title><![CDATA[ls -group name -sort name]]></title><item><property><name><![CDATA[worker_id]]></name><value><![CDATA[0]]></value></property><property><name><![CDATA[name]]></name><value><![CDATA[input]]></value></property><property><name><![CDATA[#kvs]]></name><value><![CDATA[    0 ]]></value></property><property><name><![CDATA[size]]></name><value><![CDATA[    0 ]]></value></property><property><name><![CDATA[key]]></name><value><![CDATA[txt]]></value></property><property><name><![CDATA[value]]></name><value><![CDATA[txt]]></value></property></item><item><property><name><![CDATA[worker_id]]></name><value><![CDATA[0]]></value></property><property><name><![CDATA[name]]></name><value><![CDATA[words]]></value></property><property><name><![CDATA[#kvs]]></name><value><![CDATA[    0 ]]></value></property><property><name><![CDATA[size]]></name><value><![CDATA[    0 ]]></value></property><property><name><![CDATA[key]]></name><value><![CDATA[system.String]]></value></property><property><name><![CDATA[value]]></name><value><![CDATA[system.UInt]]></value></property></item><item><property><name><![CDATA[worker_id]]></name><value><![CDATA[0]]></value></property><property><name><![CDATA[name]]></name><value><![CDATA[words_count]]></value></property><property><name><![CDATA[#kvs]]></name><value><![CDATA[ 10.0 ]]></value></property><property><name><![CDATA[size]]></name><value><![CDATA[  110 ]]></value></property><property><name><![CDATA[key]]></name><value><![CDATA[system.String]]></value></property><property><name><![CDATA[value]]></name><value><![CDATA[system.UInt]]></value></property></item></table>
+</samson>
+

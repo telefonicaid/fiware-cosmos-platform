@@ -1,0 +1,12 @@
+--NAME--
+REST JSON ls_queues
+--SHELL--
+delilah -command remove_all_stream 2> /dev/null
+delilah -command "add_stream_operation o1 txt.parser_words input words" 2> /dev/null
+delilah -command "add_stream_operation o2 txt.word_count_accumulate words words_count words_count" 2> /dev/null
+samsonPush input < input.txt
+sleep 1
+curl http://localhost:1202/samson/queues.json
+--EXPECT--
+{"title":"ls -group name -sort name","items":[{"worker_id":"0","name":"input","#kvs":"    0 ","size":"    0 ","key":"txt","value":"txt"},{"worker_id":"0","name":"words","#kvs":"    0 ","size":"    0 ","key":"system.String","value":"system.UInt"},{"worker_id":"0","name":"words_count","#kvs":" 10.0 ","size":"  110 ","key":"system.String","value":"system.UInt"}]}
+

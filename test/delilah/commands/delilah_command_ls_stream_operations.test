@@ -1,0 +1,30 @@
+--NAME--
+ls_stream_operations - fetch the current stream_operation list
+--DELILAH-INIT--
+remove_all_stream
+help add_stream_operation
+add_stream_operation o1 txt.parser_words input words
+help set_stream_operation_property
+set_stream_operation_property o1 fake true;
+help unset_stream_operation_property
+unset_stream_operation_property o1 fake;
+help add_stream_operation
+add_stream_operation o2 txt.word_count_accumulate words words_count words_count
+set_stream_operation_property o2 update_only true;
+set_stream_operation_property o2 num_divisions 4;
+push input.txt input
+flush_buffers
+help ls_stream_operations
+ls_stream_operations -group name -running
+--COMMAND--
+ls_stream_operations -group name -properties
+--EXPECT--
+/--------------------------------------------------------------------------------------------------------------------------------------\
+| ls_stream_operations -properties                                                                                                     |
+|--------------------------------------------------------------------------------------------------------------------------------------|
+| worker_id | name |                 operation |                                                                            properties |
+|-----------+------+---------------------------+---------------------------------------------------------------------------------------|
+|         0 | o1   |          txt.parser_words |                                     (max_latency=60,priority=1,system.core_seconds=1) |
+|         0 | o2   | txt.word_count_accumulate | (max_latency=60,num_divisions=4;,priority=1,system.core_seconds=11,update_only=true;) |
+\--------------------------------------------------------------------------------------------------------------------------------------/
+

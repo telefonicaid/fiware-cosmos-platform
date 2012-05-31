@@ -1,0 +1,18 @@
+--NAME--
+samsonPop - pop_from_queue
+--SHELL--
+delilah -command remove_all_stream
+samsonPush input < input.txt
+samsonPop -mas_size 1 innput
+--EXPECT--
+015211078
+072866046
+140660895
+160420776
+221322853
+364161913
+446334716
+528316139
+549570687
+739014846
+

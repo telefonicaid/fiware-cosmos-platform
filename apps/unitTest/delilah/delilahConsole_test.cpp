@@ -20,6 +20,8 @@
 
 #include "samson/module/KVFormat.h"
 
+#include "logMsg/logMsg.h"
+
 #include "common_delilah_test.h"
 
 

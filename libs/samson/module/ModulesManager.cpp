@@ -37,6 +37,7 @@ namespace samson
 	
 	ModulesManager::ModulesManager() : token("ModulesManager")
 	{
+	    LM_T(LmtModuleManager,("Creating ModulesManager"));
 		reloadModules();
 	}
 	
@@ -68,7 +69,7 @@ namespace samson
 		if (!modulesManager)
 			LM_RVE(("Attempt to destroy a non-initialized Modules Manager"));
         
-        LM_V(("Destroying ModulesManager"));
+		LM_T(LmtModuleManager, ("Destroying ModulesManager"));
         delete modulesManager;
         
         modulesManager = NULL;
@@ -76,11 +77,16 @@ namespace samson
 	
 	void ModulesManager::init()
 	{
+	    LM_T(LmtModuleManager, ("ModulesManager::init() called"));
 		if(modulesManager)
-			LM_X(1,("Error initializing Modules Manager twice"));
+		{
+			LM_W(("Error initializing Modules Manager twice, ignoring"));
+			return;
+		}
         
         LM_V(("Init ModulesManager"));
 		modulesManager = new ModulesManager();
+		LM_T(LmtModuleManager, ("ModulesManager created"));
 	}
     
 	ModulesManager* ModulesManager::shared()

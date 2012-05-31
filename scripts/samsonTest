@@ -127,7 +127,7 @@ function execute_test
         if [ $TEST_VERBOSE -eq 1 ]; then
             echo "Executing test command - ${TEST_COMMAND}"
         fi
-        delilah ${SAMSON_TEST_HOST} -command  $TEST_COMMAND > $TEST_OUTPUT 2>/dev/null
+        delilah ${SAMSON_TEST_HOST} -command  "$TEST_COMMAND" > $TEST_OUTPUT 2>/dev/null
     fi
 
     # ------------------------------------------------

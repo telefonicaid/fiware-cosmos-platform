@@ -9,7 +9,7 @@
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
 
 
-
+#include "logMsg/logMsg.h"
 
 #include "samson/delilah/DelilahConsole.h"
 
@@ -26,8 +26,9 @@ samson::DelilahConsole *init_delilah_test()
     engine::DiskManager::init(1);
     engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
 
+    LM_M(("Calling ModulesManager::init()"));
     samson::ModulesManager::init();         // Init the modules manager
-
+    LM_M(("Calling ModulesManager::init() and returns"));
 
     // Create a DelilahControler once network is ready
     samson::DelilahConsole *delilahConsole = new samson::DelilahConsole();
@@ -57,7 +58,9 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole)
     }
     
     au::LockDebugger::destroy();
+    LM_M(("Calling ModulesManager::destroy()"));
     samson::ModulesManager::destroy();
+    LM_M(("Calling ModulesManager::destroy() and returns"));
     engine::ProcessManager::destroy();
     engine::DiskManager::destroy();
     engine::MemoryManager::destroy();

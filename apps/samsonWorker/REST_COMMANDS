@@ -5,14 +5,14 @@ curl --request GET     localhost:1202/samson/version
 curl --request GET     localhost:1202/samson/version.json
 curl --request GET     localhost:1202/samson/modules
 curl --request GET     localhost:1202/samson/modules.json
-curl --request GET     localhost:1202/samson/module/MODULE
-curl --request GET     localhost:1202/samson/module/MODULE.json
+curl --request GET     localhost:1202/samson/modules/system
+curl --request GET     localhost:1202/samson/modules/system.json
 curl --request GET     localhost:1202/samson/queues
 curl --request GET     localhost:1202/samson/queues.json
-curl --request GET     localhost:1202/samson/queues/QNAME
-curl --request GET     localhost:1202/samson/queues/QNAME.json
-curl --request DELETE  localhost:1202/samson/queues/QNAME/delete
-curl --request DELETE  localhost:1202/samson/queues/QNAME/delete.json
+curl --request GET     localhost:1202/samson/queues/input.txt
+curl --request GET     localhost:1202/samson/queues/input.txt.json
+curl --request DELETE  localhost:1202/samson/queues/input.txt/delete
+curl --request DELETE  localhost:1202/samson/queues/input.txt/delete.json
 curl --request POST    localhost:1202/samson/logging/debug/on
 curl --request POST    localhost:1202/samson/logging/debug/on.json
 curl --request POST    localhost:1202/samson/logging/debug/off
@@ -118,3 +118,10 @@ o samsonWorker dies when I ask for an operation that contains a dot '.' ...
     The method RESTServiceCommand::read() destroys the input line ...
     This must be changed !
   
+
+
+PREPARATIONS
+-------------------------------------------
+% cat modules/core/txt/testing/quijote.txt | to_utf8 | samsonPush input1.txt
+% cat modules/core/txt/testing/quijote.txt | to_utf8 | samsonPush input2.txt
+% cat modules/core/txt/testing/quijote.txt | to_utf8 | samsonPush input3.txt

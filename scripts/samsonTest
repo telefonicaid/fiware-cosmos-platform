@@ -93,6 +93,10 @@ function execute_test
     # Initialize the test
     # ------------------------------------------------ 
     if [ $HAVE_DELILAH_INIT -eq 1 ]; then
+        if [ $TEST_VERBOSE -eq 1 ]; then
+            echo "Initializing test using delilah"
+            cat  `basename $TEST_DELILAH_INIT`
+        fi
         pushd  `dirname $TEST_DELILAH_INIT` > /dev/null
         delilah ${SAMSON_TEST_HOST} -f `basename $TEST_DELILAH_INIT` 2> `basename $TEST_DELILAH_INIT`.stderr > `basename $TEST_DELILAH_INIT`.stdout
         if [ $? -ne 0 ]; then
@@ -102,6 +106,10 @@ function execute_test
     fi
 
     if [ $HAVE_SHELL_INIT -eq 1 ]; then
+        if [ $TEST_VERBOSE -eq 1 ]; then
+            echo "Initializing test using bash"
+            cat $TEST_SHELL_INIT
+        fi
         if [ ! -z ${SAMSON_TEST_HOST} ]; then
             "echo Remote shell initialization is currently not supported"
         else
@@ -116,6 +124,9 @@ function execute_test
     # Execute a single delilah command
     # ------------------------------------------------
     if [ $HAVE_COMMAND -eq 1 ]; then
+        if [ $TEST_VERBOSE -eq 1 ]; then
+            echo "Executing test command - ${TEST_COMMAND}"
+        fi
         delilah ${SAMSON_TEST_HOST} -command  $TEST_COMMAND > $TEST_OUTPUT 2>/dev/null
     fi
 
@@ -123,6 +134,9 @@ function execute_test
     # Execute delilah script
     # ------------------------------------------------
     if [ $HAVE_SCRIPT -eq 1 ]; then
+        if [ $TEST_VERBOSE -eq 1 ]; then
+            echo "Executing test using delilah"
+        fi
         if [ -f  $TEST_OUTPUT ]; then
             rm -f  $TEST_OUTPUT
         fi
@@ -130,6 +144,9 @@ function execute_test
 "
         for command in $(awk '{print $0}' $TEST_DELILAH_SCRIPT)
         do
+            if [ $TEST_VERBOSE -eq 1 ]; then
+                echo "Executing - ${command}"
+            fi
             delilah ${SAMSON_TEST_HOST} -command "${command}" >> $TEST_OUTPUT 2>/dev/null
         done
     fi
@@ -138,7 +155,14 @@ function execute_test
     # Execute shell script
     # ------------------------------------------------
     if [ $HAVE_SHELL -eq 1 ]; then
-        bash $TEST_SHELL_SCRIPT > $TEST_OUTPUT 2>/dev/null
+        if [ $TEST_VERBOSE -eq 1 ]; then
+            echo "Executing test using bash"
+        fi
+        if [ $TEST_VERBOSE -eq 1 ]; then
+            bash -x $TEST_SHELL_SCRIPT > $TEST_OUTPUT 2>/dev/null
+        else
+            bash $TEST_SHELL_SCRIPT > $TEST_OUTPUT 2>/dev/null
+        fi
     fi
 
     # Check to see if the output is what we expect

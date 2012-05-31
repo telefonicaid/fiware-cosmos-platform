@@ -57,6 +57,7 @@ namespace engine {
 		// Init
         static void init( int _shared_memory_num_buffers , size_t _shared_memory_size_per_buffer);
         static SharedMemoryManager* shared();
+        static void destroy();
         
 		/**
 		 Function to retain and release a free shared-memory area

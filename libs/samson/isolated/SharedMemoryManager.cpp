@@ -27,14 +27,17 @@
 
 #include "samson/common/SamsonSetup.h"   // samson::SamsonSetup
 
-NAMESPACE_BEGIN(engine)
+namespace engine{
     
     SharedMemoryManager *sharedMemoryManager = NULL;    // Unique shared memory manager
-        
+    
     void SharedMemoryManager::init( int _shared_memory_num_buffers , size_t _shared_memory_size_per_buffer )
     {
         if( sharedMemoryManager )
-            LM_X(1, ("Init Shared memory manager only once"));
+        {
+            LM_W(("Init Shared memory manager only once"));
+            return;
+        }
         
         // Init the global shard memory element ( after init samsonSetup )
         sharedMemoryManager = new SharedMemoryManager(  _shared_memory_num_buffers ,_shared_memory_size_per_buffer ); 
@@ -47,6 +50,16 @@ NAMESPACE_BEGIN(engine)
         
         return sharedMemoryManager;
     }
+    
+    void SharedMemoryManager::destroy()
+    {
+        if( sharedMemoryManager )
+        {
+            delete sharedMemoryManager;
+            sharedMemoryManager = NULL;
+        }    
+    }
+    
     
 	SharedMemoryManager::SharedMemoryManager( int _shared_memory_num_buffers , size_t _shared_memory_size_per_buffer) 
           : token("SharedMemoryManager")

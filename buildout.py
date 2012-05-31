@@ -58,8 +58,8 @@ class BuildOut(object):
 
     def __cd_to_project(self):
         self.old_cwd = os.getcwd()
-        if os.path.isdir(self.project):
-            os.chdir(self.project)
+        if os.path.isdir(self.build_path):
+            os.chdir(self.build_path)
         else:
             raise RuntimeException("The project dir %s was not found" %
                                    self.project)

@@ -11,6 +11,17 @@ import sys
 import subprocess
 
 
+def copyreplace_tree(src_path, dst_path):
+    """
+    Copy a tree removing the destination path if it exists.
+    """
+    if os.path.isdir(dst_path):
+        print ("Dir %s already exists. Removing..." % dst_path)
+        rmtree(dst_path)
+        print "Copying from %s to %s" % (src_path, dst_path)
+        copytree(src_path, dst_path, symlinks=True)
+
+
 class BuildOut(object):
     """
     A BuildOut is a Python project that is based around a boostrap
@@ -27,12 +38,7 @@ class BuildOut(object):
             self.build_path = project
         else:
             self.build_path = os.path.join(build_path, self.project_name())
-            if os.path.isdir(self.build_path):
-                print ("Building dir %s already exists. Removing..." %
-                       self.build_path)
-                rmtree(self.build_path)
-            print "Copying files to %s" % self.build_path
-            copytree(project, self.build_path, symlinks=True)
+            copyreplace_tree(self.project, self.build_path)
 
     def build(self):
         """
@@ -51,6 +57,9 @@ class BuildOut(object):
         self.__cd_to_project()
         self.__run_subproc(['bin/hue', 'test', 'specific', self.project_name(),
                            '--with-nosexunit'], 'Unit testing')
+        if self.build_path != self.project:
+            copyreplace_tree(os.path.join(self.build_path, 'target'),
+                             os.path.join(self.project, 'target'))
         self.__cd_back()
 
     def project_name(self):

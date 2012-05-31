@@ -1,4 +1,4 @@
-package es.tid.cosmos.tests.tasks;
+package es.tid.cosmos.tests.environment;
 
 import java.io.IOException;
 import java.util.Properties;

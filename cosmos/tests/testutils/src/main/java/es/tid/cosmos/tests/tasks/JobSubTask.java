@@ -1,4 +1,4 @@
-package es.tid.cosmos.tests.jobsub.om;
+package es.tid.cosmos.tests.tasks;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,8 +19,9 @@ import org.apache.thrift.transport.TTransportException;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNull;
 
+import es.tid.cosmos.tests.environment.Environment;
+import es.tid.cosmos.tests.environment.EnvironmentSetting;
 import es.tid.cosmos.tests.jobsub.om.generated.*;
-import es.tid.cosmos.tests.tasks.*;
 
 /**
  *

@@ -1,4 +1,4 @@
-package es.tid.cosmos.tests.frontend.om;
+package es.tid.cosmos.tests.tasks;
 
 import java.io.File;
 import java.util.List;
@@ -11,9 +11,8 @@ import org.openqa.selenium.WebElement;
 import static org.testng.Assert.assertFalse;
 import static org.testng.Assert.assertTrue;
 
-import es.tid.cosmos.tests.tasks.Environment;
-import es.tid.cosmos.tests.tasks.Task;
-import es.tid.cosmos.tests.tasks.TaskStatus;
+import es.tid.cosmos.tests.environment.Environment;
+import es.tid.cosmos.tests.frontend.om.*;
 
 /**
  *

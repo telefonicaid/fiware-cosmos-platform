@@ -21,10 +21,11 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
+import es.tid.cosmos.tests.environment.Environment;
 import es.tid.cosmos.tests.frontend.om.*;
 import es.tid.cosmos.tests.hadoopjars.HadoopJars;
 import es.tid.cosmos.tests.hadoopjars.JarNames;
-import es.tid.cosmos.tests.tasks.Environment;
+import es.tid.cosmos.tests.tasks.FrontEndTask;
 import es.tid.cosmos.tests.tasks.Task;
 import es.tid.cosmos.tests.tasks.TaskStatus;
 

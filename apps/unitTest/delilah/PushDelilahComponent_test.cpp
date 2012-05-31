@@ -34,7 +34,6 @@ TEST(PushDelilahComponentTest, getStatus)
 
     EXPECT_TRUE(strstr(d->getStatus().c_str(), "to queue/s input_queue") != NULL) << "Wrong status from getStatus()";
     EXPECT_TRUE(strstr(d->getShortDescription().c_str(), "[ Id ") != NULL) << "Wrong status from getShortDescription()";
-
 }
 
 

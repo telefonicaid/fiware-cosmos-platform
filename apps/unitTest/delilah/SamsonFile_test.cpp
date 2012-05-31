@@ -73,9 +73,12 @@ TEST(SamsonFileTest, samson_file)
     EXPECT_EQ(strncmp(samson_file.getHashGroups().c_str(), "Error getting vector for hashgroups", strlen("Error getting vector for hashgroups")),0) << "Wrong getHashGroups for /tmp/test_SamsonFile_words";
 
 
-    au::ErrorManager error;
-    delilah_console->delilah_disconnect( &error );
-    //EXPECT_TRUE(error.isActivated() == false);
+    EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
 
-    //close_delilah_test(delilah_console);
+//    au::ErrorManager error;
+//    delilah_console->delilah_disconnect( &error );
+//    EXPECT_TRUE(error.isActivated() == false);
+//    EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah>") << "Wrong prompt after disconnecting";
+
+    close_delilah_test(delilah_console);
 }

@@ -697,7 +697,7 @@ TEST(delilahConsoleTest, delilahBase)
     sprintf(expected_result, "[%s@%s:%d] Delilah>", user, host, port);
     EXPECT_EQ(delilah_console->getPrompt(), expected_result) << "Wrong prompt after set_mode normal";
 
-    //EXPECT_TRUE(strncmp(delilah_console->updateTimeString().c_str(), "Update times from SAMSON elements", strlen("Update times from SAMSON elements")) == 0) << "Wrong updateTimeString at delilahBase";
+    EXPECT_TRUE(strncmp(delilah_console->updateTimeString().c_str(), "Update times from SAMSON elements", strlen("Update times from SAMSON elements")) == 0) << "Wrong updateTimeString at delilahBase";
 
     //delilah_console->updateDelilahXMLString("unitTest");
     //delilah_console->updateWorkerXMLString(0, "unitTest");

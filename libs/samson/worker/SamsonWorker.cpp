@@ -1609,6 +1609,7 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
             info->add( "show_engine_statistics" );
             info->add( "show_engine_last_items" );
             info->add( "show_engine_elements" );
+            info->add( "show_engine_current_element" );
         }
     }
     
@@ -1645,7 +1646,7 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
             writeOnConsole("OK\n");
         }
 
-        if( main_command == "show_engine_current_item" )
+        if( main_command == "show_engine_current_element" )
         {
             writeOnConsole( engine::Engine::shared()->get_activity_monitor()->getCurrentActivity() + "\n" );
             return;

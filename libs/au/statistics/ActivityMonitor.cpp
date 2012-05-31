@@ -137,7 +137,7 @@ namespace au {
         
         void ActivityMonitor::push( ActivityItem* activity_item )
         {
-            au::TokenTaker tt(&token);
+            // No necessary for mutex ( this is a private method )
             
             // Inset in the list of last items
             activity_item->retain();

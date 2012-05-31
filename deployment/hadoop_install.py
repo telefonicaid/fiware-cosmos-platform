@@ -7,6 +7,8 @@ from fabric.contrib import files
 from StringIO import StringIO
 from mako.template import Template
 
+COSMOS_CLASSPATH='/usr/lib/hadoop-0.20/lib/cosmos/'
+
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 @parallel
 def install_cdh():
@@ -19,18 +21,16 @@ def install_cdh():
          ' http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera'))
     run('yum -y install hadoop-0.20 hadoop-0.20-native')
 
+
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 @parallel
 def create_hadoop_dirs():
     """Create necessary directories for Hadoop"""
     run('rm -rf /data1')
-    run('mkdir /data1')
-    run('mkdir -m 700 /data1/data')
-    run('chown hdfs:hadoop /data1/data')
-    run('mkdir -m 755 /data1/mapred')
-    run('chown mapred:hadoop /data1/mapred')    
-    run('mkdir -m 755 /data1/name')
-    run('chown hdfs:hadoop /data1/name')
+    run('install -o hdfs   -g hadoop -m 700 -d /data1/data')
+    run('install -o mapred -g hadoop -m 755 -d /data1/mapred')
+    run('install -o hdfs   -g hadoop -m 755 -d /data1/name')
+    run('install -o root   -g hadoop -m 755 -d %s' % COSMOS_CLASSPATH)
  
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 @parallel
@@ -65,6 +65,12 @@ def configure_hadoop(config):
         template = Template(filename='templates/hdfs-site.mako')
         hdfssite.write(template.render())
         put(hdfssite, 'hdfs-site.xml')
+
+        hadoop_env = StringIO()
+        template = Template(filename='templates/hadoop-env.mako')
+        hadoop_env.write(template.render(
+            cosmos_classpath=COSMOS_CLASSPATH))
+        put(hadoop_env, 'hadoop-env.sh')
            
 def deploy_daemon(daemon):
     """Deploys a Hadoop daemon"""

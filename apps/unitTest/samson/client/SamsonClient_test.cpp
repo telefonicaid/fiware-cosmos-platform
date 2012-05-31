@@ -29,6 +29,10 @@ TEST(samson_client, DISABLED_test_1 )
 
    // Delete client
    delete samson_client;
+
+   // Close everything initiatied in general_init
+   samson::SamsonClient::general_close( );
+
 }    
 
 TEST(samson_client, DISABLED_test_2 )
@@ -50,4 +54,7 @@ TEST(samson_client, DISABLED_test_2 )
 
    // Delete client
    delete samson_client;
+
+   // Close everything initiatied in general_init
+   samson::SamsonClient::general_close( );
 }

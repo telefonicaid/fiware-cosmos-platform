@@ -78,6 +78,7 @@ namespace  samson {
         
         // General init ( Init engine )
         static void general_init( size_t memory = 1000000000 , size_t load_buffer_size = 64000000 );
+        static void general_close( );
         
         // Init the connection with a SAMSON cluster
         void initConnection( au::ErrorManager * error

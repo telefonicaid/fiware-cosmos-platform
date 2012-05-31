@@ -69,7 +69,7 @@ namespace samson
     {
         delilah->data_receiver_interface = interface;
     }
-    
+
     void SamsonClient::general_init( size_t memory , size_t load_buffer_size )
     {
         std::string samson_home    = SAMSON_HOME_DEFAULT;
@@ -99,6 +99,17 @@ namespace samson
         
         // Init the modules manager
         samson::ModulesManager::init();         
+    }
+    
+    void SamsonClient::general_close( )
+    {
+        
+        engine::Engine::stop();
+        engine::DiskManager::stop();
+        engine::ProcessManager::stop();
+        engine::MemoryManager::destroy();
+        samson::ModulesManager::destroy();         
+        samson::SamsonSetup::destroy( );    
     }
     
     void SamsonClient::initConnection( au::ErrorManager *error

@@ -76,6 +76,8 @@ TEST(delilahConsoleTest, runAsyncCommand)
     delilah_console->remove_alias("test");
     delilah_console->remove_alias("test2");
 
+    EXPECT_EQ(delilah_console->runAsyncCommand(""), 0) << "Wrong result from runAsyncCommand(aso)";
+
     delilah_console->add_alias("aso", "add_stream_operation");
 
     EXPECT_NE(delilah_console->runAsyncCommand("aso"), 0) << "Wrong result from runAsyncCommand(aso)";
@@ -92,15 +94,27 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set_mode wrong_mode"), 0) << "Wrong result from runAsyncCommand(set_mode wrong_mode)";
 
+    EXPECT_EQ(delilah_console->runAsyncCommand("set_mode logs"), 0) << "Wrong result from runAsyncCommand(set_mode logs)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("connect"), 0) << "Wrong result from runAsyncCommand(connect)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("connect samson01"), 0) << "Wrong result from runAsyncCommand(connect samson01)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("connect samson01 -port 1234"), 0) << "Wrong result from runAsyncCommand(connect samson01 -port 1234)";
+
     EXPECT_EQ(delilah_console->runAsyncCommand("history"), 0) << "Wrong result from runAsyncCommand(history)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("history 10"), 0) << "Wrong result from runAsyncCommand(history 10)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("cluster info"), 0) << "Wrong result from runAsyncCommand(cluster info)";
 
+    EXPECT_EQ(delilah_console->runAsyncCommand("reload_modules"), 0) << "Wrong result from runAsyncCommand(reload_modules)";
+
     EXPECT_EQ(delilah_console->runAsyncCommand("help"), 0) << "Wrong result from runAsyncCommand(help)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("help category"), 0) << "Wrong result from runAsyncCommand(help category)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("help category stream"), 0) << "Wrong result from runAsyncCommand(help category)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("help all"), 0) << "Wrong result from runAsyncCommand(help all)";
 
@@ -112,11 +126,23 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set"), 0) << "Wrong result from runAsyncCommand(set)";
 
+    EXPECT_EQ(delilah_console->runAsyncCommand("set a"), 0) << "Wrong result from runAsyncCommand(set a)";
+
     EXPECT_EQ(delilah_console->runAsyncCommand("set a b"), 0) << "Wrong result from runAsyncCommand(set a b)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("unset"), 0) << "Wrong result from runAsyncCommand(unset)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("unset a"), 0) << "Wrong result from runAsyncCommand(unset a)";
 
+    EXPECT_EQ(delilah_console->runAsyncCommand("unset c"), 0) << "Wrong result from runAsyncCommand(unset c)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("example_warning"), 0) << "Wrong result from runAsyncCommand(example_warning)";
+
     EXPECT_EQ(delilah_console->runAsyncCommand("local_logs"), 0) << "Wrong result from runAsyncCommand(local_logs)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("local_logs on"), 0) << "Wrong result from runAsyncCommand(local_logs on)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("local_logs off"), 0) << "Wrong result from runAsyncCommand(local_logs off)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("alerts"), 0) << "Wrong result from runAsyncCommand(alerts)";
 
@@ -128,6 +154,14 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("verbose"), 0) << "Wrong result from runAsyncCommand(verbose)";
 
+    EXPECT_EQ(delilah_console->runAsyncCommand("verbose on"), 0) << "Wrong result from runAsyncCommand(verbose on)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("verbose off"), 0) << "Wrong result from runAsyncCommand(verbose off)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("verbose on"), 0) << "Wrong result from runAsyncCommand(verbose on)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("open_alerts_file"), 0) << "Wrong result from runAsyncCommand(open_alerts_file)";
+
     EXPECT_EQ(delilah_console->runAsyncCommand("open_alerts_file /tmp/trace.log"), 0) << "Wrong result from runAsyncCommand(open_alerts_file /tmp/trace.log)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("close_alerts_file"), 0) << "Wrong result from runAsyncCommand(close_alerts_file)";
@@ -138,7 +172,11 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("ps 1"), 0) << "Wrong result from runAsyncCommand(ps 1)";
 
+    EXPECT_EQ(delilah_console->runAsyncCommand("ps -clear"), 0) << "Wrong result from runAsyncCommand(ps -clear)";
+
     EXPECT_EQ(delilah_console->runAsyncCommand("ps clear"), 0) << "Wrong result from runAsyncCommand(ps clear)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("ps -clear 3"), 0) << "Wrong result from runAsyncCommand(ps -clear 3)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("ps clear 3"), 0) << "Wrong result from runAsyncCommand(ps clear 3)";
 
@@ -148,17 +186,17 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("push /bin/bash"), 0) << "Wrong result from runAsyncCommand(push /bin/bash)";
 
-    EXPECT_NE(delilah_console->runAsyncCommand("push /bin/bash a"), 0) << "Wrong result from runAsyncCommand(push /bin/bash a)";
+    EXPECT_EQ(delilah_console->runAsyncCommand("push /bin/bash a"), 0) << "Wrong result from runAsyncCommand(push /bin/bash a)";
 
-    EXPECT_NE(delilah_console->runAsyncCommand("push /etc a"), 0) << "Wrong result from runAsyncCommand(push /etc a)";
+    EXPECT_EQ(delilah_console->runAsyncCommand("push /etc a"), 0) << "Wrong result from runAsyncCommand(push /etc a)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("pop"), 0) << "Wrong result from runAsyncCommand(pop)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("pop a"), 0) << "Wrong result from runAsyncCommand(pop a)";
 
-    EXPECT_NE(delilah_console->runAsyncCommand("pop a /tmp/traces"), 0) << "Wrong result from runAsyncCommand(pop a /tmp/traces)";
+    EXPECT_EQ(delilah_console->runAsyncCommand("pop a /tmp/traces"), 0) << "Wrong result from runAsyncCommand(pop a /tmp/traces)";
 
-    EXPECT_NE(delilah_console->runAsyncCommand("pop a /tmp/traces2"), 0) << "Wrong result from runAsyncCommand(pop a /tmp/traces2)";
+    EXPECT_EQ(delilah_console->runAsyncCommand("pop a /tmp/traces2"), 0) << "Wrong result from runAsyncCommand(pop a /tmp/traces2)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("rm"), 0) << "Wrong result from runAsyncCommand(rm)";
 
@@ -172,9 +210,11 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/traces -header"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/traces -header)";
 
+    EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /etc -header"), 0) << "Wrong result from runAsyncCommand(show_local_queue /etc -header)";
+
     EXPECT_EQ(delilah_console->runAsyncCommand("push_module"), 0) << "Wrong result from runAsyncCommand(push_module)";
 
-    EXPECT_NE(delilah_console->runAsyncCommand("push_module /tmp/libtxt.so txt"), 0) << "Wrong result from runAsyncCommand(push_module /tmp/libtxt.so txt)";
+    EXPECT_EQ(delilah_console->runAsyncCommand("push_module /tmp/libtxt.so txt"), 0) << "Wrong result from runAsyncCommand(push_module /tmp/libtxt.so txt)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set_queue_property"), 0) << "Wrong result from runAsyncCommand(set_queue_property)";
 
@@ -182,11 +222,13 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set_queue_property a pause"), 0) << "Wrong result from runAsyncCommand(set_queue_property a pause)";
 
-    EXPECT_NE(delilah_console->runAsyncCommand("set_queue_property a pause true"), 0) << "Wrong result from runAsyncCommand(set_queue_property a pause true)";
+    EXPECT_EQ(delilah_console->runAsyncCommand("set_queue_property a pause true"), 0) << "Wrong result from runAsyncCommand(set_queue_property a pause true)";
 
-    EXPECT_NE(delilah_console->runAsyncCommand("ls"), 0) << "Wrong result from runAsyncCommand(ls)";
+    EXPECT_EQ(delilah_console->runAsyncCommand("ls"), 0) << "Wrong result from runAsyncCommand(ls)";
 
-    EXPECT_NE(delilah_console->runAsyncCommand("ls -group name -rates"), 0) << "Wrong result from runAsyncCommand(ls -group name -rates)";
+    EXPECT_EQ(delilah_console->runAsyncCommand("ls -group name -rates"), 0) << "Wrong result from runAsyncCommand(ls -group name -rates)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("disconnect"), 0) << "Wrong result from runAsyncCommand(disconnect)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
 

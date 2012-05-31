@@ -1359,7 +1359,6 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
     std::string         path          = "";
     std::string         verb          = command->command;
     unsigned int        components    = command->path_components.size();
-    std::ostringstream  data;
 
     for (unsigned int ix = 0; ix < components; ix++)
         path += std::string("/") + command->path_components[ix];
@@ -1397,7 +1396,9 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
     }
     else if ((path == "/samson/cluster") && (verb == "GET"))
     {
+        std::ostringstream data;
         network->getInfo(data, "cluster", command->format);
+        command->append( data.str() );
     }
     else if ((path == "/samson/cluster/add_node") && (verb == "POST"))
     {

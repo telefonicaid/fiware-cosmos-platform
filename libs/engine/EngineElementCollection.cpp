@@ -123,7 +123,7 @@ namespace engine
     {
         au::TokenTaker tt(&token);
         
-        au::tables::Table table("Type|Waiting,f=double|Period|Description,left");
+        au::tables::Table table("Type|Waiting,f=double|Period,f=double|Description,left");
         
         au::list<EngineElement>::iterator it_elements;
         for( it_elements = repeated_elements.begin() ; it_elements != repeated_elements.end() ; it_elements++ )
@@ -132,8 +132,8 @@ namespace engine
             
             au::StringVector values;
             values.push_back("Repeat");
-            values.push_back(au::str( element->getWaitingTime() ));
-            values.push_back(au::str( element->getPeriod() ));
+            values.push_back(au::str( "%.12f" , element->getWaitingTime() ));
+            values.push_back(au::str( "%.12f" , element->getPeriod() ));
             //values.push_back(element->getName());
             values.push_back(element->getDescription());
             table.addRow( values );
@@ -145,7 +145,7 @@ namespace engine
             
             au::StringVector values;
             values.push_back("Normal");
-            values.push_back(au::str( element->getWaitingTime() ));
+            values.push_back(au::str( "%.12f" , element->getWaitingTime() ));
             values.push_back("X");
             //values.push_back(element->getName());
             values.push_back(element->getDescription());
@@ -158,7 +158,7 @@ namespace engine
             
             au::StringVector values;
             values.push_back("Extra");
-            values.push_back(au::str(  element->getWaitingTime() ) );
+            values.push_back(au::str( "%.12f" , element->getWaitingTime() ) );
             values.push_back("X");
             //values.push_back(element->getName());
             values.push_back(element->getDescription());

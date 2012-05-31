@@ -4,8 +4,9 @@ REST HTML ls_queues
 delilah -command remove_all_stream 2> /dev/null
 delilah -command "add_stream_operation o1 txt.parser_words input words" 2> /dev/null
 delilah -command "add_stream_operation o2 txt.word_count_accumulate words words_count words_count" 2> /dev/null
-samsonPush input < input.txt
-sleep 1
+delilah -command "push input.txt input"
+delilah -command push_buffers
+delilah -command "wait"
 curl http://localhost:1202/samson/queues.html
 --EXPECT--
 <html><body><table border="1" cellspacing="4" CELLPADDING="12"  ><tr><td colspan="6"><h1>ls -group name -sort name</h1></td></tr><th>worker_id</th><th>name</th><th>#kvs</th><th>size</th><th>key</th><th>value</th><tr><td>0</td><td>input</td><td>    0 </td><td>    0 </td><td>txt</td><td>txt</td></tr><tr><td>0</td><td>words</td><td>    0 </td><td>    0 </td><td>system.String</td><td>system.UInt</td></tr><tr><td>0</td><td>words_count</td><td> 10.0 </td><td>  110 </td><td>system.String</td><td>system.UInt</td></tr></table></body></html>

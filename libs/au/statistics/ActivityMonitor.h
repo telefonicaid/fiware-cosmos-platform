@@ -77,6 +77,8 @@ namespace au {
             std::string str_last_items();
             std::string str_elements();
             
+            std::string getCurrentActivity();
+            
         private:
             
             void push( ActivityItem* activity_item );

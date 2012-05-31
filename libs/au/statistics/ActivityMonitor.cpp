@@ -137,6 +137,7 @@ namespace au {
         
         void ActivityMonitor::push( ActivityItem* activity_item )
         {
+            au::TokenTaker tt(&token);
             
             // Inset in the list of last items
             activity_item->retain();
@@ -153,5 +154,13 @@ namespace au {
             ActivityStatistics * activity_estatistics = elements_.findOrCreate( activity_item->name_ );
             activity_estatistics->push( activity_item );
         }
+        
+        std::string ActivityMonitor::getCurrentActivity()
+        {
+            au::TokenTaker tt(&token);
+            
+            return current_activty_;
+        }
+
     }
 }

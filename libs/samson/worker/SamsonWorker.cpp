@@ -1644,6 +1644,12 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
             au::remove_log_plugin( this );
             writeOnConsole("OK\n");
         }
+
+        if( main_command == "show_engine_current_item" )
+        {
+            writeOnConsole( engine::Engine::shared()->get_activity_monitor()->getCurrentActivity() + "\n" );
+            return;
+        }
         
         if( main_command == "show_engine_statistics" )
         {

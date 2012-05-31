@@ -23,6 +23,10 @@ def patch_hue(config):
         with cd("/usr/share/hue"):
             run("git apply -p2 --reject {0}".format(remote_patch_path))
 
+@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
+def install_hue_plugins():
+    run("yum -y install hue-plugins")
+
 def install_thrift(thrift_tarpath):
     if files.exists('/usr/local/bin/thrift'):
         puts("Thrift already installed, skipping ...")
@@ -56,11 +60,13 @@ def install_cosmos_app():
         run("bin/buildout -c buildout.prod.cfg")
 
 def start_daemons():
-    with cd("/usr/share/hue/"):
-        run("build/env/bin/hue runserver &")
-        run("build/env/bin/hue beeswax_server &")
-        run("build/env/bin/hue jobsubd &")
+    with cd("/etc/init.d"):
+        put("templates/hue.init", "hue")
+        run("./hue start")
 
 def cleanup():
-    run("rm hue-patch-cdh3u4-r0.4.diff")
-    run("rm -rf cosmos-app")
+    patch = "hue-patch-cdh3u4-r0.4.diff"
+    if files.exists(patch):
+        run("rm {0}".format(patch))
+    if files.exists(cosmos-app):
+        run("rm -rf cosmos-app")

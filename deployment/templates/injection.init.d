@@ -13,7 +13,6 @@
 
 DESC="Injection Server"
 NAME=`basename $0`
-#SCRIPTDIR=`cd $(dirname $0); pwd`
 
 PIDFILE="/var/run/injection/server.pid"
 USAGE="Usage: ${NAME} [ start | stop | restart ]"
@@ -28,7 +27,7 @@ fi
 
 function start () {
     if [ -f $PIDFILE ]; then
-        RUNNING=$(ps aux | grep -c `cat ${PIDFILE}`)
+        RUNNING=$(ps aux | awk '{print $2}'| grep -c `cat ${PIDFILE}`)
         if [ $RUNNING != '0' ]; then
             echo "already running"
             exit 1

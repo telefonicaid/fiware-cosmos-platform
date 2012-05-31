@@ -1126,11 +1126,13 @@ typedef struct LogLineInfo
 
             if (cmd.get_num_arguments() < 2)
             {
-                finishWorkerTaskWithError( "Usage: verbose [ off ] [ 0 - 5 ]");
+                finishWorkerTaskWithError( "Usage: verbose [ off | get | 0 - 5 ]");
                 return;
-            }                
+            }
 
             subcommand = cmd.get_argument(1);
+
+            LM_M(("Got a wverbose command: '%s'", subcommand.c_str()));
 
             if ((subcommand == "off") || (subcommand == "0"))
             {
@@ -1153,6 +1155,8 @@ typedef struct LogLineInfo
                 case 1: lmVerbose  = true;
                 }
             }
+            else if (subcommand == "get")
+                LM_X(1, ("How do I return data to delilah ... ?"));
             else
             {
                 finishWorkerTaskWithError( "Usage: verbose [ off ] [ 0 - 5 ]");
@@ -1182,6 +1186,92 @@ typedef struct LogLineInfo
             else
             {
                 finishWorkerTaskWithError( "Usage: wdebug [ off | on ]");
+                return;
+            }
+
+            finishWorkerTask();
+            return;
+        }
+
+        if (main_command == "wreads")
+        {
+            std::string subcommand;
+
+            if (cmd.get_num_arguments() < 2)
+            {
+                finishWorkerTaskWithError( "Usage: wreads [ off | on ]");
+                return;
+            }                
+
+            subcommand = cmd.get_argument(1);
+
+            if (subcommand == "off")
+                lmReads = false;
+            else if (subcommand == "on")
+                lmReads = true;
+            else
+            {
+                finishWorkerTaskWithError( "Usage: wreads [ off | on ]");
+                return;
+            }
+
+            finishWorkerTask();
+            return;
+        }
+
+        if (main_command == "wwrites")
+        {
+            std::string subcommand;
+
+            if (cmd.get_num_arguments() < 2)
+            {
+                finishWorkerTaskWithError( "Usage: wwrites [ off | on ]");
+                return;
+            }                
+
+            subcommand = cmd.get_argument(1);
+
+            if (subcommand == "off")
+                lmWrites = false;
+            else if (subcommand == "on")
+                lmWrites = true;
+            else
+            {
+                finishWorkerTaskWithError( "Usage: wwrites [ off | on ]");
+                return;
+            }
+
+            finishWorkerTask();
+            return;
+        }
+
+        if (main_command == "wtrace")
+        {
+            std::string subcommand;
+            std::string levels;
+
+            if (cmd.get_num_arguments() < 2)
+            {
+                finishWorkerTaskWithError( "Usage: wtrace [ get | set | add | remove | off ]");
+                return;
+            }                
+
+            subcommand = cmd.get_argument(1);
+            levels     = cmd.get_argument(2);
+
+            if (subcommand == "set")
+               lmTraceSet((char*) levels.c_str());
+            else if (subcommand == "add")
+                lmTraceAdd((char*) levels.c_str());
+            else if (subcommand == "remove")
+                lmTraceSub((char*) levels.c_str());
+            else if (subcommand == "off")
+                lmTraceSet(NULL);
+            else if (subcommand == "get")
+                LM_X(1, ("How do I return data to delilah ... ?"));
+            else
+            {
+                finishWorkerTaskWithError( "Usage: trace [ get | set | add | remove | off ]");
                 return;
             }
 

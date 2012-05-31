@@ -472,6 +472,45 @@ namespace samson
             info->add("on");
         }
 
+        if (info->completingSecondWord("wtrace") )
+        {
+            info->add("off");
+            info->add("set");
+            info->add("get");
+            info->add("add");
+            info->add("remove");
+        }
+
+        if (info->completingSecondWord("wverbose") )
+        {
+            info->add("off");
+            info->add("0");
+            info->add("1");
+            info->add("2");
+            info->add("3");
+            info->add("4");
+            info->add("5");
+            info->add("get");
+        }
+
+        if (info->completingSecondWord("wdebug") )
+        {
+            info->add("on");
+            info->add("off");
+        }
+
+        if (info->completingSecondWord("wreads") )
+        {
+            info->add("on");
+            info->add("off");
+        }
+
+        if (info->completingSecondWord("wwrites") )
+        {
+            info->add("on");
+            info->add("off");
+        }
+
         if (info->completingSecondWord("log"))
         {
             info->add("FileName=");

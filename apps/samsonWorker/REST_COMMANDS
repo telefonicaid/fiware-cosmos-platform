@@ -45,10 +45,13 @@ curl --request GET     localhost:1202/samson/operations
 curl --request GET     localhost:1202/samson/operations.json
 
 
-OK, but needs a new delilah command (or fixes in an existing)
--------------------------------------------
+Works - but doesn't give the exact output that Grant specified in the doc ...
+--------------------------------------------------------------------------------------
 curl --request GET     localhost:1202/samson/status
 curl --request GET     localhost:1202/samson/status.json
+
+OK, but needs a new delilah command (or fixes in an existing)
+-------------------------------------------
 curl --request POST    localhost:1202/samson/cluster/add_node -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
 curl --request POST    localhost:1202/samson/cluster/add_node.json -d '{ "node" : { "name" : "localhost", "port" : "6666" } }'
 curl --request DELETE  localhost:1202/samson/cluster/remove_node -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'

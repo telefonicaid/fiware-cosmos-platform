@@ -67,7 +67,8 @@ namespace au
                     if( pos != std::string::npos )
                     {
                         format = path_components[path_components.size()-1].substr( pos + 1);
-                        if ( (format == "json") || (format == "xml") || (format == "html")  )
+
+                        if ( (format == "json") || (format == "xml") || (format == "html") )
                            path_components[path_components.size()-1] 
                               = path_components[path_components.size()-1].substr(0,pos);
                     }

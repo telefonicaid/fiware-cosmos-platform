@@ -74,14 +74,36 @@ namespace samson
         
         add( "wverbose" , "delilah", 
             "Activate or disactivate verbose mode for workers. This shows extra information for worker commands",
-            "verbose <0-5> <off>"
+            "verbose <0-5>\n"
+            "verbose off\n"
+            "verbose get\n"
             );
         
         add( "wdebug" , "delilah", 
-            "Activate or disactivate debug mode for workers. This shows extra information for worker commands",
-            "debug <on> <off>"
+             "Activate or disactivate debug mode for workers. This shows extra information for worker commands",
+             "debug on\n"
+             "debug off\n"
             );
         
+        add( "wreads" , "delilah", 
+            "Activate or disactivate reads mode for workers. This shows extra information for worker commands",
+            "reads on\n"
+            "reads off\n"
+            );
+        
+        add( "wwrites" , "delilah", 
+            "Activate or disactivate writes mode for workers. This shows extra information for worker commands",
+            "writes <on> <off>"
+            );
+        
+        add( "wtrace", "delilah",
+             "Activate or disactivate trace levels for workers (trace level format example: '1-5,7,76-99'). This shows extra information for worker commands",
+             "wtrace off\n"
+             "wtrace set <levels>\n"
+             "wtrace get <levels>\n"
+             "wtrace add <levels>\n"
+             "wtrace remove <levels>\n");
+
         add( "send_alert" , "delilah", 
             "Send an alert to all conneected delilahs using a random worker as sender",
             "send_alert [-worker X] [-error] [-warning] \"Message to be sent\"\n"

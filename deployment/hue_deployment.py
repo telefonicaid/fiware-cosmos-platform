@@ -8,7 +8,6 @@ from fabric.contrib import files
 from fabric.decorators import roles
 from fabric.utils import puts
 
-@roles('frontend')
 def patch_hue(config):
     local_patch_path = os.path.join(config['hue_patch_dir'],
                                     config['hue_patch_name'])
@@ -24,7 +23,6 @@ def patch_hue(config):
         with cd("/usr/share/hue"):
             run("git apply -p2 --reject {0}".format(remote_patch_path))
 
-@roles('frontend')
 def install_thrift(thrift_tarpath):
     if files.exists('/usr/local/bin/thrift'):
         puts("Thrift already installed, skipping ...")
@@ -41,7 +39,6 @@ def install_thrift(thrift_tarpath):
                 run("make")
                 run("make install")
 
-@roles('frontend')
 def install_cosmos_app():
     cosmos_app_install_path = '/usr/share/hue/apps/cosmos/'
     if files.exists(cosmos_app_install_path):
@@ -58,7 +55,12 @@ def install_cosmos_app():
         run("python2.6 bootstrap.py")
         run("bin/buildout -c buildout.prod.cfg")
 
-@roles('frontend')
+def start_daemons():
+    with cd("/usr/share/hue/"):
+        run("build/env/bin/hue runserver &")
+        run("build/env/bin/hue beeswax_server &")
+        run("build/env/bin/hue jobsubd &")
+
 def cleanup():
     run("rm hue-patch-cdh3u4-r0.4.diff")
     run("rm -rf cosmos-app")

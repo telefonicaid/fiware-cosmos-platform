@@ -6,13 +6,12 @@ causes Fabric to deploy each Cosmos component at a configured host.
 import json
 from StringIO import StringIO
 
-from fabric.api import run, execute, sudo, put, cd, env, local
-import fabric.context_managers as ctx
+from fabric.api import run, execute, sudo, put, cd, env
 from fabric.contrib import files
 from fabric.decorators import roles, task
-from fabric.utils import puts
 from mako.template import Template
 
+import common
 import hadoop_install
 import hue_deployment
 
@@ -22,20 +21,6 @@ CONFIG = json.loads(open(DEFAULT_CONFIG, 'r').read())
 env.user = CONFIG['user'] 
 env.password = CONFIG['password']
 env.roledefs = CONFIG['hosts']
-
-def has_package(pkg):
-    with ctx.hide('stdout'):
-        out = run('yum list -q installed | grep ^%s\\. || echo' % pkg)
-        return len(out.strip()) > 0
-
-def check_dependencies(pkg_list):
-    """
-    Checks that a list of dependencies is met using the OS package manager. If
-    a dependency is not met, it is installed.
-    """
-    for pkg_name in pkg_list:
-        if not has_package(pkg_name):
-            run("yum -y install {}".format(pkg_name))
 
 @task
 def deploy():
@@ -48,14 +33,16 @@ def deploy():
     deploy_sftp()
 
 @task
+@roles('frontend')
 def deploy_hue(thrift_tarpath='~/install-dependencies/thrift-0.8.0.tar.gz'):
     """
     Deploys the HUE frontend from Cloudera, plus our fixes and our app
     """
-    check_dependencies(['mysql', 'git'])
+    execute(common.check_dependencies, ['mysql', 'git'])
     execute(hue_deployment.patch_hue, CONFIG)
     execute(hue_deployment.install_thrift, thrift_tarpath)
     execute(hue_deployment.install_cosmos_app)
+    execute(hue_deployment.start_daemons)
     execute(hue_deployment.cleanup)
 
 @task

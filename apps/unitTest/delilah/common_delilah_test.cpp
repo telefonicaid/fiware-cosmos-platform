@@ -40,8 +40,11 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole)
     engine::Engine::stop();                  // Stop engine
     engine::DiskManager::stop();             // Stop disk manager
     engine::ProcessManager::stop();          // Stop process manager
+
+    if( delilahConsole )
+         delilahConsole->stop();
     
-    // Wait all threads to finsih
+    // Wait all threads to finish
     au::ThreadManager::shared()->wait("Delilah test");
 
     // Clear google protocol buffers library

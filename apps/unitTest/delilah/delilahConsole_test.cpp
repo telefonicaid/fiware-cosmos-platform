@@ -51,12 +51,18 @@ TEST(delilahConsoleTest, getPrompt)
     sprintf(expected_result, "[%s@%s:%d] Delilah>", user, host, port);
     EXPECT_EQ(delilah_console->getPrompt(), expected_result) << "Wrong prompt after set_mode normal";
 
-    au::ErrorManager error;
-    delilah_console->delilah_disconnect( &error );
-    EXPECT_TRUE(error.isActivated() == false);
-    EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah>") << "Wrong prompt after disconnecting";
+    EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
 
-    //close_delilah_test(delilah_console);
+//    au::ErrorManager error;
+//    delilah_console->delilah_disconnect( &error );
+//    EXPECT_TRUE(error.isActivated() == false);
+//    EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah2>") << "Wrong prompt after disconnecting";
+//
+//    delilah_console->connect( host , port , user , password );
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
+
+    close_delilah_test(delilah_console);
 }
 
 //Test size_t runAsyncCommand( std::string command);
@@ -232,11 +238,11 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
 
-    au::ErrorManager error;
-    delilah_console->delilah_disconnect( &error );
-    //EXPECT_TRUE(error.isActivated() == false);
+//    au::ErrorManager error;
+//    delilah_console->delilah_disconnect( &error );
+//    //EXPECT_TRUE(error.isActivated() == false);
 
-    //close_delilah_test(delilah_console);
+    close_delilah_test(delilah_console);
 }
 
 //Test size_t voids( std::string command);
@@ -652,11 +658,13 @@ TEST(delilahConsoleTest, voids)
         delete info;
     }
 
-    au::ErrorManager error;
-    delilah_console->delilah_disconnect( &error );
-    EXPECT_TRUE(error.isActivated() == false);
+    EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
 
-    //close_delilah_test(delilah_console);
+//    au::ErrorManager error;
+//    delilah_console->delilah_disconnect( &error );
+//    EXPECT_TRUE(error.isActivated() == false);
+
+    close_delilah_test(delilah_console);
 }
 
 //Test void delilahBase();
@@ -698,11 +706,13 @@ TEST(delilahConsoleTest, delilahBase)
 //    EXPECT_EQ(delilah_console->getQueueNames(queue_format)[0].c_str(), "OK") << "Wrong reduce getQueueNames with format at delilahBase";
 //    EXPECT_EQ(delilah_console->runDatabaseCommand("ls -group name"), "OK") << "Wrong reduce runDatabaseCommand at delilahBase";
 
-    au::ErrorManager error;
-    delilah_console->delilah_disconnect( &error );
-    EXPECT_TRUE(error.isActivated() == false);
-    EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah>") << "Wrong prompt after disconnecting";
+    EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
 
-    //close_delilah_test(delilah_console);
+//    au::ErrorManager error;
+//    delilah_console->delilah_disconnect( &error );
+//    EXPECT_TRUE(error.isActivated() == false);
+//    EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah>") << "Wrong prompt after disconnecting";
+
+    close_delilah_test(delilah_console);
 }
 

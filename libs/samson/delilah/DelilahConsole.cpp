@@ -1690,5 +1690,21 @@ namespace samson
         operation->release();
     }
     
+    void DelilahConsole::runAsyncCommandAndWait( std::string command )
+    {
+        size_t tmp_id = runAsyncCommand(command);
+        
+        if( tmp_id == 0 )
+            return; // Sync command
+        
+        while( true )
+        {
+            if ( !isActive(tmp_id) )
+                return;
+            usleep(10000);
+        }
+    }
+
+    
     
 }

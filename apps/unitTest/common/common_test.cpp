@@ -98,20 +98,6 @@ TEST(commonTest, Rate)
     EXPECT_EQ(rate.get_total_kvs(), 3) << "Error in get_total_kvs";
     EXPECT_EQ(rate.get_total_size(), 30) << "Error in get_total_size";
 
-    // as rate is received as an integer, we have to push a little bit more
-    // to have non-zero values
-
-    rate.push(10, 100);
-    rate.push(10, 100);
-    rate.push(10, 100);
-    rate.push(10, 100);
-    rate.push(10, 100);
-
-    // We have to wait to update the internal representation
-    sleep(2);
-
-    rate.push(10, 100);
-
     EXPECT_GT(rate.get_rate_size(), 0) << "Error in get_rate_size";
     EXPECT_GT(rate.get_rate_kvs(), 0) << "Error in get_rate_kvs";
 }

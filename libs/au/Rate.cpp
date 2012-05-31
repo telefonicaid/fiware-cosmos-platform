@@ -104,7 +104,13 @@ namespace au {
             double total = 0;
             for ( int i = 1 ; i < num_samples_ ; i++ )
                 total += hits_[i];
-            return  total / (double)(num_samples_-1);
+            double tmp = total / (double)(num_samples_-1);
+
+            if( tmp < hits_[0] )
+                return hits_[0]; // hits in the last second
+            
+            return tmp;
+            
         }
         
         double Rate::_getRate()
@@ -112,7 +118,13 @@ namespace au {
             double total = 0;
             for ( int i = 1 ; i < num_samples_ ; i++ )
                 total += size_[i];
-            return  total / (double)(num_samples_-1);
+            double tmp = total / (double)(num_samples_-1);
+            
+            if( tmp < size_[0] )
+                return size_[0]; // Size in the last second
+            
+            return tmp;
+            
         }
         
         void Rate::_update_time()

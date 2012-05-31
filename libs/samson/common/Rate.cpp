@@ -29,12 +29,12 @@ namespace samson {
         return rate_kvs.getTotalSize();
     }
     
-    size_t Rate::get_rate_size()
+    double Rate::get_rate_size()
     {
         return rate_size.getRate();
     }
     
-    size_t Rate::get_rate_kvs()
+    double Rate::get_rate_kvs()
     {
         return rate_kvs.getRate();
     }

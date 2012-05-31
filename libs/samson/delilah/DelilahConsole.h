@@ -169,6 +169,9 @@ class DelilahConsole : public au::Console , public Delilah
     // Run asynch command and returns the internal operation in delilah
     size_t runAsyncCommand( std::string command );
 
+    // Run asynch command and wait to finish ( only used in tests )
+    void runAsyncCommandAndWait( std::string command );
+    
     // Functions overloaded from Delilah
     // --------------------------------------------------------
 

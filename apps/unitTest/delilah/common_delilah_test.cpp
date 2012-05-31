@@ -13,12 +13,18 @@
 
 #include "samson/delilah/DelilahConsole.h"
 
+extern size_t delilah_random_code;
+
 samson::DelilahConsole *init_delilah_test()
 {
-// Make sure this singleton is created just once
+   // Random code for delilah
+   delilah_random_code = au::code64_rand();
+
+
+    // Make sure this singleton is created just once
     au::LockDebugger::shared();
 
-// Init samson setup with default values
+    // Init samson setup with default values
     samson::SamsonSetup::init("","");
 
     engine::Engine::init();
@@ -26,11 +32,9 @@ samson::DelilahConsole *init_delilah_test()
     engine::DiskManager::init(1);
     engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
 
-    LM_M(("Calling ModulesManager::init()"));
     samson::ModulesManager::init();         // Init the modules manager
-    LM_M(("Calling ModulesManager::init() and returns"));
 
-    // Create a DelilahControler once network is ready
+    // Create a DelilahConsole once network is ready
     samson::DelilahConsole *delilahConsole = new samson::DelilahConsole();
     //delilahConsole->connect( "localhost" , 1234 , "anonymous" , "empty" );
     return delilahConsole;
@@ -49,7 +53,7 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole)
     au::ThreadManager::shared()->wait("Delilah test");
 
     // Clear google protocol buffers library
-    google::protobuf::ShutdownProtobufLibrary();
+    //google::protobuf::ShutdownProtobufLibrary();
 
     if (delilahConsole != NULL)
     {
@@ -58,9 +62,7 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole)
     }
     
     au::LockDebugger::destroy();
-    LM_M(("Calling ModulesManager::destroy()"));
     samson::ModulesManager::destroy();
-    LM_M(("Calling ModulesManager::destroy() and returns"));
     engine::ProcessManager::destroy();
     engine::DiskManager::destroy();
     engine::MemoryManager::destroy();

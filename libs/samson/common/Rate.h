@@ -26,8 +26,8 @@ namespace samson {
         
         size_t get_total_size();
         size_t get_total_kvs();
-        size_t get_rate_size();
-        size_t get_rate_kvs();
+        double get_rate_size();
+        double get_rate_kvs();
         
     };
 

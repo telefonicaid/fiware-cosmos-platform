@@ -60,23 +60,18 @@ namespace au
                 path_components = StringVector::parseFromString( resource , '/' );
                 
                 // Extract extension from the last one
+                format = ""; // Default values
                 if( path_components.size() > 0 )
                 {
                     size_t pos = path_components[path_components.size()-1].rfind(".");
                     if( pos != std::string::npos )
                     {
                         format = path_components[path_components.size()-1].substr( pos + 1);
-                        if ((format == "json") || (format == "xml"))
+                        if ( (format == "json") || (format == "xml") || (format == "html")  )
                            path_components[path_components.size()-1] 
                               = path_components[path_components.size()-1].substr(0,pos);
-                        else
-                           format = "";
                     }
-                    else
-                        format = "";
                 }
-                else
-                    format = "";
                 
                 // Read the rest of the REST Request
                 char line[1024];

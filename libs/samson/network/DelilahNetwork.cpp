@@ -406,25 +406,31 @@ namespace samson {
         if ( main_command == "add" )
         {
             if ( cmdLine.get_num_arguments() < 3 )
-                return "Usage: cluster add host_name [port]";
-            
+                return "Usage: cluster add host_name[:port]";
+
+            // Host identification
             std::string host = cmdLine.get_argument(2);
-            if ((host == "localhost") || (host == "127.0.0.1"))
+            std::string lookup_host = host;
+            int lookup_port = SAMSON_WORKER_PORT;
+            
+            size_t p = host.find(":");
+            if( p != std::string::npos )
+            {
+                lookup_host = host.substr( 0 , p );
+                lookup_port = atoi( host.substr( p + 1 ).c_str() );
+            }
+
+            // Host name transformation
+            if ((lookup_host == "localhost") || (lookup_host == "127.0.0.1"))
             {
                char realname[64];
 
                if (gethostname(realname, sizeof(realname)) != 0)
                   LM_X(1, ("gethostname: %s", strerror(errno)));
-               LM_M(("Translated 'localhost' to %s", realname));
-               host = std::string(realname);
+               lookup_host = std::string(realname);
             }
 
-            int port = SAMSON_WORKER_PORT;
-            if( cmdLine.get_num_arguments() > 3 )
-                port = atoi( cmdLine.get_argument(3).c_str() );
-            
-            return addSecondaryDelilahConnection(host, port);
-            
+            return addSecondaryDelilahConnection(lookup_host, lookup_port);
         }
 
         
@@ -432,13 +438,23 @@ namespace samson {
         if ( main_command == "remove" )
         {
             if ( cmdLine.get_num_arguments() < 3 )
-                return "Usage: cluster remove id";
+                return "Usage: cluster remove id/host_name[:port]";
             
+            size_t id = (size_t) -1;
 
-            if( !is_only_digits( cmdLine.get_argument(2) ) )
-                return au::str("Please, provide an id as an argument. %s is not a number" , cmdLine.get_argument(2).c_str() );
+            if( is_only_digits( cmdLine.get_argument(2) ) )
+                id = atoll( cmdLine.get_argument(2).c_str() );
+            else
+            {
+                // Try to get the information of the host
+                id = cluster_information.getIdForWorker( cmdLine.get_argument(2) );
+                
+                if( id == (size_t)-1 )
+                    return au::str("%s is not part of this cluster" , cmdLine.get_argument(2).c_str() );
+                
+            }
+
             
-            size_t id = atoll( cmdLine.get_argument(2).c_str() );
 
             // Remove this node from the cluster information
             bool s = cluster_information.remove_host( id );

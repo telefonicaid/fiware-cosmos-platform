@@ -72,8 +72,8 @@ namespace samson {
             std::string name = au::str("NetworkConnection::initReadWriteThreads::read (%s)"
                                        , socket_connection->getHostAndPort().c_str() );
             
-            au::ThreadManager::shared()->addThread(name, &t_read, NULL, NetworkConnection_readerThread, this);
             running_t_read = true;
+            au::ThreadManager::shared()->addThread(name, &t_read, NULL, NetworkConnection_readerThread, this);
         }
         
         if( !running_t_write )
@@ -81,8 +81,8 @@ namespace samson {
             std::string name = au::str("NetworkConnection::initReadWriteThreads::write (%s)"
                                        , socket_connection->getHostAndPort().c_str() );
             
-            au::ThreadManager::shared()->addThread(name, &t_write, NULL, NetworkConnection_writerThread, this);
             running_t_write = true;
+            au::ThreadManager::shared()->addThread(name, &t_write, NULL, NetworkConnection_writerThread, this);
         }
     }
     
@@ -95,7 +95,6 @@ namespace samson {
                 // Wake up writing thread if necessary
                 au::TokenTaker tt(&token);
                 tt.wakeUpAll();
-
                 return;
             }
             

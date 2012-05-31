@@ -109,9 +109,10 @@ namespace samson {
 
         std::string str_identifier();
 
-        std::string     hostForWorker( size_t worker_id);
-        unsigned short  portForWorker(size_t worker_id);
-
+        std::string     hostForWorker( size_t worker_id );
+        unsigned short  portForWorker( size_t worker_id );
+        size_t          getIdForWorker( std::string host ); // host or host:port are accepted
+        
         // ----------------------------------------------------
         // Saving and loading to file
         // ----------------------------------------------------

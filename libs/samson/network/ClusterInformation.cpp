@@ -1,5 +1,5 @@
 
-
+#include "samson/common/ports.h"
 #include "ClusterInformation.h" // Ow interface
 
 namespace samson {
@@ -454,4 +454,29 @@ namespace samson {
 
         return 0xFFFF;
     }
+    
+    size_t ClusterInformation::getIdForWorker( std::string host )
+    {
+        // host or host:port are accepted
+        au::TokenTaker tt(&token);
+
+        std::string lookup_host = host;
+        int lookup_port = SAMSON_WORKER_PORT;
+        
+        size_t p = host.find(":");
+        if( p != std::string::npos )
+        {
+            lookup_host = host.substr( 0 , p );
+            lookup_port = atoi( host.substr( p + 1 ).c_str() );
+        }
+
+        for (size_t i = 0 ; i <nodes.size() ; i++ )
+            if( nodes[i]->host == lookup_host )
+                if( nodes[i]->port == lookup_port )
+                    return nodes[i]->id;
+
+        return -1;
+    }
+
+    
 }

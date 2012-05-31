@@ -217,24 +217,10 @@ namespace samson {
             NetworkConnection * connection = it_connections->second;
             connection->close();
             connection->setNodeIdentifier( NodeIdentifier(UnknownNode,-1) );
-            
-            // Wait until the thread goes out
-            au::Cronometer cronometer;
-            while( !connection->noThreadsRunning() )
-            {
-                usleep(100000);
-                if( cronometer.diffTime() > 1 )
-                {
-                    cronometer.reset();
-                    LM_W(("Waiting thread of network connection %s to finish..." , connection->str().c_str() ));
-                }
-            }
-            delete connection;
         }
         
-        // Remove map ( not elements inside, already deleted here )
-        connections.clear();
-        
+
+        // We cannot wait for all connections to be disconnected because reset command is originated in a delilah connection
         
     }
     

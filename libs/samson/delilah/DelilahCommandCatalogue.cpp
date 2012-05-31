@@ -31,11 +31,6 @@ namespace samson
             "alerts <on> <off>"
             );
         
-        add( "trace" , "delilah", 
-            "Activate or disactivate trace levels in SAMSON platform",
-            "trace <on> <off>"
-            );
-        
         add( "local_logs" , "delilah", 
             "Activate or disactivate logs for this delilah",
             "local_logss <on> <off>"
@@ -71,6 +66,11 @@ namespace samson
             "Activate or disactivate verbose mode. This shows extra information for commands executed in delilah",
             "verbose <on> <off>"
             );
+
+        add( "wlog" , "delilah", 
+            "Show information about what logs are activated at samson nodes. Debug, Writes, Reads, Traces, etc",
+            "wlog\n"
+            );
         
         add( "wverbose" , "delilah", 
             "Activate or disactivate verbose mode for workers. This shows extra information for worker commands",
@@ -83,24 +83,26 @@ namespace samson
              "Activate or disactivate debug mode for workers. This shows extra information for worker commands",
              "debug on\n"
              "debug off\n"
+             "debug get\n"
             );
         
         add( "wreads" , "delilah", 
             "Activate or disactivate reads mode for workers. This shows extra information for worker commands",
             "reads on\n"
             "reads off\n"
+            "reads get\n"
             );
         
         add( "wwrites" , "delilah", 
             "Activate or disactivate writes mode for workers. This shows extra information for worker commands",
-            "writes <on> <off>"
+            "writes <on> <off> <get>"
             );
         
         add( "wtrace", "delilah",
              "Activate or disactivate trace levels for workers (trace level format example: '1-5,7,76-99'). This shows extra information for worker commands",
              "wtrace off\n"
+             "wtrace get\n"
              "wtrace set <levels>\n"
-             "wtrace get <levels>\n"
              "wtrace add <levels>\n"
              "wtrace remove <levels>\n");
 

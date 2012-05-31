@@ -1052,74 +1052,49 @@ typedef struct LogLineInfo
             return;
         } 
 
-        if (main_command == "trace")
+        if (main_command == "wlog")
         {
-            std::string subcommand;
-            std::string levels;
+            
+            int vLevel;
+            if      (lmVerbose5 == true)  vLevel = 5;
+            else if (lmVerbose4 == true)  vLevel = 4;
+            else if (lmVerbose3 == true)  vLevel = 3;
+            else if (lmVerbose2 == true)  vLevel = 2;
+            else if (lmVerbose  == true)  vLevel = 1;
+            else                          vLevel = 0;
 
-            //
-            // 01: off
-            // 02: get
-            // 03: set [09-,]*
-            // 04: add [09-,]*
-            // 05: del [09-,]*
-            //
-            if (cmd.get_num_arguments() < 2)
-            {
-                finishWorkerTaskWithError( "Usage: trace [ off ] [ get ] [ set | add | del (range-list of trace levels)]" );
-                return;
-            }                
+            
+            samson::network::Collection* collection = new  samson::network::Collection();
+            collection->set_title("Logs");
+            collection->set_name("logs");
+            samson::network::CollectionRecord* record = collection->add_record();
+            ::samson::add(record, "Verbose Level", vLevel, "left,different" );
+            collections.push_back(collection);
 
-            subcommand = cmd.get_argument(1);
-
-            if (subcommand == "off")
-                lmTraceSet(NULL);
-            else if (subcommand == "get")
-            {
-                char levels[1024];
-
-                lmTraceGet(levels);
-                
-                
-                samson::network::Collection* collection = new  samson::network::Collection();
-                collection->set_title("Trace information");
-                collection->set_name("trace_levels");
-                
-                samson::network::CollectionRecord* record = collection->add_record();
-                
-                ::samson::add(record, "Trace levels", levels, "left,different" );
-                collections.push_back(collection);
-                
-                finishWorkerTask();
-                return;
-            }
-            else if ((subcommand == "set") || (subcommand == "add") || (subcommand == "del"))
-            {
-                if (cmd.get_num_arguments() < 3)
-                {
-                    finishWorkerTaskWithError( "Usage: trace " + subcommand + " (range-list of trace levels)");
-                    return;
-                }                
-
-                levels = cmd.get_argument(2);
-
-                if (subcommand == "set")
-                    lmTraceSet((char*) levels.c_str());
-                else if (subcommand == "add")
-                    lmTraceAdd((char*) levels.c_str());
-                else if (subcommand == "del")
-                    lmTraceSub((char*) levels.c_str());
-            }
+            if( lmDebug )
+                ::samson::add(record, "Debug", "on"  , "left,different" );
             else
-            {
-                finishWorkerTaskWithError( au::str("Usage: bad subcommand for 'trace': %s", subcommand.c_str()));
-                return;
-            }
+                ::samson::add(record, "Debug", "off"  , "left,different" );
 
+            if( lmReads )
+                ::samson::add(record, "Reads", "on"  , "left,different" );
+            else
+                ::samson::add(record, "Reads", "off"  , "left,different" );
+            
+            if( lmWrites )
+                ::samson::add(record, "Writes", "on"  , "left,different" );
+            else
+                ::samson::add(record, "Writes", "off"  , "left,different" );
+
+            char levels[1024];
+            lmTraceGet(levels);
+            
+            ::samson::add(record, "Trace levels", levels, "left,different" );
+            
             finishWorkerTask();
-            return;
         }
 
+        
         if (main_command == "wverbose")
         {
             std::string subcommand;
@@ -1156,7 +1131,23 @@ typedef struct LogLineInfo
                 }
             }
             else if (subcommand == "get")
-                LM_X(1, ("How do I return data to delilah ... ?"));
+            {
+                int vLevel;
+                
+                if      (lmVerbose5 == true)  vLevel = 5;
+                else if (lmVerbose4 == true)  vLevel = 4;
+                else if (lmVerbose3 == true)  vLevel = 3;
+                else if (lmVerbose2 == true)  vLevel = 2;
+                else if (lmVerbose  == true)  vLevel = 1;
+                else                          vLevel = 0;
+
+                samson::network::Collection* collection = new  samson::network::Collection();
+                collection->set_title("Verbose");
+                collection->set_name("verbose");
+                samson::network::CollectionRecord* record = collection->add_record();
+                ::samson::add(record, "Verbose Level", vLevel, "left,different" );
+                collections.push_back(collection);
+            }
             else
             {
                 finishWorkerTaskWithError( "Usage: verbose [ off ] [ 0 - 5 ]");
@@ -1183,6 +1174,21 @@ typedef struct LogLineInfo
                 lmDebug = false;
             else if (subcommand == "on")
                 lmDebug = true;
+            else if( subcommand == "get" )
+            {
+                samson::network::Collection* collection = new  samson::network::Collection();
+                collection->set_title("Debug");
+                collection->set_name("debug_levels");
+                samson::network::CollectionRecord* record = collection->add_record();
+                
+                if( lmDebug )
+                    ::samson::add(record, "Debug", "on"  , "left,different" );
+                else
+                    ::samson::add(record, "Debug", "off"  , "left,different" );
+                
+                collections.push_back(collection);
+                
+            }
             else
             {
                 finishWorkerTaskWithError( "Usage: wdebug [ off | on ]");
@@ -1209,6 +1215,21 @@ typedef struct LogLineInfo
                 lmReads = false;
             else if (subcommand == "on")
                 lmReads = true;
+            else if( subcommand == "get" )
+            {
+                samson::network::Collection* collection = new  samson::network::Collection();
+                collection->set_title("Reads");
+                collection->set_name("reads_levels");
+                samson::network::CollectionRecord* record = collection->add_record();
+                
+                if( lmReads )
+                    ::samson::add(record, "Reads", "on"  , "left,different" );
+                else
+                    ::samson::add(record, "Reads", "off"  , "left,different" );
+                
+                collections.push_back(collection);
+                
+            }
             else
             {
                 finishWorkerTaskWithError( "Usage: wreads [ off | on ]");
@@ -1225,16 +1246,32 @@ typedef struct LogLineInfo
 
             if (cmd.get_num_arguments() < 2)
             {
-                finishWorkerTaskWithError( "Usage: wwrites [ off | on ]");
+                finishWorkerTaskWithError( "Usage: wwrites [ off | on | get ]");
                 return;
             }                
 
             subcommand = cmd.get_argument(1);
 
+            
             if (subcommand == "off")
                 lmWrites = false;
             else if (subcommand == "on")
                 lmWrites = true;
+            else if( subcommand == "get" )
+            {
+                samson::network::Collection* collection = new  samson::network::Collection();
+                collection->set_title("Writes");
+                collection->set_name("writes_levels");
+                samson::network::CollectionRecord* record = collection->add_record();
+                
+                if( lmWrites )
+                    ::samson::add(record, "Writes", "on"  , "left,different" );
+                else
+                    ::samson::add(record, "Writes", "off"  , "left,different" );
+                
+                collections.push_back(collection);
+                
+            }
             else
             {
                 finishWorkerTaskWithError( "Usage: wwrites [ off | on ]");
@@ -1244,37 +1281,67 @@ typedef struct LogLineInfo
             finishWorkerTask();
             return;
         }
-
+        
         if (main_command == "wtrace")
         {
             std::string subcommand;
             std::string levels;
-
+            
+            //
+            // 01: off
+            // 02: get
+            // 03: set [09-,]*f
+            // 04: add [09-,]*
+            // 05: del [09-,]*
+            //
             if (cmd.get_num_arguments() < 2)
             {
-                finishWorkerTaskWithError( "Usage: wtrace [ get | set | add | remove | off ]");
+                finishWorkerTaskWithError( "Usage: wtrace [ off ] [ get ] [ set | add | del (range-list of trace levels)]" );
                 return;
             }                
-
+            
             subcommand = cmd.get_argument(1);
-            levels     = cmd.get_argument(2);
-
-            if (subcommand == "set")
-               lmTraceSet((char*) levels.c_str());
-            else if (subcommand == "add")
-                lmTraceAdd((char*) levels.c_str());
-            else if (subcommand == "remove")
-                lmTraceSub((char*) levels.c_str());
-            else if (subcommand == "off")
+            
+            if (subcommand == "off")
                 lmTraceSet(NULL);
             else if (subcommand == "get")
-                LM_X(1, ("How do I return data to delilah ... ?"));
-            else
             {
-                finishWorkerTaskWithError( "Usage: trace [ get | set | add | remove | off ]");
+                char levels[1024];
+                lmTraceGet(levels);
+                
+                samson::network::Collection* collection = new  samson::network::Collection();
+                collection->set_title("Trace information");
+                collection->set_name("trace_levels");
+                samson::network::CollectionRecord* record = collection->add_record();
+                ::samson::add(record, "Trace levels", levels, "left,different" );
+                collections.push_back(collection);
+                
+                finishWorkerTask();
                 return;
             }
-
+            else if ((subcommand == "set") || (subcommand == "add") || (subcommand == "del"))
+            {
+                if (cmd.get_num_arguments() < 3)
+                {
+                    finishWorkerTaskWithError( "Usage: wtrace " + subcommand + " (range-list of trace levels)");
+                    return;
+                }                
+                
+                levels = cmd.get_argument(2);
+                
+                if (subcommand == "set")
+                    lmTraceSet((char*) levels.c_str());
+                else if (subcommand == "add")
+                    lmTraceAdd((char*) levels.c_str());
+                else if (subcommand == "del")
+                    lmTraceSub((char*) levels.c_str());
+            }
+            else
+            {
+                finishWorkerTaskWithError( au::str("Usage: bad subcommand for 'wtrace': %s", subcommand.c_str()));
+                return;
+            }
+            
             finishWorkerTask();
             return;
         }

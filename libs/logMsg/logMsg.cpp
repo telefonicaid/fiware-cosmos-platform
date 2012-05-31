@@ -50,11 +50,11 @@
 #include <sys/time.h>           /* gettimeofday                              */
 #include <time.h>               /* time, gmtime_r, ...                       */
 #include <sys/timeb.h>          /* timeb, ftime, ...                         */
+#include "logMsg/time.h" //
 
 // We have a problem of cross-dependency between au and logMsg
 // We have solved it by putting au library twice in the CMakeLists.txt files,
 // before and after the lm library
-#include "au/time.h"            /* gmtime_r_samson()                         */
 
 #include "logMsg/logMsg.h"      /* Own interface                             */
 
@@ -64,7 +64,6 @@
 //#define ASSERT_FOR_EXIT
 
 extern "C" pid_t gettid(void);
-
 
 
 /******************************************************************************
@@ -710,7 +709,7 @@ static char* dateGet(int index, char* line, int lineSize)
     else
     {
         ftime(&timebuffer);
-        au::gmtime_r_samson(&secondsNow, &tmP);
+        lm::gmtime_r(&secondsNow, &tmP);
         strftime(line_tmp, 80, fds[index].timeFormat, &tmP);
         snprintf(line, lineSize, "%s(%.3d)", line_tmp, timebuffer.millitm);
     }
@@ -1669,7 +1668,7 @@ LmStatus lmFdRegister(int fd, const char* format, const char* timeFormat, const 
         return LmsFdOccupied;
 
     secsNow = time(NULL);
-    au::gmtime_r_samson(&secsNow, &tmP);
+    lm::gmtime_r(&secsNow, &tmP);
     
     if ((fd >= 0) && (strcmp(info, "stdout") != 0))
     {
@@ -2249,7 +2248,7 @@ LmStatus lmReopen(int index)
             char       tm[80];
             char       buf[80];
                 
-            au::gmtime_r_samson(&now, &tmP);
+            lm::gmtime_r(&now, &tmP);
             strftime(tm, 80, TIME_FORMAT_DEF, &tmP);
 
             snprintf(buf, sizeof(buf), "Cleared at %s  (a reopen ...)\n",tm);
@@ -2573,7 +2572,7 @@ LmStatus lmClear(int index, int keepLines, int lastLines)
                 char       tm[80];
                 char       buf[80];
                 
-                au::gmtime_r_samson(&now, &tmP);
+                lm::gmtime_r(&now, &tmP);
                 strftime(tm, 80, TIME_FORMAT_DEF, &tmP);
                 
                 snprintf(buf, sizeof(buf), "Cleared at %s\n", tm);

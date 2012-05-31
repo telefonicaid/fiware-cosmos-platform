@@ -1,10 +1,12 @@
 SET (HEADERS
 	logMsg.h
 	traceLevels.h
+	time.h
 )
 
 SET (SOURCES
     logMsg.cpp
+	time.cpp
 )
 
 

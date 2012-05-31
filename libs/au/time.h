@@ -49,7 +49,6 @@ timeval secs_to_timeval( double s );
 size_t seconds_to_microseconds( double time );
 size_t seconds_to_nanoseconds( double time );
 
-struct tm *gmtime_r_samson (time_t *timer,  struct tm *tp);
 
 NAMESPACE_END
 

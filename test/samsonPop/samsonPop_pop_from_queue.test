@@ -3,7 +3,7 @@ samsonPop - pop_from_queue
 --SHELL--
 delilah -command remove_all_stream
 samsonPush input < input.txt
-samsonPop -mas_size 1 innput
+samsonPop -max_size 1 input
 --EXPECT--
 015211078
 072866046

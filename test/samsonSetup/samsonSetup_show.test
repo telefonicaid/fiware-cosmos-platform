@@ -19,4 +19,3 @@ samsonSetup -show
 | stream.max_scheduled_write_size       |     120000000 | 120000000     |                     Maximum size scheduled for writing in the BlockManager |
 | worker.period_check_finish_tasks      |             5 | 5             |   Period to review finished tasks in samsonWorker, to be clean from memory |
 \----------------------------------------------------------------------------------------------------------------------------------------------------/
-

@@ -9,7 +9,7 @@ sleep 1
 delilah -command "run txt.word_count_accumulate words words_count words_count" 2> /dev/null
 sleep 1
 delilah -command "pop words_count /tmp/words_count -force"
-samsonCat -header /tmp/words_count
+samsonCat -header /tmp/words_count | sed 's/\(\[[0-9]* [0-9]*\]\)/[***** *****]/'
 --EXPECT--
 Total: ( 10 kvs [ 10.0 ] in 110 bytes [  110 ] )
-worker_000000_file_000001: KVHeader: (  10.0 kvs in   110 bytes )([15221 16031]) (system.String-system.UInt)
+worker_000000_file_000001: KVHeader: (  10.0 kvs in   110 bytes )([***** *****]) (system.String-system.UInt)

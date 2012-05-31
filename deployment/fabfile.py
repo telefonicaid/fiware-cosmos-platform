@@ -3,6 +3,7 @@ Cosmos automatic deployment Fabric file -
 
 causes Fabric to deploy each Cosmos component at a configured host.
 """
+import os
 import json
 from StringIO import StringIO
 
@@ -52,16 +53,31 @@ def deploy_sftp():
     """
     Deploys the SFTP server as a Java JAR and starts it
     """
-    with cd("/root/injection"):
-        put("target/injection*.jar")
-        injection_conf = StringIO()
-        template = Template(filename='injection.conf.mako')
-        injection_conf.write(template.render(
-                namenode=CONFIG['hosts']['namenode'][0]))
-        put(injection_conf, "/etc/injection.cfg")
-        put("templates/injection.init.d", "/etc/init.d/injection")
-        #run("update_config ?")
-    run("/etc/init.d/injection start")
+    injection_exec = 'injection-server-{0}.jar'.format(CONFIG['version'])
+    injection_jar = os.path.join(CONFIG['injection_path'], 'target',
+                                 injection_exec)
+    exec_path = os.path.join('~', 'injection', injection_exec)
+
+    put(injection_jar, exec_path)
+
+    injection_conf = StringIO()
+    template = Template(filename='templates/injection.conf.mako')
+    injection_conf.write(template.render(
+            namenode=CONFIG['hosts']['namenode'][0]))
+    put(injection_conf, "/etc/injection.cfg")
+    put("templates/injection.init.d", "/etc/init.d/injection")
+    symlink = "/usr/local/injection-server"
+    if not files.exists(symlink):
+        run("ln -s {0} {1}".format(exec_path, symlink))
+    run("mkdir -p /var/log/injection")
+    logfile = "/var/log/injection/server.log"
+    if not files.exists(logfile):
+        run("echo '' >> {0}".format(logfile))
+    run("mkdir -p /var/run/injection")
+    pidfile = "/var/run/injection/server.pid"
+    if not files.exists(pidfile):
+        run("echo '' >> {0}".format(pidfile))
+    run("/etc/init.d/injection restart")
       
 @task
 def deploy_cdh():

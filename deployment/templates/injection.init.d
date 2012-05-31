@@ -35,7 +35,7 @@ function start () {
         fi
     fi
     # Needs to run as root to use port 22
-    java -jar $SERVERBIN --config $SERVERCFG &> $SERVERLOG &
+    /usr/java/default/bin/java -jar $SERVERBIN --config $SERVERCFG &> $SERVERLOG &
     PID="$(ps -A -f | grep ${SERVERBIN} | awk '{ print $2 }' | head -1)"
     echo "started with process id ${PID}"
     echo $PID > $PIDFILE

@@ -509,7 +509,7 @@ namespace samson {
         
     }
     
-    std::string SamsonWorker::process_logging(au::network::RESTServiceCommand* command)
+    void SamsonWorker::process_logging(au::network::RESTServiceCommand* command)
     {
         std::ostringstream  logdata;
         std::string         logCommand  = "";
@@ -532,72 +532,44 @@ namespace samson {
         if (logCommand == "")
         {
             command->http_state = 400;
-            
-            if (command->format == "xml")
-                au::xml_simple(logdata, "message", au::str("no logging subcommand"));
-            else
-                logdata << "  \"error\" : \"" << au::str("no logging subcommand") << "\"\n";
+            command->appendFormatedElement("message", au::str("no logging subcommand"));
         }
         else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "traces") && (logCommand != "verbose") && (logCommand != "debug"))
         {
             command->http_state = 400;
-            
-            if (command->format == "xml")
-                au::xml_simple(logdata, "message", au::str("bad logging command: '%s'", logCommand.c_str()));
-            else
-                logdata << "  \"error\" : \"" << au::str("bad logging command: '%s'", logCommand.c_str()) << "\"\n";
+            command->appendFormatedElement("message", au::str("badilogging command: '%s'", logCommand.c_str()));
         }
         else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off"))
         {
             command->http_state = 400;
-            
-            if (command->format == "xml")
-                au::xml_simple(logdata, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-            else
-                logdata << "  \"error\" : \"" << au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()) << "\"\n";
+            command->appendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
         }
         else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off"))
         {
             command->http_state = 400;
-            
-            if (command->format == "xml")
-                au::xml_simple(logdata, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-            else
-                logdata << "  \"error\" : \"" << au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()) << "\"\n";
+            command->appendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
         }
         else if ((logCommand == "verbose") && (sub == "set") && (arg != "0") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") && (arg != "5"))
         {
             command->http_state = 400;
-            
-            if (command->format == "xml")
-                au::xml_simple(logdata, "message", au::str("bad logging argument for 'trace/set': %s", arg.c_str()));
-            else
-                logdata << "  \"error\" : \"" << au::str("bad logging argument for 'trace/set': %s", arg.c_str())  << "\"\n";
+            command->appendFormatedElement("message", au::str("bad logging argument for 'verbose': %s", arg.c_str()));
         }
         else if ((logCommand == "traces") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off") && (sub != ""))
         {
             command->http_state = 400;
-            
-            if (command->format == "xml")
-                au::xml_simple(logdata, "message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-            else
-                logdata << "  \"error\" : \"" << au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()) << "\"\n";
+            command->appendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
         }
         else if ((logCommand == "traces") && ((sub != "set") || (sub != "add") || (sub != "remove")))
         {
             if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
             {
                 command->http_state = 400;
-                
-                if (command->format == "xml")
-                    au::xml_simple(logdata, "message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
-                else
-                    logdata << "  \"error\" : \"" << au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()) << "\"\n";
+                command->appendFormatedElement("message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
             }
         }
         
         if (command->http_state != 200)
-            return logdata.str();
+            return;
         
         //
         // Treat the request
@@ -607,20 +579,12 @@ namespace samson {
             if (sub == "on")
             {
                 process_delilah_command("wreads on", command);
-
-                if (command->format == "xml")
-                    au::xml_simple(logdata, "reads", au::str("reads turned ON"));
-                else
-                    logdata << "  \"reads\" : \"reads turned ON\"\n";
+                command->appendFormatedElement("reads", au::str("reads turned ON"));
             }
             else if (sub == "off")
             {
                 process_delilah_command("wreads off", command);
-
-                if (command->format == "xml")
-                    au::xml_simple(logdata, "reads", au::str("reads turned OFF"));
-                else
-                    logdata << "  \"reads\" : \"reads turned OFF\"\n";
+                command->appendFormatedElement("reads", au::str("reads turned OFF"));
             }
         }
         else if (logCommand == "writes")
@@ -628,20 +592,14 @@ namespace samson {
             if (sub == "on")
             {
                 process_delilah_command("wwrites on", command);
-                
-                if (command->format == "xml")
-                    au::xml_simple(logdata, "writes", au::str("writes turned ON"));
-                else
-                    logdata << "  \"writes\" : \"writes turned ON\"\n";
+                LM_F(("lmWrites turned ON"));
+                command->appendFormatedElement("writes", au::str("writes turned ON"));
             }
             else if (sub == "off")
             {
                 process_delilah_command("wwrites off", command);
-
-                if (command->format == "xml")
-                    au::xml_simple(logdata, "writes", au::str("writes turned OFF"));
-                else
-                    logdata << "  \"writes\" : \"writes turned OFF\"\n";
+                LM_F(("lmWrites turned OFF"));
+                command->appendFormatedElement("writes", au::str("writes turned OFF"));
             }
         }
         else if (logCommand == "debug")
@@ -649,20 +607,12 @@ namespace samson {
             if (sub == "on")
             {
                 process_delilah_command("wdebug on", command);
-
-                if (command->format == "xml")
-                    au::xml_simple(logdata, "debug", au::str("debug turned ON"));
-                else
-                    logdata << "  \"debug\" : \"debug turned ON\"\n";
+                command->appendFormatedElement("debug", au::str("debug turned ON"));
             }
             else if (sub == "off")
             {
                 process_delilah_command("wdebug off", command);
-
-                if (command->format == "xml")
-                    au::xml_simple(logdata, "debug", au::str("debug turned OFF"));
-                else
-                    logdata << "  \"debug\" : \"debug turned OFF\"\n";
+                command->appendFormatedElement("debug", au::str("debug turned OFF"));
             }
         }
         else if (logCommand == "verbose")  // /samson/logging/verbose
@@ -676,17 +626,11 @@ namespace samson {
             if (sub == "get")
             {
                 process_delilah_command("wverbose get", command);
-
-                LM_X(1, ("How to implememnt this ... ?"));
             }
             else if ((sub == "off") || (sub == "0"))
             {
                 process_delilah_command("wverbose off", command);
-
-                if (command->format == "xml")
-                    au::xml_simple(logdata, "debug", au::str("verbose mode turned OFF"));
-                else
-                    logdata << "  \"debug\" : \"verbose mode turned OFF\"\n";
+                command->appendFormatedElement("verbose", au::str("verbose mode turned OFF"));
             }
             else
             {
@@ -694,11 +638,7 @@ namespace samson {
                 
                 snprintf(delilahCommand, sizeof(delilahCommand), "wverbose %s", arg.c_str());
                 process_delilah_command(delilahCommand, command);
-
-                if (command->format == "xml")
-                    au::xml_simple(logdata, "verbose", au::str("verbose levels upto %s SET", arg.c_str()));
-                else
-                    logdata << "  \"verbose\" : \"verbose levels upto " << arg << " SET\"\n";
+                command->appendFormatedElement("verbose", au::str("verbose levels upto %s SET", arg.c_str()));
             }
         }
         else if (logCommand == "traces")
@@ -712,11 +652,7 @@ namespace samson {
 
                 snprintf(delilahCommand, sizeof(delilahCommand), "wtrace set %s",  arg.c_str());
                 process_delilah_command(delilahCommand, command);
-
-                if (command->format == "xml")
-                    au::xml_simple(logdata, "traceLevels", au::str(arg.c_str()));
-                else
-                    logdata << "  \"traceLevels\" : \"" << arg.c_str() << "\"\n";
+                command->appendFormatedElement("trace", au::str("trace level: %s", arg.c_str()));
             }
             else if (sub == "get")    // /samson/logging/trace/get
             {
@@ -724,15 +660,12 @@ namespace samson {
 
                 snprintf(delilahCommand, sizeof(delilahCommand), "wtrace get");
                 process_delilah_command(delilahCommand, command);
+                // What is pushed back to the REST request?
             }
             else if (sub == "off")    // /samson/logging/trace/off
             {
                 process_delilah_command("wtrace off", command);
-
-                if (command->format == "xml")
-                    au::xml_simple(logdata, "traceLevels", au::str("all trace levels turned off"));
-                else
-                    logdata << "  \"traceLevels\" : \"all trace levels turned off\"\n";
+                command->appendFormatedElement("trace", au::str("all trace levels turned off"));
             }
             else if (sub == "add")    // /samson/logging/trace/add
             {
@@ -740,6 +673,7 @@ namespace samson {
 
                 snprintf(delilahCommand, sizeof(delilahCommand), "wtrace add %s", arg.c_str());
                 process_delilah_command(delilahCommand, command);
+                command->appendFormatedElement("trace", au::str("added level(s) %s", arg.c_str()));
             }
             else if (sub == "remove")     // /samson/logging/trace/remove
             {
@@ -747,15 +681,9 @@ namespace samson {
 
                 snprintf(delilahCommand, sizeof(delilahCommand), "wtrace remove %s", arg.c_str());
                 process_delilah_command(delilahCommand, command);
-                
-                if (command->format == "xml")
-                    au::xml_simple(logdata, "traceLevels", au::str("removed level(s) %s",  arg.c_str()));
-                else
-                    logdata << "  \"traceLevels\" : \"removed level(s) " << arg.c_str() << "\"\n";
+                command->appendFormatedElement("trace", au::str("removed level(s) %s", arg.c_str()));
             }
         }
-
-        return logdata.str();
     }
 
 #define TF(b) ((b == true)? "true" : "false")
@@ -829,13 +757,11 @@ namespace samson {
             if (sub == "on")
             {
                 lmReads  = true;
-
                 command->appendFormatedElement("reads", au::str("reads turned ON"));
             }
             else if (sub == "off")
             {
                 lmReads  = false;
-
                 command->appendFormatedElement("reads", au::str("reads turned OFF"));
             }
 
@@ -846,13 +772,11 @@ namespace samson {
             if (sub == "on")
             {
                 lmWrites  = true;
-                
                 command->appendFormatedElement("writes", au::str("writes turned ON"));
             }
             else if (sub == "off")
             {
                 lmWrites  = false;
-
                 command->appendFormatedElement("writes", au::str("writes turned OFF"));
             }
             LM_F(("writes == %s", TF(lmWrites)));
@@ -862,13 +786,11 @@ namespace samson {
             if (sub == "on")
             {
                 lmDebug  = true;
-                
                 command->appendFormatedElement("debug", au::str("debug turned ON"));
             }
             else if (sub == "off")
             {
                 lmDebug  = false;
-
                 command->appendFormatedElement("debug", au::str("debug turned OFF"));
             }
             LM_F(("debug == %s", TF(lmDebug)));
@@ -1351,9 +1273,7 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
     }
     else if (main_command == "logging")
     {
-        std::string logdata;
-        logdata = process_logging(command);
-        command->append(logdata);
+        process_logging(command);
     }
     else if (main_command == "node")
     {

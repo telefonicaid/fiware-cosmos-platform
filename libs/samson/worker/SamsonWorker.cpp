@@ -509,6 +509,7 @@ namespace samson {
         
     }
     
+#define TF(b) ((b == true)? "true" : "false")
     void SamsonWorker::process_logging(au::network::RESTServiceCommand* command)
     {
         std::ostringstream  logdata;
@@ -568,6 +569,40 @@ namespace samson {
             }
         }
         
+
+        //
+        // Checking the VERB
+        //
+        std::string verb = command->command;
+        std::string path = logCommand;
+
+        if (sub != "") path += '/' + sub;
+
+        if      ((path == "debug/on")      && (verb == "POST"));
+        else if ((path == "debug/off")     && (verb == "POST"));
+
+        else if ((path == "reads/on")      && (verb == "POST"));
+        else if ((path == "reads/off")     && (verb == "POST"));
+
+        else if ((path == "writes/on")     && (verb == "POST"));
+        else if ((path == "writes/off")    && (verb == "POST"));
+
+        else if ((path == "traces")        && (verb == "GET"));
+        else if ((path == "traces/off")    && (verb == "POST"));
+        else if ((path == "traces/set")    && (verb == "POST"));
+        else if ((path == "traces/add")    && (verb == "POST"));
+        else if ((path == "traces/remove") && (verb == "DELETE"));
+
+        else if ((path == "verbose")       && (verb == "GET"));
+        else if ((path == "verbose/off")   && (verb == "POST"));
+        else if ((path == "verbose/set")   && (verb == "POST"));
+        else
+        {
+            command->http_state = 404;
+            command->appendFormatedElement("error", "BAD VERB");
+            return;
+        }
+
         if (command->http_state != 200)
             return;
         
@@ -592,13 +627,11 @@ namespace samson {
             if (sub == "on")
             {
                 process_delilah_command("wwrites on", command);
-                LM_F(("lmWrites turned ON"));
                 command->appendFormatedElement("writes", au::str("writes turned ON"));
             }
             else if (sub == "off")
             {
                 process_delilah_command("wwrites off", command);
-                LM_F(("lmWrites turned OFF"));
                 command->appendFormatedElement("writes", au::str("writes turned OFF"));
             }
         }
@@ -686,7 +719,81 @@ namespace samson {
         }
     }
 
-#define TF(b) ((b == true)? "true" : "false")
+#if 0
+    // ------------------------------------------------------------
+    //
+    // Future common check for path and verb in logging/ilogging
+    //
+
+    static bool restTraceCheck(au::network::RESTServiceCommand* command)
+    {
+        std::string arg = command->path_components[4];
+        if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
+            return false;
+        return true;
+    }
+
+    static bool restVerboseCheck(au::network::RESTServiceCommand* command)
+    {
+        std::string arg = command->path_components[4];
+
+        if ((arg == "0") || (arg == "1") || (arg == "2") || (arg == "3") || (arg == "4") || (arg == "5"))
+            return true;
+
+        return false;
+    }
+
+    typedef bool (*RestCheckFunc)(au::network::RESTServiceCommand* command);
+    typedef struct RestCheck
+    {
+        std::string    verb;
+        std::string    path;
+        int            components;   // Not counting '/samson/XXX' ,,,
+        RestCheckFunc  checkFunc;
+    } RestCheck;
+
+    RestCheck restCheck[] = 
+    {
+        { "POST",   "debug/on",       2, NULL             },
+        { "POST",   "debug/off",      2, NULL             },
+        { "POST",   "reads/on",       2, NULL             },
+        { "POST",   "reads/off",      2, NULL             },
+        { "POST",   "writes/on",      2, NULL             },
+        { "POST",   "writes/off",     2, NULL             },
+        { "GET",    "traces",         1, NULL             },
+        { "POST",   "traces/off",     2, NULL             },
+        { "POST",   "traces/set",     3, restTraceCheck   },
+        { "POST",   "traces/add",     3, restTraceCheck   },
+        { "DELETE", "traces/remove",  3, restTraceCheck   },
+        { "GET",    "verbose",        1, NULL             },
+        { "POST",   "verbose/off",    2, NULL             },
+        { "POST",   "verbose/set",    3, restVerboseCheck },
+    };
+
+    static bool process_logging_check(au::network::RESTServiceCommand* command)
+    {
+        std::string  verb = command->command;
+        std::string  path = command->path_components[2];
+        bool         ok   = false;
+
+        if (command->path_components[3] != "")
+            path += '/' + command->path_components[3];
+
+        for (unsigned int ix = 0; ix < sizeof(restCheck) / sizeof(restCheck[0]); ix++)
+        {
+            if ((path == restCheck[ix].path) && (verb == restCheck[ix].verb) && (command->path_components.size() == restCheck[ix].components + 2))
+            {
+                // A match - now just lets see if the argument is OK also ...
+                if (restCheck[ix].check != NULL)
+                    return restCheck[ix].check(command);
+                return true;
+            }
+        }
+
+        return ok;
+    }
+#endif
+
     void SamsonWorker::process_ilogging(au::network::RESTServiceCommand* command)
     {
         std::ostringstream  logdata;
@@ -746,6 +853,40 @@ namespace samson {
             }
         }
         
+
+        //
+        // Checking the VERB
+        //
+        std::string verb = command->command;
+        std::string path = logCommand;
+
+        if (sub != "") path += '/' + sub;
+
+        if      ((path == "debug/on")      && (verb == "POST"));
+        else if ((path == "debug/off")     && (verb == "POST"));
+
+        else if ((path == "reads/on")      && (verb == "POST"));
+        else if ((path == "reads/off")     && (verb == "POST"));
+
+        else if ((path == "writes/on")     && (verb == "POST"));
+        else if ((path == "writes/off")    && (verb == "POST"));
+
+        else if ((path == "traces")        && (verb == "GET"));
+        else if ((path == "traces/off")    && (verb == "POST"));
+        else if ((path == "traces/set")    && (verb == "POST"));
+        else if ((path == "traces/add")    && (verb == "POST"));
+        else if ((path == "traces/remove") && (verb == "DELETE"));
+
+        else if ((path == "verbose")       && (verb == "GET"));
+        else if ((path == "verbose/off")   && (verb == "POST"));
+        else if ((path == "verbose/set")   && (verb == "POST"));
+        else
+        {
+            command->http_state = 404;
+            command->appendFormatedElement("error", "BAD VERB");
+            return;
+        }
+
         if (command->http_state != 200)
             return;
         
@@ -764,8 +905,6 @@ namespace samson {
                 lmReads  = false;
                 command->appendFormatedElement("reads", au::str("reads turned OFF"));
             }
-
-            LM_F(("reads == %s", TF(lmReads)));
         }
         else if (logCommand == "writes")
         {
@@ -779,7 +918,6 @@ namespace samson {
                 lmWrites  = false;
                 command->appendFormatedElement("writes", au::str("writes turned OFF"));
             }
-            LM_F(("writes == %s", TF(lmWrites)));
         }
         else if (logCommand == "debug")
         {
@@ -793,7 +931,6 @@ namespace samson {
                 lmDebug  = false;
                 command->appendFormatedElement("debug", au::str("debug turned OFF"));
             }
-            LM_F(("debug == %s", TF(lmDebug)));
         }
         else if (logCommand == "verbose")  // /samson/ilogging/verbose
         {
@@ -840,7 +977,6 @@ namespace samson {
                     case 1: lmVerbose  = true;
                 }
                 
-                LM_F(("verbose level set to %d", verboseLevel));
                 command->appendFormatedElement("verbose", au::str("verbosity level: %d", verboseLevel));
             }
         }
@@ -852,8 +988,6 @@ namespace samson {
             if (sub == "set")
             {
                 lmTraceSet((char*) arg.c_str());
-                LM_F(("setting trace to '%s'", (char*) arg.c_str()));
-                
                 command->appendFormatedElement("trace", au::str("trace level: %s", arg.c_str()));
             }
             else if (sub == "get")    // /samson/ilogging/trace/get
@@ -866,23 +1000,16 @@ namespace samson {
             else if (sub == "off")    // /samson/ilogging/trace/off
             {
                 lmTraceSet(NULL);
-                
-                LM_F(("resetting trace to 'NULL'"));
-
                 command->appendFormatedElement("trace", au::str("all trace levels turned off"));
             }
             else if (sub == "add")    // /samson/ilogging/trace/add
             {
                 lmTraceAdd((char*) arg.c_str());
-                LM_F(("adding trace levels '%s'", (char*) arg.c_str()));
-                
                 command->appendFormatedElement("trace", au::str("added level(s) %s", arg.c_str()));
             }
             else if (sub == "remove")     // /samson/ilogging/trace/remove
             {
                 lmTraceSub((char*) arg.c_str());
-                LM_F(("removing trace levels '%s'", (char*) arg.c_str()));
-                
                 command->appendFormatedElement("trace", au::str("removed level(s) %s", arg.c_str()));
             }
         }
@@ -1337,7 +1464,6 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
     {
         char delilahCommand[256];
         
-        LM_F(("format: '%s'", command->format.c_str()));
         if ((command->command == "GET") && (components == 2))
         {
             snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations");

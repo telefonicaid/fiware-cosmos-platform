@@ -1,4 +1,4 @@
-zOK
+OK
 -------------------------------------------------------------------------------
 curl --request GET     localhost:1202/samson/version
 curl --request GET     localhost:1202/samson/version.json
@@ -251,8 +251,9 @@ o Asking for details for a queue that doesn't exist (actually two different):
   What about this 'plain text' format?
   Is there another suffix for it?
 
-STILL TO TEST
--------------------------------------------------------------------------------
+
+NOT TESTED - this is what Andreu told me Goyo had been working with thoroughly - I assume it works ...
+----------------------------------------------------------------------------------------------------
 curl --request GET     localhost:1202/samson/queues/QNAME/state/KEY
 curl --request GET     localhost:1202/samson/queues/QNAME/state/KEY.json
 curl --request GET     localhost:1202/samson/queues/QNAME/state/KEY.xml

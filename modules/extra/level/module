@@ -139,6 +139,7 @@ script init_stream_operations
 
 		# Definitions
 		aso [o1]  level.update_int32_levels    [input] [state]       [output] [state];
+		set_stream_operation_property [o1] update_only true;
 		aso [o2]  level.publish_int32_levels    [output]              [output_txt];
 		
 	}
@@ -173,9 +174,11 @@ script init_stream_operations_timed
 		aso [o1]  level.update_valTimed_levels    [input] [state]       [output] [state];
 		#set_stream_operation_property [o1]   priority 7;
 		set_stream_operation_property [o1]   max_latency 20;
+		set_stream_operation_property [o1] update_only true;
 		add_queue_connection [output]   [output].bis;
 		aso [o2]  level.publish_valTimed_levels    [output]              [output_txt];
 		aso [o3]  level.update_valTimed_graph   [output].bis [graph]        [graph];
+		set_stream_operation_property [o3] update_only true;
 		#set_stream_operation_property [o3]   priority 9;
 		set_stream_operation_property [o3]   max_latency 20;
 	}

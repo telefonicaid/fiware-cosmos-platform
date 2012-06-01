@@ -14,8 +14,36 @@
 
 #include "logMsg/logMsg.h"
 
+#include <algorithm>
+#include <vector>
+
 namespace samson{
 namespace level{
+
+class TimeSortedIndex
+{
+    public:
+        time_t time_;
+        int   index_;
+
+    public:
+        TimeSortedIndex()
+        {
+            time_ = 0;
+            index_ = 0;
+        }
+        TimeSortedIndex(time_t time, int index)
+        {
+            time_ = time;
+            index_ = index;
+        }
+
+        static bool sort_by_time(TimeSortedIndex d1, TimeSortedIndex d2)
+        {
+          return d1.time_ < d2.time_;
+        }
+};
+
 
 
 class update_valTimed_graph : public samson::Reduce
@@ -24,6 +52,8 @@ class update_valTimed_graph : public samson::Reduce
     samson::system::String key;
     samson::level::ValTimed value;
     samson::level::GraphLine curve;
+
+
 
     public:
 
@@ -63,25 +93,41 @@ class update_valTimed_graph : public samson::Reduce
             }
         }
 
+        if (inputs[0].num_kvs == 0)
+        {
+            return;
+        }
+
         int pos_hours = curve.NUMBER_OF_SECONDS.value + curve.NUMBER_OF_MINUTES.value;
         int pos_minutes = curve.NUMBER_OF_SECONDS.value;
 
         //LM_M(("pos_minutes:%d, pos_hours:%d", pos_minutes, pos_hours));
 
 
-        //LM_M(("For item:'%s', %lu values, with p_coord_seconds:%p", key.value.c_str(), inputs[0].num_kvs, curve.coord));
+        std::vector<TimeSortedIndex> time_sorted_indexes;
         for (uint64_t i = 0; i < inputs[0].num_kvs; i++)
         {
             value.parse(inputs[0].kvs[i]->value);
+            TimeSortedIndex data(value.t.value, i);
+            time_sorted_indexes.push_back(data);
+        }
+
+        // Sort the vector using predicate and std::sort
+        std::sort(time_sorted_indexes.begin(), time_sorted_indexes.end(), TimeSortedIndex::sort_by_time);
+
+        //LM_M(("For item:'%s', %lu values, with p_coord_seconds:%p", key.value.c_str(), inputs[0].num_kvs, curve.coord));
+        for (uint64_t i = 0; i < time_sorted_indexes.size(); i++)
+        {
+            value.parse(inputs[0].kvs[(time_sorted_indexes[i].index_)]->value);
 
             if (value.t.value < curve.prev_timestamp.value)
             {
-                LM_W(("Value %d (at %d) out of order for item:'%s', hit:%s, prev:%s", value.val.value, i, key.value.c_str(), value.t.str().c_str(), curve.prev_timestamp.str().c_str()));
+                LM_W(("Value %d (at %d) out of order for item:'%s', hit:%s, prev:%s", value.val.value, time_sorted_indexes[i].index_, key.value.c_str(), value.t.str().c_str(), curve.prev_timestamp.str().c_str()));
                 continue;
             }
             else
             {
-                //LM_M(("Value %d (at %d) in right order for item:'%s', hit:%s, prev:%s", value.val.value, i, key.value.c_str(), value.t.str().c_str(), curve.prev_timestamp.str().c_str()));
+                //LM_M(("Value %d (at %d) in right order for item:'%s', hit:%s, prev:%s", value.val.value, time_sorted_indexes[i].index_, key.value.c_str(), value.t.str().c_str(), curve.prev_timestamp.str().c_str()));
             }
 
             if (curve.prev_timestamp.value != 0)
@@ -122,6 +168,7 @@ class update_valTimed_graph : public samson::Reduce
             //LM_M(("For key:'%s', initial second assigned to coord[%d]:%d", key.value.c_str(), 0, curve.coord[0].x[1].value));
             curve.prev_timestamp.value = value.t.value;
         }
+        time_sorted_indexes.clear();
 
         //LM_M(("Emit curve for item:'%s'", key.value.c_str()));
         writer->emit(0, &key, &curve);

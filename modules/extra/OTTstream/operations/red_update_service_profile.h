@@ -24,8 +24,6 @@ class red_update_service_profile : public samson::Reduce
   samson::system::UInt serviceId;
   samson::OTTstream::UserHit hit;
 
-  samson::system::String serviceStr;
-
   int danger_threshold;
 
 public:
@@ -46,7 +44,7 @@ public:
   void init( samson::KVWriter *writer )
   {
     //LM_M(("Update service init"));
-    danger_threshold = environment->getInt("OTTstream.danger_threshold", 20); // Activity window length, in seconds
+    danger_threshold = environment->getInt("OTTstream.danger_threshold", 1); // Threshold on web activity on the competence to detect flight danger
 
   }
 
@@ -99,7 +97,7 @@ public:
           if ((serviceId.value >= 100) && (serviceId.value <1000))
           {
               LM_M(("Checking alert for userActivity:%s", activity.user_activity[j].str().c_str()));
-              if (((hit.user.clusterId.value == 3) || (hit.user.clusterId.value == 13)) && (activity.user_activity[j].user.sensitive.value == 0) && (activity.user_activity[j].count.value > static_cast<unsigned int>(danger_threshold)))
+              if (((hit.user.clusterId.value == 1) || (hit.user.clusterId.value == 3) || (hit.user.clusterId.value == 13)) && (activity.user_activity[j].user.sensitive.value == 0) && (activity.user_activity[j].count.value > static_cast<unsigned int>(danger_threshold)))
               {
                   activity.user_activity[j].user.sensitive.value = 1;
                   writer->emit(0, &serviceId, &(activity.user_activity[j]));

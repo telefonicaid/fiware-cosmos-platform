@@ -48,7 +48,7 @@ class GraphLine : public GraphLine_base
         int end_hours = NUMBER_OF_POINTS.value;
         int init_hours = NUMBER_OF_SECONDS.value + NUMBER_OF_MINUTES.value;
 
-        if (num_items_shifted >= NUMBER_OF_HOURS.value)
+        if (num_items_shifted > NUMBER_OF_HOURS.value)
         {
             LM_E(("Error. Not possible to shift more than %d hours, trying %d", NUMBER_OF_HOURS.value, num_items_shifted));
             num_items_shifted = NUMBER_OF_HOURS.value - 1;
@@ -69,7 +69,7 @@ class GraphLine : public GraphLine_base
         int end_minutes = NUMBER_OF_SECONDS.value + NUMBER_OF_MINUTES.value;
         int init_minutes = NUMBER_OF_SECONDS.value;
 
-        if (num_items_shifted >= NUMBER_OF_MINUTES.value)
+        if (num_items_shifted > NUMBER_OF_MINUTES.value)
         {
             LM_E(("Error. Not possible to shift more than %d minutes, trying %d", NUMBER_OF_MINUTES.value, num_items_shifted));
             num_items_shifted = NUMBER_OF_MINUTES.value - 1;
@@ -90,7 +90,7 @@ class GraphLine : public GraphLine_base
         int end_seconds = NUMBER_OF_SECONDS.value;
         int init_seconds = 0;
 
-        if (num_items_shifted >= NUMBER_OF_SECONDS.value)
+        if (num_items_shifted > NUMBER_OF_SECONDS.value)
         {
             LM_E(("Error. Not possible to shift more than %d seconds, trying %d", NUMBER_OF_SECONDS.value, num_items_shifted));
             num_items_shifted = NUMBER_OF_SECONDS.value - 1;

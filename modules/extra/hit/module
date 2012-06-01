@@ -100,7 +100,9 @@ script stream_block_simple
 
     # Definitions;
     add_stream_operation [reduce_words] hit.reduceHits              [input] [words]              [words_updats] [words];
+    set_stream_operation_property [update_service_state] update_only true;
     add_stream_operation [reduce_tops]  hit.reduceHitCollections    [words_updats] [tops]        null           [tops];
+    set_stream_operation_property [update_service_state] update_only true;
 
   }
 

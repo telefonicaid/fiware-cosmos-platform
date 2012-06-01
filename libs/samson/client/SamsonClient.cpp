@@ -19,6 +19,7 @@
 #include "parseArgs/paConfig.h"
 
 #include "au/string.h"                          // au::Format
+#include "au/ThreadManager.h"
 
 #include "engine/Engine.h"                      // engine::Engine
 #include "engine/MemoryManager.h"               // engine::MemoryManager
@@ -107,6 +108,10 @@ namespace samson
         engine::Engine::stop();
         engine::DiskManager::stop();
         engine::ProcessManager::stop();
+
+        // Wait all threads to finish
+        au::ThreadManager::shared()->wait("SamsonClient");
+
         engine::MemoryManager::destroy();
         samson::ModulesManager::destroy();         
         samson::SamsonSetup::destroy( );    

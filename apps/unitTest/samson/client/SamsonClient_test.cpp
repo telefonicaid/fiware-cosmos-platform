@@ -24,6 +24,8 @@ TEST(samson_client, test_1 )
 
    EXPECT_EQ( error.isActivated() , false) << "Error connecting samsonClient to samsonWorker";
 
+   samson_client->waitUntilFinish();
+
    // Disconnect from worker
    samson_client->disconnect();
 

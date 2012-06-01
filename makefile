@@ -130,6 +130,7 @@ install_debug_all: debug_all
 
 install_coverage: coverage
 	make -C BUILD_COVERAGE install -j $(CPU_COUNT)
+	cp etc/setup.txt $(SAMSON_WORKING)/etc
 
 install_man_release: man_release
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/

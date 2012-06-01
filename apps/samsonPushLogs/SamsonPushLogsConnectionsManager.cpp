@@ -106,7 +106,12 @@ void SamsonPushLogsConnection::Run()
         {
             if ((count_lines%1000 == 0) && (count_sleeps%100000 == 0))
             {
-                LM_M(("Sleeping %s with timestamp:%s, elapsed_time:%lf since %s", dataset_->GetQueueName(),  time_read_str, ntimes_real_time_ * cronometer.diffTime(), time_init_str));
+                LM_M(("Sleeping %s with timestamp:%s, elapsed_time:%lf(%d%% realtime) since %s", dataset_->GetQueueName(),  time_read_str, ntimes_real_time_ * cronometer.diffTime(), int(100*ntimes_real_time_), time_init_str));
+            }
+
+            if ((count_sleeps%10000 == 0) && (timestamp > (first_timestamp + ntimes_real_time_ * cronometer.diffTime() + 900)))
+            {
+                LM_M(("An inactivity long gap for %s with timestamp:%s, elapsed_time:%lf(%d%% realtime) since %s", dataset_->GetQueueName(),  time_read_str, ntimes_real_time_ * cronometer.diffTime(), int(100*ntimes_real_time_), time_init_str));
             }
             // sleeps for 10 milliseconds
             usleep(10000);
@@ -120,7 +125,7 @@ void SamsonPushLogsConnection::Run()
 
         if (count_lines%100000000 == 0)
         {
-            LM_M(("Pushing with time:%s (first:%s, elapsed:%lf) to SAMSON from dataset:%s", time_read_str, time_init_str, ntimes_real_time_ * cronometer.diffTime(), dataset_->GetQueueName()));
+            LM_M(("Pushing with time:%s (first:%s, elapsed:%lf(%d%% real_time)) to SAMSON from dataset:%s", time_read_str, time_init_str, ntimes_real_time_ * cronometer.diffTime(), int(100*ntimes_real_time_), dataset_->GetQueueName()));
         }
         // Pushing this log to SAMSON system
         pushBuffer_->push( log_line , strlen(log_line) , false );

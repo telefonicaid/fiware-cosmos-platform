@@ -30,6 +30,8 @@ PIDFILE=/var/log/samson/samsond.pid
 # Load the samson environment
 if [ -f /etc/profile.d/samson.sh ]; then
     . /etc/profile.d/samson.sh
+else
+    SAMSON_HOME=/opt/samson
 fi
 
 if [ -z "${SAMSON_HOME}" ]; then

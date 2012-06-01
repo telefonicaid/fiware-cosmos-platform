@@ -10,6 +10,7 @@ from fabric.api import run, execute, sudo, put, cd, env
 from fabric.contrib import files
 from fabric.decorators import roles, task
 from mako.template import Template
+from os import path
 
 import common
 import hadoop_install
@@ -23,18 +24,26 @@ env.password = CONFIG['password']
 env.roledefs = CONFIG['hosts']
 
 @task
-def deploy():
+def deploy(dependenciespath, thrift_tar, jdk_rpm):
     """
     Deploys all the necessary components to get a running Cosmos cluster
     """
+    deploy_jdk(path.join(dependenciespath, jdk_rpm))
     deploy_cdh()
-    deploy_hue()
+    deploy_hue(path.join(dependenciespath, thrift_tar))
     deploy_models()
     deploy_sftp()
+    
+@task
+@roles('namenode', 'jobtracker', 'frontend', 'datanodes', 'tasktrackers')
+def deploy_jdk(jdkpath):
+    if not common.has_package('jdk'):
+        put(jdkpath, 'jdk.rpm')
+        run('rpm -ihv jdk.rpm')
 
 @task
 @roles('frontend')
-def deploy_hue(thrift_tarpath='~/install-dependencies/thrift-0.8.0.tar.gz'):
+def deploy_hue(thrift_tarpath):
     """
     Deploys the HUE frontend from Cloudera, plus our fixes and our app
     """

@@ -1,0 +1,108 @@
+
+CONEXION POR CONSOLA
+- Conectarse a overthetop01 con usuario samson061, passwd: samson
+
+- Recuperar sesión de tmux:
+	$ tmux a
+
+CONFIGURACION DEL CLUSTER
+- En la primera pantall CONFIG:
+	- Asegurarse que todo está parado y limpio (salvo la configurcaión del cluster)
+		$ samsonKillAll
+		$ samsonCleanAll
+	- Arrancar los samsonWorker con
+		$ samsonSpawAll
+
+- Volver a la segunda pantall delilaf_CONFIG
+	- Arrancar delilah, configurar la operación y cargar la tabla estática de clusters
+		$ delilah061 -f ~/bin/delilah_OTT.conf
+		Configura :     init_stream OTTstream.demo
+				push /home/datos/TRAFFICA/etiquetadoNov2011.txt input_user_cluster
+
+ARRANQUE DE LA SIMULACION
+- En la cuarta pantalla PushLogs:
+
+	- Arrancar samsonPushLogs para subir datos al cluster.
+		$ ~/bin/lanzaOTT_samsonPushLogs.scr
+
+		Ejecuta:
+		samsonPushLogs -ti "2011-11-03 01:00:00" -nr 10.0 -node overthetop01 -port_node 1236 -dl "HTTP,timesorted,16,9,2,logs_http DNS,timesorted,11,4,2,logs_dns SMS,timesorted,18,12:14,2,logs_sms Voice,timesorted,35,1,1,logs_voice"
+		Primero sincroniza los logs hasta que todos ellos se situan en las 1 de la madrugada del 3 de noviembre, y a partir de ahi va mandando linea a linea, de acuerdo a su timesteamp, a 10 veces tiempo real
+		Tarda casi un minuto en sincronizar los logs de HTPP y DNS.
+
+INTERFAZ REST
+- Desde un navegador, se puede acceder y controlar casi todos los componentes del demostrador
+
+http://overthetop01:1202/samson/version		Version de SAMSON. 
+http://overthetop01:1202/samson/status.html	Permite comprobar el estado del cluster
+
+http://overthetop01:1202/samson/queues.html	Muestra las colas de datos en la plataforma
+http://overthetop01:1202/samson/modules.html	Muestra los modulos en la plataforma
+http://overthetop01:1202/samson/modules/OTTstream.html	Da toda la informacion de un modulo
+
+http://overthetop01:1202/samson/queues/01.OTTstream.user_webprofile_state.html	Da informacion detallada de una cola concreta
+http://overthetop01:1202/samson/queues/01.OTTstream.service_state/state/11.thtml	Da la informacion de usuarios que han accedido a Skype (11)
+http://overthetop01:1202/samson/queues/01.OTTstream.user_webprofile_state/state/686464717.thtml	Da informacion del web profile de un usuario
+
+http://overthetop01:1202/samson/operations/OTTstream*.html	Operaciones desarrolladas en el modulo OTTstream 
+
+
+
+
+
+
+
+
+
+
+
+
+- Volver a la tercera pantalla delilah:
+	- Mostrar las operaciones y colas
+		Delilah> ls_operations OTT*
+		Delilah> ls_datas OTT*
+		Delilah> ls_stream_operations -group name
+		Delilah> ls -group name -rates (cuando salgan datos, comprobar desde el samsonPushlogs)
+
+- En la quinta pantalla LevelMonitor
+	- Arrancar la presentación del número de usuarios por servicio:
+		$ ~/bin/showOTTservices.scr
+
+		Ejecuta
+		$ samsonPop -port_node 1236 output_levels | samsonLevelMonitor -nr 10.0 -refresh 10 -concept Skype,Viber,Facebook,GTalk,WhatsApp,faceTime,iphoneMessage,Facebook,Tuenti,Google+,seq1,seq2 -title "Number of users in last 5 minutes"
+
+
+- En la sexta pantalla REST:
+	- Se puede consultar por curl:
+		$ curl -L http://overthetop01:1202/samson/version
+		$ curl -L http://overthetop01:1202/samson/state/01.OTTstream.service_state/10
+		$ curl -L http://overthetop01:1202/samson/state/01.OTTstream.service_state/2001 | fgrep 2001
+
+		Y también se puede probar desde el explorer
+
+- En las pantallas Queries y Alerts se mostrará la generación de alertas.
+- En la septima pantalla Queries
+	- Se lanza un samsonPush para escribir comandos (de uno en uno)
+		$ samsonPush -node overthetop01 -port_node 1236 -lines input_commands
+			Skype NEWER time_window=3600
+			GTalk NEWER time_window=600 clusterId=0
+			GTalk NEWER time_window=3600 clusterId=2
+			2001 OLDER time_window=600
+
+- En la octava pantalla Alerts aparecerán los datos de los usuarios en respuesta a las queries
+	- Se lanza un samsonPop a la cola correspondiente
+		$ samsonPop -node overthetop01 -port_node 1236 -new output_users_per_service
+
+		tarda un ratillo, por la latencia, ya que tienen que entrar tres operaciones. Un solución más elegante sería el interfaz REST (aunque para responder a los requisitos de filtrado, habría que haber organziado los estados de otra manera)
+
+- Finalmente, en la pantalla TopicMonitor, se mostrarán unas primeras actividades hacia un perfila de web profiling en continuo
+	- Arrancar la presentación de web profiling:
+		$ . ~/bin/showURLSTopics.scr
+
+		Ejecuta
+		samsonPop -port_node 1236 output_topics | samsonTopicMonitor -concept category -title "Top categories"  > /tmp/topic_categ 2>&1 &
+		samsonPop -port_node 1236 output_topics | samsonTopicMonitor -concept domain -title "Top domains" > /tmp/topic_domain 2>&1   &
+		samsonPop -port_node 1236 output_topics | samsonTopicMonitor -concept url -title "Top urls" > /tmp/topic_url 2>&1  &
+
+		Muestra los top 100 urls, dominios y categorías en los últimos 10 minutos
+

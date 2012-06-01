@@ -49,6 +49,21 @@ namespace samson {
         {
             // Close all connections
             NetworkManager::reset();
+            
+            au::Cronometer c;
+            while( getNumConnections() > 0 )
+            {
+                // remove all old connections if unconnected
+                remove_disconnected_connections();
+                
+                if( c.diffTimeInSeconds() > 2 )
+                {
+                    c.reset();
+                    LM_W(("Waiting %lu all connections to finish in delilah NetworkManager" , getNumConnections() ));
+                }
+                usleep(10000);
+            }
+            
         }
         
         std::string getLoginInfo()

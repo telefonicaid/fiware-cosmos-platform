@@ -21,7 +21,7 @@
 
 #include "xmlparser/xmlParser.h"
 
-#include "common_engine_test.h"
+#include "unitTest/common_engine_test.h"
 
 //Test size_t getMaxSize();
 TEST(bufferTest, getMaxSizeTest) 
@@ -129,7 +129,6 @@ TEST(bufferTest, ifstreamWriteTest)
 
     std::string fileName = "test_data/testdata.txt";
 
-    engine::MemoryManager::init(1000);
     engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
 
     std::ifstream file(fileName.c_str());
@@ -315,7 +314,6 @@ TEST(bufferTest, removeLastUnfinishedLineTest)
     init_engine_test();
     //std::string fileName = "./testdata.txt";
 
-    engine::MemoryManager::init(1000);
     engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 15 );
 
     /*std::ifstream file(fileName.c_str());

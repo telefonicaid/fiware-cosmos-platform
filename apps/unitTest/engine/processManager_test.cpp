@@ -23,7 +23,7 @@
 
 #include "xmlmarkup/xmlmarkup.h"
 
-#include "common_engine_test.h"
+#include "unitTest/common_engine_test.h"
 
 
 // Tests ProcessManager's instantiation

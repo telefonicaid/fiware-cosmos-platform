@@ -25,7 +25,7 @@
 #include "engine/MemoryManager.h"
 #include "samson/isolated/SharedMemoryManager.h"
 
-#include "unitTest/engine/common_engine_test.h"
+#include "unitTest/common_engine_test.h"
 
 class SharedMemoryManagerTest : public ::testing::Test
 {

@@ -115,6 +115,11 @@ namespace samson
         engine::MemoryManager::destroy();
         samson::ModulesManager::destroy();         
         samson::SamsonSetup::destroy( );    
+        
+        engine::DiskManager::destroy();
+        engine::ProcessManager::destroy();
+        engine::Engine::destroy();
+        
     }
     
     void SamsonClient::initConnection( au::ErrorManager *error

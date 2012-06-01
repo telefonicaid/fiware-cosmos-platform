@@ -10,13 +10,12 @@
 
 #include "samson/client/SamsonClient.h"
 
+#include "unitTest/common_engine_test.h"
+
 TEST(samson_client, test_1 )
 {
-   size_t total_memory = 64*1024*1024; // Use 64Mb for this test
-   samson::SamsonClient::general_init( total_memory );
-
-   // Create client connection
-   samson::SamsonClient* samson_client = new samson::SamsonClient("SamsonClientTest");
+   // SamsonClient to play with..
+   samson::SamsonClient* samson_client = init_samson_client_test();
 
    // Connect to samsonWorker
    au::ErrorManager error;   
@@ -24,26 +23,16 @@ TEST(samson_client, test_1 )
 
    EXPECT_EQ( error.isActivated() , false) << "Error connecting samsonClient to samsonWorker";
 
-   samson_client->waitUntilFinish();
-
-   // Disconnect from worker
-   samson_client->disconnect();
-
-   // Delete client
-   delete samson_client;
-
-   // Close everything initiatied in general_init
-   samson::SamsonClient::general_close( );
+   // Close samson client test
+   close_samson_client_test( samson_client );
 
 }    
 
 TEST(samson_client, test_2 )
 {
-   size_t total_memory = 64*1024*1024; // Use 64Mb for this test
-   samson::SamsonClient::general_init( total_memory );
 
-   // Create client connection
-   samson::SamsonClient* samson_client = new samson::SamsonClient("SamsonClientTest");
+   // SamsonClient to play with..
+   samson::SamsonClient* samson_client = init_samson_client_test();
 
    // Connect to samsonWorker
    au::ErrorManager error;
@@ -51,12 +40,6 @@ TEST(samson_client, test_2 )
 
    ASSERT_TRUE(samson_client->connection_ready()) << "Connection not ready";
 
-   // Disconnect from worker
-   samson_client->disconnect();
-
-   // Delete client
-   delete samson_client;
-
-   // Close everything initiatied in general_init
-   samson::SamsonClient::general_close( );
+   // Close samson client test
+   close_samson_client_test( samson_client );
 }

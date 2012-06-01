@@ -1,13 +1,15 @@
 SET (SOURCES
     main_UnitTest.cpp
 
+	#Common files
+	common_engine_test.h
+	common_engine_test.cpp
+
 	#au
 	au/CommandLine_test.cpp
 	au/au.cpp
 
     #engine
-	engine/common_engine_test.h
-	engine/common_engine_test.cpp
     engine/object_test.cpp
     engine/engine_test.cpp
     engine/memoryManager_test.cpp

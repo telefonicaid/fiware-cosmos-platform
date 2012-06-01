@@ -21,7 +21,7 @@
 
 #include "xmlparser/xmlParser.h"
 
-#include "common_engine_test.h"
+#include "unitTest/common_engine_test.h"
 
 //Test void add( MemoryRequest *request );
 TEST(memoryManagerTest, addTest) 

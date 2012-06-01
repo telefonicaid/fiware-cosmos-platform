@@ -24,11 +24,12 @@
 #include "au/ProcessStats.h"
 
 #include "xmlparser/xmlParser.h"
-#include "common_engine_test.h"
+#include "unitTest/common_engine_test.h"
 
 // Tests engine's instantiation
 TEST(engineTest, instantiationTest) 
 {
+    // Init test
     init_engine_test();
     
     EXPECT_TRUE(engine::Engine::shared() != static_cast<engine::Engine*>(NULL)) << "engine instance should not be null after instantiation"; 
@@ -39,7 +40,8 @@ TEST(engineTest, instantiationTest)
 //Object* getObjectByName( const char *name );
 TEST(engineTest, getObjectByNameTest) 
 {
-    engine::Engine::init();
+    // Init test
+    init_engine_test();
     
     //engine::Engine::init();
     engine::Object* testObject = new engine::Object("test_object");

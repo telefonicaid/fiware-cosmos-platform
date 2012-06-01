@@ -52,8 +52,6 @@ namespace samson {
 		
         // we start with process 2 because 0 is no process & 1 is global_update messages
         id = 2;	
-		
-        finish = false;   // Global flag to finish threads
                 
         // Listen notification about netowrk disconnection
         listen( notification_network_diconnected );
@@ -151,17 +149,6 @@ namespace samson {
         LM_X(1,("Delilah received an unexpected notification %s" , notification->getName() ));
         
     }
-    
-    
-    /* ****************************************************************************
-     *
-     * quit - 
-     */
-    void Delilah::quit()
-    {
-        finish = true;
-    }
-	
     
     
     /* ****************************************************************************

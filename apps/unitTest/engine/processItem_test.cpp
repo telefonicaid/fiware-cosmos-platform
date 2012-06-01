@@ -18,7 +18,7 @@
 #include "engine/ProcessItem.h"
 #include "engine/ProcessManager.h"
 
-#include "common_engine_test.h"
+#include "unitTest/common_engine_test.h"
 
 //ProcessItem is pure virtual. In order to test it we need to create a derived class
 

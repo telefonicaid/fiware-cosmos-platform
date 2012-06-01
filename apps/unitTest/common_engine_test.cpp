@@ -9,6 +9,8 @@
 #include "samson/common/samsonDirectories.h"
 #include "samson/common/SamsonSetup.h"
 
+#include "samson/client/SamsonClient.h"
+
 void init_engine_test()
 {
    
@@ -45,5 +47,44 @@ void close_engine_test()
    engine::Engine::destroy();               // Destroy Engine
 
    samson::SamsonSetup::destroy();
+
+}
+
+
+samson::SamsonClient* init_samson_client_test()
+{
+   
+   // General init of the SamsonClient library
+   size_t total_memory = 64*1024*1024; // Use 64Mb for this test
+   samson::SamsonClient::general_init( total_memory );
+
+   // Create client connection
+   samson::SamsonClient* samson_client = new samson::SamsonClient("SamsonClientTest");
+
+   // SamsonClient to play with
+   return samson_client;
+
+}
+
+
+void close_samson_client_test( samson::SamsonClient* samson_client  )
+{
+   // Wait until all activity is finished
+   samson_client->waitUntilFinish();
+
+   // Disconnect from worker ( if previously connected )
+   samson_client->disconnect();
+
+   // Stop engine to avoid references to samson_client
+   engine::Engine::stop();
+
+   // Remove the samson client instance
+   delete samson_client;
+
+   // General close of the SamsonClient library
+   samson::SamsonClient::general_close();
+
+   // Make sure no threads are pending to be finish
+   au::ThreadManager::wait_all_threads("EngineTest");   // Wait all threads to finsih
 
 }

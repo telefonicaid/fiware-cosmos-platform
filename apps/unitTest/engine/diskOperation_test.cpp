@@ -18,7 +18,7 @@
 #include "engine/DiskOperation.h"
 #include "xmlparser/xmlParser.h"
 
-#include "common_engine_test.h"
+#include "unitTest/common_engine_test.h"
 
 
 //Test void getInfo( std::ostringstream& output);
@@ -96,7 +96,6 @@ TEST(diskOperationTest, getDescriptionTest)
     init_engine_test();
     
     char charBuffer[1024*1024];
-    engine::MemoryManager::init(1000);
     engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test",  15 , 1 );
     
     engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 6, 2 );
@@ -120,7 +119,6 @@ TEST(diskOperationTest, getShortDescriptionTest)
     init_engine_test();
     
     char charBuffer[1024*1024];
-    engine::MemoryManager::init(1000);
     engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test", 15 , 1 );
     
     engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 6, 2 );
@@ -146,7 +144,6 @@ TEST(diskOperationTest, getSizeTest)
     init_engine_test();
     
     char charBuffer[1024*1024];
-    engine::MemoryManager::init(1000);
     engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" ,"test",  15 , 1 );
     
     engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 5, 2 );
@@ -166,8 +163,7 @@ TEST(diskOperationTest, compareTest)
     
     init_engine_test();
     
-     char charBuffer[1024*1024];
-    engine::MemoryManager::init(1000);
+	char charBuffer[1024*1024];
     engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" ,"test",  15 , 1 );
     
     engine::DiskOperation* operationRead1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 5, 2 );

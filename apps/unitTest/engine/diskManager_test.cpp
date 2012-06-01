@@ -22,7 +22,7 @@
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 
-#include "common_engine_test.h"
+#include "unitTest/common_engine_test.h"
 
 // Test DiskManager's instantiation
 TEST(diskManagerTest, instantiationTest) 
@@ -75,9 +75,10 @@ TEST(diskManagerTest, addTest)
     };
     
     // instantiate and test
-    A a;
-    a.test();
-    
+    A *a = new A();
+    a->test();
+    delete a;
+
     close_engine_test();
 }
 

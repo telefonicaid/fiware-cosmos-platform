@@ -72,6 +72,9 @@ namespace samson {
         // Extract next unconnected netwokr connection ... to be deleted
         NetworkConnection* extractNextDisconnectedConnection(  );
         
+        // simply remove all unconnected connections
+        void remove_disconnected_connections();
+        
         // Get table with connection information
         au::tables::Table * getConnectionsTable();
 
@@ -93,6 +96,9 @@ namespace samson {
        
         // Reset all connections
         void reset();
+        
+        // Get number of connections
+        size_t getNumConnections();
         
         size_t get_rate_in();
         size_t get_rate_out();

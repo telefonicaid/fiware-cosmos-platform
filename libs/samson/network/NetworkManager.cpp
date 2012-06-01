@@ -51,8 +51,11 @@ namespace samson {
         return OK;
     }
     
-
-
+    size_t NetworkManager::getNumConnections()
+    {
+        au::TokenTaker tt(&token_connections_);
+        return connections.size();
+    }
     
     bool NetworkManager::isConnected( std::string connection_name )
     {
@@ -91,6 +94,19 @@ namespace samson {
         return table;
     }
     
+    void NetworkManager::remove_disconnected_connections()
+    {
+        while (true) 
+        {
+            NetworkConnection* connection = extractNextDisconnectedConnection();
+            if( connection )
+                delete connection;
+            else
+                return;
+        }
+        
+    }
+
     NetworkConnection* NetworkManager::extractNextDisconnectedConnection( )
     {
         au::TokenTaker tt(&token_connections_);
@@ -219,8 +235,8 @@ namespace samson {
             connection->setNodeIdentifier( NodeIdentifier(UnknownNode,-1) );
         }
         
-
         // We cannot wait for all connections to be disconnected because reset command is originated in a delilah connection
+        
         
     }
     

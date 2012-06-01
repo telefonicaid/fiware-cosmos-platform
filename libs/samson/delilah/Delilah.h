@@ -92,15 +92,11 @@ namespace samson
 	public:
 		
 		Environment environment;	// Environment properties to be sent in the next job
-		bool finish;				// Global flag used by all threads to detect to stop
 		
 	public:
 		
 		Delilah( );
 		~Delilah();
-
-        // Stop all threads
-		void quit();
 
         // Notification system
         void notify( engine::Notification* notification );

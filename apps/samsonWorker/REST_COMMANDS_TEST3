@@ -1,0 +1,252 @@
+zOK
+-------------------------------------------------------------------------------
+curl --request GET     localhost:1202/samson/version
+curl --request GET     localhost:1202/samson/version.json
+curl --request GET     localhost:1202/samson/version.xml
+curl --request GET     localhost:1202/samson/version.html
+
+curl --request GET     localhost:1202/samson/status
+curl --request GET     localhost:1202/samson/status.json
+curl --request GET     localhost:1202/samson/status.xml
+curl --request GET     localhost:1202/samson/status.html
+
+curl --request GET     localhost:1202/samson/modules
+curl --request GET     localhost:1202/samson/modules.json
+curl --request GET     localhost:1202/samson/modules.xml
+curl --request GET     localhost:1202/samson/modules.html
+
+curl --request GET     localhost:1202/samson/modules/system
+curl --request GET     localhost:1202/samson/modules/system.json
+curl --request GET     localhost:1202/samson/modules/system.xml
+curl --request GET     localhost:1202/samson/modules/system.html
+
+curl --request GET     localhost:1202/samson/queues
+curl --request GET     localhost:1202/samson/queues.json
+curl --request GET     localhost:1202/samson/queues.xml
+curl --request GET     localhost:1202/samson/queues.html
+
+curl --request GET     localhost:1202/samson/queues/input0
+curl --request GET     localhost:1202/samson/queues/input0.json
+curl --request GET     localhost:1202/samson/queues/input0.xml
+curl --request GET     localhost:1202/samson/queues/input0.html
+
+curl --request DELETE  localhost:1202/samson/queues/input0/delete
+curl --request DELETE  localhost:1202/samson/queues/input0/delete.json
+curl --request DELETE  localhost:1202/samson/queues/input0/delete.xml
+curl --request DELETE  localhost:1202/samson/queues/input0/delete.html
+
+curl --request POST    localhost:1202/samson/ilogging/debug/on
+curl --request POST    localhost:1202/samson/ilogging/debug/on.json
+curl --request POST    localhost:1202/samson/ilogging/debug/on.xml
+curl --request POST    localhost:1202/samson/ilogging/debug/on.html
+
+curl --request POST    localhost:1202/samson/ilogging/debug/off
+curl --request POST    localhost:1202/samson/ilogging/debug/off.json
+curl --request POST    localhost:1202/samson/ilogging/debug/off.xml
+curl --request POST    localhost:1202/samson/ilogging/debug/off.html
+
+curl --request POST    localhost:1202/samson/ilogging/reads/on
+curl --request POST    localhost:1202/samson/ilogging/reads/on.json
+curl --request POST    localhost:1202/samson/ilogging/reads/on.xml
+curl --request POST    localhost:1202/samson/ilogging/reads/on.html
+
+curl --request POST    localhost:1202/samson/ilogging/reads/off
+curl --request POST    localhost:1202/samson/ilogging/reads/off.json
+curl --request POST    localhost:1202/samson/ilogging/reads/off.xml
+curl --request POST    localhost:1202/samson/ilogging/reads/off.html
+
+curl --request POST    localhost:1202/samson/ilogging/writes/on
+curl --request POST    localhost:1202/samson/ilogging/writes/on.json
+curl --request POST    localhost:1202/samson/ilogging/writes/on.xml
+curl --request POST    localhost:1202/samson/ilogging/writes/on.html
+
+curl --request POST    localhost:1202/samson/ilogging/writes/off
+curl --request POST    localhost:1202/samson/ilogging/writes/off.json
+curl --request POST    localhost:1202/samson/ilogging/writes/off.xml
+curl --request POST    localhost:1202/samson/ilogging/writes/off.html
+
+curl --request GET     localhost:1202/samson/ilogging/traces
+curl --request GET     localhost:1202/samson/ilogging/traces.json
+curl --request GET     localhost:1202/samson/ilogging/traces.xml
+curl --request GET     localhost:1202/samson/ilogging/traces.html
+
+curl --request POST    localhost:1202/samson/ilogging/traces/off
+curl --request POST    localhost:1202/samson/ilogging/traces/off.json
+curl --request POST    localhost:1202/samson/ilogging/traces/off.xml
+curl --request POST    localhost:1202/samson/ilogging/traces/off.html
+
+curl --request POST    localhost:1202/samson/ilogging/traces/set/1,56
+curl --request POST    localhost:1202/samson/ilogging/traces/set/1,56.json
+curl --request POST    localhost:1202/samson/ilogging/traces/set/1,56.xml
+curl --request POST    localhost:1202/samson/ilogging/traces/set/1,56.html
+
+curl --request POST    localhost:1202/samson/ilogging/traces/add/2,57
+curl --request POST    localhost:1202/samson/ilogging/traces/add/2,57.json
+curl --request POST    localhost:1202/samson/ilogging/traces/add/2,57.xml
+curl --request POST    localhost:1202/samson/ilogging/traces/add/2,57.html
+
+curl --request DELETE  localhost:1202/samson/ilogging/traces/remove/2
+curl --request DELETE  localhost:1202/samson/ilogging/traces/remove/2.json
+curl --request DELETE  localhost:1202/samson/ilogging/traces/remove/2.xml
+curl --request DELETE  localhost:1202/samson/ilogging/traces/remove/2.html
+
+curl --request GET     localhost:1202/samson/ilogging/verbose
+curl --request GET     localhost:1202/samson/ilogging/verbose.json
+curl --request GET     localhost:1202/samson/ilogging/verbose.xml
+curl --request GET     localhost:1202/samson/ilogging/verbose.html
+
+curl --request POST    localhost:1202/samson/ilogging/verbose/off
+curl --request POST    localhost:1202/samson/ilogging/verbose/off.json
+curl --request POST    localhost:1202/samson/ilogging/verbose/off.xml
+curl --request POST    localhost:1202/samson/ilogging/verbose/off.html
+
+curl --request POST    localhost:1202/samson/ilogging/verbose/set/3
+curl --request POST    localhost:1202/samson/ilogging/verbose/set/3.json
+curl --request POST    localhost:1202/samson/ilogging/verbose/set/3.xml
+curl --request POST    localhost:1202/samson/ilogging/verbose/set/3.html
+
+curl --request GET     localhost:1202/samson/operations
+curl --request GET     localhost:1202/samson/operations.json
+curl --request GET     localhost:1202/samson/operations.xml
+curl --request GET     localhost:1202/samson/operations.html
+
+curl --request GET     localhost:1202/samson/operations/system.lines
+curl --request GET     localhost:1202/samson/operations/system.lines.json
+curl --request GET     localhost:1202/samson/operations/system.lines.xml
+curl --request GET     localhost:1202/samson/operations/system.lines.html
+
+
+ERROR/Strange Behaviour
+-------------------------------------------------------------------------------
+o Asking for details for an operations with a dot in its name:
+  % curl --request GET     localhost:1202/samson/operations/system.lines
+
+  The default output is not XML, it comes out in plain text ...
+  Not really a problem, adding '.xml' and it works at it should, but it is an inconsistency.
+  If we say XML is the default output format, thrn it should be for all REST requests ...
+
+
+o Asking for details for a queue that doesn't exist (actually two different):
+  % curl --request GET     localhost:1202/samson/queues/inputXXX
+  % curl --request GET     localhost:1202/samson/queues/inputXXX.aaa
+
+  These two command give different results ...
+  And they shouldn't
+
+  Both should report 'queue "QNAME" does not exist', but ...
+
+  'inputXXX' gives this output:
+    <?xml version="1.0" encoding="UTF-8"?>
+    <!-- SAMSON Rest interface -->
+    <samson>
+    <error><![CDATA[No content in answer from REST client]]></error>
+    </samson>
+
+  'inputXXX.aaa' gives this:
+    error:
+    No content in answer from REST client
+
+  It seems the latter has some kind of 'plain text' as format ...
+  This is probably due to the change in 'if ('.json' | '.xml' || '.html' ...)
+  There we set format as "" and should probably set it to 'xml', as default format .
+  What about this 'plain text' format?
+  Is there another suffix for it?
+
+STILL TO TEST
+-------------------------------------------------------------------------------
+curl --request GET     localhost:1202/samson/cluster
+curl --request GET     localhost:1202/samson/cluster.json
+curl --request GET     localhost:1202/samson/cluster.xml
+curl --request GET     localhost:1202/samson/cluster.html
+
+curl --request POST    localhost:1202/samson/cluster/add_node      -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
+curl --request POST    localhost:1202/samson/cluster/add_node.json -d '{ "node" : { "name" : "localhost", "port" : "6666" } }'
+curl --request POST    localhost:1202/samson/cluster/add_node.xml  -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
+
+curl --request DELETE  localhost:1202/samson/cluster/remove_node      -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
+curl --request DELETE  localhost:1202/samson/cluster/remove_node.json -d '{ "node" : { "name" : "localhost", "port" : "6666" } }'
+curl --request DELETE  localhost:1202/samson/cluster/remove_node.xml  -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
+
+curl --request POST    localhost:1202/samson/logging/debug/on
+curl --request POST    localhost:1202/samson/logging/debug/on.json
+curl --request POST    localhost:1202/samson/logging/debug/on.xml
+curl --request POST    localhost:1202/samson/logging/debug/on.html
+
+curl --request POST    localhost:1202/samson/logging/debug/off
+curl --request POST    localhost:1202/samson/logging/debug/off.json
+curl --request POST    localhost:1202/samson/logging/debug/off.xml
+curl --request POST    localhost:1202/samson/logging/debug/off.html
+
+curl --request POST    localhost:1202/samson/logging/reads/on
+curl --request POST    localhost:1202/samson/logging/reads/on.json
+curl --request POST    localhost:1202/samson/logging/reads/on.xml
+curl --request POST    localhost:1202/samson/logging/reads/on.html
+
+curl --request POST    localhost:1202/samson/logging/reads/off
+curl --request POST    localhost:1202/samson/logging/reads/off.json
+curl --request POST    localhost:1202/samson/logging/reads/off.xml
+curl --request POST    localhost:1202/samson/logging/reads/off.html
+
+curl --request POST    localhost:1202/samson/logging/writes/on
+curl --request POST    localhost:1202/samson/logging/writes/on.json
+curl --request POST    localhost:1202/samson/logging/writes/on.xml
+curl --request POST    localhost:1202/samson/logging/writes/on.html
+
+curl --request POST    localhost:1202/samson/logging/writes/off
+curl --request POST    localhost:1202/samson/logging/writes/off.json
+curl --request POST    localhost:1202/samson/logging/writes/off.xml
+curl --request POST    localhost:1202/samson/logging/writes/off.html
+
+curl --request POST    localhost:1202/samson/logging/trace/off
+curl --request POST    localhost:1202/samson/logging/trace/off.json
+curl --request POST    localhost:1202/samson/logging/trace/off.xml
+curl --request POST    localhost:1202/samson/logging/trace/off.html
+
+curl --request POST    localhost:1202/samson/logging/trace/set/1,56
+curl --request POST    localhost:1202/samson/logging/trace/set/1,56.json
+curl --request POST    localhost:1202/samson/logging/trace/set/1,56.xml
+curl --request POST    localhost:1202/samson/logging/trace/set/1,56.html
+
+curl --request POST    localhost:1202/samson/logging/trace/add/2,57
+curl --request POST    localhost:1202/samson/logging/trace/add/2,57.json
+curl --request POST    localhost:1202/samson/logging/trace/add/2,57.xml
+curl --request POST    localhost:1202/samson/logging/trace/add/2,57.html
+
+curl --request DELETE  localhost:1202/samson/logging/trace/remove/2
+curl --request DELETE  localhost:1202/samson/logging/trace/remove/2.json
+curl --request DELETE  localhost:1202/samson/logging/trace/remove/2.xml
+curl --request DELETE  localhost:1202/samson/logging/trace/remove/2.html
+
+curl --request GET     localhost:1202/samson/logging/verbose
+curl --request GET     localhost:1202/samson/logging/verbose.json
+curl --request GET     localhost:1202/samson/logging/verbose.xml
+curl --request GET     localhost:1202/samson/logging/verbose.html
+
+curl --request POST    localhost:1202/samson/logging/verbose/off
+curl --request POST    localhost:1202/samson/logging/verbose/off.json
+curl --request POST    localhost:1202/samson/logging/verbose/off.xml
+curl --request POST    localhost:1202/samson/logging/verbose/off.html
+
+curl --request POST    localhost:1202/samson/logging/verbose/set/3
+curl --request POST    localhost:1202/samson/logging/verbose/set/3.json
+curl --request POST    localhost:1202/samson/logging/verbose/set/3.xml
+curl --request POST    localhost:1202/samson/logging/verbose/set/3.html
+
+curl --request GET     localhost:1202/samson/logging/traces
+curl --request GET     localhost:1202/samson/logging/traces.json
+curl --request GET     localhost:1202/samson/logging/traces.xml
+curl --request GET     localhost:1202/samson/logging/traces.html
+
+curl --request GET     localhost:1202/samson/queues/QNAME/state/KEY
+curl --request GET     localhost:1202/samson/queues/QNAME/state/KEY.json
+curl --request GET     localhost:1202/samson/queues/QNAME/state/KEY.xml
+curl --request GET     localhost:1202/samson/queues/QNAME/state/KEY.html
+
+
+
+NOT TO BE IMPLEMENTED FOR THIS RELEASE
+-------------------------------------------
+curl --request PUT     localhost:1202/samson/operations/add
+curl --request DELETE  localhost:1202/samson/operations/delete/OPERATION_ALIAS
+
+

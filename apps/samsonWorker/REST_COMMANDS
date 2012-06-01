@@ -1,5 +1,4 @@
 WORKS
-Logging - working but only locally - to spread to entire cluster, we need new delilah command
 -------------------------------------------
 curl --request GET     localhost:1202/samson/version
 curl --request GET     localhost:1202/samson/version.json
@@ -13,6 +12,34 @@ curl --request GET     localhost:1202/samson/queues/input.txt
 curl --request GET     localhost:1202/samson/queues/input.txt.json
 curl --request DELETE  localhost:1202/samson/queues/input.txt/delete
 curl --request DELETE  localhost:1202/samson/queues/input.txt/delete.json
+curl --request POST    localhost:1202/samson/ilogging/debug/on
+curl --request POST    localhost:1202/samson/ilogging/debug/on.json
+curl --request POST    localhost:1202/samson/ilogging/debug/off
+curl --request POST    localhost:1202/samson/ilogging/debug/off.json
+curl --request POST    localhost:1202/samson/ilogging/reads/on
+curl --request POST    localhost:1202/samson/ilogging/reads/on.json
+curl --request POST    localhost:1202/samson/ilogging/reads/off
+curl --request POST    localhost:1202/samson/ilogging/reads/off.json
+curl --request POST    localhost:1202/samson/ilogging/writes/on
+curl --request POST    localhost:1202/samson/ilogging/writes/on.json
+curl --request POST    localhost:1202/samson/ilogging/writes/off
+curl --request POST    localhost:1202/samson/ilogging/writes/off.json
+curl --request GET     localhost:1202/samson/ilogging/traces
+curl --request GET     localhost:1202/samson/ilogging/traces.json
+curl --request POST    localhost:1202/samson/ilogging/trace/off
+curl --request POST    localhost:1202/samson/ilogging/trace/off.json
+curl --request POST    localhost:1202/samson/ilogging/trace/set/1,56
+curl --request POST    localhost:1202/samson/ilogging/trace/set/1,56.json
+curl --request POST    localhost:1202/samson/ilogging/trace/add/2,57
+curl --request POST    localhost:1202/samson/ilogging/trace/add/2,57.json
+curl --request DELETE  localhost:1202/samson/ilogging/trace/remove/2
+curl --request DELETE  localhost:1202/samson/ilogging/trace/remove/2.json
+curl --request GET     localhost:1202/samson/ilogging/verbose
+curl --request GET     localhost:1202/samson/ilogging/verbose.json
+curl --request POST    localhost:1202/samson/ilogging/verbose/off
+curl --request POST    localhost:1202/samson/ilogging/verbose/off.json
+curl --request POST    localhost:1202/samson/ilogging/verbose/set/3
+curl --request POST    localhost:1202/samson/ilogging/verbose/set/3.json
 curl --request POST    localhost:1202/samson/logging/debug/on
 curl --request POST    localhost:1202/samson/logging/debug/on.json
 curl --request POST    localhost:1202/samson/logging/debug/off
@@ -25,8 +52,6 @@ curl --request POST    localhost:1202/samson/logging/writes/on
 curl --request POST    localhost:1202/samson/logging/writes/on.json
 curl --request POST    localhost:1202/samson/logging/writes/off
 curl --request POST    localhost:1202/samson/logging/writes/off.json
-curl --request GET     localhost:1202/samson/logging/traces
-curl --request GET     localhost:1202/samson/logging/traces.json
 curl --request POST    localhost:1202/samson/logging/trace/off
 curl --request POST    localhost:1202/samson/logging/trace/off.json
 curl --request POST    localhost:1202/samson/logging/trace/set/1,56
@@ -35,64 +60,70 @@ curl --request POST    localhost:1202/samson/logging/trace/add/2,57
 curl --request POST    localhost:1202/samson/logging/trace/add/2,57.json
 curl --request DELETE  localhost:1202/samson/logging/trace/remove/2
 curl --request DELETE  localhost:1202/samson/logging/trace/remove/2.json
-curl --request GET     localhost:1202/samson/logging/verbose
-curl --request GET     localhost:1202/samson/logging/verbose.json
 curl --request POST    localhost:1202/samson/logging/verbose/off
 curl --request POST    localhost:1202/samson/logging/verbose/off.json
 curl --request POST    localhost:1202/samson/logging/verbose/set/3
 curl --request POST    localhost:1202/samson/logging/verbose/set/3.json
 curl --request GET     localhost:1202/samson/operations
 curl --request GET     localhost:1202/samson/operations.json
+curl --request GET     localhost:1202/samson/operations/OPERATION
+curl --request GET     localhost:1202/samson/operations/OPERATION.json
 
 
-Works - but doesn't give the exact output that Grant specified in the doc ...
+
+WORKS - but doesn't give the exact output that Grant specified in the doc ...
 --------------------------------------------------------------------------------------
 curl --request GET     localhost:1202/samson/status
 curl --request GET     localhost:1202/samson/status.json
-
-OK, but needs a new delilah command (or fixes in an existing)
--------------------------------------------
-curl --request POST    localhost:1202/samson/cluster/add_node -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
-curl --request POST    localhost:1202/samson/cluster/add_node.json -d '{ "node" : { "name" : "localhost", "port" : "6666" } }'
-curl --request DELETE  localhost:1202/samson/cluster/remove_node -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
-curl --request DELETE  localhost:1202/samson/cluster/remove_node.json -d '{ "node" : { "name" : "localhost", "port" : "6666" } }'
 curl --request GET     localhost:1202/samson/cluster           - XLM gives no info if simple cluster, just '<samson></samson>'
 curl --request GET     localhost:1202/samson/cluster.json      - JSON gives a completely empty answer
 
 
-Queues
+The REST part seems to work, but delilah_command doesn't do exactly what it should ... ?
+-------------------------------------------------------------------------------------------
+curl --request POST    localhost:1202/samson/cluster/add_node -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
+curl --request POST    localhost:1202/samson/cluster/add_node.json -d '{ "node" : { "name" : "localhost", "port" : "6666" } }'
+curl --request DELETE  localhost:1202/samson/cluster/remove_node -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
+curl --request DELETE  localhost:1202/samson/cluster/remove_node.json -d '{ "node" : { "name" : "localhost", "port" : "6666" } }'
+
+
+DOESN'T WORK - info strings must be returned
+-------------------------------------------------------------------------------------------
+curl --request GET     localhost:1202/samson/logging/verbose
+curl --request GET     localhost:1202/samson/logging/verbose.json
+curl --request GET     localhost:1202/samson/logging/traces
+curl --request GET     localhost:1202/samson/logging/traces.json
+
+
+Still to test
 -------------------------------------------
 curl --request GET     localhost:1202/samson/queues/QNAME/state/KEY
 curl --request GET     localhost:1202/samson/queues/QNAME/state/KEY.json
 
 
-Operations
+NOT IMPLEMENTED
 -------------------------------------------
-curl --request GET     localhost:1202/samson/operations/OPERATION
-curl --request GET     localhost:1202/samson/operations/OPERATION.json
 curl --request PUT     localhost:1202/samson/operations/add -d '<samson><operation><alias>{operation_alias}</alias><name>{operation_name}</name><input_queues><input>queue1</input><input>queue2</input></input_queues><output_queues><output>queue3</output></output_queues><parameters><parameter><parameter_name></parameter_name><parameter_value></parameter_value></parameter><parameter><parameter_name></parameter_name><parameter_value></parameter_value></parameter></parameters></operation><samson>'
 curl --request GET     localhost:1202/samson/operations/add.json -d '{ "operation" : { "alias" : "{operation_alias}", "name" : "{operation_name}" "input_queues" : ["queue1", "queue2"], "output_queues" : ["queue3"], "parameters" : [ {"{parameter_name}", "{parameter_value}"}, {"{parameter_name}", "{parameter_value}"} ] }'
 curl --request DELETE  localhost:1202/samson/operations/delete/OPERATION_ALIAS
 curl --request DELETE  localhost:1202/samson/operations/delete/OPERATION_ALIAS.json
 
 
+
 KNOWN ERRORS
 -------------------------------------------
-o curl --request POST    localhost:1202/samson/cluster/add_node -d '<samson><node><name>localhost</name><port>6666</port></node></samson>'
-  Says OK, but it doesn't do anything ...
-
-o Info on a specific operation
+o Info on a specific non-existing operation
   INPUT
-  % curl --request GET     localhost:1202/samson/operations/system.lines
+  % curl --request GET     localhost:1202/samson/operations/system.linesXXX
 
   OUTPUT:
-    error:
-    No content in answer from REST client
+    <!-- SAMSON Rest interface -->
+    <samson>
+      <error><![CDATA[No content in answer from REST client]]></error>
+    </samson>
 
+  Perhaps we could answer with something nicer ... like 'Operation system.linesXXX doesn't exist' ...
 
-
-FATAL ERRORS
--------------------------------------------
 
 
 
@@ -125,6 +156,7 @@ o samsonWorker dies when I ask for an operation that contains a dot '.' ...
 
 PREPARATIONS
 -------------------------------------------
+% cat modules/core/txt/testing/quijote.txt | to_utf8 | samsonPush input0
 % cat modules/core/txt/testing/quijote.txt | to_utf8 | samsonPush input1.txt
 % cat modules/core/txt/testing/quijote.txt | to_utf8 | samsonPush input2.txt
 % cat modules/core/txt/testing/quijote.txt | to_utf8 | samsonPush input3.txt

@@ -174,11 +174,12 @@ namespace engine{
             
             int shmid = shmget(IPC_PRIVATE , shared_memory_size_per_buffer, shmflg);
             
-            if( shmid == -1)
+            if( shmid <= 0)
             {
-                LM_E(("Error creating the shared memory buffer of %s ( %d / %d ). Please review SAMSON documentation about shared memory usage",
+                LM_E(("Error creating the shared memory buffer of %s ( %d / %d ). \
+                      Please review SAMSON documentation about shared memory usage",
                       au::str( shared_memory_size_per_buffer , "B").c_str() , i ,shared_memory_num_buffers ));
-                LM_X(1, ("shmid  (%s)", strerror(errno)));
+                LM_X(1, ("Error creating shared memory buffers. shmid return -1 (%s)", strerror(errno)));
             }
             shm_ids[i] = shmid;
         }

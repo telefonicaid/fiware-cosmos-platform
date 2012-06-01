@@ -61,7 +61,7 @@ namespace engine {
             // Attach to local-space memory
             data = (char *) shmat( shmid, 0, 0 );
             if( data == (char*)-1 )
-                LM_X(1, ("Error with shared memory while attaching to local memory ( shared memory id %d )\n", id ));
+                LM_X(1, ("Error with shared memory while attaching to local memory ( %s )( shared memory id %d shmid %d size %lu )\n" , strerror(errno) ,  id , shmid , size ));
 		}
 		
         ~SharedMemoryItem()

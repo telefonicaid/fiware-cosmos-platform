@@ -82,6 +82,7 @@ SET (STATIC_LIBS
 # Include directories
 # ------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
+include_directories("${PROJECT_SOURCE_DIR}/apps")
 include_directories("${PROJECT_SOURCE_DIR}/extern")
 
 # Executable declaration

@@ -67,6 +67,7 @@ cp etc/setup.txt $RPM_BUILD_ROOT/var/samson/etc
 cp etc/init.d/samson.redhat $RPM_BUILD_ROOT/etc/init.d/samson
 cp etc/init.d/logserver.redhat $RPM_BUILD_ROOT/etc/init.d/logserver
 chmod 755 $RPM_BUILD_ROOT/etc/init.d/samson
+chmod 755 $RPM_BUILD_ROOT/etc/init.d/logserver
 cp etc/profile.d/samson.sh  $RPM_BUILD_ROOT/etc/profile.d/samson.sh
 chmod 755 $RPM_BUILD_ROOT/etc/profile.d/samson.sh
 
@@ -95,6 +96,11 @@ Summary: A simple log server
 Group: Applications/Engineering
 %description logserver
 LogServer for the SAMSON Platform
+
+%pre logserver
+getent group %{owner} >/dev/null || groupadd -r %{owner}
+getent passwd %{owner} >/dev/null || useradd -r -g %{owner} -m -d /opt/samson -s /bin/bash -c 'SAMSON account' %{owner}
+exit 0
 
 %post logserver
 mkdir -p /var/log/logserver

@@ -11,6 +11,7 @@ class MainWindow : public QMainWindow , public Ui_MainWindow
     
     Plot* plot;  // Main plot using KVChart
     bool first_legend;
+    std::vector<std::string> labels_;
 	
 public:
     
@@ -19,6 +20,8 @@ public:
 private slots:
     
     void updateTimer();
+    void update(){ ; }
+
     
 };
 

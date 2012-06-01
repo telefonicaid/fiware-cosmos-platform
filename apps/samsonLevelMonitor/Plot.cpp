@@ -10,7 +10,10 @@
 #include <KDChartLegend>
 
 extern int refresh_time;
+extern bool graph_time;
 extern double ntimes_real_time;
+extern bool logX;
+extern bool logY;
 
 Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
 {
@@ -40,6 +43,7 @@ Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
     xAxis->setTitleText( QString( x_title ) );
     yAxis->setTitleText( QString( y_title ) );
 
+
     /*
     KDChart::TextAttributes ta = yAxis->textAttributes();
     KDChart::Measure me( ta.fontSize() );
@@ -48,9 +52,11 @@ Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
     yAxis->setTextAttributes( ta );
 */
 
+    if (graph_time)
+    {
     QStringList times = xAxis->labels();
     QStringList times_short = xAxis->shortLabels();
-    LM_M(("xAxis with %d labels", times.size()));
+    //LM_M(("xAxis with %d labels", times.size()));
     if (times.size() > 0)
     {
     for (int i = 0; (i < times.size()); i++)
@@ -64,7 +70,7 @@ Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
 
       char new_label[33];
       sprintf(new_label, "-%d:%02d:%02d", hours, minutes, secs);
-      LM_M(("new label at pos:%d -> '%s'", i, new_label));
+      //LM_M(("new label at pos:%d -> '%s'", i, new_label));
       times.replace(i,QString::fromUtf8(new_label));
     }
     }
@@ -80,12 +86,12 @@ Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
 
         char new_label[33];
         sprintf(new_label, "-%d:%02d:%02d", hours, minutes, secs);
-        LM_M(("new label at pos:%d -> '%s'", i, new_label));
+        //LM_M(("new label at pos:%d -> '%s'", i, new_label));
 
         times << new_label;
 
         sprintf(new_label, "-%dm", secs/60);
-        LM_M(("new label at pos:%d -> '%s'", i, new_label));
+        //LM_M(("new label at pos:%d -> '%s'", i, new_label));
         times_short << new_label;
       }
     }
@@ -93,11 +99,31 @@ Plot::Plot( QGroupBox *_box , const char* x_title ,  const char* y_title )
     //times << "9000" << "7000" << "5000" << "3000" << "1000";
     xAxis->setLabels( times );
     xAxis->setShortLabels( times );
+    }
 
     diagram->addAxis( xAxis );
     diagram->addAxis( yAxis );
     
+
+
     m_chart.coordinatePlane()->replaceDiagram(diagram);
+
+    // Logarithmic scales
+    if (logX == true)
+    {
+        LM_M(("Setting logarithmic scale for X axis"));
+        KDChart::CartesianCoordinatePlane *plane_tmp = static_cast <KDChart::CartesianCoordinatePlane*>
+(m_chart.coordinatePlane());
+        plane_tmp->setAxesCalcModeX(KDChart::AbstractCoordinatePlane::Logarithmic);
+    }
+    if (logY == true)
+    {
+        LM_M(("Setting logarithmic scale for Y axis"));
+        KDChart::CartesianCoordinatePlane *plane_tmp = static_cast <KDChart::CartesianCoordinatePlane*>
+ (m_chart.coordinatePlane());
+         plane_tmp->setAxesCalcModeY(KDChart::AbstractCoordinatePlane::Logarithmic);
+    }
+
     
 /*
 	// Example to show something
@@ -154,26 +180,21 @@ void Plot::set_legend( std::string title ,  std::string label_1 , std::string la
 
 void Plot::set_legend( std::string title ,  std::vector<std::string>& labels )
 {
-
-
-
    legend_->setShowLines( true );
    //legend->setSpacing( 5 );
 
    legend_->setTitleText( title.c_str() );
 
-   LM_M(("set_legend with %d lables", labels.size()));
+   //LM_M(("set_legend with %d lables", labels.size()));
    for ( size_t i=0; i<labels.size() ; i++ )
    {
-     LM_M(("Add legend at pos %d with label:'%s'", i, labels[i].c_str() ));
+     //LM_M(("Add legend at pos %d with label:'%s'", i, labels[i].c_str() ));
 	  legend_->setText( i , labels[i].c_str() );
    }
 
    legend_->setPosition( KDChart::Position::West );
    legend_->setAlignment( Qt::AlignCenter );
    legend_->setOrientation( Qt::Vertical );
-
-
 }
 
 void Plot::set( int r , int c , double v )

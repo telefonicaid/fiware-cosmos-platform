@@ -1,6 +1,6 @@
 package es.tid.cosmos.tests.tasks;
 
-import es.tid.cosmos.tests.frontend.om.FrontEndTask;
+import es.tid.cosmos.tests.environment.Environment;
 
 /**
  *

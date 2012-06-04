@@ -12,9 +12,9 @@ import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.fail;
 
-import es.tid.cosmos.tests.tasks.Environment;
-import es.tid.cosmos.tests.tasks.EnvironmentSetting;
-import static es.tid.cosmos.tests.tasks.EnvironmentSetting.CosmosRelativeUrl;
+import es.tid.cosmos.tests.environment.Environment;
+import es.tid.cosmos.tests.environment.EnvironmentSetting;
+import static es.tid.cosmos.tests.environment.EnvironmentSetting.CosmosRelativeUrl;
 import es.tid.cosmos.tests.tasks.TaskStatus;
 import es.tid.cosmos.tests.tasks.TestException;
 

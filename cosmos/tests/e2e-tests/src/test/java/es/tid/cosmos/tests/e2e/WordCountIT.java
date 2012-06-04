@@ -10,9 +10,12 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 import org.testng.annotations.*;
 
+import es.tid.cosmos.tests.environment.Environment;
 import es.tid.cosmos.tests.hadoopjars.HadoopJars;
 import es.tid.cosmos.tests.hadoopjars.JarNames;
-import es.tid.cosmos.tests.tasks.*;
+import es.tid.cosmos.tests.tasks.FrontendTaskCreator;
+import es.tid.cosmos.tests.tasks.Task;
+import es.tid.cosmos.tests.tasks.TaskCreator;
 
 public class WordCountIT {
     private static final String WORDCOUNT_PATH = HadoopJars.getPath(

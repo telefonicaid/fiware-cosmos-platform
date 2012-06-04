@@ -20,8 +20,8 @@ import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import es.tid.cosmos.tests.sftp.om.CosmosSftp;
-import es.tid.cosmos.tests.tasks.Environment;
-import es.tid.cosmos.tests.tasks.EnvironmentSetting;
+import es.tid.cosmos.tests.environment.Environment;
+import es.tid.cosmos.tests.environment.EnvironmentSetting;
 
 @Test
 public class SftpIT {

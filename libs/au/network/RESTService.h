@@ -15,6 +15,7 @@
 
 #include "au/string.h"
 #include "au/utils.h"
+#include "au/Object.h"
 
 #include "au/console/Console.h"
 
@@ -27,7 +28,42 @@ namespace au
     namespace network
     {
         
-        class RESTServiceCommand
+        
+        class RESTServiceCommandBase : public au::Object
+        {
+            // Mechanism to block main thread
+            au::Token token;
+            bool finished;
+            
+        public:
+            
+            RESTServiceCommandBase() : token( "RESTServiceCommandBase" )
+            {
+                finished = false;
+            }
+            
+            void wait()
+            {
+                while( true )
+                {
+                    au::TokenTaker tt(&token);
+                    if( finished )
+                        return;
+                    else
+                        tt.stop();
+                }
+            }
+            
+            void finish()
+            {
+                au::TokenTaker tt(&token);
+                finished = true;
+                tt.wakeUp();
+            }
+
+        };
+        
+        class RESTServiceCommand : public RESTServiceCommandBase
         {
             
         public:
@@ -84,6 +120,7 @@ namespace au
             {
                 return error.getMessage();
             }
+            
             
         };
         

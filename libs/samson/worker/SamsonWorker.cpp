@@ -115,6 +115,8 @@ namespace samson {
             engine::Engine::shared()->notify( notification, 1 );
         }
         
+        // Notification with rest commands
+        listen("rest_connection");
         
         // Run REST interface
         rest_service = new au::network::RESTService( web_port  , this );
@@ -285,6 +287,26 @@ namespace samson {
     // Receive notifications
     void SamsonWorker::notify( engine::Notification* notification )
     {
+        
+        if ( notification->isName("rest_connection"))
+        {
+            au::network::RESTServiceCommand* command = (au::network::RESTServiceCommand*)notification->getObject();
+            
+            if( command == NULL )
+            {
+                LM_W(("rest_connection notification without a command. This is probably an error..."));
+                return;
+            }
+
+            // Sync-Engine implementation of the rest command
+            process_main(command);
+            
+            // Mark as finish and wake up thread to answer this connection
+            command->finish();
+            return;
+        }
+        
+        
         if ( notification->isName(notification_update_status))
         {
             // Create a xml version of monitorization ( common to all delilahs )
@@ -1020,7 +1042,18 @@ namespace samson {
     //
     // SamsonWorker::getRESTInformation - 
     //
+    
     void SamsonWorker::process( au::network::RESTServiceCommand* command )
+    {
+        // Add element to the engine
+        engine::Engine::shared()->notify( new engine::Notification( "rest_connection"  , command ) );
+        
+        // Wait until it is resolved
+        command->wait();
+        
+    }
+    
+    void SamsonWorker::process_main( au::network::RESTServiceCommand* command )
     {
         // Default format
         if( command->format == "" )

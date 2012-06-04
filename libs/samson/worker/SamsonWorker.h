@@ -248,6 +248,7 @@ namespace samson {
         }
     };
     
+    
 	class SamsonWorker : 
         public NetworkInterfaceReceiver, 
         public engine::Object,
@@ -317,6 +318,7 @@ namespace samson {
 
         // RESTServiceInterface
         void process( au::network::RESTServiceCommand* command );
+        void process_main( au::network::RESTServiceCommand* command );
         void process_intern( au::network::RESTServiceCommand* command );
         void process_clusterNodeAdd( au::network::RESTServiceCommand* command );
         void process_clusterNodeDelete( au::network::RESTServiceCommand* command );

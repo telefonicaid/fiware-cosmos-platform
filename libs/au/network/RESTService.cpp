@@ -277,23 +277,23 @@ namespace au
                 return;
             
             // Read HTTP packet
-            RESTServiceCommand command;
-            au::Status s = command.read(socket_connection);
+            RESTServiceCommand* command = new RESTServiceCommand();
+            au::Status s = command->read(socket_connection);
             if( s != au::OK )
             {
-                LM_W(("Error in REST interface ( %s / %s )" , status(s) , command.getErrorMessage().c_str() ));
+                LM_W(("Error in REST interface ( %s / %s )" , status(s) , command->getErrorMessage().c_str() ));
                 socket_connection->close();
                 return;
             }
             
             // Get anser from the service
-            interface->process(&command);
+            interface->process( command );
             
             // Return anser for this request
-            s = command.write( socket_connection );
+            s = command->write( socket_connection );
             if( s != au::OK )
             {
-                LM_W(("Error in REST interface ( %s / %s )" , status(s) , command.getErrorMessage().c_str() ));
+                LM_W(("Error in REST interface ( %s / %s )" , status(s) , command->getErrorMessage().c_str() ));
                 socket_connection->close();
                 return;
             }
@@ -301,6 +301,8 @@ namespace au
             // Close socket connection in all cases
             socket_connection->close();
             
+            // Release the command
+            command->release();
             
         }
         

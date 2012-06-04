@@ -40,7 +40,7 @@ if (HAVE_QT)
     if (HAVE_KDCHART)
 
         #ADD_SUBDIRECTORY(delilah_graph)
-        #ADD_SUBDIRECTORY(samsonLevelMonitor)
+       ADD_SUBDIRECTORY(samsonLevelMonitor)
 
     endif (HAVE_KDCHART) 		    
        

@@ -246,7 +246,7 @@ template <class T>
 class ValueCollection
 {
     // Values forsize    
-    au::RRTAverage<T ,1000,1>    samples_last_seconds;
+    au::RRTAverage<T ,100,1>    samples_last_seconds;
     //au::RRTAverage<T ,200,60>   samples_last_minutes;
     //au::RRTAverage<T ,200,3600> samples_last_houts;
     

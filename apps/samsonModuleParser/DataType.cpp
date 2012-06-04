@@ -818,9 +818,14 @@ string DataType::getTo_paint_header_Command( string pre_line )
     if( isVector() )
     {
         o << pre_line << "{ // paint_header  vector "<<name<<"\n";
-        o << pre_line << "\tend_col = init_col +  " << name << "[0].num_basic_fields();\n";
-        o << pre_line << "\to << \"<th colspan=\" << end_col << \">" << name << "</th>\\n\";\n";
-        o << pre_line << "\tinit_col = end_col + 1;\n";
+        o << pre_line << "\tif (" << name << "_length > 0)\n";
+        o << pre_line << "\t{\n";
+        o << pre_line << "\t\tend_col = init_col +  " << name << "[0].num_basic_fields();\n";
+        o << pre_line << "\t\to << \"<th colspan=\" << end_col << \">" << name << "</th>\\n\";\n";
+        o << pre_line << "\t\tinit_col = end_col + 1;\n";
+        o << pre_line << "\t}else{\n";
+        o << pre_line << "\t\to << \"<th colspan=\" << end_col << \">" << "</th>\\n\";\n";
+        o << pre_line << "\t}\n";
         o << pre_line << "}\n";
     }
     else
@@ -849,6 +854,8 @@ string DataType::getTo_paint_header_basic_Command( string pre_line )
     if( isVector() )
     {
         o << pre_line << "{ // paint_header_basic  vector "<<name<<"\n";
+        o << pre_line << "\tif (" << name << "_length > 0)\n";
+        o << pre_line << "\t{\n";
         o << pre_line << "\tif (" << name << "[0].is_terminal())\n";
         o << pre_line << "\t{\n";
         o << pre_line << "\t\to << \"<th>" << name << "</th>\\n\";\n";
@@ -856,6 +863,9 @@ string DataType::getTo_paint_header_basic_Command( string pre_line )
         o << pre_line << "\telse\n";
         o << pre_line << "\t{\n";
         o << pre_line << "\t\to << " << name << "[0].paint_header_basic(init_col);\n";
+        o << pre_line << "\t}\n";
+        o << pre_line << "\t}else{\n";
+        o << pre_line << "\t\to << \"<th></th>\\n\";\n";
         o << pre_line << "\t}\n";
         o << pre_line << "}\n";
 
@@ -937,7 +947,10 @@ string DataType::getTo_num_basic_fields_Command( string pre_line )
     if( isVector() )
     {
         o << pre_line << "{ // num_basic_fields of vector " << name << "\n";
+        o << pre_line << "\t{\n";
+        o << pre_line << "\tif (" << name << "_length > 0)\n";
         o << pre_line << "\t\tn_basic_fields += " << name << "[0].num_basic_fields();\n";
+        o << pre_line << "\t}\n";
         o << pre_line << "}\n";
     }
     else
@@ -962,8 +975,11 @@ string DataType::getTo_max_depth_Command( string pre_line )
     if( isVector() )
     {
         o << pre_line << "{ // max_depth of vector " << name << "\n";
+        o << pre_line << "\tif (" << name << "_length > 0)\n";
+        o << pre_line << "\t{\n";
         o << pre_line << "\t\tint depth = " << name << "[0].max_depth();\n";
         o << pre_line << "\t\tif (depth > m_depth) m_depth = depth; \n";
+        o << pre_line << "\t}\n";
         o << pre_line << "}\n";
     }
     else

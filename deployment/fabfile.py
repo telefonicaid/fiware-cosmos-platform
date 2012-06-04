@@ -9,6 +9,7 @@ from StringIO import StringIO
 
 from fabric.api import run, execute, sudo, put, cd, env
 from fabric.contrib import files
+import fabric.context_managers as ctx
 from fabric.decorators import roles, task
 from mako.template import Template
 from os import path
@@ -74,19 +75,22 @@ def deploy_sftp():
     injection_conf.write(template.render(
             namenode=CONFIG['hosts']['namenode'][0]))
     put(injection_conf, "/etc/injection.cfg")
-    put("templates/injection.init.d", "/etc/init.d/injection")
     symlink = "/usr/local/injection-server"
     if not files.exists(symlink):
         run("ln -s {0} {1}".format(exec_path, symlink))
-    run("mkdir -p /var/log/injection")
     logfile = "/var/log/injection/server.log"
     if not files.exists(logfile):
+        run("mkdir -p /var/log/injection")
         run("echo '' >> {0}".format(logfile))
-    run("mkdir -p /var/run/injection")
     pidfile = "/var/run/injection/server.pid"
     if not files.exists(pidfile):
+        run("mkdir -p /var/run/injection")
         run("echo '' >> {0}".format(pidfile))
-    run("/etc/init.d/injection restart")
+    put("templates/injection.init.d", "/etc/init.d/injection")
+    with ctx.settings(warn_only=True):
+        start = run("/etc/init.d/injection start", pty=False)
+        if start.failed:
+            run("/etc/init.d/injection restart", pty=False)
       
 @task
 def deploy_cdh():
@@ -124,9 +128,9 @@ def deploy_models():
     idea on what is needed to deploy a model, but we currently have no models
     to deploy
     """
-    modelpaths = [] # Dummy variable, this should be part of
+    model_paths = [] # Dummy variable, this should be part of
                     # the configuration or similar
-    for model in modelpaths:
+    for model in model_paths:
         put(model)
         sudo('hadoop dfs -put {0} /models/{0}'.format(model))
         run('rm %s' % model)

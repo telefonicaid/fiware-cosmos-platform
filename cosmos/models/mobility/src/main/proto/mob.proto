@@ -253,3 +253,11 @@ message Itinerary {
     optional uint32 wdayFin = 9;
     optional uint32 rangeFin = 10;
 }
+
+message MatrixRange {
+    optional uint64 node = 1;
+    optional uint64 poiSrc = 2;
+    optional uint64 poiTgt = 3;
+    optional uint32 group = 4;
+    optional uint32 range = 5;
+}

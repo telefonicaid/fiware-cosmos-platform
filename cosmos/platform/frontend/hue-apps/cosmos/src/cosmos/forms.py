@@ -6,6 +6,7 @@ import re
 
 from django import forms
 from django.core import validators
+from django.forms.util import ErrorList
 
 from cosmos import models
 
@@ -25,7 +26,7 @@ JAR_FILE_VALIDATOR = validators.RegexValidator(
     message='Filename must have "jar" extension')
 
 
-class RunJobForm(forms.Form):
+class DefineJobForm(forms.Form):
     name = forms.CharField(max_length=models.JobRun.NAME_MAX_LENGTH,
                            label='Name', validators=[ID_VALIDATOR])
     description = forms.CharField(
@@ -38,3 +39,24 @@ class RunJobForm(forms.Form):
     dataset_path = forms.CharField(max_length=models.PATH_MAX_LENGTH,
                                    validators=[ABSOLUTE_PATH_VALIDATOR],
                                    label='Dataset path')
+
+    def is_valid(self, fs):
+        valid = super(forms.Form, self).is_valid()
+        if not valid:
+            return valid
+        has_jar = self.__validate_hdfs_path(fs, 'jar_path')
+        has_dataset = self.__validate_hdfs_path(fs, 'dataset_path')
+        return has_jar and has_dataset
+
+    def __validate_hdfs_path(self, fs, field):
+        path = self.cleaned_data[field]
+        has_file = fs.exists(path)
+        if not has_file:
+            errors = self._errors.setdefault(field, ErrorList())
+            errors.append('File "%s" does not exist' % path)
+        return has_file
+
+
+
+class ParameterizeJobForm(forms.Form):
+    pass

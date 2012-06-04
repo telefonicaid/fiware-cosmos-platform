@@ -30,7 +30,7 @@ from django.template.defaultfilters import urlencode, escape
     <ul class="nav" data-filters="ArtButtonBar">
       ${toolbar_icon('job_runs', 'Job runs', url('cosmos.views.index'),
                      is_selected(section, 'job_runs'))}
-      ${toolbar_icon('run_job', 'New job', url('run_job'),
+      ${toolbar_icon('define_job', 'New job', url('define_job'),
                      is_selected(section, 'run_job'))}
       ${toolbar_icon('upload', 'Upload',
                      url('cosmos.views.upload_index'),

@@ -62,7 +62,7 @@
 .cosmos a.cos-job_runs_nav {
     background: url(/static/art/icons/application_view_list.png) no-repeat;
 }
-.cosmos a.cos-run_job_nav {
+.cosmos a.cos-define_job_nav {
     background: url(/static/art/icons/control_play_blue.png) no-repeat;
 }
 .cosmos a.cos-upload_nav {

@@ -17,8 +17,7 @@ import es.tid.cosmos.profile.generated.data.ProfileProtocol.UserProfile;
  * @author dmicol, sortega
  */
 public class MongoDBExporterReducer extends Reducer<Text,
-                                             ProtobufWritable<UserProfile>,
-                                             MongoProperty, BSONWritable> {
+        ProtobufWritable<UserProfile>, MongoProperty, BSONWritable> {
     private MongoProperty id;
 
     @Override
@@ -30,13 +29,12 @@ public class MongoDBExporterReducer extends Reducer<Text,
 
     @Override
     public void reduce(Text userId,
-                       Iterable<ProtobufWritable<UserProfile>> profiles,
-                       Context context) throws IOException,
-                                               InterruptedException {
-        id.setValue(userId.toString());
+            Iterable<ProtobufWritable<UserProfile>> profiles, Context context)
+            throws IOException, InterruptedException {
+        this.id.setValue(userId.toString());
         for (ProtobufWritable<UserProfile> wrappedProfile : profiles) {
             wrappedProfile.setConverter(UserProfile.class);
-            context.write(id, toBSON(wrappedProfile.get()));
+            context.write(this.id, toBSON(wrappedProfile.get()));
         }
     }
 

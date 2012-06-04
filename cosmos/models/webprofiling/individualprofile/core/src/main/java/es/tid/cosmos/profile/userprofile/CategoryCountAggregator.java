@@ -21,11 +21,11 @@ class CategoryCountAggregator {
     }
 
     public void add(CategoryCount count) {
-        CategoryCount.Builder partial = partials.get(count.getName());
+        CategoryCount.Builder partial = this.partials.get(count.getName());
         if (partial != null) {
             partial.setCount(partial.getCount() + count.getCount());
         } else {
-            partials.put(count.getName(), count.toBuilder());
+            this.partials.put(count.getName(), count.toBuilder());
         }
     }
 
@@ -36,7 +36,7 @@ class CategoryCountAggregator {
      */
     public List<CategoryCount> getSortedCounts() {
         LinkedList<CategoryCount> counts = new LinkedList<CategoryCount>();
-        for (CategoryCount.Builder partial : partials.values()) {
+        for (CategoryCount.Builder partial : this.partials.values()) {
             counts.add(partial.build());
         }
         Collections.sort(counts, new Comparator<CategoryCount>() {
@@ -53,5 +53,4 @@ class CategoryCountAggregator {
         });
         return counts;
     }
-
 }

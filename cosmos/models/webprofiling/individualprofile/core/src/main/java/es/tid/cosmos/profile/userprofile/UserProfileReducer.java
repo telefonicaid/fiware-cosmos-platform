@@ -14,12 +14,10 @@ import es.tid.cosmos.profile.generated.data.ProfileProtocol.UserProfile;
  * Aggregates category counts into a user profile.
  * <[userId, date], [category, count]> -> <userId, profile>
  *
- * @author sortega@tid.es
+ * @author sortega
  */
 public class UserProfileReducer extends Reducer<BinaryKey,
-                                                ProtobufWritable<CategoryCount>,
-                                                Text,
-                                                ProtobufWritable<UserProfile>> {
+        ProtobufWritable<CategoryCount>, Text, ProtobufWritable<UserProfile>> {
     private ProtobufWritable<UserProfile> profileWrapper;
     private Text userId;
     private CategoryCountAggregator categoryCountAggregator;
@@ -47,9 +45,9 @@ public class UserProfileReducer extends Reducer<BinaryKey,
         for (ProtobufWritable<CategoryCount> wrappedCount : counts) {
             wrappedCount.setConverter(CategoryCount.class);
             CategoryCount count = wrappedCount.get();
-            categoryCountAggregator.add(count);
+            this.categoryCountAggregator.add(count);
         }
-        profile.addAllCounts(categoryCountAggregator.getSortedCounts());
+        profile.addAllCounts(this.categoryCountAggregator.getSortedCounts());
         this.userId.set(userDateKey.getPrimaryKey());
         this.profileWrapper.set(profile.build());
         context.write(this.userId, this.profileWrapper);

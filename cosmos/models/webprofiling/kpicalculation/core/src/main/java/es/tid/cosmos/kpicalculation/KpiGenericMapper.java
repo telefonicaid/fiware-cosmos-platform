@@ -14,9 +14,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.cosmos.base.mapreduce.BinaryKey;
 import es.tid.cosmos.base.mapreduce.CompositeKey;
-import es.tid.cosmos.base.mapreduce.SingleKey;
 import es.tid.cosmos.kpicalculation.data.KpiCalculationCounter;
 import es.tid.cosmos.kpicalculation.generated.data.KpiCalculationProtocol.WebProfilingLog;
 

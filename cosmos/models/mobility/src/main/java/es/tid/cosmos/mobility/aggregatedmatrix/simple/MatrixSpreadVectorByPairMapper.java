@@ -11,8 +11,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
- * Input: <TwoInt, ItinTime>
- * Output: <TwoInt, ItinTime>
+ * Input: <ItinRange, ClusterVector>
+ * Output: <TwoInt, ClusterVector>
  * 
  * @author dmicol
  */

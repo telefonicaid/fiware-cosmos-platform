@@ -11,7 +11,7 @@
   </property>
   <property>        
     <name>mapred.local.dir</name>
-    <value>/data1/mapred</value>
+    <value>${dirs}</value>
   </property>
   <property>        
     <name>mapreduce.jobtracker.staging.root.dir</name>

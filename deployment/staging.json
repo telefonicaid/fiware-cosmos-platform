@@ -8,6 +8,7 @@
         "datanodes": ["10.95.108.15", "10.95.109.190", "10.95.108.201"],
         "tasktrackers": ["10.95.108.15", "10.95.109.190", "10.95.108.201"]
     },
+    "hadoop_data_dirs": ["/data1"],
     "user": "root",
     "password": "admintid33",
     "hue_patch_dir": "../cosmos/platform/frontend/hue-patches",

@@ -2,7 +2,7 @@
 HUE automatic deployment
 """
 import os
-from fabric.api import run, put, cd
+from fabric.api import run, put, cd, env
 import fabric.context_managers as ctx
 from fabric.contrib import files
 from fabric.decorators import roles
@@ -25,6 +25,7 @@ def patch_hue(config):
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def install_hue_plugins():
+    env.port = '22'
     run("yum -y install hue-plugins")
 
 def install_thrift(thrift_tarpath):
@@ -68,5 +69,5 @@ def cleanup():
     patch = "hue-patch-cdh3u4-r0.4.diff"
     if files.exists(patch):
         run("rm {0}".format(patch))
-    if files.exists(cosmos-app):
+    if files.exists("cosmos-app"):
         run("rm -rf cosmos-app")

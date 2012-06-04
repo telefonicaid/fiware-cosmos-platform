@@ -13,23 +13,29 @@ COSMOS_CLASSPATH='/usr/lib/hadoop-0.20/lib/cosmos/'
 @parallel
 def install_cdh():
     """Install the latest Hadoop distribution in CDH3"""
+    run('rm -rf /tmp/*')
     repo_rpm = ('http://archive.cloudera.com/redhat/cdh/'
                 'cdh3-repository-1.0-1.noarch.rpm')
     run('wget %s' % repo_rpm)
     run('rpm -Uvh --force cdh3-repository-1.0-1.noarch.rpm')
-    run(('rpm --import'
-         ' http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera'))
+    if not files.exists('/etc/pki/rpm-gpg/RPM-GPG-KEY-cloudera'):
+        run(('rpm --import'
+             ' http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera'))
     run('yum -y install hadoop-0.20 hadoop-0.20-native')
 
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 @parallel
-def create_hadoop_dirs():
+def create_hadoop_dirs(config):
     """Create necessary directories for Hadoop"""
-    run('rm -rf /data1')
-    run('install -o hdfs   -g hadoop -m 700 -d /data1/data')
-    run('install -o mapred -g hadoop -m 755 -d /data1/mapred')
-    run('install -o hdfs   -g hadoop -m 755 -d /data1/name')
+    for dir in config["hadoop_data_dirs"]:
+        run('rm -rf %s/*' % dir)
+        if not files.exists(dir):
+            run('mkdir %s' % dir)
+        run('install -o hdfs   -g hadoop -m 700 -d %s/data' % dir)
+        run('install -o mapred -g hadoop -m 755 -d %s/mapred' % dir)
+        run('install -o hdfs   -g hadoop -m 755 -d %s/name' % dir)
+    
     run('install -o root   -g hadoop -m 755 -d %s' % COSMOS_CLASSPATH)
  
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
@@ -58,12 +64,15 @@ def configure_hadoop(config):
         mapredsite = StringIO()
         template = Template(filename='templates/mapred-site.mako')
         mapredsite.write(template.render(
-                jobtracker=config['hosts']['jobtracker'][0]))
+                jobtracker=config['hosts']['jobtracker'][0],
+                dirs=','.join([dir + '/mapred' for dir in config["hadoop_data_dirs"]])))
         put(mapredsite, 'mapred-site.xml')
         
         hdfssite = StringIO()
         template = Template(filename='templates/hdfs-site.mako')
-        hdfssite.write(template.render())
+        hdfssite.write(template.render(
+                namedirs=','.join([dir + '/name' for dir in config["hadoop_data_dirs"]]),
+                datadirs=','.join([dir + '/data' for dir in config["hadoop_data_dirs"]])))
         put(hdfssite, 'hdfs-site.xml')
 
         hadoop_env = StringIO()

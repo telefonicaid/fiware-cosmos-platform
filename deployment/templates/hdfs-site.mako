@@ -3,11 +3,11 @@
 <configuration>
   <property>        
     <name>dfs.name.dir</name>
-    <value>/data1/name</value>
+    <value>${namedirs}</value>
   </property>
   <property>        
     <name>dfs.data.dir</name>
-    <value>/data1/data</value>
+    <value>${datadirs}</value>
   </property>
   <!-- HUE integration -->
   <property>        

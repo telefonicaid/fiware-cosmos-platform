@@ -23,5 +23,6 @@ urlpatterns = patterns('cosmos',
   url(r'^jobs/run/$',          'views.define_job',     name='define_job'),
   url(r'^jobs/run/config/$',   'views.configure_job',  name='configure_job'),
   url(r'^jobs/run/confirm/$',  'views.confirm_job',    name='confirm_job'),
+  url(r'^jobs/run/cancel/$',   'views.cancel_job',     name='cancel_job'),
   url(r'^upload/$',            'views.upload_index',   name='upload_index'),
 )

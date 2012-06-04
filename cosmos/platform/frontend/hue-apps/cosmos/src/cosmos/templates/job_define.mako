@@ -57,7 +57,7 @@ ${shared.header("Run new job", section="define_job")}
         </dl>
 
 	<br/>
-	<input class="submit" name="cancel" type="submit" value="Cancel" />
+	<a class="cos-cancel" href="${ url('cancel_job') }">Cancel</a>
 	<input class="submit" name="next"   type="submit" value="Next >" />
     </form>
 </div>

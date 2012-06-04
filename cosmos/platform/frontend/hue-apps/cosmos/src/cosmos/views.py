@@ -66,53 +66,47 @@ def submit(job):
         submission.save()
 
 
+def job_wizard(request):
+    return request.session.get('job_wizard', {})
+
+
+def clear_job_wizard(request):
+    request.session.pop('job_wizard', '')
+
+
+def update_job_wizard(request, wizard):
+    request.session['job_wizard'] = wizard
+
+
 def define_job(request):
     """Defines a new job in user session."""
 
-    if (request.session.has_key('job_wizard') and 
-        request.session['job_wizard'] is not None):
-        wizard = request.session['job_wizard']
-    else:
-        wizard = {
-            'job': JobRun()
-        }
-        request.session['job_wizard'] = wizard
+    wizard = job_wizard(request)
+    job = wizard.get('job', {})
 
     if request.method != 'POST':
-        job = wizard['job']
-        form = DefineJobForm(initial={
-            'name': job.name,
-            'description': job.description,
-            'user': request.user,
-            'dataset_path': job.dataset_path,
-            'jar_path': job.jar_path
-        })
-
-    elif request.POST.has_key('cancel'):
-        form = DefineJobForm()
-        request.session.pop('job_wizard', '')
+        form = DefineJobForm(initial=job)
 
     else:
         form = DefineJobForm(request.POST, request.FILES)
         if form.is_valid(request.fs):
-            data = form.cleaned_data
+            job.update(form.cleaned_data)
+            update_job_wizard(request, wizard)
 
-            # Merge fields
-            job = wizard['job']
-            job.name = data['name']
-            job.description = data['description']
-            job.user = request.user
-            job.dataset_path = data['dataset_path']
-            job.jar_path = data['jar_path']
-
-            with closing(CachedHDFSFile(request.fs, job.jar_path)) as cached_file:
+            with closing(CachedHDFSFile(request.fs, job['jar_path'])) \
+                    as cached_file:
                 try:
                     jar = JarFile(cached_file.local_path())
                     try:
                         if jar.is_parameterized():
-                            wizard['parameters'] = jar.parameters()
+                            wizard['parameters'] = [{
+                                'name': template.name,
+                                'type': template.type,
+                                'default_value': template.default_value
+                            } for template in jar.parameters()]
                             next_action = 'configure_job'
                         else:
+                            wizard['parameters'] = None
                             next_action = 'confirm_job'
                         return redirect(reverse(next_action))
                     finally:
@@ -129,50 +123,53 @@ def define_job(request):
 def configure_job(request):
     """Job parametrization."""
 
-    if (request.session.has_key('job_wizard') and 
-        request.session['job_wizard'] is not None):
-        wizard = request.session['job_wizard']
-    else:
-        return redirect(reverse('define_job'))
+    wizard = job_wizard(request)
+    job = wizard.get('job', {})
+    parameters = wizard.get('parameters', None)
 
-    return render('job_parameterize.mako', request, dict())
+    if not parameters:
+        return redirect(reverse('confirm_job'))
+
+    form = "..."
+
+    return render('job_parameterize.mako', request, dict(form=form))
 
 
 def confirm_job(request):
     """Confirm and run."""
 
-    if (request.session.has_key('job_wizard') and 
-        request.session['job_wizard'] is not None):
-        wizard = request.session['job_wizard']
-    else:
+    wizard = job_wizard(request)
+    job_data = wizard.get('job', {})
+    job = JobRun(user=request.user)
+    try:
+        job.name = job_data['name']
+        job.description = job_data['description']
+        job.jar_path = job_data['jar_path']
+        job.dataset_path = job_data['dataset_path']
+    except KeyError:
         return redirect(reverse('define_job'))
 
-    return render('job_confirm.mako', request, dict())
+    if request.method != 'POST':
+        return render('job_confirm.mako', request, dict(job=wizard['job']))
 
-#def run_job(request):
-#    """Starts a new job."""
-#
-#    if request.method == 'POST':
-#        form = RunJobForm(request.POST, request.FILES)
-#
-#        if form.is_valid():
-#            has_jar = validate_hdfs_path(request.fs, form, "jar_path")
-#            has_dataset = validate_hdfs_path(request.fs, form, "dataset_path")
-#            if has_jar and has_dataset:
-#                data = form.cleaned_data
-#                job = JobRun(name=data['name'], description=data['description'],
-#                             user=request.user,
-#                             dataset_path=data['dataset_path'],
-#                             jar_path=data['jar_path'])
-#                job.save()
-#                submit(job)
-#                return redirect(reverse('list_jobs'))
-#    else:
-#        form = RunJobForm()
-#
-#    return render('job_run.mako', request, dict(
-#        form=form
-#    ))
+    elif request.POST.has_key('back'):
+        if wizard.get('parameters', None):
+            prev_action = 'configure_job'
+        else:
+            prev_action = 'define_job'
+        return redirect(reverse(prev_action))
+
+    else:
+        job.save()
+        submit(job)
+        clear_job_wizard(request)
+        return redirect(reverse('list_jobs'))
+
+
+def cancel_job(request):
+    """Cancels and restarts the new job wizard."""
+    clear_job_wizard(request)
+    return redirect(reverse('define_job'))
 
 
 def ensure_dir(fs, path):

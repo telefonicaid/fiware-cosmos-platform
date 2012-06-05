@@ -33,6 +33,7 @@ message MobData {
         ITIN_RANGE = 23;
         ITIN_PERC_MOVE = 24;
         ITINERARY = 25;
+        MATRIX_TIME = 26;
     }
 
     required Type type = 1;
@@ -61,6 +62,7 @@ message MobData {
     optional ItinRange itinRange = 24;
     optional ItinPercMove itinPercMove = 25;
     optional Itinerary itinerary = 26;
+    optional MatrixTime matrixTime = 27;
 }
 
 message Cdr {
@@ -252,6 +254,18 @@ message Itinerary {
     optional uint32 rangeInit = 8;
     optional uint32 wdayFin = 9;
     optional uint32 rangeFin = 10;
+}
+
+message CellGroup {
+    optional uint64 cellId = 1;
+    optional TwoInt group = 2;
+}
+
+message MatrixTime {
+    optional base.Date date = 1;
+    optional base.Time time = 2;
+    optional uint32 group = 3;
+    optional uint64 bts = 4;
 }
 
 message MatrixRange {

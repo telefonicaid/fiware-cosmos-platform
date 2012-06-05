@@ -12,6 +12,7 @@ import org.apache.hadoop.util.ToolRunner;
 import es.tid.cosmos.base.util.ArgumentParser;
 import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
+import es.tid.cosmos.mobility.aggregatedmatrix.simple.AggregatedMatrixSimpleRunner;
 import es.tid.cosmos.mobility.itineraries.ItinerariesRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
@@ -231,6 +232,19 @@ public class MobilityMain extends Configured implements Tool {
                                                populationDensityProfileOutPath,
                                                tmpPopulationDensityProfilePath,
                                                isDebug, conf);
+        }
+        
+        Path tmpAggregatedMatrixSimplePath = new Path(tmpPath,
+                "aggregated_matrix_simple");
+        Path matrixPairBtsTxtPath = new Path(tmpAggregatedMatrixSimplePath,
+                                             "matrixPairBtsTxt");
+        boolean shouldGetAggregatedMatrixSimpleProfile = arguments.getBoolean(
+                "getAggregatedMatrixSimple");
+        if (shouldRunAll || shouldGetAggregatedMatrixSimpleProfile) {
+            AggregatedMatrixSimpleRunner.run(cdrsInfoPath, cellsPath,
+                                             matrixPairBtsTxtPath,
+                                             tmpAggregatedMatrixSimplePath,
+                                             isDebug, conf);
         }
         
         return 0;

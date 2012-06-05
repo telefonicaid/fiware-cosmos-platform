@@ -20,7 +20,6 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 public class MatrixCountRangesReducer extends Reducer<
         ProtobufWritable<MatrixRange>, ProtobufWritable<MobData>,
         ProtobufWritable<MatrixRange>, ProtobufWritable<MobData>> {
-
     @Override
     protected void reduce(ProtobufWritable<MatrixRange> key,
             Iterable<ProtobufWritable<MobData>> values, Context context)

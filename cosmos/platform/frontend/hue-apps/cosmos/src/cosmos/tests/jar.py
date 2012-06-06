@@ -24,11 +24,14 @@ class UseJarTestCase(test.TestCase):
         test_path = os.path.realpath(os.path.dirname(__file__))
         self.prop_jar = JarFile(os.path.join(test_path, 'jar-properties.jar'))
         self.xml_jar = JarFile(os.path.join(test_path, 'jar-xml.jar'))
+        self.malformed_jar = JarFile(os.path.join(test_path,
+                                                  'jar-malformed-xml.jar'))
         self.nop_jar = JarFile(os.path.join(test_path, 'jar-nop.jar'))
 
     def tearDown(self):
         self.prop_jar.close()
         self.xml_jar.close()
+        self.malformed_jar.close()
         self.nop_jar.close()
 
     def test_read_manifest(self):
@@ -51,6 +54,9 @@ class UseJarTestCase(test.TestCase):
 
     def test_get_no_parametrization(self):
         self.assertRaises(ValueError, self.nop_jar.parameters)
+
+    def test_error_on_invalid_parametrization(self):
+        self.assertRaises(InvalidJarFile, self.malformed_jar.parameters)
 
     def test_get_parametrization_from_properties(self):
         params = self.prop_jar.parameters()

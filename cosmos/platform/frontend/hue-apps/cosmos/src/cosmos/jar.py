@@ -19,6 +19,8 @@ class InvalidJarFile(Exception):
 class ParameterTemplate(object):
 
     def __init__(self, key, value):
+        if key.find('=') >= 0:
+            raise InvalidJarFile("Invalid parameter name '%s'" % key)
         self.name = key
         match = re.match(r'^(string|filepath)(?:\|(.*))?$', value)
         if not match:

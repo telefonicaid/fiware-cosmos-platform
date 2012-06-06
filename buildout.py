@@ -58,8 +58,8 @@ class BuildOut(object):
         self.__run_subproc(['bin/hue', 'test', 'specific', self.project_name(),
                            '--with-nosexunit'], 'Unit testing')
         if self.build_path != self.project:
-            copyreplace_tree(os.path.join(self.build_path, 'target'),
-                             os.path.join(self.project, 'target'))
+            copyreplace_tree(os.path.join(self.project, 'target'),
+                             os.path.join(self.build_path, 'target'))
         self.__cd_back()
 
     def project_name(self):

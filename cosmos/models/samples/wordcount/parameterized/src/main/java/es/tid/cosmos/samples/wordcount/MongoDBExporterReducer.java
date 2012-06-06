@@ -7,6 +7,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 /**
+ * Export wordcount results to MongoDB
  *
  * @author dmicol, sortega
  */

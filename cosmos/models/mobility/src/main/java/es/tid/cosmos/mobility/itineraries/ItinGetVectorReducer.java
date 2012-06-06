@@ -3,8 +3,10 @@ package es.tid.cosmos.mobility.itineraries;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinPercMove;
@@ -20,7 +22,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 public class ItinGetVectorReducer extends Reducer<ProtobufWritable<ItinRange>,
         ProtobufWritable<MobData>, ProtobufWritable<ItinRange>,
         ProtobufWritable<MobData>> {
-    private static final double MIN_ITIN_MOVES = 6.9D;
+    private double minItinMoves;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final Configuration conf = context.getConfiguration();
+        this.minItinMoves = Double.parseDouble(conf.get(Config.MIN_ITIN_MOVES));
+    }
     
     @Override
     protected void reduce(ProtobufWritable<ItinRange> key,
@@ -42,7 +51,7 @@ public class ItinGetVectorReducer extends Reducer<ProtobufWritable<ItinRange>,
             distMoves.setComs(j, percMoves.getPercMoves());
             numMoves += percMoves.getPercMoves();
         }
-        if (numMoves >= MIN_ITIN_MOVES) {
+        if (numMoves >= this.minItinMoves) {
             context.write(key, MobDataUtil.createAndWrap(distMoves.build()));
         }
     }

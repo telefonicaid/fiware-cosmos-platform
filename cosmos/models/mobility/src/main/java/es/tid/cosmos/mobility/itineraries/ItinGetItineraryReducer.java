@@ -24,6 +24,7 @@ public class ItinGetItineraryReducer extends Reducer<
         ProtobufWritable<ItinRange>, ProtobufWritable<MobData>, LongWritable,
         ProtobufWritable<MobData>> {
     private double percAbsoluteMax;
+    
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {

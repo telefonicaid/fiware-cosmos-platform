@@ -27,6 +27,7 @@ public abstract class Config {
             "mob.max_minutes_in_moves";
     public static final String MIN_MINUTES_IN_MOVES =
             "mob.min_minutes_in_moves";
+    public static final String MIN_ITIN_MOVES = "mob.min_itin_moves";
     
     private Config() {
     }
@@ -61,6 +62,8 @@ public abstract class Config {
                 MAX_MINUTES_IN_MOVES)));
         conf.setInt(MIN_MINUTES_IN_MOVES, Integer.parseInt(props.getProperty(
                 MIN_MINUTES_IN_MOVES)));
+        conf.set(MIN_ITIN_MOVES, props.getProperty(MIN_ITIN_MOVES));
+        
         return conf;
     }
 }

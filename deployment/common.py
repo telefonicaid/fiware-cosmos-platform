@@ -14,7 +14,7 @@ def has_package(pkg):
         out = run('yum list -q installed | grep ^%s\\. || echo' % pkg)
         return len(out.strip()) > 0
 
-def check_dependencies(pkg_list):
+def install_dependencies(pkg_list):
     """
     Checks that a list of dependencies is met using the OS package manager. If
     a dependency is not met, it is installed.

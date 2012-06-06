@@ -20,8 +20,6 @@ import hue_deployment
 DEFAULT_CONFIG = 'staging.json'
 
 CONFIG = json.loads(open(DEFAULT_CONFIG, 'r').read())
-env.user = CONFIG['user'] 
-env.password = CONFIG['password']
 env.roledefs = CONFIG['hosts']
 
 @task

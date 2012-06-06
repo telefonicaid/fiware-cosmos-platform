@@ -69,7 +69,7 @@ public final class AggregatedMatrixSimpleRunner {
             CosmosJob job = CosmosJob.createReduceJob(conf, "ItinGetRanges",
                     SequenceFileInputFormat.class,
                     ItinGetRangesReducer.class,
-                    TextOutputFormat.class);
+                    SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, mtxClientMovesPath);
             FileOutputFormat.setOutputPath(job, mtxClientMovesRangesPath);
             job.waitForCompletion(true);
@@ -82,7 +82,7 @@ public final class AggregatedMatrixSimpleRunner {
                     "MatrixSpreadDistMovesByPair",
                     SequenceFileInputFormat.class,
                     MatrixSpreadDistMovesByPairMapper.class,
-                    TextOutputFormat.class);
+                    SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, mtxClientMovesRangesPath);
             FileOutputFormat.setOutputPath(job, mtxPbtsMovesRangesPath);
             job.waitForCompletion(true);
@@ -94,7 +94,7 @@ public final class AggregatedMatrixSimpleRunner {
             CosmosJob job = CosmosJob.createReduceJob(conf, "ItinCountRanges",
                     SequenceFileInputFormat.class,
                     ItinCountRangesReducer.class,
-                    TextOutputFormat.class);
+                    SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, mtxPbtsMovesRangesPath);
             FileOutputFormat.setOutputPath(job, mtxPbtsMovesCountPath);
             job.waitForCompletion(true);
@@ -106,7 +106,7 @@ public final class AggregatedMatrixSimpleRunner {
             CosmosJob job = CosmosJob.createReduceJob(conf, "ItinGetVector",
                     SequenceFileInputFormat.class,
                     ItinGetVectorReducer.class,
-                    TextOutputFormat.class);
+                    SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, mtxPbtsMovesCountPath);
             FileOutputFormat.setOutputPath(job, mtxPbtsMovesVectorBtsPath);
             job.waitForCompletion(true);
@@ -118,7 +118,7 @@ public final class AggregatedMatrixSimpleRunner {
                     "MatrixSpreadVectorByPair",
                     SequenceFileInputFormat.class,
                     MatrixSpreadVectorByPairMapper.class,
-                    TextOutputFormat.class);
+                    SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, mtxPbtsMovesVectorBtsPath);
             FileOutputFormat.setOutputPath(job, mtxPairbtsVectorPath);
             job.waitForCompletion(true);

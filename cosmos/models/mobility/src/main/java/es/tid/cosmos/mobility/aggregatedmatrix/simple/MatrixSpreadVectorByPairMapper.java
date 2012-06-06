@@ -25,8 +25,6 @@ public class MatrixSpreadVectorByPairMapper extends Mapper<
             throws IOException, InterruptedException {
         key.setConverter(ItinRange.class);
         final ItinRange itrang = key.get();
-        ItinRange.Builder outItrang = ItinRange.newBuilder(itrang);
-        outItrang.setNode(itrang.getPoiSrc() * itrang.getPoiTgt());
         context.write(TwoIntUtil.createAndWrap(itrang.getPoiSrc(),
                                                itrang.getPoiTgt()), value);
     }

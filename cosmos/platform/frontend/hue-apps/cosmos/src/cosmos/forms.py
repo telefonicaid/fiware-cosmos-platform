@@ -89,7 +89,8 @@ class ParameterizeJobForm(forms.Form):
                                                   STRING_MAX_LENGTH,
                                        initial=template.get('default_value',
                                                             None),
-                                       widget=HDFSFileChooser()))
+                                       widget=HDFSFileChooser(),
+                                       validators=[ABSOLUTE_PATH_VALIDATOR]))
     }
 
     def __init__(self, parameters, data=None):

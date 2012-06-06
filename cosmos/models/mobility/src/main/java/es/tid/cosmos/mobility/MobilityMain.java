@@ -245,7 +245,7 @@ public class MobilityMain extends Configured implements Tool {
                 "getPopulationDensityProfile");
         if (shouldRunAll || shouldGetPopulationDensityProfile) {
             PopulationDensityProfileRunner.run(cdrsInfoPath,
-                                               cellsMobPath,
+                                               cellsPath,
                                                clientProfilePath,
                                                populationDensityProfileOutPath,
                                                tmpPopulationDensityProfilePath,

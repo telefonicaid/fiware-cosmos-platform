@@ -23,7 +23,7 @@ public class PopulationDensityProfileRunner {
     private PopulationDensityProfileRunner() {
     }
     
-    public static void run(Path cdrsInfoPath, Path cellsMobPath,
+    public static void run(Path cdrsInfoPath, Path cellsPath,
                            Path clientProfilePath,
                            Path populationDensityProfileOut, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
@@ -36,7 +36,8 @@ public class PopulationDensityProfileRunner {
                     SequenceFileInputFormat.class,
                     PopdenSpreadNodebtsdayhourReducer.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, cdrsInfoPath, cellsMobPath);
+            job.getConfiguration().set("cells", cellsPath.toString());
+            FileInputFormat.setInputPaths(job, cdrsInfoPath);
             FileOutputFormat.setOutputPath(job, denpobNodbtsdayhourPath);
             job.waitForCompletion(true);
         }

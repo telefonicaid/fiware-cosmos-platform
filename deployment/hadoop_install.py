@@ -13,7 +13,7 @@ COSMOS_CLASSPATH='/usr/lib/hadoop-0.20/lib/cosmos/'
 @parallel
 def install_cdh():
     """Install the latest Hadoop distribution in CDH3"""
-    run('rm -rf /tmp/*')
+    run('rm -rf /tmp/hadoop-*')
     repo_rpm = ('http://archive.cloudera.com/redhat/cdh/'
                 'cdh3-repository-1.0-1.noarch.rpm')
     run('wget %s' % repo_rpm)

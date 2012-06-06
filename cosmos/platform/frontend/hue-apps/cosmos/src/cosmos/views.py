@@ -91,6 +91,7 @@ def define_job(request):
         form = DefineJobForm(request.POST, request.FILES)
         if form.is_valid(request.fs):
             job.update(form.cleaned_data)
+            wizard['job'] = job
             update_job_wizard(request, wizard)
 
             with closing(CachedHDFSFile(request.fs, job['jar_path'])) \
@@ -98,7 +99,8 @@ def define_job(request):
                 try:
                     jar = JarFile(cached_file.local_path())
                     try:
-                        if jar.is_parameterized():
+                        wizard['parameterized'] = jar.is_parameterized()
+                        if wizard['parameterized']:
                             wizard['parameters'] = [{
                                 'name': template.name,
                                 'type': template.type,
@@ -130,7 +132,18 @@ def configure_job(request):
     if not parameters:
         return redirect(reverse('confirm_job'))
 
-    form = "..."
+    if request.method != 'POST':
+        form = ParameterizeJobForm(parameters)
+
+    elif request.POST.has_key('back'):
+        return redirect(reverse('define_job'))
+
+    else:
+        form = ParameterizeJobForm(parameters, request.POST)
+        if form.is_valid():
+            wizard['parameter_values'] = form.cleaned_data
+            update_job_wizard(request, wizard)
+            return redirect(reverse('confirm_job'))
 
     return render('job_parameterize.mako', request, dict(form=form))
 
@@ -146,14 +159,16 @@ def confirm_job(request):
         job.description = job_data['description']
         job.jar_path = job_data['jar_path']
         job.dataset_path = job_data['dataset_path']
+        if wizard['parameterized']:
+            job.parameters = wizard['parameter_values']
     except KeyError:
         return redirect(reverse('define_job'))
 
     if request.method != 'POST':
-        return render('job_confirm.mako', request, dict(job=wizard['job']))
+        return render('job_confirm.mako', request, wizard)
 
     elif request.POST.has_key('back'):
-        if wizard.get('parameters', None):
+        if wizard['parameterized']:
             prev_action = 'configure_job'
         else:
             prev_action = 'define_job'

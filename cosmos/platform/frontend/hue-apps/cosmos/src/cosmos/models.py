@@ -37,6 +37,7 @@ class JobRun(models.Model):
     dataset_path = models.CharField(max_length=PATH_MAX_LENGTH)
     jar_path = models.CharField(max_length=PATH_MAX_LENGTH)
     start_date = models.DateTimeField(auto_now=True)
+    parameters = models.TextField(null=True, blank=True)
     submission = models.ForeignKey(Submission, null=True)
     last_submission_refresh = models.DateTimeField(auto_now=True)
 
@@ -54,9 +55,14 @@ class JobRun(models.Model):
                              self.mongo_collection())
 
     def hadoop_args(self, jar_name):
+        args = ['jar', jar_name]
+        if self.parameters is not None:
+            for pair in self.parameters.items():
+                args.extend(["-D", "%s=%s" % pair])
         input_path = self.dataset_path
         output_path = '/user/%s/tmp/job_%d/' % (self.user.username, self.id)
-        return ['jar', jar_name, input_path, output_path, self.mongo_url()]
+        args.extend([input_path, output_path, self.mongo_url()])
+        return args
 
     def state(self):
         if self.submission is None:

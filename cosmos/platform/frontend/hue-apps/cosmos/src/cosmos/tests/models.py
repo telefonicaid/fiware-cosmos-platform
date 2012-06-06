@@ -27,6 +27,17 @@ class JobRunTestCase(test.TestCase):
                            '/user/jsmith/tmp/job_15/',
                            'mongodb://localhost/db_1.job_15'])
 
+    def test_hadoop_args_with_parameters(self):
+        self.job.parameters = {
+            'foo': 'bar'
+        }
+        self.assertEquals(self.job.hadoop_args('job.jar'),
+                          ['jar', 'job.jar',
+                           '-D', 'foo=bar',
+                           '/user/jsmith/datasets/text.txt',
+                           '/user/jsmith/tmp/job_15/',
+                           'mongodb://localhost/db_1.job_15'])
+
     def assert_link_in_states(self, link, states):
         for state in states:
             self.job.submission.last_seen_state = state

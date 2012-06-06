@@ -3,6 +3,7 @@
 Tests package.
 
 """
+from cosmos.tests.forms import *
 from cosmos.tests.hdfs_util import *
 from cosmos.tests.jar import *
 from cosmos.tests.models import *

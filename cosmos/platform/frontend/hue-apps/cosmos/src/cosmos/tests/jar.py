@@ -3,7 +3,6 @@
 JAR manipulation module tests.
 
 """
-
 import os.path
 import unittest as test
 

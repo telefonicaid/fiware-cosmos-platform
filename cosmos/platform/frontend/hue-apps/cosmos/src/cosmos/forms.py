@@ -7,6 +7,7 @@ import re
 from django import forms
 from django.core import validators
 from django.forms.util import ErrorList
+from django.utils.safestring import mark_safe
 
 from cosmos import models
 
@@ -57,6 +58,52 @@ class DefineJobForm(forms.Form):
         return has_file
 
 
+class HDFSFileChooser(forms.TextInput):
+    FORMAT_STRING = ('%s <a class="hue-choose_file" data-filters="ArtButton" ' +
+                     'data-chooseFor="%s">...</a>')
+
+    def render(self, name, value, attrs=None):
+        html = super(HDFSFileChooser, self).render(name, value, attrs=attrs)
+        return mark_safe(self.FORMAT_STRING % (html, name))
+
 
 class ParameterizeJobForm(forms.Form):
-    pass
+    """
+    Job parametrization form whose fields are dynamically generated from
+    parameter descriptions.
+
+    """
+
+    STRING_MAX_LENGTH = 255
+
+    FIELD_FACTORIES = {
+        'string': (lambda template:
+                       forms.CharField(label=template['name'],
+                                       max_length=ParameterizeJobForm.
+                                                  STRING_MAX_LENGTH,
+                                       initial=template.get('default_value',
+                                                            None))),
+        'filepath': (lambda template:
+                       forms.CharField(label=template['name'],
+                                       max_length=ParameterizeJobForm.
+                                                  STRING_MAX_LENGTH,
+                                       initial=template.get('default_value',
+                                                            None),
+                                       widget=HDFSFileChooser()))
+    }
+
+    def __init__(self, parameters, data=None):
+        """
+        Parameters is a list of dictionaries suppoting these keywords:
+         - name
+         - type
+         - default_value (optional)
+        """
+        if data is not None:
+            # Init from request data
+            super(ParameterizeJobForm, self).__init__(data)
+        else:
+            super(ParameterizeJobForm, self).__init__()
+
+        for param in parameters:
+            self.fields[param['name']] = self.FIELD_FACTORIES[param['type']](param)

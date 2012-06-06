@@ -15,8 +15,7 @@ ${shared.header("Run new job", section="define_job")}
     <table>
 	<thead>
 	    <tr>
-		<th>Property</th>
-		<th>Value</th>
+		<th colspan="2">Configuration</th>
 	    </tr>
 	</thead>
 	<tbody>
@@ -37,6 +36,21 @@ ${shared.header("Run new job", section="define_job")}
 		<td>${ job['dataset_path'] }</td>
 	    </tr>
 	</tbody>
+	% if parameters:
+	<thead>
+	    <tr>
+		<th colspan="2">Custom parameters</th>
+	    </tr>
+	</thead>
+	<tbody>
+	    % for parameter in parameters:
+	    <tr>
+		<th>${ parameter['name'] }</th>
+		<td>${ parameter_values[parameter['name']] }</td>
+	    </tr>
+	    % endfor
+	</tbody>
+	% endif
     </table>
 
     <form action="${ url('confirm_job') }" method="POST" class="cos-run_job_form"

@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+  <property>        
+    <name>mapred.job.tracker</name>
+    <value>${jobtracker}:8021</value>
+  </property>
+  <property>        
+    <name>mapred.system.dir</name>
+    <value>/hadoop/mapred/system</value>
+  </property>
+  <property>        
+    <name>mapred.local.dir</name>
+    <value>${dirs}</value>
+  </property>
+  <property>        
+    <name>mapreduce.jobtracker.staging.root.dir</name>
+    <value>/user</value>
+  </property>
+  <!-- optional settings -->
+  <property>
+    <name>mapred.child.java.opts</name>
+    <value>-Xmx350m</value>
+  </property>
+  <property>        
+    <name>mapred.child.ulimit</name>
+    <value>420m</value>
+  </property>
+  <!-- HUE integration -->
+  <property>        
+    <name>jobtracker.thrift.address</name>
+    <value>0.0.0.0:9290</value>
+  </property>
+  <property>        
+    <name>mapred.jobtracker.plugins</name>
+    <value>org.apache.hadoop.thriftfs.ThriftJobTrackerPlugin</value>
+  </property>
+</configuration>

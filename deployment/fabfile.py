@@ -47,8 +47,8 @@ def deploy_hue(thrift_tarpath):
     """
     Deploys the HUE frontend from Cloudera, plus our fixes and our app
     """
-    common.check_dependencies(['mysql', 'git'])
-    hue_deployment.patch_hue(CONFIG)
+    common.install_dependencies(['mysql', 'git'])
+    hue_deployment.install_and_patch_hue(CONFIG)
     execute(hue_deployment.install_hue_plugins)
     hue_deployment.install_thrift(thrift_tarpath)
     hue_deployment.install_cosmos_app()

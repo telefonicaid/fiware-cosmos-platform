@@ -8,7 +8,7 @@ from fabric.contrib import files
 from fabric.decorators import roles
 from fabric.utils import puts
 
-def patch_hue(config):
+def install_and_patch_hue(config):
     local_patch_path = os.path.join(config['hue_patch_dir'],
                                     config['hue_patch_name'])
     remote_patch_path = os.path.join('~', config['hue_patch_name'])

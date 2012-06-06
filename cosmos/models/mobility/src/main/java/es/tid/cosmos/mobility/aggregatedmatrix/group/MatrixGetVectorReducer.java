@@ -29,6 +29,9 @@ public class MatrixGetVectorReducer extends Reducer<
         key.setConverter(ItinRange.class);
         final ItinRange moveRange = key.get();
         ClusterVector.Builder moves = ClusterVector.newBuilder();
+        for (int i = 0; i < 168; i++) {
+            moves.addComs(0.0D);
+        }
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();

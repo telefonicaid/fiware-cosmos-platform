@@ -36,7 +36,7 @@ public class MatrixCountRangesReducer extends Reducer<
                 moveRange.getPoiTgt(), 0, 0);
         ProtobufWritable<MobData> distMoves = MobDataUtil.createAndWrap(
                 ItinPercMoveUtil.create(moveRange.getGroup(),
-                moveRange.getRange(), numMoves));
+                                        moveRange.getRange(), numMoves));
         context.write(range, distMoves);
     }
 }

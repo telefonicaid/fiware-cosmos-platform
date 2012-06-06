@@ -18,7 +18,7 @@ public class CellParser extends Parser {
         try {
             return Cell.newBuilder()
                 .setCellId(parseCellId())
-                .setPlaceId(parseLong())
+                .setBts(parseLong())
                 .setGeoloc1(parseInt())
                 .setGeoloc2(parseInt())
                 .setPosx(parseInt())

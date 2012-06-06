@@ -11,10 +11,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 public abstract class BtsCounterUtil {
     public static final String DELIMITER = "|";
     
-    public static BtsCounter create(long placeId, int weekday, int range,
+    public static BtsCounter create(long bts, int weekday, int range,
             int count) {
         return BtsCounter.newBuilder()
-                .setPlaceId(placeId)
+                .setBts(bts)
                 .setWeekday(weekday)
                 .setRange(range)
                 .setCount(count)
@@ -28,9 +28,9 @@ public abstract class BtsCounterUtil {
         return wrapper;
     }
     
-    public static ProtobufWritable<BtsCounter> createAndWrap(long placeId,
+    public static ProtobufWritable<BtsCounter> createAndWrap(long bts,
             int weekday, int range, int count) {
-        return wrap(create(placeId, weekday, range, count));
+        return wrap(create(bts, weekday, range, count));
     }
     
     public static BtsCounter parse(String line) {
@@ -40,7 +40,7 @@ public abstract class BtsCounterUtil {
     }
     
     public static String toString(BtsCounter obj) {
-        return (obj.getPlaceId() + DELIMITER + obj.getWeekday() + DELIMITER +
+        return (obj.getBts() + DELIMITER + obj.getWeekday() + DELIMITER +
                 obj.getRange() + DELIMITER + obj.getCount());
     }
 }

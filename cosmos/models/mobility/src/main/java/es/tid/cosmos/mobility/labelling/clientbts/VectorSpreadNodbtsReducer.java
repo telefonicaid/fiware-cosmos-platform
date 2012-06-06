@@ -45,7 +45,7 @@ public class VectorSpreadNodbtsReducer extends Reducer<LongWritable,
                         group = 0;
                 }
                 ProtobufWritable<NodeBts> nodeBts = NodeBtsUtil.createAndWrap(
-                        key.get(), (int)btsCounter.getPlaceId(),
+                        key.get(), btsCounter.getBts(),
                         group, btsCounter.getRange());
                 context.write(nodeBts,
                               MobDataUtil.createAndWrap(btsCounter.getCount()));

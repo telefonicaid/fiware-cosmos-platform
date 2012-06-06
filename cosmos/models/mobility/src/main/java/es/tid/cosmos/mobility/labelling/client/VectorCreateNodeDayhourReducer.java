@@ -55,7 +55,7 @@ public class VectorCreateNodeDayhourReducer extends Reducer
             vectorBuilder.addHours(hourComms);
         }
         ProtobufWritable<TwoInt> node = TwoIntUtil.createAndWrap(
-                bts.getUserId(), bts.getPlaceId());
+                bts.getUserId(), bts.getBts());
         context.write(node, MobDataUtil.createAndWrap(vectorBuilder.build()));
     }
 }

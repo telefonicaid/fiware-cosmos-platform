@@ -23,7 +23,8 @@ import es.tid.cosmos.mobility.mivs.MivsRunner;
 import es.tid.cosmos.mobility.outpois.OutPoisRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
-import es.tid.cosmos.mobility.populationdensity.PopulationDensityRunner;
+import es.tid.cosmos.mobility.activitydensity.ActivityDensityRunner;
+import es.tid.cosmos.mobility.activitydensity.profile.ActivityDensityProfileRunner;
 import es.tid.cosmos.mobility.populationdensity.profile.PopulationDensityProfileRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
 
@@ -208,16 +209,30 @@ public class MobilityMain extends Configured implements Tool {
                                   isDebug, conf);
         }
 
-        Path tmpPopulationDensityPath = new Path(tmpPath, "population_density");
-        Path populationDensityOutPath = new Path(tmpPopulationDensityPath,
-                                                 "populationDensityOut");
-        boolean shouldGetPopulationDensity = arguments.getBoolean(
-                "getPopulationDensity");
-        if (shouldRunAll || shouldGetPopulationDensity) {
-            PopulationDensityRunner.run(clientsInfoPath,
-                                        populationDensityOutPath,
-                                        tmpPopulationDensityPath, isDebug,
+        Path tmpActivityDensityPath = new Path(tmpPath, "activity_density");
+        Path activityDensityOutPath = new Path(tmpActivityDensityPath,
+                                               "activityDensityOut");
+        boolean shouldGetActivityDensity = arguments.getBoolean(
+                "getActivityDensity");
+        if (shouldRunAll || shouldGetActivityDensity) {
+            ActivityDensityRunner.run(clientsInfoPath,
+                                        activityDensityOutPath,
+                                        tmpActivityDensityPath, isDebug,
                                         conf);
+        }
+        
+        Path tmpActivityDensityProfilePath = new Path(tmpPath,
+                "activity_density_profile");
+        Path activityDensityProfileOutPath = new Path(
+                tmpActivityDensityProfilePath, "activityDensityProfileOut");
+        boolean shouldGetActivityDensityProfile = arguments.getBoolean(
+                "getActivityDensityProfile");
+        if (shouldRunAll || shouldGetActivityDensityProfile) {
+            ActivityDensityProfileRunner.run(clientProfilePath,
+                                             clientsInfoPath,
+                                             activityDensityProfileOutPath,
+                                             tmpActivityDensityProfilePath,
+                                             isDebug, conf);
         }
 
         Path tmpPopulationDensityProfilePath = new Path(tmpPath,
@@ -227,8 +242,9 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldGetPopulationDensityProfile = arguments.getBoolean(
                 "getPopulationDensityProfile");
         if (shouldRunAll || shouldGetPopulationDensityProfile) {
-            PopulationDensityProfileRunner.run(clientProfilePath,
-                                               clientsInfoPath,
+            PopulationDensityProfileRunner.run(cdrsInfoPath,
+                                               cellsMobPath,
+                                               clientProfilePath,
                                                populationDensityProfileOutPath,
                                                tmpPopulationDensityProfilePath,
                                                isDebug, conf);

@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.populationdensity;
+package es.tid.cosmos.mobility.activitydensity;
 
 import java.io.IOException;
 
@@ -17,8 +17,8 @@ import es.tid.cosmos.base.mapreduce.CosmosJob;
  *
  * @author dmicol
  */
-public final class PopulationDensityRunner {
-    private PopulationDensityRunner() {
+public final class ActivityDensityRunner {
+    private ActivityDensityRunner() {
     }
     
     public static void run(Path clientsInfoPath, Path populationDensityOutPath,

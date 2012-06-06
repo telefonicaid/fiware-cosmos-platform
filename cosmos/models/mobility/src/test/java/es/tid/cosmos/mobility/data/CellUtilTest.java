@@ -20,7 +20,7 @@ public class CellUtilTest {
         Cell obj = wrapper.get();
         assertNotNull(obj);
         assertEquals(1L, obj.getCellId());
-        assertEquals(2L, obj.getPlaceId());
+        assertEquals(2L, obj.getBts());
         assertEquals(3, obj.getGeoloc1());
         assertEquals(4, obj.getGeoloc2());
         assertEquals(5D, obj.getPosx(), 0.0D);

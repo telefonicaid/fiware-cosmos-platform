@@ -24,7 +24,7 @@ public class NodeBtsUtilTest {
         NodeBts obj = wrapper.get();
         assertNotNull(obj);
         assertEquals(userId, obj.getUserId());
-        assertEquals(placeId, obj.getPlaceId());
+        assertEquals(placeId, obj.getBts());
         assertEquals(weekday, obj.getWeekday());
         assertEquals(range, obj.getRange());
     }

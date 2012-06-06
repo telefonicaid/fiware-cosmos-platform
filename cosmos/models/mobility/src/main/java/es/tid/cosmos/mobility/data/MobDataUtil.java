@@ -178,6 +178,13 @@ public abstract class MobDataUtil {
                 .build();
     }
     
+    public static MobData create(NodeBts bts) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.NODE_BTS)
+                .setNodeBts(bts)
+                .build();
+    }
+    
     public static ProtobufWritable<MobData> wrap(MobData obj) {
         ProtobufWritable<MobData> wrapper = ProtobufWritable.newInstance(
                 MobData.class);
@@ -187,6 +194,10 @@ public abstract class MobDataUtil {
 
     public static ProtobufWritable<MobData> createAndWrap(NullWritable unused) {
         return wrap(create(unused));
+    }
+    
+    public static ProtobufWritable<MobData> createAndWrap(NodeBts obj) {
+        return wrap(create(obj));
     }
     
     public static ProtobufWritable<MobData> createAndWrap(int obj) {

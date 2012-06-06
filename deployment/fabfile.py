@@ -10,7 +10,7 @@ from StringIO import StringIO
 from fabric.api import run, execute, sudo, put, cd, env
 from fabric.contrib import files
 import fabric.context_managers as ctx
-from fabric.decorators import roles, task
+from fabric.decorators import roles, task, parallel
 from mako.template import Template
 from os import path
 
@@ -33,6 +33,7 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     deploy_hue(path.join(dependenciespath, thrift_tar))
     deploy_models()
     deploy_sftp()
+    deploy_ganglia()
     
 @task
 @roles('namenode', 'jobtracker', 'frontend', 'datanodes', 'tasktrackers')
@@ -132,3 +133,20 @@ def deploy_models():
         put(model)
         sudo('hadoop dfs -put {0} /models/{0}'.format(model))
         run('rm %s' % model)
+
+@task
+def deploy_ganglia():
+    execute(install_gmetad)
+    execute(install_gmond)
+
+@roles('namenode')
+def install_gmetad():
+    with ctx.hide('stdout'):
+        run("yum -y install ganglia-gmetad")
+
+#@parallel
+@roles('namenode', 'jobtracker', 'frontend', 'mongo', 'datanodes',
+       'tasktrackers')
+def install_gmond():
+    #with ctx.hide('stdout'):
+    run("yum -y install ganglia-gmond")

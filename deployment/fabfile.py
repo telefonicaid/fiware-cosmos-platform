@@ -127,8 +127,8 @@ def deploy_models():
     idea on what is needed to deploy a model, but we currently have no models
     to deploy
     """
-    model_paths = [] # Dummy variable, this should be part of
-                    # the configuration or similar
+    ## TODO: define in configuration
+    model_paths = []
     for model in model_paths:
         put(model)
         sudo('hadoop dfs -put {0} /models/{0}'.format(model))

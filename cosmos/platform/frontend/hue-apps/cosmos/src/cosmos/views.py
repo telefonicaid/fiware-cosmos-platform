@@ -133,7 +133,8 @@ def configure_job(request):
         return redirect(reverse('confirm_job'))
 
     if request.method != 'POST':
-        form = ParameterizeJobForm(parameters)
+        form = ParameterizeJobForm(parameters, wizard.get('parameter_values',
+                                                          None))
 
     elif request.POST.has_key('back'):
         return redirect(reverse('define_job'))

@@ -40,7 +40,6 @@ public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
-        List<Cdr> cdrList = new LinkedList<Cdr>();
         for (final ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();

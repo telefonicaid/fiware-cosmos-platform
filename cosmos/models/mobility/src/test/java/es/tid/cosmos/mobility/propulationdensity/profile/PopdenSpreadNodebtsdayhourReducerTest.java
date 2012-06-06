@@ -41,13 +41,13 @@ public class PopdenSpreadNodebtsdayhourReducerTest {
     @Before
     public void setUp() throws IOException {
         this.cells = new LinkedList<Cell>();
-        cells.add(CellUtil.create(10L, 11L, 12, 13, 14.0, 15.0));
+        this.cells.add(CellUtil.create(10L, 11L, 12, 13, 14.0, 15.0));
         PowerMockito.mockStatic(CellsCatalogue.class);
         when(CellsCatalogue.load(any(Path.class), any(Configuration.class)))
-                .thenReturn(cells);
+                .thenReturn(this.cells);
         this.instance = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
                 ProtobufWritable<MobData>, NullWritable>(
-                new PopdenSpreadNodebtsdayhourReducer());
+                        new PopdenSpreadNodebtsdayhourReducer());
         this.instance.getConfiguration().set("cells", "/home/test");
     }
 

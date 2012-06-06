@@ -9,18 +9,20 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.BtsProfileUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsProfile;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 
 /**
- *
+ * Input: <Long, NodeBts|Integer>
+ * Output: <BtsProfile, Long>
+ * 
  * @author ximo
  */
 public class PopdenJoinNodeInfoProfileReducer extends Reducer<
         LongWritable, ProtobufWritable<MobData>,
-        ProtobufWritable<MobData>, LongWritable> {
+        ProtobufWritable<BtsProfile>, LongWritable> {
+    private final static LongWritable ONE = new LongWritable(1);
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
@@ -44,12 +46,11 @@ public class PopdenJoinNodeInfoProfileReducer extends Reducer<
         }
         
         for (int profileId : profileIdList) {
-            for(NodeBts nodebts : nodebtsList) {
-                context.write(MobDataUtil.createAndWrap(
-                        BtsProfileUtil.create(
-                                nodebts.getBts(), profileId,
-                                nodebts.getWeekday(), nodebts.getRange())),
-                        new LongWritable(1L));
+            for (NodeBts nodebts : nodebtsList) {
+                context.write(BtsProfileUtil.createAndWrap(nodebts.getBts(),
+                              profileId, nodebts.getWeekday(),
+                              nodebts.getRange()),
+                        ONE);
             }
         }
     }

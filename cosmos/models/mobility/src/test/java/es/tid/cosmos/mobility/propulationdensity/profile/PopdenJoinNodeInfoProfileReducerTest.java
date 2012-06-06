@@ -26,7 +26,7 @@ public class PopdenJoinNodeInfoProfileReducerTest {
     public void setUp() {
         this.instance = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
                 ProtobufWritable<MobData>, LongWritable>(
-                new PopdenJoinNodeInfoProfileReducer());
+                        new PopdenJoinNodeInfoProfileReducer());
     }
 
     @Test

@@ -1,6 +1,5 @@
 """
 Data models.
-
 """
 import logging
 from datetime import datetime

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 JAR manipulation module tests.
-
 """
 import os.path
 import unittest as test

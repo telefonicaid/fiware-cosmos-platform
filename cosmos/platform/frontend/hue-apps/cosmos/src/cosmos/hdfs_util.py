@@ -10,7 +10,7 @@ from shutil import rmtree
 class TemporalDirectory(object):
     """
     Temporal directory with automatic naming whose lifespan equals the object
-    one. Intended for use within the 'with' sentence.
+    one. Intended to be used within 'with' construct.
     """
 
     def __init__(self, prefix='tmp'):

@@ -1,6 +1,5 @@
 """
 Application forms and validation.
-
 """
 import re
 
@@ -71,7 +70,6 @@ class ParameterizeJobForm(forms.Form):
     """
     Job parametrization form whose fields are dynamically generated from
     parameter descriptions.
-
     """
 
     STRING_MAX_LENGTH = 255

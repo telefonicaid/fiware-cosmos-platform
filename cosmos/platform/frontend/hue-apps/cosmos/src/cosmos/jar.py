@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 JAR manipulation module.
-
 """
 import re
 from zipfile import BadZipfile, ZipFile

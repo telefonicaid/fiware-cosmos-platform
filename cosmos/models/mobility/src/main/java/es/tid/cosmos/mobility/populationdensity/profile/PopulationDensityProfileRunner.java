@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.activitydensity.PopdenSumCommsReducer;
  *
  * @author ximo
  */
-public class PopulationDensityProfileRunner {
+public final class PopulationDensityProfileRunner {
     private PopulationDensityProfileRunner() {
     }
     

@@ -36,66 +36,66 @@ EXEC=/usr/share/hue/build/env/bin/python
 DAEMON_OPTS="-p $PIDFILE -l $LOGDIR -d"
 
 hue_start() {
-        export PYTHON_EGG_CACHE='/tmp/.hue-python-eggs'
-        RE_REGISTER=/usr/share/hue/.re_register
-        if [ -e $RE_REGISTER ]; then
-            # Do app_reg on upgraded apps. This is a workaround for DISTRO-11.
-            # We can probably take it out after another release.
-            DO="/sbin/runuser -s /bin/bash $USER -c"
-            APP_REG="/usr/share/hue/tools/app_reg/app_reg.py"
-            # Upgraded apps write their paths in the re_rgister file.
-            RE_REG_LOG=/var/log/hue/hue_re_register.log
+    export PYTHON_EGG_CACHE='/tmp/.hue-python-eggs'
+    RE_REGISTER=/usr/share/hue/.re_register
+    if [ -e $RE_REGISTER ]; then
+        # Do app_reg on upgraded apps. This is a workaround for DISTRO-11.
+        # We can probably take it out after another release.
+        DO="/sbin/runuser -s /bin/bash $USER -c"
+        APP_REG="/usr/share/hue/tools/app_reg/app_reg.py"
+        # Upgraded apps write their paths in the re_rgister file.
+        RE_REG_LOG=/var/log/hue/hue_re_register.log
 
-            # Make cwd somewhere that $USER can chdir into
-            pushd / > /dev/null
-            $DO "DESKTOP_LOG_DIR=$LOGDIR $EXEC $APP_REG --install $(cat $RE_REGISTER | xargs echo -n)  >> $RE_REG_LOG 2>&1"
-            ok=$?
-            popd > /dev/null
-            if [ $ok -eq 0 ] ; then
-                rm -f $RE_REGISTER
-            else
-                echo "Failed to register some apps: Details in $RE_REG_LOG"
-            fi
-        fi
-
-        echo -n "Starting hue: "
-        for dir in $(dirname $PIDFILE) $LOGDIR ${PYTHON_EGG_CACHE}
-        do
-            mkdir -p $dir
-            chown -R $USER $dir
-        done
-
-        # Check if already running
-        if [ -e $PIDFILE ] && checkpid $(cat $PIDFILE) ; then
-            echo "already running"
-            return
-        fi
-        # the supervisor itself will setuid down to $USER
-        env - $DAEMON $DAEMON_OPTS
-        ret=$?
-        base=$(basename $0)
-        if [ $ret -eq 0 ]; then
-            sleep 5
-            test -e $PIDFILE && checkpid $(cat $PIDFILE)
-            ret=$?
-        fi
-        if [ $ret -eq 0 ]; then
-            touch $LOCKFILE
-            success $"$base startup"
+        # Make cwd somewhere that $USER can chdir into
+        pushd / > /dev/null
+        $DO "DESKTOP_LOG_DIR=$LOGDIR $EXEC $APP_REG --install $(cat $RE_REGISTER | xargs echo -n)  >> $RE_REG_LOG 2>&1"
+        ok=$?
+        popd > /dev/null
+        if [ $ok -eq 0 ] ; then
+            rm -f $RE_REGISTER
         else
-            failure $"$base startup"
+            echo "Failed to register some apps: Details in $RE_REG_LOG"
         fi
-        echo
-        return $ret
+    fi
+
+    echo -n "Starting hue: "
+    for dir in $(dirname $PIDFILE) $LOGDIR ${PYTHON_EGG_CACHE}
+    do
+        mkdir -p $dir
+        chown -R $USER $dir
+    done
+
+    # Check if already running
+    if [ -e $PIDFILE ] && checkpid $(cat $PIDFILE) ; then
+        echo "already running"
+        return
+    fi
+    # the supervisor itself will setuid down to $USER
+    env - $DAEMON $DAEMON_OPTS
+    ret=$?
+    base=$(basename $0)
+    if [ $ret -eq 0 ]; then
+        sleep 5
+        test -e $PIDFILE && checkpid $(cat $PIDFILE)
+        ret=$?
+    fi
+    if [ $ret -eq 0 ]; then
+        touch $LOCKFILE
+        success $"$base startup"
+    else
+        failure $"$base startup"
+    fi
+    echo
+    return $ret
 }
 
 hue_stop() {
-        echo -n "Shutting down hue: "
-        killproc -p $PIDFILE -d 15 $DAEMON
-        ret=$?
-        echo
-        rm -f $LOCKFILE
-        return $ret
+    echo -n "Shutting down hue: "
+    killproc -p $PIDFILE -d 15 $DAEMON
+    ret=$?
+    echo
+    rm -f $LOCKFILE
+    return $ret
 }
 
 hue_restart() {

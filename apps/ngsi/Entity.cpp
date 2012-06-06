@@ -18,9 +18,10 @@
 #include "jsonParse.h"                          // JSON parsing function
 #include "httpData.h"                           // httpData
 #include "rest.h"                               // restReply
-#include "Attribute.h"                          // Attribute
 #include "ContextRegistrationAttributeList.h"   // ContextRegistrationAttributeList
 #include "database.h"                           // db
+#include "Attribute.h"                          // Attribute
+#include "Metadata.h"                           // Metadata
 #include "Entity.h"                             // Own interface
 
 using namespace std;
@@ -194,7 +195,8 @@ Entity* entityAdd
 )
 {
 	Entity*       entityP;
-    unsigned int  ix;
+    unsigned int  aIx;
+    unsigned int  mIx;
 
 	if (providingApplication == "")
 	{
@@ -241,11 +243,27 @@ Entity* entityAdd
 	rcrEntity->registrationId       = entityP->registrationId;
 
 
-
-	for (ix = 0; ix < attributeList->attributeV.size(); ix++)
+	//
+	// Adding the attributes (and their metadata)
+	//
+	for (aIx = 0; aIx < attributeList->attributeV.size(); aIx++)
 	{
-		attributeAdd(entityP,    attributeList->attributeV[ix]);
-		attributeAdd(rcrEntity,  attributeList->attributeV[ix]);
+		Attribute*  aP         = attributeList->attributeV[aIx];
+		std::string metaId     = "";
+		Attribute*  attribute;
+
+		attribute = attributeCreate(entityP, 0, aP->name, aP->type, aP->value, "", aP->isDomain);
+		attributeAppend(attribute);
+
+		for (mIx = 0; mIx < aP->metadataV.size(); mIx++)
+		{
+			Metadata* mP        = aP->metadataV[mIx];
+			Metadata* metadata;
+
+			metadata = metadataCreate(attribute, mP->name, mP->type, mP->value);
+			if (mP->name == "ID")
+				attribute->metaId = mP->value;
+		}
 	}
 
     return entityP;
@@ -268,7 +286,8 @@ Entity* entityUpdate
 )
 {
 	Entity*       entityP;
-    unsigned int  ix;
+    unsigned int  aIx;
+    unsigned int  mIx;
 
 	if (rcrEntity->id == "")
 	{
@@ -317,16 +336,31 @@ Entity* entityUpdate
 	//
 	// Update or add attributes
 	//
-	for (ix = 0; ix < attributeList->attributeV.size(); ix++)
+	for (aIx = 0; aIx < attributeList->attributeV.size(); aIx++)
 	{
 		Attribute* aP;
 		Attribute* attribute;
 
-		aP        = attributeList->attributeV[ix];
-		attribute = attributeLookup(aP->name, aP->type, aP->metaID);
+		aP        = attributeList->attributeV[aIx];
+		attribute = attributeLookup(entityP, aP->name, aP->type, aP->metaId);
 
-		attributeAdd(entityP,   attributeList->attributeV[ix]);
-		attributeAdd(rcrEntity, attributeList->attributeV[ix]);
+		if (attribute != NULL)
+			attributeUpdate(attribute, aP);
+		else
+		{
+			attribute = attributeCreate(entityP, 0, aP->name, aP->type, aP->value, 0, aP->isDomain);
+			attributeAppend(attribute);
+
+			for (mIx = 0; mIx < aP->metadataV.size(); mIx++)
+			{
+				Metadata* mP        = aP->metadataV[mIx];
+				Metadata* metadata;
+
+				metadata = metadataCreate(attribute, mP->name, mP->type, mP->value);
+				if (mP->name == "ID")
+					attribute->metaId = mP->value;
+			}
+		}
 	}
 
     return entityP;
@@ -497,6 +531,9 @@ int entityToDb(Entity* entityP, bool update, std::string* errorString)
 			*errorString = std::string("SQL error: ") + mysql_error(db);
 			return -1;
 		}
+
+		entityP->dbId = mysql_insert_id(db);
+		LM_T(LmtDbId, ("Inserted entity '%s:%s' has DB ID: %d", entityP->id.c_str(), entityP->type.c_str(), entityP->dbId));
 	}
 
 	return 0;

@@ -274,34 +274,3 @@ int dbReset(void)
 
 	return 0;
 }
-
-
-
-/* ****************************************************************************
-*
-* dbRegistrationAdd - 
-*/
-int dbRegistrationAdd(std::string id)
-{
-	char query[512];
-	int  s;
-
-	snprintf(query, sizeof(query), "INSERT INTO cm.registration (`id`) VALUES ('%s');", id.c_str());
-
-	s = mysql_query(db, query);
-	if (s != 0)
-		LM_RE(-1, ("mysql_query(%s): %s", query, mysql_error(db)));
-
-	return 0;
-}
-
-
-
-/* ****************************************************************************
-*
-* dbRegistrationMetadataAdd - 
-*/
-int dbRegistrationMetadataAdd(Registration* regP, Metadata* metadata)
-{
-	return 0;
-}

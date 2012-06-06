@@ -31,9 +31,13 @@ typedef enum TraceLevels
 	LmtRest,
 	LmtRestPath,
 
-	LmtDbTable   = 61,
+	LmtAttribute = 61,
+	LmtMetadata,
+
+	LmtDbTable   = 71,
 	LmtDbRegReq,
-	LmtDbEntity
+	LmtDbEntity,
+	LmtDbId
 } TraceLevels;
 
 #endif

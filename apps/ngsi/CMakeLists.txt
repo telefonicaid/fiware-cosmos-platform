@@ -16,6 +16,7 @@ SET (SOURCES
 	Registration.cpp
 	Attribute.cpp
 	database.cpp
+	Metadata.cpp
 )
 
 SET (HEADERS

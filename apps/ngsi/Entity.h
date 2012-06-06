@@ -24,6 +24,7 @@ using namespace std;
 */
 typedef struct Entity
 {
+    int              dbId;
 	std::string      id;
 	std::string      type;
 	bool             isPattern;

@@ -13,6 +13,7 @@
 #include "traceLevels.h"                    // Trace levels for log msg library
 #include "globals.h"                        // TF
 #include "Metadata.h"                       // Metadata
+#include "database.h"                       // db, ...
 #include "Registration.h"                   // Own interface
 
 using namespace std;
@@ -141,4 +142,24 @@ Registration* registrationAdd(std::string registrationId, vector<Metadata*> meta
 	registrationAppend(regP);
 
 	return regP;
+}
+
+
+
+/* ****************************************************************************
+*
+* registrationToDb - 
+*/
+int registrationToDb(std::string id)
+{
+	char query[512];
+	int  s;
+
+	snprintf(query, sizeof(query), "INSERT INTO cm.registration (`id`) VALUES ('%s');", id.c_str());
+
+	s = mysql_query(db, query);
+	if (s != 0)
+		LM_RE(-1, ("mysql_query(%s): %s", query, mysql_error(db)));
+
+	return 0;
 }

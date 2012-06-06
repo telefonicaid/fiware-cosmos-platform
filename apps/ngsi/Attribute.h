@@ -49,10 +49,11 @@ struct Entity;
 */
 typedef struct Attribute
 {
+	int                dbId;
     std::string        name;
     std::string        type;
 	std::string        value;
-	std::string        metaID;     // From metadata named 'ID' ...
+	std::string        metaId;     // From metadata named 'ID' ...
     bool               isDomain;
 	vector<Metadata*>  metadataV;
 	struct Attribute*  next;
@@ -63,9 +64,25 @@ typedef struct Attribute
 
 /* ****************************************************************************
 *
-* attributeAdd - 
+* attributeCreate - 
 */
-extern Attribute* attributeAdd(Entity* entityP, Attribute* attribute);
+extern Attribute* attributeCreate(Entity* entityP, int dbId, std::string name, std::string type, std::string value, std::string metaId, bool isDomain);
+
+
+
+/* ****************************************************************************
+*
+* attributeUpdate - 
+*/
+extern void attributeUpdate(Attribute* attribute, Attribute* updateFrom);
+
+
+
+/* ****************************************************************************
+*
+* attributeAppend - 
+*/
+extern void attributeAppend(Attribute* attribute);
 
 
 
@@ -73,6 +90,14 @@ extern Attribute* attributeAdd(Entity* entityP, Attribute* attribute);
 *
 * attributeLookup - 
 */
-extern Attribute* attributeLookup(std::string name, std::string type, std::string ID);
+extern Attribute* attributeLookup(struct Entity* entityP, std::string name, std::string type, std::string ID);
+
+
+
+/* ****************************************************************************
+*
+* attributeToDb - 
+*/
+extern int attributeToDb(Entity* entityP, Attribute* attribute);
 
 #endif

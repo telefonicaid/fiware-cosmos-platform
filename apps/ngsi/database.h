@@ -38,14 +38,6 @@ extern int dbInit(void);
 */
 extern int dbReset(void);
 
-
-
-/* ****************************************************************************
-*
-* dbRegistrationAdd - 
-*/
-extern int dbRegistrationAdd(std::string id);
-
 #endif
 
 

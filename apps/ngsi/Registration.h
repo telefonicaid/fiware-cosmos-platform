@@ -62,4 +62,12 @@ extern Registration* registrationUpdate(std::string registrationId, vector<Metad
 */
 extern Registration* registrationLookup(std::string id);
 
+
+
+/* ****************************************************************************
+*
+* registrationToDb - 
+*/
+extern int registrationToDb(std::string id);
+
 #endif

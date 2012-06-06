@@ -268,6 +268,8 @@ static int registerContextRequestToDatabase(RegisterContextRequest* rcReqP, bool
 	unsigned int  attributes;
 	unsigned int  metadatas;
 	int           s;
+	Entity*       entityP;
+	Attribute*    attributeP;
 
 	LM_T(LmtDbRegReq, ("------------ To DB ------------"));
 	entities = rcReqP->entityV.size();
@@ -282,22 +284,47 @@ static int registerContextRequestToDatabase(RegisterContextRequest* rcReqP, bool
 		s = entityToDb(rcReqP->entityV[eIx], isUpdate, errorString);
 		if (s != 0)
 			LM_RE(-1, ("Error %s entity '%s:%s'", (isUpdate == true)? "updating" : "creating", rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str()));
-	}
 
-	attributes = rcReqP->attributeList.attributeV.size();
-	for (aIx = 0; aIx < attributes; aIx++)
-    {
-        LM_T(LmtDbRegReq, ("Attribute { '%s', '%s' } to DB for the %d entities", rcReqP->attributeList.attributeV[aIx]->name.c_str(), rcReqP->attributeList.attributeV[aIx]->type.c_str(), entities));
-
-		metadatas = rcReqP->attributeList.attributeV[aIx]->metadataV.size();
-		for (mIx = 0; mIx < attributes; mIx++)
+		entityP = entityLookup(rcReqP->entityV[eIx]->id, rcReqP->entityV[eIx]->type);
+		if (entityP == NULL)
 		{
-			LM_T(LmtDbRegReq, ("Metadata { '%s', '%s', '%s' } to DB for attribute { '%s', '%s' }",
-							   rcReqP->attributeList.attributeV[aIx]->metadataV[mIx]->name.c_str(),
-							   rcReqP->attributeList.attributeV[aIx]->metadataV[mIx]->type.c_str(),
-							   rcReqP->attributeList.attributeV[aIx]->metadataV[mIx]->value.c_str(),
-							   rcReqP->attributeList.attributeV[aIx]->name.c_str(),
-							   rcReqP->attributeList.attributeV[aIx]->type.c_str()));
+			LM_W(("Entity '%s:%s' not found - this is a bug!", rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str()));
+			continue;
+		}
+
+		attributes = rcReqP->attributeList.attributeV.size();
+		for (aIx = 0; aIx < attributes; aIx++)
+		{
+			std::string metaId = "";
+
+			metadatas = rcReqP->attributeList.attributeV[aIx]->metadataV.size();
+
+			//
+			// Peeking to find metadata 'ID'
+			//
+			for (mIx = 0; mIx < metadatas; mIx++)
+			{
+				Metadata* mP = rcReqP->attributeList.attributeV[aIx]->metadataV[mIx];
+
+				if (mP->name == "ID")
+					metaId = mP->value;
+			}
+			
+			LM_T(LmtDbRegReq, ("Attribute { '%s', '%s' } to DB for the %d entities", rcReqP->attributeList.attributeV[aIx]->name.c_str(), rcReqP->attributeList.attributeV[aIx]->type.c_str(), entities));
+
+			attributeP = attributeLookup(entityP, rcReqP->attributeList.attributeV[aIx]->name, rcReqP->attributeList.attributeV[aIx]->type, metaId);
+			if (attributeP == NULL)
+			{
+				LM_W(("Attribute '%s:%s' not found - this is a bug!", rcReqP->attributeList.attributeV[aIx]->name.c_str(), rcReqP->attributeList.attributeV[aIx]->type.c_str()));
+				continue;
+			}
+			
+			s = attributeToDb(entityP, attributeP);
+			for (mIx = 0; mIx < metadatas; mIx++)
+			{
+				Metadata* mP = rcReqP->attributeList.attributeV[aIx]->metadataV[mIx];
+				metadataToDb(attributeP, mP);
+			}
 		}
 	}
 
@@ -356,7 +383,7 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 		char s[64];
 		
 		registrationId     = std::string(registrationIdGet(s, sizeof(s)));
-		if (dbRegistrationAdd(registrationId) != 0)
+		if (registrationToDb(registrationId) != 0)
 		{
 			registerContextResponse(fd, format, 502, NULL, 502, "database error", "error adding a Registration to database");
 			LM_RE(false, ("error adding a Registration to database"));

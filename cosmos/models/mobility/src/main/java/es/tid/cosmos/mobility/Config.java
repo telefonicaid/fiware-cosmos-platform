@@ -27,6 +27,8 @@ public abstract class Config {
             "mob.max_minutes_in_moves";
     public static final String MIN_MINUTES_IN_MOVES =
             "mob.min_minutes_in_moves";
+    public static final String MIN_ITIN_MOVES = "mob.min_itin_moves";
+    public static final String INCLUDE_INTRA_MOVES = "mob.include_intra_moves";
     
     private Config() {
     }
@@ -41,26 +43,31 @@ public abstract class Config {
                 MIN_TOTAL_CALLS)));
         conf.setInt(MAX_TOTAL_CALLS, Integer.parseInt(props.getProperty(
                 MAX_TOTAL_CALLS)));
-        // Unfortunate since Hadoop's Configuration doesn't have setDouble
-        conf.set(MAX_BTS_AREA, props.getProperty(MAX_BTS_AREA));
+        conf.setFloat(MAX_BTS_AREA, Float.parseFloat(props.getProperty(
+                MAX_BTS_AREA)));
         conf.setLong(MAX_COMMS_BTS, Long.parseLong(props.getProperty(
                 MAX_COMMS_BTS)));
         conf.setInt(HOME_LABELGROUP_ID, Integer.parseInt(props.getProperty(
                 HOME_LABELGROUP_ID)));
-        // Unfortunate since Hadoop's Configuration doesn't have setDouble
-        conf.set(MIN_DIST_SECOND_HOME, props.getProperty(MIN_DIST_SECOND_HOME));
+        conf.setFloat(MIN_DIST_SECOND_HOME, Float.parseFloat(props.getProperty(
+                MIN_DIST_SECOND_HOME)));
         conf.setInt(MIN_PERC_REP_BTS, Integer.parseInt(props.getProperty(
                 MIN_PERC_REP_BTS)));
         conf.setInt(MIN_NUMBER_CALLS_BTS, Integer.parseInt(props.getProperty(
                 MIN_NUMBER_CALLS_BTS)));
         conf.setInt(MAX_CDRS, Integer.parseInt(props.getProperty(
                 MAX_CDRS)));
-        // Unfortunate since Hadoop's Configuration doesn't have setDouble
-        conf.set(PERC_ABSOLUTE_MAX, props.getProperty(PERC_ABSOLUTE_MAX));
+        conf.setFloat(PERC_ABSOLUTE_MAX, Float.parseFloat(props.getProperty(
+                PERC_ABSOLUTE_MAX)));
         conf.setInt(MAX_MINUTES_IN_MOVES, Integer.parseInt(props.getProperty(
                 MAX_MINUTES_IN_MOVES)));
         conf.setInt(MIN_MINUTES_IN_MOVES, Integer.parseInt(props.getProperty(
                 MIN_MINUTES_IN_MOVES)));
+        conf.setFloat(MIN_ITIN_MOVES, Float.parseFloat(props.getProperty(
+                MIN_ITIN_MOVES)));
+        conf.setBoolean(INCLUDE_INTRA_MOVES, Boolean.parseBoolean(
+                props.getProperty(INCLUDE_INTRA_MOVES)));
+        
         return conf;
     }
 }

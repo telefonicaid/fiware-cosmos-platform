@@ -24,8 +24,14 @@ public class ServerCommandLineTest {
     }
 
     @Test
-    public void externalConfigCommandLine() throws Exception {
+    public void externalShortConfigCommandLine() throws Exception {
         this.instance.parse(new String[] {"-c", "/tmp/test.properties"});
+        assertTrue(this.instance.hasConfigFile());
+    }
+
+    @Test
+    public void externalLongConfigCommandLine() throws Exception {
+        this.instance.parse(new String[] {"--config", "/tmp/test.properties"});
         assertTrue(this.instance.hasConfigFile());
     }
 

@@ -18,9 +18,8 @@ public class TextExporterReducer extends Reducer<Text,
         ProtobufWritable<UserProfile>, NullWritable, Text> {
     @Override
     public void reduce(Text key,
-                       Iterable<ProtobufWritable<UserProfile>> values,
-                       Context context) throws IOException,
-                                               InterruptedException {
+            Iterable<ProtobufWritable<UserProfile>> values, Context context)
+            throws IOException, InterruptedException {
         for (ProtobufWritable<UserProfile> value : values) {
             value.setConverter(UserProfile.class);
             context.write(NullWritable.get(), 

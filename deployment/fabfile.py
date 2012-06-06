@@ -93,7 +93,7 @@ def deploy_sftp():
 @task
 def deploy_cdh():
     """Deploys the Cloudera Distribution for Hadoop"""
-    execute(hadoop_install.install_cdh)
+    execute(hadoop_install.install_cdh, CONFIG)
     execute(hadoop_install.create_hadoop_dirs, CONFIG)
     execute(hadoop_install.configure_hadoop, CONFIG)
     execute(hadoop_install.deploy_namenode_daemon)

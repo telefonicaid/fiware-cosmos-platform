@@ -9,6 +9,7 @@
         "datanodes": ["10.95.108.15", "10.95.109.190", "10.95.108.201"],
         "tasktrackers": ["10.95.108.15", "10.95.109.190", "10.95.108.201"]
     },
+    "cdh_version_repo": "cdh3-repository-1.0-1.noarch.rpm",
     "hadoop_data_dirs": ["/data1"],
     "hue_patch_dir": "../cosmos/platform/frontend/hue-patches",
     "hue_patch_name": "hue-patch-cdh3u4-r0.4.diff",

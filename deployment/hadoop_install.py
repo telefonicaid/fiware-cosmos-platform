@@ -11,13 +11,13 @@ COSMOS_CLASSPATH='/usr/lib/hadoop-0.20/lib/cosmos/'
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 @parallel
-def install_cdh():
+def install_cdh(config):
     """Install the latest Hadoop distribution in CDH3"""
+    cdh_repo = config["cdh_version_repo"]
     run('rm -rf /tmp/hadoop-*')
-    repo_rpm = ('http://archive.cloudera.com/redhat/cdh/'
-                'cdh3-repository-1.0-1.noarch.rpm')
+    repo_rpm = ('http://archive.cloudera.com/redhat/cdh/' + cdh_repo)
     run('wget %s' % repo_rpm)
-    run('rpm -Uvh --force cdh3-repository-1.0-1.noarch.rpm')
+    run('rpm -Uvh --force %s' % cdh_repo)
     if not files.exists('/etc/pki/rpm-gpg/RPM-GPG-KEY-cloudera'):
         run(('rpm --import'
              ' http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera'))

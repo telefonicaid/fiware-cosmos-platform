@@ -55,7 +55,7 @@ public class PopulationDensityProfileRunner {
         }
 
         Path popdenprofBtsprofPath = new Path(tmpDirPath,
-                                               "popdenprof_btsprof");
+                                              "popdenprof_btsprof");
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenJoinNodeInfoProfile",
                     SequenceFileInputFormat.class,

@@ -1,6 +1,6 @@
 package es.tid.cosmos.mobility.propulationdensity.profile;
 
-import static java.util.Arrays.asList;
+import java.util.Arrays;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -38,7 +38,7 @@ public class PopdenDeleteDuplicatesReducerTest {
                 1L, 2L, DateUtil.create(3, 4, 5, 6), 7);
         this.instance
                 .withInput(MobDataUtil.createAndWrap(key),
-                           asList(NullWritable.get()))
+                           Arrays.asList(NullWritable.get()))
                 .withOutput(new LongWritable(1L),
                             MobDataUtil.createAndWrap(
                                     NodeBtsUtil.create(1L, 2L, 6, 7)))

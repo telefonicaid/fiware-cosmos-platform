@@ -10,6 +10,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.NodeBtsDateUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
@@ -23,8 +24,9 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  *
  * @author ximo
  */
-public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, ProtobufWritable<NodeBtsDate>, NullWritable> {
+public final class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
+        ProtobufWritable<MobData>, ProtobufWritable<NodeBtsDate>,
+        ProtobufWritable<MobData>> {
     private static List<Cell> cells = null;
     
     @Override
@@ -46,9 +48,9 @@ public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
             final Cdr cdr = mobData.getCdr();
             for (Cell cell : cells) {
                 context.write(NodeBtsDateUtil.createAndWrap(cdr.getUserId(),
-                              cell.getBts(), cdr.getDate(),
-                              cdr.getTime().getHour()),
-                        NullWritable.get());
+                                        cell.getBts(), cdr.getDate(),
+                                        cdr.getTime().getHour()),
+                              MobDataUtil.createAndWrap(NullWritable.get()));
             }
         }
     }

@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobDataUtil;
@@ -18,12 +17,12 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDate;
  * 
  * @author ximo
  */
-public class PopdenDeleteDuplicatesReducer extends Reducer<
-        ProtobufWritable<NodeBtsDate>, NullWritable, LongWritable,
+public final class PopdenDeleteDuplicatesReducer extends Reducer<
+        ProtobufWritable<NodeBtsDate>, ProtobufWritable<MobData>, LongWritable,
         ProtobufWritable<MobData>> {
     @Override
     protected void reduce(ProtobufWritable<NodeBtsDate> key,
-            Iterable<NullWritable> values, Context context)
+            Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(NodeBtsDate.class);
         final NodeBtsDate nodeBtsDate = key.get();

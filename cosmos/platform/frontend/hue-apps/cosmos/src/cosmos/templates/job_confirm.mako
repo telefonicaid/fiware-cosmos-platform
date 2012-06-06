@@ -12,7 +12,7 @@ ${shared.header("Run new job", section="define_job")}
 
     <p>Please, review job settings.</p>
 
-    <table>
+    <table class="cos-job_summary">
 	<thead>
 	    <tr>
 		<th colspan="2">Configuration</th>
@@ -56,9 +56,11 @@ ${shared.header("Run new job", section="define_job")}
     <form action="${ url('confirm_job') }" method="POST" class="cos-run_job_form"
           enctype="multipart/form-data">
 	<br/>
-	<a class="cos-cancel" href="${ url('cancel_job') }">Cancel</a>
-	<input class="submit" name="back" type="submit" value="Back" />
-	<input class="submit" name="next" type="submit" value="Run job" />
+	<div class="cos-wizard_nav">
+	    <a class="cos-cancel" href="${ url('cancel_job') }">Cancel</a>
+	    <input class="submit" name="next"   type="submit" value="Run job" />
+	    <input class="submit" name="back" type="submit" value="< Back" />
+	</div>
     </form>
 </div>
 

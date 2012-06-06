@@ -8,19 +8,20 @@
 ${shared.header("Run new job", section="define_job")}
 
 <div id="run_job" class="jframe_padded view">
+    <h4 class="jframe-hidden">Run new job</h4>
+
+    <p>
+    You are creating a new custom job by uploading a custom Hadoop mapreduce
+    JAR.  Try the <a id="sample-jar-link" target="_blank"
+    href="/cosmos/static/samples/wordcount.jar">wordcount example</a> (<a 
+    id="sample-jar-sources" href="/cosmos/static/samples/wordcount.tgz"
+    target="_blank">sources</a>) or read about the
+    <a id="jar-restrictions" href="/help/cosmos/"
+    target="Help">custom job requirements</a>.
+    </p>
+
     <form action="${ url('define_job') }" method="POST" class="cos-run_job_form"
           enctype="multipart/form-data">
-	<h4 class="jframe-hidden">Run new job</h4>
-
-	<p>
-	You are creating a new custom job by uploading a custom Hadoop mapreduce
-	JAR.  Try the <a id="sample-jar-link" target="_blank"
-	href="/cosmos/static/samples/wordcount.jar">wordcount example</a> (<a 
-        id="sample-jar-sources" href="/cosmos/static/samples/wordcount.tgz"
-	target="_blank">sources</a>) or read about the
-	<a id="jar-restrictions" href="/help/cosmos/"
-	target="Help">custom job requirements</a>.
-	</p>
 
         % for err in form.non_field_errors():
         ${render_error(err)}
@@ -57,8 +58,10 @@ ${shared.header("Run new job", section="define_job")}
         </dl>
 
 	<br/>
-	<a class="cos-cancel" href="${ url('cancel_job') }">Cancel</a>
-	<input class="submit" name="next"   type="submit" value="Next >" />
+	<div class="cos-wizard_nav">
+	    <a class="cos-cancel" href="${ url('cancel_job') }">Cancel</a>
+	    <input class="submit" name="next"   type="submit" value="Next >" />
+	</div>
     </form>
 </div>
 

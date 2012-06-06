@@ -335,12 +335,14 @@ std::string str( double value )
         return au::str_double( value/ 1000.0 , 'K');
     else if( value < 1000000000)
         return au::str_double( value/ 1000000.0 , 'M');
+#ifdef __LP64__
     else if( value < 1000000000000)
         return au::str_double( value/ 1000000000.0 , 'G');
     else if( value < 1000000000000000)
         return au::str_double( value/ 1000000000000.0 , 'T');
     else if( value < 1000000000000000000)
         return au::str_double( value/ 1000000000000000.0 , 'P');
+#endif
     else 
         return "  INF ";
     

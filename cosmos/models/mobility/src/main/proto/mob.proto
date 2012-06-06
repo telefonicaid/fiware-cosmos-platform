@@ -35,6 +35,7 @@ message MobData {
         ITINERARY = 25;
         NODE_BTS_DATE = 26;
         NODE_BTS = 27;
+        MATRIX_TIME = 28;
     }
 
     required Type type = 1;
@@ -65,6 +66,7 @@ message MobData {
     optional Itinerary itinerary = 26;
     optional NodeBtsDate nodeBtsDate = 27;
     optional NodeBts nodeBts = 28;
+    optional MatrixTime matrixTime = 29;
 }
 
 message Cdr {
@@ -263,4 +265,24 @@ message Itinerary {
     optional uint32 rangeInit = 8;
     optional uint32 wdayFin = 9;
     optional uint32 rangeFin = 10;
+}
+
+message CellGroup {
+    optional uint64 cellId = 1;
+    optional TwoInt group = 2;
+}
+
+message MatrixTime {
+    optional base.Date date = 1;
+    optional base.Time time = 2;
+    optional uint32 group = 3;
+    optional uint64 bts = 4;
+}
+
+message MatrixRange {
+    optional uint64 node = 1;
+    optional uint64 poiSrc = 2;
+    optional uint64 poiTgt = 3;
+    optional uint32 group = 4;
+    optional uint32 range = 5;
 }

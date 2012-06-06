@@ -12,6 +12,7 @@ import org.apache.hadoop.util.ToolRunner;
 import es.tid.cosmos.base.util.ArgumentParser;
 import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
+import es.tid.cosmos.mobility.aggregatedmatrix.group.AggregatedMatrixGroupRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.simple.AggregatedMatrixSimpleRunner;
 import es.tid.cosmos.mobility.itineraries.ItinerariesRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
@@ -56,6 +57,7 @@ public class MobilityMain extends Configured implements Tool {
         
         Path cdrsPath = new Path(arguments.getString("cdrs"));
         Path cellsPath = new Path(arguments.getString("cells"));
+        Path cellGroupsPath = new Path(arguments.getString("cellGroups"));
         Path adjBtsPath = new Path(arguments.getString("adjBts"));
         Path btsVectorTxtPath = new Path(arguments.getString("btsVectorTxt"));
         Path clientProfilePath = new Path(arguments.getString("clientProfile"));
@@ -261,6 +263,19 @@ public class MobilityMain extends Configured implements Tool {
                                              matrixPairBtsTxtPath,
                                              tmpAggregatedMatrixSimplePath,
                                              isDebug, conf);
+        }
+
+        Path tmpAggregatedMatrixGroupPath = new Path(tmpPath,
+                                                     "aggregated_matrix_group");
+        Path matrixPairGroupTxtPath = new Path(tmpAggregatedMatrixGroupPath,
+                                               "matrixPairGroupTxt");
+        boolean shouldGetAggregatedMatrixGroupProfile = arguments.getBoolean(
+                "getAggregatedMatrixGroup");
+        if (shouldRunAll || shouldGetAggregatedMatrixGroupProfile) {
+            AggregatedMatrixGroupRunner.run(cdrsInfoPath, cellGroupsPath,
+                                            matrixPairGroupTxtPath,
+                                            tmpAggregatedMatrixGroupPath,
+                                            isDebug, conf);
         }
         
         return 0;

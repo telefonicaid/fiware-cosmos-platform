@@ -177,6 +177,13 @@ public abstract class MobDataUtil {
                 .setItinerary(itinerary)
                 .build();
     }
+
+    public static MobData create(MatrixTime matrixTime) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.MATRIX_TIME)
+                .setMatrixTime(matrixTime)
+                .build();
+    }
     
     public static MobData create(NodeBts bts) {
         return MobData.newBuilder()
@@ -289,6 +296,11 @@ public abstract class MobDataUtil {
     }
 
     public static ProtobufWritable<MobData> createAndWrap(Itinerary obj) {
+        return wrap(create(obj));
+    }
+
+
+    public static ProtobufWritable<MobData> createAndWrap(MatrixTime obj) {
         return wrap(create(obj));
     }
     

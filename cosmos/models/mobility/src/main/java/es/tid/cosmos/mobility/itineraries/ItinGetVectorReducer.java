@@ -28,7 +28,8 @@ public class ItinGetVectorReducer extends Reducer<ProtobufWritable<ItinRange>,
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.minItinMoves = Double.parseDouble(conf.get(Config.MIN_ITIN_MOVES));
+        this.minItinMoves = conf.getFloat(Config.MIN_ITIN_MOVES,
+                                          Float.MIN_VALUE);
     }
     
     @Override

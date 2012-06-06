@@ -29,8 +29,8 @@ public class ItinGetItineraryReducer extends Reducer<
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.percAbsoluteMax = Double.parseDouble(conf.get(
-                Config.PERC_ABSOLUTE_MAX));
+        this.percAbsoluteMax = conf.getFloat(Config.PERC_ABSOLUTE_MAX,
+                                             Float.MAX_VALUE);
     }
     
     @Override

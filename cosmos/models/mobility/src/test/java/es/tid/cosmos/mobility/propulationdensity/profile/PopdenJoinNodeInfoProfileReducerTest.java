@@ -21,17 +21,17 @@ import es.tid.cosmos.mobility.populationdensity.profile.PopdenJoinNodeInfoProfil
  */
 public class PopdenJoinNodeInfoProfileReducerTest {
     private ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-        ProtobufWritable<BtsProfile>, LongWritable> driver;
+            ProtobufWritable<BtsProfile>, LongWritable> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-            ProtobufWritable<BtsProfile>, LongWritable>(
-            new PopdenJoinNodeInfoProfileReducer());
+                ProtobufWritable<BtsProfile>, LongWritable>(
+                new PopdenJoinNodeInfoProfileReducer());
     }
 
     @Test
-    public void testReduce() throws Exception {
+    public void testReduce() {
         ProtobufWritable<MobData> nodebts = MobDataUtil.createAndWrap(
                 NodeBtsUtil.create(1L, 2L, 3, 4));
         ProtobufWritable<MobData> intdata = MobDataUtil.createAndWrap(5);

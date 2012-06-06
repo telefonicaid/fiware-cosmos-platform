@@ -11,7 +11,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDate;
  */
 public class NodeBtsDateUtil {   
     public static NodeBtsDate create(long userId, long bts,
-                                    Date date, int hour) {
+                                     Date date, int hour) {
         return NodeBtsDate.newBuilder()
                 .setUserId(userId)
                 .setBts(bts)
@@ -28,7 +28,7 @@ public class NodeBtsDateUtil {
     }
     
     public static ProtobufWritable<NodeBtsDate> createAndWrap(long userId,
-        long bts, Date date, int hour) {
+            long bts, Date date, int hour) {
         return wrap(create(userId, bts, date, hour));
     }
 }

@@ -32,7 +32,7 @@ public class PopdenDeleteDuplicatesReducerTest {
     }
 
     @Test
-    public void testReduce() throws Exception {
+    public void testReduce() {
         ProtobufWritable<NodeBtsDate> key = NodeBtsDateUtil.createAndWrap(
                 1L, 2L, DateUtil.create(3, 4, 5, 6), 7);
         this.driver

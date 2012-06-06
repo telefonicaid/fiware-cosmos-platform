@@ -31,7 +31,7 @@ public class PopdenSpreadNodebtsdayhourReducerTest {
     }
 
     @Test
-    public void testReduce() throws Exception {
+    public void testReduce() {
         Date date = DateUtil.create(3, 4, 5, 6);
         ProtobufWritable<MobData> cdr = MobDataUtil.createAndWrap(
                 CdrUtil.create(1L, 2L, date,

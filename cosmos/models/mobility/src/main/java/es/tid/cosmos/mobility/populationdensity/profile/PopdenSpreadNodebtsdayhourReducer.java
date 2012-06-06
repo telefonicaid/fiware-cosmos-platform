@@ -28,11 +28,9 @@ public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
             throws IOException, InterruptedException {
         List<Cdr> cdrList = new LinkedList<Cdr>();
         List<Cell> cellList = new LinkedList<Cell>();
-
         for (final ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
-
             switch (mobData.getType()) {
                 case CDR:
                     cdrList.add(mobData.getCdr());
@@ -45,7 +43,6 @@ public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
                             + mobData.getType().toString());
             }
         }
-
         for (Cell catalogue : cellList) {
             for (Cdr cdr : cdrList) {
                 context.write(

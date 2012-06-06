@@ -9,6 +9,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.BtsProfileUtil;
+import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsProfile;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
@@ -19,14 +20,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
  */
 public class PopdenJoinNodeInfoProfileReducer extends Reducer<
         LongWritable, ProtobufWritable<MobData>,
-        ProtobufWritable<BtsProfile>, LongWritable> {
+        ProtobufWritable<MobData>, LongWritable> {
     @Override
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<NodeBts> nodebtsList = new LinkedList<NodeBts>();
-        List<Integer> profileIdList = new LinkedList<Integer>();
-        
+        List<Integer> profileIdList = new LinkedList<Integer>();        
         for (final ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
@@ -43,13 +43,13 @@ public class PopdenJoinNodeInfoProfileReducer extends Reducer<
             }
         }
         
-        for(int profileId : profileIdList) {
+        for (int profileId : profileIdList) {
             for(NodeBts nodebts : nodebtsList) {
-                context.write(
-                        BtsProfileUtil.createAndWrap(
+                context.write(MobDataUtil.createAndWrap(
+                        BtsProfileUtil.create(
                                 nodebts.getBts(), profileId,
-                                nodebts.getWeekday(), nodebts.getRange()),
-                        new LongWritable(1));
+                                nodebts.getWeekday(), nodebts.getRange())),
+                        new LongWritable(1L));
             }
         }
     }

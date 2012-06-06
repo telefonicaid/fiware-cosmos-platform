@@ -30,7 +30,7 @@ public class MatrixSpreadVectorByPairMapperTest {
     }
     
     @Test
-    public void testReduce() {
+    public void testMap() {
         final ProtobufWritable<ItinRange> key = ItinRangeUtil.createAndWrap(
                 1, 2, 3, 4, 5);
         final ProtobufWritable<MobData> value = MobDataUtil.createAndWrap(

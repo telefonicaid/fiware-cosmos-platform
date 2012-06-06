@@ -28,7 +28,7 @@ public class MatrixSpreadNodeMapperTest {
     }
 
     @Test
-    public void testReduce() {
+    public void testMap() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L,
                                                                       102L);
         final ProtobufWritable<MobData> value = MobDataUtil.createAndWrap(

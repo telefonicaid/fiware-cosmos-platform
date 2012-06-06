@@ -27,7 +27,7 @@ public class MatrixSpreadDistMovesByPairMapperTest {
     }
 
     @Test
-    public void testReduce() {
+    public void testMap() {
         final ProtobufWritable<ItinRange> key = ItinRangeUtil.createAndWrap(
                 10, 20, 30, 40, 50);
         final ProtobufWritable<MobData> value = MobDataUtil.createAndWrap(57L);

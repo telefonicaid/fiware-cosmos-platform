@@ -20,8 +20,8 @@ public class CellGroupParser extends Parser {
             return CellGroup.newBuilder()
                     .setCellId(this.parseCellId())
                     .setGroup(TwoInt.newBuilder()
-                            .setNum1(this.parseInt())
-                            .setNum2(this.parseInt())
+                            .setNum1(this.parseLong())
+                            .setNum2(this.parseLong())
                             .build())
                     .build();
         } catch (Exception ex) {

@@ -698,7 +698,8 @@ class DataContainer
             file << "\t\to << \"</tr>\\n\";\n";
             file << "\t}\n";
 
-            file << "\to << \"<table>\\n\";\n";
+            file << "\to << \"<style>#table-5{font-family:\\\"Lucida Sans Unicode\\\", \\\"Lucida Grande\\\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{text-align:center;font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 td{color:#669;padding:9px 8px 0;}#table-5 tbody tr:hover td{color:#009;}</style>\";\n";
+            file << "\to << \"<table id=\\\"table-5\\\">\\n\";\n";
             file <<"\t\treturn o.str();\n";
             file <<"\t}\n\n";
 

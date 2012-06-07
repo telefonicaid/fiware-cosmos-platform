@@ -43,9 +43,10 @@ public final class PopulationDensityProfileRunner {
         }
 
         Path denpobNodeinfoNodupPath = new Path(tmpDirPath,
-                "denpob_nodeinfo_nodup");
+                                                "denpob_nodeinfo_nodup");
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenDeleteDuplicates",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "PopdenDeleteDuplicates",
                     SequenceFileInputFormat.class,
                     PopdenDeleteDuplicatesReducer.class,
                     SequenceFileOutputFormat.class);
@@ -57,7 +58,8 @@ public final class PopulationDensityProfileRunner {
         Path popdenprofBtsprofPath = new Path(tmpDirPath,
                                               "popdenprof_btsprof");
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenJoinNodeInfoProfile",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "PopdenJoinNodeInfoProfile",
                     SequenceFileInputFormat.class,
                     PopdenJoinNodeInfoProfileReducer.class,
                     SequenceFileOutputFormat.class);
@@ -84,15 +86,15 @@ public final class PopulationDensityProfileRunner {
             CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenSumComms",
                     SequenceFileInputFormat.class,
                     PopdenSumCommsReducer.class,
-                    1,
-                    TextOutputFormat.class);
+                    SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, popdenBtsprofCountPath);
             FileOutputFormat.setOutputPath(job, populationDensityPath);
             job.waitForCompletion(true);
         }
         
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenProfileGetOut",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "PopdenProfileGetOut",
                     SequenceFileInputFormat.class,
                     PopdenProfileGetOutReducer.class,
                     1,

@@ -48,8 +48,8 @@ public class PopdenJoinNodeInfoProfileReducer extends Reducer<
         for (int profileId : profileIdList) {
             for (NodeBts nodebts : nodebtsList) {
                 context.write(BtsProfileUtil.createAndWrap(nodebts.getBts(),
-                                    profileId, nodebts.getWeekday(),
-                                    nodebts.getRange()),
+                                      profileId, nodebts.getWeekday(),
+                                      nodebts.getRange()),
                               MobDataUtil.createAndWrap(1));
             }
         }

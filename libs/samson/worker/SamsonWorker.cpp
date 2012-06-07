@@ -1487,6 +1487,45 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
         snprintf(delilahCommand, sizeof(delilahCommand), "ls_modules %s -group name", command->path_components[2].c_str());
         process_delilah_command(delilahCommand, command);
     }
+    else if ( main_command == "stream_operations" )
+    {
+        if(command->command != "GET")
+        {
+            command->appendFormatedError(404, au::str("bad VERB for command"));
+            return;
+        }
+        std::string filter;
+        if( components == 3 )
+            filter = command->path_components[2];
+        process_delilah_command( au::str("ls_stream_operations %s -group name" , filter.c_str())  , command);
+    }
+    else if ( main_command == "workers" )
+    {
+        if(command->command != "GET")
+        {
+            command->appendFormatedError(404, au::str("bad VERB for command"));
+            return;
+        }
+        process_delilah_command( "ls_workers" , command );
+    }
+    else if ( main_command == "connections" )
+    {
+        if(command->command != "GET")
+        {
+            command->appendFormatedError(404, au::str("bad VERB for command"));
+            return;
+        }
+        process_delilah_command( "ls_connections -group name" , command );
+    }
+    else if ( main_command == "stream_operation_instances" )
+    {
+        if(command->command != "GET")
+        {
+            command->appendFormatedError(404, au::str("bad VERB for command"));
+            return;
+        }
+        process_delilah_command( "ps_stream -group name" , command );
+    }
     else if (main_command == "operations" )  /* /samson/operations */
     {
         char delilahCommand[256];

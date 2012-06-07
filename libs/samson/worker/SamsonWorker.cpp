@@ -1429,6 +1429,10 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
     {
         process_delilah_command( "ls -group name -sort name", command);
     }
+    else if ((path == "/samson/queues_rates") && (verb == "GET"))
+    {
+        process_delilah_command( "ls -group name -sort name -rates", command);
+    }
     else if ( main_command == "queues" )
     {
         char delilahCommand[256];

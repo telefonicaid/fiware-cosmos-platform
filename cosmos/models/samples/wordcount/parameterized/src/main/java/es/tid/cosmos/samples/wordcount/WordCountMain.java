@@ -11,26 +11,31 @@ import org.apache.log4j.Logger;
  * Application entry point. Runs a job that counts each different word
  * in a given text.
  *
- * @author logc
+ * When using JAR parametrization, all values are fed as configuration keys.
+ *
+ * @author logc, sortega
  */
 public class WordCountMain extends Configured implements Tool {
     private static final Logger LOGGER = Logger.getLogger(WordCountMain.class);
+    private static final String KEY_NS = "cosmos.wordcount.";
+    private static final String INPUT_PATH_KEY = KEY_NS + "input";
+    private static final String OUTPUT_PATH_KEY = KEY_NS + "output";
+    private static final String MONGO_URL_KEY = KEY_NS + "mongo_output";
 
     @Override
     public int run(String[] args) throws Exception {
-        if (args.length != 3) {
-            throw new IllegalArgumentException(
-                    "Usage: text_path output_path mongo_url");
+        if (args.length > 0) {
+            throw new IllegalArgumentException("Unexpected arguments");
         }
 
-        final Path inputPath = new Path(args[0]);
-        final Path outputPath = new Path(args[1]);
-        final String mongoUrl = args[2];
-        
+        final Path inputPath = new Path(getConf().get(INPUT_PATH_KEY));
+        final Path outputPath = new Path(getConf().get(OUTPUT_PATH_KEY));
+        final String mongoUrl = getConf().get(MONGO_URL_KEY);
+
         WordCountJob wcJob = new WordCountJob(this.getConf());
         wcJob.configure(inputPath, outputPath);
         if (!wcJob.waitForCompletion(true)) {
-            throw new Exception("Failed to process word counts");
+            throw new Exception("Failed to process count words");
         }
 
         MongoDBExporterJob exJob = new MongoDBExporterJob(this.getConf());

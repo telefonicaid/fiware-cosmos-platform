@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.mobility.activitydensity.PopdenCreateVectorReducer;
 import es.tid.cosmos.mobility.activitydensity.PopdenProfileGetOutReducer;
 import es.tid.cosmos.mobility.activitydensity.PopdenSumCommsReducer;
 
@@ -85,7 +86,7 @@ public final class PopulationDensityProfileRunner {
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenSumComms",
                     SequenceFileInputFormat.class,
-                    PopdenSumCommsReducer.class,
+                    PopdenCreateVectorReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, popdenBtsprofCountPath);
             FileOutputFormat.setOutputPath(job, populationDensityPath);

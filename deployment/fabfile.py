@@ -162,6 +162,16 @@ def install_gmetad():
        'tasktrackers')
 def install_gmond():
     with ctx.hide('stdout'):
+        with ctx.settings(warn_only=True):
+            major_version = 5
+            minor_version = 4
+            repo_rpm = 'epel-release-{0}-{1}.noarch.rpm'.format(
+                    major_version, minor_version)
+            base_url = ('http://download.fedoraproject.org/pub/epel/{0}/i386/'
+                            .format(major_version))
+            repo_url = base_url + repo_rpm
+            run('wget %s' % repo_url)
+            run('rpm -Uvh %s' % repo_rpm)
         run("yum -y install ganglia-gmond")
     gmond_conf = StringIO()
     template = Template(filename='templates/gmond.conf.mako')

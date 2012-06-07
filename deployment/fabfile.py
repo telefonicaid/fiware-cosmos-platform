@@ -155,6 +155,8 @@ def install_gmetad():
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmetad_cfg_path))
     put(gmetad_conf, gmetad_cfg_path)
+    run("service gmetad start")
+    run("chkconfig --level 2 gmetad on")
 
 ## TODO: review mongo host: full disk?
 @parallel
@@ -183,6 +185,8 @@ def install_gmond():
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmond_conf_path))
     put(gmond_conf, gmond_conf_path)
+    run("service gmond start")
+    run("chkconfig --level 2 gmond on")
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def configure_hadoop_metrics():

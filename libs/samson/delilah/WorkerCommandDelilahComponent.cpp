@@ -51,6 +51,12 @@ namespace samson {
         limit             = cmdLine.get_flag_uint64("limit");
 	}
 	
+    WorkerCommandDelilahComponent::~WorkerCommandDelilahComponent()
+    {
+        responses.clearMap();
+        collections.clearMap();
+    }
+
 	void WorkerCommandDelilahComponent::run()
 	{
 
@@ -306,7 +312,11 @@ namespace samson {
             table->addRow(values);
         }
 
-        return table;
+        // Select the table with the common criteria
+        au::tables::Table* selected_table = table->selectTable( title , group_field, sort_field, filter_field , limit );
+        delete table;
+        
+        return selected_table;
     }
     
     void WorkerCommandDelilahComponent::print_content( network::Collection * collection )
@@ -323,7 +333,7 @@ namespace samson {
         if( !hidden )
         {
             std::string title = collection->title();
-            output << table->strSortedGroupedAndfiltered( title , group_field, sort_field, filter_field , limit );
+            output << table->str( );
         }
         
         // Save in the internal database

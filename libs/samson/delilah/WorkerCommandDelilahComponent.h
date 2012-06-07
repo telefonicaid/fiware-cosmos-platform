@@ -72,14 +72,10 @@ namespace samson {
 	public:
 		
 		WorkerCommandDelilahComponent( std::string _command , engine::Buffer *buffer );
-        
-        ~WorkerCommandDelilahComponent()
-        {
-            responses.clearMap();
-            collections.clearMap();
-        }
+        ~WorkerCommandDelilahComponent();
 		
 		void receive( Packet* packet );
+        
 		void run();
 		
 		std::string getStatus();

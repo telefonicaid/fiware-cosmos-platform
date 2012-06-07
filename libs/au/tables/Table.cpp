@@ -1074,6 +1074,37 @@ namespace au
             return str( &select );
         }
 
+        Table* Table::selectTable( std::string title 
+                                        , std::string group_field  
+                                        , std::string sort_field 
+                                        ,  std::string conditions 
+                                        , size_t limit )
+        {
+            // Select all the columns
+            SelectTableInformation select;
+            select.addColumns( getColumnNames() );
+            
+            select.title = title;
+            
+            if( group_field != "" )
+            {
+                select.group_columns.push_back(group_field);
+                select.sort_columns.push_back(group_field);
+            }
+            
+            if( sort_field != "" )
+            {
+                select.sort_columns.push_back(sort_field);
+            }
+            
+            if( conditions != "" )
+                select.add_conditions(conditions);
+            
+            select.limit = limit;
+            
+            return selectTable( &select );
+        }        
+        
         void Table::sort( StringVector &sort_columns )
         {
             

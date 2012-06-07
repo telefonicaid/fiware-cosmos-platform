@@ -328,6 +328,12 @@ namespace au
 
             // Select
             Table* selectTable( SelectTableInformation *select_table_information );
+            Table* selectTable( std::string title 
+                               , std::string group_field=""  
+                               , std::string sort_field="" 
+                               ,  std::string conditions="" 
+                               , size_t limit=0 );
+            
             std::string str( SelectTableInformation *select_table_information );
             std::string strSortedGroupedAndfiltered( std::string title 
                                                     , std::string group_field=""  

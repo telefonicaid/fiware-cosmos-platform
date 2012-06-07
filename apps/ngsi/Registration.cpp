@@ -157,6 +157,7 @@ int registrationToDb(std::string id)
 
 	snprintf(query, sizeof(query), "INSERT INTO cm.registration (`id`) VALUES ('%s');", id.c_str());
 
+	LM_T(LmtDbEntity, ("SQL to insert a new Registration: '%s'", query));
 	s = mysql_query(db, query);
 	if (s != 0)
 		LM_RE(-1, ("mysql_query(%s): %s", query, mysql_error(db)));

@@ -84,6 +84,8 @@ Attribute* attributeLookup(Entity* entityP, std::string name, std::string type, 
 	{
 		if ((aP->entityP == entityP) && (aP->name == name) && (aP->type == type) && (aP->metaId == metaId))
 			return aP;
+
+		aP = aP->next;
 	}
 
 	LM_X(1, ("try to lookup attribute in DB"));
@@ -114,6 +116,7 @@ int attributeToDb(Entity* entityP, Attribute* attribute)
 	std::string  isDomain = (attribute->isDomain == true)? "Yes" : "No";
 	std::string  query    = "INSERT into attribute (name, type, value, metaID, isDomain) VALUES ('" + attribute->name + "', '" + attribute->type + "', '" + attribute->value + "', '" + attribute->metaId + "', '" + isDomain + "')";
 
+	LM_T(LmtDbEntity, ("SQL to insert a new Attribute: '%s'", query.c_str()));
 	s = mysql_query(db, query.c_str());
 	if (s != 0)
 	{
@@ -128,7 +131,9 @@ int attributeToDb(Entity* entityP, Attribute* attribute)
 
 	sprintf(entityDbId,    "%d", entityP->dbId);
 	sprintf(attributeDbId, "%d", attribute->dbId);
+
 	query = std::string("INSERT into entityAttribute (entityId, attributeId) VALUES (") + entityDbId + ", " + attributeDbId + ")";
+	LM_T(LmtDbEntity, ("SQL to insert a new Entity-Attribute: '%s'", query.c_str()));
 	s = mysql_query(db, query.c_str());
 	if (s != 0)
 	{

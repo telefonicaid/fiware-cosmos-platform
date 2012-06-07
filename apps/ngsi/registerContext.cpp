@@ -275,22 +275,22 @@ static int registerContextRequestToDatabase(RegisterContextRequest* rcReqP, bool
 	entities = rcReqP->entityV.size();
 	for (eIx = 0; eIx < entities; eIx++)
 	{
-		if (isUpdate == true)
-			LM_T(LmtDbRegReq, ("Entity { '%s', '%s', '%s' } NOT to DB - this is an update", rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str(), TF(rcReqP->entityV[eIx]->isPattern)));
-		else
-			LM_T(LmtDbRegReq, ("Entity { '%s', '%s', '%s' } to DB", rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str(), TF(rcReqP->entityV[eIx]->isPattern)));
-
-		LM_M(("Sending entity %d to db. providing app: '%s'", eIx, rcReqP->entityV[eIx]->providingApplication.c_str()));
-		s = entityToDb(rcReqP->entityV[eIx], isUpdate, errorString);
-		if (s != 0)
-			LM_RE(-1, ("Error %s entity '%s:%s'", (isUpdate == true)? "updating" : "creating", rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str()));
-
 		entityP = entityLookup(rcReqP->entityV[eIx]->id, rcReqP->entityV[eIx]->type);
 		if (entityP == NULL)
 		{
 			LM_W(("Entity '%s:%s' not found - this is a bug!", rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str()));
 			continue;
 		}
+
+		if (isUpdate == true)
+			LM_T(LmtDbRegReq, ("Entity { '%s', '%s', '%s' } NOT to DB - this is an update", entityP->id.c_str(), entityP->type.c_str(), TF(entityP->isPattern)));
+		else
+			LM_T(LmtDbRegReq, ("Entity { '%s', '%s', '%s' } to DB", entityP->id.c_str(), entityP->type.c_str(), TF(entityP->isPattern)));
+
+		LM_M(("Sending entity %d to db. providing app: '%s'", eIx, entityP->providingApplication.c_str()));
+		s = entityToDb(entityP, isUpdate, errorString);
+		if (s != 0)
+			LM_RE(-1, ("Error %s entity '%s:%s'", (isUpdate == true)? "updating" : "creating", entityP->id.c_str(), entityP->type.c_str()));
 
 		attributes = rcReqP->attributeList.attributeV.size();
 		for (aIx = 0; aIx < attributes; aIx++)

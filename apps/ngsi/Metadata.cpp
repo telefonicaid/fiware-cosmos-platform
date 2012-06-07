@@ -127,6 +127,7 @@ int metadataToDb(Attribute* attributeP, Metadata* metadata)
 	int          s;
 	std::string  query    = "INSERT into metadata (name, type, value) VALUES ('" + metadata->name + "', '" + metadata->type + "', '" + metadata->value + "')";
 
+	LM_T(LmtDbEntity, ("SQL to insert a new Metadata: '%s'", query.c_str()));
 	s = mysql_query(db, query.c_str());
 	if (s != 0)
 	{
@@ -143,6 +144,7 @@ int metadataToDb(Attribute* attributeP, Metadata* metadata)
 	sprintf(metadataDbId, "%d", metadata->dbId);
 
 	query = std::string("INSERT into attributeMetadata (attributeId, metadataId) VALUES (") + attributeDbId + ", " + metadataDbId + ")";
+	LM_T(LmtDbEntity, ("SQL to insert a new Attribute-Metadata: '%s'", query.c_str()));
 	s = mysql_query(db, query.c_str());
 	if (s != 0)
 	{

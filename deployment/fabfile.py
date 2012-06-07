@@ -18,9 +18,7 @@ import common
 import hadoop_install
 import hue_deployment
 
-DEFAULT_CONFIG = 'staging.json'
-
-CONFIG = json.loads(open(DEFAULT_CONFIG, 'r').read())
+CONFIG = json.loads(open(env.config, 'r').read())
 env.roledefs = CONFIG['hosts']
 
 @task
@@ -28,10 +26,9 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     """
     Deploys all the necessary components to get a running Cosmos cluster
     """
-    deploy_jdk(path.join(dependenciespath, jdk_rpm))
+    execute(deploy_jdk, path.join(dependenciespath, jdk_rpm))
     deploy_cdh()
     deploy_hue(path.join(dependenciespath, thrift_tar))
-    deploy_models()
     deploy_sftp()
     
 @task

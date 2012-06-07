@@ -53,6 +53,7 @@ TEST_F(SharedMemoryManagerTest, init)
 
 	engine::SharedMemoryManager::init( 1, 64000000); //Allocate a single 64MB buffer
 	sharedMemoryManager = engine::SharedMemoryManager::shared();
-
 	EXPECT_TRUE(sharedMemoryManager != NULL) << "Error initializing the shared memory segment";
+	engine::SharedMemoryManager::destroy();
+
 }

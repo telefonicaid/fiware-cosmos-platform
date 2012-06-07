@@ -1478,13 +1478,13 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
     }
     else if ((path == "/samson/modules") && (verb == "GET"))
     {
-        process_delilah_command("ls_modules", command);
+        process_delilah_command("ls_modules -group name", command);
     }
     else if ((main_command == "modules") && (components == 3) && (verb == "GET"))
     {
         char delilahCommand[256];
 
-        snprintf(delilahCommand, sizeof(delilahCommand), "ls_modules %s", command->path_components[2].c_str());
+        snprintf(delilahCommand, sizeof(delilahCommand), "ls_modules %s -group name", command->path_components[2].c_str());
         process_delilah_command(delilahCommand, command);
     }
     else if (main_command == "operations" )  /* /samson/operations */
@@ -1493,12 +1493,12 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
         
         if ((command->command == "GET") && (components == 2))
         {
-            snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations");
+            snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations -group name");
             process_delilah_command(delilahCommand, command);
         }
         else if ((command->command == "GET") && (components == 3))
         {
-            snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations %s", command->path_components[2].c_str());
+            snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations %s -group name", command->path_components[2].c_str());
             process_delilah_command(delilahCommand, command);
         }
         else if ((command->command == "PUT") && (components == 3))

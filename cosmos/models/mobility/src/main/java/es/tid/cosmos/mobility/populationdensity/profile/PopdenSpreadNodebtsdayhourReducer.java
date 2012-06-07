@@ -48,8 +48,8 @@ public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
             final Cdr cdr = mobData.getCdr();
             for (Cell cell : cells) {
                 context.write(NodeBtsDateUtil.createAndWrap(cdr.getUserId(),
-                                        cell.getBts(), cdr.getDate(),
-                                        cdr.getTime().getHour()),
+                                      cell.getBts(), cdr.getDate(),
+                                      cdr.getTime().getHour()),
                               MobDataUtil.createAndWrap(NullWritable.get()));
             }
         }

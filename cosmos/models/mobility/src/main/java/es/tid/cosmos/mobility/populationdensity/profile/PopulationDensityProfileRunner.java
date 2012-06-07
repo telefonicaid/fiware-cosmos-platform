@@ -68,7 +68,7 @@ public final class PopulationDensityProfileRunner {
         }
         
         Path popdenBtsprofCountPath = new Path(tmpDirPath,
-                "popden_btsprof_count");
+                                               "popden_btsprof_count");
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenSumComms",
                     SequenceFileInputFormat.class,
@@ -79,8 +79,7 @@ public final class PopulationDensityProfileRunner {
             job.waitForCompletion(true);
         }
         
-        Path populationDensityPath = new Path(tmpDirPath,
-                "population_density");
+        Path populationDensityPath = new Path(tmpDirPath, "population_density");
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenSumComms",
                     SequenceFileInputFormat.class,

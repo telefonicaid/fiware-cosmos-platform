@@ -55,11 +55,9 @@ public class PopdenSpreadNodebtsdayhourReducerTest {
     public void testReduce() {
         Date date = DateUtil.create(3, 4, 5, 6);
         ProtobufWritable<MobData> cdr = MobDataUtil.createAndWrap(
-                CdrUtil.create(1L, 2L, date,
-                               TimeUtil.create(7, 8, 9)));
+                CdrUtil.create(1L, 2L, date, TimeUtil.create(7, 8, 9)));
         this.instance
-                .withInput(new LongWritable(0L),
-                           Arrays.asList(cdr))
+                .withInput(new LongWritable(0L), Arrays.asList(cdr))
                 .withOutput(NodeBtsDateUtil.createAndWrap(1L, 11L, date, 7),
                             MobDataUtil.createAndWrap(NullWritable.get()))
                 .runTest();

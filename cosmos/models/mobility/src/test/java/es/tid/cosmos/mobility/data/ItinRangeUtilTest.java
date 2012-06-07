@@ -15,13 +15,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
 public class ItinRangeUtilTest {
     @Test
     public void testCreateAndWrap() {
-        ProtobufWritable<ItinRange> wrapper = ItinRangeUtil.createAndWrap(1, 2,
-                3, 4, 5);
+        ProtobufWritable<ItinRange> wrapper = ItinRangeUtil.createAndWrap(
+                1L, 2L, 3, 4, 5);
         wrapper.setConverter(ItinRange.class);
         ItinRange obj = wrapper.get();
         assertNotNull(obj);
-        assertEquals(1, obj.getPoiSrc());
-        assertEquals(2, obj.getPoiTgt());
+        assertEquals(1L, obj.getPoiSrc());
+        assertEquals(2L, obj.getPoiTgt());
         assertEquals(3, obj.getNode());
         assertEquals(4, obj.getGroup());
         assertEquals(5, obj.getRange());

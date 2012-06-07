@@ -29,7 +29,6 @@ public class CellGroupsCatalogueTest {
         assertEquals(3359494L, cellGroups.get(1).getCellId());
         assertEquals(3359495L, cellGroups.get(2).getCellId());
         assertEquals(3359493L, cellGroups.get(3).getCellId());
-        
         List<CellGroup> filteredCellGroups = CellGroupsCatalogue.filter(
                 cellGroups, 3359493L);
         assertEquals(2, filteredCellGroups.size());

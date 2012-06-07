@@ -11,7 +11,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
-import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,7 +52,7 @@ public class PopdenSpreadNodebtsdayhourReducerTest {
     }
 
     @Test
-    public void testReduce() throws IOException {
+    public void testReduce() {
         when(CellsCatalogue.filter(this.cells, 10L)).thenReturn(this.cells);
         Date date = DateUtil.create(3, 4, 5, 6);
         ProtobufWritable<MobData> cdr = MobDataUtil.createAndWrap(

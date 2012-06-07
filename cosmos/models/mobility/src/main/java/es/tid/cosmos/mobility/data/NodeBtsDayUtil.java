@@ -33,12 +33,6 @@ public abstract class NodeBtsDayUtil {
         return wrap(create(userId, bts, workday, count));
     }
     
-    public static NodeBtsDay parse(String line) {
-        String[] values = line.split(DELIMITER);
-        return create(Long.parseLong(values[0]), Integer.parseInt(values[1]),
-                      Integer.parseInt(values[2]), Integer.parseInt(values[3]));
-    }
-    
     public static String toString(NodeBtsDay obj) {
         return (obj.getUserId() + DELIMITER + obj.getBts() + DELIMITER +
                 obj.getWorkday() + DELIMITER + obj.getCount());

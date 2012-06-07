@@ -33,12 +33,6 @@ public abstract class NodeBtsUtil {
         return wrap(create(userId, bts, weekday, range));
     }
     
-    public static NodeBts parse(String line) {
-        String[] values = line.split(DELIMITER);
-        return create(Long.parseLong(values[0]), Integer.parseInt(values[1]),
-                      Integer.parseInt(values[2]), Integer.parseInt(values[3]));
-    }
-    
     public static String toString(NodeBts obj) {
         return obj.getUserId() + DELIMITER + obj.getBts() + DELIMITER
                 + obj.getWeekday() + DELIMITER + obj.getRange();

@@ -1,6 +1,6 @@
 package es.tid.cosmos.mobility.parsing;
 
-import com.twitter.elephantbird.util.Pair;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
 
 /**
  *
@@ -14,11 +14,12 @@ public class ClientProfileParser extends Parser {
     }
 
     @Override
-    public Pair<Long, Integer> parse() {
+    public ClientProfile parse() {
         try {
-            long nodeId = this.parseLong();
+            long userId = this.parseLong();
             int profile = this.parseInt();
-            return new Pair<Long, Integer>(nodeId, profile);
+            return ClientProfile.newBuilder()
+                    .setProfileId(profile).setUserId(userId).build();
         } catch (Exception ex) {
             throw new IllegalArgumentException("Failed to parse: " + this.line);
         }

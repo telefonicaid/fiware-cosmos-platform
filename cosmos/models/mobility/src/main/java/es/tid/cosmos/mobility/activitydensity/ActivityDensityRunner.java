@@ -21,7 +21,7 @@ public final class ActivityDensityRunner {
     private ActivityDensityRunner() {
     }
     
-    public static void run(Path clientsInfoPath, Path populationDensityOutPath,
+    public static void run(Path clientProfileMobPath, Path populationDensityOutPath,
                            Path tmpDirPath, boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         Path popdenBtsPath = new Path(tmpDirPath, "popden_bts");
@@ -30,7 +30,7 @@ public final class ActivityDensityRunner {
                     SequenceFileInputFormat.class,
                     PopdenSpreadArrayReducer.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, clientsInfoPath);
+            FileInputFormat.setInputPaths(job, clientProfileMobPath);
             FileOutputFormat.setOutputPath(job, popdenBtsPath);
             job.waitForCompletion(true);
         }

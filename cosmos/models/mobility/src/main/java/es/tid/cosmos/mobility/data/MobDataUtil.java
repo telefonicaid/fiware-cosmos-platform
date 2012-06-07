@@ -206,6 +206,13 @@ public abstract class MobDataUtil {
                 .build();
     }
     
+    public static MobData create(ClientProfile clientProfile) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.CLIENT_PROFILE)
+                .setClientProfile(clientProfile)
+                .build();
+    }
+    
     public static ProtobufWritable<MobData> wrap(MobData obj) {
         ProtobufWritable<MobData> wrapper = ProtobufWritable.newInstance(
                 MobData.class);
@@ -218,6 +225,10 @@ public abstract class MobDataUtil {
     }
     
     public static ProtobufWritable<MobData> createAndWrap(BtsProfile obj) {
+        return wrap(create(obj));
+    }
+    
+    public static ProtobufWritable<MobData> createAndWrap(ClientProfile obj) {
         return wrap(create(obj));
     }
     

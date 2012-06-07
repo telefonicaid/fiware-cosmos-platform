@@ -36,6 +36,7 @@ message MobData {
         NODE_BTS_DATE = 26;
         NODE_BTS = 27;
         MATRIX_TIME = 28;
+        CLIENT_PROFILE = 29;
     }
 
     required Type type = 1;
@@ -67,6 +68,7 @@ message MobData {
     optional NodeBtsDate nodeBtsDate = 27;
     optional NodeBts nodeBts = 28;
     optional MatrixTime matrixTime = 29;
+    optional ClientProfile clientProfile = 30;
 }
 
 message Cdr {
@@ -83,6 +85,11 @@ message Cell {
     optional uint32 geoloc2 = 4;
     optional double posx = 5;
     optional double posy = 6;
+}
+
+message ClientProfile {
+    optional uint64 userId = 1;
+    optional uint32 profileId = 2;
 }
 
 message Bts {

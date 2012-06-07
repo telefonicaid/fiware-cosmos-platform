@@ -23,6 +23,7 @@ public final class ParsingRunner {
                            Path cellsPath, Path cellsMobPath,
                            Path adjBtsPath, Path pairbtsAdjPath,
                            Path btsVectorTxtPath, Path btsComareaPath,
+                           Path clientsInfoPath, Path clientsInfoMobPath,
                            Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         {
@@ -62,6 +63,16 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsVectorTxtPath);
             FileOutputFormat.setOutputPath(job, btsComareaPath);
+            job.waitForCompletion(true);
+        }
+        
+        {
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ParserClientsInfo",
+                    TextInputFormat.class,
+                    ParseClientProfilesReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientsInfoPath);
+            FileOutputFormat.setOutputPath(job, clientsInfoMobPath);
             job.waitForCompletion(true);
         }
     }

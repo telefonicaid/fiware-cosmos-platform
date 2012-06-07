@@ -26,7 +26,7 @@ public final class PopulationDensityRunner {
     }
     
     public static void run(Path cdrsInfoPath, Path cellsPath,
-                           Path clientProfilePath,
+                           Path clientProfileMobPath,
                            Path populationDensityOut, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
@@ -65,7 +65,7 @@ public final class PopulationDensityRunner {
                     PopdenJoinNodeInfoWithoutProfileReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, denpobNodeinfoNodupPath,
-                                          clientProfilePath);
+                                          clientProfileMobPath);
             FileOutputFormat.setOutputPath(job, popdenprofBtsprofPath);
             job.waitForCompletion(true);
         }

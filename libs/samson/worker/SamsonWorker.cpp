@@ -1517,14 +1517,14 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
         }
         process_delilah_command( "ls_connections -group name" , command );
     }
-    else if ( main_command == "stream_operation_instances" )
+    else if ( main_command == "stream_operations_instances" )
     {
         if(command->command != "GET")
         {
             command->appendFormatedError(404, au::str("bad VERB for command"));
             return;
         }
-        process_delilah_command( "ps_stream -group name" , command );
+        process_delilah_command( "ps_stream" , command );
     }
     else if (main_command == "operations" )  /* /samson/operations */
     {

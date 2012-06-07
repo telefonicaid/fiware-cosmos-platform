@@ -818,8 +818,42 @@ namespace au
         {
             // Output string
             std::ostringstream output;
+
+            /*
+            output << "<style type=\"text/css\"> \
+            #table-5 {\
+              background-color: #f5f5f5;\
+              padding: 5px;\
+              border-radius: 5px;\
+              -moz-border-radius: 5px;\
+              -webkit-border-radius: 5px;\
+              border: 1px solid #ebebeb;\
+              }\
+              #table-5 td, #table-5 th {\
+              padding: 1px 5px;\
+            }\
+            #table-5 thead {\
+              font: normal 15px Helvetica Neue,Helvetica,sans-serif;\
+              text-shadow: 0 1px 0 white;\
+              color: #999;\
+            }\
+            #table-5 th {\
+              text-align: left;\
+              border-bottom: 1px solid #fff;\
+            }\
+            #table-5 td {\
+              font-size: 14px;\
+            }\
+            #table-5 td:hover {\
+              background-color: #fff;\
+            }\
+            </style>";
+            */
             
-            output << "<table border=\"1\" cellspacing=\"4\" CELLPADDING=\"12\"  >";
+            output << "<style>#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;width:480px;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 td{color:#669;padding:9px 8px 0;}#hor-minimalist-a tbody tr:hover td{color:#009;}</style>";
+             
+             
+            output << "<table id=\"table-5\">";
             
             // Main title...
             if( title != "" )

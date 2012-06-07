@@ -116,7 +116,7 @@ namespace samson {
         }
         
         // Notification with rest commands
-        listen("rest_connection");
+        listen("rest_operation_stream_manager");
         
         // Run REST interface
         rest_service = new au::network::RESTService( web_port  , this );
@@ -288,7 +288,7 @@ namespace samson {
     void SamsonWorker::notify( engine::Notification* notification )
     {
         
-        if ( notification->isName("rest_connection"))
+        if ( notification->isName("rest_operation_stream_manager"))
         {
             au::network::RESTServiceCommand* command = (au::network::RESTServiceCommand*)notification->getObject();
             
@@ -299,7 +299,7 @@ namespace samson {
             }
 
             // Sync-Engine implementation of the rest command
-            process_main(command);
+            streamManager->process( command );             // Get this from the stream manager
             
             // Mark as finish and wake up thread to answer this connection
             command->finish();
@@ -1038,22 +1038,8 @@ namespace samson {
     }        
 
 
-
-    //
-    // SamsonWorker::getRESTInformation - 
-    //
     
     void SamsonWorker::process( au::network::RESTServiceCommand* command )
-    {
-        // Add element to the engine
-        engine::Engine::shared()->notify( new engine::Notification( "rest_connection"  , command ) );
-        
-        // Wait until it is resolved
-        command->wait();
-        
-    }
-    
-    void SamsonWorker::process_main( au::network::RESTServiceCommand* command )
     {
         // Default format
         if( command->format == "" )
@@ -1458,7 +1444,15 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
             process_delilah_command(delilahCommand, command);
         }
         else if ((components == 5) && (command->path_components[3] == "state") && (verb == "GET"))
-            streamManager->process( command );             // Get this from the stream manager
+        {
+            // This is done synchronous with engine
+            
+            // Add element to the engine
+            engine::Engine::shared()->notify( new engine::Notification( "rest_operation_stream_manager"  , command ) );
+           
+            // Wait until it is resolved
+            command->wait();
+        }
         else
             command->appendFormatedError(404, au::str("Bad VERB or PATH"));
     }

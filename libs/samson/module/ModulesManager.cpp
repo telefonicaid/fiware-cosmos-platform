@@ -355,8 +355,8 @@ namespace samson
                     
                     network::CollectionRecord* record = collection->add_record();
                     
-                    ::samson::add( record , "name" , data->_name    , "" );
-                    ::samson::add( record , "help" , data->help()   , "left" );
+                    ::samson::add( record , "name" , data->_name    , "different" );
+                    ::samson::add( record , "help" , data->help()   , "left,different" );
                 }
                 
             }
@@ -391,8 +391,8 @@ namespace samson
                     
                     network::CollectionRecord* record = collection->add_record();
                     
-                    ::samson::add( record , "name" , operation->_name         , "left" );
-                    ::samson::add( record , "type" , operation->getTypeName() , "" );
+                    ::samson::add( record , "name" , operation->_name         , "left,different" );
+                    ::samson::add( record , "type" , operation->getTypeName() , "different" );
                     
                     //::samson::add( record , "help" , operation->helpLine()    , "" );
                     if( options == verbose )

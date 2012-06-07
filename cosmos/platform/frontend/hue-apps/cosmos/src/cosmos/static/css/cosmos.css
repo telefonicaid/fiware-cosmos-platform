@@ -177,7 +177,7 @@
 /* Run job form */
 .cos-run_job_form dt,
 .cos-run_job_form p label {
-    width: 90px;
+    width: 180px;
     text-align: right;
     margin: 0 1ex;
 }

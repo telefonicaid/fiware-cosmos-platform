@@ -26,8 +26,8 @@ public abstract class CdrUtil {
         return wrapper;
     }
     
-    public static ProtobufWritable createAndWrap(long userId, long cellId,
-                                                 Date date, Time time) {
+    public static ProtobufWritable<Cdr> createAndWrap(long userId, long cellId,
+                                                      Date date, Time time) {
         return wrap(create(userId, cellId, date, time));
     }
 }

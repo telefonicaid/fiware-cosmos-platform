@@ -1,4 +1,3 @@
-
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
@@ -24,7 +23,8 @@ public abstract class ClientProfileUtil {
         return wrapper;
     }
     
-    public static ProtobufWritable createAndWrap(long userId, int profileId) {
+    public static ProtobufWritable<ClientProfile> createAndWrap(
+            long userId, int profileId) {
         return wrap(create(userId, profileId));
     }
 }

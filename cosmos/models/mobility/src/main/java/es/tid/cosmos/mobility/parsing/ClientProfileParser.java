@@ -19,7 +19,9 @@ public class ClientProfileParser extends Parser {
             long userId = this.parseLong();
             int profile = this.parseInt();
             return ClientProfile.newBuilder()
-                    .setProfileId(profile).setUserId(userId).build();
+                    .setProfileId(profile)
+                    .setUserId(userId)
+                    .build();
         } catch (Exception ex) {
             throw new IllegalArgumentException("Failed to parse: " + this.line);
         }

@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
  * 
  * @author ximo
  */
-public final class PopdenJoinNodeInfoProfileReducer extends Reducer<
+public class PopdenJoinNodeInfoProfileReducer extends Reducer<
         LongWritable, ProtobufWritable<MobData>,
         ProtobufWritable<BtsProfile>, ProtobufWritable<MobData>> {
     @Override
@@ -48,9 +48,9 @@ public final class PopdenJoinNodeInfoProfileReducer extends Reducer<
         for (int profileId : profileIdList) {
             for (NodeBts nodebts : nodebtsList) {
                 context.write(BtsProfileUtil.createAndWrap(nodebts.getBts(),
-                              profileId, nodebts.getWeekday(),
-                              nodebts.getRange()),
-                        MobDataUtil.createAndWrap(1));
+                                    profileId, nodebts.getWeekday(),
+                                    nodebts.getRange()),
+                              MobDataUtil.createAndWrap(1));
             }
         }
     }

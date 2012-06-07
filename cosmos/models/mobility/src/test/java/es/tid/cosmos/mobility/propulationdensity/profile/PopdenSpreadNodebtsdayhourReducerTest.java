@@ -24,6 +24,7 @@ import es.tid.cosmos.mobility.data.*;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDate;
 import es.tid.cosmos.mobility.populationdensity.profile.PopdenSpreadNodebtsdayhourReducer;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
@@ -35,7 +36,7 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
 @PrepareForTest(CellsCatalogue.class)
 public class PopdenSpreadNodebtsdayhourReducerTest {
     private ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-            ProtobufWritable<MobData>, NullWritable> instance;
+            ProtobufWritable<NodeBtsDate>, ProtobufWritable<MobData>> instance;
     private List<Cell> cells;
     
     @Before
@@ -46,7 +47,7 @@ public class PopdenSpreadNodebtsdayhourReducerTest {
         when(CellsCatalogue.load(any(Path.class), any(Configuration.class)))
                 .thenReturn(this.cells);
         this.instance = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                ProtobufWritable<MobData>, NullWritable>(
+                ProtobufWritable<NodeBtsDate>, ProtobufWritable<MobData>>(
                         new PopdenSpreadNodebtsdayhourReducer());
         this.instance.getConfiguration().set("cells", "/home/test");
     }
@@ -60,9 +61,8 @@ public class PopdenSpreadNodebtsdayhourReducerTest {
         this.instance
                 .withInput(new LongWritable(0L),
                            Arrays.asList(cdr))
-                .withOutput(MobDataUtil.createAndWrap(
-                                    NodeBtsDateUtil.create(1L, 11L, date, 7)),
-                            NullWritable.get())
+                .withOutput(NodeBtsDateUtil.createAndWrap(1L, 11L, date, 7),
+                            MobDataUtil.createAndWrap(NullWritable.get()))
                 .runTest();
     }
 }

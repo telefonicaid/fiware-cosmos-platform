@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDate;
  * 
  * @author ximo
  */
-public final class PopdenDeleteDuplicatesReducer extends Reducer<
+public class PopdenDeleteDuplicatesReducer extends Reducer<
         ProtobufWritable<NodeBtsDate>, ProtobufWritable<MobData>, LongWritable,
         ProtobufWritable<MobData>> {
     @Override

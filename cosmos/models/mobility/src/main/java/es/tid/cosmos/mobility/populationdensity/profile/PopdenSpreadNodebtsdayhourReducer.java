@@ -24,7 +24,7 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  *
  * @author ximo
  */
-public final class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
+public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, ProtobufWritable<NodeBtsDate>,
         ProtobufWritable<MobData>> {
     private static List<Cell> cells = null;

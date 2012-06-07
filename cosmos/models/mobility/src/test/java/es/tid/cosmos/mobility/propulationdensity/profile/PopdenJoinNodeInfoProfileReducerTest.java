@@ -11,6 +11,7 @@ import org.junit.Test;
 import es.tid.cosmos.mobility.data.BtsProfileUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsProfile;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.populationdensity.profile.PopdenJoinNodeInfoProfileReducer;
 
@@ -20,12 +21,12 @@ import es.tid.cosmos.mobility.populationdensity.profile.PopdenJoinNodeInfoProfil
  */
 public class PopdenJoinNodeInfoProfileReducerTest {
     private ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-            ProtobufWritable<MobData>, LongWritable> instance;
+            ProtobufWritable<BtsProfile>, ProtobufWritable<MobData>> instance;
     
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                ProtobufWritable<MobData>, LongWritable>(
+                ProtobufWritable<BtsProfile>, ProtobufWritable<MobData>>(
                         new PopdenJoinNodeInfoProfileReducer());
     }
 
@@ -36,10 +37,9 @@ public class PopdenJoinNodeInfoProfileReducerTest {
         ProtobufWritable<MobData> intdata = MobDataUtil.createAndWrap(5);
         this.instance
                 .withInput(new LongWritable(2L),
-                        Arrays.asList(nodebts, intdata))
-                .withOutput(MobDataUtil.createAndWrap(
-                        BtsProfileUtil.create(2L, 5, 3, 4)),
-                        new LongWritable(1L))
+                           Arrays.asList(nodebts, intdata))
+                .withOutput(BtsProfileUtil.createAndWrap(2L, 5, 3, 4),
+                            MobDataUtil.createAndWrap(1))
                 .runTest();
     }
 }

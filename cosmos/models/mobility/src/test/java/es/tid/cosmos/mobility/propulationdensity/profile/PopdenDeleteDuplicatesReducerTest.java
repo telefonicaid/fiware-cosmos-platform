@@ -22,23 +22,23 @@ import es.tid.cosmos.mobility.populationdensity.profile.PopdenDeleteDuplicatesRe
  * @author ximo
  */
 public class PopdenDeleteDuplicatesReducerTest {
-    private ReduceDriver<ProtobufWritable<MobData>, NullWritable,
+    private ReduceDriver<ProtobufWritable<NodeBtsDate>, ProtobufWritable<MobData>,
             LongWritable, ProtobufWritable<MobData>> instance;
     
     @Before
     public void setUp() {
-        this.instance = new ReduceDriver<ProtobufWritable<MobData>,
-                NullWritable, LongWritable, ProtobufWritable<MobData>>(
+        this.instance = new ReduceDriver<ProtobufWritable<NodeBtsDate>,
+                ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>>(
                         new PopdenDeleteDuplicatesReducer());
     }
 
     @Test
     public void testReduce() {
-        NodeBtsDate key = NodeBtsDateUtil.create(
+        ProtobufWritable<NodeBtsDate> key = NodeBtsDateUtil.createAndWrap(
                 1L, 2L, DateUtil.create(3, 4, 5, 6), 7);
         this.instance
-                .withInput(MobDataUtil.createAndWrap(key),
-                           Arrays.asList(NullWritable.get()))
+                .withInput(key, Arrays.asList(
+                           MobDataUtil.createAndWrap(NullWritable.get())))
                 .withOutput(new LongWritable(1L),
                             MobDataUtil.createAndWrap(
                                     NodeBtsUtil.create(1L, 2L, 6, 7)))

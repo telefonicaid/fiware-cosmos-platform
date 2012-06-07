@@ -1,0 +1,16 @@
+{
+    "hosts":
+    {
+        "namenode": ["pshdp01"],
+        "jobtracker": ["pshdp01"],
+        "frontend": ["pshdp01"],
+        "mongo": ["pshdp04"],
+        "datanodes": ["pshdp02", "pshdp03", "pshdp04", "pshdp05", "pshdp06"],
+        "tasktrackers": ["pshdp02", "pshdp03", "pshdp04", "pshdp05", "pshdp06"]
+    },
+    "hadoop_data_dirs": ["/data", "/data1", "/data2"],
+    "user": "root",
+    "password": "hd1234",
+    "github": "https://pdihub.hi.inet/Cosmos",
+    "hue_checkout": "/root/hue"
+}

@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.propulationdensity.profile;
+package es.tid.cosmos.mobility.populationdensity.profile;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -25,7 +25,6 @@ import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDate;
-import es.tid.cosmos.mobility.populationdensity.profile.PopdenSpreadNodebtsdayhourReducer;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**

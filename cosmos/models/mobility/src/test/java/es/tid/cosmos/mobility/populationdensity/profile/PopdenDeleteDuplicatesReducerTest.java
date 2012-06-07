@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.propulationdensity.profile;
+package es.tid.cosmos.mobility.populationdensity.profile;
 
 import java.util.Arrays;
 
@@ -15,7 +15,6 @@ import es.tid.cosmos.mobility.data.NodeBtsDateUtil;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDate;
-import es.tid.cosmos.mobility.populationdensity.profile.PopdenDeleteDuplicatesReducer;
 
 /**
  *

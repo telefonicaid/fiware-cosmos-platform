@@ -11,21 +11,22 @@ import org.apache.hadoop.util.ToolRunner;
 
 import es.tid.cosmos.base.util.ArgumentParser;
 import es.tid.cosmos.base.util.Logger;
+import es.tid.cosmos.mobility.activitydensity.ActivityDensityRunner;
+import es.tid.cosmos.mobility.activitydensity.profile.ActivityDensityProfileRunner;
 import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.group.AggregatedMatrixGroupRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.simple.AggregatedMatrixSimpleRunner;
 import es.tid.cosmos.mobility.itineraries.ItinerariesRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
-import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;
+import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.join.LabelJoiningRunner;
 import es.tid.cosmos.mobility.labelling.secondhomes.DetectSecondHomesRunner;
 import es.tid.cosmos.mobility.mivs.MivsRunner;
 import es.tid.cosmos.mobility.outpois.OutPoisRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
-import es.tid.cosmos.mobility.activitydensity.ActivityDensityRunner;
-import es.tid.cosmos.mobility.activitydensity.profile.ActivityDensityProfileRunner;
+import es.tid.cosmos.mobility.populationdensity.PopulationDensityRunner;
 import es.tid.cosmos.mobility.populationdensity.profile.PopulationDensityProfileRunner;
 import es.tid.cosmos.mobility.preparing.PreparingRunner;
 
@@ -218,9 +219,9 @@ public class MobilityMain extends Configured implements Tool {
                 "getActivityDensity");
         if (shouldRunAll || shouldGetActivityDensity) {
             ActivityDensityRunner.run(clientsInfoPath,
-                                        activityDensityOutPath,
-                                        tmpActivityDensityPath, isDebug,
-                                        conf);
+                                      activityDensityOutPath,
+                                      tmpActivityDensityPath, isDebug,
+                                      conf);
         }
         
         Path tmpActivityDensityProfilePath = new Path(tmpPath,
@@ -235,6 +236,20 @@ public class MobilityMain extends Configured implements Tool {
                                              activityDensityProfileOutPath,
                                              tmpActivityDensityProfilePath,
                                              isDebug, conf);
+        }
+        
+        Path tmpPopulationDensityPath = new Path(tmpPath, "population_density");
+        Path populationDensityOutPath = new Path(tmpPopulationDensityPath,
+                                               "populationDensityOut");
+        boolean shouldGetPopulationDensity = arguments.getBoolean(
+                "getPopulationDensity");
+        if (shouldRunAll || shouldGetPopulationDensity) {
+            PopulationDensityRunner.run(cdrsInfoPath,
+                                        cellsPath,
+                                        clientProfilePath,
+                                        populationDensityOutPath,
+                                        tmpActivityDensityPath, isDebug,
+                                        conf);
         }
 
         Path tmpPopulationDensityProfilePath = new Path(tmpPath,

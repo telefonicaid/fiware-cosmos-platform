@@ -21,7 +21,7 @@ class ParameterTemplate(object):
         if key.find('=') >= 0:
             raise InvalidJarFile("Invalid parameter name '%s'" % key)
         self.name = key
-        match = re.match(r'^(string|filepath)(?:\|(.*))?$', value)
+        match = re.match(r'^(string|filepath|mongocoll)(?:\|(.*))?$', value)
         if not match:
             raise InvalidJarFile('Invalid parameter description "%s"' % value)
         (self.type, self.default_value) = match.groups()

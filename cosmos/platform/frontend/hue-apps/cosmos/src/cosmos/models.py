@@ -33,7 +33,8 @@ class JobRun(models.Model):
     DESCRIPTION_MAX_LENGTH = 1024
     description = models.TextField(max_length=DESCRIPTION_MAX_LENGTH)
     user = models.ForeignKey(User)
-    dataset_path = models.CharField(max_length=PATH_MAX_LENGTH)
+    dataset_path = models.CharField(max_length=PATH_MAX_LENGTH, null=True,
+                                    blank=True)
     jar_path = models.CharField(max_length=PATH_MAX_LENGTH)
     start_date = models.DateTimeField(auto_now=True)
     parameters = models.TextField(null=True, blank=True)
@@ -49,19 +50,28 @@ class JobRun(models.Model):
     def mongo_collection(self):
         return 'job_%d' % self.id
 
-    def mongo_url(self):
-        return '%s/%s.%s' % (conf.MONGO_BASE.get(), self.mongo_db(),
-                             self.mongo_collection())
+    def mongo_url(self, collection=None):
+        if collection is None:
+            collection = self.mongo_collection()
+        return '%s/%s.%s' % (conf.MONGO_BASE.get(), self.mongo_db(), collection)
 
     def hadoop_args(self, jar_name):
         args = ['jar', jar_name]
         if self.parameters is not None:
-            for pair in self.parameters.items():
-                args.extend(["-D", "%s=%s" % pair])
-        input_path = self.dataset_path
-        output_path = '/user/%s/tmp/job_%d/' % (self.user.username, self.id)
-        args.extend([input_path, output_path, self.mongo_url()])
+            for parameter in self.parameters:
+                args.extend(["-D", "%s=%s" % (parameter['name'],
+                                              self.__parameter_value(parameter))])
+        else:
+            input_path = self.dataset_path
+            output_path = '/user/%s/tmp/job_%d/' % (self.user.username, self.id)
+            args.extend([input_path, output_path, self.mongo_url()])
         return args
+
+    def __parameter_value(self, parameter):
+        if parameter['type'] == 'mongocoll':
+            return self.mongo_url(collection=parameter['value'])
+        else:
+            return parameter['value']
 
     def state(self):
         if self.submission is None:

@@ -17,7 +17,8 @@ from cosmos import conf, mongo, paths
 from cosmos.jar import InvalidJarFile, JarFile
 from cosmos.hdfs_util import CachedHDFSFile
 from cosmos.models import JobRun
-from cosmos.forms import DefineJobForm, ParameterizeJobForm
+from cosmos.forms import (BasicConfigurationForm, DefineJobForm,
+                          ParameterizeJobForm)
 
 LOGGER = logging.getLogger(__name__)
 TEMP_JAR = "tmp.jar"
@@ -59,7 +60,6 @@ def submit(job):
         try:
             submission.submission_handle = jobsub.get_client().submit(plan)
         except Exception:
-            import ipdb; ipdb.set_trace()
             submission.last_seen_state = State.ERROR
             raise
     finally:
@@ -106,11 +106,9 @@ def define_job(request):
                                 'type': template.type,
                                 'default_value': template.default_value
                             } for template in jar.parameters()]
-                            next_action = 'configure_job'
                         else:
                             wizard['parameters'] = None
-                            next_action = 'confirm_job'
-                        return redirect(reverse(next_action))
+                        return redirect(reverse('configure_job'))
                     finally:
                         jar.close()
                 except InvalidJarFile as ex:
@@ -118,35 +116,60 @@ def define_job(request):
                     errors.append('Invalid JAR: %s' % ex.message)
 
     return render('job_define.mako', request, dict(
-        form=form
+        form=form,
+        wizard_nav={'next': True, 'back': False}
     ))
 
 
 def configure_job(request):
-    """Job parametrization."""
+    """Job configuration step."""
 
     wizard = job_wizard(request)
-    job = wizard.get('job', {})
-    parameters = wizard.get('parameters', None)
+    if wizard['parameterized']:
+        return configure_parameterized_job(request)
+    else:
+        return configure_basic_job(request)
 
-    if not parameters:
-        return redirect(reverse('confirm_job'))
 
+def configure_basic_job(request):
+    wizard = job_wizard(request)
     if request.method != 'POST':
-        form = ParameterizeJobForm(parameters, wizard.get('parameter_values',
-                                                          None))
-
+        form = BasicConfigurationForm(data=wizard['job'])
     elif request.POST.has_key('back'):
         return redirect(reverse('define_job'))
-
     else:
-        form = ParameterizeJobForm(parameters, request.POST)
+        form = BasicConfigurationForm(request.POST)
+        if form.is_valid(request.fs):
+            wizard['job'].update(form.cleaned_data)
+            update_job_wizard(request, wizard)
+            return redirect(reverse('confirm_job'))
+
+    return render('job_configure.mako', request, dict(
+        form=form,
+        wizard_nav={'next': True, 'back': True}
+    ))
+
+
+def configure_parameterized_job(request):
+    wizard = job_wizard(request)
+    parameters = wizard.get('parameters', None)
+
+    if request.method != 'POST':
+        form = ParameterizeJobForm(parameters,
+                                   data=wizard.get('parameter_values', None))
+    elif request.POST.has_key('back'):
+        return redirect(reverse('define_job'))
+    else:
+        form = ParameterizeJobForm(parameters, data=request.POST)
         if form.is_valid():
             wizard['parameter_values'] = form.cleaned_data
             update_job_wizard(request, wizard)
             return redirect(reverse('confirm_job'))
 
-    return render('job_parameterize.mako', request, dict(form=form))
+    return render('job_configure.mako', request, dict(
+        form=form,
+        wizard_nav={'next': True, 'back': True}
+    ))
 
 
 def confirm_job(request):
@@ -159,22 +182,25 @@ def confirm_job(request):
         job.name = job_data['name']
         job.description = job_data['description']
         job.jar_path = job_data['jar_path']
-        job.dataset_path = job_data['dataset_path']
-        if wizard['parameterized']:
-            job.parameters = wizard['parameter_values']
     except KeyError:
         return redirect(reverse('define_job'))
 
+    if wizard['parameterized']:
+        job.parameters = []
+        for param_template in wizard['parameters']:
+            param = param_template.copy()
+            param['value'] = wizard['parameter_values'][param['name']]
+            job.parameters.append(param)
+    else:
+        job.dataset_path = job_data['dataset_path']
+
     if request.method != 'POST':
-        return render('job_confirm.mako', request, wizard)
-
+        return render('job_confirm.mako', request, dict(
+            wizard,
+            wizard_nav={'next': False, 'back': True, 'finish': 'Run job'}
+        ))
     elif request.POST.has_key('back'):
-        if wizard['parameterized']:
-            prev_action = 'configure_job'
-        else:
-            prev_action = 'define_job'
-        return redirect(reverse(prev_action))
-
+        return redirect(reverse('configure_job'))
     else:
         job.save()
         submit(job)
@@ -194,7 +220,7 @@ def ensure_dir(fs, path):
     if fs.isdir(path):
         return
     if fs.exists(path):
-        raise PopupException(('A file named "%s" is preventing the creation ' + 
+        raise PopupException(('A file named "%s" is preventing the creation ' +
                               'of the upload directory. Please, rename it to ' +
                               'proceed.') % path)
     else:
@@ -203,7 +229,7 @@ def ensure_dir(fs, path):
 
 def upload_index(request):
     """Allows to upload datasets and jars."""
-    
+
     datasets_base = paths.datasets_base(request.user)
     ensure_dir(request.fs, datasets_base)
     jars_base = paths.jars_base(request.user)

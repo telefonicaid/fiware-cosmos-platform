@@ -59,7 +59,7 @@ class UseJarTestCase(test.TestCase):
 
     def test_get_parametrization_from_properties(self):
         params = self.prop_jar.parameters()
-        self.assertEquals(len(params), 3)
+        self.assertEquals(len(params), 5)
         self.assertEquals(params[0].name, "foo")
         self.assertEquals(params[0].type, "string")
         self.assertEquals(params[0].default_value, None)
@@ -67,6 +67,11 @@ class UseJarTestCase(test.TestCase):
         self.assertEquals(params[1].default_value, "hola")
         self.assertEquals(params[2].name, "tmp")
         self.assertEquals(params[2].type, "filepath")
+        self.assertEquals(params[3].name, "mongo1")
+        self.assertEquals(params[3].type, "mongocoll")
+        self.assertEquals(params[4].name, "mongo2")
+        self.assertEquals(params[4].type, "mongocoll")
+        self.assertEquals(params[4].default_value, "col_a")
 
     def test_get_parametrization_from_xml(self):
         params = self.xml_jar.parameters()

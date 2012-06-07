@@ -48,4 +48,25 @@ from django.template.defaultfilters import urlencode, escape
     </body>
   </html>
 </%def>
+
+<%doc>
+    Wizard components
+</%doc>
+
+<%def name="wizard_navigation()">
+    <br/>
+    <div class="cos-wizard_nav">
+	<a class="cos-cancel" href="${ url('cancel_job') }">Cancel</a>
+	% if wizard_nav.has_key('finish'):
+	<input class="submit" name="next" type="submit"
+	       value="${ wizard_nav['finish'] }" />
+	% endif
+	% if wizard_nav['next']:
+	<input class="submit" name="next" type="submit" value="Next >" />
+	% endif
+	% if wizard_nav['back']:
+	<input class="submit" name="back" type="submit" value="< Back" />
+	% endif
+    </div>
+</%def>
 ## vim:set syntax=mako:

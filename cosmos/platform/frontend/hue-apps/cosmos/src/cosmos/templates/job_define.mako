@@ -47,21 +47,9 @@ ${shared.header("Run new job", section="define_job")}
 		   data-chooseFor="jar_path">...</a>
 		${ unicode(form['jar_path'].errors) | n }
 	    </dd>
-
-            <dt><label for="dataset_path">Dataset path</label></dt>
-	    <dd class="file_finder">
-		${ unicode(form['dataset_path']) | n }
-		<a class="hue-choose_file" data-filters="ArtButton"
-		   data-chooseFor="dataset_path">...</a>
-		${ unicode(form['dataset_path'].errors) | n }
-	    </dd>
         </dl>
 
-	<br/>
-	<div class="cos-wizard_nav">
-	    <a class="cos-cancel" href="${ url('cancel_job') }">Cancel</a>
-	    <input class="submit" name="next"   type="submit" value="Next >" />
-	</div>
+	${shared.wizard_navigation()}
     </form>
 </div>
 

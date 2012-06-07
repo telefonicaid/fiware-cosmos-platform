@@ -902,7 +902,7 @@ string DataType::getTo_paint_value_Command( string pre_line )
     if( isVector() )
     {
         o << pre_line << "{ // paint_value of vector " << name << "\n";
-        o << pre_line << "\t\tif (index_row < " << name << "_length)\n";
+        o << pre_line << "\t\tif ((index_row >= 0) && (index_row < " << name << "_length))\n";
         o << pre_line << "\t\t{\n";
         o << pre_line << "\t\t\to << " << name << "[index_row].paint_value(0) << \"\\n\";\n";
         o << pre_line << "\t\t}\n";
@@ -922,7 +922,7 @@ string DataType::getTo_paint_value_Command( string pre_line )
     else
     {
         o << pre_line << "{ // paint_value "<<name<<"\n";
-        o << pre_line << "\t\tif (index_row < " << name << ".max_num_values())\n";
+        o << pre_line << "\t\tif ((index_row >= 0) && (index_row < " << name << ".max_num_values()))\n";
         o << pre_line << "\t\t{\n";
         o << pre_line << "\t\t\to << " << name << ".paint_value(index_row) << \"\\n\";\n";
         o << pre_line << "\t\t}\n";

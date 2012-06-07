@@ -42,17 +42,4 @@ public abstract class DateUtil {
         return (obj.getYear() + DELIMITER + obj.getMonth() + DELIMITER +
                 obj.getDay() + DELIMITER + obj.getWeekday());
     }
-    
-    public static boolean isLeapYear(Date date) {
-        final int year = date.getYear();
-        if (year % 400 == 0) {
-            return true;
-        } else if (year % 100 == 0) {
-            return false;
-        } else if (year % 4 == 0) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 }

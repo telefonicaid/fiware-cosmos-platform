@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.itineraries;
 
 import java.io.IOException;
+import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,7 +11,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.Config;
-import es.tid.cosmos.mobility.data.DateUtil;
 import es.tid.cosmos.mobility.data.ItinMovementUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
@@ -53,6 +53,7 @@ public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
             locList.add(mobData.getItinTime());
         }
         
+        final GregorianCalendar calendar = new GregorianCalendar();
         for (ItinTime loc1 : locList) {
             int minDistance = Integer.MAX_VALUE;
             int minDifMonth = Integer.MAX_VALUE;
@@ -75,7 +76,7 @@ public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
                         nMinsMonth = MINS_IN_ONE_DAY * 30;
                         break;
                     case 2:
-                        if (DateUtil.isLeapYear(loc1.getDate())) {
+                        if (calendar.isLeapYear(loc1.getDate().getYear())) {
                             nMinsMonth = MINS_IN_ONE_DAY * 29;
                         } else {
                             nMinsMonth = MINS_IN_ONE_DAY * 28;

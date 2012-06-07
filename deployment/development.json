@@ -1,0 +1,17 @@
+{
+    "version": "0.9.0.0-SNAPSHOT",
+    "hosts":
+    {
+        "namenode": ["pshdp01"],
+        "jobtracker": ["pshdp01"],
+        "frontend": ["pshdp01"],
+        "mongo": ["pshdp04"],
+        "datanodes": ["pshdp02", "pshdp03", "pshdp04", "pshdp05", "pshdp06"],
+        "tasktrackers": ["pshdp02", "pshdp03", "pshdp04", "pshdp05", "pshdp06"]
+    },
+    "cdh_version_repo": "cdh3-repository-1.0-1.noarch.rpm",
+    "hadoop_data_dirs": ["/data", "/data1", "/data2"],
+    "hue_patch_dir": "../cosmos/platform/frontend/hue-patches",
+    "hue_patch_name": "hue-patch-cdh3u4-r0.4.diff",
+    "injection_path": "../cosmos/platform/injection/server/"
+}

@@ -236,7 +236,7 @@ public class MobDataUtilTest {
             assertEquals(Itinerary.getDefaultInstance(),
                          mobData.getItinerary());
         }
-        
+
         {
             ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(
                     NodeBts.getDefaultInstance());
@@ -265,6 +265,16 @@ public class MobDataUtilTest {
             assertEquals(MobData.Type.BTS_PROFILE, mobData.getType());
             assertEquals(BtsProfile.getDefaultInstance(),
                          mobData.getBtsProfile());
+        }
+
+        {
+            ProtobufWritable<MobData> wrapper = MobDataUtil.createAndWrap(
+                    MatrixTime.getDefaultInstance());
+            wrapper.setConverter(MobData.class);
+            MobData mobData = wrapper.get();
+            assertEquals(MobData.Type.MATRIX_TIME, mobData.getType());
+            assertEquals(MatrixTime.getDefaultInstance(),
+                         mobData.getMatrixTime());
         }
     }
 }

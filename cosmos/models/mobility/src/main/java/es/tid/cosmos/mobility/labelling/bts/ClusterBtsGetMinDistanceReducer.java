@@ -70,7 +70,7 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
                             0D,
                             mindist,
                             clusVector);
-            context.write(new LongWritable(nodeBts.getPlaceId()),
+            context.write(new LongWritable(nodeBts.getBts()),
                           MobDataUtil.createAndWrap(outputCluster));
         }
     }

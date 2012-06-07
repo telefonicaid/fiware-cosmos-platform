@@ -53,12 +53,12 @@ public class ItinJoinCellBtsReducer extends Reducer<LongWritable,
             for (Cell cell : filteredCells) {
                 final ProtobufWritable<TwoInt> nodeBts =
                         TwoIntUtil.createAndWrap(cdr.getUserId(),
-                                                 cell.getPlaceId());
+                                                 cell.getBts());
                 final ProtobufWritable<MobData> itTime =
                         MobDataUtil.createAndWrap(
                                 ItinTimeUtil.create(cdr.getDate(),
                                                     cdr.getTime(),
-                                                    cell.getPlaceId()));
+                                                    cell.getBts()));
                 context.write(nodeBts, itTime);
             }
         }

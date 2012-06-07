@@ -46,7 +46,7 @@ public class RepbtsJoinDistCommsReducer extends Reducer<LongWritable,
         for (Integer ncomms : ncommsList) {
             for (NodeBtsDay nodeBtsDay : nodeBtsDayList) {
                 BtsCounter counter = BtsCounterUtil.create(
-                                nodeBtsDay.getPlaceId(),
+                                nodeBtsDay.getBts(),
                                 0,
                                 nodeBtsDay.getCount(),
                                 nodeBtsDay.getCount() * 100 / ncomms);

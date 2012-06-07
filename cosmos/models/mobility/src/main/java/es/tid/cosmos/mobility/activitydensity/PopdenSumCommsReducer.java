@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.populationdensity;
+package es.tid.cosmos.mobility.activitydensity;
 
 import java.io.IOException;
 
@@ -34,7 +34,7 @@ public class PopdenSumCommsReducer extends Reducer<ProtobufWritable<BtsProfile>,
         key.setConverter(BtsProfile.class);
         final BtsProfile btsWdayhour = key.get();
         ProtobufWritable<TwoInt> btsProfile =
-                TwoIntUtil.createAndWrap(btsWdayhour.getPlaceId(),
+                TwoIntUtil.createAndWrap(btsWdayhour.getBts(),
                                          btsWdayhour.getProfile());
         ProtobufWritable<MobData> counter = MobDataUtil.createAndWrap(
                 BtsCounterUtil.create(0L, btsWdayhour.getWday(),

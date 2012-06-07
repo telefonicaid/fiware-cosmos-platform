@@ -22,6 +22,6 @@ public class PoiCellToBtsMapper extends Mapper<LongWritable,
             Context context) throws IOException, InterruptedException {
         value.setConverter(MobData.class);
         final Cell cell = value.get().getCell();
-        context.write(new LongWritable(cell.getPlaceId()), value);
+        context.write(new LongWritable(cell.getBts()), value);
     }
 }

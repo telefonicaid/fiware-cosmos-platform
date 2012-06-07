@@ -77,7 +77,7 @@ public class ClusterClientBtsGetMinDistanceToClusterReducer extends Reducer<
             key.setConverter(NodeBts.class);
             final NodeBts nodeBts = key.get();
             ProtobufWritable<TwoInt> twoInt = TwoIntUtil.createAndWrap(
-                    nodeBts.getUserId(), nodeBts.getPlaceId());
+                    nodeBts.getUserId(), nodeBts.getBts());
             Cluster cluster = ClusterUtil.create(
                     minDistCluster.getLabel(), minDistCluster.getLabelgroup(),
                     mindist > minDistCluster.getDistance() ? 0 : 1,

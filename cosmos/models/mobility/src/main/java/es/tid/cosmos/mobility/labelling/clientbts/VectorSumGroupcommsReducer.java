@@ -29,14 +29,14 @@ public class VectorSumGroupcommsReducer extends Reducer<
         key.setConverter(NodeBts.class);
         final NodeBts nodeBts = key.get();
         ProtobufWritable<TwoInt> twoInt = TwoIntUtil.createAndWrap(
-                nodeBts.getUserId(), nodeBts.getPlaceId());
+                nodeBts.getUserId(), nodeBts.getBts());
         
         int ncoms = 0;
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             ncoms += value.get().getInt();
         }
-        BtsCounter btsCounter = BtsCounterUtil.create(nodeBts.getPlaceId(),
+        BtsCounter btsCounter = BtsCounterUtil.create(nodeBts.getBts(),
                 nodeBts.getWeekday(), nodeBts.getRange(), ncoms);
         context.write(twoInt, MobDataUtil.createAndWrap(btsCounter));
     }

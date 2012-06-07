@@ -11,11 +11,11 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 public abstract class NodeBtsUtil {
     public static final String DELIMITER = "|";
     
-    public static NodeBts create(long userId, int placeId,
+    public static NodeBts create(long userId, long bts,
                                  int weekday, int range) {
         return NodeBts.newBuilder()
                 .setUserId(userId)
-                .setPlaceId(placeId)
+                .setBts(bts)
                 .setWeekday(weekday)
                 .setRange(range)
                 .build();
@@ -29,8 +29,8 @@ public abstract class NodeBtsUtil {
     }
     
     public static ProtobufWritable<NodeBts> createAndWrap(long userId,
-            int placeId, int weekday, int range) {
-        return wrap(create(userId, placeId, weekday, range));
+            long bts, int weekday, int range) {
+        return wrap(create(userId, bts, weekday, range));
     }
     
     public static NodeBts parse(String line) {
@@ -40,7 +40,7 @@ public abstract class NodeBtsUtil {
     }
     
     public static String toString(NodeBts obj) {
-        return obj.getUserId() + DELIMITER + obj.getPlaceId() + DELIMITER
+        return obj.getUserId() + DELIMITER + obj.getBts() + DELIMITER
                 + obj.getWeekday() + DELIMITER + obj.getRange();
     }
 }

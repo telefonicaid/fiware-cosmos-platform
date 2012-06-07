@@ -34,25 +34,20 @@ class UseJarTestCase(test.TestCase):
         self.nop_jar.close()
 
     def test_read_manifest(self):
-        manifest = self.prop_jar.manifest()
+        manifest = self.prop_jar.manifest
         self.assertEquals(manifest['Cosmos-Parameters-Template'],
                                    '/conf/params.properties')
         self.assertTrue('not-a-key' not in manifest.keys())
 
     def test_read_long_manifest_lines(self):
-        manifest = self.xml_jar.manifest()
-        self.assertEquals(manifest['Cosmos-Parameters-Template'],
-                                   '/conf/long-long-long-long-long-long-' + 
-                                   'long-name-for-having-more-than-one-' +
-                                   'line.xml')
+        self.assertEquals(self.xml_jar.manifest['Cosmos-Parameters-Template'],
+                '/conf/long-long-long-long-long-long-long-name-for-having-' +
+                'more-than-one-line.xml')
 
     def test_is_parameterized(self):
         self.assertTrue(self.prop_jar.is_parameterized())
         self.assertTrue(self.xml_jar.is_parameterized())
         self.assertFalse(self.nop_jar.is_parameterized())
-
-    def test_get_no_parametrization(self):
-        self.assertRaises(ValueError, self.nop_jar.parameters)
 
     def test_error_on_invalid_parametrization(self):
         self.assertRaises(InvalidJarFile, self.malformed_jar.parameters)

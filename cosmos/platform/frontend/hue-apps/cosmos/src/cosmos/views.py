@@ -97,8 +97,7 @@ def define_job(request):
             with closing(CachedHDFSFile(request.fs, job['jar_path'])) \
                     as cached_file:
                 try:
-                    jar = JarFile(cached_file.local_path())
-                    try:
+                    with closing(JarFile(cached_file.local_path())) as jar:
                         wizard['parameterized'] = jar.is_parameterized()
                         if wizard['parameterized']:
                             wizard['parameters'] = [{
@@ -109,8 +108,6 @@ def define_job(request):
                         else:
                             wizard['parameters'] = None
                         return redirect(reverse('configure_job'))
-                    finally:
-                        jar.close()
                 except InvalidJarFile as ex:
                     errors = form._errors.setdefault('jar_path', ErrorList())
                     errors.append('Invalid JAR: %s' % ex.message)
@@ -152,7 +149,7 @@ def configure_basic_job(request):
 
 def configure_parameterized_job(request):
     wizard = job_wizard(request)
-    parameters = wizard.get('parameters', None)
+    parameters = wizard['parameters']
 
     if request.method != 'POST':
         form = ParameterizeJobForm(parameters,

@@ -16,15 +16,15 @@ class InvalidJarFile(Exception):
 
 
 class ParameterTemplate(object):
+    PARAMETER_TYPES = ['string', 'filepath', 'mongocoll']
 
     def __init__(self, key, value):
         if key.find('=') >= 0:
             raise InvalidJarFile("Invalid parameter name '%s'" % key)
         self.name = key
-        match = re.match(r'^(string|filepath|mongocoll)(?:\|(.*))?$', value)
-        if not match:
+        self.type, self.default_value = value.split('|', 1)
+        if self.type not in self.PARAMETER_TYPES:
             raise InvalidJarFile('Invalid parameter description "%s"' % value)
-        (self.type, self.default_value) = match.groups()
 
 
 class JarFile(object):
@@ -38,36 +38,13 @@ class JarFile(object):
             self.jar = ZipFile(path, 'r')
         except BadZipfile:
             raise InvalidJarFile('Not a valid ZIP')
+        self.__load_manifest()
 
     def close(self):
         self.jar.close()
 
-    def manifest(self):
-        """
-        Returns the manifest as a dict
-        """
-        try:
-            content = self.jar.read('META-INF/MANIFEST.MF')
-        except KeyError:
-            raise InvalidJarFile('MANIFEST.MF not found')
-
-        # Long lines are folded and the next line starts by an space
-        # so we remove that pattern
-        unfolded_content = re.sub(r'(?:\r|\n)+ ', '', content)
-
-        manifest_dict = {}
-        for line in re.split(r'(?:\r|\n)+', unfolded_content):
-            match = re.match(r'^([^:]+):\s+(.*)$', line)
-            if match:
-                key, value = match.groups()
-                manifest_dict[key] = value
-            elif len(line.strip()) > 0:
-                raise InvalidJarFile('Invalid line in MANIFEST.MF: "%s"' % line)
-
-        return manifest_dict
-
     def is_parameterized(self):
-        return self.manifest().has_key(PARAMETERS_TEMPLATE_KEY)
+        return self.manifest.has_key(PARAMETERS_TEMPLATE_KEY)
 
     def parameters(self):
         content = self.__parameters_template_content()
@@ -79,15 +56,40 @@ class JarFile(object):
         else:
             raise InvalidJar("Unsupported properties template format")
 
+    def __load_manifest(self):
+        """Returns the manifest as a dict"""
+        try:
+            content = self.__unfold_lines(
+                    self.jar.read('META-INF/MANIFEST.MF'))
+        except KeyError:
+            raise InvalidJarFile('MANIFEST.MF not found')
+
+        self.manifest = {}
+        for line in content.splitlines():
+            try:
+                key, value = line.split(':', 1)
+                self.manifest.setdefault(key, value)
+            except ValueError:
+                if len(line.strip()) > 0:
+                    raise InvalidJarFile('Invalid line in MANIFEST.MF: "%s"' %
+                                         line)
+
+    def __unfold_lines(content):
+        """Unwrap MANIFEST.MF lines.
+        
+        MANIFEST.MF specification states that long lines are wrapped and the
+        continuation line must start with an extra whitespace. We remove that
+        pattern to join long lines back as a single line.
+        """
+        return re.sub(r'(?:\r|\n)+ ', '', content)
+
     def __parameters_path(self):
-        path = self.manifest().get(PARAMETERS_TEMPLATE_KEY)
+        path = self.manifest.get(PARAMETERS_TEMPLATE_KEY)
         if path.startswith('/'):
             path = path[1:]
         return path
 
     def __parameters_template_content(self):
-        if not self.is_parameterized():
-            raise ValueError('Not parameterized JAR')
         path = self.__parameters_path()
         try:
             return self.jar.read(path)

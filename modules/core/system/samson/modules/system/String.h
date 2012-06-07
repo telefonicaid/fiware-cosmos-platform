@@ -403,7 +403,7 @@ public:
 		o << "</tr>\n";
 		o << "<td>" << str() << "</td>\n";
 		o << "</tr>\n";
-		o << "<table>\n";
+		o << "</table>\n";
         return o.str();
     }
 	

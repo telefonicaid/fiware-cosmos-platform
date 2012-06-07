@@ -62,6 +62,7 @@ public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
                 if (loc2 == loc1) {
                     continue;
                 }
+                // TODO: migrate to Java's date classes
                 int difMonth = loc2.getDate().getMonth()
                                - loc1.getDate().getMonth();
                 int difDay = loc2.getDate().getDay()

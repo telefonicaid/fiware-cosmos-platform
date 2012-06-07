@@ -230,7 +230,7 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldGetActivityDensityProfile = arguments.getBoolean(
                 "getActivityDensityProfile");
         if (shouldRunAll || shouldGetActivityDensityProfile) {
-            ActivityDensityProfileRunner.run(clientProfilePath,
+            ActivityDensityProfileRunner.run(clientProfileMobPath,
                                              clientsInfoPath,
                                              activityDensityProfileOutPath,
                                              tmpActivityDensityProfilePath,

@@ -37,7 +37,8 @@ public class PopdenJoinNodeInfoProfileReducer extends Reducer<
                     nodebtsList.add(mobData.getNodeBts());
                     break;
                 case CLIENT_PROFILE:
-                    profileIdList.add(mobData.getClientProfile().getProfileId());
+                    profileIdList.add(
+                            mobData.getClientProfile().getProfileId());
                     break;
                 default:
                     throw new IllegalStateException("Invalid data type: "

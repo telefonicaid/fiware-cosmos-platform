@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.aggregatedmatrix.group;
 
 import java.io.IOException;
+import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -26,6 +27,11 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  */
 public class MatrixMoveClientReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+    private static final int MINS_IN_ONE_HOUR = 60;
+    private static final int HOURS_IN_ONE_DAY = 24;
+    private static final int MINS_IN_ONE_DAY = MINS_IN_ONE_HOUR *
+                                               HOURS_IN_ONE_DAY;
+    
     private int maxMinutesInMoves;
     private int minMinutesInMoves;
     private boolean includeIntraMoves;
@@ -52,24 +58,18 @@ public class MatrixMoveClientReducer extends Reducer<LongWritable,
             final MobData mobData = value.get();
             locList.add(mobData.getMatrixTime());
         }
-        
+
+        final GregorianCalendar calendar = new GregorianCalendar();
         for (MatrixTime loc1 : locList) {
             int minDistance = Integer.MAX_VALUE;
+            int minDifMonth = Integer.MAX_VALUE;
             MatrixTime minDistLoc = null;
             for (MatrixTime loc2 : locList) {
-                if (loc2.getGroup() == loc1.getGroup() &&
-                        loc2.getBts() == loc1.getBts()) {
-                    continue;
-                }
-                if (!this.includeIntraMoves &&
-                        loc2.getGroup() == loc1.getGroup()) {
+                if (loc2 == loc1) {
                     continue;
                 }
                 int difMonth = loc2.getDate().getMonth()
                                - loc1.getDate().getMonth();
-                if (difMonth > 1) {
-                    continue;
-                }
                 int difDay = loc2.getDate().getDay()
                              - loc1.getDate().getDay();
                 int difHour = loc2.getTime().getHour()
@@ -79,23 +79,36 @@ public class MatrixMoveClientReducer extends Reducer<LongWritable,
                 int nMinsMonth;
                 switch (loc1.getDate().getMonth()) {
                     case 4: case 6: case 9: case 11:
-                        nMinsMonth = 1440 * 30;
+                        nMinsMonth = MINS_IN_ONE_DAY * 30;
                         break;
                     case 2:
-                        nMinsMonth = 1440 * 28;
+                        if (calendar.isLeapYear(loc1.getDate().getYear())) {
+                            nMinsMonth = MINS_IN_ONE_DAY * 29;
+                        } else {
+                            nMinsMonth = MINS_IN_ONE_DAY * 28;
+                        }
                         break;
                     default:
-                        nMinsMonth = 1440 * 31;
+                        nMinsMonth = MINS_IN_ONE_DAY * 31;
                 }
-                int distance = (nMinsMonth * difMonth) + (1440 * difDay)
-                               + (60 * difHour) + difMin;
+                int distance = (nMinsMonth * difMonth)
+                               + (MINS_IN_ONE_DAY * difDay)
+                               + (MINS_IN_ONE_HOUR * difHour) + difMin;
                 if (distance >= 0 && distance < minDistance) {
                     minDistance = distance;
+                    minDifMonth = difMonth;
                     minDistLoc = loc2;
                 }
             }
+            if (minDistLoc == null || minDifMonth > 1 ||
+                    (minDistLoc.getGroup() == loc1.getGroup() &&
+                        minDistLoc.getBts() == loc1.getBts()) ||
+                    (!this.includeIntraMoves &&
+                            minDistLoc.getGroup() == loc1.getGroup())) {
+                continue;
+            }
             // Filter movements by diff of time
-            if (minDistLoc != null && minDistance <= this.maxMinutesInMoves &&
+            if (minDistance <= this.maxMinutesInMoves &&
                     minDistance >= this.minMinutesInMoves) {
                 ItinTime src = ItinTimeUtil.create(loc1.getDate(),
                                                    loc1.getTime(),

@@ -27,10 +27,11 @@ public final class ActivityDensityProfileRunner {
     public static void run(Path clientProfileMobPath, Path clientsInfoPath,
                            Path activityDensityProfileOut, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
-            throws IOException, InterruptedException, ClassNotFoundException {
+            throws ClassNotFoundException, IOException, InterruptedException {
         Path popdenprofBtsprofPath = new Path(tmpDirPath, "popdenprof_btsprof");
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenJoinArrayProfile",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "PopdenJoinArrayProfile",
                     SequenceFileInputFormat.class,
                     PopdenJoinArrayProfileReducer.class,
                     SequenceFileOutputFormat.class);
@@ -55,7 +56,8 @@ public final class ActivityDensityProfileRunner {
         Path populationDensityProfilePath = new Path(tmpDirPath,
                 "population_density_profile");
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenCreateVector",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "PopdenCreateVector",
                     SequenceFileInputFormat.class,
                     PopdenCreateVectorReducer.class,
                     SequenceFileOutputFormat.class);
@@ -65,7 +67,8 @@ public final class ActivityDensityProfileRunner {
         }
         
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenProfileGetOut",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "PopdenProfileGetOut",
                     SequenceFileInputFormat.class,
                     PopdenProfileGetOutReducer.class,
                     1,

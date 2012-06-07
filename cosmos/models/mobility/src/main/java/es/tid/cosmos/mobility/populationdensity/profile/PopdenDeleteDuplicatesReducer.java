@@ -26,12 +26,11 @@ public class PopdenDeleteDuplicatesReducer extends Reducer<
             throws IOException, InterruptedException {
         key.setConverter(NodeBtsDate.class);
         final NodeBtsDate nodeBtsDate = key.get();
-        context.write(
-                new LongWritable(nodeBtsDate.getUserId()),
-                MobDataUtil.createAndWrap(NodeBtsUtil.create(
-                        nodeBtsDate.getUserId(),
-                        nodeBtsDate.getBts(),
-                        nodeBtsDate.getDate().getWeekday(),
-                        nodeBtsDate.getHour())));
+        context.write(new LongWritable(nodeBtsDate.getUserId()),
+                      MobDataUtil.createAndWrap(NodeBtsUtil.create(
+                              nodeBtsDate.getUserId(),
+                              nodeBtsDate.getBts(),
+                              nodeBtsDate.getDate().getWeekday(),
+                              nodeBtsDate.getHour())));
     }
 }

@@ -29,7 +29,7 @@ public final class PopulationDensityRunner {
                            Path clientProfileMobPath,
                            Path populationDensityOut, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
-            throws IOException, InterruptedException, ClassNotFoundException {
+            throws ClassNotFoundException, IOException, InterruptedException {
         Path denpobNodbtsdayhourPath = new Path(tmpDirPath,
                                                 "denpob_nodbtsdayhour");
         {
@@ -45,9 +45,10 @@ public final class PopulationDensityRunner {
         }
 
         Path denpobNodeinfoNodupPath = new Path(tmpDirPath,
-                "denpob_nodeinfo_nodup");
+                                                "denpob_nodeinfo_nodup");
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenDeleteDuplicates",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "PopdenDeleteDuplicates",
                     SequenceFileInputFormat.class,
                     PopdenDeleteDuplicatesReducer.class,
                     SequenceFileOutputFormat.class);
@@ -71,7 +72,7 @@ public final class PopulationDensityRunner {
         }
         
         Path popdenBtsprofCountPath = new Path(tmpDirPath,
-                "popden_btsprof_count");
+                                               "popden_btsprof_count");
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenSumComms",
                     SequenceFileInputFormat.class,
@@ -83,20 +84,20 @@ public final class PopulationDensityRunner {
         }
         
         Path populationDensityPath = new Path(tmpDirPath,
-                "population_density");
+                                              "population_density");
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenSumComms",
                     SequenceFileInputFormat.class,
                     PopdenSumCommsReducer.class,
-                    1,
-                    TextOutputFormat.class);
+                    SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, popdenBtsprofCountPath);
             FileOutputFormat.setOutputPath(job, populationDensityPath);
             job.waitForCompletion(true);
         }
         
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenProfileGetOut",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "PopdenProfileGetOut",
                     SequenceFileInputFormat.class,
                     PopdenProfileGetOutReducer.class,
                     1,

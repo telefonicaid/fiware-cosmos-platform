@@ -52,8 +52,8 @@ public class MatrixJoinCellGroupReducer extends Reducer<LongWritable,
             final Cdr cdr = mobData.getCdr();
             for (CellGroup cellGroup : filteredCellGroups) {
                 final MatrixTime mtxTime = MatrixTimeUtil.create(cdr.getDate(),
-                        cdr.getTime(), (int)cellGroup.getGroup().getNum1(),
-                        cellGroup.getGroup().getNum2());
+                        cdr.getTime(), (int)cellGroup.getGroup().getNum2(),
+                        cellGroup.getGroup().getNum1());
                 context.write(new LongWritable(cdr.getUserId()),
                               MobDataUtil.createAndWrap(mtxTime));
             }

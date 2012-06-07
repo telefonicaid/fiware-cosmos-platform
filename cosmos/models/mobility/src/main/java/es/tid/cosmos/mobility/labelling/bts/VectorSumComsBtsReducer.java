@@ -34,7 +34,7 @@ public class VectorSumComsBtsReducer extends Reducer<
         key.setConverter(BtsCounter.class);
         final BtsCounter counter = key.get();
         ProtobufWritable<NodeBts> nodeBts = NodeBtsUtil.createAndWrap(
-                0L, (int)counter.getPlaceId(), counter.getWeekday(), 0);
+                0L, counter.getBts(), counter.getWeekday(), 0);
         TwoInt hourComms = TwoIntUtil.create(counter.getRange(), valueCount);
         context.write(nodeBts, MobDataUtil.createAndWrap(hourComms));
     }

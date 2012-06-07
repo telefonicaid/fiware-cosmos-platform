@@ -45,8 +45,8 @@ public class RepbtsGetRepresentativeBtsMapper extends Mapper<LongWritable,
         if (counter.getCount() >= this.minPercRepBts
                 && counter.getRange() >= this.minNumberCallsBts) {
             ProtobufWritable<TwoInt> nodeBts = TwoIntUtil.createAndWrap(
-                    key.get(), counter.getPlaceId());
-            BtsCounter btsCounter = BtsCounterUtil.create(counter.getPlaceId(),
+                    key.get(), counter.getBts());
+            BtsCounter btsCounter = BtsCounterUtil.create(counter.getBts(),
                     0, 0, counter.getCount());
             context.write(nodeBts, MobDataUtil.createAndWrap(btsCounter));
         }

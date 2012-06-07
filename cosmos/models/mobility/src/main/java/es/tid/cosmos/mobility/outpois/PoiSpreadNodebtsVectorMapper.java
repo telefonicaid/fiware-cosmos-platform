@@ -26,6 +26,6 @@ public class PoiSpreadNodebtsVectorMapper extends Mapper<
         key.setConverter(NodeBts.class);
         final NodeBts nodeBts = key.get();
         context.write(TwoIntUtil.createAndWrap(nodeBts.getUserId(),
-                                               nodeBts.getPlaceId()), value);
+                                               nodeBts.getBts()), value);
     }
 }

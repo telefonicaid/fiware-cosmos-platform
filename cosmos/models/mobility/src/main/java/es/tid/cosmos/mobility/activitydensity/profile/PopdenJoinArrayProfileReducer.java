@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.populationdensity.profile;
+package es.tid.cosmos.mobility.activitydensity.profile;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -50,7 +50,7 @@ public class PopdenJoinArrayProfileReducer extends Reducer<LongWritable,
                 for (BtsCounter btsCounter : counter.getBtsList()) {
                     final ProtobufWritable<BtsProfile> btsProfile =
                             BtsProfileUtil.createAndWrap(
-                                    btsCounter.getPlaceId(), profile,
+                                    btsCounter.getBts(), profile,
                                     btsCounter.getWeekday(),
                                     btsCounter.getRange());
                     context.write(btsProfile,

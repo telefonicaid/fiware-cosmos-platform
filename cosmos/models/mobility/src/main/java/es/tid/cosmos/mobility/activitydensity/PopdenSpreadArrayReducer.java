@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.populationdensity;
+package es.tid.cosmos.mobility.activitydensity;
 
 import java.io.IOException;
 
@@ -32,7 +32,7 @@ public class PopdenSpreadArrayReducer extends Reducer<LongWritable,
             final NodeMxCounter counter = mobData.getNodeMxCounter();
             for (BtsCounter btsCounter : counter.getBtsList()) {
                 final ProtobufWritable<BtsProfile> btsProfile = 
-                        BtsProfileUtil.createAndWrap(btsCounter.getPlaceId(), 0,
+                        BtsProfileUtil.createAndWrap(btsCounter.getBts(), 0,
                                                      btsCounter.getWeekday(),
                                                      btsCounter.getRange());
                 context.write(btsProfile,

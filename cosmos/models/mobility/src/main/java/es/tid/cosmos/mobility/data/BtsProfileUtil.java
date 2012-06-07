@@ -11,10 +11,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsProfile;
 public abstract class BtsProfileUtil {
     public static final String DELIMITER = "|";
     
-    public static BtsProfile create(long placeId, int profile, int wday,
+    public static BtsProfile create(long bts, int profile, int wday,
                                     int hour) {
         return BtsProfile.newBuilder()
-                .setPlaceId(placeId)
+                .setBts(bts)
                 .setProfile(profile)
                 .setWday(wday)
                 .setHour(hour)
@@ -28,8 +28,8 @@ public abstract class BtsProfileUtil {
         return wrapper;
     }
     
-    public static ProtobufWritable<BtsProfile> createAndWrap(long placeId,
+    public static ProtobufWritable<BtsProfile> createAndWrap(long bts,
             int profile, int wday, int hour) {
-        return wrap(create(placeId, profile, wday, hour));
+        return wrap(create(bts, profile, wday, hour));
     }
 }

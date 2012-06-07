@@ -24,7 +24,7 @@ public class NodeBtsDayUtilTest {
         NodeBtsDay obj = wrapper.get();
         assertNotNull(obj);
         assertEquals(userId, obj.getUserId());
-        assertEquals(placeId, obj.getPlaceId());
+        assertEquals(placeId, obj.getBts());
         assertEquals(workday, obj.getWorkday());
         assertEquals(count, obj.getCount());
     }

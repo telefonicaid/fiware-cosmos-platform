@@ -27,9 +27,9 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  */
 public class MatrixMoveClientReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
-    private final static int MINS_IN_ONE_HOUR = 60;
-    private final static int HOURS_IN_ONE_DAY = 24;
-    private final static int MINS_IN_ONE_DAY = MINS_IN_ONE_HOUR *
+    private static final int MINS_IN_ONE_HOUR = 60;
+    private static final int HOURS_IN_ONE_DAY = 24;
+    private static final int MINS_IN_ONE_DAY = MINS_IN_ONE_HOUR *
                                                HOURS_IN_ONE_DAY;
     
     private int maxMinutesInMoves;

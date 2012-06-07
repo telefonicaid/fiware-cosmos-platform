@@ -22,3 +22,36 @@ def install_dependencies(pkg_list):
     for pkg_name in pkg_list:
         if not has_package(pkg_name):
             run("yum -y install {}".format(pkg_name))
+
+def clean_host_list(hosts):
+    """
+    Perform all necessary operations to have a host list that can appear in
+    monitoring configurations.
+    """
+    return ' '.join(set(remove_port_info(flatten(hosts))))
+
+def flatten(nested_list):
+    """
+    Flattens a list that only contains strings or lists of strings, with only
+    one level of depth.
+    """
+    ## TODO: review in light of: all roles are lists
+    ans = []
+    for elem in nested_list:
+        if isinstance(elem, basestring):
+            ans.append(elem)
+        else:
+            ans.extend(elem)
+    return ans
+
+def remove_port_info(hosts):
+    """
+    Remove port informations from a list of host IPs
+    """
+    ans = []
+    for host in hosts:
+        if len(host.split(':')) > 1:
+            ans.append(host.split(':')[0])
+        else:
+            ans.append(host)
+    return ans

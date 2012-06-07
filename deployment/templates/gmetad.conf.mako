@@ -1,0 +1,3 @@
+# Format: 
+# data_source "my cluster" [polling interval] address1:port addreses2:port ...
+data_source "Cosmos Cluster" 10 ${monitored_hosts}

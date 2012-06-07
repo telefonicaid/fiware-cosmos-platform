@@ -11,6 +11,7 @@ from fabric.api import run, execute, sudo, put, cd, env
 from fabric.contrib import files
 import fabric.context_managers as ctx
 from fabric.decorators import roles, task, parallel
+from fabric.utils import puts
 from mako.template import Template
 from os import path
 
@@ -143,10 +144,31 @@ def deploy_ganglia():
 def install_gmetad():
     with ctx.hide('stdout'):
         run("yum -y install ganglia-gmetad")
+    gmetad_conf = StringIO()
+    template = Template(filename='templates/gmetad.conf.mako')
+    content = template.render(
+            monitored_hosts = common.clean_host_list(CONFIG['hosts'].values()))
+    gmetad_conf.write(content)
+    gmetad_cfg_path = "/etc/ganglia/gmetad.cfg"
+    if not files.exists(gmetad_cfg_path):
+        run("mkdir -p /etc/ganglia")
+        run("echo '' >> {0}".format(gmetad_cfg_path))
+    put(gmetad_conf, gmetad_cfg_path)
 
-#@parallel
-@roles('namenode', 'jobtracker', 'frontend', 'mongo', 'datanodes',
+## TODO: review mongo host: full disk?
+@parallel
+@roles('namenode', 'jobtracker', 'frontend', 'datanodes', #'mongo',
        'tasktrackers')
 def install_gmond():
-    #with ctx.hide('stdout'):
-    run("yum -y install ganglia-gmond")
+    with ctx.hide('stdout'):
+        run("yum -y install ganglia-gmond")
+    gmond_conf = StringIO()
+    template = Template(filename='templates/gmond.conf.mako')
+    content = template.render(
+            gmetad_host = common.clean_host_list(CONFIG['hosts']['namenode']))
+    gmond_conf.write(content)
+    gmond_conf_path = "/etc/ganglia/gmond.cfg"
+    if not files.exists(gmond_conf_path):
+        run("mkdir -p /etc/ganglia")
+        run("echo '' >> {0}".format(gmond_conf_path))
+    put(gmond_conf, gmond_conf_path)

@@ -57,11 +57,11 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
             } else {
                 int minutSrc = source.getTime().getMinute();
                 int minutTgt = target.getTime().getMinute();
-                int dur = (diff * 60) + (minutTgt - minutSrc);
+                double dur = (diff * 60) + (minutTgt - minutSrc);
                 // Comunication in source hour
                 moveRange.setRange(source.getTime().getHour());
                 moveRange.setGroup(source.getDate().getWeekday());
-                double percMoves = (60 - minutSrc) / dur;
+                double percMoves = (60.0D - (double)minutSrc) / dur;
                 moveRangeFinal = moveRange.clone();
                 context.write(ItinRangeUtil.wrap(moveRangeFinal.build()),
                               MobDataUtil.createAndWrap(percMoves));
@@ -84,7 +84,7 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
                     }
                     moveRange.setRange(range);
                     moveRange.setGroup(group);
-                    percMoves = 60 / dur;
+                    percMoves = 60.0D / dur;
                     moveRangeFinal = moveRange.clone();
                     context.write(ItinRangeUtil.wrap(moveRangeFinal.build()),
                                   MobDataUtil.createAndWrap(percMoves));

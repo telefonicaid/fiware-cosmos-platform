@@ -26,10 +26,9 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  */
 public class MatrixMoveClientReducer extends Reducer<LongWritable,
         ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
-    private static final boolean INCLUDE_INTRA_MOVES = false;
-    
     private int maxMinutesInMoves;
     private int minMinutesInMoves;
+    private boolean includeIntraMoves;
     
     @Override
     protected void setup(Context context) throws IOException,
@@ -39,6 +38,8 @@ public class MatrixMoveClientReducer extends Reducer<LongWritable,
                                              Integer.MAX_VALUE);
         this.minMinutesInMoves = conf.getInt(Config.MIN_MINUTES_IN_MOVES,
                                              Integer.MIN_VALUE);
+        this.includeIntraMoves = conf.getBoolean(Config.INCLUDE_INTRA_MOVES,
+                                                 false);
     }
 
     @Override
@@ -60,7 +61,7 @@ public class MatrixMoveClientReducer extends Reducer<LongWritable,
                         loc2.getBts() == loc1.getBts()) {
                     continue;
                 }
-                if (!INCLUDE_INTRA_MOVES &&
+                if (!this.includeIntraMoves &&
                         loc2.getGroup() == loc1.getGroup()) {
                     continue;
                 }
@@ -94,8 +95,8 @@ public class MatrixMoveClientReducer extends Reducer<LongWritable,
                 }
             }
             // Filter movements by diff of time
-            if (minDistLoc != null && minDistance <= maxMinutesInMoves &&
-                    minDistance >= minMinutesInMoves) {
+            if (minDistLoc != null && minDistance <= this.maxMinutesInMoves &&
+                    minDistance >= this.minMinutesInMoves) {
                 ItinTime src = ItinTimeUtil.create(loc1.getDate(),
                                                    loc1.getTime(),
                                                    loc1.getGroup());

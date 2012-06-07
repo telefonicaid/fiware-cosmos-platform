@@ -34,8 +34,8 @@ public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
         final Configuration conf = context.getConfiguration();
         this.homeLabelgroupId = conf.getInt(Config.HOME_LABELGROUP_ID,
                                             Integer.MAX_VALUE);
-        this.minDistSecondHome = Double.parseDouble(conf.get(
-                Config.MIN_DIST_SECOND_HOME));
+        this.minDistSecondHome = conf.getFloat(Config.MIN_DIST_SECOND_HOME,
+                                               Float.MIN_VALUE);
     }
     
     @Override

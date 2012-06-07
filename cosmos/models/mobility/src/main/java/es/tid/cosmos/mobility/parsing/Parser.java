@@ -81,7 +81,7 @@ public abstract class Parser {
         String date = this.nextToken();
         final int day = Integer.parseInt(date.substring(0, 2), 10);
         final int month = Integer.parseInt(date.substring(3, 5), 10);
-        final int year = Integer.parseInt(date.substring(8, 10), 10);
+        final int year = Integer.parseInt(date.substring(6, 10), 10);
         return Date.newBuilder()
                 .setDay(day)
                 .setMonth(month)
@@ -100,7 +100,7 @@ public abstract class Parser {
     }
 
     private static int dayOfWeek(int day, int month, int year) {
-        int ix = ((year + 100 - 21) % 28) + monthOffset(month)
+        int ix = (((year % 100) + 100 - 21) % 28) + monthOffset(month)
                  + ((month > 2) ? 1 : 0);
         int tx = (ix + (ix / 4)) % 7 + day;
         return (tx + 1) % 7;

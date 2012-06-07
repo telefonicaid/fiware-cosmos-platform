@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.BtsProfileUtil;
+import es.tid.cosmos.mobility.data.ClientProfileUtil;
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsProfile;
@@ -33,7 +34,8 @@ public class PopdenJoinNodeInfoProfileReducerTest {
     public void testReduce() {
         ProtobufWritable<MobData> nodebts = MobDataUtil.createAndWrap(
                 NodeBtsUtil.create(1L, 2L, 3, 4));
-        ProtobufWritable<MobData> intdata = MobDataUtil.createAndWrap(5);
+        ProtobufWritable<MobData> intdata = MobDataUtil.createAndWrap(
+                ClientProfileUtil.create(1L, 5));
         this.instance
                 .withInput(new LongWritable(2L),
                            Arrays.asList(nodebts, intdata))

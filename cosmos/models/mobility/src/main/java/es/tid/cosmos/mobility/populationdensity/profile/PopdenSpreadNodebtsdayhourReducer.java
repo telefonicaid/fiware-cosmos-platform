@@ -42,11 +42,12 @@ public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
     protected void reduce(LongWritable key,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
+        List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
         for (final ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
             final Cdr cdr = mobData.getCdr();
-            for (Cell cell : cells) {
+            for (Cell cell : filteredCells) {
                 context.write(NodeBtsDateUtil.createAndWrap(cdr.getUserId(),
                                       cell.getBts(), cdr.getDate(),
                                       cdr.getTime().getHour()),

@@ -250,8 +250,8 @@ public class MobilityMain extends Configured implements Tool {
                                         cellsPath,
                                         clientProfileMobPath,
                                         populationDensityOutPath,
-                                        tmpActivityDensityPath, isDebug,
-                                        conf);
+                                        tmpPopulationDensityPath,
+                                        isDebug, conf);
         }
 
         Path tmpPopulationDensityProfilePath = new Path(tmpPath,

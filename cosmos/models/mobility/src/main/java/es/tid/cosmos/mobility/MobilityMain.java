@@ -71,11 +71,13 @@ public class MobilityMain extends Configured implements Tool {
         Path cellsMobPath = new Path(tmpParsingPath, "cells_mob");
         Path pairbtsAdjPath = new Path(tmpParsingPath, "pairbts_adj");
         Path btsComareaPath = new Path(tmpParsingPath, "bts_comarea");
+        Path clientProfileMobPath = new Path(tmpParsingPath, "clientprofile_mob");
         boolean shouldParse = arguments.getBoolean("parse");
         if (shouldRunAll || shouldParse) {
             ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath, cellsMobPath,
                               adjBtsPath, pairbtsAdjPath, btsVectorTxtPath,
-                              btsComareaPath, conf);
+                              btsComareaPath, clientProfilePath,
+                              clientProfileMobPath, conf);
         }
         
         Path tmpPreparingPath = new Path(tmpPath, "preparing");
@@ -246,7 +248,7 @@ public class MobilityMain extends Configured implements Tool {
         if (shouldRunAll || shouldGetPopulationDensity) {
             PopulationDensityRunner.run(cdrsInfoPath,
                                         cellsPath,
-                                        clientProfilePath,
+                                        clientProfileMobPath,
                                         populationDensityOutPath,
                                         tmpActivityDensityPath, isDebug,
                                         conf);
@@ -261,7 +263,7 @@ public class MobilityMain extends Configured implements Tool {
         if (shouldRunAll || shouldGetPopulationDensityProfile) {
             PopulationDensityProfileRunner.run(cdrsInfoPath,
                                                cellsPath,
-                                               clientProfilePath,
+                                               clientProfileMobPath,
                                                populationDensityProfileOutPath,
                                                tmpPopulationDensityProfilePath,
                                                isDebug, conf);

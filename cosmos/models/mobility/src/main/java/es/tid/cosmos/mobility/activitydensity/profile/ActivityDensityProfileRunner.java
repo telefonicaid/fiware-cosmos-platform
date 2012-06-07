@@ -7,13 +7,11 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
-import es.tid.cosmos.mobility.parsing.ParserClientProfilesReducer;
 import es.tid.cosmos.mobility.activitydensity.PopdenCreateVectorReducer;
 import es.tid.cosmos.mobility.activitydensity.PopdenProfileGetOutReducer;
 import es.tid.cosmos.mobility.activitydensity.PopdenSumCommsReducer;
@@ -26,22 +24,10 @@ public final class ActivityDensityProfileRunner {
     private ActivityDensityProfileRunner() {
     }
     
-    public static void run(Path clientProfilePath, Path clientsInfoPath,
+    public static void run(Path clientProfileMobPath, Path clientsInfoPath,
                            Path activityDensityProfileOut, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
-        Path clientProfileParsedPath = new Path(tmpDirPath,
-                                                "client_profile_parsed");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "ParserClientProfiles",
-                    TextInputFormat.class,
-                    ParserClientProfilesReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, clientsInfoPath);
-            FileOutputFormat.setOutputPath(job, clientProfileParsedPath);
-            job.waitForCompletion(true);
-        }
-
         Path popdenprofBtsprofPath = new Path(tmpDirPath, "popdenprof_btsprof");
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenJoinArrayProfile",
@@ -49,7 +35,7 @@ public final class ActivityDensityProfileRunner {
                     PopdenJoinArrayProfileReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] { clientsInfoPath,
-                clientProfileParsedPath });
+                clientProfileMobPath });
             FileOutputFormat.setOutputPath(job, popdenprofBtsprofPath);
             job.waitForCompletion(true);
         }

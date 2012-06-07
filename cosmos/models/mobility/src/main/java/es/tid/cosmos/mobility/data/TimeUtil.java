@@ -31,12 +31,6 @@ public abstract class TimeUtil {
         return wrap(create(hour, minute, seconds));
     }
     
-    public static Time parse(String line) {
-        String[] values = line.split("\\" + DELIMITER);
-        return create(Integer.parseInt(values[0]), Integer.parseInt(values[1]),
-                      Integer.parseInt(values[2]));
-    }
-    
     public static String toString(Time obj) {
         return (obj.getHour() + DELIMITER + obj.getMinute() + DELIMITER +
                 obj.getSeconds());

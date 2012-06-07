@@ -29,14 +29,6 @@ public class TwoIntUtilTest {
     }
 
     @Test
-    public void testParse() {
-        TwoInt obj = TwoIntUtil.parse("3|5");
-        assertNotNull(obj);
-        assertEquals(3L, obj.getNum1());
-        assertEquals(5L, obj.getNum2());
-    }
-
-    @Test
     public void testToString() {
         TwoInt obj = TwoIntUtil.create(3L, 5L);
         assertEquals("3|5", TwoIntUtil.toString(obj));

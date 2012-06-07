@@ -33,12 +33,6 @@ public abstract class BtsCounterUtil {
         return wrap(create(bts, weekday, range, count));
     }
     
-    public static BtsCounter parse(String line) {
-        String[] values = line.split(DELIMITER);
-        return create(Long.parseLong(values[0]), Integer.parseInt(values[1]),
-                      Integer.parseInt(values[2]), Integer.parseInt(values[3]));
-    }
-    
     public static String toString(BtsCounter obj) {
         return (obj.getBts() + DELIMITER + obj.getWeekday() + DELIMITER +
                 obj.getRange() + DELIMITER + obj.getCount());

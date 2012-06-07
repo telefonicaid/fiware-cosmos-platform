@@ -137,6 +137,7 @@ def deploy_models():
 
 @task
 def deploy_ganglia():
+    execute(configure_hadoop_metrics)
     execute(install_gmetad)
     execute(install_gmond)
 
@@ -172,3 +173,16 @@ def install_gmond():
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmond_conf_path))
     put(gmond_conf, gmond_conf_path)
+
+@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
+def configure_hadoop_metrics():
+    hadoop_metrics_conf = StringIO()
+    template = Template(filename='templates/hadoop-metrics.properties.mako')
+    content = template.render(namenode=CONFIG['hosts']['namenode'])
+    hadoop_metrics_conf.write(content)
+    ## TODO: parametize Hadoop version
+    hadoop_metrics_path = "/etc/hadoop-0.20/conf/hadoop-metrics.properties"
+    if not files.exists(hadoop_metrics_path):
+        run("mkdir -p /etc/hadoop-0.20/conf/")
+        run("echo '' >> {0}".format(hadoop_metrics_path))
+    put(hadoop_metrics_conf, hadoop_metrics_path)

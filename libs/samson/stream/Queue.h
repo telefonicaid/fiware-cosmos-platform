@@ -111,6 +111,9 @@ namespace samson {
             
             void flush();
 
+            // Get total size accumulated here
+            size_t getTotalSize();
+            
         };
         
         
@@ -198,6 +201,9 @@ namespace samson {
 
             // Review stuff necessary for this queue
             void review();
+            
+            // Get total accumulated size
+            size_t getAccumulatedTotalSize();
             
             void setMinNumDivisions( int _num_divisions )
             {

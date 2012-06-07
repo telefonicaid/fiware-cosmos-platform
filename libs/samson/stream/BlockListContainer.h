@@ -56,6 +56,10 @@ namespace samson
             
             // Get a description of the contents
             std::string getBlockListContainerDataDescription();
+            
+            // Get the total number of blocks included in all the block lists
+            size_t getNumBlocks();
+            
         };
     }
 }

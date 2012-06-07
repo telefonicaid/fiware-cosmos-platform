@@ -951,12 +951,23 @@ typedef struct LogLineInfo
         if( main_command == "wait" )
         {
             // Special operation to wait until no activity is present in stream manager
-            
             if( streamManager->queueTaskManager.isActive() )
+            {
                 pending_to_be_executed = true;
-            else
-                finishWorkerTask();
+                return;
+            }
+
+            // No pending data to be processed
+            if( streamManager->isSomethingPending() )
+            {
+                pending_to_be_executed = true;
+                return;
+            }
             
+            
+
+            // Nothing else to be waited
+            finishWorkerTask();
             return;
         }
         

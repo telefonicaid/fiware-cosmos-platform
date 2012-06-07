@@ -1348,5 +1348,33 @@ namespace samson {
             command->append( block->lookup( key.c_str() , command->format ) );
             return;
         }
+        
+        bool StreamManager::isSomethingPending()
+        {
+            // Check if queues has something in the buffers
+            au::map< std::string , Queue >::iterator it_queues;                
+            for( it_queues = queues.begin() ; it_queues != queues.end() ; it_queues++ )
+            {
+                Queue* queue = it_queues->second;
+                if( queue->getAccumulatedTotalSize() >  0 )
+                    return true; // Still something accumulated in queues pending to be transformed in blocks
+            }
+            
+            
+            au::map <std::string , StreamOperation>::iterator it;
+            for( it = stream_operations.begin() ; it != stream_operations.end() ; it++ )
+            {
+                StreamOperation * stream_operation = it->second;
+                
+                if( stream_operation->running_tasks.size() > 0 )
+                    return true;
+                
+                if( stream_operation->getNumBlocks() > 0 )
+                    return true;
+            }
+
+            return false;
+        }
+
     }
 }

@@ -192,6 +192,9 @@ namespace samson {
             // Get value for a particular state
             void process( au::network::RESTServiceCommand* command );
             
+            // check if something is pending to be processed ( only for wait command in tests )
+            bool isSomethingPending();
+            
         private:
             
             void reviewStreamOperations();

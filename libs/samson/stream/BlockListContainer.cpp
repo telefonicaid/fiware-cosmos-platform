@@ -112,8 +112,14 @@ namespace samson
             return output.str();
         }
 
+        size_t BlockListContainer::getNumBlocks()
+        {
+            size_t total = 0;
+            au::map<std::string, BlockList >::iterator it;
+            for (it = blockLists.begin() ; it != blockLists.end() ; it++ )
+                total += (it->second->getNumBlocks() );
+            return total;
+        }
 
-        
-        
     } 
 }

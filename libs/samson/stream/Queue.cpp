@@ -108,6 +108,12 @@ namespace samson {
             
         }
         
+        size_t BufferAccumulator::getTotalSize()
+        {
+            return buffer_list_container.getTotalSize();
+        }
+
+        
 #pragma mark Queue
         
         Queue::Queue( std::string _name , StreamManager* _streamManager  ) : buffer_accumulator(this)
@@ -447,6 +453,11 @@ namespace samson {
             
             return true;
             
+        }
+        
+        size_t Queue::getAccumulatedTotalSize()
+        {
+            return buffer_accumulator.getTotalSize();
         }
         
         void Queue::fill( samson::network::CollectionRecord* record , Visualization* visualization )

@@ -7,7 +7,7 @@ import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetRaw;
  * @author dmicol
  */
 public abstract class InetRawUtil {
-    private static final String DELIMITER = "\\|";
+    private static final String DELIMITER = "|";
     
     private InetRawUtil() {
     }
@@ -36,7 +36,7 @@ public abstract class InetRawUtil {
     }
     
     public static InetRaw parse(String line) {
-        String[] fields = line.split(DELIMITER);
+        String[] fields = line.split("\\" + DELIMITER);
         return create(fields[0], fields[1], fields[2], fields[3], fields[4],
                 fields[5], fields[6], fields[7], fields[8], fields[9],
                 fields[10], fields[11], fields[12], fields[13]);

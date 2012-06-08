@@ -9,7 +9,7 @@ Package: samson
 Section: tid
 Priority: optional
 Architecture: amd64
-Depends: libprotobuf6, ntp, tid-mongodb, samson-logserver (= 0.6.1), libjson0
+Depends: libprotobuf6, ntp, tid-mongodb, samson-logserver, libjson0
 Description: SAMSON is a high-performance MapReduce platform that is designed
  for scaling tasks on a cluster of commodity hardware. This platform removes the
  need to develop a system for parallelizing and synchronizing work between
@@ -24,7 +24,7 @@ Package: samson-dev
 Section: tid
 Priority: optional
 Architecture: amd64
-Depends: samson (= 0.6.1), libboost-dev, ncurses-dev, make, gcc, cmake, libreadline-dev, libprotobuf-dev, protobuf-compiler, libboost-filesystem-dev, libboost-thread-dev, qt4-qmake, libqt4-dev, tid-mongodb-dev
+Depends: samson, libboost-dev, ncurses-dev, make, gcc, cmake, libreadline-dev, libprotobuf-dev, protobuf-compiler, libboost-filesystem-dev, libboost-thread-dev, qt4-qmake, libqt4-dev, tid-mongodb-dev
 Description: SAMSON is a high-performance MapReduce platform that is designed
  for scaling tasks on a cluster of commodity hardware. This platform removes the
  need to develop a system for parallelizing and synchronizing work between
@@ -39,7 +39,7 @@ Package: samson-gui
 Section: tid
 Priority: optional
 Architecture: amd64
-Depends: samson (= 0.6.1), kdchart
+Depends: samson, kdchart
 Description: SAMSON is a high-performance MapReduce platform that is designed
  for scaling tasks on a cluster of commodity hardware. This platform removes the
  need to develop a system for parallelizing and synchronizing work between

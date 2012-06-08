@@ -23,9 +23,9 @@ public class RepbtsJoinDistCommsReducerTest {
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                LongWritable, ProtobufWritable<MobData>>(
-                        new RepbtsJoinDistCommsReducer());
+        //this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
+        //        LongWritable, ProtobufWritable<MobData>>(
+        //                new RepbtsJoinDistCommsReducer());
     }
 
     @Test

@@ -21,9 +21,9 @@ public class DeletePeriodMapperTest {
     
     @Before
     public void setUp() {
-        this.driver = new MapDriver<ProtobufWritable<TelMonth>,
-                ProtobufWritable<MobData>, ProtobufWritable<TelMonth>,
-                ProtobufWritable<MobData>>(new DeletePeriodMapper());
+        //this.driver = new MapDriver<ProtobufWritable<TelMonth>,
+        //        ProtobufWritable<MobData>, ProtobufWritable<TelMonth>,
+        //        ProtobufWritable<MobData>>(new DeletePeriodMapper());
     }
 
     @Test

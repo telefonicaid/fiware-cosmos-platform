@@ -26,9 +26,9 @@ public class RepbtsFilterNumCommsReducerTest {
     
     @Before
     public void setUp() throws IOException {
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                LongWritable, ProtobufWritable<MobData>>(
-                        new RepbtsFilterNumCommsReducer());
+        //this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
+        //        LongWritable, ProtobufWritable<MobData>>(
+        //                new RepbtsFilterNumCommsReducer());
         InputStream configInput = Config.class.getResource(
                 "/mobility.properties").openStream();
         this.driver.setConfiguration(Config.load(configInput,

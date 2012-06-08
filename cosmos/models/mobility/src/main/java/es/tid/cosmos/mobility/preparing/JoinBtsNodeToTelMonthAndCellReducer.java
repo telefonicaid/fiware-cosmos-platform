@@ -10,6 +10,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TelMonthUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
@@ -24,8 +25,8 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  * @author dmicol
  */
 public class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, ProtobufWritable<TelMonth>,
-        ProtobufWritable<MobData>> {
+        MobilityWritable<Cdr>, ProtobufWritable<TelMonth>,
+        MobilityWritable<Cell>> {
     private static List<Cell> cells = null;
     
     @Override
@@ -39,15 +40,14 @@ public class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Cdr>> values, Context context)
             throws IOException, InterruptedException {
         List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
         if (filteredCells.isEmpty()) {
             return;
         }
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final Cdr cdr = value.get().getCdr();
+        for (MobilityWritable<Cdr> value : values) {
+            final Cdr cdr = value.get();
             for (Cell cell : filteredCells) {
                 int weekday = cdr.getDate().getWeekday();
                 int hour = cdr.getTime().getHour();
@@ -60,7 +60,8 @@ public class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
                 }
                 ProtobufWritable<TelMonth> telMonth = TelMonthUtil.createAndWrap(
                         cdr.getUserId(), cdr.getDate().getMonth(), workingday);
-                context.write(telMonth, MobDataUtil.createAndWrap(cell));
+                context.write(telMonth,
+                              new MobilityWritable<Cell>(cell, Cell.class));
             }
         }
     }

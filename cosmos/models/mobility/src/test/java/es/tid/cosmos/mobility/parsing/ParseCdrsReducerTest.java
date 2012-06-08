@@ -25,8 +25,8 @@ public class ParseCdrsReducerTest {
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, Text, LongWritable,
-                ProtobufWritable<MobData>>(new ParseCdrsReducer());
+       // this.driver = new ReduceDriver<LongWritable, Text, LongWritable,
+        //        ProtobufWritable<MobData>>(new ParseCdrsReducer());
     }
 
     @Test

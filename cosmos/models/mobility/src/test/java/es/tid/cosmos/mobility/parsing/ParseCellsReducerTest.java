@@ -25,8 +25,8 @@ public class ParseCellsReducerTest {
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, Text, LongWritable,
-                ProtobufWritable<MobData>>(new ParseCellsReducer());
+        //this.driver = new ReduceDriver<LongWritable, Text, LongWritable,
+        //        ProtobufWritable<MobData>>(new ParseCellsReducer());
     }
 
     @Test

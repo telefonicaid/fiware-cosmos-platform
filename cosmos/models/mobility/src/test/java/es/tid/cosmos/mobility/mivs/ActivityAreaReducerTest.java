@@ -35,9 +35,9 @@ public class ActivityAreaReducerTest {
 
     @Before
     public void setUp() {
-        this.reducer = new ReduceDriver<ProtobufWritable<TelMonth>,
-                ProtobufWritable<MobData>, LongWritable,
-                ProtobufWritable<MobData>>(new ActivityAreaReducer());
+        //this.reducer = new ReduceDriver<ProtobufWritable<TelMonth>,
+        //        ProtobufWritable<MobData>, LongWritable,
+        //        ProtobufWritable<MobData>>(new ActivityAreaReducer());
         this.firstCell = CellUtil.create(590379901L, 100L, 1, 2,
                                          5000000D, 2000000D);
         this.secondCell = CellUtil.create(591266215L, 101L, 3, 4,

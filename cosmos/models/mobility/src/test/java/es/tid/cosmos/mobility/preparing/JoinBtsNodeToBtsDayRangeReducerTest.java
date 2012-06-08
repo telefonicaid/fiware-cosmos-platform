@@ -52,9 +52,9 @@ public class JoinBtsNodeToBtsDayRangeReducerTest {
         PowerMockito.mockStatic(CellsCatalogue.class);
         when(CellsCatalogue.load(any(Path.class), any(Configuration.class)))
                 .thenReturn(cells);
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                LongWritable, ProtobufWritable<MobData>>(
-                        new JoinBtsNodeToBtsDayRangeReducer());
+        //this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
+        //        LongWritable, ProtobufWritable<MobData>>(
+        //                new JoinBtsNodeToBtsDayRangeReducer());
         this.driver.getConfiguration().set("cells", "/home/test");
     }
 

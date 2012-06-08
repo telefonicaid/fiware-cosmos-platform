@@ -10,10 +10,9 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobVarsUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TelMonth;
 
@@ -24,8 +23,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TelMonth;
  * @author logc
  */
 public class ActivityAreaReducer extends Reducer<
-        ProtobufWritable<TelMonth>, ProtobufWritable<MobData>,
-        LongWritable, ProtobufWritable<MobData>> {
+        ProtobufWritable<TelMonth>, MobilityWritable<Cell>,
+        LongWritable, MobilityWritable<MobVars>> {
     private static class Accumulations {
         int difPos;
         int numBtss;
@@ -44,7 +43,7 @@ public class ActivityAreaReducer extends Reducer<
 
     @Override
     protected void reduce(ProtobufWritable<TelMonth> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Cell>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(TelMonth.class);
         final LongWritable newKey = new LongWritable(key.get().getPhone());
@@ -63,20 +62,19 @@ public class ActivityAreaReducer extends Reducer<
                 month, isWorkDay, accs.difPos, accs.numBtss, accs.numMuns,
                 accs.numStates, accs.massCenterX, accs.massCenterY, accs.radius,
                 influenceAreaDiameter);
-        context.write(newKey, MobDataUtil.createAndWrap(ans));
+        context.write(newKey, new MobilityWritable<MobVars>(ans, MobVars.class));
     }
     
     private Accumulations accumulate(
-            Iterable<ProtobufWritable<MobData>> values) {
+            Iterable<MobilityWritable<Cell>> values) {
         Accumulations ans = new Accumulations();
         int numPos = 0;
         double massCenterAccX = 0.0D;
         double massCenterAccY = 0.0D;
         double radiusAccX = 0.0D;
         double radiusAccY = 0.0D;
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final Cell cell = value.get().getCell();
+        for (MobilityWritable<Cell> value : values) {
+            final Cell cell = value.get();
             numPos++;
             this.allCells.add(cell.getCellId());
             boolean hasNewBts = this.allBtss.add(cell.getBts());

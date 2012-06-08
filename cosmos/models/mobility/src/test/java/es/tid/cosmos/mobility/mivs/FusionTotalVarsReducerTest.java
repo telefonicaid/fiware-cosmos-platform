@@ -24,9 +24,9 @@ public class FusionTotalVarsReducerTest {
 
     @Before
     public void setUp() {
-        this.reducer = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                LongWritable, ProtobufWritable<MobData>>(
-                        new FusionTotalVarsReducer());
+        //this.reducer = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
+        //        LongWritable, ProtobufWritable<MobData>>(
+        //                new FusionTotalVarsReducer());
     }
 
     @Test

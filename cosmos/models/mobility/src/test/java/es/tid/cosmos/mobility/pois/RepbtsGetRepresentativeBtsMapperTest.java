@@ -26,9 +26,9 @@ public class RepbtsGetRepresentativeBtsMapperTest {
     
     @Before
     public void setUp() throws IOException {
-        this.driver = new MapDriver<LongWritable, ProtobufWritable<MobData>,
-                ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>(
-                        new RepbtsGetRepresentativeBtsMapper());
+        //this.driver = new MapDriver<LongWritable, ProtobufWritable<MobData>,
+        //        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>(
+        //                new RepbtsGetRepresentativeBtsMapper());
         InputStream configInput = Config.class.getResource(
                 "/mobility.properties").openStream();
         this.driver.setConfiguration(Config.load(configInput,

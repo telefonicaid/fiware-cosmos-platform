@@ -23,9 +23,9 @@ public class NodeMobInfoReducerTest {
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                LongWritable, ProtobufWritable<MobData>>(
-                        new NodeMobInfoReducer());
+        //this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
+        //        LongWritable, ProtobufWritable<MobData>>(
+        //                new NodeMobInfoReducer());
     }
 
     @Test

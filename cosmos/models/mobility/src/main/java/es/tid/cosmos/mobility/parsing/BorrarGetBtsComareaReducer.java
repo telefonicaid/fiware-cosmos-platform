@@ -2,14 +2,12 @@ package es.tid.cosmos.mobility.parsing;
 
 import java.io.IOException;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, Text>
@@ -18,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * @author dmicol
  */
 public class BorrarGetBtsComareaReducer extends Reducer<LongWritable, Text,
-        LongWritable, ProtobufWritable<MobData>> {
+        LongWritable, MobilityWritable<Bts>> {
     @Override
     protected void reduce(LongWritable key, Iterable<Text> values,
             Context context) throws IOException, InterruptedException {
@@ -31,7 +29,7 @@ public class BorrarGetBtsComareaReducer extends Reducer<LongWritable, Text,
                 continue;
             }
             context.write(new LongWritable(bts.getPlaceId()),
-                          MobDataUtil.createAndWrap(bts));
+                          new MobilityWritable<Bts>(bts, Bts.class));
         }
     }
 }

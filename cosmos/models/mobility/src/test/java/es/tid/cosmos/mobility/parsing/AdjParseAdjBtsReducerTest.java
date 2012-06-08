@@ -26,9 +26,9 @@ public class AdjParseAdjBtsReducerTest {
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, Text,
-                ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>(
-                        new AdjParseAdjBtsReducer());
+        //this.driver = new ReduceDriver<LongWritable, Text,
+        //        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>(
+        //                new AdjParseAdjBtsReducer());
     }
 
     @Test

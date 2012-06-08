@@ -4,13 +4,12 @@ import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -20,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class AdjParseAdjBtsReducer extends Reducer<LongWritable, Text,
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
+        ProtobufWritable<TwoInt>, MobilityWritable<Null>> {
     @Override
     protected void reduce(LongWritable key, Iterable<Text> values,
             Context context) throws IOException, InterruptedException {
@@ -33,7 +32,8 @@ public class AdjParseAdjBtsReducer extends Reducer<LongWritable, Text,
                 continue;
             }
             context.write(TwoIntUtil.wrap(adjBts),
-                          MobDataUtil.createAndWrap(NullWritable.get()));
+                          new MobilityWritable(Null.getDefaultInstance(),
+                                               Null.class));
         }
     }
 }

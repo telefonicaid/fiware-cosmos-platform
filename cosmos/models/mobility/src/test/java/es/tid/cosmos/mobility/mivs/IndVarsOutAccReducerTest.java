@@ -26,9 +26,9 @@ public class IndVarsOutAccReducerTest {
 
     @Before
     public void setUp() {
-        this.reducer = new ReduceDriver<LongWritable,
-                ProtobufWritable<MobData>, NullWritable, Text>(
-                        new IndVarsOutAccReducer());
+        //this.reducer = new ReduceDriver<LongWritable,
+        //        ProtobufWritable<MobData>, NullWritable, Text>(
+        //                new IndVarsOutAccReducer());
     }
 
     @Test

@@ -26,9 +26,9 @@ public class NodeBtsCounterReducerTest {
 
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<ProtobufWritable<NodeBts>,
-                ProtobufWritable<MobData>, LongWritable,
-                ProtobufWritable<MobData>>(new NodeBtsCounterReducer());
+        //this.driver = new ReduceDriver<ProtobufWritable<NodeBts>,
+        //        ProtobufWritable<MobData>, LongWritable,
+        //        ProtobufWritable<MobData>>(new NodeBtsCounterReducer());
     }
 
 

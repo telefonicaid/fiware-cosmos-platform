@@ -3,17 +3,16 @@ package es.tid.cosmos.mobility.preparing;
 import java.io.IOException;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
@@ -23,7 +22,7 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  * @author dmicol
  */
 public class JoinBtsNodeToBtsDayRangeReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+        MobilityWritable<Cdr>, LongWritable, MobilityWritable<TwoInt>> {
     private static List<Cell> cells = null;
     
     @Override
@@ -37,15 +36,14 @@ public class JoinBtsNodeToBtsDayRangeReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Cdr>> values, Context context)
             throws IOException, InterruptedException {
         List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
         if (filteredCells.isEmpty()) {
             return;
         }
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final Cdr cdr = value.get().getCdr();
+        for (MobilityWritable<Cdr> value : values) {
+            final Cdr cdr = value.get();
             for (Cell cell : filteredCells) {
                 int group;
                 switch (cdr.getDate().getWeekday()) {
@@ -62,9 +60,10 @@ public class JoinBtsNodeToBtsDayRangeReducer extends Reducer<LongWritable,
                         group = 0;
                 }
                 context.write(new LongWritable(cell.getBts()),
-                        MobDataUtil.createAndWrap(
+                        new MobilityWritable<TwoInt>(
                                 TwoIntUtil.create(group,
-                                                  cdr.getTime().getHour())));
+                                                  cdr.getTime().getHour()),
+                                TwoInt.class));
             }
         }
     }

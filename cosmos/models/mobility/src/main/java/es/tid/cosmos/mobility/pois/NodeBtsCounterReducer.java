@@ -7,10 +7,10 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 
 /**
  * Input: <NodeBts, Null>
@@ -19,14 +19,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
  * @author dmicol
  */
 public class NodeBtsCounterReducer extends Reducer<
-        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>, LongWritable,
-        ProtobufWritable<MobData>> {
+        ProtobufWritable<NodeBts>, MobilityWritable<Null>, LongWritable,
+        MobilityWritable<BtsCounter>> {
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Null>> values, Context context)
             throws IOException, InterruptedException {
         int count = 0;
-        for (ProtobufWritable<MobData> value : values) {
+        for (MobilityWritable<Null> value : values) {
             count++;
         }
         key.setConverter(NodeBts.class);
@@ -34,6 +34,6 @@ public class NodeBtsCounterReducer extends Reducer<
         BtsCounter counter = BtsCounterUtil.create(node.getBts(),
                 node.getWeekday(), node.getRange(), count);
         context.write(new LongWritable(node.getUserId()),
-                      MobDataUtil.createAndWrap(counter));
+                      new MobilityWritable<BtsCounter>(counter, BtsCounter.class));
     }
 }

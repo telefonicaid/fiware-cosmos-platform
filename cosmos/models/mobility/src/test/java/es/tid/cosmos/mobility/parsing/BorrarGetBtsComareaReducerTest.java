@@ -9,9 +9,10 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
@@ -25,8 +26,8 @@ public class BorrarGetBtsComareaReducerTest {
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, Text, LongWritable,
-                ProtobufWritable<MobData>>(new BorrarGetBtsComareaReducer());
+        //this.driver = new ReduceDriver<LongWritable, Text, LongWritable,
+        //        ProtobufWritable<MobData>>(new BorrarGetBtsComareaReducer());
     }
 
     @Test

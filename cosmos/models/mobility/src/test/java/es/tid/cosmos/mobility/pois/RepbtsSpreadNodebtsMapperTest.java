@@ -28,9 +28,9 @@ public class RepbtsSpreadNodebtsMapperTest {
     
     @Before
     public void setUp() {
-        this.driver = new MapDriver<LongWritable,
-                ProtobufWritable<MobData>, ProtobufWritable<NodeBtsDay>,
-                ProtobufWritable<MobData>>(new RepbtsSpreadNodebtsMapper());
+        //this.driver = new MapDriver<LongWritable,
+        //        ProtobufWritable<MobData>, ProtobufWritable<NodeBtsDay>,
+        //        ProtobufWritable<MobData>>(new RepbtsSpreadNodebtsMapper());
     }
     
     @Test

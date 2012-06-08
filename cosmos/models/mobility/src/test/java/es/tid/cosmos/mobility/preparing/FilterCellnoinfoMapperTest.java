@@ -22,9 +22,9 @@ public class FilterCellnoinfoMapperTest {
 
     @Before
     public void setUp() {
-        this.driver = new MapDriver<LongWritable, ProtobufWritable<MobData>,
-                LongWritable, ProtobufWritable<MobData>>(
-                        new FilterCellnoinfoMapper());
+        //this.driver = new MapDriver<LongWritable, ProtobufWritable<MobData>,
+        //        LongWritable, ProtobufWritable<MobData>>(
+        //                new FilterCellnoinfoMapper());
     }
     
     @Test

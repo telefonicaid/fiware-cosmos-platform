@@ -3,14 +3,13 @@ package es.tid.cosmos.mobility.mivs;
 import java.io.IOException;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobVarsUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 
@@ -21,17 +20,16 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
  * @author logc
  */
 public class  IndVarsOutAccReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, NullWritable, Text> {
+        MobilityWritable<MobViMobVars>, NullWritable, Text> {
     private static final String DELIMITER = "|";
     private static final String MISSING = "-1|-1|-1|-1|-1|-1|-1|-1";
 
     @Override
     public void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values,
+            Iterable<MobilityWritable<MobViMobVars>> values,
             Context context) throws IOException, InterruptedException {
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobViMobVars activityAreas = value.get().getMobViMobVars();
+        for (MobilityWritable<MobViMobVars> value : values) {
+            final MobViMobVars activityAreas = value.get();
             List<MobVars> areasList = activityAreas.getVarsList();
             boolean exists = false;
             String ans = key.toString();

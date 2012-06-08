@@ -24,9 +24,9 @@ public class RepbtsAggbybtsReducerTest {
 
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<ProtobufWritable<NodeBtsDay>,
-                ProtobufWritable<MobData>, LongWritable,
-                ProtobufWritable<MobData>>(new RepbtsAggbybtsReducer());
+        //this.driver = new ReduceDriver<ProtobufWritable<NodeBtsDay>,
+        //        ProtobufWritable<MobData>, LongWritable,
+        //        ProtobufWritable<MobData>>(new RepbtsAggbybtsReducer());
     }
 
     @Test

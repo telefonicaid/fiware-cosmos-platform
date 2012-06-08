@@ -53,9 +53,9 @@ public class JoinBtsNodeToTelMonthAndCellReducerTest {
         PowerMockito.mockStatic(CellsCatalogue.class);
         when(CellsCatalogue.load(any(Path.class), any(Configuration.class)))
                 .thenReturn(cells);
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                ProtobufWritable<TelMonth>, ProtobufWritable<MobData>>(
-                        new JoinBtsNodeToTelMonthAndCellReducer());
+        //this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
+        //        ProtobufWritable<TelMonth>, ProtobufWritable<MobData>>(
+        //                new JoinBtsNodeToTelMonthAndCellReducer());
         this.driver.getConfiguration().set("cells", "/home/test");
     }
 

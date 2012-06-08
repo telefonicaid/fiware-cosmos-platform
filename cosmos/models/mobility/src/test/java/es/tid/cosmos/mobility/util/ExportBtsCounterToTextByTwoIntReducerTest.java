@@ -25,9 +25,9 @@ public class ExportBtsCounterToTextByTwoIntReducerTest {
             NullWritable, Text> driver;
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>, NullWritable, Text>(
-                        new ExportBtsCounterToTextByTwoIntReducer());
+        //this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
+        //        ProtobufWritable<MobData>, NullWritable, Text>(
+        //                new ExportBtsCounterToTextByTwoIntReducer());
     }
     
     @Test

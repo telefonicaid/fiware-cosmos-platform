@@ -2,14 +2,12 @@ package es.tid.cosmos.mobility.parsing;
 
 import java.io.IOException;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, Text>
@@ -18,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * @author dmicol, sortega
  */
 public class ParseCellsReducer extends Reducer<LongWritable, Text, LongWritable,
-        ProtobufWritable<MobData>> {
+        MobilityWritable<Cell>> {
     private LongWritable cellId;
     
     @Override
@@ -38,7 +36,8 @@ public class ParseCellsReducer extends Reducer<LongWritable, Text, LongWritable,
                 continue;
             }
             this.cellId.set(cell.getCellId());
-            context.write(this.cellId, MobDataUtil.createAndWrap(cell));
+            context.write(this.cellId,
+                          new MobilityWritable<Cell>(cell, Cell.class));
         }
     }
 }

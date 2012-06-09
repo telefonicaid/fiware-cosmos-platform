@@ -27,7 +27,7 @@ public class BorrarGetBtsComareaMapper extends Mapper<LongWritable, Text,
             context.write(new LongWritable(bts.getPlaceId()),
                           MobDataUtil.createAndWrap(bts));
         } catch (Exception ex) {
-            context.getCounter(Counters.INVALID_LINES).increment(1L);
+            context.getCounter(Counters.INVALID_BTS).increment(1L);
         }
     }
 }

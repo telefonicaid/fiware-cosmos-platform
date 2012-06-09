@@ -29,7 +29,7 @@ public class ParseClientProfileMapper extends Mapper<LongWritable, Text,
             context.write(new LongWritable(clientProfile.getUserId()),
                           MobDataUtil.createAndWrap(clientProfile));
         } catch (Exception ex) {
-            context.getCounter(Counters.INVALID_LINES).increment(1L);
+            context.getCounter(Counters.INVALID_CLIENT_PROFILES).increment(1L);
         }
     }
 }

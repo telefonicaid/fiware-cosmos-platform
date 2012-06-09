@@ -29,7 +29,7 @@ public class AdjParseAdjBtsMapper extends Mapper<LongWritable, Text,
             context.write(TwoIntUtil.wrap(adjBts),
                           MobDataUtil.createAndWrap(NullWritable.get()));
         } catch (Exception ex) {
-            context.getCounter(Counters.INVALID_LINES).increment(1L);
+            context.getCounter(Counters.INVALID_ADJACENTS).increment(1L);
         }
     }
 }

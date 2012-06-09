@@ -27,7 +27,7 @@ public class ParseCdrMapper extends Mapper<LongWritable, Text, LongWritable,
             context.write(new LongWritable(cdr.getUserId()),
                           MobDataUtil.createAndWrap(cdr));
         } catch (Exception ex) {
-            context.getCounter(Counters.INVALID_LINES).increment(1L);
+            context.getCounter(Counters.INVALID_CDRS).increment(1L);
         }
     }
 }

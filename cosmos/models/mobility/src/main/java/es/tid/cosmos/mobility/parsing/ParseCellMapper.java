@@ -27,7 +27,7 @@ public class ParseCellMapper extends Mapper<LongWritable, Text, LongWritable,
             context.write(new LongWritable(cell.getCellId()),
                           MobDataUtil.createAndWrap(cell));
         } catch (Exception ex) {
-            context.getCounter(Counters.INVALID_LINES).increment(1L);
+            context.getCounter(Counters.INVALID_CELLS).increment(1L);
         }
     }
 }

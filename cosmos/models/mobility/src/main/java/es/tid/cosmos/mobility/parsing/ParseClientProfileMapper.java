@@ -24,7 +24,7 @@ public class ParseClientProfileMapper extends Mapper<LongWritable, Text,
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
         try {
-            ClientProfile clientProfile = new ClientProfileParser(
+            final ClientProfile clientProfile = new ClientProfileParser(
                     value.toString()).parse();
             context.write(new LongWritable(clientProfile.getUserId()),
                           MobDataUtil.createAndWrap(clientProfile));

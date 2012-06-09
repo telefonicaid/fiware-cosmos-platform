@@ -23,7 +23,7 @@ public class ParseCellMapper extends Mapper<LongWritable, Text, LongWritable,
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
         try {
-            Cell cell = new CellParser(value.toString()).parse();
+            final Cell cell = new CellParser(value.toString()).parse();
             context.write(new LongWritable(cell.getCellId()),
                           MobDataUtil.createAndWrap(cell));
         } catch (Exception ex) {

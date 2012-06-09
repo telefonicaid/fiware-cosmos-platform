@@ -6,7 +6,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
@@ -19,21 +19,17 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class AdjParseAdjBtsReducer extends Reducer<LongWritable, Text,
+public class AdjParseAdjBtsMapper extends Mapper<LongWritable, Text,
         ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
     @Override
-    protected void reduce(LongWritable key, Iterable<Text> values,
-            Context context) throws IOException, InterruptedException {
-        for (Text value : values) {
-            TwoInt adjBts;
-            try {
-                adjBts = new AdjacentParser(value.toString()).parse();
-            } catch (Exception ex) {
-                context.getCounter(Counters.INVALID_LINES).increment(1L);
-                continue;
-            }
+    protected void map(LongWritable key, Text value, Context context)
+            throws IOException, InterruptedException {
+        try {
+            final TwoInt adjBts = new AdjacentParser(value.toString()).parse();
             context.write(TwoIntUtil.wrap(adjBts),
                           MobDataUtil.createAndWrap(NullWritable.get()));
+        } catch (Exception ex) {
+            context.getCounter(Counters.INVALID_LINES).increment(1L);
         }
     }
 }

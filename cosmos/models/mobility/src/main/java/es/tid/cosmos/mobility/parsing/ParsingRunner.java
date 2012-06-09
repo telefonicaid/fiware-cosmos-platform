@@ -29,9 +29,9 @@ public final class ParsingRunner {
             throws IOException, InterruptedException, ClassNotFoundException {
         JobList jobs = new JobList();
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "ParseCdrs",
+            CosmosJob job = CosmosJob.createMapJob(conf, "ParseCdrs",
                     TextInputFormat.class,
-                    ParseCdrsReducer.class,
+                    ParseCdrMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsPath);
             FileOutputFormat.setOutputPath(job, cdrsMobPath);
@@ -39,9 +39,9 @@ public final class ParsingRunner {
         }
 
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "ParseCells",
+            CosmosJob job = CosmosJob.createMapJob(conf, "ParseCells",
                     TextInputFormat.class,
-                    ParseCellsReducer.class,
+                    ParseCellMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cellsPath);
             FileOutputFormat.setOutputPath(job, cellsMobPath);
@@ -49,9 +49,9 @@ public final class ParsingRunner {
         }
         
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "AdjParseAdjBts",
+            CosmosJob job = CosmosJob.createMapJob(conf, "AdjParseAdjBts",
                     TextInputFormat.class,
-                    AdjParseAdjBtsReducer.class,
+                    AdjParseAdjBtsMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, adjBtsPath);
             FileOutputFormat.setOutputPath(job, pairbtsAdjPath);
@@ -59,9 +59,9 @@ public final class ParsingRunner {
         }
 
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "BorrarGetBtsComarea",
+            CosmosJob job = CosmosJob.createMapJob(conf, "BorrarGetBtsComarea",
                     TextInputFormat.class,
-                    BorrarGetBtsComareaReducer.class,
+                    BorrarGetBtsComareaMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsVectorTxtPath);
             FileOutputFormat.setOutputPath(job, btsComareaPath);
@@ -69,9 +69,9 @@ public final class ParsingRunner {
         }
         
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "ParserClientsInfo",
+            CosmosJob job = CosmosJob.createMapJob(conf, "ParserClientsInfo",
                     TextInputFormat.class,
-                    ParseClientProfilesReducer.class,
+                    ParseClientProfileMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoPath);
             FileOutputFormat.setOutputPath(job, clientsInfoMobPath);

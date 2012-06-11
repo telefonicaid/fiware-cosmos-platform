@@ -18,8 +18,8 @@ def copyreplace_tree(src_path, dst_path):
     if os.path.isdir(dst_path):
         print ("Dir %s already exists. Removing..." % dst_path)
         rmtree(dst_path)
-        print "Copying from %s to %s" % (src_path, dst_path)
-        copytree(src_path, dst_path, symlinks=True)
+    print "Copying from %s to %s" % (src_path, dst_path)
+    copytree(src_path, dst_path, symlinks=True)
 
 
 class BuildOut(object):
@@ -55,11 +55,12 @@ class BuildOut(object):
         Run NoseXUnit integrated tests
         """
         self.__cd_to_project()
-        self.__run_subproc(['bin/hue', 'test', 'specific', self.project_name(),
-                           '--with-nosexunit'], 'Unit testing')
+        self.__run_subproc([os.path.join(self.build_path, 'bin/hue'), 'test',
+                            'specific', self.project_name(),
+                            '--with-nosexunit'], 'Unit testing')
         if self.build_path != self.project:
-            copyreplace_tree(os.path.join(self.project, 'target'),
-                             os.path.join(self.build_path, 'target'))
+            copyreplace_tree(os.path.join(self.build_path, 'target'),
+                             os.path.join(self.project, 'target'))
         self.__cd_back()
 
     def project_name(self):
@@ -70,8 +71,8 @@ class BuildOut(object):
         if os.path.isdir(self.build_path):
             os.chdir(self.build_path)
         else:
-            raise RuntimeException("The project dir %s was not found" %
-                                   self.project)
+            raise RuntimeError("The project dir %s was not found" %
+                               self.project)
 
     def __cd_back(self):
         os.chdir(self.old_cwd)

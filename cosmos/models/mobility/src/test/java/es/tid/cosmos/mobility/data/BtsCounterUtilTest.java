@@ -25,7 +25,7 @@ public class BtsCounterUtilTest {
         wrapper.setConverter(BtsCounter.class);
         BtsCounter obj = wrapper.get();
         assertNotNull(obj);
-        assertEquals(placeId, obj.getPlaceId());
+        assertEquals(placeId, obj.getBts());
         assertEquals(weekday, obj.getWeekday());
         assertEquals(range, obj.getRange());
         assertEquals(count, obj.getCount());

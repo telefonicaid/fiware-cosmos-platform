@@ -30,7 +30,7 @@ public class FilterBtsVectorReducer extends Reducer<LongWritable,
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.maxBtsArea = Double.parseDouble(conf.get(Config.MAX_BTS_AREA));
+        this.maxBtsArea = conf.getFloat(Config.MAX_BTS_AREA, Float.MAX_VALUE);
         this.maxCommsBts = conf.getInt(Config.MAX_COMMS_BTS, Integer.MAX_VALUE);
     }
     

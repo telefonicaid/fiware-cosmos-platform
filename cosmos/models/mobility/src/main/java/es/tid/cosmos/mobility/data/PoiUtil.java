@@ -11,7 +11,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 public abstract class PoiUtil {
     public static final String DELIMITER = "|";
     
-    public static Poi create(int id, long node, int bts, int labelnode,
+    public static Poi create(int id, long node, long bts, int labelnode,
             int labelgroupnode, int confidentnode, double distancenode,
             int labelbts, int labelgroupbts, int confidentbts,
             double distancebts, int labelnodebts, int labelgroupnodebts,
@@ -45,7 +45,7 @@ public abstract class PoiUtil {
     }
     
     public static ProtobufWritable<Poi> createAndWrap(int id, long node,
-            int bts, int labelnode, int labelgroupnode, int confidentnode,
+            long bts, int labelnode, int labelgroupnode, int confidentnode,
             double distancenode, int labelbts, int labelgroupbts,
             int confidentbts, double distancebts, int labelnodebts,
             int labelgroupnodebts, int confidentnodebts, double distancenodebts,

@@ -12,66 +12,108 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.mobility.activitydensity.PopdenCreateVectorReducer;
+import es.tid.cosmos.mobility.activitydensity.PopdenProfileGetOutReducer;
+import es.tid.cosmos.mobility.activitydensity.PopdenSumCommsReducer;
+import es.tid.cosmos.mobility.populationdensity.profile.PopdenDeleteDuplicatesReducer;
+import es.tid.cosmos.mobility.populationdensity.profile.PopdenSpreadNodebtsdayhourReducer;
 
 /**
  *
- * @author dmicol
+ * @author ximo
  */
 public final class PopulationDensityRunner {
     private PopulationDensityRunner() {
     }
     
-    public static void run(Path clientsInfoPath, Path populationDensityOutPath,
-                           Path tmpDirPath, boolean isDebug, Configuration conf)
-            throws IOException, InterruptedException, ClassNotFoundException {
-        Path popdenBtsPath = new Path(tmpDirPath, "popden_bts");
+    public static void run(Path cdrsInfoPath, Path cellsPath,
+                           Path clientProfileMobPath,
+                           Path populationDensityOut, Path tmpDirPath,
+                           boolean isDebug, Configuration conf)
+            throws ClassNotFoundException, IOException, InterruptedException {
+        Path denpobNodbtsdayhourPath = new Path(tmpDirPath,
+                                                "denpob_nodbtsdayhour");
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenSpreadArray",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "PopdenSpreadNodebtsdayhour",
                     SequenceFileInputFormat.class,
-                    PopdenSpreadArrayReducer.class,
+                    PopdenSpreadNodebtsdayhourReducer.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, clientsInfoPath);
-            FileOutputFormat.setOutputPath(job, popdenBtsPath);
+            job.getConfiguration().set("cells", cellsPath.toString());
+            FileInputFormat.setInputPaths(job, cdrsInfoPath);
+            FileOutputFormat.setOutputPath(job, denpobNodbtsdayhourPath);
             job.waitForCompletion(true);
         }
 
-        Path popdenBtsCountPath = new Path(tmpDirPath, "popden_bts_count");
+        Path denpobNodeinfoNodupPath = new Path(tmpDirPath,
+                                                "denpob_nodeinfo_nodup");
+        {
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "PopdenDeleteDuplicates",
+                    SequenceFileInputFormat.class,
+                    PopdenDeleteDuplicatesReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, denpobNodbtsdayhourPath);
+            FileOutputFormat.setOutputPath(job, denpobNodeinfoNodupPath);
+            job.waitForCompletion(true);
+        }
+
+        Path popdenprofBtsprofPath = new Path(tmpDirPath,
+                                              "popdenprof_btsprof");
+        {
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "PopdenJoinNodeInfoWithoutProfile",
+                    SequenceFileInputFormat.class,
+                    PopdenJoinNodeInfoWithoutProfileReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, denpobNodeinfoNodupPath,
+                                          clientProfileMobPath);
+            FileOutputFormat.setOutputPath(job, popdenprofBtsprofPath);
+            job.waitForCompletion(true);
+        }
+        
+        Path popdenBtsprofCountPath = new Path(tmpDirPath,
+                                               "popden_btsprof_count");
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenSumComms",
                     SequenceFileInputFormat.class,
                     PopdenSumCommsReducer.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, popdenBtsPath);
-            FileOutputFormat.setOutputPath(job, popdenBtsCountPath);
+            FileInputFormat.setInputPaths(job, popdenprofBtsprofPath);
+            FileOutputFormat.setOutputPath(job, popdenBtsprofCountPath);
             job.waitForCompletion(true);
         }
-
-        Path populationDensityPath = new Path(tmpDirPath, "population_density");
+        
+        Path populationDensityPath = new Path(tmpDirPath,
+                                              "population_density");
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenCreateVector",
+            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenSumComms",
                     SequenceFileInputFormat.class,
                     PopdenCreateVectorReducer.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, popdenBtsCountPath);
+            FileInputFormat.setInputPaths(job, popdenBtsprofCountPath);
             FileOutputFormat.setOutputPath(job, populationDensityPath);
             job.waitForCompletion(true);
         }
-
+        
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PopdenProfileGetOut",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "PopdenProfileGetOut",
                     SequenceFileInputFormat.class,
                     PopdenProfileGetOutReducer.class,
                     1,
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, populationDensityPath);
-            FileOutputFormat.setOutputPath(job, populationDensityOutPath);
+            FileOutputFormat.setOutputPath(job, populationDensityOut);
             job.waitForCompletion(true);
         }
         
         if (!isDebug) {
             FileSystem fs = FileSystem.get(conf);
-            fs.delete(popdenBtsPath, true);
-            fs.delete(popdenBtsCountPath, true);
+            fs.delete(denpobNodbtsdayhourPath, true);
+            fs.delete(denpobNodeinfoNodupPath, true);
+            fs.delete(popdenBtsprofCountPath, true);
+            fs.delete(populationDensityPath, true);
         }
     }
 }

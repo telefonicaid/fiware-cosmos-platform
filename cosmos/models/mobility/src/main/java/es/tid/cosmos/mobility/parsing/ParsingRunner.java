@@ -10,6 +10,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.base.mapreduce.JobList;
 
 /**
  *
@@ -23,8 +24,10 @@ public final class ParsingRunner {
                            Path cellsPath, Path cellsMobPath,
                            Path adjBtsPath, Path pairbtsAdjPath,
                            Path btsVectorTxtPath, Path btsComareaPath,
+                           Path clientsInfoPath, Path clientsInfoMobPath,
                            Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
+        JobList jobs = new JobList();
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "ParseCdrs",
                     TextInputFormat.class,
@@ -32,7 +35,7 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsPath);
             FileOutputFormat.setOutputPath(job, cdrsMobPath);
-            job.waitForCompletion(true);
+            jobs.add(job);
         }
 
         {
@@ -42,7 +45,7 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cellsPath);
             FileOutputFormat.setOutputPath(job, cellsMobPath);
-            job.waitForCompletion(true);
+            jobs.add(job);
         }
         
         {
@@ -52,7 +55,7 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, adjBtsPath);
             FileOutputFormat.setOutputPath(job, pairbtsAdjPath);
-            job.waitForCompletion(true);
+            jobs.add(job);
         }
 
         {
@@ -62,7 +65,19 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsVectorTxtPath);
             FileOutputFormat.setOutputPath(job, btsComareaPath);
-            job.waitForCompletion(true);
+            jobs.add(job);
         }
+        
+        {
+            CosmosJob job = CosmosJob.createReduceJob(conf, "ParserClientsInfo",
+                    TextInputFormat.class,
+                    ParseClientProfilesReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, clientsInfoPath);
+            FileOutputFormat.setOutputPath(job, clientsInfoMobPath);
+            jobs.add(job);
+        }
+        
+        jobs.waitForCompletion(true);
     }
 }

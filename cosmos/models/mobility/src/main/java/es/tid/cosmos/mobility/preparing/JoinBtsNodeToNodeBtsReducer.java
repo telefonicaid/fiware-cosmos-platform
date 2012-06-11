@@ -51,7 +51,7 @@ public class JoinBtsNodeToNodeBtsReducer extends Reducer<LongWritable,
             final Cdr cdr = value.get().getCdr();
             for (Cell cell : filteredCells) {
                 ProtobufWritable<NodeBts> nodeBts = NodeBtsUtil.createAndWrap(
-                        cdr.getUserId(), (int)cell.getPlaceId(),
+                        cdr.getUserId(), cell.getBts(),
                         cdr.getDate().getWeekday(), cdr.getTime().getHour());
                 context.write(nodeBts,
                               MobDataUtil.createAndWrap(NullWritable.get()));

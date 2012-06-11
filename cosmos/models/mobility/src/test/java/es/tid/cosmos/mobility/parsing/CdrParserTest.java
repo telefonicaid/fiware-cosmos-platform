@@ -20,7 +20,7 @@ public class CdrParserTest {
                 Date.newBuilder()
                 .setDay(1)
                 .setMonth(1)
-                .setYear(10)
+                .setYear(2010)
                 .setWeekday(5)
                 .build(),
                 Time.newBuilder()

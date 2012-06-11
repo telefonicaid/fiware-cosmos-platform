@@ -23,15 +23,6 @@ public class TimeUtilTest {
     }
 
     @Test
-    public void testParse() {
-        Time obj = TimeUtil.parse("1|2|3");
-        assertNotNull(obj);
-        assertEquals(1, obj.getHour());
-        assertEquals(2, obj.getMinute());
-        assertEquals(3, obj.getSeconds());
-    }
-
-    @Test
     public void testToString() {
         Time obj = TimeUtil.create(1, 2, 3);
         assertNotNull(obj);

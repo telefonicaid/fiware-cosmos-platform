@@ -17,7 +17,7 @@ public class BtsParser extends Parser {
     public Bts parse() {
         try {
             Bts.Builder bts = Bts.newBuilder();
-            bts.setPlaceId(this.parseInt());
+            bts.setPlaceId(this.parseLong());
             this.skipField();
             bts.setArea(this.parseDouble());
             bts.setComms(this.parseInt());

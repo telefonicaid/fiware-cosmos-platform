@@ -61,7 +61,7 @@ public class JoinBtsNodeToBtsDayRangeReducer extends Reducer<LongWritable,
                     default:
                         group = 0;
                 }
-                context.write(new LongWritable(cell.getPlaceId()),
+                context.write(new LongWritable(cell.getBts()),
                         MobDataUtil.createAndWrap(
                                 TwoIntUtil.create(group,
                                                   cdr.getTime().getHour())));

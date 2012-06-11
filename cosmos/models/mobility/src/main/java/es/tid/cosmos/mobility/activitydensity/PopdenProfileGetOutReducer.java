@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.populationdensity;
+package es.tid.cosmos.mobility.activitydensity;
 
 import java.io.IOException;
 

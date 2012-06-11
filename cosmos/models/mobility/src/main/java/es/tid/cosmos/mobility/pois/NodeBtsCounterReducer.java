@@ -31,7 +31,7 @@ public class NodeBtsCounterReducer extends Reducer<
         }
         key.setConverter(NodeBts.class);
         final NodeBts node = key.get();
-        BtsCounter counter = BtsCounterUtil.create(node.getPlaceId(),
+        BtsCounter counter = BtsCounterUtil.create(node.getBts(),
                 node.getWeekday(), node.getRange(), count);
         context.write(new LongWritable(node.getUserId()),
                       MobDataUtil.createAndWrap(counter));

@@ -77,7 +77,7 @@ public class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
             key.setConverter(NodeBts.class);
             final NodeBts nodeBts = key.get();
             Poi poi = PoiUtil.create(
-                    0, nodeBts.getUserId(), nodeBts.getPlaceId(), 0, 0, 0, 0,
+                    0, nodeBts.getUserId(), nodeBts.getBts(), 0, 0, 0, 0,
                     0, 0, 0, 0, minDistCluster.getLabel(),
                     minDistCluster.getLabelgroup(),
                     mindist > minDistCluster.getDistance() ? 0 : 1, mindist,

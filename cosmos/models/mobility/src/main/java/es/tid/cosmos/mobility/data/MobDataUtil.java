@@ -185,6 +185,34 @@ public abstract class MobDataUtil {
                 .build();
     }
     
+    public static MobData create(NodeBts bts) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.NODE_BTS)
+                .setNodeBts(bts)
+                .build();
+    }
+    
+    public static MobData create(NodeBtsDate btsDate) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.NODE_BTS_DATE)
+                .setNodeBtsDate(btsDate)
+                .build();
+    }
+    
+    public static MobData create(BtsProfile btsProfile) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.BTS_PROFILE)
+                .setBtsProfile(btsProfile)
+                .build();
+    }
+    
+    public static MobData create(ClientProfile clientProfile) {
+        return MobData.newBuilder()
+                .setType(MobData.Type.CLIENT_PROFILE)
+                .setClientProfile(clientProfile)
+                .build();
+    }
+    
     public static ProtobufWritable<MobData> wrap(MobData obj) {
         ProtobufWritable<MobData> wrapper = ProtobufWritable.newInstance(
                 MobData.class);
@@ -194,6 +222,22 @@ public abstract class MobDataUtil {
 
     public static ProtobufWritable<MobData> createAndWrap(NullWritable unused) {
         return wrap(create(unused));
+    }
+    
+    public static ProtobufWritable<MobData> createAndWrap(BtsProfile obj) {
+        return wrap(create(obj));
+    }
+    
+    public static ProtobufWritable<MobData> createAndWrap(ClientProfile obj) {
+        return wrap(create(obj));
+    }
+    
+    public static ProtobufWritable<MobData> createAndWrap(NodeBtsDate obj) {
+        return wrap(create(obj));
+    }
+    
+    public static ProtobufWritable<MobData> createAndWrap(NodeBts obj) {
+        return wrap(create(obj));
     }
     
     public static ProtobufWritable<MobData> createAndWrap(int obj) {

@@ -33,7 +33,10 @@ message MobData {
         ITIN_RANGE = 23;
         ITIN_PERC_MOVE = 24;
         ITINERARY = 25;
-        MATRIX_TIME = 26;
+        NODE_BTS_DATE = 26;
+        NODE_BTS = 27;
+        MATRIX_TIME = 28;
+        CLIENT_PROFILE = 29;
     }
 
     required Type type = 1;
@@ -62,7 +65,10 @@ message MobData {
     optional ItinRange itinRange = 24;
     optional ItinPercMove itinPercMove = 25;
     optional Itinerary itinerary = 26;
-    optional MatrixTime matrixTime = 27;
+    optional NodeBtsDate nodeBtsDate = 27;
+    optional NodeBts nodeBts = 28;
+    optional MatrixTime matrixTime = 29;
+    optional ClientProfile clientProfile = 30;
 }
 
 message Cdr {
@@ -74,11 +80,16 @@ message Cdr {
 
 message Cell {
     optional uint64 cellId = 1;
-    optional uint64 placeId = 2;
+    optional uint64 bts = 2;
     optional uint32 geoloc1 = 3;
     optional uint32 geoloc2 = 4;
     optional double posx = 5;
     optional double posy = 6;
+}
+
+message ClientProfile {
+    optional uint64 userId = 1;
+    optional uint32 profileId = 2;
 }
 
 message Bts {
@@ -92,20 +103,20 @@ message Bts {
 
 message NodeBts {
     optional uint64 userId = 1;
-    optional uint32 placeId = 2;
+    optional uint64 bts = 2;
     optional uint32 weekday = 3;
     optional uint32 range = 4;
 }
 
 message BtsCounter {
-    optional uint64 placeId = 1;
+    optional uint64 bts = 1;
     optional uint32 weekday = 2;
     optional uint32 range = 3;
     optional uint32 count = 4;
 }
 
 message BtsProfile {
-    optional uint64 placeId = 1;
+    optional uint64 bts = 1;
     optional uint32 profile = 2;
     optional uint32 wday = 3;
     optional uint32 hour = 4;
@@ -113,9 +124,16 @@ message BtsProfile {
 
 message NodeBtsDay {
     optional uint64 userId = 1;
-    optional uint64 placeId = 2;
+    optional uint64 bts = 2;
     optional uint32 workday = 3;
     optional uint32 count = 4;
+}
+
+message NodeBtsDate {
+    optional uint64 userId = 1;
+    optional uint64 bts = 2;
+    optional base.Date date = 3;
+    optional uint32 hour = 4;
 }
 
 message NodeMxCounter {
@@ -148,7 +166,7 @@ message Cluster {
 
 message GLEvent {
     optional uint64 userId = 1;
-    optional uint64 placeId = 2;
+    optional uint64 bts = 2;
     optional base.Date date = 3;
     optional base.Time time = 4;
 }
@@ -162,7 +180,7 @@ message TelMonth {
 message Poi {
     optional uint32 id = 1;
     optional uint64 node = 2;
-    optional uint32 bts = 3;
+    optional uint64 bts = 3;
     optional uint32 labelnode = 4;
     optional uint32 labelgroupnode = 5;
     optional uint32 confidentnode = 6;

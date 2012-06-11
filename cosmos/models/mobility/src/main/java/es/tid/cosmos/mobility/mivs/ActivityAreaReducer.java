@@ -79,7 +79,7 @@ public class ActivityAreaReducer extends Reducer<
             final Cell cell = value.get().getCell();
             numPos++;
             this.allCells.add(cell.getCellId());
-            boolean hasNewBts = this.allBtss.add(cell.getPlaceId());
+            boolean hasNewBts = this.allBtss.add(cell.getBts());
             if (hasNewBts) {
                 this.cellsWithDifBts.add(cell);
             }

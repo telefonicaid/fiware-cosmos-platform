@@ -31,7 +31,7 @@ public class RepbtsAggbybtsReducer extends Reducer<ProtobufWritable<NodeBtsDay>,
         key.setConverter(NodeBtsDay.class);
         final NodeBtsDay byDay = key.get();
         NodeBtsDay nodeBtsDay = NodeBtsDayUtil.create(byDay.getUserId(),
-                byDay.getPlaceId(), byDay.getWorkday(), totalCallCount);
+                byDay.getBts(), byDay.getWorkday(), totalCallCount);
         context.write(new LongWritable(byDay.getUserId()),
                       MobDataUtil.createAndWrap(nodeBtsDay));
     }

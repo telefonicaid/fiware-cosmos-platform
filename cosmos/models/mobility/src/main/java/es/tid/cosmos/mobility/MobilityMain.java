@@ -11,13 +11,15 @@ import org.apache.hadoop.util.ToolRunner;
 
 import es.tid.cosmos.base.util.ArgumentParser;
 import es.tid.cosmos.base.util.Logger;
+import es.tid.cosmos.mobility.activitydensity.ActivityDensityRunner;
+import es.tid.cosmos.mobility.activitydensity.profile.ActivityDensityProfileRunner;
 import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.group.AggregatedMatrixGroupRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.simple.AggregatedMatrixSimpleRunner;
 import es.tid.cosmos.mobility.itineraries.ItinerariesRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
-import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;
+import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.join.LabelJoiningRunner;
 import es.tid.cosmos.mobility.labelling.secondhomes.DetectSecondHomesRunner;
 import es.tid.cosmos.mobility.mivs.MivsRunner;
@@ -47,36 +49,35 @@ public class MobilityMain extends Configured implements Tool {
         }
         final Configuration conf = Config.load(configInput, this.getConf());
         
-        Path tmpPath;
-        if (arguments.has("tmpDir")) {
-            tmpPath = new Path(arguments.getString("tmpDir"));
-        } else {
-            tmpPath = new Path("/tmp/mobility");
-        }
-        
-        Path cdrsPath = new Path(arguments.getString("cdrs"));
-        Path cellsPath = new Path(arguments.getString("cells"));
-        Path cellGroupsPath = new Path(arguments.getString("cellGroups"));
-        Path adjBtsPath = new Path(arguments.getString("adjBts"));
-        Path btsVectorTxtPath = new Path(arguments.getString("btsVectorTxt"));
-        Path clientProfilePath = new Path(arguments.getString("clientProfile"));
+        Path outputPath = new Path(arguments.getString("output", true));
+        Path cdrsPath = new Path(arguments.getString("cdrs", true));
+        Path cellsPath = new Path(arguments.getString("cells", true));
+        Path cellGroupsPath = new Path(arguments.getString("cellGroups", true));
+        Path adjBtsPath = new Path(arguments.getString("adjBts", true));
+        Path btsVectorTxtPath = new Path(arguments.getString("btsVectorTxt",
+                                                             true));
+        Path clientProfilePath = new Path(arguments.getString("clientProfile",
+                                                              true));
         
         boolean shouldRunAll = arguments.getBoolean("runAll");
         boolean isDebug = arguments.getBoolean("debug");
         
-        Path tmpParsingPath = new Path(tmpPath, "parsing");
+        Path tmpParsingPath = new Path(outputPath, "parsing");
         Path cdrsMobPath = new Path(tmpParsingPath, "cdrs_mob");
         Path cellsMobPath = new Path(tmpParsingPath, "cells_mob");
         Path pairbtsAdjPath = new Path(tmpParsingPath, "pairbts_adj");
         Path btsComareaPath = new Path(tmpParsingPath, "bts_comarea");
+        Path clientProfileMobPath = new Path(tmpParsingPath,
+                                             "clientprofile_mob");
         boolean shouldParse = arguments.getBoolean("parse");
         if (shouldRunAll || shouldParse) {
             ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath, cellsMobPath,
                               adjBtsPath, pairbtsAdjPath, btsVectorTxtPath,
-                              btsComareaPath, conf);
+                              btsComareaPath, clientProfilePath,
+                              clientProfileMobPath, conf);
         }
         
-        Path tmpPreparingPath = new Path(tmpPath, "preparing");
+        Path tmpPreparingPath = new Path(outputPath, "preparing");
         Path cdrsInfoPath = new Path(tmpPreparingPath, "cdrs_info");
         Path cdrsNoinfoPath = new Path(tmpPreparingPath, "cdrs_noinfo");
         Path clientsBtsPath = new Path(tmpPreparingPath, "clients_bts");
@@ -91,7 +92,7 @@ public class MobilityMain extends Configured implements Tool {
                                 conf);
         }
 
-        Path tmpExtractMivsPath = new Path(tmpPath, "mivs");
+        Path tmpExtractMivsPath = new Path(outputPath, "mivs");
         Path viClientFuseAccPath = new Path(tmpExtractMivsPath,
                                             "vi_client_fuse_acc");
         boolean shouldExtractMivs = arguments.getBoolean("extractMIVs");
@@ -100,7 +101,7 @@ public class MobilityMain extends Configured implements Tool {
                            tmpExtractMivsPath, isDebug, conf);
         }
         
-        Path tmpExtractPoisPath = new Path(tmpPath, "pois");
+        Path tmpExtractPoisPath = new Path(outputPath, "pois");
         Path clientsInfoPath = new Path(tmpExtractPoisPath, "clients_info");
         Path clientsInfoFilteredPath = new Path(tmpExtractPoisPath,
                                                 "clients_info_filtered");
@@ -113,7 +114,7 @@ public class MobilityMain extends Configured implements Tool {
                            conf);
         }
 
-        Path tmpLabelClientPath = new Path(tmpPath, "label_client");
+        Path tmpLabelClientPath = new Path(outputPath, "label_client");
         Path vectorClientClusterPath = new Path(tmpLabelClientPath,
                                                 "vector_client_cluster");
         boolean shouldLabelClient = arguments.getBoolean("labelClient");
@@ -125,7 +126,7 @@ public class MobilityMain extends Configured implements Tool {
                                       tmpLabelClientPath, isDebug, conf);
         }
 
-        Path tmpLabelBtsPath = new Path(tmpPath, "label_bts");
+        Path tmpLabelBtsPath = new Path(outputPath, "label_bts");
         Path vectorBtsClusterPath = new Path(tmpLabelBtsPath,
                                              "vector_bts_cluster");
         boolean shouldLabelBts = arguments.getBoolean("labelBTS");
@@ -137,7 +138,7 @@ public class MobilityMain extends Configured implements Tool {
                                    tmpLabelBtsPath, isDebug, conf);
         }
 
-        Path tmpLabelClientbtsPath = new Path(tmpPath, "label_clientbts");
+        Path tmpLabelClientbtsPath = new Path(outputPath, "label_clientbts");
         Path vectorClientbtsPath = new Path(tmpLabelClientbtsPath,
                                             "vector_clientbts");
         Path pointsOfInterestTempPath = new Path(tmpLabelClientbtsPath,
@@ -155,7 +156,7 @@ public class MobilityMain extends Configured implements Tool {
                                          tmpLabelClientbtsPath, isDebug, conf);
         }
 
-        Path tmpLabelJoining = new Path(tmpPath, "label_joining");
+        Path tmpLabelJoining = new Path(outputPath, "label_joining");
         Path pointsOfInterestTemp4Path = new Path(tmpLabelJoining,
                                                   "points_of_interest_temp4");
         boolean shouldJoinLabels = arguments.getBoolean("joinLabels");
@@ -168,7 +169,7 @@ public class MobilityMain extends Configured implements Tool {
                                    tmpLabelJoining, isDebug, conf);
         }
         
-        Path tmpSecondHomesPath = new Path(tmpPath, "second_homes");
+        Path tmpSecondHomesPath = new Path(outputPath, "second_homes");
         Path pointsOfInterestPath = new Path(tmpSecondHomesPath,
                                              "points_of_interest");
         boolean shouldDetectSecondHomes = arguments.getBoolean(
@@ -180,7 +181,7 @@ public class MobilityMain extends Configured implements Tool {
                                         tmpSecondHomesPath, isDebug, conf);
         }
         
-        Path tmpAdjacentsPath = new Path(tmpPath, "adjacents");
+        Path tmpAdjacentsPath = new Path(outputPath, "adjacents");
         Path pointsOfInterestIdPath = new Path(tmpAdjacentsPath,
                                                "points_of_interest_id");
         boolean shouldExtractAdjacents = arguments.getBoolean(
@@ -191,7 +192,7 @@ public class MobilityMain extends Configured implements Tool {
                                          tmpAdjacentsPath, isDebug, conf);
         }
         
-        Path tmpOutPoisPath = new Path(tmpPath, "out_pois");
+        Path tmpOutPoisPath = new Path(outputPath, "out_pois");
         boolean shouldOutPois = arguments.getBoolean("outPois");
         if (shouldRunAll || shouldOutPois) {
             OutPoisRunner.run(vectorClientbtsPath, pointsOfInterestIdPath,
@@ -199,7 +200,7 @@ public class MobilityMain extends Configured implements Tool {
                               tmpOutPoisPath, isDebug, conf);
         }
         
-        Path tmpItinerariesPath = new Path(tmpPath, "itineraries");
+        Path tmpItinerariesPath = new Path(outputPath, "itineraries");
         Path clientItinerariesTxtPath = new Path(tmpItinerariesPath,
                                                  "client_itineraries_txt");
         boolean shouldGetItineraries = arguments.getBoolean("getItineraries");
@@ -210,33 +211,63 @@ public class MobilityMain extends Configured implements Tool {
                                   isDebug, conf);
         }
 
-        Path tmpPopulationDensityPath = new Path(tmpPath, "population_density");
+        Path tmpActivityDensityPath = new Path(outputPath, "activity_density");
+        Path activityDensityOutPath = new Path(tmpActivityDensityPath,
+                                               "activityDensityOut");
+        boolean shouldGetActivityDensity = arguments.getBoolean(
+                "getActivityDensity");
+        if (shouldRunAll || shouldGetActivityDensity) {
+            ActivityDensityRunner.run(clientsInfoPath,
+                                      activityDensityOutPath,
+                                      tmpActivityDensityPath, isDebug,
+                                      conf);
+        }
+        
+        Path tmpActivityDensityProfilePath = new Path(outputPath,
+                "activity_density_profile");
+        Path activityDensityProfileOutPath = new Path(
+                tmpActivityDensityProfilePath, "activityDensityProfileOut");
+        boolean shouldGetActivityDensityProfile = arguments.getBoolean(
+                "getActivityDensityProfile");
+        if (shouldRunAll || shouldGetActivityDensityProfile) {
+            ActivityDensityProfileRunner.run(clientProfileMobPath,
+                                             clientsInfoPath,
+                                             activityDensityProfileOutPath,
+                                             tmpActivityDensityProfilePath,
+                                             isDebug, conf);
+        }
+        
+        Path tmpPopulationDensityPath = new Path(outputPath,
+                                                 "population_density");
         Path populationDensityOutPath = new Path(tmpPopulationDensityPath,
-                                                 "populationDensityOut");
+                                               "populationDensityOut");
         boolean shouldGetPopulationDensity = arguments.getBoolean(
                 "getPopulationDensity");
         if (shouldRunAll || shouldGetPopulationDensity) {
-            PopulationDensityRunner.run(clientsInfoPath,
+            PopulationDensityRunner.run(cdrsInfoPath,
+                                        cellsPath,
+                                        clientProfileMobPath,
                                         populationDensityOutPath,
-                                        tmpPopulationDensityPath, isDebug,
-                                        conf);
+                                        tmpPopulationDensityPath,
+                                        isDebug, conf);
         }
 
-        Path tmpPopulationDensityProfilePath = new Path(tmpPath,
+        Path tmpPopulationDensityProfilePath = new Path(outputPath,
                 "population_density_profile");
         Path populationDensityProfileOutPath = new Path(
                 tmpPopulationDensityProfilePath, "populationDensityProfileOut");
         boolean shouldGetPopulationDensityProfile = arguments.getBoolean(
                 "getPopulationDensityProfile");
         if (shouldRunAll || shouldGetPopulationDensityProfile) {
-            PopulationDensityProfileRunner.run(clientProfilePath,
-                                               clientsInfoPath,
+            PopulationDensityProfileRunner.run(cdrsInfoPath,
+                                               cellsPath,
+                                               clientProfileMobPath,
                                                populationDensityProfileOutPath,
                                                tmpPopulationDensityProfilePath,
                                                isDebug, conf);
         }
         
-        Path tmpAggregatedMatrixSimplePath = new Path(tmpPath,
+        Path tmpAggregatedMatrixSimplePath = new Path(outputPath,
                 "aggregated_matrix_simple");
         Path matrixPairBtsTxtPath = new Path(tmpAggregatedMatrixSimplePath,
                                              "matrixPairBtsTxt");
@@ -249,7 +280,7 @@ public class MobilityMain extends Configured implements Tool {
                                              isDebug, conf);
         }
 
-        Path tmpAggregatedMatrixGroupPath = new Path(tmpPath,
+        Path tmpAggregatedMatrixGroupPath = new Path(outputPath,
                                                      "aggregated_matrix_group");
         Path matrixPairGroupTxtPath = new Path(tmpAggregatedMatrixGroupPath,
                                                "matrixPairGroupTxt");

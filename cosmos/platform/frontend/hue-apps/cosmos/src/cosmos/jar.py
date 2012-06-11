@@ -22,7 +22,12 @@ class ParameterTemplate(object):
         if key.find('=') >= 0:
             raise InvalidJarFile("Invalid parameter name '%s'" % key)
         self.name = key
-        self.type, self.default_value = value.split('|', 1)
+        tokens = value.split('|', 1)
+        self.type = tokens[0]
+        if len(tokens) > 1:
+            self.default_value = tokens[1]
+        else:
+            self.default_value = None
         if self.type not in self.PARAMETER_TYPES:
             raise InvalidJarFile('Invalid parameter description "%s"' % value)
 
@@ -68,13 +73,13 @@ class JarFile(object):
         for line in content.splitlines():
             try:
                 key, value = line.split(':', 1)
-                self.manifest.setdefault(key, value)
+                self.manifest.setdefault(key, value.strip())
             except ValueError:
                 if len(line.strip()) > 0:
                     raise InvalidJarFile('Invalid line in MANIFEST.MF: "%s"' %
                                          line)
 
-    def __unfold_lines(content):
+    def __unfold_lines(self, content):
         """Unwrap MANIFEST.MF lines.
         
         MANIFEST.MF specification states that long lines are wrapped and the

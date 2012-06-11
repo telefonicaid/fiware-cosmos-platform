@@ -98,25 +98,25 @@ namespace samson {
         // Send packet to an element in the samson cluster ( delilah or worker )
         virtual Status send( Packet* packet )
         {
-            LM_X(1, ("NetworkInterface method not implemented"));
+            LM_E(("NetworkInterface send() method not implemented"));
             return Error;
         }
     
         // Close all threads and return the "run" call
         virtual void quit(void)
         {
-            LM_W(("NetworkInterface method not implemented"));
+            LM_W(("NetworkInterface quit() method not implemented"));
         }
       
         virtual void stop()
         {
-            LM_W(("NetworkInterface method not implemented"));
+            LM_W(("NetworkInterface stop() method not implemented"));
         }
         
         // Basic information about the cluster ( list of workers and delilahs )
         virtual std::vector<size_t> getWorkerIds()
         {
-            LM_X(1, ("NetworkInterface method not implemented"));
+            LM_E(("NetworkInterface getWorkerIds() method not implemented"));
             return std::vector<size_t>();
         }
 
@@ -128,13 +128,13 @@ namespace samson {
         
         virtual std::vector<size_t> getDelilahIds()
         {
-            LM_X(1, ("NetworkInterface method not implemented"));
+            LM_E(("NetworkInterface getDelilahIds() method not implemented"));
             return std::vector<size_t>();
         }
         
         virtual std::string cluster_command( std::string command )
         {
-            LM_W(("NetworkInterface method not implemented (%s)", command.c_str()));
+            LM_W(("NetworkInterface cluster_command() method not implemented (%s)", command.c_str()));
             return "";
         }
         
@@ -160,7 +160,7 @@ namespace samson {
         // Get information about network state
         virtual void getInfo( ::std::ostringstream& output , std::string command , std::string format = "xml")
         {
-            LM_W(("NetworkInterface method not implemented (%s)", command.c_str()));
+            LM_W(("NetworkInterface getInfo() method not implemented (%s)", command.c_str()));
         }
         
         virtual NodeIdentifier getMynodeIdentifier()=0;
@@ -168,14 +168,14 @@ namespace samson {
         virtual std::string getHostForWorker(size_t worker_id)
         {
 			if (worker_id == 0) {}
-            LM_X(1, ("NetworkInterface method not implemented"));
+            LM_E(("NetworkInterface getHostForWorker() method not implemented"));
             return "";
         }
 
         virtual unsigned short getPortForWorker(size_t worker_id)
         {
 			if (worker_id == 0) {}
-            LM_X(1, ("NetworkInterface method not implemented"));
+            LM_E(("NetworkInterface getPortForWorker() method not implemented"));
             return 0xFFFF;
         }
         

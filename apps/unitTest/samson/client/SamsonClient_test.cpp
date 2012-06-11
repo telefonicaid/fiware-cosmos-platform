@@ -12,6 +12,8 @@
 
 #include "unitTest/common_engine_test.h"
 
+#include "samson/commons/ports.h"           // for SAMSON_WORKER_PORT
+
 TEST(samson_client, test_1 )
 {
    // SamsonClient to play with..
@@ -19,7 +21,7 @@ TEST(samson_client, test_1 )
 
    // Connect to samsonWorker
    au::ErrorManager error;   
-   samson_client->initConnection( &error , "localhost" , 1324 , "anonymous" , "anonymous" );
+   samson_client->initConnection( &error , "localhost" , SAMSON_WORKER_PORT , "anonymous" , "anonymous" );
 
    EXPECT_EQ( error.isActivated() , false) << "Error connecting samsonClient to samsonWorker";
 
@@ -36,7 +38,7 @@ TEST(samson_client, test_2 )
 
    // Connect to samsonWorker
    au::ErrorManager error;
-   samson_client->initConnection( &error , "localhost" , 1324 , "anonymous" , "anonymous" );
+   samson_client->initConnection( &error , "localhost" , SAMSON_WORKER_PORT , "anonymous" , "anonymous" );
 
    ASSERT_TRUE(samson_client->connection_ready()) << "Connection not ready";
 

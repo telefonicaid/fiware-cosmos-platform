@@ -17,6 +17,8 @@
 #include "samson/common/ports.h" // for SAMSON_WORKER_PORT
 #include "samson/delilah/SamsonFile.h"                                     // samson::Delailh
 
+#include "logMsg/logMsg.h"
+
 #include "common_delilah_test.h"
 
 
@@ -72,12 +74,19 @@ TEST(SamsonFileTest, DISABLED_samson_file)
     if (system ("word_generator 1000 | samsonPush input") == -1)
 	   std::cerr << "Error on word_generator system() command" << std::endl;
 
+    LM_M(("system(push) sent successfully"));
+
     delilah_console->runAsyncCommandAndWait("flush_buffers");
     delilah_console->runAsyncCommandAndWait("run txt.parser_words input words");
     delilah_console->runAsyncCommandAndWait("flush_buffers"); 
     delilah_console->runAsyncCommandAndWait("run txt.word_count_accumulate words words_count words_count");
     delilah_console->runAsyncCommandAndWait("flush_buffers"); 
+
+    LM_M(("ready to pop words_count"));
+
     delilah_console->runAsyncCommandAndWait("pop words_count /tmp/test_SamsonFile_words -force");
+
+    LM_M(("words_count popped"));
 	
     samson::SamsonFile samson_file_ok( "/tmp/test_SamsonFile_words/worker_000000_file_000001" );
     EXPECT_EQ(samson_file_ok.hasError(), false) << "Wrong ok samson_file detection for /tmp/test_SamsonFile_words";

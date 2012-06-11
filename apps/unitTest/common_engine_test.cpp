@@ -85,6 +85,6 @@ void close_samson_client_test( samson::SamsonClient* samson_client  )
    samson::SamsonClient::general_close();
 
    // Make sure no threads are pending to be finish
-   au::ThreadManager::wait_all_threads("EngineTest");   // Wait all threads to finsih
+   au::ThreadManager::wait_all_threads("SamsonClientTest");   // Wait all threads to finish
 
 }

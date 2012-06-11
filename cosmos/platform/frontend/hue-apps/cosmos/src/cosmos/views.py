@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from contextlib import closing
 import logging
 
 from desktop.lib.django_util import PopupException, render, render_to_string
@@ -13,8 +14,11 @@ from jobsubd.ttypes import (BinHadoopStep, LocalizedFile, LocalizeFilesStep,
                             State, SubmissionPlan, SubmissionPlanStep)
 
 from cosmos import conf, mongo, paths
+from cosmos.jar import InvalidJarFile, JarFile
+from cosmos.hdfs_util import CachedHDFSFile
 from cosmos.models import JobRun
-from cosmos.forms import RunJobForm
+from cosmos.forms import (BasicConfigurationForm, DefineJobForm,
+                          ParameterizeJobForm)
 
 LOGGER = logging.getLogger(__name__)
 TEMP_JAR = "tmp.jar"
@@ -30,14 +34,6 @@ def index(request):
     return render('index.mako', request, dict(
         job_runs=job_runs
     ))
-
-
-def validate_hdfs_path(fs, form, field):
-    has_file = fs.exists(form.cleaned_data[field])
-    if not has_file:
-        errors = form._errors.setdefault(field, ErrorList())
-        errors.append("File does not exist")
-    return has_file
 
 
 def submit(job):
@@ -64,37 +60,146 @@ def submit(job):
         try:
             submission.submission_handle = jobsub.get_client().submit(plan)
         except Exception:
-            import ipdb; ipdb.set_trace()
             submission.last_seen_state = State.ERROR
             raise
     finally:
         submission.save()
 
 
-def run_job(request):
-    """Starts a new job."""
+def job_wizard(request):
+    return request.session.get('job_wizard', {})
 
-    if request.method == 'POST':
-        form = RunJobForm(request.POST, request.FILES)
 
-        if form.is_valid():
-            has_jar = validate_hdfs_path(request.fs, form, "jar_path")
-            has_dataset = validate_hdfs_path(request.fs, form, "dataset_path")
-            if has_jar and has_dataset:
-                data = form.cleaned_data
-                job = JobRun(name=data['name'], description=data['description'],
-                             user=request.user,
-                             dataset_path=data['dataset_path'],
-                             jar_path=data['jar_path'])
-                job.save()
-                submit(job)
-                return redirect(reverse('list_jobs'))
+def clear_job_wizard(request):
+    request.session.pop('job_wizard', '')
+
+
+def update_job_wizard(request, wizard):
+    request.session['job_wizard'] = wizard
+
+
+def define_job(request):
+    """Defines a new job in user session."""
+
+    wizard = job_wizard(request)
+    job = wizard.get('job', {})
+
+    if request.method != 'POST':
+        form = DefineJobForm(initial=job)
+
     else:
-        form = RunJobForm()
+        form = DefineJobForm(request.POST, request.FILES)
+        if form.is_valid(request.fs):
+            job.update(form.cleaned_data)
+            wizard['job'] = job
+            update_job_wizard(request, wizard)
 
-    return render('job_run.mako', request, dict(
-        form=form
+            with closing(CachedHDFSFile(request.fs, job['jar_path'])) \
+                    as cached_file:
+                try:
+                    with closing(JarFile(cached_file.local_path())) as jar:
+                        wizard['parameterized'] = jar.is_parameterized()
+                        if wizard['parameterized']:
+                            wizard['parameters'] = jar.parameters()
+                        else:
+                            wizard['parameters'] = None
+                        return redirect(reverse('configure_job'))
+                except InvalidJarFile as ex:
+                    errors = form._errors.setdefault('jar_path', ErrorList())
+                    errors.append('Invalid JAR: %s' % ex.message)
+
+    return render('job_define.mako', request, dict(
+        form=form,
+        wizard_nav={'next': True, 'back': False}
     ))
+
+
+def configure_job(request):
+    """Job configuration step."""
+
+    wizard = job_wizard(request)
+    if wizard['parameterized']:
+        return configure_parameterized_job(request)
+    else:
+        return configure_basic_job(request)
+
+
+def configure_basic_job(request):
+    wizard = job_wizard(request)
+    if request.method != 'POST':
+        form = BasicConfigurationForm(data=wizard['job'])
+    elif request.POST.has_key('back'):
+        return redirect(reverse('define_job'))
+    else:
+        form = BasicConfigurationForm(request.POST)
+        if form.is_valid(request.fs):
+            wizard['job'].update(form.cleaned_data)
+            update_job_wizard(request, wizard)
+            return redirect(reverse('confirm_job'))
+
+    return render('job_configure.mako', request, dict(
+        form=form,
+        wizard_nav={'next': True, 'back': True}
+    ))
+
+
+def configure_parameterized_job(request):
+    wizard = job_wizard(request)
+    parameters = wizard['parameters']
+
+    if request.method != 'POST':
+        form = ParameterizeJobForm(parameters)
+    elif request.POST.has_key('back'):
+        return redirect(reverse('define_job'))
+    else:
+        for param in parameters:
+            param.set_value(request.POST.get(param.name, None))
+        form = ParameterizeJobForm(parameters)
+        update_job_wizard(request, wizard)
+        if form.is_valid():
+            return redirect(reverse('confirm_job'))
+
+    return render('job_configure.mako', request, dict(
+        form=form,
+        wizard_nav={'next': True, 'back': True}
+    ))
+
+
+def confirm_job(request):
+    """Confirm and run."""
+
+    wizard = job_wizard(request)
+    job_data = wizard.get('job', {})
+    job = JobRun(user=request.user)
+    try:
+        job.name = job_data['name']
+        job.description = job_data['description']
+        job.jar_path = job_data['jar_path']
+    except KeyError:
+        return redirect(reverse('define_job'))
+
+    if wizard['parameterized']:
+        job.parameters = wizard['parameters']
+    else:
+        job.dataset_path = job_data['dataset_path']
+
+    if request.method != 'POST':
+        return render('job_confirm.mako', request, dict(wizard,
+            wizard_nav={'next': False, 'back': True, 'finish': 'Run job'}
+        ))
+    elif request.POST.has_key('back'):
+        return redirect(reverse('configure_job'))
+    else:
+        job.save()
+        submit(job)
+        clear_job_wizard(request)
+        return redirect(reverse('list_jobs'))
+
+
+def cancel_job(request):
+    """Cancels and restarts the new job wizard."""
+    clear_job_wizard(request)
+    return redirect(reverse('define_job'))
 
 
 def ensure_dir(fs, path):
@@ -103,7 +208,7 @@ def ensure_dir(fs, path):
     if fs.isdir(path):
         return
     if fs.exists(path):
-        raise PopupException(('A file named "%s" is preventing the creation ' + 
+        raise PopupException(('A file named "%s" is preventing the creation ' +
                               'of the upload directory. Please, rename it to ' +
                               'proceed.') % path)
     else:
@@ -112,7 +217,7 @@ def ensure_dir(fs, path):
 
 def upload_index(request):
     """Allows to upload datasets and jars."""
-    
+
     datasets_base = paths.datasets_base(request.user)
     ensure_dir(request.fs, datasets_base)
     jars_base = paths.jars_base(request.user)

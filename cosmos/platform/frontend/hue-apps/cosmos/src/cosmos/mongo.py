@@ -1,5 +1,5 @@
 """
-Module mongo.py -
+Module mongo.py
 
 This module holds functionality to retrieve job results from a mongoDB.
 """

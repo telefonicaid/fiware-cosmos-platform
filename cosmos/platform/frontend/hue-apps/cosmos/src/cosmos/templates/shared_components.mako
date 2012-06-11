@@ -30,7 +30,7 @@ from django.template.defaultfilters import urlencode, escape
     <ul class="nav" data-filters="ArtButtonBar">
       ${toolbar_icon('job_runs', 'Job runs', url('cosmos.views.index'),
                      is_selected(section, 'job_runs'))}
-      ${toolbar_icon('run_job', 'New job', url('run_job'),
+      ${toolbar_icon('define_job', 'New job', url('define_job'),
                      is_selected(section, 'run_job'))}
       ${toolbar_icon('upload', 'Upload',
                      url('cosmos.views.upload_index'),
@@ -47,5 +47,26 @@ from django.template.defaultfilters import urlencode, escape
 <%def name="footer()">
     </body>
   </html>
+</%def>
+
+<%doc>
+    Wizard components
+</%doc>
+
+<%def name="wizard_navigation()">
+    <br/>
+    <div class="cos-wizard_nav">
+	<a class="cos-cancel" href="${ url('cancel_job') }">Cancel</a>
+	% if wizard_nav.has_key('finish'):
+	<input class="submit" name="next" type="submit"
+	       value="${ wizard_nav['finish'] }" />
+	% endif
+	% if wizard_nav['next']:
+	<input class="submit" name="next" type="submit" value="Next >" />
+	% endif
+	% if wizard_nav['back']:
+	<input class="submit" name="back" type="submit" value="< Back" />
+	% endif
+    </div>
 </%def>
 ## vim:set syntax=mako:

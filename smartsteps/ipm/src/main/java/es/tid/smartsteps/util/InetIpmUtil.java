@@ -7,7 +7,7 @@ import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetIpm;
  * @author dmicol
  */
 public abstract class InetIpmUtil {
-    private static final String DELIMITER = "|";
+    private static final char DELIMITER = '|';
     
     private InetIpmUtil() {
     }

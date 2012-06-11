@@ -7,7 +7,7 @@ import es.tid.smartsteps.ipm.data.generated.CrmProtocol.CrmIpm;
  * @author dmicol
  */
 public abstract class CrmIpmUtil {
-    private static final String DELIMITER = "|";
+    private static final char DELIMITER = '|';
     
     private CrmIpmUtil() {
     }

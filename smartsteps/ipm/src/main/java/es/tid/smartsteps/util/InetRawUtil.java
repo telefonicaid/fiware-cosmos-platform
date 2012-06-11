@@ -7,7 +7,7 @@ import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetRaw;
  * @author dmicol
  */
 public abstract class InetRawUtil {
-    private static final String DELIMITER = "|";
+    private static final char DELIMITER = '|';
     
     private InetRawUtil() {
     }

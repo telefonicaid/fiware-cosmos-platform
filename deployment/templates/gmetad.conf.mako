@@ -4,7 +4,7 @@
 # What to monitor. The most important section of this file.
 # Format: 
 # data_source "my cluster" [polling interval] address1:port addreses2:port ...
-data_source "Cosmos" 10 ${monitored_hosts}
+data_source "Cosmos" 10 127.0.0.1 ${monitored_hosts}
 
 # Round-Robin Archives
 # You can specify custom Round-Robin archives here (defaults are listed below)
@@ -27,7 +27,7 @@ data_source "Cosmos" 10 ${monitored_hosts}
 # The name of this Grid. All the data sources above will be wrapped in a GRID
 # tag with this name.
 # default: Unspecified
-gridname "CosmosGrid"
+gridname "Cosmos Cluster"
 
 #-------------------------------------------------------------------------------
 # The authority URL for this grid. Used by other gmetads to locate graphs

@@ -9,7 +9,7 @@
 # Configuration of the "dfs" context for ganglia
 # Pick one: Ganglia 3.0 (former) or Ganglia 3.1 (latter)
 #dfs.class=org.apache.hadoop.metrics.ganglia.GangliaContext
-dfs.class=org.apache.hadoop.metrics.ganglia.GangliaContext31
+dfs.class=org.apache.hadoop.metrics.ganglia.GangliaContext30
 dfs.period=10
 dfs.servers=${namenode}:8649
 
@@ -25,7 +25,7 @@ dfs.servers=${namenode}:8649
 # Configuration of the "mapred" context for ganglia
 # Pick one: Ganglia 3.0 (former) or Ganglia 3.1 (latter)
 #mapred.class=org.apache.hadoop.metrics.ganglia.GangliaContext
-mapred.class=org.apache.hadoop.metrics.ganglia.GangliaContext31
+mapred.class=org.apache.hadoop.metrics.ganglia.GangliaContext30
 mapred.period=10
 mapred.servers=${namenode}:8649
 

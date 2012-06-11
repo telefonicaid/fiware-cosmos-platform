@@ -29,10 +29,10 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     """
     execute(deploy_jdk, path.join(dependenciespath, jdk_rpm))
     deploy_cdh()
-    deploy_hue(path.join(dependenciespath, thrift_tar))
-    deploy_models()
-    deploy_sftp()
-    deploy_ganglia()
+    execute(deploy_hue, path.join(dependenciespath, thrift_tar))
+    execute(deploy_sftp)
+    execute(deploy_ganglia)
+    execute(deploy_mongo)
 
 @task
 @roles('namenode', 'jobtracker', 'frontend', 'datanodes', 'tasktrackers')
@@ -89,7 +89,7 @@ def deploy_sftp():
         start = run("/etc/init.d/injection start", pty=False)
         if start.failed:
             run("/etc/init.d/injection restart", pty=False)
-      
+
 @task
 def deploy_cdh():
     """Deploys the Cloudera Distribution for Hadoop"""
@@ -142,7 +142,7 @@ def deploy_ganglia():
     execute(install_gmond)
 
 @parallel
-@roles('namenode', 'namenode', 'jobtracker', 'frontend', 'datanodes', #'mongo',
+@roles('namenode', 'namenode', 'jobtracker', 'frontend', 'datanodes', 'mongo',
        'tasktrackers')
 def configure_ntp():
     ntp_conf = StringIO()
@@ -170,6 +170,7 @@ def install_gmetad():
             repo_url = base_url + repo_rpm
             run('wget %s' % repo_url)
             run('rpm -Uvh %s' % repo_rpm)
+        run("yum -y erase ganglia-gmetad")
         run("yum -y install ganglia-gmetad")
     gmetad_conf = StringIO()
     template = Template(filename='templates/gmetad.conf.mako')
@@ -200,6 +201,7 @@ def install_ganglia_frontend():
             repo_url = base_url + repo_rpm
             run('wget %s' % repo_url)
             run('rpm -Uvh %s' % repo_rpm)
+        run("yum -y erase ganglia-web")
         run("yum -y install ganglia-web")
     ganglia_web_conf = StringIO()
     template = Template(filename='templates/conf.php.mako')
@@ -207,11 +209,12 @@ def install_ganglia_frontend():
     ganglia_web_conf.write(content)
     ganglia_web_conf_path = "/usr/share/ganglia/conf.php"
     put(ganglia_web_conf, ganglia_web_conf_path)
-    run("apachectl start")
+    start = run("apachectl start")
+    if start.endswith("already running"):
+        run("apachectl restart")
 
-## TODO: review mongo host: full disk?
 @parallel
-@roles('namenode', 'jobtracker', 'frontend', 'datanodes', #'mongo',
+@roles('namenode', 'jobtracker', 'frontend', 'datanodes', 'mongo',
        'tasktrackers')
 def install_gmond():
     with ctx.hide('stdout'):
@@ -228,6 +231,7 @@ def install_gmond():
             repo_url = base_url + repo_rpm
             run('wget %s' % repo_url)
             run('rpm -Uvh %s' % repo_rpm)
+        run("yum -y erase ganglia-gmond")
         run("yum -y install ganglia-gmond")
     gmond_conf = StringIO()
     template = Template(filename='templates/gmond.conf.mako')
@@ -247,7 +251,8 @@ def install_gmond():
 def configure_hadoop_metrics():
     hadoop_metrics_conf = StringIO()
     template = Template(filename='templates/hadoop-metrics.properties.mako')
-    content = template.render(namenode=CONFIG['hosts']['namenode'])
+    content = template.render(
+            namenode = common.clean_host_list(CONFIG['hosts']['namenode']))
     hadoop_metrics_conf.write(content)
     ## TODO: parametize Hadoop version
     hadoop_metrics_path = "/etc/hadoop-0.20/conf/hadoop-metrics.properties"
@@ -255,3 +260,6 @@ def configure_hadoop_metrics():
         run("mkdir -p /etc/hadoop-0.20/conf/")
         run("echo '' >> {0}".format(hadoop_metrics_path))
     put(hadoop_metrics_conf, hadoop_metrics_path)
+    if files.exists("/etc/init.d/hadoop-0.20-tasktracker"):
+        with ctx.hide('stdout'):
+            run("service hadoop-0.20-tasktracker restart")

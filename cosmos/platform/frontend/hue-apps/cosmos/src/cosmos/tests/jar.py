@@ -12,7 +12,7 @@ from cosmos.jar_parameters import make_parameter
 
 class CannotOpenJarTestCase(test.TestCase):
 
-    def test_not_fount(self):
+    def test_not_found(self):
         self.assertRaises(IOError, JarFile, 'does/not/exist.jar')
 
     def test_not_a_jar(self):

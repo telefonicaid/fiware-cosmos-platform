@@ -75,12 +75,10 @@ def make_parameter(name, value):
     if name.find('=') >= 0:
         raise ValueError("invalid parameter name '%s'" % name)
     tokens = value.split('|', 1)
-    if len(tokens) > 1:
-        default_value = tokens[1]
-    else:
-        default_value = None
     type_name = tokens[0]
-    if PARAMETER_MAP.has_key(type_name):
-        return PARAMETER_MAP[type_name](name, default_value=default_value)
-    else:
+    if not PARAMETER_MAP.has_key(type_name):
         raise ValueError('unknown type "%s"' % type_name)
+    if len(tokens) > 1:
+        return PARAMETER_MAP[type_name](name, default_value=tokens[1])
+    else:
+        return PARAMETER_MAP[type_name](name)

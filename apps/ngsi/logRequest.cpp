@@ -33,7 +33,7 @@ using namespace std;
 */
 static int traceRequest(int fd, Verb verb, Format format, int components, std::string* component)
 {
-	LM_M(("verb: %s, components: %d, %s", verbName(verb), components, component[0].c_str()));
+	LM_T(LmtLogRequest, ("verb: %s, components: %d, %s", verbName(verb), components, component[0].c_str()));
 	if (verb == DELETE)
 	{
 		if (components == 2)
@@ -102,12 +102,12 @@ static int traceRequest(int fd, Verb verb, Format format, int components, std::s
 
 		if (component[2] == "set")
 		{
-			LM_M(("Setting trace levels '%s'", s));
+			LM_T(LmtLogRequest, ("Setting trace levels '%s'", s));
 			lmTraceSet(s);
 		}
 		else if (component[2] == "add")
 		{
-			LM_M(("Adding trace levels '%s'", s));
+			LM_T(LmtLogRequest, ("Adding trace levels '%s'", s));
 			lmTraceAdd(s);
 		}
 		else
@@ -145,11 +145,11 @@ static int traceRequest(int fd, Verb verb, Format format, int components, std::s
 */
 static int verboseRequest(int fd, Verb verb, Format format, int components, std::string* component)
 {
-	LM_M(("verboseRequest"));
+	LM_T(LmtLogRequest, ("verboseRequest"));
 
 	if (verb == DELETE)
 	{
-		LM_M(("verboseRequest: DELETE"));
+		LM_T(LmtLogRequest, ("verboseRequest: DELETE"));
 
 		if (components == 2)
 		{
@@ -173,7 +173,7 @@ static int verboseRequest(int fd, Verb verb, Format format, int components, std:
 			char verbose[5];
 			int  verboseLevel = 0;
 
-			LM_M(("verboseRequest: GET"));
+			LM_T(LmtLogRequest, ("verboseRequest: GET"));
 
 			if (lmVerbose  == true)  verboseLevel = 1;
 			if (lmVerbose2 == true)  verboseLevel = 2;
@@ -191,7 +191,7 @@ static int verboseRequest(int fd, Verb verb, Format format, int components, std:
 	}
 	else if (verb == PUT)
 	{
-		LM_M(("verboseRequest: PUT"));
+		LM_T(LmtLogRequest, ("verboseRequest: PUT"));
 
 		if ((components == 3) && (component[2] == "off"))
 		{
@@ -227,7 +227,7 @@ static int verboseRequest(int fd, Verb verb, Format format, int components, std:
 				if (level >= 4) lmVerbose4 = true;
 				if (level >= 5) lmVerbose5 = true;
 
-				LM_M(("Setting verbose level to %d", level));
+				LM_T(LmtLogRequest, ("Setting verbose level to %d", level));
 				restReply(fd, format, 200, "verbose", "new level applied");
 				return 0;
 			}

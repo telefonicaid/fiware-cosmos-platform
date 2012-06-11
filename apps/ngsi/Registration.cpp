@@ -1,6 +1,6 @@
 /* ****************************************************************************
 *
-* FILE                  Entity.h 
+* FILE                  Registration.cpp
 *
 *
 *
@@ -95,7 +95,6 @@ char* registrationIdGet(char* s, int sLen)
 	if (registrationNo >= 1000)
 	    registrationNo = 1;
 
-	LM_M(("registrationId: '%s'", s));
 	return s;
 }
 
@@ -112,7 +111,7 @@ Registration* registrationUpdate(std::string registrationId, vector<Metadata*> m
 	if (regP == NULL)
 		LM_RE(NULL, ("Can't find registration with id '%s'", registrationId.c_str()));
 
-	LM_M(("************ PLEASE IMPLEMENT !!! ************"));
+	LM_W(("************ PLEASE IMPLEMENT !!! ************"));
 
 	return regP;
 }
@@ -158,6 +157,7 @@ int registrationToDb(std::string id)
 	snprintf(query, sizeof(query), "INSERT INTO cm.registration (`id`) VALUES ('%s');", id.c_str());
 
 	LM_T(LmtDbEntity, ("SQL to insert a new Registration: '%s'", query));
+	LM_T(LmtSqlQuery, ("SQL Query is '%s'", query));
 	s = mysql_query(db, query);
 	if (s != 0)
 		LM_RE(-1, ("mysql_query(%s): %s", query, mysql_error(db)));

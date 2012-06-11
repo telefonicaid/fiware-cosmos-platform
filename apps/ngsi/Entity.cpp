@@ -60,6 +60,8 @@ static Entity* entityCreate(std::string id, std::string type, bool isPattern, st
 	if (entity == NULL)
 		LM_X(1, ("malloc: %s", strerror(errno)));
 
+	LM_T(LmtDuration, ("Creating an Entity - duration: %d", duration));
+
 	entity->id                    = id;
 	entity->type                  = type;
 	entity->isPattern             = isPattern;
@@ -104,7 +106,6 @@ static void entityAppend(Entity* entity)
 Entity* entityLookupInDb(std::string id, std::string type)
 {
 	MYSQL_RES*   result;
-	int          results;
 	MYSQL_ROW    row;
 	MYSQL_ROW    firstRow;
 	int          rows;
@@ -112,6 +113,7 @@ Entity* entityLookupInDb(std::string id, std::string type)
 
 	std::string query = "SELECT * from entity WHERE id = '" + id + "' AND type = '" + type + "'";
 
+	LM_T(LmtSqlQuery, ("SQL Query is '%s'", query.c_str()));
 	s = mysql_query(db, query.c_str());
 	if (s != 0)
 	{
@@ -119,13 +121,12 @@ Entity* entityLookupInDb(std::string id, std::string type)
 		return NULL;
 	}
 
-	if ((result = mysql_store_result(db)) == 0)
+	if ((result = mysql_store_result(db)) == NULL)
 	{
 		LM_T(LmtDbTable, ("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
 		return NULL;
 	}
 
-	results = mysql_num_fields(result);
 	rows    = 0;
 	while ((row = mysql_fetch_row(result)))
 	{
@@ -198,6 +199,8 @@ Entity* entityAdd
     unsigned int  aIx;
     unsigned int  mIx;
 
+	LM_T(LmtEntity, ("Adding entity '%s:%s'", rcrEntity->type.c_str(), rcrEntity->id.c_str()));
+
 	if (providingApplication == "")
 	{
 		*errorString = "Empty providing application";
@@ -243,26 +246,64 @@ Entity* entityAdd
 	rcrEntity->registrationId       = entityP->registrationId;
 
 
+
 	//
 	// Adding the attributes (and their metadata)
 	//
 	for (aIx = 0; aIx < attributeList->attributeV.size(); aIx++)
 	{
 		Attribute*  aP         = attributeList->attributeV[aIx];
-		std::string metaId     = "";
 		Attribute*  attribute;
+		std::string metaId     = "";
+		
+		//
+		// First, get the metaID, if any ...
+		//
+		LM_T(LmtAttributeMetaId, ("Looking for metadata 'ID' in %d metadatas for attribute '%s:%s'", aP->metadataV.size(), aP->name.c_str(), aP->type.c_str()));
+		for (mIx = 0; mIx < aP->metadataV.size(); mIx++)
+		{
+			Metadata* mP        = aP->metadataV[mIx];
 
-		attribute = attributeCreate(entityP, 0, aP->name, aP->type, aP->value, "", aP->isDomain);
-		attributeAppend(attribute);
+			if (mP->name == "ID")
+			{
+				metaId = mP->value;
+				LM_T(LmtAttributeMetaId, ("Found metaId '%s' for attribute '%s:%s'", metaId.c_str(), aP->name.c_str(), aP->type.c_str()));
+			}
+		}
+
+		if (metaId == "")
+			LM_T(LmtAttributeMetaId, ("No metaId found for attribute '%s:%s'", aP->name.c_str(), aP->type.c_str()));
+
+		attribute = attributeLookup(entityP, aP->name, aP->type, metaId, true);
+		if (attribute == NULL)
+		{
+			LM_T(LmtToRAM, ("Could not find attribute '%s:%s:%s' in RAM - creating it", aP->name.c_str(), aP->type.c_str(), metaId.c_str()));
+			attribute = attributeCreate(entityP, 0, aP->name, aP->type, aP->value, metaId, aP->isDomain);
+			attributeAppend(attribute);
+		}
+		else
+			LM_T(LmtToRAM, ("Found attribute '%s:%s:%s' - in RAM", aP->name.c_str(), aP->type.c_str(), metaId.c_str()));
 
 		for (mIx = 0; mIx < aP->metadataV.size(); mIx++)
 		{
 			Metadata* mP        = aP->metadataV[mIx];
 			Metadata* metadata;
 
-			metadata = metadataCreate(attribute, mP->name, mP->type, mP->value);
-			if (mP->name == "ID")
-				attribute->metaId = mP->value;
+			if ((mP->name == "") || (mP->name == "emptycontent") || (mP->type == "") || (mP->type == "emptycontent"))
+			{
+				LM_W(("Skipping Metadata with 'empty content'"));
+				continue;
+			}
+
+			metadata = metadataLookup(attribute, mP->name, mP->type);
+			if (metadata == NULL)
+			{
+				LM_T(LmtToRAM, ("Didn't find metadata '%s:%s' for attribute '%s:%s:%s' in RAM - creating it", mP->name.c_str(), mP->type.c_str(), aP->name.c_str(), aP->type.c_str(), metaId.c_str()));
+				metadata = metadataCreate(attribute, mP->name, mP->type, mP->value);
+				if (mP->name == "ID")
+					attribute->metaId = mP->value;
+				metadataAppend(metadata);
+			}
 		}
 	}
 
@@ -289,6 +330,8 @@ Entity* entityUpdate
     unsigned int  aIx;
     unsigned int  mIx;
 
+	LM_T(LmtEntity, ("Updating entity '%s:%s'", rcrEntity->type.c_str(), rcrEntity->id.c_str()));
+
 	if (rcrEntity->id == "")
 	{
 		*errorString = "Empty entity id";
@@ -302,12 +345,14 @@ Entity* entityUpdate
 	}
 
 	//
-	// Lookup the entity 'id'
+	// Lookup the entity
 	//
 	LM_T(LmtEntity, ("Looking up entity '%s'", rcrEntity->id.c_str()));
 	entityP = entityLookup(rcrEntity->id, rcrEntity->type);
 	if (entityP == NULL)
 		LM_RE(NULL, ("Entity '%s' of type '%s' doesn't exist", rcrEntity->id.c_str(), rcrEntity->type.c_str()));
+
+	LM_T(LmtDbId, ("Found entity '%s:%s' with dbId %d", entityP->id.c_str(), entityP->type.c_str(), entityP->dbId));
 
 	//
 	// Change the values of the entity
@@ -317,18 +362,21 @@ Entity* entityUpdate
 		LM_W(("providingApplication changed from '%s' to '%s'", entityP->providingApplication.c_str(), providingApplication.c_str()));
 		entityP->providingApplication   = providingApplication;
 		rcrEntity->providingApplication = providingApplication;
-
 	}
 	
 	if (duration != 0)
 	{
 		//
 		// What I do with 'startTime' ... ?
-		// Seems more logical to keep the old start time
+		// Seems more logical to maintain the start time
+		//
+		// But, if startTime is in the future?
 		//
 		
+		LM_T(LmtDuration, ("duration is %lu", duration));
 		entityP->endTime    = time(NULL) + duration;
 		rcrEntity->endTime  = entityP->endTime;
+		LM_T(LmtDuration, ("Correct endTime is %lu", entityP->endTime));
 	}
 
 
@@ -338,28 +386,69 @@ Entity* entityUpdate
 	//
 	for (aIx = 0; aIx < attributeList->attributeV.size(); aIx++)
 	{
-		Attribute* aP;
+		Attribute* aP          = attributeList->attributeV[aIx];
 		Attribute* attribute;
+		std::string metaId     = "";
 
-		aP        = attributeList->attributeV[aIx];
-		attribute = attributeLookup(entityP, aP->name, aP->type, aP->metaId);
+        //
+        // First, get the metaID, if any ...
+        //
+		LM_T(LmtAttributeMetaId, ("Looking for metadata 'ID' in %d metadatas for attribute '%s:%s'", aP->metadataV.size(), aP->name.c_str(), aP->type.c_str()));
+        for (mIx = 0; mIx < aP->metadataV.size(); mIx++)
+        {
+            Metadata* mP        = aP->metadataV[mIx];
 
+			if (mP->name == "ID")
+			{
+				metaId = mP->value;
+				LM_T(LmtAttributeMetaId, ("Found metaId '%s' for attribute '%s:%s'", metaId.c_str(), aP->name.c_str(), aP->type.c_str()));
+			}
+        }
+		
+		if (metaId == "")
+			LM_T(LmtAttributeMetaId, ("No metaId found for attribute '%s:%s'", aP->name.c_str(), aP->type.c_str()));
+
+		attribute = attributeLookup(entityP, aP->name, aP->type, metaId, true);
 		if (attribute != NULL)
-			attributeUpdate(attribute, aP);
+		{
+			LM_T(LmtAttribute, ("Attribute %s:%s already exists - does it need updating ... ?", aP->name.c_str(), aP->type.c_str()));
+		}
 		else
 		{
-			attribute = attributeCreate(entityP, 0, aP->name, aP->type, aP->value, 0, aP->isDomain);
+			LM_T(LmtAttributeCreate, ("Creating attribute %s:%s:%s", aP->name.c_str(), aP->type.c_str(), metaId.c_str()));
+			attribute = attributeCreate(entityP, 0, aP->name, aP->type, aP->value, metaId, aP->isDomain);
+			LM_T(LmtAttributeCreate, ("Created attribute %s:%s:%s", attribute->name.c_str(), attribute->type.c_str(), aP->metaId.c_str()));
+			LM_T(LmtAttributeCreate, ("Appending attribute %s:%s:%s", attribute->name.c_str(), attribute->type.c_str(), aP->metaId.c_str()));
 			attributeAppend(attribute);
+			LM_T(LmtAttributeCreate, ("Appended attribute %s:%s:%s", attribute->name.c_str(), attribute->type.c_str(), aP->metaId.c_str()));
+		}
 
-			for (mIx = 0; mIx < aP->metadataV.size(); mIx++)
+		LM_T(LmtAttribute, ("Adding %d metadata(s) for attribute %s:%s", attribute->metadataV.size(), attribute->name.c_str(), attribute->type.c_str()));
+
+		for (mIx = 0; mIx < attribute->metadataV.size(); mIx++)
+		{
+			Metadata* mP        = attribute->metadataV[mIx];
+			Metadata* metadata;
+
+			if ((mP->name == "") || (mP->name == "emptycontent") || (mP->type == "") || (mP->type == "emptycontent"))
 			{
-				Metadata* mP        = aP->metadataV[mIx];
-				Metadata* metadata;
+				if (attribute->entityP == NULL)
+					LM_X(1, ("NULL entity pointer for attribute"));
+				LM_W(("Empty content or type for metadata for attribute '%s:%s:%s' belonging to entity '%s:%s'- skipping it ...",
+					  attribute->name.c_str(), attribute->type.c_str(), attribute->metaId.c_str(), attribute->entityP->id.c_str(), attribute->entityP->type.c_str()));
+				continue;
+			}
 
+			metadata = metadataLookup(attribute, mP->name, mP->type);
+			if (metadata == NULL)
+			{
 				metadata = metadataCreate(attribute, mP->name, mP->type, mP->value);
-				if (mP->name == "ID")
+				metadataAppend(metadata);
+				if ((mP->name == "ID") && (attribute->metaId == ""))
 					attribute->metaId = mP->value;
 			}
+			else
+				metadataUpdate(metadata, mP);
 		}
 	}
 
@@ -376,7 +465,6 @@ static bool entityExistsInDb(Entity* entityP, std::string* errorString, bool* is
 {
 	int          s;
 	MYSQL_RES*   result;
-	int          results;
 	MYSQL_ROW    row;
 	MYSQL_ROW    firstRow;
 	int          rows;
@@ -385,6 +473,7 @@ static bool entityExistsInDb(Entity* entityP, std::string* errorString, bool* is
 	std::string query = "SELECT * from entity WHERE id = '" + entityP->id + "' AND type = '" + entityP->type + "'";
 		
 	LM_T(LmtDbEntity, ("SQL to verify that entity exists: %s", query.c_str()));
+	LM_T(LmtSqlQuery, ("SQL Query is '%s'", query.c_str()));
 	s = mysql_query(db, query.c_str());
 	if (s != 0)
 	{
@@ -393,14 +482,13 @@ static bool entityExistsInDb(Entity* entityP, std::string* errorString, bool* is
 		return false;
 	}
 
-	if ((result = mysql_store_result(db)) == 0)
+	if ((result = mysql_store_result(db)) == NULL)
 	{
 		LM_T(LmtDbTable, ("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
 		*errorString = std::string("mysql_store_result: ") + mysql_error(db);
 		return false;
 	}
 
-	results = mysql_num_fields(result);
 	rows    = 0;
 	while ((row = mysql_fetch_row(result)))
 	{
@@ -444,44 +532,39 @@ static bool entityExistsInDb(Entity* entityP, std::string* errorString, bool* is
 *
 * entityToDb - 
 */
-int entityToDb(Entity* entityP, bool update, std::string* errorString)
+int entityToDb(Entity* entityP, bool update, long duration, std::string* errorString)
 {
 	bool         isPattern = false;
 	std::string  providingApplication;
-	int          duration;
 	int          s;
 
+	LM_T(LmtDuration, ("entityToDb: endTime: %lu", entityP->endTime));
 	if (update)
 	{
-		if (entityExistsInDb(entityP, errorString, &isPattern, &providingApplication, &duration) == false)
+		if (entityExistsInDb(entityP, errorString, &isPattern, &providingApplication) == false)
 		{
 			LM_W(("update for a non-existing entity (%s:%s)", entityP->id.c_str(), entityP->type.c_str()));
 			return -1;
 		}
 
+
 		//
 		// Now, entity exists in DB - let's update it, if necessary ... ?
 		//
-		if ((entityP->isPattern != isPattern) || (entityP->providingApplication != providingApplication) || duration != 0)
+		if ((entityP->isPattern != isPattern) || (entityP->providingApplication != providingApplication) || (duration != 0))
 		{
 			char endTime[64];
 
 			LM_W(("diff in isPattern OR providingApplication - what do I do (send the change to DB or flag an error?)"));
 
-			std::string isPat = (isPattern == true)? "Yes" : "No";
+			std::string isPat = (entityP->isPattern == true)? "Yes" : "No";
+			sprintf(endTime, "%lu", entityP->endTime);
 
+			std::string query = "UPDATE entity SET isPattern='" + isPat + "', providingApplication='" + entityP->providingApplication + "', endTime='" + endTime + "'" +
+				                " WHERE id='" + entityP->id + "' AND type='" + entityP->type + "'";
 
-			std::string query = "UPDATE entity SET isPattern=" + isPat + ", providingApplication='" + providingApplication + "'";
-
-			if (duration != 0)
-			{
-				LM_W(("What startTime should I use to get endTime ... ?   Old one or new one? New one!"));
-				duration += entityP->startTime;
-				query    += std::string(", endTime=") + endTime;
-			}
-
-			query += " WHERE id='" + entityP->id + "' AND type='" + entityP->type + "'";
 			LM_T(LmtDbEntity, ("SQL to UPDATE an Entity: '%s'", query.c_str()));
+			LM_T(LmtSqlQuery, ("SQL Query is '%s'", query.c_str()));
 			s = mysql_query(db, query.c_str());
 			if (s != 0)
 			{
@@ -524,6 +607,7 @@ int entityToDb(Entity* entityP, bool update, std::string* errorString)
 			entityP->registrationId                                  + "')";
 
 		LM_T(LmtDbEntity, ("SQL to insert a new Entity: '%s'", query.c_str()));
+		LM_T(LmtSqlQuery, ("SQL Query is '%s'", query.c_str()));
 		s = mysql_query(db, query.c_str());
 		if (s != 0)
 		{
@@ -533,8 +617,95 @@ int entityToDb(Entity* entityP, bool update, std::string* errorString)
 		}
 
 		entityP->dbId = mysql_insert_id(db);
-		LM_T(LmtDbId, ("Inserted entity '%s:%s' has DB ID: %d", entityP->id.c_str(), entityP->type.c_str(), entityP->dbId));
+		LM_T(LmtDbId, ("Inserted entity '%s:%s' has dbId: %d", entityP->id.c_str(), entityP->type.c_str(), entityP->dbId));
 	}
 
 	return 0;
+}
+
+
+
+/* ****************************************************************************
+*
+* entityPresent - 
+*/
+void entityPresent(Entity* entityP)
+{
+	int        attributes = 0;
+	Attribute* attribute;
+
+	LM_T(LmtEntityPresent, ("--------------- Entity '%s', type '%s' ---------------------------------", entityP->id.c_str(), entityP->type.c_str()));
+
+	attribute = attributeList;
+	while (attribute)
+	{
+		if (attribute->entityP == entityP)
+			++attributes;
+		attribute = attribute->next;
+	}
+
+	LM_T(LmtEntityPresent, ("  %d attributes:", attributes));
+
+    attribute = attributeList;
+    while (attribute)
+	{
+		int        metadatas = 0;
+		Metadata*  metadata;
+
+		if (attribute->entityP == entityP)
+			LM_T(LmtEntityPresent, ("    %s:%s", attribute->name.c_str(), attribute->type.c_str()));
+
+		metadata = metadataList;
+		while (metadata)
+		{
+			if (metadata->attributeP == attribute)
+				++metadatas;
+			metadata = metadata->next;
+		}
+
+		LM_T(LmtEntityPresent, ("      %d metadatas", metadatas));
+
+        metadata = metadataList;
+        while (metadata)
+        {
+            if (metadata->attributeP == attribute)
+                LM_T(LmtEntityPresent, ("        %s:%s:%s", metadata->name.c_str(), metadata->type.c_str(), metadata->value.c_str()));
+			metadata = metadata->next;
+        }
+
+		attribute = attribute->next;
+	}
+
+	LM_T(LmtEntityPresent, ("---------------------------------------------------------------------------"));
+}
+
+
+
+/* ****************************************************************************
+*
+* entitiesPresent - 
+*/
+void entitiesPresent(void)
+{
+	Entity* entityP;
+	int     entities = 0;
+
+	entityP = entityV;
+    while (entityP != NULL)
+	{
+		++entities;
+		entityP = entityP->next;
+	}
+
+	LM_T(LmtEntitiesPresent, (""));
+	LM_T(LmtEntitiesPresent, ("%d entities:", entities));
+	entityP = entityV;
+	while (entityP != NULL)
+	{
+		LM_T(LmtEntitiesPresent, ("o %s, type %s", entityP->id.c_str(), entityP->type.c_str()));
+
+		entityP = entityP->next;
+	}
+
+	LM_T(LmtEntitiesPresent, (""));
 }

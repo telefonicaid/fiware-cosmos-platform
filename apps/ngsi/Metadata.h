@@ -41,6 +41,14 @@ typedef struct Metadata
 
 /* ****************************************************************************
 *
+* Globals
+*/
+extern Metadata*        metadataList;
+
+
+
+/* ****************************************************************************
+*
 * metadataCreate - 
 */
 extern Metadata* metadataCreate(struct Attribute* attribute, std::string name, std::string type, std::string value);
@@ -76,5 +84,13 @@ Metadata* metadataLookup(struct Attribute* aP, std::string name, std::string typ
 * metadataToDb - 
 */
 extern int metadataToDb(Attribute* attributeP, Metadata* metadata);
+
+
+
+/* ****************************************************************************
+*
+* metadatasPresent - 
+*/
+extern void metadatasPresent(void);
 
 #endif

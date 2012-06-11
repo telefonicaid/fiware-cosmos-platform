@@ -89,6 +89,22 @@ extern Entity* entityLookup(std::string id, std::string type);
 *
 * entityToDb - 
 */
-extern int entityToDb(Entity* entityP, bool update, std::string* errorString);
+extern int entityToDb(Entity* entityP, bool update, long duration, std::string* errorString);
+
+
+
+/* ****************************************************************************
+*
+* entityPresent - 
+*/
+extern void entityPresent(Entity* entityP);
+
+
+
+/* ****************************************************************************
+*
+* entitiesPresent - 
+*/
+extern void entitiesPresent(void);
 
 #endif

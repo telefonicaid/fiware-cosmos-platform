@@ -136,7 +136,6 @@ static void dbTableCreate(std::string tableName)
 {
 	std::string  query;
 	int          s;
-	MYSQL_RES*   result;
 
 	query = std::string("create table cm.") + tableName + " (";
 
@@ -155,9 +154,7 @@ static void dbTableCreate(std::string tableName)
 	else if (tableName == "attributeMetadata")
 	{
 		query += "`attributeId` int(10) unsigned  NOT NULL,";
-		query += "`metadataId`  int(10) unsigned  NOT NULL,";
-
-		query += "PRIMARY KEY (`attributeId`)";
+		query += "`metadataId`  int(10) unsigned  NOT NULL";
 	}
 	else if (tableName == "entity")
 	{
@@ -176,9 +173,7 @@ static void dbTableCreate(std::string tableName)
 	else if (tableName == "entityAttribute")
 	{
 		query += "`entityId`    int(10) unsigned  NOT NULL,";
-		query += "`attributeId` int(10) unsigned  NOT NULL,";
-
-		query += "PRIMARY KEY (`entityId`)";
+		query += "`attributeId` int(10) unsigned  NOT NULL";
 	}
 	else if (tableName == "metadata")
 	{
@@ -214,10 +209,7 @@ static void dbTableCreate(std::string tableName)
 	if (s != 0)
 		LM_X(1, ("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
 
-	if ((result = mysql_store_result(db)) == NULL)
-		LM_W(("mysql_query returned NULL for query: '%s': %s", query.c_str(), mysql_error(db)));
-
-	LM_M(("executed SQL: %s", query.c_str()));
+	LM_T(LmtDbTable, ("executed SQL: %s", query.c_str()));
 }
 
 
@@ -238,10 +230,10 @@ int dbInit(void)
 	{
 		if (dbTableExists(DbTable[ix]) == false)
 		{
-			LM_M(("db table '%s' doesn't exist - creating it", DbTable[ix].c_str()));
+			LM_T(LmtDbTable, ("db table '%s' doesn't exist - creating it", DbTable[ix].c_str()));
 			dbTableCreate(DbTable[ix]);
 		}
-		LM_M(("db table '%s' already exists - not creating it", DbTable[ix].c_str()));
+		LM_T(LmtDbTable, ("db table '%s' already exists - not creating it", DbTable[ix].c_str()));
 
 		++ix;
 	}

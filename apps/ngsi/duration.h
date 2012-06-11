@@ -16,6 +16,6 @@
 *
 * durationStringToSeconds - 
 */
-extern int durationStringToSeconds(std::string durationString);
+extern long durationStringToSeconds(std::string durationString);
 
 #endif

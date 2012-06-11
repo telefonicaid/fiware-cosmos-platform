@@ -64,6 +64,15 @@ typedef struct Attribute
 
 /* ****************************************************************************
 *
+* Global variables
+*/
+extern Attribute*         attributeList;
+extern int                attributes;
+
+
+
+/* ****************************************************************************
+*
 * attributeCreate - 
 */
 extern Attribute* attributeCreate(Entity* entityP, int dbId, std::string name, std::string type, std::string value, std::string metaId, bool isDomain);
@@ -90,7 +99,7 @@ extern void attributeAppend(Attribute* attribute);
 *
 * attributeLookup - 
 */
-extern Attribute* attributeLookup(struct Entity* entityP, std::string name, std::string type, std::string ID);
+extern Attribute* attributeLookup(struct Entity* entityP, std::string name, std::string type, std::string ID, bool onlyRAM);
 
 
 
@@ -98,6 +107,14 @@ extern Attribute* attributeLookup(struct Entity* entityP, std::string name, std:
 *
 * attributeToDb - 
 */
-extern int attributeToDb(Entity* entityP, Attribute* attribute);
+extern int attributeToDb(Entity* entityP, Attribute* attribute, bool update);
+
+
+
+/* ****************************************************************************
+*
+* attributesPresent - 
+*/
+extern void attributesPresent(void);
 
 #endif

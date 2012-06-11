@@ -172,7 +172,7 @@ static void discoverContextAvailabilityRequestPresent(DiscoverContextAvailabilit
 */
 static bool discoverContextAvailabilityRequestTreat(DiscoverContextAvailabilityRequest* dcarP)
 {
-	LM_M(("Not Implemented"));
+	LM_W(("Not Implemented"));
 	return false;
 }
 

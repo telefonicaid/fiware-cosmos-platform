@@ -1,0 +1,10 @@
+registrationId=$1
+if [ "$registrationId" == "" ]
+then
+  echo usage: $0 '<registrationId>'
+  exit 1
+fi
+
+data='<?xml version="1.0" encoding="UTF-8"?><registerContextRequest><contextRegistrationList><contextRegistration><entityIdList><entityId type="Room" isPattern="false"><id>ConferenceRoom</id></entityId><entityId type="Room" isPattern="false"><id>OfficeRoom</id></entityId></entityIdList><contextRegistrationAttributeList><contextRegistrationAttribute><name>temperature</name><type>degree</type><isDomain>false</isDomain><metaData><contextMetadata><name>ID</name><type>string</type><value>reg3</value></contextMetadata><contextMetadata><name>id2</name><type>string</type><value>1234567</value></contextMetadata></metaData></contextRegistrationAttribute><contextRegistrationAttribute><name>pressure</name><type>BAR</type><isDomain>true</isDomain><metaData><contextMetadata><name>ID</name><type>string</type><value>4711</value></contextMetadata><contextMetadata><name>Location</name><type>string</type><value>77,66</value></contextMetadata></metaData></contextRegistrationAttribute></contextRegistrationAttributeList><registrationMetaData><contextMetadata><name>ID</name><type>string</type><value>2212</value></contextMetadata></registrationMetaData><providingApplication>http://192.168.100.1:70/application3</providingApplication></contextRegistration></contextRegistrationList><duration>PT3Y1M13DT01:02:03Z</duration><registrationId>'$registrationId'</registrationId></registerContextRequest>'
+
+curl 'localhost:1025/NGSI9/registerContext?Z=1&Abba=123' --header 'Content-Type: text/xml' -vvvvv -d "$data"

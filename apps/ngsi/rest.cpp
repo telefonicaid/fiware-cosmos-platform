@@ -169,10 +169,6 @@ static int restTreat(int fd, Verb verb, Format format, int components, std::stri
 		return versionRequest(fd, verb, format, components, component);
 
 
-	LM_M(("Not LOG and not VERSION: '%s'", component[0].c_str()));
-
-
-
     //
     // Sanity Check
     //
@@ -265,7 +261,7 @@ static int restParse(Verb verb, char* path, int fd)
     std::string  xmlSuffix    = ".xml";
     Format       format       = XML;    // Default format is XML
 
-	LM_M(("------------- %s -------------", path));
+	LM_T(LmtRestPath, ("------------- %s -------------", path));
 
     //
     // Check the input

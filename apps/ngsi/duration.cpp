@@ -21,7 +21,7 @@ using namespace std;
 *
 * durationStringToSeconds - 
 */
-int durationStringToSeconds(std::string durationString)
+long durationStringToSeconds(std::string durationString)
 {
 	char*        start;
 	char         initially[128];
@@ -123,10 +123,10 @@ int durationStringToSeconds(std::string durationString)
 	LM_T(LmtDuration, ("o Minutes:  %d", minutes));
 	LM_T(LmtDuration, ("o Seconds:  %d", seconds));
 
-	int secs = seconds + 60 * minutes + 3600 * hours + (3600 * 24) * days + (3600 * 24 * 30) * months + (3600 * 24 * 365) * years;
+	long secs = seconds + 60 * minutes + 3600 * hours + (3600 * 24) * days + (3600 * 24 * 30) * months + (3600 * 24 * 365) * years;
 
 	secs *= sign;
 
-	LM_T(LmtDuration, ("o Result:   %d", secs));
+	LM_T(LmtDuration, ("o Result:   %lu", secs));
 	return secs;
 }

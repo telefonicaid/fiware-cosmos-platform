@@ -12,7 +12,7 @@
 
 #include "unitTest/common_engine_test.h"
 
-#include "samson/commons/ports.h"           // for SAMSON_WORKER_PORT
+#include "samson/common/ports.h"           // for SAMSON_WORKER_PORT
 
 TEST(samson_client, test_1 )
 {

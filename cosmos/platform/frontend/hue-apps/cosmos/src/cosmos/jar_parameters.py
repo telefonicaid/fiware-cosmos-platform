@@ -8,7 +8,10 @@ from cosmos.forms import ABSOLUTE_PATH_VALIDATOR, ID_VALIDATOR, HDFSFileChooser
 
 
 class AbstractParameter(object):
-    """Base class for custom JAR parameters"""
+    """Base class for custom JAR parameters.
+
+    Do not use it directly, only through subclassing.
+    """
 
     def __init__(self, name, default_value=None):
         self.name = name
@@ -28,9 +31,18 @@ class AbstractParameter(object):
         return self.__value is not None
 
     def form_field(self):
-        raise NotImplemented()
+        """Generate a field suitable for a django form.
+
+        To be override by subclasses.
+        """
+        raise NotImplemented("AbstractParameter#form_field must be override")
 
     def as_job_argument(self, job):
+        """Returns a list of command line arguments to inject this
+        parameter into a job.
+
+        Can be overriden by subclasses.
+        """
         return ["-D", "%s=%s" % (self.name, self.get_value())]
 
 

@@ -32,7 +32,7 @@ public class CrmRawToIpmConverter implements RawToIpmConverter {
             anonymisedImei = SHAEncoder.encode(crmRaw.getImei());
         } catch (NoSuchAlgorithmException ex) {
             Logger.get(CrmRawToIpmConverter.class).fatal(ex);
-            throw new IllegalArgumentException("Failed to anonimise data", ex);
+            throw new IllegalArgumentException("Failed to anonymise data", ex);
         }
         final String imeiTac = (crmRaw.getImei().length() == 15) ?
                 crmRaw.getImei().substring(0, 8) : "";

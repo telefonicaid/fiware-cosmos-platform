@@ -178,7 +178,7 @@ def install_gmetad():
     content = template.render(
             monitored_hosts = common.clean_host_list(CONFIG['hosts'].values()))
     gmetad_conf.write(content)
-    gmetad_cfg_path = "/etc/ganglia/gmetad.cfg"
+    gmetad_cfg_path = "/etc/gmetad.conf"
     if not files.exists(gmetad_cfg_path):
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmetad_cfg_path))
@@ -236,7 +236,7 @@ def install_gmond():
     content = template.render(
             gmetad_host = common.clean_host_list(CONFIG['hosts']['namenode']))
     gmond_conf.write(content)
-    gmond_conf_path = "/etc/ganglia/gmond.cfg"
+    gmond_conf_path = "/etc/gmond.conf"
     if not files.exists(gmond_conf_path):
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmond_conf_path))
@@ -244,6 +244,7 @@ def install_gmond():
     run("service gmond start")
     run("chkconfig --level 2 gmond on")
 
+@parallel
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def configure_hadoop_metrics():
     hadoop_metrics_conf = StringIO()

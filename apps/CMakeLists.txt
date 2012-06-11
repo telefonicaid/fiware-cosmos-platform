@@ -18,7 +18,7 @@ ADD_SUBDIRECTORY(samsonPushLogs)
 ADD_SUBDIRECTORY(samsonMemCheck)
 
 ADD_SUBDIRECTORY(logServer)
-ADD_SUBDIRECTORY(ngsi)
+#ADD_SUBDIRECTORY(ngsi)
 
 #ADD_SUBDIRECTORY(samsonTest) #Sandbox for debuggin and testing
 

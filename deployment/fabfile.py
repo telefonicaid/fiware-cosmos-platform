@@ -138,8 +138,22 @@ def deploy_models():
 @task
 def deploy_ganglia():
     execute(configure_hadoop_metrics)
+    execute(configure_ntp)
     execute(install_gmetad)
     execute(install_gmond)
+
+@parallel
+@roles('namenode', 'namenode', 'jobtracker', 'frontend', 'datanodes', #'mongo',
+       'tasktrackers')
+def configure_ntp():
+    ntp_conf = StringIO()
+    template = Template(filename='templates/ntp.conf.mako')
+    content = template.render()
+    ntp_conf.write(content)
+    ntp_conf_path = "/etc/ntp.conf"
+    put(ntp_conf, ntp_conf_path)
+    run("chkconfig --level 2 ntpd on")
+    run("service ntpd start")
 
 @roles('namenode')
 def install_gmetad():

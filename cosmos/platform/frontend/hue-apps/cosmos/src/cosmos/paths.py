@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
 Default paths.
-
 """
 
 def datasets_base(user):

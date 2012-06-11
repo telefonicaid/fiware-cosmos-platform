@@ -62,7 +62,7 @@
 .cosmos a.cos-job_runs_nav {
     background: url(/static/art/icons/application_view_list.png) no-repeat;
 }
-.cosmos a.cos-run_job_nav {
+.cosmos a.cos-define_job_nav {
     background: url(/static/art/icons/control_play_blue.png) no-repeat;
 }
 .cosmos a.cos-upload_nav {
@@ -175,13 +175,18 @@
 }
 
 /* Run job form */
+.cos-run_job_form dt,
+.cos-run_job_form p label {
+    width: 180px;
+    text-align: right;
+    margin: 0 1ex;
+}
 .cos-run_job_form dt {
     float: left;
     clear: both;
-    text-align: right;
-    margin-right: 1ex;
-    width: 90px;
-    margin: 1ex;
+}
+.cos-run_job_form p label {
+    display: inline-block;
 }
 .cos-run_job_form dd {
     float: left;
@@ -197,9 +202,25 @@
 .cos-run_job_form br {
     clear: both;
 }
-.cos-run_job_form .submit {
-    margin: 1em 10em;
+.cos-wizard_nav {
+    display: block;
+    position: relative;
+    width: 250px;
 }
+.cos-run_job_form .submit {
+    margin-left: 1ex;
+    float: right;
+}
+
+.cos-job_summary table {width: 100%; margin-left: 30px; }
+.cos-job_summary td,
+.cos-job_summary th {
+    font-size: 1em;
+    padding: 2px; 
+    margin: 0 1ex;
+    border: 1px solid #999;
+}
+.cos-job_summary th { font-weight: bold; background-color:#f4f4f4; } 
 
 /* Navigation */
 .cos-next_page {

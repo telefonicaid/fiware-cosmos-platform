@@ -28,8 +28,8 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     """
     execute(deploy_jdk, path.join(dependenciespath, jdk_rpm))
     deploy_cdh()
-    deploy_hue(path.join(dependenciespath, thrift_tar))
-    deploy_sftp()
+    execute(deploy_hue, path.join(dependenciespath, thrift_tar))
+    execute(deploy_sftp)
     
 @task
 @roles('namenode', 'jobtracker', 'frontend', 'datanodes', 'tasktrackers')

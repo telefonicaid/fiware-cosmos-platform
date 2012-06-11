@@ -78,42 +78,16 @@ class ParameterizeJobForm(forms.Form):
     parameter descriptions.
     """
 
-    STRING_MAX_LENGTH = 255
-
-    FIELD_FACTORIES = {
-        'string':
-        (lambda template:
-         forms.CharField(label=template['name'],
-                         max_length=ParameterizeJobForm.STRING_MAX_LENGTH,
-                         initial=template.get('default_value', None))),
-        'filepath':
-        (lambda template:
-         forms.CharField(label=template['name'],
-                         max_length=ParameterizeJobForm.STRING_MAX_LENGTH,
-                         initial=template.get('default_value', None),
-                         widget=HDFSFileChooser(),
-                         validators=[ABSOLUTE_PATH_VALIDATOR])),
-        'mongocoll':
-        (lambda template:
-         forms.CharField(label=template['name'],
-                        max_length=ParameterizeJobForm.STRING_MAX_LENGTH,
-                        initial=template.get('default_value', None),
-                        validators=[ID_VALIDATOR]))
-    }
-
-    def __init__(self, parameters, data=None):
+    def __init__(self, parameters):
         """
-        Parameters is a list of dictionaries suppoting these keywords:
-         - name
-         - type
-         - default_value (optional)
+        Parameters is a list of JAR parameters to be rendered as a form.
         """
-        if data is not None:
-            # Init from request data
-            super(ParameterizeJobForm, self).__init__(data)
+        if any(param.has_value() for param in parameters):
+            data = dict([(param.name, param.get_value()) for param in
+                         parameters])
         else:
-            super(ParameterizeJobForm, self).__init__()
+            data = None
+        super(ParameterizeJobForm, self).__init__(data)
 
         for param in parameters:
-            self.fields[param['name']] = \
-                    self.FIELD_FACTORIES[param['type']](param)
+            self.fields[param.name] = param.form_field()

@@ -5,19 +5,14 @@ Forms tests.
 """
 import unittest as test
 
+from cosmos.jar_parameters import make_parameter
 from cosmos.forms import ParameterizeJobForm
 
 
 class ParameterizeFormTestCase(test.TestCase):
     def setUp(self):
-        self.parameters = [{
-            'name': 'foo',
-            'type': 'string'
-        }, {
-            'name': 'bar',
-            'type': 'filepath',
-            'default_value': '/tmp/'
-        }]
+        self.parameters = [make_parameter('foo', 'string'),
+                           make_parameter('bar', 'filepath|/tmp/')]
 
     def test_generate_fields(self):
         form = ParameterizeJobForm(self.parameters)

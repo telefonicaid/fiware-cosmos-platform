@@ -100,11 +100,7 @@ def define_job(request):
                     with closing(JarFile(cached_file.local_path())) as jar:
                         wizard['parameterized'] = jar.is_parameterized()
                         if wizard['parameterized']:
-                            wizard['parameters'] = [{
-                                'name': template.name,
-                                'type': template.type,
-                                'default_value': template.default_value
-                            } for template in jar.parameters()]
+                            wizard['parameters'] = jar.parameters()
                         else:
                             wizard['parameters'] = None
                         return redirect(reverse('configure_job'))
@@ -152,15 +148,15 @@ def configure_parameterized_job(request):
     parameters = wizard['parameters']
 
     if request.method != 'POST':
-        form = ParameterizeJobForm(parameters,
-                                   data=wizard.get('parameter_values', None))
+        form = ParameterizeJobForm(parameters)
     elif request.POST.has_key('back'):
         return redirect(reverse('define_job'))
     else:
-        form = ParameterizeJobForm(parameters, data=request.POST)
+        for param in parameters:
+            param.set_value(request.POST.get(param.name, None))
+        form = ParameterizeJobForm(parameters)
+        update_job_wizard(request, wizard)
         if form.is_valid():
-            wizard['parameter_values'] = form.cleaned_data
-            update_job_wizard(request, wizard)
             return redirect(reverse('confirm_job'))
 
     return render('job_configure.mako', request, dict(
@@ -183,17 +179,12 @@ def confirm_job(request):
         return redirect(reverse('define_job'))
 
     if wizard['parameterized']:
-        job.parameters = []
-        for param_template in wizard['parameters']:
-            param = param_template.copy()
-            param['value'] = wizard['parameter_values'][param['name']]
-            job.parameters.append(param)
+        job.parameters = wizard['parameters']
     else:
         job.dataset_path = job_data['dataset_path']
 
     if request.method != 'POST':
-        return render('job_confirm.mako', request, dict(
-            wizard,
+        return render('job_confirm.mako', request, dict(wizard,
             wizard_nav={'next': False, 'back': True, 'finish': 'Run job'}
         ))
     elif request.POST.has_key('back'):

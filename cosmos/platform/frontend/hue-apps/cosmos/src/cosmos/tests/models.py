@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from jobsubd.ttypes import State
 from jobsub.models import Submission
 
+from cosmos.jar_parameters import make_parameter
 from cosmos.models import JobRun
 
 
@@ -28,15 +29,8 @@ class JobRunTestCase(test.TestCase):
                            'mongodb://localhost/db_1.job_15'])
 
     def test_hadoop_args_with_parameters(self):
-        self.job.parameters = [{
-            'name': 'foo',
-            'type': 'string',
-            'value': 'bar'
-        }, {
-            'name': 'mongo1',
-            'type': 'mongocoll',
-            'value': 'col_a'
-        }]
+        self.job.parameters = [make_parameter('foo', 'string|bar'),
+                               make_parameter('mongo1', 'mongocoll|col_a')]
         self.assertEquals(self.job.hadoop_args('job.jar'),
                           ['jar', 'job.jar',
                            '-D', 'foo=bar',

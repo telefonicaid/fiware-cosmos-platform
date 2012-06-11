@@ -45,10 +45,10 @@ ${shared.header("Run new job", section="define_job")}
 	    </tr>
 	</thead>
 	<tbody>
-	    % for parameter in parameters:
+	    % for param in parameters:
 	    <tr>
-		<th>${ parameter['name'] }</th>
-		<td>${ parameter_values[parameter['name']] }</td>
+		<th>${ param.name }</th>
+		<td>${ param.get_value() }</td>
 	    </tr>
 	    % endfor
 	</tbody>

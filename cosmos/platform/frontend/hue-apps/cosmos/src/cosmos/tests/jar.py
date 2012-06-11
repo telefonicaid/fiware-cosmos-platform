@@ -3,9 +3,11 @@
 JAR manipulation module tests.
 """
 import os.path
+import pickle
 import unittest as test
 
 from cosmos.jar import InvalidJarFile, JarFile
+from cosmos.jar_parameters import make_parameter
 
 
 class CannotOpenJarTestCase(test.TestCase):
@@ -56,16 +58,12 @@ class UseJarTestCase(test.TestCase):
         params = self.prop_jar.parameters()
         self.assertEquals(len(params), 5)
         self.assertEquals(params[0].name, "foo")
-        self.assertEquals(params[0].type, "string")
         self.assertEquals(params[0].default_value, None)
         self.assertEquals(params[1].name, "bar")
         self.assertEquals(params[1].default_value, "hola")
         self.assertEquals(params[2].name, "tmp")
-        self.assertEquals(params[2].type, "filepath")
         self.assertEquals(params[3].name, "mongo1")
-        self.assertEquals(params[3].type, "mongocoll")
         self.assertEquals(params[4].name, "mongo2")
-        self.assertEquals(params[4].type, "mongocoll")
         self.assertEquals(params[4].default_value, "col_a")
 
     def test_get_parametrization_from_xml(self):
@@ -73,4 +71,18 @@ class UseJarTestCase(test.TestCase):
         self.assertEquals(len(params), 3)
         self.assertEquals(params[0].name, "foo")
         self.assertEquals(params[1].default_value, "hola")
-        self.assertEquals(params[2].type, "filepath")
+
+
+class JarParametersTestCase(test.TestCase):
+
+    def setUp(self):
+        self.foo = make_parameter('foo', 'string')
+        self.bar = make_parameter('bar', 'string|value')
+        self.tmp = make_parameter('tmp', 'filepath|/tmp')
+        self.coll = make_parameter('coll', 'mongocoll')
+
+    def test_pickable(self):
+        for param in [self.foo, self.bar, self.tmp, self.coll]:
+            serialized_param = pickle.dumps(param)
+            deserialized_param = pickle.loads(serialized_param)
+            self.assertEquals(param.name, deserialized_param.name)

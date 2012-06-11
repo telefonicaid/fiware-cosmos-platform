@@ -59,19 +59,12 @@ class JobRun(models.Model):
         args = ['jar', jar_name]
         if self.parameters is not None:
             for parameter in self.parameters:
-                args.extend(["-D", "%s=%s" % (parameter['name'],
-                                              self.__parameter_value(parameter))])
+                args.extend(parameter.as_job_argument(self))
         else:
             input_path = self.dataset_path
             output_path = '/user/%s/tmp/job_%d/' % (self.user.username, self.id)
             args.extend([input_path, output_path, self.mongo_url()])
         return args
-
-    def __parameter_value(self, parameter):
-        if parameter['type'] == 'mongocoll':
-            return self.mongo_url(collection=parameter['value'])
-        else:
-            return parameter['value']
 
     def state(self):
         if self.submission is None:

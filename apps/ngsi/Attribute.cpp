@@ -424,6 +424,34 @@ Attribute* attributeLookup(Entity* entityP, std::string name, std::string type, 
 
 /* ****************************************************************************
 *
+* attributeLookup - 
+*/
+Attribute* attributeLookup(Entity* entityP, std::string name)
+{
+	Attribute*   aP;
+
+	LM_T(LmtAttributeLookup, ("Looking up attribute '%s' for Entity '%s:%s'", name.c_str(), entityP->type.c_str(), entityP->id.c_str()));
+	aP = attributeList;
+	while (aP != NULL)
+	{
+		LM_T(LmtAttributeLookup, ("Comparing attribute '%s %p' to wanted '%s %p'", aP->name.c_str(), aP->entityP, name.c_str(), entityP));
+
+		if ((aP->entityP == entityP) && (aP->name == name))
+		{
+			LM_T(LmtAttributeLookup, ("Found attribute '%s:%s' for Entity '%s:%s'", aP->type.c_str(), aP->name.c_str(), entityP->type.c_str(), entityP->id.c_str()));
+			return aP;
+		}
+
+		aP = aP->next;
+	}
+
+	return NULL;
+}
+
+
+
+/* ****************************************************************************
+*
 * attributeUpdate - 
 */
 void attributeUpdate(Attribute* attribute, Attribute* updateFrom)

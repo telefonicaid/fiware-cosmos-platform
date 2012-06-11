@@ -100,6 +100,7 @@ extern void attributeAppend(Attribute* attribute);
 * attributeLookup - 
 */
 extern Attribute* attributeLookup(struct Entity* entityP, std::string name, std::string type, std::string ID, bool onlyRAM);
+extern Attribute* attributeLookup(struct Entity* entityP, std::string name);
 
 
 

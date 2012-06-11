@@ -198,7 +198,7 @@ static int restTreat(int fd, Verb verb, Format format, int components, std::stri
 	else if ((component[0] == "NGSI9") && (components == 2) && (component[1] == "discoverContextAvailability"))
 		return discoverContextAvailability(fd, verb, format, httpData[0]);
 
-	LM_RE(-1, ("Unknown reqeust"));
+	LM_RE(-1, ("Unknown request"));
 }
 
 

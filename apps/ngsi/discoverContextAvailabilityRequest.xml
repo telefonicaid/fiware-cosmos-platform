@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<discoveryContextAvailabilityRequest>
+<discoverContextAvailabilityRequest>
 	<entityIdList>
-		<entityId>
+		<entityId type="Room" isPattern="false">
 			<id>ConferenceRoom</id>
-			<type>Room</type>
-			<isPattern>false</isPattern>
 		</entityId>
-		<entityId>
-			<id>OfficeRoom</id>
-			<type>Room</type>
-			<isPattern>false</isPattern>
+		<entityId type="Room" isPattern="false">
+			<id>OfficeRoom</id>			
 		</entityId>
 	</entityIdList>
 	<attributeList>
@@ -30,4 +26,4 @@
 			</operationScope>
 		</scope>
 	</restriction>
-</discoveryContextAvailabilityRequest>
+</discoverContextAvailabilityRequest>

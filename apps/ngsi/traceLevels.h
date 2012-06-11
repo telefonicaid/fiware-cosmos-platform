@@ -21,18 +21,17 @@ typedef enum TraceLevels
     LmtParameters2,
 	LmtHttpHeader,
 
-	LmtHttpData = 41,
-	LmtHttpDataSeparate,
-	LmtRegisterContext,
-	LmtDuration,
 
-	LmtRegistration = 51,
+	LmtRegistration = 41,
 	LmtRegister,
 	LmtEmpty,
 	LmtRest,
 	LmtRestPath,
 	LmtLogRequest,
 	
+	LmtDiscover = 51,
+	LmtDiscoverTreat,
+
 	LmtEntity = 61,
 	LmtEntityLookup,
 	LmtEntityDbLookup,
@@ -67,7 +66,12 @@ typedef enum TraceLevels
 
 	LmtToTree = 101,
 	LmtToRAM,
-	LmtToDB
+	LmtToDB,
+
+	LmtHttpData = 111,
+	LmtHttpDataSeparate,
+	LmtRegisterContext,
+	LmtDuration
 } TraceLevels;
 
 #endif

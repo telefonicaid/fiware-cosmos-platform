@@ -41,7 +41,7 @@ public class JoinBtsNodeToCdrReducer extends Reducer<LongWritable,
             for (MobilityWritable<Cdr> value : values) {
                 final Cdr cdr = value.get();
                 context.write(new LongWritable(cdr.getUserId()),
-                              new MobilityWritable<Cdr>(cdr, Cdr.class));
+                              new MobilityWritable<Cdr>(cdr));
             }
         }
     }

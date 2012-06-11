@@ -4,7 +4,6 @@ import java.io.IOException;
 import static java.util.Arrays.asList;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -16,21 +15,21 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  *
  * @author dmicol
  */
 public class VectorOneidOutReducerTest {
-    private ReduceDriver<LongWritable, ProtobufWritable<MobData>, NullWritable,
+    private ReduceDriver<LongWritable, MobilityWritable<Cluster>, NullWritable,
             Text> driver;
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
+        this.driver = new ReduceDriver<LongWritable, MobilityWritable<Cluster>,
                 NullWritable, Text>(new VectorOneidOutReducer());
     }
 
@@ -42,9 +41,9 @@ public class VectorOneidOutReducerTest {
         ClusterVector clusterVector2 = ClusterVector.newBuilder()
                 .addAllComs(asList(0.4D, 3.2D))
                 .build();
-        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+        final MobilityWritable<Cluster> value1 = new MobilityWritable<Cluster>(
                 ClusterUtil.create(1, 2, 3, 4, 5, clusterVector1));
-        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+        final MobilityWritable<Cluster> value2 = new MobilityWritable<Cluster>(
                 ClusterUtil.create(10, 20, 30, 40, 50, clusterVector2));
         List<Pair<NullWritable, Text>> results = this.driver
                 .withInput(new LongWritable(57L), asList(value1, value2))

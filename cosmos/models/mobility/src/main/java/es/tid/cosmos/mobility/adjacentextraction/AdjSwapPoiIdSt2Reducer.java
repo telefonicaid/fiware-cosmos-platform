@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.google.protobuf.ByteString;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -19,26 +19,26 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class AdjSwapPoiIdSt2Reducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+        MobilityWritable<InputIdRecord>, LongWritable, MobilityWritable<TwoInt>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<InputIdRecord>> values, Context context)
             throws IOException, InterruptedException {
         List<TwoInt> pairPoisList = new LinkedList<TwoInt>();
         TwoInt lastPairIndex = null;
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getInputId()) {
+        for (MobilityWritable<InputIdRecord> value : values) {
+            final InputIdRecord record = value.get();
+            final TwoInt twoInt = TwoInt.parseFrom(record.getMessageBytes());
+            switch (record.getInputId()) {
                 case 0:
-                    pairPoisList.add(mobData.getTwoInt());
+                    pairPoisList.add(twoInt);
                     break;
                 case 1:
-                    lastPairIndex = mobData.getTwoInt();
+                    lastPairIndex = twoInt;
                     break;
                 default:
-                    throw new IllegalStateException("Unexpected MobData ID: "
-                            + mobData.getInputId());
+                    throw new IllegalStateException("Unexpected Input ID: "
+                            + record.getInputId());
             }
         }
         
@@ -55,7 +55,7 @@ public class AdjSwapPoiIdSt2Reducer extends Reducer<LongWritable,
                 outputPairPois.setNum2(tmp);
             }
             context.write(new LongWritable(outputPairPois.getNum1()),
-                          MobDataUtil.createAndWrap(outputPairPois.build()));
+                          new MobilityWritable<TwoInt>(outputPairPois.build()));
         }
     }
 }

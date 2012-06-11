@@ -2,28 +2,27 @@ package es.tid.cosmos.mobility.adjacentextraction;
 
 import static java.util.Arrays.asList;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Int64;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 
 /**
  *
  * @author dmicol
  */
 public class AdjCountIndexesReducerTest {
-    private ReduceDriver<LongWritable, ProtobufWritable<MobData>, LongWritable,
-            ProtobufWritable<MobData>> driver;
+    private ReduceDriver<LongWritable, MobilityWritable<Int64>, LongWritable,
+            MobilityWritable<Null>> driver;
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                LongWritable, ProtobufWritable<MobData>>(
+        this.driver = new ReduceDriver<LongWritable, MobilityWritable<Int64>,
+                LongWritable, MobilityWritable<Null>>(
                         new AdjCountIndexesReducer());
     }
     
@@ -31,12 +30,12 @@ public class AdjCountIndexesReducerTest {
     public void testReduce() {
         this.driver
                 .withInput(new LongWritable(3L),
-                           asList(MobDataUtil.createAndWrap(5L),
-                                  MobDataUtil.createAndWrap(10L),
-                                  MobDataUtil.createAndWrap(7L),
-                                  MobDataUtil.createAndWrap(0L)))
+                           asList(MobilityWritable.create(5L),
+                                  MobilityWritable.create(10L),
+                                  MobilityWritable.create(7L),
+                                  MobilityWritable.create(0L)))
                 .withOutput(new LongWritable(22L),
-                            MobDataUtil.createAndWrap(NullWritable.get()))
+                            new MobilityWritable<Null>(Null.getDefaultInstance()))
                 .runTest();
     }
 }

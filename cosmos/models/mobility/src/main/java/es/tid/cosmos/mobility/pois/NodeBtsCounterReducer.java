@@ -34,6 +34,6 @@ public class NodeBtsCounterReducer extends Reducer<
         BtsCounter counter = BtsCounterUtil.create(node.getBts(),
                 node.getWeekday(), node.getRange(), count);
         context.write(new LongWritable(node.getUserId()),
-                      new MobilityWritable<BtsCounter>(counter, BtsCounter.class));
+                      new MobilityWritable<BtsCounter>(counter));
     }
 }

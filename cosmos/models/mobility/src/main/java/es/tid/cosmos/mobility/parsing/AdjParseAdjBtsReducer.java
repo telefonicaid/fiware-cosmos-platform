@@ -32,8 +32,7 @@ public class AdjParseAdjBtsReducer extends Reducer<LongWritable, Text,
                 continue;
             }
             context.write(TwoIntUtil.wrap(adjBts),
-                          new MobilityWritable(Null.getDefaultInstance(),
-                                               Null.class));
+                          new MobilityWritable(Null.getDefaultInstance()));
         }
     }
 }

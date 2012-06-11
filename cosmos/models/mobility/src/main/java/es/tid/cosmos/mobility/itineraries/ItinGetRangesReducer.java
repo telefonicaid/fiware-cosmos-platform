@@ -7,11 +7,11 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ItinRangeUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Float64;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, ItinMovement>
@@ -20,17 +20,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * @author dmicol
  */
 public class ItinGetRangesReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, ProtobufWritable<ItinRange>,
-        ProtobufWritable<MobData>> {
+        MobilityWritable<ItinMovement>, ProtobufWritable<ItinRange>,
+        MobilityWritable<Float64>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<ItinMovement>> values, Context context)
             throws IOException, InterruptedException {
         final long node = key.get();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            final ItinMovement move = mobData.getItinMovement();
+        for (MobilityWritable<ItinMovement> value : values) {
+            final ItinMovement move = value.get();
             final ItinTime source = move.getSource();
             final ItinTime target = move.getTarget();
             ItinRange.Builder moveRange = ItinRange.newBuilder();
@@ -53,7 +51,7 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
                 moveRange.setGroup(source.getDate().getWeekday());
                 moveRangeFinal = moveRange.clone();
                 context.write(ItinRangeUtil.wrap(moveRangeFinal.build()),
-                              MobDataUtil.createAndWrap(1.0D));
+                              MobilityWritable.create(1.0D));
             } else {
                 int minutSrc = source.getTime().getMinute();
                 int minutTgt = target.getTime().getMinute();
@@ -64,7 +62,7 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
                 double percMoves = (60.0D - (double)minutSrc) / dur;
                 moveRangeFinal = moveRange.clone();
                 context.write(ItinRangeUtil.wrap(moveRangeFinal.build()),
-                              MobDataUtil.createAndWrap(percMoves));
+                              MobilityWritable.create(percMoves));
                 
                 // Comunication in target hour
                 moveRange.setRange(target.getTime().getHour());
@@ -72,7 +70,7 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
                 percMoves = minutTgt / dur;
                 moveRangeFinal = moveRange.clone();
                 context.write(ItinRangeUtil.wrap(moveRangeFinal.build()),
-                              MobDataUtil.createAndWrap(percMoves));
+                              MobilityWritable.create(percMoves));
                 
                 // Fill the intermediate hours
                 for (int i = 1; i < diff; i++) {
@@ -87,7 +85,7 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
                     percMoves = 60.0D / dur;
                     moveRangeFinal = moveRange.clone();
                     context.write(ItinRangeUtil.wrap(moveRangeFinal.build()),
-                                  MobDataUtil.createAndWrap(percMoves));
+                                  MobilityWritable.create(percMoves));
                 }
             }
         }

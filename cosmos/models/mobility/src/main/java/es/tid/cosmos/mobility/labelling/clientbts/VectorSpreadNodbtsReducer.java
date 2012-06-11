@@ -6,10 +6,10 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
@@ -20,15 +20,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  * @author dmicol
  */
 public class VectorSpreadNodbtsReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, ProtobufWritable<NodeBts>,
-        ProtobufWritable<MobData>> {
+        MobilityWritable<NodeMxCounter>, ProtobufWritable<NodeBts>,
+        MobilityWritable<Int>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<NodeMxCounter>> values, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final NodeMxCounter nodeMxCounter = value.get().getNodeMxCounter();
+        for (MobilityWritable<NodeMxCounter> value : values) {
+            final NodeMxCounter nodeMxCounter = value.get();
             for (BtsCounter btsCounter : nodeMxCounter.getBtsList()) {
                 int group;
                 switch (btsCounter.getWeekday()) {
@@ -48,7 +47,7 @@ public class VectorSpreadNodbtsReducer extends Reducer<LongWritable,
                         key.get(), btsCounter.getBts(),
                         group, btsCounter.getRange());
                 context.write(nodeBts,
-                              MobDataUtil.createAndWrap(btsCounter.getCount()));
+                              MobilityWritable.create(btsCounter.getCount()));
             }
         }
     }

@@ -38,7 +38,7 @@ public class ParseClientProfilesReducer extends Reducer<LongWritable, Text,
             }
             this.userId.set(clientProfile.getUserId());
             context.write(this.userId, new MobilityWritable<ClientProfile>(
-                    clientProfile, ClientProfile.class));
+                    clientProfile));
         }
     }
 }

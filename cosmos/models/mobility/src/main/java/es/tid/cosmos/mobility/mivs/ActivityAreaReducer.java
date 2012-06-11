@@ -62,7 +62,7 @@ public class ActivityAreaReducer extends Reducer<
                 month, isWorkDay, accs.difPos, accs.numBtss, accs.numMuns,
                 accs.numStates, accs.massCenterX, accs.massCenterY, accs.radius,
                 influenceAreaDiameter);
-        context.write(newKey, new MobilityWritable<MobVars>(ans, MobVars.class));
+        context.write(newKey, new MobilityWritable<MobVars>(ans));
     }
     
     private Accumulations accumulate(

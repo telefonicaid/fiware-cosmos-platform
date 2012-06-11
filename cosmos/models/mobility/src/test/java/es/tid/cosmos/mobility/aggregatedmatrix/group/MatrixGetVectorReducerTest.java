@@ -8,16 +8,17 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.ItinPercMoveUtil;
 import es.tid.cosmos.mobility.data.ItinRangeUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinPercMove;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -25,25 +26,26 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class MatrixGetVectorReducerTest {
-    private ReduceDriver<ProtobufWritable<ItinRange>, ProtobufWritable<MobData>,
-            ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> instance;
+    private ReduceDriver<ProtobufWritable<ItinRange>,
+            MobilityWritable<ItinPercMove>, ProtobufWritable<TwoInt>,
+            MobilityWritable<ClusterVector>> instance;
     
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<ItinRange>,
-                ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>>(new MatrixGetVectorReducer());
+            MobilityWritable<ItinPercMove>, ProtobufWritable<TwoInt>,
+            MobilityWritable<ClusterVector>>(new MatrixGetVectorReducer());
     }
 
     @Test
     public void testReduce() throws IOException {
         final ProtobufWritable<ItinRange> key = ItinRangeUtil.createAndWrap(
                 1, 2, 3, 4, 5);
-        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+        final MobilityWritable<ItinPercMove> value1 = new MobilityWritable<ItinPercMove>(
                 ItinPercMoveUtil.create(0, 7, 8.9D));
-        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+        final MobilityWritable<ItinPercMove> value2 = new MobilityWritable<ItinPercMove>(
                 ItinPercMoveUtil.create(6, 11, 12.13D));
-        List<Pair<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>> res =
+        List<Pair<ProtobufWritable<TwoInt>, MobilityWritable<ClusterVector>>> res =
                 this.instance
                         .withInput(key, asList(value1, value2))
                         .run();
@@ -53,9 +55,8 @@ public class MatrixGetVectorReducerTest {
         outKey.setConverter(TwoInt.class);
         assertEquals(1, outKey.get().getNum1());
         assertEquals(2, outKey.get().getNum2());
-        final ProtobufWritable<MobData> outValue = res.get(0).getSecond();
-        outValue.setConverter(MobData.class);
-        final ClusterVector clusterVector = outValue.get().getClusterVector();
+        final MobilityWritable<ClusterVector> outValue = res.get(0).getSecond();
+        final ClusterVector clusterVector = outValue.get();
         assertEquals(168, clusterVector.getComsCount());
         assertEquals(8.9D, clusterVector.getComs(151), 0.0D);
         assertEquals(12.13D, clusterVector.getComs(131), 0.0D);

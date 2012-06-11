@@ -5,12 +5,12 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -20,14 +20,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class VectorSumComsBtsReducer extends Reducer<
-        ProtobufWritable<BtsCounter>, ProtobufWritable<MobData>,
-        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>> {
+        ProtobufWritable<BtsCounter>, MobilityWritable<Null>,
+        ProtobufWritable<NodeBts>, MobilityWritable<TwoInt>> {
     @Override
     protected void reduce(ProtobufWritable<BtsCounter> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Null>> values, Context context)
             throws IOException,InterruptedException {
         int valueCount = 0;
-        for (ProtobufWritable<MobData> value : values) {
+        for (MobilityWritable<Null> value : values) {
             valueCount++;
         }
         
@@ -36,6 +36,6 @@ public class VectorSumComsBtsReducer extends Reducer<
         ProtobufWritable<NodeBts> nodeBts = NodeBtsUtil.createAndWrap(
                 0L, counter.getBts(), counter.getWeekday(), 0);
         TwoInt hourComms = TwoIntUtil.create(counter.getRange(), valueCount);
-        context.write(nodeBts, MobDataUtil.createAndWrap(hourComms));
+        context.write(nodeBts, new MobilityWritable<TwoInt>(hourComms));
     }
 }

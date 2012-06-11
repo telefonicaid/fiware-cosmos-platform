@@ -2,15 +2,14 @@ package es.tid.cosmos.mobility.outpois;
 
 import java.io.IOException;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, Cluster>
@@ -19,14 +18,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * @author dmicol
  */
 public class VectorOneidOutReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, NullWritable, Text> {
+        MobilityWritable<Cluster>, NullWritable, Text> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Cluster>> values, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final Cluster cluster = value.get().getCluster();
+        for (MobilityWritable<Cluster> value : values) {
+            final Cluster cluster = value.get();
             String output =
                     key.get() + ClusterUtil.DELIMITER
                     + cluster.getLabel() + ClusterUtil.DELIMITER

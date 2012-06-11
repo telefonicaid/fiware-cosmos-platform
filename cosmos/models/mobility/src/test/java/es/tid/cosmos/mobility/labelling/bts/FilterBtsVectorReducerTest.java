@@ -1,10 +1,10 @@
 package es.tid.cosmos.mobility.labelling.bts;
 
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import static java.util.Arrays.asList;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.google.protobuf.Message;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
@@ -13,21 +13,21 @@ import org.junit.Test;
 import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.BtsUtil;
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  *
  * @author dmicol
  */
 public class FilterBtsVectorReducerTest {
-    private ReduceDriver<LongWritable, ProtobufWritable<MobData>, LongWritable,
-            ProtobufWritable<MobData>> driver;
+    private ReduceDriver<LongWritable, MobilityWritable<Message>, LongWritable,
+            MobilityWritable<Cluster>> driver;
     @Before
     public void setUp() throws IOException {
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                LongWritable, ProtobufWritable<MobData>>(
+        this.driver = new ReduceDriver<LongWritable, MobilityWritable<Message>,
+                LongWritable, MobilityWritable<Cluster>>(
                         new FilterBtsVectorReducer());
         InputStream configInput = Config.class.getResource(
                 "/mobility.properties").openStream();
@@ -38,12 +38,12 @@ public class FilterBtsVectorReducerTest {
     @Test
     public void testNonConfidentOutput() {
         final LongWritable key = new LongWritable(57L);
-        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+        final MobilityWritable<Message> value1 = new MobilityWritable<Message>(
                 BtsUtil.create(1, 50000, 2, 3, 6, asList(5L, 6L, 7L)));
-        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+        final MobilityWritable<Message> value2 = new MobilityWritable<Message>(
                 ClusterUtil.create(1, 2, 1, 4, 5,
                                    ClusterVector.getDefaultInstance()));
-        final ProtobufWritable<MobData> outValue = MobDataUtil.createAndWrap(
+        final MobilityWritable<Cluster> outValue = new MobilityWritable<Cluster>(
                 ClusterUtil.create(1, 2, 0, 4, 5,
                                    ClusterVector.getDefaultInstance()));
         this.driver
@@ -55,12 +55,12 @@ public class FilterBtsVectorReducerTest {
     @Test
     public void testConfidentOutput() {
         final LongWritable key = new LongWritable(57L);
-        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+        final MobilityWritable<Message> value1 = new MobilityWritable<Message>(
                 BtsUtil.create(1, 80000, 2, 3, 4, asList(5L, 6L, 7L)));
-        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+        final MobilityWritable<Message> value2 = new MobilityWritable<Message>(
                 ClusterUtil.create(1, 2, 1, 4, 5,
                                    ClusterVector.getDefaultInstance()));
-        final ProtobufWritable<MobData> outValue = MobDataUtil.createAndWrap(
+        final MobilityWritable<Cluster> outValue = new MobilityWritable<Cluster>(
                 ClusterUtil.create(1, 2, 1, 4, 5,
                                    ClusterVector.getDefaultInstance()));
         this.driver

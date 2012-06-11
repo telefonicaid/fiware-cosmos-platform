@@ -34,7 +34,6 @@ public class NodeMobInfoReducer extends Reducer<LongWritable,
         NodeMxCounter nodeMxCounter = NodeMxCounterUtil.create(allBts,
                                                                numberOfValues,
                                                                numberOfValues);
-        context.write(key, new MobilityWritable<NodeMxCounter>(
-                nodeMxCounter, NodeMxCounter.class));
+        context.write(key, new MobilityWritable<NodeMxCounter>(nodeMxCounter));
     }
 }

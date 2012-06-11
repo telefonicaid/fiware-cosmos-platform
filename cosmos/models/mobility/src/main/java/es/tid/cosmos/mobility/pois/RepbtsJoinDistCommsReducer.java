@@ -46,8 +46,7 @@ public class RepbtsJoinDistCommsReducer extends Reducer<LongWritable,
                                 0,
                                 nodeBtsDay.getCount(),
                                 nodeBtsDay.getCount() * 100 / ncomms);
-                context.write(key, new MobilityWritable<BtsCounter>(
-                        counter, BtsCounter.class));
+                context.write(key, new MobilityWritable<BtsCounter>(counter));
             }
         }
     }

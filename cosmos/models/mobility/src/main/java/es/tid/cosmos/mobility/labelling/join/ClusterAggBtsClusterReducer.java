@@ -1,16 +1,15 @@
 package es.tid.cosmos.mobility.labelling.join;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.google.protobuf.Message;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 
 /**
@@ -20,28 +19,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
  * @author dmicol
  */
 public class ClusterAggBtsClusterReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+        MobilityWritable<Message>, LongWritable, MobilityWritable<Poi>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        List<Poi> poiList = new LinkedList<Poi>();
-        List<Cluster> clusterList = new LinkedList<Cluster>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case POI:
-                    poiList.add(mobData.getPoi());
-                    break;
-                case CLUSTER:
-                    clusterList.add(mobData.getCluster());
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected MobData type: "
-                            + mobData.getType().name());
-            }
-        }
+        Map<Class, List> dividedLists = MobilityWritable.divideIntoTypes(values, Poi.class, Cluster.class);
+        List<Poi> poiList = dividedLists.get(Poi.class);
+        List<Cluster> clusterList = dividedLists.get(Cluster.class);
         
         for (Poi poi : poiList) {
             for (Cluster cluster : clusterList) {
@@ -51,7 +36,7 @@ public class ClusterAggBtsClusterReducer extends Reducer<LongWritable,
                 outputPoi.setConfidentbts(cluster.getConfident());
                 outputPoi.setDistancebts(cluster.getDistance());
                 context.write(new LongWritable(poi.getBts()),
-                              MobDataUtil.createAndWrap(outputPoi.build()));
+                              new MobilityWritable<Poi>(outputPoi.build()));
             }
         }
     }

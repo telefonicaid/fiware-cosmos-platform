@@ -4,18 +4,19 @@ import java.io.IOException;
 import static java.util.Arrays.asList;
 import java.util.List;
 
+import com.google.protobuf.Message;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.assertEquals;
-import org.junit.Test;
 import org.junit.Before;
+import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -23,13 +24,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class SetMobDataInputIdByTwoIntReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
-            ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> driver;
+    private ReduceDriver<ProtobufWritable<TwoInt>, MobilityWritable<Message>,
+            ProtobufWritable<TwoInt>, MobilityWritable<InputIdRecord>> driver;
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>>(
+                MobilityWritable<Message>, ProtobufWritable<TwoInt>,
+                MobilityWritable<InputIdRecord>>(
                         new SetMobDataInputIdByTwoIntReducer());
     }
     
@@ -42,15 +43,14 @@ public class SetMobDataInputIdByTwoIntReducerTest {
     public void testSetInputId() throws IOException {
         Configuration conf = this.driver.getConfiguration();
         conf.setInt("input_id", 3);
-        List<Pair<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>> res =
+        List<Pair<ProtobufWritable<TwoInt>, MobilityWritable<InputIdRecord>>> res =
                 this.driver
                         .withInput(TwoIntUtil.createAndWrap(1L, 2L),
-                                   asList(MobDataUtil.createAndWrap(
-                                           NullWritable.get())))
+                                   asList(new MobilityWritable<Message>(
+                                           Null.getDefaultInstance())))
                         .run();
         assertEquals(1, res.size());
-        ProtobufWritable<MobData> output = res.get(0).getSecond();
-        output.setConverter(MobData.class);
+        MobilityWritable<InputIdRecord> output = res.get(0).getSecond();
         assertEquals(3, output.get().getInputId());
     }
 }

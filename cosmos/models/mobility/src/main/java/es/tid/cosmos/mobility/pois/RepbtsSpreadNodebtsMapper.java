@@ -29,10 +29,7 @@ public class RepbtsSpreadNodebtsMapper extends Mapper<LongWritable,
         for (BtsCounter bts : counter.getBtsList()) {
             ProtobufWritable<NodeBtsDay> nodeBtsDay = NodeBtsDayUtil.
                     createAndWrap(key.get(), bts.getBts(), 0, 0);
-            context.write(nodeBtsDay,
-                          new MobilityWritable<Int>(
-                                  Int.newBuilder().setNum(bts.getCount()).build(),
-                                  Int.class));
+            context.write(nodeBtsDay, MobilityWritable.create(bts.getCount()));
         }
     }
 }

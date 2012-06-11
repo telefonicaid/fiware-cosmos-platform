@@ -10,11 +10,11 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ItinTimeUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
@@ -25,8 +25,8 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  * @author dmicol
  */
 public class ItinJoinCellBtsReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-        ProtobufWritable<MobData>> {
+        MobilityWritable<Cdr>, ProtobufWritable<TwoInt>,
+        MobilityWritable<ItinTime>> {
     private static List<Cell> cells;
     
     @Override
@@ -40,22 +40,20 @@ public class ItinJoinCellBtsReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Cdr>> values, Context context)
             throws IOException, InterruptedException {
         List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
         if (filteredCells.isEmpty()) {
             return;
         }
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            final Cdr cdr = mobData.getCdr();
+        for (MobilityWritable<Cdr> value : values) {
+            final Cdr cdr = value.get();
             for (Cell cell : filteredCells) {
                 final ProtobufWritable<TwoInt> nodeBts =
                         TwoIntUtil.createAndWrap(cdr.getUserId(),
                                                  cell.getBts());
-                final ProtobufWritable<MobData> itTime =
-                        MobDataUtil.createAndWrap(
+                final MobilityWritable<ItinTime> itTime =
+                        new MobilityWritable<ItinTime>(
                                 ItinTimeUtil.create(cdr.getDate(),
                                                     cdr.getTime(),
                                                     cell.getBts()));

@@ -7,15 +7,12 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
@@ -56,7 +53,7 @@ public class JoinBtsNodeToNodeBtsReducer extends Reducer<LongWritable,
                         cdr.getDate().getWeekday(), cdr.getTime().getHour());
                 context.write(nodeBts,
                               new MobilityWritable<Null>(
-                                    Null.getDefaultInstance(), Null.class));
+                                    Null.getDefaultInstance()));
             }
         }
     }

@@ -1,19 +1,18 @@
 package es.tid.cosmos.mobility.labelling.bts;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.google.protobuf.Message;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.Config;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, Bts|Cluster>
@@ -22,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * @author dmicol
  */
 public class FilterBtsVectorReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+        MobilityWritable<Message>, LongWritable, MobilityWritable<Cluster>> {
     private double maxBtsArea;
     private int maxCommsBts;
     
@@ -36,25 +35,12 @@ public class FilterBtsVectorReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        List<Bts> btsList = new LinkedList<Bts>();
-        List<Cluster> clusterList = new LinkedList<Cluster>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case BTS:
-                    btsList.add(mobData.getBts());
-                    break;
-                case CLUSTER:
-                    clusterList.add(mobData.getCluster());
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected MobData type: "
-                            + mobData.getType().name());
-            }
-        }
+        Map<Class, List> dividedLists = MobilityWritable.divideIntoTypes(
+                values, Bts.class, Cluster.class);
+        List<Bts> btsList = dividedLists.get(Bts.class);
+        List<Cluster> clusterList = dividedLists.get(Cluster.class);
         
         for (Bts bts : btsList) {
             for (Cluster cluster : clusterList) {
@@ -66,7 +52,7 @@ public class FilterBtsVectorReducer extends Reducer<LongWritable,
                 Cluster.Builder outputCluster = Cluster.newBuilder(cluster);
                 outputCluster.setConfident(confident);
                 context.write(key,
-                              MobDataUtil.createAndWrap(outputCluster.build()));
+                              new MobilityWritable<Cluster>(outputCluster.build()));
             }
         }
     }

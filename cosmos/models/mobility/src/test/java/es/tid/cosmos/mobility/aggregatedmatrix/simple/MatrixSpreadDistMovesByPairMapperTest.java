@@ -6,23 +6,23 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.ItinRangeUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Float64;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  *
  * @author dmicol
  */
 public class MatrixSpreadDistMovesByPairMapperTest {
-    private MapDriver<ProtobufWritable<ItinRange>, ProtobufWritable<MobData>,
-            ProtobufWritable<ItinRange>, ProtobufWritable<MobData>> instance;
+    private MapDriver<ProtobufWritable<ItinRange>, MobilityWritable<Float64>,
+            ProtobufWritable<ItinRange>, MobilityWritable<Float64>> instance;
     
     @Before
     public void setUp() {
         this.instance = new MapDriver<ProtobufWritable<ItinRange>,
-                ProtobufWritable<MobData>, ProtobufWritable<ItinRange>,
-                ProtobufWritable<MobData>>(
+                MobilityWritable<Float64>, ProtobufWritable<ItinRange>,
+                MobilityWritable<Float64>>(
                         new MatrixSpreadDistMovesByPairMapper());
     }
 
@@ -30,7 +30,7 @@ public class MatrixSpreadDistMovesByPairMapperTest {
     public void testMap() {
         final ProtobufWritable<ItinRange> key = ItinRangeUtil.createAndWrap(
                 10, 20, 30, 40, 50);
-        final ProtobufWritable<MobData> value = MobDataUtil.createAndWrap(57L);
+        final MobilityWritable<Float64> value = MobilityWritable.create(57.0D);
         final ProtobufWritable<ItinRange> outKey = ItinRangeUtil.createAndWrap(
                 10, 20, 200, 40, 50);
         this.instance

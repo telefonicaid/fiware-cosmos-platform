@@ -36,7 +36,7 @@ public class ParseCdrsReducer extends Reducer<LongWritable, Text, LongWritable,
                 continue;
             }
             this.userId.set(cdr.getUserId());
-            context.write(this.userId, new MobilityWritable<Cdr>(cdr, Cdr.class));
+            context.write(this.userId, new MobilityWritable<Cdr>(cdr));
         }
     }
 }

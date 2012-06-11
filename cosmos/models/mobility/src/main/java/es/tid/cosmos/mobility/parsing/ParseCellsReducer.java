@@ -37,7 +37,7 @@ public class ParseCellsReducer extends Reducer<LongWritable, Text, LongWritable,
             }
             this.cellId.set(cell.getCellId());
             context.write(this.cellId,
-                          new MobilityWritable<Cell>(cell, Cell.class));
+                          new MobilityWritable<Cell>(cell));
         }
     }
 }

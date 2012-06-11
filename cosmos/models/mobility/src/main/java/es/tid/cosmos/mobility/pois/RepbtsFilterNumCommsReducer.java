@@ -8,7 +8,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.Config;
-import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
@@ -56,8 +55,7 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
         int totalComms = numCommsInfo + numCommsNoInfoOrNoBts;
         if (totalComms >= this.minTotalCalls &&
                 totalComms <= this.maxTotalCalls) {
-            context.write(key, new MobilityWritable<Int>(
-                    Int.newBuilder().setNum(numCommsInfo).build(), Int.class));
+            context.write(key, MobilityWritable.create(numCommsInfo));
         }
     }
 }

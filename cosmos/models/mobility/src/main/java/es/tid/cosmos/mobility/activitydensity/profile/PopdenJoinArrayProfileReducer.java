@@ -4,15 +4,17 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.google.protobuf.Message;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.BtsProfileUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsProfile;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
 /**
@@ -22,28 +24,23 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  * @author dmicol
  */
 public class PopdenJoinArrayProfileReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, ProtobufWritable<BtsProfile>,
-        ProtobufWritable<MobData>> {
+        MobilityWritable<Message>, ProtobufWritable<BtsProfile>,
+        MobilityWritable<Int>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
         List<NodeMxCounter> counterList = new LinkedList<NodeMxCounter>();
         List<Integer> profileIdList = new LinkedList<Integer>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case NODE_MX_COUNTER:
-                    counterList.add(mobData.getNodeMxCounter());
-                    break;
-                case CLIENT_PROFILE:
-                    profileIdList.add(
-                            mobData.getClientProfile().getProfileId());
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected MobData type: "
-                            + mobData.getType().name());
+        for (MobilityWritable<Message> value : values) {
+            final Message message = value.get();
+            if (message instanceof NodeMxCounter) {
+                counterList.add((NodeMxCounter)message);
+            } else if (message instanceof ClientProfile) {
+                profileIdList.add(((ClientProfile)message).getProfileId());
+            } else {
+                throw new IllegalStateException("Unexpected input: "
+                        + message.toString());
             }
         }
         for (int profileId : profileIdList) {
@@ -55,7 +52,7 @@ public class PopdenJoinArrayProfileReducer extends Reducer<LongWritable,
                                     btsCounter.getWeekday(),
                                     btsCounter.getRange());
                     context.write(btsProfile,
-                            MobDataUtil.createAndWrap(btsCounter.getCount()));
+                            MobilityWritable.create(btsCounter.getCount()));
                 }
             }
         }

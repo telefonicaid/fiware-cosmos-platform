@@ -5,12 +5,11 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinPercMove;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -20,11 +19,11 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class MatrixGetVectorReducer extends Reducer<
-        ProtobufWritable<ItinRange>, ProtobufWritable<MobData>,
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
+        ProtobufWritable<ItinRange>, MobilityWritable<ItinPercMove>,
+        ProtobufWritable<TwoInt>, MobilityWritable<ClusterVector>> {
     @Override
     protected void reduce(ProtobufWritable<ItinRange> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<ItinPercMove>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(ItinRange.class);
         final ItinRange moveRange = key.get();
@@ -32,10 +31,8 @@ public class MatrixGetVectorReducer extends Reducer<
         for (int i = 0; i < 168; i++) {
             moves.addComs(0.0D);
         }
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            final ItinPercMove percMoves = mobData.getItinPercMove();
+        for (MobilityWritable<ItinPercMove> value : values) {
+            final ItinPercMove percMoves = value.get();
             int j = percMoves.getGroup() - 1;  // Vector starts on Monday
             j = (j >= 0) ? j : 6;  // Sunday at the end
             j *= 24;
@@ -44,6 +41,7 @@ public class MatrixGetVectorReducer extends Reducer<
         }
         ProtobufWritable<TwoInt> pairGroup = TwoIntUtil.createAndWrap(
                 moveRange.getPoiSrc(), moveRange.getPoiTgt());
-        context.write(pairGroup, MobDataUtil.createAndWrap(moves.build()));
+        context.write(pairGroup, new MobilityWritable<ClusterVector>(
+                moves.build()));
     }
 }

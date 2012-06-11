@@ -9,11 +9,13 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -22,18 +24,18 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  */
 public class AdjParseAdjBtsReducerTest {
     private ReduceDriver<LongWritable, Text, ProtobufWritable<TwoInt>,
-            ProtobufWritable<MobData>> driver;
+            MobilityWritable<Null>> driver;
     
     @Before
     public void setUp() {
-        //this.driver = new ReduceDriver<LongWritable, Text,
-        //        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>(
-        //                new AdjParseAdjBtsReducer());
+        this.driver = new ReduceDriver<LongWritable, Text,
+                ProtobufWritable<TwoInt>, MobilityWritable<Null>>(
+                        new AdjParseAdjBtsReducer());
     }
 
     @Test
     public void testValidLine() throws IOException {
-        List<Pair<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>> res =
+        List<Pair<ProtobufWritable<TwoInt>, MobilityWritable<Null>>> res =
                 this.driver
                         .withInput(new LongWritable(1L),
                                    asList(new Text("123|456")))
@@ -42,9 +44,7 @@ public class AdjParseAdjBtsReducerTest {
         ProtobufWritable<TwoInt> wrappedKey = res.get(0).getFirst();
         wrappedKey.setConverter(TwoInt.class);
         assertNotNull(wrappedKey.get());
-        ProtobufWritable<MobData> wrappedNull = res.get(0).getSecond();
-        wrappedNull.setConverter(MobData.class);
-        assertEquals(MobData.Type.NULL, wrappedNull.get().getType());
+        MobilityWritable<Null> wrappedNull = res.get(0).getSecond();
     }
 
     @Test

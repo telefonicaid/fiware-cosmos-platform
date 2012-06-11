@@ -1,16 +1,17 @@
 package es.tid.cosmos.mobility.adjacentextraction;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
+import com.google.protobuf.Message;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Int64;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiNew;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -21,37 +22,25 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class AdjJoinNewPoiIdReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-        ProtobufWritable<MobData>> {
+        MobilityWritable<Message>, ProtobufWritable<TwoInt>,
+        MobilityWritable<PoiNew>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        List<Long> longList = new LinkedList<Long>();
-        List<PoiNew> poiNewList = new LinkedList<PoiNew>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case LONG:
-                    longList.add(mobData.getLong());
-                    break;
-                case POI_NEW:
-                    poiNewList.add(mobData.getPoiNew());
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected MobData type: "
-                            + mobData.getType().name());
-            }
-        }
+        Map<Class, List> dividedValues = MobilityWritable.divideIntoTypes(
+                values, Int64.class, PoiNew.class);
+        List<Int64> longList = dividedValues.get(Int64.class);
+        List<PoiNew> poiNewList = dividedValues.get(PoiNew.class);
         
-        for (long poiMod : longList) {
+        for (Int64 poiMod : longList) {
+            int poiModVal = (int) poiMod.getNum();
             for (PoiNew poi : poiNewList) {
                 PoiNew.Builder outputPoiBuilder = PoiNew.newBuilder(poi);
-                outputPoiBuilder.setId((int)poiMod);
+                outputPoiBuilder.setId(poiModVal);
                 context.write(TwoIntUtil.createAndWrap(poi.getNode(),
                                                        poi.getBts()),
-                              MobDataUtil.createAndWrap(
+                              new MobilityWritable<PoiNew>(
                                       outputPoiBuilder.build()));
             }
         }

@@ -3,14 +3,13 @@ package es.tid.cosmos.mobility.labelling.secondhomes;
 import static java.util.Arrays.asList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -18,22 +17,22 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class PoiDeleteSechomeDuplicateReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
-            ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> driver;
+    private ReduceDriver<ProtobufWritable<TwoInt>, MobilityWritable<Null>,
+        ProtobufWritable<TwoInt>, MobilityWritable<Null>> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>>(
+                MobilityWritable<Null>, ProtobufWritable<TwoInt>,
+                MobilityWritable<Null>>(
                         new PoiDeleteSechomeDuplicateReducer());
     }
 
     @Test
     public void testReduce() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(30L, 40L);
-        final ProtobufWritable<MobData> value = MobDataUtil.createAndWrap(
-                NullWritable.get());
+        final MobilityWritable<Null> value = new MobilityWritable<Null>(
+                Null.getDefaultInstance());
         this.driver
                 .withInput(key, asList(value, value, value))
                 .withOutput(key, value)

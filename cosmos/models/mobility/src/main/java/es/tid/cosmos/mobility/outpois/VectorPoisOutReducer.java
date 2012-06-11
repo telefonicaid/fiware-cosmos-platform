@@ -7,8 +7,8 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.PoiUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -19,14 +19,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class VectorPoisOutReducer extends Reducer<ProtobufWritable<TwoInt>,
-        ProtobufWritable<MobData>, NullWritable, Text> {
+        MobilityWritable<Poi>, NullWritable, Text> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Poi>> values, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final Poi poi = value.get().getPoi();
+        for (MobilityWritable<Poi> value : values) {
+            final Poi poi = value.get();
             Poi.Builder poiBuilder = Poi.newBuilder(poi);
             poiBuilder.setLabelgroupnodebts(poi.getConfidentnodebts() == 0 ?
                     0 : poi.getLabelgroupnodebts());

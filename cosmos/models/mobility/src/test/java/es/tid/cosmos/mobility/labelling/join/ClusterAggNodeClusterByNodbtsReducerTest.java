@@ -2,18 +2,16 @@ package es.tid.cosmos.mobility.labelling.join;
 
 import static java.util.Arrays.asList;
 
+import com.google.protobuf.Message;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.PoiUtil;
-import es.tid.cosmos.mobility.data.TwoIntUtil;
+import es.tid.cosmos.mobility.data.*;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -21,27 +19,27 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class ClusterAggNodeClusterByNodbtsReducerTest {
-    private ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-            ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> driver;
+    private ReduceDriver<LongWritable, MobilityWritable<Message>,
+            ProtobufWritable<TwoInt>, MobilityWritable<Poi>> driver;
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>(
+        this.driver = new ReduceDriver<LongWritable, MobilityWritable<Message>,
+                ProtobufWritable<TwoInt>, MobilityWritable<Poi>>(
                         new ClusterAggNodeClusterByNodbtsReducer());
     }
 
     @Test
     public void testReduce() {
         final LongWritable key = new LongWritable(57L);
-        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+        final MobilityWritable<Message> value1 = new MobilityWritable<Message>(
                 ClusterUtil.create(1, 2, 0, 3, 4,
                                    ClusterVector.getDefaultInstance()));
-        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+        final MobilityWritable<Message> value2 = new MobilityWritable<Message>(
                 PoiUtil.create(1, 2, 3, 4, 5, 0, 6, 7, 8, 0, 9, 10, 11, 0, 13,
                                14, 15));
         final ProtobufWritable<TwoInt> outKey = TwoIntUtil.createAndWrap(2, 3);
-        final ProtobufWritable<MobData> outValue = MobDataUtil.createAndWrap(
+        final MobilityWritable<Poi> outValue = new MobilityWritable<Poi>(
                 PoiUtil.create(1, 2, 3, 1, 2, 0, 4, 7, 8, 0, 9, 10, 11, 0, 13,
                                14, 15));
         this.driver

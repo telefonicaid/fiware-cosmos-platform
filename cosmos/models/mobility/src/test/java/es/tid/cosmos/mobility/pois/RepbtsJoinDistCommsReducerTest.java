@@ -2,48 +2,51 @@ package es.tid.cosmos.mobility.pois;
 
 import static java.util.Arrays.asList;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.google.protobuf.Message;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.NodeBtsDayUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
 
 /**
  *
  * @author dmicol
  */
 public class RepbtsJoinDistCommsReducerTest {
-    private ReduceDriver<LongWritable, ProtobufWritable<MobData>, LongWritable,
-            ProtobufWritable<MobData>> driver;
+    private ReduceDriver<LongWritable, MobilityWritable<Message>, LongWritable,
+            MobilityWritable<BtsCounter>> driver;
     
     @Before
     public void setUp() {
-        //this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-        //        LongWritable, ProtobufWritable<MobData>>(
-        //                new RepbtsJoinDistCommsReducer());
+        this.driver = new ReduceDriver<LongWritable, MobilityWritable<Message>,
+                LongWritable, MobilityWritable<BtsCounter>>(
+                        new RepbtsJoinDistCommsReducer());
     }
 
     @Test
     public void testReduce() throws Exception {
         final LongWritable key = new LongWritable(57L);
-        final ProtobufWritable<MobData> nodeBtsDay1 = MobDataUtil.createAndWrap(
+        final MobilityWritable<Message> nodeBtsDay1 = new MobilityWritable<Message>(
                 NodeBtsDayUtil.create(1L, 2L, 3, 4));
-        final ProtobufWritable<MobData> nodeBtsDay2 = MobDataUtil.createAndWrap(
+        final MobilityWritable<Message> nodeBtsDay2 = new MobilityWritable<Message>(
                 NodeBtsDayUtil.create(5L, 6L, 7, 8));
-        final ProtobufWritable<MobData> int1 = MobDataUtil.createAndWrap(37);
-        final ProtobufWritable<MobData> int2 = MobDataUtil.createAndWrap(132);
-        final ProtobufWritable<MobData> output1 = MobDataUtil.createAndWrap(
+        final MobilityWritable<Message> int1 = new MobilityWritable<Message>(
+                Int.newBuilder().setNum(37).build());
+        final MobilityWritable<Message> int2 = new MobilityWritable<Message>(
+                Int.newBuilder().setNum(132).build());
+        final MobilityWritable<BtsCounter> output1 = new MobilityWritable<BtsCounter>(
                 BtsCounterUtil.create(2L, 0, 4, 10));
-        final ProtobufWritable<MobData> output2 = MobDataUtil.createAndWrap(
+        final MobilityWritable<BtsCounter> output2 = new MobilityWritable<BtsCounter>(
                 BtsCounterUtil.create(6L, 0, 8, 21));
-        final ProtobufWritable<MobData> output3 = MobDataUtil.createAndWrap(
+        final MobilityWritable<BtsCounter> output3 = new MobilityWritable<BtsCounter>(
                 BtsCounterUtil.create(2L, 0, 4, 3));
-        final ProtobufWritable<MobData> output4 = MobDataUtil.createAndWrap(
+        final MobilityWritable<BtsCounter> output4 = new MobilityWritable<BtsCounter>(
                 BtsCounterUtil.create(6L, 0, 8, 6));
         this.driver
                 .withInput(key, asList(int1, nodeBtsDay1, nodeBtsDay2, int2))

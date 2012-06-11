@@ -29,7 +29,6 @@ public class FusionTotalVarsReducer extends Reducer<LongWritable,
             allAreas.add(value.get());
         }
         context.write(key, new MobilityWritable<MobViMobVars>(
-                MobViMobVarsUtil.create(allAreas),
-                MobViMobVars.class));
+                MobViMobVarsUtil.create(allAreas)));
     }
 }

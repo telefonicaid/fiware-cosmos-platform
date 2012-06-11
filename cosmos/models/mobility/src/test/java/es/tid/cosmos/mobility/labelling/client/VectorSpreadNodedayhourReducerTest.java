@@ -8,31 +8,32 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
+import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.DateUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TimeUtil;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 
 /**
  *
  * @author dmicol
  */
 public class VectorSpreadNodedayhourReducerTest {
-    private ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-            ProtobufWritable<NodeBts>, ProtobufWritable<MobData>> instance;
+    private ReduceDriver<LongWritable, MobilityWritable<Cdr>,
+            ProtobufWritable<NodeBts>, MobilityWritable<Null>> instance;
     @Before
     public void setUp() throws Exception {
         this.instance = new ReduceDriver<LongWritable,
-                ProtobufWritable<MobData>, ProtobufWritable<NodeBts>,
-                ProtobufWritable<MobData>>(
+                MobilityWritable<Cdr>, ProtobufWritable<NodeBts>,
+                MobilityWritable<Null>>(
                         new VectorSpreadNodedayhourReducer());
     }
 
@@ -40,13 +41,13 @@ public class VectorSpreadNodedayhourReducerTest {
     public void testReduce() throws IOException {
         Date date1 = DateUtil.create(2012, 4, 11, 3);
         Time time1 = TimeUtil.create(1, 2, 3);
-        ProtobufWritable<MobData> cdr1 = MobDataUtil.createAndWrap(
+        MobilityWritable<Cdr> cdr1 = new MobilityWritable<Cdr>(
                 CdrUtil.create(12L, 34L, date1, time1));
         Date date2 = DateUtil.create(2012, 4, 13, 5);
         Time time2 = TimeUtil.create(4, 5, 6);
-        ProtobufWritable<MobData> cdr2 = MobDataUtil.createAndWrap(
+        MobilityWritable<Cdr> cdr2 = new MobilityWritable<Cdr>(
                 CdrUtil.create(56L, 78L, date2, time2));
-        List<Pair<ProtobufWritable<NodeBts>, ProtobufWritable<MobData>>> res =
+        List<Pair<ProtobufWritable<NodeBts>, MobilityWritable<Null>>> res =
                 this.instance
                         .withInput(new LongWritable(1L), asList(cdr1, cdr2))
                         .run();

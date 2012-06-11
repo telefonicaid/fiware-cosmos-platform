@@ -6,8 +6,8 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -18,13 +18,12 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class PoiJoinPoisBtscoordToPoiMapper extends Mapper<LongWritable,
-        ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-        ProtobufWritable<MobData>> {
+        MobilityWritable<Poi>, ProtobufWritable<TwoInt>,
+        MobilityWritable<Poi>> {
     @Override
-    protected void map(LongWritable key, ProtobufWritable<MobData> value,
+    protected void map(LongWritable key, MobilityWritable<Poi> value,
             Context context) throws IOException, InterruptedException {
-        value.setConverter(MobData.class);
-        final Poi poi = value.get().getPoi();
+        final Poi poi = value.get();
         context.write(TwoIntUtil.createAndWrap(poi.getNode(), poi.getBts()),
                       value);
     }

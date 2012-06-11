@@ -29,7 +29,7 @@ public class BorrarGetBtsComareaReducer extends Reducer<LongWritable, Text,
                 continue;
             }
             context.write(new LongWritable(bts.getPlaceId()),
-                          new MobilityWritable<Bts>(bts, Bts.class));
+                          new MobilityWritable<Bts>(bts));
         }
     }
 }

@@ -2,12 +2,11 @@ package es.tid.cosmos.mobility.labelling.join;
 
 import java.io.IOException;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Int64;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -17,20 +16,19 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class ClusterGetMajPoiByNodeReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+        MobilityWritable<TwoInt>, LongWritable, MobilityWritable<Int64>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<TwoInt>> values, Context context)
             throws IOException, InterruptedException {
         TwoInt maxPoiblCount = null;
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final TwoInt poilblCount = value.get().getTwoInt();
+        for (MobilityWritable<TwoInt> value : values) {
+            final TwoInt poilblCount = value.get();
             if (maxPoiblCount == null ||
                     poilblCount.getNum2() > maxPoiblCount.getNum2()) {
                 maxPoiblCount = poilblCount;
             }
         }
-        context.write(key, MobDataUtil.createAndWrap(maxPoiblCount.getNum1()));
+        context.write(key, MobilityWritable.create(maxPoiblCount.getNum1()));
     }
 }

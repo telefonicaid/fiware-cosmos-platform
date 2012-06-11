@@ -7,15 +7,14 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.NodeBtsDateUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDate;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
@@ -25,8 +24,8 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  * @author ximo
  */
 public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, ProtobufWritable<NodeBtsDate>,
-        ProtobufWritable<MobData>> {
+        MobilityWritable<Cdr>, ProtobufWritable<NodeBtsDate>,
+        MobilityWritable<Null>> {
     private static List<Cell> cells = null;
     
     @Override
@@ -40,18 +39,18 @@ public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Cdr>> values, Context context)
             throws IOException, InterruptedException {
+        final MobilityWritable<Null> nullValue = new MobilityWritable<Null>(
+                Null.getDefaultInstance());
         List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
-        for (final ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            final Cdr cdr = mobData.getCdr();
+        for (final MobilityWritable<Cdr> value : values) {
+            final Cdr cdr = value.get();
             for (Cell cell : filteredCells) {
                 context.write(NodeBtsDateUtil.createAndWrap(cdr.getUserId(),
                                       cell.getBts(), cdr.getDate(),
                                       cdr.getTime().getHour()),
-                              MobDataUtil.createAndWrap(NullWritable.get()));
+                              nullValue);
             }
         }
     }

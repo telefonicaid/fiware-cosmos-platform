@@ -4,16 +4,16 @@ import static java.util.Arrays.asList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 
 /**
  *
@@ -21,27 +21,28 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
  */
 public class NodeBtsCounterReducerTest {
     private ReduceDriver<
-        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>, LongWritable,
-        ProtobufWritable<MobData>> driver;
+        ProtobufWritable<NodeBts>, MobilityWritable<Null>, LongWritable,
+        MobilityWritable<BtsCounter>> driver;
 
     @Before
     public void setUp() {
-        //this.driver = new ReduceDriver<ProtobufWritable<NodeBts>,
-        //        ProtobufWritable<MobData>, LongWritable,
-        //        ProtobufWritable<MobData>>(new NodeBtsCounterReducer());
+        this.driver = new ReduceDriver<ProtobufWritable<NodeBts>,
+                MobilityWritable<Null>, LongWritable,
+                MobilityWritable<BtsCounter>>(new NodeBtsCounterReducer());
     }
 
 
     @Test
     public void reduceTest() throws Exception {
         int phone = 1234;
-        ProtobufWritable<MobData> expectedBtsCounter =
-                MobDataUtil.createAndWrap(BtsCounterUtil.create(1, 2, 3, 2));
-
+        MobilityWritable<BtsCounter> expectedBtsCounter =
+                new MobilityWritable<BtsCounter>(
+                        BtsCounterUtil.create(1, 2, 3, 2));
+        final MobilityWritable<Null> nullValue = new MobilityWritable<Null>(
+                Null.getDefaultInstance());
         this.driver
                 .withInput(NodeBtsUtil.createAndWrap(phone, 1, 2, 3),
-                           asList(MobDataUtil.createAndWrap(NullWritable.get()),
-                                  MobDataUtil.createAndWrap(NullWritable.get())))
+                           asList(nullValue, nullValue))
                 .withOutput(new LongWritable(phone), expectedBtsCounter)
                 .runTest();
     }

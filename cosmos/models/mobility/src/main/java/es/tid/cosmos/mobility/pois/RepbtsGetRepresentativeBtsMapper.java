@@ -46,8 +46,7 @@ public class RepbtsGetRepresentativeBtsMapper extends Mapper<LongWritable,
                     key.get(), counter.getBts());
             BtsCounter btsCounter = BtsCounterUtil.create(counter.getBts(),
                     0, 0, counter.getCount());
-            context.write(nodeBts, new MobilityWritable<BtsCounter>(
-                    btsCounter, BtsCounter.class));
+            context.write(nodeBts, new MobilityWritable<BtsCounter>(btsCounter));
         }
     }
 }

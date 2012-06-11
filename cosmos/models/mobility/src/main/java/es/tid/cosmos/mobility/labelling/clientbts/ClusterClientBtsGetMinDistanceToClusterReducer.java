@@ -9,11 +9,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 import es.tid.cosmos.mobility.util.CentroidsCatalogue;
@@ -25,8 +24,8 @@ import es.tid.cosmos.mobility.util.CentroidsCatalogue;
  * @author dmicol
  */
 public class ClusterClientBtsGetMinDistanceToClusterReducer extends Reducer<
-        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>,
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
+        ProtobufWritable<NodeBts>, MobilityWritable<ClusterVector>,
+        ProtobufWritable<TwoInt>, MobilityWritable<Cluster>> {
     private static List<Cluster> centroids = null;
 
     @Override
@@ -41,11 +40,10 @@ public class ClusterClientBtsGetMinDistanceToClusterReducer extends Reducer<
 
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<ClusterVector>> values, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final ClusterVector clusVector = value.get().getClusterVector();
+        for (MobilityWritable<ClusterVector> value : values) {
+            final ClusterVector clusVector = value.get();
             double mindist = Double.POSITIVE_INFINITY;
             Cluster minDistCluster = null;
             for (Cluster cluster : centroids) {
@@ -82,7 +80,7 @@ public class ClusterClientBtsGetMinDistanceToClusterReducer extends Reducer<
                     minDistCluster.getLabel(), minDistCluster.getLabelgroup(),
                     mindist > minDistCluster.getDistance() ? 0 : 1,
                     0D, mindist, clusVector);
-            context.write(twoInt, MobDataUtil.createAndWrap(cluster));
+            context.write(twoInt, new MobilityWritable<Cluster>(cluster));
         }
     }
 }

@@ -9,12 +9,10 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TelMonthUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TelMonth;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
@@ -61,7 +59,7 @@ public class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
                 ProtobufWritable<TelMonth> telMonth = TelMonthUtil.createAndWrap(
                         cdr.getUserId(), cdr.getDate().getMonth(), workingday);
                 context.write(telMonth,
-                              new MobilityWritable<Cell>(cell, Cell.class));
+                              new MobilityWritable<Cell>(cell));
             }
         }
     }

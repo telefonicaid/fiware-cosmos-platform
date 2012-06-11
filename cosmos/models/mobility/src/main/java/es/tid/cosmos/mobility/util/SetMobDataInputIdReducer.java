@@ -2,20 +2,20 @@ package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.google.protobuf.Message;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
 
 /**
  *
  * @author dmicol
  */
 public class SetMobDataInputIdReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+        MobilityWritable<Message>, LongWritable, MobilityWritable<InputIdRecord>> {
     private static final int DEFAULT_INVALID_ID = -1;
     private static Integer inputId = null;
 
@@ -31,14 +31,16 @@ public class SetMobDataInputIdReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<MobilityWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            MobData mobData = value.get();
-            MobData mobDataWithInputId = MobDataUtil.setInputId(mobData,
-                                                                inputId);
-            context.write(key, MobDataUtil.wrap(mobDataWithInputId));
+        for (MobilityWritable<Message> value : values) {
+            Message message = value.get();
+            InputIdRecord record = InputIdRecord
+                    .newBuilder()
+                    .setInputId(inputId)
+                    .setMessageBytes(message.toByteString())
+                    .build();
+            context.write(key, new MobilityWritable<InputIdRecord>(record));
         }
     }
 }

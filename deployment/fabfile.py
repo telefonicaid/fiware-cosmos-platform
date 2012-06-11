@@ -140,6 +140,7 @@ def deploy_ganglia():
     execute(configure_hadoop_metrics)
     execute(configure_ntp)
     execute(install_gmetad)
+    execute(install_ganglia_frontend)
     execute(install_gmond)
 
 @parallel
@@ -171,6 +172,31 @@ def install_gmetad():
     put(gmetad_conf, gmetad_cfg_path)
     run("service gmetad start")
     run("chkconfig --level 2 gmetad on")
+
+@roles('namenode')
+def install_ganglia_frontend():
+    with ctx.hide('stdout'):
+        repolist = run("yum repolist")
+        epel_installed = any([line.split()[0] == 'epel'
+                              for line in repolist.splitlines()])
+        if not epel_installed:
+            major_version = 5
+            minor_version = 4
+            repo_rpm = 'epel-release-{0}-{1}.noarch.rpm'.format(
+                    major_version, minor_version)
+            base_url = ('http://download.fedoraproject.org/pub/epel/{0}/i386/'
+                            .format(major_version))
+            repo_url = base_url + repo_rpm
+            run('wget %s' % repo_url)
+            run('rpm -Uvh %s' % repo_rpm)
+        run("yum -y install ganglia-web")
+    ganglia_web_conf = StringIO()
+    template = Template(filename='templates/conf.php.mako')
+    content = template.render(gmetad_port = 8651)
+    ganglia_web_conf.write(content)
+    ganglia_web_conf_path = "/usr/share/ganglia/conf.php"
+    put(ganglia_web_conf, ganglia_web_conf_path)
+    run("apachectl start")
 
 ## TODO: review mongo host: full disk?
 @parallel

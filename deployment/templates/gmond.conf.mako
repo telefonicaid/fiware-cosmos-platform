@@ -12,8 +12,8 @@ globals {
 } 
 
 cluster {
-  name = "Cosmos Cluster"
-  owner = "Cosmos Team"
+  name = "Cosmos"
+  owner = "Cosmos"
 }
 
 host {
@@ -21,7 +21,7 @@ host {
 }
 
 udp_send_channel {
-  bind_hostname = yes # Highly recommended, soon to be default.
+  #bind_hostname = yes # Highly recommended, soon to be default.
                        # This option tells gmond to use a source address
                        # that resolves to the machine's hostname.  Without
                        # this, the metrics may appear to come from any

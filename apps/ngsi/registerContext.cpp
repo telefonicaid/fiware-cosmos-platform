@@ -206,6 +206,7 @@ static void registerContextRequestNode(RegisterContextRequest* rcReqP, xmlNodePt
     {
 		rcReqP->registrationId = content;
 		lastRegistrationId     = content;
+		LM_T(LmtRegistrationId, ("Got registrationId: '%s'", rcReqP->registrationId.c_str()));
 	}
 
     else if (path == "registerContextRequest.contextRegistrationList.contextRegistration.entityIdList.entityId")
@@ -285,9 +286,9 @@ static void registerContextRequest(RegisterContextRequest* rcReqP, xmlNodePtr no
 
 /* ****************************************************************************
 *
-* registerContextRequestToDatabase - 
+* registerContextRequestToDb - 
 */
-static int registerContextRequestToDatabase(RegisterContextRequest* rcReqP, bool isUpdate, long duration, std::string* errorString)
+static int registerContextRequestToDb(RegisterContextRequest* rcReqP, bool isUpdate, long duration, std::string* errorString, std::string registrationId)
 {
 	unsigned int  eIx;
 	unsigned int  aIx;
@@ -298,6 +299,16 @@ static int registerContextRequestToDatabase(RegisterContextRequest* rcReqP, bool
 	int           s;
 	Entity*       entityP;
 	Attribute*    attributeP;
+	unsigned int  registrationDbId;
+
+#if 1
+	if (!isUpdate)
+	{
+		if (registrationToDb(registrationId, &registrationDbId) != 0)
+			LM_RE(-1, ("error adding a Registration to database"));
+	}
+#endif
+
 
 	LM_T(LmtDbRegReq, ("------------ To DB ------------"));
 	entities = rcReqP->entityV.size();
@@ -349,7 +360,10 @@ static int registerContextRequestToDatabase(RegisterContextRequest* rcReqP, bool
 				continue;
 			}
 			
-			LM_T(LmtAttributeToDb, ("  Attribute '%s:%s:%s' for entity '%s:%s' to DB", attributeP->name.c_str(), attributeP->type.c_str(), attributeP->metaId.c_str(), entityP->type.c_str(), entityP->id.c_str()));
+			LM_T(LmtAttributeToDb, ("  Attribute '%s:%s:%s' for entity '%s:%s' to DB",
+									attributeP->name.c_str(), attributeP->type.c_str(), attributeP->metaId.c_str(),
+									entityP->type.c_str(), entityP->id.c_str()));
+
 			s = attributeToDb(entityP, attributeP, isUpdate);
 			for (mIx = 0; mIx < metadatas; mIx++)
 			{
@@ -366,6 +380,24 @@ static int registerContextRequestToDatabase(RegisterContextRequest* rcReqP, bool
 				}
 			}
 		}
+	}
+
+	//
+	// Now, registration metadata
+	//
+	unsigned int rmdIx;
+
+	metadatas = rcReqP->registrationMetadataV.size();
+	if (metadatas == 0)
+		return 0;
+
+	for (rmdIx = 0; rmdIx < metadatas; rmdIx++)
+	{
+		Metadata* metadata;
+
+		metadata = rcReqP->registrationMetadataV[rmdIx];
+		metadataToDb(registrationDbId, metadata);
+		LM_T(LmtRegMetadataToDb, ("Adding metadata '%s:%s:%s' for registration %s to DB", metadata->name.c_str(), metadata->type.c_str(), metadata->value.c_str(), rcReqP->registrationId.c_str()));
 	}
 
 	return 0;
@@ -423,13 +455,17 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 		char s[64];
 		
 		registrationId     = std::string(registrationIdGet(s, sizeof(s)));
-		if (registrationToDb(registrationId) != 0)
+#if 0
+		if (registrationToDb(registrationId, &registrationDbId) != 0)
 		{
 			registerContextResponse(fd, format, 502, NULL, 502, "database error", "error adding a Registration to database");
 			LM_RE(false, ("error adding a Registration to database"));
 		}
+#endif
 
+		rcrP->registrationId = registrationId;
 		lastRegistrationId = registrationId;
+		LM_T(LmtRegistrationId, ("Created registrationId: '%s'", rcrP->registrationId.c_str()));
 	}
 	else
 	{
@@ -534,7 +570,7 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 	// Push request data to the DB
 	//
 	LM_T(LmtEntity, ("Push request data to the DB"));
-	if (registerContextRequestToDatabase(rcrP, isUpdate, duration, &errorString) != 0)
+	if (registerContextRequestToDb(rcrP, isUpdate, duration, &errorString, registrationId) != 0)
 	{
 		registerContextResponse(fd, format, 500, NULL, 500, "db error", errorString.c_str());
 		LM_RE(false, ("error saving to database"));

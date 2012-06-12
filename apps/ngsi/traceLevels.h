@@ -23,6 +23,7 @@ typedef enum TraceLevels
 
 
 	LmtRegistration = 41,
+	LmtRegistrationId,
 	LmtRegister,
 	LmtEmpty,
 	LmtRest,
@@ -57,18 +58,25 @@ typedef enum TraceLevels
 	LmtMetadatasPresent,
 	LmtMetadataToDb,
 
-	LmtDbTable   = 91,
+	LmtRegMetadata  = 91,
+	LmtRegMetadataLookup,
+	LmtRegMetadataDbLookup,
+	LmtRegMetadataPresent,
+	LmtRegMetadatasPresent,
+	LmtRegMetadataToDb,
+
+	LmtDbTable   = 101,
 	LmtSqlQuery,
 	LmtDbRegReq,
 	LmtDbEntity,
 	LmtDbId,
 	LmtUpdate,
 
-	LmtToTree = 101,
+	LmtToTree = 111,
 	LmtToRAM,
 	LmtToDB,
 
-	LmtHttpData = 111,
+	LmtHttpData = 121,
 	LmtHttpDataSeparate,
 	LmtRegisterContext,
 	LmtDuration

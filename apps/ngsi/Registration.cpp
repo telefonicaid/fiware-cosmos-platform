@@ -149,7 +149,7 @@ Registration* registrationAdd(std::string registrationId, vector<Metadata*> meta
 *
 * registrationToDb - 
 */
-int registrationToDb(std::string id)
+int registrationToDb(std::string id, unsigned int* dbIdP)
 {
 	char query[512];
 	int  s;
@@ -161,6 +161,9 @@ int registrationToDb(std::string id)
 	s = mysql_query(db, query);
 	if (s != 0)
 		LM_RE(-1, ("mysql_query(%s): %s", query, mysql_error(db)));
+
+	if (dbIdP != NULL)
+		*dbIdP = mysql_insert_id(db);
 
 	return 0;
 }

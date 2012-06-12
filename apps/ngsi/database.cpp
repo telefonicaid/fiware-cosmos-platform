@@ -196,9 +196,7 @@ static void dbTableCreate(std::string tableName)
 	else if (tableName == "registrationMetadata")
 	{
 		query += "`registrationId` int(10) unsigned NOT NULL,";
-		query += "`metadataId`     int(10) unsigned NOT NULL,";
-
-		query += "PRIMARY KEY (`registrationId`)";
+		query += "`metadataId`     int(10) unsigned NOT NULL";
 	}
 	else
 		LM_X(1, ("bad database table name: '%s'", tableName.c_str()));

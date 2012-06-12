@@ -68,6 +68,6 @@ extern Registration* registrationLookup(std::string id);
 *
 * registrationToDb - 
 */
-extern int registrationToDb(std::string id);
+extern int registrationToDb(std::string id, unsigned int* dbIdP = NULL);
 
 #endif

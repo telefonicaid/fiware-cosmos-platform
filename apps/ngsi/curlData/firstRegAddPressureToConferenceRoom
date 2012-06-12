@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <registerContextRequest>
+    <contextRegistrationList>
+      <contextRegistration>
+        <entityIdList>
+          <entityId type="Room" isPattern="false">
+            <id>ConferenceRoom</id>
+          </entityId>
+        </entityIdList>
+        <contextRegistrationAttributeList>
+          <contextRegistrationAttribute>
+            <name>pressure</name>
+            <type>BAR</type>
+            <isDomain>false</isDomain>
+            <metaData>
+              <contextMetadata>
+                <name>ID</name>
+                <type>string</type>
+                <value>pressureInConferenceRoom</value>
+              </contextMetadata>
+              <contextMetadata>
+                <name>location</name>
+                <type>string</type>
+                <value>north-east corner</value>
+              </contextMetadata>
+            </metaData>
+          </contextRegistrationAttribute>
+        </contextRegistrationAttributeList>
+        <providingApplication>http://192.168.100.1:70/application2</providingApplication>
+      </contextRegistration>
+    </contextRegistrationList>
+    <duration>PT1M</duration>
+    <registrationId>REGISTRATIONID</registrationId>
+  </registerContextRequest>

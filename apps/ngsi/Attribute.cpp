@@ -142,6 +142,7 @@ static bool attributeExistsInDb(Entity* entityP, std::string name, std::string t
 
 	sprintf(dbId, "%d", entityP->dbId);
 	query = std::string("SELECT * from entityAttribute WHERE entityId='") + dbId + "'";
+	LM_T(LmtAttributeInDB, ("Query to get all attributes: '%s'", query.c_str()));
 	s = mysql_query(db, query.c_str());
 	LM_T(LmtSqlQuery, ("SQL Query is '%s'", query.c_str()));
 	if (s != 0)
@@ -169,10 +170,11 @@ static bool attributeExistsInDb(Entity* entityP, std::string name, std::string t
 
 	if (attributeDbIdV == NULL)
 		LM_X(1, ("error allocating a vector of %d char-pointers - cannot continue", results));
-
+	
 	while ((row = mysql_fetch_row(result)))
 	{
 		attributeDbIdV[rowIx] = strdup(row[1]);
+		LM_T(LmtAttributeInDB, ("Attribute ID: '%s'", attributeDbIdV[rowIx]));
 		++rowIx;
 	}
 
@@ -181,6 +183,8 @@ static bool attributeExistsInDb(Entity* entityP, std::string name, std::string t
 	if (rowIx != results)
 		LM_X(1, ("Expected %d results, got %d rows ... something is rotten ...", results, rowIx));
 
+		 
+	LM_T(LmtAttributeInDB, ("Checking %d attributes", results));
 	for (rowIx = 0; rowIx < results; rowIx++)
 	{
 		char*       attributeDbId = attributeDbIdV[rowIx];
@@ -201,13 +205,9 @@ static bool attributeExistsInDb(Entity* entityP, std::string name, std::string t
 			continue;
 		}
 
-		for (int ix = 0; ix < results; ix++)
-			free(attributeDbIdV[ix]);
-		free(attributeDbIdV);
-
 
 		//
-		// I found it, now I have to consume it ...
+		// Now, let's see if we found what we're looking for ...
 		//
 		result   = mysql_store_result(db);
 		int rows = mysql_num_rows(result);
@@ -216,11 +216,24 @@ static bool attributeExistsInDb(Entity* entityP, std::string name, std::string t
 
 		bool ret = true;
 		if (rows == 0)
-			ret = false;
+		{
+			LM_T(LmtAttributeInDB, ("Nope, attribute dbId %s doesn't do it ...", attributeDbIdV[rowIx]));
+			continue;
+		}
+
+		LM_T(LmtAttributeInDB, ("OK, found the attribute - the dbId is '%s'", attributeDbIdV[rowIx]));
+
+
+		//
+		// Free up the allocated attribute db ids ...
+		//
+		for (int ix = 0; ix < results; ix++)
+			free(attributeDbIdV[ix]);
+		free(attributeDbIdV);
 
 		LM_T(LmtAttributeInDB, ("Attribute '%s:%s:%s' %sfound in DB", name.c_str(), type.c_str(), metaId.c_str(), (ret == true)? "" : "NOT "));
 		LM_T(LmtAttributeInDB, ("---------------------------------------------------------------------------------"));
-		return ret;
+		return true;
 	}
 
 	for (int ix = 0; ix < results; ix++)
@@ -475,9 +488,9 @@ int attributeToDb(Entity* entityP, Attribute* attribute, bool update)
 	LM_T(LmtAttribute, ("Attribute '%s:%s' to db", attribute->name.c_str(), attribute->type.c_str()));
 
 	if (existsInDb == true)
-	{
-		LM_W(("Attribute '%s:%s' for entity %s:%s' already is in the DB", attribute->name.c_str(), attribute->type.c_str(), entityP->id.c_str(), entityP->type.c_str()));
-	}
+		LM_T(LmtAttributeInDB, ("Attribute '%s:%s' for entity %s:%s' already is in the DB", attribute->name.c_str(), attribute->type.c_str(), entityP->id.c_str(), entityP->type.c_str()));
+	else
+		LM_T(LmtAttributeInDB, ("Attribute '%s:%s' for entity %s:%s' not in the DB", attribute->name.c_str(), attribute->type.c_str(), entityP->id.c_str(), entityP->type.c_str()));
 
 	if ((update == false) && (existsInDb == true))
 		LM_RE(-1, ("Not an update, but the attribute '%s:%s:%s' already exists ...", attribute->name.c_str(), attribute->type.c_str(), attribute->metaId.c_str()));

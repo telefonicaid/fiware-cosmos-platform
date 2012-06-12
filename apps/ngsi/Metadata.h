@@ -84,6 +84,7 @@ Metadata* metadataLookup(struct Attribute* aP, std::string name, std::string typ
 * metadataToDb - 
 */
 extern int metadataToDb(Attribute* attributeP, Metadata* metadata);
+extern int metadataToDb(unsigned int registrationDbId, Metadata* metadata);
 
 
 

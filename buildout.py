@@ -82,6 +82,7 @@ class BuildOut(object):
         Runs a command line string as a subprocess of this module. Requires a
         description of the subprocess for message formatting.
         """
+        print "=== %s - Exec: '%s'" % (desc, " ".join(command))
         proc = subprocess.Popen(command, stderr=subprocess.STDOUT)
         proc.communicate()
         if proc.returncode != 0:

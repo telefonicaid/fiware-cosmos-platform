@@ -29,23 +29,24 @@ namespace samson {
 	
 	class ModulesManager 
 	{
-        
-		au::Token token;			               //!< General lock for modules access
+        std::string owner_;                         // Module who created the ModulesManager
+		au::Token token_modules;			               //!< General lock for modules accessquit
 
         au::map< std::string  , Module > modules;  // Individual modules ( just for listing )
         
 
         std::vector<void*> handlers;               // Open handlers
 		
-        ModulesManager();		                   //!< Private constructor to implement singleton
+        ModulesManager(std::string calling_module);		                   //!< Private constructor to implement singleton
         
 	public:
 
 		~ModulesManager();
 		
-		static void init();
-		static void destroy();
+		static void init(std::string calling_module);
+		static void destroy(std::string calling_module);
 		static ModulesManager* shared();
+		std::string get_owner(){return owner_;};
 		        
 
     public:

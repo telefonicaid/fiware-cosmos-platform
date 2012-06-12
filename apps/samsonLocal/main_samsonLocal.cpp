@@ -151,7 +151,7 @@ int main(int argC, const char *argV[])
     // Add this element to test how Engine crash for exesive task time
     // engine::Engine::add( new engine::EngineElementSleepTest() );
     
-	samson::ModulesManager::init();		// Init the modules manager
+	samson::ModulesManager::init("samsonLocal");		// Init the modules manager
 	engine::SharedMemoryManager::init( samson::SamsonSetup::shared()->getInt("general.num_processess") , samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer"));
 	engine::DiskManager::init( 1 );
 	engine::ProcessManager::init( samson::SamsonSetup::shared()->getInt("general.num_processess") );

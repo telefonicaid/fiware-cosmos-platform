@@ -16,6 +16,8 @@
 #include <samson/module/Tracer.h>              // samson::Tracer
 #include <samson/module/OperationController.h>
 
+#include "logMsg/logMsg.h"
+
 namespace samson {
     
 #define TRACE_CHANNEL -1   // Handy definition to emit traces at the output
@@ -108,6 +110,7 @@ namespace samson {
         
         virtual ~Operation()
         {
+            LM_M(("Operation destructor for op:%s with helpLine:%s and helpMessage:%s", _name.c_str(), _helpLine.c_str(), _helpMessage.c_str()));
         }
 
         // Get instance of this operation

@@ -99,7 +99,8 @@ namespace samson
         engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
         
         // Init the modules manager
-        samson::ModulesManager::init();         
+        LM_W(("Starting ModulesManager from SamsonClient::general_init()"));
+        samson::ModulesManager::init("samsonClient");
     }
     
     void SamsonClient::general_close( )
@@ -113,7 +114,8 @@ namespace samson
         au::ThreadManager::shared()->wait("SamsonClient");
 
         engine::MemoryManager::destroy();
-        samson::ModulesManager::destroy();         
+        LM_W(("destroying ModulesManager from SAMSONClient::general_close()"));
+        samson::ModulesManager::destroy("samsonClient");
         samson::SamsonSetup::destroy( );    
         
         engine::DiskManager::destroy();

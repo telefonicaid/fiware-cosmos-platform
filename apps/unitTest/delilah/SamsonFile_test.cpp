@@ -49,6 +49,7 @@ TEST(SamsonFileTest, samson_file)
     int port = SAMSON_WORKER_PORT;
     char *user = strdup("anonymous");
     char *password = strdup("anonymous");
+    LM_M(("delilah_console->connect"));
     delilah_console->connect( host , port , user , password );
 
     delilah_console->runAsyncCommand("remove_all_stream");
@@ -71,10 +72,12 @@ TEST(SamsonFileTest, samson_file)
 	// ------------------------------------------------------------
 	delilah_console->runAsyncCommand("remove_all_stream");
 	
-    if (system ("word_generator 1000 | samsonPush input") == -1)
-	   std::cerr << "Error on word_generator system() command" << std::endl;
+//    if (system ("word_generator 1000 | samsonPush input") == -1)
+//	   std::cerr << "Error on word_generator system() command" << std::endl;
 
-    LM_M(("system(push) sent successfully"));
+    LM_W(("system(push) sent successfully"));
+
+    delilah_console->runAsyncCommandAndWait("push /tmp/words_input.txt input");
 
     delilah_console->runAsyncCommandAndWait("flush_buffers");
     delilah_console->runAsyncCommandAndWait("run txt.parser_words input words");
@@ -82,11 +85,11 @@ TEST(SamsonFileTest, samson_file)
     delilah_console->runAsyncCommandAndWait("run txt.word_count_accumulate words words_count words_count");
     delilah_console->runAsyncCommandAndWait("flush_buffers"); 
 
-    LM_M(("ready to pop words_count"));
+    LM_W(("ready to pop words_count"));
 
     delilah_console->runAsyncCommandAndWait("pop words_count /tmp/test_SamsonFile_words -force");
 
-    LM_M(("words_count popped"));
+    LM_W(("words_count popped"));
 	
     samson::SamsonFile samson_file_ok( "/tmp/test_SamsonFile_words/worker_000000_file_000001" );
     EXPECT_EQ(samson_file_ok.hasError(), false) << "Wrong ok samson_file detection for /tmp/test_SamsonFile_words";

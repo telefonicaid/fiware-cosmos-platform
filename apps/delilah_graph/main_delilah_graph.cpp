@@ -156,7 +156,7 @@ int main(int argC, const char *argV[])
 	engine::DiskManager::init(1);
 	engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
 
-	samson::ModulesManager::init();         // Init the modules manager
+	samson::ModulesManager::init("delilah_graph");         // Init the modules manager
 	
 	// Initialize the network element for delilah
 	samson::DelilahNetwork * networkP  = new samson::DelilahNetwork( "graph" , delilah_random_code );
@@ -198,7 +198,7 @@ int main(int argC, const char *argV[])
     // Close everything
     // ------------------------------------------------------------------------
     
-    samson::ModulesManager::destroy();
+    samson::ModulesManager::destroy("delilah_graph");
     
 	engine::ProcessManager::destroy();
 	engine::DiskManager::destroy();

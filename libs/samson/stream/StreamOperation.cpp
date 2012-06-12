@@ -246,6 +246,10 @@ namespace samson {
             
             // Distribution information
             stream_operation->distribution_information.workers = streamManager->worker->network->getWorkerIds();
+            if (stream_operation->distribution_information.workers.size() == 0)
+            {
+                LM_W(("No workers connected"));
+            }
             stream_operation->distribution_information.network = streamManager->worker->network;
             
             // Get the inputs and output queues

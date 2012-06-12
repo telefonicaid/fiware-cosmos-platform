@@ -37,11 +37,14 @@ TEST(delilahConsoleTest, getPrompt)
     int port = SAMSON_WORKER_PORT;
     char *user = strdup("anonymous");
     char *password = strdup("anonymous");
+    LM_M(("delilah_console->connect"));
     delilah_console->connect( host , port , user , password );
 
     char expected_result[1024];
     sprintf(expected_result, "[%s@%s:%d] Delilah>", user, host, port);
     EXPECT_EQ(delilah_console->getPrompt(), expected_result) << "Wrong prompt after connected (samsonWorker should be running in localhost)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("set_mode"), 0) << "Wrong result from (set_mode)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set_mode database"), 0) << "Wrong result from (set_mode database)";
     EXPECT_EQ(delilah_console->getPrompt(), "Database >") << "Wrong prompt after set_mode database";
@@ -96,6 +99,8 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set_mode database"), 0) << "Wrong result from runAsyncCommand(set_mode database)";
 
+    EXPECT_EQ(delilah_console->runAsyncCommand("ls"), 0) << "Wrong result from runAsyncCommand(ls) (in database mode)";
+
     EXPECT_EQ(delilah_console->runAsyncCommand("set_mode mode_logs"), 0) << "Wrong result from runAsyncCommand(set_mode mode_logs)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set_mode normal"), 0) << "Wrong result from runAsyncCommand(set_mode normal)";
@@ -103,6 +108,8 @@ TEST(delilahConsoleTest, runAsyncCommand)
     EXPECT_EQ(delilah_console->runAsyncCommand("set_mode wrong_mode"), 0) << "Wrong result from runAsyncCommand(set_mode wrong_mode)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set_mode logs"), 0) << "Wrong result from runAsyncCommand(set_mode logs)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("set_mode normal"), 0) << "Wrong result from runAsyncCommand(set_mode normal) (back to normal)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("connect"), 0) << "Wrong result from runAsyncCommand(connect)";
 
@@ -116,13 +123,29 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("cluster info"), 0) << "Wrong result from runAsyncCommand(cluster info)";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("reload_modules"), 0) << "Wrong result from runAsyncCommand(reload_modules)";
+    //EXPECT_NE(delilah_console->runAsyncCommand("reload_modules"), 0) << "Wrong result from runAsyncCommand(reload_modules)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("help"), 0) << "Wrong result from runAsyncCommand(help)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("help category"), 0) << "Wrong result from runAsyncCommand(help category)";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("help category stream"), 0) << "Wrong result from runAsyncCommand(help category)";
+    EXPECT_EQ(delilah_console->runAsyncCommand("help categories"), 0) << "Wrong result from runAsyncCommand(help categories)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("help category stream"), 0) << "Wrong result from runAsyncCommand(help category stream)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("help stream"), 0) << "Wrong result from runAsyncCommand(help stream)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("help cluster"), 0) << "Wrong result from runAsyncCommand(help cluster)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("help data"), 0) << "Wrong result from runAsyncCommand(help data)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("help delilah"), 0) << "Wrong result from runAsyncCommand(help delilah)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("help local"), 0) << "Wrong result from runAsyncCommand(help local)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("help modules"), 0) << "Wrong result from runAsyncCommand(help modules)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("help push&pop"), 0) << "Wrong result from runAsyncCommand(help push&pop)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("help all"), 0) << "Wrong result from runAsyncCommand(help all)";
 
@@ -190,39 +213,46 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("ps clear wrong_job"), 0) << "Wrong result from runAsyncCommand(ps clear wrong_job)";
 
+    LM_W(("Before push"));
     EXPECT_EQ(delilah_console->runAsyncCommand("push"), 0) << "Wrong result from runAsyncCommand(push)";
 
+    LM_W(("Before push /bin/bash"));
     EXPECT_EQ(delilah_console->runAsyncCommand("push /bin/bash"), 0) << "Wrong result from runAsyncCommand(push /bin/bash)";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("push /bin/bash a"), 0) << "Wrong result from runAsyncCommand(push /bin/bash a)";
+    LM_W(("Before push /bin/bash a"));
+    EXPECT_NE(delilah_console->runAsyncCommand("push /bin/bash a"), 0) << "Wrong result from runAsyncCommand(push /bin/bash a)";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("push /etc a"), 0) << "Wrong result from runAsyncCommand(push /etc a)";
+    LM_W(("Before push /tmp/dir_test a"));
+    EXPECT_NE(delilah_console->runAsyncCommand("push /tmp/dir_test a"), 0) << "Wrong result from runAsyncCommand(push /tmp/dir_test a)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("pop"), 0) << "Wrong result from runAsyncCommand(pop)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("pop a"), 0) << "Wrong result from runAsyncCommand(pop a)";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("pop a /tmp/traces"), 0) << "Wrong result from runAsyncCommand(pop a /tmp/traces)";
+    EXPECT_NE(delilah_console->runAsyncCommand("pop a /tmp/traces"), 0) << "Wrong result from runAsyncCommand(pop a /tmp/traces)";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("pop a /tmp/traces2"), 0) << "Wrong result from runAsyncCommand(pop a /tmp/traces2)";
+    EXPECT_NE(delilah_console->runAsyncCommand("pop a /tmp/traces2"), 0) << "Wrong result from runAsyncCommand(pop a /tmp/traces2)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("rm"), 0) << "Wrong result from runAsyncCommand(rm)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("rm_local /tmp/traces2"), 0) << "Wrong result from runAsyncCommand(rm_local /tmp/traces)";
 
+    LM_W(("Before ls_local"));
     EXPECT_EQ(delilah_console->runAsyncCommand("ls_local"), 0) << "Wrong result from runAsyncCommand(ls_local)";
 
+    LM_W(("Before show_local_queue"));
     EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue"), 0) << "Wrong result from runAsyncCommand(show_local_queue)";
 
+    LM_W(("Before show_local_queue /tmp/traces"));
     EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/traces"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/traces)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/traces -header"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/traces -header)";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /etc -header"), 0) << "Wrong result from runAsyncCommand(show_local_queue /etc -header)";
+    EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/dir_test -header"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/dir_test -header)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("push_module"), 0) << "Wrong result from runAsyncCommand(push_module)";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("push_module /tmp/libtxt.so txt"), 0) << "Wrong result from runAsyncCommand(push_module /tmp/libtxt.so txt)";
+    //EXPECT_NE(delilah_console->runAsyncCommand("push_module /tmp/libtxt.so txt"), 0) << "Wrong result from runAsyncCommand(push_module /tmp/libtxt.so txt)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set_queue_property"), 0) << "Wrong result from runAsyncCommand(set_queue_property)";
 
@@ -230,11 +260,13 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set_queue_property a pause"), 0) << "Wrong result from runAsyncCommand(set_queue_property a pause)";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("set_queue_property a pause true"), 0) << "Wrong result from runAsyncCommand(set_queue_property a pause true)";
+    EXPECT_NE(delilah_console->runAsyncCommand("set_queue_property a pause true"), 0) << "Wrong result from runAsyncCommand(set_queue_property a pause true)";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("ls"), 0) << "Wrong result from runAsyncCommand(ls)";
+    EXPECT_NE(delilah_console->runAsyncCommand("ls"), 0) << "Wrong result from runAsyncCommand(ls)";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("ls -group name -rates"), 0) << "Wrong result from runAsyncCommand(ls -group name -rates)";
+    EXPECT_NE(delilah_console->runAsyncCommand("set_queue_property a pause false"), 0) << "Wrong result from runAsyncCommand(set_queue_property a pause false)";
+
+    EXPECT_NE(delilah_console->runAsyncCommand("ls -group name -rates"), 0) << "Wrong result from runAsyncCommand(ls -group name -rates)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("disconnect"), 0) << "Wrong result from runAsyncCommand(disconnect)";
 
@@ -258,6 +290,7 @@ TEST(delilahConsoleTest, voids)
     int port = SAMSON_WORKER_PORT;
     char *user = strdup("anonymous");
     char *password = strdup("anonymous");
+    LM_M(("delilah_console->connect"));
     delilah_console->connect( host , port , user , password );
 
     sleep(1);
@@ -346,7 +379,14 @@ TEST(delilahConsoleTest, voids)
     }
 
     {
-        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("help category");
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("help categor");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("help categories cl");
         delilah_console->autoComplete(info);
 
         delete info;
@@ -444,6 +484,20 @@ TEST(delilahConsoleTest, voids)
     }
 
     {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("wverbose");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("wverbose 0");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
         au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("open_alerts_file /tmp/trace.log");
         delilah_console->autoComplete(info);
 
@@ -521,7 +575,7 @@ TEST(delilahConsoleTest, voids)
     }
 
     {
-        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("push /etc a");
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("push /tmp/dir_test a");
         delilah_console->autoComplete(info);
 
         delete info;
@@ -647,7 +701,91 @@ TEST(delilahConsoleTest, voids)
     }
 
     {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls -rat");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls -p");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls -r");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
         au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls -group name -rates");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_workers");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_workers -eng");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_workers -d");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_workers -");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_stream_operations");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_stream_operations -p");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_stream_operations -r");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_stream_operations -i");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_stream_operations -o");
         delilah_console->autoComplete(info);
 
         delete info;
@@ -681,6 +819,7 @@ TEST(delilahConsoleTest, delilahBase)
     int port = SAMSON_WORKER_PORT;
     char *user = strdup("anonymous");
     char *password = strdup("anonymous");
+    LM_M(("delilah_console->connect"));
     delilah_console->connect( host , port , user , password );
 
     char expected_result[1024];

@@ -77,7 +77,7 @@ int main(int argC, const char *argV[])
 	logFd = lmFirstDiskFileDescriptor();
     
 	samson::SamsonSetup::init( samsonHome , samsonWorking );
-    samson::ModulesManager::init();
+    samson::ModulesManager::init("samsonCat");
 	
     
     struct stat filestatus;

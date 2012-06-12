@@ -244,6 +244,7 @@ namespace samson {
             return;
         }
         
+        LM_M(("SamsonWorker command received:%s", command.c_str()));
         // Set the main command
         std::string main_command = cmd.get_argument(0);
 
@@ -1492,7 +1493,7 @@ typedef struct LogLineInfo
             
             std::string canceled_worker_command_id = cmd.get_argument(1);
             
-            // Emit a cancelation notification to cancel as much cas possible
+            // Emit a cancellation notification to cancel as much cas possible
             engine::Notification * notification = new engine::Notification("cancel");
             notification->environment.set("id", canceled_worker_command_id );
 
@@ -1876,9 +1877,14 @@ typedef struct LogLineInfo
         
         std::string operation_name = cmd.get_argument(pos_argument++);
         
-        // Disitribution informaiton for this stream operation
+        // Distribution information for this stream operation
         DistributionInformation distribution_information;
         distribution_information.workers = samsonWorker->network->getWorkerIds();
+        if (distribution_information.workers.size() == 0)
+          {
+              LM_W(("No workers connected"));
+          }
+
         distribution_information.network = samsonWorker->network;
         
         stream::StreamOperationBase *operation = new stream::StreamOperationBase( operation_name , distribution_information );
@@ -1888,7 +1894,7 @@ typedef struct LogLineInfo
         for (int i = 0 ; i < op->getNumOutputs() ; i++)
             operation->output_queues.push_back( cmd.get_argument( pos_argument++ ) );
      
-        // Reasign the name for better description
+        // Reassign the name for better description
         operation->name = au::str("run_%s_delilah_%s_%lu" , op->getName().c_str() , au::code64_str(delilah_id).c_str() , delilah_component_id );
         
         

@@ -62,6 +62,7 @@ namespace samson {
 
         if( !delilah->isConnected() )
         {
+            LM_W(("delilah bot connected, command:%s", concept.c_str()));
             setComponentFinishedWithError("Delilah not connected to any SAMSON system" );            
             return;
         }

@@ -1293,6 +1293,10 @@ namespace samson {
 
             // Cluster information to discover if we redirect this query
             std::vector<size_t> worker_ids    = worker->network->getWorkerIds();
+            if (worker_ids.size() == 0)
+            {
+                LM_W(("No workers connected"));
+            }
             // New way to determine the server from the hashgroup, instead of partition function
             //int                 server        = reference_key_data_instance->partition(  worker_ids.size() );
             int                   server = hg%worker_ids.size();

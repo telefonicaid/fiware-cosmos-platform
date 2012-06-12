@@ -316,6 +316,11 @@ namespace samson {
             // Get vector of connected delilahs
             std::vector<size_t> delilahs = network->getDelilahIds();
             std::vector<size_t> workers  = network->getWorkerIds();
+            if (workers.size() == 0)
+             {
+                 LM_W(("No workers connected"));
+             }
+
             
             // Send this message to all delilahs
             for ( size_t i = 0 ; i < delilahs.size() ; i++ )

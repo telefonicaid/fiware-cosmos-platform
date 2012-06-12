@@ -114,7 +114,7 @@ void init( int argC, char *argV[] )
 	engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
     
     // Init the modules manager
-	samson::ModulesManager::init();         
+	samson::ModulesManager::init("delilahQT");
     
 }
 

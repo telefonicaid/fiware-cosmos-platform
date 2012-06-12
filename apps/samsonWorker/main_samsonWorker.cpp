@@ -327,7 +327,7 @@ int main(int argC, const char *argV[])
 
     valgrindExit(9);
     LM_D(("samson::ModulesManager::init"));
-    samson::ModulesManager::init();
+    samson::ModulesManager::init("samsonWorker");
 
     valgrindExit(10);
     LM_D(("samson::stream::BlockManager::init"));
@@ -409,7 +409,7 @@ int main(int argC, const char *argV[])
     samson::stream::BlockManager::destroy();
     
     LM_T(LmtCleanup, ("destroying ModulesManager"));
-    samson::ModulesManager::destroy();
+    samson::ModulesManager::destroy("samsonWorker");
     
     LM_T(LmtCleanup, ("destroying ProcessManager"));
     engine::ProcessManager::destroy();

@@ -265,6 +265,10 @@ namespace samson {
             
             // Send Hello to the rest of nodes
             std::vector<size_t> ids = getWorkerIds();
+            if (ids.size() == 0)
+            {
+                LM_W(("No workers connected"));
+            }
             for ( size_t i = 0 ; i < ids.size() ; i++ )
                 if( ids[i] != assigned_id )
                 {
@@ -489,6 +493,10 @@ namespace samson {
             
             // Update all workers
             std::vector<size_t> ids = getWorkerIds();
+            if (ids.size() == 0)
+            {
+                LM_W(("No workers connected"));
+            }
             for ( size_t i = 0 ; i < ids.size() ; i++ )
             {
                 Packet * packet = helloMessage(NULL);

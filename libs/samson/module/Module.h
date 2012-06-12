@@ -8,6 +8,8 @@
 #include <samson/module/Data.h>                /* Data                                     */
 #include <samson/module/Operation.h>           /* Operation                                */
 
+#include "logMsg/logMsg.h"
+
 
 
 namespace samson
@@ -40,6 +42,7 @@ namespace samson
 		
 		~Module()
 		{
+		    LM_M(("Destructor for module:'%s'", name.c_str()));
 			clearModule();
 		}
 		
@@ -127,6 +130,7 @@ namespace samson
                 delete previous_operation;
             
 			operations.insert( std::pair<std::string , Operation*>( operation->getName() , operation) );
+			LM_M(("Module operation inserted: '%s' at operation:%p", operation->getName().c_str(), operation));
 		}
 		
 		void add( Data* data )
@@ -136,6 +140,7 @@ namespace samson
                 delete previous_data;
             
 			datas.insert( std::pair<std::string , Data*> ( data->getName() , data ) );
+			LM_M(("Module data inserted: '%s' at data:%p", data->getName().c_str(), data));
 		}
 
         /*
@@ -176,10 +181,16 @@ namespace samson
 		{
 			// Remove all operations and datas
 			for ( std::map<std::string, Operation*>::iterator o = operations.begin() ; o != operations.end() ; o++)
+			{
+			    LM_M(("delete operation:%s with val:%p", o->first.c_str(), o->second));
 				delete o->second;
+			}
 			
 			for ( std::map<std::string, Data*>::iterator d = datas.begin() ; d != datas.end() ; d++)
+			{
+			    LM_M(("delete data:%s with val:%p", d->first.c_str(), d->second));
 				delete d->second;
+			}
 			
 			datas.clear();
 			operations.clear();

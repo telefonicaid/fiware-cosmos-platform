@@ -154,7 +154,7 @@ void cleanup(void)
     au::LockDebugger::destroy();
 
     LM_T(LmtCleanup, ("destroying ModulesManager"));
-    samson::ModulesManager::destroy();
+    samson::ModulesManager::destroy("delilah");
 
     LM_T(LmtCleanup, ("destroying ProcessManager"));
     engine::ProcessManager::destroy();
@@ -272,7 +272,7 @@ int main(int argC, const char *argV[])
     engine::DiskManager::init(1);
     engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
 
-    samson::ModulesManager::init();         // Init the modules manager
+    samson::ModulesManager::init("delilah");         // Init the modules manager
     
     
     // Create a DelilahControler once network is ready

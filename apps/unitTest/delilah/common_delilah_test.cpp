@@ -31,7 +31,7 @@ samson::DelilahConsole *init_delilah_test()
     engine::DiskManager::init(1);
     engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
 
-    samson::ModulesManager::init();         // Init the modules manager
+    samson::ModulesManager::init("delilah_test");         // Init the modules manager
 
     // Create a DelilahConsole once network is ready
     samson::DelilahConsole *delilahConsole = new samson::DelilahConsole();
@@ -52,6 +52,7 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole)
          delilahConsole->stop();
     
     // Wait all threads to finish
+    LM_M(("From close_delilah_test, waiting all threads to finish"));
     au::ThreadManager::shared()->wait("Delilah test");
 
     // Clear google protocol buffers library
@@ -63,8 +64,10 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole)
         delilahConsole = NULL;
     }
     
+    LM_W(("Finishing delilah"));
     au::LockDebugger::destroy();
-    samson::ModulesManager::destroy();
+    LM_W(("Calling to destroy ModulesManager"));
+    samson::ModulesManager::destroy("delilah_test");
     engine::ProcessManager::destroy();
     engine::DiskManager::destroy();
     engine::MemoryManager::destroy();

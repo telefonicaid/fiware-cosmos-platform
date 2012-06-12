@@ -151,7 +151,7 @@ int main( int argC , const char *argV[] )
 	//engine::DiskManager::init(1);
 	//engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
     
-	samson::ModulesManager::init();         // Init the modules manager
+	samson::ModulesManager::init("samsonConnector");         // Init the modules manager
 
     // Ignore verbose mode if interactive is activated
     if( interactive )

@@ -35,21 +35,26 @@ namespace samson
 	
 	static ModulesManager *modulesManager=NULL;
 	
-	ModulesManager::ModulesManager() : token("ModulesManager")
+	ModulesManager::ModulesManager(std::string calling_module) : token_modules("ModulesManager")
 	{
-	    LM_T(LmtModuleManager,("Creating ModulesManager"));
+	    LM_T(LmtModuleManager,("Creating ModulesManager by owner:%s", calling_module.c_str()));
+	    LM_M(("Creating ModulesManager by owner:%s", calling_module.c_str()));
+	    owner_ = calling_module;
 		reloadModules();
 	}
 	
 	ModulesManager::~ModulesManager()
 	{
-        LM_T(LmtModuleManager,("Destroying ModulesManager"));
+        LM_T(LmtModuleManager,("Destroyed ModulesManager"));
+        LM_M(("Destroyed ModulesManager"));
         clearModulesManager();
 	}
     
+
     void ModulesManager::clearModulesManager()
     {
         // Remove the main instances of the modules created while loading from disk
+        au::TokenTaker tt( &token_modules , "ModulesManager::clearModulesManager");
         modules.clearMap();
         
         // Close handlers
@@ -64,35 +69,41 @@ namespace samson
     }
     
     
-    void ModulesManager::destroy()
+    void ModulesManager::destroy(std::string calling_module)
     {
 		if (!modulesManager)
 			LM_RVE(("Attempt to destroy a non-initialized Modules Manager"));
-        
+        if (calling_module != modulesManager->get_owner())
+        {
+            LM_E(("Trying to destroy ModulesManager from a different owner(%s) than created(%s)", calling_module.c_str(), modulesManager->get_owner().c_str()));
+            return;
+        }
 		LM_T(LmtModuleManager, ("Destroying ModulesManager"));
+		LM_M(("Destroying ModulesManager by %s", calling_module.c_str()));
         delete modulesManager;
         
         modulesManager = NULL;
     }
 	
-	void ModulesManager::init()
+	void ModulesManager::init(std::string calling_module)
 	{
 	    LM_T(LmtModuleManager, ("ModulesManager::init() called"));
 		if(modulesManager)
 		{
-			LM_W(("Error initializing Modules Manager twice, ignoring"));
+			LM_W(("Error initializing ModulesManager twice (already from:%s), ignoring calling_module:%s", modulesManager->get_owner().c_str(), calling_module.c_str()));
 			return;
 		}
         
         LM_V(("Init ModulesManager"));
-		modulesManager = new ModulesManager();
+		modulesManager = new ModulesManager(calling_module);
 		LM_T(LmtModuleManager, ("ModulesManager created"));
+		LM_M(("ModulesManager created by %s", calling_module.c_str()));
 	}
     
 	ModulesManager* ModulesManager::shared()
 	{
 		if( !modulesManager )
-			LM_X(1,("Modules Manager not initialized"));
+			LM_X(1,("ModulesManager not initialized"));
 
 		return modulesManager;
 	}
@@ -101,7 +112,7 @@ namespace samson
 
     std::string ModulesManager::getModuleFileName( std::string module_name )
     {
-        au::TokenTaker tt( &token , "ModulesManager::reloadModules");
+        au::TokenTaker tt( &token_modules , "ModulesManager::reloadModules");
         Module* module = modules.findInMap(module_name);
         if( !module )
             return "";
@@ -112,7 +123,7 @@ namespace samson
 	
 	void ModulesManager::reloadModules()
 	{
-        au::TokenTaker tt( &token , "ModulesManager::reloadModules");
+
 
 		LM_T(LmtModuleManager,("Reloading modules"));
         
@@ -125,6 +136,7 @@ namespace samson
 	
     void ModulesManager::addModules()
 	{
+
 		addModulesFromDirectory( SamsonSetup::shared()->modulesDirectory() );
 	}
     
@@ -213,6 +225,8 @@ namespace samson
         // Check platform version
         if( platform_version == SAMSON_VERSION )
         {
+            au::TokenTaker tt( &token_modules , "ModulesManager::addModule");
+
             Module * previous_module = modules.findInMap( module->name );
 
             if( previous_module != NULL )
@@ -236,6 +250,7 @@ namespace samson
             // Keep handler in a vector to close latter
             handlers.push_back(hndl);
             
+
         }
         else
         {
@@ -288,7 +303,7 @@ namespace samson
     
     void ModulesManager::getInfo( std::ostringstream& output)
     {
-        au::TokenTaker tt(&token);			//!< General lock for modules access
+        au::TokenTaker tt(&token_modules);			//!< General lock for modules access
         
         au::xml_open(output , "modules_manager" );
         au::xml_iterate_map( output , "modules" , modules );
@@ -304,6 +319,7 @@ namespace samson
         
         samson::network::Collection* collection = new samson::network::Collection();
         collection->set_name("modules");
+        au::TokenTaker tt( &token_modules , "ModulesManager::getModulesCollection");
         au::map< std::string , Module >::iterator it;
         for( it = modules.begin() ; it != modules.end() ; it++ )
         {
@@ -334,7 +350,7 @@ namespace samson
 
         samson::network::Collection* collection = new samson::network::Collection();
         collection->set_name("datas");
-        
+        au::TokenTaker tt( &token_modules , "ModulesManager::getDatasCollection");
         au::map< std::string , Module >::iterator it;
         for( it = modules.begin() ; it != modules.end() ; it++ )
         {
@@ -370,7 +386,7 @@ namespace samson
         
         samson::network::Collection* collection = new samson::network::Collection();
         collection->set_name("operations");
-        
+        au::TokenTaker tt( &token_modules , "ModulesManager::getOperationsCollection");
         au::map< std::string , Module >::iterator it;
         for( it = modules.begin() ; it != modules.end() ; it++ )
         {
@@ -410,7 +426,8 @@ namespace samson
     
     Data* ModulesManager::getData( std::string name )
     {
-        // Searhc in all modules ( inefficient but generic )
+        // Search in all modules ( inefficient but generic )
+        au::TokenTaker tt( &token_modules , "ModulesManager::getData");
         au::map< std::string  , Module >::iterator it_modules;
         for( it_modules = modules.begin() ; it_modules != modules.end() ; it_modules++ )
         {
@@ -423,7 +440,8 @@ namespace samson
     
     Operation* ModulesManager::getOperation( std::string name )
     {
-        // Searhc in all modules ( inefficient but generic )
+        // Search in all modules ( inefficient but generic )
+        au::TokenTaker tt( &token_modules , "ModulesManager::getOperation");
         au::map< std::string  , Module >::iterator it_modules;
         for( it_modules = modules.begin() ; it_modules != modules.end() ; it_modules++ )
         {

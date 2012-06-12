@@ -36,6 +36,10 @@ namespace samson {
             
             // Check all workers connected...
             std::vector<size_t> workers = cluster_information.getWorkerIds();
+            if (workers.size() == 0)
+            {
+                LM_W(("No workers connected"));
+            }
             for ( size_t i = 0 ; i < workers.size() ; i++ )
             {            
                 std::string name = NodeIdentifier( WorkerNode , workers[i] ).getCodeName();

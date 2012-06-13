@@ -17,6 +17,7 @@
 #include <samson/module/OperationController.h>
 
 #include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"         // LmtModuleManager
 
 namespace samson {
     
@@ -110,7 +111,7 @@ namespace samson {
         
         virtual ~Operation()
         {
-            LM_M(("Operation destructor for op:%s with helpLine:%s and helpMessage:%s", _name.c_str(), _helpLine.c_str(), _helpMessage.c_str()));
+            LM_T(LmtModuleManager, ("Operation destructor for op:%s with helpLine:%s and helpMessage:%s", _name.c_str(), _helpLine.c_str(), _helpMessage.c_str()));
         }
 
         // Get instance of this operation

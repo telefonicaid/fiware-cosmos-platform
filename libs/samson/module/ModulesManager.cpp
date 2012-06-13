@@ -38,15 +38,13 @@ namespace samson
 	ModulesManager::ModulesManager(std::string calling_module) : token_modules("ModulesManager")
 	{
 	    LM_T(LmtModuleManager,("Creating ModulesManager by owner:%s", calling_module.c_str()));
-	    LM_M(("Creating ModulesManager by owner:%s", calling_module.c_str()));
 	    owner_ = calling_module;
 		reloadModules();
 	}
 	
 	ModulesManager::~ModulesManager()
 	{
-        LM_T(LmtModuleManager,("Destroyed ModulesManager"));
-        LM_M(("Destroyed ModulesManager"));
+        LM_T(LmtModuleManager,("ModulesManager destructor, calling clearModulesManager"));
         clearModulesManager();
 	}
     
@@ -75,11 +73,10 @@ namespace samson
 			LM_RVE(("Attempt to destroy a non-initialized Modules Manager"));
         if (calling_module != modulesManager->get_owner())
         {
-            LM_E(("Trying to destroy ModulesManager from a different owner(%s) than created(%s)", calling_module.c_str(), modulesManager->get_owner().c_str()));
+            LM_T(LmtModuleManager,("Trying to destroy ModulesManager from a different owner(%s) than created(%s)", calling_module.c_str(), modulesManager->get_owner().c_str()));
             return;
         }
-		LM_T(LmtModuleManager, ("Destroying ModulesManager"));
-		LM_M(("Destroying ModulesManager by %s", calling_module.c_str()));
+		LM_T(LmtModuleManager,("Destroying ModulesManager by %s", calling_module.c_str()));
         delete modulesManager;
         
         modulesManager = NULL;
@@ -96,8 +93,7 @@ namespace samson
         
         LM_V(("Init ModulesManager"));
 		modulesManager = new ModulesManager(calling_module);
-		LM_T(LmtModuleManager, ("ModulesManager created"));
-		LM_M(("ModulesManager created by %s", calling_module.c_str()));
+		LM_T(LmtModuleManager,("ModulesManager created by %s", calling_module.c_str()));
 	}
     
 	ModulesManager* ModulesManager::shared()

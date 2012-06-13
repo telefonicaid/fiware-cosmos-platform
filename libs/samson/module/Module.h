@@ -9,6 +9,7 @@
 #include <samson/module/Operation.h>           /* Operation                                */
 
 #include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"         // LmtModuleManager
 
 
 
@@ -42,7 +43,7 @@ namespace samson
 		
 		~Module()
 		{
-		    LM_M(("Destructor for module:'%s'", name.c_str()));
+		    LM_T(LmtModuleManager,("Destructor for module:'%s'", name.c_str()));
 			clearModule();
 		}
 		
@@ -130,7 +131,7 @@ namespace samson
                 delete previous_operation;
             
 			operations.insert( std::pair<std::string , Operation*>( operation->getName() , operation) );
-			LM_M(("Module operation inserted: '%s' at operation:%p", operation->getName().c_str(), operation));
+			LM_T(LmtModuleManager,("Module operation inserted: '%s' at operation:%p", operation->getName().c_str(), operation));
 		}
 		
 		void add( Data* data )
@@ -140,7 +141,7 @@ namespace samson
                 delete previous_data;
             
 			datas.insert( std::pair<std::string , Data*> ( data->getName() , data ) );
-			LM_M(("Module data inserted: '%s' at data:%p", data->getName().c_str(), data));
+			LM_T(LmtModuleManager,("Module data inserted: '%s' at data:%p", data->getName().c_str(), data));
 		}
 
         /*
@@ -182,13 +183,13 @@ namespace samson
 			// Remove all operations and datas
 			for ( std::map<std::string, Operation*>::iterator o = operations.begin() ; o != operations.end() ; o++)
 			{
-			    LM_M(("delete operation:%s with val:%p", o->first.c_str(), o->second));
+			    LM_T(LmtModuleManager,("delete operation:%s with val:%p", o->first.c_str(), o->second));
 				delete o->second;
 			}
 			
 			for ( std::map<std::string, Data*>::iterator d = datas.begin() ; d != datas.end() ; d++)
 			{
-			    LM_M(("delete data:%s with val:%p", d->first.c_str(), d->second));
+			    LM_T(LmtModuleManager,("delete data:%s with val:%p", d->first.c_str(), d->second));
 				delete d->second;
 			}
 			

@@ -16,6 +16,7 @@
  * ****************************************************************************/
 
 #include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"         // LmtModuleManager
 #include "parseArgs/paConfig.h"
 
 #include "au/string.h"                          // au::Format
@@ -99,7 +100,7 @@ namespace samson
         engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
         
         // Init the modules manager
-        LM_W(("Starting ModulesManager from SamsonClient::general_init()"));
+        LM_T(LmtModuleManager, ("Starting ModulesManager from SamsonClient::general_init()"));
         samson::ModulesManager::init("samsonClient");
     }
     
@@ -114,7 +115,7 @@ namespace samson
         au::ThreadManager::shared()->wait("SamsonClient");
 
         engine::MemoryManager::destroy();
-        LM_W(("destroying ModulesManager from SAMSONClient::general_close()"));
+        LM_T(LmtModuleManager, ("destroying ModulesManager from SAMSONClient::general_close()"));
         samson::ModulesManager::destroy("samsonClient");
         samson::SamsonSetup::destroy( );    
         

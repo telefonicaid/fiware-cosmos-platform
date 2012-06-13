@@ -17,6 +17,8 @@
 #include <samson/modules/system/Void.h>
 #include <iostream>
 
+#include "logMsg/logMsg.h"
+
 namespace samson{
 namespace txt{
 

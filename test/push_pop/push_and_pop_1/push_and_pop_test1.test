@@ -3,9 +3,9 @@ push_and_pop_test1 - Pushing and poping a file
 --SHELL--
 echo Begin
 delilah -command remove_all_stream
-cat input.txt | samsonPush input
-samsonPop input -max_size 100 > output.txt
-diff output.txt input.txt
+samsonPush input < input.txt
+samsonPop input -max_size 100 > /tmp/output.txt
+diff /tmp/output.txt input.txt
 echo Finish
 --EXPECT--
 Begin

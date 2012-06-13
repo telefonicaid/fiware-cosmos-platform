@@ -12,9 +12,9 @@ run system.map words lengths env:command " select  strlen(key) , 1 | emit "
 flush_buffers
 run system.reduce lengths lengths_total env:command sum
 flush_buffers
-pop lengths_total lengths_total -force
+pop lengths_total /tmp/lengths_total -force
 --SHELL--
-samsonCat lengths_total | sort -n
+samsonCat /tmp/lengths_total | sort -n
 --EXPECT--
 1 28973
 2 88180

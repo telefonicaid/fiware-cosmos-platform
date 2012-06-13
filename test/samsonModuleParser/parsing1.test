@@ -2,9 +2,10 @@
 samsonModuleParser parsing1 - Parsing a single file
 --SHELL--
 echo Begin
-samsonModuleParser module . main
-diff main.h expected_main.h
-diff main.cpp expected_main.cpp
+mkdir -p /tmp/samsonModuleParser_test
+samsonModuleParser module /tmp/samsonModuleParser_test main
+diff /tmp/samsonModuleParser_test/main.h expected_main.h
+diff /tmp/samsonModuleParser_test/main.cpp expected_main.cpp
 echo Finish
 --EXPECT--
 Begin

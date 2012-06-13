@@ -15,10 +15,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -26,20 +25,20 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class PopdenProfileGetOutReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
+    private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<ClusterVector>,
             NullWritable, Text> instance;
     
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>, NullWritable, Text>(
+                TypedProtobufWritable<ClusterVector>, NullWritable, Text>(
                         new PopdenProfileGetOutReducer());
     }
     
     @Test
     public void testReduce() throws IOException {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 88L);
-        final ProtobufWritable<MobData> value = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<ClusterVector> value = new TypedProtobufWritable<ClusterVector>(
                 ClusterVector.getDefaultInstance());
         List<Pair<NullWritable, Text>> results = this.instance
                 .withInput(key, Arrays.asList(value))

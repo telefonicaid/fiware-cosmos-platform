@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -19,26 +18,26 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class AdjUpdatePoisTableReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+        TypedProtobufWritable<InputIdRecord>, LongWritable, TypedProtobufWritable<TwoInt>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<InputIdRecord>> values, Context context)
             throws IOException, InterruptedException {
         List<TwoInt> poiPoimodList = new LinkedList<TwoInt>();
         TwoInt lastPairPois = null;
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getInputId()) {
+        for (TypedProtobufWritable<InputIdRecord> value : values) {
+            final InputIdRecord record = value.get();
+            final TwoInt twoInt = TwoInt.parseFrom(record.getMessageBytes());
+            switch (record.getInputId()) {
                 case 0:
-                    poiPoimodList.add(mobData.getTwoInt());
+                    poiPoimodList.add(twoInt);
                     break;
                 case 1:
-                    lastPairPois = mobData.getTwoInt();
+                    lastPairPois = twoInt;
                     break;
                 default:
-                    throw new IllegalStateException("Unexpected MobData ID: "
-                            + mobData.getInputId());
+                    throw new IllegalStateException("Unexpected Input ID: "
+                            + record.getInputId());
             }
         }
         for (TwoInt poiPoimod : poiPoimodList) {
@@ -49,7 +48,7 @@ public class AdjUpdatePoisTableReducer extends Reducer<LongWritable,
                 outputPoiPoimod.setNum2(outputKey);
             }
             context.write(new LongWritable(outputKey),
-                          MobDataUtil.createAndWrap(outputPoiPoimod.build()));
+                          new TypedProtobufWritable<TwoInt>(outputPoiPoimod.build()));
         }
     }
 }

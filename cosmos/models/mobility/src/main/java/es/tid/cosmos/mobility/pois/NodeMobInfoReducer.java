@@ -4,14 +4,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.NodeMxCounterUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
 /**
@@ -21,22 +19,21 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  * @author dmicol
  */
 public class NodeMobInfoReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+        TypedProtobufWritable<BtsCounter>, LongWritable, TypedProtobufWritable<NodeMxCounter>> {
     @Override
     public void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<BtsCounter>> values, Context context)
             throws IOException, InterruptedException {
         List<BtsCounter> allBts = new ArrayList<BtsCounter>();
         int numberOfValues = 0;
-        for (ProtobufWritable<MobData> value : values) {
+        for (TypedProtobufWritable<BtsCounter> value : values) {
             numberOfValues++;
-            value.setConverter(MobData.class);
-            final BtsCounter btsCounter = value.get().getBtsCounter();
+            final BtsCounter btsCounter = value.get();
             allBts.add(btsCounter);
         }
         NodeMxCounter nodeMxCounter = NodeMxCounterUtil.create(allBts,
                                                                numberOfValues,
                                                                numberOfValues);
-        context.write(key, MobDataUtil.createAndWrap(nodeMxCounter));
+        context.write(key, new TypedProtobufWritable<NodeMxCounter>(nodeMxCounter));
     }
 }

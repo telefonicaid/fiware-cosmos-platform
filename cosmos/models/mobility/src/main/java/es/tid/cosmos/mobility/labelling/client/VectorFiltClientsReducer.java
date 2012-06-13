@@ -4,15 +4,15 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.google.protobuf.Message;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.Config;
-import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, Int|Cdr>
@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * @author dmicol
  */
 public class VectorFiltClientsReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<Cdr>> {
     private int maxCdrs;
     
     @Override
@@ -33,23 +33,21 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
         boolean hasComms = false;
         List<Cdr> cdrList = new LinkedList<Cdr>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case INT:
-                    hasComms = true;
-                    break;
-                case CDR:
-                    cdrList.add(mobData.getCdr());
-                    break;
-                default:
-                    throw new IllegalArgumentException();
+        for (TypedProtobufWritable<Message> value : values) {
+            final Message message = value.get();
+            if (message instanceof Int) {
+                hasComms = true;
+            } else if (message instanceof Cdr) {
+                cdrList.add((Cdr)message);
+            } else {
+                throw new IllegalArgumentException("Invalid input type: "
+                        + message.getClass());
             }
+            
             if (hasComms) {
                 break;
             }
@@ -63,16 +61,14 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
             return;
         }
         for (Cdr cdr : cdrList) {
-            context.write(key, MobDataUtil.createAndWrap(cdr));
+            context.write(key, new TypedProtobufWritable<Cdr>(cdr));
         }
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            final Cdr cdr = mobData.getCdr();
-            if (mobData.getType() != MobData.Type.CDR) {
+        for (TypedProtobufWritable<Message> value : values) {
+            final Cdr cdr = (Cdr) value.get();
+            if (cdr == null) {
                 throw new IllegalStateException();
             }
-            context.write(key, MobDataUtil.createAndWrap(cdr));
+            context.write(key, new TypedProtobufWritable<Cdr>(cdr));
         }
     }
 }

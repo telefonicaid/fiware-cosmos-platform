@@ -2,14 +2,13 @@ package es.tid.cosmos.mobility.itineraries;
 
 import java.io.IOException;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, Itinerary>
@@ -18,18 +17,16 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * @author dmicol
  */
 public class ItinItineraryOutReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, NullWritable, Text> {
+        TypedProtobufWritable<Itinerary>, NullWritable, Text> {
     private static final String DELIMITER = "|";
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<Itinerary>> values, Context context)
             throws IOException, InterruptedException {
         final long node = key.get();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            final Itinerary itin = mobData.getItinerary();
+        for (TypedProtobufWritable<Itinerary> value : values) {
+            final Itinerary itin = value.get();
             String output = node
                     + DELIMITER + itin.getSource()
                     + DELIMITER + itin.getTarget()

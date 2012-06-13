@@ -10,10 +10,9 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.util.CentroidsCatalogue;
 
@@ -24,8 +23,8 @@ import es.tid.cosmos.mobility.util.CentroidsCatalogue;
  * @author dmicol
  */
 public class ClusterBtsGetMinDistanceReducer extends Reducer<
-        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>,
-        LongWritable, ProtobufWritable<MobData>> {
+        ProtobufWritable<NodeBts>, TypedProtobufWritable<ClusterVector>,
+        LongWritable, TypedProtobufWritable<Cluster>> {
     private static List<Cluster> centroids = null;
     
     @Override
@@ -40,13 +39,12 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
     
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<ClusterVector>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(NodeBts.class);
         final NodeBts nodeBts = key.get();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final ClusterVector clusVector = value.get().getClusterVector();
+        for (TypedProtobufWritable<ClusterVector> value : values) {
+            final ClusterVector clusVector = value.get();
             double mindist = Double.POSITIVE_INFINITY;
             Cluster minDistCluster = null;
             for (Cluster cluster : centroids) {
@@ -71,7 +69,7 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
                             mindist,
                             clusVector);
             context.write(new LongWritable(nodeBts.getBts()),
-                          MobDataUtil.createAndWrap(outputCluster));
+                          new TypedProtobufWritable<Cluster>(outputCluster));
         }
     }
 }

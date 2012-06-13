@@ -8,11 +8,10 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.Config;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <ItinRange, ClusterVector>
@@ -21,8 +20,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * @author dmicol
  */
 public class ItinGetItineraryReducer extends Reducer<
-        ProtobufWritable<ItinRange>, ProtobufWritable<MobData>, LongWritable,
-        ProtobufWritable<MobData>> {
+        ProtobufWritable<ItinRange>, TypedProtobufWritable<ClusterVector>, LongWritable,
+        TypedProtobufWritable<Itinerary>> {
     private double percAbsoluteMax;
     
     @Override
@@ -35,15 +34,13 @@ public class ItinGetItineraryReducer extends Reducer<
     
     @Override
     protected void reduce(ProtobufWritable<ItinRange> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<ClusterVector>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(ItinRange.class);
         final ItinRange moveRange = key.get();
         double absMax = Double.MIN_VALUE;
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            final ClusterVector distMoves = mobData.getClusterVector();
+        for (TypedProtobufWritable<ClusterVector> value : values) {
+            final ClusterVector distMoves = value.get();
             ClusterVector.Builder peaksMoves = ClusterVector.newBuilder();
             // Vector normalization
             for (int j = 0; j < distMoves.getComsCount(); j++) {
@@ -108,7 +105,8 @@ public class ItinGetItineraryReducer extends Reducer<
                     itin.setRangeFin(itin.getRangeFin() % 24);
                     Itinerary.Builder itinFinal = itin.clone();
                     context.write(new LongWritable(moveRange.getNode()),
-                                  MobDataUtil.createAndWrap(itinFinal.build()));
+                                  new TypedProtobufWritable<Itinerary>(
+                                          itinFinal.build()));
                 }
             }
         }

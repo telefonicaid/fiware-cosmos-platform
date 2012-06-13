@@ -5,11 +5,12 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Float64;
 import es.tid.cosmos.mobility.data.ItinPercMoveUtil;
 import es.tid.cosmos.mobility.data.MatrixRangeUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinPercMove;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixRange;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <MatrixRange, Double>
@@ -18,23 +19,22 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * @author dmicol
  */
 public class MatrixCountRangesReducer extends Reducer<
-        ProtobufWritable<MatrixRange>, ProtobufWritable<MobData>,
-        ProtobufWritable<MatrixRange>, ProtobufWritable<MobData>> {
+        ProtobufWritable<MatrixRange>, TypedProtobufWritable<Float64>,
+        ProtobufWritable<MatrixRange>, TypedProtobufWritable<ItinPercMove>> {
     @Override
     protected void reduce(ProtobufWritable<MatrixRange> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<Float64>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(MatrixRange.class);
         final MatrixRange moveRange = key.get();
         double numMoves = 0.0D;
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            numMoves += value.get().getDouble();
+        for (TypedProtobufWritable<Float64> value : values) {
+            numMoves += value.get().getValue();
         }
         ProtobufWritable<MatrixRange> range = MatrixRangeUtil.createAndWrap(
                 moveRange.getNode(), moveRange.getPoiSrc(),
                 moveRange.getPoiTgt(), 0, 0);
-        ProtobufWritable<MobData> distMoves = MobDataUtil.createAndWrap(
+        TypedProtobufWritable<ItinPercMove> distMoves = new TypedProtobufWritable<ItinPercMove>(
                 ItinPercMoveUtil.create(moveRange.getGroup(),
                                         moveRange.getRange(), numMoves));
         context.write(range, distMoves);

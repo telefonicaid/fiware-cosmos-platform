@@ -2,30 +2,30 @@ package es.tid.cosmos.mobility.adjacentextraction;
 
 import java.io.IOException;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
  * Input: <Long, TwoInt>
- * Output: <Long, Long>
+ * Output: <Long, Int>
  * 
  * @author dmicol
  */
 public class AdjSpreadCountReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+        TypedProtobufWritable<TwoInt>, LongWritable, TypedProtobufWritable<Int>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<TwoInt>> values, Context context)
             throws IOException, InterruptedException {
         int valueCount = 0;
-        for (ProtobufWritable<MobData> value : values) {
+        for (TypedProtobufWritable<TwoInt> value : values) {
             valueCount++;
         }
         context.write(new LongWritable(0L),
-                      MobDataUtil.createAndWrap(valueCount));
+                      TypedProtobufWritable.create(valueCount));
     }
 }

@@ -5,9 +5,10 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Float64;
 import es.tid.cosmos.mobility.data.ItinRangeUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <ItinRange, Double>
@@ -16,11 +17,11 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * @author dmicol
  */
 public class MatrixSpreadDistMovesByPairMapper extends Mapper<
-        ProtobufWritable<ItinRange>, ProtobufWritable<MobData>,
-        ProtobufWritable<ItinRange>, ProtobufWritable<MobData>> {
+        ProtobufWritable<ItinRange>, TypedProtobufWritable<Float64>,
+        ProtobufWritable<ItinRange>, TypedProtobufWritable<Float64>> {
     @Override
     protected void map(ProtobufWritable<ItinRange> key,
-            ProtobufWritable<MobData> value, Context context)
+            TypedProtobufWritable<Float64> value, Context context)
             throws IOException, InterruptedException {
         key.setConverter(ItinRange.class);
         final ItinRange itrang = key.get();

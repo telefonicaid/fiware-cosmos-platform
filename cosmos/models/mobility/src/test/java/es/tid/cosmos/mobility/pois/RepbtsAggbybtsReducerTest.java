@@ -8,9 +8,9 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.NodeBtsDayUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
 
 /**
@@ -18,15 +18,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
  * @author sortega
  */
 public class RepbtsAggbybtsReducerTest {
-    private ReduceDriver<ProtobufWritable<NodeBtsDay>,
-            ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>>
+    private ReduceDriver<ProtobufWritable<NodeBtsDay>, TypedProtobufWritable<Int>,
+            LongWritable, TypedProtobufWritable<NodeBtsDay>>
             driver;
 
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<NodeBtsDay>,
-                ProtobufWritable<MobData>, LongWritable,
-                ProtobufWritable<MobData>>(new RepbtsAggbybtsReducer());
+                TypedProtobufWritable<Int>, LongWritable,
+                TypedProtobufWritable<NodeBtsDay>>(new RepbtsAggbybtsReducer());
     }
 
     @Test
@@ -36,9 +36,9 @@ public class RepbtsAggbybtsReducerTest {
         int workday = 1;
         this.driver
                 .withInput(NodeBtsDayUtil.createAndWrap(node, bts, workday, 101),
-                           asList(MobDataUtil.createAndWrap(4),
-                                  MobDataUtil.createAndWrap(5)))
-                .withOutput(new LongWritable(node), MobDataUtil.createAndWrap(
+                           asList(TypedProtobufWritable.create(4),
+                                  TypedProtobufWritable.create(5)))
+                .withOutput(new LongWritable(node), new TypedProtobufWritable<NodeBtsDay>(
                         NodeBtsDayUtil.create(node, bts, workday, 9)))
                 .runTest();
     }

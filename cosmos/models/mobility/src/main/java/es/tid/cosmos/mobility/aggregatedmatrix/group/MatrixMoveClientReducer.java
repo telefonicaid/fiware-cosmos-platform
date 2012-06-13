@@ -5,7 +5,6 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -13,11 +12,10 @@ import org.apache.hadoop.mapreduce.Reducer;
 import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.ItinMovementUtil;
 import es.tid.cosmos.mobility.data.ItinTimeUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixTime;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, MatrixTime>
@@ -26,7 +24,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * @author dmicol
  */
 public class MatrixMoveClientReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+        TypedProtobufWritable<MatrixTime>, LongWritable, TypedProtobufWritable<ItinMovement>> {
     private static final int MINS_IN_ONE_HOUR = 60;
     private static final int HOURS_IN_ONE_DAY = 24;
     private static final int MINS_IN_ONE_DAY = MINS_IN_ONE_HOUR *
@@ -50,13 +48,11 @@ public class MatrixMoveClientReducer extends Reducer<LongWritable,
 
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values,
+            Iterable<TypedProtobufWritable<MatrixTime>> values,
             Context context) throws IOException, InterruptedException {
         List<MatrixTime> locList = new LinkedList<MatrixTime>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            locList.add(mobData.getMatrixTime());
+        for (TypedProtobufWritable<MatrixTime> value : values) {
+            locList.add(value.get());
         }
 
         final GregorianCalendar calendar = new GregorianCalendar();
@@ -117,7 +113,7 @@ public class MatrixMoveClientReducer extends Reducer<LongWritable,
                                                    minDistLoc.getTime(),
                                                    minDistLoc.getGroup());
                 ItinMovement move = ItinMovementUtil.create(src, tgt);
-                context.write(key, MobDataUtil.createAndWrap(move));
+                context.write(key, new TypedProtobufWritable<ItinMovement>(move));
             }
         }
     }

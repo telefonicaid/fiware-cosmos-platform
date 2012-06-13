@@ -9,7 +9,6 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.assertEquals;
@@ -17,7 +16,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.mockito.Mockito.any;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -25,12 +24,13 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.CellUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
@@ -41,8 +41,8 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
 @PrepareForTest(CellsCatalogue.class)
 public class JoinBtsNodeToNodeBtsReducerTest {
     private List<Cell> cells;
-    private ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-            ProtobufWritable<NodeBts>, ProtobufWritable<MobData>> driver;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
+            ProtobufWritable<NodeBts>, TypedProtobufWritable<Null>> driver;
     
     @Before
     public void setUp() throws IOException {
@@ -54,9 +54,9 @@ public class JoinBtsNodeToNodeBtsReducerTest {
         PowerMockito.mockStatic(CellsCatalogue.class);
         when(CellsCatalogue.load(any(Path.class), any(Configuration.class)))
                 .thenReturn(cells);
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                ProtobufWritable<NodeBts>, ProtobufWritable<MobData>>(
-                        new JoinBtsNodeToNodeBtsReducer());
+        this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
+            ProtobufWritable<NodeBts>, TypedProtobufWritable<Null>>(
+                       new JoinBtsNodeToNodeBtsReducer());
         this.driver.getConfiguration().set("cells", "/home/test");
     }
 
@@ -64,13 +64,13 @@ public class JoinBtsNodeToNodeBtsReducerTest {
     public void testEmptyOutput() throws IOException {
         List<Cell> filteredCells = new LinkedList<Cell>();
         when(CellsCatalogue.filter(this.cells, 57L)).thenReturn(filteredCells);
-        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<Cdr> value1 = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(1L, 2L, Date.getDefaultInstance(),
                                Time.getDefaultInstance()));
-        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<Cdr> value2 = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(3L, 4L, Date.getDefaultInstance(),
                                Time.getDefaultInstance()));
-        List<Pair<ProtobufWritable<NodeBts>, ProtobufWritable<MobData>>> res =
+        List<Pair<ProtobufWritable<NodeBts>, TypedProtobufWritable<Null>>> res =
                 this.driver
                         .withInput(new LongWritable(57L),
                                    asList(value1, value2))
@@ -85,13 +85,13 @@ public class JoinBtsNodeToNodeBtsReducerTest {
         filteredCells.add(this.cells.get(0));
         filteredCells.add(this.cells.get(2));
         when(CellsCatalogue.filter(this.cells, 10L)).thenReturn(filteredCells);
-        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<Cdr> value1 = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(1L, 2L, Date.getDefaultInstance(),
                                Time.getDefaultInstance()));
-        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<Cdr> value2 = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(3L, 4L, Date.getDefaultInstance(),
                                Time.getDefaultInstance()));
-        List<Pair<ProtobufWritable<NodeBts>, ProtobufWritable<MobData>>> res =
+        List<Pair<ProtobufWritable<NodeBts>, TypedProtobufWritable<Null>>> res =
                 this.driver
                         .withInput(new LongWritable(10L),
                                    asList(value1, value2))

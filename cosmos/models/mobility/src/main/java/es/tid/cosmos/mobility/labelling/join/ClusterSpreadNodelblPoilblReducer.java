@@ -3,12 +3,11 @@ package es.tid.cosmos.mobility.labelling.join;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -19,19 +18,19 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class ClusterSpreadNodelblPoilblReducer extends Reducer<
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<Poi>> values, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final Poi poi = value.get().getPoi();
+        for (TypedProtobufWritable<Poi> value : values) {
+            final Poi poi = value.get();
             if (poi.getConfidentnode() == 1 && poi.getConfidentnodebts() == 1) {
                 context.write(TwoIntUtil.createAndWrap(poi.getLabelnode(),
                                                        poi.getLabelnodebts()),
-                              MobDataUtil.createAndWrap(NullWritable.get()));
+                              new TypedProtobufWritable<Null>(
+                                      Null.getDefaultInstance()));
             }
         }
     }

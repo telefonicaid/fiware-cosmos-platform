@@ -1,0 +1,45 @@
+operation=$1
+dataFile=$2
+registrationId=$3
+
+function usage()
+{
+  echo usage: $0 '<operation (reg|disc)> <data file> [<registrationId>]'
+  exit 1
+}
+
+if [ "$operation" = "" ]
+then
+  echo $0: "no operation"
+  usage
+fi
+
+if [ "$dataFile" = "" ]
+then
+  echo $0: "no data file"
+  usage
+fi
+
+
+if [ "$registrationId" != "" ]
+then
+  data=$(cat $dataFile | sed "s/REGISTRATIONID/$registrationId/")
+else
+  data=$(cat $dataFile)
+fi
+
+echo
+echo data: "'" $data "'"
+echo
+
+if [ "$operation" == "reg" ]
+then
+  curl 'localhost:1025/NGSI9/registerContext' --header 'Content-Type: text/xml' -vvvvv -d "$data"
+elif [ "$operation" == "disc" ]
+then
+  curl 'localhost:1025/NGSI9/discoverContextAvailability' --header 'Content-Type: text/xml' -vvvvv -d "$data"
+else
+  echo "bad operation: '"$operation"'"
+  usage
+fi
+

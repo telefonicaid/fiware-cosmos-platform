@@ -302,6 +302,22 @@ static bool discoverContextAvailabilityResponse(int fd, Format format, DiscoverC
 	output << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 	output << "<discoverContextAvailabilityResponse>";
 	
+
+	//
+	// Sanity check - one or more entities in the request?
+	//
+	if (dcarP->entityV.size() == 0)
+	{
+		LM_E(("No entities is discovery request"));
+        output << errorCodeAdd(400, std::string("no entities"), std::string("No entities in request - this is NOT optional"));
+        output << "</discoverContextAvailabilityResponse>";
+        restReplySend(fd, format, 400, output.str().c_str());
+		
+		return false;
+	}
+
+
+
 	//
 	// Lookup first entity
 	//
@@ -311,6 +327,7 @@ static bool discoverContextAvailabilityResponse(int fd, Format format, DiscoverC
 		output << errorCodeAdd(400, std::string("entity not found"), std::string("entity '") + dcarP->entityV[0]->id + "' not found");
 		output << "</discoverContextAvailabilityResponse>";
 		restReplySend(fd, format, 400, output.str().c_str());
+
 		return true;
 	}
 
@@ -444,11 +461,11 @@ static bool discoverContextAvailabilityResponse(int fd, Format format, DiscoverC
 	//
 	// Terminating the response
 	//
-	output << "<providingApplication>" << dcarP->entityV[0]->providingApplication << "</providingApplication>";
+	output << "<providingApplication>" << entity0P->providingApplication << "</providingApplication>";
 	output << "</contextRegistration>";
 	output << "</contextRegistrationResponse>";
 	output << "</contextRegistrationResponseList>";
-	output << errorCodeAdd(200, "Ok", "");
+	output << errorCodeAdd(200, "Ok", "No problem");
 	output << "</discoverContextAvailabilityResponse>";
 
 	restReplySend(fd, format, 200, output.str().c_str());
@@ -468,12 +485,8 @@ static bool discoverContextAvailabilityRequestTreat(int fd, Format format, Disco
 	LM_T(LmtDiscoverTreat, ("Treating discovery of %d entities", dcarP->entityV.size()));
 
 	if (entities == 0)
-	{
-		restReplySend(fd, format, 404, "no entities found");
-		LM_RE(false, ("no entities in request"));
-	}
-	else
-		return discoverContextAvailabilityResponse(fd, format, dcarP);
+		LM_E(("no entities in request"));
+	return discoverContextAvailabilityResponse(fd, format, dcarP);
 }
 
 
@@ -543,7 +556,7 @@ bool discoverContextAvailability(int fd, Verb verb, Format format, char* data)
 		else if (httpDataLines > 1)
 		{
 			LM_W(("More than one data line for discoverContextAvailability (%d)", httpDataLines));
-			return restReply(fd, format, 404, "status", "Only one line of XML data allowed");
+			data = (char*) httpDataString.c_str();
 		}
 
 		return discoverContextAvailabilityXmlDataParse(fd, format, data);

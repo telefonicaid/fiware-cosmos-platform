@@ -25,8 +25,8 @@ using namespace std;
 * Global variables
 */
 static int             registrationNo    = 1;
-static Registration*   registrationV     = NULL;
-static Registration*   registrationNext  = NULL;
+static Registration*   registrationList  = NULL;
+static Registration*   registrationLast  = NULL;
 
 
 
@@ -36,8 +36,26 @@ static Registration*   registrationNext  = NULL;
 */
 void registrationInit(void)
 {
-	registrationV   = NULL;
+	registrationList   = NULL;
 	registrationNo  = 1;
+}
+
+
+
+/* ****************************************************************************
+*
+* registrationCreate - 
+*/
+static Registration* registrationCreate(std::string id)
+{
+	Registration* regP = new Registration();
+
+	if (regP == NULL)
+		LM_X(1, ("operator 'new' failed for a Registration ..."));
+
+	regP->id = id;
+
+	return regP;
 }
 
 
@@ -50,12 +68,57 @@ static void registrationAppend(Registration* registration)
 {
 	LM_T(LmtRegistration, ("Appending registration '%s'", registration->id.c_str()));
 
-	if (registrationNext == NULL)
-		registrationV = registration;
+	if (registrationLast == NULL)
+		registrationList = registration;
 	else
-		registrationNext->next = registration;
+		registrationLast->next = registration;
 
-	registrationNext = registration;
+	registrationLast = registration;
+}
+
+
+
+/* ****************************************************************************
+*
+* registrationLookupInDb - 
+*/
+static Registration* registrationLookupInDb(std::string id)
+{
+    MYSQL_RES*     result;
+    MYSQL_ROW      row;
+    int            rows;
+    int            s;
+
+	std::string query = "SELECT * from registration WHERE id = '" + id + "'";
+    LM_T(LmtSqlQuery, ("SQL Query is '%s'", query.c_str()));
+    s = mysql_query(db, query.c_str());
+    if (s != 0)
+    {
+        LM_E(("mysql_query(%s): %s", mysql_error(db)));
+        return NULL;
+    }
+
+    if ((result = mysql_store_result(db)) == NULL)
+    {
+        LM_T(LmtDbTable, ("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
+        return NULL;
+    }
+
+    rows = mysql_num_rows(result);
+    if (rows == 0)
+    {
+        mysql_free_result(result);
+        return NULL;
+    }
+    else if (rows != 1)
+        LM_X(1, ("Found more than ONE instance of registration '%s", id.c_str()));
+	
+	row = mysql_fetch_row(result);
+	mysql_free_result(result);
+
+	Registration* regP = registrationCreate(id);
+	registrationAppend(regP);
+	return regP;
 }
 
 
@@ -66,7 +129,7 @@ static void registrationAppend(Registration* registration)
 */
 Registration* registrationLookup(std::string id)
 {
-	Registration* registrationP = registrationV;
+	Registration* registrationP = registrationList;
 
 	while (registrationP != NULL)
 	{
@@ -76,7 +139,13 @@ Registration* registrationLookup(std::string id)
 		registrationP = registrationP->next;
 	}
 
-	return NULL;
+	//
+	// Not found in RAM - look it up in DB and save to RAM if found
+	//
+	LM_T(LmtRegistrationLookup, ("Registration '%s' not in RAM - looking it up in the database ...", id.c_str()));
+	registrationP = registrationLookupInDb(id);
+
+	return registrationP;
 }
 
 
@@ -131,13 +200,31 @@ Registration* registrationAdd(std::string registrationId, vector<Metadata*> meta
 	if (regP != NULL)
 		LM_RE(NULL, ("registration with id '%s' already exists", registrationId.c_str()));
 
-	regP = new Registration();
-
-	regP->id = registrationId;
+	regP = registrationCreate(registrationId);
 
 	for (ix = 0; ix < metadataV.size(); ix++)
 		regP->metadataV.push_back(metadataV[ix]);
 
+	registrationAppend(regP);
+
+	return regP;
+}
+
+
+
+/* ****************************************************************************
+*
+* registrationAdd - 
+*/
+Registration* registrationAdd(std::string registrationId)
+{
+	Registration* regP;
+
+	regP = registrationLookup(registrationId);
+	if (regP != NULL)
+		LM_RE(NULL, ("registration with id '%s' already exists", registrationId.c_str()));
+
+	regP = registrationCreate(registrationId);
 	registrationAppend(regP);
 
 	return regP;

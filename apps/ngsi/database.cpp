@@ -264,3 +264,36 @@ int dbReset(void)
 
 	return 0;
 }
+
+
+
+/* ****************************************************************************
+*
+* dbItemsInTable - 
+*/
+int dbItemsInTable(std::string table)
+{
+	int          s;
+    int          hits;
+    MYSQL_RES*   result  = NULL;
+	std::string  query   = "SELECT * FROM " + table;
+	
+    s = mysql_query(db, query.c_str());
+    if (s != 0)
+    {
+        LM_E(("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
+        return 0;
+    }
+
+    if ((result = mysql_store_result(db)) == NULL)
+    {
+        LM_E(("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
+        return 0;
+    }
+
+	hits = mysql_num_rows(result);
+	mysql_free_result(result);
+
+	LM_T(LmtDbTable, ("Got %d hits in DB table %s", hits, table.c_str()));
+	return hits;
+}

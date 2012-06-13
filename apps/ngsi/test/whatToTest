@@ -1,0 +1,9 @@
+01. Simple registration
+    % curlTest reg firstReg 
+    
+    Check that all is in DB
+------------------------------------------------------------------
+02. Check that data is recovered/found in DB on restart
+    - kill ngsi process and run the same command again
+    % curlTest reg firstReg
+    - should fail as we cannot register an entity twice ...

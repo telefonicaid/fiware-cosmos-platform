@@ -20,15 +20,17 @@ typedef enum TraceLevels
     LmtParameters,
     LmtParameters2,
 	LmtHttpHeader,
-
-
-	LmtRegistration = 41,
-	LmtRegistrationId,
-	LmtRegister,
 	LmtEmpty,
 	LmtRest,
 	LmtRestPath,
 	LmtLogRequest,
+
+
+	LmtRegistration = 41,
+	LmtRegistrationId,
+	LmtRegistrationLookup,
+	LmtRegistrationDbLookup,
+	LmtRegister,
 	
 	LmtDiscover = 51,
 	LmtDiscoverTreat,
@@ -50,6 +52,7 @@ typedef enum TraceLevels
 	LmtAttributeCreate,
 	LmtAttributeMetaId,
 	LmtAttributeInDB,
+	LmtAttributeInit = 80,
 
 	LmtMetadata  = 81,
 	LmtMetadataLookup,

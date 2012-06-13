@@ -15,8 +15,10 @@ char* host;
 char* userAgent;
 char* accepts;
 
-char* httpData[100];
-int   httpDataLines = 0;
+char*        httpData[100];
+std::string  httpDataString;
+int          httpDataLines = 0;
+
 
 
 extern int lineSplit(char* buf, char** lineX);
@@ -36,6 +38,7 @@ bool httpDataParse(char** input, int lines, bool continued)
 	if (continued)
 		isData = true;
 
+	httpDataString = "";
 	//
 	// Skipping first line (GET/PUT/POST/DELETE)
 	//
@@ -52,6 +55,7 @@ bool httpDataParse(char** input, int lines, bool continued)
 		{
 			LM_T(LmtHttpData, ("dataLine[%d]: '%s'", httpDataLines, input[ix]));
 			httpData[httpDataLines++] = input[ix];
+			httpDataString += input[ix];
 		}
 		else if (strncmp(input[ix], "Expect: 100-continue", 19) == 0)
 		{

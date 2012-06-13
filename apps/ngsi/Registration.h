@@ -45,6 +45,7 @@ extern char* registrationIdGet(char* s, int sLen);
 * registrationAdd - 
 */
 extern Registration* registrationAdd(std::string registrationId, vector<Metadata*> metadataV);
+extern Registration* registrationAdd(std::string registrationId);
 
 
 

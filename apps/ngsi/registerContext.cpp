@@ -1,24 +1,24 @@
-#include <sstream>                          // std::ostringstream
-#include <string>                           // std::stream
+#include <sstream>                              // std::ostringstream
+#include <string>                               // std::stream
 
-#include <libxml/tree.h>                    // XML library
+#include <libxml/tree.h>                        // XML library
 
-#include "logMsg/logMsg.h"                  // LM_*
+#include "logMsg/logMsg.h"                      // LM_*
 
-#include "traceLevels.h"                    // Trace levels for log msg library
-#include "globals.h"                        // TF
-#include "database.h"                       // dbRegistrationAdd
-#include "ws.h"                             // whitespace functions
-#include "Format.h"                         // Format
-#include "Verb.h"                           // Verb
-#include "rest.h"                           // allow, restReply
-#include "httpData.h"                       // httpDataLines, httpData
-#include "duration.h"                       // durationStringToSeconds
-#include "RegisterContextRequest.h"         // RegisterContextRequest
-#include "Attribute.h"                      // Attribute
-#include "Registration.h"                   // Registration, registrationIdGet, ...
-#include "Entity.h"                         // Entity, entityToDb
-#include "registerContext.h"                // Own interface
+#include "traceLevels.h"                        // Trace levels for log msg library
+#include "globals.h"                            // TF
+#include "database.h"                           // dbRegistrationAdd
+#include "ws.h"                                 // whitespace functions
+#include "Format.h"                             // Format
+#include "Verb.h"                               // Verb
+#include "rest.h"                               // allow, restReply
+#include "httpData.h"                           // httpDataLines, httpData
+#include "duration.h"                           // durationStringToSeconds
+#include "RegisterContextRequest.h"             // RegisterContextRequest
+#include "Attribute.h"                          // Attribute
+#include "Registration.h"                       // Registration, registrationIdGet, ...
+#include "Entity.h"                             // Entity, entityToDb
+#include "registerContext.h"                    // Own interface
 
 using namespace std;
 
@@ -301,13 +301,11 @@ static int registerContextRequestToDb(RegisterContextRequest* rcReqP, bool isUpd
 	Attribute*    attributeP;
 	unsigned int  registrationDbId;
 
-#if 1
 	if (!isUpdate)
 	{
 		if (registrationToDb(registrationId, &registrationDbId) != 0)
 			LM_RE(-1, ("error adding a Registration to database"));
 	}
-#endif
 
 
 	LM_T(LmtDbRegReq, ("------------ To DB ------------"));
@@ -320,11 +318,6 @@ static int registerContextRequestToDb(RegisterContextRequest* rcReqP, bool isUpd
 			LM_W(("Entity '%s:%s' not found - this is a bug!", rcReqP->entityV[eIx]->id.c_str(), rcReqP->entityV[eIx]->type.c_str()));
 			continue;
 		}
-
-		if (isUpdate == true)
-			LM_T(LmtEntityToDb, ("Entity { '%s', '%s', '%s' } NOT to DB - this is an update", entityP->id.c_str(), entityP->type.c_str(), TF(entityP->isPattern)));
-		else
-			LM_T(LmtEntityToDb, ("Entity { '%s', '%s', '%s' } to DB", entityP->id.c_str(), entityP->type.c_str(), TF(entityP->isPattern)));
 
 		LM_T(LmtDuration, ("pushing entity to db: duration: %lu", duration));
 		s = entityToDb(entityP, isUpdate, duration, errorString);

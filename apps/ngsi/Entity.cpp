@@ -14,6 +14,7 @@
 
 #include "logMsg/logMsg.h"                      // LM_*
 
+#include "globals.h"                            // TF
 #include "traceLevels.h"                        // Trace levels for log msg library
 #include "jsonParse.h"                          // JSON parsing function
 #include "httpData.h"                           // httpData
@@ -32,8 +33,9 @@ using namespace std;
 *
 * Globals
 */
-static Entity*       entityV          = NULL;
-static int           entities         = 0;
+static Entity*   entityList   = NULL;
+static Entity*   entityLast   = NULL;
+static int       entities     = 0;
 
 
 
@@ -43,7 +45,7 @@ static int           entities         = 0;
 */
 void entityInit(void)
 {
-	entityV  = NULL;
+	entityList  = NULL;
 	entities = 0;
 }
 
@@ -53,7 +55,18 @@ void entityInit(void)
 *
 * entityCreate - 
 */
-static Entity* entityCreate(std::string id, std::string type, bool isPattern, std::string providingApplication, int duration, std::string registrationId)
+static Entity* entityCreate
+(
+	std::string  id,
+	std::string  type,
+	bool         isPattern,
+	time_t       startTime,
+	time_t       endTime,
+	int          duration,
+	std::string  providingApplication,
+	std::string  registrationId,
+	int          dbId
+)
 {
 	Entity* entity = new Entity();
 
@@ -66,9 +79,19 @@ static Entity* entityCreate(std::string id, std::string type, bool isPattern, st
 	entity->type                  = type;
 	entity->isPattern             = isPattern;
 	entity->providingApplication  = providingApplication;
-	entity->startTime             = time(NULL);
-	entity->endTime               = entity->startTime + duration;
 	entity->registrationId        = registrationId;
+	entity->dbId                  = dbId;
+
+	if (startTime == 0)
+	{
+		entity->startTime             = time(NULL);
+		entity->endTime               = entity->startTime + duration;
+	}
+	else
+	{
+		entity->startTime             = startTime;
+		entity->endTime               = endTime;
+	}
 
 	entity->next      = NULL;
 
@@ -80,7 +103,6 @@ static Entity* entityCreate(std::string id, std::string type, bool isPattern, st
 
 
 
-Entity* entityNext = NULL;
 /* ****************************************************************************
 *
 * entityAppend - 
@@ -89,12 +111,14 @@ static void entityAppend(Entity* entity)
 {
 	LM_T(LmtEntity, ("Appending entity '%s'", entity->id.c_str()));
 
-	if (entityNext == NULL)
-		entityV = entity;
+	if (entityLast == NULL)
+		entityList = entity;
 	else
-		entityNext->next = entity;
+		entityLast->next = entity;
 
-	entityNext = entity;
+	entityLast = entity;
+
+	entitiesPresent();
 }
 
 
@@ -103,11 +127,10 @@ static void entityAppend(Entity* entity)
 *
 * entityLookupInDb - 
 */
-Entity* entityLookupInDb(std::string id, std::string type)
+static Entity* entityLookupInDb(std::string id, std::string type)
 {
 	MYSQL_RES*   result;
 	MYSQL_ROW    row;
-	MYSQL_ROW    firstRow;
 	int          rows;
 	int          s;
 
@@ -127,28 +150,86 @@ Entity* entityLookupInDb(std::string id, std::string type)
 		return NULL;
 	}
 
-	rows    = 0;
-	while ((row = mysql_fetch_row(result)))
+	rows = mysql_num_rows(result);
+	if (rows == 0)
 	{
-		if (rows == 0)
-			firstRow = row;
-		++rows;
+		mysql_free_result(result);
+		return NULL;
+	}
+	else if (rows != 1)
+		LM_X(1, ("Found more than ONE instance of entity '%s:%s'", type.c_str(), id.c_str()));
+
+	row = mysql_fetch_row(result);
+	mysql_free_result(result);
+
+
+	int          dbId                  = atoi(row[0]);
+	std::string  id2                   = row[1];
+	std::string  type2                 = row[2];
+	bool         isPattern             = (std::string(row[3]) == "No")? false : true;
+	std::string  providingApplication  = row[4];
+	time_t       startTime             = strtoul(row[5], NULL, 10);
+	time_t       endTime               = strtoul(row[6], NULL, 10);
+	std::string  registrationId        = row[7];
+	
+	Entity* entityP = entityCreate(id, type, isPattern, startTime, endTime, 0, providingApplication, registrationId, dbId);
+
+	return entityP;
+}
+
+
+
+/* ****************************************************************************
+*
+* entityLookupInDb - 
+*/
+static Entity* entityLookupInDb(int dbId)
+{
+	MYSQL_RES*   result;
+	MYSQL_ROW    row;
+	int          rows;
+	int          s;
+	char         dbIdV[32];
+
+	sprintf(dbIdV, "%d", dbId);
+	std::string query = std::string("SELECT * from entity WHERE dbId = ") + dbIdV;
+
+	LM_T(LmtSqlQuery, ("SQL Query is '%s'", query.c_str()));
+	s = mysql_query(db, query.c_str());
+	if (s != 0)
+	{
+		LM_E(("mysql_query(%s): %s", mysql_error(db)));
+		return NULL;
 	}
 
-	mysql_free_result(result);
-	if (rows != 1)
+	if ((result = mysql_store_result(db)) == NULL)
 	{
-		char rowsV[30];
-
-		sprintf(rowsV, "%d", rows);
-
 		LM_T(LmtDbTable, ("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
 		return NULL;
 	}
 
-	bool    isPattern = (std::string(firstRow[3]) == "No")? false : true;
-		
-	Entity* entityP = entityCreate(firstRow[1], firstRow[2], isPattern, firstRow[4], atoi(firstRow[5]), firstRow[6]);
+	rows = mysql_num_rows(result);
+	if (rows == 0)
+	{
+		mysql_free_result(result);
+		return NULL;
+	}
+	else if (rows != 1)
+		LM_X(1, ("Found more than ONE instance of entity with dbId '%d'", dbId));
+
+	row = mysql_fetch_row(result);
+	mysql_free_result(result);
+
+
+	std::string  id                    = row[1];
+	std::string  type                  = row[2];
+	bool         isPattern             = (std::string(row[3]) == "No")? false : true;
+	std::string  providingApplication  = row[4];
+	time_t       startTime             = strtoul(row[5], NULL, 10);
+	time_t       endTime               = strtoul(row[6], NULL, 10);
+	std::string  registrationId        = row[7];
+	
+	Entity* entityP = entityCreate(id, type, isPattern, startTime, endTime, 0, providingApplication, registrationId, dbId);
 
 	return entityP;
 }
@@ -161,8 +242,11 @@ Entity* entityLookupInDb(std::string id, std::string type)
 */
 Entity* entityLookup(std::string id, std::string type)
 {
-	Entity* entityP = entityV;
+	Entity* entityP = entityList;
 
+	//
+	// First lookup in RAM
+	//
 	while (entityP != NULL)
 	{
 		if ((entityP->id == id) && (entityP->type == type))
@@ -171,7 +255,39 @@ Entity* entityLookup(std::string id, std::string type)
 		entityP = entityP->next;
 	}
 
+	//
+	// Now try to find it in DB - if found, add to RAM
+	//
 	entityP = entityLookupInDb(id, type);
+	if (entityP == NULL)
+		return NULL;
+
+	entityAppend(entityP);
+	return entityP;
+}
+
+
+
+/* ****************************************************************************
+*
+* entityLookup -
+*/
+Entity* entityLookupByDbId(int dbId)
+{
+	Entity* entityP = entityList;
+
+	//
+	// lookup in RAM only ...
+	//
+	while (entityP != NULL)
+	{
+		if (entityP->dbId == dbId)
+			return entityP;
+
+		entityP = entityP->next;
+	}
+
+	entityP = entityLookupInDb(dbId);
 	if (entityP == NULL)
 		return NULL;
 
@@ -222,6 +338,9 @@ Entity* entityAdd
 	//
 	// Lookup the entity 'id'
 	//
+	// If already found, should I return it ... ?
+	// Or, return NULL, to indicate it already existed ... ?
+	//
 	LM_T(LmtEntity, ("Looking up entity '%s'", rcrEntity->id.c_str()));
 	entityP = entityLookup(rcrEntity->id, rcrEntity->type);
 	if (entityP != NULL)
@@ -232,7 +351,7 @@ Entity* entityAdd
 	//
 	// Adding entity to global RAM collection
 	//
-	entityP = entityCreate(rcrEntity->id, rcrEntity->type, rcrEntity->isPattern, providingApplication, duration, registrationId);
+	entityP = entityCreate(rcrEntity->id, rcrEntity->type, rcrEntity->isPattern, 0, 0, duration, providingApplication, registrationId, 0);
 	entityAppend(entityP);
 
 
@@ -538,6 +657,11 @@ int entityToDb(Entity* entityP, bool update, long duration, std::string* errorSt
 	std::string  providingApplication;
 	int          s;
 
+	if (update == true)
+	    LM_T(LmtEntityToDb, ("Entity { '%s', '%s', '%s' } DB update", entityP->id.c_str(), entityP->type.c_str(), TF(entityP->isPattern)));
+	else
+	    LM_T(LmtEntityToDb, ("Entity { '%s', '%s', '%s' } to DB", entityP->id.c_str(), entityP->type.c_str(), TF(entityP->isPattern)));
+
 	LM_T(LmtDuration, ("entityToDb: endTime: %lu", entityP->endTime));
 	if (update)
 	{
@@ -690,7 +814,7 @@ void entitiesPresent(void)
 	Entity* entityP;
 	int     entities = 0;
 
-	entityP = entityV;
+	entityP = entityList;
     while (entityP != NULL)
 	{
 		++entities;
@@ -699,10 +823,18 @@ void entitiesPresent(void)
 
 	LM_T(LmtEntitiesPresent, (""));
 	LM_T(LmtEntitiesPresent, ("%d entities:", entities));
-	entityP = entityV;
+	entityP = entityList;
 	while (entityP != NULL)
 	{
-		LM_T(LmtEntitiesPresent, ("o %s, type %s", entityP->id.c_str(), entityP->type.c_str()));
+		LM_T(LmtEntitiesPresent, ("o Entity   '%d'",  entityP->dbId));
+		LM_T(LmtEntitiesPresent, ("    ID:    '%s'",  entityP->id.c_str()));
+		LM_T(LmtEntitiesPresent, ("    dbId:  '%d'",  entityP->dbId));
+		LM_T(LmtEntitiesPresent, ("    Type:  '%s'",  entityP->type.c_str())); 
+		LM_T(LmtEntitiesPresent, ("    App:   '%s'",  entityP->providingApplication.c_str())); 
+		LM_T(LmtEntitiesPresent, ("    Reg:   '%s'",  entityP->registrationId.c_str())); 
+		LM_T(LmtEntitiesPresent, ("    Start: '%u'",  entityP->startTime));
+		LM_T(LmtEntitiesPresent, ("    End:   '%u'",  entityP->endTime));
+        LM_T(LmtEntitiesPresent, (""));
 
 		entityP = entityP->next;
 	}

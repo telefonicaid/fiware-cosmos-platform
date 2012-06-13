@@ -73,6 +73,14 @@ extern int                attributes;
 
 /* ****************************************************************************
 *
+* attributeInit - 
+*/
+extern void attributeInit(void);
+
+
+
+/* ****************************************************************************
+*
 * attributeCreate - 
 */
 extern Attribute* attributeCreate(Entity* entityP, int dbId, std::string name, std::string type, std::string value, std::string metaId, bool isDomain);

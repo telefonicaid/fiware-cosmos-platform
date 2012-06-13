@@ -87,6 +87,14 @@ extern Entity* entityLookup(std::string id, std::string type);
 
 /* ****************************************************************************
 *
+* entityLookupByDbId -
+*/
+extern Entity* entityLookupByDbId(int dbId);
+
+
+
+/* ****************************************************************************
+*
 * entityToDb - 
 */
 extern int entityToDb(Entity* entityP, bool update, long duration, std::string* errorString);

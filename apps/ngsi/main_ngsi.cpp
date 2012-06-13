@@ -77,40 +77,6 @@
 * Or should the Broker be able to connect?
 * 
 *
-* REST paths:
-*   GET /NGSI10/contextEntities/{entityId}/attributes/{attributeName}/{valueID}
-*   GET /NGSI10/contextEntities/{entityId}/attributeDomains/{attributeDomainName}
-*   GET /NGSI10/contextEntityTypes/{typeName}/attributes/{attributeName}
-*   GET /NGSI10/contextEntityTypes/{typeName}/attributeDomains/{attributeDomainName}
-*   GET /NGSI10/contextSubscriptions/{subscriptionId}
-*   GET /NGSI10/queryContext
-*   GET /NGSI10/subscribeContext
-*   GET /NGSI10/updateContextSubscription
-*   GET /NGSI10/unsubscribeContext
-*   GET /NGSI10/updateContext
-*
-*
-* CURL commands:
-#if 0
-    curl 'localhost:1025/NGSI9/registerContext/entity01?Z=1&Abba=123' --header "Content-Type: text/xml" -v --data - < registerContextRequest.xml
-
-    curl 'localhost:1025/NGSI9/registerContext/entity01?Z=1&Abba=123' -d @registerContextRequest.xml --header "Content-Type: text/xml"
-    curl 'localhost:1025/NGSI10/contextEntities/entity01?Z=1&Abba=123' -d '{ "s" : "25", "i" : 131, "b" : true }'  --header "Content-Type: text/json"
-    curl 'localhost:1025/NGSI10/contextEntities/entity01?Z=1&Abba=123' -d '{ "s" : "25", "i" : 131, "b" : true }'  --header "Content-Type: text/json" -G
-
-    curl localhost:1025/NGSI10/contextEntities/entity01/attributes/attribute01/value01
-    curl localhost:1025/NGSI10/contextEntities/entity01/attributeDomains/attributeDomain01
-    curl localhost:1025/NGSI10/contextEntityTypes/type01/attributes/attribute01
-    curl localhost:1025/NGSI10/contextEntityTypes/type01/attributeDomains/attributeDomain01
-    curl localhost:1025/NGSI10/contextSubscriptions/subscription01
-    curl localhost:1025/NGSI10/queryContext
-    curl localhost:1025/NGSI10/subscribeContext
-    curl localhost:1025/NGSI10/updateContextSubscription
-    curl localhost:1025/NGSI10/unsubscribeContext
-    curl localhost:1025/NGSI10/updateContext
-#endif
-*
-*
 * HTTP Status Codes
 *
 * Informational
@@ -442,7 +408,7 @@ int main(int argC, const char *argV[])
 
 
 	//
-	// databse initialisation
+	// database initialisation
 	//
 	if (dbInit() != 0)
 		LM_X(1, ("error initializing database"));
@@ -452,6 +418,8 @@ int main(int argC, const char *argV[])
 		if (dbReset() != 0)
 			LM_X(1, ("error resetting database"));
 	}
+
+	attributeInit();
 
     run(fd);
 

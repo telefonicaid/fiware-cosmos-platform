@@ -38,7 +38,12 @@ extern int dbInit(void);
 */
 extern int dbReset(void);
 
+
+
+/* ****************************************************************************
+*
+* dbItemsInTable - 
+*/
+extern int dbItemsInTable(std::string table);
+
 #endif
-
-
- 

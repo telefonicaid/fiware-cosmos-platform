@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <discoverContextAvailabilityRequest>
+    <attributeList>
+      <attribute>temperature</attribute>
+      <attribute>occupancy</attribute>
+      <attribute>lightstatus</attribute>
+    </attributeList>
+    <restriction>
+      <attributeExpression>
+      </attributeExpression>
+      <scope>
+        <operationScope>
+          <scopeType></scopeType>
+          <scopeValue></scopeValue>
+        </operationScope>
+        <operationScope>
+          <scopeType></scopeType>
+          <scopeValue></scopeValue>
+        </operationScope>
+      </scope>
+    </restriction>
+  </discoverContextAvailabilityRequest>

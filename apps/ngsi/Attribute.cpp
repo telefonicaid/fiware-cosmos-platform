@@ -37,6 +37,141 @@ int                attributes    = 0;
 
 /* ****************************************************************************
 *
+* attributeLoadFromDb - 
+*/
+static void attributeLoadFromDb(void)
+{
+	Attribute*   attributeP;
+	std::string  query = "SELECT * from attribute";
+	int          s;
+    int          results;
+    MYSQL_RES*   result  = NULL;
+	MYSQL_ROW    row;
+
+    s = mysql_query(db, query.c_str());
+    if (s != 0)
+    {
+        LM_E(("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
+        return;
+    }
+
+    if ((result = mysql_store_result(db)) == NULL)
+    {
+        LM_E(("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
+        return;
+    }
+
+	results = mysql_num_rows(result);
+	if (results <= 0)
+	{
+		mysql_free_result(result);
+		return;
+	}
+
+	while ((row = mysql_fetch_row(result)))
+	{
+		int         dbId           = atoi(row[0]);
+		std::string name           = row[1];
+		std::string type           = row[2];
+		std::string metaId         = row[4];
+		std::string isDomainString = row[5];
+		bool        isDomain       = false;
+
+		if (isDomainString == "Yes")
+			isDomain = true;
+
+		Entity e; // Don't ask ... it SIGSEGVs without this ...
+
+		if (metaId == "")
+			attributeP = attributeCreate(&e, dbId, name, type, "NO_VALUE", "NO_META_ID", isDomain);
+		else
+		{
+			attributeP = attributeCreate(&e, dbId, name, type, "NO_VALUE", metaId, isDomain);
+		}
+
+		attributeP->entityP = NULL;
+		attributeAppend(attributeP);
+	}
+	mysql_free_result(result);
+
+
+
+	//
+	// Now, lookup the entity for each of these attributes (table 'entityAttribute')
+	// Note that the entities should be in RAM first ...
+	//
+	attributeP = attributeList;
+	while (attributeP)
+	{
+		char     dbId[32];
+		int      entityDbId;
+		Entity*  entityP;
+
+		LM_T(LmtAttributeInit, ("Looking up entity for attribute '%s:%s", attributeP->name.c_str(), attributeP->type.c_str()));
+
+		sprintf(dbId, "%d", attributeP->dbId);
+		query = std::string("SELECT * from entityAttribute WHERE attributeId=") + dbId;
+		s = mysql_query(db, query.c_str());
+		if (s != 0)
+		{
+			LM_E(("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
+			continue;
+		}
+
+		if ((result = mysql_store_result(db)) == NULL)
+		{
+			LM_T(LmtDbTable, ("mysql_query(%s): %s", query.c_str(), mysql_error(db)));
+			LM_T(LmtEntityAttribute, ("Attribute dbId '%s' doesn't exist in the DB", dbId));
+			continue;
+		}
+
+		results = mysql_num_rows(result);
+		if (results == 0)
+		{
+			// Consume ...
+			row = mysql_fetch_row(result);
+			mysql_free_result(result);
+			continue;
+		}
+		if (results != 1)
+			LM_X(1, ("Attribute dbId '%s' is in %d places in DB table 'entityAttribute'!!!", dbId));
+
+		row = mysql_fetch_row(result);
+		entityDbId = atoi(row[0]);
+		mysql_free_result(result);
+		LM_T(LmtAttributeInit, ("found entity id for attribute: %d", entityDbId));
+		entityP = entityLookupByDbId(entityDbId);
+
+		if (entityP == NULL)
+			LM_W(("Entity with db id '%d' not found ...", entityDbId));
+		else
+		{
+			LM_T(LmtEntityAttribute, ("Found entity '%s:%s' for attribute '%s:%s", entityP->id.c_str(), entityP->type.c_str(), attributeP->name.c_str(), attributeP->type.c_str()));
+			attributeP->entityP = entityP;
+		}
+
+		attributeP = attributeP->next;
+	}
+}
+
+
+
+/* ****************************************************************************
+*
+* attributeInit - 
+*/
+void attributeInit(void)
+{
+	int itemsInDb = dbItemsInTable("attribute");
+
+	if (itemsInDb < 100)
+		attributeLoadFromDb();
+}
+
+
+
+/* ****************************************************************************
+*
 * attributeCreate - 
 */
 Attribute* attributeCreate(Entity* entityP, int dbId, std::string name, std::string type, std::string value, std::string metaId, bool isDomain)
@@ -47,12 +182,19 @@ Attribute* attributeCreate(Entity* entityP, int dbId, std::string name, std::str
 	attributeP->dbId      = dbId;
 	attributeP->name      = name;
 	attributeP->type      = type;
-	attributeP->value     = value;
-	attributeP->metaId    = metaId;
 	attributeP->isDomain  = isDomain;
 	attributeP->next      = NULL;
 
-	LM_T(LmtAttributeCreate, ("XXX2 - Created attribute: '%s:%s:%s' for entity '%s:%s'", attributeP->name.c_str(), attributeP->type.c_str(), attributeP->metaId.c_str(), entityP->type.c_str(), entityP->id.c_str()));
+	if ((value != "NO_VALUE") && (value != ""))
+		attributeP->value     = value;
+
+	if ((metaId != "NO_META_ID") && (metaId != ""))
+		attributeP->metaId    = metaId;
+
+	if (entityP != NULL)
+		LM_T(LmtAttributeCreate, ("XXX2 - Created attribute: '%s:%s:%s' for entity '%s:%s'", attributeP->name.c_str(), attributeP->type.c_str(), attributeP->metaId.c_str(), entityP->type.c_str(), entityP->id.c_str()));
+	else
+		LM_T(LmtAttributeCreate, ("XXX2 - Created attribute: '%s:%s:%s' for entity '%s:%s'", attributeP->name.c_str(), attributeP->type.c_str(), attributeP->metaId.c_str(), entityP->type.c_str(), entityP->id.c_str()));
 
 	return attributeP;
 }
@@ -458,6 +600,10 @@ Attribute* attributeLookup(Entity* entityP, std::string name)
 		aP = aP->next;
 	}
 
+	//
+	// Not found in RAM - look in DB
+	//
+	
 	return NULL;
 }
 

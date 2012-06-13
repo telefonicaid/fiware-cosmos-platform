@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  * 
  * @author dmicol
  */
-public class PopdenSpreadArrayReducer extends Reducer<LongWritable,
+class PopdenSpreadArrayReducer extends Reducer<LongWritable,
         TypedProtobufWritable<NodeMxCounter>, ProtobufWritable<BtsProfile>,
         TypedProtobufWritable<Int>> {
     @Override

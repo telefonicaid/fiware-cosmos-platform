@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
  * 
  * @author dmicol
  */
-public class ItinGetItineraryReducer extends Reducer<
+class ItinGetItineraryReducer extends Reducer<
         ProtobufWritable<ItinRange>, TypedProtobufWritable<ClusterVector>, LongWritable,
         TypedProtobufWritable<Itinerary>> {
     private double percAbsoluteMax;

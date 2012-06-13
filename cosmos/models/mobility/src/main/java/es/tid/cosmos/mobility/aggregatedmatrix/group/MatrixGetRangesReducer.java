@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixRange;
  *
  * @author dmicol
  */
-public class MatrixGetRangesReducer extends Reducer<LongWritable,
+class MatrixGetRangesReducer extends Reducer<LongWritable,
         TypedProtobufWritable<ItinMovement>, ProtobufWritable<MatrixRange>,
         TypedProtobufWritable<Float64>> {
     @Override

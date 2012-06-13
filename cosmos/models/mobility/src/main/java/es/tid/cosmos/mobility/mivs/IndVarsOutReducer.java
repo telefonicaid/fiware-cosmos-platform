@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
  * 
  * @author logc
  */
-public class  IndVarsOutReducer extends Reducer<LongWritable,
+class IndVarsOutReducer extends Reducer<LongWritable,
         TypedProtobufWritable<MobViMobVars>, NullWritable, Text> {
     private static final String DELIMITER = "|";
     private static final String MISSING = "-1|-1|-1|-1|-1|-1|-1|-1";

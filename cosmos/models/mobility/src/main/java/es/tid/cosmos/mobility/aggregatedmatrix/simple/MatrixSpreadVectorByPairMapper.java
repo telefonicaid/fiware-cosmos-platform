@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class MatrixSpreadVectorByPairMapper extends Mapper<
+class MatrixSpreadVectorByPairMapper extends Mapper<
         ProtobufWritable<ItinRange>, TypedProtobufWritable<ClusterVector>,
         ProtobufWritable<TwoInt>, TypedProtobufWritable<ClusterVector>> {
     @Override

@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
  * 
  * @author dmicol
  */
-public class VectorOneidOutReducer extends Reducer<LongWritable,
+class VectorOneidOutReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Cluster>, NullWritable, Text> {
     @Override
     protected void reduce(LongWritable key,

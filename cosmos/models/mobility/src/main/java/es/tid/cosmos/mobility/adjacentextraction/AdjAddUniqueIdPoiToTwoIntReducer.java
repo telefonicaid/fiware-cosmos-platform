@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class AdjAddUniqueIdPoiToTwoIntReducer extends Reducer<LongWritable,
+class AdjAddUniqueIdPoiToTwoIntReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Poi>, LongWritable, TypedProtobufWritable<TwoInt>> {
     private static final long MAX_NUM_PARTITIONS = 100L;
     

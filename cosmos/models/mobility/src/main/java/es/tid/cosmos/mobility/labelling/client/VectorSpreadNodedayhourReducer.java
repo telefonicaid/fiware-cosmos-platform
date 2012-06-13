@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
  * 
  * @author dmicol
  */
-public class VectorSpreadNodedayhourReducer extends Reducer<LongWritable,
+class VectorSpreadNodedayhourReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Cdr>, ProtobufWritable<NodeBts>,
         TypedProtobufWritable<Null>> {
     @Override

@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
+class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>,
         ProtobufWritable<TwoInt>, TypedProtobufWritable<Cluster>> {
     @Override

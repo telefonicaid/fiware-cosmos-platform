@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class VectorGetNcomsNodedayhourReducer extends Reducer<
+class VectorGetNcomsNodedayhourReducer extends Reducer<
         ProtobufWritable<NodeBts>, TypedProtobufWritable<Null>,
         ProtobufWritable<NodeBts>, TypedProtobufWritable<TwoInt>> {
     @Override

@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class VectorPoisOutReducer extends Reducer<ProtobufWritable<TwoInt>,
+class VectorPoisOutReducer extends Reducer<ProtobufWritable<TwoInt>,
         TypedProtobufWritable<Poi>, NullWritable, Text> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,

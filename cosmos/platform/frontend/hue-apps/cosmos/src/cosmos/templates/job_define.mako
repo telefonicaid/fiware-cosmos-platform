@@ -5,22 +5,23 @@
   </div>
 </%def>
 
-${shared.header("Run new job", section="run_job")}
+${shared.header("Run new job", section="define_job")}
 
 <div id="run_job" class="jframe_padded view">
-    <form action="${ url('run_job') }" method="POST" class="cos-run_job_form"
-          enctype="multipart/form-data">
-	<h4 class="jframe-hidden">Run new job</h4>
+    <h4 class="jframe-hidden">Run new job</h4>
 
-	<p>
-	You are creating a new custom job by uploading a custom Hadoop mapreduce
-	JAR.  Try the <a id="sample-jar-link" target="_blank"
-	href="/cosmos/static/samples/wordcount.jar">wordcount example</a> (<a 
-        id="sample-jar-sources" href="/cosmos/static/samples/wordcount.tgz"
-	target="_blank">sources</a>) or read about the
-	<a id="jar-restrictions" href="/help/cosmos/"
-	target="Help">custom job requirements</a>.
-	</p>
+    <p>
+    You are creating a new custom job by uploading a custom Hadoop mapreduce
+    JAR.  Try the <a id="sample-jar-link" target="_blank"
+    href="/cosmos/static/samples/wordcount.jar">wordcount example</a> (<a 
+    id="sample-jar-sources" href="/cosmos/static/samples/wordcount.tgz"
+    target="_blank">sources</a>) or read about the
+    <a id="jar-restrictions" href="/help/cosmos/"
+    target="Help">custom job requirements</a>.
+    </p>
+
+    <form action="${ url('define_job') }" method="POST" class="cos-run_job_form"
+          enctype="multipart/form-data">
 
         % for err in form.non_field_errors():
         ${render_error(err)}
@@ -46,18 +47,9 @@ ${shared.header("Run new job", section="run_job")}
 		   data-chooseFor="jar_path">...</a>
 		${ unicode(form['jar_path'].errors) | n }
 	    </dd>
-
-            <dt><label for="dataset_path">Dataset path</label></dt>
-	    <dd class="file_finder">
-		${ unicode(form['dataset_path']) | n }
-		<a class="hue-choose_file" data-filters="ArtButton"
-		   data-chooseFor="dataset_path">...</a>
-		${ unicode(form['dataset_path'].errors) | n }
-	    </dd>
         </dl>
 
-	<br/>
-	<input class="submit" type="submit" value="Run job" />
+	${shared.wizard_navigation()}
     </form>
 </div>
 

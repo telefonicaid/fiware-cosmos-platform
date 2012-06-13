@@ -29,7 +29,7 @@ public class PopdenJoinArrayProfileReducer extends Reducer<LongWritable,
             Iterable<ProtobufWritable<MobData>> values, Context context)
             throws IOException, InterruptedException {
         List<NodeMxCounter> counterList = new LinkedList<NodeMxCounter>();
-        List<Integer> profileList = new LinkedList<Integer>();
+        List<Integer> profileIdList = new LinkedList<Integer>();
         for (ProtobufWritable<MobData> value : values) {
             value.setConverter(MobData.class);
             final MobData mobData = value.get();
@@ -37,20 +37,21 @@ public class PopdenJoinArrayProfileReducer extends Reducer<LongWritable,
                 case NODE_MX_COUNTER:
                     counterList.add(mobData.getNodeMxCounter());
                     break;
-                case INT:
-                    profileList.add(mobData.getInt());
+                case CLIENT_PROFILE:
+                    profileIdList.add(
+                            mobData.getClientProfile().getProfileId());
                     break;
                 default:
                     throw new IllegalStateException("Unexpected MobData type: "
                             + mobData.getType().name());
             }
         }
-        for (int profile : profileList) {
+        for (int profileId : profileIdList) {
             for (NodeMxCounter counter : counterList) {
                 for (BtsCounter btsCounter : counter.getBtsList()) {
                     final ProtobufWritable<BtsProfile> btsProfile =
                             BtsProfileUtil.createAndWrap(
-                                    btsCounter.getBts(), profile,
+                                    btsCounter.getBts(), profileId,
                                     btsCounter.getWeekday(),
                                     btsCounter.getRange());
                     context.write(btsProfile,

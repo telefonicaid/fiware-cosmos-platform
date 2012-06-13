@@ -11,8 +11,8 @@ import sys
 
 def virtualenv_safe_environment(env):
     safe_env = env.copy()
-    safe_env.pop('PYTHONPATH')
-    safe_env.pop('BUILDOUT_ORIGINAL_PYTHONPATH')
+    safe_env.pop('PYTHONPATH', '')
+    safe_env.pop('BUILDOUT_ORIGINAL_PYTHONPATH', '')
     return safe_env
 
 

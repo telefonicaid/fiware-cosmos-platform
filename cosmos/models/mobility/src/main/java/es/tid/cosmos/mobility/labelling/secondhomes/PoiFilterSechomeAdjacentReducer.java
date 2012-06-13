@@ -35,7 +35,7 @@ public class PoiFilterSechomeAdjacentReducer extends Reducer<
             if (record.getInputId() == 1) {
                 return;
             }            
-            nodeList.add(Int64.parseFrom(record.toByteString()).getValue());
+            nodeList.add(Int64.parseFrom(record.getMessageBytes()).getValue());
         }        
         for (long node : nodeList) {
             context.write(TwoIntUtil.createAndWrap(node, pairbts.getNum2()),

@@ -168,7 +168,7 @@ run_coverage: install_coverage
 	killall logServer || true
 	lcov --directory BUILD_COVERAGE --zerocounters	
 	logServer
-	samsonWorker -log_classic
+	samsonWorker -log_classic -t 31,34,35,200,201,210
 	make test_coverage
 	killall samsonWorker || true
 	killall logServer || true
@@ -199,7 +199,7 @@ begin_mac_coverage:
 
 process_mac_coverage:
 	killall samsonWorker || true
-	samsonWorker -log_classic
+	samsonWorker -log_classic -t 31,34,35,200,201,210
 	make test_coverage
 	killall samsonWorker || true
 

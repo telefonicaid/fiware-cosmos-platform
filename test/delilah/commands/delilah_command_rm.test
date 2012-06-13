@@ -4,7 +4,7 @@ rm - delete a named queue
 remove_all_stream
 push input.txt input
 push input.txt input2
-push_buffers
+flush_buffers
 --SCRIPT--
 rm input
 ls

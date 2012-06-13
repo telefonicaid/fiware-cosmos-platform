@@ -5,7 +5,7 @@ delilah -command remove_all_stream 2> /dev/null
 delilah -command "add_stream_operation o1 txt.parser_words input words" 2> /dev/null
 delilah -command "add_stream_operation o2 txt.word_count_accumulate words words_count words_count" 2> /dev/null
 delilah -command "push input.txt input"
-delilah -command push_buffers
+delilah -command flush_buffers
 delilah -command "wait"
 curl http://localhost:1202/samson/queues/words_count/state/015211078.json
 --EXPECT--

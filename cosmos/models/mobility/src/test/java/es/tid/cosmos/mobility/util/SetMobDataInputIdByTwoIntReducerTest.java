@@ -13,10 +13,10 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -24,13 +24,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class SetMobDataInputIdByTwoIntReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, MobilityWritable<Message>,
-            ProtobufWritable<TwoInt>, MobilityWritable<InputIdRecord>> driver;
+    private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>,
+            ProtobufWritable<TwoInt>, TypedProtobufWritable<InputIdRecord>> driver;
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                MobilityWritable<Message>, ProtobufWritable<TwoInt>,
-                MobilityWritable<InputIdRecord>>(
+                TypedProtobufWritable<Message>, ProtobufWritable<TwoInt>,
+                TypedProtobufWritable<InputIdRecord>>(
                         new SetMobDataInputIdByTwoIntReducer());
     }
     
@@ -43,14 +43,14 @@ public class SetMobDataInputIdByTwoIntReducerTest {
     public void testSetInputId() throws IOException {
         Configuration conf = this.driver.getConfiguration();
         conf.setInt("input_id", 3);
-        List<Pair<ProtobufWritable<TwoInt>, MobilityWritable<InputIdRecord>>> res =
+        List<Pair<ProtobufWritable<TwoInt>, TypedProtobufWritable<InputIdRecord>>> res =
                 this.driver
                         .withInput(TwoIntUtil.createAndWrap(1L, 2L),
-                                   asList(new MobilityWritable<Message>(
+                                   asList(new TypedProtobufWritable<Message>(
                                            Null.getDefaultInstance())))
                         .run();
         assertEquals(1, res.size());
-        MobilityWritable<InputIdRecord> output = res.get(0).getSecond();
+        TypedProtobufWritable<InputIdRecord> output = res.get(0).getSecond();
         assertEquals(3, output.get().getInputId());
     }
 }

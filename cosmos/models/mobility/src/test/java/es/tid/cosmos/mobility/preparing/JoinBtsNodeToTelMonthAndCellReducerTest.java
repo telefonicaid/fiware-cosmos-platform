@@ -24,7 +24,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.CellUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
@@ -40,8 +40,8 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
 @PrepareForTest(CellsCatalogue.class)
 public class JoinBtsNodeToTelMonthAndCellReducerTest {
     private List<Cell> cells;
-    private ReduceDriver<LongWritable, MobilityWritable<Cdr>,
-            ProtobufWritable<TelMonth>, MobilityWritable<Cell>> driver;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
+            ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>> driver;
     
     @Before
     public void setUp() throws IOException {
@@ -53,8 +53,8 @@ public class JoinBtsNodeToTelMonthAndCellReducerTest {
         PowerMockito.mockStatic(CellsCatalogue.class);
         when(CellsCatalogue.load(any(Path.class), any(Configuration.class)))
                 .thenReturn(cells);
-        this.driver = new ReduceDriver<LongWritable, MobilityWritable<Cdr>,
-                ProtobufWritable<TelMonth>, MobilityWritable<Cell>>(
+        this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
+                ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>>(
                         new JoinBtsNodeToTelMonthAndCellReducer());
         this.driver.getConfiguration().set("cells", "/home/test");
     }
@@ -63,13 +63,13 @@ public class JoinBtsNodeToTelMonthAndCellReducerTest {
     public void testEmptyOutput() throws IOException {
         List<Cell> filteredCells = new LinkedList<Cell>();
         when(CellsCatalogue.filter(this.cells, 57L)).thenReturn(filteredCells);
-        final MobilityWritable<Cdr> value1 = new MobilityWritable<Cdr>(
+        final TypedProtobufWritable<Cdr> value1 = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(1L, 2L, Date.getDefaultInstance(),
                                Time.getDefaultInstance()));
-        final MobilityWritable<Cdr> value2 = new MobilityWritable<Cdr>(
+        final TypedProtobufWritable<Cdr> value2 = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(3L, 4L, Date.getDefaultInstance(),
                                Time.getDefaultInstance()));
-        List<Pair<ProtobufWritable<TelMonth>, MobilityWritable<Cell>>> res =
+        List<Pair<ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>>> res =
                 this.driver
                         .withInput(new LongWritable(57L),
                                    asList(value1, value2))
@@ -84,13 +84,13 @@ public class JoinBtsNodeToTelMonthAndCellReducerTest {
         filteredCells.add(this.cells.get(0));
         filteredCells.add(this.cells.get(2));
         when(CellsCatalogue.filter(this.cells, 10L)).thenReturn(filteredCells);
-        final MobilityWritable<Cdr> value1 = new MobilityWritable<Cdr>(
+        final TypedProtobufWritable<Cdr> value1 = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(1L, 2L, Date.getDefaultInstance(),
                                Time.getDefaultInstance()));
-        final MobilityWritable<Cdr> value2 = new MobilityWritable<Cdr>(
+        final TypedProtobufWritable<Cdr> value2 = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(3L, 4L, Date.getDefaultInstance(),
                                Time.getDefaultInstance()));
-        List<Pair<ProtobufWritable<TelMonth>, MobilityWritable<Cell>>> res =
+        List<Pair<ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>>> res =
                 this.driver
                         .withInput(new LongWritable(10L),
                                    asList(value1, value2))

@@ -9,11 +9,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -21,30 +21,30 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class ClusterAggPotPoiPoisToClusterReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, MobilityWritable<Message>,
-        ProtobufWritable<TwoInt>, MobilityWritable<Cluster>> driver;
+    private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Cluster>> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                MobilityWritable<Message>, ProtobufWritable<TwoInt>,
-                MobilityWritable<Cluster>>(
+                TypedProtobufWritable<Message>, ProtobufWritable<TwoInt>,
+                TypedProtobufWritable<Cluster>>(
                         new ClusterAggPotPoiPoisToClusterReducer());
     }
 
     @Test
     public void shoulChangeConfidence() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);
-        final MobilityWritable<Message> value1 = new MobilityWritable<Message>(
+        final TypedProtobufWritable<Message> value1 = new TypedProtobufWritable<Message>(
                 ClusterUtil.create(1, 2, 0, 3, 4,
                                    ClusterVector.getDefaultInstance()));
-        final MobilityWritable<Message> value2 = new MobilityWritable<Message>(
+        final TypedProtobufWritable<Message> value2 = new TypedProtobufWritable<Message>(
                 ClusterUtil.create(5, 6, 1, 7, 8,
                                    ClusterVector.getDefaultInstance()));
         // This value is what makes the reducer change the confidence
-        final MobilityWritable<Message> value3 = new MobilityWritable<Message>(
+        final TypedProtobufWritable<Message> value3 = new TypedProtobufWritable<Message>(
                 Null.getDefaultInstance());
-        final MobilityWritable<Cluster> outValue = new MobilityWritable<Cluster>(
+        final TypedProtobufWritable<Cluster> outValue = new TypedProtobufWritable<Cluster>(
                 ClusterUtil.create(1, 2, 1, 3, 4,
                                    ClusterVector.getDefaultInstance()));
         this.driver
@@ -56,13 +56,13 @@ public class ClusterAggPotPoiPoisToClusterReducerTest {
     @Test
     public void shouldNotChangeConfidence() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);
-        final MobilityWritable<Message> value1 = new MobilityWritable<Message>(
+        final TypedProtobufWritable<Message> value1 = new TypedProtobufWritable<Message>(
                 ClusterUtil.create(1, 2, 0, 3, 4,
                                    ClusterVector.getDefaultInstance()));
-        final MobilityWritable<Message> value2 = new MobilityWritable<Message>(
+        final TypedProtobufWritable<Message> value2 = new TypedProtobufWritable<Message>(
                 ClusterUtil.create(5, 6, 1, 7, 8,
                                    ClusterVector.getDefaultInstance()));
-        final MobilityWritable<Cluster> outValue = new MobilityWritable<Cluster>(
+        final TypedProtobufWritable<Cluster> outValue = new TypedProtobufWritable<Cluster>(
                 ClusterUtil.create(1, 2, 0, 3, 4,
                                    ClusterVector.getDefaultInstance()));
         this.driver

@@ -9,7 +9,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
@@ -23,13 +23,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class PoiJoinPoisViToTwoIntReducer extends Reducer<LongWritable,
-        MobilityWritable<Message>, ProtobufWritable<TwoInt>,
-        MobilityWritable<TwoInt>> {
+        TypedProtobufWritable<Message>, ProtobufWritable<TwoInt>,
+        TypedProtobufWritable<TwoInt>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        Map<Class, List> dividedLists = MobilityWritable.divideIntoTypes(
+        Map<Class, List> dividedLists = TypedProtobufWritable.groupByClass(
                 values, PoiPos.class, MobViMobVars.class);
         List<PoiPos> poiPosList = dividedLists.get(PoiPos.class);
         List<MobViMobVars> mobVIVarsList = dividedLists.get(MobViMobVars.class);
@@ -55,9 +55,9 @@ public class PoiJoinPoisViToTwoIntReducer extends Reducer<LongWritable,
                 }
                 context.write(TwoIntUtil.createAndWrap(outputPoiPos.getNode(),
                                                        outputPoiPos.getBts()),
-                            new MobilityWritable<TwoInt>(TwoIntUtil.create(
-                                            outputPoiPos.getInoutWeek(),
-                                            outputPoiPos.getInoutWend())));
+                              new TypedProtobufWritable<TwoInt>(TwoIntUtil.create(
+                                      outputPoiPos.getInoutWeek(),
+                                      outputPoiPos.getInoutWend())));
             }
         }
     }

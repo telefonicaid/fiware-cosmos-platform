@@ -5,7 +5,7 @@ import java.io.IOException;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 
 /**
@@ -15,9 +15,9 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
  * @author dmicol
  */
 public class FilterCellnoinfoMapper extends Mapper<LongWritable,
-        MobilityWritable<Cdr>, LongWritable, MobilityWritable<Cdr>> {
+        TypedProtobufWritable<Cdr>, LongWritable, TypedProtobufWritable<Cdr>> {
     @Override
-    public void map(LongWritable key, MobilityWritable<Cdr> value,
+    public void map(LongWritable key, TypedProtobufWritable<Cdr> value,
                     Context context) throws IOException, InterruptedException {
         final Cdr cdr = value.get();
         if (cdr.getCellId() != 0) {

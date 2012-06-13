@@ -8,7 +8,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 
 /**
@@ -18,12 +18,12 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
  * @author dmicol
  */
 public class VectorOneidOutReducer extends Reducer<LongWritable,
-        MobilityWritable<Cluster>, NullWritable, Text> {
+        TypedProtobufWritable<Cluster>, NullWritable, Text> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Cluster>> values, Context context)
+            Iterable<TypedProtobufWritable<Cluster>> values, Context context)
             throws IOException, InterruptedException {
-        for (MobilityWritable<Cluster> value : values) {
+        for (TypedProtobufWritable<Cluster> value : values) {
             final Cluster cluster = value.get();
             String output =
                     key.get() + ClusterUtil.DELIMITER

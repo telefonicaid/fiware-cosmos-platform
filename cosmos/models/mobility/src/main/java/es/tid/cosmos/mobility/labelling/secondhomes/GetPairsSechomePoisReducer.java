@@ -9,10 +9,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int64;
 import es.tid.cosmos.mobility.Config;
-import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int64;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -23,8 +23,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
-        MobilityWritable<PoiPos>, ProtobufWritable<TwoInt>,
-        MobilityWritable<Int64>> {
+        TypedProtobufWritable<PoiPos>, ProtobufWritable<TwoInt>,
+        TypedProtobufWritable<Int64>> {
     private int homeLabelgroupId;
     private double minDistSecondHome;
     
@@ -40,10 +40,10 @@ public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<PoiPos>> values, Context context)
+            Iterable<TypedProtobufWritable<PoiPos>> values, Context context)
             throws IOException, InterruptedException {
         List<PoiPos> poiPosList = new LinkedList<PoiPos>();
-        for (MobilityWritable<PoiPos> value : values) {
+        for (TypedProtobufWritable<PoiPos> value : values) {
             poiPosList.add(value.get());
         }
 
@@ -60,7 +60,7 @@ public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
                             context.write(
                                     TwoIntUtil.createAndWrap(poiIn.getBts(),
                                                              poiOut.getBts()),
-                                    MobilityWritable.create(poiIn.getNode()));
+                                    TypedProtobufWritable.create(poiIn.getNode()));
                         }
                     }
                 }

@@ -7,22 +7,22 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int64;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int64;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 
 /**
  *
  * @author dmicol
  */
 public class AdjCountIndexesReducerTest {
-    private ReduceDriver<LongWritable, MobilityWritable<Int64>, LongWritable,
-            MobilityWritable<Null>> driver;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<Int64>, LongWritable,
+            TypedProtobufWritable<Null>> driver;
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, MobilityWritable<Int64>,
-                LongWritable, MobilityWritable<Null>>(
+        this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Int64>,
+                LongWritable, TypedProtobufWritable<Null>>(
                         new AdjCountIndexesReducer());
     }
     
@@ -30,12 +30,12 @@ public class AdjCountIndexesReducerTest {
     public void testReduce() {
         this.driver
                 .withInput(new LongWritable(3L),
-                           asList(MobilityWritable.create(5L),
-                                  MobilityWritable.create(10L),
-                                  MobilityWritable.create(7L),
-                                  MobilityWritable.create(0L)))
+                           asList(TypedProtobufWritable.create(5L),
+                                  TypedProtobufWritable.create(10L),
+                                  TypedProtobufWritable.create(7L),
+                                  TypedProtobufWritable.create(0L)))
                 .withOutput(new LongWritable(22L),
-                            new MobilityWritable<Null>(Null.getDefaultInstance()))
+                            new TypedProtobufWritable<Null>(Null.getDefaultInstance()))
                 .runTest();
     }
 }

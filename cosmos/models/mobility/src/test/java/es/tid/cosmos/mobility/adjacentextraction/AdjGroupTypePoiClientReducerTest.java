@@ -11,7 +11,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.PoiNewUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiNew;
@@ -22,29 +22,29 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class AdjGroupTypePoiClientReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, MobilityWritable<PoiNew>,
-            ProtobufWritable<TwoInt>, MobilityWritable<TwoInt>> driver;
+    private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<PoiNew>,
+            ProtobufWritable<TwoInt>, TypedProtobufWritable<TwoInt>> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                MobilityWritable<PoiNew>, ProtobufWritable<TwoInt>,
-                MobilityWritable<TwoInt>>(new AdjGroupTypePoiClientReducer());
+                TypedProtobufWritable<PoiNew>, ProtobufWritable<TwoInt>,
+                TypedProtobufWritable<TwoInt>>(new AdjGroupTypePoiClientReducer());
     }
     
     @Test
     public void testSomeMethod() throws IOException {
         PoiNew pn1 = PoiNewUtil.create(1, 2L, 3L, 4, 1);
         PoiNew pn2 = PoiNewUtil.create(5, 6L, 7L, 8, 0);
-        List<Pair<ProtobufWritable<TwoInt>, MobilityWritable<TwoInt>>> res =
+        List<Pair<ProtobufWritable<TwoInt>, TypedProtobufWritable<TwoInt>>> res =
                 this.driver
                         .withInput(TwoIntUtil.createAndWrap(1, 2),
-                                   asList(new MobilityWritable<PoiNew>(pn1),
-                                          new MobilityWritable<PoiNew>(pn2)))
+                                   asList(new TypedProtobufWritable<PoiNew>(pn1),
+                                          new TypedProtobufWritable<PoiNew>(pn2)))
                 .run();
         assertEquals(1, res.size());
         final ProtobufWritable<TwoInt> keyWrapper = res.get(0).getFirst();
-        final MobilityWritable<TwoInt> valueWrapper = res.get(0).getSecond();
+        final TypedProtobufWritable<TwoInt> valueWrapper = res.get(0).getSecond();
         keyWrapper.setConverter(TwoInt.class);
         final TwoInt key = keyWrapper.get();
         final TwoInt value = valueWrapper.get();

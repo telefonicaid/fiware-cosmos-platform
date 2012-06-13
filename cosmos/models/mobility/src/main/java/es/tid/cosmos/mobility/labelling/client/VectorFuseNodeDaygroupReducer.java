@@ -7,7 +7,7 @@ import java.util.List;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.DailyVector;
@@ -21,14 +21,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class VectorFuseNodeDaygroupReducer extends Reducer
-        <ProtobufWritable<TwoInt>, MobilityWritable<DailyVector>,
-        ProtobufWritable<NodeBts>, MobilityWritable<ClusterVector>> {
+        <ProtobufWritable<TwoInt>, TypedProtobufWritable<DailyVector>,
+        ProtobufWritable<NodeBts>, TypedProtobufWritable<ClusterVector>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<MobilityWritable<DailyVector>> values, Context context)
+            Iterable<TypedProtobufWritable<DailyVector>> values, Context context)
             throws IOException, InterruptedException {
         List<DailyVector> valueList = new LinkedList<DailyVector>();
-        for (MobilityWritable<DailyVector> value : values) {
+        for (TypedProtobufWritable<DailyVector> value : values) {
             final DailyVector dailyVector = value.get();
             valueList.add(dailyVector);
         }
@@ -59,7 +59,7 @@ public class VectorFuseNodeDaygroupReducer extends Reducer
         ProtobufWritable<NodeBts> bts = NodeBtsUtil.createAndWrap(
                 twoInt.getNum1(), (int)twoInt.getNum2(), 0, 0);
         context.write(bts,
-                      new MobilityWritable<ClusterVector>(
+                      new TypedProtobufWritable<ClusterVector>(
                               clusterVectorBuilder.build()));
     }
 }

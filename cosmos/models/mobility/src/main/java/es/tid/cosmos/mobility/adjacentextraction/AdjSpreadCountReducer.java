@@ -5,8 +5,8 @@ import java.io.IOException;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -16,16 +16,16 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class AdjSpreadCountReducer extends Reducer<LongWritable,
-        MobilityWritable<TwoInt>, LongWritable, MobilityWritable<Int>> {
+        TypedProtobufWritable<TwoInt>, LongWritable, TypedProtobufWritable<Int>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<TwoInt>> values, Context context)
+            Iterable<TypedProtobufWritable<TwoInt>> values, Context context)
             throws IOException, InterruptedException {
         int valueCount = 0;
-        for (MobilityWritable<TwoInt> value : values) {
+        for (TypedProtobufWritable<TwoInt> value : values) {
             valueCount++;
         }
         context.write(new LongWritable(0L),
-                      MobilityWritable.create(valueCount));
+                      TypedProtobufWritable.create(valueCount));
     }
 }

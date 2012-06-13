@@ -6,7 +6,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
 
 /**
@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
  * @author dmicol, ximo
  */
 public class ParseClientProfileMapper extends Mapper<LongWritable, Text,
-        LongWritable, MobilityWritable<ClientProfile>> {
+        LongWritable, TypedProtobufWritable<ClientProfile>> {
     @Override
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
@@ -25,7 +25,7 @@ public class ParseClientProfileMapper extends Mapper<LongWritable, Text,
             final ClientProfile clientProfile = new ClientProfileParser(
                     value.toString()).parse();
             context.write(new LongWritable(clientProfile.getUserId()),
-                          new MobilityWritable<ClientProfile>(clientProfile));
+                          new TypedProtobufWritable<ClientProfile>(clientProfile));
         } catch (Exception ex) {
             context.getCounter(Counters.INVALID_CLIENT_PROFILES).increment(1L);
         }

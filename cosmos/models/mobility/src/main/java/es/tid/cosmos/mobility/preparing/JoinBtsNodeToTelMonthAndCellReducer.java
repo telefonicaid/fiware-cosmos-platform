@@ -9,7 +9,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TelMonthUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
@@ -23,8 +23,8 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  * @author dmicol
  */
 public class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
-        MobilityWritable<Cdr>, ProtobufWritable<TelMonth>,
-        MobilityWritable<Cell>> {
+        TypedProtobufWritable<Cdr>, ProtobufWritable<TelMonth>,
+        TypedProtobufWritable<Cell>> {
     private static List<Cell> cells = null;
     
     @Override
@@ -38,13 +38,13 @@ public class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Cdr>> values, Context context)
+            Iterable<TypedProtobufWritable<Cdr>> values, Context context)
             throws IOException, InterruptedException {
         List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
         if (filteredCells.isEmpty()) {
             return;
         }
-        for (MobilityWritable<Cdr> value : values) {
+        for (TypedProtobufWritable<Cdr> value : values) {
             final Cdr cdr = value.get();
             for (Cell cell : filteredCells) {
                 int weekday = cdr.getDate().getWeekday();
@@ -59,7 +59,7 @@ public class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
                 ProtobufWritable<TelMonth> telMonth = TelMonthUtil.createAndWrap(
                         cdr.getUserId(), cdr.getDate().getMonth(), workingday);
                 context.write(telMonth,
-                              new MobilityWritable<Cell>(cell));
+                              new TypedProtobufWritable<Cell>(cell));
             }
         }
     }

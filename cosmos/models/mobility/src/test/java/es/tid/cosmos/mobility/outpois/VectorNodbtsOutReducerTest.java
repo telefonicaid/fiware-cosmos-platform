@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
@@ -26,13 +26,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class VectorNodbtsOutReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, MobilityWritable<Cluster>,
+    private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Cluster>,
             NullWritable, Text> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                MobilityWritable<Cluster>, NullWritable, Text>(
+                TypedProtobufWritable<Cluster>, NullWritable, Text>(
                         new VectorNodbtsOutReducer());
     }
 
@@ -45,9 +45,9 @@ public class VectorNodbtsOutReducerTest {
                 .addAllComs(asList(0.4D, 3.2D))
                 .build();
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);
-        final MobilityWritable<Cluster> value1 = new MobilityWritable<Cluster>(
+        final TypedProtobufWritable<Cluster> value1 = new TypedProtobufWritable<Cluster>(
                 ClusterUtil.create(1, 2, 3, 4, 5, clusterVector1));
-        final MobilityWritable<Cluster> value2 = new MobilityWritable<Cluster>(
+        final TypedProtobufWritable<Cluster> value2 = new TypedProtobufWritable<Cluster>(
                 ClusterUtil.create(10, 20, 30, 40, 50, clusterVector2));
         List<Pair<NullWritable, Text>> results = this.driver
                 .withInput(key, asList(value1, value2))

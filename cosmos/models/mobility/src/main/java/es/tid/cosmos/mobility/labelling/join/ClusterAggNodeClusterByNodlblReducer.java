@@ -8,7 +8,7 @@ import com.google.protobuf.Message;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 
@@ -19,12 +19,12 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
  * @author dmicol
  */
 public class ClusterAggNodeClusterByNodlblReducer extends Reducer<LongWritable,
-        MobilityWritable<Message>, LongWritable, MobilityWritable<Poi>> {
+        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<Poi>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        Map<Class, List> dividedLists = MobilityWritable.divideIntoTypes(
+        Map<Class, List> dividedLists = TypedProtobufWritable.groupByClass(
                 values, Poi.class, Cluster.class);
         List<Poi> poiList = dividedLists.get(Poi.class);
         List<Cluster> clusterList = dividedLists.get(Cluster.class);
@@ -37,7 +37,7 @@ public class ClusterAggNodeClusterByNodlblReducer extends Reducer<LongWritable,
                 outputPoi.setConfidentnode(cluster.getConfident());
                 outputPoi.setDistancenode(cluster.getDistance());
                 context.write(new LongWritable(cluster.getLabel()),
-                              new MobilityWritable<Poi>(outputPoi.build()));
+                              new TypedProtobufWritable<Poi>(outputPoi.build()));
             }
         }
     }

@@ -5,7 +5,7 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TelMonthUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TelMonth;
@@ -17,13 +17,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TelMonth;
  * @author logc
  */
 public class DeletePeriodMapper extends Mapper<
-        ProtobufWritable<TelMonth>, MobilityWritable<Cell>,
-        ProtobufWritable<TelMonth>, MobilityWritable<Cell>> {
+        ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>,
+        ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>> {
     private static final int FIRST_MONTH = 1;
 
     @Override
     public void map(ProtobufWritable<TelMonth> key,
-            MobilityWritable<Cell> value, Context context)
+            TypedProtobufWritable<Cell> value, Context context)
             throws IOException, InterruptedException {
         key.setConverter(TelMonth.class);
         final TelMonth oldKey = key.get();

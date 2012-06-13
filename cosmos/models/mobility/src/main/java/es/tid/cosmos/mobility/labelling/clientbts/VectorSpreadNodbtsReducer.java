@@ -6,10 +6,10 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
@@ -20,13 +20,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  * @author dmicol
  */
 public class VectorSpreadNodbtsReducer extends Reducer<LongWritable,
-        MobilityWritable<NodeMxCounter>, ProtobufWritable<NodeBts>,
-        MobilityWritable<Int>> {
+        TypedProtobufWritable<NodeMxCounter>, ProtobufWritable<NodeBts>,
+        TypedProtobufWritable<Int>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<NodeMxCounter>> values, Context context)
+            Iterable<TypedProtobufWritable<NodeMxCounter>> values, Context context)
             throws IOException, InterruptedException {
-        for (MobilityWritable<NodeMxCounter> value : values) {
+        for (TypedProtobufWritable<NodeMxCounter> value : values) {
             final NodeMxCounter nodeMxCounter = value.get();
             for (BtsCounter btsCounter : nodeMxCounter.getBtsList()) {
                 int group;
@@ -47,7 +47,7 @@ public class VectorSpreadNodbtsReducer extends Reducer<LongWritable,
                         key.get(), btsCounter.getBts(),
                         group, btsCounter.getRange());
                 context.write(nodeBts,
-                              MobilityWritable.create(btsCounter.getCount()));
+                              TypedProtobufWritable.create(btsCounter.getCount()));
             }
         }
     }

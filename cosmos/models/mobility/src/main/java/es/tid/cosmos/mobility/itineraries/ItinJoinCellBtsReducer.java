@@ -10,7 +10,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ItinTimeUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
@@ -25,8 +25,8 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  * @author dmicol
  */
 public class ItinJoinCellBtsReducer extends Reducer<LongWritable,
-        MobilityWritable<Cdr>, ProtobufWritable<TwoInt>,
-        MobilityWritable<ItinTime>> {
+        TypedProtobufWritable<Cdr>, ProtobufWritable<TwoInt>,
+        TypedProtobufWritable<ItinTime>> {
     private static List<Cell> cells;
     
     @Override
@@ -40,20 +40,20 @@ public class ItinJoinCellBtsReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Cdr>> values, Context context)
+            Iterable<TypedProtobufWritable<Cdr>> values, Context context)
             throws IOException, InterruptedException {
         List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
         if (filteredCells.isEmpty()) {
             return;
         }
-        for (MobilityWritable<Cdr> value : values) {
+        for (TypedProtobufWritable<Cdr> value : values) {
             final Cdr cdr = value.get();
             for (Cell cell : filteredCells) {
                 final ProtobufWritable<TwoInt> nodeBts =
                         TwoIntUtil.createAndWrap(cdr.getUserId(),
                                                  cell.getBts());
-                final MobilityWritable<ItinTime> itTime =
-                        new MobilityWritable<ItinTime>(
+                final TypedProtobufWritable<ItinTime> itTime =
+                        new TypedProtobufWritable<ItinTime>(
                                 ItinTimeUtil.create(cdr.getDate(),
                                                     cdr.getTime(),
                                                     cell.getBts()));

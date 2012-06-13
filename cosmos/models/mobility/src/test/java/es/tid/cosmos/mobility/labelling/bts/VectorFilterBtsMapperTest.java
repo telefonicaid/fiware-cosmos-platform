@@ -9,10 +9,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -20,13 +20,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class VectorFilterBtsMapperTest {
-    private MapDriver<LongWritable, MobilityWritable<TwoInt>,
-            ProtobufWritable<BtsCounter>, MobilityWritable<Null>> driver;
+    private MapDriver<LongWritable, TypedProtobufWritable<TwoInt>,
+            ProtobufWritable<BtsCounter>, TypedProtobufWritable<Null>> driver;
     
     @Before
     public void setUp() {
-        this.driver = new MapDriver<LongWritable, MobilityWritable<TwoInt>,
-                ProtobufWritable<BtsCounter>, MobilityWritable<Null>>(
+        this.driver = new MapDriver<LongWritable, TypedProtobufWritable<TwoInt>,
+                ProtobufWritable<BtsCounter>, TypedProtobufWritable<Null>>(
                         new VectorFilterBtsMapper());
     }
     
@@ -36,9 +36,9 @@ public class VectorFilterBtsMapperTest {
         final TwoInt value = TwoIntUtil.create(4L, 7L);
         final BtsCounter outKey = BtsCounterUtil.create(3L, 4, 7, 0);
         this.driver
-                .withInput(key, new MobilityWritable<TwoInt>(value))
+                .withInput(key, new TypedProtobufWritable<TwoInt>(value))
                 .withOutput(BtsCounterUtil.wrap(outKey),
-                            new MobilityWritable<Null>(Null.getDefaultInstance()))
+                            new TypedProtobufWritable<Null>(Null.getDefaultInstance()))
                 .runTest();
     }
 }

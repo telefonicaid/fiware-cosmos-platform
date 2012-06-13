@@ -12,7 +12,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
 
 /**
@@ -21,23 +21,23 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
  */
 public class ParseClientProfileMapperTest {
     private MapDriver<LongWritable, Text, LongWritable,
-            MobilityWritable<ClientProfile>> driver;
+            TypedProtobufWritable<ClientProfile>> driver;
     
     @Before
     public void setUp() {
         this.driver = new MapDriver<LongWritable, Text, LongWritable,
-                MobilityWritable<ClientProfile>>(new ParseClientProfileMapper());
+                TypedProtobufWritable<ClientProfile>>(new ParseClientProfileMapper());
     }
 
     @Test
     public void testValidLine() throws IOException {
-        List<Pair<LongWritable, MobilityWritable<ClientProfile>>> res = this.driver
+        List<Pair<LongWritable, TypedProtobufWritable<ClientProfile>>> res = this.driver
                 .withInput(new LongWritable(1L), new Text("2221436242|12"))
                 .run();
         assertNotNull(res);
         assertEquals(1, res.size());
         assertEquals(new LongWritable(2221436242L), res.get(0).getFirst());
-        MobilityWritable<ClientProfile> wrappedCell = res.get(0).getSecond();
+        TypedProtobufWritable<ClientProfile> wrappedCell = res.get(0).getSecond();
         assertNotNull(wrappedCell.get());
     }
 

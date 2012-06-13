@@ -11,7 +11,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.ItinMovementUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 
@@ -22,7 +22,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
  * @author dmicol
  */
 public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
-        MobilityWritable<ItinTime>, LongWritable, MobilityWritable<ItinMovement>> {
+        TypedProtobufWritable<ItinTime>, LongWritable, TypedProtobufWritable<ItinMovement>> {
     private static final int MINS_IN_ONE_HOUR = 60;
     private static final int HOURS_IN_ONE_DAY = 24;
     private static final int MINS_IN_ONE_DAY = MINS_IN_ONE_HOUR *
@@ -43,10 +43,10 @@ public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
 
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<ItinTime>> values,
+            Iterable<TypedProtobufWritable<ItinTime>> values,
             Context context) throws IOException, InterruptedException {
         List<ItinTime> locList = new LinkedList<ItinTime>();
-        for (MobilityWritable<ItinTime> value : values) {
+        for (TypedProtobufWritable<ItinTime> value : values) {
             locList.add(value.get());
         }
         
@@ -101,7 +101,7 @@ public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
             // Filter movements by diff of time
             if (minDistance <= this.maxMinutesInMoves &&
                     minDistance >= this.minMinutesInMoves) {
-                MobilityWritable<ItinMovement> move = new MobilityWritable<ItinMovement>(
+                TypedProtobufWritable<ItinMovement> move = new TypedProtobufWritable<ItinMovement>(
                         ItinMovementUtil.create(loc1, minDistLoc));
                 context.write(key, move);
             }

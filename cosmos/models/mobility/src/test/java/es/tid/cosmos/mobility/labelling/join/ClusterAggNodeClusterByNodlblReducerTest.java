@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.PoiUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
@@ -19,27 +19,27 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
  * @author dmicol
  */
 public class ClusterAggNodeClusterByNodlblReducerTest {
-    private ReduceDriver<LongWritable, MobilityWritable<Message>, LongWritable,
-            MobilityWritable<Poi>> driver;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<Message>, LongWritable,
+            TypedProtobufWritable<Poi>> driver;
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, MobilityWritable<Message>,
-                LongWritable, MobilityWritable<Poi>>(
+        this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
+                LongWritable, TypedProtobufWritable<Poi>>(
                         new ClusterAggNodeClusterByNodlblReducer());
     }
 
     @Test
     public void testReduce() {
         final LongWritable key = new LongWritable(57L);
-        final MobilityWritable<Message> value1 = new MobilityWritable<Message>(
+        final TypedProtobufWritable<Message> value1 = new TypedProtobufWritable<Message>(
                 ClusterUtil.create(1, 2, 0, 3, 4,
                                    ClusterVector.getDefaultInstance()));
-        final MobilityWritable<Message> value2 = new MobilityWritable<Message>(
+        final TypedProtobufWritable<Message> value2 = new TypedProtobufWritable<Message>(
                 PoiUtil.create(1, 2, 3, 4, 5, 0, 6, 7, 8, 0, 9, 10, 11, 0, 13,
                                14, 15));
         final LongWritable outKey = new LongWritable(1L);
-        final MobilityWritable<Poi> outValue = new MobilityWritable<Poi>(
+        final TypedProtobufWritable<Poi> outValue = new TypedProtobufWritable<Poi>(
                 PoiUtil.create(1, 2, 3, 1, 2, 0, 4, 7, 8, 0, 9, 10, 11, 0, 13,
                                14, 15));
         this.driver

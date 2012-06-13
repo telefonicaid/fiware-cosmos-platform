@@ -19,12 +19,13 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.*;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDate;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
@@ -34,8 +35,8 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(CellsCatalogue.class)
 public class PopdenSpreadNodebtsdayhourReducerTest {
-    private ReduceDriver<LongWritable, MobilityWritable<Cdr>,
-            ProtobufWritable<NodeBtsDate>, MobilityWritable<Null>> instance;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
+            ProtobufWritable<NodeBtsDate>, TypedProtobufWritable<Null>> instance;
     private List<Cell> cells;
     
     @Before
@@ -45,8 +46,8 @@ public class PopdenSpreadNodebtsdayhourReducerTest {
         PowerMockito.mockStatic(CellsCatalogue.class);
         when(CellsCatalogue.load(any(Path.class), any(Configuration.class)))
                 .thenReturn(this.cells);
-        this.instance = new ReduceDriver<LongWritable, MobilityWritable<Cdr>,
-                ProtobufWritable<NodeBtsDate>, MobilityWritable<Null>>(
+        this.instance = new ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
+                ProtobufWritable<NodeBtsDate>, TypedProtobufWritable<Null>>(
                         new PopdenSpreadNodebtsdayhourReducer());
         this.instance.getConfiguration().set("cells", "/home/test");
     }
@@ -55,12 +56,12 @@ public class PopdenSpreadNodebtsdayhourReducerTest {
     public void testReduce() {
         when(CellsCatalogue.filter(this.cells, 10L)).thenReturn(this.cells);
         Date date = DateUtil.create(3, 4, 5, 6);
-        MobilityWritable<Cdr> cdr = new MobilityWritable<Cdr>(
+        TypedProtobufWritable<Cdr> cdr = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(1L, 2L, date, TimeUtil.create(7, 8, 9)));
         this.instance
                 .withInput(new LongWritable(10L), Arrays.asList(cdr))
                 .withOutput(NodeBtsDateUtil.createAndWrap(1L, 11L, date, 7),
-                            new MobilityWritable<Null>(Null.getDefaultInstance()))
+                            new TypedProtobufWritable<Null>(Null.getDefaultInstance()))
                 .runTest();
     }
 }

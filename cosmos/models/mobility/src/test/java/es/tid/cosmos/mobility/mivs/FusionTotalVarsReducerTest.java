@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 
@@ -18,13 +18,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
  * @author logc
  */
 public class FusionTotalVarsReducerTest {
-    private ReduceDriver<LongWritable, MobilityWritable<MobVars>,
-            LongWritable, MobilityWritable<MobViMobVars>> reducer;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<MobVars>,
+            LongWritable, TypedProtobufWritable<MobViMobVars>> reducer;
 
     @Before
     public void setUp() {
-        this.reducer = new ReduceDriver<LongWritable, MobilityWritable<MobVars>,
-                LongWritable, MobilityWritable<MobViMobVars>>(
+        this.reducer = new ReduceDriver<LongWritable, TypedProtobufWritable<MobVars>,
+                LongWritable, TypedProtobufWritable<MobViMobVars>>(
                         new FusionTotalVarsReducer());
     }
 
@@ -34,11 +34,11 @@ public class FusionTotalVarsReducerTest {
 
         MobVars area1 = MobVarsUtil.create(1, true, 1, 1, 1, 1, 1000000,
                                            1000000, 0.0, 0.0);
-        MobilityWritable<MobVars> row1 = new MobilityWritable<MobVars>(area1);
+        TypedProtobufWritable<MobVars> row1 = new TypedProtobufWritable<MobVars>(area1);
         MobVars area2 = MobVarsUtil.create(1, true, 2, 2, 2, 2, 6000000,
                                            3000000, 100, 100);
-        MobilityWritable<MobVars> row2 = new MobilityWritable<MobVars>(area2);
-        MobilityWritable<MobViMobVars> results = new MobilityWritable<MobViMobVars>(
+        TypedProtobufWritable<MobVars> row2 = new TypedProtobufWritable<MobVars>(area2);
+        TypedProtobufWritable<MobViMobVars> results = new TypedProtobufWritable<MobViMobVars>(
                 MobViMobVarsUtil.create(asList(area1, area2)));
 
         this.reducer

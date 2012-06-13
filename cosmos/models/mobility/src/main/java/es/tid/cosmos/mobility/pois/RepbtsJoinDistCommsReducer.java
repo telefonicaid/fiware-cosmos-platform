@@ -9,10 +9,10 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
 
 /**
@@ -22,21 +22,22 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
  * @author dmicol
  */
 public class RepbtsJoinDistCommsReducer extends Reducer<LongWritable,
-        MobilityWritable<Message>, LongWritable, MobilityWritable<BtsCounter>> {
+        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<BtsCounter>> {
     @Override
     public void reduce(LongWritable key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
         List<Integer> ncommsList = new LinkedList<Integer>();
         List<NodeBtsDay> nodeBtsDayList = new LinkedList<NodeBtsDay>();
-        for (MobilityWritable<Message> value : values) {
+        for (TypedProtobufWritable<Message> value : values) {
             final Message message = value.get();
             if (message instanceof Int) {
-                ncommsList.add(((Int)message).getNum());
+                ncommsList.add(((Int) message).getValue());
             } else if (message instanceof NodeBtsDay) {
-                nodeBtsDayList.add((NodeBtsDay)message);
+                nodeBtsDayList.add((NodeBtsDay) message);
             } else {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Unexpected input type: "
+                        + message.getClass());
             }
         }
         for (Integer ncomms : ncommsList) {
@@ -46,7 +47,7 @@ public class RepbtsJoinDistCommsReducer extends Reducer<LongWritable,
                                 0,
                                 nodeBtsDay.getCount(),
                                 nodeBtsDay.getCount() * 100 / ncomms);
-                context.write(key, new MobilityWritable<BtsCounter>(counter));
+                context.write(key, new TypedProtobufWritable<BtsCounter>(counter));
             }
         }
     }

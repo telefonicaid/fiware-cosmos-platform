@@ -9,12 +9,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
@@ -24,8 +24,8 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  * @author dmicol
  */
 public class JoinBtsNodeToNodeBtsReducer extends Reducer<LongWritable,
-        MobilityWritable<Cdr>, ProtobufWritable<NodeBts>,
-        MobilityWritable<Null>> {
+        TypedProtobufWritable<Cdr>, ProtobufWritable<NodeBts>,
+        TypedProtobufWritable<Null>> {
     private static List<Cell> cells = null;
     
     @Override
@@ -39,21 +39,21 @@ public class JoinBtsNodeToNodeBtsReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Cdr>> values, Context context)
+            Iterable<TypedProtobufWritable<Cdr>> values, Context context)
             throws IOException, InterruptedException {
         List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
         if (filteredCells.isEmpty()) {
             return;
         }
-        for (MobilityWritable<Cdr> value : values) {
+        for (TypedProtobufWritable<Cdr> value : values) {
             final Cdr cdr = value.get();
             for (Cell cell : filteredCells) {
                 ProtobufWritable<NodeBts> nodeBts = NodeBtsUtil.createAndWrap(
                         cdr.getUserId(), cell.getBts(),
                         cdr.getDate().getWeekday(), cdr.getTime().getHour());
                 context.write(nodeBts,
-                              new MobilityWritable<Null>(
-                                    Null.getDefaultInstance()));
+                              new TypedProtobufWritable<Null>(
+                                      Null.getDefaultInstance()));
             }
         }
     }

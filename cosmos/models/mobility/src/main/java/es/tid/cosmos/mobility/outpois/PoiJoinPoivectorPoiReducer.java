@@ -9,7 +9,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
@@ -23,13 +23,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class PoiJoinPoivectorPoiReducer extends Reducer<
-        ProtobufWritable<TwoInt>, MobilityWritable<Message>,
-        ProtobufWritable<TwoInt>, MobilityWritable<Cluster>> {
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Cluster>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        Map<Class, List> dividedLists = MobilityWritable.divideIntoTypes(
+        Map<Class, List> dividedLists = TypedProtobufWritable.groupByClass(
                 values, ClusterVector.class, Poi.class);
         List<ClusterVector> clusterVectorList = dividedLists.get(ClusterVector.class);
         List<Poi> poiList = dividedLists.get(Poi.class);
@@ -44,7 +44,7 @@ public class PoiJoinPoivectorPoiReducer extends Reducer<
                         poi.getLabelnodebts(), poi.getLabelgroupnodebts(),
                         poi.getConfidentnodebts(), 0.0D, 0.0D, clusterVector);
                 context.write(TwoIntUtil.wrap(outputNodeBtsBuilder.build()),
-                              new MobilityWritable<Cluster>(outputCluster));
+                              new TypedProtobufWritable<Cluster>(outputCluster));
             }
         }
     }

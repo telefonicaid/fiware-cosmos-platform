@@ -6,9 +6,9 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Float64;
 import es.tid.cosmos.mobility.data.MatrixRangeUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Float64;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixRange;
@@ -20,13 +20,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixRange;
  * @author dmicol
  */
 public class MatrixGetRangesReducer extends Reducer<LongWritable,
-        MobilityWritable<ItinMovement>, ProtobufWritable<MatrixRange>,
-        MobilityWritable<Float64>> {
+        TypedProtobufWritable<ItinMovement>, ProtobufWritable<MatrixRange>,
+        TypedProtobufWritable<Float64>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<ItinMovement>> values, Context context)
+            Iterable<TypedProtobufWritable<ItinMovement>> values, Context context)
             throws IOException, InterruptedException {
-        for (MobilityWritable<ItinMovement> value : values) {
+        for (TypedProtobufWritable<ItinMovement> value : values) {
             final ItinMovement move = value.get();
             final ItinTime source = move.getSource();
             final ItinTime target = move.getTarget();
@@ -52,7 +52,7 @@ public class MatrixGetRangesReducer extends Reducer<LongWritable,
                 percMoves = 1.0D;
                 moveRangeFinal = moveRange.clone();
                 context.write(MatrixRangeUtil.wrap(moveRangeFinal.build()),
-                              MobilityWritable.create(percMoves));
+                              TypedProtobufWritable.create(percMoves));
             } else {
                 int minutSrc = source.getTime().getMinute();
                 int minutTgt = target.getTime().getMinute();
@@ -63,14 +63,14 @@ public class MatrixGetRangesReducer extends Reducer<LongWritable,
                 percMoves = (60 - minutSrc) / dur;
                 moveRangeFinal = moveRange.clone();
                 context.write(MatrixRangeUtil.wrap(moveRangeFinal.build()),
-                              MobilityWritable.create(percMoves));
+                              TypedProtobufWritable.create(percMoves));
                 // Comunication in target hour
                 moveRange.setRange(target.getTime().getHour());
                 moveRange.setGroup(target.getDate().getWeekday());
                 percMoves = minutTgt / dur;
                 moveRangeFinal = moveRange.clone();
                 context.write(MatrixRangeUtil.wrap(moveRangeFinal.build()),
-                              MobilityWritable.create(percMoves));
+                              TypedProtobufWritable.create(percMoves));
                 // Fill the intermediate hours
                 for (int i = 1; i < diff; i++) {
                     moveRange.setRange(source.getTime().getHour() + i);
@@ -82,7 +82,7 @@ public class MatrixGetRangesReducer extends Reducer<LongWritable,
                     percMoves = 60 / dur;
                     moveRangeFinal = moveRange.clone();
                     context.write(MatrixRangeUtil.wrap(moveRangeFinal.build()),
-                                  MobilityWritable.create(percMoves));
+                                  TypedProtobufWritable.create(percMoves));
                 }
             }
         }

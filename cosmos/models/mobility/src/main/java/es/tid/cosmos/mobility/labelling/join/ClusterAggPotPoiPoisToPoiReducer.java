@@ -7,8 +7,8 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -19,18 +19,20 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
-        ProtobufWritable<TwoInt>, MobilityWritable<Message>, LongWritable,
-        MobilityWritable<Poi>> {
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>, LongWritable,
+        TypedProtobufWritable<Poi>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
         Poi poi = null;
         boolean hasNulls = false;
-        for (MobilityWritable<Message> value : values) {
+        for (TypedProtobufWritable<Message> value : values) {
             final Message message = value.get();
-            if (message instanceof Poi && poi == null) {
-                poi =(Poi)message;
+            if (message instanceof Poi) {
+                if (poi == null) {
+                    poi = (Poi) message;
+                }
             } else if (message instanceof Null) {
                 hasNulls = true;
             } else {
@@ -49,6 +51,6 @@ public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
             outputPoi.setConfidentnodebts(1);
         }
         context.write(new LongWritable(outputPoi.getBts()),
-                      new MobilityWritable<Poi>(outputPoi.build()));
+                      new TypedProtobufWritable<Poi>(outputPoi.build()));
     }
 }

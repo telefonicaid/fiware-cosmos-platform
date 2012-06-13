@@ -13,8 +13,8 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -23,18 +23,18 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  */
 public class AdjParseAdjBtsMapperTest {
     private MapDriver<LongWritable, Text, ProtobufWritable<TwoInt>,
-            MobilityWritable<Null>> driver;
+            TypedProtobufWritable<Null>> driver;
     
     @Before
     public void setUp() {
         this.driver = new MapDriver<LongWritable, Text,
-                ProtobufWritable<TwoInt>, MobilityWritable<Null>>(
+                ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>>(
                         new AdjParseAdjBtsMapper());
     }
 
     @Test
     public void testValidLine() throws IOException {
-        List<Pair<ProtobufWritable<TwoInt>, MobilityWritable<Null>>> res =
+        List<Pair<ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>>> res =
                 this.driver
                         .withInput(new LongWritable(1L), new Text("123|456"))
                         .run();
@@ -43,7 +43,7 @@ public class AdjParseAdjBtsMapperTest {
         ProtobufWritable<TwoInt> wrappedKey = res.get(0).getFirst();
         wrappedKey.setConverter(TwoInt.class);
         assertNotNull(wrappedKey.get());
-        MobilityWritable<Null> wrappedNull = res.get(0).getSecond();
+        TypedProtobufWritable<Null> wrappedNull = res.get(0).getSecond();
     }
 
     @Test

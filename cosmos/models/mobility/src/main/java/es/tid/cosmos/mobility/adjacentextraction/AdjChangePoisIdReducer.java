@@ -8,25 +8,25 @@ import com.google.protobuf.Message;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiNew;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
- * Input: <TwoInt, Poi|PoiNew> Output: <TwoInt, Poi>
+ * Input: <TwoInt, Poi|PoiNew>
+ * Output: <TwoInt, Poi>
  *
  * @author dmicol
  */
 public class AdjChangePoisIdReducer extends Reducer<ProtobufWritable<TwoInt>,
-        MobilityWritable<Message>, ProtobufWritable<TwoInt>,
-        MobilityWritable<Poi>> {
+        TypedProtobufWritable<Message>, ProtobufWritable<TwoInt>,
+        TypedProtobufWritable<Poi>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-                          Iterable<MobilityWritable<Message>> values,
-                          Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        Map<Class, List> typeLists = MobilityWritable.divideIntoTypes(
+        Map<Class, List> typeLists = TypedProtobufWritable.groupByClass(
                 values, Poi.class, PoiNew.class);
         final List<Poi> poiList = typeLists.get(Poi.class);
         final List<PoiNew> poiNewList = typeLists.get(PoiNew.class);
@@ -35,7 +35,7 @@ public class AdjChangePoisIdReducer extends Reducer<ProtobufWritable<TwoInt>,
             for (PoiNew poiNew : poiNewList) {
                 Poi.Builder outputPoiBuilder = Poi.newBuilder(poi);
                 outputPoiBuilder.setId(poiNew.getId());
-                context.write(key, new MobilityWritable<Poi>(
+                context.write(key, new TypedProtobufWritable<Poi>(
                         outputPoiBuilder.build()));
             }
         }

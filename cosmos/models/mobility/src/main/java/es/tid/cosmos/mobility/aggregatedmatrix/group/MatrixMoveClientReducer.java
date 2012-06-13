@@ -12,7 +12,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.ItinMovementUtil;
 import es.tid.cosmos.mobility.data.ItinTimeUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixTime;
@@ -24,7 +24,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixTime;
  * @author dmicol
  */
 public class MatrixMoveClientReducer extends Reducer<LongWritable,
-        MobilityWritable<MatrixTime>, LongWritable, MobilityWritable<ItinMovement>> {
+        TypedProtobufWritable<MatrixTime>, LongWritable, TypedProtobufWritable<ItinMovement>> {
     private static final int MINS_IN_ONE_HOUR = 60;
     private static final int HOURS_IN_ONE_DAY = 24;
     private static final int MINS_IN_ONE_DAY = MINS_IN_ONE_HOUR *
@@ -48,10 +48,10 @@ public class MatrixMoveClientReducer extends Reducer<LongWritable,
 
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<MatrixTime>> values,
+            Iterable<TypedProtobufWritable<MatrixTime>> values,
             Context context) throws IOException, InterruptedException {
         List<MatrixTime> locList = new LinkedList<MatrixTime>();
-        for (MobilityWritable<MatrixTime> value : values) {
+        for (TypedProtobufWritable<MatrixTime> value : values) {
             locList.add(value.get());
         }
 
@@ -113,7 +113,7 @@ public class MatrixMoveClientReducer extends Reducer<LongWritable,
                                                    minDistLoc.getTime(),
                                                    minDistLoc.getGroup());
                 ItinMovement move = ItinMovementUtil.create(src, tgt);
-                context.write(key, new MobilityWritable<ItinMovement>(move));
+                context.write(key, new TypedProtobufWritable<ItinMovement>(move));
             }
         }
     }

@@ -6,11 +6,11 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 
 /**
  * Input: <NodeBts, Null>
@@ -19,14 +19,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
  * @author dmicol
  */
 public class NodeBtsCounterReducer extends Reducer<
-        ProtobufWritable<NodeBts>, MobilityWritable<Null>, LongWritable,
-        MobilityWritable<BtsCounter>> {
+        ProtobufWritable<NodeBts>, TypedProtobufWritable<Null>, LongWritable,
+        TypedProtobufWritable<BtsCounter>> {
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<MobilityWritable<Null>> values, Context context)
+            Iterable<TypedProtobufWritable<Null>> values, Context context)
             throws IOException, InterruptedException {
         int count = 0;
-        for (MobilityWritable<Null> value : values) {
+        for (TypedProtobufWritable<Null> value : values) {
             count++;
         }
         key.setConverter(NodeBts.class);
@@ -34,6 +34,6 @@ public class NodeBtsCounterReducer extends Reducer<
         BtsCounter counter = BtsCounterUtil.create(node.getBts(),
                 node.getWeekday(), node.getRange(), count);
         context.write(new LongWritable(node.getUserId()),
-                      new MobilityWritable<BtsCounter>(counter));
+                      new TypedProtobufWritable<BtsCounter>(counter));
     }
 }

@@ -9,7 +9,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MatrixTimeUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.CellGroup;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixTime;
@@ -22,7 +22,7 @@ import es.tid.cosmos.mobility.util.CellGroupsCatalogue;
  * @author dmicol
  */
 public class MatrixJoinCellGroupReducer extends Reducer<LongWritable,
-        MobilityWritable<Cdr>, LongWritable, MobilityWritable<MatrixTime>> {
+        TypedProtobufWritable<Cdr>, LongWritable, TypedProtobufWritable<MatrixTime>> {
     private static List<CellGroup> cellGroups;
     
     @Override
@@ -37,21 +37,21 @@ public class MatrixJoinCellGroupReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Cdr>> values, Context context)
+            Iterable<TypedProtobufWritable<Cdr>> values, Context context)
             throws IOException, InterruptedException {
         List<CellGroup> filteredCellGroups = CellGroupsCatalogue.filter(
                 cellGroups, key.get());
         if (filteredCellGroups.isEmpty()) {
             return;
         }
-        for (MobilityWritable<Cdr> value : values) {
+        for (TypedProtobufWritable<Cdr> value : values) {
             final Cdr cdr = value.get();
             for (CellGroup cellGroup : filteredCellGroups) {
                 final MatrixTime mtxTime = MatrixTimeUtil.create(cdr.getDate(),
                         cdr.getTime(), (int)cellGroup.getGroup().getNum2(),
                         cellGroup.getGroup().getNum1());
                 context.write(new LongWritable(cdr.getUserId()),
-                              new MobilityWritable<MatrixTime>(mtxTime));
+                              new TypedProtobufWritable<MatrixTime>(mtxTime));
             }
         }
     }

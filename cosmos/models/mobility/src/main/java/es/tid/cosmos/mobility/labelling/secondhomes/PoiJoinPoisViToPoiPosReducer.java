@@ -8,7 +8,7 @@ import com.google.protobuf.Message;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
@@ -20,12 +20,12 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
  * @author dmicol
  */
 public class PoiJoinPoisViToPoiPosReducer extends Reducer<LongWritable,
-        MobilityWritable<Message>, LongWritable, MobilityWritable<PoiPos>> {
+        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<PoiPos>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        Map<Class, List> dividedLists = MobilityWritable.divideIntoTypes(
+        Map<Class, List> dividedLists = TypedProtobufWritable.groupByClass(
                 values, PoiPos.class, MobViMobVars.class);
         List<PoiPos> poiPosList = dividedLists.get(PoiPos.class);
         List<MobViMobVars> mobVIVarsList = dividedLists.get(MobViMobVars.class);
@@ -50,7 +50,7 @@ public class PoiJoinPoisViToPoiPosReducer extends Reducer<LongWritable,
                     outputPoiPos.setDistCMWeek(dist);
                 }
                 context.write(key,
-                              new MobilityWritable<PoiPos>(outputPoiPos.build()));
+                              new TypedProtobufWritable<PoiPos>(outputPoiPos.build()));
             }
         }
     }

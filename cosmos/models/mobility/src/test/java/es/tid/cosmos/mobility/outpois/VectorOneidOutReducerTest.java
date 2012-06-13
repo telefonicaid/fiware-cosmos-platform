@@ -15,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 
@@ -24,12 +24,12 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
  * @author dmicol
  */
 public class VectorOneidOutReducerTest {
-    private ReduceDriver<LongWritable, MobilityWritable<Cluster>, NullWritable,
+    private ReduceDriver<LongWritable, TypedProtobufWritable<Cluster>, NullWritable,
             Text> driver;
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, MobilityWritable<Cluster>,
+        this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Cluster>,
                 NullWritable, Text>(new VectorOneidOutReducer());
     }
 
@@ -41,9 +41,9 @@ public class VectorOneidOutReducerTest {
         ClusterVector clusterVector2 = ClusterVector.newBuilder()
                 .addAllComs(asList(0.4D, 3.2D))
                 .build();
-        final MobilityWritable<Cluster> value1 = new MobilityWritable<Cluster>(
+        final TypedProtobufWritable<Cluster> value1 = new TypedProtobufWritable<Cluster>(
                 ClusterUtil.create(1, 2, 3, 4, 5, clusterVector1));
-        final MobilityWritable<Cluster> value2 = new MobilityWritable<Cluster>(
+        final TypedProtobufWritable<Cluster> value2 = new TypedProtobufWritable<Cluster>(
                 ClusterUtil.create(10, 20, 30, 40, 50, clusterVector2));
         List<Pair<NullWritable, Text>> results = this.driver
                 .withInput(new LongWritable(57L), asList(value1, value2))

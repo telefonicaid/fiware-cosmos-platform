@@ -7,9 +7,9 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -17,21 +17,21 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class PoiDeleteSechomeDuplicateReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, MobilityWritable<Null>,
-        ProtobufWritable<TwoInt>, MobilityWritable<Null>> driver;
+    private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                MobilityWritable<Null>, ProtobufWritable<TwoInt>,
-                MobilityWritable<Null>>(
+                TypedProtobufWritable<Null>, ProtobufWritable<TwoInt>,
+                TypedProtobufWritable<Null>>(
                         new PoiDeleteSechomeDuplicateReducer());
     }
 
     @Test
     public void testReduce() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(30L, 40L);
-        final MobilityWritable<Null> value = new MobilityWritable<Null>(
+        final TypedProtobufWritable<Null> value = new TypedProtobufWritable<Null>(
                 Null.getDefaultInstance());
         this.driver
                 .withInput(key, asList(value, value, value))

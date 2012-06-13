@@ -8,7 +8,7 @@ import com.google.protobuf.Message;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.PoiPosUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
@@ -21,19 +21,21 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
  * @author dmicol
  */
 public class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
-        MobilityWritable<Message>, LongWritable, MobilityWritable<PoiPos>> {
+        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<PoiPos>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
         List<Poi> poiList = new LinkedList<Poi>();
         Cell cell = null;
-        for (MobilityWritable<Message> value : values) {
+        for (TypedProtobufWritable<Message> value : values) {
             final Message message = value.get();
             if (message instanceof Poi) {
                 poiList.add((Poi)message);
-            } else if (message instanceof Cell && cell == null) {
-                cell = (Cell)message;
+            } else if (message instanceof Cell) {
+                if (cell == null) {
+                    cell = (Cell) message;
+                }
             } else {
                 throw new IllegalStateException("Unexpected input type: "
                         + message.getClass());
@@ -48,7 +50,7 @@ public class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
                     cell.getPosx(), cell.getPosy(), poi.getInoutWeek(),
                     poi.getInoutWend(), -1D, -1D, -1D, -1D);
             context.write(new LongWritable(poi.getNode()),
-                          new MobilityWritable<PoiPos>(poiPos));
+                          new TypedProtobufWritable<PoiPos>(poiPos));
         }
     }
 }

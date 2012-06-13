@@ -9,12 +9,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.NodeBtsDateUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDate;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
@@ -24,9 +24,11 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  * @author ximo
  */
 public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
-        MobilityWritable<Cdr>, ProtobufWritable<NodeBtsDate>,
-        MobilityWritable<Null>> {
+        TypedProtobufWritable<Cdr>, ProtobufWritable<NodeBtsDate>,
+        TypedProtobufWritable<Null>> {
     private static List<Cell> cells = null;
+    private static final TypedProtobufWritable<Null> nullValue =
+            new TypedProtobufWritable<Null>(Null.getDefaultInstance());
     
     @Override
     protected void setup(Context context) throws IOException,
@@ -39,12 +41,10 @@ public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Cdr>> values, Context context)
+            Iterable<TypedProtobufWritable<Cdr>> values, Context context)
             throws IOException, InterruptedException {
-        final MobilityWritable<Null> nullValue = new MobilityWritable<Null>(
-                Null.getDefaultInstance());
         List<Cell> filteredCells = CellsCatalogue.filter(cells, key.get());
-        for (final MobilityWritable<Cdr> value : values) {
+        for (final TypedProtobufWritable<Cdr> value : values) {
             final Cdr cdr = value.get();
             for (Cell cell : filteredCells) {
                 context.write(NodeBtsDateUtil.createAndWrap(cdr.getUserId(),

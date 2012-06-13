@@ -6,9 +6,9 @@ import com.google.protobuf.Message;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -18,19 +18,21 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
-        ProtobufWritable<TwoInt>, MobilityWritable<Message>,
-        ProtobufWritable<TwoInt>, MobilityWritable<Cluster>> {
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Cluster>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
         Cluster cluster = null;
         boolean hasNulls = false;
-        for (MobilityWritable<Message> value : values) {
+        for (TypedProtobufWritable<Message> value : values) {
             final Message message = value.get();
-            if (message instanceof Cluster && cluster == null) {
-                cluster = (Cluster)message;
-            } else if(message instanceof Null) {
+            if (message instanceof Cluster) {
+                if (cluster == null) {
+                    cluster = (Cluster) message;
+                }
+            } else if (message instanceof Null) {
                 hasNulls = true;
             } else {
                 throw new IllegalStateException("Unexpected input type: "
@@ -48,6 +50,6 @@ public class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
         if (hasNulls) {
             outputCluster.setConfident(1);
         }
-        context.write(key, new MobilityWritable<Cluster>(outputCluster.build()));
+        context.write(key, new TypedProtobufWritable<Cluster>(outputCluster.build()));
     }
 }

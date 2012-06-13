@@ -9,10 +9,10 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int64;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int64;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -23,23 +23,24 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class ClusterJoinPotPoiLabelReducer extends Reducer<
-        LongWritable, MobilityWritable<Message>, ProtobufWritable<TwoInt>,
-        MobilityWritable<Null>> {
+        LongWritable, TypedProtobufWritable<Message>, ProtobufWritable<TwoInt>,
+        TypedProtobufWritable<Null>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        Map<Class, List> dividedLists = MobilityWritable.divideIntoTypes(
+        Map<Class, List> dividedLists = TypedProtobufWritable.groupByClass(
                 values, Poi.class, Int64.class);
         List<Poi> poiList = dividedLists.get(Poi.class);
-        List<Long> longList = dividedLists.get(Long.class);
+        List<Int64> longList = dividedLists.get(Int64.class);
         
-        for (Long majPoiLbl : longList) {
+        for (Int64 majPoiInt64 : longList) {
+            final long majPoiLbl = majPoiInt64.getValue();
             for (Poi potPoi : poiList) {
                 if (majPoiLbl == potPoi.getLabelnodebts()) {
                     context.write(TwoIntUtil.createAndWrap(potPoi.getNode(),
                                                            potPoi.getBts()),
-                                  new MobilityWritable<Null>(
+                                  new TypedProtobufWritable<Null>(
                                           Null.getDefaultInstance()));
                 }
             }

@@ -6,11 +6,11 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 
 /**
  * Input: <Long, Cdr>
@@ -19,15 +19,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
  * @author dmicol
  */
 public class VectorSpreadNodedayhourReducer extends Reducer<LongWritable,
-        MobilityWritable<Cdr>, ProtobufWritable<NodeBts>,
-        MobilityWritable<Null>> {
+        TypedProtobufWritable<Cdr>, ProtobufWritable<NodeBts>,
+        TypedProtobufWritable<Null>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Cdr>> values, Context context)
+            Iterable<TypedProtobufWritable<Cdr>> values, Context context)
             throws IOException, InterruptedException {
-        final MobilityWritable<Null> nullValue = new MobilityWritable<Null>(
+        final TypedProtobufWritable<Null> nullValue = new TypedProtobufWritable<Null>(
                 Null.getDefaultInstance());
-        for (MobilityWritable<Cdr> value : values) {
+        for (TypedProtobufWritable<Cdr> value : values) {
             final Cdr cdr = value.get();
             int weekday;
             switch (cdr.getDate().getWeekday()) {

@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.CdrUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
@@ -16,19 +16,19 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
  * @author dmicol
  */
 public class FilterCellnoinfoMapperTest {
-    private MapDriver<LongWritable, MobilityWritable<Cdr>, LongWritable,
-            MobilityWritable<Cdr>> driver;
+    private MapDriver<LongWritable, TypedProtobufWritable<Cdr>, LongWritable,
+            TypedProtobufWritable<Cdr>> driver;
 
     @Before
     public void setUp() {
-        this.driver = new MapDriver<LongWritable, MobilityWritable<Cdr>,
-                LongWritable, MobilityWritable<Cdr>>(
+        this.driver = new MapDriver<LongWritable, TypedProtobufWritable<Cdr>,
+                LongWritable, TypedProtobufWritable<Cdr>>(
                        new FilterCellnoinfoMapper());
     }
     
     @Test
     public void testValidCellId() throws Exception {
-        final MobilityWritable<Cdr> value = new MobilityWritable<Cdr>(
+        final TypedProtobufWritable<Cdr> value = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(3L, 7L, Date.getDefaultInstance(),
                                Time.getDefaultInstance()));
         this.driver
@@ -39,7 +39,7 @@ public class FilterCellnoinfoMapperTest {
 
     @Test
     public void testInvalidCellId() throws Exception {
-        final MobilityWritable<Cdr> value = new MobilityWritable<Cdr>(
+        final TypedProtobufWritable<Cdr> value = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(3L, 0L, Date.getDefaultInstance(),
                                Time.getDefaultInstance()));
         this.driver

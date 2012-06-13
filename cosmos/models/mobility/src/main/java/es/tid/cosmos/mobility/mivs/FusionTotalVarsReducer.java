@@ -8,7 +8,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 
@@ -19,16 +19,16 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
  * @author logc
  */
 public class FusionTotalVarsReducer extends Reducer<LongWritable,
-        MobilityWritable<MobVars>, LongWritable, MobilityWritable<MobViMobVars>> {
+        TypedProtobufWritable<MobVars>, LongWritable, TypedProtobufWritable<MobViMobVars>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<MobVars>> values, Context context)
+            Iterable<TypedProtobufWritable<MobVars>> values, Context context)
             throws IOException, InterruptedException {
         List<MobVars> allAreas = new ArrayList<MobVars>();
-        for (MobilityWritable<MobVars> value: values) {
+        for (TypedProtobufWritable<MobVars> value: values) {
             allAreas.add(value.get());
         }
-        context.write(key, new MobilityWritable<MobViMobVars>(
+        context.write(key, new TypedProtobufWritable<MobViMobVars>(
                 MobViMobVarsUtil.create(allAreas)));
     }
 }

@@ -7,7 +7,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
 
 /**
@@ -17,15 +17,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
  * @author dmicol
  */
 public class ItinItineraryOutReducer extends Reducer<LongWritable,
-        MobilityWritable<Itinerary>, NullWritable, Text> {
+        TypedProtobufWritable<Itinerary>, NullWritable, Text> {
     private static final String DELIMITER = "|";
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Itinerary>> values, Context context)
+            Iterable<TypedProtobufWritable<Itinerary>> values, Context context)
             throws IOException, InterruptedException {
         final long node = key.get();
-        for (MobilityWritable<Itinerary> value : values) {
+        for (TypedProtobufWritable<Itinerary> value : values) {
             final Itinerary itin = value.get();
             String output = node
                     + DELIMITER + itin.getSource()

@@ -16,7 +16,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -27,12 +27,12 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  */
 public class MatrixGetOutReducerTest {
     private ReduceDriver<ProtobufWritable<TwoInt>,
-            MobilityWritable<ClusterVector>, NullWritable, Text> instance;
+            TypedProtobufWritable<ClusterVector>, NullWritable, Text> instance;
 
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<TwoInt>,
-                MobilityWritable<ClusterVector>, NullWritable, Text>(
+                TypedProtobufWritable<ClusterVector>, NullWritable, Text>(
                         new MatrixGetOutReducer());
     }
     
@@ -40,7 +40,7 @@ public class MatrixGetOutReducerTest {
     public void testReduce() throws IOException {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L,
                                                                       102L);
-        final MobilityWritable<ClusterVector> value = new MobilityWritable<ClusterVector>(
+        final TypedProtobufWritable<ClusterVector> value = new TypedProtobufWritable<ClusterVector>(
                 ClusterVector.getDefaultInstance());
         List<Pair<NullWritable, Text>> results = this.instance
                 .withInput(key, asList(value, value))

@@ -13,21 +13,21 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 
 /**
  *
  * @author dmicol
  */
 public class SetMobDataInputIdReducerTest {
-    private ReduceDriver<LongWritable, MobilityWritable<Message>, LongWritable,
-            MobilityWritable<InputIdRecord>> driver;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<Message>, LongWritable,
+            TypedProtobufWritable<InputIdRecord>> driver;
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, MobilityWritable<Message>,
-                LongWritable, MobilityWritable<InputIdRecord>>(
+        this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
+                LongWritable, TypedProtobufWritable<InputIdRecord>>(
                         new SetMobDataInputIdReducer());
     }
     
@@ -40,13 +40,13 @@ public class SetMobDataInputIdReducerTest {
     public void testSetInputId() throws IOException {
         Configuration conf = this.driver.getConfiguration();
         conf.setInt("input_id", 3);
-        List<Pair<LongWritable, MobilityWritable<InputIdRecord>>> res = this.driver
+        List<Pair<LongWritable, TypedProtobufWritable<InputIdRecord>>> res = this.driver
                 .withInput(new LongWritable(57L),
-                            asList(new MobilityWritable<Message>(
+                            asList(new TypedProtobufWritable<Message>(
                                     Null.getDefaultInstance())))
                 .run();
         assertEquals(1, res.size());
-        MobilityWritable<InputIdRecord> output = res.get(0).getSecond();
+        TypedProtobufWritable<InputIdRecord> output = res.get(0).getSecond();
         assertEquals(3, output.get().getInputId());
     }
 }

@@ -9,10 +9,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.Config;
-import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
 
 /**
  * Input: <Long, Int|Cdr>
@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
  * @author dmicol
  */
 public class VectorFiltClientsReducer extends Reducer<LongWritable,
-        MobilityWritable<Message>, LongWritable, MobilityWritable<Cdr>> {
+        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<Cdr>> {
     private int maxCdrs;
     
     @Override
@@ -33,18 +33,19 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
         boolean hasComms = false;
         List<Cdr> cdrList = new LinkedList<Cdr>();
-        for (MobilityWritable<Message> value : values) {
+        for (TypedProtobufWritable<Message> value : values) {
             final Message message = value.get();
             if (message instanceof Int) {
                 hasComms = true;
             } else if (message instanceof Cdr) {
                 cdrList.add((Cdr)message);
             } else {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Invalid input type: "
+                        + message.getClass());
             }
             
             if (hasComms) {
@@ -60,14 +61,14 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
             return;
         }
         for (Cdr cdr : cdrList) {
-            context.write(key, new MobilityWritable<Cdr>(cdr));
+            context.write(key, new TypedProtobufWritable<Cdr>(cdr));
         }
-        for (MobilityWritable<Message> value : values) {
+        for (TypedProtobufWritable<Message> value : values) {
             final Cdr cdr = (Cdr) value.get();
             if (cdr == null) {
                 throw new IllegalStateException();
             }
-            context.write(key, new MobilityWritable<Cdr>(cdr));
+            context.write(key, new TypedProtobufWritable<Cdr>(cdr));
         }
     }
 }

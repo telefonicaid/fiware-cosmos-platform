@@ -7,7 +7,7 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.PoiUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 
@@ -18,12 +18,12 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
  * @author dmicol
  */
 public class ExportPoiToTextReducer extends Reducer<LongWritable,
-        MobilityWritable<Poi>, NullWritable, Text> {
+        TypedProtobufWritable<Poi>, NullWritable, Text> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Poi>> values, Context context)
+            Iterable<TypedProtobufWritable<Poi>> values, Context context)
             throws IOException, InterruptedException {
-        for (MobilityWritable<Poi> value : values) {
+        for (TypedProtobufWritable<Poi> value : values) {
             final Poi poi = value.get();
             context.write(NullWritable.get(),
                           new Text(key + PoiUtil.DELIMITER

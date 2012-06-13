@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility.data;
+package es.tid.cosmos.base.data;
 
 import java.nio.charset.Charset;
 
@@ -11,7 +11,7 @@ import org.apache.commons.lang.ArrayUtils;
  *
  * @author ximo
  */
-public class MobilityConverter<M extends Message> implements BinaryConverter<M> {
+public class TypedProtobufConverter<M extends Message> implements BinaryConverter<M> {
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     @Override
@@ -36,7 +36,7 @@ public class MobilityConverter<M extends Message> implements BinaryConverter<M> 
                                                     1 + classNameLength);
         String className = new String(classNameBytes, UTF8);
         try {
-            clazz = (Class<M>)Class.forName(className);
+            clazz = (Class<M>) Class.forName(className);
         } catch (ClassNotFoundException ex) {
             throw new IllegalArgumentException("Byte stream does not have a "
                     + "valid class identifier", ex);

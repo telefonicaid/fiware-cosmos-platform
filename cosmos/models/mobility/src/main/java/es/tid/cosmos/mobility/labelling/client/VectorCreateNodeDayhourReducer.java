@@ -7,7 +7,7 @@ import java.util.List;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.DailyVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
@@ -20,17 +20,17 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class VectorCreateNodeDayhourReducer extends Reducer
-        <ProtobufWritable<NodeBts>, MobilityWritable<TwoInt>,
-        ProtobufWritable<TwoInt>, MobilityWritable<DailyVector>> {
+        <ProtobufWritable<NodeBts>, TypedProtobufWritable<TwoInt>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<DailyVector>> {
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<MobilityWritable<TwoInt>> values, Context context)
+            Iterable<TypedProtobufWritable<TwoInt>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(NodeBts.class);
         final NodeBts bts = key.get();
         
         List<TwoInt> valueList = new LinkedList<TwoInt>();
-        for (MobilityWritable<TwoInt> value : values) {
+        for (TypedProtobufWritable<TwoInt> value : values) {
             valueList.add(value.get());
         }
         
@@ -53,7 +53,7 @@ public class VectorCreateNodeDayhourReducer extends Reducer
         }
         ProtobufWritable<TwoInt> node = TwoIntUtil.createAndWrap(
                 bts.getUserId(), bts.getBts());
-        context.write(node, new MobilityWritable<DailyVector>(
+        context.write(node, new TypedProtobufWritable<DailyVector>(
                 vectorBuilder.build()));
     }
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
@@ -22,15 +22,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class VectorFiltClientbtsReducer extends Reducer<
-        ProtobufWritable<TwoInt>, MobilityWritable<InputIdRecord>,
-        ProtobufWritable<NodeBts>, MobilityWritable<TwoInt>> {
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<InputIdRecord>,
+        ProtobufWritable<NodeBts>, TypedProtobufWritable<TwoInt>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<MobilityWritable<InputIdRecord>> values, Context context)
+            Iterable<TypedProtobufWritable<InputIdRecord>> values, Context context)
             throws IOException, InterruptedException {
         int reprBtsCounterCount = 0;
         List<BtsCounter> sumBtsCounterList = new LinkedList<BtsCounter>();
-        for (MobilityWritable<InputIdRecord> value : values) {
+        for (TypedProtobufWritable<InputIdRecord> value : values) {
             final InputIdRecord record = value.get();
             switch (record.getInputId()) {
                 case 0:
@@ -56,7 +56,7 @@ public class VectorFiltClientbtsReducer extends Reducer<
                         sumBtsCounter.getWeekday(), 0);
                 TwoInt hourComs = TwoIntUtil.create(sumBtsCounter.getRange(),
                                                     sumBtsCounter.getCount());
-                context.write(nodeBts, new MobilityWritable<TwoInt>(hourComs));
+                context.write(nodeBts, new TypedProtobufWritable<TwoInt>(hourComs));
             }
         }
     }

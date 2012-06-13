@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.NodeMxCounterUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
@@ -18,24 +18,24 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  * @author dmicol
  */
 public class NodeMobInfoReducerTest {
-    private ReduceDriver<LongWritable, MobilityWritable<BtsCounter>,
-            LongWritable, MobilityWritable<NodeMxCounter>> driver;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<BtsCounter>,
+            LongWritable, TypedProtobufWritable<NodeMxCounter>> driver;
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, MobilityWritable<BtsCounter>,
-                LongWritable, MobilityWritable<NodeMxCounter>>(
+        this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<BtsCounter>,
+                LongWritable, TypedProtobufWritable<NodeMxCounter>>(
                         new NodeMobInfoReducer());
     }
 
     @Test
     public void testReduce() throws Exception {
         LongWritable key = new LongWritable(57L);
-        MobilityWritable<BtsCounter> btsCounter1 = new MobilityWritable<BtsCounter>(
+        TypedProtobufWritable<BtsCounter> btsCounter1 = new TypedProtobufWritable<BtsCounter>(
                 BtsCounterUtil.create(1L, 2, 3, 4));
-        MobilityWritable<BtsCounter> btsCounter2 = new MobilityWritable<BtsCounter>(
+        TypedProtobufWritable<BtsCounter> btsCounter2 = new TypedProtobufWritable<BtsCounter>(
                 BtsCounterUtil.create(5L, 6, 7, 8));
-        MobilityWritable<NodeMxCounter> output = new MobilityWritable<NodeMxCounter>(
+        TypedProtobufWritable<NodeMxCounter> output = new TypedProtobufWritable<NodeMxCounter>(
                 NodeMxCounterUtil.create(
                         asList(btsCounter1.get(), btsCounter2.get()), 2, 2));
         this.driver

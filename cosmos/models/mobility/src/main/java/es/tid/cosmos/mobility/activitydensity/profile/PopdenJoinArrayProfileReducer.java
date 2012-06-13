@@ -9,12 +9,12 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.data.BtsProfileUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsProfile;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
 /**
@@ -24,15 +24,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  * @author dmicol
  */
 public class PopdenJoinArrayProfileReducer extends Reducer<LongWritable,
-        MobilityWritable<Message>, ProtobufWritable<BtsProfile>,
-        MobilityWritable<Int>> {
+        TypedProtobufWritable<Message>, ProtobufWritable<BtsProfile>,
+        TypedProtobufWritable<Int>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
         List<NodeMxCounter> counterList = new LinkedList<NodeMxCounter>();
         List<Integer> profileIdList = new LinkedList<Integer>();
-        for (MobilityWritable<Message> value : values) {
+        for (TypedProtobufWritable<Message> value : values) {
             final Message message = value.get();
             if (message instanceof NodeMxCounter) {
                 counterList.add((NodeMxCounter)message);
@@ -52,7 +52,7 @@ public class PopdenJoinArrayProfileReducer extends Reducer<LongWritable,
                                     btsCounter.getWeekday(),
                                     btsCounter.getRange());
                     context.write(btsProfile,
-                            MobilityWritable.create(btsCounter.getCount()));
+                            TypedProtobufWritable.create(btsCounter.getCount()));
                 }
             }
         }

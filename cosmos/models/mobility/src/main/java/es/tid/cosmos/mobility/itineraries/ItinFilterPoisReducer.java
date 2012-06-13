@@ -9,7 +9,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -21,12 +21,12 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class ItinFilterPoisReducer extends Reducer<ProtobufWritable<TwoInt>,
-        MobilityWritable<Message>, LongWritable, MobilityWritable<ItinTime>> {
+        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<ItinTime>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        Map<Class, List> dividedList = MobilityWritable.divideIntoTypes(
+        Map<Class, List> dividedList = TypedProtobufWritable.groupByClass(
                 values, ItinTime.class, Poi.class);
         List<ItinTime> itinTimeList = dividedList.get(ItinTime.class);
         List<Poi> poiList = dividedList.get(Poi.class);
@@ -37,7 +37,7 @@ public class ItinFilterPoisReducer extends Reducer<ProtobufWritable<TwoInt>,
                 ItinTime.Builder itinTimeOut = ItinTime.newBuilder(itinTime);
                 itinTimeOut.setBts(poi.getId());
                 context.write(new LongWritable(nodeBts.getNum1()),
-                              new MobilityWritable<ItinTime>(itinTimeOut.build()));
+                              new TypedProtobufWritable<ItinTime>(itinTimeOut.build()));
             }
         }
     }

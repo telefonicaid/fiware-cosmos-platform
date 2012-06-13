@@ -7,10 +7,11 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.*;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsProfile;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -19,25 +20,25 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  */
 public class PopdenSumCommsReducerTest {
     private ReduceDriver<ProtobufWritable<BtsProfile>,
-            MobilityWritable<Int>, ProtobufWritable<TwoInt>,
-            MobilityWritable<BtsCounter>> instance;
+            TypedProtobufWritable<Int>, ProtobufWritable<TwoInt>,
+            TypedProtobufWritable<BtsCounter>> instance;
     
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<BtsProfile>,
-                MobilityWritable<Int>, ProtobufWritable<TwoInt>,
-                MobilityWritable<BtsCounter>>(new PopdenSumCommsReducer());
+                TypedProtobufWritable<Int>, ProtobufWritable<TwoInt>,
+                TypedProtobufWritable<BtsCounter>>(new PopdenSumCommsReducer());
     }
     
     @Test
     public void testReduce() {
         final ProtobufWritable<BtsProfile> key = BtsProfileUtil.createAndWrap(
                 1L, 2, 3, 4);
-        final MobilityWritable<Int> value1 = MobilityWritable.create(57);
-        final MobilityWritable<Int> value2 = MobilityWritable.create(102);
+        final TypedProtobufWritable<Int> value1 = TypedProtobufWritable.create(57);
+        final TypedProtobufWritable<Int> value2 = TypedProtobufWritable.create(102);
         final ProtobufWritable<TwoInt> outKey = TwoIntUtil.createAndWrap(1L,
                                                                          2L);
-        final MobilityWritable<BtsCounter> outValue = new MobilityWritable<BtsCounter>(
+        final TypedProtobufWritable<BtsCounter> outValue = new TypedProtobufWritable<BtsCounter>(
                 BtsCounterUtil.create(0L, 3, 4, 159));
         this.instance
                 .withInput(key, Arrays.asList(value1, value2))

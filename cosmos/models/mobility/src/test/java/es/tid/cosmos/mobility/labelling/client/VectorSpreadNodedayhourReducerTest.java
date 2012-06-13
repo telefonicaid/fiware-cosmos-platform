@@ -14,26 +14,26 @@ import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.DateUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TimeUtil;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 
 /**
  *
  * @author dmicol
  */
 public class VectorSpreadNodedayhourReducerTest {
-    private ReduceDriver<LongWritable, MobilityWritable<Cdr>,
-            ProtobufWritable<NodeBts>, MobilityWritable<Null>> instance;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
+            ProtobufWritable<NodeBts>, TypedProtobufWritable<Null>> instance;
     @Before
     public void setUp() throws Exception {
         this.instance = new ReduceDriver<LongWritable,
-                MobilityWritable<Cdr>, ProtobufWritable<NodeBts>,
-                MobilityWritable<Null>>(
+                TypedProtobufWritable<Cdr>, ProtobufWritable<NodeBts>,
+                TypedProtobufWritable<Null>>(
                         new VectorSpreadNodedayhourReducer());
     }
 
@@ -41,13 +41,13 @@ public class VectorSpreadNodedayhourReducerTest {
     public void testReduce() throws IOException {
         Date date1 = DateUtil.create(2012, 4, 11, 3);
         Time time1 = TimeUtil.create(1, 2, 3);
-        MobilityWritable<Cdr> cdr1 = new MobilityWritable<Cdr>(
+        TypedProtobufWritable<Cdr> cdr1 = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(12L, 34L, date1, time1));
         Date date2 = DateUtil.create(2012, 4, 13, 5);
         Time time2 = TimeUtil.create(4, 5, 6);
-        MobilityWritable<Cdr> cdr2 = new MobilityWritable<Cdr>(
+        TypedProtobufWritable<Cdr> cdr2 = new TypedProtobufWritable<Cdr>(
                 CdrUtil.create(56L, 78L, date2, time2));
-        List<Pair<ProtobufWritable<NodeBts>, MobilityWritable<Null>>> res =
+        List<Pair<ProtobufWritable<NodeBts>, TypedProtobufWritable<Null>>> res =
                 this.instance
                         .withInput(new LongWritable(1L), asList(cdr1, cdr2))
                         .run();

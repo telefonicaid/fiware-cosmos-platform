@@ -5,10 +5,10 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Float64;
 import es.tid.cosmos.mobility.data.ItinPercMoveUtil;
 import es.tid.cosmos.mobility.data.ItinRangeUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Float64;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinPercMove;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
 
@@ -19,19 +19,19 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
  * @author dmicol
  */
 public class ItinCountRangesReducer extends Reducer<ProtobufWritable<ItinRange>,
-        MobilityWritable<Float64>, ProtobufWritable<ItinRange>,
-        MobilityWritable<ItinPercMove>> {
+        TypedProtobufWritable<Float64>, ProtobufWritable<ItinRange>,
+        TypedProtobufWritable<ItinPercMove>> {
     @Override
     protected void reduce(ProtobufWritable<ItinRange> key,
-            Iterable<MobilityWritable<Float64>> values, Context context)
+            Iterable<TypedProtobufWritable<Float64>> values, Context context)
             throws IOException, InterruptedException {
         double numMoves = 0.0D;
-        for (MobilityWritable<Float64> value : values) {
-            numMoves += value.get().getNum();
+        for (TypedProtobufWritable<Float64> value : values) {
+            numMoves += value.get().getValue();
         }
         key.setConverter(ItinRange.class);
         final ItinRange moveRange = key.get();
-        MobilityWritable<ItinPercMove> distMoves = new MobilityWritable<ItinPercMove>(
+        TypedProtobufWritable<ItinPercMove> distMoves = new TypedProtobufWritable<ItinPercMove>(
                 ItinPercMoveUtil.create(moveRange.getGroup(),
                                         moveRange.getRange(), numMoves));
         ItinRange.Builder outMoveRange = ItinRange.newBuilder(moveRange);

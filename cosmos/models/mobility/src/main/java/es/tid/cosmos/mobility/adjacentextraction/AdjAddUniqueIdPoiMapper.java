@@ -6,7 +6,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -17,11 +17,11 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class AdjAddUniqueIdPoiMapper extends Mapper<
-        ProtobufWritable<TwoInt>, MobilityWritable<Poi>,
-        LongWritable, MobilityWritable<Poi>> {
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>,
+        LongWritable, TypedProtobufWritable<Poi>> {
     @Override
     protected void map(ProtobufWritable<TwoInt> key,
-            MobilityWritable<Poi> value, Context context)
+            TypedProtobufWritable<Poi> value, Context context)
             throws IOException, InterruptedException {
         key.setConverter(TwoInt.class);
         final TwoInt nodBts = key.get();

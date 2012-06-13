@@ -9,36 +9,37 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.*;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsProfile;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int64;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 
 /**
  *
  * @author ximo
  */
 public class PopdenJoinNodeInfoProfileReducerTest {
-    private ReduceDriver<LongWritable, MobilityWritable<Message>,
-            ProtobufWritable<BtsProfile>, MobilityWritable<Int64>> instance;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
+            ProtobufWritable<BtsProfile>, TypedProtobufWritable<Int>> instance;
     
     @Before
     public void setUp() {
-        this.instance = new ReduceDriver<LongWritable, MobilityWritable<Message>,
-                ProtobufWritable<BtsProfile>, MobilityWritable<Int64>>(
+        this.instance = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
+                ProtobufWritable<BtsProfile>, TypedProtobufWritable<Int>>(
                         new PopdenJoinNodeInfoProfileReducer());
     }
 
     @Test
     public void testReduce() {
-        MobilityWritable<Message> nodebts = new MobilityWritable<Message>(
+        TypedProtobufWritable<Message> nodebts = new TypedProtobufWritable<Message>(
                 NodeBtsUtil.create(1L, 2L, 3, 4));
-        MobilityWritable<Message> intdata = new MobilityWritable<Message>(
+        TypedProtobufWritable<Message> intdata = new TypedProtobufWritable<Message>(
                 ClientProfileUtil.create(1L, 5));
         this.instance
                 .withInput(new LongWritable(2L),
                            Arrays.asList(nodebts, intdata))
                 .withOutput(BtsProfileUtil.createAndWrap(2L, 5, 3, 4),
-                            MobilityWritable.create(1L))
+                            TypedProtobufWritable.create(1))
                 .runTest();
     }
 }

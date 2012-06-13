@@ -8,6 +8,7 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.*;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
@@ -19,14 +20,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class PoiJoinPoivectorPoiReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, MobilityWritable<Message>,
-            ProtobufWritable<TwoInt>, MobilityWritable<Cluster>> driver;
+    private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>,
+            ProtobufWritable<TwoInt>, TypedProtobufWritable<Cluster>> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                MobilityWritable<Message>, ProtobufWritable<TwoInt>,
-                MobilityWritable<Cluster>>(new PoiJoinPoivectorPoiReducer());
+                TypedProtobufWritable<Message>, ProtobufWritable<TwoInt>,
+                TypedProtobufWritable<Cluster>>(new PoiJoinPoivectorPoiReducer());
     }
 
     @Test
@@ -48,11 +49,11 @@ public class PoiJoinPoivectorPoiReducerTest {
         final Cluster outValue2 = ClusterUtil.create(120, 130, 140, 0.0D, 0.0D,
                                                      clusterVector);
         this.driver
-                .withInput(key, asList(new MobilityWritable<Message>(poi1),
-                        new MobilityWritable<Message>(clusterVector),
-                        new MobilityWritable<Message>(poi2)))
-                .withOutput(outKey1, new MobilityWritable<Cluster>(outValue1))
-                .withOutput(outKey2, new MobilityWritable<Cluster>(outValue2))
+                .withInput(key, asList(new TypedProtobufWritable<Message>(poi1),
+                        new TypedProtobufWritable<Message>(clusterVector),
+                        new TypedProtobufWritable<Message>(poi2)))
+                .withOutput(outKey1, new TypedProtobufWritable<Cluster>(outValue1))
+                .withOutput(outKey2, new TypedProtobufWritable<Cluster>(outValue2))
                 .runTest();
     }
 }

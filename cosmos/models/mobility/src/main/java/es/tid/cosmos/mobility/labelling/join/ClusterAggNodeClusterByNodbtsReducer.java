@@ -9,7 +9,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
@@ -22,13 +22,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class ClusterAggNodeClusterByNodbtsReducer extends Reducer<LongWritable,
-        MobilityWritable<Message>, ProtobufWritable<TwoInt>,
-        MobilityWritable<Poi>> {
+        TypedProtobufWritable<Message>, ProtobufWritable<TwoInt>,
+        TypedProtobufWritable<Poi>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        Map<Class, List> dividedList = MobilityWritable.divideIntoTypes(
+        Map<Class, List> dividedList = TypedProtobufWritable.groupByClass(
                 values, Poi.class, Cluster.class);
         List<Poi> poiList = dividedList.get(Poi.class);
         List<Cluster> clusterList = dividedList.get(Cluster.class);
@@ -43,7 +43,7 @@ public class ClusterAggNodeClusterByNodbtsReducer extends Reducer<LongWritable,
                 outputPoi.setConfidentnode(cluster.getConfident());
                 outputPoi.setDistancenode(cluster.getDistance());
                 context.write(nodbts,
-                              new MobilityWritable<Poi>(outputPoi.build()));
+                              new TypedProtobufWritable<Poi>(outputPoi.build()));
             }
         }
     }

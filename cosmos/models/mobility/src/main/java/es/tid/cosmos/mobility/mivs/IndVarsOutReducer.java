@@ -9,7 +9,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobVarsUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 
@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
  * @author logc
  */
 public class  IndVarsOutReducer extends Reducer<LongWritable,
-        MobilityWritable<MobViMobVars>, NullWritable, Text> {
+        TypedProtobufWritable<MobViMobVars>, NullWritable, Text> {
     private static final String DELIMITER = "|";
     private static final String MISSING = "-1|-1|-1|-1|-1|-1|-1|-1";
     private static final int FIRST_MONTH = 1;
@@ -28,9 +28,9 @@ public class  IndVarsOutReducer extends Reducer<LongWritable,
 
     @Override
     public void reduce(LongWritable key,
-            Iterable<MobilityWritable<MobViMobVars>> values,
+            Iterable<TypedProtobufWritable<MobViMobVars>> values,
             Context context) throws IOException, InterruptedException {
-        for (MobilityWritable<MobViMobVars> value : values) {
+        for (TypedProtobufWritable<MobViMobVars> value : values) {
             final MobViMobVars activityAreas = value.get();
             List<MobVars> areasList = activityAreas.getVarsList();
             for (int numMonth = FIRST_MONTH; numMonth <= LAST_MONTH; numMonth++) {

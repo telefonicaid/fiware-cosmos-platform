@@ -5,7 +5,7 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -17,17 +17,17 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class PopdenCreateVectorReducer extends Reducer<ProtobufWritable<TwoInt>,
-        MobilityWritable<BtsCounter>, ProtobufWritable<TwoInt>,
-        MobilityWritable<ClusterVector>> {
+        TypedProtobufWritable<BtsCounter>, ProtobufWritable<TwoInt>,
+        TypedProtobufWritable<ClusterVector>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<MobilityWritable<BtsCounter>> values, Context context)
+            Iterable<TypedProtobufWritable<BtsCounter>> values, Context context)
             throws IOException, InterruptedException {
         ClusterVector.Builder comsVector = ClusterVector.newBuilder();
         for (int i = 0; i < 168; i++) {
             comsVector.addComs(0.0D);
         }
-        for (MobilityWritable<BtsCounter> value : values) {
+        for (TypedProtobufWritable<BtsCounter> value : values) {
             final BtsCounter counter = value.get();
             int wday = counter.getWeekday();
             int pos = wday > 0 ? wday - 1 : 6;	// Sunday: 0
@@ -41,7 +41,7 @@ public class PopdenCreateVectorReducer extends Reducer<ProtobufWritable<TwoInt>,
             }
             comsVector.setComs(pos, norm);
         }
-        context.write(key, new MobilityWritable<ClusterVector>(
+        context.write(key, new TypedProtobufWritable<ClusterVector>(
                 comsVector.build()));
     }
 }

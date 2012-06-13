@@ -7,7 +7,7 @@ import java.util.List;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiNew;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -19,14 +19,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class AdjGroupTypePoiClientReducer extends Reducer<
-        ProtobufWritable<TwoInt>, MobilityWritable<PoiNew>,
-        ProtobufWritable<TwoInt>, MobilityWritable<TwoInt>> {
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<PoiNew>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<TwoInt>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<MobilityWritable<PoiNew>> values, Context context)
+            Iterable<TypedProtobufWritable<PoiNew>> values, Context context)
             throws IOException, InterruptedException {
         List<PoiNew> poiNewList = new LinkedList<PoiNew>();
-        for (MobilityWritable<PoiNew> value : values) {
+        for (TypedProtobufWritable<PoiNew> value : values) {
             final PoiNew poiNew = value.get();
             poiNewList.add(poiNew);
         }
@@ -36,8 +36,8 @@ public class AdjGroupTypePoiClientReducer extends Reducer<
                 if (curPoi.getId() < tempPoi.getId()) {
                     context.write(TwoIntUtil.createAndWrap(curPoi.getBts(),
                                                            tempPoi.getBts()),
-                                  new MobilityWritable<TwoInt>(TwoIntUtil.create(
-                                                  curPoi.getId(), tempPoi.getId())));
+                                  new TypedProtobufWritable<TwoInt>(TwoIntUtil.create(
+                                          curPoi.getId(), tempPoi.getId())));
                 }
             }
         }

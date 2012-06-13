@@ -9,7 +9,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -20,15 +20,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class AdjJoinPairbtsAdjbtsReducer extends Reducer<
-        ProtobufWritable<TwoInt>, MobilityWritable<InputIdRecord>,
-        LongWritable, MobilityWritable<TwoInt>> {
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<InputIdRecord>,
+        LongWritable, TypedProtobufWritable<TwoInt>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<MobilityWritable<InputIdRecord>> values, Context context)
+            Iterable<TypedProtobufWritable<InputIdRecord>> values, Context context)
             throws IOException, InterruptedException {
         List<TwoInt> pairPoisList = new LinkedList<TwoInt>();
         boolean hasAdjacentBts = false;
-        for (MobilityWritable<InputIdRecord> value : values) {
+        for (TypedProtobufWritable<InputIdRecord> value : values) {
             final InputIdRecord record = value.get();
             switch (record.getInputId()) {
                 case 0:
@@ -48,7 +48,7 @@ public class AdjJoinPairbtsAdjbtsReducer extends Reducer<
         if (hasAdjacentBts) {
             for (TwoInt pairPois : pairPoisList) {
                 context.write(new LongWritable(pairPois.getNum1()),
-                              new MobilityWritable<TwoInt>(pairPois));
+                              new TypedProtobufWritable<TwoInt>(pairPois));
             }
         }
     }

@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 
@@ -20,13 +20,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
  * @author logc
  */
 public class IndVarsOutReducerTest {
-    private ReduceDriver<LongWritable, MobilityWritable<MobViMobVars>,
+    private ReduceDriver<LongWritable, TypedProtobufWritable<MobViMobVars>,
             NullWritable, Text> reducer;
 
     @Before
     public void setUp() {
         this.reducer = new ReduceDriver<LongWritable,
-                MobilityWritable<MobViMobVars>, NullWritable, Text>(
+                TypedProtobufWritable<MobViMobVars>, NullWritable, Text>(
                         new IndVarsOutReducer());
     }
 
@@ -35,7 +35,7 @@ public class IndVarsOutReducerTest {
         LongWritable userNotSeenInFirstMonth = new LongWritable(5512684400L);
         MobVars area = MobVarsUtil.create(1, false, 1, 1, 1, 1,
                                           1000000D, 1000000D, 0.0, 0.0);
-        MobilityWritable<MobViMobVars> input = new MobilityWritable<MobViMobVars>(
+        TypedProtobufWritable<MobViMobVars> input = new TypedProtobufWritable<MobViMobVars>(
             MobViMobVarsUtil.create(asList(area)));
 
         String s = "5512684400|1|-1|-1|-1|-1|-1|-1|-1|-1|"

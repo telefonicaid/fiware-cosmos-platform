@@ -10,7 +10,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.Config;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 
@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
  * @author dmicol
  */
 public class FilterBtsVectorReducer extends Reducer<LongWritable,
-        MobilityWritable<Message>, LongWritable, MobilityWritable<Cluster>> {
+        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<Cluster>> {
     private double maxBtsArea;
     private int maxCommsBts;
     
@@ -35,9 +35,9 @@ public class FilterBtsVectorReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        Map<Class, List> dividedLists = MobilityWritable.divideIntoTypes(
+        Map<Class, List> dividedLists = TypedProtobufWritable.groupByClass(
                 values, Bts.class, Cluster.class);
         List<Bts> btsList = dividedLists.get(Bts.class);
         List<Cluster> clusterList = dividedLists.get(Cluster.class);
@@ -52,7 +52,7 @@ public class FilterBtsVectorReducer extends Reducer<LongWritable,
                 Cluster.Builder outputCluster = Cluster.newBuilder(cluster);
                 outputCluster.setConfident(confident);
                 context.write(key,
-                              new MobilityWritable<Cluster>(outputCluster.build()));
+                              new TypedProtobufWritable<Cluster>(outputCluster.build()));
             }
         }
     }

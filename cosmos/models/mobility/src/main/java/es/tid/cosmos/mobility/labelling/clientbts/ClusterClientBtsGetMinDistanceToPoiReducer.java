@@ -9,7 +9,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.PoiUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
@@ -24,8 +24,8 @@ import es.tid.cosmos.mobility.util.CentroidsCatalogue;
  * @author dmicol
  */
 public class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
-        ProtobufWritable<NodeBts>, MobilityWritable<ClusterVector>,
-        LongWritable, MobilityWritable<Poi>> {
+        ProtobufWritable<NodeBts>, TypedProtobufWritable<ClusterVector>,
+        LongWritable, TypedProtobufWritable<Poi>> {
     private static List<Cluster> centroids = null;
 
     @Override
@@ -40,9 +40,9 @@ public class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
 
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<MobilityWritable<ClusterVector>> values, Context context)
+            Iterable<TypedProtobufWritable<ClusterVector>> values, Context context)
             throws IOException, InterruptedException {
-        for (MobilityWritable<ClusterVector> value : values) {
+        for (TypedProtobufWritable<ClusterVector> value : values) {
             final ClusterVector clusVector = value.get();
             double mindist = Double.POSITIVE_INFINITY;
             Cluster minDistCluster = null;
@@ -81,7 +81,7 @@ public class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
                     mindist > minDistCluster.getDistance() ? 0 : 1, mindist,
                     -1, -1);
             context.write(new LongWritable(nodeBts.getUserId()),
-                          new MobilityWritable<Poi>(poi));
+                          new TypedProtobufWritable<Poi>(poi));
         }
     }
 }

@@ -7,11 +7,11 @@ import java.util.List;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int64;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int64;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -21,25 +21,25 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class PoiFilterSechomeAdjacentReducer extends Reducer<
-        ProtobufWritable<TwoInt>, MobilityWritable<InputIdRecord>,
-        ProtobufWritable<TwoInt>, MobilityWritable<Null>> {
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<InputIdRecord>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<MobilityWritable<InputIdRecord>> values, Context context)
+            Iterable<TypedProtobufWritable<InputIdRecord>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(TwoInt.class);
         final TwoInt pairbts = key.get();
         List<Long> nodeList = new LinkedList<Long>();
-        for (MobilityWritable<InputIdRecord> value : values) {
+        for (TypedProtobufWritable<InputIdRecord> value : values) {
             final InputIdRecord record = value.get();
-            if(record.getInputId() == 1) {
+            if (record.getInputId() == 1) {
                 return;
             }            
-            nodeList.add(Int64.parseFrom(record.toByteString()).getNum());
+            nodeList.add(Int64.parseFrom(record.toByteString()).getValue());
         }        
         for (long node : nodeList) {
             context.write(TwoIntUtil.createAndWrap(node, pairbts.getNum2()),
-                          new MobilityWritable<Null>(Null.getDefaultInstance()));
+                          new TypedProtobufWritable<Null>(Null.getDefaultInstance()));
         }
     }
 }

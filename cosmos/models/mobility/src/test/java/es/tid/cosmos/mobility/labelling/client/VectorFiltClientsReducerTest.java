@@ -13,32 +13,32 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 
 /**
  *
  * @author dmicol
  */
 public class VectorFiltClientsReducerTest {
-    private ReduceDriver<LongWritable, MobilityWritable<Message>, LongWritable,
-            MobilityWritable<Cdr>> driver;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<Message>, LongWritable,
+            TypedProtobufWritable<Cdr>> driver;
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, MobilityWritable<Message>,
-                LongWritable, MobilityWritable<Cdr>>(
+        this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
+                LongWritable, TypedProtobufWritable<Cdr>>(
                         new VectorFiltClientsReducer());
     }
 
     @Test
     public void testNoNumberOfCommunications() throws IOException {
-        MobilityWritable<Message> value1 = new MobilityWritable<Message>(
+        TypedProtobufWritable<Message> value1 = new TypedProtobufWritable<Message>(
                 Cdr.getDefaultInstance());
-        MobilityWritable<Message> value2 = new MobilityWritable<Message>(
+        TypedProtobufWritable<Message> value2 = new TypedProtobufWritable<Message>(
                 Cdr.getDefaultInstance());
-        List<Pair<LongWritable, MobilityWritable<Cdr>>> res = this.driver
+        List<Pair<LongWritable, TypedProtobufWritable<Cdr>>> res = this.driver
                 .withInput(new LongWritable(17L), asList(value1, value2))
                 .run();
         assertNotNull(res);
@@ -47,10 +47,10 @@ public class VectorFiltClientsReducerTest {
     
     @Test(expected=IllegalStateException.class)
     public void testInvalidNumberOfCommunications() throws IOException {
-        MobilityWritable<Message> value1 = new MobilityWritable<Message>(
-                Int.newBuilder().setNum(56).build());
-        MobilityWritable<Message> value2 = new MobilityWritable<Message>(
-                Int.newBuilder().setNum(137).build());
+        TypedProtobufWritable<Message> value1 = new TypedProtobufWritable<Message>(
+                Int.newBuilder().setValue(56).build());
+        TypedProtobufWritable<Message> value2 = new TypedProtobufWritable<Message>(
+                Int.newBuilder().setValue(137).build());
         this.driver
                 .withInput(new LongWritable(17L), asList(value1, value2))
                 .run();

@@ -7,7 +7,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
 
 /**
@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
  * @author dmicol
  */
 public class SetMobDataInputIdReducer extends Reducer<LongWritable,
-        MobilityWritable<Message>, LongWritable, MobilityWritable<InputIdRecord>> {
+        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<InputIdRecord>> {
     private static final int DEFAULT_INVALID_ID = -1;
     private static Integer inputId = null;
 
@@ -31,16 +31,16 @@ public class SetMobDataInputIdReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        for (MobilityWritable<Message> value : values) {
-            Message message = value.get();
+        for (TypedProtobufWritable<Message> value : values) {
+            final Message message = value.get();
             InputIdRecord record = InputIdRecord
                     .newBuilder()
                     .setInputId(inputId)
                     .setMessageBytes(message.toByteString())
                     .build();
-            context.write(key, new MobilityWritable<InputIdRecord>(record));
+            context.write(key, new TypedProtobufWritable<InputIdRecord>(record));
         }
     }
 }

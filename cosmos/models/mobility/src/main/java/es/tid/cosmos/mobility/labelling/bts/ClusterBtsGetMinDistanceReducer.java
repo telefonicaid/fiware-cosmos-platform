@@ -10,7 +10,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
@@ -23,8 +23,8 @@ import es.tid.cosmos.mobility.util.CentroidsCatalogue;
  * @author dmicol
  */
 public class ClusterBtsGetMinDistanceReducer extends Reducer<
-        ProtobufWritable<NodeBts>, MobilityWritable<ClusterVector>,
-        LongWritable, MobilityWritable<Cluster>> {
+        ProtobufWritable<NodeBts>, TypedProtobufWritable<ClusterVector>,
+        LongWritable, TypedProtobufWritable<Cluster>> {
     private static List<Cluster> centroids = null;
     
     @Override
@@ -39,11 +39,11 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
     
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<MobilityWritable<ClusterVector>> values, Context context)
+            Iterable<TypedProtobufWritable<ClusterVector>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(NodeBts.class);
         final NodeBts nodeBts = key.get();
-        for (MobilityWritable<ClusterVector> value : values) {
+        for (TypedProtobufWritable<ClusterVector> value : values) {
             final ClusterVector clusVector = value.get();
             double mindist = Double.POSITIVE_INFINITY;
             Cluster minDistCluster = null;
@@ -69,7 +69,7 @@ public class ClusterBtsGetMinDistanceReducer extends Reducer<
                             mindist,
                             clusVector);
             context.write(new LongWritable(nodeBts.getBts()),
-                          new MobilityWritable<Cluster>(outputCluster));
+                          new TypedProtobufWritable<Cluster>(outputCluster));
         }
     }
 }

@@ -7,7 +7,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -16,8 +16,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class SetMobDataInputIdByTwoIntReducer extends Reducer<
-        ProtobufWritable<TwoInt>, MobilityWritable<Message>,
-        ProtobufWritable<TwoInt>, MobilityWritable<InputIdRecord>> {
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<InputIdRecord>> {
     private static final int DEFAULT_INVALID_ID = -1;
     private static Integer inputId = null;
 
@@ -33,16 +33,16 @@ public class SetMobDataInputIdByTwoIntReducer extends Reducer<
     
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<MobilityWritable<Message>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        for (MobilityWritable<Message> value : values) {
-            Message message = value.get();
+        for (TypedProtobufWritable<Message> value : values) {
+            final Message message = value.get();
             InputIdRecord record = InputIdRecord
                     .newBuilder()
                     .setInputId(inputId)
                     .setMessageBytes(message.toByteString())
                     .build();
-            context.write(key, new MobilityWritable<InputIdRecord>(record));
+            context.write(key, new TypedProtobufWritable<InputIdRecord>(record));
         }
     }
 }

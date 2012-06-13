@@ -6,7 +6,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 
@@ -17,15 +17,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
  * @author dmicol
  */
 public class VectorNormalizedReducer extends Reducer<ProtobufWritable<NodeBts>,
-        MobilityWritable<ClusterVector>, ProtobufWritable<NodeBts>,
-        MobilityWritable<ClusterVector>> {
+        TypedProtobufWritable<ClusterVector>, ProtobufWritable<NodeBts>,
+        TypedProtobufWritable<ClusterVector>> {
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<MobilityWritable<ClusterVector>> values, Context context)
+            Iterable<TypedProtobufWritable<ClusterVector>> values, Context context)
             throws IOException, InterruptedException {
         ClusterVector.Builder vectorNormBuilder = ClusterVector.newBuilder();
         ClusterVector.Builder divBuilder = ClusterVector.newBuilder();
-        for (MobilityWritable<ClusterVector> value : values) {
+        for (TypedProtobufWritable<ClusterVector> value : values) {
             final ClusterVector clusterVector = value.get();
             double sumvalues = 0D;
             for (int j = 0; j < clusterVector.getComsCount(); j++) {
@@ -47,7 +47,7 @@ public class VectorNormalizedReducer extends Reducer<ProtobufWritable<NodeBts>,
                 vectorNormBuilder.addComs(normCom);
             }
             
-            context.write(key, new MobilityWritable<ClusterVector>(
+            context.write(key, new TypedProtobufWritable<ClusterVector>(
                     vectorNormBuilder.build()));
         }
     }

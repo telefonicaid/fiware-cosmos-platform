@@ -5,9 +5,9 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -18,18 +18,18 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class ClusterSpreadNodelblPoilblReducer extends Reducer<
-        ProtobufWritable<TwoInt>, MobilityWritable<Poi>,
-        ProtobufWritable<TwoInt>, MobilityWritable<Null>> {
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<MobilityWritable<Poi>> values, Context context)
+            Iterable<TypedProtobufWritable<Poi>> values, Context context)
             throws IOException, InterruptedException {
-        for (MobilityWritable<Poi> value : values) {
+        for (TypedProtobufWritable<Poi> value : values) {
             final Poi poi = value.get();
             if (poi.getConfidentnode() == 1 && poi.getConfidentnodebts() == 1) {
                 context.write(TwoIntUtil.createAndWrap(poi.getLabelnode(),
                                                        poi.getLabelnodebts()),
-                              new MobilityWritable<Null>(
+                              new TypedProtobufWritable<Null>(
                                       Null.getDefaultInstance()));
             }
         }

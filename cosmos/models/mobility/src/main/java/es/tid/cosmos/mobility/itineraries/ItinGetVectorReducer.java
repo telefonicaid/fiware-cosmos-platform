@@ -7,7 +7,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.Config;
-import es.tid.cosmos.mobility.data.MobilityWritable;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinPercMove;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
@@ -19,8 +19,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
  * @author dmicol
  */
 public class ItinGetVectorReducer extends Reducer<ProtobufWritable<ItinRange>,
-        MobilityWritable<ItinPercMove>, ProtobufWritable<ItinRange>,
-        MobilityWritable<ClusterVector>> {
+        TypedProtobufWritable<ItinPercMove>, ProtobufWritable<ItinRange>,
+        TypedProtobufWritable<ClusterVector>> {
     private double minItinMoves;
     
     @Override
@@ -33,14 +33,14 @@ public class ItinGetVectorReducer extends Reducer<ProtobufWritable<ItinRange>,
     
     @Override
     protected void reduce(ProtobufWritable<ItinRange> key,
-            Iterable<MobilityWritable<ItinPercMove>> values, Context context)
+            Iterable<TypedProtobufWritable<ItinPercMove>> values, Context context)
             throws IOException, InterruptedException {
         ClusterVector.Builder distMoves = ClusterVector.newBuilder();
         for (int i = 0; i < 168; i++) {
             distMoves.addComs(0.0D);
         }
         double numMoves = 0.0D;
-        for (MobilityWritable<ItinPercMove> value : values) {
+        for (TypedProtobufWritable<ItinPercMove> value : values) {
             final ItinPercMove percMoves = value.get();
             int j = percMoves.getGroup() - 1;  // Vector starts on Monday
             j = (j >= 0) ? j : 6;  // Sunday at the end
@@ -50,8 +50,8 @@ public class ItinGetVectorReducer extends Reducer<ProtobufWritable<ItinRange>,
             numMoves += percMoves.getPercMoves();
         }
         if (numMoves >= this.minItinMoves) {
-            context.write(key, new MobilityWritable<ClusterVector>(
-                                distMoves.build()));
+            context.write(key, new TypedProtobufWritable<ClusterVector>(
+                    distMoves.build()));
         }
     }
 }

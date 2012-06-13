@@ -7,10 +7,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.Config;
-import es.tid.cosmos.mobility.data.MobilityWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Int;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
 
 /**
@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
  * @author dmicol
  */
 public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
-        MobilityWritable<Message>, LongWritable, MobilityWritable<Int>> {
+        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<Int>> {
     private int minTotalCalls;
     private int maxTotalCalls;
     
@@ -36,14 +36,14 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
 
     @Override
     public void reduce(LongWritable key,
-                       Iterable<MobilityWritable<Message>> values,
+                       Iterable<TypedProtobufWritable<Message>> values,
                        Context context)
             throws IOException, InterruptedException {
         int numCommsInfo = 0;
         int numCommsNoInfoOrNoBts = 0;
-        for (MobilityWritable<Message> value : values) {
+        for (TypedProtobufWritable<Message> value : values) {
             final Message message = value.get();
-            if(message instanceof Cdr) {
+            if (message instanceof Cdr) {
                 numCommsNoInfoOrNoBts++;
             } else if (message instanceof NodeBtsDay) {
                 final NodeBtsDay nodeBtsDay = (NodeBtsDay) message;
@@ -55,7 +55,7 @@ public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
         int totalComms = numCommsInfo + numCommsNoInfoOrNoBts;
         if (totalComms >= this.minTotalCalls &&
                 totalComms <= this.maxTotalCalls) {
-            context.write(key, MobilityWritable.create(numCommsInfo));
+            context.write(key, TypedProtobufWritable.create(numCommsInfo));
         }
     }
 }

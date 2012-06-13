@@ -64,11 +64,12 @@ public class VectorFiltClientsReducer extends Reducer<LongWritable,
             context.write(key, new TypedProtobufWritable<Cdr>(cdr));
         }
         for (TypedProtobufWritable<Message> value : values) {
-            final Cdr cdr = (Cdr) value.get();
-            if (cdr == null) {
-                throw new IllegalStateException();
+            final Message message = value.get();
+            if (!(message instanceof Cdr)) {
+                throw new IllegalStateException("Invalid input type: "
+                        + message.getClass());
             }
-            context.write(key, new TypedProtobufWritable<Cdr>(cdr));
+            context.write(key, new TypedProtobufWritable<Cdr>((Cdr) message));
         }
     }
 }

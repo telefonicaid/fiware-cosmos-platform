@@ -22,7 +22,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class GetPairsSechomePoisReducer extends Reducer<LongWritable,
+class GetPairsSechomePoisReducer extends Reducer<LongWritable,
         TypedProtobufWritable<PoiPos>, ProtobufWritable<TwoInt>,
         TypedProtobufWritable<Int64>> {
     private int homeLabelgroupId;

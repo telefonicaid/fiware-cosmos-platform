@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  *
  * @author dmicol
  */
-public class AdjChangePoisIdReducer extends Reducer<ProtobufWritable<TwoInt>,
+class AdjChangePoisIdReducer extends Reducer<ProtobufWritable<TwoInt>,
         TypedProtobufWritable<Message>, ProtobufWritable<TwoInt>,
         TypedProtobufWritable<Poi>> {
     @Override

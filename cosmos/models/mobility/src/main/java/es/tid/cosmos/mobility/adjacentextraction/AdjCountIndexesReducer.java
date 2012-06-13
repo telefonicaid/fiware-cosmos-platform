@@ -15,7 +15,7 @@ import es.tid.cosmos.base.data.generated.BaseTypes.Null;
  *
  * @author dmicol
  */
-public class AdjCountIndexesReducer extends Reducer <LongWritable,
+class AdjCountIndexesReducer extends Reducer <LongWritable,
         TypedProtobufWritable<Int64>, LongWritable, TypedProtobufWritable<Null>> {
     @Override
     protected void reduce(LongWritable key,

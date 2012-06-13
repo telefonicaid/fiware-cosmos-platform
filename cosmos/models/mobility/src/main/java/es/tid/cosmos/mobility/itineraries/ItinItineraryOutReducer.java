@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
  * 
  * @author dmicol
  */
-public class ItinItineraryOutReducer extends Reducer<LongWritable,
+class ItinItineraryOutReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Itinerary>, NullWritable, Text> {
     private static final String DELIMITER = "|";
     

@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  * 
  * @author dmicol
  */
-public class JoinBtsNodeToBtsDayRangeReducer extends Reducer<LongWritable,
+class JoinBtsNodeToBtsDayRangeReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Cdr>, LongWritable, TypedProtobufWritable<TwoInt>> {
     private static List<Cell> cells = null;
     

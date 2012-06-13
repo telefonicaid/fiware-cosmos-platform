@@ -22,7 +22,7 @@ import es.tid.cosmos.mobility.util.CentroidsCatalogue;
  * 
  * @author dmicol
  */
-public class ClusterBtsGetMinDistanceReducer extends Reducer<
+class ClusterBtsGetMinDistanceReducer extends Reducer<
         ProtobufWritable<NodeBts>, TypedProtobufWritable<ClusterVector>,
         LongWritable, TypedProtobufWritable<Cluster>> {
     private static List<Cluster> centroids = null;

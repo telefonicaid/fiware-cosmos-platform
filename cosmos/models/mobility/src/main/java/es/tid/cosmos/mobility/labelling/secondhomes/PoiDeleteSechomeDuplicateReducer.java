@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class PoiDeleteSechomeDuplicateReducer extends Reducer<
+class PoiDeleteSechomeDuplicateReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>,
         ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>> {
     @Override

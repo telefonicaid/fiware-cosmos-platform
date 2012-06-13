@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
  * 
  * @author dmicol
  */
-public class MatrixSpreadDistMovesByPairMapper extends Mapper<
+class MatrixSpreadDistMovesByPairMapper extends Mapper<
         ProtobufWritable<ItinRange>, TypedProtobufWritable<Float64>,
         ProtobufWritable<ItinRange>, TypedProtobufWritable<Float64>> {
     @Override

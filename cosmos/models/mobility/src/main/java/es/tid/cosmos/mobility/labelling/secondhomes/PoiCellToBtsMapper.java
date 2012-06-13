@@ -14,7 +14,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
  * 
  * @author dmicol
  */
-public class PoiCellToBtsMapper extends Mapper<LongWritable,
+class PoiCellToBtsMapper extends Mapper<LongWritable,
         TypedProtobufWritable<Cell>, LongWritable, TypedProtobufWritable<Cell>> {
     @Override
     protected void map(LongWritable key, TypedProtobufWritable<Cell> value,

@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
  * 
  * @author dmicol
  */
-public class RepbtsJoinDistCommsReducer extends Reducer<LongWritable,
+class RepbtsJoinDistCommsReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<BtsCounter>> {
     @Override
     public void reduce(LongWritable key,

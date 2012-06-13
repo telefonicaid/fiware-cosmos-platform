@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class MatrixSpreadNodeMapper extends Mapper<ProtobufWritable<TwoInt>,
+class MatrixSpreadNodeMapper extends Mapper<ProtobufWritable<TwoInt>,
         TypedProtobufWritable<ItinTime>, LongWritable, TypedProtobufWritable<ItinTime>> {
     @Override
     protected void map(ProtobufWritable<TwoInt> key,

@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
  * 
  * @author dmicol
  */
-public class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
+class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<PoiPos>> {
     @Override
     protected void reduce(LongWritable key,

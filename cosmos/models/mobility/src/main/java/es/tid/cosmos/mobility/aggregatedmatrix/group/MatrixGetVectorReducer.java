@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  *
  * @author dmicol
  */
-public class MatrixGetVectorReducer extends Reducer<
+class MatrixGetVectorReducer extends Reducer<
         ProtobufWritable<ItinRange>, TypedProtobufWritable<ItinPercMove>,
         ProtobufWritable<TwoInt>, TypedProtobufWritable<ClusterVector>> {
     @Override

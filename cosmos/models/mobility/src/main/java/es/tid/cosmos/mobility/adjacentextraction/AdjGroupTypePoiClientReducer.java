@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class AdjGroupTypePoiClientReducer extends Reducer<
+class AdjGroupTypePoiClientReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<PoiNew>,
         ProtobufWritable<TwoInt>, TypedProtobufWritable<TwoInt>> {
     @Override

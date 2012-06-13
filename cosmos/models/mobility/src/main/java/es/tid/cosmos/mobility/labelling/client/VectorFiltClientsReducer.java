@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
  * 
  * @author dmicol
  */
-public class VectorFiltClientsReducer extends Reducer<LongWritable,
+class VectorFiltClientsReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<Cdr>> {
     private int maxCdrs;
     

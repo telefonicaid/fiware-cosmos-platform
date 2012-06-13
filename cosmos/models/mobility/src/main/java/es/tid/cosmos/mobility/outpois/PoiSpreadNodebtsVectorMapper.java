@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class PoiSpreadNodebtsVectorMapper extends Mapper<
+class PoiSpreadNodebtsVectorMapper extends Mapper<
         ProtobufWritable<NodeBts>, TypedProtobufWritable<ClusterVector>,
         ProtobufWritable<TwoInt>, TypedProtobufWritable<ClusterVector>> {
     @Override

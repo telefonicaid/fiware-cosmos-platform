@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class AdjParseAdjBtsMapper extends Mapper<LongWritable, Text,
+class AdjParseAdjBtsMapper extends Mapper<LongWritable, Text,
         ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>> {
     @Override
     protected void map(LongWritable key, Text value, Context context)

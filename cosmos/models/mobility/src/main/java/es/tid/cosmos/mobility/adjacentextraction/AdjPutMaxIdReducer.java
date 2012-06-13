@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class AdjPutMaxIdReducer extends Reducer<LongWritable,
+class AdjPutMaxIdReducer extends Reducer<LongWritable,
         TypedProtobufWritable<TwoInt>, LongWritable, TypedProtobufWritable<TwoInt>> {
     @Override
     protected void reduce(LongWritable key,

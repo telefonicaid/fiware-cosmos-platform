@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
  * 
  * @author dmicol
  */
-public class FilterBtsVectorReducer extends Reducer<LongWritable,
+class FilterBtsVectorReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<Cluster>> {
     private double maxBtsArea;
     private int maxCommsBts;

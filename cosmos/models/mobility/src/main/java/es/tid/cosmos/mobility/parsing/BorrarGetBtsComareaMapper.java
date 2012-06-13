@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
  * 
  * @author dmicol
  */
-public class BorrarGetBtsComareaMapper extends Mapper<LongWritable, Text,
+class BorrarGetBtsComareaMapper extends Mapper<LongWritable, Text,
         LongWritable, TypedProtobufWritable<Bts>> {
     @Override
     protected void map(LongWritable key, Text value, Context context)

@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TelMonth;
  * 
  * @author logc
  */
-public class DeletePeriodMapper extends Mapper<
+class DeletePeriodMapper extends Mapper<
         ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>,
         ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>> {
     private static final int FIRST_MONTH = 1;

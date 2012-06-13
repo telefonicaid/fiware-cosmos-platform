@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
  * 
  * @author dmicol
  */
-public class ClusterAggBtsClusterReducer extends Reducer<LongWritable,
+class ClusterAggBtsClusterReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<Poi>> {
     @Override
     protected void reduce(LongWritable key,

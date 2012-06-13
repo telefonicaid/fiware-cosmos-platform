@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  * 
  * @author dmicol
  */
-public class NodeMobInfoReducer extends Reducer<LongWritable,
+class NodeMobInfoReducer extends Reducer<LongWritable,
         TypedProtobufWritable<BtsCounter>, LongWritable, TypedProtobufWritable<NodeMxCounter>> {
     @Override
     public void reduce(LongWritable key,

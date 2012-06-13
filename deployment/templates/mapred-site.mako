@@ -17,6 +17,10 @@
     <name>mapreduce.jobtracker.staging.root.dir</name>
     <value>/user</value>
   </property>
+  <property>
+    <name>mapred.reduce.tasks</name>
+    <value>${reduce_tasks}</value>
+  </property>
   <!-- optional settings -->
   <property>
     <name>mapred.child.java.opts</name>
@@ -25,6 +29,22 @@
   <property>        
     <name>mapred.child.ulimit</name>
     <value>420m</value>
+  </property>
+  <property>
+    <name>mapred.map.output.compression.codec</name>
+    <value>com.hadoop.compression.lzo.LzoCodec</value>
+  </property>
+  <property>
+    <name>mapred.output.compress</name>
+    <value>true</value>
+  </property>
+  <property>
+    <name>mapred.output.compression.type</name>
+    <value>BLOCK</value>
+  </property>
+  <property>
+    <name>mapred.output.compression.codec</name>
+    <value>com.hadoop.compression.lzo.LzoCodec</value>
   </property>
   <!-- HUE integration -->
   <property>        

@@ -67,7 +67,7 @@ def configure_hadoop(config):
         mapredsite.write(template.render(
                 jobtracker = config['hosts']['jobtracker'][0],
                 dirs = ','.join([dir + '/mapred' for dir in config["hadoop_data_dirs"]]),
-                reduce_tasks = len(config['hosts']['datanodes'])))
+                reduce_tasks = 2*len(config['hosts']['datanodes'])))
         put(mapredsite, 'mapred-site.xml')
         
         hdfssite = StringIO()

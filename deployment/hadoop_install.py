@@ -6,6 +6,7 @@ from fabric.decorators import roles, parallel
 from fabric.contrib import files
 from StringIO import StringIO
 from mako.template import Template
+from os import path
 
 COSMOS_CLASSPATH='/usr/lib/hadoop-0.20/lib/cosmos/'
 BASEPATH = path.realpath(__file__)

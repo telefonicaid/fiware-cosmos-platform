@@ -6,10 +6,10 @@ from fabric.decorators import roles, parallel
 from fabric.contrib import files
 from StringIO import StringIO
 from mako.template import Template
-from os import path
+import os.path
 
 COSMOS_CLASSPATH='/usr/lib/hadoop-0.20/lib/cosmos/'
-BASEPATH = path.realpath(__file__)
+BASEPATH = os.path.realpath(__file__)
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 @parallel
@@ -46,7 +46,7 @@ def configure_hadoop(config):
     """Generate  Hadoop configuration files"""
     with cd('/etc/hadoop/conf'):
         coresite = StringIO()
-        template = Template(filename = path.join(BASEPATH, 'templates/core-site.mako'))
+        template = Template(filename = os.path.join(BASEPATH, 'templates/core-site.mako'))
         coresite.write(template.render(
                 namenode=config['hosts']['namenode'][0]))
         put(coresite, 'core-site.xml')
@@ -64,7 +64,7 @@ def configure_hadoop(config):
         put(slaves, 'slaves')
             
         mapredsite = StringIO()
-        template = Template(filename = path.join(BASEPATH, 'templates/mapred-site.mako'))
+        template = Template(filename = os.path.join(BASEPATH, 'templates/mapred-site.mako'))
         mapredsite.write(template.render(
                 jobtracker = config['hosts']['jobtracker'][0],
                 dirs = ','.join([dir + '/mapred' for dir in config["hadoop_data_dirs"]]),
@@ -72,14 +72,14 @@ def configure_hadoop(config):
         put(mapredsite, 'mapred-site.xml')
         
         hdfssite = StringIO()
-        template = Template(filename = path.join(BASEPATH, 'templates/hdfs-site.mako'))
+        template = Template(filename = os.path.join(BASEPATH, 'templates/hdfs-site.mako'))
         hdfssite.write(template.render(
                 namedirs=','.join([dir + '/name' for dir in config["hadoop_data_dirs"]]),
                 datadirs=','.join([dir + '/data' for dir in config["hadoop_data_dirs"]])))
         put(hdfssite, 'hdfs-site.xml')
         
         hadoop_env = StringIO()
-        template = Template(filename = path.join(BASEPATH, 'templates/hadoop-env.mako'))
+        template = Template(filename = os.path.join(BASEPATH, 'templates/hadoop-env.mako'))
         hadoop_env.write(template.render(
             cosmos_classpath=COSMOS_CLASSPATH))
         put(hadoop_env, 'hadoop-env.sh')

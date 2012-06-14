@@ -267,6 +267,5 @@
     <modules>
         <module>api</module>
         <module>core</module>
-        <module>parameterized</module>
     </modules>
 </project>

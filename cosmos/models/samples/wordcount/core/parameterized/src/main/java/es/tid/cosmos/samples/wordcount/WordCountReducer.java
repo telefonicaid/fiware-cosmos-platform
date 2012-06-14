@@ -24,7 +24,7 @@ public class WordCountReducer extends Reducer<Text, IntWritable,
     
     @Override
     public void reduce(Text key, Iterable<IntWritable> values, Context context) 
-          throws IOException, InterruptedException {
+            throws IOException, InterruptedException {
         long sumValue = 0L;
         for (IntWritable val : values) {
             sumValue += val.get();

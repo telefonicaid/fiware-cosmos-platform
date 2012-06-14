@@ -3,7 +3,6 @@ package es.tid.cosmos.mobility.labelling.clientbts;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -12,6 +11,8 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.base.mapreduce.CosmosWorkflow;
+import es.tid.cosmos.base.mapreduce.WorkflowList;
 import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourReducer;
 import es.tid.cosmos.mobility.labelling.client.VectorFuseNodeDaygroupReducer;
 import es.tid.cosmos.mobility.labelling.client.VectorNormalizedReducer;
@@ -26,115 +27,117 @@ public final class ClientBtsLabellingRunner {
     private ClientBtsLabellingRunner() {
     }
     
-    public static void run(Path clientsInfoPath, Path clientsRepbtsPath,
-                           Path vectorClientbtsPath, Path centroidsPath,
-                           Path pointsOfInterestTempPath,
-                           Path vectorClientbtsClusterPath, Path tmpDirPath,
-                           boolean isDebug, Configuration conf)
+    public static CosmosWorkflow run(Path clientsInfoPath,
+            Path clientsRepbtsPath, Path vectorClientbtsPath, Path centroidsPath,
+            Path pointsOfInterestTempPath, Path vectorClientbtsClusterPath,
+            Path tmpDirPath, boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
-        FileSystem fs = FileSystem.get(conf);
+        WorkflowList wfList = new WorkflowList();
         
         Path clientsbtsSpreadPath = new Path(tmpDirPath, "clientsbts_spread");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "VectorSpreadNodbts",
-                    SequenceFileInputFormat.class,
-                    VectorSpreadNodbtsReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, clientsInfoPath);
-            FileOutputFormat.setOutputPath(job, clientsbtsSpreadPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob clientsbtsSpreadJob = CosmosJob.createReduceJob(conf,
+                "VectorSpreadNodbts",
+                SequenceFileInputFormat.class,
+                VectorSpreadNodbtsReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(clientsbtsSpreadJob, clientsInfoPath);
+        FileOutputFormat.setOutputPath(clientsbtsSpreadJob, clientsbtsSpreadPath);
+        clientsbtsSpreadJob.setDeleteOutputOnExit(!isDebug);
+        wfList.add(clientsbtsSpreadJob);
 
         Path clientsbtsSumPath = new Path(tmpDirPath, "clientsbts_sum");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf,
-                    "VectorSumGroupcomms",
-                    SequenceFileInputFormat.class,
-                    VectorSumGroupcommsReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, clientsbtsSpreadPath);
-            FileOutputFormat.setOutputPath(job, clientsbtsSumPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob clientsbtsSumJob = CosmosJob.createReduceJob(conf,
+                "VectorSumGroupcomms",
+                SequenceFileInputFormat.class,
+                VectorSumGroupcommsReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(clientsbtsSumJob, clientsbtsSpreadPath);
+        FileOutputFormat.setOutputPath(clientsbtsSumJob, clientsbtsSumPath);
+        clientsbtsSumJob.setDeleteOutputOnExit(!isDebug);
+        clientsbtsSumJob.addDependentWorkflow(clientsbtsSpreadJob);
+        wfList.add(clientsbtsSumJob);
 
         Path clientsbtsSumWithInputIdPath = new Path(tmpDirPath,
                 "clientsbts_sum_with_input_id");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf,
-                    "SetMobDataInputIdByTwoInt",
-                    SequenceFileInputFormat.class,
-                    SetMobDataInputIdByTwoIntReducer.class,
-                    SequenceFileOutputFormat.class);
-            job.getConfiguration().setInt("input_id", 0);
-            FileInputFormat.setInputPaths(job, clientsbtsSumPath);
-            FileOutputFormat.setOutputPath(job, clientsbtsSumWithInputIdPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob clientsbtsSumWithInputIdJob = CosmosJob.createReduceJob(conf,
+                "SetMobDataInputIdByTwoInt",
+                SequenceFileInputFormat.class,
+                SetMobDataInputIdByTwoIntReducer.class,
+                SequenceFileOutputFormat.class);
+        clientsbtsSumWithInputIdJob.getConfiguration().setInt("input_id", 0);
+        FileInputFormat.setInputPaths(clientsbtsSumWithInputIdJob,
+                                      clientsbtsSumPath);
+        FileOutputFormat.setOutputPath(clientsbtsSumWithInputIdJob,
+                                       clientsbtsSumWithInputIdPath);
+        clientsbtsSumWithInputIdJob.setDeleteOutputOnExit(true);
+        clientsbtsSumWithInputIdJob.addDependentWorkflow(clientsbtsSumJob);
+        wfList.add(clientsbtsSumWithInputIdJob);
 
         Path clientsRepbtsWithInputIdPath = new Path(tmpDirPath,
                 "clients_repbts_with_input_id");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf,
-                    "SetMobDataInputIdByTwoInt",
-                    SequenceFileInputFormat.class,
-                    SetMobDataInputIdByTwoIntReducer.class,
-                    SequenceFileOutputFormat.class);
-            job.getConfiguration().setInt("input_id", 1);
-            FileInputFormat.setInputPaths(job, clientsRepbtsPath);
-            FileOutputFormat.setOutputPath(job, clientsRepbtsWithInputIdPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob clientsRepbtsWithInputIdJob = CosmosJob.createReduceJob(conf,
+                "SetMobDataInputIdByTwoInt",
+                SequenceFileInputFormat.class,
+                SetMobDataInputIdByTwoIntReducer.class,
+                SequenceFileOutputFormat.class);
+        clientsRepbtsWithInputIdJob.getConfiguration().setInt("input_id", 1);
+        FileInputFormat.setInputPaths(clientsRepbtsWithInputIdJob,
+                                      clientsRepbtsPath);
+        FileOutputFormat.setOutputPath(clientsRepbtsWithInputIdJob,
+                                       clientsRepbtsWithInputIdPath);
+        clientsRepbtsWithInputIdJob.setDeleteOutputOnExit(true);
+        wfList.add(clientsRepbtsWithInputIdJob);
         
         Path clientsbtsRepbtsPath = new Path(tmpDirPath, "clientsbts_repbts");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf,
-                    "VectorFiltClientbts",
-                    SequenceFileInputFormat.class,
-                    VectorFiltClientbtsReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, new Path[] {
-                clientsbtsSumWithInputIdPath, clientsRepbtsWithInputIdPath });
-            FileOutputFormat.setOutputPath(job, clientsbtsRepbtsPath);
-            job.waitForCompletion(true);
-        }
-        
-        fs.delete(clientsbtsSumWithInputIdPath, true);
-        fs.delete(clientsRepbtsWithInputIdPath, true);
-        
+        CosmosJob clientsbtsRepbtsJob = CosmosJob.createReduceJob(conf,
+                "VectorFiltClientbts",
+                SequenceFileInputFormat.class,
+                VectorFiltClientbtsReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(clientsbtsRepbtsJob, new Path[] {
+            clientsbtsSumWithInputIdPath, clientsRepbtsWithInputIdPath });
+        FileOutputFormat.setOutputPath(clientsbtsRepbtsJob, clientsbtsRepbtsPath);
+        clientsbtsRepbtsJob.setDeleteOutputOnExit(!isDebug);
+        clientsbtsRepbtsJob.addDependentWorkflow(clientsbtsSumWithInputIdJob);
+        clientsbtsRepbtsJob.addDependentWorkflow(clientsRepbtsWithInputIdJob);
+        wfList.add(clientsbtsRepbtsJob);
+               
         Path clientsbtsGroupPath = new Path(tmpDirPath, "clientsbts_group");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf,
-                    "VectorCreateNodeDayhour",
-                    SequenceFileInputFormat.class,
-                    VectorCreateNodeDayhourReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, clientsbtsRepbtsPath);
-            FileOutputFormat.setOutputPath(job, clientsbtsGroupPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob clientsbtsGroupJob = CosmosJob.createReduceJob(conf,
+                "VectorCreateNodeDayhour",
+                SequenceFileInputFormat.class,
+                VectorCreateNodeDayhourReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(clientsbtsGroupJob, clientsbtsRepbtsPath);
+        FileOutputFormat.setOutputPath(clientsbtsGroupJob, clientsbtsGroupPath);
+        clientsbtsGroupJob.setDeleteOutputOnExit(!isDebug);
+        clientsbtsGroupJob.addDependentWorkflow(clientsbtsRepbtsJob);                                                                     
+        wfList.add(clientsbtsGroupJob);
 
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf,
-                    "VectorFuseNodeDaygroup",
-                    SequenceFileInputFormat.class,
-                    VectorFuseNodeDaygroupReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, clientsbtsGroupPath);
-            FileOutputFormat.setOutputPath(job, vectorClientbtsPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob vectorClientbtsJob = CosmosJob.createReduceJob(conf,
+                "VectorFuseNodeDaygroup",
+                SequenceFileInputFormat.class,
+                VectorFuseNodeDaygroupReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(vectorClientbtsJob, clientsbtsGroupPath);
+        FileOutputFormat.setOutputPath(vectorClientbtsJob, vectorClientbtsPath);
+        vectorClientbtsJob.addDependentWorkflow(clientsbtsGroupJob);
+        wfList.add(vectorClientbtsJob);
 
         Path vectorClientbtsNormPath = new Path(tmpDirPath,
                                                 "vector_clientbts_norm");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "VectorNormalized",
-                    SequenceFileInputFormat.class,
-                    VectorNormalizedReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, vectorClientbtsPath);
-            FileOutputFormat.setOutputPath(job, vectorClientbtsNormPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob vectorClientbtsNormJob = CosmosJob.createReduceJob(conf,
+                "VectorNormalized",
+                SequenceFileInputFormat.class,
+                VectorNormalizedReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(vectorClientbtsNormJob,
+                                      vectorClientbtsPath);
+        FileOutputFormat.setOutputPath(vectorClientbtsNormJob,
+                                       vectorClientbtsNormPath);
+        vectorClientbtsNormJob.setDeleteOutputOnExit(!isDebug);
+        vectorClientbtsNormJob.addDependentWorkflow(vectorClientbtsJob);
+        wfList.add(vectorClientbtsNormJob);
 
         {
             CosmosJob job = CosmosJob.createReduceJob(conf,
@@ -145,20 +148,25 @@ public final class ClientBtsLabellingRunner {
             job.getConfiguration().set("centroids", centroidsPath.toString());
             FileInputFormat.setInputPaths(job, vectorClientbtsNormPath);
             FileOutputFormat.setOutputPath(job, pointsOfInterestTempPath);
-            job.waitForCompletion(true);
+            job.setDeleteOutputOnExit(!isDebug);
+            job.addDependentWorkflow(vectorClientbtsNormJob);
+            wfList.add(job);
         }
         
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf,
-                    "ClusterClientBtsGetMinDistanceToCluster",
-                    SequenceFileInputFormat.class,
-                    ClusterClientBtsGetMinDistanceToClusterReducer.class,
-                    SequenceFileOutputFormat.class);
-            job.getConfiguration().set("centroids", centroidsPath.toString());
-            FileInputFormat.setInputPaths(job, vectorClientbtsNormPath);
-            FileOutputFormat.setOutputPath(job, vectorClientbtsClusterPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob vectorClientbtsClusterJob = CosmosJob.createReduceJob(conf,
+                "ClusterClientBtsGetMinDistanceToCluster",
+                SequenceFileInputFormat.class,
+                ClusterClientBtsGetMinDistanceToClusterReducer.class,
+                SequenceFileOutputFormat.class);
+        vectorClientbtsClusterJob.getConfiguration().set("centroids",
+                centroidsPath.toString());
+        FileInputFormat.setInputPaths(vectorClientbtsClusterJob,
+                                      vectorClientbtsNormPath);
+        FileOutputFormat.setOutputPath(vectorClientbtsClusterJob,
+                                       vectorClientbtsClusterPath);
+        vectorClientbtsClusterJob.setDeleteOutputOnExit(!isDebug);
+        vectorClientbtsClusterJob.addDependentWorkflow(vectorClientbtsNormJob);
+        wfList.add(vectorClientbtsClusterJob);
 
         if (isDebug) {
             Path vectorClientbtsClusterTextPath = new Path(tmpDirPath,
@@ -173,14 +181,10 @@ public final class ClientBtsLabellingRunner {
                 FileInputFormat.setInputPaths(job, vectorClientbtsClusterPath);
                 FileOutputFormat.setOutputPath(job,
                                                vectorClientbtsClusterTextPath);
-                job.waitForCompletion(true);
+                job.addDependentWorkflow(vectorClientbtsClusterJob);
+                wfList.add(job);
             }
-        } else {
-            fs.delete(clientsbtsSpreadPath, true);
-            fs.delete(clientsbtsSumPath, true);
-            fs.delete(clientsbtsRepbtsPath, true);
-            fs.delete(clientsbtsGroupPath, true);
-            fs.delete(vectorClientbtsNormPath, true);
         }
+        return wfList;
     }
 }

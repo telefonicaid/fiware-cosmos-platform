@@ -170,20 +170,20 @@ public class CosmosJobTest {
         FakeJob job = new FakeJob(new Configuration(), "Test", true);
         job.waitForCompletion(true);
         assertTrue(job.getWaitForCompletionCalled());
-        job.addDependentJob(null);
+        job.addDependentWorkflow(null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testWaitForCompletion6() throws Exception {
         FakeJob job = new FakeJob(new Configuration(), "Test", true);
-        job.addDependentJob(job);
+        job.addDependentWorkflow(job);
     }
 
     @Test(expected = JobExecutionException.class)
     public void testWaitForCompletion7() throws Exception {
         FakeJob job = new FakeJob(new Configuration(), "Test", true);
         FakeJob job2 = new FakeJob(new Configuration(), "Test2", false);
-        job.addDependentJob(job2);
+        job.addDependentWorkflow(job2);
         job.waitForCompletion(true);
     }
 
@@ -194,11 +194,11 @@ public class CosmosJobTest {
         FakeJob job3 = new FakeJob(new Configuration(), "Test3", true);
         FakeJob job4 = new FakeJob(new Configuration(), "Test4", true);
         FakeJob job5 = new FakeJob(new Configuration(), "Test5", true);
-        job.addDependentJob(job2);
-        job.addDependentJob(job3);
-        job2.addDependentJob(job3);
-        job2.addDependentJob(job4);
-        job3.addDependentJob(job5);
+        job.addDependentWorkflow(job2);
+        job.addDependentWorkflow(job3);
+        job2.addDependentWorkflow(job3);
+        job2.addDependentWorkflow(job4);
+        job3.addDependentWorkflow(job5);
         job.waitForCompletion(true);
 
         assertNotNull(job2.getSubmitCallTime());
@@ -223,10 +223,10 @@ public class CosmosJobTest {
         FakeJob job3 = new FakeJob(new Configuration(), "Test3", true);
         FakeJob job4 = new FakeJob(new Configuration(), "Test4", true);
         FakeJob job5 = new FakeJob(new Configuration(), "Test5", true);
-        job.addDependentJob(job2);
-        job2.addDependentJob(job3);
-        job3.addDependentJob(job4);
-        job4.addDependentJob(job5);
+        job.addDependentWorkflow(job2);
+        job2.addDependentWorkflow(job3);
+        job3.addDependentWorkflow(job4);
+        job4.addDependentWorkflow(job5);
         job.waitForCompletion(true);
 
         assertNotNull(job2.getSubmitCallTime());
@@ -253,14 +253,14 @@ public class CosmosJobTest {
         FakeJob exp = new FakeJob(new Configuration(), "Exp", true);
         FakeJob exp2 = new FakeJob(new Configuration(), "Exp2", true);
         FakeJob exp3 = new FakeJob(new Configuration(), "Exp3", true);
-        agg.addDependentJob(main);
-        agg2.addDependentJob(main);
-        agg3.addDependentJob(main);
-        exp.addDependentJob(agg);
-        exp2.addDependentJob(agg2);
-        exp3.addDependentJob(agg3);
+        agg.addDependentWorkflow(main);
+        agg2.addDependentWorkflow(main);
+        agg3.addDependentWorkflow(main);
+        exp.addDependentWorkflow(agg);
+        exp2.addDependentWorkflow(agg2);
+        exp3.addDependentWorkflow(agg3);
 
-        JobList j = new JobList();
+        WorkflowList j = new WorkflowList();
         j.add(exp);
         j.add(exp2);
         j.add(exp3);
@@ -385,7 +385,7 @@ public class CosmosJobTest {
     public void testSubmit() throws Exception {
         FakeJob job = new FakeJob(new Configuration(), "Test", true);
         FakeJob job2 = new FakeJob(new Configuration(), "Test2", false);
-        job.addDependentJob(job2);
+        job.addDependentWorkflow(job2);
         job.submit();
         assertNotNull(job2.getSubmitCallTime());
         job.waitForCompletion(true);

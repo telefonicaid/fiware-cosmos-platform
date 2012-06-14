@@ -22,7 +22,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
-import es.tid.cosmos.base.mapreduce.JobList;
+import es.tid.cosmos.base.mapreduce.WorkflowList;
 import es.tid.cosmos.kpicalculation.config.KpiConfig;
 import es.tid.cosmos.kpicalculation.config.KpiFeature;
 import es.tid.cosmos.kpicalculation.export.mongodb.MongoDBExporterReducer;
@@ -81,14 +81,14 @@ public class KpiMain extends Configured implements Tool {
         KpiConfig config = new KpiConfig();
         config.read(KPI_DEFINITIONS);
 
-        JobList jobList = new JobList();
+        WorkflowList wfList = new WorkflowList();
         for (KpiFeature features : config.getKpiFeatures()) {
             Path kpiOutputPath = outputPath.suffix("/" + timeFolder + "/"
                     + features.getName());
 
             CosmosJob aggregationJob = createAggregationJob(conf, features,
                     tmpPath, kpiOutputPath);
-            aggregationJob.addDependentJob(cleanerJob);
+            aggregationJob.addDependentWorkflow(cleanerJob);
 
             CosmosJob exporterJob = CosmosJob.createReduceJob(conf, "MongoDBExporterJob",
                     TextInputFormat.class,
@@ -99,10 +99,10 @@ public class KpiMain extends Configured implements Tool {
             MongoConfigUtil.setOutputURI(exporterConf, mongoUrl);
             exporterConf.set("name", features.getName());
             exporterConf.setStrings("fields", features.getFields());
-            exporterJob.addDependentJob(aggregationJob);
-            jobList.add(exporterJob);
+            exporterJob.addDependentWorkflow(aggregationJob);
+            wfList.add(exporterJob);
         }
-        jobList.waitForCompletion(true);
+        wfList.waitForCompletion(true);
 
         return 0;
     }

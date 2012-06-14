@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class VectorSumComsBtsReducer extends Reducer<
+class VectorSumComsBtsReducer extends Reducer<
         ProtobufWritable<BtsCounter>, TypedProtobufWritable<Null>,
         ProtobufWritable<NodeBts>, TypedProtobufWritable<TwoInt>> {
     @Override

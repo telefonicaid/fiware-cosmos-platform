@@ -22,7 +22,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class ClusterJoinPotPoiLabelReducer extends Reducer<
+class ClusterJoinPotPoiLabelReducer extends Reducer<
         LongWritable, TypedProtobufWritable<Message>, ProtobufWritable<TwoInt>,
         TypedProtobufWritable<Null>> {
     @Override

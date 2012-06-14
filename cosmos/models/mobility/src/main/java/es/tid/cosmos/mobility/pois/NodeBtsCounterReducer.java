@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
  *
  * @author dmicol
  */
-public class NodeBtsCounterReducer extends Reducer<
+class NodeBtsCounterReducer extends Reducer<
         ProtobufWritable<NodeBts>, TypedProtobufWritable<Null>, LongWritable,
         TypedProtobufWritable<BtsCounter>> {
     @Override

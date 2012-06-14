@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  * 
  * @author dmicol
  */
-public class RepbtsSpreadNodebtsMapper extends Mapper<LongWritable,
+class RepbtsSpreadNodebtsMapper extends Mapper<LongWritable,
         TypedProtobufWritable<NodeMxCounter>, ProtobufWritable<NodeBtsDay>,
         TypedProtobufWritable<Int>> {
     @Override

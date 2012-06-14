@@ -14,7 +14,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
  * 
  * @author dmicol
  */
-public class FilterCellnoinfoMapper extends Mapper<LongWritable,
+class FilterCellnoinfoMapper extends Mapper<LongWritable,
         TypedProtobufWritable<Cdr>, LongWritable, TypedProtobufWritable<Cdr>> {
     @Override
     public void map(LongWritable key, TypedProtobufWritable<Cdr> value,

@@ -14,11 +14,12 @@ public class WorkflowList extends LinkedList<CosmosWorkflow>
         implements CosmosWorkflow {
     private volatile ExceptionedThread submittedThread = null;
     private WorkflowList dependencies = null;
+    
     /**
      * This will call submit on all workflows in the list and then call
      * waitForCompletion on each of them.
-     * @param verbose
-     * @throws IOException
+     * @param verbose print the progress to the user 
+     * @throws IOException thrown if the communication with the JobTracker is lost 
      * @throws InterruptedException
      * @throws ClassNotFoundException
      */

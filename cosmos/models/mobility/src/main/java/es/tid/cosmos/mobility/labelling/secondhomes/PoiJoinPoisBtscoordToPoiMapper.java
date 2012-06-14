@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class PoiJoinPoisBtscoordToPoiMapper extends Mapper<LongWritable,
+class PoiJoinPoisBtscoordToPoiMapper extends Mapper<LongWritable,
         TypedProtobufWritable<Poi>, ProtobufWritable<TwoInt>,
         TypedProtobufWritable<Poi>> {
     @Override

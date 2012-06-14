@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
  *
  * @author ximo
  */
-public class PopdenJoinNodeInfoWithoutProfileReducer extends Reducer<
+class PopdenJoinNodeInfoWithoutProfileReducer extends Reducer<
         LongWritable, TypedProtobufWritable<NodeBts>, ProtobufWritable<BtsProfile>,
         TypedProtobufWritable<Int>> {
     @Override

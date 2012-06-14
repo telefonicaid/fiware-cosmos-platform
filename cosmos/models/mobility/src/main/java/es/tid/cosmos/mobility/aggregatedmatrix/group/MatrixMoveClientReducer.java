@@ -9,10 +9,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.ItinMovementUtil;
 import es.tid.cosmos.mobility.data.ItinTimeUtil;
-import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixTime;
@@ -23,7 +23,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixTime;
  *
  * @author dmicol
  */
-public class MatrixMoveClientReducer extends Reducer<LongWritable,
+class MatrixMoveClientReducer extends Reducer<LongWritable,
         TypedProtobufWritable<MatrixTime>, LongWritable, TypedProtobufWritable<ItinMovement>> {
     private static final int MINS_IN_ONE_HOUR = 60;
     private static final int HOURS_IN_ONE_DAY = 24;

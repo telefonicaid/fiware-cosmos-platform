@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class VectorFilterBtsMapper extends Mapper<LongWritable,
+class VectorFilterBtsMapper extends Mapper<LongWritable,
         TypedProtobufWritable<TwoInt>, ProtobufWritable<BtsCounter>,
         TypedProtobufWritable<Null>> {
     @Override

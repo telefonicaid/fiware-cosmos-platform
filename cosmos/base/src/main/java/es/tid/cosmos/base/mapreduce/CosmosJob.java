@@ -208,9 +208,9 @@ public class CosmosJob extends Job implements CosmosWorkflow {
      * signals errors through JobExecutionException, so the return value will
      * never be false.
      *
-     * @param verbose
+     * @param verbose print the progress to the user 
      * @return Always true
-     * @throws IOException
+     * @throws IOException thrown if the communication with the JobTracker is lost 
      * @throws InterruptedException
      * @throws ClassNotFoundException
      * @throws JobExecutionException
@@ -222,10 +222,9 @@ public class CosmosJob extends Job implements CosmosWorkflow {
         this.submittedThread.join();
         this.submittedThread.throwErrors();
         
-        if(!this.callSuperWaitForCompletion(verbose)) {
+        if (!this.callSuperWaitForCompletion(verbose)) {
             throw new JobExecutionException("Job failed: " + this.getJobName());
         }
-
         if (this.deleteOutputOnExit) {
             Class outputFormat = this.getOutputFormatClass();
             OutputEraser eraser = OutputEraser.getEraser(outputFormat);

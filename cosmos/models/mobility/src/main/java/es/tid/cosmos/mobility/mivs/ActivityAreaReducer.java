@@ -22,7 +22,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TelMonth;
  * 
  * @author logc
  */
-public class ActivityAreaReducer extends Reducer<
+class ActivityAreaReducer extends Reducer<
         ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>,
         LongWritable, TypedProtobufWritable<MobVars>> {
     private static class Accumulations {

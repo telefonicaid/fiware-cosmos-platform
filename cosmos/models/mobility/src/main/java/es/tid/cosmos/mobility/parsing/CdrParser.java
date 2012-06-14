@@ -6,7 +6,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
  *
  * @author sortega
  */
-public class CdrParser extends Parser {
+class CdrParser extends Parser {
     private static final String DELIMITER = "\\|";
     
     public CdrParser(String line) {

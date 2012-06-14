@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class AdjSpreadPoisByPoiIdMapper extends Mapper<
+class AdjSpreadPoisByPoiIdMapper extends Mapper<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<PoiNew>, LongWritable,
         TypedProtobufWritable<PoiNew>> {
     @Override

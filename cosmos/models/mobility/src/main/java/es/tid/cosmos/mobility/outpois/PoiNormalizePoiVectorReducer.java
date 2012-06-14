@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class PoiNormalizePoiVectorReducer extends Reducer<
+class PoiNormalizePoiVectorReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<Cluster>,
         ProtobufWritable<TwoInt>, TypedProtobufWritable<Cluster>> {
     @Override

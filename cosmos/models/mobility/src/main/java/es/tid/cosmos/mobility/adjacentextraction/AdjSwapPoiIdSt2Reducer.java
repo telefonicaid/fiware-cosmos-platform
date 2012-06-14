@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class AdjSwapPoiIdSt2Reducer extends Reducer<LongWritable,
+class AdjSwapPoiIdSt2Reducer extends Reducer<LongWritable,
         TypedProtobufWritable<InputIdRecord>, LongWritable, TypedProtobufWritable<TwoInt>> {
     @Override
     protected void reduce(LongWritable key,

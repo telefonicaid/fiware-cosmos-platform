@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
  *
  * @author dmicol, sortega
  */
-public class RepbtsAggbybtsReducer extends Reducer<ProtobufWritable<NodeBtsDay>,
+class RepbtsAggbybtsReducer extends Reducer<ProtobufWritable<NodeBtsDay>,
         TypedProtobufWritable<Int>, LongWritable, TypedProtobufWritable<NodeBtsDay>> {
     @Override
     public void reduce(ProtobufWritable<NodeBtsDay> key,

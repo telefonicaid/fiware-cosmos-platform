@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
  * 
  * @author logc
  */
-public class FusionTotalVarsReducer extends Reducer<LongWritable,
+class FusionTotalVarsReducer extends Reducer<LongWritable,
         TypedProtobufWritable<MobVars>, LongWritable, TypedProtobufWritable<MobViMobVars>> {
     @Override
     protected void reduce(LongWritable key,

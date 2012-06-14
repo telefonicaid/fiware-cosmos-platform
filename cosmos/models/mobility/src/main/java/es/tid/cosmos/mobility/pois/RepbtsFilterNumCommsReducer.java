@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
  * 
  * @author dmicol
  */
-public class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
+class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<Int>> {
     private int minTotalCalls;
     private int maxTotalCalls;

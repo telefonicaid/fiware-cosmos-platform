@@ -23,7 +23,7 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  * 
  * @author dmicol
  */
-public class JoinBtsNodeToNodeBtsReducer extends Reducer<LongWritable,
+class JoinBtsNodeToNodeBtsReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Cdr>, ProtobufWritable<NodeBts>,
         TypedProtobufWritable<Null>> {
     private static List<Cell> cells = null;

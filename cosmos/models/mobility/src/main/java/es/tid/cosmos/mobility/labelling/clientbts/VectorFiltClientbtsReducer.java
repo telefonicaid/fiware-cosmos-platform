@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class VectorFiltClientbtsReducer extends Reducer<
+class VectorFiltClientbtsReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<InputIdRecord>,
         ProtobufWritable<NodeBts>, TypedProtobufWritable<TwoInt>> {
     @Override

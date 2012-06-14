@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.google.protobuf.ByteString;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -19,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class AdjJoinPairbtsAdjbtsReducer extends Reducer<
+class AdjJoinPairbtsAdjbtsReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<InputIdRecord>,
         LongWritable, TypedProtobufWritable<TwoInt>> {
     @Override

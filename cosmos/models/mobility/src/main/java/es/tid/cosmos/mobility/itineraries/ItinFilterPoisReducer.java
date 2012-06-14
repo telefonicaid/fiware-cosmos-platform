@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class ItinFilterPoisReducer extends Reducer<ProtobufWritable<TwoInt>,
+class ItinFilterPoisReducer extends Reducer<ProtobufWritable<TwoInt>,
         TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<ItinTime>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,

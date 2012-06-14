@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class PoiFilterSechomeAdjacentReducer extends Reducer<
+class PoiFilterSechomeAdjacentReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<InputIdRecord>,
         ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>> {
     @Override

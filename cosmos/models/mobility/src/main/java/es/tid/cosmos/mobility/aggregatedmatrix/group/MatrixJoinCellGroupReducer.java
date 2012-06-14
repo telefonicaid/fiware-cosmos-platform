@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.util.CellGroupsCatalogue;
  * 
  * @author dmicol
  */
-public class MatrixJoinCellGroupReducer extends Reducer<LongWritable,
+class MatrixJoinCellGroupReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Cdr>, LongWritable, TypedProtobufWritable<MatrixTime>> {
     private static List<CellGroup> cellGroups;
     

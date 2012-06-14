@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class RepbtsGetRepresentativeBtsMapper extends Mapper<LongWritable,
+class RepbtsGetRepresentativeBtsMapper extends Mapper<LongWritable,
         TypedProtobufWritable<BtsCounter>, ProtobufWritable<TwoInt>,
         TypedProtobufWritable<BtsCounter>> {
     private int minPercRepBts;

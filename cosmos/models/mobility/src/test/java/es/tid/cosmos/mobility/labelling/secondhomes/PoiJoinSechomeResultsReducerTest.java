@@ -2,16 +2,17 @@ package es.tid.cosmos.mobility.labelling.secondhomes;
 
 import static java.util.Arrays.asList;
 
+import com.google.protobuf.Message;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.PoiUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -19,27 +20,27 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class PoiJoinSechomeResultsReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
-            ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> driver;
+    private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>,
+            ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>>(new PoiJoinSechomeResultsReducer());
+                TypedProtobufWritable<Message>, ProtobufWritable<TwoInt>,
+                TypedProtobufWritable<Poi>>(new PoiJoinSechomeResultsReducer());
     }
 
     @Test
     public void testOutputWithSecHomeCount() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(1L, 2L);
-        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<Message> value1 = new TypedProtobufWritable<Message>(
                 PoiUtil.create(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
                                15, 16, 17));
-        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<Message> value2 = new TypedProtobufWritable<Message>(
                 TwoIntUtil.create(52L, 37L));
-        final ProtobufWritable<MobData> value3 = MobDataUtil.createAndWrap(
-                NullWritable.get());
-        final ProtobufWritable<MobData> outValue = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<Message> value3 = new TypedProtobufWritable<Message>(
+                Null.getDefaultInstance());
+        final TypedProtobufWritable<Poi> outValue = new TypedProtobufWritable<Poi>(
                 PoiUtil.create(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 100, 100, 14,
                                15, 52, 37));
         this.driver
@@ -51,12 +52,12 @@ public class PoiJoinSechomeResultsReducerTest {
     @Test
     public void testOutputWithoutSecHomeCount() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(1L, 2L);
-        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<Message> value1 = new TypedProtobufWritable<Message>(
                 PoiUtil.create(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
                                15, 16, 17));
-        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<Message> value2 = new TypedProtobufWritable<Message>(
                 TwoIntUtil.create(52L, 37L));
-        final ProtobufWritable<MobData> outValue = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<Poi> outValue = new TypedProtobufWritable<Poi>(
                 PoiUtil.create(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
                                15, 52, 37));
         this.driver

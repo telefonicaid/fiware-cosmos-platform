@@ -8,10 +8,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -20,33 +21,43 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class VectorFiltClientbtsReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
-            ProtobufWritable<NodeBts>, ProtobufWritable<MobData>> driver;
+    private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<InputIdRecord>,
+        ProtobufWritable<NodeBts>, TypedProtobufWritable<TwoInt>> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>, ProtobufWritable<NodeBts>,
-                ProtobufWritable<MobData>>(new VectorFiltClientbtsReducer());
+                TypedProtobufWritable<InputIdRecord>, ProtobufWritable<NodeBts>,
+                TypedProtobufWritable<TwoInt>>(new VectorFiltClientbtsReducer());
     }
 
     @Test
     public void testSomeMethod() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);
-        MobData value1 = MobDataUtil.create(BtsCounterUtil.create(1, 2, 3, 4));
-        value1 = MobDataUtil.setInputId(value1, 0);
-        MobData value2 = MobDataUtil.create(BtsCounterUtil.create(5, 6, 7, 8));
-        value2 = MobDataUtil.setInputId(value2, 1);
-        MobData value3 = MobDataUtil.create(BtsCounterUtil.create(1, 2, 3, 4));
-        value3 = MobDataUtil.setInputId(value3, 1);
+        BtsCounter value1 = BtsCounterUtil.create(1, 2, 3, 4);
+        TypedProtobufWritable<InputIdRecord> record1 =
+                new TypedProtobufWritable<InputIdRecord>(InputIdRecord.newBuilder()
+                        .setInputId(0)
+                        .setMessageBytes(value1.toByteString())
+                        .build());
+        BtsCounter value2 = BtsCounterUtil.create(5, 6, 7, 8);
+        TypedProtobufWritable<InputIdRecord> record2 =
+                new TypedProtobufWritable<InputIdRecord>(InputIdRecord.newBuilder()
+                        .setInputId(1)
+                        .setMessageBytes(value2.toByteString())
+                        .build());
+        BtsCounter value3 = BtsCounterUtil.create(1, 2, 3, 4);
+        TypedProtobufWritable<InputIdRecord> record3 =
+                new TypedProtobufWritable<InputIdRecord>(InputIdRecord.newBuilder()
+                        .setInputId(1)
+                        .setMessageBytes(value3.toByteString())
+                        .build());
         ProtobufWritable<NodeBts> outKey = NodeBtsUtil.createAndWrap(57, 32,
                                                                      2, 0);
-        ProtobufWritable<MobData> outValue = MobDataUtil.createAndWrap(
+        TypedProtobufWritable<TwoInt> outValue = new TypedProtobufWritable<TwoInt>(
                 TwoIntUtil.create(3, 4));
         this.driver
-                .withInput(key, asList(MobDataUtil.wrap(value1),
-                                       MobDataUtil.wrap(value2),
-                                       MobDataUtil.wrap(value3)))
+                .withInput(key, asList(record1, record2, record3))
                 .withOutput(outKey, outValue)
                 .withOutput(outKey, outValue)
                 .runTest();

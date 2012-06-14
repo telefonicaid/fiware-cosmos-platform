@@ -13,6 +13,7 @@ import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
 import es.tid.cosmos.mobility.util.ExportPoiToTextByTwoIntReducer;
+import es.tid.cosmos.mobility.util.SetMobDataInputIdByTwoIntReducer;
 
 /**
  *
@@ -99,6 +100,30 @@ public final class DetectSecondHomesRunner {
             job.waitForCompletion(true);
         }
         
+        Path sechPotSecHomeInputIdPath = new Path(tmpDirPath, "sech_pot_sec_home_id");
+        {
+            CosmosJob job = CosmosJob.createReduceJob(conf, "GetPairsSechomePois",
+                    SequenceFileInputFormat.class,
+                    SetMobDataInputIdByTwoIntReducer.class,
+                    SequenceFileOutputFormat.class);
+            job.getConfiguration().setInt("input_id", 0);
+            FileInputFormat.setInputPaths(job, sechPotSecHomePath);
+            FileOutputFormat.setOutputPath(job, sechPotSecHomeInputIdPath);
+            job.waitForCompletion(true);
+        }
+        
+        Path pairbtsAdjInputIdPath = new Path(tmpDirPath, "pairbts_adj_id");
+        {
+            CosmosJob job = CosmosJob.createReduceJob(conf, "GetPairsSechomePois",
+                    SequenceFileInputFormat.class,
+                    SetMobDataInputIdByTwoIntReducer.class,
+                    SequenceFileOutputFormat.class);
+            job.getConfiguration().setInt("input_id", 1);
+            FileInputFormat.setInputPaths(job, pairbtsAdjPath);
+            FileOutputFormat.setOutputPath(job, pairbtsAdjInputIdPath);
+            job.waitForCompletion(true);
+        }
+        
         Path nodbtsSechomePath = new Path(tmpDirPath, "nodbts_sechome");
         {
             CosmosJob job = CosmosJob.createReduceJob(conf,
@@ -107,7 +132,7 @@ public final class DetectSecondHomesRunner {
                     PoiFilterSechomeAdjacentReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, new Path[] {
-                sechPotSecHomePath, pairbtsAdjPath });
+                sechPotSecHomeInputIdPath, pairbtsAdjInputIdPath });
             FileOutputFormat.setOutputPath(job, nodbtsSechomePath);
             job.waitForCompletion(true);
         }

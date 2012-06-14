@@ -20,6 +20,7 @@ import hue_deployment
 
 CONFIG = json.loads(open(env.config, 'r').read())
 env.roledefs = CONFIG['hosts']
+BASEPATH = path.realpath(__file__)
 
 @task
 def deploy(dependenciespath, thrift_tar, jdk_rpm):
@@ -66,7 +67,7 @@ def deploy_sftp():
     put(injection_jar, exec_path)
 
     injection_conf = StringIO()
-    template = Template(filename='templates/injection.conf.mako')
+    template = Template(filename = path.join(BASEPATH,'templates/injection.conf.mako'))
     injection_conf.write(template.render(
             namenode=CONFIG['hosts']['namenode'][0]))
     put(injection_conf, "/etc/injection.cfg")
@@ -81,7 +82,7 @@ def deploy_sftp():
     if not files.exists(pidfile):
         run("mkdir -p /var/run/injection")
         run("echo '' >> {0}".format(pidfile))
-    put("templates/injection.init.d", "/etc/init.d/injection")
+    put(path.join(BASEPATH, "templates/injection.init.d"), "/etc/init.d/injection")
     with ctx.settings(warn_only=True):
         start = run("/etc/init.d/injection start", pty=False)
         if start.failed:
@@ -104,7 +105,7 @@ def deploy_mongo():
     """Install the latest MongoDB distribution"""
     with cd('/etc/yum.repos.d'):
         if not files.exists('10gen.repo'):
-            put('templates/10gen.repo', '10gen.repo')
+            put(path.join(BASEPATH, 'templates/10gen.repo'), '10gen.repo')
     run('yum -y install mongo-10gen mongo-10gen-server')
     run('service mongod start')
     run('chkconfig mongod on')
@@ -124,7 +125,7 @@ def deploy_models():
     to deploy
     """
     model_paths = [] # Dummy variable, this should be part of
-                    # the configuration or similar
+                     # the configuration or similar
     for model in model_paths:
         put(model)
         sudo('hadoop dfs -put {0} /models/{0}'.format(model))

@@ -2,13 +2,11 @@ package es.tid.cosmos.mobility.adjacentextraction;
 
 import java.io.IOException;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -17,22 +15,21 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class AdjPutMaxIdReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+class AdjPutMaxIdReducer extends Reducer<LongWritable,
+        TypedProtobufWritable<TwoInt>, LongWritable, TypedProtobufWritable<TwoInt>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<TwoInt>> values, Context context)
             throws IOException, InterruptedException {
         TwoInt pairPois = null;
         long max = Long.MIN_VALUE;
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            pairPois = value.get().getTwoInt();
+        for (TypedProtobufWritable<TwoInt> value : values) {
+            pairPois = value.get();
             if (pairPois.getNum2() > max) {
                 max = pairPois.getNum2();
             }
         }
-        context.write(key, MobDataUtil.createAndWrap(
+        context.write(key, new TypedProtobufWritable<TwoInt>(
                 TwoIntUtil.create(pairPois.getNum1(), max)));
     }
 }

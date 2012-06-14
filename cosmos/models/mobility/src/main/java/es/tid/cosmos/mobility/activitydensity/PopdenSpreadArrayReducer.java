@@ -6,11 +6,11 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.data.BtsProfileUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsProfile;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
 /**
@@ -19,24 +19,22 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  * 
  * @author dmicol
  */
-public class PopdenSpreadArrayReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, ProtobufWritable<BtsProfile>,
-        ProtobufWritable<MobData>> {
+class PopdenSpreadArrayReducer extends Reducer<LongWritable,
+        TypedProtobufWritable<NodeMxCounter>, ProtobufWritable<BtsProfile>,
+        TypedProtobufWritable<Int>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<NodeMxCounter>> values, Context context)
             throws IOException, InterruptedException {
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            final NodeMxCounter counter = mobData.getNodeMxCounter();
+        for (TypedProtobufWritable<NodeMxCounter> value : values) {
+            final NodeMxCounter counter = value.get();
             for (BtsCounter btsCounter : counter.getBtsList()) {
                 final ProtobufWritable<BtsProfile> btsProfile = 
                         BtsProfileUtil.createAndWrap(btsCounter.getBts(), 0,
                                                      btsCounter.getWeekday(),
                                                      btsCounter.getRange());
                 context.write(btsProfile,
-                              MobDataUtil.createAndWrap(btsCounter.getCount()));
+                              TypedProtobufWritable.create(btsCounter.getCount()));
             }
         }
     }

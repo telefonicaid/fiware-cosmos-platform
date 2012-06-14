@@ -6,7 +6,8 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -15,11 +16,11 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class MatrixSpreadNodeMapper extends Mapper<ProtobufWritable<TwoInt>,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+class MatrixSpreadNodeMapper extends Mapper<ProtobufWritable<TwoInt>,
+        TypedProtobufWritable<ItinTime>, LongWritable, TypedProtobufWritable<ItinTime>> {
     @Override
     protected void map(ProtobufWritable<TwoInt> key,
-            ProtobufWritable<MobData> value, Context context)
+            TypedProtobufWritable<ItinTime> value, Context context)
             throws IOException, InterruptedException {
         key.setConverter(TwoInt.class);
         final TwoInt nodbts = key.get();

@@ -9,37 +9,35 @@ import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.ItinPercMoveUtil;
 import es.tid.cosmos.mobility.data.MatrixRangeUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Float64;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinPercMove;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixRange;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  *
  * @author dmicol
  */
 public class MatrixCountRangesReducerTest {
-    private ReduceDriver<ProtobufWritable<MatrixRange>,
-            ProtobufWritable<MobData>, ProtobufWritable<MatrixRange>,
-            ProtobufWritable<MobData>> instance;
+    private ReduceDriver<ProtobufWritable<MatrixRange>, TypedProtobufWritable<Float64>,
+            ProtobufWritable<MatrixRange>, TypedProtobufWritable<ItinPercMove>> instance;
     
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<MatrixRange>,
-                ProtobufWritable<MobData>, ProtobufWritable<MatrixRange>,
-                ProtobufWritable<MobData>>(new MatrixCountRangesReducer());
+                TypedProtobufWritable<Float64>, ProtobufWritable<MatrixRange>,
+                TypedProtobufWritable<ItinPercMove>>(new MatrixCountRangesReducer());
     }
 
     @Test
     public void testReduce() {
         final ProtobufWritable<MatrixRange> key = MatrixRangeUtil.createAndWrap(
                 1, 2, 3, 4, 5);
-        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
-                5.7D);
-        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
-                8.8D);
+        final TypedProtobufWritable<Float64> value1 = TypedProtobufWritable.create(5.7D);
+        final TypedProtobufWritable<Float64> value2 = TypedProtobufWritable.create(8.8D);
         final ProtobufWritable<MatrixRange> outKey =
                 MatrixRangeUtil.createAndWrap(1, 2, 3, 0, 0);
-        final ProtobufWritable<MobData> outValue = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<ItinPercMove> outValue = new TypedProtobufWritable<ItinPercMove>(
                 ItinPercMoveUtil.create(4, 5, 14.5D));
         this.instance
                 .withInput(key, asList(value1, value2))

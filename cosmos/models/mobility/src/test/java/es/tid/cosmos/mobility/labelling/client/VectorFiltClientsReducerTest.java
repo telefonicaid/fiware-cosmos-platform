@@ -4,7 +4,7 @@ import java.io.IOException;
 import static java.util.Arrays.asList;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.google.protobuf.Message;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
@@ -13,32 +13,32 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 
 /**
  *
  * @author dmicol
  */
 public class VectorFiltClientsReducerTest {
-    private ReduceDriver<LongWritable, ProtobufWritable<MobData>, LongWritable,
-            ProtobufWritable<MobData>> driver;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<Message>, LongWritable,
+            TypedProtobufWritable<Cdr>> driver;
     
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                LongWritable, ProtobufWritable<MobData>>(
+        this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
+                LongWritable, TypedProtobufWritable<Cdr>>(
                         new VectorFiltClientsReducer());
     }
 
     @Test
     public void testNoNumberOfCommunications() throws IOException {
-        ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+        TypedProtobufWritable<Message> value1 = new TypedProtobufWritable<Message>(
                 Cdr.getDefaultInstance());
-        ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+        TypedProtobufWritable<Message> value2 = new TypedProtobufWritable<Message>(
                 Cdr.getDefaultInstance());
-        List<Pair<LongWritable, ProtobufWritable<MobData>>> res = this.driver
+        List<Pair<LongWritable, TypedProtobufWritable<Cdr>>> res = this.driver
                 .withInput(new LongWritable(17L), asList(value1, value2))
                 .run();
         assertNotNull(res);
@@ -47,8 +47,10 @@ public class VectorFiltClientsReducerTest {
     
     @Test(expected=IllegalStateException.class)
     public void testInvalidNumberOfCommunications() throws IOException {
-        ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(56);
-        ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(137);
+        TypedProtobufWritable<Message> value1 = new TypedProtobufWritable<Message>(
+                Int.newBuilder().setValue(56).build());
+        TypedProtobufWritable<Message> value2 = new TypedProtobufWritable<Message>(
+                Int.newBuilder().setValue(137).build());
         this.driver
                 .withInput(new LongWritable(17L), asList(value1, value2))
                 .run();

@@ -1,18 +1,18 @@
 package es.tid.cosmos.mobility.outpois;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
+import com.google.protobuf.Message;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -22,30 +22,17 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class PoiJoinPoivectorPoiReducer extends Reducer<
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
+class PoiJoinPoivectorPoiReducer extends Reducer<
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Cluster>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        List<ClusterVector> clusterVectorList = new LinkedList<ClusterVector>();
-        List<Poi> poiList = new LinkedList<Poi>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case CLUSTER_VECTOR:
-                    clusterVectorList.add(mobData.getClusterVector());
-                    break;
-                case POI:
-                    poiList.add(mobData.getPoi());
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected MobData type: "
-                            + mobData.getType().name());
-            }
-        }
+        Map<Class, List> dividedLists = TypedProtobufWritable.groupByClass(
+                values, ClusterVector.class, Poi.class);
+        List<ClusterVector> clusterVectorList = dividedLists.get(ClusterVector.class);
+        List<Poi> poiList = dividedLists.get(Poi.class);
         
         key.setConverter(TwoInt.class);
         final TwoInt nodeBts = key.get();
@@ -57,7 +44,7 @@ public class PoiJoinPoivectorPoiReducer extends Reducer<
                         poi.getLabelnodebts(), poi.getLabelgroupnodebts(),
                         poi.getConfidentnodebts(), 0.0D, 0.0D, clusterVector);
                 context.write(TwoIntUtil.wrap(outputNodeBtsBuilder.build()),
-                              MobDataUtil.createAndWrap(outputCluster));
+                              new TypedProtobufWritable<Cluster>(outputCluster));
             }
         }
     }

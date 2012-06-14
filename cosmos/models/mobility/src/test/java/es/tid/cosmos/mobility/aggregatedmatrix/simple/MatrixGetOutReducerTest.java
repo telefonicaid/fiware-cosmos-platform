@@ -10,15 +10,15 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -26,13 +26,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class MatrixGetOutReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
-            NullWritable, Text> instance;
+    private ReduceDriver<ProtobufWritable<TwoInt>,
+            TypedProtobufWritable<ClusterVector>, NullWritable, Text> instance;
 
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>, NullWritable, Text>(
+                TypedProtobufWritable<ClusterVector>, NullWritable, Text>(
                         new MatrixGetOutReducer());
     }
     
@@ -40,7 +40,7 @@ public class MatrixGetOutReducerTest {
     public void testReduce() throws IOException {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L,
                                                                       102L);
-        final ProtobufWritable<MobData> value = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<ClusterVector> value = new TypedProtobufWritable<ClusterVector>(
                 ClusterVector.getDefaultInstance());
         List<Pair<NullWritable, Text>> results = this.instance
                 .withInput(key, asList(value, value))

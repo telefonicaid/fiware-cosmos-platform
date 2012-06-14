@@ -30,9 +30,9 @@ class RepbtsGetRepresentativeBtsMapper extends Mapper<LongWritable,
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.minPercRepBts = conf.getInt(Config.MIN_PERC_REP_BTS,
+        this.minPercRepBts = conf.getInt(Config.POI_MIN_PERC_REP_BTS,
                                          Integer.MIN_VALUE);
-        this.minNumberCallsBts = conf.getInt(Config.MIN_NUMBER_CALLS_BTS,
+        this.minNumberCallsBts = conf.getInt(Config.POI_MIN_NUMBER_CALLS_BTS,
                                              Integer.MIN_VALUE);
     }
     

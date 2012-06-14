@@ -32,9 +32,9 @@ class GetPairsSechomePoisReducer extends Reducer<LongWritable,
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.homeLabelgroupId = conf.getInt(Config.HOME_LABELGROUP_ID,
+        this.homeLabelgroupId = conf.getInt(Config.POI_HOME_LABELGROUP_ID,
                                             Integer.MAX_VALUE);
-        this.minDistSecondHome = conf.getFloat(Config.MIN_DIST_SECOND_HOME,
+        this.minDistSecondHome = conf.getFloat(Config.POI_MIN_DIST_SECOND_HOME,
                                                Float.MIN_VALUE);
     }
     

@@ -53,7 +53,7 @@ double EngineElement::getTimeToTrigger()
     if( type == repeated )
     {
         double t = cronometer.diffTime();
-        LM_T(LmtEngine, ("getTimeToTrigger: Period %d Cronometer: %f" , period , t ));
+        LM_T(LmtEngineTime, ("getTimeToTrigger: Period %d Cronometer: %f" , period , t ));
         return period - t; 
     }
     return 0;

@@ -677,6 +677,8 @@ namespace samson
 
         std::string mainCommand = commandLine.get_argument(0);
         
+        LM_M(("runAsyncCommand command:%s", command.c_str()));
+
         // Common command in all modes
         if( mainCommand == "set_mode" )
         {
@@ -1692,6 +1694,7 @@ namespace samson
     
     void DelilahConsole::runAsyncCommandAndWait( std::string command )
     {
+        LM_M(("runAsyncCommandAndWait command:%s", command.c_str()));
         size_t tmp_id = runAsyncCommand(command);
         
         if( tmp_id == 0 )

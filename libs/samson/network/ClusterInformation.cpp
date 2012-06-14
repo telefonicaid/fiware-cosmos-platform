@@ -81,7 +81,7 @@ namespace samson {
     
     ClusterInformation::~ClusterInformation()
     {
-        LM_T(LmtCleanup, ("In destructor"));
+        LM_T(LmtCleanup, ("In destructor, calling clearClusterInformation"));
         clearClusterInformation();
     }
     
@@ -89,6 +89,7 @@ namespace samson {
     {
         id = 0;
         version = 0;
+        au::TokenTaker tt (&token);
         
         LM_T(LmtCleanup, ("nodes.size == %d", nodes.size()));
         for ( size_t i = 0 ; i < nodes.size() ; i++ )
@@ -102,14 +103,17 @@ namespace samson {
     
     void ClusterInformation::init_new_cluster( std::string host , int port )
     {
-        // Clear previous informaiton ( if any )
+        LM_T(LmtCleanup, ("In init_new_cluster, calling clearClusterInformation"));
+        // Clear previous information ( if any )
         clearClusterInformation();
         
         // New random identifier
         id = ( (size_t) (rand()%1000000) ) * 1000000 + ( (size_t) (rand()%1000000) );
         version = 0;
         
+        LM_T(LmtCleanup, ("In init_new_cluster, adds single worker:%s", host.c_str()));
         // Add a single worker ( id = 0 )
+        au::TokenTaker tt (&token);
         nodes.push_back( new ClusterNode( host , port , 0 ) );
         
     }
@@ -119,11 +123,13 @@ namespace samson {
         // Update the version
         version++;
         
+        au::TokenTaker tt (&token);
         size_t assigned_id = 0;
         for ( size_t i = 0 ; i < nodes.size() ; i++ )
             if( assigned_id <= nodes[i]->id )
                 assigned_id = nodes[i]->id+1;
         
+        LM_T(LmtCleanup, ("In add_node, adds single worker:%s", host.c_str()));
         nodes.push_back( new ClusterNode( host , port , assigned_id ) );
         
         return assigned_id;
@@ -135,6 +141,7 @@ namespace samson {
         
         std::vector<ClusterNode*> _nodes;   
         
+        au::TokenTaker tt (&token);
         for ( size_t i = 0 ; i < nodes.size() ; i++ )
         {
             if( nodes[i]->id == worker_id )
@@ -152,6 +159,8 @@ namespace samson {
         // Update the version
         version++;
         
+        LM_T(LmtCleanup, ("In remove_host, removes single worker_id:%lu", worker_id));
+
         // construct the vector without the affected element
         nodes.clear();
         for ( size_t i = 0 ; i < _nodes.size() ; i++ )
@@ -205,6 +214,7 @@ namespace samson {
     
     size_t ClusterInformation::getNumNodes()
     {
+        au::TokenTaker tt (&token);
         return nodes.size();
     }
     
@@ -220,7 +230,7 @@ namespace samson {
     
     void ClusterInformation::update( ClusterInformation* new_cluster_information )
     {
-        au::TokenTaker tt(&token); // Mutex protection
+
         if ( id != 0 )
         {
             if( id != new_cluster_information->id )
@@ -237,6 +247,7 @@ namespace samson {
         id = new_cluster_information->id;
         version = new_cluster_information->version;
         
+        au::TokenTaker tt(&token); // Mutex protection
         for ( size_t i = 0 ; i < new_cluster_information->nodes.size() ; i++ )
             nodes.push_back( new ClusterNode( new_cluster_information->nodes[i] )) ;
         
@@ -316,6 +327,7 @@ namespace samson {
             
             if( command == "node" )
             {
+                au::TokenTaker tt (&token);
                 if( cmdLine.get_num_arguments() >= 4 )
                 {
                     std::string host = cmdLine.get_argument(1).c_str();
@@ -334,6 +346,7 @@ namespace samson {
     std::vector<size_t> ClusterInformation::getWorkerIds()
     {
         std::vector<size_t> ids;
+        au::TokenTaker tt (&token);
         
         for ( size_t i = 0 ; i < nodes.size() ; i++ )
             ids.push_back( nodes[i]->id );
@@ -354,6 +367,7 @@ namespace samson {
         output << "------------------------------------------------\n";
         output << "Cluster Information [ id " << id << " version " << version << " ]\n";
         output << "------------------------------------------------\n";
+        au::TokenTaker tt (&token);
         for ( size_t i = 0 ; i < nodes.size() ; i++ )
             output << nodes[i]->str() << "\n";
         output << "------------------------------------------------\n";
@@ -401,6 +415,8 @@ namespace samson {
     
     void ClusterInformation::getInfo( ::std::ostringstream& output , ::std::string format)
     {
+        au::TokenTaker tt (&token);
+
         if (format == "xml")
         {
             au::xml_open(output, "cluster_information");

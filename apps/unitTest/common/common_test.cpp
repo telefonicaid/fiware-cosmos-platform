@@ -80,7 +80,7 @@ TEST(commonTest, SamsonSetup)
     EXPECT_EQ(samson::SamsonSetup::shared()->isParameterDefined("unit_test.samsonSetupTest"), true) << "Error in isParameterDefined negative test";
     EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("unit_test.samsonSetupTest"), "initial") << "Error in getValueForParameter for unit_test.samsonSetupTest";
 
-    EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("isolated.timeout"), "300") << "Error in getValueForParameter for isolated.timeout";
+    EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("isolated.timeout"), "600") << "Error in getValueForParameter for isolated.timeout";
 
     samson::SamsonSetup::destroy();
 }

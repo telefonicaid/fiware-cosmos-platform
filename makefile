@@ -223,7 +223,7 @@ test: ctest
 ctest: debug_all
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
 	cp apps/unitTest/delilah/words_input.txt /tmp
-	cp scripts/DartConfiguration.tcl BUILD_DEBUG_ALL
+	#cp scripts/DartConfiguration.tcl BUILD_DEBUG_ALL
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
 	make test -C BUILD_DEBUG_ALL ARGS="-D ExperimentalTest"
@@ -235,7 +235,7 @@ ctest: debug_all
 unit_test: debug_all
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
 	cp apps/unitTest/delilah/words_input.txt /tmp
-	cp scripts/DartConfiguration.tcl BUILD_DEBUG_ALL
+	#cp scripts/DartConfiguration.tcl BUILD_DEBUG_ALL
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
 	# Enable core dumps for any potential SEGVs
@@ -248,7 +248,7 @@ test_coverage:
 	cp apps/unitTest/delilah/words_input.txt /tmp
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
-	cp scripts/DartConfiguration.tcl BUILD_COVERAGE
+	#cp scripts/DartConfiguration.tcl BUILD_COVERAGE
 	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" || true
 	# Enable core dumps for any potential SEGVs
 	ulimit -c unlimited && BUILD_COVERAGE/apps/unitTest/unitTest --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true

@@ -11,7 +11,7 @@ BuildDirectory: /home/jges/SAMSON/trunk/BUILD_COVERAGE
 CostDataFile: 
 
 # Site is something like machine.domain, i.e. pragmatic.crd
-Site: samson09
+Site: localhost
 
 # Build name is osname-revision-compiler, i.e. Linux-2.4.2-2smp-c++
 BuildName: Linux-c++

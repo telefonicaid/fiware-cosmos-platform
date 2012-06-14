@@ -33,7 +33,8 @@ public class CdrParser extends Parser {
 
             return cdr.build();
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Failed to parse: " + this.line);
+            throw new IllegalArgumentException("Failed to parse: " + this.line,
+                                               ex);
         }
     }
 }

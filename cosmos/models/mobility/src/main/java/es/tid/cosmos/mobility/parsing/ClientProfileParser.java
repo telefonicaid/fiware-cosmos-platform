@@ -23,7 +23,8 @@ public class ClientProfileParser extends Parser {
                     .setUserId(userId)
                     .build();
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Failed to parse: " + this.line);
+            throw new IllegalArgumentException("Failed to parse: " + this.line,
+                                               ex);
         }
     }
 }

@@ -11,6 +11,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 public abstract class Parser {
     protected static final int MAX_CELL_DIGITS = 8;
     protected static final int MAX_CLIENT_LENGTH = 10;
+    private static final int DEFAULT_RADIX = 10;
     
     protected String line;
     private String[] fields;
@@ -39,11 +40,11 @@ public abstract class Parser {
     }
 
     protected int parseInt() {
-        return Integer.parseInt(nextToken(), 10);
+        return Integer.parseInt(nextToken(), DEFAULT_RADIX);
     }
 
     protected long parseLong() {
-        return Long.parseLong(nextToken(), 10);
+        return Long.parseLong(nextToken(), DEFAULT_RADIX);
     }
 
     protected double parseDouble() {
@@ -66,7 +67,7 @@ public abstract class Parser {
         if (str.length() > MAX_CLIENT_LENGTH) {
             str = str.substring(str.length() - MAX_CLIENT_LENGTH);
         }
-        return Long.parseLong(str, 10);
+        return Long.parseLong(str, DEFAULT_RADIX);
     }
     
     protected ClusterVector parseClusterVector() {
@@ -79,9 +80,9 @@ public abstract class Parser {
 
     protected Date parseDate() {
         String date = this.nextToken();
-        final int day = Integer.parseInt(date.substring(0, 2), 10);
-        final int month = Integer.parseInt(date.substring(3, 5), 10);
-        final int year = Integer.parseInt(date.substring(6, 10), 10);
+        final int day = Integer.parseInt(date.substring(0, 2), DEFAULT_RADIX);
+        final int month = Integer.parseInt(date.substring(3, 5), DEFAULT_RADIX);
+        final int year = Integer.parseInt(date.substring(6, 10), DEFAULT_RADIX);
         return Date.newBuilder()
                 .setDay(day)
                 .setMonth(month)
@@ -93,9 +94,9 @@ public abstract class Parser {
     protected Time parseTime() {
         String time = this.nextToken();
         return Time.newBuilder()
-                .setHour(Integer.parseInt(time.substring(0, 2), 10))
-                .setMinute(Integer.parseInt(time.substring(3, 5), 10))
-                .setSeconds(Integer.parseInt(time.substring(6, 8), 10))
+                .setHour(Integer.parseInt(time.substring(0, 2), DEFAULT_RADIX))
+                .setMinute(Integer.parseInt(time.substring(3, 5), DEFAULT_RADIX))
+                .setSeconds(Integer.parseInt(time.substring(6, 8), DEFAULT_RADIX))
                 .build();
     }
 

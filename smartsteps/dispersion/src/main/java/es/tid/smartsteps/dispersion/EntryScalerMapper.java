@@ -18,17 +18,16 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsEntryParser;
  */
 public class EntryScalerMapper extends Mapper<LongWritable, Text,
                                               Text, Text> {
-    private LookupType type;
     private Parser countsParser;
     private Parser lookupParser;
     
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        this.type = context.getConfiguration().getEnum(
-                LookupType.class.getName(), LookupType.INVALID);
         this.countsParser = new TrafficCountsEntryParser();
-        switch (this.type) {
+        LookupType type = context.getConfiguration().getEnum(
+                LookupType.class.getName(), LookupType.INVALID);
+        switch (type) {
             case CELL_TO_MICROGRID:
                 this.lookupParser = new CellToMicrogridEntryParser(
                         context.getConfiguration().get(Config.DELIMITER));

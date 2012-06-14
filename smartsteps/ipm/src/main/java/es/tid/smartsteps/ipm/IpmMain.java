@@ -6,9 +6,12 @@ import java.io.*;
  *
  * @author dmicol
  */
-public class IpmMain {
+public final class IpmMain {
     private static final String INET_TYPE = "inet";
     private static final String CRM_TYPE = "crm";
+    
+    private IpmMain() {
+    }
     
     public static void main(String[] args) throws Exception {
         if (args.length != 3) {
@@ -37,8 +40,6 @@ public class IpmMain {
             while ((line = reader.readLine()) != null) {
                 writer.write(converter.convert(line));
             }
-        } catch (IOException ex) {
-            throw ex;
         } finally {
             if (writer != null) {
                 writer.close();

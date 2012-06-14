@@ -15,7 +15,7 @@ import es.tid.smartsteps.dispersion.data.TrafficCountsEntry;
  *
  * @author logc
  */
-public class TrafficCountsEntryParser extends Parser {
+public class TrafficCountsEntryParser extends Parser<TrafficCountsEntry> {
     public TrafficCountsEntryParser() {
         super(null);
     }

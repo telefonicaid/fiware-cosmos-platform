@@ -67,7 +67,7 @@ namespace samson {
                 }
                 usleep(10000);
             }
-            
+
         }
         
         std::string getLoginInfo()
@@ -79,6 +79,7 @@ namespace samson {
         // Close everything and return the "run" call
         virtual void quit(void)
         {
+            LM_W(("Testing DelilahNetwork quit()"));
         }
         
         virtual std::vector<size_t> getDelilahIds()

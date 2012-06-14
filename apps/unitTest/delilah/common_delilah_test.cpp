@@ -48,8 +48,12 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole)
     engine::DiskManager::stop();             // Stop disk manager
     engine::ProcessManager::stop();          // Stop process manager
 
+
     if( delilahConsole )
+    {
+        LM_M(("delilahConsole->stop()"));
          delilahConsole->stop();
+    }
     
     // Wait all threads to finish
     LM_M(("From close_delilah_test, waiting all threads to finish"));

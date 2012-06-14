@@ -1361,7 +1361,11 @@ namespace samson {
             {
                 Queue* queue = it_queues->second;
                 if( queue->getAccumulatedTotalSize() >  0 )
+                {
+                    LM_M(("StreamManager::isSomethingPending(): true by queue->getAccumulatedTotalSize():%d", queue->getAccumulatedTotalSize()));
                     return true; // Still something accumulated in queues pending to be transformed in blocks
+                }
+
             }
             
             
@@ -1371,10 +1375,16 @@ namespace samson {
                 StreamOperation * stream_operation = it->second;
                 
                 if( stream_operation->running_tasks.size() > 0 )
+                {
+                    LM_M(("StreamManager::isSomethingPending(): true by stream_operation->running_tasks.size():%d", stream_operation->running_tasks.size()));
                     return true;
+                }
                 
                 if( stream_operation->getNumBlocks() > 0 )
+                {
+                    LM_M(("StreamManager::isSomethingPending(): true by rstream_operation->getNumBlocks():%d", stream_operation->getNumBlocks()));
                     return true;
+                }
             }
 
             return false;

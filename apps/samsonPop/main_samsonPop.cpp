@@ -106,7 +106,7 @@ int main( int argC , const char *argV[] )
     paConfig("usage and exit on any warning", (void*) true);
     
     paConfig("log to screen",         (void*) true);
-    paConfig("log to file",           (void*) false);
+    paConfig("log to file",           (void*) true);
     paConfig("screen line format",    (void*) "TYPE:EXEC: TEXT");
     paConfig("man shortdescription",  (void*) manShortDescription);
     paConfig("man synopsis",          (void*) manSynopsis);

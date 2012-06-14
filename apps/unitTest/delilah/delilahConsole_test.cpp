@@ -56,14 +56,17 @@ TEST(delilahConsoleTest, getPrompt)
     sprintf(expected_result, "[%s@%s:%d] Delilah>", user, host, port);
     EXPECT_EQ(delilah_console->getPrompt(), expected_result) << "Wrong prompt after set_mode normal";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
 
-//    au::ErrorManager error;
-//    delilah_console->delilah_disconnect( &error );
-//    EXPECT_TRUE(error.isActivated() == false);
-//    EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah2>") << "Wrong prompt after disconnecting";
-//
-//    delilah_console->connect( host , port , user , password );
+
+    au::ErrorManager error;
+    LM_M(("delilah_disconnect()"));
+    delilah_console->delilah_disconnect( &error );
+    EXPECT_TRUE(error.isActivated() == false);
+    EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah>") << "Wrong prompt after disconnecting";
+
+    delilah_console->connect( host , port , user , password );
+
+    LM_M(("quit delilah"));
 
     EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
 
@@ -246,10 +249,13 @@ TEST(delilahConsoleTest, runAsyncCommand)
     LM_W(("Before show_local_queue /tmp/traces"));
     EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/traces"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/traces)";
 
+    LM_W(("Before show_local_queue /tmp/traces -header"));
     EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/traces -header"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/traces -header)";
 
+    LM_W(("Before show_local_queue /tmp/dir_test -header"));
     EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/dir_test -header"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/dir_test -header)";
 
+    LM_W(("Before push_module"));
     EXPECT_EQ(delilah_console->runAsyncCommand("push_module"), 0) << "Wrong result from runAsyncCommand(push_module)";
 
     //EXPECT_NE(delilah_console->runAsyncCommand("push_module /tmp/libtxt.so txt"), 0) << "Wrong result from runAsyncCommand(push_module /tmp/libtxt.so txt)";
@@ -268,14 +274,17 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_NE(delilah_console->runAsyncCommand("ls -group name -rates"), 0) << "Wrong result from runAsyncCommand(ls -group name -rates)";
 
+    LM_W(("Before disconnect"));
     EXPECT_EQ(delilah_console->runAsyncCommand("disconnect"), 0) << "Wrong result from runAsyncCommand(disconnect)";
 
+    LM_W(("Before quit"));
     EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
 
 //    au::ErrorManager error;
 //    delilah_console->delilah_disconnect( &error );
 //    //EXPECT_TRUE(error.isActivated() == false);
 
+    LM_W(("Before close_delilah_test()"));
     close_delilah_test(delilah_console);
 }
 

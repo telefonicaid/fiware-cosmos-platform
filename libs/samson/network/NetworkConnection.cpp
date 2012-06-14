@@ -17,6 +17,7 @@ namespace samson {
         NetworkConnection* network_connection = ( NetworkConnection* ) p;
         network_connection->readerThread();
         network_connection->running_t_read = false;
+        network_connection->quitting_t_reader = false;
         return NULL;
     }
     
@@ -28,6 +29,7 @@ namespace samson {
         NetworkConnection* network_connection = ( NetworkConnection* ) p;
         network_connection->writerThread();
         network_connection->running_t_write = false;
+        network_connection->quitting_t_writer = false;
         return NULL;
     }
     
@@ -50,6 +52,9 @@ namespace samson {
         // Init flags about threads
         running_t_read = false;
         running_t_write = false;
+        // and stopping
+        quitting_t_reader = false;
+        quitting_t_writer = false;
 
     }
 
@@ -86,6 +91,21 @@ namespace samson {
         }
     }
     
+    void NetworkConnection::stopReadWriteThreads()
+    {
+
+        // Set the quit flag for stopping threads
+        if( running_t_read )
+        {
+            quitting_t_reader = true;
+        }
+
+        if( running_t_write )
+         {
+            quitting_t_writer = true;
+         }
+    }
+
     void NetworkConnection::readerThread()
     {
         while( 1 )
@@ -97,7 +117,15 @@ namespace samson {
                 tt.wakeUpAll();
                 return;
             }
-            
+
+            if (quitting_t_reader == true)
+            {
+                LM_W(("Quit readerThread because quitting_t_reader == true"));
+                au::TokenTaker tt(&token);
+                 tt.wakeUpAll();
+                 return;
+            }
+
             // Read a packet
             Packet * packet = new Packet();
 
@@ -133,6 +161,15 @@ namespace samson {
                 return;
             }
             
+            if (quitting_t_writer == true)
+            {
+                LM_W(("Quit writerThread because quitting_t_writer == true"));
+                // Save pending packets...
+                network_manager->push_pending_packet(name, &packet_queue);
+
+                return;
+            }
+
             // Get the next packet to be sent
             Packet* packet = packet_queue.next();
             

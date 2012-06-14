@@ -46,7 +46,7 @@ void Token::retain(  )
     int ans = pthread_mutex_lock(&_lock);
     if( ans )
     {
-        LM_LE(("Error %d getting mutex (EINVAL:%d, EFAULT:%d, EDEADLK:%d", ans, EINVAL, EFAULT, EDEADLK));
+        LM_LE(("Error %d getting mutex  (EINVAL:%d, EFAULT:%d, EDEADLK:%d", ans, EINVAL, EFAULT, EDEADLK));
         //assert(false);
         if ((name != NULL) & (name != (char *)0xffffffff))
         {

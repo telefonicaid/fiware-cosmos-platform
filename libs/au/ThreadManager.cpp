@@ -38,7 +38,10 @@ namespace au {
         thread_info->t = *t;
         
         if( s == 0 )
+        {
+            LM_T(LmtThreadManager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
             threads.insertInMap( thread_info->t , thread_info );
+        }
         else
         {
             LM_W(("Not possible to create thread %s %d " , thread_name.c_str(), s));
@@ -54,6 +57,8 @@ namespace au {
         // Mutex protection
         au::TokenTaker tt( &token );
         
+        LM_T(LmtThreadManager,("Thread '%s' extracted from map", thread_info->name.c_str()));
+
         if ( threads.extractFromMap( thread_info->t ) == NULL )
             LM_X(1,("Error in ThreadManager")); 
     }
@@ -122,13 +127,16 @@ namespace au {
                         return;
                     }
                 
-                if( c.diffTimeInSeconds() > 2 )
+                if( c.diffTimeInSeconds() > 5 )
                 {
+                    LM_W(("%s: Waiting all threads to finish", title.c_str()));
+                    LM_W(("Stll running %d threads", threads.size()));
+                    LM_W(("%s", _str().c_str()));
+
                     std::cerr << title << ": Waiting all threads to finish\n";
                     std::cerr << _str() << "\n";
                     std::cerr << au::str( "Still running %d threads ...\n" , threads.size() );
-                    
-                    
+
                     c.reset();
                 }
                 

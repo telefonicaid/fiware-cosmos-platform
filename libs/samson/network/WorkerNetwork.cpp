@@ -9,7 +9,7 @@ namespace samson {
 
     WorkerNetwork::WorkerNetwork( int port , int web_port )
     {
-        // Workers are allways connected as user samson
+        // Workers are always connected as user samson
         // ----------------------------------------------------------------------------
         user = "samson"; 
         connection_type = "worker";

@@ -231,7 +231,14 @@ namespace samson {
             std::string name = it_connections->first;
             
             NetworkConnection * connection = it_connections->second;
+
             connection->close();
+
+            // Setting the quitting flags to stop reader and writer threads
+            LM_W(("Setting the quitting flags to stop reader and writer threads"));
+
+            connection->quitting_t_reader = true;
+            connection->quitting_t_writer = true;
             connection->setNodeIdentifier( NodeIdentifier(UnknownNode,-1) );
         }
         

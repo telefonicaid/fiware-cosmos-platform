@@ -130,7 +130,8 @@ install_debug_all: debug_all
 
 install_coverage: coverage
 	make -C BUILD_COVERAGE install -j $(CPU_COUNT)
-	cp etc/setup.txt $(SAMSON_WORKING)/etc
+	mkdir -p  $(SAMSON_WORKING)/etc
+	cp etc/setup.txt $(SAMSON_WORKING)/etc/setup.txt
 
 install_man_release: man_release
 	cp -r BUILD_RELEASE/man $(SAMSON_HOME)/
@@ -220,20 +221,21 @@ finish_mac_coverage:
 
 test: ctest
 ctest: debug_all
-	#rm -f ${SAMSON_HOME}/modules/libtxt.so
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
 	cp apps/unitTest/delilah/words_input.txt /tmp
+	cp scripts/DartConfiguration.tcl BUILD_DEBUG_ALL
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
 	make test -C BUILD_DEBUG_ALL ARGS="-D ExperimentalTest"
+	# Enable core dumps for any potential SEGVs
 	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG_ALL/samson_test.xml
 
 unit_test: debug_all
-	#rm -f ${SAMSON_HOME}/modules/libtxt.so
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
 	cp apps/unitTest/delilah/words_input.txt /tmp
+	cp scripts/DartConfiguration.tcl BUILD_DEBUG_ALL
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
 	# Enable core dumps for any potential SEGVs
@@ -242,12 +244,13 @@ unit_test: debug_all
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG_ALL/samson_test.xml
 
 test_coverage:
-	#rm -f ${SAMSON_HOME}/modules/libtxt.so
 	cp BUILD_COVERAGE/modules/core/txt/libtxt.so /tmp
 	cp apps/unitTest/delilah/words_input.txt /tmp
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
+	cp scripts/DartConfiguration.tcl BUILD_COVERAGE
 	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" || true
+	# Enable core dumps for any potential SEGVs
 	ulimit -c unlimited && BUILD_COVERAGE/apps/unitTest/unitTest --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' -e 's,\(<testcase name="\)DISABLED_\(.*status="notrun".*\) />,\1\2>\n      <skipped/>\n    </testcase>,' BUILD_COVERAGE/samson_test.xml
@@ -429,7 +432,8 @@ init_home:
 	mkdir -p $(SAMSON_HOME)
 	mkdir -p $(SAMSON_WORKING)
 	mkdir -p /var/log/samson
-	chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME) $(SAMSON_WORKING) /var/log/samson
+	mkdir -p /var/log/logServer
+	chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME) $(SAMSON_WORKING) /var/log/samson /var/log/logServer
 
 help:
 	less doc/makefile_targets

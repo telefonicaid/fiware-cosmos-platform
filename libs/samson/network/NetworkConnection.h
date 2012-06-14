@@ -47,6 +47,9 @@ namespace samson {
         bool running_t_read;      // Flag to indicate that there is a thread using this endpoint writing data
         bool running_t_write;     // Flag to indicate that there is a thread using this endpoint reading data
 
+        bool quitting_t_reader;    // Flag to signal the reader thread to stop itself
+        bool quitting_t_writer;    // Flag to signal the writer thread to stop itself
+
         friend class NetworkManager;
         friend class CommonNetwork;
         std::string name;         //Name in NetworkManager
@@ -64,6 +67,9 @@ namespace samson {
         // Init io threads
         void initReadWriteThreads();
         
+        // to stop the reader and writer threads
+        void stopReadWriteThreads();
+
         // Push a packet to this node
         void push( Packet* p )
         {

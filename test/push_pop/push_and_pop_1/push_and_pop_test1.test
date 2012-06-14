@@ -2,10 +2,12 @@
 push_and_pop_test1 - Pushing and poping a file
 --SHELL--
 echo Begin
+rm -f /tmp/output.txt /tmp/pop_output.diff 
 delilah -command remove_all_stream
 samsonPush input < input.txt
-samsonPop input -max_size 100 > /tmp/output.txt
-diff /tmp/output.txt input.txt
+samsonPop -v input -max_size 1 > /tmp/output.txt
+diff /tmp/output.txt input.txt > /tmp/pop_output.diff
+cat /tmp/pop_output.diff
 echo Finish
 --EXPECT--
 Begin

@@ -30,14 +30,14 @@ namespace samson {
     
     DelilahNetwork::DelilahNetwork( std::string _connection_type , size_t delilah_random_code )
     {
-        // I am a delilah ( random id auto-asigned )
+        // I am a delilah ( random id auto-assigned )
         node_identifier = NodeIdentifier( DelilahNode , delilah_random_code );
         
         // Save connection type string  to be send in all hello messages
         connection_type = _connection_type;
     }
     
-    // Add new connection agains any worker in the cluster
+    // Add new connection against any worker in the cluster
     Status DelilahNetwork::addMainDelilahConnection( 
                                                     std::string _host 
                                                     , int _port 
@@ -76,7 +76,7 @@ namespace samson {
         return NetworkManager::add( network_connection );
     }
 
-    // Add a new connection agains an additional worker to be added to the cluster
+    // Add a new connection against an additional worker to be added to the cluster
     std::string DelilahNetwork::addSecondaryDelilahConnection( std::string host , int port )
     {
         std::string name = SECONDARY_DELILAH_CONNECTION_NAME;
@@ -327,8 +327,8 @@ namespace samson {
     {
         
         au::CommandLine cmdLine;
-        cmdLine.set_flag_string("user", "anynimous");
-        cmdLine.set_flag_string("password", "anynimous");
+        cmdLine.set_flag_string("user", "anonymous");
+        cmdLine.set_flag_string("password", "anonymous");
         cmdLine.parse(command);
         
         if ( cmdLine.get_num_arguments() == 0 )

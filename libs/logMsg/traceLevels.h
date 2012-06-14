@@ -49,6 +49,7 @@ typedef enum TraceLevels
     LmtBuffer                 = 206, 
 
 	LmtModuleManager          = 210,                // Module Manager component
+	LmtThreadManager          = 211,    // Tracking threads in ThreadManager
 
     
 	LmtIsolated               = 215, // Isolated mechanism

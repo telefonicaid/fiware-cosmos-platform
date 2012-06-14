@@ -88,7 +88,7 @@ namespace samson {
     
     class  NetworkInterface : public NetworkInterfaceBase
     {
-        
+
     public:
 
         // Constructor and destructor

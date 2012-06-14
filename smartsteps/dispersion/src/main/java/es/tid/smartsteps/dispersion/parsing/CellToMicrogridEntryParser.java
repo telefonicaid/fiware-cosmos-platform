@@ -8,7 +8,7 @@ import es.tid.smartsteps.dispersion.data.CellToMicrogridEntry;
  *
  * @author dmicol
  */
-public class CellToMicrogridEntryParser extends Parser {
+public class CellToMicrogridEntryParser extends Parser<CellToMicrogridEntry> {
     public CellToMicrogridEntryParser(String delimiter) {
         super(delimiter);
     }

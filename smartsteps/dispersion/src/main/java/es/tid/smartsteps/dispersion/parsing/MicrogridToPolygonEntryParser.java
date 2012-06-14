@@ -8,7 +8,8 @@ import es.tid.smartsteps.dispersion.data.MicrogridToPolygonEntry;
  *
  * @author dmicol
  */
-public class MicrogridToPolygonEntryParser extends Parser {
+public class MicrogridToPolygonEntryParser
+        extends Parser<MicrogridToPolygonEntry> {
     public MicrogridToPolygonEntryParser(String delimiter) {
         super(delimiter);
     }

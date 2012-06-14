@@ -18,13 +18,13 @@ public abstract class Parser<E extends Entry> {
      * @param line The line to parse.
      * @return The parsed object.
      */
-    public abstract Entry parse(String line);
+    public abstract E parse(String line);
     
     /**
      * Parses a line. Will not throw an exception if the operation fails.
      * @param line The line to parse.
      * @return The parsed object, or null if the operation failed.
      */
-    public abstract Entry safeParse(String line);
+    public abstract E safeParse(String line);
 }
  

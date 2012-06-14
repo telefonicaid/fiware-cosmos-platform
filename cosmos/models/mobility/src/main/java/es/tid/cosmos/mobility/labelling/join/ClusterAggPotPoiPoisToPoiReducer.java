@@ -2,12 +2,13 @@ package es.tid.cosmos.mobility.labelling.join;
 
 import java.io.IOException;
 
+import com.google.protobuf.Message;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -17,30 +18,26 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>, LongWritable,
-        ProtobufWritable<MobData>> {
+class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>, LongWritable,
+        TypedProtobufWritable<Poi>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
         Poi poi = null;
         boolean hasNulls = false;
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case POI:
-                    if (poi == null) {
-                        poi = mobData.getPoi();
-                    }
-                    break;
-                case NULL:
-                    hasNulls = true;
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected MobData type: "
-                            + mobData.getType().name());
+        for (TypedProtobufWritable<Message> value : values) {
+            final Message message = value.get();
+            if (message instanceof Poi) {
+                if (poi == null) {
+                    poi = (Poi) message;
+                }
+            } else if (message instanceof Null) {
+                hasNulls = true;
+            } else {
+                throw new IllegalStateException("Unexpected input type: "
+                        + message.getClass());
             }
             if (poi != null && hasNulls) {
                 break;
@@ -54,6 +51,6 @@ public class ClusterAggPotPoiPoisToPoiReducer extends Reducer<
             outputPoi.setConfidentnodebts(1);
         }
         context.write(new LongWritable(outputPoi.getBts()),
-                      MobDataUtil.createAndWrap(outputPoi.build()));
+                      new TypedProtobufWritable<Poi>(outputPoi.build()));
     }
 }

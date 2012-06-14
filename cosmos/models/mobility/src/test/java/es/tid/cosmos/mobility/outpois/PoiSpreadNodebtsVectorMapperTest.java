@@ -5,11 +5,10 @@ import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -18,14 +17,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class PoiSpreadNodebtsVectorMapperTest {
-    private MapDriver<ProtobufWritable<NodeBts>, ProtobufWritable<MobData>,
-            ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> driver;
+    private MapDriver<ProtobufWritable<NodeBts>, TypedProtobufWritable<ClusterVector>,
+            ProtobufWritable<TwoInt>, TypedProtobufWritable<ClusterVector>> driver;
     
     @Before
     public void setUp() {
         this.driver = new MapDriver<ProtobufWritable<NodeBts>,
-                ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>>(new PoiSpreadNodebtsVectorMapper());
+                TypedProtobufWritable<ClusterVector>, ProtobufWritable<TwoInt>,
+                TypedProtobufWritable<ClusterVector>>(
+                        new PoiSpreadNodebtsVectorMapper());
     }
     
     @Test
@@ -34,7 +34,7 @@ public class PoiSpreadNodebtsVectorMapperTest {
                 1L, 2, 3, 4);
         final ProtobufWritable<TwoInt> outputKey = TwoIntUtil.createAndWrap(
                 1L, 2L);
-        final ProtobufWritable<MobData> value = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<ClusterVector> value = new TypedProtobufWritable<ClusterVector>(
                 ClusterVector.getDefaultInstance());
         this.driver
                 .withInput(inputKey, value)

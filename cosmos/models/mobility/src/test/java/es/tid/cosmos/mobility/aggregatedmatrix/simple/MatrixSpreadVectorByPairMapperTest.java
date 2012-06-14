@@ -6,11 +6,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.ItinRangeUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -18,14 +17,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class MatrixSpreadVectorByPairMapperTest {
-    private MapDriver<ProtobufWritable<ItinRange>, ProtobufWritable<MobData>,
-            ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> instance;
+    private MapDriver<ProtobufWritable<ItinRange>,
+            TypedProtobufWritable<ClusterVector>, ProtobufWritable<TwoInt>,
+            TypedProtobufWritable<ClusterVector>> instance;
     
     @Before
     public void setUp() {
         this.instance = new MapDriver<ProtobufWritable<ItinRange>,
-                ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>>(
+                TypedProtobufWritable<ClusterVector>, ProtobufWritable<TwoInt>,
+                TypedProtobufWritable<ClusterVector>>(
                         new MatrixSpreadVectorByPairMapper());
     }
     
@@ -33,7 +33,7 @@ public class MatrixSpreadVectorByPairMapperTest {
     public void testMap() {
         final ProtobufWritable<ItinRange> key = ItinRangeUtil.createAndWrap(
                 1, 2, 3, 4, 5);
-        final ProtobufWritable<MobData> value = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<ClusterVector> value = new TypedProtobufWritable<ClusterVector>(
                 ClusterVector.getDefaultInstance());
         final ProtobufWritable<TwoInt> outKey = TwoIntUtil.createAndWrap(1, 2);
         this.instance

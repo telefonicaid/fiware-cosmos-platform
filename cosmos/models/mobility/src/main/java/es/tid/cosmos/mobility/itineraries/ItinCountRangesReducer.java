@@ -5,11 +5,12 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Float64;
 import es.tid.cosmos.mobility.data.ItinPercMoveUtil;
 import es.tid.cosmos.mobility.data.ItinRangeUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinPercMove;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <ItinRange, Double>
@@ -18,21 +19,19 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * @author dmicol
  */
 public class ItinCountRangesReducer extends Reducer<ProtobufWritable<ItinRange>,
-        ProtobufWritable<MobData>, ProtobufWritable<ItinRange>,
-        ProtobufWritable<MobData>> {
+        TypedProtobufWritable<Float64>, ProtobufWritable<ItinRange>,
+        TypedProtobufWritable<ItinPercMove>> {
     @Override
     protected void reduce(ProtobufWritable<ItinRange> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<Float64>> values, Context context)
             throws IOException, InterruptedException {
         double numMoves = 0.0D;
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            numMoves += mobData.getDouble();
+        for (TypedProtobufWritable<Float64> value : values) {
+            numMoves += value.get().getValue();
         }
         key.setConverter(ItinRange.class);
         final ItinRange moveRange = key.get();
-        ProtobufWritable<MobData> distMoves = MobDataUtil.createAndWrap(
+        TypedProtobufWritable<ItinPercMove> distMoves = new TypedProtobufWritable<ItinPercMove>(
                 ItinPercMoveUtil.create(moveRange.getGroup(),
                                         moveRange.getRange(), numMoves));
         ItinRange.Builder outMoveRange = ItinRange.newBuilder(moveRange);

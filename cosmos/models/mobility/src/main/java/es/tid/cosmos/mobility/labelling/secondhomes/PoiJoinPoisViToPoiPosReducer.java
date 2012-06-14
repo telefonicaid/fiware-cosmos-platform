@@ -1,15 +1,14 @@
 package es.tid.cosmos.mobility.labelling.secondhomes;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.google.protobuf.Message;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
@@ -20,29 +19,16 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
  * 
  * @author dmicol
  */
-public class PoiJoinPoisViToPoiPosReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+class PoiJoinPoisViToPoiPosReducer extends Reducer<LongWritable,
+        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<PoiPos>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        List<PoiPos> poiPosList = new LinkedList<PoiPos>();
-        List<MobViMobVars> mobVIVarsList = new LinkedList<MobViMobVars>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case POI_POS:
-                    poiPosList.add(mobData.getPoiPos());
-                    break;
-                case MOB_VI_MOB_VARS:
-                    mobVIVarsList.add(mobData.getMobViMobVars());
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected MobData type: "
-                            + mobData.getType().name());
-            }
-        }
+        Map<Class, List> dividedLists = TypedProtobufWritable.groupByClass(
+                values, PoiPos.class, MobViMobVars.class);
+        List<PoiPos> poiPosList = dividedLists.get(PoiPos.class);
+        List<MobViMobVars> mobVIVarsList = dividedLists.get(MobViMobVars.class);
 
         for (PoiPos poiPos : poiPosList) {
             for (MobViMobVars indvars : mobVIVarsList) {
@@ -64,7 +50,7 @@ public class PoiJoinPoisViToPoiPosReducer extends Reducer<LongWritable,
                     outputPoiPos.setDistCMWeek(dist);
                 }
                 context.write(key,
-                              MobDataUtil.createAndWrap(outputPoiPos.build()));
+                              new TypedProtobufWritable<PoiPos>(outputPoiPos.build()));
             }
         }
     }

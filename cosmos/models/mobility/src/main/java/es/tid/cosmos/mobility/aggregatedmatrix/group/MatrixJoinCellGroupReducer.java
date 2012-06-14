@@ -3,18 +3,16 @@ package es.tid.cosmos.mobility.aggregatedmatrix.group;
 import java.io.IOException;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MatrixTimeUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.CellGroup;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixTime;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.util.CellGroupsCatalogue;
 
 /**
@@ -23,8 +21,8 @@ import es.tid.cosmos.mobility.util.CellGroupsCatalogue;
  * 
  * @author dmicol
  */
-public class MatrixJoinCellGroupReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+class MatrixJoinCellGroupReducer extends Reducer<LongWritable,
+        TypedProtobufWritable<Cdr>, LongWritable, TypedProtobufWritable<MatrixTime>> {
     private static List<CellGroup> cellGroups;
     
     @Override
@@ -39,23 +37,21 @@ public class MatrixJoinCellGroupReducer extends Reducer<LongWritable,
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<Cdr>> values, Context context)
             throws IOException, InterruptedException {
         List<CellGroup> filteredCellGroups = CellGroupsCatalogue.filter(
                 cellGroups, key.get());
         if (filteredCellGroups.isEmpty()) {
             return;
         }
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            final Cdr cdr = mobData.getCdr();
+        for (TypedProtobufWritable<Cdr> value : values) {
+            final Cdr cdr = value.get();
             for (CellGroup cellGroup : filteredCellGroups) {
                 final MatrixTime mtxTime = MatrixTimeUtil.create(cdr.getDate(),
                         cdr.getTime(), (int)cellGroup.getGroup().getNum2(),
                         cellGroup.getGroup().getNum1());
                 context.write(new LongWritable(cdr.getUserId()),
-                              MobDataUtil.createAndWrap(mtxTime));
+                              new TypedProtobufWritable<MatrixTime>(mtxTime));
             }
         }
     }

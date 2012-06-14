@@ -4,30 +4,30 @@ import java.io.IOException;
 import static java.util.Arrays.asList;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.google.protobuf.Message;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.InputIdRecord;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 
 /**
  *
  * @author dmicol
  */
 public class SetMobDataInputIdReducerTest {
-    private ReduceDriver<LongWritable, ProtobufWritable<MobData>, LongWritable,
-            ProtobufWritable<MobData>> driver;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<Message>, LongWritable,
+            TypedProtobufWritable<InputIdRecord>> driver;
     @Before
     public void setUp() {
-        this.driver = new ReduceDriver<LongWritable, ProtobufWritable<MobData>,
-                LongWritable, ProtobufWritable<MobData>>(
+        this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
+                LongWritable, TypedProtobufWritable<InputIdRecord>>(
                         new SetMobDataInputIdReducer());
     }
     
@@ -40,14 +40,13 @@ public class SetMobDataInputIdReducerTest {
     public void testSetInputId() throws IOException {
         Configuration conf = this.driver.getConfiguration();
         conf.setInt("input_id", 3);
-        List<Pair<LongWritable, ProtobufWritable<MobData>>> res = this.driver
+        List<Pair<LongWritable, TypedProtobufWritable<InputIdRecord>>> res = this.driver
                 .withInput(new LongWritable(57L),
-                            asList(MobDataUtil.createAndWrap(
-                                    NullWritable.get())))
+                            asList(new TypedProtobufWritable<Message>(
+                                    Null.getDefaultInstance())))
                 .run();
         assertEquals(1, res.size());
-        ProtobufWritable<MobData> output = res.get(0).getSecond();
-        output.setConverter(MobData.class);
+        TypedProtobufWritable<InputIdRecord> output = res.get(0).getSecond();
         assertEquals(3, output.get().getInputId());
     }
 }

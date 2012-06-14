@@ -6,10 +6,10 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.data.NodeBtsDayUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
@@ -19,19 +19,17 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  * 
  * @author dmicol
  */
-public class RepbtsSpreadNodebtsMapper extends Mapper<LongWritable,
-        ProtobufWritable<MobData>, ProtobufWritable<NodeBtsDay>,
-        ProtobufWritable<MobData>> {
+class RepbtsSpreadNodebtsMapper extends Mapper<LongWritable,
+        TypedProtobufWritable<NodeMxCounter>, ProtobufWritable<NodeBtsDay>,
+        TypedProtobufWritable<Int>> {
     @Override
-    public void map(LongWritable key, ProtobufWritable<MobData> value,
+    public void map(LongWritable key, TypedProtobufWritable<NodeMxCounter> value,
             Context context) throws IOException, InterruptedException {
-        value.setConverter(MobData.class);
-        final NodeMxCounter counter = value.get().getNodeMxCounter();
+        final NodeMxCounter counter = value.get();
         for (BtsCounter bts : counter.getBtsList()) {
             ProtobufWritable<NodeBtsDay> nodeBtsDay = NodeBtsDayUtil.
                     createAndWrap(key.get(), bts.getBts(), 0, 0);
-            context.write(nodeBtsDay,
-                          MobDataUtil.createAndWrap(bts.getCount()));
+            context.write(nodeBtsDay, TypedProtobufWritable.create(bts.getCount()));
         }
     }
 }

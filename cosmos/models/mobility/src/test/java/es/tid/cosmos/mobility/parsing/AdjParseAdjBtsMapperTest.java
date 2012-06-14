@@ -8,11 +8,13 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.apache.hadoop.mrunit.types.Pair;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -21,18 +23,18 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  */
 public class AdjParseAdjBtsMapperTest {
     private MapDriver<LongWritable, Text, ProtobufWritable<TwoInt>,
-            ProtobufWritable<MobData>> driver;
+            TypedProtobufWritable<Null>> driver;
     
     @Before
     public void setUp() {
         this.driver = new MapDriver<LongWritable, Text,
-                ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>(
+                ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>>(
                         new AdjParseAdjBtsMapper());
     }
 
     @Test
     public void testValidLine() throws IOException {
-        List<Pair<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>>> res =
+        List<Pair<ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>>> res =
                 this.driver
                         .withInput(new LongWritable(1L), new Text("123|456"))
                         .run();
@@ -41,9 +43,7 @@ public class AdjParseAdjBtsMapperTest {
         ProtobufWritable<TwoInt> wrappedKey = res.get(0).getFirst();
         wrappedKey.setConverter(TwoInt.class);
         assertNotNull(wrappedKey.get());
-        ProtobufWritable<MobData> wrappedNull = res.get(0).getSecond();
-        wrappedNull.setConverter(MobData.class);
-        assertEquals(MobData.Type.NULL, wrappedNull.get().getType());
+        TypedProtobufWritable<Null> wrappedNull = res.get(0).getSecond();
     }
 
     @Test

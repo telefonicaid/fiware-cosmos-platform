@@ -32,7 +32,7 @@
   </property>
   <property>
     <name>mapred.map.output.compression.codec</name>
-    <value>com.hadoop.compression.lzo.LzopCodec</value>
+    <value>com.hadoop.compression.lzo.LzoCodec</value>
   </property>
   <property>
     <name>mapred.output.compress</name>
@@ -44,7 +44,7 @@
   </property>
   <property>
     <name>mapred.output.compression.codec</name>
-    <value>com.hadoop.compression.lzo.LzopCodec</value>
+    <value>com.hadoop.compression.lzo.LzoCodec</value>
   </property>
   <!-- HUE integration -->
   <property>        

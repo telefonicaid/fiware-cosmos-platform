@@ -9,7 +9,7 @@ from mako.template import Template
 import os.path
 
 COSMOS_CLASSPATH='/usr/lib/hadoop-0.20/lib/cosmos/'
-BASEPATH = os.path.realpath(__file__)
+BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 @parallel

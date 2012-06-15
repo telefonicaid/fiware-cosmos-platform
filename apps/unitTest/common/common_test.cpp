@@ -249,7 +249,7 @@ TEST(commonTest, testKVInfo)
     info_1.append(1, 1);
     EXPECT_EQ(info_1.str(), "(  11.0 kvs in   101 bytes )") << "Error in KVInfo str() for append";
     info_1.remove(2, 2);
-    EXPECT_EQ(info_1.str(), "(  9.00 kvs in   99.0 bytes )") << "Error in KVInfo str() for append";
+    EXPECT_EQ(info_1.str(), "(  9.00 kvs in  99.0 bytes )") << "Error in KVInfo str() for append";
     EXPECT_EQ(info_1.isEmpty(), false) << "Error in KVInfo isValid() for isEmpty() false";
     info_1.clear();
     EXPECT_EQ(info_1.isEmpty(), true) << "Error in KVInfo isValid() for isEmpty() true";
@@ -281,7 +281,7 @@ TEST(commonTest, testFullKVInfo)
     info_1.append(static_cast<samson::uint32>(1), static_cast<samson::uint32>(1));
     EXPECT_EQ(info_1.str(), "(  11.0 kvs in   101 bytes )") << "Error in FullKVInfo isValid() for append";
     info_1.remove(static_cast<samson::uint32>(2), static_cast<samson::uint32>(2));
-    EXPECT_EQ(info_1.str(), "(  9.00 kvs in   99.0 bytes )") << "Error in FullKVInfo isValid() for append";
+    EXPECT_EQ(info_1.str(), "(  9.00 kvs in  99.0 bytes )") << "Error in FullKVInfo isValid() for append";
     EXPECT_EQ(info_1.isEmpty(), false) << "Error in FullKVInfo isValid() for isEmpty false";
     info_1.clear();
     EXPECT_EQ(info_1.isEmpty(), true) << "Error in FullKVInfo isValid() for isEmpty true";
@@ -292,7 +292,7 @@ TEST(commonTest, testFullKVInfo)
     EXPECT_EQ(info_1.str(), "(  20.0 kvs in  2.00Kbytes )") << "Error in FullKVInfo append from KVInfo";
 
     info_1.set(static_cast<samson::uint64>(1000), static_cast<samson::uint64>(100));
-    EXPECT_EQ(info_1.str(), "(   100 kvs in   1.00Kbytes )") << "Error in FullKVInfo isValid() for set 64 bits";
+    EXPECT_EQ(info_1.str(), "(   100 kvs in  1.00Kbytes )") << "Error in FullKVInfo isValid() for set 64 bits";
     EXPECT_EQ(info_1.fitsInKVInfo(), true) << "Error in FullKVInfo fitsInKVInfo true";
     samson::uint64 kvs = 1024 * 1024;
     kvs *= 1024 * 8;

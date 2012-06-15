@@ -24,6 +24,11 @@ public class CellToMicrogridEntry implements Entry {
     }
 
     @Override
+    public String getSecondaryKey() {
+        return this.microgridId;
+    }
+
+    @Override
     public BigDecimal getProportion() {
         return this.proportion;
     }

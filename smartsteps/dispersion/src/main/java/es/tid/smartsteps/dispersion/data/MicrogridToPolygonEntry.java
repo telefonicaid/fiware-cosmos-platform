@@ -22,6 +22,11 @@ public class MicrogridToPolygonEntry implements Entry {
     public String getKey() {
         return this.microgridId;
     }
+
+    @Override
+    public String getSecondaryKey() {
+        return this.polygonId;
+    }
     
     @Override
     public BigDecimal getProportion() {

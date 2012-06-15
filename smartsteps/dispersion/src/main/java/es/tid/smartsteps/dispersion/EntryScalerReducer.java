@@ -72,10 +72,10 @@ public class EntryScalerReducer extends Reducer<Text, Text,
                         lookup.getProportion());
                 switch (this.type) {
                     case CELL_TO_MICROGRID:
-                        scaledEntry.microgridId = lookup.getKey();
+                        scaledEntry.microgridId = lookup.getSecondaryKey();
                         break;
                     case MICROGRID_TO_POLYGON:
-                        scaledEntry.polygonId = lookup.getKey();
+                        scaledEntry.polygonId = lookup.getSecondaryKey();
                         scaledEntry.counts = scaledEntry.roundCounts();
                         break;
                     default:

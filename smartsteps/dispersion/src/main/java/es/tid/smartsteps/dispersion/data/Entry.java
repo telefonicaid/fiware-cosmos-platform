@@ -15,6 +15,13 @@ public interface Entry {
     String getKey();
 
     /**
+     * Gets the secondary key of this entry.
+     *
+     * @return The corresponding key
+     */
+    String getSecondaryKey();
+
+    /**
      * Gets the proportion that this entry informs for scaling, if any.
      *
      * @return The corresponding proportion.

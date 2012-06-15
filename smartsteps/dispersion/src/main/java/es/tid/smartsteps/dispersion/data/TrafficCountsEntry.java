@@ -60,6 +60,12 @@ public class TrafficCountsEntry implements Entry {
     }
 
     @Override
+    public String getSecondaryKey() {
+        throw new UnsupportedOperationException("Secondary key is not a field" +
+                "of TrafficCountsEntry");
+    }
+
+    @Override
     public BigDecimal getProportion() {
         throw new UnsupportedOperationException("Proportion is not a field of "
                 + "TrafficCountsEntry");

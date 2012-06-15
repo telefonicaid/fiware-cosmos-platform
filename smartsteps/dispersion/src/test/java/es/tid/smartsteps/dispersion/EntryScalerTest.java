@@ -75,7 +75,7 @@ public class EntryScalerTest {
 
         this.cell2micro =
                 new Text("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d3" +
-                        "|123|0.57");
+                        "0f1f2ff3cdc0849b0c|123|0.57");
     }
 
     @Test

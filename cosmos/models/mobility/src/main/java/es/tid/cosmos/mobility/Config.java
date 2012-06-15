@@ -36,7 +36,7 @@ public abstract class Config {
     public static final String MIN_TOTAL_CALLS = "mob.client_min_total_calls";
     public static final String MAX_TOTAL_CALLS = "mob.client_max_total_calls";
     public static final String BTS_MAX_BTS_AREA = "mob.bts_max_bts_area";
-    public static final String BTS_MAX_COMMS_BTS = "mob.bts_max_comms_bts";
+    public static final String BTS_MIN_COMMS_BTS = "mob.bts_min_comms_bts";
     public static final String POI_HOME_LABELGROUP_ID =
             "mob.poi_home_labelgroup_id";
     public static final String POI_MIN_DIST_SECOND_HOME =

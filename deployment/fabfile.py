@@ -19,7 +19,7 @@ import hue_deployment
 
 CONFIG = json.loads(open(env.config, 'r').read())
 env.roledefs = CONFIG['hosts']
-BASEPATH = os.path.realpath(__file__)
+BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
 @task
 def deploy(dependenciespath, thrift_tar, jdk_rpm):
@@ -59,7 +59,7 @@ def deploy_sftp():
     Deploys the SFTP server as a Java JAR and starts it
     """
     injection_exec = 'injection-server-{0}.jar'.format(CONFIG['version'])
-    injection_jar = os.path.join(CONFIG['injection_path'], 'target',
+    injection_jar = os.path.join(BASEPATH, CONFIG['injection_path'], 'target',
                                  injection_exec)
     exec_path = os.path.join('~', 'injection', injection_exec)
 

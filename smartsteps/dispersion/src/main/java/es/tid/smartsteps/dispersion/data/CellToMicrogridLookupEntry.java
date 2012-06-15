@@ -6,13 +6,13 @@ import java.math.BigDecimal;
  *
  * @author dmicol
  */
-public class CellToMicrogridEntry implements Entry {
+public class CellToMicrogridLookupEntry implements LookupEntry {
     public final String cellId;
     public final String microgridId;
     public BigDecimal proportion;
 
-    public CellToMicrogridEntry(String cellId, String microgridId,
-                                BigDecimal proportion) {
+    public CellToMicrogridLookupEntry(String cellId, String microgridId,
+                                      BigDecimal proportion) {
         this.cellId = cellId;
         this.microgridId = microgridId;
         this.proportion = proportion;

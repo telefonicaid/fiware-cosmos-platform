@@ -10,11 +10,11 @@ import org.junit.Test;
  * @author dmicol
  */
 public class MicrogridToPolygonEntryTest {
-    private MicrogridToPolygonEntry instance;
+    private MicrogridToPolygonLookupEntry instance;
     
     @Before
     public void setUp() {
-        this.instance = new MicrogridToPolygonEntry("123", "456",
+        this.instance = new MicrogridToPolygonLookupEntry("123", "456",
                                                     new BigDecimal(0.57D));
     }
 

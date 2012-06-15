@@ -15,10 +15,10 @@ import es.tid.smartsteps.dispersion.parsing.Parser;
  * @author dmicol
  */
 public class LookupTable {
-    private Map<String, List<Entry>> entries;
+    private Map<String, List<LookupEntry>> entries;
     
     public LookupTable() {
-        this.entries = new HashMap<String, List<Entry>>();
+        this.entries = new HashMap<String, List<LookupEntry>>();
     }
     
     public void load(Reader reader, Parser parser) throws IOException {
@@ -30,17 +30,17 @@ public class LookupTable {
     }
     
     public void add(Entry entry) {
-        List<Entry> entryList;
+        List<LookupEntry> entryList;
         if (this.entries.containsKey(entry.getKey())) {
             entryList = this.entries.get(entry.getKey());
         } else {
-            entryList = new LinkedList<Entry>();
+            entryList = new LinkedList<LookupEntry>();
             this.entries.put(entry.getKey(), entryList);
         }
-        entryList.add(entry);
+        entryList.add((LookupEntry) entry);
     }
     
-    public List<Entry> get(String key) {
+    public List<LookupEntry> get(String key) {
         return this.entries.get(key);
     }
 }

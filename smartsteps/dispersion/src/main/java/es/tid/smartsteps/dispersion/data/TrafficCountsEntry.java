@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 /**
  * TrafficCountsEntry
@@ -13,7 +14,7 @@ import java.util.HashMap;
  *
  * @author  logc
  */
-public class TrafficCountsEntry implements Entry {
+public class TrafficCountsEntry implements FieldsEntry {
     public static final String[] EXPECTED_POIS = {"HOME", "NONE", "WORK",
                                                   "OTHER", "BILL"};
     public static final String[] COUNT_FIELDS = { "footfall_observed_basic",
@@ -60,15 +61,18 @@ public class TrafficCountsEntry implements Entry {
     }
 
     @Override
-    public String getSecondaryKey() {
-        throw new UnsupportedOperationException("Secondary key is not a field" +
-                "of TrafficCountsEntry");
-    }
-
-    @Override
-    public BigDecimal getProportion() {
-        throw new UnsupportedOperationException("Proportion is not a field of "
-                + "TrafficCountsEntry");
+    public List<Object> getFields() {
+        ArrayList<Object> ans = new ArrayList<Object>();
+        ans.add(this.date);
+        ans.add(this.northing);
+        ans.add(this.easting);
+        ans.add(this.lat);
+        ans.add(this.counts);
+        ans.add(this.poiFive);
+        ans.add(this.pois);
+        ans.add(this.microgridId);
+        ans.add(this.polygonId);
+        return ans;
     }
 
     public TrafficCountsEntry scale(BigDecimal factor) {

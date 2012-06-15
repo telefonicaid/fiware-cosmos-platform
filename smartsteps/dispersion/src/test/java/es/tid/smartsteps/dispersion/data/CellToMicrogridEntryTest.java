@@ -10,11 +10,11 @@ import org.junit.Test;
  * @author dmicol
  */
 public class CellToMicrogridEntryTest {
-    private CellToMicrogridEntry instance;
+    private CellToMicrogridLookupEntry instance;
     
     @Before
     public void setUp() {
-        this.instance = new CellToMicrogridEntry("abc", "def",
+        this.instance = new CellToMicrogridLookupEntry("abc", "def",
                                                  new BigDecimal(0.37D));
     }
 

@@ -1,10 +1,14 @@
 package es.tid.smartsteps.dispersion.data;
 
-import java.math.BigDecimal;
+import java.util.List;
 
 /**
+ * Entry
  *
- * @author dmicol
+ * represents an entry in a table, therefore a class where one of its fields is
+ * a primary key
+ *
+ * @author dmicol, logc
  */
 public interface Entry {
     /**
@@ -14,17 +18,5 @@ public interface Entry {
      */
     String getKey();
 
-    /**
-     * Gets the secondary key of this entry.
-     *
-     * @return The corresponding key
-     */
-    String getSecondaryKey();
 
-    /**
-     * Gets the proportion that this entry informs for scaling, if any.
-     *
-     * @return The corresponding proportion.
-     */
-    BigDecimal getProportion();
 }

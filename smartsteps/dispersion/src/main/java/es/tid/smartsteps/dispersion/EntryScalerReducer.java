@@ -66,8 +66,8 @@ public class EntryScalerReducer extends Reducer<Text, Text,
         }
         
         for (TrafficCountsEntry entry : trafficCountsEntries) {
-            final List<Entry> lookups = lookupTable.get(key.toString());
-            for (Entry lookup : lookups) {
+            final List<LookupEntry> lookups = lookupTable.get(key.toString());
+            for (LookupEntry lookup : lookups) {
                 TrafficCountsEntry scaledEntry = entry.scale(
                         lookup.getProportion());
                 switch (this.type) {

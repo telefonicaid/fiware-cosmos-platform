@@ -21,8 +21,9 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
  * 
  * @author dmicol
  */
-public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
-        TypedProtobufWritable<ItinTime>, LongWritable, TypedProtobufWritable<ItinMovement>> {
+public class ItinMoveClientPoisReducer extends Reducer<
+        LongWritable, TypedProtobufWritable<ItinTime>,
+        LongWritable, TypedProtobufWritable<ItinMovement>> {
     private static final int MINS_IN_ONE_HOUR = 60;
     private static final int HOURS_IN_ONE_DAY = 24;
     private static final int MINS_IN_ONE_DAY = MINS_IN_ONE_HOUR *
@@ -35,9 +36,9 @@ public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.maxMinutesInMoves = conf.getInt(Config.MAX_MINUTES_IN_MOVES,
+        this.maxMinutesInMoves = conf.getInt(Config.ITIN_MAX_MINUTES_IN_MOVES,
                                              Integer.MAX_VALUE);
-        this.minMinutesInMoves = conf.getInt(Config.MIN_MINUTES_IN_MOVES,
+        this.minMinutesInMoves = conf.getInt(Config.ITIN_MIN_MINUTES_IN_MOVES,
                                              Integer.MIN_VALUE);
     }
 

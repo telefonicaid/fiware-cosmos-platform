@@ -18,23 +18,23 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
  * 
  * @author dmicol
  */
-public class ItinGetVectorReducer extends Reducer<ProtobufWritable<ItinRange>,
-        TypedProtobufWritable<ItinPercMove>, ProtobufWritable<ItinRange>,
-        TypedProtobufWritable<ClusterVector>> {
+public class ItinGetVectorReducer extends Reducer<
+        ProtobufWritable<ItinRange>, TypedProtobufWritable<ItinPercMove>,
+        ProtobufWritable<ItinRange>, TypedProtobufWritable<ClusterVector>> {
     private double minItinMoves;
     
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.minItinMoves = conf.getFloat(Config.MIN_ITIN_MOVES,
+        this.minItinMoves = conf.getFloat(Config.ITIN_MIN_ITIN_MOVES,
                                           Float.MIN_VALUE);
     }
     
     @Override
     protected void reduce(ProtobufWritable<ItinRange> key,
-            Iterable<TypedProtobufWritable<ItinPercMove>> values, Context context)
-            throws IOException, InterruptedException {
+            Iterable<TypedProtobufWritable<ItinPercMove>> values,
+            Context context) throws IOException, InterruptedException {
         ClusterVector.Builder distMoves = ClusterVector.newBuilder();
         for (int i = 0; i < 168; i++) {
             distMoves.addComs(0.0D);

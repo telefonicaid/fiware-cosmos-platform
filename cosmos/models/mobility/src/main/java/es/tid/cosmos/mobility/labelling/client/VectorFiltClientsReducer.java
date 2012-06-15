@@ -20,15 +20,17 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
  * 
  * @author dmicol
  */
-class VectorFiltClientsReducer extends Reducer<LongWritable,
-        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<Cdr>> {
-    private int maxCdrs;
+class VectorFiltClientsReducer extends Reducer<
+        LongWritable, TypedProtobufWritable<Message>,
+        LongWritable, TypedProtobufWritable<Cdr>> {
+    private int maxTotalCalls;
     
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.maxCdrs = conf.getInt(Config.MAX_CDRS, Integer.MAX_VALUE);
+        this.maxTotalCalls = conf.getInt(Config.MAX_TOTAL_CALLS,
+                                         Integer.MAX_VALUE);
     }
     
     @Override
@@ -51,7 +53,7 @@ class VectorFiltClientsReducer extends Reducer<LongWritable,
             if (hasComms) {
                 break;
             }
-            if (cdrList.size() > this.maxCdrs) {
+            if (cdrList.size() > this.maxTotalCalls) {
                 return;
             }
         }

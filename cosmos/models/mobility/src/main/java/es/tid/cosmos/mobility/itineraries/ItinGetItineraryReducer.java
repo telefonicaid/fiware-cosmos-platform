@@ -20,22 +20,22 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
  * @author dmicol
  */
 class ItinGetItineraryReducer extends Reducer<
-        ProtobufWritable<ItinRange>, TypedProtobufWritable<ClusterVector>, LongWritable,
-        TypedProtobufWritable<Itinerary>> {
+        ProtobufWritable<ItinRange>, TypedProtobufWritable<ClusterVector>,
+        LongWritable, TypedProtobufWritable<Itinerary>> {
     private double percAbsoluteMax;
     
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.percAbsoluteMax = conf.getFloat(Config.PERC_ABSOLUTE_MAX,
+        this.percAbsoluteMax = conf.getFloat(Config.ITIN_PERC_ABSOLUTE_MAX,
                                              Float.MAX_VALUE);
     }
     
     @Override
     protected void reduce(ProtobufWritable<ItinRange> key,
-            Iterable<TypedProtobufWritable<ClusterVector>> values, Context context)
-            throws IOException, InterruptedException {
+            Iterable<TypedProtobufWritable<ClusterVector>> values,
+            Context context) throws IOException, InterruptedException {
         key.setConverter(ItinRange.class);
         final ItinRange moveRange = key.get();
         double absMax = Double.MIN_VALUE;

@@ -167,12 +167,14 @@ clean:
 run_coverage: install_coverage
 	killall samsonWorker || true
 	killall logServer || true
+	scripts/lib_shared_memory.scr || true
 	lcov --directory BUILD_COVERAGE --zerocounters	
 	logServer
 	samsonWorker -log_classic -t 31,32,33,34,35,201,210
 	make test_coverage
 	killall samsonWorker || true
 	killall logServer || true
+	scripts/lib_shared_memory.scr
 	mkdir -p coverage
 	lcov --directory BUILD_COVERAGE --capture --output-file coverage/samson.info
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
@@ -223,7 +225,8 @@ test: ctest
 ctest: debug_all
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
 	cp apps/unitTest/delilah/words_input.txt /tmp
-	#cp scripts/DartConfiguration.tcl BUILD_DEBUG_ALL
+	# To configure DART_TIMEOUT to 600 instead of 1500. 
+	sed 's/1500/600/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
 	make test -C BUILD_DEBUG_ALL ARGS="-D ExperimentalTest"
@@ -235,7 +238,8 @@ ctest: debug_all
 unit_test: debug_all
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
 	cp apps/unitTest/delilah/words_input.txt /tmp
-	#cp scripts/DartConfiguration.tcl BUILD_DEBUG_ALL
+	# To configure DART_TIMEOUT to 600 instead of 1500. 
+	sed 's/1500/600/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
 	# Enable core dumps for any potential SEGVs
@@ -248,7 +252,8 @@ test_coverage:
 	cp apps/unitTest/delilah/words_input.txt /tmp
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
-	#cp scripts/DartConfiguration.tcl BUILD_COVERAGE
+	# To configure DART_TIMEOUT to 600 instead of 1500. 
+	sed 's/1500/600/' BUILD_COVERAGE/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_COVERAGE/DartConfiguration.tcl
 	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" || true
 	# Enable core dumps for any potential SEGVs
 	ulimit -c unlimited && BUILD_COVERAGE/apps/unitTest/unitTest --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
@@ -432,8 +437,8 @@ init_home:
 	mkdir -p $(SAMSON_HOME)
 	mkdir -p $(SAMSON_WORKING)
 	mkdir -p /var/log/samson
-	mkdir -p /var/log/logServer
-	chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME) $(SAMSON_WORKING) /var/log/samson /var/log/logServer
+	mkdir -p /var/log/logserver
+	chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME) $(SAMSON_WORKING) /var/log/samson /var/log/logserver
 
 help:
 	less doc/makefile_targets

@@ -96,6 +96,12 @@ namespace samson
     // Create the vector of KVInfo from block data    
     KVInfo* createKVInfoVector( char* _data , au::ErrorManager *error )
     {
+        if (_data == NULL)
+        {
+           LM_E(("Null _data"));
+           error->set( au::str("NULL _data" ) );
+           return NULL;
+        }
         
         KVHeader * header = (KVHeader*) _data;
         char *data = _data + sizeof(KVHeader);

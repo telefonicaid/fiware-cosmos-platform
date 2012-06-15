@@ -228,7 +228,10 @@ namespace samson
         SetupItem*item = items.findInMap(name);
         
         if( !item )
-            LM_X(1, ("Parameter %s not defined in the setup. This is not acceptable", name.c_str()));
+        {
+            LM_E(("Parameter %s not defined in the setup. This is not acceptable", name.c_str()));
+            return "Error";
+        }
         
         return item->getValue();
         

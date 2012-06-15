@@ -225,17 +225,13 @@ namespace samson {
     
     bool operator<(const KVRange & left, const KVRange & right)
     {
-        if( left.hg_begin < left.hg_begin )
+        // What does exactly "<" mean? Previous version seemed to be copy-paste wrong
+        if( left.hg_end < right.hg_begin )
             return true;
-        if( left.hg_begin > left.hg_begin )
+        if( left.hg_begin > right.hg_end )
             return false;
-        
-        if( left.hg_end < left.hg_end )
+        if( left.hg_end < right.hg_end )
             return true;
-        
-        if (right == right) // To avoid warning in 'strict' - perhaps we should remove the second parameter?
-            return false;
-
         return false;
     }    
     

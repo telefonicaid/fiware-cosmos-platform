@@ -90,6 +90,14 @@ TEST(delilahConsoleTest, runAsyncCommand)
     delilah_console->remove_alias("test");
     delilah_console->remove_alias("test2");
 
+    EXPECT_EQ(delilah_console->runAsyncCommand("verbose"), 0) << "Wrong result from runAsyncCommand(verbose)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("verbose on"), 0) << "Wrong result from runAsyncCommand(verbose on)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("verbose off"), 0) << "Wrong result from runAsyncCommand(verbose off)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("verbose on"), 0) << "Wrong result from runAsyncCommand(verbose on)";
+
     EXPECT_EQ(delilah_console->runAsyncCommand(""), 0) << "Wrong result from runAsyncCommand(aso)";
 
     delilah_console->add_alias("aso", "add_stream_operation");
@@ -186,14 +194,6 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("show_alerts"), 0) << "Wrong result from runAsyncCommand(show_alerts)";
 
-    EXPECT_EQ(delilah_console->runAsyncCommand("verbose"), 0) << "Wrong result from runAsyncCommand(verbose)";
-
-    EXPECT_EQ(delilah_console->runAsyncCommand("verbose on"), 0) << "Wrong result from runAsyncCommand(verbose on)";
-
-    EXPECT_EQ(delilah_console->runAsyncCommand("verbose off"), 0) << "Wrong result from runAsyncCommand(verbose off)";
-
-    EXPECT_EQ(delilah_console->runAsyncCommand("verbose on"), 0) << "Wrong result from runAsyncCommand(verbose on)";
-
     EXPECT_EQ(delilah_console->runAsyncCommand("open_alerts_file"), 0) << "Wrong result from runAsyncCommand(open_alerts_file)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("open_alerts_file /tmp/trace.log"), 0) << "Wrong result from runAsyncCommand(open_alerts_file /tmp/trace.log)";
@@ -266,7 +266,35 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set_queue_property a pause"), 0) << "Wrong result from runAsyncCommand(set_queue_property a pause)";
 
-    EXPECT_NE(delilah_console->runAsyncCommand("set_queue_property a pause true"), 0) << "Wrong result from runAsyncCommand(set_queue_property a pause true)";
+    EXPECT_EQ(delilah_console->runAsyncCommand("unset_queue_property"), 0) << "Wrong result from runAsyncCommand(unset_queue_property)";
+
+     EXPECT_EQ(delilah_console->runAsyncCommand("unset_queue_property a"), 0) << "Wrong result from runAsyncCommand(unset_queue_property a)";
+
+     EXPECT_NE(delilah_console->runAsyncCommand("unset_queue_property a pause"), 0) << "Wrong result from runAsyncCommand(unset_queue_property a pause)";
+
+    EXPECT_NE(delilah_console->runAsyncCommand("unset_queue_property a pause true"), 0) << "Wrong result from runAsyncCommand(unset_queue_property a pause true)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("push_queue"), 0) << "Wrong result from runAsyncCommand(push_queue)";
+
+    EXPECT_NE(delilah_console->runAsyncCommand("push_queue a b"), 0) << "Wrong result from runAsyncCommand(push_queue a b)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("pause_queue"), 0) << "Wrong result from runAsyncCommand(pause_queue)";
+
+    EXPECT_NE(delilah_console->runAsyncCommand("pause_queue a"), 0) << "Wrong result from runAsyncCommand(pause_queue a)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("play_queue"), 0) << "Wrong result from runAsyncCommand(play_queue)";
+
+    EXPECT_NE(delilah_console->runAsyncCommand("play_queue a"), 0) << "Wrong result from runAsyncCommand(play_queue a)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("times"), 0) << "Wrong result from runAsyncCommand(times)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("ls_local_queues"), 0) << "Wrong result from runAsyncCommand(ls_local_queues)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("ls_local_queues txt.*"), 0) << "Wrong result from runAsyncCommand(ls_local_queues txt.*)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue"), 0) << "Wrong result from runAsyncCommand(show_local_queue)";
+
+    EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue /tmp/traces"), 0) << "Wrong result from runAsyncCommand(show_local_queue /tmp/traces)";
 
     EXPECT_NE(delilah_console->runAsyncCommand("ls"), 0) << "Wrong result from runAsyncCommand(ls)";
 
@@ -799,6 +827,70 @@ TEST(delilahConsoleTest, voids)
 
         delete info;
     }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("trace");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("wtrace");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("wdebug");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("run");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("run txt");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("run txt.parser_words ");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("init_stream");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("init_stream txt");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
+    {
+        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("push_module");
+        delilah_console->autoComplete(info);
+
+        delete info;
+    }
+
 
     {
         au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("quit");

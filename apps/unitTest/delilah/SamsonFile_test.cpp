@@ -54,6 +54,25 @@ TEST(SamsonFileTest, samson_file)
 
     delilah_console->runAsyncCommand("remove_all_stream");
 
+    // Check with a txt file
+    LM_M(("Pushing /tmp/words_input.txt to t queue"));
+    delilah_console->runAsyncCommand("push /tmp/words_input.txt t");
+    delilah_console->runAsyncCommand("pop t /tmp/output_file -force");
+    LM_M(("Popped /tmp/output_file from t queue"));
+    samson::SamsonFile samson_txt_dir( "/tmp/output_file" );
+    EXPECT_EQ(samson_txt_dir.hasError(), true) << "Wrong ok samson_file detection for /tmp/output_file";
+    EXPECT_EQ(samson_txt_dir.getErrorMessage(), "Getting header: read only -1 bytes (wanted to read 240)\n") << "Wrong error message for /tmp/output_file";
+    EXPECT_EQ(samson_txt_dir.printContent(10, std::cout), 0) << "Wrong printContent for /tmp/output_file";
+    EXPECT_EQ(strncmp(samson_txt_dir.getHashGroups().c_str(), "Error getting vector for hashgroups", strlen("Error getting vector for hashgroups")),0) << "Wrong getHashGroups for /tmp/output_file";
+
+    samson::SamsonFile samson_txt_file( "/tmp/output_file/worker_000000_file_000001" );
+    EXPECT_EQ(samson_txt_file.hasError(), true) << "Wrong ok samson_file detection for /tmp/output_file";
+    EXPECT_EQ(samson_txt_file.getErrorMessage(), "Not possible to open file") << "Wrong error message for /tmp/output_file";
+    EXPECT_EQ(samson_txt_file.printContent(10, std::cout), 0) << "Wrong printContent for /tmp/output_file";
+    EXPECT_NE(strncmp(samson_txt_file.getHashGroups().c_str(), "Error getting vector for hashgroups", strlen("Error getting vector for hashgroups")),0) << "Wrong getHashGroups for /tmp/output_file";
+
+
+
     delilah_console->runAsyncCommand("push /bin/bash a");
     delilah_console->runAsyncCommand("pop a /tmp/test_SamsonFile -force");
 
@@ -96,11 +115,10 @@ TEST(SamsonFileTest, samson_file)
     EXPECT_EQ(samson_file_ok.getErrorMessage(), "No errors") << "Wrong error message for /tmp/test_SamsonFile_words";
     EXPECT_EQ(samson_file_ok.printContent(10, std::cerr), 10) << "Wrong printContent for /tmp/test_SamsonFile_words";
     EXPECT_EQ(strncmp(samson_file.getHashGroups().c_str(), "Error getting vector for hashgroups", strlen("Error getting vector for hashgroups")),0) << "Wrong getHashGroups for /tmp/test_SamsonFile_words";
-	
 
-    // Delilah disconnection
-    // ------------------------------------------------------------	
-    //EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
+     //Delilah disconnection
+     //------------------------------------------------------------
+    EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
 	
 //    au::ErrorManager error;
 //    delilah_console->delilah_disconnect( &error );

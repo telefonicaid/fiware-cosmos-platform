@@ -230,6 +230,8 @@ ctest: debug_all
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
 	make test -C BUILD_DEBUG_ALL ARGS="-D ExperimentalTest"
+	# Trying to clean up the shared memory
+	scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
 	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
@@ -242,6 +244,8 @@ unit_test: debug_all
 	sed 's/1500/600/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
+	# Trying to clean up the shared memory
+	scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
 	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest --gtest_shuffle --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
@@ -255,6 +259,8 @@ test_coverage:
 	# To configure DART_TIMEOUT to 600 instead of 1500. 
 	sed 's/1500/600/' BUILD_COVERAGE/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_COVERAGE/DartConfiguration.tcl
 	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" || true
+	# Trying to clean up the shared memory
+	scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
 	ulimit -c unlimited && BUILD_COVERAGE/apps/unitTest/unitTest --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins

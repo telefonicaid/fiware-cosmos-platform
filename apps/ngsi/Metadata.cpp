@@ -482,11 +482,15 @@ int metadataToDb(unsigned int registrationDbId, Metadata* metadata)
 *
 * metadatasPresent - 
 */
-void metadatasPresent(void)
+void metadatasPresent(bool force)
 {
 	Metadata*  mP;
 	int        metadatas = 0;
+	char       oldValue = lmTraceIsSet(LmtMetadatasPresent);
 
+    if (force == true)
+		lmTraceLevelSet(LmtMetadatasPresent, true);
+	
 	mP = metadataList;
 	while (mP != NULL)
 	{
@@ -507,4 +511,7 @@ void metadatasPresent(void)
     }
 
     LM_T(LmtMetadatasPresent, (""));
+
+	if ((force == true) && (oldValue == false))
+		lmTraceLevelSet(LmtMetadatasPresent, false);
 }

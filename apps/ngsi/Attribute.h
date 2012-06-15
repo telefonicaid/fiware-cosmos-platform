@@ -124,6 +124,6 @@ extern int attributeToDb(Entity* entityP, Attribute* attribute, bool update);
 *
 * attributesPresent - 
 */
-extern void attributesPresent(void);
+extern void attributesPresent(bool force = false);
 
 #endif

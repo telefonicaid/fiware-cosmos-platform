@@ -809,10 +809,14 @@ void entityPresent(Entity* entityP)
 *
 * entitiesPresent - 
 */
-void entitiesPresent(void)
+void entitiesPresent(bool force)
 {
 	Entity* entityP;
 	int     entities = 0;
+	char    oldValue = lmTraceIsSet(LmtEntitiesPresent);
+
+    if (force == true)
+	   lmTraceLevelSet(LmtEntitiesPresent, true);
 
 	entityP = entityList;
     while (entityP != NULL)
@@ -840,4 +844,7 @@ void entitiesPresent(void)
 	}
 
 	LM_T(LmtEntitiesPresent, (""));
+
+	if ((force == true) && (oldValue == false))
+		lmTraceLevelSet(LmtEntitiesPresent, false);
 }

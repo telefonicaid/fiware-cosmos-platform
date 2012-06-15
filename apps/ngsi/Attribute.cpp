@@ -192,9 +192,9 @@ Attribute* attributeCreate(Entity* entityP, int dbId, std::string name, std::str
 		attributeP->metaId    = metaId;
 
 	if (entityP != NULL)
-		LM_T(LmtAttributeCreate, ("XXX2 - Created attribute: '%s:%s:%s' for entity '%s:%s'", attributeP->name.c_str(), attributeP->type.c_str(), attributeP->metaId.c_str(), entityP->type.c_str(), entityP->id.c_str()));
+		LM_T(LmtAttributeCreate, ("Created attribute: '%s:%s:%s' for entity '%s:%s' - dbId: %d", attributeP->name.c_str(), attributeP->type.c_str(), attributeP->metaId.c_str(), entityP->type.c_str(), entityP->id.c_str(), attributeP->dbId));
 	else
-		LM_T(LmtAttributeCreate, ("XXX2 - Created attribute: '%s:%s:%s' for entity '%s:%s'", attributeP->name.c_str(), attributeP->type.c_str(), attributeP->metaId.c_str(), entityP->type.c_str(), entityP->id.c_str()));
+		LM_T(LmtAttributeCreate, ("Created attribute: '%s:%s:%s' for entity '%s:%s' - dbId: %d", attributeP->name.c_str(), attributeP->type.c_str(), attributeP->metaId.c_str(), entityP->type.c_str(), entityP->id.c_str(), attributeP->dbId));
 
 	return attributeP;
 }
@@ -666,9 +666,11 @@ int attributeToDb(Entity* entityP, Attribute* attribute, bool update)
 			query = std::string("UPDATE attribute SET isDomain='") + std::string((attribute->isDomain == true)? "Yes" : "No") + "'";
 		else
 			query = std::string("UPDATE attribute SET value='") + aP->value + "', isDomain='" + std::string((attribute->isDomain == true)? "Yes" : "No") + "'";
+
+		LM_T(LmtAttributeCreate, ("Not an insert - old dbId == %d", aP->dbId));
 	}
 
-	LM_T(LmtSqlQuery, ("SQL Query is '%s'", query.c_str()));
+	LM_T(LmtAttributeCreate, ("SQL Query is '%s'", query.c_str()));
 	s = mysql_query(db, query.c_str());
 	if (s != 0)
 	{
@@ -679,8 +681,10 @@ int attributeToDb(Entity* entityP, Attribute* attribute, bool update)
 	if (existsInDb == false)
 	{
 		attribute->dbId = mysql_insert_id(db);
-		LM_T(LmtDbId, ("Just inserted attribute got dbId %d", attribute->dbId));
+		LM_T(LmtAttributeCreate, ("Just inserted attribute got dbId %d", attribute->dbId));
 	}
+	else
+		LM_T(LmtAttributeCreate, ("No dbId assigned to attribute - was it an UPDATE?"));
 
 	char entityDbId[32];
 	char attributeDbId[32];
@@ -712,10 +716,14 @@ int attributeToDb(Entity* entityP, Attribute* attribute, bool update)
 *
 * attributesPresent - 
 */
-void attributesPresent(void)
+void attributesPresent(bool force)
 {
 	Attribute*   aP;
 	int          attributes = 0;
+	char         oldValue = lmTraceIsSet(LmtAttributesPresent);
+
+	if (force == true)
+		lmTraceLevelSet(LmtAttributesPresent, true);
 
 	LM_T(LmtAttributesPresent, (""));
 	aP = attributeList;
@@ -733,4 +741,7 @@ void attributesPresent(void)
         aP = aP->next;
     }
 	LM_T(LmtAttributesPresent, (""));
+
+	if ((force == true) && (oldValue == false))
+		lmTraceLevelSet(LmtAttributesPresent, false);
 }

@@ -113,6 +113,6 @@ extern void entityPresent(Entity* entityP);
 *
 * entitiesPresent - 
 */
-extern void entitiesPresent(void);
+extern void entitiesPresent(bool force = false);
 
 #endif

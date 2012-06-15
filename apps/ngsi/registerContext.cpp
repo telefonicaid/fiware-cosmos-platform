@@ -574,7 +574,8 @@ static bool registerContextRequestTreat(int fd, Format format, RegisterContextRe
 	//
 	// Save the registration info
 	//
-	registrationAdd(registrationId, rcrP->registrationMetadataV);
+	if (!isUpdate)
+		registrationAdd(registrationId, rcrP->registrationMetadataV);
 
 	registerContextResponse(fd, format);
 	return true;

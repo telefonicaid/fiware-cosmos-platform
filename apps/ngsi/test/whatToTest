@@ -1,9 +1,118 @@
 01. Simple registration
+    % ngsi -fg -reset
     % curlTest reg firstReg 
     
-    Check that all is in DB
+    Check that all is in DB.
+
+	EXPECTED RESULT:
+    <?xml version="1.0" encoding="UTF-8"?>
+      <registerContextResponse>
+        <registrationId>1339680125T001</registrationId>
+      </registerContextResponse>
 ------------------------------------------------------------------
 02. Check that data is recovered/found in DB on restart
     - kill ngsi process and run the same command again
+
+	% killall ngsi
+	% ngsi -fg  # don't reset the database ... !
     % curlTest reg firstReg
     - should fail as we cannot register an entity twice ...
+
+	EXPECTED RESULT:
+    <?xml version="1.0" encoding="UTF-8"?>
+      <registerContextResponse>
+        <registrationId>1339680174T001</registrationId>
+        <errorCode>
+          <code>404</code>
+          <reasonPhrase>already exists</reasonPhrase>
+          <details>Entity 'ConferenceRoom', type 'Room' already exists in a 'Create' Request</details>
+        </errorCode>
+      </registerContextResponse>
+------------------------------------------------------------------
+03. Simple recovery
+    % curlTest disc simpleDiscovery
+    - make sure you see 'temperature' as only attribute
+
+    EXPECTED RESULT:
+    <?xml version="1.0" encoding="UTF-8"?>
+      <discoverContextAvailabilityResponse>
+        <contextRegistrationResponseList>
+          <contextRegistrationResponse>
+            <contextRegistration>
+              <entityIdList>
+                <entityId type="Room" isPattern="false">
+                  <id>ConferenceRoom</id>
+                </entityId>
+                <entityId type="Room" isPattern="false">
+                  <id>OfficeRoom</id>
+                </entityId>
+              <entityIdList>
+              <contextRegistrationAttributeList>
+                <contextRegistrationAttribute>
+                  <name>temperature</name>
+                  <type>degree</type>
+                  <isDomain>false</isDomain>
+                  <metaData>
+                  </metaData>
+                </contextRegistrationAttribute>
+              </contextRegistrationAttributeList>
+              <registrationMetaData>
+              </registrationMetaData>
+              <providingApplication>http://192.168.100.1:70/application</providingApplication>
+            </contextRegistration>
+          </contextRegistrationResponse>
+        </contextRegistrationResponseList>
+        <errorCode>
+          <code>200</code>
+          <reasonPhrase>Ok</reasonPhrase>
+          <details>No problem</details>
+        </errorCode>
+      </discoverContextAvailabilityResponse>
+------------------------------------------------------------------
+04. Adding attributes to an entity
+    % curlTest reg firstRegAddPressureToConferenceRoom <REGISTRATIONID>
+    - make sure the attribute 'pressure' is added to 'ConferenceRoom', and not to 'OfficeRoom'
+
+    EXPECTED RESULT:
+    <?xml version="1.0" encoding="UTF-8"?>
+      <registerContextResponse>
+        <registrationId>1339680125T001</registrationId>
+      </registerContextResponse>
+
+------------------------------------------------------------------
+05. Changing values of metadatas of an attribute, belonging to an entity
+    % curlTest reg firstRegChangecm2ForOfficeRoom <REGISTRATIONID>
+
+	EXPECTED RESULT:
+
+------------------------------------------------------------------
+06. Add an entity that already exists
+    % curlTest reg firstReg
+    - make sure no new identical Entity is added
+
+	EXPECTED RESULT:
+
+------------------------------------------------------------------
+07. Updating two entities with different Registration IDs
+    % curlTest reg firstReg2
+    - Now you have ConferenceRoom and ConferenceRoom2, but as they were created at
+      different occasions, their RegistrationIDs are different so, the following should fail:
+    % curlTest reg updateFirstReg1and2
+
+	EXPECTED RESULT:
+
+------------------------------------------------------------------
+08. Updating an entity with bad Registration IDs
+    % curlTest reg firstRegAddPressureToConferenceRoom notTheCorrectRegId
+
+	EXPECTED RESULT:
+
+------------------------------------------------------------------
+09. Updating an entity with NO Registration ID
+    - This is exactly the same thing as 'Trying to create an Entity that already exists' (case 06)
+    - Which is OK, just that if no new attribute is added, nor any of its metadatas,
+      nothing will be done ...
+
+	EXPECTED RESULT:
+
+------------------------------------------------------------------

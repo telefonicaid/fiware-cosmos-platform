@@ -92,6 +92,6 @@ extern int metadataToDb(unsigned int registrationDbId, Metadata* metadata);
 *
 * metadatasPresent - 
 */
-extern void metadatasPresent(void);
+extern void metadatasPresent(bool force = false);
 
 #endif

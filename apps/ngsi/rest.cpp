@@ -169,6 +169,25 @@ static int restTreat(int fd, Verb verb, Format format, int components, std::stri
 		return versionRequest(fd, verb, format, components, component);
 
 
+	//
+	// debug request?
+	//
+	if (component[0] == "debug")
+	{
+		if (component[1] == "attribute")
+			attributesPresent(true);
+		else if (component[1] == "entity")
+			entitiesPresent(true);
+		else if (component[1] == "metadata")
+			metadatasPresent(true);
+		else
+			return restReplySend(fd, format, 400, "bad debug path");
+
+		return restReplySend(fd, format, 200, "OK");
+	}
+
+
+
     //
     // Sanity Check
     //
@@ -212,7 +231,7 @@ static bool sanityCheck(const char* s)
     if ((s == NULL) || (s[0] == 0))
         return false;
 
-    if ((strncmp(s, "/NGSI10/", 8) != 0) && (strncmp(s, "/NGSI9/", 7) != 0) && (strncmp(s, "/log/", 5) != 0) && (strncmp(s, "/version", 8) != 0))
+    if ((strncmp(s, "/NGSI10/", 8) != 0) && (strncmp(s, "/NGSI9/", 7) != 0) && (strncmp(s, "/log/", 5) != 0) && (strncmp(s, "/version", 8) != 0) && (strncmp(s, "/debug", 6) != 0))
         LM_RE(false, ("Sorry, '%s' is not a valid request", s));
 
     return true;

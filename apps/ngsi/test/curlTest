@@ -8,6 +8,12 @@ function usage()
   exit 1
 }
 
+
+if [ "$operation" = "-u" ]
+then
+  usage
+fi
+
 if [ "$operation" = "" ]
 then
   echo $0: "no operation"

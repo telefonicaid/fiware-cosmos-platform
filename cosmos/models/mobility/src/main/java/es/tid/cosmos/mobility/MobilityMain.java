@@ -324,14 +324,6 @@ public class MobilityMain extends Configured implements Tool {
                     pointsOfInterestIdPath, tmpAdjacentsPath, isDebug, conf);
         }
         
-        Path tmpOutPoisPath = new Path(outputPath, "out_pois");
-        boolean shouldOutPois = arguments.getBoolean("outPois");
-        if (shouldRunAll || shouldOutPois) {
-            OutPoisRunner.run(vectorClientbtsPath, pointsOfInterestIdPath,
-                              vectorClientClusterPath, vectorBtsClusterPath,
-                              tmpOutPoisPath, isDebug, conf);
-        }
-        
         Path tmpItinerariesPath = new Path(outputPath, "itineraries");
         Path clientItinerariesTxtPath = new Path(tmpItinerariesPath,
                                                  "client_itineraries_txt");
@@ -341,6 +333,14 @@ public class MobilityMain extends Configured implements Tool {
                                   pointsOfInterestIdPath,
                                   clientItinerariesTxtPath, tmpItinerariesPath,
                                   isDebug, conf);
+        }
+        
+        Path tmpOutPoisPath = new Path(outputPath, "out_pois");
+        boolean shouldOutPois = arguments.getBoolean("outPois");
+        if (shouldRunAll || shouldOutPois) {
+            OutPoisRunner.run(vectorClientbtsPath, pointsOfInterestIdPath,
+                              vectorClientClusterPath, vectorBtsClusterPath,
+                              tmpOutPoisPath, isDebug, conf);
         }
         
         return 0;

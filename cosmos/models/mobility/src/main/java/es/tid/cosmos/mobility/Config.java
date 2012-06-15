@@ -3,8 +3,13 @@ package es.tid.cosmos.mobility;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.Locale;
 import java.util.Properties;
 
+import org.apache.commons.validator.routines.AbstractNumberValidator;
+import org.apache.commons.validator.routines.FloatValidator;
+import org.apache.commons.validator.routines.IntegerValidator;
+import org.apache.commons.validator.routines.LongValidator;
 import org.apache.hadoop.conf.Configuration;
 
 import es.tid.cosmos.base.util.Logger;
@@ -93,33 +98,28 @@ public abstract class Config {
         // The logic of the following code is to try to match the property
         // value to a given data type, from more strict to less. Therefore, 
         // the order is int - long - float - boolean - string.
-        try {
+        AbstractNumberValidator validator;
+        validator = new IntegerValidator();
+        if (validator.isValid(value, Locale.ENGLISH)) {
             conf.setInt(name, Integer.parseInt(value));
             return;
-        } catch (NumberFormatException ex) {
         }
-        try {
+        validator = new LongValidator();
+        if (validator.isValid(value, Locale.ENGLISH)) {
             conf.setLong(name, Long.parseLong(value));
             return;
-        } catch (NumberFormatException ex) {
         }
-        try {
+        validator = new FloatValidator();
+        if (validator.isValid(value, Locale.ENGLISH)) {
             conf.setFloat(name, Float.parseFloat(value));
             return;
-        } catch (NumberFormatException ex) {
         }
-        
-        // For booleans, we don't use Boolean.parseBoolean. This is because it
-        // will return false for all strings different than "true", even if they
-        // don't represent a real boolean value.
-        if ("true".equalsIgnoreCase(value)) {
-            conf.setBoolean(name, true);
-        } else if ("false".equalsIgnoreCase(value)) {
-            conf.setBoolean(name, false);
-        } else {
-            // If we couldn't match the value to a given data type, we fall back
-            // to a string.
-            conf.set(name, props.getProperty(name));
+        if ("true".equalsIgnoreCase(value) || "false".equalsIgnoreCase(value)) {
+            conf.setBoolean(name, Boolean.parseBoolean(value));
+            return;
         }
+        // If we couldn't match the value to a given data type, we fall back
+        // to a string.
+        conf.set(name, value);
     }
 }

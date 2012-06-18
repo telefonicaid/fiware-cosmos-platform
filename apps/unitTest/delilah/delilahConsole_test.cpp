@@ -240,8 +240,8 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     EXPECT_EQ(delilah_console->runAsyncCommand("rm_local /tmp/traces2"), 0) << "Wrong result from runAsyncCommand(rm_local /tmp/traces)";
 
-    LM_W(("Before ls_local"));
-    EXPECT_EQ(delilah_console->runAsyncCommand("ls_local"), 0) << "Wrong result from runAsyncCommand(ls_local)";
+    //LM_W(("Before ls_local"));
+    //EXPECT_EQ(delilah_console->runAsyncCommand("ls_local"), 0) << "Wrong result from runAsyncCommand(ls_local)";
 
     LM_W(("Before show_local_queue"));
     EXPECT_EQ(delilah_console->runAsyncCommand("show_local_queue"), 0) << "Wrong result from runAsyncCommand(show_local_queue)";
@@ -660,12 +660,12 @@ TEST(delilahConsoleTest, voids)
         delete info;
     }
 
-    {
-        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_local");
-        delilah_console->autoComplete(info);
-
-        delete info;
-    }
+//    {
+//        au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("ls_local");
+//        delilah_console->autoComplete(info);
+//
+//        delete info;
+//    }
 
     {
         au::ConsoleAutoComplete* info = new au::ConsoleAutoComplete("show_local_queue");

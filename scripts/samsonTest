@@ -127,7 +127,7 @@ function execute_test
         if [ $TEST_VERBOSE -eq 1 ]; then
             echo "Executing test command - ${TEST_COMMAND}"
         fi
-        delilah ${SAMSON_TEST_HOST} -command  "$TEST_COMMAND" > $TEST_OUTPUT 2>/dev/null
+        delilah ${SAMSON_TEST_HOST} -command  "$TEST_COMMAND" | grep -v "^[MEW]:" > $TEST_OUTPUT 2>/dev/null
     fi
 
     # ------------------------------------------------
@@ -147,7 +147,7 @@ function execute_test
             if [ $TEST_VERBOSE -eq 1 ]; then
                 echo "Executing - ${command}"
             fi
-            delilah ${SAMSON_TEST_HOST} -command "${command}" >> $TEST_OUTPUT 2>/dev/null
+            delilah ${SAMSON_TEST_HOST} -command "${command}" | grep -v "^[MEW]:" >> $TEST_OUTPUT 2>/dev/null
         done
     fi
 
@@ -159,9 +159,9 @@ function execute_test
             echo "Executing test using bash"
         fi
         if [ $TEST_VERBOSE -eq 1 ]; then
-            bash -x $TEST_SHELL_SCRIPT > $TEST_OUTPUT 2>/dev/null
+            bash -x $TEST_SHELL_SCRIPT | grep -v "^[MEW]:" > $TEST_OUTPUT 2>/dev/null
         else
-            bash $TEST_SHELL_SCRIPT > $TEST_OUTPUT 2>/dev/null
+            bash $TEST_SHELL_SCRIPT | grep -v "^[MEW]:" > $TEST_OUTPUT 2>/dev/null
         fi
     fi
 

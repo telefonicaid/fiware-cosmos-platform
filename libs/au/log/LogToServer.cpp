@@ -14,7 +14,7 @@ namespace au
     {
         if( !log_central )
         {
-            fprintf(stderr , "Init log system before adding plugins\n");
+            fprintf(stderr , "No log_central initialised.\nPlease, init log system before adding plugins\n");
             return;
         }
         log_central->addPlugin(plugin);
@@ -24,7 +24,7 @@ namespace au
     {
         if( !log_central )
         {
-            fprintf(stderr , "Init log system before removing plugins\n");
+            fprintf(stderr , "No log_central initialised.\nPlease, init log system before removing plugins\n");
             return;
         }
         log_central->removePlugin(plugin);

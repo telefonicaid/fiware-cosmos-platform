@@ -23,13 +23,13 @@ import es.tid.cosmos.mobility.populationdensity.profile.PopdenSpreadNodebtsdayho
  *
  * @author ximo
  */
-public class PopulationDensityRunner {
-    public PopulationDensityRunner() {
+public final class PopulationDensityRunner {
+    private PopulationDensityRunner() {
     }
     
-    public CosmosWorkflow run(Path cdrsInfoPath, Path cellsPath,
-                              Path populationDensityOut, Path tmpDirPath,
-                              boolean isDebug, Configuration conf)
+    public static CosmosWorkflow run(Path cdrsInfoPath, Path cellsPath,
+                                     Path populationDensityOut, Path tmpDirPath,
+                                     boolean isDebug, Configuration conf)
             throws ClassNotFoundException, IOException, InterruptedException {
         WorkflowList wfList = new WorkflowList();
         Path denpobNodbtsdayhourPath = new Path(tmpDirPath,

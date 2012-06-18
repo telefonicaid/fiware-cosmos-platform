@@ -20,12 +20,12 @@ import es.tid.cosmos.mobility.itineraries.*;
  * @author dmicol
  */
 public class AggregatedMatrixSimpleRunner {
-    public AggregatedMatrixSimpleRunner() {
+    private AggregatedMatrixSimpleRunner() {
     }
     
-    public CosmosWorkflow run(Path cdrsInfoPath, Path cellsPath,
-                              Path matrixPairBtsTxtPath, Path tmpDirPath,
-                              boolean isDebug, Configuration conf)
+    public static CosmosWorkflow run(Path cdrsInfoPath, Path cellsPath,
+                                     Path matrixPairBtsTxtPath, Path tmpDirPath,
+                                     boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         WorkflowList wfList = new WorkflowList();
         

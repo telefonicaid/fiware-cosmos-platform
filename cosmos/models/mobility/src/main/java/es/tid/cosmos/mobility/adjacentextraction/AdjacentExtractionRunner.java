@@ -21,12 +21,12 @@ import es.tid.cosmos.mobility.util.SetMobDataInputIdReducer;
  * @author dmicol
  */
 public class AdjacentExtractionRunner {
-    public AdjacentExtractionRunner() {
+    private AdjacentExtractionRunner() {
     }
     
-    public void run(Path pointsOfInterestPath, Path pairbtsAdjPath,
-                    Path pointsOfInterestIdPath, Path tmpDirPath,
-                    boolean isDebug, Configuration conf)
+    public static void run(Path pointsOfInterestPath, Path pairbtsAdjPath,
+                           Path pointsOfInterestIdPath, Path tmpDirPath,
+                           boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
         

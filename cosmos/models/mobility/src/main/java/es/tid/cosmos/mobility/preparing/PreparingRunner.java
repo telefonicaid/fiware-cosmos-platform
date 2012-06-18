@@ -17,11 +17,11 @@ import es.tid.cosmos.base.mapreduce.WorkflowList;
  *
  * @author dmicol
  */
-public class PreparingRunner {
-    public PreparingRunner() {
+public final class PreparingRunner {
+    private PreparingRunner() {
     }
 
-    public CosmosWorkflow run(Path tmpPath, Path cdrsMobPath,
+    public static CosmosWorkflow run(Path tmpPath, Path cdrsMobPath,
             Path cdrsInfoPath, Path cdrsNoinfoPath, Path cellsPath,
             Path clientsBtsPath, Path btsCommsPath, Path cdrsNoBtsPath,
             Path viTelmonthBtsPath, boolean isDebug, Configuration conf)

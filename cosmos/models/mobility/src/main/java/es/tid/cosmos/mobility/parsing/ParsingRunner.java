@@ -17,15 +17,16 @@ import es.tid.cosmos.base.mapreduce.WorkflowList;
  *
  * @author dmicol
  */
-public class ParsingRunner {
-    public ParsingRunner() {
+public final class ParsingRunner {
+    private ParsingRunner() {
     }
 
-    public CosmosWorkflow run(Path cdrsPath, Path cdrsMobPath, Path cellsPath,
-            Path cellsMobPath, Path adjBtsPath, Path pairbtsAdjPath,
-            Path btsVectorTxtPath, Path btsComareaPath, Path clientsInfoPath,
-            Path clientsInfoMobPath, boolean isDebug, Configuration conf)
-            throws IOException, InterruptedException, ClassNotFoundException {
+    public static CosmosWorkflow run(Path cdrsPath, Path cdrsMobPath,
+            Path cellsPath, Path cellsMobPath, Path adjBtsPath,
+            Path pairbtsAdjPath, Path btsVectorTxtPath, Path btsComareaPath,
+            Path clientsInfoPath, Path clientsInfoMobPath, boolean isDebug,
+            Configuration conf) throws IOException, InterruptedException,
+                                       ClassNotFoundException {
         WorkflowList wf = new WorkflowList();
         {
             CosmosJob job = CosmosJob.createMapJob(conf, "ParseCdrs",

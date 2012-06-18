@@ -19,11 +19,11 @@ import es.tid.cosmos.mobility.util.ExportPoiToTextReducer;
  *
  * @author dmicol
  */
-public class LabelJoiningRunner {
-    public LabelJoiningRunner() {
+public final class LabelJoiningRunner {
+    private LabelJoiningRunner() {
     }
     
-    public CosmosWorkflow run(Path pointsOfInterestTempPath,
+    public static CosmosWorkflow run(Path pointsOfInterestTempPath,
             Path vectorClientClusterPath, Path vectorClientbtsClusterPath,
             Path vectorBtsClusterPath, Path pointsOfInterestTemp4Path,
             Path tmpDirPath, boolean isDebug, Configuration conf)

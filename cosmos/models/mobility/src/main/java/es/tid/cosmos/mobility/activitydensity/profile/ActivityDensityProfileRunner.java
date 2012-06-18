@@ -21,13 +21,13 @@ import es.tid.cosmos.mobility.activitydensity.PopdenSumCommsReducer;
  *
  * @author dmicol
  */
-public class ActivityDensityProfileRunner {
-    public ActivityDensityProfileRunner() {
+public final class ActivityDensityProfileRunner {
+    private ActivityDensityProfileRunner() {
     }
     
-    public CosmosWorkflow run(Path clientProfileMobPath,
-            Path clientsInfoPath, Path activityDensityProfileOut, Path tmpDirPath,
-            boolean isDebug, Configuration conf)
+    public static CosmosWorkflow run(Path clientProfileMobPath,
+            Path clientsInfoPath, Path activityDensityProfileOut,
+            Path tmpDirPath, boolean isDebug, Configuration conf)
             throws ClassNotFoundException, IOException, InterruptedException {
         WorkflowList wfList = new WorkflowList();
         Path popdenprofBtsprofPath = new Path(tmpDirPath, "popdenprof_btsprof");

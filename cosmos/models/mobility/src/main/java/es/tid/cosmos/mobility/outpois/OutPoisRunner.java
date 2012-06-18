@@ -17,13 +17,13 @@ import es.tid.cosmos.base.mapreduce.CosmosJob;
  *
  * @author dmicol
  */
-public class OutPoisRunner {
-    public OutPoisRunner() {
+public final class OutPoisRunner {
+    private OutPoisRunner() {
     }
     
-    public void run(Path vectorClientbtsPath, Path pointsOfInterestIdPath,
-                    Path vectorClientClusterPath, Path vectorBtsClusterPath,
-                    Path tmpDirPath, boolean isDebug, Configuration conf)
+    public static void run(Path vectorClientbtsPath, Path pointsOfInterestIdPath,
+                           Path vectorClientClusterPath, Path vectorBtsClusterPath,
+                           Path tmpDirPath, boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
         

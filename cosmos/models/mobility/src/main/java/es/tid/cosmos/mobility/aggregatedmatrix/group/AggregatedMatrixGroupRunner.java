@@ -20,10 +20,10 @@ import es.tid.cosmos.mobility.aggregatedmatrix.simple.MatrixGetOutReducer;
  * @author dmicol
  */
 public class AggregatedMatrixGroupRunner {
-    public AggregatedMatrixGroupRunner() {
+    private AggregatedMatrixGroupRunner() {
     }
     
-    public CosmosWorkflow run(Path cdrsInfoPath, Path cellsGroupPath,
+    public static CosmosWorkflow run(Path cdrsInfoPath, Path cellsGroupPath,
             Path matrixPairGroupTxtPath, Path tmpDirPath, boolean isDebug,
             Configuration conf) throws IOException, InterruptedException,
                                        ClassNotFoundException {

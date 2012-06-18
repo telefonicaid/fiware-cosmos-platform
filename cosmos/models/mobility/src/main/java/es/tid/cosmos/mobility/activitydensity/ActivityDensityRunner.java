@@ -18,11 +18,11 @@ import es.tid.cosmos.base.mapreduce.WorkflowList;
  *
  * @author dmicol
  */
-public class ActivityDensityRunner {
-    public ActivityDensityRunner() {
+public final class ActivityDensityRunner {
+    private ActivityDensityRunner() {
     }
     
-    public CosmosWorkflow run(Path clientProfileMobPath,
+    public static CosmosWorkflow run(Path clientProfileMobPath,
             Path populationDensityOutPath, Path tmpDirPath, boolean isDebug,
             Configuration conf)
             throws ClassNotFoundException, IOException, InterruptedException {

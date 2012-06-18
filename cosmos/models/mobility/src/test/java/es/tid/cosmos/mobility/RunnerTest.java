@@ -21,7 +21,6 @@ import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.join.LabelJoiningRunner;
 import es.tid.cosmos.mobility.labelling.secondhomes.DetectSecondHomesRunner;
 import es.tid.cosmos.mobility.mivs.MivsRunner;
-import es.tid.cosmos.mobility.outpois.OutPoisRunner;
 import es.tid.cosmos.mobility.parsing.ParsingRunner;
 import es.tid.cosmos.mobility.pois.PoisRunner;
 import es.tid.cosmos.mobility.populationdensity.PopulationDensityRunner;
@@ -77,16 +76,17 @@ public class RunnerTest {
         Configuration conf = new Configuration();
         conf.setBoolean("test", true);
         final Path dummyPath = new Path("/dummyPath");
-        final Method runnerMethod = runnerClazz.getMethods()[0];
-        final int numberOfArguments = runnerMethod.getParameterTypes().length;
-        Object[] methodData = new Object[numberOfArguments];
+        final Method[] methods = runnerClazz.getDeclaredMethods();
+        assertEquals(1, methods.length);
+        assertEquals("run", methods[0].getName());
+        final int numberOfArguments = methods[0].getParameterTypes().length;
+        Object[] params = new Object[numberOfArguments];
         for (int i = 0; i < numberOfArguments - 2; i++) {
-            methodData[i] = dummyPath;
+            params[i] = dummyPath;
         }
-        methodData[numberOfArguments - 2] = isDebug;
-        methodData[numberOfArguments - 1] = conf;
-        CosmosWorkflow wfrun = (CosmosWorkflow) runnerMethod.invoke(
-                runnerClazz.newInstance(), methodData);
+        params[numberOfArguments - 2] = isDebug;
+        params[numberOfArguments - 1] = conf;
+        CosmosWorkflow wfrun = (CosmosWorkflow) methods[0].invoke(null, params);
         assertEquals(wfrun.getClass(), WorkflowList.class);
         WorkflowList list = (WorkflowList) wfrun;
         boolean exportToText = false;

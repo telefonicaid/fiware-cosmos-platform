@@ -1,13 +1,13 @@
 package es.tid.smartsteps.ipm;
 
+import java.security.NoSuchAlgorithmException;
+
 import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.base.util.SHAEncoder;
 import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetIpm;
 import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetRaw;
 import es.tid.smartsteps.util.InetIpmUtil;
 import es.tid.smartsteps.util.InetRawUtil;
-
-import java.security.NoSuchAlgorithmException;
 
 /**
  *

@@ -22,7 +22,6 @@ import static es.tid.smartsteps.flume.IpmConverterInterceptor.Constants.PROPERTY
  * @author apv
  */
 public class IpmConverterInterceptor implements Interceptor {
-
     private static final Logger logger =
             LoggerFactory.getLogger(IpmConverterInterceptor.class);
 

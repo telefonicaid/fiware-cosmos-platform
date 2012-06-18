@@ -25,7 +25,6 @@ import static org.junit.Assert.assertNull;
  * @author apv
  */
 public class IpmConverterInterceptorTest {
-
     private Interceptor crmInterceptor;
     private Interceptor inetInterceptor;
 

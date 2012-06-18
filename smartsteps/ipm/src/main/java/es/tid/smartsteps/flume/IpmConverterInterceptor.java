@@ -56,8 +56,9 @@ public class IpmConverterInterceptor implements Interceptor {
     @Override
     public List<Event> intercept(List<Event> events) {
         List<Event> result = new ArrayList<Event>(events.size());
-        for (Event ev : events)
+        for (Event ev : events) {
             result.add(intercept(ev));
+        }
         return result;
     }
 

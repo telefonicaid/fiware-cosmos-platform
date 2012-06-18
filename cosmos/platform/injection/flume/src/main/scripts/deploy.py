@@ -31,7 +31,7 @@ def parse_command_line():
 
 def exec_template(filename, config):
     shell = Popen(['flume', 'shell', '-q'], stdin=PIPE)
-    shell.stdin.write(Template(filename=filename).render(config))
+    shell.stdin.write(Template(filename=filename).render(**config))
     shell.stdin.close()
     shell.wait()
 

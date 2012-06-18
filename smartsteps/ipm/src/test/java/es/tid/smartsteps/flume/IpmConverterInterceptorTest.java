@@ -129,6 +129,7 @@ public class IpmConverterInterceptorTest {
     @Test
     public void testInterceptInvalidCrmEvent() throws ParseException {
         this.interceptInvalidEvent(this.crmInterceptor);
+        interceptInvalidEvent(this.crmInterceptor);
     }
 
     @Test

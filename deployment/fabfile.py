@@ -10,6 +10,7 @@ from StringIO import StringIO
 from fabric.api import run, execute, sudo, put, cd, env
 from fabric.contrib import files
 import fabric.context_managers as ctx
+from fabric.colors import green, red
 from fabric.decorators import roles, task, parallel
 from fabric.utils import puts
 from mako.template import Template
@@ -35,6 +36,7 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     execute(deploy_mongo)
 
 @task
+@parallel
 @roles('namenode', 'jobtracker', 'frontend', 'datanodes', 'tasktrackers')
 def deploy_jdk(jdkpath):
     """

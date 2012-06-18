@@ -14,8 +14,6 @@ import org.slf4j.LoggerFactory;
 import es.tid.smartsteps.ipm.ParseException;
 import es.tid.smartsteps.ipm.RawToIpmConverter;
 
-import static es.tid.smartsteps.flume.IpmConverterInterceptor.Constants.PROPERTY_CONVERTER;
-
 /**
  * A flume interceptor for converting incoming raw lines into IPM events.
  *
@@ -24,6 +22,8 @@ import static es.tid.smartsteps.flume.IpmConverterInterceptor.Constants.PROPERTY
 public class IpmConverterInterceptor implements Interceptor {
     private static final Logger logger =
             LoggerFactory.getLogger(IpmConverterInterceptor.class);
+
+    public static final String PROPERTY_CONVERTER = "converter";
 
     private RawToIpmConverter converter;
 
@@ -128,7 +128,4 @@ public class IpmConverterInterceptor implements Interceptor {
         }
     }
 
-    public static class Constants {
-        public static final String PROPERTY_CONVERTER = "converter";
-    }
 }

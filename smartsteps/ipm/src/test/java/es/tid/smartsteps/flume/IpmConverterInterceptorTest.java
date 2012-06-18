@@ -48,7 +48,7 @@ public class IpmConverterInterceptorTest {
         IpmConverterInterceptor.Builder interceptorBuilder =
                 new IpmConverterInterceptor.Builder();
         Context ctx = new Context();
-        ctx.put(IpmConverterInterceptor.Constants.PROPERTY_CONVERTER,
+        ctx.put(IpmConverterInterceptor.PROPERTY_CONVERTER,
                 converterType.name());
         interceptorBuilder.configure(ctx);
         return interceptorBuilder.build();
@@ -101,7 +101,7 @@ public class IpmConverterInterceptorTest {
         IpmConverterInterceptor.Builder interceptorBuilder =
                 new IpmConverterInterceptor.Builder();
         Context ctx = new Context();
-        ctx.put(IpmConverterInterceptor.Constants.PROPERTY_CONVERTER,
+        ctx.put(IpmConverterInterceptor.PROPERTY_CONVERTER,
                 "foobar");
         interceptorBuilder.configure(ctx);
     }
@@ -111,7 +111,7 @@ public class IpmConverterInterceptorTest {
         IpmConverterInterceptor.Builder interceptorBuilder =
                 new IpmConverterInterceptor.Builder();
         Context ctx = new Context();
-        ctx.put(IpmConverterInterceptor.Constants.PROPERTY_CONVERTER,
+        ctx.put(IpmConverterInterceptor.PROPERTY_CONVERTER,
                 FakeIpmConverter.class.getName());
         interceptorBuilder.configure(ctx);
     }

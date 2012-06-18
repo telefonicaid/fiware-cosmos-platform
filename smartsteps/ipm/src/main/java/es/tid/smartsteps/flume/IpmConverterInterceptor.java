@@ -91,7 +91,7 @@ public class IpmConverterInterceptor implements Interceptor {
                         "missing '%s' property for IPM converter interceptor",
                         PROPERTY_CONVERTER));
             }
-            Class<? extends RawToIpmConverter> converterClass = null;
+            Class<? extends RawToIpmConverter> converterClass;
             try {
                 IpmConverterType converterType =
                         IpmConverterType.valueOf(converterName.toUpperCase());

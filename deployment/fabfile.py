@@ -32,6 +32,16 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     execute(deploy_sftp)
     
 @task
+@roles('frontend')
+def add_test_setup():
+    """
+    Installs any test-specific setup components
+    """
+    with cd('/usr/share/hue'):
+        put(os.path.join(BASEPATH, '../cosmos/tests/testUser.json'), 'testUser.json')
+        run('build/env/bin/hue loaddata fixture.json')
+    
+@task
 @roles('namenode', 'jobtracker', 'frontend', 'datanodes', 'tasktrackers')
 def deploy_jdk(jdkpath):
     if not common.has_package('jdk'):

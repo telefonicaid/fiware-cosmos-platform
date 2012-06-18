@@ -1,45 +1,37 @@
 {
     "version": "0.9.0.0-SNAPSHOT",
     "hosts": {
-        "namenode": [
-            "jcosmos1"
-        ],
-        "jobtracker": [
-            "jcosmos1"
-        ],
-        "frontend": [
-            "jcosmos1"
-        ],
-        "mongo": [
-            "jcosmos14"
-        ],
+        "namenode": [ "176.28.105.8" ],
+        "jobtracker": [ "176.28.105.8" ],
+        "frontend": [ "176.28.105.8" ],
+        "mongo": [ "176.28.105.42" ],
         "datanodes": [
-            "jcosmos2",
-            "jcosmos3",
-            "jcosmos4",
-            "jcosmos5",
-            "jcosmos6",
-            "jcosmos7",
-            "jcosmos8",
-            "jcosmos9",
-            "jcosmos10",
-            "jcosmos11",
-            "jcosmos12",
-            "jcosmos13"
+            "176.28.105.12",
+            "176.28.105.13",
+            "176.28.105.16",
+            "176.28.105.16",
+            "176.28.105.24",
+            "176.28.105.26",
+            "176.28.105.28",
+            "176.28.105.29",
+            "176.28.105.31",
+            "176.28.105.33",
+            "176.28.105.36",
+            "176.28.105.37"
         ],
         "tasktrackers": [
-            "jcosmos2",
-            "jcosmos3",
-            "jcosmos4",
-            "jcosmos5",
-            "jcosmos6",
-            "jcosmos7",
-            "jcosmos8",
-            "jcosmos9",
-            "jcosmos10",
-            "jcosmos11",
-            "jcosmos12",
-            "jcosmos13"
+            "176.28.105.12",
+            "176.28.105.13",
+            "176.28.105.14",
+            "176.28.105.16",
+            "176.28.105.24",
+            "176.28.105.26",
+            "176.28.105.28",
+            "176.28.105.29",
+            "176.28.105.31",
+            "176.28.105.33",
+            "176.28.105.36",
+            "176.28.105.37"
         ]
     },
     "cdh_version_repo": "cdh3-repository-1.0-1.noarch.rpm",
@@ -48,5 +40,6 @@
     ],
     "hue_patch_dir": "../cosmos/platform/frontend/hue-patches",
     "hue_patch_name": "hue-patch-cdh3u4-r0.4.diff",
-    "injection_path": "../cosmos/platform/injection/server/"
+    "injection_path": "../cosmos/platform/injection/server/",
+    "key_filename": "~/.ssh/id_rsa_joyent"
 }

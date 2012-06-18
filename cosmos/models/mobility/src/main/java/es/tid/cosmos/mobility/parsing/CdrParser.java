@@ -21,10 +21,10 @@ class CdrParser extends Parser {
             if (cdr.getCellId() == 0) { // Cell 2
                 cdr.setCellId(this.parseCellId());
             } else {
-                this.skipField();
+                this.nextToken();
             }
-            this.skipField(); // Phone 2
-            this.skipField(); // Unknown field
+            this.nextToken(); // Phone 2
+            this.nextToken(); // Unknown field
 
             cdr.setDate(this.parseDate());
             cdr.setTime(this.parseTime());

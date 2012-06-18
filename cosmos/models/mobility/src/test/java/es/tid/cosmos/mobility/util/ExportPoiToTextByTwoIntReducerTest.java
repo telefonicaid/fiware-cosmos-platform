@@ -11,10 +11,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.PoiUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
+import java.io.InputStream;
 
 /**
  *
@@ -23,11 +25,16 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class ExportPoiToTextByTwoIntReducerTest {
     private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>,
             NullWritable, Text> driver;
+    
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<Poi>, NullWritable, Text>(
                         new ExportPoiToTextByTwoIntReducer());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                                                 this.driver.getConfiguration()));
     }
     
     @Test

@@ -35,6 +35,6 @@ public class DateUtilTest {
     @Test
     public void testToString() {
         Date obj = DateUtil.create(2012, 4, 20, 5);
-        assertEquals("2012|4|20|5", DateUtil.toString(obj, "\\|"));
+        assertEquals("2012|4|20|5", DateUtil.toString(obj, "|"));
     }
 }

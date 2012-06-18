@@ -1,7 +1,7 @@
 package es.tid.cosmos.mobility.parsing;
 
 import java.io.IOException;
-import static java.util.Arrays.asList;
+import java.io.InputStream;
 import java.util.List;
 
 import org.apache.hadoop.io.LongWritable;
@@ -14,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 
 /**
@@ -25,9 +26,13 @@ public class ParseCdrMapperTest {
             TypedProtobufWritable<Cdr>> driver;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.driver = new MapDriver<LongWritable, Text, LongWritable,
                 TypedProtobufWritable<Cdr>>(new ParseCdrMapper());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                                                 this.driver.getConfiguration()));
     }
 
     @Test

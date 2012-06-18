@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import static java.util.Arrays.asList;
 
 import org.apache.hadoop.io.LongWritable;
@@ -11,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.PoiUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 
@@ -21,10 +23,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 public class ExportPoiToTextReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Poi>, NullWritable,
             Text> driver;
+    
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Poi>,
                 NullWritable, Text>(new ExportPoiToTextReducer());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                                                 this.driver.getConfiguration()));
     }
     
     @Test

@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.outpois;
 
 import java.io.IOException;
+import java.io.InputStream;
 import static java.util.Arrays.asList;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.PoiUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
@@ -29,10 +31,14 @@ public class VectorPoisOutReducerTest {
             NullWritable, Text> driver;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<Poi>, NullWritable, Text>(
                         new VectorPoisOutReducer());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                                                 this.driver.getConfiguration()));
     }
 
     @Test

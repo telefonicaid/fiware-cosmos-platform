@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import static java.util.Arrays.asList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
@@ -12,6 +13,7 @@ import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -24,10 +26,14 @@ public class ExportBtsCounterToTextByTwoIntReducerTest {
     private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<BtsCounter>,
             NullWritable, Text> driver;
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<BtsCounter>, NullWritable, Text>(
                         new ExportBtsCounterToTextByTwoIntReducer());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                                                 this.driver.getConfiguration()));
     }
     
     @Test

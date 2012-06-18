@@ -13,10 +13,8 @@ import es.tid.cosmos.base.mapreduce.CosmosWorkflow;
 import es.tid.cosmos.base.mapreduce.WorkflowList;
 import es.tid.cosmos.mobility.activitydensity.ActivityDensityRunner;
 import es.tid.cosmos.mobility.activitydensity.profile.ActivityDensityProfileRunner;
-import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.group.AggregatedMatrixGroupRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.simple.AggregatedMatrixSimpleRunner;
-import es.tid.cosmos.mobility.itineraries.ItinerariesRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;
 import es.tid.cosmos.mobility.labelling.clientbts.ClientBtsLabellingRunner;
@@ -39,21 +37,17 @@ import es.tid.cosmos.mobility.util.ExportPoiToTextReducer;
  * @author dmicol, ximo
  */
 public class RunnerTest {
-    private static final int NUMBER_OF_RUNNERS = 1;
     private static final Class[] RUNNER_CLASSES = {
         ActivityDensityRunner.class,
         ActivityDensityProfileRunner.class,
-        AdjacentExtractionRunner.class,
         AggregatedMatrixGroupRunner.class,
         AggregatedMatrixSimpleRunner.class,
-        ItinerariesRunner.class,
         BtsLabellingRunner.class,
         ClientLabellingRunner.class,
         ClientBtsLabellingRunner.class,
         LabelJoiningRunner.class,
         DetectSecondHomesRunner.class,
         MivsRunner.class,
-        OutPoisRunner.class,
         ParsingRunner.class,
         PoisRunner.class,
         PopulationDensityRunner.class,
@@ -63,8 +57,6 @@ public class RunnerTest {
     private static final Class[] EXPORT_TO_TEXT_CLASSES = {
         null,
         null,
-        ExportPoiToTextByTwoIntReducer.class,
-        null,
         null,
         null,
         ExportClusterToTextReducer.class,
@@ -72,7 +64,6 @@ public class RunnerTest {
         ExportClusterToTextByTwoIntReducer.class,
         ExportPoiToTextReducer.class,
         ExportPoiToTextByTwoIntReducer.class,
-        null,
         null,
         null,
         null,
@@ -113,7 +104,8 @@ public class RunnerTest {
     }
     
     private static void testRunners(boolean isDebug) throws Exception {
-        for (int i = 0; i < NUMBER_OF_RUNNERS; i++) {
+        assertEquals(RUNNER_CLASSES.length, EXPORT_TO_TEXT_CLASSES.length);
+        for (int i = 0; i < RUNNER_CLASSES.length; i++) {
             testRunner(RUNNER_CLASSES[i], EXPORT_TO_TEXT_CLASSES[i], isDebug);
         }
     }

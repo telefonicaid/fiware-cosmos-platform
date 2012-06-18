@@ -25,8 +25,8 @@ public class AdjacentExtractionRunner {
     }
     
     public void run(Path pointsOfInterestPath, Path pairbtsAdjPath,
-                           Path pointsOfInterestIdPath, Path tmpDirPath,
-                           boolean isDebug, Configuration conf)
+                    Path pointsOfInterestIdPath, Path tmpDirPath,
+                    boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
         

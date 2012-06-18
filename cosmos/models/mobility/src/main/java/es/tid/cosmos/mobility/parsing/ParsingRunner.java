@@ -24,7 +24,7 @@ public class ParsingRunner {
     public CosmosWorkflow run(Path cdrsPath, Path cdrsMobPath, Path cellsPath,
             Path cellsMobPath, Path adjBtsPath, Path pairbtsAdjPath,
             Path btsVectorTxtPath, Path btsComareaPath, Path clientsInfoPath,
-            Path clientsInfoMobPath, Configuration conf)
+            Path clientsInfoMobPath, boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         WorkflowList wf = new WorkflowList();
         {

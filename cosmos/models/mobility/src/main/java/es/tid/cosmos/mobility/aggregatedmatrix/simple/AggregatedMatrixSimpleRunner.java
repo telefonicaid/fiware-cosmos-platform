@@ -24,8 +24,8 @@ public class AggregatedMatrixSimpleRunner {
     }
     
     public CosmosWorkflow run(Path cdrsInfoPath, Path cellsPath,
-                           Path matrixPairBtsTxtPath, Path tmpDirPath,
-                           boolean isDebug, Configuration conf)
+                              Path matrixPairBtsTxtPath, Path tmpDirPath,
+                              boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         WorkflowList wfList = new WorkflowList();
         

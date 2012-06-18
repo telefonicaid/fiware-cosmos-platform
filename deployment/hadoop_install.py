@@ -1,12 +1,15 @@
 """
 Hadoop automatic deployment
 """
-from fabric.api import run, sudo, put, cd
-from fabric.decorators import roles, parallel
+import os.path
+from fabric.api import cd, env, put, run, sudo
+import fabric.context_managers as ctx
 from fabric.contrib import files
+from fabric.colors import green, red
+from fabric.decorators import roles, parallel
+from fabric.utils import puts
 from StringIO import StringIO
 from mako.template import Template
-import os.path
 
 COSMOS_CLASSPATH='/usr/lib/hadoop-0.20/lib/cosmos/'
 BASEPATH = os.path.dirname(os.path.realpath(__file__))

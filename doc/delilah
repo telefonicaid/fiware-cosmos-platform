@@ -1,51 +1,3 @@
-1. Those trailing '...'
-   Should be fixed with SIGWINCH and getenv("COLUMNS") ... ?
-   Unfortunately it's not that simple ... COLUMNS is changed in father process, but not in the child process ...
-   However, there must be a way to fix this ...
-
-2. Wrong type of parenthesis
-   Normally '<>' is used for a replacement, like '-f <file name>',
-   while '[]' is used for something that is optional, like [-v] ...
-
-   delilah> help set_queue_property
-   ...
-   DESCRIPTION:  Specify the value of property <property> for queue <queue>
-   USAGE:        set_queue_property [queue] [property] [value]
-
-   'USAGE' should be:
-   USAGE:        set_queue_property <queue> <property> <value>
-
-   This 'failure' is consistent all over the help ...
-
-4. Typo in text:
-    help all -category data
-    rm | Remove a queueUsage: rm queue
-
-5. Typo:
-   delilah> help set_mode
-   DESCRIPTION:  Select delilah working mode: normal ,databse , logs
-
-   Should be:
-   DESCRIPTION:  Select delilah working mode: normal, database, logs
-
-6. A <CR> is missing in USAGE
-   delilah> help send_alert
-
-     DESCRIPTION:  Send a trace to all conneceted delilah using a random worker as a sender
-     USAGE:        send_trace [-worker X] [-error] [-warning] "Message to be sent"      -worker X     Use only this worker as broadcaster
-           -error        Mark this trace as an error for correct visualitzation
-           -warning      Mark this trace as a warning for correct visualitzation
-           message       Use only this worker as broadcaster
-
-   A newline is missing after '"Message to be sent"'.
-   Also, visualitzation is not a word ... 'visualization' is ... :-)
-
-7. The DESCRIPTION and USAGE of 'help send_alert'
-   'Send a trace' ...
-   send_trace [-worker X] ...
-
-   Should probably be 'Send an alert', etc ...
---------------------------------------------------------------
 1. Introduction
    Samson is a MapReduce platform, developed for processing large volumes of information (> 1GB daily).
    delilah is its console client, used to connect to and to interact with the Samson platform.
@@ -89,66 +41,66 @@ o history
 o auto-completion
   Using the tab key, the delilah user can auto-complete command names, its options, operation names, dataset names etc.
 
-
-Something about the built-in options here ... ?
-
 2.1 Getting help
     The command to use to get help in delilah is called 'help'.
     Once invoked, the following listing is presented on the screen:
 
-    ============================================================================================================================
-     SAMSON v 0.6.1
-    ============================================================================================================================
-            SAMSON is a distributed platform for efficient processing of unbounded streams of big data
-            Authors: Andreu Urruela, J.Gregorio Escalada & Ken Zangelin
-            Telefonica I+D 2010-2012
-    ----------------------------------------------------------------------------------------------------------------------------
-            Type help all [-category category_name] to get help for all available commands
-                    Current categories: cluster data delilah local modules push&pop stream
-            Type help <command> to get detailed information for a command
-    ----------------------------------------------------------------------------------------------------------------------------
+=======================================================================================================================================================
+ SAMSON v 0.6.1
+=======================================================================================================================================================
+    SAMSON is a distributed platform for efficient processing of unbounded streams of big data
+    Authors: Andreu Urruela, Grant Croker, J.Gregorio Escalada & Ken Zangelin
+    Telefonica I+D 2010-2012
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+    help all .................. get a list of all available commands
+    help categories ........... get a list of command categories
+    help <command> ............ get detailed information for a command
+    help <category> ........... get list of commands for a particular categoriy
+-------------------------------------------------------------------------------------------------------------------------------------------------------
 
     The help categories are:
-    o cluster
     o data
     o delilah
     o local
+    o management
     o modules
     o push&pop
     o stream
 
     To see the listing of all commands for a category, use the following command:
-
-    delilah> help all -category <category name>
+    delilah> help <category name>
 
     To see the help of an individual command, use 'help <command name>', for example:
     delilah> help ls
 
-    -------------------------------------------------------------------------------------------------------------------------------------
-    ls    ( data )
-    -------------------------------------------------------------------------------------------------------------------------------------
-    DESCRIPTION:  Show a list of all data queues in the system
-    USAGE:        ls [-rates] [-blocks] [-properties] [-group group_field] [<queue name>]
-          -rates        Information about total size and current rate
-          -blocks       Detailes information about blocks
-          -properties   Get properties assigned to queues
-          -group X      Group results by a particular field
+         --------------------------------------------------------------------------------------------------------------------------------
+          COMMAND ls       ( data )
+         --------------------------------------------------------------------------------------------------------------------------------
+         DESCRIPTION:  Show a list of all data queues in the system
+         USAGE: 
+                       ls [-rates] [-blocks] [-properties] [-group group_field]
+                             -rates        Information about total size and current rate
+                             -blocks       Detailes information about blocks
+                             -properties   Get properties assigned to queues
+                             -group X      Group results by a particular field
+         --------------------------------------------------------------------------------------------------------------------------------
 
-    -------------------------------------------------------------------------------------------------------------------------------------
-
-2.2 cluster commands
-
+2.2 management commands
     A SAMSON cluster is a set of SAMSON nodes that work together.
-    Nodes can be easily added or removed from a SAMSON cluster using delilah
+    Nodes can easily be added or removed from a SAMSON cluster using delilah.
+
+    'management' is the delilah command category to maintain clusters.
+    The commands in this category are:
+    o cluster         - to add/remove/view cluster members
+    o ls_connections  - to see the status of all connections in the cluster
 
 2.2.1 cluster
-    cluster is the delilah command to create clusters and to add/remove nodes to a cluster.
     The cluster command has a number of subcommands:
     o info                                         Show current cluster definition and connection status.
     o connections                                  Show more information about current connections.
     o pending                                      Show pending packets for unconnected workers.
-    o connect host [port] [-user X] [-password X]  Connect to another SAMSON cluster instance.
-    o add     host [port]                          Add a node to this cluster. A samsond clear instance should be running there.
+    o connect host[:port] [-user X] [-password X]  Connect to another SAMSON cluster instance (default port: 1324 - the default worker port).
+    o add     host[:port]                          Add a node to this cluster. A samsond clear instance should be running there.
     o remove  id                                   Remove one of the involved workers. The worker id should be provided (see cluster info).
     o get_my_id                                    Get this delilah identifier (see ls_connections).
 
@@ -163,18 +115,107 @@ Something about the built-in options here ... ?
 
     3. Now add the other two nodes, using the 'cluster add' command.
 
-    4. To check that everything has worked out just fine, use the 'cluster info' command and you should see the three nodes.
+    4. To check that everything worked, use the 'cluster info' command and you should see the three nodes:
+
+
+2.2.1.1 cluster info
+    The cluster subcommand 'info' shows the list of nodes in the connected cluster, e.g.:
+
+    Synopsis:
+    delilah> cluster info
+         /----------------------------------------------------------------\                                                              
+         | Cluster 204695284815 ( version 2 )                             |
+         |----------------------------------------------------------------|
+         | Worker |        Host |                                  Status | 
+         |--------+-------------+-----------------------------------------|
+         |      0 | torkel:1324 | Connected In:     0 B/s Out:     0 B/s  | 
+         |      1 | torkel:2000 | Connected In:     0 B/s Out:     0 B/s  | 
+         |      2 | torkel:2001 | Connected In:  86.0 B/s Out:     0 B/s  | 
+         \----------------------------------------------------------------/
+
+
+2.2.1.2 cluster connections
+    The cluster subcommand 'connections' shows a listing with detailed information of all currently open connections:
+
+    Synopsis:
+    delilah> cluster connections
+         /------------------------------------------------\                                                                              
+         | Connections                                    |
+         |------------------------------------------------|
+         |     Name |        Host |        In |       Out | 
+         |----------+-------------+-----------+-----------|
+         | worker_0 | torkel:1324 |  86.0 B/s |  3.00 B/s | 
+         | worker_1 | torkel:2000 |  86.0 B/s |  3.00 B/s | 
+         | worker_2 | torkel:2001 |  86.0 B/s |  3.00 B/s | 
+         \------------------------------------------------/
+2.2.1.3 cluster pending
+    The cluster subcommand 'pending' shows all pending packets for unconnected workers:
+
+    Synopsis:
+    delilah> cluster pending
+         /------------------------------\                                                                                                
+         | Pending packets              |
+         |------------------------------|
+         | Connection | #Packets | Size | 
+         |------------+----------+------|
+         \------------------------------/
+
+2.2.1.4 cluster connect
+   The cluster subcommand 'connect' lets you connect to a samson cluster.
+   If you are already connected to a cluster, delilah will disconnect from that cluster and
+   connect to the requested cluster, unless delilah detects outstanding operations.
+   If so, to override this, the user would have to disconnect manually, using the command
+   'cluster disconnect' before connecting to the new cluster.
+   To connect to a cluster, it is enoung to connect to any of the samson workers in the cluster.
+
+   Synopsis:
+   delilah> cluster connect host:port
+
+2.2.1.5 cluster add
+   To add a new node to an existing cluster (the cluster you're currently connected to), the
+   subcommand 'add' is used. cluster add has one parameter, the name of the node where the
+   samson worker instance is running. In case this samson worker has been started with a 
+   port that is not the default samson worker port (1324), this port must be added to the node
+   using colon (:) as separator.
+
+   Synopsis:
+   delilah> cluster add host:port
+
+2.2.1.6 cluster remove
+   To remove a worker instance from a cluster, the subcommand 'remove' is used.
+   A removed worker instance is immediately informed and this worker instance is now
+   cluster-free, meaning that it can be added to any cluster.
+   One option is required for this command - the host of the worker instance that is
+   to be removed from the cluster. In case the worker is not using the default worker port,
+   the port number is added to the hostname, using a colon as separator.
+
+   Synopsis:
+   delilah> cluster remove host:port
+
+2.2.1.7 cluster get_my_id
+   To retrieve the cluster id of the currently connected cluster, the subcommand 'get_my_id' 
+   is used. This identification number of the cluster can later be used in various listings
+   to detect that connections are with this instance of delilah, and not another one.
+   It is typical to have many instances of delilah running simultaneously.
+
+   Synopsis:
+   delilah> cluster get_my_id
 
 2.2.2 ls_connections
-    The delilah command 'ls_connections' shows a listing with detailed information of all current open connections:
+   The management command ls_connections shows the status of all connections in a cluster. E.g.:
 
-/----------------------------------------------------------------------------------------------------------------------------\
-| ls_connections                                                                                                             |
-|----------------------------------------------------------------------------------------------------------------------------|
-| worker_id | name             | user      | connection | status    |         host | In (B) | Out (B) | In (B/s) | Out (B/s) |
-|-----------+------------------+-----------+------------+-----------+--------------+--------+---------+----------+-----------|
-|         0 | delilah_9AUbL8zn | anonymous | console    | connected | 10.95.109.98 |   880  |   11.7K |      17  |      297  |
-\----------------------------------------------------------------------------------------------------------------------------/
+   Synopsis:
+   delilah> ls_connections
+         /---------------------------------------------------------------------------------------------------------------------------\   
+         | ls_connections                                                                                                            |
+         |---------------------------------------------------------------------------------------------------------------------------|
+         | worker_id | name             | user      | connection | status    |        host | In (B) | Out (B) | In (B/s) | Out (B/s) | 
+         |-----------+------------------+-----------+------------+-----------+-------------+--------+---------+----------+-----------|
+         |         1 | delilah_f00gQjEf | anonymous | console    | connected |   127.0.0.1 |   397  |   1.02K |    44.0  |      112  | 
+         |         1 | worker_0         | samson    | worker     | connected |   127.0.0.1 |   460  |    359  |    51.0  |     39.0  | 
+         |         0 | delilah_f00gQjEf | anonymous | console    | connected |   127.0.0.1 |  4.72K |   12.3K |    47.0  |      103  | 
+         |         0 | worker_1         | samson    | worker     | connected | torkel:2000 |   359  |    460  |    39.0  |     51.0  | 
+         \---------------------------------------------------------------------------------------------------------------------------/
 
 
 2.3 data commands
@@ -194,6 +235,7 @@ Something about the built-in options here ... ?
     -properties   Get properties assigned to queues
     -group X      Group results by a particular field
 
+    Synopsis:
     delilah> ls [<queue name>]
 
 2.3.2 rm
@@ -210,7 +252,7 @@ Something about the built-in options here ... ?
     delilah> set_queue_property <queue> <property> <value>
 
 2.3.5 unset_queue_property
-    The 'unset_queue_property' is used to remove a previously set property for a queue:
+    The 'unset_queue_property' is used to remove a previously set property for a queue.
 
     Synopsis:
     delilah> unset_queue_property <queue> <property>
@@ -250,7 +292,7 @@ Something about the built-in options here ... ?
     Synopsis:
     delilah> ps [-clear] [<id>]
 
-    The option '-clear', if set, removes all finished or erroneous processes
+    The option '-clear', if set, removes all finished or erroneous processes.
     If a parameter (id) is sent to the 'ps' command, then extensive information about that process is shown.
 
 2.4.3 set_mode
@@ -328,7 +370,7 @@ Something about the built-in options here ... ?
 
 2.4.13 log
     This command is obsolete and should not be used.
-    To view the log files the Samson logClient should be used
+    To view the log files, the Samson logClient executable should be used
 
 2.4.14 trace
     Activate or disactivate trace levels in the Samson cluster.
@@ -349,18 +391,66 @@ Something about the built-in options here ... ?
 
     Synopsis:
     delilah> wverbose <0-5>|<off>
-
+ 
 2.4.17 wdebug
     The 'wdebug' command sets the debug level for the samson workers in the cluster.
 
     Synopsis:
     delilah> wdebug <on>|<off>
 
+2.4.18 wwrites
+    The 'wwrites' command sets the 'writes' debug level for the samson workers in the cluster.
+
+    Synopsis:
+    delilah> wwrites <on>|<off>
+
+2.4.19 wreads
+    The 'wreads' command sets the 'reads' debug level for the samson workers in the cluster.
+
+    Synopsis:
+    delilah> wreads <on>|<off>
+
+2.4.20 wtrace
+    The 'wtrace' command sets the 'trace' level for the samson workers in the cluster.
+    
+    Synopsis:
+    delilah> wtrace <trace level comma-separated ranges>
+
+    The samson workers have 256 trace levels, from 0 to 255.
+    Using the command, delilah changes the trace levels of all workers in the cluster.
+    The option for 'wtrace' is a comma separated list of ranges, E.g. 0-4,67-99
 
 2.5 local commands
+   The category 'local' groups the delilah commands that have no interaction whatsoever with any of the
+   workers in the cluster.
+
 2.5.1 ls_local
+   The 'ls_local' command shows a list of current directory with relevant information about local data-sets
+
+   Synopsis:
+   delilah> ls_local
+         /-----------------------------------------\                                                                                     
+         | Local files ( * )                       |
+         |-----------------------------------------|
+         | Name      | Type |        Size | Format | 
+         |-----------+------+-------------+--------|
+         | dirr      | DIR  |             |        | 
+         | test_file | FILE |  2.00 bytes | -      | 
+         \-----------------------------------------/
+
 2.5.2 rm_local
+   The 'rm_local' command removes a local file or directory (and all its contents).
+
+   Synopsis:
+   delilah> rm_local <local filename>
+
 2.5.3 history
+   As explained in 1.2.X, delilah keeps the command history on file to be retrieved for reusal
+   in the same session or for future sessions of delilah.
+   To see the command history, the command 'history' is used.
+
+   Synopsis:
+   delilah> history
 
 2.6 module commands
 2.6.1 ls_modules

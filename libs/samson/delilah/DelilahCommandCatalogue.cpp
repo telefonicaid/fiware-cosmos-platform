@@ -107,7 +107,7 @@ namespace samson
              "wtrace remove <levels>\n");
 
         add( "send_alert" , "delilah", 
-            "Send an alert to all conneected delilahs using a random worker as sender",
+            "Send an alert to all connected delilahs using a random worker as sender",
             "send_alert [-worker X] [-error] [-warning] \"Message to be sent\"\n"
             "      -worker X     Use only this worker as broadcaster\n"
             "      -error        Mark this trace as an error for correct visualization\n"
@@ -157,11 +157,11 @@ namespace samson
 
         
         add("rm_local", "local",
-            "Remove a local directory and all its contents"); 
+            "Remove a local file or directory (and all its contents)"); 
 
         add("history", "local",
             "Show the history of the last commands",
-            "history [num_items]   Optional paremter to limit the number of history items to show "); 
+            "history [num_items]   Optional parameter to limit the number of history items to show "); 
         
         
         // DATA MANIPULATION
@@ -365,18 +365,18 @@ namespace samson
         // CLUSTER
         // ------------------------------------------------------------------
         
-        add( "ls_connections" , "cluster" ,
+        add( "ls_connections" , "management" ,
             "Show status of all connections in the cluster");
         
-        add( "cluster" , "cluster" ,
+        add( "cluster" , "management" ,
             "Command for cluster related operation",
             "cluster info/connect/add/remove/reset/get_my_id [...options...]\n"
             "\n"
             "           info                                         : Show current cluster definition and connection status\n"
             "           connections                                  : Show more information about current connections\n"
             "           pending                                      : Show pending packets for unconnected workers\n"
-            "           connect host [port] [-user X] [-password X]  : Connect to another SAMSON cluster instance.\n"
-            "           add host [port]                              : Add a node to this cluster. A samsond clear instance should be running there \n"
+            "           connect host[:port] [-user X] [-password X]  : Connect to another SAMSON cluster instance.\n"
+            "           add host[:port]                              : Add a node to this cluster. A samsond clear instance should be running there\n"
             "           remove id                                    : Remove one of the involved workers. The worker id should be provided ( see cluster info )\n"
             "           get_my_id                                    : Get this delilah identifier ( see ls_connections )\n"
             );

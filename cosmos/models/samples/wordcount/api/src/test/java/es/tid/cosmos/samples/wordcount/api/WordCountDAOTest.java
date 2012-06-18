@@ -8,6 +8,7 @@ import com.mongodb.DBObject;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
+import static org.mockito.Mockito.mock;
 
 /**
  *
@@ -33,6 +34,8 @@ public class WordCountDAOTest {
                 return this.processResults(results);
             }
         };
+
+        this.instance.setMongo(mock(MongoService.class));
     }
 
     @Test

@@ -14,7 +14,7 @@
 
 #include "samson/common/ports.h"           // for SAMSON_WORKER_PORT
 
-TEST(samson_client, test_1 )
+TEST(samson_client, DISABLED_test_1 )
 {
    // SamsonClient to play with..
    samson::SamsonClient* samson_client = init_samson_client_test();
@@ -30,7 +30,7 @@ TEST(samson_client, test_1 )
 
 }    
 
-TEST(samson_client, test_2 )
+TEST(samson_client, DISABLED_test_2 )
 {
 
    // SamsonClient to play with..

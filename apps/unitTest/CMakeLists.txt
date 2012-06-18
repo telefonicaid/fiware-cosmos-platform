@@ -8,6 +8,8 @@ SET (SOURCES
 	#au
 	au/CommandLine_test.cpp
 	au/au.cpp
+	au/au_string_test.cpp
+	au/au_Token_test.cpp
 
     #engine
     engine/object_test.cpp

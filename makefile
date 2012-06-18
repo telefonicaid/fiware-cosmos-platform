@@ -225,8 +225,8 @@ test: ctest
 ctest: debug_all
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
 	cp apps/unitTest/delilah/words_input.txt /tmp
-	# To configure DART_TIMEOUT to 600 instead of 1500. 
-	sed 's/1500/600/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
+	# To configure DART_TIMEOUT to 400 instead of 1500. 
+	sed 's/1500/400/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
 	make test -C BUILD_DEBUG_ALL ARGS="-D ExperimentalTest"
@@ -240,8 +240,8 @@ ctest: debug_all
 unit_test: debug_all
 	cp BUILD_DEBUG_ALL/modules/core/txt/libtxt.so /tmp
 	cp apps/unitTest/delilah/words_input.txt /tmp
-	# To configure DART_TIMEOUT to 600 instead of 1500. 
-	sed 's/1500/600/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
+	# To configure DART_TIMEOUT to 400 instead of 1500. 
+	sed 's/1500/400/' BUILD_DEBUG_ALL/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_DEBUG_ALL/DartConfiguration.tcl
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
 	# Trying to clean up the shared memory
@@ -256,8 +256,8 @@ test_coverage:
 	cp apps/unitTest/delilah/words_input.txt /tmp
 	mkdir -p /tmp/dir_test
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
-	# To configure DART_TIMEOUT to 600 instead of 1500. 
-	sed 's/1500/600/' BUILD_COVERAGE/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_COVERAGE/DartConfiguration.tcl
+	# To configure DART_TIMEOUT to 400 instead of 1500. 
+	sed 's/1500/400/' BUILD_COVERAGE/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_COVERAGE/DartConfiguration.tcl
 	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" || true
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true

@@ -9,7 +9,7 @@ samsonSetup -show
 | Parameter                             | Default value | Current value |                                                                Description |
 |---------------------------------------+---------------+---------------+----------------------------------------------------------------------------|
 | general.memory                        |   10000000000 | 10000000000   |                                                   Global available memory  |
-| general.num_processess                |            16 | 16            |                                                            Number of cores |
+| general.num_processess                |            16 | 2             |                                                            Number of cores |
 | general.shared_memory_size_per_buffer |     268435456 | 268435456     |                                         Size of the shared memory segments |
 | general.update_status_period          |             2 | 2             |                Period for the automatic update from workers to all delilah |
 | isolated.timeout                      |           300 | 300           |                                      Timeout for all 3rd partty operations |

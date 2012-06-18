@@ -25,13 +25,13 @@ import static org.junit.Assert.assertNull;
  * @author apv
  */
 public class IpmConverterInterceptorTest {
-    private Interceptor crmInterceptor;
-    private Interceptor inetInterceptor;
-
     private static final String validCrmEvent =
             "0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17";
     private static final String validInetEvent =
             "0|1|2|3|4|5|6|7|8|9|10|11|12|13";
+
+    private Interceptor crmInterceptor;
+    private Interceptor inetInterceptor;
 
     /**
      * Take IPM converter class. This class provides a fake implementation

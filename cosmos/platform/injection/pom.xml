@@ -14,7 +14,7 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>sftp</module>
         <module>flume</module>
+        <module>sftp</module>
     </modules>
 </project>

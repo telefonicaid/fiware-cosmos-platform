@@ -45,7 +45,8 @@ public class IpmConverterInterceptor implements Interceptor {
     public Event intercept(Event event) {
         String body = new String(event.getBody());
         try {
-            event.setBody(converter.convert(body).getBytes(Charsets.US_ASCII));
+            event.setBody(this.converter.convert(body).getBytes(
+                    Charsets.US_ASCII));
             return event;
         } catch (ParseException e) {
             logger.warn("event discarded due to parsing error", e);
@@ -72,10 +73,10 @@ public class IpmConverterInterceptor implements Interceptor {
 
         @Override
         public Interceptor build() {
-            if (converter == null)
+            if (this.converter == null)
                 throw new RuntimeException("cannot build IPM converter " +
                         "interceptor: the builder has not been initialized yet");
-            return new IpmConverterInterceptor(converter);
+            return new IpmConverterInterceptor(this.converter);
         }
 
         @Override
@@ -113,7 +114,7 @@ public class IpmConverterInterceptor implements Interceptor {
                 }
             }
             try {
-                converter = converterClass.newInstance();
+                this.converter = converterClass.newInstance();
             } catch (Exception e) {
                 throw new ConfigurationException(String.format("cannot " +
                         "instantiate IPM converter from class %s",

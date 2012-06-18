@@ -17,7 +17,7 @@ public enum IpmConverterType {
    }
 
    public Class<? extends RawToIpmConverter> getConverterClass() {
-      return converterClass;
+      return this.converterClass;
    }
 }
 

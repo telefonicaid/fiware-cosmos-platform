@@ -94,8 +94,8 @@ public class IpmConverterInterceptorTest {
 
     @Before
     public void setUp() {
-        crmInterceptor = buildInterceptor(IpmConverterType.CRM);
-        inetInterceptor = buildInterceptor(IpmConverterType.INET);
+        this.crmInterceptor = buildInterceptor(IpmConverterType.CRM);
+        this.inetInterceptor = buildInterceptor(IpmConverterType.INET);
     }
 
     @Test(expected = ConfigurationException.class)
@@ -121,34 +121,38 @@ public class IpmConverterInterceptorTest {
     @Test
     public void testInterceptValidCrmEvent() throws ParseException {
         interceptValidEvent(
-                validCrmEvent, crmInterceptor, new CrmRawToIpmConverter());
+                this.validCrmEvent, this.crmInterceptor,
+                new CrmRawToIpmConverter());
     }
 
     @Test
     public void testInterceptInvalidCrmEvent() throws ParseException {
-        interceptInvalidEvent(crmInterceptor);
+        interceptInvalidEvent(this.crmInterceptor);
     }
 
     @Test
     public void testInterceptValidCrmEventList() throws ParseException {
         interceptValidEventList(
-                validCrmEvent, crmInterceptor, new CrmRawToIpmConverter());
+                this.validCrmEvent, this.crmInterceptor,
+                new CrmRawToIpmConverter());
     }
 
     @Test
     public void testInterceptValidInetEvent() throws ParseException {
         interceptValidEvent(
-                validInetEvent, inetInterceptor, new InetRawToIpmConverter());
+                this.validInetEvent, this.inetInterceptor,
+                new InetRawToIpmConverter());
     }
 
     @Test
     public void testInterceptInvalidInetEvent() throws ParseException {
-        interceptInvalidEvent(inetInterceptor);
+        interceptInvalidEvent(this.inetInterceptor);
     }
 
     @Test
     public void testInterceptValidInetEventList() throws ParseException {
         interceptValidEventList(
-                validInetEvent, inetInterceptor, new InetRawToIpmConverter());
+                this.validInetEvent, this.inetInterceptor,
+                new InetRawToIpmConverter());
     }
 }

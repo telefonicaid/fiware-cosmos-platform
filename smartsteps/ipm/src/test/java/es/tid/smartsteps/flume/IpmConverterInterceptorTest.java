@@ -38,7 +38,6 @@ public class IpmConverterInterceptorTest {
      * of IPM converter for testing purposes.
      */
     public static class FakeIpmConverter implements RawToIpmConverter {
-
         @Override
         public String convert(String line) throws ParseException {
             return line;

@@ -10,8 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test case for MongoDBExporterJob
- *
  * @author sortega
  */
 public class MongoDBExporterJobTest extends JobTest {
@@ -31,8 +29,8 @@ public class MongoDBExporterJobTest extends JobTest {
 
     @Test
     public void shouldBeConfigured() throws Exception {
-        Path inputPath = new Path("file:/tmp/text");
-        String outputUrl = "mongodb://host/db";
+        final Path inputPath = new Path("file:/tmp/text");
+        final String outputUrl = "mongodb://host/db";
         this.instance.configure(inputPath, outputUrl);
 
         assertArrayEquals(new Path[] { inputPath },

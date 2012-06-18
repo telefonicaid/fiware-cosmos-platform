@@ -5,12 +5,10 @@ import java.util.List;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
-import com.mongodb.Mongo;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 /**
  *

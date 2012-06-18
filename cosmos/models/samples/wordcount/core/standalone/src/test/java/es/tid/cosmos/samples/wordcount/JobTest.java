@@ -1,7 +1,5 @@
 package es.tid.cosmos.samples.wordcount;
 
-
-
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;

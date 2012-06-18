@@ -6,8 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Test case for MongoService
- *
  * @author sortega
  */
 public class MongoServiceTest {

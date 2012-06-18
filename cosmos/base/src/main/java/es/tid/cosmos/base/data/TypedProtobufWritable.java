@@ -69,7 +69,7 @@ public class TypedProtobufWritable<M extends Message> extends ProtobufWritable<M
     public void readFields(DataInput in) throws IOException {
         String className = WritableUtils.readString(in);
         Class clazz;
-        if ("".equals(className)) {
+        if (className.isEmpty()) {
             clazz = Message.class;
         } else {
             try {

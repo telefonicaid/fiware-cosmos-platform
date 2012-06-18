@@ -75,10 +75,10 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldParse = arguments.getBoolean("parse");
         CosmosWorkflow parsingWorkflow = null;
         if (shouldRunAll || shouldParse) {
-            parsingWorkflow = ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath,
-                    cellsMobPath, adjBtsPath, pairbtsAdjPath, btsVectorTxtPath,
-                    btsComareaPath, clientProfilePath, clientProfileMobPath,
-                    conf);
+            parsingWorkflow = ParsingRunner.run(cdrsPath, cdrsMobPath,
+                    cellsPath, cellsMobPath, adjBtsPath, pairbtsAdjPath,
+                    btsVectorTxtPath, btsComareaPath, clientProfilePath,
+                    clientProfileMobPath, isDebug, conf);
             wfList.add(parsingWorkflow);
         }
         
@@ -186,10 +186,10 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldJoinLabels = arguments.getBoolean("joinLabels");
         CosmosWorkflow labelJoiningWorkflow = null;
         if (shouldRunAll || shouldJoinLabels) {
-            labelJoiningWorkflow = LabelJoiningRunner.run(pointsOfInterestTempPath,
-                    vectorClientClusterPath, vectorClientbtsClusterPath,
-                    vectorBtsClusterPath, pointsOfInterestTemp4Path,
-                    tmpLabelJoining, isDebug, conf);
+            labelJoiningWorkflow = LabelJoiningRunner.run(
+                    pointsOfInterestTempPath, vectorClientClusterPath,
+                    vectorClientbtsClusterPath, vectorBtsClusterPath,
+                    pointsOfInterestTemp4Path, tmpLabelJoining, isDebug, conf);
             labelJoiningWorkflow.addDependentWorkflow(clientBtsLabellingWorkflow);
             labelJoiningWorkflow.addDependentWorkflow(clientLabellingWorkflow);
             labelJoiningWorkflow.addDependentWorkflow(btsLabellingWorkflow);
@@ -220,9 +220,9 @@ public class MobilityMain extends Configured implements Tool {
                 "getActivityDensity");
         CosmosWorkflow activityDensityWorkflow = null;
         if (shouldRunAll || shouldGetActivityDensity) {
-            activityDensityWorkflow = ActivityDensityRunner.run(clientsInfoPath,
-                    activityDensityOutPath, tmpActivityDensityPath, isDebug,
-                    conf);
+            activityDensityWorkflow = ActivityDensityRunner.run(
+                    clientsInfoPath, activityDensityOutPath,
+                    tmpActivityDensityPath, isDebug, conf);
             activityDensityWorkflow.addDependentWorkflow(poisWorkflow);
             wfList.add(activityDensityWorkflow);
         }
@@ -236,9 +236,9 @@ public class MobilityMain extends Configured implements Tool {
         CosmosWorkflow activityDensityProfileWorkflow = null;
         if (shouldRunAll || shouldGetActivityDensityProfile) {
             activityDensityProfileWorkflow = ActivityDensityProfileRunner.run(
-                clientProfileMobPath, clientsInfoPath,
-                activityDensityProfileOutPath, tmpActivityDensityProfilePath,
-                isDebug, conf);
+                    clientProfileMobPath, clientsInfoPath,
+                    activityDensityProfileOutPath,
+                    tmpActivityDensityProfilePath, isDebug, conf);
             activityDensityProfileWorkflow.addDependentWorkflow(parsingWorkflow);
             activityDensityProfileWorkflow.addDependentWorkflow(poisWorkflow);
             wfList.add(activityDensityProfileWorkflow);
@@ -253,8 +253,8 @@ public class MobilityMain extends Configured implements Tool {
         CosmosWorkflow populationDensityWorkflow = null;
         if (shouldRunAll || shouldGetPopulationDensity) {
             populationDensityWorkflow = PopulationDensityRunner.run(
-                cdrsInfoPath, cellsPath, populationDensityOutPath,
-                tmpPopulationDensityPath, isDebug, conf);
+                    cdrsInfoPath, cellsPath, populationDensityOutPath,
+                    tmpPopulationDensityPath, isDebug, conf);
             populationDensityWorkflow.addDependentWorkflow(preparingWorkflow);
             populationDensityWorkflow.addDependentWorkflow(parsingWorkflow);
             wfList.add(populationDensityWorkflow);
@@ -301,9 +301,9 @@ public class MobilityMain extends Configured implements Tool {
                 "getAggregatedMatrixGroup");
         CosmosWorkflow aggregatedMatrixGroupWorkflow = null;
         if (shouldRunAll || shouldGetAggregatedMatrixGroupProfile) {
-            aggregatedMatrixGroupWorkflow = AggregatedMatrixGroupRunner.run(
-                    cdrsInfoPath, cellGroupsPath, matrixPairGroupTxtPath,
-                    tmpAggregatedMatrixGroupPath, isDebug, conf);
+            aggregatedMatrixGroupWorkflow = AggregatedMatrixGroupRunner
+                    .run(cdrsInfoPath, cellGroupsPath, matrixPairGroupTxtPath,
+                         tmpAggregatedMatrixGroupPath, isDebug, conf);
             aggregatedMatrixGroupWorkflow.addDependentWorkflow(preparingWorkflow);
             aggregatedMatrixGroupWorkflow.addDependentWorkflow(parsingWorkflow);
             wfList.add(aggregatedMatrixGroupWorkflow);
@@ -329,18 +329,16 @@ public class MobilityMain extends Configured implements Tool {
                                                  "client_itineraries_txt");
         boolean shouldGetItineraries = arguments.getBoolean("getItineraries");
         if (shouldRunAll || shouldGetItineraries) {
-            ItinerariesRunner.run(cellsPath, cdrsInfoPath,
-                                  pointsOfInterestIdPath,
-                                  clientItinerariesTxtPath, tmpItinerariesPath,
-                                  isDebug, conf);
+            ItinerariesRunner.run(cellsPath, cdrsInfoPath, pointsOfInterestIdPath,
+                    clientItinerariesTxtPath, tmpItinerariesPath, isDebug, conf);
         }
         
         Path tmpOutPoisPath = new Path(outputPath, "out_pois");
         boolean shouldOutPois = arguments.getBoolean("outPois");
         if (shouldRunAll || shouldOutPois) {
             OutPoisRunner.run(vectorClientbtsPath, pointsOfInterestIdPath,
-                              vectorClientClusterPath, vectorBtsClusterPath,
-                              tmpOutPoisPath, isDebug, conf);
+                    vectorClientClusterPath, vectorBtsClusterPath,
+                    tmpOutPoisPath, isDebug, conf);
         }
         
         return 0;

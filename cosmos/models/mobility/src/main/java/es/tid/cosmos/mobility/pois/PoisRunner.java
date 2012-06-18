@@ -24,10 +24,9 @@ public final class PoisRunner {
     }
     
     public static CosmosWorkflow run(Path tmpDirPath, Path clientsBtsPath,
-                           Path clientsInfoPath, Path cdrsNoinfoPath,
-                           Path cdrsNoBtsPath, Path clientsInfoFilteredPath,
-                           Path clientsRepbtsPath, boolean isDebug,
-                           Configuration conf)
+            Path clientsInfoPath, Path cdrsNoinfoPath, Path cdrsNoBtsPath,
+            Path clientsInfoFilteredPath, Path clientsRepbtsPath,
+            boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         WorkflowList wfList = new WorkflowList();
         

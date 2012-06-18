@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.util.SetMobDataInputIdReducer;
  *
  * @author dmicol
  */
-public final class AdjacentExtractionRunner {
+public class AdjacentExtractionRunner {
     private AdjacentExtractionRunner() {
     }
     

@@ -11,17 +11,6 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <name>tests</name>
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>2.12</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
     <modules>
         <module>data-injection-tests</module>
         <module>e2e-tests</module>

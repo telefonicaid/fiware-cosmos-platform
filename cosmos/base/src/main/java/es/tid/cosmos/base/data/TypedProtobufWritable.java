@@ -1,14 +1,17 @@
 package es.tid.cosmos.base.data;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import com.google.protobuf.Message;
-import com.twitter.elephantbird.mapreduce.io.BinaryConverter;
-import com.twitter.elephantbird.mapreduce.io.BinaryWritable;
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.hadoop.io.WritableUtils;
 
 import es.tid.cosmos.base.data.generated.BaseTypes.Float64;
 import es.tid.cosmos.base.data.generated.BaseTypes.Int;
@@ -18,13 +21,14 @@ import es.tid.cosmos.base.data.generated.BaseTypes.Int64;
  *
  * @author ximo
  */
-public class TypedProtobufWritable<M extends Message> extends BinaryWritable<M> { 
+public class TypedProtobufWritable<M extends Message> extends ProtobufWritable<M> { 
     public TypedProtobufWritable() {
-        super(null, new TypedProtobufConverter<M>());
+        super(null, null);
     }
 
     public TypedProtobufWritable(M obj) {
-        super(obj, new TypedProtobufConverter<M>());
+        super(obj, null);
+        this.setConverter((Class) obj.getClass());
     }
     
     public static Map<Class, List> groupByClass(
@@ -62,7 +66,31 @@ public class TypedProtobufWritable<M extends Message> extends BinaryWritable<M> 
     }
 
     @Override
-    protected BinaryConverter<M> getConverterFor(Class<M> clazz) {
-        return new TypedProtobufConverter();
+    public void readFields(DataInput in) throws IOException {
+        String className = WritableUtils.readString(in);
+        Class clazz;
+        if (className.isEmpty()) {
+            clazz = Message.class;
+        } else {
+            try {
+                clazz = Class.forName(className);
+            } catch (ClassNotFoundException ex) {
+                throw new IllegalArgumentException("Byte stream does not have a "
+                        + "valid class identifier", ex);
+            }
+        }
+        this.setConverter(clazz);
+        super.readFields(in);
+    }
+    
+    @Override
+    public void write(DataOutput out) throws IOException {
+        M obj = this.get();
+        if (obj == null) {
+            WritableUtils.writeString(out, "");
+        } else {
+            WritableUtils.writeString(out, obj.getClass().getName());
+        }
+        super.write(out);
     }
 }

@@ -85,25 +85,27 @@ public class IpmConverterInterceptor implements Interceptor {
                 throw new ConfigurationException(String.format(
                         "missing '%s' property for IPM converter interceptor",
                         PROPERTY_CONVERTER));
-            IpmConverterType converterType =
-                    IpmConverterType.valueOf(converterName.toUpperCase());
             Class<? extends RawToIpmConverter> converterClass = null;
-            if (converterType != null)
+            try {
+                IpmConverterType converterType =
+                        IpmConverterType.valueOf(converterName.toUpperCase());
                 converterClass = converterType.getConverterClass();
-            else {
+            } catch (IllegalArgumentException ignorable) {
+                // The converter name is unknown. Let's check whether it
+                // is a valid class name implementing RawToIpmConverter
                 try {
                     converterClass = (Class<? extends RawToIpmConverter>)
                             getClass().getClassLoader().loadClass(converterName);
                 } catch (ClassNotFoundException e) {
                     throw new ConfigurationException(String.format(
                             "unknown value %s for '%s' property " +
-                            "of IPM converter interceptor",
+                                    "of IPM converter interceptor",
                             converterName, PROPERTY_CONVERTER), e);
                 } catch (ClassCastException e) {
                     throw new ConfigurationException(String.format(
                             "given value %s for '%s' property of IPM " +
-                            "converter interceptor is not valid: not a %s " +
-                            "instance",
+                                    "converter interceptor is not valid: " +
+                                    "not a %s instance",
                             converterName,
                             PROPERTY_CONVERTER,
                             RawToIpmConverter.class.getName()), e);

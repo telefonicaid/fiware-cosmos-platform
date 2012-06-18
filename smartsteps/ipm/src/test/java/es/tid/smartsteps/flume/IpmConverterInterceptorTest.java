@@ -7,6 +7,7 @@ import es.tid.smartsteps.ipm.ParseException;
 import es.tid.smartsteps.ipm.RawToIpmConverter;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
+import org.apache.flume.conf.ConfigurationException;
 import org.apache.flume.event.EventBuilder;
 import org.apache.flume.interceptor.Interceptor;
 import org.junit.Before;
@@ -32,6 +33,18 @@ public class IpmConverterInterceptorTest {
             "0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17";
     private static final String validInetEvent =
             "0|1|2|3|4|5|6|7|8|9|10|11|12|13";
+
+    /**
+     * Take IPM converter class. This class provides a fake implementation
+     * of IPM converter for testing purposes.
+     */
+    public static class FakeIpmConverter implements RawToIpmConverter {
+
+        @Override
+        public String convert(String line) throws ParseException {
+            return line;
+        }
+    }
 
     private Interceptor buildInterceptor(
             IpmConverterType converterType) {
@@ -86,36 +99,56 @@ public class IpmConverterInterceptorTest {
         inetInterceptor = buildInterceptor(IpmConverterType.INET);
     }
 
+    @Test(expected = ConfigurationException.class)
+    public void testConfigureInterceptorFromInvalidConverter() {
+        IpmConverterInterceptor.Builder interceptorBuilder =
+                new IpmConverterInterceptor.Builder();
+        Context ctx = new Context();
+        ctx.put(IpmConverterInterceptor.Constants.PROPERTY_CONVERTER,
+                "foobar");
+        interceptorBuilder.configure(ctx);
+    }
+
     @Test
-    public void interceptValidCrmEvent() throws ParseException {
+    public void testConfigureInterceptorFromCustomConverter() {
+        IpmConverterInterceptor.Builder interceptorBuilder =
+                new IpmConverterInterceptor.Builder();
+        Context ctx = new Context();
+        ctx.put(IpmConverterInterceptor.Constants.PROPERTY_CONVERTER,
+                FakeIpmConverter.class.getName());
+        interceptorBuilder.configure(ctx);
+    }
+
+    @Test
+    public void testInterceptValidCrmEvent() throws ParseException {
         interceptValidEvent(
                 validCrmEvent, crmInterceptor, new CrmRawToIpmConverter());
     }
 
     @Test
-    public void interceptInvalidCrmEvent() throws ParseException {
+    public void testInterceptInvalidCrmEvent() throws ParseException {
         interceptInvalidEvent(crmInterceptor);
     }
 
     @Test
-    public void interceptValidCrmEventList() throws ParseException {
+    public void testInterceptValidCrmEventList() throws ParseException {
         interceptValidEventList(
                 validCrmEvent, crmInterceptor, new CrmRawToIpmConverter());
     }
 
     @Test
-    public void interceptValidInetEvent() throws ParseException {
+    public void testInterceptValidInetEvent() throws ParseException {
         interceptValidEvent(
                 validInetEvent, inetInterceptor, new InetRawToIpmConverter());
     }
 
     @Test
-    public void interceptInvalidInetEvent() throws ParseException {
+    public void testInterceptInvalidInetEvent() throws ParseException {
         interceptInvalidEvent(inetInterceptor);
     }
 
     @Test
-    public void interceptValidInetEventList() throws ParseException {
+    public void testInterceptValidInetEventList() throws ParseException {
         interceptValidEventList(
                 validInetEvent, inetInterceptor, new InetRawToIpmConverter());
     }

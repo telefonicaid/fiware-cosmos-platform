@@ -46,9 +46,10 @@ public abstract class CrmIpmUtil {
     
     public static CrmIpm parse(String line) throws ParseException {
         String[] fields = line.split("\\" + DELIMITER);
-        if (fields.length != 20)
+        if (fields.length != 20) {
             throw new ParseException(String.format(
                     "cannot parse input line %s: invalid format", line));
+        }
         return create(fields[0], fields[1], fields[2], fields[3], fields[4],
                 fields[5], fields[6], fields[7], fields[8], fields[9],
                 fields[10], fields[11], fields[12], fields[13], fields[14],

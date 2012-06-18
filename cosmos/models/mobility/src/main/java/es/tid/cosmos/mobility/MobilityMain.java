@@ -61,7 +61,7 @@ public class MobilityMain extends Configured implements Tool {
         }
         
         Path inputPath = new Path(conf.get(Config.SYS_INPUT_FOLDER));
-        Path outputPath = new Path(arguments.getString("output", true));
+        Path outputPath = new Path(conf.get(Config.SYS_OUTPUT_COMPLETE_FOLDER));
         Path cdrsPath = new Path(inputPath, "cdrs");
         Path cellsPath = new Path(inputPath, "cells");
         Path cellGroupsPath = new Path(inputPath, "cellGroups");

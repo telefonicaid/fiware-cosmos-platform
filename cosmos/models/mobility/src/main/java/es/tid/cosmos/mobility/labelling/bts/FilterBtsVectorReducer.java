@@ -20,17 +20,20 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
  * 
  * @author dmicol
  */
-class FilterBtsVectorReducer extends Reducer<LongWritable,
-        TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<Cluster>> {
+class FilterBtsVectorReducer extends Reducer<
+        LongWritable, TypedProtobufWritable<Message>,
+        LongWritable, TypedProtobufWritable<Cluster>> {
     private double maxBtsArea;
-    private int maxCommsBts;
+    private int minCommsBts;
     
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.maxBtsArea = conf.getFloat(Config.MAX_BTS_AREA, Float.MAX_VALUE);
-        this.maxCommsBts = conf.getInt(Config.MAX_COMMS_BTS, Integer.MAX_VALUE);
+        this.maxBtsArea = conf.getFloat(Config.BTS_MAX_BTS_AREA,
+                                        Float.MAX_VALUE);
+        this.minCommsBts = conf.getInt(Config.BTS_MIN_COMMS_BTS,
+                                       Integer.MIN_VALUE);
     }
     
     @Override
@@ -45,14 +48,14 @@ class FilterBtsVectorReducer extends Reducer<LongWritable,
         for (Bts bts : btsList) {
             for (Cluster cluster : clusterList) {
                 int confident = cluster.getConfident();
-                if (bts.getComms() < this.maxCommsBts &&
+                if (bts.getComms() < this.minCommsBts &&
                         bts.getArea() > this.maxBtsArea) {
                     confident = 0;
                 }
                 Cluster.Builder outputCluster = Cluster.newBuilder(cluster);
                 outputCluster.setConfident(confident);
-                context.write(key,
-                              new TypedProtobufWritable<Cluster>(outputCluster.build()));
+                context.write(key, new TypedProtobufWritable<Cluster>(
+                        outputCluster.build()));
             }
         }
     }

@@ -479,11 +479,12 @@
         <site>
             <id>${repoSiteId}</id>
             <name>${repoSiteName}</name>
-            <url>${repoSiteUrl}/${project.groupId}/bigdataplatform</url>
+            <url>${repoSiteUrl}/${project.groupId}/smartsteps</url>
         </site>
     </distributionManagement>
 
     <modules>
+        <module>dispersion</module>
         <module>ipm</module>
     </modules>
 </project>

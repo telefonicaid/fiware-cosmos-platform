@@ -3,7 +3,6 @@ package es.tid.cosmos.mobility.aggregatedmatrix.group;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -12,6 +11,8 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.base.mapreduce.CosmosWorkflow;
+import es.tid.cosmos.base.mapreduce.WorkflowList;
 import es.tid.cosmos.mobility.aggregatedmatrix.simple.MatrixGetOutReducer;
 
 /**
@@ -22,70 +23,81 @@ public final class AggregatedMatrixGroupRunner {
     private AggregatedMatrixGroupRunner() {
     }
     
-    public static void run(Path cdrsInfoPath, Path cellsGroupPath,
-                           Path matrixPairGroupTxtPath, Path tmpDirPath,
-                           boolean isDebug, Configuration conf)
-            throws IOException, InterruptedException, ClassNotFoundException {
+    public static CosmosWorkflow run(Path cdrsInfoPath, Path cellsGroupPath,
+            Path matrixPairGroupTxtPath, Path tmpDirPath, boolean isDebug,
+            Configuration conf) throws IOException, InterruptedException,
+                                       ClassNotFoundException {
+        WorkflowList wfList = new WorkflowList();
         Path mtxClientstaTimePath = new Path(tmpDirPath, "mtx_clientsta_time");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf,
-                    "MatrixJoinCellGroup",
-                    SequenceFileInputFormat.class,
-                    MatrixJoinCellGroupReducer.class,
-                    SequenceFileOutputFormat.class);
-            job.getConfiguration().set("cell_groups",
-                                       cellsGroupPath.toString());
-            FileInputFormat.setInputPaths(job, cdrsInfoPath);
-            FileOutputFormat.setOutputPath(job, mtxClientstaTimePath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob mtxClientstaTimeJob = CosmosJob.createReduceJob(conf,
+                "MatrixJoinCellGroup",
+                SequenceFileInputFormat.class,
+                MatrixJoinCellGroupReducer.class,
+                SequenceFileOutputFormat.class);
+        mtxClientstaTimeJob.getConfiguration().set("cell_groups",
+                                    cellsGroupPath.toString());
+        FileInputFormat.setInputPaths(mtxClientstaTimeJob, cdrsInfoPath);
+        FileOutputFormat.setOutputPath(mtxClientstaTimeJob,
+                                       mtxClientstaTimePath);
+        mtxClientstaTimeJob.setDeleteOutputOnExit(!isDebug);
+        wfList.add(mtxClientstaTimeJob);
         
         Path mtxClientMovesPath = new Path(tmpDirPath, "mtx_client_moves");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "MatrixMoveClient",
-                    SequenceFileInputFormat.class,
-                    MatrixMoveClientReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, mtxClientstaTimePath);
-            FileOutputFormat.setOutputPath(job, mtxClientMovesPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob mtxClientMovesJob = CosmosJob.createReduceJob(conf,
+                "MatrixMoveClient",
+                SequenceFileInputFormat.class,
+                MatrixMoveClientReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(mtxClientMovesJob, mtxClientstaTimePath);
+        FileOutputFormat.setOutputPath(mtxClientMovesJob, mtxClientMovesPath);
+        mtxClientMovesJob.setDeleteOutputOnExit(!isDebug);
+        mtxClientMovesJob.addDependentWorkflow(mtxClientstaTimeJob);
+        wfList.add(mtxClientMovesJob);
         
         Path mtxClientMovesRangesPath = new Path(tmpDirPath,
                                                  "mtx_client_moves_ranges");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "MatrixGetRanges",
-                    SequenceFileInputFormat.class,
-                    MatrixGetRangesReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, mtxClientMovesPath);
-            FileOutputFormat.setOutputPath(job, mtxClientMovesRangesPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob mtxClientMovesRangesJob = CosmosJob.createReduceJob(conf,
+                "MatrixGetRanges",
+                SequenceFileInputFormat.class,
+                MatrixGetRangesReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(mtxClientMovesRangesJob,
+                                      mtxClientMovesPath);
+        FileOutputFormat.setOutputPath(mtxClientMovesRangesJob,
+                                       mtxClientMovesRangesPath);
+        mtxClientMovesRangesJob.setDeleteOutputOnExit(!isDebug);
+        mtxClientMovesRangesJob.addDependentWorkflow(mtxClientMovesJob);
+        wfList.add(mtxClientMovesRangesJob);
         
         Path mtxGroupMovesCountPath = new Path(tmpDirPath,
                                                "mtx_group_moves_count");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "MatrixCountRanges",
-                    SequenceFileInputFormat.class,
-                    MatrixCountRangesReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, mtxClientMovesRangesPath);
-            FileOutputFormat.setOutputPath(job, mtxGroupMovesCountPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob mtxGroupMovesCountJob = CosmosJob.createReduceJob(conf,
+                "MatrixCountRanges",
+                SequenceFileInputFormat.class,
+                MatrixCountRangesReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(mtxGroupMovesCountJob,
+                                      mtxClientMovesRangesPath);
+        FileOutputFormat.setOutputPath(mtxGroupMovesCountJob,
+                                       mtxGroupMovesCountPath);
+        mtxGroupMovesCountJob.setDeleteOutputOnExit(!isDebug);
+        mtxGroupMovesCountJob.addDependentWorkflow(mtxClientMovesRangesJob);
+        wfList.add(mtxGroupMovesCountJob);
 
         Path mtxGroupMovesVectorBtsPath = new Path(tmpDirPath,
                 "mtx_group_moves_vector_bts");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "MatrixGetVector",
-                    SequenceFileInputFormat.class,
-                    MatrixGetVectorReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, mtxGroupMovesCountPath);
-            FileOutputFormat.setOutputPath(job, mtxGroupMovesVectorBtsPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob mtxGroupMovesVectorBtsJob = CosmosJob.createReduceJob(conf,
+                "MatrixGetVector",
+                SequenceFileInputFormat.class,
+                MatrixGetVectorReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(mtxGroupMovesVectorBtsJob,
+                                      mtxGroupMovesCountPath);
+        FileOutputFormat.setOutputPath(mtxGroupMovesVectorBtsJob,
+                                       mtxGroupMovesVectorBtsPath);
+        mtxGroupMovesVectorBtsJob.setDeleteOutputOnExit(!isDebug);
+        mtxGroupMovesVectorBtsJob.addDependentWorkflow(mtxGroupMovesCountJob);
+        wfList.add(mtxGroupMovesVectorBtsJob);
 
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "MatrixGetOut",
@@ -95,16 +107,10 @@ public final class AggregatedMatrixGroupRunner {
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, mtxGroupMovesVectorBtsPath);
             FileOutputFormat.setOutputPath(job, matrixPairGroupTxtPath);
-            job.waitForCompletion(true);
+            job.addDependentWorkflow(mtxGroupMovesVectorBtsJob);
+            wfList.add(job);
         }
         
-        if (!isDebug) {
-            FileSystem fs = FileSystem.get(conf);
-            fs.delete(mtxClientstaTimePath, true);
-            fs.delete(mtxClientMovesPath, true);
-            fs.delete(mtxClientMovesRangesPath, true);
-            fs.delete(mtxGroupMovesCountPath, true);
-            fs.delete(mtxGroupMovesVectorBtsPath, true);
-        }
+        return wfList;
     }
 }

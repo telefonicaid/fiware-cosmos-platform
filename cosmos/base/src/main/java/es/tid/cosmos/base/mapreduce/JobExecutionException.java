@@ -8,4 +8,8 @@ public class JobExecutionException extends RuntimeException {
     JobExecutionException(String message) {
         super(message);
     }
+    
+    JobExecutionException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

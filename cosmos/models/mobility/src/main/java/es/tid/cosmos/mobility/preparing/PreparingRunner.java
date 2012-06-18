@@ -10,6 +10,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.base.mapreduce.CosmosWorkflow;
+import es.tid.cosmos.base.mapreduce.WorkflowList;
 
 /**
  *
@@ -19,20 +21,21 @@ public final class PreparingRunner {
     private PreparingRunner() {
     }
 
-    public static void run(Path tmpPath, Path cdrsMobPath, Path cdrsInfoPath,
-                           Path cdrsNoinfoPath, Path cellsPath,
-                           Path clientsBtsPath, Path btsCommsPath,
-                           Path cdrsNoBtsPath, Path viTelmonthBtsPath,
-                           Configuration conf)
-            throws IOException, InterruptedException, ClassNotFoundException {
+    public static CosmosWorkflow run(Path tmpPath, Path cdrsMobPath,
+            Path cdrsInfoPath, Path cdrsNoinfoPath, Path cellsPath,
+            Path clientsBtsPath, Path btsCommsPath, Path cdrsNoBtsPath,
+            Path viTelmonthBtsPath, boolean isDebug, Configuration conf)
+        throws IOException, InterruptedException, ClassNotFoundException {
+        WorkflowList wfList = new WorkflowList();
+        CosmosJob cdrsInfoJob;
         {
-            CosmosJob job = CosmosJob.createMapJob(conf, "FilterCellnoinfoMapper",
+            cdrsInfoJob = CosmosJob.createMapJob(conf, "FilterCellnoinfoMapper",
                     SequenceFileInputFormat.class,
                     FilterCellnoinfoMapper.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, cdrsMobPath);
-            FileOutputFormat.setOutputPath(job, cdrsInfoPath);
-            job.waitForCompletion(true);
+            FileInputFormat.setInputPaths(cdrsInfoJob, cdrsMobPath);
+            FileOutputFormat.setOutputPath(cdrsInfoJob, cdrsInfoPath);
+            wfList.add(cdrsInfoJob);
         }
         
         {
@@ -42,7 +45,8 @@ public final class PreparingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsMobPath);
             FileOutputFormat.setOutputPath(job, cdrsNoinfoPath);
-            job.waitForCompletion(true);
+            job.setDeleteOutputOnExit(!isDebug);
+            wfList.add(job);
         }
 
         {
@@ -53,7 +57,9 @@ public final class PreparingRunner {
             job.getConfiguration().set("cells", cellsPath.toString());
             FileInputFormat.setInputPaths(job, cdrsInfoPath);
             FileOutputFormat.setOutputPath(job, clientsBtsPath);
-            job.waitForCompletion(true);
+            job.setDeleteOutputOnExit(!isDebug);
+            job.addDependentWorkflow(cdrsInfoJob);
+            wfList.add(job);
         }
 
         {
@@ -64,7 +70,9 @@ public final class PreparingRunner {
             job.getConfiguration().set("cells", cellsPath.toString());
             FileInputFormat.setInputPaths(job, cdrsInfoPath);
             FileOutputFormat.setOutputPath(job, btsCommsPath);
-            job.waitForCompletion(true);
+            job.setDeleteOutputOnExit(!isDebug);
+            job.addDependentWorkflow(cdrsInfoJob);
+            wfList.add(job);
         }
 
         {
@@ -75,7 +83,9 @@ public final class PreparingRunner {
             job.getConfiguration().set("cells", cellsPath.toString());
             FileInputFormat.setInputPaths(job, cdrsInfoPath);
             FileOutputFormat.setOutputPath(job, cdrsNoBtsPath);
-            job.waitForCompletion(true);
+            job.setDeleteOutputOnExit(!isDebug);
+            job.addDependentWorkflow(cdrsInfoJob);
+            wfList.add(job);
         }
 
         {
@@ -87,7 +97,9 @@ public final class PreparingRunner {
             job.getConfiguration().set("cells", cellsPath.toString());
             FileInputFormat.setInputPaths(job, cdrsInfoPath);
             FileOutputFormat.setOutputPath(job, viTelmonthBtsPath);
-            job.waitForCompletion(true);
+            job.addDependentWorkflow(cdrsInfoJob);
+            wfList.add(job);
         }
+        return wfList;
     }
 }

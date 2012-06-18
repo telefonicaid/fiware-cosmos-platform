@@ -46,20 +46,20 @@ public abstract class InetRawUtil {
                 fields[10], fields[11], fields[12], fields[13]);
     }
     
-    public static String toString(InetRaw InetRaw) {
-        return (InetRaw.getType() + DELIMITER
-                + InetRaw.getCallType() + DELIMITER
-                + InetRaw.getImsi() + DELIMITER
-                + InetRaw.getFirstTempImsi() + DELIMITER
-                + InetRaw.getLastTempImsi() + DELIMITER
-                + InetRaw.getImei() + DELIMITER
-                + InetRaw.getLacod() + DELIMITER
-                + InetRaw.getCellId() + DELIMITER
-                + InetRaw.getEventDateTime() + DELIMITER
-                + InetRaw.getDtapCause() + DELIMITER
-                + InetRaw.getBssmapCause() + DELIMITER
-                + InetRaw.getCcCause() + DELIMITER
-                + InetRaw.getMmCause() + DELIMITER
-                + InetRaw.getRanapCause());
+    public static String toString(InetRaw inetRaw) {
+        return (inetRaw.getType() + DELIMITER
+                + inetRaw.getCallType() + DELIMITER
+                + inetRaw.getImsi() + DELIMITER
+                + inetRaw.getFirstTempImsi() + DELIMITER
+                + inetRaw.getLastTempImsi() + DELIMITER
+                + inetRaw.getImei() + DELIMITER
+                + inetRaw.getLacod() + DELIMITER
+                + inetRaw.getCellId() + DELIMITER
+                + inetRaw.getEventDateTime() + DELIMITER
+                + inetRaw.getDtapCause() + DELIMITER
+                + inetRaw.getBssmapCause() + DELIMITER
+                + inetRaw.getCcCause() + DELIMITER
+                + inetRaw.getMmCause() + DELIMITER
+                + inetRaw.getRanapCause());
     }
 }

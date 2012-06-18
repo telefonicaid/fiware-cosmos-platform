@@ -12,10 +12,10 @@ import org.apache.hadoop.mapreduce.*;
  *
  * @author ximo
  */
-public class CosmosJob extends Job {
+public class CosmosJob extends Job implements CosmosWorkflow {
     private volatile ExceptionedThread submittedThread;
     private boolean deleteOutputOnExit;
-    private JobList dependencies;
+    private WorkflowList dependencies;
 
     // Static create methods that configure the class automatically
     // These are static methods instead of constructors to enable type inference
@@ -153,7 +153,7 @@ public class CosmosJob extends Job {
         super(conf, jobName);
         this.submittedThread = null;
         this.deleteOutputOnExit = false;
-        this.dependencies = new JobList();
+        this.dependencies = new WorkflowList();
     }
 
     /**
@@ -208,9 +208,9 @@ public class CosmosJob extends Job {
      * signals errors through JobExecutionException, so the return value will
      * never be false.
      *
-     * @param verbose
+     * @param verbose print the progress to the user 
      * @return Always true
-     * @throws IOException
+     * @throws IOException thrown if the communication with the JobTracker is lost 
      * @throws InterruptedException
      * @throws ClassNotFoundException
      * @throws JobExecutionException
@@ -219,13 +219,12 @@ public class CosmosJob extends Job {
     public final boolean waitForCompletion(boolean verbose)
             throws IOException, InterruptedException, ClassNotFoundException {
         this.submit(verbose);
-
         this.submittedThread.join();
         this.submittedThread.throwErrors();
-        if(!this.callSuperWaitForCompletion(verbose)) {
+        
+        if (!this.callSuperWaitForCompletion(verbose)) {
             throw new JobExecutionException("Job failed: " + this.getJobName());
         }
-
         if (this.deleteOutputOnExit) {
             Class outputFormat = this.getOutputFormatClass();
             OutputEraser eraser = OutputEraser.getEraser(outputFormat);
@@ -247,34 +246,6 @@ public class CosmosJob extends Job {
 
     public boolean getDeleteOutputOnExit() {
         return this.deleteOutputOnExit;
-    }
-
-    private abstract static class ExceptionedThread extends Thread {
-        private Exception exception;
-
-        protected void setException(Exception e) {
-            this.exception = e;
-        }
-
-        public void throwErrors() throws IOException, InterruptedException,
-                                         ClassNotFoundException {
-            if (this.exception == null) {
-                return;
-            }
-
-            if (this.exception instanceof RuntimeException) {
-                throw (RuntimeException)this.exception;
-            } else if (this.exception instanceof IOException) {
-                throw (IOException)this.exception;
-            } else if (this.exception instanceof InterruptedException) {
-                throw (InterruptedException)this.exception;
-            } else if (this.exception instanceof ClassNotFoundException) {
-                throw (ClassNotFoundException)this.exception;
-            } else {
-                throw new RuntimeException("Unexpected exception thrown",
-                                           this.exception);
-            }
-        }
     }
 
     @Override
@@ -319,15 +290,18 @@ public class CosmosJob extends Job {
         return super.waitForCompletion(verbose);
     }
 
-    public void addDependentJob(CosmosJob job) {
+    @Override
+    public void addDependentWorkflow(CosmosWorkflow wf) {
         if (this.submittedThread != null) {
             throw new IllegalStateException("Cannot add a dependent job to a"
                     + "job if that job has been already submitted");
         }
-        if (job.equals(this)) {
+        if (this.equals(wf)) {
             throw new IllegalArgumentException("Cannot add a job to its own"
                     + "dependent job list.");
         }
-        this.dependencies.add(job);
+        if (wf != null) {
+            this.dependencies.add(wf);
+        }
     }
 }

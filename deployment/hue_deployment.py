@@ -8,8 +8,10 @@ from fabric.contrib import files
 from fabric.decorators import roles
 from fabric.utils import puts
 
+BASEPATH = os.path.dirname(os.path.realpath(__file__))
+
 def install_and_patch_hue(config):
-    local_patch_path = os.path.join(config['hue_patch_dir'],
+    local_patch_path = os.path.join(BASEPATH, config['hue_patch_dir'],
                                     config['hue_patch_name'])
     remote_patch_path = os.path.join('~', config['hue_patch_name'])
     with ctx.hide('stdout'):
@@ -53,7 +55,7 @@ def install_cosmos_app():
     if files.exists("cosmos-app"):
         run("rm -rf cosmos-app")
     run("mkdir cosmos-app")
-    put("../cosmos/platform/frontend/hue-apps/cosmos", "cosmos-app")
+    put(os.path.join(BASEPATH, "../cosmos/platform/frontend/hue-apps/cosmos"), "cosmos-app")
     with cd("cosmos-app/cosmos"):
         puts("About to run buildout")
         ## TODO: check the python version before running
@@ -62,7 +64,7 @@ def install_cosmos_app():
 
 def start_daemons():
     with cd("/etc/init.d"):
-        put("templates/hue.init", "hue")
+        put(os.path.join(BASEPATH, "templates/hue.init"), "hue")
         run("./hue start")
 
 def cleanup():

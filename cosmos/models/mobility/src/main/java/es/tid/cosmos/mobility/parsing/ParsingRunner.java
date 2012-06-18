@@ -10,7 +10,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
-import es.tid.cosmos.base.mapreduce.JobList;
+import es.tid.cosmos.base.mapreduce.CosmosWorkflow;
+import es.tid.cosmos.base.mapreduce.WorkflowList;
 
 /**
  *
@@ -20,14 +21,12 @@ public final class ParsingRunner {
     private ParsingRunner() {
     }
 
-    public static void run(Path cdrsPath, Path cdrsMobPath,
-                           Path cellsPath, Path cellsMobPath,
-                           Path adjBtsPath, Path pairbtsAdjPath,
-                           Path btsVectorTxtPath, Path btsComareaPath,
-                           Path clientsInfoPath, Path clientsInfoMobPath,
-                           Configuration conf)
+    public static CosmosWorkflow run(Path cdrsPath, Path cdrsMobPath,
+            Path cellsPath, Path cellsMobPath, Path adjBtsPath,
+            Path pairbtsAdjPath, Path btsVectorTxtPath, Path btsComareaPath,
+            Path clientsInfoPath, Path clientsInfoMobPath, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
-        JobList jobs = new JobList();
+        WorkflowList wf = new WorkflowList();
         {
             CosmosJob job = CosmosJob.createMapJob(conf, "ParseCdrs",
                     TextInputFormat.class,
@@ -35,7 +34,7 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsPath);
             FileOutputFormat.setOutputPath(job, cdrsMobPath);
-            jobs.add(job);
+            wf.add(job);
         }
 
         {
@@ -45,7 +44,7 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cellsPath);
             FileOutputFormat.setOutputPath(job, cellsMobPath);
-            jobs.add(job);
+            wf.add(job);
         }
         
         {
@@ -55,7 +54,7 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, adjBtsPath);
             FileOutputFormat.setOutputPath(job, pairbtsAdjPath);
-            jobs.add(job);
+            wf.add(job);
         }
 
         {
@@ -65,7 +64,7 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsVectorTxtPath);
             FileOutputFormat.setOutputPath(job, btsComareaPath);
-            jobs.add(job);
+            wf.add(job);
         }
         
         {
@@ -75,9 +74,9 @@ public final class ParsingRunner {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoPath);
             FileOutputFormat.setOutputPath(job, clientsInfoMobPath);
-            jobs.add(job);
+            wf.add(job);
         }
         
-        jobs.waitForCompletion(true);
+        return wf;
     }
 }

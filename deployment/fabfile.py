@@ -12,7 +12,6 @@ from fabric.contrib import files
 import fabric.context_managers as ctx
 from fabric.decorators import roles, task
 from mako.template import Template
-from os import path
 
 import common
 import hadoop_install
@@ -20,16 +19,16 @@ import hue_deployment
 
 CONFIG = json.loads(open(env.config, 'r').read())
 env.roledefs = CONFIG['hosts']
-BASEPATH = path.realpath(__file__)
+BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
 @task
 def deploy(dependenciespath, thrift_tar, jdk_rpm):
     """
     Deploys all the necessary components to get a running Cosmos cluster
     """
-    execute(deploy_jdk, path.join(dependenciespath, jdk_rpm))
+    execute(deploy_jdk, os.path.join(dependenciespath, jdk_rpm))
     deploy_cdh()
-    execute(deploy_hue, path.join(dependenciespath, thrift_tar))
+    execute(deploy_hue, os.path.join(dependenciespath, thrift_tar))
     execute(deploy_sftp)
     
 @task
@@ -60,14 +59,14 @@ def deploy_sftp():
     Deploys the SFTP server as a Java JAR and starts it
     """
     injection_exec = 'injection-server-{0}.jar'.format(CONFIG['version'])
-    injection_jar = os.path.join(CONFIG['injection_path'], 'target',
+    injection_jar = os.path.join(BASEPATH, CONFIG['injection_path'], 'target',
                                  injection_exec)
     exec_path = os.path.join('~', 'injection', injection_exec)
 
     put(injection_jar, exec_path)
 
     injection_conf = StringIO()
-    template = Template(filename = path.join(BASEPATH,'templates/injection.conf.mako'))
+    template = Template(filename = os.path.join(BASEPATH,'templates/injection.conf.mako'))
     injection_conf.write(template.render(
             namenode=CONFIG['hosts']['namenode'][0]))
     put(injection_conf, "/etc/injection.cfg")
@@ -82,7 +81,7 @@ def deploy_sftp():
     if not files.exists(pidfile):
         run("mkdir -p /var/run/injection")
         run("echo '' >> {0}".format(pidfile))
-    put(path.join(BASEPATH, "templates/injection.init.d"), "/etc/init.d/injection")
+    put(os.path.join(BASEPATH, "templates/injection.init.d"), "/etc/init.d/injection")
     with ctx.settings(warn_only=True):
         start = run("/etc/init.d/injection start", pty=False)
         if start.failed:
@@ -105,7 +104,7 @@ def deploy_mongo():
     """Install the latest MongoDB distribution"""
     with cd('/etc/yum.repos.d'):
         if not files.exists('10gen.repo'):
-            put(path.join(BASEPATH, 'templates/10gen.repo'), '10gen.repo')
+            put(os.path.join(BASEPATH, 'templates/10gen.repo'), '10gen.repo')
     run('yum -y install mongo-10gen mongo-10gen-server')
     run('service mongod start')
     run('chkconfig mongod on')

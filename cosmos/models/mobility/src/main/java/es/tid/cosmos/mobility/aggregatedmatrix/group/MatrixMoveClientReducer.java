@@ -38,11 +38,11 @@ class MatrixMoveClientReducer extends Reducer<LongWritable,
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.maxMinutesInMoves = conf.getInt(Config.MAX_MINUTES_IN_MOVES,
+        this.maxMinutesInMoves = conf.getInt(Config.MTX_MAX_MINUTES_IN_MOVES,
                                              Integer.MAX_VALUE);
-        this.minMinutesInMoves = conf.getInt(Config.MIN_MINUTES_IN_MOVES,
+        this.minMinutesInMoves = conf.getInt(Config.MTX_MIN_MINUTES_IN_MOVES,
                                              Integer.MIN_VALUE);
-        this.includeIntraMoves = conf.getBoolean(Config.INCLUDE_INTRA_MOVES,
+        this.includeIntraMoves = conf.getBoolean(Config.MTX_INCLUDE_INTRA_MOVES,
                                                  false);
     }
 

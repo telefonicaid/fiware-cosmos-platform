@@ -22,11 +22,11 @@ import es.tid.cosmos.mobility.util.ExportClusterToTextReducer;
  *
  * @author dmicol
  */
-public final class BtsLabellingRunner {
-    private BtsLabellingRunner() {
+public class BtsLabellingRunner {
+    public BtsLabellingRunner() {
     }
     
-    public static CosmosWorkflow run(Path btsCommsPath, Path btsComareaPath,
+    public CosmosWorkflow run(Path btsCommsPath, Path btsComareaPath,
             Path centroidsPath, Path vectorBtsClusterPath, Path tmpDirPath,
             boolean isDebug, Configuration conf) throws IOException,
                                                         InterruptedException,

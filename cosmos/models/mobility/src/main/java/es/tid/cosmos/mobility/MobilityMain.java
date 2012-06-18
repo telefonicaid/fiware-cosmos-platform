@@ -75,10 +75,10 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldParse = arguments.getBoolean("parse");
         CosmosWorkflow parsingWorkflow = null;
         if (shouldRunAll || shouldParse) {
-            parsingWorkflow = ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath,
-                    cellsMobPath, adjBtsPath, pairbtsAdjPath, btsVectorTxtPath,
-                    btsComareaPath, clientProfilePath, clientProfileMobPath,
-                    conf);
+            parsingWorkflow = new ParsingRunner().run(cdrsPath, cdrsMobPath,
+                    cellsPath, cellsMobPath, adjBtsPath, pairbtsAdjPath,
+                    btsVectorTxtPath, btsComareaPath, clientProfilePath,
+                    clientProfileMobPath, conf);
             wfList.add(parsingWorkflow);
         }
         
@@ -92,7 +92,7 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldPrepare = arguments.getBoolean("prepare");
         CosmosWorkflow preparingWorkflow = null;
         if (shouldRunAll || shouldPrepare) {
-            preparingWorkflow = PreparingRunner.run(tmpPreparingPath,
+            preparingWorkflow = new PreparingRunner().run(tmpPreparingPath,
                     cdrsMobPath, cdrsInfoPath, cdrsNoinfoPath, cellsPath,
                     clientsBtsPath, btsCommsPath, cdrsNoBtsPath,
                     viTelmonthBtsPath, isDebug, conf);
@@ -106,8 +106,8 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldExtractMivs = arguments.getBoolean("extractMIVs");
         CosmosWorkflow mivsWorkflow = null;
         if (shouldRunAll || shouldExtractMivs) {
-            mivsWorkflow = MivsRunner.run(viTelmonthBtsPath, viClientFuseAccPath,
-                    tmpExtractMivsPath, isDebug, conf);
+            mivsWorkflow = new MivsRunner().run(viTelmonthBtsPath,
+                    viClientFuseAccPath, tmpExtractMivsPath, isDebug, conf);
             mivsWorkflow.addDependentWorkflow(preparingWorkflow);
             wfList.add(mivsWorkflow);
         }
@@ -120,7 +120,7 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldExtractPois = arguments.getBoolean("extractPOIs");
         CosmosWorkflow poisWorkflow = null;
         if (shouldRunAll || shouldExtractPois) {
-            poisWorkflow = PoisRunner.run(tmpExtractPoisPath, clientsBtsPath,
+            poisWorkflow = new PoisRunner().run(tmpExtractPoisPath, clientsBtsPath,
                     clientsInfoPath, cdrsNoinfoPath, cdrsNoBtsPath,
                     clientsInfoFilteredPath, clientsRepbtsPath, isDebug, conf);
             poisWorkflow.addDependentWorkflow(preparingWorkflow);
@@ -135,7 +135,7 @@ public class MobilityMain extends Configured implements Tool {
         if (shouldRunAll || shouldLabelClient) {
             Path centroidsPath = new Path(arguments.getString(
                     "centroids_client", true));
-            clientLabellingWorkflow = ClientLabellingRunner.run(cdrsMobPath,
+            clientLabellingWorkflow = new ClientLabellingRunner().run(cdrsMobPath,
                     clientsInfoFilteredPath, centroidsPath,
                     vectorClientClusterPath, tmpLabelClientPath, isDebug, conf);
             clientLabellingWorkflow.addDependentWorkflow(parsingWorkflow);
@@ -151,7 +151,7 @@ public class MobilityMain extends Configured implements Tool {
         if (shouldRunAll || shouldLabelBts) {
             Path centroidsPath = new Path(arguments.getString(
                     "centroids_bts", true));
-            btsLabellingWorkflow = BtsLabellingRunner.run(btsCommsPath,
+            btsLabellingWorkflow = new BtsLabellingRunner().run(btsCommsPath,
                     btsComareaPath, centroidsPath, vectorBtsClusterPath,
                     tmpLabelBtsPath, isDebug, conf);
             btsLabellingWorkflow.addDependentWorkflow(parsingWorkflow);
@@ -171,7 +171,7 @@ public class MobilityMain extends Configured implements Tool {
         if (shouldRunAll || shouldLabelClientbts) {
             Path centroidsPath = new Path(arguments.getString(
                     "centroids_clientbts", true));
-            clientBtsLabellingWorkflow = ClientBtsLabellingRunner.run(
+            clientBtsLabellingWorkflow = new ClientBtsLabellingRunner().run(
                     clientsInfoPath, clientsRepbtsPath, vectorClientbtsPath,
                     centroidsPath, pointsOfInterestTempPath,
                     vectorClientbtsClusterPath, tmpLabelClientbtsPath, isDebug,
@@ -186,10 +186,10 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldJoinLabels = arguments.getBoolean("joinLabels");
         CosmosWorkflow labelJoiningWorkflow = null;
         if (shouldRunAll || shouldJoinLabels) {
-            labelJoiningWorkflow = LabelJoiningRunner.run(pointsOfInterestTempPath,
-                    vectorClientClusterPath, vectorClientbtsClusterPath,
-                    vectorBtsClusterPath, pointsOfInterestTemp4Path,
-                    tmpLabelJoining, isDebug, conf);
+            labelJoiningWorkflow = new LabelJoiningRunner().run(
+                    pointsOfInterestTempPath, vectorClientClusterPath,
+                    vectorClientbtsClusterPath, vectorBtsClusterPath,
+                    pointsOfInterestTemp4Path, tmpLabelJoining, isDebug, conf);
             labelJoiningWorkflow.addDependentWorkflow(clientBtsLabellingWorkflow);
             labelJoiningWorkflow.addDependentWorkflow(clientLabellingWorkflow);
             labelJoiningWorkflow.addDependentWorkflow(btsLabellingWorkflow);
@@ -203,7 +203,7 @@ public class MobilityMain extends Configured implements Tool {
                 "detectSecondHomes");
         CosmosWorkflow detectSecondHomesWorkflow =  null;
         if (shouldRunAll || shouldDetectSecondHomes) {
-            detectSecondHomesWorkflow = DetectSecondHomesRunner.run(
+            detectSecondHomesWorkflow = new DetectSecondHomesRunner().run(
                     cellsMobPath, pointsOfInterestTemp4Path, viClientFuseAccPath,
                     pairbtsAdjPath, pointsOfInterestPath, tmpSecondHomesPath,
                     isDebug, conf);
@@ -220,9 +220,9 @@ public class MobilityMain extends Configured implements Tool {
                 "getActivityDensity");
         CosmosWorkflow activityDensityWorkflow = null;
         if (shouldRunAll || shouldGetActivityDensity) {
-            activityDensityWorkflow = ActivityDensityRunner.run(clientsInfoPath,
-                    activityDensityOutPath, tmpActivityDensityPath, isDebug,
-                    conf);
+            activityDensityWorkflow = new ActivityDensityRunner().run(
+                    clientsInfoPath, activityDensityOutPath,
+                    tmpActivityDensityPath, isDebug, conf);
             activityDensityWorkflow.addDependentWorkflow(poisWorkflow);
             wfList.add(activityDensityWorkflow);
         }
@@ -235,10 +235,10 @@ public class MobilityMain extends Configured implements Tool {
                 "getActivityDensityProfile");
         CosmosWorkflow activityDensityProfileWorkflow = null;
         if (shouldRunAll || shouldGetActivityDensityProfile) {
-            activityDensityProfileWorkflow = ActivityDensityProfileRunner.run(
-                clientProfileMobPath, clientsInfoPath,
-                activityDensityProfileOutPath, tmpActivityDensityProfilePath,
-                isDebug, conf);
+            activityDensityProfileWorkflow = new ActivityDensityProfileRunner()
+                    .run(clientProfileMobPath, clientsInfoPath,
+                         activityDensityProfileOutPath,
+                         tmpActivityDensityProfilePath, isDebug, conf);
             activityDensityProfileWorkflow.addDependentWorkflow(parsingWorkflow);
             activityDensityProfileWorkflow.addDependentWorkflow(poisWorkflow);
             wfList.add(activityDensityProfileWorkflow);
@@ -252,9 +252,9 @@ public class MobilityMain extends Configured implements Tool {
                 "getPopulationDensity");
         CosmosWorkflow populationDensityWorkflow = null;
         if (shouldRunAll || shouldGetPopulationDensity) {
-            populationDensityWorkflow = PopulationDensityRunner.run(
-                cdrsInfoPath, cellsPath, populationDensityOutPath,
-                tmpPopulationDensityPath, isDebug, conf);
+            populationDensityWorkflow = new PopulationDensityRunner().run(
+                    cdrsInfoPath, cellsPath, populationDensityOutPath,
+                    tmpPopulationDensityPath, isDebug, conf);
             populationDensityWorkflow.addDependentWorkflow(preparingWorkflow);
             populationDensityWorkflow.addDependentWorkflow(parsingWorkflow);
             wfList.add(populationDensityWorkflow);
@@ -268,10 +268,10 @@ public class MobilityMain extends Configured implements Tool {
                 "getPopulationDensityProfile");
         CosmosWorkflow populationDensityProfileWorkflow = null;
         if (shouldRunAll || shouldGetPopulationDensityProfile) {
-            populationDensityProfileWorkflow = PopulationDensityProfileRunner.run(
-                    cdrsInfoPath, cellsPath, clientProfileMobPath,
-                    populationDensityProfileOutPath,
-                    tmpPopulationDensityProfilePath, isDebug, conf);
+            populationDensityProfileWorkflow = new PopulationDensityProfileRunner()
+                    .run(cdrsInfoPath, cellsPath, clientProfileMobPath,
+                         populationDensityProfileOutPath,
+                         tmpPopulationDensityProfilePath, isDebug, conf);
             populationDensityProfileWorkflow.addDependentWorkflow(preparingWorkflow);
             populationDensityProfileWorkflow.addDependentWorkflow(parsingWorkflow);
             wfList.add(populationDensityProfileWorkflow);
@@ -285,9 +285,9 @@ public class MobilityMain extends Configured implements Tool {
                 "getAggregatedMatrixSimple");
         CosmosWorkflow aggregatedMatrixSimpleWorkflow = null;
         if (shouldRunAll || shouldGetAggregatedMatrixSimpleProfile) {
-            aggregatedMatrixSimpleWorkflow = AggregatedMatrixSimpleRunner.run(
-                    cdrsInfoPath, cellsPath, matrixPairBtsTxtPath,
-                    tmpAggregatedMatrixSimplePath, isDebug, conf);
+            aggregatedMatrixSimpleWorkflow = new AggregatedMatrixSimpleRunner()
+                    .run(cdrsInfoPath, cellsPath, matrixPairBtsTxtPath,
+                         tmpAggregatedMatrixSimplePath, isDebug, conf);
             aggregatedMatrixSimpleWorkflow.addDependentWorkflow(preparingWorkflow);
             aggregatedMatrixSimpleWorkflow.addDependentWorkflow(parsingWorkflow);
             wfList.add(aggregatedMatrixSimpleWorkflow);
@@ -301,9 +301,9 @@ public class MobilityMain extends Configured implements Tool {
                 "getAggregatedMatrixGroup");
         CosmosWorkflow aggregatedMatrixGroupWorkflow = null;
         if (shouldRunAll || shouldGetAggregatedMatrixGroupProfile) {
-            aggregatedMatrixGroupWorkflow = AggregatedMatrixGroupRunner.run(
-                    cdrsInfoPath, cellGroupsPath, matrixPairGroupTxtPath,
-                    tmpAggregatedMatrixGroupPath, isDebug, conf);
+            aggregatedMatrixGroupWorkflow = new AggregatedMatrixGroupRunner()
+                    .run(cdrsInfoPath, cellGroupsPath, matrixPairGroupTxtPath,
+                         tmpAggregatedMatrixGroupPath, isDebug, conf);
             aggregatedMatrixGroupWorkflow.addDependentWorkflow(preparingWorkflow);
             aggregatedMatrixGroupWorkflow.addDependentWorkflow(parsingWorkflow);
             wfList.add(aggregatedMatrixGroupWorkflow);
@@ -320,8 +320,9 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldExtractAdjacents = arguments.getBoolean(
                 "extractAdjacents");
         if (shouldRunAll || shouldExtractAdjacents) {
-            AdjacentExtractionRunner.run(pointsOfInterestPath, pairbtsAdjPath,
-                    pointsOfInterestIdPath, tmpAdjacentsPath, isDebug, conf);
+            new AdjacentExtractionRunner().run(pointsOfInterestPath,
+                    pairbtsAdjPath, pointsOfInterestIdPath, tmpAdjacentsPath,
+                    isDebug, conf);
         }
         
         Path tmpItinerariesPath = new Path(outputPath, "itineraries");
@@ -329,18 +330,18 @@ public class MobilityMain extends Configured implements Tool {
                                                  "client_itineraries_txt");
         boolean shouldGetItineraries = arguments.getBoolean("getItineraries");
         if (shouldRunAll || shouldGetItineraries) {
-            ItinerariesRunner.run(cellsPath, cdrsInfoPath,
-                                  pointsOfInterestIdPath,
-                                  clientItinerariesTxtPath, tmpItinerariesPath,
-                                  isDebug, conf);
+            new ItinerariesRunner().run(cellsPath, cdrsInfoPath,
+                                        pointsOfInterestIdPath,
+                                        clientItinerariesTxtPath,
+                                        tmpItinerariesPath, isDebug, conf);
         }
         
         Path tmpOutPoisPath = new Path(outputPath, "out_pois");
         boolean shouldOutPois = arguments.getBoolean("outPois");
         if (shouldRunAll || shouldOutPois) {
-            OutPoisRunner.run(vectorClientbtsPath, pointsOfInterestIdPath,
-                              vectorClientClusterPath, vectorBtsClusterPath,
-                              tmpOutPoisPath, isDebug, conf);
+            new OutPoisRunner().run(vectorClientbtsPath, pointsOfInterestIdPath,
+                                    vectorClientClusterPath, vectorBtsClusterPath,
+                                    tmpOutPoisPath, isDebug, conf);
         }
         
         return 0;

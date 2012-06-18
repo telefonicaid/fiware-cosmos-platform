@@ -23,11 +23,11 @@ import es.tid.cosmos.mobility.util.SetMobDataInputIdByTwoIntReducer;
  *
  * @author dmicol
  */
-public final class ClientBtsLabellingRunner {
-    private ClientBtsLabellingRunner() {
+public class ClientBtsLabellingRunner {
+    public ClientBtsLabellingRunner() {
     }
     
-    public static CosmosWorkflow run(Path clientsInfoPath,
+    public CosmosWorkflow run(Path clientsInfoPath,
             Path clientsRepbtsPath, Path vectorClientbtsPath, Path centroidsPath,
             Path pointsOfInterestTempPath, Path vectorClientbtsClusterPath,
             Path tmpDirPath, boolean isDebug, Configuration conf)

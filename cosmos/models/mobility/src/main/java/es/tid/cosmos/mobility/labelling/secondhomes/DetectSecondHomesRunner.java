@@ -20,11 +20,11 @@ import es.tid.cosmos.mobility.util.SetMobDataInputIdByTwoIntReducer;
  *
  * @author dmicol
  */
-public final class DetectSecondHomesRunner {
-    private DetectSecondHomesRunner() {
+public class DetectSecondHomesRunner {
+    public DetectSecondHomesRunner() {
     }
     
-    public static CosmosWorkflow run(Path cellsMobPath,
+    public CosmosWorkflow run(Path cellsMobPath,
             Path pointsOfInterestTemp4Path, Path viClientFuseAccPath,
             Path pairbtsAdjPath, Path pointsOfInterestPath, Path tmpDirPath,
             boolean isDebug, Configuration conf)

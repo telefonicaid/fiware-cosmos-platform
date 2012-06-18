@@ -17,14 +17,14 @@ import es.tid.cosmos.base.mapreduce.CosmosJob;
  *
  * @author dmicol
  */
-public final class ItinerariesRunner {
-    private ItinerariesRunner() {
+public class ItinerariesRunner {
+    public ItinerariesRunner() {
     }
     
-    public static void run(Path cellsPath, Path cdrsInfoPath,
-                           Path pointsOfInterestIdPath,
-                           Path clientItinerariesTxtPath, Path tmpDirPath,
-                           boolean isDebug, Configuration conf)
+    public void run(Path cellsPath, Path cdrsInfoPath,
+                    Path pointsOfInterestIdPath,
+                    Path clientItinerariesTxtPath, Path tmpDirPath,
+                    boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         Path itClientbtsTimePath = new Path(tmpDirPath, "it_clientbts_time");
         {

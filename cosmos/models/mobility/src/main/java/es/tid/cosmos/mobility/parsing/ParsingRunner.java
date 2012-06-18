@@ -17,14 +17,14 @@ import es.tid.cosmos.base.mapreduce.WorkflowList;
  *
  * @author dmicol
  */
-public final class ParsingRunner {
-    private ParsingRunner() {
+public class ParsingRunner {
+    public ParsingRunner() {
     }
 
-    public static CosmosWorkflow run(Path cdrsPath, Path cdrsMobPath,
-            Path cellsPath, Path cellsMobPath, Path adjBtsPath,
-            Path pairbtsAdjPath, Path btsVectorTxtPath, Path btsComareaPath,
-            Path clientsInfoPath, Path clientsInfoMobPath, Configuration conf)
+    public CosmosWorkflow run(Path cdrsPath, Path cdrsMobPath, Path cellsPath,
+            Path cellsMobPath, Path adjBtsPath, Path pairbtsAdjPath,
+            Path btsVectorTxtPath, Path btsComareaPath, Path clientsInfoPath,
+            Path clientsInfoMobPath, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         WorkflowList wf = new WorkflowList();
         {

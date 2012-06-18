@@ -21,11 +21,11 @@ import es.tid.cosmos.mobility.activitydensity.PopdenSumCommsReducer;
  *
  * @author ximo
  */
-public final class PopulationDensityProfileRunner {
-    private PopulationDensityProfileRunner() {
+public class PopulationDensityProfileRunner {
+    public PopulationDensityProfileRunner() {
     }
     
-    public static CosmosWorkflow run(Path cdrsInfoPath, Path cellsPath,
+    public CosmosWorkflow run(Path cdrsInfoPath, Path cellsPath,
             Path clientProfileMobPath, Path populationDensityProfileOut,
             Path tmpDirPath, boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {

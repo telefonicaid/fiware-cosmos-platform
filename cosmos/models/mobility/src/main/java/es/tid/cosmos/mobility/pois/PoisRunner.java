@@ -19,15 +19,15 @@ import es.tid.cosmos.mobility.util.ExportBtsCounterToTextByTwoIntReducer;
  *
  * @author dmicol
  */
-public final class PoisRunner {
-    private PoisRunner() {
+public class PoisRunner {
+    public PoisRunner() {
     }
     
-    public static CosmosWorkflow run(Path tmpDirPath, Path clientsBtsPath,
-                           Path clientsInfoPath, Path cdrsNoinfoPath,
-                           Path cdrsNoBtsPath, Path clientsInfoFilteredPath,
-                           Path clientsRepbtsPath, boolean isDebug,
-                           Configuration conf)
+    public CosmosWorkflow run(Path tmpDirPath, Path clientsBtsPath,
+                              Path clientsInfoPath, Path cdrsNoinfoPath,
+                              Path cdrsNoBtsPath, Path clientsInfoFilteredPath,
+                              Path clientsRepbtsPath, boolean isDebug,
+                              Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         WorkflowList wfList = new WorkflowList();
         

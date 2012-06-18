@@ -19,11 +19,11 @@ import es.tid.cosmos.mobility.itineraries.*;
  *
  * @author dmicol
  */
-public final class AggregatedMatrixSimpleRunner {
-    private AggregatedMatrixSimpleRunner() {
+public class AggregatedMatrixSimpleRunner {
+    public AggregatedMatrixSimpleRunner() {
     }
     
-    public static CosmosWorkflow run(Path cdrsInfoPath, Path cellsPath,
+    public CosmosWorkflow run(Path cdrsInfoPath, Path cellsPath,
                            Path matrixPairBtsTxtPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {

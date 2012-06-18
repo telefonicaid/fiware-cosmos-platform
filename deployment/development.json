@@ -13,5 +13,5 @@
     "hadoop_data_dirs": ["/data", "/data1", "/data2"],
     "hue_patch_dir": "../cosmos/platform/frontend/hue-patches",
     "hue_patch_name": "hue-patch-cdh3u4-r0.4.diff",
-    "injection_path": "../cosmos/platform/injection/server/"
+    "injection_path": "../cosmos/platform/injection/sftp/"
 }

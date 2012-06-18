@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.protobuf.Message;
+import com.twitter.elephantbird.mapreduce.io.BinaryConverter;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
@@ -28,6 +29,13 @@ public class TypedProtobufWritableTest {
         TypedProtobufWritable<Float64> doubleObj = TypedProtobufWritable.create(
                 3.5D);
         assertEquals(doubleObj.get().getValue(), 3.5D, 0.0D);
+    }
+
+    @Test
+    public void testConverter() {
+        TypedProtobufWritable<Int> intObj = TypedProtobufWritable.create(4);
+        BinaryConverter<Int> converter = intObj.getConverterFor(null);
+        assertEquals(TypedProtobufConverter.class, converter.getClass());
     }
 
     @Test

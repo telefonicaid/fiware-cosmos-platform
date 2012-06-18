@@ -1,13 +1,13 @@
 package es.tid.smartsteps.ipm;
 
-import java.security.NoSuchAlgorithmException;
-
 import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.base.util.SHAEncoder;
 import es.tid.smartsteps.ipm.data.generated.CrmProtocol.CrmIpm;
 import es.tid.smartsteps.ipm.data.generated.CrmProtocol.CrmRaw;
 import es.tid.smartsteps.util.CrmIpmUtil;
 import es.tid.smartsteps.util.CrmRawUtil;
+
+import java.security.NoSuchAlgorithmException;
 
 /**
  *
@@ -18,7 +18,7 @@ public class CrmRawToIpmConverter implements RawToIpmConverter {
     }
     
     @Override
-    public String convert(String line) {
+    public String convert(String line) throws ParseException {
         final CrmRaw crmRaw = CrmRawUtil.parse(line);
         final String anonymisedMsisdn;
         final String anonymisedBillingPostCode;

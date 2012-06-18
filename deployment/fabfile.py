@@ -21,6 +21,7 @@ import hue_deployment
 
 CONFIG = json.loads(open(env.config, 'r').read())
 env.roledefs = CONFIG['hosts']
+env.user = 'root'
 
 @task
 def deploy(dependenciespath, thrift_tar, jdk_rpm):
@@ -37,6 +38,13 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
 @task
 @roles('namenode', 'jobtracker', 'frontend', 'datanodes', 'tasktrackers')
 def deploy_jdk(jdkpath):
+    """
+    Deployes basic packages that somehow are not present in Joyent templates.
+    """
+    if not common.has_package('wget'):
+        run('yum -y install wget')
+    if not common.has_package('sudo'):
+        run('yum -y install sudo')
     if not common.has_package('jdk'):
         put(jdkpath, 'jdk.rpm')
         run('rpm -ihv jdk.rpm')

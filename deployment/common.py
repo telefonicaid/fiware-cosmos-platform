@@ -3,10 +3,30 @@ common.py -
 
 common functionality for Fabric deployments
 """
+from fabric.api import env, roles, run, settings
+from fabric.colors import red, green
+from fabric.decorators import roles
 import fabric.context_managers as ctx
-from fabric.api import run
 
+@roles('namenode')
 def has_package(pkg):
+    """
+    Checks that a package is installed using the OS package manager
+    """
+    with ctx.hide('stdout'):
+        # Need to consider this settings context and warn_only
+        # to have full control over the run commands.
+        with settings(warn_only=True):
+            output=run('yum list -q installed |grep -qi %s' % pkg)
+            if output.return_code != 0:
+                print red("ERROR: Package %s NOT installed on %s" % (pkg , env.host_string))
+                print output.stdout
+                return 0
+            else:
+                print green("Package %s installed in %s" % (pkg, env.host_string))
+                return 1
+
+def has_package2(pkg):
     """
     Checks that a package is installed using the OS package manager
     """

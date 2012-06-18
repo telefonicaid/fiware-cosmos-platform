@@ -3,12 +3,36 @@ package es.tid.smartsteps.util;
 import es.tid.smartsteps.ipm.ParseException;
 import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetRaw;
 
+import static es.tid.smartsteps.util.InetRawUtil.FieldIndex.*;
 /**
  *
  * @author dmicol
  */
 public abstract class InetRawUtil {
     private static final char DELIMITER = '|';
+
+    public static enum FieldIndex {
+        TYPE            (0),
+        CALL_TYPE       (1),
+        IMSI            (2),
+        FIRST_TEMP_IMSI (3),
+        LAST_TEMP_IMSI  (4),
+        IMEI            (5),
+        LACOD           (6),
+        CELL_ID         (7),
+        EVENT_DATE_TIME (8),
+        DTAP_CAUSE      (9),
+        BSS_MAP_CAUSE   (10),
+        CC_CAUSE        (11),
+        MM_CAUSE        (12),
+        RANAP_CAUSE     (13);
+
+        public int value;
+
+        private FieldIndex(int value) {
+            this.value = value;
+        }
+    }
     
     private InetRawUtil() {
     }
@@ -38,13 +62,26 @@ public abstract class InetRawUtil {
     
     public static InetRaw parse(String line) throws ParseException {
         String[] fields = line.split("\\" + DELIMITER);
-        if (fields.length != 14) {
+        if (fields.length != FieldIndex.values().length) {
             throw new ParseException(String.format(
                     "cannot parse input line %s: invalid format", line));
         }
-        return create(fields[0], fields[1], fields[2], fields[3], fields[4],
-                fields[5], fields[6], fields[7], fields[8], fields[9],
-                fields[10], fields[11], fields[12], fields[13]);
+        return InetRaw.newBuilder()
+                .setType(fields[TYPE.value])
+                .setCallType(fields[CALL_TYPE.value])
+                .setImsi(fields[IMSI.value])
+                .setFirstTempImsi(fields[FIRST_TEMP_IMSI.value])
+                .setLastTempImsi(fields[LAST_TEMP_IMSI.value])
+                .setImei(fields[IMEI.value])
+                .setLacod(fields[LACOD.value])
+                .setCellId(fields[CELL_ID.value])
+                .setEventDateTime(fields[EVENT_DATE_TIME.value])
+                .setDtapCause(fields[DTAP_CAUSE.value])
+                .setBssmapCause(fields[BSS_MAP_CAUSE.value])
+                .setCcCause(fields[CC_CAUSE.value])
+                .setMmCause(fields[MM_CAUSE.value])
+                .setRanapCause(fields[RANAP_CAUSE.value])
+                .build();
     }
     
     public static String toString(InetRaw inetRaw) {

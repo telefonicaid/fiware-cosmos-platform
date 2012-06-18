@@ -3,12 +3,37 @@ package es.tid.smartsteps.util;
 import es.tid.smartsteps.ipm.ParseException;
 import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetIpm;
 
+import static es.tid.smartsteps.util.InetIpmUtil.FieldIndex.*;
 /**
  *
  * @author dmicol
  */
 public abstract class InetIpmUtil {
     private static final char DELIMITER = '|';
+
+    public static enum FieldIndex {
+        TYPE            (0),
+        CALL_TYPE       (1),
+        ANONYMISED_IMSI (2),
+        FIRST_TEMP_IMSI (3),
+        LAST_TEMP_IMSI  (4),
+        IMEI_TAC        (5),
+        ANONYMISED_IMEI (6),
+        LACOD           (7),
+        CELL_ID         (8),
+        EVENT_DATE_TIME (9),
+        DTAP_CAUSE      (10),
+        BSS_MAP_CAUSE   (11),
+        CC_CAUSE        (12),
+        MM_CAUSE        (13),
+        RANAP_CAUSE     (14);
+
+        public int value;
+
+        private FieldIndex(int value) {
+            this.value = value;
+        }
+    }
     
     private InetIpmUtil() {
     }
@@ -39,13 +64,27 @@ public abstract class InetIpmUtil {
     
     public static InetIpm parse(String line) throws ParseException {
         String[] fields = line.split("\\" + DELIMITER);
-        if (fields.length != 15) {
+        if (fields.length != FieldIndex.values().length) {
             throw new ParseException(String.format(
                     "cannot parse input line %s: invalid format", line));
         }
-        return create(fields[0], fields[1], fields[2], fields[3], fields[4],
-                fields[5], fields[6], fields[7], fields[8], fields[9],
-                fields[10], fields[11], fields[12], fields[13], fields[14]);
+        return InetIpm.newBuilder()
+                .setType(fields[TYPE.value])
+                .setCallType(fields[CALL_TYPE.value])
+                .setAnonymisedImsi(fields[ANONYMISED_IMSI.value])
+                .setFirstTempImsi(fields[FIRST_TEMP_IMSI.value])
+                .setLastTempImsi(fields[LAST_TEMP_IMSI.value])
+                .setImeiTac(fields[IMEI_TAC.value])
+                .setAnonymisedImei(fields[ANONYMISED_IMEI.value])
+                .setLacod(fields[LACOD.value])
+                .setCellId(fields[CELL_ID.value])
+                .setEventDateTime(fields[EVENT_DATE_TIME.value])
+                .setDtapCause(fields[DTAP_CAUSE.value])
+                .setBssmapCause(fields[BSS_MAP_CAUSE.value])
+                .setCcCause(fields[CC_CAUSE.value])
+                .setMmCause(fields[MM_CAUSE.value])
+                .setRanapCause(fields[RANAP_CAUSE.value])
+                .build();
     }
     
     public static String toString(InetIpm inetIpm) {

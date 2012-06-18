@@ -54,8 +54,7 @@ public class IpmConverterInterceptorTest {
         return interceptorBuilder.build();
     }
 
-    private void interceptValidEvent(
-            String inputLine,
+    private void interceptValidEvent(String inputLine,
             Interceptor interceptor,
             RawToIpmConverter converter) throws ParseException {
         Event inputEvent = EventBuilder.withBody(inputLine, Charsets.US_ASCII);
@@ -71,8 +70,7 @@ public class IpmConverterInterceptorTest {
         assertNull(outputEvent);
     }
 
-    private void interceptValidEventList(
-            String inputLine,
+    private void interceptValidEventList(String inputLine,
             Interceptor interceptor,
             RawToIpmConverter converter) throws ParseException {
         List<Event> inputEvents = new LinkedList<Event>();

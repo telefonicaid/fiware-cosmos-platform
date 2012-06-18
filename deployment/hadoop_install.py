@@ -11,22 +11,25 @@ from fabric.utils import puts
 from StringIO import StringIO
 from mako.template import Template
 
-COSMOS_CLASSPATH='/usr/lib/hadoop-0.20/lib/cosmos/'
+COSMOS_CLASSPATH = '/usr/lib/hadoop-0.20/lib/cosmos/'
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 @parallel
 def install_cdh(config):
     """Install the latest Hadoop distribution in CDH3"""
-    cdh_repo = config["cdh_version_repo"]
-    run('rm -rf /tmp/hadoop-*')
-    repo_rpm = ('http://archive.cloudera.com/redhat/cdh/' + cdh_repo)
-    run('wget %s' % repo_rpm)
-    run('rpm -Uvh --force %s' % cdh_repo)
-    if not files.exists('/etc/pki/rpm-gpg/RPM-GPG-KEY-cloudera'):
-        run(('rpm --import'
-             ' http://archive.cloudera.com/redhat/cdh/RPM-GPG-KEY-cloudera'))
-    run('yum -y install hadoop-0.20 hadoop-0.20-native')
+    with ctx.hide('stdout'):
+        cdh_repo = config["cdh_version_repo"]
+        run('rm -rf /tmp/hadoop-*')
+        repo_rpm = ('http://archive.cloudera.com/redhat/cdh/' + cdh_repo)
+        if not files.exists('~/cdh3-repository-1.0-1.noarch.rpm'):
+            run('wget %s' % repo_rpm)
+            run('rpm -Uvh --force %s' % cdh_repo)
+        if not files.exists('/etc/pki/rpm-gpg/RPM-GPG-KEY-cloudera'):
+            run(('rpm --import'
+                 ' http://archive.cloudera.com/redhat/cdh/'
+                 ' RPM-GPG-KEY-cloudera'))
+        run('yum -y install hadoop-0.20 hadoop-0.20-native')
 
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
@@ -49,7 +52,8 @@ def configure_hadoop(config):
     """Generate  Hadoop configuration files"""
     with cd('/etc/hadoop/conf'):
         coresite = StringIO()
-        template = Template(filename = os.path.join(BASEPATH, 'templates/core-site.mako'))
+        template = Template(filename = os.path.join(BASEPATH,
+                                                   'templates/core-site.mako'))
         coresite.write(template.render(
                 namenode=config['hosts']['namenode'][0]))
         put(coresite, 'core-site.xml')
@@ -67,22 +71,28 @@ def configure_hadoop(config):
         put(slaves, 'slaves')
             
         mapredsite = StringIO()
-        template = Template(filename = os.path.join(BASEPATH, 'templates/mapred-site.mako'))
+        template = Template(filename = os.path.join(BASEPATH,
+                                                'templates/mapred-site.mako'))
         mapredsite.write(template.render(
                 jobtracker = config['hosts']['jobtracker'][0],
-                dirs = ','.join([dir + '/mapred' for dir in config["hadoop_data_dirs"]]),
+                dirs = ','.join([dir + '/mapred'
+                                 for dir in config["hadoop_data_dirs"]]),
                 reduce_tasks = 2*len(config['hosts']['datanodes'])))
         put(mapredsite, 'mapred-site.xml')
         
         hdfssite = StringIO()
-        template = Template(filename = os.path.join(BASEPATH, 'templates/hdfs-site.mako'))
+        template = Template(filename = os.path.join(BASEPATH,
+                                                   'templates/hdfs-site.mako'))
         hdfssite.write(template.render(
-                namedirs=','.join([dir + '/name' for dir in config["hadoop_data_dirs"]]),
-                datadirs=','.join([dir + '/data' for dir in config["hadoop_data_dirs"]])))
+                namedirs=','.join([dir + '/name'
+                                   for dir in config["hadoop_data_dirs"]]),
+                datadirs=','.join([dir + '/data'
+                                   for dir in config["hadoop_data_dirs"]])))
         put(hdfssite, 'hdfs-site.xml')
         
         hadoop_env = StringIO()
-        template = Template(filename = os.path.join(BASEPATH, 'templates/hadoop-env.mako'))
+        template = Template(filename = os.path.join(BASEPATH,
+                                                  'templates/hadoop-env.mako'))
         hadoop_env.write(template.render(
             cosmos_classpath=COSMOS_CLASSPATH))
         put(hadoop_env, 'hadoop-env.sh')
@@ -110,7 +120,12 @@ def deploy_datanode_daemon():
 def deploy_namenode_daemon():
     """Deploys the namenode Hadoop daemon"""
     deploy_daemon('namenode')
-    sudo('yes Y | hadoop namenode -format', user='hdfs')
+    output = sudo('yes Y | hadoop namenode -format', user='hdfs')
+    if output.return_code != 0:
+        red('Error while deploying namenode daemon on %s' % env.host)
+        puts(output.stdout)
+    else:
+        green('Success deploying namenode daemon on %s' % env.host)
     start_daemon('namenode')
     sudo('hadoop dfs -mkdir /hadoop/mapred/system', user='hdfs')
     sudo('hadoop dfs -chown -R mapred /hadoop/mapred/', user='hdfs')

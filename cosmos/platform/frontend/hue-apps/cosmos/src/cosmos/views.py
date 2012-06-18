@@ -124,7 +124,7 @@ def configure_job(request):
     """Job configuration step."""
 
     wizard = job_wizard(request)
-    if wizard['parameterized']:
+    if wizard.has_key('parameterized'):
         return configure_parameterized_job(request)
     else:
         return configure_basic_job(request)
@@ -133,7 +133,7 @@ def configure_job(request):
 def configure_basic_job(request):
     wizard = job_wizard(request)
     if request.method != 'POST':
-        form = BasicConfigurationForm(data=wizard['job'])
+        form = BasicConfigurationForm(data=wizard.get('job'))
     elif request.POST.has_key('back'):
         return redirect(reverse('define_job'))
     else:

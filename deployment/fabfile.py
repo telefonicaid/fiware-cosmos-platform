@@ -73,16 +73,21 @@ def deploy_sftp():
     Deploys the SFTP server as a Java JAR and starts it
     """
     injection_exec = 'injection-server-{0}.jar'.format(CONFIG['version'])
-    injection_jar = os.path.join(BASEPATH, CONFIG['injection_path'], 'target',
+    injection_jar = os.path.join(CONFIG['injection_path'], 'target',
                                  injection_exec)
+    if not os.path.exists(injection_jar):
+        puts(red('ERROR: injection server file not found: %s' % injection_jar))
+        return
     exec_path = os.path.join('~', 'injection', injection_exec)
-
+    if not files.exists(exec_path):
+        run("mkdir -p {0}".format(os.path.join('~', 'injection')))
     put(injection_jar, exec_path)
 
     injection_conf = StringIO()
-    template = Template(filename = os.path.join(BASEPATH,'templates/injection.conf.mako'))
+    template = Template(filename = os.path.join(BASEPATH,
+                                              'templates/injection.conf.mako'))
     injection_conf.write(template.render(
-            namenode=CONFIG['hosts']['namenode'][0]))
+            namenode = CONFIG['hosts']['namenode'][0]))
     put(injection_conf, "/etc/injection.cfg")
     symlink = "/usr/local/injection-server"
     if not files.exists(symlink):
@@ -95,11 +100,15 @@ def deploy_sftp():
     if not files.exists(pidfile):
         run("mkdir -p /var/run/injection")
         run("echo '' >> {0}".format(pidfile))
-    put(os.path.join(BASEPATH, "templates/injection.init.d"), "/etc/init.d/injection")
+    put(os.path.join(BASEPATH, "templates/injection.init.d"),
+                               "/etc/init.d/injection")
     with ctx.settings(warn_only=True):
         start = run("/etc/init.d/injection start", pty=False)
         if start.failed:
-            run("/etc/init.d/injection restart", pty=False)
+            restart = run("/etc/init.d/injection restart", pty=False)
+            if restart.failed and 'Permission denied' in restart.stdout:
+                sudo('chmod +x /etc/init.d/injection')
+                run("service injection start")
 
 @task
 def deploy_cdh():

@@ -28,6 +28,7 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     """
     execute(deploy_jdk, os.path.join(dependenciespath, jdk_rpm))
     deploy_cdh()
+    execute(deploy_mongo)
     execute(deploy_hue, os.path.join(dependenciespath, thrift_tar))
     execute(deploy_sftp)
     
@@ -37,10 +38,11 @@ def add_test_setup():
     """
     Installs any test-specific setup components
     """
+    files_to_delete = put(os.path.join(BASEPATH, '../cosmos/tests/testUser.json'), 'testUser.json')
     with cd('/usr/share/hue'):
-        put(os.path.join(BASEPATH, '../cosmos/tests/testUser.json'), 'testUser.json')
-        run('build/env/bin/hue loaddata fixture.json')
-    
+        run('build/env/bin/hue loaddata ~/testUser.json')
+    for f in files_to_delete:
+        run('rm %s' % f)
 @task
 @roles('namenode', 'jobtracker', 'frontend', 'datanodes', 'tasktrackers')
 def deploy_jdk(jdkpath):

@@ -47,7 +47,7 @@ public class ClusterParserTest {
                 + "0.0122207242145179|0.0127380859263272|0.0137016352221018|"
                 + "0.0145254067172264|0.0143057717118093|0.0118448756663055|"
                 + "0.00721698692307692";
-        ClusterParser parser = new ClusterParser(line);
+        ClusterParser parser = new ClusterParser(line, "\\|");
         Cluster cluster = parser.parse();
         assertEquals(1, cluster.getLabel());
         assertEquals(1, cluster.getLabelgroup());

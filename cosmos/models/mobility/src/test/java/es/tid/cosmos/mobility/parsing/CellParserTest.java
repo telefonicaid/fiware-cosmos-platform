@@ -13,7 +13,7 @@ public class CellParserTest {
     @Test
     public void testParse() {
         CellParser parser = new CellParser(
-                "334305216764|2221436242|12|34|56|78");
+                "334305216764|2221436242|12|34|56|78", "\\|");
         Cell obj = parser.parse();
         assertEquals(86075236L, obj.getCellId());
         assertEquals(2221436242L, obj.getBts());

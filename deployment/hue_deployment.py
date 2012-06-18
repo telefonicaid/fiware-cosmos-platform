@@ -55,7 +55,8 @@ def install_cosmos_app():
     if files.exists("cosmos-app"):
         run("rm -rf cosmos-app")
     run("mkdir cosmos-app")
-    put(os.path.join(BASEPATH, "../cosmos/platform/frontend/hue-apps/cosmos"), "cosmos-app")
+    put(os.path.join(BASEPATH,
+               "../cosmos/platform/frontend/hue-apps/cosmos"), "cosmos-app")
     with cd("cosmos-app/cosmos"):
         puts("About to run buildout")
         ## TODO: check the python version before running

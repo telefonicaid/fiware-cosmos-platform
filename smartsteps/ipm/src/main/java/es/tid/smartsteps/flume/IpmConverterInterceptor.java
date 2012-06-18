@@ -85,7 +85,8 @@ public class IpmConverterInterceptor implements Interceptor {
                 throw new ConfigurationException(String.format(
                         "missing '%s' property for IPM converter interceptor",
                         PROPERTY_CONVERTER));
-            IpmConverterType converterType = IpmConverterType.valueOf(converterName);
+            IpmConverterType converterType =
+                    IpmConverterType.valueOf(converterName.toUpperCase());
             Class<? extends RawToIpmConverter> converterClass = null;
             if (converterType != null)
                 converterClass = converterType.getConverterClass();

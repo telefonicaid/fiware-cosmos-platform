@@ -7,10 +7,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
  * @author dmicol
  */
 public class BtsParser extends Parser {
-    private static final String DELIMITER = "[ ]+";
-    
-    public BtsParser(String line) {
-        super(line, DELIMITER);
+    public BtsParser(String line, String separator) {
+        super(line, separator);
     }
     
     @Override

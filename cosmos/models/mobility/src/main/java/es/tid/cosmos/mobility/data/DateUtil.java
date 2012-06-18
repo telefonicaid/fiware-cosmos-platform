@@ -9,8 +9,6 @@ import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
  * @author sortega
  */
 public abstract class DateUtil {
-    public static final String DELIMITER = "|";
-    
     public static Date create(int year, int month, int day, int weekday) {
         return Date.newBuilder()
                 .setYear(year)
@@ -32,14 +30,14 @@ public abstract class DateUtil {
         return wrap(create(year, month, day, weekday));
     }
     
-    public static Date parse(String line) {
-        String[] values = line.split("\\" + DELIMITER);
+    public static Date parse(String line, String separator) {
+        String[] values = line.split(separator);
         return create(Integer.parseInt(values[0]), Integer.parseInt(values[1]),
                       Integer.parseInt(values[2]), Integer.parseInt(values[3]));
     }
     
-    public static String toString(Date obj) {
-        return (obj.getYear() + DELIMITER + obj.getMonth() + DELIMITER +
-                obj.getDay() + DELIMITER + obj.getWeekday());
+    public static String toString(Date obj, String separator) {
+        return (obj.getYear() + separator + obj.getMonth() + separator +
+                obj.getDay() + separator + obj.getWeekday());
     }
 }

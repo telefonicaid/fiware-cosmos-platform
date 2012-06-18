@@ -9,8 +9,6 @@ import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
  * @author sortega
  */
 public abstract class TimeUtil {
-    private static final String DELIMITER = "|";
-    
     public static Time create(int hour, int minute, int seconds) {
         return Time.newBuilder()
                 .setHour(hour)
@@ -31,8 +29,8 @@ public abstract class TimeUtil {
         return wrap(create(hour, minute, seconds));
     }
     
-    public static String toString(Time obj) {
-        return (obj.getHour() + DELIMITER + obj.getMinute() + DELIMITER +
+    public static String toString(Time obj, String separator) {
+        return (obj.getHour() + separator + obj.getMinute() + separator +
                 obj.getSeconds());
     }
 }

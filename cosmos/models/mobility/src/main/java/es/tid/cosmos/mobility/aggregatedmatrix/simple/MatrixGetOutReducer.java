@@ -8,7 +8,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.data.TwoIntUtil;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -20,6 +20,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  */
 public class MatrixGetOutReducer extends Reducer<ProtobufWritable<TwoInt>,
         TypedProtobufWritable<ClusterVector>, NullWritable, Text> {
+    private String separator;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        this.separator = context.getConfiguration().get(Config.DATA_SEPARATOR);
+    }
+    
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<TypedProtobufWritable<ClusterVector>> values, Context context)
@@ -28,10 +36,9 @@ public class MatrixGetOutReducer extends Reducer<ProtobufWritable<TwoInt>,
         final TwoInt pairId = key.get();
         for (TypedProtobufWritable<ClusterVector> value : values) {
             final ClusterVector moves = value.get();
-            String output = pairId.getNum1() + TwoIntUtil.DELIMITER
-                            + pairId.getNum2();
+            String output = pairId.getNum1() + this.separator + pairId.getNum2();
             for (Double move : moves.getComsList()) {
-                output += TwoIntUtil.DELIMITER + move;
+                output += this.separator + move;
             }
             context.write(NullWritable.get(), new Text(output));
         }

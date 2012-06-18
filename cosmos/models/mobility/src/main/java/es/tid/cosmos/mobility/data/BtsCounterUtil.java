@@ -9,8 +9,6 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
  * @author sortega
  */
 public abstract class BtsCounterUtil {
-    public static final String DELIMITER = "|";
-    
     public static BtsCounter create(long bts, int weekday, int range,
             int count) {
         return BtsCounter.newBuilder()
@@ -33,8 +31,8 @@ public abstract class BtsCounterUtil {
         return wrap(create(bts, weekday, range, count));
     }
     
-    public static String toString(BtsCounter obj) {
-        return (obj.getBts() + DELIMITER + obj.getWeekday() + DELIMITER +
-                obj.getRange() + DELIMITER + obj.getCount());
+    public static String toString(BtsCounter obj, String separator) {
+        return (obj.getBts() + separator + obj.getWeekday() + separator +
+                obj.getRange() + separator + obj.getCount());
     }
 }

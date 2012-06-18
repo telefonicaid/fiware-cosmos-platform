@@ -7,8 +7,8 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 
 /**
@@ -19,6 +19,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
  */
 class VectorOneidOutReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Cluster>, NullWritable, Text> {
+    private String separator;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        this.separator = context.getConfiguration().get(Config.DATA_SEPARATOR);
+    }
+    
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Cluster>> values, Context context)
@@ -26,12 +34,12 @@ class VectorOneidOutReducer extends Reducer<LongWritable,
         for (TypedProtobufWritable<Cluster> value : values) {
             final Cluster cluster = value.get();
             String output =
-                    key.get() + ClusterUtil.DELIMITER
-                    + cluster.getLabel() + ClusterUtil.DELIMITER
-                    + cluster.getLabelgroup() + ClusterUtil.DELIMITER
+                    key.get() + this.separator
+                    + cluster.getLabel() + this.separator
+                    + cluster.getLabelgroup() + this.separator
                     + cluster.getConfident();
             for (double comm :cluster.getCoords().getComsList()) {
-                 output += ClusterUtil.DELIMITER + comm;
+                 output += this.separator + comm;
             }
             context.write(NullWritable.get(), new Text(output));
         }

@@ -7,10 +7,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
  * @author dmicol
  */
 class ClientProfileParser extends Parser {
-    private static final String DELIMITER = "\\|";
-    
-    public ClientProfileParser(String line) {
-        super(line, DELIMITER);
+    public ClientProfileParser(String line, String separator) {
+        super(line, separator);
     }
 
     @Override

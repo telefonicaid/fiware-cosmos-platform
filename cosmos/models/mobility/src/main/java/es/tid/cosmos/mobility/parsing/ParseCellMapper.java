@@ -7,6 +7,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 
 /**
@@ -17,11 +18,20 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
  */
 public class ParseCellMapper extends Mapper<LongWritable, Text, LongWritable,
         TypedProtobufWritable<Cell>> {
+    private String separator;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        this.separator = context.getConfiguration().get(Config.DATA_SEPARATOR);
+    }
+    
     @Override
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
         try {
-            final Cell cell = new CellParser(value.toString()).parse();
+            final Cell cell = new CellParser(value.toString(),
+                                             this.separator).parse();
             context.write(new LongWritable(cell.getCellId()),
                           new TypedProtobufWritable<Cell>(cell));
         } catch (Exception ex) {

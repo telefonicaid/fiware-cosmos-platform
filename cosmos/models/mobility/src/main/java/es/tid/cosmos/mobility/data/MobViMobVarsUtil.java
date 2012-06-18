@@ -12,8 +12,6 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
  * @author losa
  */
 public abstract class MobViMobVarsUtil {
-    public static final String DELIMITER = "|";
-
     public static MobViMobVars create(Iterable<MobVars> areas) {
         MobViMobVars.Builder repActAreas = MobViMobVars.newBuilder()
                 .addAllVars(areas);
@@ -32,15 +30,15 @@ public abstract class MobViMobVarsUtil {
         return wrap(create(allAreas));
     }
 
-    public static String toString(MobViMobVars obj) {
+    public static String toString(MobViMobVars obj, String separator) {
         List<MobVars> allAreas = obj.getVarsList();
         String ans = "";
         int pos = 0;
         for (MobVars area : allAreas) {
             pos += 1;
-            ans += MobVarsUtil.toString(area);
+            ans += MobVarsUtil.toString(area, separator);
             if (pos < allAreas.size()) {
-                ans += DELIMITER;
+                ans += separator;
             }
         }
         return ans;

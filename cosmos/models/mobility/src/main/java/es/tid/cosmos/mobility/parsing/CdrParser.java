@@ -7,10 +7,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
  * @author sortega
  */
 class CdrParser extends Parser {
-    private static final String DELIMITER = "\\|";
-    
-    public CdrParser(String line) {
-        super(line, DELIMITER);
+    public CdrParser(String line, String separator) {
+        super(line, separator);
     }
 
     @Override

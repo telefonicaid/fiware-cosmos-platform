@@ -51,16 +51,23 @@ public class MobilityMain extends Configured implements Tool {
                     .openStream();
         }
         final Configuration conf = Config.load(configInput, this.getConf());
+        if (conf.get(Config.SYS_EXEC_MODE).equalsIgnoreCase("complete")) {
+            throw new UnsupportedOperationException(
+                    "Only complete execution mode is supported");
+        }
+        if (conf.getBoolean(Config.SYS_EXEC_INCREMENTAL, false)) {
+            throw new UnsupportedOperationException(
+                    "Incremental mode is not supported yet");
+        }
         
+        Path inputPath = new Path(conf.get(Config.SYS_INPUT_FOLDER));
         Path outputPath = new Path(arguments.getString("output", true));
-        Path cdrsPath = new Path(arguments.getString("cdrs", true));
-        Path cellsPath = new Path(arguments.getString("cells", true));
-        Path cellGroupsPath = new Path(arguments.getString("cellGroups", true));
-        Path adjBtsPath = new Path(arguments.getString("adjBts", true));
-        Path btsVectorTxtPath = new Path(arguments.getString("btsVectorTxt",
-                                                             true));
-        Path clientProfilePath = new Path(arguments.getString("clientProfile",
-                                                              true));
+        Path cdrsPath = new Path(inputPath, "cdrs");
+        Path cellsPath = new Path(inputPath, "cells");
+        Path cellGroupsPath = new Path(inputPath, "cellGroups");
+        Path adjBtsPath = new Path(inputPath, "adjBts");
+        Path btsVectorTxtPath = new Path(inputPath, "btsVectorTxt");
+        Path clientProfilePath = new Path(inputPath, "clientProfile");
         
         boolean shouldRunAll = arguments.getBoolean("runAll");
         boolean isDebug = arguments.getBoolean("debug");

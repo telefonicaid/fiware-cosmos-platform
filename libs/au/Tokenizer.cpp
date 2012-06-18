@@ -178,8 +178,13 @@ namespace au {
         
         bool TokenVector::popNextTokensIfTheyAre( std::string content , std::string content2 )
         {
+            if ((size() == 0) || (size() == 1))
+            {
+                return false;
+            }
+
             if ( position >= ( size() - 1 ) )
-                return NULL;
+                return false;
 
             if( (*this)[position].content != content )
                 return false;

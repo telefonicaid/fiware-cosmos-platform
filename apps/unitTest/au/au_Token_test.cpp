@@ -34,20 +34,28 @@ TEST(auTokenTest, simple )
     au::token::TokenVector token_vector;
 
     EXPECT_EQ( token_vector.getNextTokenContent(), "<empty>") << "Error in getNextTokenContent empty";
+    EXPECT_EQ( token_vector.popNextTokenIfItIs("token1"), false) << "Error in popNextTokenIfItIs false";
+//    EXPECT_EQ( token_vector.popNextTokensIfTheyAre("token1", "token2"), false) << "Error in popNextTokensIfTheyAre false";
+//    EXPECT_EQ( token_vector.checkNextTokenIs("token1"), false) << "Error in checkNextTokenIs false";
+//    EXPECT_EQ( token_vector.checkNextNextTokenIs("token1"), false) << "Error in checkNextNextTokenIs false";
 
     au::token::Tokenizer tokenizer;
 
     tokenizer.addSingleCharTokens ("-_");
     tokenizer.addToken("next");
+    tokenizer.addToken("previous");
 
-    au::token::TokenVector vector_tokens = tokenizer.parse ("Test string to tokenizer:literals: \"true\", digits: 2.1, ops: +");
-
-
-    EXPECT_EQ(vector_tokens.str(), "( 3 tokens ) Test string to tokenizer:literals:  \\\"true\\\" , digits: 2.1, ops: + ") << "Error in Tokenizer";
-
-
-
-
+//    au::token::TokenVector vector_tokens = tokenizer.parse ("Test string to tokenizer:literals: \"true\" and next:'false' , digits: 2.1, ops: +");
+//
+//
+//    EXPECT_EQ(vector_tokens.str(), "( 3 tokens ) Test string to tokenizer:literals:  \\\"true\\\" , digits: 2.1, ops: + ") << "Error in Tokenizer";
+//
+//
+//    EXPECT_EQ( token_vector.getNextTokenContent(), "next") << "Error in getNextTokenContent non empty";
+//    EXPECT_EQ( token_vector.popNextTokenIfItIs("next"), true) << "Error in popNextTokenIfItIs true";
+//    EXPECT_EQ( token_vector.popNextTokensIfTheyAre("next", "previous"), true) << "Error in popNextTokensIfTheyAre true";
+//    EXPECT_EQ( token_vector.checkNextTokenIs("next"), true) << "Error in checkNextTokenIs true";
+//    EXPECT_EQ( token_vector.checkNextNextTokenIs("next"), true) << "Error in checkNextNextTokenIs true";
 
 
 }

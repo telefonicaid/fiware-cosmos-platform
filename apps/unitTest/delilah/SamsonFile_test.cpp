@@ -23,7 +23,7 @@
 
 
 //Test void samson_file();
-TEST(SamsonFileTest, samson_file)
+TEST(SamsonFileTest, DISABLED_samson_file)
 {
 
    // Check error is detected in non-exiting files

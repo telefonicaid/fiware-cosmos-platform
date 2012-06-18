@@ -10,6 +10,7 @@ SET (SOURCES
 	au/au.cpp
 	au/au_string_test.cpp
 	au/au_Token_test.cpp
+	au/au_Table_test.cpp
 
     #engine
     engine/object_test.cpp

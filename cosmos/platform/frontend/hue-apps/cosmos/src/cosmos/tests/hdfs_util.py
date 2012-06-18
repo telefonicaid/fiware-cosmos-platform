@@ -41,7 +41,7 @@ class FakeHDFS(object):
         self.files = files
 
     def open(self, path, mode):
-        return closing(StringIO(self.files[path]))
+        return StringIO(self.files[path])
 
 
 class CachedHDFSFileTestCase(test.TestCase):
@@ -58,3 +58,7 @@ class CachedHDFSFileTestCase(test.TestCase):
             with open(path, 'r') as f:
                 self.assertEquals(f.read(), "File contents")
         self.assertFalse(os.path.isfile(path))
+
+    def test_io_error(self):
+        self.assertRaises(Exception, CachedHDFSFile, [self.fake_fs,
+                                                      ':invalid;:file\\/name'])

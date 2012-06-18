@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from contextlib import closing
 import logging
 
 from desktop.lib.django_util import PopupException, render, render_to_string
@@ -94,19 +93,26 @@ def define_job(request):
             wizard['job'] = job
             update_job_wizard(request, wizard)
 
-            with closing(CachedHDFSFile(request.fs, job['jar_path'])) \
-                    as cached_file:
+            cached_file = None
+            jar = None
+            try:
+                cached_file = CachedHDFSFile(request.fs, job['jar_path'])
                 try:
-                    with closing(JarFile(cached_file.local_path())) as jar:
-                        wizard['parameterized'] = jar.is_parameterized()
-                        if wizard['parameterized']:
-                            wizard['parameters'] = jar.parameters()
-                        else:
-                            wizard['parameters'] = None
-                        return redirect(reverse('configure_job'))
-                except InvalidJarFile as ex:
+                    jar = JarFile(cached_file.local_path())
+                    wizard['parameterized'] = jar.is_parameterized()
+                    if wizard['parameterized']:
+                        wizard['parameters'] = jar.parameters()
+                    else:
+                        wizard['parameters'] = None
+                    return redirect(reverse('configure_job'))
+                except InvalidJarFile, ex:
                     errors = form._errors.setdefault('jar_path', ErrorList())
                     errors.append('Invalid JAR: %s' % ex.message)
+            finally:
+                if jar:
+                    jar.close()
+                if cached_file:
+                    cached_file.close()
 
     return render('job_define.mako', request, dict(
         form=form,
@@ -118,7 +124,7 @@ def configure_job(request):
     """Job configuration step."""
 
     wizard = job_wizard(request)
-    if wizard['parameterized']:
+    if wizard.has_key('parameterized'):
         return configure_parameterized_job(request)
     else:
         return configure_basic_job(request)
@@ -127,7 +133,7 @@ def configure_job(request):
 def configure_basic_job(request):
     wizard = job_wizard(request)
     if request.method != 'POST':
-        form = BasicConfigurationForm(data=wizard['job'])
+        form = BasicConfigurationForm(data=wizard.get('job'))
     elif request.POST.has_key('back'):
         return redirect(reverse('define_job'))
     else:

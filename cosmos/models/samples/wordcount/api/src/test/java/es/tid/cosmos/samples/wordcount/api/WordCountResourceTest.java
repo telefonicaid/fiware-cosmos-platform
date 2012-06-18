@@ -6,12 +6,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Test case for WordCountResource
- *
  * @author sortega
  */
 public class WordCountResourceTest {
-
     @Test
     public void testGetCount() throws Exception {
         WordCountResource instance = new WordCountResource();

@@ -9,14 +9,12 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-// import es.tid.cosmos.tests.hadoop.JobTest;
-
 /**
  * Test case for MongoDBExporterJob
  *
  * @author sortega
  */
-public class MongoDBExporterJobTest { //extends JobTest {
+public class MongoDBExporterJobTest extends JobTest {
     private MongoDBExporterJob instance;
 
     @Before
@@ -42,7 +40,7 @@ public class MongoDBExporterJobTest { //extends JobTest {
         assertEquals(outputUrl, MongoConfigUtil.getOutputURI(
                 this.instance.getConfiguration()).toString());
 
-        /*assertMRChain(this.instance, DEFAULT_MAPPER,
-                                     MongoDBExporterReducer.class);*/
+        assertMRChain(this.instance, DEFAULT_MAPPER,
+                                     MongoDBExporterReducer.class);
     }
 }

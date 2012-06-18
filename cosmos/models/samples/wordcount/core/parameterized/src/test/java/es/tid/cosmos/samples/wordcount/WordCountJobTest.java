@@ -9,14 +9,10 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-//import es.tid.cosmos.tests.hadoop.JobTest;
-
 /**
- * Test case for WordcountJob
- *
  * @author sortega
  */
-public class WordCountJobTest /*extends JobTest*/ {
+public class WordCountJobTest extends JobTest {
     private WordCountJob instance;
 
     @Before
@@ -42,7 +38,7 @@ public class WordCountJobTest /*extends JobTest*/ {
         assertEquals(outputPath,
                      FileOutputFormat.getOutputPath(this.instance));
 
-     //   assertMRChain(this.instance, WordCountMapper.class,
-     //                                WordCountReducer.class);
+        assertMRChain(this.instance, WordCountMapper.class,
+                                     WordCountReducer.class);
     }
 }

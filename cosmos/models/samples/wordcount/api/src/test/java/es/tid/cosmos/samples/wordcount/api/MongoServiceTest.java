@@ -21,6 +21,11 @@ public class MongoServiceTest {
         this.instance.init();
     }
 
+    @After
+    public void tearDown() {
+        this.instance.destroy();
+    }
+
     @Test
     public void testGetDb() {
         assertNotNull(this.instance.getDb());
@@ -29,10 +34,5 @@ public class MongoServiceTest {
     @Test
     public void testGetMongo() {
         assertNotNull(this.instance.getMongo());
-    }
-
-    @After
-    public void tearDown() {
-        this.instance.destroy();
     }
 }

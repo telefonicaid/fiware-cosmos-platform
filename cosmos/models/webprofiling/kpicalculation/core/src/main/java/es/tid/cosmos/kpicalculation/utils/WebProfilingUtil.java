@@ -12,15 +12,16 @@ import es.tid.cosmos.kpicalculation.generated.data.KpiCalculationProtocol.WebPro
 /**
  * Class used to serialize records from text files
  *
- * @author javierb
+ * @author javierb, sortega
  */
-public class WebProfilingUtil {
+public final class WebProfilingUtil {
     private static final String DELIMITER = "\t";
 
     private static WebProfilingLog.Builder builder;
     private static KpiCalculationDateFormatter dateFormatter;
 
-    protected WebProfilingUtil() {
+    private WebProfilingUtil() {
+        // Utility class
     }
 
     public static WebProfilingLog getInstance(String line) {

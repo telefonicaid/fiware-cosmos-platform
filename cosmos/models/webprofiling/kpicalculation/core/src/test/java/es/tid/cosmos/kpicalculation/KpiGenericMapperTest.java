@@ -29,7 +29,6 @@ public class KpiGenericMapperTest {
     private MapDriver<NullWritable, ProtobufWritable<WebProfilingLog>,
                       CompositeKey, IntWritable> driver;
     private ProtobufWritable<WebProfilingLog> inputLog;
-    private WebProfilingLog.Builder builder;
 
     @Before
     public void setUp() {
@@ -39,24 +38,23 @@ public class KpiGenericMapperTest {
                                     CompositeKey, IntWritable>(this.mapper);
         this.driver.getConfiguration().setStrings("kpi.aggregation.fields",
                                                   "protocol,device,date");
-        this.builder = WebProfilingLog.newBuilder();
-        this.builder.setVisitorId("16737b1873ef03ad");
-        this.builder.setProtocol("http");
-        this.builder.setFullUrl("http://tid.es/");
-        this.builder.setUrlDomain("tid.es");
-        this.builder.setUrlPath("/");
-        this.builder.setUrlQuery("null");
-        this.builder.setDate("02\t11\t2012");
-        this.builder.setMimeType("application/pkix-crl");
-        this.builder.setBrowser("-Microsoft-CryptoAPI/6.1");
-        this.builder.setDevice("-Microsoft-CryptoAPI/6.1");
-        this.builder.setUserAgent("-Microsoft-CryptoAPI/6.1");
-        this.builder.setOperSys("-Microsoft-CryptoAPI/6.1");
-        this.builder.setMethod("GET");
-        this.builder.setStatus("304");
-
         this.inputLog = ProtobufWritable.newInstance(WebProfilingLog.class);
-        this.inputLog.set(this.builder.build());
+        this.inputLog.set(WebProfilingLog.newBuilder()
+                .setVisitorId("16737b1873ef03ad")
+                .setProtocol("http")
+                .setFullUrl("http://tid.es/")
+                .setUrlDomain("tid.es")
+                .setUrlPath("/")
+                .setUrlQuery("null")
+                .setDate("02\t11\t2012")
+                .setMimeType("application/pkix-crl")
+                .setBrowser("-Microsoft-CryptoAPI/6.1")
+                .setDevice("-Microsoft-CryptoAPI/6.1")
+                .setUserAgent("-Microsoft-CryptoAPI/6.1")
+                .setOperSys("-Microsoft-CryptoAPI/6.1")
+                .setMethod("GET")
+                .setStatus("304")
+                .build());
     }
 
     @Test

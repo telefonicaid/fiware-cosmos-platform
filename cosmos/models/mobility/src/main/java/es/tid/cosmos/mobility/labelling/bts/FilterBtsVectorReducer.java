@@ -1,19 +1,18 @@
 package es.tid.cosmos.mobility.labelling.bts;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import com.google.protobuf.Message;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.Config;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, Bts|Cluster>
@@ -21,52 +20,42 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * 
  * @author dmicol
  */
-public class FilterBtsVectorReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+class FilterBtsVectorReducer extends Reducer<
+        LongWritable, TypedProtobufWritable<Message>,
+        LongWritable, TypedProtobufWritable<Cluster>> {
     private double maxBtsArea;
-    private int maxCommsBts;
+    private int minCommsBts;
     
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.maxBtsArea = conf.getFloat(Config.MAX_BTS_AREA, Float.MAX_VALUE);
-        this.maxCommsBts = conf.getInt(Config.MAX_COMMS_BTS, Integer.MAX_VALUE);
+        this.maxBtsArea = conf.getFloat(Config.BTS_MAX_BTS_AREA,
+                                        Float.MAX_VALUE);
+        this.minCommsBts = conf.getInt(Config.BTS_MIN_COMMS_BTS,
+                                       Integer.MIN_VALUE);
     }
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
-        List<Bts> btsList = new LinkedList<Bts>();
-        List<Cluster> clusterList = new LinkedList<Cluster>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            switch (mobData.getType()) {
-                case BTS:
-                    btsList.add(mobData.getBts());
-                    break;
-                case CLUSTER:
-                    clusterList.add(mobData.getCluster());
-                    break;
-                default:
-                    throw new IllegalStateException("Unexpected MobData type: "
-                            + mobData.getType().name());
-            }
-        }
+        Map<Class, List> dividedLists = TypedProtobufWritable.groupByClass(
+                values, Bts.class, Cluster.class);
+        List<Bts> btsList = dividedLists.get(Bts.class);
+        List<Cluster> clusterList = dividedLists.get(Cluster.class);
         
         for (Bts bts : btsList) {
             for (Cluster cluster : clusterList) {
                 int confident = cluster.getConfident();
-                if (bts.getComms() < this.maxCommsBts &&
+                if (bts.getComms() < this.minCommsBts &&
                         bts.getArea() > this.maxBtsArea) {
                     confident = 0;
                 }
                 Cluster.Builder outputCluster = Cluster.newBuilder(cluster);
                 outputCluster.setConfident(confident);
-                context.write(key,
-                              MobDataUtil.createAndWrap(outputCluster.build()));
+                context.write(key, new TypedProtobufWritable<Cluster>(
+                        outputCluster.build()));
             }
         }
     }

@@ -5,16 +5,15 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.ItinMovementUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, ItinTime>
@@ -22,8 +21,9 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  * 
  * @author dmicol
  */
-public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+public class ItinMoveClientPoisReducer extends Reducer<
+        LongWritable, TypedProtobufWritable<ItinTime>,
+        LongWritable, TypedProtobufWritable<ItinMovement>> {
     private static final int MINS_IN_ONE_HOUR = 60;
     private static final int HOURS_IN_ONE_DAY = 24;
     private static final int MINS_IN_ONE_DAY = MINS_IN_ONE_HOUR *
@@ -36,21 +36,19 @@ public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.maxMinutesInMoves = conf.getInt(Config.MAX_MINUTES_IN_MOVES,
+        this.maxMinutesInMoves = conf.getInt(Config.ITIN_MAX_MINUTES_IN_MOVES,
                                              Integer.MAX_VALUE);
-        this.minMinutesInMoves = conf.getInt(Config.MIN_MINUTES_IN_MOVES,
+        this.minMinutesInMoves = conf.getInt(Config.ITIN_MIN_MINUTES_IN_MOVES,
                                              Integer.MIN_VALUE);
     }
 
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values,
+            Iterable<TypedProtobufWritable<ItinTime>> values,
             Context context) throws IOException, InterruptedException {
         List<ItinTime> locList = new LinkedList<ItinTime>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            locList.add(mobData.getItinTime());
+        for (TypedProtobufWritable<ItinTime> value : values) {
+            locList.add(value.get());
         }
         
         final GregorianCalendar calendar = new GregorianCalendar();
@@ -104,7 +102,7 @@ public class ItinMoveClientPoisReducer extends Reducer<LongWritable,
             // Filter movements by diff of time
             if (minDistance <= this.maxMinutesInMoves &&
                     minDistance >= this.minMinutesInMoves) {
-                ProtobufWritable<MobData> move = MobDataUtil.createAndWrap(
+                TypedProtobufWritable<ItinMovement> move = new TypedProtobufWritable<ItinMovement>(
                         ItinMovementUtil.create(loc1, minDistLoc));
                 context.write(key, move);
             }

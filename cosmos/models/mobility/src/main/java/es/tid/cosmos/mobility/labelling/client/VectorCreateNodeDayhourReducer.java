@@ -7,10 +7,9 @@ import java.util.List;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.DailyVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -21,20 +20,18 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class VectorCreateNodeDayhourReducer extends Reducer
-        <ProtobufWritable<NodeBts>, ProtobufWritable<MobData>,
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
+        <ProtobufWritable<NodeBts>, TypedProtobufWritable<TwoInt>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<DailyVector>> {
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<TwoInt>> values, Context context)
             throws IOException, InterruptedException {
         key.setConverter(NodeBts.class);
         final NodeBts bts = key.get();
         
         List<TwoInt> valueList = new LinkedList<TwoInt>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final TwoInt hourComms = value.get().getTwoInt();
-            valueList.add(hourComms);
+        for (TypedProtobufWritable<TwoInt> value : values) {
+            valueList.add(value.get());
         }
         
         DailyVector.Builder vectorBuilder = DailyVector.newBuilder();
@@ -56,6 +53,7 @@ public class VectorCreateNodeDayhourReducer extends Reducer
         }
         ProtobufWritable<TwoInt> node = TwoIntUtil.createAndWrap(
                 bts.getUserId(), bts.getBts());
-        context.write(node, MobDataUtil.createAndWrap(vectorBuilder.build()));
+        context.write(node, new TypedProtobufWritable<DailyVector>(
+                vectorBuilder.build()));
     }
 }

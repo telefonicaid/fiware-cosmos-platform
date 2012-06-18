@@ -14,10 +14,10 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.PoiUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -25,23 +25,23 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class VectorPoisOutReducerTest {
-    private ReduceDriver<ProtobufWritable<TwoInt>, ProtobufWritable<MobData>,
+    private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>,
             NullWritable, Text> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
-                ProtobufWritable<MobData>, NullWritable, Text>(
+                TypedProtobufWritable<Poi>, NullWritable, Text>(
                         new VectorPoisOutReducer());
     }
 
     @Test
     public void testReduce() throws IOException {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);
-        final ProtobufWritable<MobData> value1 = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<Poi> value1 = new TypedProtobufWritable<Poi>(
                 PoiUtil.create(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
                                15, 16, 17));
-        final ProtobufWritable<MobData> value2 = MobDataUtil.createAndWrap(
+        final TypedProtobufWritable<Poi> value2 = new TypedProtobufWritable<Poi>(
                 PoiUtil.create(10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110,
                                120, 130, 140, 150, 160, 170));
         List<Pair<NullWritable, Text>> results = this.driver

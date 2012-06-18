@@ -6,7 +6,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
  *
  * @author sortega
  */
-public class CdrParser extends Parser {
+class CdrParser extends Parser {
     private static final String DELIMITER = "\\|";
     
     public CdrParser(String line) {
@@ -33,7 +33,8 @@ public class CdrParser extends Parser {
 
             return cdr.build();
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Failed to parse: " + this.line);
+            throw new IllegalArgumentException("Failed to parse: " + this.line,
+                                               ex);
         }
     }
 }

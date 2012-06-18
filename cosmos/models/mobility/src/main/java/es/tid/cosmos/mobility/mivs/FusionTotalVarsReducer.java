@@ -1,17 +1,16 @@
 package es.tid.cosmos.mobility.mivs;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 
 /**
  * Input: <Long, MobVars>
@@ -19,18 +18,17 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
  * 
  * @author logc
  */
-public class FusionTotalVarsReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+class FusionTotalVarsReducer extends Reducer<LongWritable,
+        TypedProtobufWritable<MobVars>, LongWritable, TypedProtobufWritable<MobViMobVars>> {
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<MobVars>> values, Context context)
             throws IOException, InterruptedException {
         List<MobVars> allAreas = new ArrayList<MobVars>();
-        for (ProtobufWritable<MobData> value: values) {
-            value.setConverter(MobData.class);
-            allAreas.add(value.get().getMobVars());
+        for (TypedProtobufWritable<MobVars> value: values) {
+            allAreas.add(value.get());
         }
-        context.write(key, MobDataUtil.createAndWrap(
+        context.write(key, new TypedProtobufWritable<MobViMobVars>(
                 MobViMobVarsUtil.create(allAreas)));
     }
 }

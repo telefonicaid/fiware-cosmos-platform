@@ -20,7 +20,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
-import es.tid.cosmos.base.mapreduce.JobList;
+import es.tid.cosmos.base.mapreduce.WorkflowList;
 import es.tid.cosmos.profile.categoryextraction.CategoryExtractionReducer;
 import es.tid.cosmos.profile.categoryextraction.TextCategoryExtractionMapper;
 import es.tid.cosmos.profile.dictionary.comscore.DistributedCacheDictionary;
@@ -76,7 +76,7 @@ public class IndividualProfileMain extends Configured implements Tool {
                 SequenceFileOutputFormat.class);
         FileInputFormat.setInputPaths(upJob, this.categoriesPath);
         FileOutputFormat.setOutputPath(upJob, this.profilePath);
-        upJob.addDependentJob(ceJob);
+        upJob.addDependentWorkflow(ceJob);
 
         CosmosJob exTextJob = CosmosJob.createReduceJob(this.getConf(),
                 "TextExporter",
@@ -86,7 +86,7 @@ public class IndividualProfileMain extends Configured implements Tool {
                 TextOutputFormat.class);
         TextInputFormat.setInputPaths(exTextJob, this.profilePath);
         FileOutputFormat.setOutputPath(exTextJob, textOutputPath);
-        exTextJob.addDependentJob(upJob);
+        exTextJob.addDependentWorkflow(upJob);
         
         CosmosJob exMongoJob = CosmosJob.createReduceJob(this.getConf(),
                 "MongoDBExporter",
@@ -95,12 +95,12 @@ public class IndividualProfileMain extends Configured implements Tool {
                 MongoOutputFormat.class);
         TextInputFormat.setInputPaths(exMongoJob, this.profilePath);
         MongoConfigUtil.setOutputURI(exMongoJob.getConfiguration(), mongoUrl);
-        exMongoJob.addDependentJob(upJob);
+        exMongoJob.addDependentWorkflow(upJob);
         
-        JobList jobList = new JobList();
-        jobList.add(exTextJob);
-        jobList.add(exMongoJob);
-        jobList.waitForCompletion(true);
+        WorkflowList wfList = new WorkflowList();
+        wfList.add(exTextJob);
+        wfList.add(exMongoJob);
+        wfList.waitForCompletion(true);
 
         return 0;
     }

@@ -6,8 +6,10 @@ from fabric.decorators import roles, parallel
 from fabric.contrib import files
 from StringIO import StringIO
 from mako.template import Template
+import os.path
 
 COSMOS_CLASSPATH='/usr/lib/hadoop-0.20/lib/cosmos/'
+BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 @parallel
@@ -32,10 +34,10 @@ def create_hadoop_dirs(config):
         run('rm -rf %s/*' % dir)
         if not files.exists(dir):
             run('mkdir %s' % dir)
-        run('install -o hdfs   -g hadoop -m 700 -d %s/data' % dir)
+        run('install -o hdfs   -g hadoop -m 755 -d %s/data' % dir)
         run('install -o mapred -g hadoop -m 755 -d %s/mapred' % dir)
         run('install -o hdfs   -g hadoop -m 755 -d %s/name' % dir)
-    
+        
     run('install -o root   -g hadoop -m 755 -d %s' % COSMOS_CLASSPATH)
  
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
@@ -44,7 +46,7 @@ def configure_hadoop(config):
     """Generate  Hadoop configuration files"""
     with cd('/etc/hadoop/conf'):
         coresite = StringIO()
-        template = Template(filename='templates/core-site.mako')
+        template = Template(filename = os.path.join(BASEPATH, 'templates/core-site.mako'))
         coresite.write(template.render(
                 namenode=config['hosts']['namenode'][0]))
         put(coresite, 'core-site.xml')
@@ -62,21 +64,22 @@ def configure_hadoop(config):
         put(slaves, 'slaves')
             
         mapredsite = StringIO()
-        template = Template(filename='templates/mapred-site.mako')
+        template = Template(filename = os.path.join(BASEPATH, 'templates/mapred-site.mako'))
         mapredsite.write(template.render(
-                jobtracker=config['hosts']['jobtracker'][0],
-                dirs=','.join([dir + '/mapred' for dir in config["hadoop_data_dirs"]])))
+                jobtracker = config['hosts']['jobtracker'][0],
+                dirs = ','.join([dir + '/mapred' for dir in config["hadoop_data_dirs"]]),
+                reduce_tasks = 2*len(config['hosts']['datanodes'])))
         put(mapredsite, 'mapred-site.xml')
         
         hdfssite = StringIO()
-        template = Template(filename='templates/hdfs-site.mako')
+        template = Template(filename = os.path.join(BASEPATH, 'templates/hdfs-site.mako'))
         hdfssite.write(template.render(
                 namedirs=','.join([dir + '/name' for dir in config["hadoop_data_dirs"]]),
                 datadirs=','.join([dir + '/data' for dir in config["hadoop_data_dirs"]])))
         put(hdfssite, 'hdfs-site.xml')
-
+        
         hadoop_env = StringIO()
-        template = Template(filename='templates/hadoop-env.mako')
+        template = Template(filename = os.path.join(BASEPATH, 'templates/hadoop-env.mako'))
         hadoop_env.write(template.render(
             cosmos_classpath=COSMOS_CLASSPATH))
         put(hadoop_env, 'hadoop-env.sh')

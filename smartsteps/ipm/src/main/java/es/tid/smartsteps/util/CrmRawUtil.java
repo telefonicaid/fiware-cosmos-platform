@@ -7,7 +7,7 @@ import es.tid.smartsteps.ipm.data.generated.CrmProtocol.CrmRaw;
  * @author dmicol
  */
 public abstract class CrmRawUtil {
-    private static final String DELIMITER = "\\|";
+    private static final char DELIMITER = '|';
     
     private CrmRawUtil() {
     }
@@ -42,7 +42,7 @@ public abstract class CrmRawUtil {
     }
     
     public static CrmRaw parse(String line) {
-        String[] fields = line.split(DELIMITER);
+        String[] fields = line.split("\\" + DELIMITER);
         return create(fields[0], fields[1], fields[2], fields[3], fields[4],
                 fields[5], fields[6], fields[7], fields[8], fields[9],
                 fields[10], fields[11], fields[12], fields[13], fields[14],

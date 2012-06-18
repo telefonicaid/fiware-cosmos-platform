@@ -5,10 +5,9 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -18,20 +17,18 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class PopdenCreateVectorReducer extends Reducer<ProtobufWritable<TwoInt>,
-        ProtobufWritable<MobData>, ProtobufWritable<TwoInt>,
-        ProtobufWritable<MobData>> {
+        TypedProtobufWritable<BtsCounter>, ProtobufWritable<TwoInt>,
+        TypedProtobufWritable<ClusterVector>> {
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<BtsCounter>> values, Context context)
             throws IOException, InterruptedException {
         ClusterVector.Builder comsVector = ClusterVector.newBuilder();
         for (int i = 0; i < 168; i++) {
             comsVector.addComs(0.0D);
         }
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            final BtsCounter counter = mobData.getBtsCounter();
+        for (TypedProtobufWritable<BtsCounter> value : values) {
+            final BtsCounter counter = value.get();
             int wday = counter.getWeekday();
             int pos = wday > 0 ? wday - 1 : 6;	// Sunday: 0
             pos *= 24;
@@ -44,6 +41,7 @@ public class PopdenCreateVectorReducer extends Reducer<ProtobufWritable<TwoInt>,
             }
             comsVector.setComs(pos, norm);
         }
-        context.write(key, MobDataUtil.createAndWrap(comsVector.build()));
+        context.write(key, new TypedProtobufWritable<ClusterVector>(
+                comsVector.build()));
     }
 }

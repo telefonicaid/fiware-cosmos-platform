@@ -5,19 +5,17 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.ItinMovementUtil;
 import es.tid.cosmos.mobility.data.ItinTimeUtil;
-import es.tid.cosmos.mobility.data.MobDataUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixTime;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 
 /**
  * Input: <Long, MatrixTime>
@@ -25,8 +23,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
  *
  * @author dmicol
  */
-public class MatrixMoveClientReducer extends Reducer<LongWritable,
-        ProtobufWritable<MobData>, LongWritable, ProtobufWritable<MobData>> {
+class MatrixMoveClientReducer extends Reducer<LongWritable,
+        TypedProtobufWritable<MatrixTime>, LongWritable, TypedProtobufWritable<ItinMovement>> {
     private static final int MINS_IN_ONE_HOUR = 60;
     private static final int HOURS_IN_ONE_DAY = 24;
     private static final int MINS_IN_ONE_DAY = MINS_IN_ONE_HOUR *
@@ -40,23 +38,21 @@ public class MatrixMoveClientReducer extends Reducer<LongWritable,
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         final Configuration conf = context.getConfiguration();
-        this.maxMinutesInMoves = conf.getInt(Config.MAX_MINUTES_IN_MOVES,
+        this.maxMinutesInMoves = conf.getInt(Config.MTX_MAX_MINUTES_IN_MOVES,
                                              Integer.MAX_VALUE);
-        this.minMinutesInMoves = conf.getInt(Config.MIN_MINUTES_IN_MOVES,
+        this.minMinutesInMoves = conf.getInt(Config.MTX_MIN_MINUTES_IN_MOVES,
                                              Integer.MIN_VALUE);
-        this.includeIntraMoves = conf.getBoolean(Config.INCLUDE_INTRA_MOVES,
+        this.includeIntraMoves = conf.getBoolean(Config.MTX_INCLUDE_INTRA_MOVES,
                                                  false);
     }
 
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values,
+            Iterable<TypedProtobufWritable<MatrixTime>> values,
             Context context) throws IOException, InterruptedException {
         List<MatrixTime> locList = new LinkedList<MatrixTime>();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final MobData mobData = value.get();
-            locList.add(mobData.getMatrixTime());
+        for (TypedProtobufWritable<MatrixTime> value : values) {
+            locList.add(value.get());
         }
 
         final GregorianCalendar calendar = new GregorianCalendar();
@@ -117,7 +113,7 @@ public class MatrixMoveClientReducer extends Reducer<LongWritable,
                                                    minDistLoc.getTime(),
                                                    minDistLoc.getGroup());
                 ItinMovement move = ItinMovementUtil.create(src, tgt);
-                context.write(key, MobDataUtil.createAndWrap(move));
+                context.write(key, new TypedProtobufWritable<ItinMovement>(move));
             }
         }
     }

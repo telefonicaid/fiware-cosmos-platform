@@ -6,10 +6,9 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.PoiNewUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiNew;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -20,20 +19,19 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class AdjAddUniqueIdPoiToPoiNewReducer extends Reducer<
-        LongWritable, ProtobufWritable<MobData>,
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
+class AdjAddUniqueIdPoiToPoiNewReducer extends Reducer<
+        LongWritable, TypedProtobufWritable<Poi>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<PoiNew>> {
     private static final long MAX_NUM_PARTITIONS = 100L;
     
     @Override
     protected void reduce(LongWritable key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<Poi>> values, Context context)
             throws IOException, InterruptedException {
         int hash = (int)(key.get() % MAX_NUM_PARTITIONS);
         int counter = 0;
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final Poi poi = value.get().getPoi();
+        for (TypedProtobufWritable<Poi> value : values) {
+            final Poi poi = value.get();
             PoiNew poiId = PoiNewUtil.create(
                     (int)(MAX_NUM_PARTITIONS * counter++) + hash,
                     poi.getNode(), poi.getBts(),
@@ -42,7 +40,7 @@ public class AdjAddUniqueIdPoiToPoiNewReducer extends Reducer<
                     poi.getConfidentnodebts());
             ProtobufWritable<TwoInt> nodLbl = TwoIntUtil.createAndWrap(
                     poi.getNode(), poiId.getLabelgroupnodebts());
-            context.write(nodLbl, MobDataUtil.createAndWrap(poiId));
+            context.write(nodLbl, new TypedProtobufWritable<PoiNew>(poiId));
         }
     }
 }

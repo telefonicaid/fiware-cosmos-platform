@@ -6,7 +6,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
  *
  * @author dmicol
  */
-public class ClientProfileParser extends Parser {
+class ClientProfileParser extends Parser {
     private static final String DELIMITER = "\\|";
     
     public ClientProfileParser(String line) {
@@ -23,7 +23,8 @@ public class ClientProfileParser extends Parser {
                     .setUserId(userId)
                     .build();
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Failed to parse: " + this.line);
+            throw new IllegalArgumentException("Failed to parse: " + this.line,
+                                               ex);
         }
     }
 }

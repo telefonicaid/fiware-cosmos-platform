@@ -6,9 +6,8 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
-import es.tid.cosmos.mobility.data.MobDataUtil;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 
 /**
@@ -18,17 +17,16 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
  * @author dmicol
  */
 public class VectorNormalizedReducer extends Reducer<ProtobufWritable<NodeBts>,
-        ProtobufWritable<MobData>, ProtobufWritable<NodeBts>,
-        ProtobufWritable<MobData>> {
+        TypedProtobufWritable<ClusterVector>, ProtobufWritable<NodeBts>,
+        TypedProtobufWritable<ClusterVector>> {
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
-            Iterable<ProtobufWritable<MobData>> values, Context context)
+            Iterable<TypedProtobufWritable<ClusterVector>> values, Context context)
             throws IOException, InterruptedException {
         ClusterVector.Builder vectorNormBuilder = ClusterVector.newBuilder();
         ClusterVector.Builder divBuilder = ClusterVector.newBuilder();
-        for (ProtobufWritable<MobData> value : values) {
-            value.setConverter(MobData.class);
-            final ClusterVector clusterVector = value.get().getClusterVector();
+        for (TypedProtobufWritable<ClusterVector> value : values) {
+            final ClusterVector clusterVector = value.get();
             double sumvalues = 0D;
             for (int j = 0; j < clusterVector.getComsCount(); j++) {
                 double elem = clusterVector.getComs(j);
@@ -49,8 +47,8 @@ public class VectorNormalizedReducer extends Reducer<ProtobufWritable<NodeBts>,
                 vectorNormBuilder.addComs(normCom);
             }
             
-            context.write(key,
-                          MobDataUtil.createAndWrap(vectorNormBuilder.build()));
+            context.write(key, new TypedProtobufWritable<ClusterVector>(
+                    vectorNormBuilder.build()));
         }
     }
 }

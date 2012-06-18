@@ -5,70 +5,9 @@ import "base.proto";
 option java_package = "es.tid.cosmos.mobility.data.generated";
 option java_outer_classname = "MobProtocol";
 
-message MobData {
-    enum Type {
-        INVALID = 0;
-        NULL = 1;
-        INT = 2;
-        LONG = 3;
-        DOUBLE = 4;
-        CDR = 5;
-        CELL = 6;
-        BTS = 7;
-        CLUSTER = 8;
-        NODE_BTS_DAY = 9;
-        BTS_COUNTER = 10;
-        BTS_PROFILE = 11;
-        POI = 12;
-        POI_POS = 13;
-        MOB_VI_MOB_VARS = 14;
-        TWO_INT = 15;
-        CLUSTER_VECTOR = 16;
-        POI_NEW = 17;
-        NODE_MX_COUNTER = 18;
-        DAILY_VECTOR = 19;
-        MOB_VARS = 20;
-        ITIN_TIME = 21;
-        ITIN_MOVEMENT = 22;
-        ITIN_RANGE = 23;
-        ITIN_PERC_MOVE = 24;
-        ITINERARY = 25;
-        NODE_BTS_DATE = 26;
-        NODE_BTS = 27;
-        MATRIX_TIME = 28;
-        CLIENT_PROFILE = 29;
-    }
-
-    required Type type = 1;
-    optional int32 inputId = 2 [default = -1];
-    optional uint32 int = 3;
-    optional uint64 long = 4;
-    optional double double = 5;
-    optional Cdr cdr = 6;
-    optional Cell cell = 7;
-    optional Bts bts = 8;
-    optional Cluster cluster = 9;
-    optional NodeBtsDay nodeBtsDay = 10;
-    optional BtsCounter btsCounter = 11;
-    optional BtsProfile btsProfile = 12;
-    optional Poi poi = 13;
-    optional PoiPos poiPos = 14;
-    optional MobViMobVars mobViMobVars = 15;
-    optional TwoInt twoInt = 16;
-    optional ClusterVector clusterVector = 17;
-    optional PoiNew poiNew = 18;
-    optional NodeMxCounter nodeMxCounter = 19;
-    optional DailyVector dailyVector = 20;
-    optional MobVars mobVars = 21;
-    optional ItinTime itinTime = 22;
-    optional ItinMovement itinMovement = 23;
-    optional ItinRange itinRange = 24;
-    optional ItinPercMove itinPercMove = 25;
-    optional Itinerary itinerary = 26;
-    optional NodeBtsDate nodeBtsDate = 27;
-    optional NodeBts nodeBts = 28;
-    optional MatrixTime matrixTime = 29;
-    optional ClientProfile clientProfile = 30;
+message InputIdRecord {
+    required int32 inputId = 1;
+    required bytes messageBytes = 2;
 }
 
 message Cdr {

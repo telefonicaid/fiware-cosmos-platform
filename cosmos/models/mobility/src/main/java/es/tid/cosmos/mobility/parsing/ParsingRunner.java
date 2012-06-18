@@ -10,7 +10,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
-import es.tid.cosmos.base.mapreduce.JobList;
+import es.tid.cosmos.base.mapreduce.CosmosWorkflow;
+import es.tid.cosmos.base.mapreduce.WorkflowList;
 
 /**
  *
@@ -20,64 +21,62 @@ public final class ParsingRunner {
     private ParsingRunner() {
     }
 
-    public static void run(Path cdrsPath, Path cdrsMobPath,
-                           Path cellsPath, Path cellsMobPath,
-                           Path adjBtsPath, Path pairbtsAdjPath,
-                           Path btsVectorTxtPath, Path btsComareaPath,
-                           Path clientsInfoPath, Path clientsInfoMobPath,
-                           Configuration conf)
+    public static CosmosWorkflow run(Path cdrsPath, Path cdrsMobPath,
+            Path cellsPath, Path cellsMobPath, Path adjBtsPath,
+            Path pairbtsAdjPath, Path btsVectorTxtPath, Path btsComareaPath,
+            Path clientsInfoPath, Path clientsInfoMobPath, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
-        JobList jobs = new JobList();
+        WorkflowList wf = new WorkflowList();
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "ParseCdrs",
+            CosmosJob job = CosmosJob.createMapJob(conf, "ParseCdrs",
                     TextInputFormat.class,
-                    ParseCdrsReducer.class,
+                    ParseCdrMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsPath);
             FileOutputFormat.setOutputPath(job, cdrsMobPath);
-            jobs.add(job);
+            wf.add(job);
         }
 
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "ParseCells",
+            CosmosJob job = CosmosJob.createMapJob(conf, "ParseCells",
                     TextInputFormat.class,
-                    ParseCellsReducer.class,
+                    ParseCellMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cellsPath);
             FileOutputFormat.setOutputPath(job, cellsMobPath);
-            jobs.add(job);
+            wf.add(job);
         }
         
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "AdjParseAdjBts",
+            CosmosJob job = CosmosJob.createMapJob(conf, "AdjParseAdjBts",
                     TextInputFormat.class,
-                    AdjParseAdjBtsReducer.class,
+                    AdjParseAdjBtsMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, adjBtsPath);
             FileOutputFormat.setOutputPath(job, pairbtsAdjPath);
-            jobs.add(job);
+            wf.add(job);
         }
 
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "BorrarGetBtsComarea",
+            CosmosJob job = CosmosJob.createMapJob(conf, "BorrarGetBtsComarea",
                     TextInputFormat.class,
-                    BorrarGetBtsComareaReducer.class,
+                    BorrarGetBtsComareaMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, btsVectorTxtPath);
             FileOutputFormat.setOutputPath(job, btsComareaPath);
-            jobs.add(job);
+            wf.add(job);
         }
         
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "ParserClientsInfo",
+            CosmosJob job = CosmosJob.createMapJob(conf, "ParserClientsInfo",
                     TextInputFormat.class,
-                    ParseClientProfilesReducer.class,
+                    ParseClientProfileMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, clientsInfoPath);
             FileOutputFormat.setOutputPath(job, clientsInfoMobPath);
-            jobs.add(job);
+            wf.add(job);
         }
         
-        jobs.waitForCompletion(true);
+        return wf;
     }
 }

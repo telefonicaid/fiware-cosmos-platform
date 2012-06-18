@@ -3,7 +3,6 @@ package es.tid.cosmos.mobility.labelling.secondhomes;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -12,7 +11,10 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.base.mapreduce.CosmosWorkflow;
+import es.tid.cosmos.base.mapreduce.WorkflowList;
 import es.tid.cosmos.mobility.util.ExportPoiToTextByTwoIntReducer;
+import es.tid.cosmos.mobility.util.SetMobDataInputIdByTwoIntReducer;
 
 /**
  *
@@ -22,120 +24,149 @@ public final class DetectSecondHomesRunner {
     private DetectSecondHomesRunner() {
     }
     
-    public static void run(Path cellsMobPath, Path pointsOfInterestTemp4Path,
-                           Path viClientFuseAccPath, Path pairbtsAdjPath,
-                           Path pointsOfInterestPath, Path tmpDirPath,
-                           boolean isDebug, Configuration conf)
+    public static CosmosWorkflow run(Path cellsMobPath,
+            Path pointsOfInterestTemp4Path, Path viClientFuseAccPath,
+            Path pairbtsAdjPath, Path pointsOfInterestPath, Path tmpDirPath,
+            boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
-        FileSystem fs = FileSystem.get(conf);
+        WorkflowList wfList = new WorkflowList();
         
         Path btsMobPath = new Path(tmpDirPath, "bts_mob");
-        {
-            CosmosJob job = CosmosJob.createMapJob(conf, "PoiCellToBts",
-                    SequenceFileInputFormat.class,
-                    PoiCellToBtsMapper.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, cellsMobPath);
-            FileOutputFormat.setOutputPath(job, btsMobPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob btsMobJob = CosmosJob.createMapJob(conf, "PoiCellToBts",
+                SequenceFileInputFormat.class,
+                PoiCellToBtsMapper.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(btsMobJob, cellsMobPath);
+        FileOutputFormat.setOutputPath(btsMobJob, btsMobPath);
+        btsMobJob.setDeleteOutputOnExit(!isDebug);
+        wfList.add(btsMobJob);
         
         Path sechPoiPosPath = new Path(tmpDirPath, "sech_poi_pos");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf,
-                    "PoiJoinPoisBtscoordToPoiPos",
-                    SequenceFileInputFormat.class,
-                    PoiJoinPoisBtscoordToPoiPosReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, new Path[] {
-                pointsOfInterestTemp4Path, btsMobPath });
-            FileOutputFormat.setOutputPath(job, sechPoiPosPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob sechPoiPosJob = CosmosJob.createReduceJob(conf,
+                "PoiJoinPoisBtscoordToPoiPos",
+                SequenceFileInputFormat.class,
+                PoiJoinPoisBtscoordToPoiPosReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(sechPoiPosJob, new Path[] {
+            pointsOfInterestTemp4Path, btsMobPath });
+        FileOutputFormat.setOutputPath(sechPoiPosJob, sechPoiPosPath);
+        sechPoiPosJob.setDeleteOutputOnExit(!isDebug);
+        sechPoiPosJob.addDependentWorkflow(btsMobJob);
+        wfList.add(sechPoiPosJob);
 
         Path nodbtsPoiPath = new Path(tmpDirPath, "nodbts_poi");
-        {
-            CosmosJob job = CosmosJob.createMapJob(conf, "PoiJoinPoisBtscoordToPoi",
-                    SequenceFileInputFormat.class,
-                    PoiJoinPoisBtscoordToPoiMapper.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, pointsOfInterestTemp4Path);
-            FileOutputFormat.setOutputPath(job, nodbtsPoiPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob nodbtsPoiJob = CosmosJob.createMapJob(conf,
+                "PoiJoinPoisBtscoordToPoi",
+                SequenceFileInputFormat.class,
+                PoiJoinPoisBtscoordToPoiMapper.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(nodbtsPoiJob, pointsOfInterestTemp4Path);
+        FileOutputFormat.setOutputPath(nodbtsPoiJob, nodbtsPoiPath);
+        nodbtsPoiJob.setDeleteOutputOnExit(!isDebug);
+        wfList.add(nodbtsPoiJob);
         
         Path sechPoiInoutPath = new Path(tmpDirPath, "vector_bts");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PoiJoinPoisViToPoiPos",
-                    SequenceFileInputFormat.class,
-                    PoiJoinPoisViToPoiPosReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, new Path[] {
-                sechPoiPosPath, viClientFuseAccPath });
-            FileOutputFormat.setOutputPath(job, sechPoiInoutPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob sechPoiInoutJob = CosmosJob.createReduceJob(conf,
+                "PoiJoinPoisViToPoiPos",
+                SequenceFileInputFormat.class,
+                PoiJoinPoisViToPoiPosReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(sechPoiInoutJob, new Path[] {
+            sechPoiPosPath, viClientFuseAccPath });
+        FileOutputFormat.setOutputPath(sechPoiInoutJob, sechPoiInoutPath);
+        sechPoiInoutJob.setDeleteOutputOnExit(!isDebug);
+        sechPoiInoutJob.addDependentWorkflow(sechPoiPosJob);
+        wfList.add(sechPoiInoutJob);
 
         Path nodbtsInoutPath = new Path(tmpDirPath, "nodbts_inout");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PoiJoinPoisViToTwoInt",
-                    SequenceFileInputFormat.class,
-                    PoiJoinPoisViToTwoIntReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, new Path[] {
-                sechPoiPosPath, viClientFuseAccPath });
-            FileOutputFormat.setOutputPath(job, nodbtsInoutPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob nodbtsInoutJob = CosmosJob.createReduceJob(conf,
+                "PoiJoinPoisViToTwoInt",
+                SequenceFileInputFormat.class,
+                PoiJoinPoisViToTwoIntReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(nodbtsInoutJob, new Path[] {
+            sechPoiPosPath, viClientFuseAccPath });
+        FileOutputFormat.setOutputPath(nodbtsInoutJob, nodbtsInoutPath);
+        nodbtsInoutJob.setDeleteOutputOnExit(!isDebug);
+        nodbtsInoutJob.addDependentWorkflow(sechPoiPosJob);
+        wfList.add(nodbtsInoutJob);
 
         Path sechPotSecHomePath = new Path(tmpDirPath, "sech_pot_sec_home");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "GetPairsSechomePois",
-                    SequenceFileInputFormat.class,
-                    GetPairsSechomePoisReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, sechPoiInoutPath);
-            FileOutputFormat.setOutputPath(job, sechPotSecHomePath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob sechPotSecHomeJob = CosmosJob.createReduceJob(conf,
+                "GetPairsSechomePois",
+                SequenceFileInputFormat.class,
+                GetPairsSechomePoisReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(sechPotSecHomeJob, sechPoiInoutPath);
+        FileOutputFormat.setOutputPath(sechPotSecHomeJob, sechPotSecHomePath);
+        sechPotSecHomeJob.setDeleteOutputOnExit(!isDebug);
+        sechPotSecHomeJob.addDependentWorkflow(sechPoiInoutJob);
+        wfList.add(sechPotSecHomeJob);
+        
+        Path sechPotSecHomeInputIdPath = new Path(tmpDirPath, "sech_pot_sec_home_id");
+        CosmosJob sechPotSecHomeInputIdJob = CosmosJob.createReduceJob(conf,
+                "GetPairsSechomePois",
+                SequenceFileInputFormat.class,
+                SetMobDataInputIdByTwoIntReducer.class,
+                SequenceFileOutputFormat.class);
+        sechPotSecHomeInputIdJob.getConfiguration().setInt("input_id", 0);
+        FileInputFormat.setInputPaths(sechPotSecHomeInputIdJob, sechPotSecHomePath);
+        FileOutputFormat.setOutputPath(sechPotSecHomeInputIdJob, sechPotSecHomeInputIdPath);
+        sechPotSecHomeInputIdJob.addDependentWorkflow(sechPotSecHomeJob);
+        wfList.add(sechPotSecHomeInputIdJob);
+        
+        Path pairbtsAdjInputIdPath = new Path(tmpDirPath, "pairbts_adj_id");
+        CosmosJob pairbtsAdjInputIdJob = CosmosJob.createReduceJob(conf,
+                "GetPairsSechomePois",
+                SequenceFileInputFormat.class,
+                SetMobDataInputIdByTwoIntReducer.class,
+                SequenceFileOutputFormat.class);
+        pairbtsAdjInputIdJob.getConfiguration().setInt("input_id", 1);
+        FileInputFormat.setInputPaths(pairbtsAdjInputIdJob, pairbtsAdjPath);
+        FileOutputFormat.setOutputPath(pairbtsAdjInputIdJob, pairbtsAdjInputIdPath);
+        wfList.add(pairbtsAdjInputIdJob);
         
         Path nodbtsSechomePath = new Path(tmpDirPath, "nodbts_sechome");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf,
-                    "PoiFilterSechomeAdjacent",
-                    SequenceFileInputFormat.class,
-                    PoiFilterSechomeAdjacentReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, new Path[] {
-                sechPotSecHomePath, pairbtsAdjPath });
-            FileOutputFormat.setOutputPath(job, nodbtsSechomePath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob nodbtsSechomeJob = CosmosJob.createReduceJob(conf,
+                "PoiFilterSechomeAdjacent",
+                SequenceFileInputFormat.class,
+                PoiFilterSechomeAdjacentReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(nodbtsSechomeJob, new Path[] {
+            sechPotSecHomeInputIdPath, pairbtsAdjInputIdPath });
+        FileOutputFormat.setOutputPath(nodbtsSechomeJob, nodbtsSechomePath);
+        nodbtsSechomeJob.setDeleteOutputOnExit(!isDebug);
+        nodbtsSechomeJob.addDependentWorkflow(sechPotSecHomeInputIdJob);
+        nodbtsSechomeJob.addDependentWorkflow(pairbtsAdjInputIdJob);
+        wfList.add(nodbtsSechomeJob);
         
         Path nodbtsSechomeUniqPath = new Path(tmpDirPath,
                                               "nodbts_sechome_uniq");
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PoiDeleteSechomeDuplicate",
-                    SequenceFileInputFormat.class,
-                    PoiDeleteSechomeDuplicateReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, nodbtsSechomePath);
-            FileOutputFormat.setOutputPath(job, nodbtsSechomeUniqPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob nodbtsSechomeUniqJob = CosmosJob.createReduceJob(conf,
+                "PoiDeleteSechomeDuplicate",
+                SequenceFileInputFormat.class,
+                PoiDeleteSechomeDuplicateReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(nodbtsSechomeUniqJob, nodbtsSechomePath);
+        FileOutputFormat.setOutputPath(nodbtsSechomeUniqJob, nodbtsSechomeUniqPath);
+        nodbtsSechomeUniqJob.setDeleteOutputOnExit(!isDebug);
+        nodbtsSechomeUniqJob.addDependentWorkflow(nodbtsSechomeJob);
+        wfList.add(nodbtsSechomeUniqJob);
         
-        {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "PoiJoinSechomeResults",
-                    SequenceFileInputFormat.class,
-                    PoiJoinSechomeResultsReducer.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, new Path[] {
-                nodbtsPoiPath,
-                nodbtsInoutPath,
-                nodbtsSechomeUniqPath });
-            FileOutputFormat.setOutputPath(job, pointsOfInterestPath);
-            job.waitForCompletion(true);
-        }
+        CosmosJob pointsOfInterestJob = CosmosJob.createReduceJob(conf,
+                "PoiJoinSechomeResults",
+                SequenceFileInputFormat.class,
+                PoiJoinSechomeResultsReducer.class,
+                SequenceFileOutputFormat.class);
+        FileInputFormat.setInputPaths(pointsOfInterestJob, new Path[] {
+            nodbtsPoiPath,
+            nodbtsInoutPath,
+            nodbtsSechomeUniqPath });
+        FileOutputFormat.setOutputPath(pointsOfInterestJob, pointsOfInterestPath);
+        pointsOfInterestJob.addDependentWorkflow(nodbtsPoiJob);
+        pointsOfInterestJob.addDependentWorkflow(nodbtsInoutJob);
+        pointsOfInterestJob.addDependentWorkflow(nodbtsSechomeUniqJob);
+        wfList.add(pointsOfInterestJob);
         
         if (isDebug) {
             Path pointsOfInterestTextPath = new Path(tmpDirPath,
@@ -149,18 +180,10 @@ public final class DetectSecondHomesRunner {
                         TextOutputFormat.class);
                 FileInputFormat.setInputPaths(job, pointsOfInterestPath);
                 FileOutputFormat.setOutputPath(job, pointsOfInterestTextPath);
-                job.waitForCompletion(true);
+                job.addDependentWorkflow(pointsOfInterestJob);
+                wfList.add(job);
             }
-        } else {
-            fs.delete(btsMobPath, true);
-            fs.delete(nodbtsPoiPath, true);
-            fs.delete(sechPoiPosPath, true);
-            fs.delete(sechPoiInoutPath, true);
-            fs.delete(nodbtsInoutPath, true);
-            fs.delete(sechPotSecHomePath, true);
-            fs.delete(nodbtsSechomePath, true);
-            fs.delete(nodbtsSechomeUniqPath, true);
-            fs.delete(pointsOfInterestTemp4Path, true);
         }
+        return wfList;
     }
 }

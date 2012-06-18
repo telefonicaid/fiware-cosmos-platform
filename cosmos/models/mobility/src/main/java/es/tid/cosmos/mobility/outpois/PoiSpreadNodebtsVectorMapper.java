@@ -5,8 +5,9 @@ import java.io.IOException;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobData;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -16,12 +17,12 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * 
  * @author dmicol
  */
-public class PoiSpreadNodebtsVectorMapper extends Mapper<
-        ProtobufWritable<NodeBts>, ProtobufWritable<MobData>,
-        ProtobufWritable<TwoInt>, ProtobufWritable<MobData>> {
+class PoiSpreadNodebtsVectorMapper extends Mapper<
+        ProtobufWritable<NodeBts>, TypedProtobufWritable<ClusterVector>,
+        ProtobufWritable<TwoInt>, TypedProtobufWritable<ClusterVector>> {
     @Override
     protected void map(ProtobufWritable<NodeBts> key,
-            ProtobufWritable<MobData> value, Context context)
+            TypedProtobufWritable<ClusterVector> value, Context context)
             throws IOException, InterruptedException {
         key.setConverter(NodeBts.class);
         final NodeBts nodeBts = key.get();

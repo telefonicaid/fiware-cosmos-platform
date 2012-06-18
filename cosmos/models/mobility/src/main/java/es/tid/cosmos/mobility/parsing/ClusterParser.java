@@ -24,7 +24,8 @@ public class ClusterParser extends Parser {
             cluster.setCoords(this.parseClusterVector());
             return cluster.build();
         } catch (Exception ex) {
-            throw new IllegalArgumentException("Failed to parse: " + this.line);
+            throw new IllegalArgumentException("Failed to parse: " + this.line,
+                                               ex);
         }
     }
 }

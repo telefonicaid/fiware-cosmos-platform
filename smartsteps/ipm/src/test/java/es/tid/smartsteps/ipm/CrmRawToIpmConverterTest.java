@@ -23,7 +23,7 @@ public class CrmRawToIpmConverterTest {
         String output = null;
         try {
             output = this.instance.convert("0|1|2|3|4|5|6|7|8|9|10|"
-                                                  + "11|12|13|14|15|16|17");
+                                           + "11|12|13|14|15|16|17");
         } catch (ParseException e) {
             fail(String.format("unexpected parsing error: %s", e.getCause()));
         }

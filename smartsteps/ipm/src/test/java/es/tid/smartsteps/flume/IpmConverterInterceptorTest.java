@@ -151,5 +151,4 @@ public class IpmConverterInterceptorTest {
         interceptValidEventList(
                 validInetEvent, inetInterceptor, new InetRawToIpmConverter());
     }
-
 }

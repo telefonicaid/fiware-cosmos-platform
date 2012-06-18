@@ -68,7 +68,6 @@ public class IpmConverterInterceptor implements Interceptor {
     }
 
     public static class Builder implements Interceptor.Builder {
-
         private RawToIpmConverter converter = null;
 
         @Override
@@ -82,10 +81,11 @@ public class IpmConverterInterceptor implements Interceptor {
         @Override
         public void configure(Context context) throws ConfigurationException {
             String converterName = context.getString(PROPERTY_CONVERTER);
-            if (converterName == null)
+            if (converterName == null) {
                 throw new ConfigurationException(String.format(
                         "missing '%s' property for IPM converter interceptor",
                         PROPERTY_CONVERTER));
+            }
             Class<? extends RawToIpmConverter> converterClass = null;
             try {
                 IpmConverterType converterType =
@@ -125,5 +125,4 @@ public class IpmConverterInterceptor implements Interceptor {
     public static class Constants {
         public static final String PROPERTY_CONVERTER = "converter";
     }
-
 }

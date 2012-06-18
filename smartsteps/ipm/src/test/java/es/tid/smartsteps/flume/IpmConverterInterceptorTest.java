@@ -44,8 +44,7 @@ public class IpmConverterInterceptorTest {
         }
     }
 
-    private Interceptor buildInterceptor(
-            IpmConverterType converterType) {
+    private Interceptor buildInterceptor(IpmConverterType converterType) {
         IpmConverterInterceptor.Builder interceptorBuilder =
                 new IpmConverterInterceptor.Builder();
         Context ctx = new Context();
@@ -61,8 +60,7 @@ public class IpmConverterInterceptorTest {
             RawToIpmConverter converter) throws ParseException {
         Event inputEvent = EventBuilder.withBody(inputLine, Charsets.US_ASCII);
         Event outputEvent = interceptor.intercept(inputEvent);
-        assertEquals(new String(outputEvent.getBody()),
-                converter.convert(inputLine));
+        assertEquals(new String(outputEvent.getBody()), converter.convert(inputLine));
     }
 
     private void interceptInvalidEvent(

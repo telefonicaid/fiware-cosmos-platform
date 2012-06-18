@@ -1,18 +1,21 @@
 package es.tid.cosmos.profile.api;
 
 import java.util.List;
+import java.util.Map;
 
-import com.sun.jersey.api.NotFoundException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+
+import com.sun.jersey.api.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
+ * Lists the top n categories for a user.
  *
  * @author sortega
  */
@@ -29,8 +32,8 @@ public class TopCategoriesResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List getTop(@PathParam("username") String userName,
-                       @PathParam("n") int n) {
+    public List<Map> getTop(@PathParam("username") String userName,
+                            @PathParam("n") int n) {
         try {
             return Categories.getTop(this.profile, userName, n);
         } catch (IllegalArgumentException ex) {

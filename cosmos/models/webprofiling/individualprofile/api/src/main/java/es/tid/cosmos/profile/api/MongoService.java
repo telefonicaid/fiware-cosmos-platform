@@ -1,10 +1,11 @@
 package es.tid.cosmos.profile.api;
 
-import com.mongodb.DB;
-import com.mongodb.Mongo;
 import java.net.UnknownHostException;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+
+import com.mongodb.DB;
+import com.mongodb.Mongo;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

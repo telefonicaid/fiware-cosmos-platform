@@ -1,8 +1,9 @@
 package es.tid.smartsteps.flume;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.common.base.Charsets;
-import es.tid.smartsteps.ipm.ParseException;
-import es.tid.smartsteps.ipm.RawToIpmConverter;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.conf.ConfigurationException;
@@ -10,8 +11,8 @@ import org.apache.flume.interceptor.Interceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import es.tid.smartsteps.ipm.ParseException;
+import es.tid.smartsteps.ipm.RawToIpmConverter;
 
 import static es.tid.smartsteps.flume.IpmConverterInterceptor.Constants.PROPERTY_CONVERTER;
 

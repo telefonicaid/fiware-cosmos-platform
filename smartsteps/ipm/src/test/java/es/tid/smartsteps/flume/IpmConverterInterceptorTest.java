@@ -1,10 +1,9 @@
 package es.tid.smartsteps.flume;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import com.google.common.base.Charsets;
-import es.tid.smartsteps.ipm.CrmRawToIpmConverter;
-import es.tid.smartsteps.ipm.InetRawToIpmConverter;
-import es.tid.smartsteps.ipm.ParseException;
-import es.tid.smartsteps.ipm.RawToIpmConverter;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.conf.ConfigurationException;
@@ -13,12 +12,13 @@ import org.apache.flume.interceptor.Interceptor;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.LinkedList;
-import java.util.List;
+import es.tid.smartsteps.ipm.CrmRawToIpmConverter;
+import es.tid.smartsteps.ipm.InetRawToIpmConverter;
+import es.tid.smartsteps.ipm.ParseException;
+import es.tid.smartsteps.ipm.RawToIpmConverter;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-
 /**
  * Unit test for IPM converter interceptor
  *

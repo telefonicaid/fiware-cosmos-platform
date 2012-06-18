@@ -78,7 +78,7 @@ public class MobilityMain extends Configured implements Tool {
             parsingWorkflow = new ParsingRunner().run(cdrsPath, cdrsMobPath,
                     cellsPath, cellsMobPath, adjBtsPath, pairbtsAdjPath,
                     btsVectorTxtPath, btsComareaPath, clientProfilePath,
-                    clientProfileMobPath, conf);
+                    clientProfileMobPath, isDebug, conf);
             wfList.add(parsingWorkflow);
         }
         

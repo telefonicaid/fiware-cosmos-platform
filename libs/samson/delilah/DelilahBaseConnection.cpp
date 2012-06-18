@@ -60,6 +60,7 @@ namespace samson
         
         if( network )
         {
+            LM_E(("Currently connected to %s" , network->getLoginInfo().c_str()));
             error->set( au::str("Currently connected to %s" , network->getLoginInfo().c_str() ) );
             return;
         }
@@ -75,6 +76,7 @@ namespace samson
         
         if( s != samson::OK )
         {
+            LM_W(("Not possible to open connection with %s:%d (%s)" , host.c_str() , port , samson::status(s)));
             error->set(au::str("Not possible to open connection with %s:%d (%s)" , host.c_str() , port , samson::status(s) ));
             // TODO: Wait for unfinished threads in _network?
             
@@ -154,7 +156,10 @@ namespace samson
         au::TokenTaker tt(&token);
         
         if( !network)
+        {
+            LM_W(("No network instance"));
             return false;
+        }
         return network->ready();
     }
 

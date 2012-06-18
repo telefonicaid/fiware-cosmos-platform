@@ -337,7 +337,7 @@ int main(int argC, const char *argV[])
     if ( strcmp( commandFileName,"") != 0 )
     {
         
-        // Set timple output
+        // Set simple output
         delilahConsole->setSimpleOutput();
         
         {

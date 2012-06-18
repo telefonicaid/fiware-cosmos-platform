@@ -306,6 +306,7 @@ namespace samson {
     void CommonNetwork::report_delilah_connected( size_t id )
     {
         Packet * packet = new Packet( Message::NetworkNotification );
+        LM_M(("report_delilah_connected() id:%lu", id));
         packet->message->mutable_network_notification()->set_connected_delilah_id(id);
         schedule_receive( packet );
         packet->release();
@@ -314,6 +315,7 @@ namespace samson {
     void CommonNetwork::report_delilah_disconnected( size_t id )
     {
         Packet * packet = new Packet( Message::NetworkNotification );
+        LM_M(("report_delilah_disconnected() id:%lu", id));
         packet->message->mutable_network_notification()->set_disconnected_delilah_id(id);
         schedule_receive( packet );
         packet->release();

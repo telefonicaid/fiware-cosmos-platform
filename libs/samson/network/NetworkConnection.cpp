@@ -89,6 +89,7 @@ namespace samson {
             running_t_write = true;
             au::ThreadManager::shared()->addThread(name, &t_write, NULL, NetworkConnection_writerThread, this);
         }
+        LM_M(("Reader and writer threads initialised"));
     }
     
     void NetworkConnection::stopReadWriteThreads()

@@ -59,8 +59,9 @@ public class IpmConverterInterceptor implements Interceptor {
         List<Event> result = new ArrayList<Event>(events.size());
         for (Event inputEvent : events) {
             Event outputEvent = intercept(inputEvent);
-            if (outputEvent != null)
+            if (outputEvent != null) {
                 result.add(outputEvent);
+            }
         }
         return result;
     }
@@ -75,9 +76,10 @@ public class IpmConverterInterceptor implements Interceptor {
 
         @Override
         public Interceptor build() {
-            if (this.converter == null)
+            if (this.converter == null) {
                 throw new RuntimeException("cannot build IPM converter " +
                         "interceptor: the builder has not been initialized yet");
+            }
             return new IpmConverterInterceptor(this.converter);
         }
 

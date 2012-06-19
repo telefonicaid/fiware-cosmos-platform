@@ -33,8 +33,8 @@ public class ItinJoinCellBtsReducer extends Reducer<LongWritable,
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         if (cells == null) {
-            final MobilityConfiguration conf =
-                    (MobilityConfiguration) context.getConfiguration();
+            final MobilityConfiguration conf = new MobilityConfiguration(context.
+                    getConfiguration());
             cells = CellsCatalogue.load(new Path(conf.get("cells")), conf);
         }
     }

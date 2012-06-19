@@ -1,10 +1,13 @@
 package es.tid.cosmos.mobility;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -58,7 +61,7 @@ public class MobilityMain extends Configured implements Tool {
         conf.load(configInput);
         this.setConf(conf);
         
-        if (conf.getSysExecMode().equalsIgnoreCase("complete")) {
+        if (!conf.getSysExecMode().equalsIgnoreCase("complete")) {
             throw new UnsupportedOperationException(
                     "Only complete execution mode is supported");
         }
@@ -66,14 +69,16 @@ public class MobilityMain extends Configured implements Tool {
             throw new UnsupportedOperationException(
                     "Incremental mode is not supported yet");
         }
-        
+
         Path inputPath = new Path(conf.getSysInputFolder());
         Path outputPath = new Path(conf.getSysOutputCompleteFolder());
         Path cdrsPath = new Path(inputPath, "cdrs");
-        Path cellsPath = new Path(inputPath, "cells");
-        Path cellGroupsPath = new Path(inputPath, "cellGroups");
+        Path cellsPath = getOnlyFileInDirectory(
+                new Path(inputPath, "cells"), conf);
+        Path cellGroupsPath = getOnlyFileInDirectory(
+                new Path(inputPath, "cellGroups"), conf);
         Path adjBtsPath = new Path(inputPath, "adjBts");
-        Path btsVectorTxtPath = new Path(inputPath, "btsVectorTxt");
+        Path btsVectorTxtPath = new Path(inputPath, "btsVector");
         Path clientProfilePath = new Path(inputPath, "clientProfile");
         
         boolean shouldRunAll = arguments.getBoolean("runAll");
@@ -147,8 +152,8 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldLabelClient = arguments.getBoolean("labelClient");
         CosmosWorkflow clientLabellingWorkflow = null;
         if (shouldRunAll || shouldLabelClient) {
-            Path centroidsPath = new Path(arguments.getString(
-                    "centroids_client", true));
+            Path centroidsPath = getOnlyFileInDirectory(
+                    new Path(inputPath, "centroidsClient"), conf);
             clientLabellingWorkflow = ClientLabellingRunner.run(cdrsMobPath,
                     clientsInfoFilteredPath, centroidsPath,
                     vectorClientClusterPath, tmpLabelClientPath, isDebug, conf);
@@ -163,8 +168,8 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldLabelBts = arguments.getBoolean("labelBTS");
         CosmosWorkflow btsLabellingWorkflow = null;
         if (shouldRunAll || shouldLabelBts) {
-            Path centroidsPath = new Path(arguments.getString(
-                    "centroids_bts", true));
+            Path centroidsPath = getOnlyFileInDirectory(
+                    new Path(inputPath, "centroidsBts"), conf);
             btsLabellingWorkflow = BtsLabellingRunner.run(btsCommsPath,
                     btsComareaPath, centroidsPath, vectorBtsClusterPath,
                     tmpLabelBtsPath, isDebug, conf);
@@ -183,11 +188,11 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldLabelClientbts = arguments.getBoolean("labelClientBTS");
         CosmosWorkflow clientBtsLabellingWorkflow = null;
         if (shouldRunAll || shouldLabelClientbts) {
-            Path centroidsPath = new Path(arguments.getString(
-                    "centroids_clientbts", true));
+            Path medoidsPath = getOnlyFileInDirectory(
+                    new Path(inputPath, "medoidsClientbts"), conf);
             clientBtsLabellingWorkflow = ClientBtsLabellingRunner.run(
                     clientsInfoPath, clientsRepbtsPath, vectorClientbtsPath,
-                    centroidsPath, pointsOfInterestTempPath,
+                    medoidsPath, pointsOfInterestTempPath,
                     vectorClientbtsClusterPath, tmpLabelClientbtsPath, isDebug,
                     conf);
             clientBtsLabellingWorkflow.addDependentWorkflow(poisWorkflow);
@@ -356,6 +361,21 @@ public class MobilityMain extends Configured implements Tool {
         }
         
         return 0;
+    }
+    
+    private static Path getOnlyFileInDirectory(Path directoryPath,
+            Configuration conf) throws IOException {
+        FileSystem fs = FileSystem.get(conf);
+        if (!fs.exists(directoryPath)) {
+            throw new IllegalArgumentException(
+                    "Path " + directoryPath + " does not exist");
+        }
+        FileStatus[] files = fs.listStatus(directoryPath);
+        if (files.length != 1) {
+            throw new IllegalArgumentException(
+                    "Only one file should be in " + directoryPath);
+        }
+        return files[0].getPath();
     }
     
     public static void main(String[] args) throws Exception {

@@ -37,8 +37,8 @@ class MatrixMoveClientReducer extends Reducer<LongWritable,
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        final MobilityConfiguration conf =
-                (MobilityConfiguration) context.getConfiguration();
+        final MobilityConfiguration conf = new MobilityConfiguration(context.
+                getConfiguration());
         this.maxMinutesInMoves = conf.getMtxMaxMinutesInMoves();
         this.minMinutesInMoves = conf.getMtxMinMinutesInMoves();
         this.includeIntraMoves = conf.getMtxIncludeIntraMoves();

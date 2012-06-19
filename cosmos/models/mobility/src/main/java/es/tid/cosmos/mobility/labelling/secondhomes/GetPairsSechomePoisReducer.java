@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 

@@ -3,7 +3,6 @@ package es.tid.cosmos.mobility.itineraries;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.MobilityConfiguration;

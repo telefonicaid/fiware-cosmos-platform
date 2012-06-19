@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.protobuf.Message;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 

@@ -7,10 +7,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
  * @author dmicol
  */
 public class ClusterParser extends Parser {
-    private static final String DELIMITER = "\\|";
-    
-    public ClusterParser(String line) {
-        super(line, DELIMITER);
+    public ClusterParser(String line, String separator) {
+        super(line, separator);
     }
 
     @Override

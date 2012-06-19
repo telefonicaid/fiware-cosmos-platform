@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.outpois;
 
 import java.io.IOException;
+import java.io.InputStream;
 import static java.util.Arrays.asList;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 
@@ -28,9 +30,13 @@ public class VectorOneidOutReducerTest {
             Text> driver;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Cluster>,
                 NullWritable, Text>(new VectorOneidOutReducer());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                                                 this.driver.getConfiguration()));
     }
 
     @Test

@@ -13,6 +13,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.base.util.Logger;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.parsing.CellParser;
 
@@ -29,7 +30,8 @@ public abstract class CellsCatalogue {
             FileSystem fs = FileSystem.get(conf);
             in = fs.open(input);
             reader = new InputStreamReader(in);
-            return load(reader);
+            final String separator = conf.get(Config.DATA_SEPARATOR);
+            return load(reader, separator);
         } catch (Exception ex) {
             Logger.get(CellsCatalogue.class).fatal(ex);
             throw new IOException(ex);
@@ -49,12 +51,13 @@ public abstract class CellsCatalogue {
         }
     }
 
-    public static List<Cell> load(Reader input) throws IOException {
+    public static List<Cell> load(Reader input, String separator)
+            throws IOException {
         List<Cell> cells = new LinkedList<Cell>();
         BufferedReader br = new BufferedReader(input);
         String line;
         while ((line = br.readLine()) != null) {
-            Cell cell = new CellParser(line).parse();
+            Cell cell = new CellParser(line, separator).parse();
             cells.add(cell);
         }
         return cells;

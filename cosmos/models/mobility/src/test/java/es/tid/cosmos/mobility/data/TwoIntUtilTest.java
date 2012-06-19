@@ -31,6 +31,6 @@ public class TwoIntUtilTest {
     @Test
     public void testToString() {
         TwoInt obj = TwoIntUtil.create(3L, 5L);
-        assertEquals("3|5", TwoIntUtil.toString(obj));
+        assertEquals("3|5", TwoIntUtil.toString(obj, "|"));
     }
 }

@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.parsing;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 
 import org.apache.hadoop.io.LongWritable;
@@ -13,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
 
 /**
@@ -24,9 +26,13 @@ public class BorrarGetBtsComareaMapperTest {
             TypedProtobufWritable<Bts>> driver;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.driver = new MapDriver<LongWritable, Text, LongWritable,
                 TypedProtobufWritable<Bts>>(new BorrarGetBtsComareaMapper());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                                                 this.driver.getConfiguration()));
     }
 
     @Test
@@ -34,7 +40,7 @@ public class BorrarGetBtsComareaMapperTest {
         List<Pair<LongWritable, TypedProtobufWritable<Bts>>> res =
                 this.driver
                         .withInput(new LongWritable(1L),
-                                   new Text("17360  17360 711.86 6673"))
+                                   new Text("17360|17360|711.86|6673"))
                         .run();
         assertNotNull(res);
         assertEquals(1, res.size());
@@ -48,7 +54,7 @@ public class BorrarGetBtsComareaMapperTest {
     public void testInvalidLine() throws IOException {
         this.driver
                 .withInput(new LongWritable(1L),
-                           new Text("17360  17360 711.86 blah"))
+                           new Text("17360|17360|711.86|blah"))
                 .runTest();
     }
 }

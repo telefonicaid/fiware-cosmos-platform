@@ -12,7 +12,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
  *
  * @author dmicol
  */
-public class ClusterUtilTest {
+public class ClusterUtilTest {    
     @Test
     public void testCreateAndWrap() {
         ProtobufWritable<Cluster> wrapper = ClusterUtil.createAndWrap(
@@ -31,6 +31,6 @@ public class ClusterUtilTest {
     public void testToString() {
         Cluster obj = ClusterUtil.create(1, 2, 1, 0.57D, 30.12D,
                                          ClusterVector.getDefaultInstance());
-        assertEquals("1|2|1|0.57|30.12", ClusterUtil.toString(obj));
+        assertEquals("1|2|1|0.57|30.12", ClusterUtil.toString(obj, "|"));
     }
 }

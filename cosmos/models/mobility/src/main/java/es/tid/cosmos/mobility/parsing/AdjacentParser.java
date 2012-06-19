@@ -7,10 +7,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 class AdjacentParser extends Parser {
-    private static final String DELIMITER = "\\|";
-    
-    public AdjacentParser(String line) {
-        super(line, DELIMITER);
+    public AdjacentParser(String line, String separator) {
+        super(line, separator);
     }
     
     @Override

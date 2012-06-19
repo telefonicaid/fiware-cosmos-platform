@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import static java.util.Arrays.asList;
 
 import org.apache.hadoop.io.LongWritable;
@@ -12,6 +13,7 @@ import org.junit.Test;
 
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 
@@ -24,9 +26,13 @@ public class ExportClusterToTextReducerTest {
             Text> driver;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Cluster>,
                 NullWritable, Text>(new ExportClusterToTextReducer());
+        InputStream configInput = Config.class.getResource(
+                "/mobility.properties").openStream();
+        this.driver.setConfiguration(Config.load(configInput,
+                                                 this.driver.getConfiguration()));
     }
     
     @Test

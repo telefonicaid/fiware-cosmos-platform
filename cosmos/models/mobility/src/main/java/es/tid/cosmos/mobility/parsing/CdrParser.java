@@ -7,10 +7,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
  * @author sortega
  */
 class CdrParser extends Parser {
-    private static final String DELIMITER = "\\|";
-    
-    public CdrParser(String line) {
-        super(line, DELIMITER);
+    public CdrParser(String line, String separator) {
+        super(line, separator);
     }
 
     @Override
@@ -23,10 +21,10 @@ class CdrParser extends Parser {
             if (cdr.getCellId() == 0) { // Cell 2
                 cdr.setCellId(this.parseCellId());
             } else {
-                this.skipField();
+                this.nextToken();
             }
-            this.skipField(); // Phone 2
-            this.skipField(); // Unknown field
+            this.nextToken(); // Phone 2
+            this.nextToken(); // Unknown field
 
             cdr.setDate(this.parseDate());
             cdr.setTime(this.parseTime());

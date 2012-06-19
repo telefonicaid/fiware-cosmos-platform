@@ -7,10 +7,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
  * @author sortega
  */
 public class CellParser extends Parser {
-    private static final String DELIMITER = "\\|";
-    
-    public CellParser(String line) {
-        super(line, DELIMITER);
+    public CellParser(String line, String separator) {
+        super(line, separator);
     }
 
     @Override

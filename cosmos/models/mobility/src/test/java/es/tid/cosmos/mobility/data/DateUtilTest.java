@@ -25,7 +25,7 @@ public class DateUtilTest {
 
     @Test
     public void testParse() {
-        Date obj = DateUtil.parse("2012|4|20|5");
+        Date obj = DateUtil.parse("2012|4|20|5", "\\|");
         assertEquals(2012, obj.getYear());
         assertEquals(4, obj.getMonth());
         assertEquals(20, obj.getDay());
@@ -35,6 +35,6 @@ public class DateUtilTest {
     @Test
     public void testToString() {
         Date obj = DateUtil.create(2012, 4, 20, 5);
-        assertEquals("2012|4|20|5", DateUtil.toString(obj));
+        assertEquals("2012|4|20|5", DateUtil.toString(obj, "|"));
     }
 }

@@ -10,8 +10,6 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
  * @author sortega
  */
 public abstract class ClusterUtil {
-    public static final String DELIMITER = "|";
-    
     public static Cluster create(int label, int labelgroup, int confident,
             double mean, double distance, ClusterVector coords) {
         return Cluster.newBuilder()
@@ -37,12 +35,12 @@ public abstract class ClusterUtil {
         return wrap(create(label, labelgroup, confident, mean, distance, coords));
     }
 
-    public static String toString(Cluster obj) {
-        String str = obj.getLabel() + DELIMITER + obj.getLabelgroup()
-                + DELIMITER + obj.getConfident() + DELIMITER + obj.getMean()
-                + DELIMITER + obj.getDistance();
+    public static String toString(Cluster obj, String separator) {
+        String str = obj.getLabel() + separator + obj.getLabelgroup()
+                + separator + obj.getConfident() + separator + obj.getMean()
+                + separator + obj.getDistance();
         for (double comm : obj.getCoords().getComsList()) {
-            str += DELIMITER + comm;
+            str += separator + comm;
         }
         return str;
     }

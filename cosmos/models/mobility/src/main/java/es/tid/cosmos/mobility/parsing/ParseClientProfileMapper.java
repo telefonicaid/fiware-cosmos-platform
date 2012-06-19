@@ -7,6 +7,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
 
 /**
@@ -18,12 +19,20 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
  */
 public class ParseClientProfileMapper extends Mapper<LongWritable, Text,
         LongWritable, TypedProtobufWritable<ClientProfile>> {
+    private String separator;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        this.separator = context.getConfiguration().get(Config.DATA_SEPARATOR);
+    }
+    
     @Override
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
         try {
             final ClientProfile clientProfile = new ClientProfileParser(
-                    value.toString()).parse();
+                    value.toString(), this.separator).parse();
             context.write(new LongWritable(clientProfile.getUserId()),
                           new TypedProtobufWritable<ClientProfile>(clientProfile));
         } catch (Exception ex) {

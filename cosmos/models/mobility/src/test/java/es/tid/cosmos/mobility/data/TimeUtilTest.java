@@ -26,6 +26,6 @@ public class TimeUtilTest {
     public void testToString() {
         Time obj = TimeUtil.create(1, 2, 3);
         assertNotNull(obj);
-        assertEquals("1|2|3", TimeUtil.toString(obj));
+        assertEquals("1|2|3", TimeUtil.toString(obj, "|"));
     }
 }

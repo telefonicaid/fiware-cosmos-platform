@@ -1,54 +1,39 @@
 package es.tid.cosmos.mobility.parsing;
 
+import java.util.StringTokenizer;
+
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 
 /**
  *
- * @author sortega
+ * @author dmicol, sortega
  */
-public abstract class Parser {
+public abstract class Parser extends StringTokenizer {
     protected static final int MAX_CELL_DIGITS = 8;
     protected static final int MAX_CLIENT_LENGTH = 10;
     private static final int DEFAULT_RADIX = 10;
     
-    protected String line;
-    private String[] fields;
-    private int index;
+    protected final String line;
 
     public Parser(String line, String separator) {
+        super(line, separator);
         this.line = line;
-        this.fields = line.split(separator);
-        this.index = 0;
     }
 
     public abstract Object parse();
 
-    protected String currentToken() {
-        return this.fields[this.index];
-    }
-    
-    protected String nextToken() {
-        String token = this.currentToken();
-        this.index++;
-        return token;
-    }
-    
-    protected void skipField() {
-        this.nextToken();
-    }
-
     protected int parseInt() {
-        return Integer.parseInt(nextToken(), DEFAULT_RADIX);
+        return Integer.parseInt(this.nextToken(), DEFAULT_RADIX);
     }
 
     protected long parseLong() {
-        return Long.parseLong(nextToken(), DEFAULT_RADIX);
+        return Long.parseLong(this.nextToken(), DEFAULT_RADIX);
     }
 
     protected double parseDouble() {
-        return Double.parseDouble(nextToken());
+        return Double.parseDouble(this.nextToken());
     }
     
     protected long parseCellId() {

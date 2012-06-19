@@ -43,7 +43,6 @@ public class ItinGetItineraryReducerTest {
         this.instance.setConfiguration(conf);
     }
 
-    // TODO: add a test that actually produces results
     @Test
     public void testReduce() throws IOException {
         final ProtobufWritable<ItinRange> key = ItinRangeUtil.createAndWrap(1L,
@@ -59,6 +58,6 @@ public class ItinGetItineraryReducerTest {
                         .withInput(key, Arrays.asList(value))
                         .run();
         assertNotNull(results);
-        assertEquals(0, results.size());
+        assertEquals(1, results.size());
     }
 }

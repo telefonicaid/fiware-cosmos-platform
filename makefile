@@ -170,7 +170,7 @@ run_coverage: install_coverage
 	bash -x scripts/lib_shared_memory.scr || true
 	lcov --directory BUILD_COVERAGE --zerocounters	
 	logServer
-	samsonWorker -log_classic -t 31,32,33,34,35,210
+	samsonWorker -log_classic -t 15,20,22,31,32,33,34,35,210
 	make test_coverage
 	killall samsonWorker || true
 	killall logServer || true
@@ -202,7 +202,7 @@ begin_mac_coverage:
 
 process_mac_coverage:
 	killall samsonWorker || true
-	samsonWorker -log_classic -t 31,32,33,34,35,210
+	samsonWorker -log_classic -t 15,20,22,31,32,33,34,35,210
 	make test_coverage
 	killall samsonWorker || true
 

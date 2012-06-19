@@ -48,11 +48,17 @@ namespace samson {
         // Check previous connection....
         std::string connection_name = MAIN_DELILAH_CONNECTION_NAME;
         if( NetworkManager::isConnected(connection_name) )
+        {
+            LM_W(("Delilah_connection:%s, already connected", connection_name.c_str()));
             return Error;
+        }
 
         // Check not already connected to a cluster
         if( cluster_information.getId() != 0 )
+        {
+            LM_W(("Already connected to a cluster cluster_information.getId():%lu", cluster_information.getId() != 0));
             return Error;
+        }
         
         host = _host;
         port = _port;
@@ -60,19 +66,22 @@ namespace samson {
         password = _password;
         
         au::SocketConnection* socket_connection;
-        au::Status s = au::SocketConnection::newSocketConnection(host , port , &socket_connection );        
-        
+        au::Status s = au::SocketConnection::newSocketConnection(host , port , &socket_connection );
+
         if( s != au::OK )
         {
             LM_W(("Error: Not possible to open connection with %s:%d (%s)\n" , host.c_str() , port , status(s)));
             //std::cerr << au::str("Error: Not possible to open connection with %s:%d (%s)\n" , host.c_str() , port , status(s));
             return au_status(s); // Best conversion between error codes
         }
+        LM_T( LmtNetworkConnection , ("addMainDelilahConnection" ));
         
         
         // Create network connection with this socket
         NetworkConnection * network_connection = new NetworkConnection( connection_name , socket_connection , this );
         
+        LM_T( LmtNetworkConnection , ("NetworkConnection created for:%s", connection_name.c_str() ));
+
         // Add this network connection
         return NetworkManager::add( network_connection );
     }
@@ -84,6 +93,7 @@ namespace samson {
 
         if( NetworkManager::isConnected(name) )
         {
+            LM_W(("Not adding node %s:%d since still processing node %s", host.c_str(), port, name.c_str()));
             return au::str( "Not adding node %s:%d since still processing node %s"
                            , host.c_str()
                            , port 
@@ -97,6 +107,7 @@ namespace samson {
         
         if( s != au::OK )
         {
+            LM_W(("Error: Not possible to open connection with %s:%d (%s)\n", host.c_str(), port, name.c_str()));
             return 
                     au::str("Error: Not possible to open connection with %s:%d (%s)\n" 
                             , host.c_str() 
@@ -107,6 +118,8 @@ namespace samson {
         
         // Create network connection with this socket
         NetworkConnection * network_connection = new NetworkConnection( name , socket_connection , this );
+
+        LM_T( LmtNetworkConnection , ("NetworkConnection Secondary created for:%s", name.c_str() ));
 
         // Add network connection
         NetworkManager::add( network_connection );
@@ -127,6 +140,8 @@ namespace samson {
         if( !packet->message->has_hello() )
             LM_X(1, ("Error in SAMSON Protocol: Non Hello information in a hello packet"));
         
+        LM_T( LmtNetworkConnection , ("Processing hello"));
+
         // Information included in the hello message
         ClusterInformation new_cluster_information( packet->message->hello().cluster_information() );
         NodeIdentifier new_node_identifier( packet->message->hello().node_identifier() );
@@ -135,6 +150,8 @@ namespace samson {
         std::string host = connection->getHost();
         int port = connection->getPort();
         
+        LM_T( LmtNetworkConnection , ("Processing hello for:%s", connection_name.c_str()));
+
         // -----------------------------------------------------------------------------------------------
         // Main init connection
         // -----------------------------------------------------------------------------------------------
@@ -520,6 +537,8 @@ namespace samson {
     
     void DelilahNetwork::message( std::string txt )
     {
+        LM_T( LmtNetworkConnection , ("Message txt:%s", txt.c_str()));
+
         Packet* packet = Packet::messagePacket( txt + "\n" );
         network_interface_receiver->receive( packet );
         packet->release();

@@ -135,6 +135,7 @@ namespace samson
         // Create a DelilahControler once network is ready
         delilah_random_code = au::code64_rand();
         delilah->delilah_connect(connection_type, worker_host, port, user, password, error);
+        LM_T( LmtNetworkConnection , ("delilah_connect code:%lu", delilah_random_code ));
 
         if( error->isActivated() )
         {
@@ -144,13 +145,16 @@ namespace samson
         
         // What until the network is ready
         LM_VV(("Waiting network connections to the all nodes in SAMSON cluster..."));
+        LM_T( LmtNetworkConnection , ("Waiting network connections to the all nodes in SAMSON cluster..." ));
         while ( !delilah->isConnectionReady() )
             usleep(1000);
         LM_VV(("Connected to all workers"));
+        LM_T( LmtNetworkConnection , ("Connected to all workers" ));
     }
     
     void SamsonClient::disconnect()
     {
+        LM_T( LmtNetworkConnection , ("In samsonClient::disconnect(): delilah->stop()" ));
         // Stop all connections of my delilah
         delilah->stop();
     }

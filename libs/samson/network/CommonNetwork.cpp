@@ -33,10 +33,16 @@ namespace samson {
             NodeIdentifier node_identifier = connection->getNodeIdentifier();
 
             if( node_identifier.node_type == WorkerNode )
+            {
+                LM_T( LmtNetworkConnection , ("report_worker_disconnected WorkerNode:%lu", node_identifier.id ));
                 report_worker_disconnected( node_identifier.id );
+            }
             
             if( node_identifier.node_type == DelilahNode )
+            {
+                LM_T( LmtNetworkConnection , ("report_worker_disconnected DelilahNode:%lu", node_identifier.id ));
                 report_delilah_disconnected( node_identifier.id );
+            }
             
             
             // Remove connection

@@ -246,7 +246,7 @@ namespace samson {
                 if( it_packet_queues->second->getSeconds() > 60 )
                 {
                     std::string name = it_packet_queues->first;
-                    LM_W(("Removing  pending packerts for %s since it has been disconnected mote thatn 60 secs",name.c_str()));
+                    LM_W(("Removing  pending packets for %s since it has been disconnected mote thatn 60 secs",name.c_str()));
                     it_packet_queues->second->clear();   
                     packet_queues.erase( it_packet_queues++ );
                 }

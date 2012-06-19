@@ -31,8 +31,13 @@ namespace samson {
         // ------------------------------------------------------------
         bool ready()
         {
+            LM_T( LmtNetworkConnection , ("ready()"));
+
             if ( cluster_information.getId() == 0 )
+            {
+                LM_T( LmtNetworkConnection , ("ready false because getId:%lu", cluster_information.getId()));
                 return false;
+            }
             
             // Check all workers connected...
             std::vector<size_t> workers = cluster_information.getWorkerIds();
@@ -44,13 +49,19 @@ namespace samson {
             {            
                 std::string name = NodeIdentifier( WorkerNode , workers[i] ).getCodeName();
                 if( ! NetworkManager::isConnected( name ) )
+                {
+                    LM_T( LmtNetworkConnection , ("ready false because %s is not connected", name.c_str()));
                     return false;
+                }
             }
+            LM_T( LmtNetworkConnection , ("ready true"));
             return true;
         }
         
         void stop()
         {
+            LM_T( LmtNetworkConnection , ("stop()"));
+
             // Close all connections
             NetworkManager::reset();
             
@@ -84,13 +95,13 @@ namespace samson {
         
         virtual std::vector<size_t> getDelilahIds()
         {
-            LM_X(1, ("Delilah should never vall this method"));
+            LM_X(1, ("Delilah should never call this method"));
             return std::vector<size_t>();
         }
         
         virtual std::string cluster_command( std::string command );
         
-        // Auxiliar tools
+        // Auxiliary tools
         void message( std::string txt );
         
         

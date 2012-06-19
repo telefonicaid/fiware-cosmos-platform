@@ -75,7 +75,7 @@ void close_samson_client_test( samson::SamsonClient* samson_client  )
    // Wait until all activity is finished
    samson_client->waitUntilFinish();
 
-   LM_M(("waitUntilFinished finished"));
+   LM_M(("waitUntilFinish finished"));
 
    // Disconnect from worker ( if previously connected )
    samson_client->disconnect();

@@ -56,6 +56,10 @@ public class MobilityConfiguration extends Configuration {
     public MobilityConfiguration() {
     }
     
+    public MobilityConfiguration(Configuration conf) {
+        super(conf);
+    }
+    
     public void load(InputStream configInput) throws IOException {
         Properties props = new Properties();
         props.load(configInput);

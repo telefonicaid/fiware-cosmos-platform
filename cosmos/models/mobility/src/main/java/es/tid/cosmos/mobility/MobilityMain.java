@@ -53,7 +53,8 @@ public class MobilityMain extends Configured implements Tool {
         
         // Override the actual configuration with a mobility-based one, in order
         // to have the corresponding execution parameters
-        final MobilityConfiguration conf = new MobilityConfiguration();
+        final MobilityConfiguration conf = new MobilityConfiguration(
+                this.getConf());
         conf.load(configInput);
         this.setConf(conf);
         

@@ -87,4 +87,26 @@ public class ItinMoveClientPoisReducerTest {
                 .withOutput(key, outValue)
                 .runTest();
     }
+    
+    @Test
+    public void testDateLogic() throws IOException {
+        final LongWritable key = new LongWritable(57L);
+        final Date srcDate = DateUtil.create(2012, 05, 27, 0);
+        final Date tgtDate = DateUtil.create(2012, 05, 27, 0);
+        final Time srcTime = TimeUtil.create(15, 35, 27);
+        final Time tgtTime = TimeUtil.create(18, 01, 05);
+        final ItinTime time1 = ItinTimeUtil.create(tgtDate, tgtTime, 3L);
+        final ItinTime time2 = ItinTimeUtil.create(srcDate, srcTime, 9L);
+        final TypedProtobufWritable<ItinTime> value1 =
+                new TypedProtobufWritable<ItinTime>(time1);
+        final TypedProtobufWritable<ItinTime> value2 =
+                new TypedProtobufWritable<ItinTime>(time2);
+        final TypedProtobufWritable<ItinMovement> outValue =
+                new TypedProtobufWritable<ItinMovement>(ItinMovementUtil.create(
+                        time2, time1));
+        this.instance
+                .withInput(key, Arrays.asList(value1, value2))
+                .withOutput(key, outValue)
+                .runTest();
+    }
 }

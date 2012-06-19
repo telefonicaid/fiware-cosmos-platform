@@ -15,7 +15,7 @@ import es.tid.cosmos.base.mapreduce.CosmosWorkflow;
 import es.tid.cosmos.base.mapreduce.WorkflowList;
 import es.tid.cosmos.mobility.labelling.client.VectorCreateNodeDayhourReducer;
 import es.tid.cosmos.mobility.labelling.client.VectorFuseNodeDaygroupReducer;
-import es.tid.cosmos.mobility.labelling.client.VectorNormalizedReducer;
+import es.tid.cosmos.mobility.labelling.client.VectorNormalizedMapper;
 import es.tid.cosmos.mobility.util.ExportClusterToTextReducer;
 
 /**
@@ -80,10 +80,10 @@ public final class BtsLabellingRunner {
         wfList.add(vectorBtsJob);
 
         Path vectorBtsNormPath = new Path(tmpDirPath, "vector_bts_norm");
-        CosmosJob vectorBtsNormJob = CosmosJob.createReduceJob(conf,
+        CosmosJob vectorBtsNormJob = CosmosJob.createMapJob(conf,
                 "VectorNormalized",
                 SequenceFileInputFormat.class,
-                VectorNormalizedReducer.class,
+                VectorNormalizedMapper.class,
                 SequenceFileOutputFormat.class);
         FileInputFormat.setInputPaths(vectorBtsNormJob, vectorBtsPath);
         FileOutputFormat.setOutputPath(vectorBtsNormJob, vectorBtsNormPath);

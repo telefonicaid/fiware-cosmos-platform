@@ -9,7 +9,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
  *
  * @author sortega
  */
-public abstract class ClusterUtil {
+public final class ClusterUtil {
+
+    private ClusterUtil() {}
+
     public static Cluster create(int label, int labelgroup, int confident,
             double mean, double distance, ClusterVector coords) {
         return Cluster.newBuilder()

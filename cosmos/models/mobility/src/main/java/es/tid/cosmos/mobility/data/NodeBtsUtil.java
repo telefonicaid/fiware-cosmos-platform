@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
  *
  * @author sortega
  */
-public abstract class NodeBtsUtil {
+public final class NodeBtsUtil {
+
+    private NodeBtsUtil() {}
+
     public static NodeBts create(long userId, long bts,
                                  int weekday, int range) {
         return NodeBts.newBuilder()

@@ -1,19 +1,24 @@
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-
-import es.tid.cosmos.mobility.data.BtsCounterUtil;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import org.junit.Test;
+
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 
 /**
  *
  * @author dmicol
  */
 public class BtsCounterUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(BtsCounterUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         long placeId = 132L;

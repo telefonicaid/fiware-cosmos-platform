@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinPercMove;
  *
  * @author dmicol
  */
-public abstract class ItinPercMoveUtil {
+public final class ItinPercMoveUtil {
+
+    private ItinPercMoveUtil() {}
+
     public static ItinPercMove create(int group, int range, double percMoves) {
         return ItinPercMove.newBuilder()
                 .setGroup(group)

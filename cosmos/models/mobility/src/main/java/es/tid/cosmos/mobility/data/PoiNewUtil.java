@@ -8,15 +8,18 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiNew;
  *
  * @author dmicol
  */
-public abstract class PoiNewUtil {
+public final class PoiNewUtil {
+
+    private PoiNewUtil() {}
+
     public static PoiNew create(int id, long node, long bts,
-            int labelgroupnodebts, int confidentnodebts) {
+            int labelGroupNodeBts, int confidentNodeBts) {
         return PoiNew.newBuilder()
                 .setId(id)
                 .setNode(node)
                 .setBts(bts)
-                .setLabelgroupnodebts(labelgroupnodebts)
-                .setConfidentnodebts(confidentnodebts)
+                .setLabelgroupnodebts(labelGroupNodeBts)
+                .setConfidentnodebts(confidentNodeBts)
                 .build();
     }
 
@@ -28,7 +31,7 @@ public abstract class PoiNewUtil {
     }
     
     public static ProtobufWritable<PoiNew> createAndWrap(int id, long node,
-            long bts, int labelgroupnodebts, int confidentnodebts) {
-        return wrap(create(id, node, bts, labelgroupnodebts, confidentnodebts));
+            long bts, int labelGroupNodeBts, int confidentNodeBts) {
+        return wrap(create(id, node, bts, labelGroupNodeBts, confidentNodeBts));
     }
 }

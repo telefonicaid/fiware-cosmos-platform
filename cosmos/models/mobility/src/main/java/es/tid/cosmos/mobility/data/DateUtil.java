@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
  *
  * @author sortega
  */
-public abstract class DateUtil {
+public final class DateUtil {
+
+    private DateUtil() {}
+
     public static Date create(int year, int month, int day, int weekday) {
         return Date.newBuilder()
                 .setYear(year)

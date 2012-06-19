@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
  *
  * @author dmicol
  */
-public abstract class ItinRangeUtil {
+public final class ItinRangeUtil {
+
+    private ItinRangeUtil() {}
+
     public static ItinRange create(long poiSrc, long poiTgt, int node,
                                    int group, int range) {
         return ItinRange.newBuilder()

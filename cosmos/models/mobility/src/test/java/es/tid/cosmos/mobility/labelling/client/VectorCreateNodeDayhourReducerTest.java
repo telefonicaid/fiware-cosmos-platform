@@ -58,7 +58,8 @@ public class VectorCreateNodeDayhourReducerTest {
         outputBuilder.setHours(2, TwoIntUtil.create(
                 key.get().getWeekday(),
                 3));
-        this.driver.withInput(key, values)
+        this.driver
+                .withInput(key, values)
                 .withOutput(outKey, new TypedProtobufWritable<DailyVector>(
                             outputBuilder.build()))
                 .runTest();

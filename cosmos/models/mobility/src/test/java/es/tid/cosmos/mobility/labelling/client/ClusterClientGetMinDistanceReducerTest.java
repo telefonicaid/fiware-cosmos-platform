@@ -38,6 +38,7 @@ import es.tid.cosmos.mobility.util.CentroidsCatalogue;
 public class ClusterClientGetMinDistanceReducerTest {
     
     private static final int VECTOR_LENGTH = 24;    
+    
     private List<Cluster> centroids;
     private ReduceDriver<ProtobufWritable<NodeBts>,
             TypedProtobufWritable<ClusterVector>, LongWritable,

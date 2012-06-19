@@ -55,7 +55,5 @@ public class VectorNormalizedMapperTest {
             total += value;
         }
         assertEquals(total, 1.0D, 1e-9D);
-        
-        
     }    
 }

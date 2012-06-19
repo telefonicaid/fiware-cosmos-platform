@@ -28,7 +28,7 @@ public final class UtilityClassTest {
         assertTrue("Utility class should be final",
                    Modifier.isFinal(clazz.getModifiers()));
 
-        for(Constructor constructor : clazz.getDeclaredConstructors()) {
+        for (Constructor constructor : clazz.getDeclaredConstructors()) {
             if (Modifier.isPublic(constructor.getModifiers())) {
                 fail("Utility class should not have public constructors");
             } else {

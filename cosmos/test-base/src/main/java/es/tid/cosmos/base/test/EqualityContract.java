@@ -3,6 +3,7 @@ package es.tid.cosmos.base.test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -12,7 +13,8 @@ import static org.junit.Assert.*;
  * @author sortega
  */
 public class EqualityContract<T> {
-    private final ArrayList<Collection<T>> classes;
+
+    private final List<Collection<T>> classes;
 
     /**
      * Creates an equality contract checker given two or more equivalence
@@ -72,14 +74,15 @@ public class EqualityContract<T> {
     private void verifyInterClassInequality() {
         for (Collection<T> leftClass : this.classes) {
             for (Collection<T> rightClass : this.classes) {
-                if (!leftClass.equals(rightClass)) {
-                    for (T leftElement : leftClass) {
-                        for (T rightElement : rightClass) {
-                            final String message = String.format("Elements "
-                                    + "of different classes '%s' and '%s' must "
-                                    + "be different", leftElement, rightElement);
-                            assertFalse(message, leftElement.equals(rightElement));
-                        }
+                if (leftClass.equals(rightClass)) {
+                    continue;
+                }
+                for (T leftElement : leftClass) {
+                    for (T rightElement : rightClass) {
+                        final String message = String.format("Elements "
+                                + "of different classes '%s' and '%s' must "
+                                + "be different", leftElement, rightElement);
+                        assertFalse(message, leftElement.equals(rightElement));
                     }
                 }
             }
@@ -94,5 +97,4 @@ public class EqualityContract<T> {
             }
         }
     }
-
 }

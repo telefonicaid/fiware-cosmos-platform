@@ -72,7 +72,7 @@ public class KpiFeature {
 
     @Override
     public String toString() {
-        return "KpiFeature{" + "name=" + name + ", fields=[" + StringUtils.join(
-                fields, ",") + "], group=" + group + '}';
+        return ("KpiFeature{" + "name=" + name + ", fields=[" +
+                StringUtils.join(fields, ",") + "], group=" + group + '}');
     }
 }

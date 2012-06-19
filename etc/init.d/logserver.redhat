@@ -42,7 +42,7 @@ fi
 
 logserver_start()
 {
-    /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/logServer
+    su - samson -c "${SAMSON_HOME}/bin/logServer"
 }
 
 logserver_stop()

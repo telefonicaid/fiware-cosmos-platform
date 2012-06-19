@@ -40,7 +40,7 @@ fi
 
 samson_start()
 {
-    /usr/bin/sudo -u samson -i ${SAMSON_HOME}/bin/samsonWorker
+    su - samson -c "${SAMSON_HOME}/bin/samsonWorker"
 }
 
 samson_stop()

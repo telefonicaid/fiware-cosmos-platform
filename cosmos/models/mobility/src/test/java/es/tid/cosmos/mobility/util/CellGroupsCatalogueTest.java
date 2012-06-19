@@ -22,7 +22,7 @@ public class CellGroupsCatalogueTest {
                 + "334307|5|6\n"
                 + "334305|7|8";
         List<CellGroup> cellGroups = CellGroupsCatalogue.load(
-                new StringReader(text));
+                new StringReader(text), "|");
         assertNotNull(cellGroups);
         assertEquals(4, cellGroups.size());
         assertEquals(3359493L, cellGroups.get(0).getCellId());

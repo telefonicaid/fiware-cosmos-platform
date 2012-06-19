@@ -11,7 +11,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.base.data.generated.BaseTypes.Int;
-import es.tid.cosmos.mobility.Config;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 
 /**
@@ -28,9 +28,9 @@ class VectorFiltClientsReducer extends Reducer<
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        final Configuration conf = context.getConfiguration();
-        this.maxTotalCalls = conf.getInt(Config.MAX_TOTAL_CALLS,
-                                         Integer.MAX_VALUE);
+        final MobilityConfiguration conf =
+                (MobilityConfiguration) context.getConfiguration();
+        this.maxTotalCalls = conf.getClientMaxTotalCalls();
     }
     
     @Override

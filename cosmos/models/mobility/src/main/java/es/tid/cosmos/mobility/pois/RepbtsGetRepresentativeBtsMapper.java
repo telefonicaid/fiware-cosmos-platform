@@ -7,7 +7,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.cosmos.mobility.Config;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
@@ -29,11 +29,10 @@ class RepbtsGetRepresentativeBtsMapper extends Mapper<LongWritable,
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        final Configuration conf = context.getConfiguration();
-        this.minPercRepBts = conf.getInt(Config.POI_MIN_PERC_REP_BTS,
-                                         Integer.MIN_VALUE);
-        this.minNumberCallsBts = conf.getInt(Config.POI_MIN_NUMBER_CALLS_BTS,
-                                             Integer.MIN_VALUE);
+        final MobilityConfiguration conf =
+                (MobilityConfiguration) context.getConfiguration();
+        this.minPercRepBts = conf.getPoiMinPercRepBts();
+        this.minNumberCallsBts = conf.getPoiMinNumberCallsBts();
     }
     
     @Override

@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import java.io.InputStream;
+
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
@@ -14,6 +16,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.ItinRangeUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
@@ -29,10 +32,15 @@ public class ItinGetItineraryReducerTest {
             TypedProtobufWritable<Itinerary>> instance;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.instance = new ReduceDriver<ProtobufWritable<ItinRange>,
                 TypedProtobufWritable<ClusterVector>, LongWritable,
                 TypedProtobufWritable<Itinerary>>(new ItinGetItineraryReducer());
+        InputStream configInput = MobilityConfiguration.class.getResource(
+                "/mobility.properties").openStream();
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        this.instance.setConfiguration(conf);
     }
 
     // TODO: add a test that actually produces results

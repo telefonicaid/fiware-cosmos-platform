@@ -17,7 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.Config;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -35,10 +35,11 @@ public class MatrixGetOutReducerTest {
         this.instance = new ReduceDriver<ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<ClusterVector>, NullWritable, Text>(
                         new MatrixGetOutReducer());
-        InputStream configInput = Config.class.getResource(
+        InputStream configInput = MobilityConfiguration.class.getResource(
                 "/mobility.properties").openStream();
-        this.instance.setConfiguration(Config.load(configInput,
-                this.instance.getConfiguration()));
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        this.instance.setConfiguration(conf);
     }
     
     @Test

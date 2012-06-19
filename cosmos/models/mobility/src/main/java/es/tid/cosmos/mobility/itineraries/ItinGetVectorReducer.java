@@ -6,7 +6,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.Config;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinPercMove;
@@ -26,9 +26,9 @@ public class ItinGetVectorReducer extends Reducer<
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        final Configuration conf = context.getConfiguration();
-        this.minItinMoves = conf.getFloat(Config.ITIN_MIN_ITIN_MOVES,
-                                          Float.MIN_VALUE);
+        final MobilityConfiguration conf =
+                (MobilityConfiguration) context.getConfiguration();
+        this.minItinMoves = conf.getItinMinMoves();
     }
     
     @Override

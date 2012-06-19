@@ -10,7 +10,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.Config;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 
@@ -29,7 +29,9 @@ class IndVarsOutAccReducer extends Reducer<LongWritable,
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        this.separator = context.getConfiguration().get(Config.DATA_SEPARATOR);
+        final MobilityConfiguration conf =
+                (MobilityConfiguration) context.getConfiguration();
+        this.separator = conf.getDataSeparator();
     }
 
     @Override

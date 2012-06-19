@@ -4,13 +4,13 @@ import java.io.IOException;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.base.data.generated.BaseTypes.Null;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.NodeBtsDateUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
@@ -34,7 +34,8 @@ public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
     protected void setup(Context context) throws IOException,
             InterruptedException {
         if (cells == null) {
-            final Configuration conf = context.getConfiguration();
+            final MobilityConfiguration conf =
+                    (MobilityConfiguration) context.getConfiguration();
             cells = CellsCatalogue.load(new Path(conf.get("cells")), conf);
         }
     }

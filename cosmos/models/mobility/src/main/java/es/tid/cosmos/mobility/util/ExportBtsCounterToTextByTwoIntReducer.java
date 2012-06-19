@@ -9,7 +9,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
-import es.tid.cosmos.mobility.Config;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -26,7 +26,9 @@ public class ExportBtsCounterToTextByTwoIntReducer extends Reducer<
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        this.separator = context.getConfiguration().get(Config.DATA_SEPARATOR);
+        final MobilityConfiguration conf =
+                (MobilityConfiguration) context.getConfiguration();
+        this.separator = conf.getDataSeparator();
     }
     
     @Override

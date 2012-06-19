@@ -1,17 +1,24 @@
 package es.tid.cosmos.base.data;
 
 import com.google.protobuf.Message;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import es.tid.cosmos.base.data.generated.WebLogProtocol.WebLog;
 import org.junit.Test;
 
-import es.tid.cosmos.base.data.generated.WebLogProtocol.WebLog;
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
  * @author dmicol
  */
 public class MessageUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(MessageUtil.class);
+    }
+
     @Test
     public void testToString() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();

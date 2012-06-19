@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
  *
  * @author losa
  */
-public abstract class MobVarsUtil {
+public final class MobVarsUtil {
+
+    private MobVarsUtil() {}
+
     public static MobVars create(int month, boolean isWorkDay, int numPos,
             int difBtss, int difMuns, int difStates, double masscenterUtmX,
             double masscenterUtmY, double radius, double diamAreaInf) {

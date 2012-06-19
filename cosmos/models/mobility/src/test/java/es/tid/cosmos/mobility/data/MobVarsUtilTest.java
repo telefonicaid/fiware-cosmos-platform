@@ -1,18 +1,23 @@
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
+import static org.junit.Assert.*;
 
 /**
  *
  * @author dmicol
  */
 public class MobVarsUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(MobVarsUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         ProtobufWritable<MobVars> wrapper = MobVarsUtil.createAndWrap(1, true,

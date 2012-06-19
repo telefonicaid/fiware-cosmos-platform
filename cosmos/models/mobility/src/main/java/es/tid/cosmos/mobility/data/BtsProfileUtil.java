@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsProfile;
  *
  * @author dmicol
  */
-public abstract class BtsProfileUtil {    
+public final class BtsProfileUtil {
+
+    private BtsProfileUtil() {}
+
     public static BtsProfile create(long bts, int profile, int wday,
                                     int hour) {
         return BtsProfile.newBuilder()

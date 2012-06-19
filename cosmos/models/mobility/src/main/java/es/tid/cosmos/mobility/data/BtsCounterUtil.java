@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
  *
  * @author sortega
  */
-public abstract class BtsCounterUtil {
+public final class BtsCounterUtil {
+
+    private BtsCounterUtil() {}
+
     public static BtsCounter create(long bts, int weekday, int range,
             int count) {
         return BtsCounter.newBuilder()

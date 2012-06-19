@@ -9,7 +9,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDate;
  *
  * @author ximo
  */
-public class NodeBtsDateUtil {   
+public final class NodeBtsDateUtil {
+
+    private NodeBtsDateUtil() {}
+
     public static NodeBtsDate create(long userId, long bts,
                                      Date date, int hour) {
         return NodeBtsDate.newBuilder()

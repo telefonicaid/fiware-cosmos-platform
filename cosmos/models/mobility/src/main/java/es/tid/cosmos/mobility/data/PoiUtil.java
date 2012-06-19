@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
  *
  * @author dmicol
  */
-public abstract class PoiUtil {
+public final class PoiUtil {
+
+    private PoiUtil() {}
+
     public static Poi create(int id, long node, long bts, int labelnode,
             int labelgroupnode, int confidentnode, double distancenode,
             int labelbts, int labelgroupbts, int confidentbts,

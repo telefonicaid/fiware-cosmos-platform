@@ -1,14 +1,22 @@
 package es.tid.cosmos.base.util;
 
+import org.junit.Test;
+
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import org.junit.Test;
 
 /**
  *
  * @author dmicol
  */
 public class LoggerTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(Logger.class);
+    }
+
     @Test
     public void testGet() {
         assertNotNull(Logger.get(LoggerTest.class));

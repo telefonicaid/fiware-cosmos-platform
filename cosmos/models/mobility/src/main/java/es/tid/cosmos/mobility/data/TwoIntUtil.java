@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  *
  * @author dmicol
  */
-public abstract class TwoIntUtil {
+public final class TwoIntUtil {
+
+    private TwoIntUtil() {}
+
     public static TwoInt create(long num1, long num2) {
         return TwoInt.newBuilder()
                 .setNum1(num1)

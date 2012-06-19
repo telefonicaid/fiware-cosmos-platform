@@ -1,14 +1,16 @@
 package es.tid.smartsteps.util;
 
+import es.tid.smartsteps.ipm.ParseException;
 import es.tid.smartsteps.ipm.data.generated.CrmProtocol.CrmRaw;
 
+import static es.tid.smartsteps.ipm.data.generated.CrmProtocol.CrmRaw.*;
 /**
  *
  * @author dmicol
  */
 public abstract class CrmRawUtil {
     private static final char DELIMITER = '|';
-    
+
     private CrmRawUtil() {
     }
     
@@ -41,12 +43,35 @@ public abstract class CrmRawUtil {
                 .build();
     }
     
-    public static CrmRaw parse(String line) {
+    public static CrmRaw parse(String line) throws ParseException {
         String[] fields = line.split("\\" + DELIMITER);
-        return create(fields[0], fields[1], fields[2], fields[3], fields[4],
-                fields[5], fields[6], fields[7], fields[8], fields[9],
-                fields[10], fields[11], fields[12], fields[13], fields[14],
-                fields[15], fields[16], fields[17]);
+        if (fields.length != CrmRaw.getDescriptor().getFields().size()) {
+            throw new ParseException(String.format(
+                    "cannot parse input line %s: invalid format", line));
+        }
+        return CrmRaw.newBuilder()
+                .setMsisdn(fields[MSISDN_FIELD_NUMBER - 1])
+                .setBillingPostCode(fields[BILLINGPOSTCODE_FIELD_NUMBER - 1])
+                .setAcornCode(fields[ACORNCODE_FIELD_NUMBER - 1])
+                .setGender(fields[GENDER_FIELD_NUMBER - 1])
+                .setBillingSystem(fields[BILLINGSYSTEM_FIELD_NUMBER - 1])
+                .setMtrcPlSegment(fields[MTRCPLSEGMENT_FIELD_NUMBER - 1])
+                .setMpnStatus(fields[MPNSTATUS_FIELD_NUMBER - 1])
+                .setSpid(fields[SPID_FIELD_NUMBER - 1])
+                .setActiveStatus(fields[ACTIVESTATUS_FIELD_NUMBER - 1])
+                .setNeedsSegmentation(
+                        fields[NEEDSSEGMENTATION_FIELD_NUMBER - 1])
+                .setAge(fields[AGE_FIELD_NUMBER - 1])
+                .setAgeBand(fields[AGEBAND_FIELD_NUMBER - 1])
+                .setImsi(fields[IMSI_FIELD_NUMBER - 1])
+                .setImei(fields[IMEI_FIELD_NUMBER - 1])
+                .setDeviceType(fields[DEVICETYPE_FIELD_NUMBER - 1])
+                .setDeviceManufacturer(
+                        fields[DEVICEMANUFACTURER_FIELD_NUMBER - 1])
+                .setDeviceModelName(fields[DEVICEMODELNAME_FIELD_NUMBER - 1])
+                .setEffectiveFromDate(
+                        fields[EFFECTIVEFROMDATE_FIELD_NUMBER - 1])
+                .build();
     }
     
     public static String toString(CrmRaw crmRaw) {

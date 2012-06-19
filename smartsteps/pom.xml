@@ -76,6 +76,17 @@
             </organizationUrl>
             <timezone>+1</timezone>
         </developer>
+        <developer>
+            <id>apv</id>
+            <name>Alvaro Polo</name>
+            <email>apv@tid.es</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <organization>${project.organization.name}</organization>
+            <organizationUrl>${project.organization.url}</organizationUrl>
+            <timezone>+1</timezone>
+      </developer>
     </developers>
 
     <build>
@@ -371,6 +382,12 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-core</artifactId>
             <version>${org.apache.hadoop}-cdh3u4</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.hadoop.thirdparty.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.hadoop.compression</groupId>

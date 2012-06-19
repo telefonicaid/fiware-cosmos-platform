@@ -98,10 +98,10 @@ public final class ClientLabellingRunner {
         wfList.add(vectorFuseNodeDaygroupJob);
 
         Path vectorClientNormPath = new Path(tmpDirPath, "vector_client_norm");
-        CosmosJob vectorClientNormJob = CosmosJob.createReduceJob(conf,
+        CosmosJob vectorClientNormJob = CosmosJob.createMapJob(conf,
                 "VectorNormalized",
                 SequenceFileInputFormat.class,
-                VectorNormalizedReducer.class,
+                VectorNormalizedMapper.class,
                 SequenceFileOutputFormat.class);
         FileInputFormat.setInputPaths(vectorClientNormJob,
                                       vectorFuseNodeDaygroupPath);

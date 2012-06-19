@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
@@ -21,6 +20,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
@@ -55,12 +55,14 @@ public class ClusterClientGetMinDistanceReducerTest {
         this.centroids.add(ClusterUtil.create(1, 2, 3, 4.2, 5.3, vector));
         this.centroids.add(ClusterUtil.create(6, 7, 8, 9.2, 10.3, vector));
         PowerMockito.mockStatic(CentroidsCatalogue.class);
-        when(CentroidsCatalogue.load(any(Path.class), any(Configuration.class)))
+        when(CentroidsCatalogue.load(any(Path.class),
+                                     any(MobilityConfiguration.class)))
                 .thenReturn(centroids);
         this.driver = new ReduceDriver<ProtobufWritable<NodeBts>,
                 TypedProtobufWritable<ClusterVector>, LongWritable,
                 TypedProtobufWritable<Cluster>>(
                         new ClusterClientGetMinDistanceReducer());
+        this.driver.setConfiguration(new MobilityConfiguration());
         this.driver.getConfiguration().set("centroids", "/home/test");
     }
 

@@ -45,7 +45,8 @@ public class VectorNormalizedMapperTest {
             vectorBuilder.addComs(value);
             sum += value;
         }
-        List<Pair<ProtobufWritable<NodeBts>, TypedProtobufWritable<ClusterVector>>> results =
+        List<Pair<ProtobufWritable<NodeBts>,
+                  TypedProtobufWritable<ClusterVector>>> results =
                 this.driver.withInput(key, new TypedProtobufWritable<ClusterVector>(
                         vectorBuilder.build())).run();
         assertEquals(results.size(), 1);

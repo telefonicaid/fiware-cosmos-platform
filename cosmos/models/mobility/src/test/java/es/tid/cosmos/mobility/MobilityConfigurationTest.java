@@ -3,9 +3,9 @@ package es.tid.cosmos.mobility;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
+import org.junit.Test;
 
 /**
  *

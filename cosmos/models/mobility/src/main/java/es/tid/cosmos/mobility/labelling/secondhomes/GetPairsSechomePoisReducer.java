@@ -5,13 +5,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.base.data.generated.BaseTypes.Int64;
-import es.tid.cosmos.mobility.Config;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -31,11 +30,10 @@ class GetPairsSechomePoisReducer extends Reducer<LongWritable,
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        final Configuration conf = context.getConfiguration();
-        this.homeLabelgroupId = conf.getInt(Config.POI_HOME_LABELGROUP_ID,
-                                            Integer.MAX_VALUE);
-        this.minDistSecondHome = conf.getFloat(Config.POI_MIN_DIST_SECOND_HOME,
-                                               Float.MIN_VALUE);
+        final MobilityConfiguration conf =
+                (MobilityConfiguration) context.getConfiguration();
+        this.homeLabelgroupId = conf.getPoiHomeLabelgroupId();
+        this.minDistSecondHome = conf.getPoiMinDistSecondHome();
     }
     
     @Override

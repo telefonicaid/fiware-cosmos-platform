@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.itineraries;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.ItinPercMoveUtil;
 import es.tid.cosmos.mobility.data.ItinRangeUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
@@ -29,10 +31,15 @@ public class ItinGetVectorReducerTest {
             TypedProtobufWritable<ClusterVector>> instance;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.instance = new ReduceDriver<ProtobufWritable<ItinRange>,
             TypedProtobufWritable<ItinPercMove>, ProtobufWritable<ItinRange>,
             TypedProtobufWritable<ClusterVector>>(new ItinGetVectorReducer());
+        InputStream configInput = MobilityConfiguration.class.getResource(
+                "/mobility.properties").openStream();
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        this.instance.setConfiguration(conf);
     }
 
     @Test

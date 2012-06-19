@@ -1,0 +1,8 @@
+{
+    "srv_master_host": "localhost",
+    "srv_master_port": 35873,
+    "bridge_host": "localhost",
+    "bridge_port": 35800,
+    "client_master_host": "localhost",
+    "client_master_port": 35873
+}

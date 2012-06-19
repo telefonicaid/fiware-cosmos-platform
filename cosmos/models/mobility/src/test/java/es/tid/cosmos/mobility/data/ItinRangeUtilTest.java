@@ -1,18 +1,24 @@
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-
+import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
 import org.junit.Test;
+
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
 
 /**
  *
  * @author dmicol
  */
 public class ItinRangeUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(ItinRangeUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         ProtobufWritable<ItinRange> wrapper = ItinRangeUtil.createAndWrap(

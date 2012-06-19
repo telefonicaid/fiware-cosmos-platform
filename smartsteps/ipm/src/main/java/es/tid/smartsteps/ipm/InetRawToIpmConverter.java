@@ -18,7 +18,7 @@ public class InetRawToIpmConverter implements RawToIpmConverter {
     }
     
     @Override
-    public String convert(String line) {
+    public String convert(String line) throws ParseException {
         final InetRaw inetRaw = InetRawUtil.parse(line);
         final String anonymisedImsi;
         final String anonymisedImei;

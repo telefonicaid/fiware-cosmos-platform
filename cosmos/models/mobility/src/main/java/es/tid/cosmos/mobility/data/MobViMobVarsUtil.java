@@ -1,17 +1,19 @@
 package es.tid.cosmos.mobility.data;
 
-import java.util.List;
-
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
+
+import java.util.List;
 
 /**
  *
  * @author losa
  */
-public abstract class MobViMobVarsUtil {
+public final class MobViMobVarsUtil {
+
+    private MobViMobVarsUtil() {}
+
     public static MobViMobVars create(Iterable<MobVars> areas) {
         MobViMobVars.Builder repActAreas = MobViMobVars.newBuilder()
                 .addAllVars(areas);

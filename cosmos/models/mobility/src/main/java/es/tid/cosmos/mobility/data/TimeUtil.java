@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
  *
  * @author sortega
  */
-public abstract class TimeUtil {
+public final class TimeUtil {
+
+    private TimeUtil() {}
+
     public static Time create(int hour, int minute, int seconds) {
         return Time.newBuilder()
                 .setHour(hour)

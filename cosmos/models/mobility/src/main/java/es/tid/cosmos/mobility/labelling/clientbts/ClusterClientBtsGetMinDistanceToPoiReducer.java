@@ -4,12 +4,12 @@ import java.io.IOException;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.PoiUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
@@ -32,7 +32,8 @@ class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
     protected void setup(Context context) throws IOException,
             InterruptedException {
         if (centroids == null) {
-            final Configuration conf = context.getConfiguration();
+            final MobilityConfiguration conf =
+                    (MobilityConfiguration) context.getConfiguration();
             centroids = CentroidsCatalogue.load(new Path(conf.get("centroids")),
                                                 conf);
         }

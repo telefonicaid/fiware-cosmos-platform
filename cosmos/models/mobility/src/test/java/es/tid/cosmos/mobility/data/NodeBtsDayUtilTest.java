@@ -1,17 +1,24 @@
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
 import org.junit.Test;
+
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
 
 /**
  *
  * @author dmicol
  */
 public class NodeBtsDayUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(NodeBtsDayUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         long userId = 132L;

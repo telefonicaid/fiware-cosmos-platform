@@ -1,20 +1,27 @@
 package es.tid.cosmos.mobility.data;
 
+import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.junit.Test;
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
 
 /**
  *
  * @author dmicol
  */
 public class BtsUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(BtsUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         long placeId = 132L;

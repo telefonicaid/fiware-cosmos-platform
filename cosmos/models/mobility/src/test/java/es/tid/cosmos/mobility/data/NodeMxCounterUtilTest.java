@@ -1,20 +1,26 @@
 package es.tid.cosmos.mobility.data;
 
-import static java.util.Arrays.asList;
-
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Test;
-
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
+import org.junit.Test;
+
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
  * @author dmicol
  */
 public class NodeMxCounterUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(NodeMxCounterUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         ProtobufWritable<NodeMxCounter> wrapper =

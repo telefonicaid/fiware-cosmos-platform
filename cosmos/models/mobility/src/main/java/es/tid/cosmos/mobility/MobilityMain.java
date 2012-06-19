@@ -47,21 +47,28 @@ public class MobilityMain extends Configured implements Tool {
         if (arguments.has("config")) {
             configInput = new FileInputStream(arguments.getString("config"));
         } else {
-            configInput = Config.class.getResource("/mobility.properties")
-                    .openStream();
+            configInput = MobilityConfiguration.class.getResource(
+                    "/mobility.properties").openStream();
         }
-        final Configuration conf = Config.load(configInput, this.getConf());
-        if (conf.get(Config.SYS_EXEC_MODE).equalsIgnoreCase("complete")) {
+        
+        // Override the actual configuration with a mobility-based one, in order
+        // to have the corresponding execution parameters
+        final MobilityConfiguration conf = new MobilityConfiguration(
+                this.getConf());
+        conf.load(configInput);
+        this.setConf(conf);
+        
+        if (conf.getSysExecMode().equalsIgnoreCase("complete")) {
             throw new UnsupportedOperationException(
                     "Only complete execution mode is supported");
         }
-        if (conf.getBoolean(Config.SYS_EXEC_INCREMENTAL, false)) {
+        if (conf.getSysExecIncremental()) {
             throw new UnsupportedOperationException(
                     "Incremental mode is not supported yet");
         }
         
-        Path inputPath = new Path(conf.get(Config.SYS_INPUT_FOLDER));
-        Path outputPath = new Path(conf.get(Config.SYS_OUTPUT_COMPLETE_FOLDER));
+        Path inputPath = new Path(conf.getSysInputFolder());
+        Path outputPath = new Path(conf.getSysOutputCompleteFolder());
         Path cdrsPath = new Path(inputPath, "cdrs");
         Path cellsPath = new Path(inputPath, "cells");
         Path cellGroupsPath = new Path(inputPath, "cellGroups");

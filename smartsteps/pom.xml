@@ -76,6 +76,17 @@
             </organizationUrl>
             <timezone>+1</timezone>
         </developer>
+        <developer>
+            <id>apv</id>
+            <name>Alvaro Polo</name>
+            <email>apv@tid.es</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <organization>${project.organization.name}</organization>
+            <organizationUrl>${project.organization.url}</organizationUrl>
+            <timezone>+1</timezone>
+      </developer>
     </developers>
 
     <build>

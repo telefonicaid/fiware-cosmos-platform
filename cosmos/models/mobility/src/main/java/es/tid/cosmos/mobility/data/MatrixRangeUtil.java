@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixRange;
  *
  * @author dmicol
  */
-public abstract class MatrixRangeUtil {
+public final class MatrixRangeUtil {
+
+    private MatrixRangeUtil() {}
+
     public static MatrixRange create(long node, long poiSrc, long poiTgt,
                                      int group, int range) {
         return MatrixRange.newBuilder()

@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
  *
  * @author sortega
  */
-public abstract class NodeBtsDayUtil {
+public final class NodeBtsDayUtil {
+
+    private NodeBtsDayUtil() {}
+
     public static NodeBtsDay create(long userId, long bts,
                                     int workday, int count) {
         return NodeBtsDay.newBuilder()

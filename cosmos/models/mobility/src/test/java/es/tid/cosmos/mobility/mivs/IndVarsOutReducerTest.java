@@ -11,10 +11,10 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
-import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 
@@ -31,10 +31,11 @@ public class IndVarsOutReducerTest {
         this.reducer = new ReduceDriver<LongWritable,
                 TypedProtobufWritable<MobViMobVars>, NullWritable, Text>(
                         new IndVarsOutReducer());
-        InputStream configInput = Config.class.getResource(
+        InputStream configInput = MobilityConfiguration.class.getResource(
                 "/mobility.properties").openStream();
-        this.reducer.setConfiguration(Config.load(configInput,
-                this.reducer.getConfiguration()));
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        this.reducer.setConfiguration(conf);
     }
 
     @Test

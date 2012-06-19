@@ -7,13 +7,12 @@ import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.base.util.Logger;
-import es.tid.cosmos.mobility.Config;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.parsing.CellParser;
 
@@ -22,7 +21,7 @@ import es.tid.cosmos.mobility.parsing.CellParser;
  * @author dmicol
  */
 public abstract class CellsCatalogue {
-    public static List<Cell> load(Path input, Configuration conf)
+    public static List<Cell> load(Path input, MobilityConfiguration conf)
             throws IOException {
         FSDataInputStream in = null;
         Reader reader = null;
@@ -30,7 +29,7 @@ public abstract class CellsCatalogue {
             FileSystem fs = FileSystem.get(conf);
             in = fs.open(input);
             reader = new InputStreamReader(in);
-            final String separator = conf.get(Config.DATA_SEPARATOR);
+            final String separator = conf.getDataSeparator();
             return load(reader, separator);
         } catch (Exception ex) {
             Logger.get(CellsCatalogue.class).fatal(ex);

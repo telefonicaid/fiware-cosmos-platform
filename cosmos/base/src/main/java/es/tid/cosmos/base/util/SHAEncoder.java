@@ -7,7 +7,7 @@ import java.security.NoSuchAlgorithmException;
  *
  * @author dmicol
  */
-public abstract class SHAEncoder {
+public final class SHAEncoder {
     private SHAEncoder() {
     }
     

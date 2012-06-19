@@ -74,10 +74,10 @@ chmod 755 $RPM_BUILD_ROOT/etc/profile.d/samson.sh
 
 echo "%%defattr(-, samson, samson, - )" > MANIFEST
 (cd %{buildroot}; find . -type f -or -type l | sed -e s/^.// -e /^$/d) >>MANIFEST
-grep "samsonTopicMonitor\|delilah_graph\|samsonLocal" MANIFEST >> MANIFEST.samson-gui
+grep "samsonLevelMonitor\|samsonTopicMonitor\|delilah_graph\|samsonLocal" MANIFEST >> MANIFEST.samson-gui
 grep "include\/\|lib\/\|samsonModule" MANIFEST >> MANIFEST.samson-devel
 grep "logCat\|logServer\|logClient\|logserver" MANIFEST >> MANIFEST.samson-logserver
-grep -v "samsonTopicMonitor\|delilah_graph\|samsonLocal\|include\|lib\/\|samsonModule\|logCat\|logServer\|logClient\|logserver" MANIFEST >> MANIFEST.samson
+grep -v "samsonLevelMonitor\|samsonTopicMonitor\|delilah_graph\|samsonLocal\|include\|lib\/\|samsonModule\|logCat\|logServer\|logClient\|logserver" MANIFEST >> MANIFEST.samson
 
 %files -f MANIFEST.samson
 

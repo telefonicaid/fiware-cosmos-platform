@@ -1,11 +1,11 @@
 package es.tid.cosmos.mobility.preparing;
 
 import java.io.IOException;
+import java.io.InputStream;
 import static java.util.Arrays.asList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
@@ -21,9 +21,10 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.CellUtil;
-import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
@@ -49,12 +50,17 @@ public class JoinBtsNodeToCdrReducerTest {
         cells.add(CellUtil.create(33L, 200L, 300, 400, 500L, 600L));
         cells.add(CellUtil.create(10L, 2000L, 3000, 4000, 5000L, 6000L));
         PowerMockito.mockStatic(CellsCatalogue.class);
-        when(CellsCatalogue.load(any(Path.class), any(Configuration.class)))
+        when(CellsCatalogue.load(any(Path.class), any(MobilityConfiguration.class)))
                 .thenReturn(cells);
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
                 LongWritable, TypedProtobufWritable<Cdr>>(
                         new JoinBtsNodeToCdrReducer());
-        this.driver.getConfiguration().set("cells", "/home/test");
+        InputStream configInput = MobilityConfiguration.class.getResource(
+                "/mobility.properties").openStream();
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        conf.set("cells", "/home/test");
+        this.driver.setConfiguration(conf);
     }
 
     @Test

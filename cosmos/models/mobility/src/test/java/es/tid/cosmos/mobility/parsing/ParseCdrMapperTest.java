@@ -14,7 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.Config;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 
 /**
@@ -29,10 +29,11 @@ public class ParseCdrMapperTest {
     public void setUp() throws IOException {
         this.driver = new MapDriver<LongWritable, Text, LongWritable,
                 TypedProtobufWritable<Cdr>>(new ParseCdrMapper());
-        InputStream configInput = Config.class.getResource(
+        InputStream configInput = MobilityConfiguration.class.getResource(
                 "/mobility.properties").openStream();
-        this.driver.setConfiguration(Config.load(configInput,
-                                                 this.driver.getConfiguration()));
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        this.driver.setConfiguration(conf);
     }
 
     @Test

@@ -1,12 +1,12 @@
 package es.tid.cosmos.mobility.populationdensity.profile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
@@ -20,12 +20,13 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Null;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.*;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDate;
-import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
@@ -44,12 +45,17 @@ public class PopdenSpreadNodebtsdayhourReducerTest {
         this.cells = new LinkedList<Cell>();
         this.cells.add(CellUtil.create(10L, 11L, 12, 13, 14.0, 15.0));
         PowerMockito.mockStatic(CellsCatalogue.class);
-        when(CellsCatalogue.load(any(Path.class), any(Configuration.class)))
+        when(CellsCatalogue.load(any(Path.class), any(MobilityConfiguration.class)))
                 .thenReturn(this.cells);
         this.instance = new ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
                 ProtobufWritable<NodeBtsDate>, TypedProtobufWritable<Null>>(
                         new PopdenSpreadNodebtsdayhourReducer());
-        this.instance.getConfiguration().set("cells", "/home/test");
+        InputStream configInput = MobilityConfiguration.class.getResource(
+                "/mobility.properties").openStream();
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        conf.set("cells", "/home/test");
+        this.instance.setConfiguration(conf);
     }
 
     @Test

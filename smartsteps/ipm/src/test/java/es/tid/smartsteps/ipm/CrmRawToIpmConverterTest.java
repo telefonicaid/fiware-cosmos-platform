@@ -1,5 +1,7 @@
 package es.tid.smartsteps.ipm;
 
+import java.nio.charset.Charset;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,7 +17,8 @@ public class CrmRawToIpmConverterTest {
     
     @Before
     public void setUp() {
-        this.instance = new CrmRawToIpmConverter();
+        this.instance = new CrmRawToIpmConverter("|",
+                Charset.forName("UTF-8"));
     }
 
     @Test

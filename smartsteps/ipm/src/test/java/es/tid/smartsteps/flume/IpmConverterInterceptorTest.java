@@ -1,9 +1,9 @@
 package es.tid.smartsteps.flume;
 
+import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.google.common.base.Charsets;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.conf.ConfigurationException;
@@ -29,6 +29,8 @@ public class IpmConverterInterceptorTest {
             "0|1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17";
     private static final String validInetEvent =
             "0|1|2|3|4|5|6|7|8|9|10|11|12|13";
+    private static final String eventDelimiter = "|";
+    private static final Charset eventCharset = Charset.forName("UTF-8");
 
     private Interceptor crmInterceptor;
     private Interceptor inetInterceptor;
@@ -42,6 +44,14 @@ public class IpmConverterInterceptorTest {
         public String convert(String line) throws ParseException {
             return line;
         }
+
+        public static final class Builder implements RawToIpmConverter.Builder {
+            @Override
+            public RawToIpmConverter newConverter(String delimiter,
+                                                  Charset charset) {
+                return new FakeIpmConverter();
+            }
+        }
     }
 
     private Interceptor buildInterceptor(IpmConverterType converterType) {
@@ -50,6 +60,8 @@ public class IpmConverterInterceptorTest {
         Context ctx = new Context();
         ctx.put(IpmConverterInterceptor.PROPERTY_CONVERTER,
                 converterType.name());
+        ctx.put(IpmConverterInterceptor.PROPERTY_DELIMITER, "|");
+        ctx.put(IpmConverterInterceptor.PROPERTY_CHARSET, "UTF-8");
         interceptorBuilder.configure(ctx);
         return interceptorBuilder.build();
     }
@@ -57,7 +69,8 @@ public class IpmConverterInterceptorTest {
     private void interceptValidEvent(String inputLine,
             Interceptor interceptor,
             RawToIpmConverter converter) throws ParseException {
-        Event inputEvent = EventBuilder.withBody(inputLine, Charsets.US_ASCII);
+        Event inputEvent = EventBuilder.withBody(inputLine,
+                Charset.forName("UTF-8"));
         Event outputEvent = interceptor.intercept(inputEvent);
         assertEquals(new String(outputEvent.getBody()), converter.convert(inputLine));
     }
@@ -65,7 +78,7 @@ public class IpmConverterInterceptorTest {
     private void interceptInvalidEvent(
             Interceptor interceptor) throws ParseException {
         Event inputEvent = EventBuilder.withBody("Hello world!!",
-                Charsets.US_ASCII);
+                Charset.forName("UTF-8"));
         Event outputEvent = interceptor.intercept(inputEvent);
         assertNull(outputEvent);
     }
@@ -76,7 +89,7 @@ public class IpmConverterInterceptorTest {
         List<Event> inputEvents = new LinkedList<Event>();
         for (int i = 0; i < 10; i++) {
             inputEvents.add(EventBuilder.withBody(inputLine,
-                    Charsets.US_ASCII));
+                    Charset.forName("UTF-8")));
         }
 
         List<Event> outputEvents = interceptor.intercept(inputEvents);
@@ -101,6 +114,8 @@ public class IpmConverterInterceptorTest {
         Context ctx = new Context();
         ctx.put(IpmConverterInterceptor.PROPERTY_CONVERTER,
                 "foobar");
+        ctx.put(IpmConverterInterceptor.PROPERTY_DELIMITER, "|");
+        ctx.put(IpmConverterInterceptor.PROPERTY_CHARSET, "UTF-8");
         interceptorBuilder.configure(ctx);
     }
 
@@ -111,6 +126,8 @@ public class IpmConverterInterceptorTest {
         Context ctx = new Context();
         ctx.put(IpmConverterInterceptor.PROPERTY_CONVERTER,
                 FakeIpmConverter.class.getName());
+        ctx.put(IpmConverterInterceptor.PROPERTY_DELIMITER, "|");
+        ctx.put(IpmConverterInterceptor.PROPERTY_CHARSET, "UTF-8");
         interceptorBuilder.configure(ctx);
     }
 
@@ -118,7 +135,7 @@ public class IpmConverterInterceptorTest {
     public void testInterceptValidCrmEvent() throws ParseException {
         this.interceptValidEvent(
                 this.validCrmEvent, this.crmInterceptor,
-                new CrmRawToIpmConverter());
+                new CrmRawToIpmConverter(eventDelimiter, eventCharset));
     }
 
     @Test
@@ -131,14 +148,14 @@ public class IpmConverterInterceptorTest {
     public void testInterceptValidCrmEventList() throws ParseException {
         this.interceptValidEventList(
                 this.validCrmEvent, this.crmInterceptor,
-                new CrmRawToIpmConverter());
+                new CrmRawToIpmConverter(eventDelimiter, eventCharset));
     }
 
     @Test
     public void testInterceptValidInetEvent() throws ParseException {
         this.interceptValidEvent(
                 this.validInetEvent, this.inetInterceptor,
-                new InetRawToIpmConverter());
+                new InetRawToIpmConverter(eventDelimiter, eventCharset));
     }
 
     @Test
@@ -150,6 +167,6 @@ public class IpmConverterInterceptorTest {
     public void testInterceptValidInetEventList() throws ParseException {
         this.interceptValidEventList(
                 this.validInetEvent, this.inetInterceptor,
-                new InetRawToIpmConverter());
+                new InetRawToIpmConverter(eventDelimiter, eventCharset));
     }
 }

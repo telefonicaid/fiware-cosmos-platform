@@ -1,5 +1,8 @@
 package es.tid.smartsteps.flume;
 
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +27,8 @@ public class IpmConverterInterceptor implements Interceptor {
             LoggerFactory.getLogger(IpmConverterInterceptor.class);
 
     public static final String PROPERTY_CONVERTER = "converter";
+    public static final String PROPERTY_DELIMITER = "delimiter";
+    public static final String PROPERTY_CHARSET   = "charset";
 
     private RawToIpmConverter converter;
 
@@ -74,6 +79,54 @@ public class IpmConverterInterceptor implements Interceptor {
     public static class Builder implements Interceptor.Builder {
         private RawToIpmConverter converter = null;
 
+        private static RawToIpmConverter.Builder getBuilderFromClass(
+                String className) throws ConfigurationException {
+            ClassLoader cl = Builder.class.getClassLoader();
+            Class<? extends RawToIpmConverter> converterClass;
+            Class<? extends RawToIpmConverter.Builder> factoryClass;
+            try {
+                converterClass = (Class<? extends RawToIpmConverter>)
+                        cl.loadClass(className);
+
+            } catch (ClassNotFoundException e) {
+                throw new ConfigurationException(String.format(
+                        "invalid value %s for '%s' property; unknown class " +
+                                "name",
+                        className, PROPERTY_CONVERTER), e);
+            } catch (ClassCastException e) {
+                throw new ConfigurationException(String.format(
+                        "invalid value %s for '%s' property; " +
+                                "given class is not an instance of %s ",
+                        className, PROPERTY_CONVERTER,
+                        RawToIpmConverter.class.getName()), e);
+            }
+            try {
+                factoryClass = (Class<? extends RawToIpmConverter.Builder>)
+                        cl.loadClass(className + "$Builder");
+            } catch (ClassNotFoundException e) {
+                throw new ConfigurationException(String.format(
+                        "invalid value %s for '%s' property; missing " +
+                                "inner class Builder",
+                        className, PROPERTY_CONVERTER), e);
+            } catch (ClassCastException e) {
+                throw new ConfigurationException(String.format(
+                        "invalid value %s for '%s' property; " +
+                                "given inner class Builder is not an instance" +
+                                " of %s",
+                        className, PROPERTY_CONVERTER,
+                        RawToIpmConverter.class.getName()), e);
+            }
+            try {
+                return factoryClass.newInstance();
+            } catch (Exception e) {
+                throw new ConfigurationException(String.format(
+                        "invalid value %s for '%s' property; inner class " +
+                                "Builder for given class cannot be " +
+                                "instantiated",
+                        className, PROPERTY_CONVERTER), e);
+            }
+        }
+
         @Override
         public Interceptor build() {
             if (this.converter == null) {
@@ -83,47 +136,47 @@ public class IpmConverterInterceptor implements Interceptor {
             return new IpmConverterInterceptor(this.converter);
         }
 
+        private static void checkPropertiesOrThrow(Context ctx)
+                throws ConfigurationException {
+            for (String property : new String[] { PROPERTY_CONVERTER,
+                    PROPERTY_DELIMITER, PROPERTY_CHARSET }) {
+                if (ctx.getString(property) == null) {
+                    throw new ConfigurationException(String.format(
+                            "missing '%s' property for IPM converter interceptor",
+                            property));
+                }
+            }
+        }
+
         @Override
         public void configure(Context context) throws ConfigurationException {
+            checkPropertiesOrThrow(context);
+
             String converterName = context.getString(PROPERTY_CONVERTER);
-            if (converterName == null) {
-                throw new ConfigurationException(String.format(
-                        "missing '%s' property for IPM converter interceptor",
-                        PROPERTY_CONVERTER));
-            }
-            Class<? extends RawToIpmConverter> converterClass;
+            String delimiter = context.getString(PROPERTY_DELIMITER);
+            String charset = context.getString(PROPERTY_CHARSET);
+
+            RawToIpmConverter.Builder converterBuilder;
             try {
                 IpmConverterType converterType =
                         IpmConverterType.valueOf(converterName.toUpperCase());
-                converterClass = converterType.getConverterClass();
+                converterBuilder = converterType.getConverterBuilder();
             } catch (IllegalArgumentException ignorable) {
                 // The converter name is unknown. Let's check whether it
                 // is a valid class name implementing RawToIpmConverter
-                try {
-                    converterClass = (Class<? extends RawToIpmConverter>)
-                            this.getClass().getClassLoader().loadClass(
-                                    converterName);
-                } catch (ClassNotFoundException e) {
-                    throw new ConfigurationException(String.format(
-                            "unknown value %s for '%s' property " +
-                                    "of IPM converter interceptor",
-                            converterName, PROPERTY_CONVERTER), e);
-                } catch (ClassCastException e) {
-                    throw new ConfigurationException(String.format(
-                            "given value %s for '%s' property of IPM " +
-                                    "converter interceptor is not valid: " +
-                                    "not a %s instance",
-                            converterName,
-                            PROPERTY_CONVERTER,
-                            RawToIpmConverter.class.getName()), e);
-                }
+                converterBuilder = getBuilderFromClass(converterName);
             }
             try {
-                this.converter = converterClass.newInstance();
-            } catch (Exception e) {
-                throw new ConfigurationException(String.format("cannot " +
-                        "instantiate IPM converter from class %s",
-                        converterClass.getName()), e);
+                this.converter = converterBuilder.newConverter(delimiter,
+                        Charset.forName(charset));
+            } catch (IllegalCharsetNameException e) {
+                throw new ConfigurationException(String.format("invalid value" +
+                        " %s for property %s: unknown charset name",
+                        charset, PROPERTY_CHARSET), e);
+            } catch (UnsupportedCharsetException e) {
+                throw new ConfigurationException(String.format("invalid value" +
+                        " %s for property %s: charset is not supported",
+                        charset, PROPERTY_CHARSET), e);
             }
         }
     }

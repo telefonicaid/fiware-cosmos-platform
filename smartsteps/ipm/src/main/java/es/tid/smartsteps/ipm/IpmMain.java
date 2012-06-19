@@ -1,6 +1,7 @@
 package es.tid.smartsteps.ipm;
 
 import java.io.*;
+import java.nio.charset.Charset;
 
 /**
  *
@@ -26,7 +27,8 @@ public final class IpmMain {
         if (type.equals(INET_TYPE)) {
              converter = new InetRawToIpmConverter();
         } else if (type.equals(CRM_TYPE)) {
-            converter = new CrmRawToIpmConverter();
+            converter = new CrmRawToIpmConverter("|",
+                    Charset.forName("UTF-8"));
         } else {
             throw new IllegalArgumentException("Invalid data type: " + type);
         }

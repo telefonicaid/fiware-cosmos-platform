@@ -20,21 +20,17 @@ public abstract class CsvParserSupport<T, Builder extends Message.Builder>
                         Builder builder) throws ParseException;
     }
 
-    private FieldParser[] fieldParsers;
-
-    protected CsvParserSupport(char delimiter, Charset charset,
-                               FieldParser[] fieldParsers) {
+    protected CsvParserSupport(String delimiter, Charset charset) {
         super(delimiter, charset);
-        this.fieldParsers = fieldParsers;
     }
 
-    protected void parse(InputStream input, Builder builder)
-            throws ParseException {
+    protected void parse(InputStream input, Builder builder,
+                         FieldParser[] fieldParsers) throws ParseException {
         String encoding = this.getCharset().name();
         try {
             String line = IOUtils.toString(input, this.getCharset().name());
             StringTokenizer st = new StringTokenizer(line,
-                    String.valueOf(this.getDelimiter()));
+                    this.getDelimiter());
             int fieldsCount = st.countTokens();
             if (fieldsCount != fieldParsers.length) {
                 throw new ParseException(String.format(

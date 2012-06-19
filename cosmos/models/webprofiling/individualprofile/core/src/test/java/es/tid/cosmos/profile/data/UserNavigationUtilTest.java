@@ -4,6 +4,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
 import es.tid.cosmos.profile.generated.data.ProfileProtocol.UserNavigation;
 
 /**
@@ -12,6 +13,11 @@ import es.tid.cosmos.profile.generated.data.ProfileProtocol.UserNavigation;
  * @author sortega
  */
 public class UserNavigationUtilTest {
+    @Test
+    public void shouldBeUtilityClass() {
+        assertUtilityClass(UserNavigationUtil.class);
+    }
+
     @Test
     public void testCreate() {
         final String userId = "cfae4f24cb42c12d";
@@ -24,7 +30,7 @@ public class UserNavigationUtilTest {
         assertEquals(url, nav.getUrl());
         assertEquals(date, nav.getDate());
     }
-    
+
     @Test
     public void testParse() {
         UserNavigation nav = UserNavigationUtil.parse("cfae4f24cb42c12d\t"

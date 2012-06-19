@@ -4,9 +4,14 @@ Fabric script file to perform common tasks on remote machines. Requires fabric[1
 [1] http://fabfile.org.
 """
 from fabric.api import run,env
+from time import sleep
+from random import randint
 
 def host_type():
     run('uname -s')
+
+def host_name():
+    run('hostname')
 
 def list_machines():
     run('tashi getinstances')
@@ -38,27 +43,89 @@ def start_jenkins():
     start_samson_hudson_ubuntu_bigdata()
     start_samson_hudson_oneiric_bigdata()
 
-"""
-Start up a cluster of Ubuntu Samson nodes
+def start_ubuntu_cluster(name=env.user):
+    """
+    Start up a cluster of Ubuntu Samson nodes
+    """
+    run('tashi createMany --basename %s --cores %s --memory %s --disks x86_64-natty-samson-cluster-grant.qcow2,samson-cluster-var-samson-100G.qcow2 --count %s --nics %s' % (env.basename, env.cores, env.memory, env.count, env.nics))
 
-e.g. start 2 nodes with the name samson-cluster-user
+def start_centos_cluster():
+    """
+    Start up a cluster of CentOS Samson nodes
+    """
+    run('tashi createMany --basename %s --cores %s --memory %s --disks x86_64-samson-centos-cluster.qcow2 --count %s --nics %s' % (env.basename, env.cores, env.memory, env.count, env.nics))
 
-fab -H user@hadoop.bigdata.hi.inet start_ubuntu_cluster
-
-e.g. start 5 nodes with a custom suffix
-
-fab -H user@hadoop.bigdata.hi.inet start_ubuntu_cluster:count=5,name=test
-"""
-def start_ubuntu_cluster(name=env.user, count=2):
-    run('tashi createMany --basename samson-cluster-%s --cores 2 --memory 4096 --disks x86_64-natty-samson-cluster-grant.qcow2,samson-cluster-var-samson-100G.qcow2 --count %s' % (name, count))
-
-"""
-Shutdown machines started using start_ubuntu_cluster or start_centos_cluster
-
-e.g. Stop the "test" cluster
-
-fab -H user@hadoop.bigdata.hi.inet stop_cluster:name=test
-
-"""
 def stop_cluster(name=env.user):
-    run('tashi destroyMany --basename samson-cluster-%s' % (name))
+    """
+    Shutdown machines started using start_ubuntu_cluster or start_centos_cluster
+    e.g. Stop the "test" cluster
+    fab -H user@hadoop.bigdata.hi.inet stop_cluster:name=test
+    """
+    run('tashi destroyMany --basename %s' % (env.basename))
+    print "Waiting 5 seconds for the machines to stop"
+    sleep(5)
+
+def start_cluster(os='ubuntu', name=env.user, wait=30):
+    if os == 'ubuntu':
+        start_ubuntu_cluster()
+    elif os == 'centos':
+        start_centos_cluster()
+    else:
+       print 'Unknown os - %s' % (os)
+    
+    # Wait a bit for the machines to come up
+    remaining = int(wait)
+    for slot in (range(remaining, 10, -10)):
+        print "Waiting %d seconds for the machines to start" % remaining
+        sleep(10)
+        remaining = remaining - 10
+
+def delilah():
+    # Pick a node, any node
+    run("delilah -command 'cluster info'")
+
+def configure_cluster(name=env.user):
+    """
+    Define the modes to be used in the cluster
+    """
+    print env.host
+
+    for node in (range(int(count))):
+        print node
+
+def tashi(user=env.user, public_ip=False, count=2, name=None, cores=2, nics=999, mem=2048):
+    """
+    Config for connecting to hadoop.bigdata.hi.inet
+    """
+    env.hosts = ['hadoop.bigdata.hi.inet']
+    env.user = user
+    if public_ip != False:
+        env.public_ip = True
+    else:
+        env.public_ip = False
+    env.count = count
+
+    if name == None:
+        env.basename = "samson-cluster-%s" % user
+    else:
+        env.basename = name
+
+    env.cores = cores
+    env.nics = nics
+    env.memory = mem
+
+
+def samson(user=env.user,password=None):
+    """
+    Config for connecting to samson.bigdata.hi.inet
+    """
+    env.hosts = ['samson.bigdata.hi.inet']
+    env.user = user
+    if password != None:
+        env.password = password
+
+def samson_node():
+    master=randint(0,int(env.count)-1)
+
+    env.hosts = ['samson@%s-%d' % (env.basename, master)]
+    env.password = 'samson'

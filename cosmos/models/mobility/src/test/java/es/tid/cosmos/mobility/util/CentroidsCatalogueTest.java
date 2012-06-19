@@ -88,7 +88,7 @@ public class CentroidsCatalogueTest {
                 + "0.0145254067172264|0.0143057717118093|0.0118448756663055|"
                 + "0.00721698692307692\n";
         List<Cluster> centroids = CentroidsCatalogue.load(
-                new StringReader(text));
+                new StringReader(text), "\\|");
         assertNotNull(centroids);
         assertEquals(2, centroids.size());
         assertEquals(1, centroids.get(0).getLabel());

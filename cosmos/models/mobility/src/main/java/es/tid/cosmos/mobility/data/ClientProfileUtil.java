@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
  *
  * @author ximo
  */
-public abstract class ClientProfileUtil {
+public final class ClientProfileUtil {
+
+    private ClientProfileUtil() {}
+
     public static ClientProfile create(long userId, int profileId) {
         return ClientProfile.newBuilder()
                 .setUserId(userId)

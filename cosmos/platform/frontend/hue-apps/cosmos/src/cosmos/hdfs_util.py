@@ -35,10 +35,18 @@ class CachedHDFSFile(object):
         self.tmp_dir = TemporalDirectory(prefix='hdfscache')
         self.cached_file = os.path.join(self.tmp_dir.path,
                                         os.path.basename(path))
-        with fs.open(path, 'r') as hdfs_file:
-            with open(self.cached_file, 'w') as local_file:
-                for chunk in iter((lambda: hdfs_file.read(self.CHUNK_SIZE)), ''):
-                    local_file.write(chunk)
+        hdfs_file = None
+        local_file = None
+        try:
+            hdfs_file = fs.open(path, 'r')
+            local_file = open(self.cached_file, 'w')
+            for chunk in iter((lambda: hdfs_file.read(self.CHUNK_SIZE)), ''):
+                local_file.write(chunk)
+        finally:
+            if hdfs_file:
+                hdfs_file.close()
+            if local_file:
+                local_file.close()
 
     def local_path(self):
         return self.cached_file

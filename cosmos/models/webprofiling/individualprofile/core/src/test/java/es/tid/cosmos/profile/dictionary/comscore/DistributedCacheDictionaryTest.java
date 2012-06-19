@@ -12,6 +12,8 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
+
 /**
  *
  * @author sortega
@@ -24,6 +26,11 @@ public class DistributedCacheDictionaryTest {
     public void setUp() throws Exception {
         this.job = new Job();
         this.config = this.job.getConfiguration();
+    }
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(DistributedCacheDictionary.class);
     }
 
     @Test

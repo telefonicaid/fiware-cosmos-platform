@@ -26,8 +26,8 @@ public final class ActivityDensityProfileRunner {
     }
     
     public static CosmosWorkflow run(Path clientProfileMobPath,
-            Path clientsInfoPath, Path activityDensityProfileOut, Path tmpDirPath,
-            boolean isDebug, Configuration conf)
+            Path clientsInfoPath, Path activityDensityProfileOut,
+            Path tmpDirPath, boolean isDebug, Configuration conf)
             throws ClassNotFoundException, IOException, InterruptedException {
         WorkflowList wfList = new WorkflowList();
         Path popdenprofBtsprofPath = new Path(tmpDirPath, "popdenprof_btsprof");

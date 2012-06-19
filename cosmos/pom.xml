@@ -22,6 +22,7 @@
 
         <!-- platform-wide dependency versions -->
         <jersey-version>1.11</jersey-version>
+	<junit.version>4.10</junit.version>
         <jvm.version>1.6</jvm.version>
         <org.apache.hadoop>0.20.2</org.apache.hadoop>
         <thrift.version>0.8.0</thrift.version>
@@ -391,7 +392,7 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.10</version>
+            <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -468,6 +469,7 @@
 
     <modules>
         <module>base</module>
+        <module>test-base</module>
         <module>models</module>
         <module>platform</module>
         <module>tests</module>

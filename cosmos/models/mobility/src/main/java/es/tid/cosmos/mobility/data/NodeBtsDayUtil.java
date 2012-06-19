@@ -8,9 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
  *
  * @author sortega
  */
-public abstract class NodeBtsDayUtil {
-    public static final String DELIMITER = "|";
-    
+public final class NodeBtsDayUtil {
+
+    private NodeBtsDayUtil() {}
+
     public static NodeBtsDay create(long userId, long bts,
                                     int workday, int count) {
         return NodeBtsDay.newBuilder()
@@ -33,8 +34,8 @@ public abstract class NodeBtsDayUtil {
         return wrap(create(userId, bts, workday, count));
     }
     
-    public static String toString(NodeBtsDay obj) {
-        return (obj.getUserId() + DELIMITER + obj.getBts() + DELIMITER +
-                obj.getWorkday() + DELIMITER + obj.getCount());
+    public static String toString(NodeBtsDay obj, String separator) {
+        return (obj.getUserId() + separator + obj.getBts() + separator +
+                obj.getWorkday() + separator + obj.getCount());
     }
 }

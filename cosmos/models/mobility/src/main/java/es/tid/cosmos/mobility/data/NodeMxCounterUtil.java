@@ -9,7 +9,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  *
  * @author dmicol
  */
-public abstract class NodeMxCounterUtil {
+public final class NodeMxCounterUtil {
+
+    private NodeMxCounterUtil() {}
+
     public static NodeMxCounter create(Iterable<BtsCounter> allBts,
                                        int btsLength,
                                        int btsMaxLength) {

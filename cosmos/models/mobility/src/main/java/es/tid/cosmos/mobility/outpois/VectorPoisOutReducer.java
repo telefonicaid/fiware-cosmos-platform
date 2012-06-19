@@ -8,7 +8,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.data.PoiUtil;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -20,6 +20,16 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  */
 class VectorPoisOutReducer extends Reducer<ProtobufWritable<TwoInt>,
         TypedProtobufWritable<Poi>, NullWritable, Text> {
+    private String separator;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final MobilityConfiguration conf =
+                (MobilityConfiguration) context.getConfiguration();
+        this.separator = conf.getDataSeparator();
+    }
+    
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<TypedProtobufWritable<Poi>> values, Context context)
@@ -35,19 +45,19 @@ class VectorPoisOutReducer extends Reducer<ProtobufWritable<TwoInt>,
                     0 : poi.getLabelgroupbts());
             final Poi outputPoi = poiBuilder.build();
             String output =
-                    outputPoi.getId() + PoiUtil.DELIMITER
-                    + outputPoi.getNode() + PoiUtil.DELIMITER
-                    + outputPoi.getBts() + PoiUtil.DELIMITER
-                    + outputPoi.getLabelnodebts() + PoiUtil.DELIMITER
-                    + outputPoi.getLabelgroupnodebts() + PoiUtil.DELIMITER
-                    + outputPoi.getConfidentnodebts() + PoiUtil.DELIMITER
-                    + outputPoi.getInoutWeek() + PoiUtil.DELIMITER
-                    + outputPoi.getInoutWend() + PoiUtil.DELIMITER
-                    + outputPoi.getLabelnode() + PoiUtil.DELIMITER
-                    + outputPoi.getLabelgroupnode() + PoiUtil.DELIMITER
-                    + outputPoi.getConfidentnode() + PoiUtil.DELIMITER
-                    + outputPoi.getLabelbts() + PoiUtil.DELIMITER
-                    + outputPoi.getLabelgroupbts() + PoiUtil.DELIMITER
+                    outputPoi.getId() + this.separator
+                    + outputPoi.getNode() + this.separator
+                    + outputPoi.getBts() + this.separator
+                    + outputPoi.getLabelnodebts() + this.separator
+                    + outputPoi.getLabelgroupnodebts() + this.separator
+                    + outputPoi.getConfidentnodebts() + this.separator
+                    + outputPoi.getInoutWeek() + this.separator
+                    + outputPoi.getInoutWend() + this.separator
+                    + outputPoi.getLabelnode() + this.separator
+                    + outputPoi.getLabelgroupnode() + this.separator
+                    + outputPoi.getConfidentnode() + this.separator
+                    + outputPoi.getLabelbts() + this.separator
+                    + outputPoi.getLabelgroupbts() + this.separator
                     + outputPoi.getConfidentbts();
             context.write(NullWritable.get(), new Text(output));
         }

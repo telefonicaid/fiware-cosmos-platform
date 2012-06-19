@@ -23,7 +23,7 @@ public final class MivsRunner {
     }
 
     public static CosmosWorkflow run(Path viTelmonthBts, Path viClientFuseAcc,
-                           Path tmpDir, boolean isDebug, Configuration conf)
+            Path tmpDir, boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         WorkflowList wfList = new WorkflowList();       
         Path viTelmonthMobvars = new Path(tmpDir, "vi_telmonth_mobvars");

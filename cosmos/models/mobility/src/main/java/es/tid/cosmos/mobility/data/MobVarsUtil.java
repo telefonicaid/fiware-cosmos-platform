@@ -8,8 +8,9 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
  *
  * @author losa
  */
-public abstract class MobVarsUtil {
-    public static final String DELIMITER = "|";
+public final class MobVarsUtil {
+
+    private MobVarsUtil() {}
 
     public static MobVars create(int month, boolean isWorkDay, int numPos,
             int difBtss, int difMuns, int difStates, double masscenterUtmX,
@@ -44,11 +45,11 @@ public abstract class MobVarsUtil {
                            diamAreaInf));
     }
 
-    public static String toString(MobVars obj) {
-        return (obj.getNumPos() + DELIMITER + obj.getDifBtss() + DELIMITER +
-                obj.getDifMuns() + DELIMITER + obj.getDifStates() + DELIMITER +
-                obj.getMasscenterUtmx() + DELIMITER +
-                obj.getMasscenterUtmy() + DELIMITER +
-                obj.getRadius() + DELIMITER + obj.getDiamAreainf());
+    public static String toString(MobVars obj, String separator) {
+        return (obj.getNumPos() + separator + obj.getDifBtss() + separator +
+                obj.getDifMuns() + separator + obj.getDifStates() + separator +
+                obj.getMasscenterUtmx() + separator +
+                obj.getMasscenterUtmy() + separator +
+                obj.getRadius() + separator + obj.getDiamAreainf());
     }
 }

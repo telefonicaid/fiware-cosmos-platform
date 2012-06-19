@@ -2,6 +2,8 @@ package es.tid.cosmos.kpicalculation.config;
 
 import java.util.Arrays;
 
+import org.apache.commons.lang.StringUtils;
+
 /**
  * @author javierb, sortega
  */
@@ -66,5 +68,11 @@ public class KpiFeature {
         hash = HASH_SALT * hash + (this.group != null ? this.group.hashCode()
                                                       : 0);
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        return ("KpiFeature{" + "name=" + name + ", fields=[" +
+                StringUtils.join(fields, ",") + "], group=" + group + '}');
     }
 }

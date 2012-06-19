@@ -4,6 +4,7 @@ import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
 import es.tid.cosmos.profile.generated.data.ProfileProtocol.CategoryCount;
 
 /**
@@ -12,6 +13,11 @@ import es.tid.cosmos.profile.generated.data.ProfileProtocol.CategoryCount;
  * @author dmicol
  */
 public class CategoryCountUtilTest {
+    @Test
+    public void shouldBeUtilityClass() {
+        assertUtilityClass(CategoryCountUtil.class);
+    }
+
     @Test
     public void testCreate() {
         final String name = "Sports";

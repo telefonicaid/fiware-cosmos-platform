@@ -8,6 +8,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.PoiUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
@@ -21,6 +22,16 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  */
 public class ExportPoiToTextByTwoIntReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>, NullWritable, Text> {
+    private String separator;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final MobilityConfiguration conf =
+                (MobilityConfiguration) context.getConfiguration();
+        this.separator = conf.getDataSeparator();
+    }
+    
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<TypedProtobufWritable<Poi>> values, Context context)
@@ -30,9 +41,9 @@ public class ExportPoiToTextByTwoIntReducer extends Reducer<
         for (TypedProtobufWritable<Poi> value : values) {
             final Poi poi = value.get();
             context.write(NullWritable.get(),
-                          new Text(TwoIntUtil.toString(twoInt)
-                                   + PoiUtil.DELIMITER
-                                   + PoiUtil.toString(poi)));
+                          new Text(TwoIntUtil.toString(twoInt, this.separator)
+                                   + this.separator
+                                   + PoiUtil.toString(poi, this.separator)));
         }
     }
 }

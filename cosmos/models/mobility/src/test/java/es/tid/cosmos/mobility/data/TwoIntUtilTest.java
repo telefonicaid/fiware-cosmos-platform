@@ -1,17 +1,24 @@
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
  * @author dmicol
  */
 public class TwoIntUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(TwoIntUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         ProtobufWritable<TwoInt> wrapper = TwoIntUtil.createAndWrap(3L, 5L);
@@ -31,6 +38,6 @@ public class TwoIntUtilTest {
     @Test
     public void testToString() {
         TwoInt obj = TwoIntUtil.create(3L, 5L);
-        assertEquals("3|5", TwoIntUtil.toString(obj));
+        assertEquals("3|5", TwoIntUtil.toString(obj, "|"));
     }
 }

@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.activitydensity;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -29,10 +31,15 @@ public class PopdenProfileGetOutReducerTest {
             NullWritable, Text> instance;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.instance = new ReduceDriver<ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<ClusterVector>, NullWritable, Text>(
                         new PopdenProfileGetOutReducer());
+        InputStream configInput = MobilityConfiguration.class.getResource(
+                "/mobility.properties").openStream();
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        this.instance.setConfiguration(conf);
     }
     
     @Test

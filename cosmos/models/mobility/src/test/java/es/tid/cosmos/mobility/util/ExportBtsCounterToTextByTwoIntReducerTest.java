@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
+import java.io.InputStream;
 import static java.util.Arrays.asList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
@@ -10,8 +11,9 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.BtsCounterUtil;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.data.BtsCounterUtil;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -24,10 +26,15 @@ public class ExportBtsCounterToTextByTwoIntReducerTest {
     private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<BtsCounter>,
             NullWritable, Text> driver;
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<BtsCounter>, NullWritable, Text>(
                         new ExportBtsCounterToTextByTwoIntReducer());
+        InputStream configInput = MobilityConfiguration.class.getResource(
+                "/mobility.properties").openStream();
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        this.driver.setConfiguration(conf);
     }
     
     @Test

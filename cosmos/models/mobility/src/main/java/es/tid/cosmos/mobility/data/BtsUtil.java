@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
  *
  * @author dmicol, sortega
  */
-public abstract class BtsUtil {
+public final class BtsUtil {
+
+    private BtsUtil() {}
+
     public static Bts create(long placeId, long comms, double posx, double posy,
             double area, Iterable<Long> adjBts) {
         Bts.Builder bts = Bts.newBuilder()

@@ -7,8 +7,9 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.BtsCounterUtil;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.data.BtsCounterUtil;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -20,6 +21,16 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class ExportBtsCounterToTextByTwoIntReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<BtsCounter>, NullWritable,
         Text> {
+    private String separator;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final MobilityConfiguration conf =
+                (MobilityConfiguration) context.getConfiguration();
+        this.separator = conf.getDataSeparator();
+    }
+    
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<TypedProtobufWritable<BtsCounter>> values, Context context)
@@ -29,9 +40,10 @@ public class ExportBtsCounterToTextByTwoIntReducer extends Reducer<
         for (TypedProtobufWritable<BtsCounter> value : values) {
             final BtsCounter btsCounter = value.get();
             context.write(NullWritable.get(),
-                          new Text(TwoIntUtil.toString(twoInt)
-                                   + BtsCounterUtil.DELIMITER
-                                   + BtsCounterUtil.toString(btsCounter)));
+                          new Text(TwoIntUtil.toString(twoInt, this.separator)
+                                   + this.separator
+                                   + BtsCounterUtil.toString(btsCounter,
+                                                             this.separator)));
         }
     }
 }

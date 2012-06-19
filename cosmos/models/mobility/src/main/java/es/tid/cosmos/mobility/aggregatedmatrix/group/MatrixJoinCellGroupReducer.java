@@ -3,13 +3,13 @@ package es.tid.cosmos.mobility.aggregatedmatrix.group;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MatrixTimeUtil;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.CellGroup;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixTime;
@@ -29,7 +29,8 @@ class MatrixJoinCellGroupReducer extends Reducer<LongWritable,
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         if (cellGroups == null) {
-            final Configuration conf = context.getConfiguration();
+            final MobilityConfiguration conf =
+                    (MobilityConfiguration) context.getConfiguration();
             cellGroups = CellGroupsCatalogue.load(
                     new Path(conf.get("cell_groups")), conf);
         }

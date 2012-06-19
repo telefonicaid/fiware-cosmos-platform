@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
  *
  * @author dmicol
  */
-public abstract class PoiPosUtil {
+public final class PoiPosUtil {
+
+    private PoiPosUtil() {}
+
     public static PoiPos create(long node, long bts, int label, double posx,
             double posy, int inoutWeek, int inoutWend, double radiusWeek,
             double distCMWeek, double radiusWend, double distCMWend) {

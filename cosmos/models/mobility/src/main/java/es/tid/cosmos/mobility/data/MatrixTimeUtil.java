@@ -10,7 +10,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixTime;
  *
  * @author dmicol
  */
-public abstract class MatrixTimeUtil {
+public final class MatrixTimeUtil {
+
+    private MatrixTimeUtil() {}
+
     public static MatrixTime create(Date date, Time time, int group, long bts) {
         return MatrixTime.newBuilder()
                 .setDate(date)

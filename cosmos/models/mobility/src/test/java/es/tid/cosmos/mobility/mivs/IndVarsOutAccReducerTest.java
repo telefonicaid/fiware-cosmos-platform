@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.mivs;
 
+import java.io.InputStream;
+import java.io.IOException;
 import static java.util.Arrays.asList;
 
 import org.apache.hadoop.io.LongWritable;
@@ -9,9 +11,10 @@ import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
-import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 
@@ -24,10 +27,15 @@ public class IndVarsOutAccReducerTest {
             NullWritable, Text> reducer;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.reducer = new ReduceDriver<LongWritable,
                 TypedProtobufWritable<MobViMobVars>, NullWritable, Text>(
                         new IndVarsOutAccReducer());
+        InputStream configInput = MobilityConfiguration.class.getResource(
+                "/mobility.properties").openStream();
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        this.reducer.setConfiguration(conf);
     }
 
     @Test

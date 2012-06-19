@@ -3,7 +3,7 @@ package es.tid.smartsteps.util;
 import es.tid.smartsteps.ipm.ParseException;
 import es.tid.smartsteps.ipm.data.generated.CrmProtocol.CrmIpm;
 
-import static es.tid.smartsteps.util.CrmIpmUtil.FieldIndex.*;
+import static es.tid.smartsteps.ipm.data.generated.CrmProtocol.CrmIpm.*;
 
 /**
  *
@@ -11,35 +11,6 @@ import static es.tid.smartsteps.util.CrmIpmUtil.FieldIndex.*;
  */
 public abstract class CrmIpmUtil {
     private static final char DELIMITER = '|';
-
-    public static enum FieldIndex {
-        ANONYMISED_MSISDN               (0),
-        ANONYMISED_BILLING_POST_CODE    (1),
-        BILLING_POST_CODE_PREFIX        (2),
-        ACORN_CODE                      (3),
-        GENDER                          (4),
-        BILLING_SYSTEM                  (5),
-        MTRC_PL_SEGMENT                 (6),
-        MPN_STATUS                      (7),
-        SPID                            (8),
-        ACTIVE_STATUS                   (9),
-        NEEDS_SEGMENTATION              (10),
-        AGE                             (11),
-        AGE_BAND                        (12),
-        ANONYMISED_IMSI                 (13),
-        ANONYMISED_IMEI                 (14),
-        IMEI_TAC                        (15),
-        DEVICE_TYPE                     (16),
-        DEVICE_MANUFACTURER             (17),
-        DEVICE_MODEL_NAME               (18),
-        EFFECTIVE_FROM_NAME             (19);
-
-        public final int value;
-
-        private FieldIndex(int value) {
-            this.value = value;
-        }
-    }
 
     private CrmIpmUtil() {
     }
@@ -56,6 +27,7 @@ public abstract class CrmIpmUtil {
                 .setAnonymisedMsisdn(anonymisedMsisdn)
                 .setAnonymisedBillingPostCode(anonymisedBillingPostCode)
                 .setAcornCode(acornCode)
+                .setBillingPostCodePrefix(billingPostCodePrefix)
                 .setGender(gender)
                 .setBillingSystem(billingSystem)
                 .setMtrcPlSegment(mtrcPlSegment)
@@ -77,30 +49,36 @@ public abstract class CrmIpmUtil {
 
     public static CrmIpm parse(String line) throws ParseException {
         String[] fields = line.split("\\" + DELIMITER);
-        if (fields.length != FieldIndex.values().length) {
+        if (fields.length != CrmIpm.getDescriptor().getFields().size()) {
             throw new ParseException(String.format(
                     "cannot parse input line %s: invalid format", line));
         }
         return CrmIpm.newBuilder()
-                .setAnonymisedMsisdn(fields[ANONYMISED_MSISDN.value])
-                .setAnonymisedBillingPostCode(fields[ANONYMISED_BILLING_POST_CODE.value])
-                .setAcornCode(fields[ACORN_CODE.value])
-                .setGender(fields[GENDER.value])
-                .setBillingSystem(fields[BILLING_SYSTEM.value])
-                .setMtrcPlSegment(fields[MTRC_PL_SEGMENT.value])
-                .setMpnStatus(fields[MPN_STATUS.value])
-                .setSpid(fields[SPID.value])
-                .setActiveStatus(fields[ACTIVE_STATUS.value])
-                .setNeedsSegmentation(fields[NEEDS_SEGMENTATION.value])
-                .setAge(fields[AGE.value])
-                .setAgeBand(fields[AGE_BAND.value])
-                .setAnonymisedImsi(fields[ANONYMISED_IMSI.value])
-                .setAnonymisedImei(fields[ANONYMISED_IMEI.value])
-                .setImeiTac(fields[IMEI_TAC.value])
-                .setDeviceType(fields[DEVICE_TYPE.value])
-                .setDeviceManufacturer(fields[DEVICE_MANUFACTURER.value])
-                .setDeviceModelName(fields[DEVICE_MODEL_NAME.value])
-                .setEffectiveFromDate(fields[EFFECTIVE_FROM_NAME.value])
+                .setAnonymisedMsisdn(fields[ANONYMISEDMSISDN_FIELD_NUMBER - 1])
+                .setAnonymisedBillingPostCode(
+                        fields[ANONYMISEDBILLINGPOSTCODE_FIELD_NUMBER - 1])
+                .setAcornCode(fields[ACORNCODE_FIELD_NUMBER - 1])
+                .setBillingPostCodePrefix(
+                        fields[BILLINGPOSTCODEPREFIX_FIELD_NUMBER - 1])
+                .setGender(fields[GENDER_FIELD_NUMBER - 1])
+                .setBillingSystem(fields[BILLINGSYSTEM_FIELD_NUMBER - 1])
+                .setMtrcPlSegment(fields[MTRCPLSEGMENT_FIELD_NUMBER - 1])
+                .setMpnStatus(fields[MPNSTATUS_FIELD_NUMBER - 1])
+                .setSpid(fields[SPID_FIELD_NUMBER - 1])
+                .setActiveStatus(fields[ACTIVESTATUS_FIELD_NUMBER - 1])
+                .setNeedsSegmentation(
+                        fields[NEEDSSEGMENTATION_FIELD_NUMBER - 1])
+                .setAge(fields[AGE_FIELD_NUMBER - 1])
+                .setAgeBand(fields[AGEBAND_FIELD_NUMBER - 1])
+                .setAnonymisedImsi(fields[ANONYMISEDIMSI_FIELD_NUMBER - 1])
+                .setAnonymisedImei(fields[ANONYMISEDIMEI_FIELD_NUMBER - 1])
+                .setImeiTac(fields[IMEITAC_FIELD_NUMBER - 1])
+                .setDeviceType(fields[DEVICETYPE_FIELD_NUMBER - 1])
+                .setDeviceManufacturer(
+                        fields[DEVICEMANUFACTURER_FIELD_NUMBER - 1])
+                .setDeviceModelName(fields[DEVICEMODELNAME_FIELD_NUMBER - 1])
+                .setEffectiveFromDate(
+                        fields[EFFECTIVEFROMDATE_FIELD_NUMBER - 1])
                 .build();
     }
     

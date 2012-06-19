@@ -7,12 +7,12 @@ import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.base.util.Logger;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.parsing.ClusterParser;
 
@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.parsing.ClusterParser;
  * @author dmicol
  */
 public abstract class CentroidsCatalogue {
-    public static List<Cluster> load(Path input, Configuration conf)
+    public static List<Cluster> load(Path input, MobilityConfiguration conf)
             throws IOException {
         FSDataInputStream in = null;
         InputStreamReader reader = null;
@@ -29,7 +29,8 @@ public abstract class CentroidsCatalogue {
             FileSystem fs = FileSystem.get(conf);
             in = fs.open(input);
             reader = new InputStreamReader(in);
-            return load(reader);
+            final String separator = conf.getDataSeparator();
+            return load(reader, separator);
         } catch (Exception ex) {
             Logger.get(CentroidsCatalogue.class).fatal(ex);
             throw new IOException(ex);
@@ -49,12 +50,13 @@ public abstract class CentroidsCatalogue {
         }
     }
     
-    public static List<Cluster> load(Reader input) throws IOException {
+    public static List<Cluster> load(Reader input, String separator)
+            throws IOException {
         BufferedReader br = new BufferedReader(input);
         List<Cluster> centroids = new LinkedList<Cluster>();
         String line;
         while ((line = br.readLine()) != null) {
-            Cluster cluster = new ClusterParser(line).parse();
+            Cluster cluster = new ClusterParser(line, separator).parse();
             centroids.add(cluster);
         }
         return centroids;

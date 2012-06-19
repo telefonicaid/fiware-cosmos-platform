@@ -10,7 +10,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
  *
  * @author dmicol
  */
-public abstract class ItinTimeUtil {
+public final class ItinTimeUtil {
+
+    private ItinTimeUtil() {}
+
     public static ItinTime create(Date date, Time time, long bts) {
         return ItinTime.newBuilder()
                 .setDate(date)

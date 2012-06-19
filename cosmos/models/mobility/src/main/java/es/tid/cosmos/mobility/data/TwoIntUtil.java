@@ -8,9 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  *
  * @author dmicol
  */
-public abstract class TwoIntUtil {
-    public static final String DELIMITER = "|";
-    
+public final class TwoIntUtil {
+
+    private TwoIntUtil() {}
+
     public static TwoInt create(long num1, long num2) {
         return TwoInt.newBuilder()
                 .setNum1(num1)
@@ -33,7 +34,7 @@ public abstract class TwoIntUtil {
         return (obj.getNum1() % maxNumPartitions);
     }
     
-    public static String toString(TwoInt obj) {
-        return (obj.getNum1() + DELIMITER + obj.getNum2());
+    public static String toString(TwoInt obj, String separator) {
+        return (obj.getNum1() + separator + obj.getNum2());
     }
 }

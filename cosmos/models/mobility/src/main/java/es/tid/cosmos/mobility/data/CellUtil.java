@@ -8,7 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
  *
  * @author dmicol
  */
-public abstract class CellUtil {
+public final class CellUtil {
+
+    private CellUtil() {}
+
     public static Cell create(long cellId, long bts, int geoLoc1,
                               int geoLoc2, double posX, double posY) {
         return Cell.newBuilder()

@@ -18,7 +18,7 @@ public class WordCountDAO {
     private static final String WORD_COUNT_COLLECTION = "wordcount";
     private static final String WORD_COLUMN = "_id";
     private static final String COUNT_COLUMN = "value";
-    
+
     @Autowired(required = true)
     private MongoService mongo;
     private DBCollection wordCounts;
@@ -32,12 +32,12 @@ public class WordCountDAO {
     public void setMongo(MongoService mongo) {
         this.mongo = mongo;
     }
-    
+
     public long getCount(String word) {
         BasicDBObject ref = new BasicDBObject(WORD_COLUMN, word);
         return this.processResults(this.wordCounts.find(ref).toArray());
     }
-    
+
     protected long processResults(List<DBObject> results) {
         if (results.isEmpty()) {
             // Word is not in the provided text

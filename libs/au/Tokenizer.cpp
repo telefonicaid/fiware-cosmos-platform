@@ -228,6 +228,11 @@ namespace au {
         
         bool TokenVector::checkNextNextTokenIs( std::string content )
         {
+            if ((size() == 0) || (size() == 1))
+            {
+                return false;
+            }
+
             if( position >= ( size() -1 ) )
                 return false;
             

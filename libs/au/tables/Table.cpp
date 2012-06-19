@@ -4,18 +4,18 @@
 
 #include "au/xml.h"
 
-#include "Table.h" // Own interterface
+#include "Table.h" // Own interface
 
 /*
  #define AU_TABLE_H        "-"
  #define AU_TABLE_V        "|"
  #define AU_TABLE_CORNER_LT "+"  // Left top
- #define AU_TABLE_CORNER_RT "+"  // Rigth top
+ #define AU_TABLE_CORNER_RT "+"  // Right top
  #define AU_TABLE_CORNER_LB "+"  // Left bottom
- #define AU_TABLE_CORNER_RB "+"  // Rigth bottom
+ #define AU_TABLE_CORNER_RB "+"  // Right bottom
  #define AU_TABLE_X_HD      "+" // Horizontal down
  #define AU_TABLE_X_HU      "+" // Horizontal down
- #define AU_TABLE_X_VR      "+" // Vertial rigth
+ #define AU_TABLE_X_VR      "+" // Vertical right
  #define AU_TABLE_X_VL      "+" // Vertical left
  #define AU_TABLE_X         "+" // Full cross
  */
@@ -23,12 +23,12 @@
 #define AU_TABLE_H         "-"
 #define AU_TABLE_V         "|"
 #define AU_TABLE_CORNER_LT "/"  // Left top
-#define AU_TABLE_CORNER_RT "\\"  // Rigth top
+#define AU_TABLE_CORNER_RT "\\"  // Right top
 #define AU_TABLE_CORNER_LB "\\"  // Left bottom
-#define AU_TABLE_CORNER_RB "/"  // Rigth bottom
+#define AU_TABLE_CORNER_RB "/"  // Right bottom
 #define AU_TABLE_X_HD      "-" // Horizontal down
 #define AU_TABLE_X_HU      "-" // Horizontal down
-#define AU_TABLE_X_VR      "|" // Vertial rigths
+#define AU_TABLE_X_VR      "|" // Vertical rights
 #define AU_TABLE_X_VL      "|" // Vertical left
 #define AU_TABLE_X         "+" // Full cross
 
@@ -37,12 +37,12 @@
  #define AU_TABLE_H         "━"
  #define AU_TABLE_V         "┃"
  #define AU_TABLE_CORNER_LT "┏"  // Left top
- #define AU_TABLE_CORNER_RT "┓"  // Rigth top
+ #define AU_TABLE_CORNER_RT "┓"  // Right top
  #define AU_TABLE_CORNER_LB "┗"  // Left bottom
- #define AU_TABLE_CORNER_RB "┛"  // Rigth bottom
+ #define AU_TABLE_CORNER_RB "┛"  // Right bottom
  #define AU_TABLE_X_HD      "┳" // Horizontal down
  #define AU_TABLE_X_HU      "┻" // Horizontal down
- #define AU_TABLE_X_VR      "┣" // Vertial rigth
+ #define AU_TABLE_X_VR      "┣" // Vertical right
  #define AU_TABLE_X_VL      "┫" // Vertical left
  #define AU_TABLE_X         "╋" // Full cross
  */
@@ -304,7 +304,7 @@ namespace au
             // Original field description
             field_definition = _field_definition;
             
-            left = false;            // By default no left aligment
+            left = false;            // By default no left alignment
             format = format_string;  // By default string format
             
             group = sum;             // Default criteria
@@ -596,7 +596,7 @@ namespace au
             if (!cell )
                 return "";
 
-            // Return agregated version of the values
+            // Return aggregated version of the values
             return columns[c]->transform( cell->values );
         }
         
@@ -657,7 +657,7 @@ namespace au
             }
             title_length += 3*( columns.size()-1);
             
-            // Check enougth space for the title length
+            // Check enough space for the title length
             int pos = 0 ;
             while( title.length() > title_length )
             {
@@ -1109,7 +1109,7 @@ namespace au
         void Table::sort( StringVector &sort_columns )
         {
             
-            // Simple double buble algorithm to sort :(
+            // Simple double bubble algorithm to sort :(
             for (size_t r = 0 ; r < rows.size() ; r++ )
                 for (size_t rr = r+1 ; rr < rows.size() ; rr++ )
                 {
@@ -1125,7 +1125,7 @@ namespace au
                             TableCell* cell1 = rows[r]->get( column_name );
                             TableCell* cell2 = rows[rr]->get( column_name );
                             
-                            // Use this column to resolve comparisson
+                            // Use this column to resolve comparison
                             c = cell1->compare( cell2 , columns[column_id]->format );
                         }
                         
@@ -1342,6 +1342,10 @@ namespace au
 
         std::string Table::getFormatForColumn( size_t c)
         {
+            if (c >= columns.size())
+            {
+                return "";
+            }
             return columns[c]->field_definition;
         }
 

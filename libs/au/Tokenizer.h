@@ -53,7 +53,7 @@ namespace au
             // Constructor
             Token( std::string _content , Type _type , int _position );
             
-            // Check if this component is a parituclar sequence
+            // Check if this component is a particular sequence
             bool is( std::string _content );
             
             // Check if this token is a numerical value
@@ -76,7 +76,7 @@ namespace au
         
         class TokenVector : public std::vector<Token>
         {
-            size_t position;                  // Position inside the vector ( when retriving for using... )
+            size_t position;                  // Position inside the vector ( when retrieving for using... )
             
             
         public:
@@ -101,7 +101,7 @@ namespace au
             // Debug function 
             std::string str();
             
-            // Auxiliar function to set the error.
+            // Auxiliary function to set the error.
             void set_error( au::ErrorManager *error , std::string error_message );
           
             
@@ -134,10 +134,10 @@ namespace au
             
         public:
             
-            // Add spetial tokens
+            // Add special tokens
             void addSingleCharTokens( std::string tokens ); 
             
-            // General function to add spetial tokens
+            // General function to add special tokens
             void addToken( std::string token ); 
 
             // Main function to parse the provided command

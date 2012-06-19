@@ -3,7 +3,8 @@ package es.tid.smartsteps.util;
 import es.tid.smartsteps.ipm.ParseException;
 import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetIpm;
 
-import static es.tid.smartsteps.util.InetIpmUtil.FieldIndex.*;
+import static es.tid.smartsteps.ipm.data.generated.InetProtocol.InetIpm.*;
+
 /**
  *
  * @author dmicol
@@ -11,30 +12,6 @@ import static es.tid.smartsteps.util.InetIpmUtil.FieldIndex.*;
 public abstract class InetIpmUtil {
     private static final char DELIMITER = '|';
 
-    public static enum FieldIndex {
-        TYPE            (0),
-        CALL_TYPE       (1),
-        ANONYMISED_IMSI (2),
-        FIRST_TEMP_IMSI (3),
-        LAST_TEMP_IMSI  (4),
-        IMEI_TAC        (5),
-        ANONYMISED_IMEI (6),
-        LACOD           (7),
-        CELL_ID         (8),
-        EVENT_DATE_TIME (9),
-        DTAP_CAUSE      (10),
-        BSS_MAP_CAUSE   (11),
-        CC_CAUSE        (12),
-        MM_CAUSE        (13),
-        RANAP_CAUSE     (14);
-
-        public int value;
-
-        private FieldIndex(int value) {
-            this.value = value;
-        }
-    }
-    
     private InetIpmUtil() {
     }
     
@@ -64,26 +41,26 @@ public abstract class InetIpmUtil {
     
     public static InetIpm parse(String line) throws ParseException {
         String[] fields = line.split("\\" + DELIMITER);
-        if (fields.length != FieldIndex.values().length) {
+        if (fields.length != InetIpm.getDescriptor().getFields().size()) {
             throw new ParseException(String.format(
                     "cannot parse input line %s: invalid format", line));
         }
         return InetIpm.newBuilder()
-                .setType(fields[TYPE.value])
-                .setCallType(fields[CALL_TYPE.value])
-                .setAnonymisedImsi(fields[ANONYMISED_IMSI.value])
-                .setFirstTempImsi(fields[FIRST_TEMP_IMSI.value])
-                .setLastTempImsi(fields[LAST_TEMP_IMSI.value])
-                .setImeiTac(fields[IMEI_TAC.value])
-                .setAnonymisedImei(fields[ANONYMISED_IMEI.value])
-                .setLacod(fields[LACOD.value])
-                .setCellId(fields[CELL_ID.value])
-                .setEventDateTime(fields[EVENT_DATE_TIME.value])
-                .setDtapCause(fields[DTAP_CAUSE.value])
-                .setBssmapCause(fields[BSS_MAP_CAUSE.value])
-                .setCcCause(fields[CC_CAUSE.value])
-                .setMmCause(fields[MM_CAUSE.value])
-                .setRanapCause(fields[RANAP_CAUSE.value])
+                .setType(fields[TYPE_FIELD_NUMBER - 1])
+                .setCallType(fields[CALLTYPE_FIELD_NUMBER - 1])
+                .setAnonymisedImsi(fields[ANONYMISEDIMSI_FIELD_NUMBER - 1])
+                .setFirstTempImsi(fields[FIRSTTEMPIMSI_FIELD_NUMBER - 1])
+                .setLastTempImsi(fields[LASTTEMPIMSI_FIELD_NUMBER - 1])
+                .setImeiTac(fields[IMEITAC_FIELD_NUMBER - 1])
+                .setAnonymisedImei(fields[ANONYMISEDIMEI_FIELD_NUMBER - 1])
+                .setLacod(fields[LACOD_FIELD_NUMBER - 1])
+                .setCellId(fields[CELLID_FIELD_NUMBER - 1])
+                .setEventDateTime(fields[EVENTDATETIME_FIELD_NUMBER - 1])
+                .setDtapCause(fields[DTAPCAUSE_FIELD_NUMBER - 1])
+                .setBssmapCause(fields[BSSMAPCAUSE_FIELD_NUMBER - 1])
+                .setCcCause(fields[CCCAUSE_FIELD_NUMBER - 1])
+                .setMmCause(fields[MMCAUSE_FIELD_NUMBER - 1])
+                .setRanapCause(fields[RANAPCAUSE_FIELD_NUMBER - 1])
                 .build();
     }
     

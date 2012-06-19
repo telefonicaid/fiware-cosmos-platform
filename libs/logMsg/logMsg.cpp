@@ -1754,7 +1754,15 @@ LmStatus lmPathRegister(const char* path, const char* format, const char* timeFo
     STRING_CHECK(format, F_LEN);
     
     if (isdir((char*) path) == true)
-        snprintf(fileName, sizeof(fileName), "%s/%sLog", path, &progName[0]);
+    {
+        // Goyo. If progName (argv[0] is a complete (or relative, but with directories) path, perhaps we don't want all of it
+        char *leaf_path = strrchr(progName, '/');
+        if (leaf_path == NULL)
+        {
+            leaf_path = progName;
+        }
+        snprintf(fileName, sizeof(fileName), "%s/%sLog", path, leaf_path);
+    }
     else
     {
         if (access(fileName, X_OK) == -1)

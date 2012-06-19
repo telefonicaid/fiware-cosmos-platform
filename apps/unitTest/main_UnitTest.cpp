@@ -49,13 +49,20 @@ int main(int argC, char **argV) {
     paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
     paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
     paConfig("log to file",                   (void*) true);
-    paConfig("log dir",                       (void*) "/var/log/samson/");
+    paConfig("default value", "-logDir",      (void*) "/var/log/samson");
     
     paConfig("man author",                    "Samson team");
 
-    // Avoid parsing any argument
-    paParse(paArgs, 1, (char**) argV, 1, false);
-
+    // Goyo. trying to get traces
+    if (strcmp(argV[1], "-t") == 0)
+    {
+        paParse(paArgs, 3, (char**) argV, 3, false);
+    }
+    else
+    {
+        // Avoid parsing any argument
+        paParse(paArgs, 1, (char**) argV, 1, false);
+    }
     // Run all tests
     ::testing::InitGoogleTest(&argC, argV);
     return RUN_ALL_TESTS();

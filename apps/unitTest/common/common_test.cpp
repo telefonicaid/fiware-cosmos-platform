@@ -327,4 +327,31 @@ TEST(commonTest, KVFile)
     free(wrong_header);
 }
 
+#include "samson/common/KVInputVector.h"
+
+//Test  KVInputVector;
+TEST(commonTest, KVInputVector)
+{
+    samson::KVInputVector kv_empty_vector(0);
+    samson::KVInputVector kv_old_vector(1);
+
+//    samson::Operation  red_op("test_reduce_operation", samson::Operation::reduce);
+//    samson::KVInputVector kv_red_op_vector(&red_op);
+//
+//    samson::Operation  map_op("test_map_operation", samson::Operation::map);
+//    samson::KVInputVector kv_map_op_vector(&map_op);
+//
+//    EXPECT_EQ(kv_empty_vector.getNext(), (samson::KVSetStruct *)NULL) << "Error in getNext for empty KVInputVector";
+//    EXPECT_EQ(kv_old_vector.getNext(), (samson::KVSetStruct *)NULL) << "Error in getNext for kv_old_vector KVInputVector";
+//    EXPECT_EQ(kv_red_op_vector.getNext(), (samson::KVSetStruct *)NULL) << "Error in getNext for kv_red_op_vector KVInputVector";
+//    EXPECT_EQ(kv_map_op_vector.getNext(), (samson::KVSetStruct *)NULL) << "Error in getNext for kv_map_op_vector KVInputVector";
+//
+//    kv_empty_vector.sort();
+//    kv_red_op_vector.sort();
+
+
+
+
+}
+
 

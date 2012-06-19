@@ -233,7 +233,7 @@ ctest: debug_all
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
-	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
+	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest -t 15,20,22,31,32,33,34,35,210 --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG_ALL/samson_test.xml
 
@@ -247,7 +247,7 @@ unit_test: debug_all
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
-	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest --gtest_shuffle --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
+	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest  -t 15,20,22,31,32,33,34,35,210 --gtest_shuffle --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG_ALL/samson_test.xml
 
@@ -262,7 +262,7 @@ test_coverage:
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
-	ulimit -c unlimited && BUILD_COVERAGE/apps/unitTest/unitTest --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
+	ulimit -c unlimited && BUILD_COVERAGE/apps/unitTest/unitTest  -t 15,20,22,31,32,33,34,35,210 --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' -e 's,\(<testcase name="\)DISABLED_\(.*status="notrun".*\) />,\1\2>\n      <skipped/>\n    </testcase>,' BUILD_COVERAGE/samson_test.xml
 

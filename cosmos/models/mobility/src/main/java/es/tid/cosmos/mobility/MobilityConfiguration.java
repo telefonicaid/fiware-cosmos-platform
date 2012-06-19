@@ -166,7 +166,7 @@ public class MobilityConfiguration extends Configuration {
     }
 
     public void setItinPercAbsoluteMax(String value) {
-        this.getFloat(ITIN_PERC_ABSOLUTE_MAX, Float.parseFloat(value));
+        this.setFloat(ITIN_PERC_ABSOLUTE_MAX, Float.parseFloat(value));
     }
 
     public void setItinMaxMinutesInMoves(String value) {

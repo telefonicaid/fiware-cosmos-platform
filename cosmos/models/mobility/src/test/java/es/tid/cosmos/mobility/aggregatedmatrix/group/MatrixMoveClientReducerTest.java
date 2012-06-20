@@ -27,6 +27,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixTime;
  * @author dmicol
  */
 public class MatrixMoveClientReducerTest {
+
     private ReduceDriver<LongWritable, TypedProtobufWritable<MatrixTime>,
             LongWritable, TypedProtobufWritable<ItinMovement>> instance;
     

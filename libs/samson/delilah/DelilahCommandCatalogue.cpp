@@ -255,7 +255,7 @@ namespace samson
             "run <op_name> [queues...] [-clear_inputs]\n"
             "           <op_name>        : Name of the operation. See 'help ls_operations' for more info\n"
             "           [queues]         : Name of the queues involved in this operation (inputs and outputs)\n"
-            "           [-clear_inputs]  : Flag used to remove content from input queues when running this operation\n"
+            "           [-clear_inputs]  : clear content from input queues before running this operation\n"
             );
 
         add( "cancel_stream_operation" , "stream" ,

@@ -3,7 +3,6 @@
    delilah is its console client, used to connect to and to interact with the Samson platform.
 
 2. delilah console client
-
 'delilah' is the samson shell, used to interact with the samson platform.
 
 Synopsis:
@@ -20,17 +19,15 @@ delilah supports a number of options, the most important being:
   -f                     File with commands to execute
   -command               Single command to be executed
 
-
-delilah is included in the samson package and installed with the rest of the platform.
-delilah is an executable and the supported platforms are:
+delilah is included in the samson package and installed with the rest of the platform; it is an executable and the supported platforms are:
   o Ubuntu,
   o RedHat,
   o CentOS and
   o MacOS ?
 
-delilah doesn't need to run in any of the nodes of the samson cluster but it does need to be able to connect to all the nodes in the cluster.
-In order to tell delilah what cluster to connect to, it's two command line parameters are used.
-The port parameter defaults to 1324, which is the default listen port for the samson worker, while the IP-address parameter defaults to 'localhost', i.e. the same node where delilah has been started.
+delilah doesn't have to run in any of the nodes of the samson cluster it connects to, but it does need to be able to connect to all nodes in the cluster.
+In order to tell delilah what cluster to connect to, its two command line parameters are used (IP Address and port).
+The port parameter defaults to 1324, which is the default port for the samson worker, while the IP-address parameter defaults to 'localhost', i.e. the same node where delilah has been started.
 
 As a shell, delilah offers a number of convenient features, such as:
 
@@ -86,13 +83,13 @@ o auto-completion
          --------------------------------------------------------------------------------------------------------------------------------
 
 2.2 management commands
-   A SAMSON cluster is a set of SAMSON nodes that work together.
-   Nodes can easily be added or removed from a SAMSON cluster using delilah.
-
    'management' is the delilah command category to maintain clusters.
    The commands in this category are:
    o cluster         - to add/remove/view cluster members
    o ls_connections  - to see the status of all connections in the cluster
+
+   A SAMSON cluster is a set of SAMSON nodes that work together.
+   Nodes can easily be added or removed from a SAMSON cluster using delilah.
 
 2.2.1 cluster
    The cluster command has a number of subcommands:
@@ -119,7 +116,7 @@ o auto-completion
 
 
 2.2.1.1 cluster info
-   The cluster subcommand 'info' shows the list of nodes in the connected cluster, e.g.:
+   The cluster subcommand 'info' shows the list of nodes in the connected cluster.
 
    Synopsis:
    delilah> cluster info
@@ -137,7 +134,7 @@ o auto-completion
 
 
 2.2.1.2 cluster connections
-   The cluster subcommand 'connections' shows a listing with detailed information of all currently open connections:
+   The cluster subcommand 'connections' shows a listing with detailed information of all currently open connections.
 
    Synopsis:
    delilah> cluster connections
@@ -164,6 +161,7 @@ o auto-completion
          |------------------------------|
          | Connection | #Packets | Size | 
          |------------+----------+------|
+          ...
          \------------------------------/
 
 2.2.1.4 cluster connect
@@ -202,7 +200,7 @@ o auto-completion
    To retrieve the cluster id of the currently connected cluster, the subcommand 'get_my_id' 
    is used. This identification number of the cluster can later be used in various listings
    to detect that connections are with this instance of delilah, and not another one.
-   It is typical to have many instances of delilah running simultaneously.
+   It is normal to have many instances of delilah running simultaneously.
 
    Synopsis:
    delilah> cluster get_my_id
@@ -285,8 +283,8 @@ o auto-completion
     delilah> ls_buffers
 
 2.4 delilah commands
-    The 'delilah' set of command are typically the commands that do not invoke anything outside of the
-    delilah executable, i.e. no message is sent to any worker in order to execute these types of commands.
+    The 'delilah' category of commands are typically the commands that do not invoke anything outside of the
+    delilah executable, i.e. no message is sent to any worker in order to execute this type of commands.
     The exception to this rule are connect/disconnect and wverbose/wdebug
 
 2.4.1 help
@@ -428,13 +426,15 @@ o auto-completion
 
 2.5 local commands
    The category 'local' groups the delilah commands that have no interaction whatsoever with any of the
-   workers in the cluster.
+   workers in the cluster and that interacts with the local filesystem.
 
 2.5.1 ls_local
-   The 'ls_local' command shows a list of current directory with relevant information about local data-sets
+   The 'ls_local' command shows a listing of the current directory with relevant information about local data-sets.
 
    Synopsis:
    delilah> ls_local
+
+   Example output:
          /-----------------------------------------\                                                                                     
          | Local files ( * )                       |
          |-----------------------------------------|
@@ -566,9 +566,9 @@ o auto-completion
 
 
 2.7 push&pop commands
-   The category 'push&pop' includes the commands to push queues into the samson platform, from local files
+   The category 'push&pop' includes the commands to push queues into the samson platform from local files
    in the file system, to pop them, i.e. create a local file with a copy of the information in the queue,
-   as well as commands to manipulate and view queues
+   as well as commands to manipulate and view queues.
 
 
 2.7.1 push
@@ -582,13 +582,14 @@ o auto-completion
   The command 'pop' copies the content of a samson queue to a local directory.
   This command also works for binary queues.
   To later view the content, the executable samsonCat is used. samsonCat is distributed with the samson platform.
+  <reference to samsonCat doc?>
 
   Synopsis:
   delilah> pop <queue> <local_file_or_dir> [-force] [-show]
 
 
 2.7.3 connect_to_queue
-  Using the command 'connect_to_queue', you can connect to a queue to receive live data from SAMSON.
+  Using the command 'connect_to_queue', you can connect to a queue to receive live data from the samson platform.
   Received data will be stored in a local directory called stream_out_<queue>
 
   Synopsis:
@@ -632,7 +633,10 @@ o auto-completion
    Synopsis:
    delilah> push_queue  <from_queue> <to_queue> [ <to_queue2> ... ]
 
+
 2.8 stream commands
+   The 'stream' category of delilah commands contain the commands that ...
+
 
 2.8.1 ls_stream_operations
    Show a list of defined stream operations (added with add_stream_operation)
@@ -662,7 +666,7 @@ o auto-completion
 
 
 2.8.3 rm_stream_operation
-   To remove a stream operation the command 'rm_stream_operation' is used.
+   To remove a stream operation, the command 'rm_stream_operation' is used.
    
    Synopsis:
    delilah> rm_stream_operation <name> [-f (silent)]
@@ -677,7 +681,7 @@ o auto-completion
    delilah> run <op_name> [queues...] [-clear_inputs]
                          <op_name>        : Name of the operation. See 'help ls_operations' for more info
                          [queues]         : Name of the queues involved in this operation (inputs and outputs)
-                         [-clear_inputs]  : Flag used to remove content from input queues when running this operation
+                         [-clear_inputs]  : clear content from input queues before running this operation
 
 
 2.8.5 cancel_stream_operation
@@ -704,14 +708,14 @@ o auto-completion
 
 2.8.8 add_queue_connection
    To connect a queue to a set of queues, the command 'add_queue_connection' is used.
-   Data will be automatically redirected to target queues.
+   All data from the source queue is automatically redirected to target queues.
 
    Synopsis:
    delilah> add_queue_connection <source_queue> <target_queue_1> <target_queue_2> ... <target_queue_N>
 
 
 2.8.9 rm_queue_connection
-   To remove a connected queue, previously established with 'add_queue_connection', the command 'rm_queue_connection' is used.
+   To remove a queue connection, previously established with 'add_queue_connection', the command 'rm_queue_connection' is used.
 
    Synopsis:
    delilah> rm_queue_connection <source_queue> <target_queue>
@@ -725,7 +729,7 @@ o auto-completion
 
 
 2.8.11 ps_stream
-   To obtainb a list of the stream tasks currently running in all workers, the command 'ps_stream' is used.
+   To obtain a list of the stream tasks currently running in all workers, the command 'ps_stream' is used.
 
    Synopsis:
    delilah> ps_stream

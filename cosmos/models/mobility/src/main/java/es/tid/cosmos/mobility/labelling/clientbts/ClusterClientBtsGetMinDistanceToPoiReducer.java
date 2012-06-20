@@ -32,8 +32,8 @@ class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<
     protected void setup(Context context) throws IOException,
             InterruptedException {
         if (centroids == null) {
-            final MobilityConfiguration conf =
-                    (MobilityConfiguration) context.getConfiguration();
+            final MobilityConfiguration conf = new MobilityConfiguration(context.
+                    getConfiguration());
             centroids = CentroidsCatalogue.load(new Path(conf.get("centroids")),
                                                 conf);
         }

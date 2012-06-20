@@ -24,19 +24,19 @@ public class MobilityConfigurationTest {
 
     @Test
     public void testGetSysInputFolder() {
-        assertEquals("/use/hdfs/mobility/input",
+        assertEquals("/user/hdfs/mobility/input",
                      this.instance.getSysInputFolder());
     }
 
     @Test
     public void testGetSysOutputTrainingFolder() {
-        assertEquals("/use/hdfs/mobility/output/training",
+        assertEquals("/user/hdfs/mobility/output/training",
                      this.instance.getSysOutputTrainingFolder());
     }
 
     @Test
     public void testGetSysOutputCompleteFolder() {
-        assertEquals("/use/hdfs/mobility/output/complete",
+        assertEquals("/user/hdfs/mobility/output/complete",
                      this.instance.getSysOutputCompleteFolder());
     }
 

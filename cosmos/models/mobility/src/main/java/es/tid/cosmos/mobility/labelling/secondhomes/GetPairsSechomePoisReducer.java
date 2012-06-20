@@ -30,8 +30,8 @@ class GetPairsSechomePoisReducer extends Reducer<LongWritable,
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        final MobilityConfiguration conf =
-                (MobilityConfiguration) context.getConfiguration();
+        final MobilityConfiguration conf = new MobilityConfiguration(context.
+                getConfiguration());
         this.homeLabelgroupId = conf.getPoiHomeLabelgroupId();
         this.minDistSecondHome = conf.getPoiMinDistSecondHome();
     }

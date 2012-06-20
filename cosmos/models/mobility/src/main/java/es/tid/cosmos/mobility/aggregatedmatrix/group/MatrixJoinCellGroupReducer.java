@@ -29,8 +29,8 @@ class MatrixJoinCellGroupReducer extends Reducer<LongWritable,
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         if (cellGroups == null) {
-            final MobilityConfiguration conf =
-                    (MobilityConfiguration) context.getConfiguration();
+            final MobilityConfiguration conf = new MobilityConfiguration(context.
+                    getConfiguration());
             cellGroups = CellGroupsCatalogue.load(
                     new Path(conf.get("cell_groups")), conf);
         }

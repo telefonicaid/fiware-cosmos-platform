@@ -26,8 +26,8 @@ class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        final MobilityConfiguration conf =
-                (MobilityConfiguration) context.getConfiguration();
+        final MobilityConfiguration conf = new MobilityConfiguration(context.
+                getConfiguration());
         this.minTotalCalls = conf.getClientMinTotalCalls();
         this.maxTotalCalls = conf.getClientMaxTotalCalls();
     }

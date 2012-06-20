@@ -34,8 +34,8 @@ public class ItinMoveClientPoisReducer extends Reducer<
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        final MobilityConfiguration conf =
-                (MobilityConfiguration) context.getConfiguration();
+        final MobilityConfiguration conf = new MobilityConfiguration(context.
+                getConfiguration());
         this.maxMinutesInMoves = conf.getItinMaxMinutesInMoves();
         this.minMinutesInMoves = conf.getItinMinMinutesInMoves();
     }

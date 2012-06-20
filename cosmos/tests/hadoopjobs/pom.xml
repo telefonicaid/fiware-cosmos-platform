@@ -12,7 +12,15 @@
     </parent>
     <name>hadoopjobs</name>
     <modules>
-        <module>printprimes</module>
         <module>mapperfail</module>
+        <module>parameterizedjob-base</module>
+        <module>parameterizedjob-malformed1</module>
+        <module>parameterizedjob-malformed2</module>
+        <module>parameterizedjob-malformed3</module>
+        <module>parameterizedjob-malformed4</module>
+        <module>parameterizedjob-malformed5</module>
+        <module>parameterizedjob-normal</module>
+        <module>parameterizedjob-whitespace</module>
+        <module>printprimes</module>
     </modules>
 </project>

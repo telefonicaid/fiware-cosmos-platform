@@ -30,7 +30,7 @@ TEST(samson_client, test_1 )
 
 }    
 
-TEST(samson_client, DISABLED_test_2 )
+TEST(samson_client, test_2 )
 {
 
    // SamsonClient to play with..

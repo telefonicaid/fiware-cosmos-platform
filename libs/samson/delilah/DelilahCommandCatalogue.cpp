@@ -208,15 +208,15 @@ namespace samson
         
         add( "ls_modules" , "modules",
             "Show a list of modules installed in SAMSON node workers",
-            "ls_module [module_name_pattern]. i.e ls_modules web*\n");
+            "ls_module [module_name_pattern]. E.g. ls_modules web*\n");
         
         add(  "ls_operations","modules", 
             "Shows a list of available operations",
-            "ls_operations [operation_name_pattern]. i.e ls_operations web*");
+            "ls_operations [operation_name_pattern]. E.g. ls_operations web*");
         
         add( "ls_datas" , "modules" ,
             "Shows a list of available data-types.",
-            "ls_datas [data_name_pattern]. i.e ls_datas web*"
+            "ls_datas [data_name_pattern]. E.g. ls_datas web*"
             );
         
         add( "reload_modules" , "modules", 
@@ -242,18 +242,17 @@ namespace samson
         
         add( "add_stream_operation" , "stream"    ,   
             "Add an operation to automatically process data from input queues to output queues",
-            "add_stream_operation name operation input-queues  output-queues <-forward>n"
-            "    -forward      Option allows to schedule reduce operations without state. Joint against a constant queue");
+            "add_stream_operation <name> <operation> <input-queues> <output-queues> [-forward]\n"
+            "    -forward      Option that allows to schedule reduce operations without state. Joint against a constant queue");
         
         add( "rm_stream_operation" , "stream"  ,  
             "Remove a previously defined operation with add_stream_operation",
-            "rm_stream_operation name <-f>"
+            "rm_stream_operation name <-f>\n"
             "      -f      Option avoids complaints when the operation does not exist");
         
         add( "run" , "stream" ,
             "Run a particular operation over queues manually",
             "run <op_name> [queues...] [-clear_inputs]\n"
-            "\n"
             "           <op_name>        : Name of the operation. See 'help ls_operations' for more info\n"
             "           [queues]         : Name of the queues involved in this operation (inputs and outputs)\n"
             "           [-clear_inputs]  : Flag used to remove content from input queues when running this operation\n"
@@ -262,27 +261,26 @@ namespace samson
         add( "cancel_stream_operation" , "stream" ,
             "Cancel a particular operation",
             "cancel_stream_operation <op_id>\n"
-            "\n"
-            "           <op_name>        : Identifier of the operation. Usually something like XXXXX_XXX\n"
+            "           <op_id>        : Identifier of the operation. Usually something like XXXXX_XXX\n"
             );
         
         
         add( "set_stream_operation_property"    , "stream" ,  
-            "Set value of an enviroment property associated to a stream operation ( see add_stream_operation )",
-            "set_stream_operation_property stream_operation_name variable_name value");
+            "Set value of an enviroment property associated to a stream operation (see add_stream_operation)",
+            "set_stream_operation_property <stream_operation_name> <variable_name> <value>");
         
         add( "unset_stream_operation_property"    , "stream" ,  
-            "Unset value of an enviroment property associated to a stream operation ( see add_stream_operation )",
-            "unset_stream_operation_property stream_operation_name variable_name");
+            "Remove an enviroment property associated to a stream operation (see add_stream_operation)",
+            "unset_stream_operation_property <stream_operation_name> <variable_name>");
         
         
         add( "add_queue_connection"    , "stream" ,  
             "Connect a queue to a set of queues. Data will be automatically redirected to target queues",
-            "add_queue_connection source_queue target_queue_1 target_queue_2 ... target_queue_N ");
+            "add_queue_connection <source_queue> <target_queue_1> <target_queue_2> ... <target_queue_N>");
 
         add( "rm_queue_connection"    , "stream" ,  
-            "Remove a queue connected stablished with add_queue_connection",
-            "rm_queue_connection source_queue target_queue");
+            "Remove a connected queue, previously established with 'add_queue_connection'",
+            "rm_queue_connection <source_queue> <target_queue>");
         
         add( "ls_queues_connections"    , "stream" ,  
             "Show queue_connections defined with the add_queue_connection command");
@@ -293,17 +291,17 @@ namespace samson
         
         
         add( "ls_workers" , "stream" ,
-            "Get a list of current workers with current memory/ disk / process status",
+            "Get a list of current workers with current memory/disk/process status",
             "ls_workers [-disk] [-engine]\n"
-            "           [-disk]   Show more information about disk activity in each worker "
-            "           [-engine] Show more information about engine activity in each worker "
+            "           [-disk]   Show more information about disk activity in each worker\n"
+            "           [-engine] Show more information about engine activity in each worker"
             );
         
         add( "init_stream" , "stream" ,
-            "Execute a initialization script to setup some automatic stream operations",
+            "Execute am initialization script to setup some automatic stream operations",
             "init_stream [prefix] <script_name>\n"
             "          [prefix]         It is used to name operations and queues\n"
-            "          <script_name>    Name of the script (i.e. module.script)\n"
+            "          <script_name>    Name of the script (e.g. module.script)\n"
             );
         
         
@@ -350,7 +348,7 @@ namespace samson
         
         add( "show_local_queue" , "push&pop"  ,
             "Show contents of a queue downloaded using pop. Modules should be installed locally",
-            "show_local_queue <local_dir> [-header] [-limit X]"
+            "show_local_queue <local_dir> [-header] [-limit X]\n"
             "          <local_dir>    Name of local directory where queue has been saved\n"
             "          [-header]      Show only headers\n"
             "          [-limit X]     Limit the number of key-values to show ( 10 by default )\n"
@@ -358,7 +356,7 @@ namespace samson
         
         add( "push_queue" , "push&pop", 
             "Push content of a queue to another queue/s",
-            "push_queue  <from_queue> <to_queue>"
+            "push_queue  <from_queue> <to_queue> [ <to_queue2> ... ]"
             );
         
         

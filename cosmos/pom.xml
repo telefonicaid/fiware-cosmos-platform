@@ -469,7 +469,6 @@
 
     <modules>
         <module>base</module>
-        <module>test-base</module>
         <module>models</module>
         <module>platform</module>
         <module>tests</module>

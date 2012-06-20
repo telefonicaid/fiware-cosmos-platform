@@ -1,5 +1,8 @@
 package es.tid.smartsteps.ipm;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 /**
@@ -7,21 +10,15 @@ import java.nio.charset.Charset;
  * @author dmicol
  */
 public interface RawToIpmConverter {
-    /**
-     * Converts a string that represents a raw record to a string that 
-     * represents the IPM output of such record.
-     * @param line The input line.
-     * @return The output record textual representation.
-     * @throws ParseException when input line cannot be parsed
-     */
-    String convert(String line) throws ParseException;
+
+    void convert(InputStream input, OutputStream output)
+            throws IOException, ParseException;
 
     /**
      * Raw-to-IPM converter factory class.
      */
-    public interface Builder {
+    interface Builder {
 
         RawToIpmConverter newConverter(String delimiter, Charset charset);
-
     }
 }

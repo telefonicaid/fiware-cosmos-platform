@@ -1,154 +1,169 @@
 package es.tid.smartsteps.util;
 
-import java.io.InputStream;
 import java.nio.charset.Charset;
 
-import es.tid.smartsteps.ipm.ParseException;
 import es.tid.smartsteps.ipm.data.generated.CrmProtocol.CrmIpm;
 
 /**
-*/
-public class CrmIpmCsvParser extends CsvParserSupport<CrmIpm, CrmIpm.Builder> {
+ * A CSV parser for CRM-IPM CDRs.
+ *
+ * @author apv
+ */
+public class CrmIpmCsvParser extends CsvParserSupport<CrmIpm> {
+
+    private static class BuilderAdapter extends
+            AbstractBuilderAdapter<CrmIpm, CrmIpm.Builder> {
+
+        public BuilderAdapter(CrmIpm.Builder builder) {
+            super(builder);
+        }
+
+        @Override
+        public CrmIpm build() {
+            return this.getBuilder().build();
+        }
+
+    }
 
     private static final FieldParser[] FIELD_PARSERS = {
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setAnonymisedMsisdn(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setAnonymisedMsisdn(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setAnonymisedBillingPostCode(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setAnonymisedBillingPostCode(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setAcornCode(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setAcornCode(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setBillingPostCodePrefix(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setBillingPostCodePrefix(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setGender(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setGender(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setBillingSystem(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setBillingSystem(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setMtrcPlSegment(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setMtrcPlSegment(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setMpnStatus(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setMpnStatus(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setSpid(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setSpid(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setActiveStatus(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setActiveStatus(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setNeedsSegmentation(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setNeedsSegmentation(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setAge(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setAge(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setAgeBand(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setAgeBand(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setAnonymisedImsi(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setAnonymisedImsi(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setAnonymisedImei(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setAnonymisedImei(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setImeiTac(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setImeiTac(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setDeviceType(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setDeviceType(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setDeviceManufacturer(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setDeviceManufacturer(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setDeviceModelName(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setDeviceModelName(fieldValue);
                 }
             },
-            new FieldParser<CrmIpm.Builder>() {
+            new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
-                                       CrmIpm.Builder builder) {
-                    builder.setEffectiveFromDate(fieldValue);
+                                       BuilderAdapter adapter) {
+                    adapter.getBuilder().setEffectiveFromDate(fieldValue);
                 }
             },
     };
@@ -158,9 +173,12 @@ public class CrmIpmCsvParser extends CsvParserSupport<CrmIpm, CrmIpm.Builder> {
     }
 
     @Override
-    public CrmIpm parse(InputStream input) throws ParseException {
-        CrmIpm.Builder builder = CrmIpm.newBuilder();
-        this.parse(input, builder, FIELD_PARSERS);
-        return builder.build();
+    protected FieldParser<CrmIpm, Builder<CrmIpm>>[] getFieldParsers() {
+        return FIELD_PARSERS;
+    }
+
+    @Override
+    protected Builder newBuilder() {
+        return new BuilderAdapter(CrmIpm.newBuilder());
     }
 }

@@ -1,12 +1,14 @@
 package es.tid.smartsteps.flume;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.base.Charsets;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.conf.ConfigurationException;
@@ -23,7 +25,7 @@ import es.tid.smartsteps.ipm.RawToIpmConverter;
  * @author apv
  */
 public class IpmConverterInterceptor implements Interceptor {
-    private static final Logger logger =
+    private static final Logger LOGGER =
             LoggerFactory.getLogger(IpmConverterInterceptor.class);
 
     public static final String PROPERTY_CONVERTER = "converter";
@@ -48,13 +50,18 @@ public class IpmConverterInterceptor implements Interceptor {
 
     @Override
     public Event intercept(Event event) {
-        String body = new String(event.getBody());
         try {
-            event.setBody(this.converter.convert(body).getBytes(
-                    Charsets.US_ASCII));
+            ByteArrayInputStream oldBody = new ByteArrayInputStream(event
+                    .getBody());
+            ByteArrayOutputStream newBody = new ByteArrayOutputStream();
+            this.converter.convert(oldBody, newBody);
+            event.setBody(newBody.toByteArray());
             return event;
         } catch (ParseException e) {
-            logger.warn("event discarded due to parsing error", e);
+            LOGGER.warn("event discarded due to parsing error", e);
+            return null;
+        } catch (IOException e) {
+            LOGGER.warn("event discarded due to IO error", e);
             return null;
         }
     }
@@ -77,67 +84,54 @@ public class IpmConverterInterceptor implements Interceptor {
     }
 
     public static class Builder implements Interceptor.Builder {
+
         private RawToIpmConverter converter = null;
 
         private static RawToIpmConverter.Builder getBuilderFromClass(
-                String className) throws ConfigurationException {
-            ClassLoader cl = Builder.class.getClassLoader();
-            Class<? extends RawToIpmConverter> converterClass;
-            Class<? extends RawToIpmConverter.Builder> factoryClass;
-            try {
-                converterClass = (Class<? extends RawToIpmConverter>)
-                        cl.loadClass(className);
-
-            } catch (ClassNotFoundException e) {
-                throw new ConfigurationException(String.format(
-                        "invalid value %s for '%s' property; unknown class " +
-                                "name",
-                        className, PROPERTY_CONVERTER), e);
-            } catch (ClassCastException e) {
-                throw new ConfigurationException(String.format(
-                        "invalid value %s for '%s' property; " +
-                                "given class is not an instance of %s ",
-                        className, PROPERTY_CONVERTER,
-                        RawToIpmConverter.class.getName()), e);
-            }
-            try {
-                factoryClass = (Class<? extends RawToIpmConverter.Builder>)
-                        cl.loadClass(className + "$Builder");
-            } catch (ClassNotFoundException e) {
-                throw new ConfigurationException(String.format(
-                        "invalid value %s for '%s' property; missing " +
-                                "inner class Builder",
-                        className, PROPERTY_CONVERTER), e);
-            } catch (ClassCastException e) {
-                throw new ConfigurationException(String.format(
-                        "invalid value %s for '%s' property; " +
-                                "given inner class Builder is not an instance" +
-                                " of %s",
-                        className, PROPERTY_CONVERTER,
-                        RawToIpmConverter.class.getName()), e);
-            }
+                String className) {
+            String errorMessage = String.format("invalid value %s for '%s' property",
+                    className, PROPERTY_CONVERTER);
+            loadDerivedClass(className, RawToIpmConverter.class, errorMessage);
+            Class<? extends RawToIpmConverter.Builder> factoryClass =
+                    loadDerivedClass(className + "$Builder",
+                            RawToIpmConverter.Builder.class,
+                            errorMessage);
             try {
                 return factoryClass.newInstance();
             } catch (Exception e) {
+                throw new ConfigurationException(errorMessage + "; inner " +
+                        "class Builder for given class cannot be " +
+                        "instantiated", e);
+            }
+        }
+
+        private static <Base, Derived> Class<Derived> loadDerivedClass(
+                String className, Class<Base> baseClass, String errorMessage) {
+            try {
+                Class clazz = Class.forName(className);
+                if (!baseClass.isAssignableFrom(clazz)) {
+                    throw new ConfigurationException(String.format(
+                            "%s; class %s is not derived from %s",
+                            errorMessage, className, baseClass));
+                }
+                return (Class<Derived>) clazz;
+
+            } catch (ClassNotFoundException e) {
                 throw new ConfigurationException(String.format(
-                        "invalid value %s for '%s' property; inner class " +
-                                "Builder for given class cannot be " +
-                                "instantiated",
-                        className, PROPERTY_CONVERTER), e);
+                        "%s; missing class %s", errorMessage, className), e);
             }
         }
 
         @Override
         public Interceptor build() {
             if (this.converter == null) {
-                throw new RuntimeException("cannot build IPM converter " +
+                throw new IllegalStateException("cannot build IPM converter " +
                         "interceptor: the builder has not been initialized yet");
             }
             return new IpmConverterInterceptor(this.converter);
         }
 
-        private static void checkPropertiesOrThrow(Context ctx)
-                throws ConfigurationException {
+        private static void checkPropertiesOrThrow(Context ctx) {
             for (String property : new String[] { PROPERTY_CONVERTER,
                     PROPERTY_DELIMITER, PROPERTY_CHARSET }) {
                 if (ctx.getString(property) == null) {
@@ -149,7 +143,7 @@ public class IpmConverterInterceptor implements Interceptor {
         }
 
         @Override
-        public void configure(Context context) throws ConfigurationException {
+        public void configure(Context context) {
             checkPropertiesOrThrow(context);
 
             String converterName = context.getString(PROPERTY_CONVERTER);

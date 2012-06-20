@@ -1,5 +1,6 @@
 package es.tid.smartsteps.flume;
 
+import java.io.*;
 import java.nio.charset.Charset;
 import java.util.LinkedList;
 import java.util.List;
@@ -17,6 +18,7 @@ import es.tid.smartsteps.ipm.InetRawToIpmConverter;
 import es.tid.smartsteps.ipm.ParseException;
 import es.tid.smartsteps.ipm.RawToIpmConverter;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 /**
@@ -40,9 +42,9 @@ public class IpmConverterInterceptorTest {
      * of IPM converter for testing purposes.
      */
     public static class FakeIpmConverter implements RawToIpmConverter {
+
         @Override
-        public String convert(String line) throws ParseException {
-            return line;
+        public void convert(InputStream input, OutputStream output) {
         }
 
         public static final class Builder implements RawToIpmConverter.Builder {
@@ -68,11 +70,16 @@ public class IpmConverterInterceptorTest {
 
     private void interceptValidEvent(String inputLine,
             Interceptor interceptor,
-            RawToIpmConverter converter) throws ParseException {
-        Event inputEvent = EventBuilder.withBody(inputLine,
-                Charset.forName("UTF-8"));
+            RawToIpmConverter converter) throws ParseException, IOException {
+        Charset charset = Charset.forName("UTF-8");
+        Event inputEvent = EventBuilder.withBody(inputLine, charset);
         Event outputEvent = interceptor.intercept(inputEvent);
-        assertEquals(new String(outputEvent.getBody()), converter.convert(inputLine));
+
+        ByteArrayOutputStream expectedOutput = new ByteArrayOutputStream();
+        converter.convert(
+                new ByteArrayInputStream(inputLine.getBytes(charset)),
+                expectedOutput);
+        assertArrayEquals(outputEvent.getBody(), expectedOutput.toByteArray());
     }
 
     private void interceptInvalidEvent(
@@ -85,20 +92,24 @@ public class IpmConverterInterceptorTest {
 
     private void interceptValidEventList(String inputLine,
             Interceptor interceptor,
-            RawToIpmConverter converter) throws ParseException {
+            RawToIpmConverter converter) throws ParseException, IOException {
+        Charset charset = Charset.forName("UTF-8");
         List<Event> inputEvents = new LinkedList<Event>();
         for (int i = 0; i < 10; i++) {
-            inputEvents.add(EventBuilder.withBody(inputLine,
-                    Charset.forName("UTF-8")));
+            inputEvents.add(EventBuilder.withBody(inputLine, charset));
         }
 
         List<Event> outputEvents = interceptor.intercept(inputEvents);
         assertEquals(inputEvents.size(), outputEvents.size());
 
-        String convertedEventBody = converter.convert(inputLine);
-        for (int i = 0, l = inputEvents.size(); i < l; i++)
-            assertEquals(new String(outputEvents.get(i).getBody()),
-                    convertedEventBody);
+        ByteArrayOutputStream expectedOutput = new ByteArrayOutputStream();
+        converter.convert(
+                new ByteArrayInputStream(inputLine.getBytes(charset)),
+                expectedOutput);
+        byte[] expectedOutputData = expectedOutput.toByteArray();
+        for (int i = 0, l = inputEvents.size(); i < l; i++) {
+            assertArrayEquals(outputEvents.get(i).getBody(), expectedOutputData);
+        }
     }
 
     @Before
@@ -132,7 +143,8 @@ public class IpmConverterInterceptorTest {
     }
 
     @Test
-    public void testInterceptValidCrmEvent() throws ParseException {
+    public void testInterceptValidCrmEvent()
+            throws ParseException, IOException {
         this.interceptValidEvent(
                 this.validCrmEvent, this.crmInterceptor,
                 new CrmRawToIpmConverter(eventDelimiter, eventCharset));
@@ -145,14 +157,16 @@ public class IpmConverterInterceptorTest {
     }
 
     @Test
-    public void testInterceptValidCrmEventList() throws ParseException {
+    public void testInterceptValidCrmEventList()
+            throws ParseException, IOException {
         this.interceptValidEventList(
                 this.validCrmEvent, this.crmInterceptor,
                 new CrmRawToIpmConverter(eventDelimiter, eventCharset));
     }
 
     @Test
-    public void testInterceptValidInetEvent() throws ParseException {
+    public void testInterceptValidInetEvent()
+            throws ParseException, IOException {
         this.interceptValidEvent(
                 this.validInetEvent, this.inetInterceptor,
                 new InetRawToIpmConverter(eventDelimiter, eventCharset));
@@ -164,7 +178,8 @@ public class IpmConverterInterceptorTest {
     }
 
     @Test
-    public void testInterceptValidInetEventList() throws ParseException {
+    public void testInterceptValidInetEventList()
+            throws ParseException, IOException {
         this.interceptValidEventList(
                 this.validInetEvent, this.inetInterceptor,
                 new InetRawToIpmConverter(eventDelimiter, eventCharset));

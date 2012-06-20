@@ -18,15 +18,19 @@ TEST(samson_client, test_1 )
 {
    // SamsonClient to play with..
    samson::SamsonClient* samson_client = init_samson_client_test();
+   LM_M(("samson_client in test_1 initialised"));
 
    // Connect to samsonWorker
    au::ErrorManager error;   
    samson_client->initConnection( &error , "localhost" , SAMSON_WORKER_PORT , "anonymous" , "anonymous" );
+   LM_M(("samson_client in test_1 connected as anonymous"));
 
    EXPECT_EQ( error.isActivated() , false) << "Error connecting samsonClient to samsonWorker";
 
    // Close samson client test
+   LM_M(("samson_client in test_1 ready to close client"));
    close_samson_client_test( samson_client );
+   LM_M(("samson_client in test_1 closed client"));
 
 }    
 
@@ -35,13 +39,17 @@ TEST(samson_client, test_2 )
 
    // SamsonClient to play with..
    samson::SamsonClient* samson_client = init_samson_client_test();
+   LM_M(("samson_client in test_2 initialised"));
 
    // Connect to samsonWorker
    au::ErrorManager error;
    samson_client->initConnection( &error , "localhost" , SAMSON_WORKER_PORT , "anonymous" , "anonymous" );
+   LM_M(("samson_client in test_2 connected as anonymous"));
 
    ASSERT_TRUE(samson_client->connection_ready()) << "Connection not ready";
 
    // Close samson client test
+   LM_M(("samson_client in test_2 ready to close client"));
    close_samson_client_test( samson_client );
+   LM_M(("samson_client in test_2 closed client"));
 }

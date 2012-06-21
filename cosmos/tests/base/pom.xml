@@ -10,7 +10,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>test-base</artifactId>
+    <artifactId>base</artifactId>
     <name>Test base</name>
     <description>Shared test utilities</description>
     <packaging>jar</packaging>

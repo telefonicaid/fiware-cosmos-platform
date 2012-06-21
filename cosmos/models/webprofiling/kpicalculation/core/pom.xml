@@ -42,7 +42,7 @@
         </dependency>
         <dependency>
             <groupId>es.tid.cosmos.tests</groupId>
-            <artifactId>test-base</artifactId>
+            <artifactId>base</artifactId>
             <version>0.9.0.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>

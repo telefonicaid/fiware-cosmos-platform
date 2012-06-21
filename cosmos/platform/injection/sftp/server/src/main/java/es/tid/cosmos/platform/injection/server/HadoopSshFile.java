@@ -252,8 +252,7 @@ public class HadoopSshFile implements SshFile {
              * Here it is supposed that setting the modification time is an
              * access to the file.
              */
-            this.hadoopFS.setTimes(this.hadoopPath, time,
-                    System.currentTimeMillis());
+            this.hadoopFS.setTimes(this.hadoopPath, time, -1);
             return true;
         } catch (IOException e) {
             LOG.error(e.getMessage(), e);

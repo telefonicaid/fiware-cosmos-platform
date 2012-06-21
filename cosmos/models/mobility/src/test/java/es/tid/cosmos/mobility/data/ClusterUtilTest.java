@@ -1,18 +1,25 @@
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Test;
-
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
+import org.junit.Test;
+
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
  * @author dmicol
  */
 public class ClusterUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(ClusterUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         ProtobufWritable<Cluster> wrapper = ClusterUtil.createAndWrap(
@@ -31,6 +38,6 @@ public class ClusterUtilTest {
     public void testToString() {
         Cluster obj = ClusterUtil.create(1, 2, 1, 0.57D, 30.12D,
                                          ClusterVector.getDefaultInstance());
-        assertEquals("1|2|1|0.57|30.12", ClusterUtil.toString(obj));
+        assertEquals("1|2|1|0.57|30.12", ClusterUtil.toString(obj, "|"));
     }
 }

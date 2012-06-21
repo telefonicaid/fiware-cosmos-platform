@@ -10,6 +10,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 
@@ -21,11 +22,20 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
  */
 class IndVarsOutReducer extends Reducer<LongWritable,
         TypedProtobufWritable<MobViMobVars>, NullWritable, Text> {
-    private static final String DELIMITER = "|";
     private static final String MISSING = "-1|-1|-1|-1|-1|-1|-1|-1";
     private static final int FIRST_MONTH = 1;
     private static final int LAST_MONTH = 6;
 
+    private String separator;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final MobilityConfiguration conf = new MobilityConfiguration(context.
+                getConfiguration());
+        this.separator = conf.getDataSeparator();
+    }
+    
     @Override
     public void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<MobViMobVars>> values,
@@ -36,27 +46,29 @@ class IndVarsOutReducer extends Reducer<LongWritable,
             for (int numMonth = FIRST_MONTH; numMonth <= LAST_MONTH; numMonth++) {
                 boolean exists = false;
                 String ans = key.toString();
-                ans += DELIMITER + numMonth;
+                ans += this.separator + numMonth;
                 for (MobVars area : areasList) {
                     if (area.getMonth() == numMonth && area.getWorkingday()) {
-                        ans += DELIMITER + MobVarsUtil.toString(area);
+                        ans += this.separator + MobVarsUtil.toString(area,
+                                this.separator);
                         exists = true;
                         break;
                     }
                 }
                 if (!exists) {
-                    ans += DELIMITER + MISSING;
+                    ans += this.separator + MISSING;
                 }
                 exists = false;
                 for (MobVars area : areasList) {
                     if (area.getMonth() == numMonth && !area.getWorkingday()) {
-                        ans += DELIMITER + MobVarsUtil.toString(area);
+                        ans += this.separator + MobVarsUtil.toString(area,
+                                this.separator);
                         exists = true;
                         break;
                     }
                 }
                 if (!exists) {
-                    ans += DELIMITER + MISSING;
+                    ans += this.separator + MISSING;
                 }
                 context.write(NullWritable.get(), new Text(ans));
             }

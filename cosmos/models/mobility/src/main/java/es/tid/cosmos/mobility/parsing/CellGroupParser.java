@@ -8,10 +8,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class CellGroupParser extends Parser {
-    private static final String DELIMITER = "\\|";
-    
-    public CellGroupParser(String line) {
-        super(line, DELIMITER);
+    public CellGroupParser(String line, String separator) {
+        super(line, separator);
     }
     
     @Override

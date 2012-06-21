@@ -8,7 +8,7 @@ import es.tid.cosmos.base.data.MessageDescriptor.MetaFields;
  *
  * @author dmicol
  */
-public abstract class MessageUtil {
+public final class MessageUtil {
     private MessageUtil() {
     }
     

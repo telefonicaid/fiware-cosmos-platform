@@ -8,9 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
  *
  * @author sortega
  */
-public abstract class NodeBtsUtil {
-    public static final String DELIMITER = "|";
-    
+public final class NodeBtsUtil {
+
+    private NodeBtsUtil() {}
+
     public static NodeBts create(long userId, long bts,
                                  int weekday, int range) {
         return NodeBts.newBuilder()
@@ -33,9 +34,9 @@ public abstract class NodeBtsUtil {
         return wrap(create(userId, bts, weekday, range));
     }
     
-    public static String toString(NodeBts obj) {
-        return obj.getUserId() + DELIMITER + obj.getBts() + DELIMITER
-                + obj.getWeekday() + DELIMITER + obj.getRange();
+    public static String toString(NodeBts obj, String separator) {
+        return obj.getUserId() + separator + obj.getBts() + separator
+                + obj.getWeekday() + separator + obj.getRange();
     }
 }
 

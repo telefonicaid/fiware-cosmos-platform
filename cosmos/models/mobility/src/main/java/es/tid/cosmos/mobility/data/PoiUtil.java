@@ -8,9 +8,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
  *
  * @author dmicol
  */
-public abstract class PoiUtil {
-    public static final String DELIMITER = "|";
-    
+public final class PoiUtil {
+
+    private PoiUtil() {}
+
     public static Poi create(int id, long node, long bts, int labelnode,
             int labelgroupnode, int confidentnode, double distancenode,
             int labelbts, int labelgroupbts, int confidentbts,
@@ -56,17 +57,17 @@ public abstract class PoiUtil {
                 confidentnodebts, distancenodebts, inoutWeek, inoutWend));
     }
     
-    public static String toString(Poi obj) {
-        return (obj.getId() + DELIMITER + obj.getNode() + DELIMITER +
-                obj.getBts() + DELIMITER + obj.getLabelnode() + DELIMITER +
-                obj.getLabelgroupnode() + DELIMITER + obj.getConfidentnode() +
-                DELIMITER + obj.getDistancenode() + DELIMITER +
-                obj.getLabelbts() + DELIMITER + obj.getLabelgroupbts() +
-                DELIMITER + obj.getConfidentbts() + DELIMITER +
-                obj.getDistancebts() + DELIMITER + obj.getLabelnodebts() +
-                DELIMITER + obj.getLabelgroupnodebts() + DELIMITER +
-                obj.getConfidentnodebts() + DELIMITER +
-                obj.getDistancenodebts() + DELIMITER + obj.getInoutWeek() +
-                DELIMITER + obj.getInoutWend());
+    public static String toString(Poi obj, String separator) {
+        return (obj.getId() + separator + obj.getNode() + separator +
+                obj.getBts() + separator + obj.getLabelnode() + separator +
+                obj.getLabelgroupnode() + separator + obj.getConfidentnode() +
+                separator + obj.getDistancenode() + separator +
+                obj.getLabelbts() + separator + obj.getLabelgroupbts() +
+                separator + obj.getConfidentbts() + separator +
+                obj.getDistancebts() + separator + obj.getLabelnodebts() +
+                separator + obj.getLabelgroupnodebts() + separator +
+                obj.getConfidentnodebts() + separator +
+                obj.getDistancenodebts() + separator + obj.getInoutWeek() +
+                separator + obj.getInoutWend());
     }
 }

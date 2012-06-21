@@ -8,6 +8,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
 
 /**
@@ -18,7 +19,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
  */
 class ItinItineraryOutReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Itinerary>, NullWritable, Text> {
-    private static final String DELIMITER = "|";
+    private String separator;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final MobilityConfiguration conf = new MobilityConfiguration(context.
+                getConfiguration());
+        this.separator = conf.getDataSeparator();
+    }
     
     @Override
     protected void reduce(LongWritable key,
@@ -28,12 +37,12 @@ class ItinItineraryOutReducer extends Reducer<LongWritable,
         for (TypedProtobufWritable<Itinerary> value : values) {
             final Itinerary itin = value.get();
             String output = node
-                    + DELIMITER + itin.getSource()
-                    + DELIMITER + itin.getTarget()
-                    + DELIMITER + itin.getWdayPeakInit()
-                    + DELIMITER + itin.getRangePeakInit()
-                    + DELIMITER + itin.getWdayPeakFin()
-                    + DELIMITER + itin.getRangePeakFin();
+                    + this.separator + itin.getSource()
+                    + this.separator + itin.getTarget()
+                    + this.separator + itin.getWdayPeakInit()
+                    + this.separator + itin.getRangePeakInit()
+                    + this.separator + itin.getWdayPeakFin()
+                    + this.separator + itin.getRangePeakFin();
             context.write(NullWritable.get(), new Text(output));
         }
     }

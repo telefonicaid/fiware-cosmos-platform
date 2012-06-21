@@ -21,7 +21,7 @@ public class MongoDBExporterJob extends Job {
 
     public MongoDBExporterJob(Configuration conf) throws IOException {
         super(conf, JOB_NAME);
-        
+
         this.setJarByClass(WordCountMain.class);
         this.setMapOutputKeyClass(LongWritable.class);
         this.setMapOutputValueClass(Text.class);

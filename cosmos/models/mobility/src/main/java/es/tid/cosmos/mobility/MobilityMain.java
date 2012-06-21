@@ -1,10 +1,13 @@
 package es.tid.cosmos.mobility;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -47,20 +50,36 @@ public class MobilityMain extends Configured implements Tool {
         if (arguments.has("config")) {
             configInput = new FileInputStream(arguments.getString("config"));
         } else {
-            configInput = Config.class.getResource("/mobility.properties")
-                    .openStream();
+            configInput = MobilityConfiguration.class.getResource(
+                    "/mobility.properties").openStream();
         }
-        final Configuration conf = Config.load(configInput, this.getConf());
         
-        Path outputPath = new Path(arguments.getString("output", true));
-        Path cdrsPath = new Path(arguments.getString("cdrs", true));
-        Path cellsPath = new Path(arguments.getString("cells", true));
-        Path cellGroupsPath = new Path(arguments.getString("cellGroups", true));
-        Path adjBtsPath = new Path(arguments.getString("adjBts", true));
-        Path btsVectorTxtPath = new Path(arguments.getString("btsVectorTxt",
-                                                             true));
-        Path clientProfilePath = new Path(arguments.getString("clientProfile",
-                                                              true));
+        // Override the actual configuration with a mobility-based one, in order
+        // to have the corresponding execution parameters
+        final MobilityConfiguration conf = new MobilityConfiguration(
+                this.getConf());
+        conf.load(configInput);
+        this.setConf(conf);
+        
+        if (!conf.getSysExecMode().equalsIgnoreCase("complete")) {
+            throw new UnsupportedOperationException(
+                    "Only complete execution mode is supported");
+        }
+        if (conf.getSysExecIncremental()) {
+            throw new UnsupportedOperationException(
+                    "Incremental mode is not supported yet");
+        }
+
+        Path inputPath = new Path(conf.getSysInputFolder());
+        Path outputPath = new Path(conf.getSysOutputCompleteFolder());
+        Path cdrsPath = new Path(inputPath, "cdrs");
+        Path cellsPath = getOnlyFileInDirectory(
+                new Path(inputPath, "cells"), conf);
+        Path cellGroupsPath = getOnlyFileInDirectory(
+                new Path(inputPath, "cellGroups"), conf);
+        Path adjBtsPath = new Path(inputPath, "adjBts");
+        Path btsVectorTxtPath = new Path(inputPath, "btsVector");
+        Path clientProfilePath = new Path(inputPath, "clientProfile");
         
         boolean shouldRunAll = arguments.getBoolean("runAll");
         boolean isDebug = arguments.getBoolean("debug");
@@ -75,10 +94,10 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldParse = arguments.getBoolean("parse");
         CosmosWorkflow parsingWorkflow = null;
         if (shouldRunAll || shouldParse) {
-            parsingWorkflow = ParsingRunner.run(cdrsPath, cdrsMobPath, cellsPath,
-                    cellsMobPath, adjBtsPath, pairbtsAdjPath, btsVectorTxtPath,
-                    btsComareaPath, clientProfilePath, clientProfileMobPath,
-                    conf);
+            parsingWorkflow = ParsingRunner.run(cdrsPath, cdrsMobPath,
+                    cellsPath, cellsMobPath, adjBtsPath, pairbtsAdjPath,
+                    btsVectorTxtPath, btsComareaPath, clientProfilePath,
+                    clientProfileMobPath, isDebug, conf);
             wfList.add(parsingWorkflow);
         }
         
@@ -133,8 +152,8 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldLabelClient = arguments.getBoolean("labelClient");
         CosmosWorkflow clientLabellingWorkflow = null;
         if (shouldRunAll || shouldLabelClient) {
-            Path centroidsPath = new Path(arguments.getString(
-                    "centroids_client", true));
+            Path centroidsPath = getOnlyFileInDirectory(
+                    new Path(inputPath, "centroidsClient"), conf);
             clientLabellingWorkflow = ClientLabellingRunner.run(cdrsMobPath,
                     clientsInfoFilteredPath, centroidsPath,
                     vectorClientClusterPath, tmpLabelClientPath, isDebug, conf);
@@ -149,8 +168,8 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldLabelBts = arguments.getBoolean("labelBTS");
         CosmosWorkflow btsLabellingWorkflow = null;
         if (shouldRunAll || shouldLabelBts) {
-            Path centroidsPath = new Path(arguments.getString(
-                    "centroids_bts", true));
+            Path centroidsPath = getOnlyFileInDirectory(
+                    new Path(inputPath, "centroidsBts"), conf);
             btsLabellingWorkflow = BtsLabellingRunner.run(btsCommsPath,
                     btsComareaPath, centroidsPath, vectorBtsClusterPath,
                     tmpLabelBtsPath, isDebug, conf);
@@ -169,11 +188,11 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldLabelClientbts = arguments.getBoolean("labelClientBTS");
         CosmosWorkflow clientBtsLabellingWorkflow = null;
         if (shouldRunAll || shouldLabelClientbts) {
-            Path centroidsPath = new Path(arguments.getString(
-                    "centroids_clientbts", true));
+            Path medoidsPath = getOnlyFileInDirectory(
+                    new Path(inputPath, "medoidsClientbts"), conf);
             clientBtsLabellingWorkflow = ClientBtsLabellingRunner.run(
                     clientsInfoPath, clientsRepbtsPath, vectorClientbtsPath,
-                    centroidsPath, pointsOfInterestTempPath,
+                    medoidsPath, pointsOfInterestTempPath,
                     vectorClientbtsClusterPath, tmpLabelClientbtsPath, isDebug,
                     conf);
             clientBtsLabellingWorkflow.addDependentWorkflow(poisWorkflow);
@@ -186,10 +205,10 @@ public class MobilityMain extends Configured implements Tool {
         boolean shouldJoinLabels = arguments.getBoolean("joinLabels");
         CosmosWorkflow labelJoiningWorkflow = null;
         if (shouldRunAll || shouldJoinLabels) {
-            labelJoiningWorkflow = LabelJoiningRunner.run(pointsOfInterestTempPath,
-                    vectorClientClusterPath, vectorClientbtsClusterPath,
-                    vectorBtsClusterPath, pointsOfInterestTemp4Path,
-                    tmpLabelJoining, isDebug, conf);
+            labelJoiningWorkflow = LabelJoiningRunner.run(
+                    pointsOfInterestTempPath, vectorClientClusterPath,
+                    vectorClientbtsClusterPath, vectorBtsClusterPath,
+                    pointsOfInterestTemp4Path, tmpLabelJoining, isDebug, conf);
             labelJoiningWorkflow.addDependentWorkflow(clientBtsLabellingWorkflow);
             labelJoiningWorkflow.addDependentWorkflow(clientLabellingWorkflow);
             labelJoiningWorkflow.addDependentWorkflow(btsLabellingWorkflow);
@@ -220,9 +239,9 @@ public class MobilityMain extends Configured implements Tool {
                 "getActivityDensity");
         CosmosWorkflow activityDensityWorkflow = null;
         if (shouldRunAll || shouldGetActivityDensity) {
-            activityDensityWorkflow = ActivityDensityRunner.run(clientsInfoPath,
-                    activityDensityOutPath, tmpActivityDensityPath, isDebug,
-                    conf);
+            activityDensityWorkflow = ActivityDensityRunner.run(
+                    clientsInfoPath, activityDensityOutPath,
+                    tmpActivityDensityPath, isDebug, conf);
             activityDensityWorkflow.addDependentWorkflow(poisWorkflow);
             wfList.add(activityDensityWorkflow);
         }
@@ -236,9 +255,9 @@ public class MobilityMain extends Configured implements Tool {
         CosmosWorkflow activityDensityProfileWorkflow = null;
         if (shouldRunAll || shouldGetActivityDensityProfile) {
             activityDensityProfileWorkflow = ActivityDensityProfileRunner.run(
-                clientProfileMobPath, clientsInfoPath,
-                activityDensityProfileOutPath, tmpActivityDensityProfilePath,
-                isDebug, conf);
+                    clientProfileMobPath, clientsInfoPath,
+                    activityDensityProfileOutPath,
+                    tmpActivityDensityProfilePath, isDebug, conf);
             activityDensityProfileWorkflow.addDependentWorkflow(parsingWorkflow);
             activityDensityProfileWorkflow.addDependentWorkflow(poisWorkflow);
             wfList.add(activityDensityProfileWorkflow);
@@ -253,8 +272,8 @@ public class MobilityMain extends Configured implements Tool {
         CosmosWorkflow populationDensityWorkflow = null;
         if (shouldRunAll || shouldGetPopulationDensity) {
             populationDensityWorkflow = PopulationDensityRunner.run(
-                cdrsInfoPath, cellsPath, populationDensityOutPath,
-                tmpPopulationDensityPath, isDebug, conf);
+                    cdrsInfoPath, cellsPath, populationDensityOutPath,
+                    tmpPopulationDensityPath, isDebug, conf);
             populationDensityWorkflow.addDependentWorkflow(preparingWorkflow);
             populationDensityWorkflow.addDependentWorkflow(parsingWorkflow);
             wfList.add(populationDensityWorkflow);
@@ -301,9 +320,9 @@ public class MobilityMain extends Configured implements Tool {
                 "getAggregatedMatrixGroup");
         CosmosWorkflow aggregatedMatrixGroupWorkflow = null;
         if (shouldRunAll || shouldGetAggregatedMatrixGroupProfile) {
-            aggregatedMatrixGroupWorkflow = AggregatedMatrixGroupRunner.run(
-                    cdrsInfoPath, cellGroupsPath, matrixPairGroupTxtPath,
-                    tmpAggregatedMatrixGroupPath, isDebug, conf);
+            aggregatedMatrixGroupWorkflow = AggregatedMatrixGroupRunner
+                    .run(cdrsInfoPath, cellGroupsPath, matrixPairGroupTxtPath,
+                         tmpAggregatedMatrixGroupPath, isDebug, conf);
             aggregatedMatrixGroupWorkflow.addDependentWorkflow(preparingWorkflow);
             aggregatedMatrixGroupWorkflow.addDependentWorkflow(parsingWorkflow);
             wfList.add(aggregatedMatrixGroupWorkflow);
@@ -329,21 +348,34 @@ public class MobilityMain extends Configured implements Tool {
                                                  "client_itineraries_txt");
         boolean shouldGetItineraries = arguments.getBoolean("getItineraries");
         if (shouldRunAll || shouldGetItineraries) {
-            ItinerariesRunner.run(cellsPath, cdrsInfoPath,
-                                  pointsOfInterestIdPath,
-                                  clientItinerariesTxtPath, tmpItinerariesPath,
-                                  isDebug, conf);
+            ItinerariesRunner.run(cellsPath, cdrsInfoPath, pointsOfInterestIdPath,
+                    clientItinerariesTxtPath, tmpItinerariesPath, isDebug, conf);
         }
         
         Path tmpOutPoisPath = new Path(outputPath, "out_pois");
         boolean shouldOutPois = arguments.getBoolean("outPois");
         if (shouldRunAll || shouldOutPois) {
             OutPoisRunner.run(vectorClientbtsPath, pointsOfInterestIdPath,
-                              vectorClientClusterPath, vectorBtsClusterPath,
-                              tmpOutPoisPath, isDebug, conf);
+                    vectorClientClusterPath, vectorBtsClusterPath,
+                    tmpOutPoisPath, isDebug, conf);
         }
         
         return 0;
+    }
+    
+    private static Path getOnlyFileInDirectory(Path directoryPath,
+            Configuration conf) throws IOException {
+        FileSystem fs = FileSystem.get(conf);
+        if (!fs.exists(directoryPath)) {
+            throw new IllegalArgumentException(
+                    "Path " + directoryPath + " does not exist");
+        }
+        FileStatus[] files = fs.listStatus(directoryPath);
+        if (files.length != 1) {
+            throw new IllegalArgumentException(
+                    "Only one file should be in " + directoryPath);
+        }
+        return files[0].getPath();
     }
     
     public static void main(String[] args) throws Exception {

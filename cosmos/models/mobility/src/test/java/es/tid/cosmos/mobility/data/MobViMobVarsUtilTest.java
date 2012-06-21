@@ -1,20 +1,26 @@
 package es.tid.cosmos.mobility.data;
 
-import static java.util.Arrays.asList;
-
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import org.junit.Test;
-
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
+import org.junit.Test;
+
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
  * @author dmicol
  */
 public class MobViMobVarsUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(MobViMobVarsUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         MobVars mobVars1 = MobVarsUtil.create(1, true, 2, 3, 4, 5, 6, 7, 8, 9);

@@ -1,18 +1,24 @@
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-
+import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixRange;
 import org.junit.Test;
+
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixRange;
 
 /**
  *
  * @author dmicol
  */
 public class MatrixRangeUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(MatrixRangeUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         ProtobufWritable<MatrixRange> wrapper = MatrixRangeUtil.createAndWrap(

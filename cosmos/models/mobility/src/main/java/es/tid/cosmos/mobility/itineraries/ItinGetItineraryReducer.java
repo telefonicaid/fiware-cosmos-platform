@@ -3,12 +3,11 @@ package es.tid.cosmos.mobility.itineraries;
 import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.Config;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
@@ -27,9 +26,9 @@ class ItinGetItineraryReducer extends Reducer<
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        final Configuration conf = context.getConfiguration();
-        this.percAbsoluteMax = conf.getFloat(Config.ITIN_PERC_ABSOLUTE_MAX,
-                                             Float.MAX_VALUE);
+        final MobilityConfiguration conf = new MobilityConfiguration(context.
+                getConfiguration());
+        this.percAbsoluteMax = conf.getItinPercAbsoluteMax();
     }
     
     @Override

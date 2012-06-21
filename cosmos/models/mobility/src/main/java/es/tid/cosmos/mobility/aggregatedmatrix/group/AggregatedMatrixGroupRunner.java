@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.aggregatedmatrix.simple.MatrixGetOutReducer;
  *
  * @author dmicol
  */
-public final class AggregatedMatrixGroupRunner {
+public class AggregatedMatrixGroupRunner {
     private AggregatedMatrixGroupRunner() {
     }
     

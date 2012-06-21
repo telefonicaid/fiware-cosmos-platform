@@ -7,8 +7,9 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.data.ClusterUtil;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 
 /**
@@ -19,6 +20,16 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
  */
 public class ExportClusterToTextReducer extends Reducer<
         LongWritable, TypedProtobufWritable<Cluster>, NullWritable, Text> {
+    private String separator;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final MobilityConfiguration conf = new MobilityConfiguration(context.
+                getConfiguration());
+        this.separator = conf.getDataSeparator();
+    }
+    
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Cluster>> values, Context context)
@@ -26,8 +37,9 @@ public class ExportClusterToTextReducer extends Reducer<
         for (TypedProtobufWritable<Cluster> value : values) {
             final Cluster cluster = value.get();
             context.write(NullWritable.get(),
-                          new Text(key + ClusterUtil.DELIMITER
-                                   + ClusterUtil.toString(cluster)));
+                          new Text(key + this.separator
+                                   + ClusterUtil.toString(cluster,
+                                                          this.separator)));
         }
     }
 }

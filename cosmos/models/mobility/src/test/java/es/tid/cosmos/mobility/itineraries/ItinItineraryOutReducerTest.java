@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.itineraries;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
 
 /**
@@ -27,10 +29,15 @@ public class ItinItineraryOutReducerTest {
             NullWritable, Text> instance;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.instance = new ReduceDriver<LongWritable,
                 TypedProtobufWritable<Itinerary>, NullWritable, Text>(
                         new ItinItineraryOutReducer());
+        InputStream configInput = MobilityConfiguration.class.getResource(
+                "/mobility.properties").openStream();
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        this.instance.setConfiguration(conf);
     }
 
     @Test

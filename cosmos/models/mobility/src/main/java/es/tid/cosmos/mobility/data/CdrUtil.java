@@ -10,7 +10,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
  *
  * @author dmicol
  */
-public abstract class CdrUtil {
+public final class CdrUtil {
+
+    private CdrUtil() {}
+
     public static Cdr create(long userId, long cellId, Date date, Time time) {
         return Cdr.newBuilder()
                 .setUserId(userId)

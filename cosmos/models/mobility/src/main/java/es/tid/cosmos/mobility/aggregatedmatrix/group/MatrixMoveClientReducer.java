@@ -5,12 +5,11 @@ import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.Config;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.ItinMovementUtil;
 import es.tid.cosmos.mobility.data.ItinTimeUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;
@@ -24,7 +23,8 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixTime;
  * @author dmicol
  */
 class MatrixMoveClientReducer extends Reducer<LongWritable,
-        TypedProtobufWritable<MatrixTime>, LongWritable, TypedProtobufWritable<ItinMovement>> {
+        TypedProtobufWritable<MatrixTime>, LongWritable,
+        TypedProtobufWritable<ItinMovement>> {
     private static final int MINS_IN_ONE_HOUR = 60;
     private static final int HOURS_IN_ONE_DAY = 24;
     private static final int MINS_IN_ONE_DAY = MINS_IN_ONE_HOUR *
@@ -37,13 +37,11 @@ class MatrixMoveClientReducer extends Reducer<LongWritable,
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        final Configuration conf = context.getConfiguration();
-        this.maxMinutesInMoves = conf.getInt(Config.MTX_MAX_MINUTES_IN_MOVES,
-                                             Integer.MAX_VALUE);
-        this.minMinutesInMoves = conf.getInt(Config.MTX_MIN_MINUTES_IN_MOVES,
-                                             Integer.MIN_VALUE);
-        this.includeIntraMoves = conf.getBoolean(Config.MTX_INCLUDE_INTRA_MOVES,
-                                                 false);
+        final MobilityConfiguration conf = new MobilityConfiguration(context.
+                getConfiguration());
+        this.maxMinutesInMoves = conf.getMtxMaxMinutesInMoves();
+        this.minMinutesInMoves = conf.getMtxMinMinutesInMoves();
+        this.includeIntraMoves = conf.getMtxIncludeIntraMoves();
     }
 
     @Override

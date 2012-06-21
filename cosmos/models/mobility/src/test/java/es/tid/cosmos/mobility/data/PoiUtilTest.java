@@ -1,17 +1,24 @@
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
  * @author dmicol
  */
 public class PoiUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(PoiUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         ProtobufWritable<Poi> wrapper = PoiUtil.createAndWrap(1, 2, 3, 4, 5, 6,

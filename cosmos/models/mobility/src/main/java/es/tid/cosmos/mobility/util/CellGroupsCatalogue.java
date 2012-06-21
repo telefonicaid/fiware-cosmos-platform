@@ -7,12 +7,12 @@ import java.io.Reader;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.base.util.Logger;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.CellGroup;
 import es.tid.cosmos.mobility.parsing.CellGroupParser;
 
@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.parsing.CellGroupParser;
  * @author dmicol
  */
 public abstract class CellGroupsCatalogue {
-    public static List<CellGroup> load(Path input, Configuration conf)
+    public static List<CellGroup> load(Path input, MobilityConfiguration conf)
             throws IOException {
         FSDataInputStream in = null;
         Reader reader = null;
@@ -29,7 +29,7 @@ public abstract class CellGroupsCatalogue {
             FileSystem fs = FileSystem.get(conf);
             in = fs.open(input);
             reader = new InputStreamReader(in);
-            return load(reader);
+            return load(reader, conf.getDataSeparator());
         } catch (Exception ex) {
             Logger.get(CellGroupsCatalogue.class).fatal(ex);
             throw new IOException(ex);
@@ -49,12 +49,13 @@ public abstract class CellGroupsCatalogue {
         }
     }
 
-    public static List<CellGroup> load(Reader input) throws IOException {
+    public static List<CellGroup> load(Reader input, String separator)
+            throws IOException {
         List<CellGroup> cells = new LinkedList<CellGroup>();
         BufferedReader br = new BufferedReader(input);
         String line;
         while ((line = br.readLine()) != null) {
-            CellGroup cellGroup = new CellGroupParser(line).parse();
+            CellGroup cellGroup = new CellGroupParser(line, separator).parse();
             cells.add(cellGroup);
         }
         return cells;

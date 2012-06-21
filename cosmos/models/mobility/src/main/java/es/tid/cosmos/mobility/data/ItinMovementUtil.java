@@ -9,7 +9,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
  *
  * @author dmicol
  */
-public abstract class ItinMovementUtil {
+public final class ItinMovementUtil {
+
+    private ItinMovementUtil() {}
+
     public static ItinMovement create(ItinTime source, ItinTime target) {
         return ItinMovement.newBuilder()
                 .setSource(source)

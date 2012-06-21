@@ -16,7 +16,11 @@ import es.tid.cosmos.profile.dictionary.Dictionary;
  *
  * @author dmicol, sortega
  */
-public abstract class DistributedCacheDictionary {
+public final class DistributedCacheDictionary {
+    private DistributedCacheDictionary() {
+        // Utility class
+    }
+
     public static final String LATEST_DICTIONARY =
             "/user/hdfs/comscore/latest/";
     private static final String DICTIONARY_NAMES =

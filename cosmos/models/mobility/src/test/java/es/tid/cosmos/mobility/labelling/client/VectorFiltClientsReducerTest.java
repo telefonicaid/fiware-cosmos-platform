@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.labelling.client;
 
 import java.io.IOException;
+import java.io.InputStream;
 import static java.util.Arrays.asList;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import org.junit.Test;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.base.data.generated.BaseTypes.Int;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 
 /**
  *
@@ -26,10 +28,15 @@ public class VectorFiltClientsReducerTest {
             TypedProtobufWritable<Cdr>> driver;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
                 LongWritable, TypedProtobufWritable<Cdr>>(
                         new VectorFiltClientsReducer());
+        InputStream configInput = MobilityConfiguration.class.getResource(
+                "/mobility.properties").openStream();
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        this.driver.setConfiguration(conf);
     }
 
     @Test

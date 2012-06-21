@@ -1,20 +1,26 @@
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
+import org.junit.Test;
+
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
  * @author dmicol
  */
 public class ItinTimeUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(ItinTimeUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         ProtobufWritable<ItinTime> wrapper = ItinTimeUtil.createAndWrap(

@@ -18,7 +18,7 @@ public class CrmRawToIpmConverter implements RawToIpmConverter {
     }
     
     @Override
-    public String convert(String line) {
+    public String convert(String line) throws ParseException {
         final CrmRaw crmRaw = CrmRawUtil.parse(line);
         final String anonymisedMsisdn;
         final String anonymisedBillingPostCode;

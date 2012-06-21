@@ -42,6 +42,12 @@
             <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>es.tid.cosmos.tests</groupId>
+            <artifactId>base</artifactId>
+            <version>0.9.0.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

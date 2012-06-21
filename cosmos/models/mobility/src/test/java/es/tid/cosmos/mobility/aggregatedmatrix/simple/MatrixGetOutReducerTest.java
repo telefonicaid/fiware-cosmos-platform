@@ -1,6 +1,7 @@
 package es.tid.cosmos.mobility.aggregatedmatrix.simple;
 
 import java.io.IOException;
+import java.io.InputStream;
 import static java.util.Arrays.asList;
 import java.util.List;
 
@@ -10,13 +11,13 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -30,10 +31,15 @@ public class MatrixGetOutReducerTest {
             TypedProtobufWritable<ClusterVector>, NullWritable, Text> instance;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.instance = new ReduceDriver<ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<ClusterVector>, NullWritable, Text>(
                         new MatrixGetOutReducer());
+        InputStream configInput = MobilityConfiguration.class.getResource(
+                "/mobility.properties").openStream();
+        MobilityConfiguration conf = new MobilityConfiguration();
+        conf.load(configInput);
+        this.instance.setConfiguration(conf);
     }
     
     @Test

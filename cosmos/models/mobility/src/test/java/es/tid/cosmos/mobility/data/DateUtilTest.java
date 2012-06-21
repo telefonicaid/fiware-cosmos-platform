@@ -1,17 +1,24 @@
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
+import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  *
  * @author dmicol
  */
 public class DateUtilTest {
+
+    @Test
+    public void testUtilityClass() {
+        assertUtilityClass(DateUtil.class);
+    }
+
     @Test
     public void testCreateAndWrap() {
         ProtobufWritable<Date> wrapper = DateUtil.createAndWrap(2012, 4, 20, 5);
@@ -25,7 +32,7 @@ public class DateUtilTest {
 
     @Test
     public void testParse() {
-        Date obj = DateUtil.parse("2012|4|20|5");
+        Date obj = DateUtil.parse("2012|4|20|5", "\\|");
         assertEquals(2012, obj.getYear());
         assertEquals(4, obj.getMonth());
         assertEquals(20, obj.getDay());
@@ -35,6 +42,6 @@ public class DateUtilTest {
     @Test
     public void testToString() {
         Date obj = DateUtil.create(2012, 4, 20, 5);
-        assertEquals("2012|4|20|5", DateUtil.toString(obj));
+        assertEquals("2012|4|20|5", DateUtil.toString(obj, "|"));
     }
 }

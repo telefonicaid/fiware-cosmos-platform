@@ -1,6 +1,9 @@
 package es.tid.smartsteps.util;
 
+import es.tid.smartsteps.ipm.ParseException;
 import es.tid.smartsteps.ipm.data.generated.CrmProtocol.CrmIpm;
+
+import static es.tid.smartsteps.ipm.data.generated.CrmProtocol.CrmIpm.*;
 
 /**
  *
@@ -8,7 +11,7 @@ import es.tid.smartsteps.ipm.data.generated.CrmProtocol.CrmIpm;
  */
 public abstract class CrmIpmUtil {
     private static final char DELIMITER = '|';
-    
+
     private CrmIpmUtil() {
     }
     
@@ -24,6 +27,7 @@ public abstract class CrmIpmUtil {
                 .setAnonymisedMsisdn(anonymisedMsisdn)
                 .setAnonymisedBillingPostCode(anonymisedBillingPostCode)
                 .setAcornCode(acornCode)
+                .setBillingPostCodePrefix(billingPostCodePrefix)
                 .setGender(gender)
                 .setBillingSystem(billingSystem)
                 .setMtrcPlSegment(mtrcPlSegment)
@@ -42,13 +46,40 @@ public abstract class CrmIpmUtil {
                 .setEffectiveFromDate(effectiveFromDate)
                 .build();
     }
-    
-    public static CrmIpm parse(String line) {
+
+    public static CrmIpm parse(String line) throws ParseException {
         String[] fields = line.split("\\" + DELIMITER);
-        return create(fields[0], fields[1], fields[2], fields[3], fields[4],
-                fields[5], fields[6], fields[7], fields[8], fields[9],
-                fields[10], fields[11], fields[12], fields[13], fields[14],
-                fields[15], fields[16], fields[17], fields[18], fields[19]);
+        if (fields.length != CrmIpm.getDescriptor().getFields().size()) {
+            throw new ParseException(String.format(
+                    "cannot parse input line %s: invalid format", line));
+        }
+        return CrmIpm.newBuilder()
+                .setAnonymisedMsisdn(fields[ANONYMISEDMSISDN_FIELD_NUMBER - 1])
+                .setAnonymisedBillingPostCode(
+                        fields[ANONYMISEDBILLINGPOSTCODE_FIELD_NUMBER - 1])
+                .setAcornCode(fields[ACORNCODE_FIELD_NUMBER - 1])
+                .setBillingPostCodePrefix(
+                        fields[BILLINGPOSTCODEPREFIX_FIELD_NUMBER - 1])
+                .setGender(fields[GENDER_FIELD_NUMBER - 1])
+                .setBillingSystem(fields[BILLINGSYSTEM_FIELD_NUMBER - 1])
+                .setMtrcPlSegment(fields[MTRCPLSEGMENT_FIELD_NUMBER - 1])
+                .setMpnStatus(fields[MPNSTATUS_FIELD_NUMBER - 1])
+                .setSpid(fields[SPID_FIELD_NUMBER - 1])
+                .setActiveStatus(fields[ACTIVESTATUS_FIELD_NUMBER - 1])
+                .setNeedsSegmentation(
+                        fields[NEEDSSEGMENTATION_FIELD_NUMBER - 1])
+                .setAge(fields[AGE_FIELD_NUMBER - 1])
+                .setAgeBand(fields[AGEBAND_FIELD_NUMBER - 1])
+                .setAnonymisedImsi(fields[ANONYMISEDIMSI_FIELD_NUMBER - 1])
+                .setAnonymisedImei(fields[ANONYMISEDIMEI_FIELD_NUMBER - 1])
+                .setImeiTac(fields[IMEITAC_FIELD_NUMBER - 1])
+                .setDeviceType(fields[DEVICETYPE_FIELD_NUMBER - 1])
+                .setDeviceManufacturer(
+                        fields[DEVICEMANUFACTURER_FIELD_NUMBER - 1])
+                .setDeviceModelName(fields[DEVICEMODELNAME_FIELD_NUMBER - 1])
+                .setEffectiveFromDate(
+                        fields[EFFECTIVEFROMDATE_FIELD_NUMBER - 1])
+                .build();
     }
     
     public static String toString(CrmIpm crmInet) {

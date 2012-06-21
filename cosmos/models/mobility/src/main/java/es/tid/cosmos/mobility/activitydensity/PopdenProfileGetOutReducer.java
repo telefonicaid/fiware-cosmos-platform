@@ -8,6 +8,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -20,7 +21,15 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class PopdenProfileGetOutReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<ClusterVector>,
         NullWritable, Text> {
-    private static final String DELIMITER = "|";
+    private String separator;
+    
+    @Override
+    protected void setup(Context context) throws IOException,
+                                                 InterruptedException {
+        final MobilityConfiguration conf = new MobilityConfiguration(context.
+                getConfiguration());
+        this.separator = conf.getDataSeparator();
+    }
     
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
@@ -30,10 +39,10 @@ public class PopdenProfileGetOutReducer extends Reducer<
         final TwoInt btsProfile = key.get();
         for (TypedProtobufWritable<ClusterVector> value : values) {
             final ClusterVector commsVector = value.get();
-            String str = btsProfile.getNum1() + DELIMITER
+            String str = btsProfile.getNum1() + this.separator
                          + btsProfile.getNum2();
             for (Double comm : commsVector.getComsList()) {
-                str += DELIMITER + comm;
+                str += this.separator + comm;
             }
             context.write(NullWritable.get(), new Text(str));
         }

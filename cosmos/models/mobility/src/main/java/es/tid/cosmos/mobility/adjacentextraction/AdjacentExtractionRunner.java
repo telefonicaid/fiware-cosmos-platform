@@ -159,6 +159,7 @@ public class AdjacentExtractionRunner {
             }
             
             fs.delete(poisTablePath, true);
+            fs.delete(poisTableWithInputIdPath, true);
             fs.rename(poisTableTmpPath, poisTablePath);
 
             Path poiPairbtsAdjWithInputIdPath = new Path(tmpDirPath,
@@ -240,6 +241,13 @@ public class AdjacentExtractionRunner {
                 numIndicesLeft = job.getCounters().findCounter(
                         Counters.NUM_INDEXES).getValue();
             }
+
+            fs.delete(poiPairbtsIndexPath, true);
+            fs.delete(poiPairbtsIndexWithInputIdPath, true);
+            fs.delete(poiPairbtsCh1Path, true);
+            fs.delete(poiPairbtsCh1WithInputIdPath, true);
+            fs.delete(nindSpreadPath, true);
+            fs.delete(numIndexPath, true);
         }
         
         Path poiPoimodPath = new Path(tmpDirPath, "poi_poimod");

@@ -93,7 +93,7 @@ public class EqualityContract<T> {
         for (Collection<T> elements : this.classes) {
             for (T element : elements) {
                 assertFalse("Should be not equalt to null",
-                            element.equals(null));
+                            element.equals(null)); // NOPMD
             }
         }
     }

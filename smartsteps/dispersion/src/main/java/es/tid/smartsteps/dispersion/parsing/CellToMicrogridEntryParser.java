@@ -2,30 +2,32 @@ package es.tid.smartsteps.dispersion.parsing;
 
 import java.math.BigDecimal;
 
-import es.tid.smartsteps.dispersion.data.CellToMicrogridEntry;
+import es.tid.smartsteps.dispersion.data.CellToMicrogridLookupEntry;
 
 /**
  *
  * @author dmicol
  */
-public class CellToMicrogridEntryParser extends Parser<CellToMicrogridEntry> {
+public class CellToMicrogridEntryParser extends Parser<CellToMicrogridLookupEntry> {
     public CellToMicrogridEntryParser(String delimiter) {
         super(delimiter);
     }
     
     @Override
-    public CellToMicrogridEntry parse(String line) {
+    public CellToMicrogridLookupEntry parse(String line) {
         final String[] values = line.split(this.delimiter);
         if (values.length != 3) {
             throw new IllegalArgumentException("Invalid line: " + line);
         }
-        CellToMicrogridEntry entry = new CellToMicrogridEntry(values[0],
-                values[1], new BigDecimal(values[2]));
+        CellToMicrogridLookupEntry entry =
+                new CellToMicrogridLookupEntry(values[0], values[1],
+                                               new BigDecimal(values[2]));
+
         return entry;
     }
     
     @Override
-    public CellToMicrogridEntry safeParse(String line) {
+    public CellToMicrogridLookupEntry safeParse(String line) {
         try {
             return this.parse(line);
         } catch (Exception ex) {

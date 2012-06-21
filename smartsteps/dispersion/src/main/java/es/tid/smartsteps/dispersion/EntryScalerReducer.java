@@ -4,13 +4,14 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.sf.json.JSONObject;
-import net.sf.json.JSONSerializer;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.smartsteps.dispersion.data.*;
+import es.tid.smartsteps.dispersion.data.Entry;
+import es.tid.smartsteps.dispersion.data.LookupEntry;
+import es.tid.smartsteps.dispersion.data.LookupTable;
+import es.tid.smartsteps.dispersion.data.TrafficCountsEntry;
 import es.tid.smartsteps.dispersion.parsing.CellToMicrogridEntryParser;
 import es.tid.smartsteps.dispersion.parsing.MicrogridToPolygonEntryParser;
 import es.tid.smartsteps.dispersion.parsing.Parser;
@@ -66,24 +67,23 @@ public class EntryScalerReducer extends Reducer<Text, Text,
         }
         
         for (TrafficCountsEntry entry : trafficCountsEntries) {
-            final List<Entry> lookups = lookupTable.get(key.toString());
-            for (Entry lookup : lookups) {
+            final List<LookupEntry> lookups = lookupTable.get(key.toString());
+            for (LookupEntry lookup : lookups) {
                 TrafficCountsEntry scaledEntry = entry.scale(
                         lookup.getProportion());
                 switch (this.type) {
                     case CELL_TO_MICROGRID:
-                        scaledEntry.microgridId = lookup.getKey();
+                        scaledEntry.microgridId = lookup.getSecondaryKey();
                         break;
                     case MICROGRID_TO_POLYGON:
-                        scaledEntry.polygonId = lookup.getKey();
+                        scaledEntry.polygonId = lookup.getSecondaryKey();
                         scaledEntry.counts = scaledEntry.roundCounts();
                         break;
                     default:
                         throw new IllegalStateException();
                 }
-                final JSONObject obj = (JSONObject) JSONSerializer.toJSON(
-                        scaledEntry);
-                context.write(NullWritable.get(), new Text(obj.toString()));
+                context.write(NullWritable.get(),
+                              new Text(scaledEntry.toJSON().toString()));
             }
         }
     }

@@ -4,13 +4,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>cosmos</artifactId>
-        <groupId>es.tid.cosmos</groupId>
+        <artifactId>tests</artifactId>
+        <groupId>es.tid.cosmos.tests</groupId>
         <version>0.9.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>test-base</artifactId>
+    <artifactId>base</artifactId>
     <name>Test base</name>
     <description>Shared test utilities</description>
     <packaging>jar</packaging>

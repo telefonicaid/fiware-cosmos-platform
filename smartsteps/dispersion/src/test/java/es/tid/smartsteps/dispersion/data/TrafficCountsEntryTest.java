@@ -61,11 +61,6 @@ public class TrafficCountsEntryTest {
                 + "0849b0c", this.instance.getKey());
     }
 
-    @Test(expected=UnsupportedOperationException.class)
-    public void testGetProportion() {
-        this.instance.getProportion();
-    }
-
     @Test
     public void testScale() {
         final TrafficCountsEntry scaledEntry = this.instance.scale(

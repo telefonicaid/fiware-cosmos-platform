@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
+import net.sf.json.JSONObject;
 
 /**
  * TrafficCountsEntry
@@ -13,7 +16,7 @@ import java.util.HashMap;
  *
  * @author  logc
  */
-public class TrafficCountsEntry implements Entry {
+public class TrafficCountsEntry implements FieldsEntry {
     public static final String[] EXPECTED_POIS = {"HOME", "NONE", "WORK",
                                                   "OTHER", "BILL"};
     public static final String[] COUNT_FIELDS = { "footfall_observed_basic",
@@ -60,9 +63,18 @@ public class TrafficCountsEntry implements Entry {
     }
 
     @Override
-    public BigDecimal getProportion() {
-        throw new UnsupportedOperationException("Proportion is not a field of "
-                + "TrafficCountsEntry");
+    public List<Object> getFields() {
+        ArrayList<Object> ans = new ArrayList<Object>();
+        ans.add(this.date);
+        ans.add(this.northing);
+        ans.add(this.easting);
+        ans.add(this.lat);
+        ans.add(this.counts);
+        ans.add(this.poiFive);
+        ans.add(this.pois);
+        ans.add(this.microgridId);
+        ans.add(this.polygonId);
+        return ans;
     }
 
     public TrafficCountsEntry scale(BigDecimal factor) {
@@ -114,5 +126,22 @@ public class TrafficCountsEntry implements Entry {
             roundedCounts.put(countField, roundedCountsForField);
         }
         return roundedCounts;
+    }
+
+    public JSONObject toJSON(){
+        final JSONObject obj = new JSONObject();
+        obj.put("cellId", this.cellId);
+        obj.put("date", this.date);
+        obj.put("northing", this.northing);
+        obj.put("easting", this.easting);
+        obj.put("lat", this.lat);
+        for (String field : TrafficCountsEntry.COUNT_FIELDS) {
+            obj.put(field, this.counts.get(field));
+        }
+        obj.put("poi_5", this.poiFive);
+        obj.put("pois", this.pois);
+        obj.put("microgrid_id", this.microgridId);
+        obj.put("polygon_id", this.polygonId);
+        return obj;
     }
 }

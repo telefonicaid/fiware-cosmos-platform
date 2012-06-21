@@ -8,8 +8,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int64;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
@@ -17,13 +17,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class AdjSpreadCountReducerTest {
-    private ReduceDriver<LongWritable, TypedProtobufWritable<TwoInt>, LongWritable,
-            TypedProtobufWritable<Int>> driver;
+    private ReduceDriver<LongWritable, TypedProtobufWritable<TwoInt>,
+            LongWritable, TypedProtobufWritable<Int64>> driver;
     
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<TwoInt>,
-                LongWritable, TypedProtobufWritable<Int>>(
+                LongWritable, TypedProtobufWritable<Int64>>(
                         new AdjSpreadCountReducer());
     }
 
@@ -35,7 +35,7 @@ public class AdjSpreadCountReducerTest {
                 TwoIntUtil.create(300L, 400L));
         this.driver
                 .withInput(new LongWritable(57L), asList(value1, value2))
-                .withOutput(new LongWritable(0L), TypedProtobufWritable.create(2))
+                .withOutput(new LongWritable(0L), TypedProtobufWritable.create(2L))
                 .runTest();
     }
 }

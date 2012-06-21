@@ -1,4 +1,4 @@
-package es.tid.cosmos.base.test;
+package es.tid.cosmos.base.test.sampleutilities;
 
 /**
  * Sample invalid utility class for testing UtilityClassTest

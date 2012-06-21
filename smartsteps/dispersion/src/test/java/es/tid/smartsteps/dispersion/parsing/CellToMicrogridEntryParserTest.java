@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.smartsteps.dispersion.data.CellToMicrogridEntry;
+import es.tid.smartsteps.dispersion.data.CellToMicrogridLookupEntry;
 
 /**
  *
@@ -20,7 +20,7 @@ public class CellToMicrogridEntryParserTest {
 
     @Test
     public void testParse() {
-        CellToMicrogridEntry entry = this.parser.parse("assag43\t123\t0.57");
+        CellToMicrogridLookupEntry entry = this.parser.parse("assag43\t123\t0.57");
         assertEquals("assag43", entry.cellId);
         assertEquals("123", entry.microgridId);
         assertEquals(0.57D, entry.proportion.doubleValue(), 0.0D);

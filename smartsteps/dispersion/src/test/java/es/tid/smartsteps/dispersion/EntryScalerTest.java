@@ -1,9 +1,15 @@
 package es.tid.smartsteps.dispersion;
 
+import java.util.List;
+
+import static junit.framework.Assert.assertEquals;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapReduceDriver;
+import org.apache.hadoop.mrunit.types.Pair;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -24,6 +30,7 @@ public class EntryScalerTest {
     private Text intermediateValue;
     private Text outputValue;
     private Text cell2micro;
+    private Text micro2polygon;
 
     @Before
     public void setUp() {
@@ -67,15 +74,16 @@ public class EntryScalerTest {
         int inputPenultimate = this.inputValue.getLength() - 1;
         this.intermediateValue =
                 new Text(this.inputValue.toString().substring(0,
-                        inputPenultimate) + ", \"microgidid\": 123}");
+                        inputPenultimate) + ", \"microgrid_id\": 123}");
         this.outputValue =
                 new Text(this.inputValue.toString().substring(0,
-                         inputPenultimate) + ", \"microgridid\": 123, " +
-                         "\"polygonid\": 345");
+                         inputPenultimate) + ", \"microgrid_id\": 123, " +
+                         "\"polygon_id\": 345");
 
         this.cell2micro =
                 new Text("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d3" +
                         "0f1f2ff3cdc0849b0c|123|0.57");
+        this.micro2polygon = new Text("123|345|1");
     }
 
     @Test
@@ -83,9 +91,34 @@ public class EntryScalerTest {
         this.instance.getConfiguration().setEnum(LookupType.class.getName(),
                                                  LookupType.CELL_TO_MICROGRID);
         this.instance.getConfiguration().set(Config.DELIMITER, "\\|");
-        this.instance.withInput(this.key, this.inputValue)
-                     .withInput(new LongWritable(1L), this.cell2micro)
-                     .withOutput(NullWritable.get(), this.intermediateValue)
-                     .runTest();
+        List<Pair<NullWritable, Text>> allResults =
+                this.instance.withInput(this.key, this.inputValue)
+                    .withInput(new LongWritable(1L), this.cell2micro)
+                    .run();
+        assertEquals(1, allResults.size());
+        Pair<NullWritable, Text> result = allResults.get(0);
+        JSONObject resultJson =
+                (JSONObject) JSONSerializer.toJSON(
+                        result.getSecond().toString());
+        assertEquals("123", resultJson.get("microgrid_id"));
+        assertEquals("", resultJson.get("polygon_id"));
+    }
+
+    @Test
+    public void testFinalResults() throws Exception {
+        this.instance.getConfiguration().setEnum(LookupType.class.getName(),
+                                             LookupType.MICROGRID_TO_POLYGON);
+        this.instance.getConfiguration().set(Config.DELIMITER, "\\|");
+        List<Pair<NullWritable, Text>> allResults =
+                this.instance.withInput(this.key, this.intermediateValue)
+                        .withInput(new LongWritable(1L), this.micro2polygon)
+                        .run();
+        assertEquals(1, allResults.size());
+        Pair<NullWritable, Text> result = allResults.get(0);
+        JSONObject resultJson =
+                (JSONObject) JSONSerializer.toJSON(
+                        result.getSecond().toString());
+        assertEquals("123", resultJson.get("microgrid_id"));
+        assertEquals("345", resultJson.get("polygon_id"));
     }
 }

@@ -4,6 +4,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import es.tid.cosmos.base.test.sampleutilities.*;
 import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
 
 /**
@@ -48,5 +49,13 @@ public class UtilityClassTestTest {
         this.exception.expectMessage("Utility class constructor should have " +
                                      "no arguments");
         assertUtilityClass(InvalidConstructorUtilityClass.class);
+    }
+
+    @Test
+    public void testInvalidConstructorUtilityClass2() {
+        this.exception.expect(AssertionError.class);
+        this.exception.expectMessage("Utility class constructor should not " +
+                                     "throw exceptions");
+        assertUtilityClass(BusyConstructorUtilityClass.class);
     }
 }

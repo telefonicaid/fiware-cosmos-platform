@@ -41,8 +41,8 @@
             <version>2.6</version>
         </dependency>
         <dependency>
-            <groupId>es.tid.cosmos</groupId>
-            <artifactId>test-base</artifactId>
+            <groupId>es.tid.cosmos.tests</groupId>
+            <artifactId>base</artifactId>
             <version>0.9.0.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>

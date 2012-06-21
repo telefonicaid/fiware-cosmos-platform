@@ -16,6 +16,7 @@
         <module>e2e-tests</module>
         <module>frontend-tests</module>
         <module>hadoopjobs</module>
+        <module>base</module>
         <module>testutils</module>
     </modules>
 </project>

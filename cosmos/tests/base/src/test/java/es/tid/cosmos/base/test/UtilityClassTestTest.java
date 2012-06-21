@@ -1,10 +1,10 @@
 package es.tid.cosmos.base.test;
 
-import es.tid.cosmos.base.test.sampleutilities.*;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import es.tid.cosmos.base.test.sampleutilities.*;
 import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
 
 /**

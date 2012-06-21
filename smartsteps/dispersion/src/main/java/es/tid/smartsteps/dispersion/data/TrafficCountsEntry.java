@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import net.sf.json.JSONObject;
+
 /**
  * TrafficCountsEntry
  *
@@ -124,5 +126,22 @@ public class TrafficCountsEntry implements FieldsEntry {
             roundedCounts.put(countField, roundedCountsForField);
         }
         return roundedCounts;
+    }
+
+    public JSONObject toJSON(){
+        final JSONObject obj = new JSONObject();
+        obj.put("cellId", this.cellId);
+        obj.put("date", this.date);
+        obj.put("northing", this.northing);
+        obj.put("easting", this.easting);
+        obj.put("lat", this.lat);
+        for (String field : TrafficCountsEntry.COUNT_FIELDS) {
+            obj.put(field, this.counts.get(field));
+        }
+        obj.put("poi_5", this.poiFive);
+        obj.put("pois", this.pois);
+        obj.put("microgrid_id", this.microgridId);
+        obj.put("polygon_id", this.polygonId);
+        return obj;
     }
 }

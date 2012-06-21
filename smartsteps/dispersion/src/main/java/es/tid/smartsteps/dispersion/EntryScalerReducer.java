@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.sf.json.JSONObject;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -83,20 +82,8 @@ public class EntryScalerReducer extends Reducer<Text, Text,
                     default:
                         throw new IllegalStateException();
                 }
-                final JSONObject obj = new JSONObject();
-                obj.put("cellId", scaledEntry.cellId);
-                obj.put("date", scaledEntry.date);
-                obj.put("northing", scaledEntry.northing);
-                obj.put("easting", scaledEntry.easting);
-                obj.put("lat", scaledEntry.lat);
-                for (String field : TrafficCountsEntry.COUNT_FIELDS) {
-                    obj.put(field, scaledEntry.counts.get(field));
-                }
-                obj.put("poi_5", scaledEntry.poiFive);
-                obj.put("pois", scaledEntry.pois);
-                obj.put("microgrid_id", scaledEntry.microgridId);
-                obj.put("polygon_id", scaledEntry.polygonId);
-                context.write(NullWritable.get(), new Text(obj.toString()));
+                context.write(NullWritable.get(),
+                              new Text(scaledEntry.toJSON().toString()));
             }
         }
     }

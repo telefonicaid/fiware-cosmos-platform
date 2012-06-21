@@ -19,6 +19,7 @@ import es.tid.cosmos.base.mapreduce.CosmosJob;
  *
  */
 public class ParameterizedJobTool extends Configured implements Tool {
+    
     @Override
     public int run(String[] args)
             throws IOException, InterruptedException, ClassNotFoundException {

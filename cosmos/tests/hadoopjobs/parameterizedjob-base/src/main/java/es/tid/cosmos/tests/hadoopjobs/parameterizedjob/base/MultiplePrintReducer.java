@@ -17,6 +17,7 @@ import org.bson.BasicBSONObject;
  */
 public class MultiplePrintReducer
         extends Reducer<Text, IntWritable, Text, BSONWritable> {
+    
     @Override
     public void reduce(Text key, Iterable<IntWritable> values, Context context) 
             throws IOException, InterruptedException {

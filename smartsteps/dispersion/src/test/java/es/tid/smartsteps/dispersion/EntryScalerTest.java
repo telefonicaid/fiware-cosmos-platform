@@ -28,7 +28,6 @@ public class EntryScalerTest {
     private LongWritable key;
     private Text inputValue;
     private Text intermediateValue;
-    private Text outputValue;
     private Text cell2micro;
     private Text micro2polygon;
 
@@ -75,10 +74,6 @@ public class EntryScalerTest {
         this.intermediateValue =
                 new Text(this.inputValue.toString().substring(0,
                         inputPenultimate) + ", \"microgrid_id\": 123}");
-        this.outputValue =
-                new Text(this.inputValue.toString().substring(0,
-                         inputPenultimate) + ", \"microgrid_id\": 123, " +
-                         "\"polygon_id\": 345");
 
         this.cell2micro =
                 new Text("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d3" +

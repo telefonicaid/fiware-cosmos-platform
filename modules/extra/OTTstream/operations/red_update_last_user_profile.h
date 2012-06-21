@@ -304,7 +304,7 @@ class red_update_last_user_profile: public samson::Reduce
                 int seqId = 2000;
                 const char *seq_name = "seqLargaGTalk";
                 unsigned long time_window = 3600;
-                const char *events = "40,1000,40,1000";
+                const char *events = "13,1001,13,1001";
                 int strict = 0;
                 activity.AddSequence(seqId, seq_name, time_window, events, strict);
             }
@@ -312,7 +312,7 @@ class red_update_last_user_profile: public samson::Reduce
                 int seqId = 2001;
                 const char *seq_name = "seqCortaGTalk";
                 unsigned long time_window = 300;
-                const char *events = "40,1000";
+                const char *events = "13,1001";
                 int strict = 1;
                 activity.AddSequence(seqId, seq_name, time_window, events, strict);
             }
@@ -320,7 +320,7 @@ class red_update_last_user_profile: public samson::Reduce
                 int seqId = 2002;
                 const char *seq_name = "seqWhatsApp";
                 unsigned long time_window = 600;
-                const char *events = "50,1000";
+                const char *events = "14,1001";
                 int strict = 0;
                 activity.AddSequence(seqId, seq_name, time_window, events, strict);
             }
@@ -328,7 +328,7 @@ class red_update_last_user_profile: public samson::Reduce
                 int seqId = 2002;
                 const char *seq_name = "seqWhatsApp";
                 unsigned long time_window = 600;
-                const char *events = "1000,50";
+                const char *events = "1001,14";
                 int strict = 0;
                 activity.AddSequence(seqId, seq_name, time_window, events, strict);
             }

@@ -49,7 +49,7 @@ class red_update_user_web_profile : public samson::Reduce
         {
             user.parse(inputs[0].kvs[0]->key);
             profile.Init();
-            LM_M(("Web profile created for user:%lu", user.value));
+            //LM_M(("Web profile created for user:%lu", user.value));
         }
         else
         {

@@ -15,7 +15,7 @@ public class CellToMicrogridEntryTest {
     @Before
     public void setUp() {
         this.instance = new CellToMicrogridLookupEntry("abc", "def",
-                                                 new BigDecimal(0.37D));
+                                                       new BigDecimal(0.37D));
     }
 
     @Test

@@ -14,8 +14,9 @@ public class MicrogridToPolygonEntryTest {
     
     @Before
     public void setUp() {
-        this.instance = new MicrogridToPolygonLookupEntry("123", "456",
-                                                    new BigDecimal(0.57D));
+        this.instance =
+                new MicrogridToPolygonLookupEntry("123", "456",
+                                                  new BigDecimal(0.57D));
     }
 
     @Test

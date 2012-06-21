@@ -3,9 +3,7 @@ package es.tid.smartsteps.dispersion.data;
 import java.util.List;
 
 /**
- * FieldsEntry
- *
- * represents a table entry where there are no secondary keys, only field
+ * Represents a table entry where there are no secondary keys, only field
  * values
  *
  * @author logc

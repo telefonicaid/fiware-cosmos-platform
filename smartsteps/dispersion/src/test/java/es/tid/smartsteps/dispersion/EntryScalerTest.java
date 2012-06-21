@@ -14,8 +14,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * EntryScalerTest
- *
  * These tests show what is the effect of the microgrid dispersion Job: it
  * scales the input value according to the lookup tables proportion, and it
  * joins the input key with the corresponding lookup values.

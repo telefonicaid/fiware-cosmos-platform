@@ -3,9 +3,7 @@ package es.tid.smartsteps.dispersion.data;
 import java.math.BigDecimal;
 
 /**
- * LookupEntry
- *
- * represents an entry in a lookup table, where the lookup helps to join
+ * Represents an entry in a lookup table, where the lookup helps to join
  * a primary key to a secondary key.
  *
  * @author dmicol, logc

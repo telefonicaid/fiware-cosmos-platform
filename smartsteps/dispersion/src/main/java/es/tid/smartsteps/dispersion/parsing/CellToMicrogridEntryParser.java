@@ -19,8 +19,10 @@ public class CellToMicrogridEntryParser extends Parser<CellToMicrogridLookupEntr
         if (values.length != 3) {
             throw new IllegalArgumentException("Invalid line: " + line);
         }
-        CellToMicrogridLookupEntry entry = new CellToMicrogridLookupEntry(values[0],
-                values[1], new BigDecimal(values[2]));
+        CellToMicrogridLookupEntry entry =
+                new CellToMicrogridLookupEntry(values[0], values[1],
+                                               new BigDecimal(values[2]));
+
         return entry;
     }
     

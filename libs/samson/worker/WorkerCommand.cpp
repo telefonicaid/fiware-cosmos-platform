@@ -1133,6 +1133,12 @@ typedef struct LogLineInfo
             {
                 int level = subcommand.c_str()[0] - '0';
 
+                lmVerbose  = false;
+                lmVerbose2 = false;
+                lmVerbose3 = false;
+                lmVerbose4 = false;
+                lmVerbose5 = false;
+
                 switch (level)
                 {
                 case 5: lmVerbose5 = true;
@@ -1141,6 +1147,12 @@ typedef struct LogLineInfo
                 case 2: lmVerbose2 = true;
                 case 1: lmVerbose  = true;
                 }
+
+                LM_V(("Verbose level 1 is ON"));
+                LM_V2(("Verbose level 2 is ON"));
+                LM_V3(("Verbose level 3 is ON"));
+                LM_V4(("Verbose level 4 is ON"));
+                LM_V5(("Verbose level 5 is ON"));
             }
             else if (subcommand == "get")
             {
@@ -1183,9 +1195,17 @@ typedef struct LogLineInfo
             subcommand = cmd.get_argument(1);
 
             if (subcommand == "off")
+            {
                 lmDebug = false;
+                LM_F(("DEBUG is turned OFF"));
+                LM_D(("DEBUG is STILL ON - this is a bug"));
+            }
             else if (subcommand == "on")
+            {
                 lmDebug = true;
+                LM_F(("DEBUG is turned ON"));
+                LM_D(("DEBUG is ON"));
+            }
             else if( subcommand == "get" )
             {
                 samson::network::Collection* collection = new  samson::network::Collection();
@@ -1224,9 +1244,15 @@ typedef struct LogLineInfo
             subcommand = cmd.get_argument(1);
 
             if (subcommand == "off")
+            {
                 lmReads = false;
+                LM_F(("READS OFF"));
+            }
             else if (subcommand == "on")
+            {
                 lmReads = true;
+                LM_F(("READS ON"));
+            }
             else if( subcommand == "get" )
             {
                 samson::network::Collection* collection = new  samson::network::Collection();
@@ -1266,9 +1292,15 @@ typedef struct LogLineInfo
 
             
             if (subcommand == "off")
+            {
                 lmWrites = false;
+                LM_F(("WRITES OFF"));
+            }
             else if (subcommand == "on")
+            {
                 lmWrites = true;
+                LM_F(("WRITES ON"));
+            }
             else if( subcommand == "get" )
             {
                 samson::network::Collection* collection = new  samson::network::Collection();
@@ -1315,7 +1347,10 @@ typedef struct LogLineInfo
             subcommand = cmd.get_argument(1);
             
             if (subcommand == "off")
+            {
                 lmTraceSet(NULL);
+                LM_F(("All trace levels removed"));
+            }
             else if (subcommand == "get")
             {
                 char levels[1024];
@@ -1342,11 +1377,20 @@ typedef struct LogLineInfo
                 levels = cmd.get_argument(2);
                 
                 if (subcommand == "set")
+                {
                     lmTraceSet((char*) levels.c_str());
+                    LM_F(("Set trace levels '%s'", levels.c_str()));
+                }
                 else if (subcommand == "add")
+                {
                     lmTraceAdd((char*) levels.c_str());
+                    LM_F(("Added trace levels '%s'", levels.c_str()));
+                }
                 else if (subcommand == "del")
+                {
                     lmTraceSub((char*) levels.c_str());
+                    LM_F(("Removed trace levels '%s'", levels.c_str()));
+                }
             }
             else
             {

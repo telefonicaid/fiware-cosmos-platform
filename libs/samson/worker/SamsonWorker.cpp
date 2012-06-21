@@ -514,7 +514,7 @@ namespace samson {
         
         if( !table )
         {
-            command->appendFormatedError(500, "No content in answer from REST client" );
+            // command->appendFormatedError(500, "No content in answer from REST client" );
             LM_E(("No content in answer from REST client"));
             return;
         }
@@ -565,12 +565,12 @@ namespace samson {
         else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "traces") && (logCommand != "verbose") && (logCommand != "debug"))
         {
             command->http_state = 400;
-            command->appendFormatedElement("message", au::str("badilogging command: '%s'", logCommand.c_str()));
+            command->appendFormatedElement("message", au::str("bad logging command: '%s'", logCommand.c_str()));
         }
         else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off"))
         {
             command->http_state = 400;
-            command->appendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+            command->appendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
         }
         else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off"))
         {
@@ -595,7 +595,8 @@ namespace samson {
                 command->appendFormatedElement("message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
             }
         }
-        
+
+
 
         //
         // Checking the VERB
@@ -616,6 +617,7 @@ namespace samson {
 
         else if ((path == "traces")        && (verb == "GET"));
         else if ((path == "traces/off")    && (verb == "POST"));
+        else if ((path == "traces/get")    && (verb == "GET"));
         else if ((path == "traces/set")    && (verb == "POST"));
         else if ((path == "traces/add")    && (verb == "POST"));
         else if ((path == "traces/remove") && (verb == "DELETE"));
@@ -642,11 +644,13 @@ namespace samson {
             {
                 process_delilah_command("wreads on", command);
                 command->appendFormatedElement("reads", au::str("reads turned ON"));
+                LM_F(("Turning on READS for entire cluster"));
             }
             else if (sub == "off")
             {
                 process_delilah_command("wreads off", command);
                 command->appendFormatedElement("reads", au::str("reads turned OFF"));
+                LM_F(("Turning off READS for entire cluster"));
             }
         }
         else if (logCommand == "writes")
@@ -655,11 +659,13 @@ namespace samson {
             {
                 process_delilah_command("wwrites on", command);
                 command->appendFormatedElement("writes", au::str("writes turned ON"));
+                LM_F(("Turning on WRITES for entire cluster"));
             }
             else if (sub == "off")
             {
                 process_delilah_command("wwrites off", command);
                 command->appendFormatedElement("writes", au::str("writes turned OFF"));
+                LM_F(("Turning off WRITES for entire cluster"));
             }
         }
         else if (logCommand == "debug")
@@ -668,11 +674,15 @@ namespace samson {
             {
                 process_delilah_command("wdebug on", command);
                 command->appendFormatedElement("debug", au::str("debug turned ON"));
+                LM_F(("Turning on DEBUG for entire cluster"));
+                LM_D(("Debug should be ON"));
             }
             else if (sub == "off")
             {
                 process_delilah_command("wdebug off", command);
                 command->appendFormatedElement("debug", au::str("debug turned OFF"));
+                LM_F(("Turning off DEBUG for entire cluster"));
+                LM_D(("Debug should be OFF"));
             }
         }
         else if (logCommand == "verbose")  // /samson/logging/verbose
@@ -691,6 +701,8 @@ namespace samson {
             {
                 process_delilah_command("wverbose off", command);
                 command->appendFormatedElement("verbose", au::str("verbose mode turned OFF"));
+                LM_F(("Turning off VERBOSE for entire cluster"));
+                LM_V(("VERBOSE should be OFF"));
             }
             else
             {
@@ -699,6 +711,12 @@ namespace samson {
                 snprintf(delilahCommand, sizeof(delilahCommand), "wverbose %s", arg.c_str());
                 process_delilah_command(delilahCommand, command);
                 command->appendFormatedElement("verbose", au::str("verbose levels upto %s SET", arg.c_str()));
+                LM_F(("Setting VERBOSE level to %s for entire cluster", arg.c_str()));
+                LM_V(("VERBOSE level 1"));
+                LM_V2(("VERBOSE level 2"));
+                LM_V3(("VERBOSE level 3"));
+                LM_V4(("VERBOSE level 4"));
+                LM_V5(("VERBOSE level 5"));
             }
         }
         else if (logCommand == "traces")
@@ -713,6 +731,7 @@ namespace samson {
                 snprintf(delilahCommand, sizeof(delilahCommand), "wtrace set %s",  arg.c_str());
                 process_delilah_command(delilahCommand, command);
                 command->appendFormatedElement("trace", au::str("trace level: %s", arg.c_str()));
+                LM_F(("Setting TRACE levels to '%s'", arg.c_str()));
             }
             else if (sub == "get")    // /samson/logging/trace/get
             {
@@ -726,6 +745,7 @@ namespace samson {
             {
                 process_delilah_command("wtrace off", command);
                 command->appendFormatedElement("trace", au::str("all trace levels turned off"));
+                LM_F(("Resetting TRACE levels to 'NADA DE NADA'"));
             }
             else if (sub == "add")    // /samson/logging/trace/add
             {
@@ -734,6 +754,7 @@ namespace samson {
                 snprintf(delilahCommand, sizeof(delilahCommand), "wtrace add %s", arg.c_str());
                 process_delilah_command(delilahCommand, command);
                 command->appendFormatedElement("trace", au::str("added level(s) %s", arg.c_str()));
+                LM_F(("Adding TRACE levels '%s'", arg.c_str()));
             }
             else if (sub == "remove")     // /samson/logging/trace/remove
             {
@@ -742,6 +763,7 @@ namespace samson {
                 snprintf(delilahCommand, sizeof(delilahCommand), "wtrace remove %s", arg.c_str());
                 process_delilah_command(delilahCommand, command);
                 command->appendFormatedElement("trace", au::str("removed level(s) %s", arg.c_str()));
+                LM_F(("Removing TRACE levels '%s'", arg.c_str()));
             }
         }
     }
@@ -900,6 +922,7 @@ namespace samson {
 
         else if ((path == "traces")        && (verb == "GET"));
         else if ((path == "traces/off")    && (verb == "POST"));
+        else if ((path == "traces/get")    && (verb == "GET"));
         else if ((path == "traces/set")    && (verb == "POST"));
         else if ((path == "traces/add")    && (verb == "POST"));
         else if ((path == "traces/remove") && (verb == "DELETE"));
@@ -926,11 +949,13 @@ namespace samson {
             {
                 lmReads  = true;
                 command->appendFormatedElement("reads", au::str("reads turned ON"));
+                LM_F(("Turned on READS for this node only"));
             }
             else if (sub == "off")
             {
                 lmReads  = false;
                 command->appendFormatedElement("reads", au::str("reads turned OFF"));
+                LM_F(("Turned off READS for this node only"));
             }
         }
         else if (logCommand == "writes")
@@ -939,11 +964,13 @@ namespace samson {
             {
                 lmWrites  = true;
                 command->appendFormatedElement("writes", au::str("writes turned ON"));
+                LM_F(("Turned on WRITES for this node only"));
             }
             else if (sub == "off")
             {
                 lmWrites  = false;
                 command->appendFormatedElement("writes", au::str("writes turned OFF"));
+                LM_F(("Turned off WRITES for this node only"));
             }
         }
         else if (logCommand == "debug")
@@ -952,11 +979,15 @@ namespace samson {
             {
                 lmDebug  = true;
                 command->appendFormatedElement("debug", au::str("debug turned ON"));
+                LM_F(("Turned on DEBUG for this node only"));
+                LM_D(("Turned on DEBUG for this node only"));
             }
             else if (sub == "off")
             {
                 lmDebug  = false;
                 command->appendFormatedElement("debug", au::str("debug turned OFF"));
+                LM_F(("Turned off DEBUG for this node only"));
+                LM_D(("This line should not be seen ..."));
             }
         }
         else if (logCommand == "verbose")  // /samson/ilogging/verbose
@@ -1005,6 +1036,7 @@ namespace samson {
                 }
                 
                 command->appendFormatedElement("verbose", au::str("verbosity level: %d", verboseLevel));
+                LM_F(("New verbose level for this node only: %d", verboseLevel));
             }
         }
         else if (logCommand == "traces")
@@ -1016,6 +1048,7 @@ namespace samson {
             {
                 lmTraceSet((char*) arg.c_str());
                 command->appendFormatedElement("trace", au::str("trace level: %s", arg.c_str()));
+                LM_F(("Set trace levels to '%s' for this node only", arg.c_str()));
             }
             else if (sub == "get")    // /samson/ilogging/trace/get
             {
@@ -1028,16 +1061,19 @@ namespace samson {
             {
                 lmTraceSet(NULL);
                 command->appendFormatedElement("trace", au::str("all trace levels turned off"));
+                LM_F(("Turned off trace levels for this node only"));
             }
             else if (sub == "add")    // /samson/ilogging/trace/add
             {
                 lmTraceAdd((char*) arg.c_str());
                 command->appendFormatedElement("trace", au::str("added level(s) %s", arg.c_str()));
+                LM_F(("Added trace levels '%s' for this node only", arg.c_str()));
             }
             else if (sub == "remove")     // /samson/ilogging/trace/remove
             {
                 lmTraceSub((char*) arg.c_str());
                 command->appendFormatedElement("trace", au::str("removed level(s) %s", arg.c_str()));
+                LM_F(("Removed trace levels '%s' for this node only", arg.c_str()));
             }
         }
     }        
@@ -1401,8 +1437,9 @@ void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
     }
     else if ((path == "/samson/status") && (verb == "GET"))
     {
-        process_delilah_command("ls_workers", command);
-        // command->appendFormatedElement("status", "OK");
+        std::ostringstream data;
+        network->getInfo(data, "cluster", command->format);
+        command->append( data.str() );
     }
     else if ((path == "/samson/cluster") && (verb == "GET"))
     {

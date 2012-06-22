@@ -10,7 +10,7 @@ ifndef SAMSON_WORKING
 SAMSON_WORKING=/var/samson
 endif
 ifndef SAMSON_VERSION
-SAMSON_VERSION=0.6.1
+SAMSON_VERSION=0.7.0
 endif
 ifndef SAMSON_RELEASE
 	SAMSON_RELEASE:=$(shell svn info . | grep "Last Changed Rev: " | cut -f4 -d" ")

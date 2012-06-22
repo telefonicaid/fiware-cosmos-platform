@@ -9,19 +9,7 @@ from optparse import OptionParser
 from buildout import BuildOut
 
 
-PYPROJECTS = ['cosmos/platform/frontend/hue-apps/cosmos/']
-
-
-COMMANDS = {
-    'build':    lambda project: project.build(),
-    'runtests': lambda project: project.run_tests()
-}
-
-
-def run_command(command_name, projects):
-    command = COMMANDS[command_name]
-    for project in projects:
-        command(project)
+PROJECT_PATHS = ['cosmos/platform/frontend/hue-apps/cosmos/']
 
 
 def run():
@@ -29,27 +17,23 @@ def run():
     Main entry point
     """
     parser = OptionParser()
-    parser.add_option("-p", "--projects", dest="projects",
-                      help="Comma-separated list of projects to build",
-                      default=','.join(PYPROJECTS))
     parser.add_option("-b", "--build_path", dest="build_path",
                       help="Alternative build path",
                       default=None)
-    (options, args) = parser.parse_args()
+    (options, commands) = parser.parse_args()
 
-    if len(args) == 0:
-        print "No command to run"
+    if len(commands) == 0:
+        print "No command to run. Valid commands: copy, build, test"
         sys.exit(-1)
 
-    for arg in args:
-        if not COMMANDS.has_key(arg):
-            print "Unknown command '%s'"
-            sys.exit(-1)
-
-    projects = [BuildOut(project, build_path=options.build_path) for
-                project in options.projects.split(',')]
-    for arg in args:
-        run_command(arg, projects)
+    for project_path in PROJECT_PATHS:
+        project = BuildOut(project_path, build_path=options.build_path)
+        if "copy" in commands:
+            project.copy()
+        if "build" in commands:
+            project.build()
+        if "test" in commands:
+            project.run_tests()
 
 
 if __name__ == "__main__":

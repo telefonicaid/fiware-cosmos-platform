@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.smartsteps.dispersion.data.MicrogridToPolygonEntry;
+import es.tid.smartsteps.dispersion.data.MicrogridToPolygonLookupEntry;
 
 /**
  *
@@ -20,7 +20,7 @@ public class MicrogridToPolygonEntryParserTest {
 
     @Test
     public void testParse() {
-        MicrogridToPolygonEntry entry = this.parser.parse("456\t123\t0.57");
+        MicrogridToPolygonLookupEntry entry = this.parser.parse("456\t123\t0.57");
         assertEquals("456", entry.microgridId);
         assertEquals("123", entry.polygonId);
         assertEquals(0.57D, entry.proportion.doubleValue(), 0.0D);

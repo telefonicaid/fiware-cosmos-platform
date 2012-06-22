@@ -6,23 +6,28 @@ import java.math.BigDecimal;
  *
  * @author dmicol
  */
-public class MicrogridToPolygonEntry implements Entry {
+public class CellToMicrogridLookupEntry implements LookupEntry {
+    public final String cellId;
     public final String microgridId;
-    public final String polygonId;
-    public final BigDecimal proportion;
+    public BigDecimal proportion;
 
-    public MicrogridToPolygonEntry(String microgridId, String polygonId,
-                                   BigDecimal proportion) {
+    public CellToMicrogridLookupEntry(String cellId, String microgridId,
+                                      BigDecimal proportion) {
+        this.cellId = cellId;
         this.microgridId = microgridId;
-        this.polygonId = polygonId;
         this.proportion = proportion;
     }
     
     @Override
     public String getKey() {
+        return this.cellId;
+    }
+
+    @Override
+    public String getSecondaryKey() {
         return this.microgridId;
     }
-    
+
     @Override
     public BigDecimal getProportion() {
         return this.proportion;

@@ -11,6 +11,13 @@
             <includes> 
                 <include>es.tid.cosmos.tests.hadoopjobs:printprimes</include>
                 <include>es.tid.cosmos.tests.hadoopjobs:mapperfail</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed1</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed2</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed3</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed4</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed5</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-normal</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-whitespace</include> 
                 <include>es.tid.cosmos:wordcount-core</include>
             </includes> 
             <useTransitiveDependencies>false</useTransitiveDependencies>

@@ -215,7 +215,7 @@ public class HadoopSshFileTest {
         long retrievedTime = this.hadoopSshFile.getLastModified();
         assertTrue(String.format("sent: %s, got: %s, diff: %s", fixedTime,
                                  retrievedTime, fixedTime - retrievedTime),
-                   Math.abs(fixedTime - retrievedTime) < 1000);
+                   Math.abs(fixedTime - retrievedTime) < 10000);
     }
 
     @Test

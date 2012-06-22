@@ -212,8 +212,10 @@ public class HadoopSshFileTest {
         // mismatch between HDFS and System.currentTimeMillis; we try to
         // write with more decimal places than can be read. What we can say is
         // that this difference has an upper limit.
-        assertTrue(Math.abs(fixedTime - this.hadoopSshFile.getLastModified())
-                        < 1000);
+        long retrievedTime = this.hadoopSshFile.getLastModified();
+        assertTrue(String.format("sent: %s, got: %s, diff: %s", fixedTime,
+                                 retrievedTime, fixedTime - retrievedTime),
+                   Math.abs(fixedTime - retrievedTime) < 1000);
     }
 
     @Test

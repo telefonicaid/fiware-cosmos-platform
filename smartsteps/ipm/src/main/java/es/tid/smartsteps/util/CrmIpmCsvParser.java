@@ -44,14 +44,14 @@ public class CrmIpmCsvParser extends CsvParserSupport<CrmIpm> {
                 @Override
                 public void parseField(String fieldValue,
                                        BuilderAdapter adapter) {
-                    adapter.getBuilder().setAcornCode(fieldValue);
+                    adapter.getBuilder().setBillingPostCodePrefix(fieldValue);
                 }
             },
             new FieldParser<CrmIpm, BuilderAdapter>() {
                 @Override
                 public void parseField(String fieldValue,
                                        BuilderAdapter adapter) {
-                    adapter.getBuilder().setBillingPostCodePrefix(fieldValue);
+                    adapter.getBuilder().setAcornCode(fieldValue);
                 }
             },
             new FieldParser<CrmIpm, BuilderAdapter>() {

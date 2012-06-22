@@ -24,6 +24,7 @@ public class CrmIpmCsvPrinter extends AbstractCsvPrinter<CrmIpm> {
         String delimiter = this.getDelimiter();
         String line = (crmIpm.getAnonymisedMsisdn() + delimiter
                 + crmIpm.getAnonymisedBillingPostCode() + delimiter
+                + crmIpm.getBillingPostCodePrefix() + delimiter
                 + crmIpm.getAcornCode() + delimiter
                 + crmIpm.getGender() + delimiter
                 + crmIpm.getBillingSystem() + delimiter

@@ -6,5 +6,5 @@ curl http://localhost:1202/samson/version
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- SAMSON Rest interface -->
 <samson>
-<version><![CDATA[SAMSON v 0.6.1]]></version>
+<version><![CDATA[SAMSON v 0.7.0]]></version>
 </samson>

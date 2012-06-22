@@ -10,7 +10,7 @@ from StringIO import StringIO
 from fabric.api import run, execute, sudo, put, cd, env
 from fabric.contrib import files
 import fabric.context_managers as ctx
-from fabric.colors import green, red
+from fabric.colors import green, red, yellow
 from fabric.decorators import roles, task, parallel
 from fabric.utils import puts
 from mako.template import Template
@@ -30,12 +30,18 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     """
     Deploys all the necessary components to get a running Cosmos cluster
     """
+    process_start_msg = "DEPLOY: stating %s deployment"
+    puts(yellow(process_start_msg % "JDK"))
     execute(deploy_jdk, os.path.join(dependenciespath, jdk_rpm))
+    puts(yellow(process_start_msg % "CDH"))
     deploy_cdh()
-    execute(deploy_mongo)
+    puts(yellow(process_start_msg % "HUE"))
     execute(deploy_hue, os.path.join(dependenciespath, thrift_tar))
+    puts(yellow(process_start_msg % "SFTP"))
     execute(deploy_sftp)
+    puts(yellow(process_start_msg % "Ganglia"))
     execute(deploy_ganglia)
+    puts(yellow(process_start_msg % "Mongo"))
     execute(deploy_mongo)
 
 @task
@@ -44,7 +50,8 @@ def add_test_setup():
     """
     Installs any test-specific setup components
     """
-    files_to_delete = put(os.path.join(BASEPATH, '../cosmos/tests/testUser.json'), 'testUser.json')
+    files_to_delete = put(os.path.join(BASEPATH,
+                          '../cosmos/tests/testUser.json'), 'testUser.json')
     with cd('/usr/share/hue'):
         run('build/env/bin/hue loaddata ~/testUser.json')
     for f in files_to_delete:

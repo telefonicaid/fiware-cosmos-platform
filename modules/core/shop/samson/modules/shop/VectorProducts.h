@@ -16,6 +16,11 @@ namespace shop{
 
 	class VectorProducts : public VectorProducts_base
 	{
+	    public:
+	    void init()
+	    {
+	        productsSetLength(0);
+	    }
 	};
 
 

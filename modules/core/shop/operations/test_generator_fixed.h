@@ -25,7 +25,7 @@ namespace shop{
             size_t num_samples = environment->getInt( "shop.samples", 10000);
 
             samson::system::UInt id;
-            samson::shop::Operation operation;
+            samson::shop::Transaction operation;
 
             for (size_t i = 0; (i < num_samples); i++)
             {

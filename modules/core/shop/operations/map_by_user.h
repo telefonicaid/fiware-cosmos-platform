@@ -8,7 +8,7 @@
 
 
 #include <samson/module/samson.h>
-#include <samson/modules/shop/Operation.h>
+#include <samson/modules/shop/Transaction.h>
 #include <samson/modules/system/UInt.h>
 
 
@@ -25,10 +25,10 @@ namespace shop{
 #ifdef INFO_COMMENT //Just to include a comment without conflicting anything
 // If interface changes and you do not recreate this file, consider updating this information (and of course, the module file)
 
-input: system.UInt shop.Operation  
+input: system.UInt shop.Transaction
 output: system.UInt system.UInt
 
-helpLine: Map example; from input_data [UInt - Operation] emits key-values [UInt - UInt] with user-id and product-id
+helpLine: Map example; from input_data [UInt - Transaction] emits key-values [UInt - UInt] with user-id and product-id
 #endif // de INFO_COMMENT
 
 		void init( samson::KVWriter *writer )
@@ -38,7 +38,7 @@ helpLine: Map example; from input_data [UInt - Operation] emits key-values [UInt
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
             samson::system::UInt input_key;
-            samson::shop::Operation input_value;
+            samson::shop::Transaction input_value;
             samson::system::UInt output_value;
             samson::system::UInt output_key;
 

@@ -1,14 +1,13 @@
 {
     "version": "0.9.0.0-SNAPSHOT",
     "hosts": {
-        "namenode": [ "176.28.105.8" ],
-        "jobtracker": [ "176.28.105.8" ],
+        "namenode": [ "176.28.105.12" ],
+        "jobtracker": [ "176.28.105.12" ],
         "frontend": [ "176.28.105.8" ],
         "mongo": [ "176.28.105.42" ],
         "datanodes": [
-            "176.28.105.12",
             "176.28.105.13",
-            "176.28.105.16",
+            "176.28.105.14",
             "176.28.105.16",
             "176.28.105.24",
             "176.28.105.26",
@@ -20,7 +19,6 @@
             "176.28.105.37"
         ],
         "tasktrackers": [
-            "176.28.105.12",
             "176.28.105.13",
             "176.28.105.14",
             "176.28.105.16",
@@ -41,5 +39,5 @@
     "hue_patch_dir": "../cosmos/platform/frontend/hue-patches",
     "hue_patch_name": "hue-patch-cdh3u4-r0.4.diff",
     "injection_path": "../cosmos/platform/injection/server/",
-    "key_filename": "~/.ssh/id_rsa_joyent"
+    "mongo_db_path": "/data/lib/mongo"
 }

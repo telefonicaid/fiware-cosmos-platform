@@ -22,6 +22,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author dmicol
  */
 public class AdjAddUniqueIdPoiToTwoIntNewMapperTest {
+
     private MapDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>,
             LongWritable, TypedProtobufWritable<TwoInt>> driver;
     

@@ -7,6 +7,7 @@
 #include "au/Status.h"
 #include "au/mutex/Token.h"
 #include "au/string.h"
+#include "au/ThreadManager.h"
 
 namespace au 
 {
@@ -77,7 +78,6 @@ namespace au
         // Invalidate: Put fd = -1 without closing to reuse this connection in other place
         int getFdAndinvalidate();
     };
-    
     
     
 }

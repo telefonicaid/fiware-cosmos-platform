@@ -164,7 +164,7 @@ reduce process
     out system.Value system.Value
     out system.Value system.Value
 
-	helpLine "Accumulation, Level and other common tasks implemented in the same operation"
+	helpLine "Generic operation based on ProcessComponents.Useful for generic operations like accumulations"
 
 }
 

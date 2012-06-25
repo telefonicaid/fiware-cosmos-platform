@@ -24,7 +24,7 @@ namespace samson
         public:
             
             ListenerItem( Channel * channel , ConnectionType type , int _port ) : 
-            Item( channel , type , au::str("Listener port %d" , _port ) ) ,
+            Item( channel , type , au::str("Listener port %d" , _port ) , au::str("LISTEN(%d)" , _port ) ) ,
             au::NetworkListener( this )
             {
                 // Keep the port

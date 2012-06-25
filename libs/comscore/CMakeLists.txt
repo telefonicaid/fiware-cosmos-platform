@@ -26,7 +26,7 @@ SET( STATIC_LIBS
      samson_comscore
      au
      lm
-	au
+	 json
      pa
      dl
      pthread

@@ -5,6 +5,7 @@
 #include "ListenerItem.h"
 #include "SamsonItem.h"
 #include "DiskItem.h"
+#include "InterChannelItem.h"
 #include "Channel.h" // Own interface
 
 
@@ -16,85 +17,18 @@ namespace samson {
     namespace connector 
     {
         
-        Channel::Channel( SamsonConnector * _connector , std::string _name ) : token("samson::Channel")
+        Channel::Channel( SamsonConnector * connector , std::string name , std::string splitter ) : token( "token_Channel")
         {
             // First id for an item
             items_id = 0; 
             
             // Keep name and pointer to connector
-            name = _name;
-            connector = _connector;
+            connector_ = connector;
+            name_ = name;
+            splitter_ = splitter;
         }
         
         
-        // Generic command line interface to modify this channel
-        void Channel::process_command( CommandLine* cmdLine , au::ErrorManager * error )
-        {
-            // Mutex protection
-            au::TokenTaker tt(&token);
-            
-            // Modify the context of the answer
-            au::ErrorContext context( error , au::str("Channel %s" , name.c_str() ) );
-            
-            if( cmdLine->get_num_arguments() == 0 )
-            {
-                error->add_error( "No command provided" );
-                return;
-            }
-            
-            // Get the main command
-            std::string main_command = cmdLine->get_argument(0);
-            
-            
-            if ( main_command == "add_input" )
-            {
-                if( cmdLine->get_num_arguments() < 2 )
-                {
-                    error->set( "Usage: add_input [port:8888] [connection:host:port] [samson:host:queue]" );
-                    return;
-                }
-                
-                add_inputs( cmdLine->get_argument(1) , error );
-                return;
-            }
-            
-            if ( main_command == "add_output" )
-            {
-                if( cmdLine->get_num_arguments() < 2 )
-                {
-                    error->set( "Usage: add_output [port:8888] [connection:host:port] [samson:host:queue]" );
-                    return;
-                }
-                add_outputs( cmdLine->get_argument(1) , error );
-                return;
-            }
-            
-            if( main_command == "remove" )
-            {
-                if( cmdLine->get_num_arguments() < 2 )
-                {
-                    error->set( "Usage: remove item_id [-channel C]" );
-                    return;
-                }
-                
-                int id = ::atoi( cmdLine->get_argument(1).c_str() );
-                Item* item = items.findInMap(id);
-                
-                if( !item )
-                {
-                    error->set( au::str("Item %d not found in channel %s" , id, name.c_str() ));
-                    return;
-                }
-
-                error->add_message( au::str("Item [%d][%s] is marked to be removed" , id , item->getName().c_str() ) );
-                item->set_removing(); // Close all connections and mark as to be removed
-                return;
-            }
-
-            // Unknown command error
-            error->set( au::str("Unknown command %s" , main_command.c_str() ) );
-            
-		}            
         void Channel::review()
         {
             // Mutex protection
@@ -172,7 +106,7 @@ namespace samson {
                     
                     // Add a listen item
                     add( new ListenerItem( this , connection_output , port ) );
-                    error->add_message( au::str("Added an output item to channel %s listening plain socket connection on port %d " , name.c_str() , port ));
+                    error->add_message( au::str("Added an output item to channel %s listening plain socket connection on port %d " , name_.c_str() , port ));
                     return;
                     
                 }
@@ -230,6 +164,27 @@ namespace samson {
                     
                     add( new SamsonItem( this , connection_output , host , port  , queue ) );
                 }
+                else if( components[0] == "channel" )
+                {
+                    if( components.size() < 3 )
+                    {
+                        error->set("Output connection without host and channel. Please specifiy as channel:host:channel)");
+                        return;
+                    }
+                    
+                    std::string host = components[1];
+                    std::string channel = components[2];
+                    
+                    add( new OutputInterChannelItem(this, host, channel ) );
+                    
+                }
+
+                else
+                {
+                    // Error message
+                    error->add_error( au::str("Unknown input %s" , components[0].c_str() ) );
+                }
+
             }
         }
         
@@ -277,7 +232,7 @@ namespace samson {
                     
                     // Add a listen item
                     add( new ListenerItem( this , connection_input , port ) );
-                    error->add_message( au::str("Added an input item to channel %s listening plain socket connection on port %d " , name.c_str() , port ));
+                    error->add_message( au::str("Added an input item to channel %s listening plain socket connection on port %d " , name_.c_str() , port ));
                     return;
                 }
                 else if( components[0] == "disk" )
@@ -334,6 +289,17 @@ namespace samson {
                     add( new SamsonItem( this , connection_input , host , port  , queue ) );
                     
                 }
+                else if( components[0] == "channel" )
+                {
+                    // Able to receive connections for inter-channel connection
+                    add( new InputInterChannelItem( this ) );
+                }
+                else
+                {
+                    // Error message
+                    error->add_error( au::str("Unknown input %s" , components[0].c_str() ) );
+                }
+
             }
         }
         
@@ -411,7 +377,45 @@ namespace samson {
 
         std::string Channel::getName()
         {
-            return name;
+            return name_;
+        }
+        
+        std::string Channel::getSplitter()
+        {
+            return splitter_;
+        }
+
+        
+        std::string Channel::getInputsString()
+        {
+            std::ostringstream output;
+            
+            au::map<int, Item>::iterator it_items;
+            for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
+            {
+                Item* item = it_items->second;
+                if( item->getType() == connection_input )
+                {
+                    output << item->short_name_  << " ";
+                }
+            }
+            return output.str();
+        }
+        
+        std::string Channel::getOutputsString()
+        {
+            std::ostringstream output;
+            
+            au::map<int, Item>::iterator it_items;
+            for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
+            {
+                Item* item = it_items->second;
+                if( item->getType() == connection_output )
+                {
+                    output << item->short_name_ << " ";
+                }
+            }
+            return output.str();
         }
 
         

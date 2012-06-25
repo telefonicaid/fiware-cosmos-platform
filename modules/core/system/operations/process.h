@@ -9,7 +9,7 @@
 
 #include <samson/module/samson.h>
 #include <samson/modules/system/Value.h>
-#include "samson_system/Process.h"
+#include "samson_system/ProcessComponentManager.h"
 
 namespace samson{
 namespace system{
@@ -18,14 +18,9 @@ namespace system{
 	class process : public samson::Reduce
 	{
         
-        // Process element for all operations
-        Process  p; 
-
-        // Value to parse everything
-        Value key;
-        Value state;
-        Value value;
-        
+	   // Process manager
+	   ProcessComponentsManager process_components_manager;
+       
 	public:
 
 
@@ -48,64 +43,12 @@ namespace system{
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-            trace( au::str("Run process with %lu / %lu", inputs[0].num_kvs , inputs[1].num_kvs ) , writer );
-            
-            // Parse key
-            // ----------------------------------------------------------------
-            if ( inputs[0].num_kvs > 0 )
-                key.parse( inputs[0].kvs[0]->key );
-            else if ( inputs[1].num_kvs > 0 )
-                key.parse( inputs[1].kvs[0]->key );
-            else
-                return;
-
-            // Recover state ( if any )
-            // ----------------------------------------------------------------
-            if( inputs[1].num_kvs > 0 )
-                state.parse( inputs[1].kvs[0]->value );
-            else
-                state.set_as_void();
-            p.init( &key , &state , writer ); // Previous state was present
-
-            // Process all key-values
-            // ----------------------------------------------------------------
-            for (size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
-            {
-                value.parse( inputs[0].kvs[i]->value );
-                p.process( &value );
-            }
-            
-            // Finish
-            // ----------------------------------------------------------------
-            p.finish();
-            
-            
-            // Emit state if non void
-            if( !state.isVoid() )
-                writer->emit( 2 , &key, &state );
+		   process_components_manager.process( inputs , writer );
 		}
 
 		void finish( samson::KVWriter *writer )
 		{
-            // Flush everything included in all kind of operations
-            p.flush();
 		}
-
-        
-        void trace( std::string message , samson::KVWriter *writer  )
-        {
-            
-            samson::system::Value key_message;
-            samson::system::Value value_message;
-            key_message.set_string( message );
-            value_message.set_as_void();
-            
-            writer->emit( -1 , &key_message , &value_message );
-            
-        }
-        
-
-
 	};
 
 

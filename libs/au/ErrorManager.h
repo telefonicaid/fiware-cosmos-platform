@@ -129,6 +129,35 @@ namespace au
             return NULL;
         }
         
+        
+        
+        std::string str()
+        {
+            std::ostringstream output;
+            
+            // Transform the error message in something to print on screen
+            for ( size_t i = 0 ; i < getNumItems() ; i++ )
+            {
+                ErrorMessage * item = getItem(i);
+                
+                switch (item->getType()) 
+                {
+                    case item_message:
+                        output << item->getMultiLineMessage();
+                        break;
+                        
+                    case item_warning:
+                        output << "\033[1;35m"<< item->getMultiLineMessage() << "\033[0m";
+                        break;
+                    case item_error:
+                        output << "\033[1;31m"<< item->getMultiLineMessage() << "\033[0m";
+                        break;
+                }
+            }
+            
+            return output.str();
+        }
+        
     private:
         
         friend class ErrorContext;

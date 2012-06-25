@@ -18,6 +18,7 @@ namespace au
         virtual void newSocketConnection( NetworkListener* listener , SocketConnection * socket_connetion )=0;
     };
     
+    
     class NetworkListener
     {
         // Network manager to be notified
@@ -26,7 +27,10 @@ namespace au
         // Port where we are listening
         int port;
         
+        // Internal file descriptor
         int rFd;
+        
+        // Flag to inform that background thread should finish
         bool quit_flag;
         
         // Thread listening connections...
@@ -34,6 +38,7 @@ namespace au
         
     public: 
         
+        // Flag indicating if the background thread is running
         bool background_thread_running;
         
     public:

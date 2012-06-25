@@ -1,0 +1,20 @@
+package samson.connector;
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// General message
+//
+
+message Message
+{
+
+	// Identifier of the target channel 
+	optional string target_channel = 1;	
+
+	// Error messageo
+	optional string error = 2;
+
+	// HandShake confirmation
+	optional bool ack = 3;
+
+}

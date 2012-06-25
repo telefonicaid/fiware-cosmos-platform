@@ -30,6 +30,7 @@ size_t buffer_size;
 char input[1024];
 char output[1024];
 char input_splitter_name[1024];
+char file_name[1024];
 
 bool interactive;
 bool run_as_daemon;
@@ -84,11 +85,12 @@ PaArgument paArgs[] =
 	{ "-output",           output,              "",  PaString,  PaOpt, _i "stdout"  , PaNL, PaNL,       "Output sources "         },
 	{ "-buffer_size",      &buffer_size,        "",  PaInt,     PaOpt, default_buffer_size,       1, default_buffer_size,  "Buffer size in bytes"    },
 	{ "-inputbuffer_size", &input_buffer_size,  "",  PaInt,     PaOpt, default_input_buffer_size, 1, 10000000,               "Read inputs in chunks of this size" },
-	{ "-splitter",         input_splitter_name, "",  PaString,  PaOpt, _i "",   PaNL, PaNL,  "Splitter"  },
+	{ "-splitter",         input_splitter_name, "",  PaString,  PaOpt, _i "",   PaNL, PaNL,  "Splitter to be used ( only valid for the default channel )"  },
 	{ "-i",                &interactive,        "",  PaBool,    PaOpt,    false,  false,   true,        "Interactive console"          },
 	{ "-daemon",           &run_as_daemon,      "",  PaBool,    PaOpt,    false,  false,   true,        "Run in background. Remove connection & REST interface activated"  },
     { "-console_port",     &sc_console_port,    "",  PaInt,     PaOpt,    SC_CONSOLE_PORT,     1,      9999,  "Port to receive new console connections"   },
     { "-web_port",         &sc_web_port,        "",  PaInt,     PaOpt,    SC_WEB_PORT,         1,      9999,  "Port to receive REST connections"   },
+	{ "-f",                file_name,           "",  PaString,  PaOpt, _i "",   PaNL, PaNL,  "Input file with commands to setup channels and adapters"  },
 	PA_END_OF_ARGS
 };
 
@@ -160,28 +162,93 @@ int main( int argC , const char *argV[] )
     // Init samsonConnector
     
     samson_connector = new samson::connector::SamsonConnector();
-    
-    // Add outputs
-    au::ErrorManager error;
-    samson_connector->process_command( au::str("add_output %s" , output )  , &error );
-    if( error.isActivated() )
-        samson_connector->writeError( error.getMessage().c_str()  );
-    
-    // Add inputs
-    samson_connector->process_command( au::str("add_input %s" , input )  , &error );
-    if( error.isActivated() )
-        samson_connector->writeError( error.getMessage().c_str()  );
-    
+
+
+    if( strcmp(file_name, "") != 0 )
+    {
+
+        // Common error messages
+
+        // Read commands from file
+        FILE *f = fopen( file_name , "r" );
+        if( !f )
+        {
+            LM_E(("Error opening commands file %s", file_name));
+            exit(0);
+        }
+        
+        int num_line = 0;
+        char line[1024];
+        
+        LM_M(("Processing commands file %s", file_name ));
+        
+        while( fgets(line, sizeof(line), f) )
+        {
+            // Remove the last return of a string
+            while( ( strlen( line ) > 0 ) && ( line[ strlen(line)-1] == '\n') > 0 )
+                line[ strlen(line)-1]= '\0';
+            
+            //LM_M(("Processing line: %s", line ));
+            num_line++;
+            
+            if( ( line[0] != '#' ) && ( strlen(line) > 0) )
+            {
+                au::ErrorManager error;
+                error.add_message(au::str("Processing: '%s'" , line ));
+                samson_connector->process_command( line  , &error );
+                std::cerr << error.str();
+            }
+        }
+        
+        // Print the error on screen
+        
+        
+        fclose(f);
+        
+    }
+    else
+    {
+        // Create default channel
+        au::ErrorManager error;
+        samson_connector->process_command( au::str("add_channel default %s" , input_splitter_name )  , &error );
+        
+        // Add outputs
+        samson_connector->process_command( au::str("add_output_to_channel default %s" , output )  , &error );
+        if( error.isActivated() )
+            samson_connector->writeError( error.getMessage().c_str()  );
+        
+        // Add inputs
+        samson_connector->process_command( au::str("add_input_to_channel default %s" , input )  , &error );
+        if( error.isActivated() )
+            samson_connector->writeError( error.getMessage().c_str()  );
+
+        // Print all setup on screen
+        std::cerr << error.str();
+    }
+        
     // Run console if interactive mode is activated
     if( run_as_daemon )
     {
-        samson_connector->add_service();          // Add service to accept monitor connections from samsonConnectorClient
-        samson_connector->initRESTInterface();    // Add REST service to accept REST-full connections
+        // Add service to accept monitor connections from samsonConnectorClient
+        samson_connector->add_service();               
+        // Add REST service to accept REST-full connections
+        samson_connector->initRESTInterface();         
+        // Add service to accept inter-channel connections
+        samson_connector->initInterChannelInteface();
+        
         while( true )
             sleep(1000);
+        
     }
     else if( interactive )
     {
+        // Add service to accept monitor connections from samsonConnectorClient
+        samson_connector->add_service();               
+        // Add REST service to accept REST-full connections
+        samson_connector->initRESTInterface();         
+        // Add service to accept inter-channel connections
+        samson_connector->initInterChannelInteface();
+        
         samson_connector->runConsole();
     }
     else
@@ -190,7 +257,7 @@ int main( int argC , const char *argV[] )
             // Verify if can exit....
             if( samson_connector->getNumInputItems() == 0 )
                 if( samson_connector->getOutputConnectionsSize() == 0 )                 // Check no pending data to be send....
-                    LM_X(0, ("Not more inputs and no pending data to be sent"));
+                    LM_X(0, ("Finish correctly. No more inputs data"));
             
             usleep(100000);
         }

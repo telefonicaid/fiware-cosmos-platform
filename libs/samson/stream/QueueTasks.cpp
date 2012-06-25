@@ -734,6 +734,13 @@ namespace samson {
             }
             else
             {
+                // Exception to send logs
+                if( output == (int) streamOperation->output_queues.size() )
+                {
+                    sendBufferToQueue( buffer , outputWorker , au::str("log_%s", streamOperation->name.c_str() ) );
+                    return;
+                }
+
                 sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues[output] );
             }
         }

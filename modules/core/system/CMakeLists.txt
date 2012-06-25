@@ -97,6 +97,10 @@ if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
+#Common inlcude 
+include_directories("/usr/local/include/json")
+include_directories("/usr/include/json")
+
 # Include directory pointing to current dir and /usr/local/include
 IF (SVN_BUILD)
     include_directories("${PROJECT_SOURCE_DIR}/libs")
@@ -118,11 +122,11 @@ include_directories( "$ENV{SAMSON_HOME}/include" )
 link_directories( "$ENV{SAMSON_HOME}/lib" )
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES} ${AUX_HEADERS}  )
-TARGET_LINK_LIBRARIES( ${MODULE_NAME}  samson_system lm au )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME}  samson_system lm au json )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)
 INSTALL(FILES ${HEADERS} DESTINATION include/samson/modules/${MODULE_NAME})
 
 #ADD_EXECUTABLE(system_test ${AUX_HEADERS} ${SOURCES_TEST} ${SOURCES} ${HEADERS})
-#TARGET_LINK_LIBRARIES(system_test samson_system lm au )
+#TARGET_LINK_LIBRARIES(system_test samson_system lm au json )
 

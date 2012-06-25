@@ -19,8 +19,8 @@ namespace system{
 	class parse : public samson::Parser
 	{
         
-        samson::system::Value key;
-        samson::system::Value value;
+        samson::system::ValueContainer keyContainer;
+        samson::system::ValueContainer valueContainer;
         
         // Collection of filters to execute for every key-value
         FilterCollection filters_collection;
@@ -46,7 +46,7 @@ namespace system{
             line = (char *) malloc( 20000 );
             
             // By default, value is 1
-            value = 1;
+            valueContainer.value->set_double( 1 );
             
             // Setup the process chain...
             std::string command =  environment->get( "command" ,  "" );
@@ -77,18 +77,18 @@ namespace system{
                 line[line_pos] = '\0';
                 
                 // Set the key with the new string
-                key.set_string( line );
+                keyContainer.value->set_string( line );
                 
                 
                 if( filters_collection.get_num_filters() > 0 )
                 {
-                    KeyValue kv( &key, &value );
+                    KeyValue kv( keyContainer.value, valueContainer.value );
                     filters_collection.run( kv );
                 }
                 else
                 {                   
                     //Emit the parsed key value
-                    writer->emit( 0 , &key , &value );
+                    writer->emit( 0 , keyContainer.value , valueContainer.value );
                 }
             }
 		}

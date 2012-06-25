@@ -94,6 +94,10 @@ namespace samson{
             {
                 return new FilterParserWords();
             }
+            else if ( token->content == "json" )
+            {
+                return new FilterJSONLine();
+            }
             else if ( token->content == "xml_element" )
             {
                 // Parse kind of filter

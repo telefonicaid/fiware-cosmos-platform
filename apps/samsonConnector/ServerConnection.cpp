@@ -14,7 +14,11 @@ namespace samson {
         // ---------------------------------
         
         ConnectionItem::ConnectionItem( Channel* _channel , ConnectionType _type , std::string _host , int _port  )
-        : Item( _channel , _type, au::str("Connection to %s:%d" , _host.c_str() , _port) ) 
+        : Item( _channel 
+               , _type
+               , au::str("Connection to %s:%d" , _host.c_str() , _port) 
+               , au::str("CONNECTION(%s:%d)" , _host.c_str() , _port) 
+               ) 
         {
             host = _host;
             port = _port;
@@ -76,7 +80,7 @@ namespace samson {
 
         
         // Constructor & Destructor
-        StdinItem::StdinItem( Channel* _channel ) : Item( _channel , connection_input , "stdin" ) 
+        StdinItem::StdinItem( Channel* _channel ) : Item( _channel , connection_input , "stdin" , "STDIN" ) 
         {
             // Add connection
             add( new FileDescriptorConnection( this , connection_input , "stdin" , new au::FileDescriptor( "stdin" , 0 ) ) );
@@ -109,7 +113,7 @@ namespace samson {
         // ---------------------------------
         
         // Constructor & Destructor
-        StdoutItem::StdoutItem( Channel* _channel ) : Item( _channel , connection_output , "stdout" ) 
+        StdoutItem::StdoutItem( Channel* _channel ) : Item( _channel , connection_output , "stdout" , "STDOUT" ) 
         {
             // Add connection
             add( new FileDescriptorConnection( this , connection_output , "stdout" , new au::FileDescriptor( "stdout" , 1 ) ) );

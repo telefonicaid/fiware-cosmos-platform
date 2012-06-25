@@ -131,6 +131,101 @@ namespace au {
         
     };
     
+
+    // Funciton to execute the Thread::run()
+    void* run_Thread( void* p );
+    
+    
+    // Class encapsulating a thread
+    // 
+    // This thread is implemented in method run()
+    //
+    // Method run should return "quickly" after method cancel_thread is executed in a paralel thread
+    // Method thread_should_quit() can be executed inside run() to check if I have to finish
+    
+    class Thread
+    {
+        pthread_t t;
+        bool pthread_running;
+        bool stoping; // Flag to indicate 
+        
+        friend void* run_Thread( void* p );
+        
+        std::string name_;
+        
+    public:
+        
+        Thread( std::string name )
+        {
+            // Default values
+            stoping = false;
+            pthread_running = false;
+            name_ = name;
+            
+        }
+        void start_thread()
+        {
+            if( pthread_running )
+                return; // Already running
+
+            // Mark as running
+            pthread_running = true;
+            
+            // Run the thread in background
+            au::ThreadManager::shared()->addThread(name_, &t, NULL, run_Thread,this);
+        }
+        
+        virtual void run()=0; // Main function of the thread to be overloaded
+        virtual void cancel_thread(){}; // Paralel cancel function ( to wake up the thread for instance )
+        
+        void stop_thread()
+        {
+            stoping = true;
+            if( !pthread_running )
+                return;
+            
+            if ( pthread_self() == t )
+            {
+                LM_W(("Not possible to stop a thread from itself"));
+                return;
+            }
+            
+            // Set the flag
+            stoping = true;
+            
+            // Execute cutom cancel cunfion
+            cancel_thread();
+            
+            // Wait until thread is finished
+            au::Cronometer c;
+            while ( true )
+            {
+                if( !pthread_running )
+                    return;
+                
+                if( c.diffTimeInSeconds() > 2 )
+                {
+                    LM_W(("Too mush time waiting for thread %s" , name_.c_str() ));
+                    c.reset();
+                }
+                
+                usleep(100000);
+            }
+        }
+        
+        bool thread_should_quit()
+        {
+            return stoping;
+        }
+        
+        bool isRunning()
+        {
+            return pthread_running;
+        }
+        
+    };
+    
+    
 }
 
 #endif

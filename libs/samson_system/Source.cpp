@@ -62,6 +62,16 @@ namespace samson {
                     }
                     else
                         source_components.push_back(tmp);
+                    
+                    // Read the mandatory "," if it is not the end of the vector
+                    if( !token_vector->checkNextTokenIs("]") )
+                        if( !token_vector->popNextTokenIfItIs(",") )
+                        {
+                            error->set(  au::str("Wrong map format (expected ',' instead of %s)" , token_vector->getNextTokenContent().c_str() ) );
+                            source_components.clearVector();
+                            return NULL;
+                        }
+
                 }
             }
             
@@ -102,7 +112,7 @@ namespace samson {
                     
                     if( !token_vector->popNextTokenIfItIs(":") )
                     {
-                        error->set("Wrong map format");
+                        error->set(  au::str("Wrong map format (expected ':' instead of %s)" , token_vector->getNextTokenContent().c_str() ) );
                         source_keys.clearVector();
                         source_values.clearVector();
                         return NULL;
@@ -119,6 +129,17 @@ namespace samson {
                     // Accumulate components for this map
                     source_keys.push_back(tmp_key);
                     source_values.push_back(tmp_value);
+                    
+                    // Read the mandatory "," if it is not the end of the map
+                    if( !token_vector->checkNextTokenIs("}") )
+                        if( !token_vector->popNextTokenIfItIs(",") )
+                        {
+                            error->set(  au::str("Wrong map format (expected ',' instead of %s)" , token_vector->getNextTokenContent().c_str() ) );
+                            source_keys.clearVector();
+                            source_values.clearVector();
+                            return NULL;
+                        }
+
                 }
                 
                 

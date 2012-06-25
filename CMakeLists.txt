@@ -94,6 +94,8 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 include_directories("/opt/local/include")
 include_directories("/usr/include")
+include_directories("/usr/local/include/json")
+include_directories("/usr/include/json")
 
 #
 # Library directories

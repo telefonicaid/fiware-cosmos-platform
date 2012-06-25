@@ -53,6 +53,9 @@ namespace engine {
         Buffer* front();
         void pop();
 
+        // Extract directly the next buffer and include them in a BufferContainer
+        void pop( engine::BufferContainer * container );
+        
         // Get total size included in the list
         size_t getTotalSize();
         

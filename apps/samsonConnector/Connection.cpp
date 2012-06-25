@@ -16,8 +16,8 @@ namespace samson {
             item = _item;
             name = _name;
             
-            // Block to process all input buffers
-            buffer_processor = new BufferProcessor( item->channel );
+            // Buffer processor created on demand ( first time )
+            buffer_processor = NULL;
             
             removing = false;
             
@@ -25,7 +25,8 @@ namespace samson {
         
         Connection::~Connection()
         {
-            delete buffer_processor;
+            if( buffer_processor )
+                delete buffer_processor;
         }
         
         void Connection::report_output_size( size_t size )
@@ -44,8 +45,8 @@ namespace samson {
         
         void Connection::getNextBufferToSent( engine::BufferContainer * container )
         {
+            // Extract buffer from the list
             buffer_list.pop( container );
-            
             
             // Report output traffic ( as it is really exported....)
             engine::Buffer* buffer = container->getBuffer();
@@ -59,6 +60,10 @@ namespace samson {
             if( !buffer )
                 return;
             
+            // Create buffer processor to process all input buffers
+            if( !buffer_processor )
+                buffer_processor = new BufferProcessor( item->channel );
+
             // Report input block
             report_input_size( buffer->getSize() );
             

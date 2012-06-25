@@ -18,6 +18,7 @@ namespace samson
   
         class Connection;
         class Channel;
+        class InputInterChannelConnection;
         
         class Item
         {
@@ -26,9 +27,10 @@ namespace samson
 
             // Name describing this item
             std::string name;
+            std::string short_name_; // Quick name for the channel summary
             
             // Collection of connections
-            int next_id;
+            int next_id; // Next identifier
             au::map<int, Connection> connections;
             
             // Statistic information
@@ -44,19 +46,20 @@ namespace samson
             friend class Channel;
             friend class SamsonConnector;
             
-            // Bool removing
+            // Bool removing falg ( used when this item is being removed )
             bool removing;
             
         public:
 
-            Item ( Channel * _channel , ConnectionType _type , std::string _name );
+            Item ( Channel * _channel , ConnectionType _type , std::string _name , std::string short_name );
             virtual ~Item(){}
             
             std::string getName()
             {
                 return name;
             }
-            
+
+            // Add a connection
             void add( Connection* Connection );
             
             void push( engine::Buffer * buffer );
@@ -84,12 +87,17 @@ namespace samson
             // Check if if it is possible to remove
             virtual bool canBeRemoved()=0;
 
-            
             // Set removing
             void set_removing();
             
             // Check if we are in removing state
             bool isRemoving();
+          
+            // Check if we accept a particular connection
+            virtual bool accept( InputInterChannelConnection* connection )
+            {
+                return false;
+            }
             
             
         };

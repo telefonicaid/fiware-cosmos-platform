@@ -12,6 +12,8 @@
 namespace samson{
     namespace system{
 
+        /*
+        
         // ---------------------------------------------
         // ValueList
         // ---------------------------------------------
@@ -356,7 +358,7 @@ namespace samson{
                     if( value.get_vector_size() != 2 )
                         continue;
                     
-                    int counter = value.get_value_from_vector(1)->getDouble();
+                    int counter = value.get_value_from_vector(1)->get_double();
                     
                     // Push to the list
                     list->push( value.get_value_from_vector(0) , counter );
@@ -394,7 +396,7 @@ namespace samson{
                 for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
                 {
                     value.parse( inputs[0].kvs[i]->value );
-                    double tmp =  value.getDouble();
+                    double tmp =  value.get_double();
                     total += tmp;
                 }
                 
@@ -429,7 +431,7 @@ namespace samson{
                 for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
                 {
                     value.parse( inputs[0].kvs[i]->value );
-                    double tmp =  value.getDouble();
+                    double tmp =  value.get_double();
                     total += tmp;
                 }
                 total /= (double) inputs[0].num_kvs;
@@ -500,21 +502,21 @@ namespace samson{
                     if( value.isVector() && (value.get_vector_size() == 2) )
                     {
                         // Recover previous 
-                        total = value.get_value_from_vector(0)->getDouble();
+                        total = value.get_value_from_vector(0)->get_double();
                         
                         // Forgetting factor 
-                        size_t time_diff = t - value.get_value_from_vector(1)->getDouble();
+                        size_t time_diff = t - value.get_value_from_vector(1)->get_double();
                         total = total * pow( factor  , time_diff );
                     }
                     
-                    double tmp =  value.getDouble();
+                    double tmp =  value.get_double();
                     total += tmp;
                 }                
                 
                 for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
                 {
                     value.parse( inputs[0].kvs[i]->value );
-                    double tmp =  value.getDouble();
+                    double tmp =  value.get_double();
                     total += tmp;
                 }
 
@@ -597,13 +599,13 @@ namespace samson{
             
             void push( Value* value )
             {
-                double new_num = value->get_value_from_map("counter")->getDouble();
+                double new_num = value->get_value_from_map("counter")->get_double();
                 
                 // Push a new element
                 std::list<system::Value*>::iterator it_values;
                 for( it_values = values.begin() ; it_values != values.end() ; it_values ++ )
                 {
-                    double num = (*it_values)->get_value_from_map("counter")->getDouble();
+                    double num = (*it_values)->get_value_from_map("counter")->get_double();
                     if( new_num > num )
                     {
                         values.insert(it_values, copy(value));
@@ -681,9 +683,9 @@ namespace samson{
             void update_counter( system::Value * value )
             {
                 // Forgetting factor 
-                size_t time_diff = current_time - value->get_value_from_map("timestamp")->getDouble();
+                size_t time_diff = current_time - value->get_value_from_map("timestamp")->get_double();
                 system::Value * counter_value = value->get_value_from_map("counter");
-                double previous_counter = counter_value->getDouble();
+                double previous_counter = counter_value->get_double();
                 double counter = previous_counter * pow( factor  , time_diff );
                 
                 counter_value->set_double(counter );
@@ -718,7 +720,7 @@ namespace samson{
                     update_counter(&value);
 
                     // Counter to accumulate inputs 
-                    total = value.get_value_from_map("counter")->getDouble();
+                    total = value.get_value_from_map("counter")->get_double();
                     
                 }
                 else
@@ -741,7 +743,7 @@ namespace samson{
                     tmp_value.parse( inputs[0].kvs[i]->value );
                     if( tmp_value.isNumber() )
                     {
-                        double tmp =  tmp_value.getDouble();
+                        double tmp =  tmp_value.get_double();
                         total += tmp;
                     }
                 }
@@ -808,9 +810,9 @@ namespace samson{
             void update_counter( system::Value * value )
             {
                 // Forgetting factor 
-                size_t time_diff = current_time - value->get_value_from_map("timestamp")->getDouble();
+                size_t time_diff = current_time - value->get_value_from_map("timestamp")->get_double();
                 system::Value * counter_value = value->get_value_from_map("counter");
-                counter_value->set_double( counter_value->getDouble() * pow( factor  , time_diff ) );
+                counter_value->set_double( counter_value->get_double() * pow( factor  , time_diff ) );
             }
             
             void run( samson::KVSetStruct* inputs , samson::KVWriter *writer  )
@@ -954,6 +956,7 @@ namespace samson{
             }
             
         };
+         */
     }
 }
 

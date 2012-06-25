@@ -274,13 +274,14 @@ namespace au {
                 }
                 
                 // Report timeout if max seconds is excedded
-                if( cronometer.diffTime() > max_seconds )
-                {
-                    if ( read_size )
-                        *read_size = tot;
-                    
-                    return Timeout;
-                }
+                if( max_seconds > 0 )
+                    if( cronometer.diffTime() > max_seconds )
+                    {
+                        if ( read_size )
+                            *read_size = tot;
+                        
+                        return Timeout;
+                    }
                 
             } while ( s!= OK );
             

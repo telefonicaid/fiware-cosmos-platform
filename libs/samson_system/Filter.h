@@ -40,6 +40,7 @@ namespace samson{
             }
             
             virtual void run( KeyValue kv )=0;
+            
             std::string str()
             {
                 std::string output = _str();
@@ -86,6 +87,52 @@ namespace samson{
             
             
         };
+
+        // ----------------------------------------------------------------------------
+        // FilterJSON : each line is analised as JSON and used as key ( value = void )
+        // ----------------------------------------------------------------------------
+        
+        class FilterJSONLine : public Filter
+        {
+            system::ValueContainer new_key;
+            system::ValueContainer new_value;
+            
+            KeyValue output_kv;
+        public:
+            
+            FilterJSONLine( )
+            {
+                // Value is always void at the output
+                new_value.value->set_as_void();
+                
+                // Prepare output key-value
+                output_kv.key = new_key.value;
+                output_kv.value = new_value.value;
+            }
+            
+            virtual void run( KeyValue kv )
+            {
+                // Input key expected to be a string
+                if( !kv.key )
+                    return;
+                
+                if( !kv.key->isString() )
+                    return;
+                
+                // Set the new key reading json string
+                new_key.value->setFromJSONString( kv.key->c_str() );
+
+                // Emit the output key-value to the next element in the chain
+                if( next )
+                    next->run( output_kv );
+            }
+            
+            std::string _str()
+            {
+                return "FilterJSONLine";
+            }
+            
+        };
         
         // --------------------------------------------------------
         // FilterXMLElement
@@ -95,7 +142,7 @@ namespace samson{
         {
             std::string element_name;
 
-            system::Value new_key;
+            system::ValueContainer new_key;
             samson::system::KeyValue _kv;
 
         public:
@@ -129,7 +176,7 @@ namespace samson{
             virtual void run( KeyValue kv )
             {
                 // Prepare output
-                _kv.key = &new_key;
+                _kv.key = new_key.value;
                 _kv.value = kv.value;
                 
                 if(!kv.key)
@@ -172,7 +219,7 @@ namespace samson{
                     {
                         if( prefix == "" )
                             prefix = "content";
-                        new_key.add_value_to_map( prefix )->set_string( xml_node.value() );
+                        new_key.value->add_value_to_map( prefix )->set_string( xml_node.value() );
                         return;
                     }
 
@@ -198,7 +245,7 @@ namespace samson{
                 //printf("Add %s %s\n" , xml_node.name() , xml_node.value()  );
                 
                 // Init new key
-                new_key.set_as_map();
+                new_key.value->set_as_map();
                 
                 for( pugi::xml_node_iterator n = xml_node.begin() ; n != xml_node.end() ; n++)
                     add( *n , "" );
@@ -355,7 +402,7 @@ namespace samson{
             char separator;
             
             // Key key used to "emit" to the next filter
-            samson::system::Value key;
+            samson::system::ValueContainer keyContainer;
             
             FilterParser()
             {
@@ -450,12 +497,12 @@ namespace samson{
                 au::StringComponents string_components;
                 string_components.process_line( line.c_str() , line.length() , separator );
                 
-                key.set_as_vector();
+                keyContainer.value->set_as_vector();
 
                 if( fields.size() == 0 )
                 {
                     for ( size_t i = 0 ; i < string_components.components.size() ; i++ )
-                        key.add_value_to_vector()->set_string( string_components.components[i] );
+                        keyContainer.value->add_value_to_vector()->set_string( string_components.components[i] );
                 }
                 else
                 {
@@ -463,7 +510,7 @@ namespace samson{
                     {
                         if( i < fields.size() )
                         {
-                            samson::system::Value *v = key.add_value_to_vector();
+                            samson::system::Value *v = keyContainer.value->add_value_to_vector();
                             v ->set_string( string_components.components[i] );
                             
                             switch (fields[i]) 
@@ -481,7 +528,7 @@ namespace samson{
                 // Run next filter
                 if( next )
                 {
-                    KeyValue next_kv( &key , kv.value );
+                    KeyValue next_kv( keyContainer.value , kv.value );
                     next->run( next_kv );
                 }
                 
@@ -502,7 +549,7 @@ namespace samson{
         class FilterParserWords : public Filter
         {
             // Key key used to "emit" to the next filter
-            samson::system::Value key;
+            samson::system::ValueContainer keyContainer;
             
         public:
             
@@ -513,7 +560,7 @@ namespace samson{
                     return ;
 
                 // Next key-value ready to be emitted
-                KeyValue next_kv( &key , kv.value );
+                KeyValue next_kv( keyContainer.value , kv.value );
                 
                 // Line to parse
                 std::string line = kv.key->get_string();
@@ -529,7 +576,7 @@ namespace samson{
                         {
                             // New word
                             std::string word = line.substr(pos,i-pos);
-                            key.set_string(word);
+                            keyContainer.value->set_string(word);
                             
                             // Run next filter
                             if( next )
@@ -549,7 +596,7 @@ namespace samson{
 				if( pos < line.length() )
 				{
 				   std::string word = line.substr(pos);
-				   key.set_string(word);
+				   keyContainer.value->set_string(word);
 				   
 				   // Run next filter
 				   if( next )
@@ -573,7 +620,7 @@ namespace samson{
         class FilterParserChars : public Filter
         {
             // Key key used to "emit" to the next filter
-            samson::system::Value key;
+            samson::system::ValueContainer keyContainer;
             
         public:
             
@@ -584,7 +631,7 @@ namespace samson{
                     return ;
                 
                 // Next key-value ready to be emitted
-                KeyValue next_kv( &key , kv.value );
+                KeyValue next_kv( keyContainer.value , kv.value );
                 
                 // Line to parse
                 std::string line = kv.key->get_string();
@@ -594,7 +641,7 @@ namespace samson{
                 {
                     // New letter
                     std::string letter = line.substr(i,1);
-                    key.set_string(letter);
+                    keyContainer.value->set_string(letter);
                     
                     // Run next filter
                     if( next )
@@ -634,7 +681,7 @@ namespace samson{
                 if( !v )
                     return false;
 
-                return ( v->getDouble() != 0 );
+                return ( v->get_double() != 0 );
             }
             
             void run( KeyValue kv )
@@ -661,8 +708,8 @@ namespace samson{
             Source* source_for_key;
             Source* source_for_value;
             
-            samson::system::Value key;
-            samson::system::Value value;
+            samson::system::ValueContainer keyContainer;
+            samson::system::ValueContainer valueContainer;
 
         public:
             
@@ -699,12 +746,12 @@ namespace samson{
                 if( !value_for_value )
                     return;
                 
-                key.copyFrom( value_for_key );
-                value.copyFrom( value_for_value );
+                keyContainer.value->copyFrom( value_for_key );
+                valueContainer.value->copyFrom( value_for_value );
 
                 // Run next element
                 if( next )
-                    next->run( KeyValue( &key , &value ) );
+                    next->run( KeyValue( keyContainer.value , valueContainer.value ) );
             }
         };
 

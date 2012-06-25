@@ -8,11 +8,13 @@ namespace samson
 {
     namespace connector
     {
-        Item::Item ( Channel * _channel , ConnectionType _type , std::string _name ) : token("connector::Item")
+        Item::Item ( Channel * _channel , ConnectionType _type , std::string _name , std::string short_name ) 
+        : token("connector::Item")
         {
             channel = _channel;
             type = _type;
             name = _name;
+            short_name_ = short_name;
             
             next_id = 0;
             

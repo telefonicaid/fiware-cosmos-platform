@@ -5,7 +5,7 @@ namespace samson
 {
     namespace system
     {
- 
+ /*
         ValueList::ValueList( int _max_num_elements )
         {
             max_num_elements = _max_num_elements;
@@ -18,7 +18,8 @@ namespace samson
                 values[i] = new Value();
                 counters[i] = 0; // Init counter to 0
             }
+  
         }
-        
+  */      
     }
 }

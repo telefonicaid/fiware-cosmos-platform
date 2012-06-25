@@ -177,4 +177,14 @@ namespace au {
     }
 
     
+    void* run_Thread( void* p )
+    {
+        Thread* t = (Thread*)p;
+        t->run();
+        t->pthread_running = false;
+        return NULL;
+    }
+
+    
+    
 }

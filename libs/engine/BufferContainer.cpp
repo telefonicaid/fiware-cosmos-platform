@@ -108,6 +108,21 @@ namespace engine {
         return total;
     }
     
+    void BufferListContainer::pop( engine::BufferContainer * container )
+    {
+        // Get the ponter to the next buffer
+        engine::Buffer* buffer = front();
+        if( !buffer )
+            return;
+        
+        // Include the buffer in the container
+        container->setBuffer( buffer );
+        
+        // Real pop from this list
+        pop(); 
+        
+    }
+    
     
     void BufferListContainer::extractFrom( BufferListContainer* other , size_t maximum_size )
     {

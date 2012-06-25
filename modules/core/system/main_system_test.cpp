@@ -68,7 +68,7 @@ void test_selialization( double v )
     if( !value2.isNumber() )
         printf("Error serialiazing %f: Not a value recovered \n" , v );
 
-    double v2 = value2.getDouble();
+    double v2 = value2.get_double();
     if( v != v2 )
         printf("Error serialiazing %f: Recovered %f \n" , v , v2 );
         

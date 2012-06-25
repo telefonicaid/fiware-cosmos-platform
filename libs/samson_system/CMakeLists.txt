@@ -6,7 +6,11 @@ Source.h
 SourceFunction.h
 ValueReduce.h
 smaz.h
-Process.h
+ValueContainer.h
+ValueVector.h
+ProcessComponent.h
+TopProcessComponent.h
+ProcessComponentManager.h
 )
 
 SET (SOURCES
@@ -17,13 +21,18 @@ Source.cpp
 SourceFunction.cpp
 ValueReduce.cpp
 smaz.cpp
-Process.cpp
+ValueContainer.cpp
+ValueVector.cpp
+ProcessComponent.cpp
+TopProcessComponent.cpp
+ProcessComponentManager.cpp
 )
 
 # Include directories
 # -----------------------------------------------------------------
 include_directories("${PROJECT_SOURCE_DIR}/libs")
-
+include_directories("/usr/local/include/json")
+include_directories("/usr/include/json")
 
 # Library declaration
 # -----------------------------------------------------------------

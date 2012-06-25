@@ -16,18 +16,15 @@ namespace samson
         class Item;
         class BufferProcessor;
         
-        // Connection
-        // ------------------------------------------
-        
         class Connection
         {
-            BufferProcessor* buffer_processor; // Processor for input buffers ( only in input )
-            BufferList buffer_list;           // List of buffers to be sent ( in output connections )
+            BufferProcessor* buffer_processor;     // Processor for input buffers ( only in input )
+            BufferList buffer_list;                // List of buffers to be sent ( in output connections )
 
-            std::string name;                 // Description name
-            ConnectionType type;              // Type of item ( input or output )
-            au::Cronometer cronometer;        // Global cronometer
-            Item * item;                      // My item            
+            std::string name;                      // Description name
+            ConnectionType type;                   // Type of item ( input or output )
+            au::Cronometer cronometer;             // Global cronometer
+            Item * item;                           // My item            
                         
             TrafficStatistics traffic_statistics;  // Information about input & output
 

@@ -11,7 +11,6 @@
 
 // samson_system library
 #include "samson_system/Value.h"
-#include "samson_system/ValueReduce.h"
 
 namespace samson{
 namespace system{
@@ -25,9 +24,6 @@ namespace system{
 	class reduce : public samson::Reduce
 	{
         
-        std::string command;
-        ValueReduce * operation;
-
 	public:
 
 
@@ -43,30 +39,10 @@ namespace system{
 
 		void init( samson::KVWriter *writer )
 		{
-            // Setup the process chain...
-            command =  environment->get( "command" ,  "" );
-            
-			if( command == "" )
-			{
-                tracer->setUserError( "Environment variable command not specified. Please specify with env:command sum,average,most_popular..." );
-                return;
-			}
-            
-            ValueReduceManager manager("reduce");
-            operation = manager.getInstance( command );
-            
-            if( !operation )
-            {
-                tracer->setUserError( au::str("Non valid command '%s' Available commands: %s" , command.c_str() , manager.getListOfCommands().c_str() ) );
-                return;
-            }
-            
 		}
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
-            // Run selected operation
-            operation->run( inputs , writer );
 		}
 
 		void finish( samson::KVWriter *writer )

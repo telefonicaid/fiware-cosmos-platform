@@ -11,6 +11,7 @@
 
 #include <samson/module/samson.h>
 #include "samson_system/Value.h"
+#include "samson_system/ValueContainer.h"
 #include "samson_system/KeyValue.h"
 #include "samson_system/Source.h"
 
@@ -79,7 +80,7 @@ namespace samson{
         {
 
             // output for vector/map based outputs
-            samson::system::Value one_to_one_value; 
+            samson::system::ValueContainer value_container; 
 
         public:
             
@@ -107,7 +108,7 @@ namespace samson{
                 if( source_value->isVector() )
                 {
                     // Create a vector transforming individual component
-                    one_to_one_value.set_as_vector();
+                    value_container.value->set_as_vector();
                     for( size_t i = 0 ; i < source_value->get_vector_size() ; i++ )
                     {
                         // value component
@@ -117,15 +118,15 @@ namespace samson{
                         if( !output_component_value )
                             return  NULL; // If one of the components can not be transformed, not return anything
  
-                        one_to_one_value.add_value_to_vector()->copyFrom( output_component_value );
+                        value_container.value->add_value_to_vector()->copyFrom( output_component_value );
                     }
-                    return &one_to_one_value;
+                    return value_container.value;
                 }
                 else if( source_value->isMap() )
                 {
                     // Create a map transforming individual component
                     
-                    one_to_one_value.set_as_map();
+                    value_container.value->set_as_map();
                     std::vector<std::string> keys = source_value->get_keys_from_map();
                     for( size_t i = 0 ; i < keys.size() ; i++ )
                     {
@@ -136,9 +137,9 @@ namespace samson{
                         if( !output_component_value )
                             return  NULL; // If one of the components can not be transformed, not return anything
                         
-                        one_to_one_value.add_value_to_map( keys[i] )->copyFrom( output_component_value );
+                        value_container.value->add_value_to_map( keys[i] )->copyFrom( output_component_value );
                     }
-                    return &one_to_one_value;
+                    return value_container.value;
                     return NULL;
                 }
                 else
@@ -187,7 +188,7 @@ namespace samson{
         {
             
             char *buffer;
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
         public:
             
@@ -216,9 +217,9 @@ namespace samson{
                 
                 Value::SerialitzationCode code = (Value::SerialitzationCode) buffer[0];
 
-                value = Value::strSerialitzationCode( code );
+                value_container.value->set_string( Value::strSerialitzationCode( code ) );
                 
-                return &value;
+                return value_container.value;
                 
             }            
         };  
@@ -227,7 +228,7 @@ namespace samson{
         {
             
             char *buffer;
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
         public:
             
@@ -254,9 +255,9 @@ namespace samson{
                 // Serialize in buffer
                 int l = source_value->serialize( buffer );
                 
-                value.set_double(l);
+                value_container.value->set_double(l);
                 
-                return &value;
+                return value_container.value;
                 
             }            
         };  
@@ -264,7 +265,7 @@ namespace samson{
         class SourceFunction_getType : public SourceFunction
         {
             
-            samson::system::Value value; 
+            samson::system::ValueContainer value_containter; 
             
         public:
             
@@ -283,17 +284,16 @@ namespace samson{
                     return NULL;
                 
                 // Get the string describing the type
-                value = source_value->strType();
+                value_containter.value->set_string( source_value->strType() );
                 
-                return &value;
-                
+                return value_containter.value;
             }            
         };          
         
         class SourceFunctionisAlpha : public SourceFunction
         {
             
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
         public:
             
@@ -320,13 +320,13 @@ namespace samson{
                 for ( size_t i = 0 ; i < line.length() ; i++ )
                     if( !isalpha( line[i] ) )
                     {
-                        value.set_double(0);
-                        return &value;
+                        value_container.value->set_double(0);
+                        return value_container.value;
                     }
                 
                 // Return true
-                value.set_double(1);
-                return &value;
+                value_container.value->set_double(1);
+                return value_container.value;
             }            
         };
         
@@ -338,7 +338,7 @@ namespace samson{
         
         class SourceFunction_string : public SourceFunction
         {
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
         public:
             
@@ -361,8 +361,8 @@ namespace samson{
                         return NULL;
                     str.append( source_value->get_string() );
                 }
-                value.set_string(str);
-                return &value;
+                value_container.value->set_string(str);
+                return value_container.value;
             }            
         };
 
@@ -375,7 +375,7 @@ namespace samson{
         
         class SourceFunction_substr : public SourceFunction
         {
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
         public:
             
@@ -416,20 +416,20 @@ namespace samson{
                 
                 
                 std::string input  = source_value->get_string();
-                size_t pos = pos_value->getDouble();
+                size_t pos = pos_value->get_double();
                 
                 if( length_value == NULL )
                 {
                     std::string output = input.substr( pos );
-                    value.set_string( output );
-                    return &value;
+                    value_container.value->set_string( output );
+                    return value_container.value;
                 }
                 else
                 {
-                    size_t length = length_value->getDouble();
+                    size_t length = length_value->get_double();
                     std::string output = input.substr( pos , length );
-                    value.set_string( output );
-                    return &value;
+                    value_container.value->set_string( output );
+                    return value_container.value;
                 }
             }            
         };        
@@ -437,7 +437,7 @@ namespace samson{
         
         class SourceFunction_find : public SourceFunction
         {
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
         public:
             
@@ -464,13 +464,13 @@ namespace samson{
 
                 if( pos == std::string::npos )
                 {
-                    value = -1;
-                    return &value;
+                    value_container.value->set_double( -1 );
+                    return value_container.value;
                 }
                 else
                 {
-                    value = pos;
-                    return &value;
+                    value_container.value->set_double( pos );
+                    return value_container.value;
                 }
                 
             }            
@@ -484,7 +484,7 @@ namespace samson{
         
         class SourceFunction_number : public SourceFunction
         {
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
         public:
             
@@ -504,8 +504,8 @@ namespace samson{
                 if( !source_value )
                     return NULL;
 
-                value = source_value->getDouble();
-                return &value;
+                value_container.value->set_double( source_value->get_double() );
+                return value_container.value;
             }            
         };
 
@@ -517,7 +517,7 @@ namespace samson{
         
         class SourceFunction_json : public SourceFunction
         {
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
         public:
             
@@ -534,8 +534,8 @@ namespace samson{
                 if( !source_value )
                     return NULL;
                 
-                value.set_string( source_value->strJSON() );
-                return &value;
+                value_container.value->set_string( source_value->strJSON() );
+                return value_container.value;
             }            
         };
 
@@ -547,7 +547,7 @@ namespace samson{
         
         class SourceFunction_str : public SourceFunction
         {
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
         public:
             
@@ -564,8 +564,8 @@ namespace samson{
                 if( !source_value )
                     return NULL;
                 
-                value.set_string( source_value->str() );
-                return &value;
+                value_container.value->set_string( source_value->str() );
+                return value_container.value;
             }            
         };
 
@@ -577,7 +577,7 @@ namespace samson{
         
         class SourceFunction_time : public SourceFunction
         {
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
         public:
             
@@ -588,8 +588,8 @@ namespace samson{
             
             samson::system::Value* get( KeyValue kv )
             {
-                value.set_double( time(NULL) );
-                return &value;
+                value_container.value->set_double( time(NULL) );
+                return value_container.value;
             }            
         };        
         
@@ -599,7 +599,7 @@ namespace samson{
         
         class SourceFunction_strlen : public String_OneToOne_SourceFunction
         {
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
         public:
             
             SourceFunction_strlen() : String_OneToOne_SourceFunction( "strlen" )
@@ -607,8 +607,8 @@ namespace samson{
             }
             samson::system::Value* get_from_string( std::string& input )
             {
-                value.set_double( input.length() );
-                return &value;
+                value_container.value->set_double( input.length() );
+                return value_container.value;
             }
         };
 
@@ -618,7 +618,7 @@ namespace samson{
 
         class SourceFunction_to_lower : public SourceFunction
         {
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
             char *line;
             int max_line_size;
@@ -670,8 +670,8 @@ namespace samson{
 
                 line[input_line_size] = 0;
                 
-                value = line;
-                return &value;
+                value_container.value->set_string( line );
+                return value_container.value;
             }
         };
             
@@ -679,7 +679,7 @@ namespace samson{
         class SourceFunction_match : public SourceFunction
         {
             // Value used to emit output
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
             // Struct to store regular expression
             regex_t preg;
@@ -741,11 +741,11 @@ namespace samson{
 
                 
                 if( c == 0 )
-                    value.set_double(1);
+                    value_container.value->set_double(1);
                 else
-                    value.set_double(0);
+                    value_container.value->set_double(0);
                     
-                return &value;
+                return value_container.value;
             }              
         };
             
@@ -755,7 +755,7 @@ namespace samson{
         
         class SourceFunction_to_upper : public SourceFunction
         {
-            samson::system::Value value; 
+            samson::system::ValueContainer value_container; 
             
             char *line;
             int max_line_size;
@@ -805,8 +805,8 @@ namespace samson{
                     line[i] =  au::iso_8859_to_upper( input_line[i] );
                 line[input_line_size] = 0;
                 
-                value = line;
-                return &value;
+                value_container.value->set_string( line );
+                return value_container.value;
             }            
             
         };

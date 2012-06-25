@@ -1328,7 +1328,10 @@ namespace samson {
 
             if (list.blocks.size() == 0 )
             {
-                command->appendFormatedError( au::str("No data in queue %s" , queue_name.c_str()) );
+                command->appendFormatedError( au::str("No data in queue %s for hashgroup %d (key %s)" 
+                                                      , queue_name.c_str()
+                                                      , hg
+                                                      , reference_key_data_instance->str().c_str() ) );
                 return;
             }
 

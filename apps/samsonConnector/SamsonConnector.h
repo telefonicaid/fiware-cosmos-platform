@@ -16,6 +16,7 @@
 #include "au/network/NetworkListener.h"
 #include "au/network/ConsoleService.h"
 #include "au/network/RESTService.h"
+#include "au/network/NetworkListener.h"
 
 #include "common.h"
 #include "SamsonConnector.h"
@@ -49,6 +50,7 @@
  connection:H:P    Establish a connection to host H port P
  samson:H:Q        Establish a connection to samson at host H and receive from queue Q
  disk:D            Read content from directory D
+ channel           All interchannel connections
  stdin             Standard input ( only in non iterative / deamon )
  
  Outputs
@@ -57,6 +59,7 @@
  connection:H:P    Establish a connection to host H port P
  samson:H:Q        Establish a connection to samson at host H and receive from queue Q
  disk:D            Read content from directory D
+ channel:H:C       Connect to channel "C" at host "H"
  stdout            Standard output ( only in non iterative / deamon )
 
  
@@ -67,26 +70,29 @@ extern bool run_as_daemon;
 extern int sc_console_port;
 extern int sc_web_port;
 
+
 namespace samson 
 {
     namespace connector
     {
         class Channel;
         class SamsonConnectorService;
+        class InputInterChannelConnection;
         
-        class SamsonConnector :  public au::Console , public au::network::RESTServiceInterface
+        class SamsonConnector :  public au::Console
+        , public au::network::RESTServiceInterface 
+        , public au::NetworkListenerInterface
         {
             // List of channels in this samsonConnector
             au::map<std::string, Channel> channels;
 
-            // Mutex protection for channels
+            // Mutex protection for entire data-model in SamsonConnector
             au::Token token;
             
             // Service to accept monitor connection
             SamsonConnectorService* service;
             
             friend class SamsonConnectorService;
-
 
             // General environment
             au::Token token_environment;
@@ -95,6 +101,12 @@ namespace samson
             // REST Interface
             au::network::RESTService *rest_service;
             
+            // Simple listener for interchannel connection
+            au::NetworkListener *inter_channel_listener;
+            
+            // List of connection for interchannel
+            au::list<InputInterChannelConnection> input_inter_channel_connections;
+            
         public:
             
             SamsonConnector();
@@ -102,6 +114,9 @@ namespace samson
             // Init rest interface
             void initRESTInterface();
 
+            // Init listener to receive inter channel connections
+            void initInterChannelInteface();
+            
             //Add service to accept monitor connection
             void add_service();
             
@@ -112,6 +127,7 @@ namespace samson
             std::string getPrompt();
             void evalCommand( std::string command );
             void autoComplete( au::ConsoleAutoComplete* info );
+            void autoCompleteWithChannelNames( au::ConsoleAutoComplete* info );
             
             // Review
             void review();
@@ -137,10 +153,16 @@ namespace samson
             // au::network::RESTServiceInterface
             void process( au::network::RESTServiceCommand* command );
 
+            // au::network::NetworkListenerInterface
+            virtual void newSocketConnection( au::NetworkListener* listener 
+                                             , au::SocketConnection * socket_connetion );
+
             // Write errors depending on setup ( interactive, deamon, normal )
             void writeError( std::string message );
             
-            
+            // Select channel for an interchannel connection
+            void select_channel( InputInterChannelConnection* connection , std::string target_channel , au::ErrorManager *error );
+
         private:
             
             au::tables::Table* getChannelsTable();
@@ -148,10 +170,13 @@ namespace samson
             au::tables::Table* getItemsTableForChannel( std::string channel );
             au::tables::Table* getConnectionsTable();
             au::tables::Table* getConnectionsTableForChannel( std::string channel );
+
+            au::tables::Table* getInputInterChannelConnections();
             
             
         };
-        
+
+
         // Class to accept connection to monitor
         class SamsonConnectorService : public au::network::ConsoleService
         {

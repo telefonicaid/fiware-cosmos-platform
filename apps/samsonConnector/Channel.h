@@ -17,19 +17,23 @@ namespace samson {
             
             // Mutex protection
             au::Token token;
+         
+            // Name of this channel
+            std::string name_;
             
-            // All items included in this channel
-            // listeners, connections , disk connection, samson connections, etc... 
+            // Name of the splitters ( process on all inputs for this channel )
+            std::string splitter_; 
+            
+            // All items ( adapters ) included in this channel
             au::map<int, Item> items;
-            
-            // id for the next item
-            int items_id; 
+            int items_id;                 // id for the next item
             
             // Input & Output statistics
             TrafficStatistics traffic_statistics;
+
+            // Pointer to the global connector
+            SamsonConnector * connector_;
             
-            SamsonConnector * connector;
-            std::string name;
             
             friend class Connection;
             friend class SamsonConnector;
@@ -37,23 +41,23 @@ namespace samson {
         public:
             
             // Constructor
-            Channel( SamsonConnector * _connector , std::string _name );
-            
-            // Generic command line interface to modify this channel
-            void process_command( CommandLine* command , au::ErrorManager * error );
+            Channel( SamsonConnector * connector , std::string name , std::string splitter );
             
             // General review to check if there are connections to be closed
             void review();
             
             // Common method to push data to all output connections ( from all items at input )
             void push( engine::Buffer * buffer );
-
+            
             // Information
             int getNumItems();
             int getNumInputItems();
             int getNumOutputItems();
             int getNumConnections();
             std::string getName();
+            std::string getSplitter();
+            std::string getInputsString();
+            std::string getOutputsString();
             
         private:
             

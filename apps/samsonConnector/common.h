@@ -11,6 +11,8 @@
 // ----------------------------------------------------------------
 #define SC_CONSOLE_PORT 5467
 #define SC_WEB_PORT     9999
+#define SAMSON_CONNECTOR_INTERCHANNEL_PORT 9890
+
 // ----------------------------------------------------------------
 
 namespace samson 

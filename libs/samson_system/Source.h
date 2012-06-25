@@ -9,6 +9,7 @@
 
 #include <samson/module/samson.h>
 #include "samson_system/Value.h"
+#include "samson_system/ValueContainer.h"
 #include "samson_system/KeyValue.h"
 
 
@@ -37,18 +38,18 @@ namespace samson{
         
         class SourceVoid : public Source
         {
-            samson::system::Value value;
+            samson::system::ValueContainer value_container;
             
         public:
             
             SourceVoid()
             {
-                value.set_as_void();
+                value_container.value->set_as_void();
             }
             
             virtual samson::system::Value* get( KeyValue kv )
             {
-                return &value;
+                return value_container.value;
             }
             
             virtual std::string str()
@@ -86,7 +87,7 @@ namespace samson{
                 if( !value_condition )
                     return NULL;
                 
-                if( value_condition->getDouble() != 0 )
+                if( value_condition->get_double() != 0 )
                     return value1->get(kv);
                 else
                     return value2->get(kv);
@@ -125,7 +126,7 @@ namespace samson{
             Source *rigth;
             Comparisson comparisson;
             
-            Value value;
+            ValueContainer value_container;
             
         public:
             
@@ -204,11 +205,11 @@ namespace samson{
 
                 // Eval an assign 1 for true, 0 for false
                 if( eval(kv) )
-                    value = 1;
+                    value_container.value->set_double(1);
                 else
-                    value = (double)0;
+                    value_container.value->set_double(0);
                 
-                return &value;
+                return value_container.value;
             }
             
             std::string str()
@@ -241,7 +242,7 @@ namespace samson{
             Source *rigth;
             Operation operation;
             
-            Value value;
+            ValueContainer value_container;
             
         public:
             
@@ -297,19 +298,19 @@ namespace samson{
                 
                 switch (operation) 
                 {
-                    case sum:       value = *v1 + *v2 ;
+                    case sum:       *value_container.value = *v1 + *v2 ;
                         break;
-                    case minus:     value = *v1 - *v2 ;
+                    case minus:     *value_container.value = *v1 - *v2 ;
                         break;
-                    case multiply:  value = *v1 * *v2 ;
+                    case multiply:  *value_container.value = *v1 * *v2 ;
                         break;
-                    case divide:    value = *v1 / *v2 ;
+                    case divide:    *value_container.value = *v1 / *v2 ;
                         break;
                     case unknown: return NULL;
                         break;
                 }
                 
-                return &value;
+                return value_container.value;
             }
             
             std::string str()
@@ -325,46 +326,46 @@ namespace samson{
         
         class SourceStringConstant : public Source
         {
-            Value value;
+            ValueContainer value_container;
             
         public:
             
             SourceStringConstant( std::string _value )
             {
-                value.set_string( _value );
+                value_container.value->set_string( _value );
             }
             
             samson::system::Value* get( KeyValue kv )
             {
-                return &value;
+                return value_container.value;
             }
             
             std::string str()
             {
-                return au::str("\"%s\"" , value.get_string().c_str() );
+                return au::str("\"%s\"" , value_container.value->get_string().c_str() );
             }
             
         };
         
         class SourceNumberConstant : public Source
         {
-            Value value;
+            ValueContainer value_container;
             
         public:
             
             SourceNumberConstant( double _value )
             {
-                value.set_double( _value );
+                value_container.value->set_double( _value );
             }
             
             samson::system::Value* get( KeyValue kv )
             {
-                return &value;
+                return value_container.value;
             }
             
             std::string str()
             {
-                return au::str("#%s" , value.get_string().c_str() );
+                return au::str("#%s" , value_container.value->get_string().c_str() );
             }
             
         };
@@ -424,7 +425,7 @@ namespace samson{
                 if( !index_value || !base_value )
                     return  NULL;
                 
-                return base_value->get_value_from_vector( index_value->getDouble() );
+                return base_value->get_value_from_vector( index_value->get_double() );
             }
             
             virtual std::string str()
@@ -472,7 +473,7 @@ namespace samson{
         class SourceVector : public Source
         {
             au::vector<Source> source_components;
-            samson::system::Value value; // To generate output
+            samson::system::ValueContainer value_container; // To generate output
         public:
             
             SourceVector( au::vector<Source>& _source_components )
@@ -483,16 +484,16 @@ namespace samson{
             
             virtual samson::system::Value* get( KeyValue kv )
             {
-                value.set_as_vector();
+                value_container.value->set_as_vector();
                 for ( size_t i = 0 ; i < source_components.size() ; i++ )
                 {
                     samson::system::Value* tmp_value = source_components[i]->get(kv);
                     if( !tmp_value )
-                        value.add_value_to_vector()->set_as_void();
+                        value_container.value->add_value_to_vector()->set_as_void();
                     else
-                        value.add_value_to_vector()->copyFrom( tmp_value );
+                        value_container.value->add_value_to_vector()->copyFrom( tmp_value );
                 }
-                return &value;
+                return value_container.value;
             }
             
             virtual std::string str()
@@ -512,7 +513,7 @@ namespace samson{
             au::vector<Source> source_keys;
             au::vector<Source> source_values;
             
-            samson::system::Value value; // To generate output
+            samson::system::ValueContainer value_container; // To generate output
         public:
             
             SourceMap( au::vector<Source> _source_keys , au::vector<Source> _source_values )
@@ -529,7 +530,7 @@ namespace samson{
             
             virtual samson::system::Value* get( KeyValue kv )
             {                
-                value.set_as_map();
+                value_container.value->set_as_map();
                 for ( size_t i = 0 ; i < source_keys.size() ; i++ )
                 {
                     samson::system::Value* tmp_key   = source_keys[i]->get(kv);
@@ -539,10 +540,10 @@ namespace samson{
                         return NULL;
                     
                     // Prepare the value
-                    value.add_value_to_map( tmp_key->get_string() )->copyFrom( tmp_value );
+                    value_container.value->add_value_to_map( tmp_key->get_string() )->copyFrom( tmp_value );
                 }
                 
-                return &value;
+                return value_container.value;
             }
             
             virtual std::string str()

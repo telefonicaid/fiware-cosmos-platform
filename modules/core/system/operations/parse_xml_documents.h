@@ -18,8 +18,8 @@ namespace system{
 	class parse_xml_documents : public samson::Parser
 	{
 
-	   samson::system::Value key;
-	   samson::system::Value value;
+	   samson::system::ValueContainer keyContainer;
+	   samson::system::ValueContainer valueContainer;
 
 	   samson::system::String trace;
 	   samson::system::Void value_void;
@@ -38,7 +38,7 @@ namespace system{
 
 		void init( samson::KVWriter *writer )
 		{
-		   value = 1;
+		   valueContainer.value->set_double( 1 );
 		}
 
         
@@ -60,8 +60,8 @@ namespace system{
                     // Sequence found
                     if( pos > pos_begin )
                     {
-                        key.set_string( &data[pos_begin] , pos - pos_begin );
-                        writer->emit( 0 , &key , &value );
+                        keyContainer.value->set_string( &data[pos_begin] , pos - pos_begin );
+                        writer->emit( 0 , keyContainer.value , valueContainer.value );
                     }
                     
                     pos_begin = pos;
@@ -76,8 +76,8 @@ namespace system{
             // emit the last one
             if( pos > pos_begin )
             {
-                key.set_string( &data[pos_begin] , pos - pos_begin );
-                writer->emit( 0 , &key , &value );
+                keyContainer.value->set_string( &data[pos_begin] , pos - pos_begin );
+                writer->emit( 0 , keyContainer.value , valueContainer.value );
             }
             
 

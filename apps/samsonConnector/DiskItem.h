@@ -49,9 +49,6 @@ namespace samson
             // Main method to run from background thread
             void run();
 
-            // Review
-            void review_connection();
-
             // Status of this connection
             std::string getStatus();
             
@@ -71,7 +68,7 @@ namespace samson
         public:
             
             DiskItem( Channel * _channel , ConnectionType _type ,  std::string _directory ) : 
-            Item( _channel , _type , au::str("DISK %s" , _directory.c_str() ) ) 
+            Item( _channel , _type , au::str("DISK %s" , _directory.c_str() ) , au::str("FILE(%s)" , _directory.c_str() ) ) 
             {
                 // Information for connection
                 directory = _directory;
@@ -94,11 +91,6 @@ namespace samson
                 return "Disk connection";
             }
             
-            void review_item()
-            {
-                // Nothing to do here
-                
-            }
             
             
         };

@@ -118,6 +118,8 @@ network/SocketConnection.cpp
 network/SocketConnection.h
 network/misc.cpp
 network/misc.h
+network/PacketReaderWriter.h
+network/PacketReaderWriter.cpp
 )
 
 # ---------------------------------------------------
@@ -269,7 +271,7 @@ ${CONTAINERS_FILES} ${TABLES_FILES} ${NETWORK_FILES} ${CONSOLE_FILES}
 ${STRING_FILES})
 
 # Only needed for the "samson" project
-IF (CMAKE_PROJECT_NAME STREQUAL "samson")
+IF (CMAKE_PROJECT_NAME STREQUAL "Samson")
     INSTALL(TARGETS au ARCHIVE DESTINATION lib)
     INSTALL(FILES ${HEADERS}          DESTINATION include/au)
     INSTALL(FILES ${STATISTICS_FILES} DESTINATION include/au/statistics)
@@ -280,7 +282,7 @@ IF (CMAKE_PROJECT_NAME STREQUAL "samson")
     INSTALL(FILES ${NETWORK_FILES}    DESTINATION include/au/network)
     INSTALL(FILES ${CONSOLE_FILES}    DESTINATION include/au/console)
     INSTALL(FILES ${STRING_FILES}     DESTINATION include/au/string)
-ENDIF (CMAKE_PROJECT_NAME STREQUAL "samson")
+ENDIF (CMAKE_PROJECT_NAME STREQUAL "Samson")
 
 SET (LIBAU ${PROJECT_BINARY_DIR}/libs/au/libau.a CACHE INTERNAL "")
 

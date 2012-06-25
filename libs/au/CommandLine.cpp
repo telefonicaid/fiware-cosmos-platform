@@ -116,13 +116,33 @@ void CommandLine::parse( std::string _command )
         if ( pos == std::string::npos )
             break;	// No more tockens in this string
         
-        if( ( command[pos] == '\"' ) || ( command[pos] == '\'' ) )
+        if( command[pos] == '\"' )
         {
             if( command.length() <= pos )
                 break;	// No more characters to finish the literal
             
             pos++;
-            size_t last = command.find_first_of("\"'", pos);
+            size_t last = command.find_first_of("\"", pos);
+            if( last == std::string::npos )
+            {
+                // Add the unfinished literal and finish
+                tockens.push_back(command.substr(pos, command.length() - pos));
+                break;
+            }
+            else
+            {
+                tockens.push_back(command.substr(pos, last - pos));
+                pos = last+1;
+            }
+            
+        }
+        else if( command[pos] == '\'' )
+        {
+            if( command.length() <= pos )
+                break;	// No more characters to finish the literal
+            
+            pos++;
+            size_t last = command.find_first_of("'", pos);
             if( last == std::string::npos )
             {
                 // Add the unfinished literal and finish

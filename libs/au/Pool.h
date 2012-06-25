@@ -48,7 +48,7 @@ namespace au
             size_t s = objects.size();
             
             if( s == 0 )
-                return new C();
+                return NULL;
             
             C* c = objects[ s-1 ];
             objects.pop_back();

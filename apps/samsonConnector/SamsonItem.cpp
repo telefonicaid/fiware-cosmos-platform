@@ -19,7 +19,10 @@ namespace samson {
                                , int _port 
                                , std::string _queue )
         : 
-        Item( _channel , _type , au::str("SAMSON at %s:%d" , _host.c_str() , _port) ) 
+        Item( _channel 
+             , _type 
+             , au::str("SAMSON at %s:%d" , _host.c_str() , _port) 
+             , au::str("SAMSON(%s:%d)" , _host.c_str() , _port) ) 
         {
             // Information for connection
             host = _host;

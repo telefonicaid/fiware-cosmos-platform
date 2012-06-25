@@ -125,6 +125,31 @@ namespace au {
             list.push_front( c );
         }
         
+        C* front()
+        {
+            return list.front();
+        }
+        
+        
+        
+        void clear()
+        {
+            typename au::list<C>::iterator it;
+            
+            for ( it = list.begin() ; it != list.end() ; it++ )
+                (*it)->release();
+            
+            list.clear();
+        }
+        
+        void pop_front()
+        {
+            // Relese the front element and remove from list
+            list.front()->release();
+            list.pop_front();
+            
+        }
+        
         void extract_front( ClassObjectContainer<C>& container )
         {
             C* c = list.extractFront();
@@ -147,6 +172,10 @@ namespace au {
             c->release();
         }
         
+        size_t size()
+        {
+            return list.size();
+        }
         
     };
     

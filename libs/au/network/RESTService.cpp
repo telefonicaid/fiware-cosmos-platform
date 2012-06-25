@@ -8,6 +8,15 @@ namespace au
     namespace network
     {
         
+        void find_and_replace( std::string &source, const std::string find, std::string replace ) {
+            size_t j;
+            for ( ; (j = source.find( find )) != std::string::npos ; ) {
+                source.replace( j, find.length(), replace );
+            }
+        }
+
+        
+        
         RESTServiceCommand::RESTServiceCommand()
         {
             http_state = 200; // By default 200 response
@@ -55,6 +64,14 @@ namespace au
                 // Get request parts...
                 command = cmdLine.get_argument(0);
                 resource = cmdLine.get_argument(1);
+                
+                // Replace url-chars for the real ones....
+                find_and_replace( resource , "%7B" , "{");
+                find_and_replace( resource , "%7D" , "}");
+                find_and_replace( resource , "%22" , "\"");
+                find_and_replace( resource , "%5B" , "[");
+                find_and_replace( resource , "%5D" , "]");
+                
                 
                 // Get path componenets and format
                 path_components = StringVector::parseFromString( resource , '/' );

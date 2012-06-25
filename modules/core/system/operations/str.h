@@ -19,8 +19,8 @@ namespace system{
 	class str : public samson::ParserOut
 	{
 
-        samson::system::Value key;
-        samson::system::Value value;
+        samson::system::ValueContainer keyContainer;
+        samson::system::ValueContainer valueContainer;
         
         // Collection of filters to execute for every key-value
         FilterCollection filters_collection;
@@ -62,11 +62,11 @@ namespace system{
 		{
             for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
             {
-                key.parse( inputs[0].kvs[i]->key );
-                value.parse( inputs[0].kvs[i]->value );
+                keyContainer.value->parse( inputs[0].kvs[i]->key );
+                valueContainer.value->parse( inputs[0].kvs[i]->value );
                 
                 
-                KeyValue kv( &key, &value );
+                KeyValue kv( keyContainer.value, valueContainer.value );
                 filters_collection.run( kv );
             }
 		}

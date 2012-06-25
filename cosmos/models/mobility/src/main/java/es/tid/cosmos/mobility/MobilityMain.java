@@ -20,6 +20,7 @@ import es.tid.cosmos.mobility.activitydensity.profile.ActivityDensityProfileRunn
 import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.group.AggregatedMatrixGroupRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.simple.AggregatedMatrixSimpleRunner;
+import es.tid.cosmos.mobility.conf.MobilityConfiguration;
 import es.tid.cosmos.mobility.itineraries.ItinerariesRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;

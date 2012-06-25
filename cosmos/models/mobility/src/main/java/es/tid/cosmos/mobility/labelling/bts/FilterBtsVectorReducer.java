@@ -8,7 +8,7 @@ import com.google.protobuf.Message;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.conf.MobilityConfiguration;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;

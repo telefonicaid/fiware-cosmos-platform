@@ -12,7 +12,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 
 import es.tid.cosmos.base.util.Logger;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.conf.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.parsing.CellParser;
 

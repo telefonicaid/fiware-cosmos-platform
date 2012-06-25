@@ -22,7 +22,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.mobility.ConfiguredTest;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.conf.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.CellUtil;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;

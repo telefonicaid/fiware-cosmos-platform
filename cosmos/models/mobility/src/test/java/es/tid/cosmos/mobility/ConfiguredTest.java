@@ -4,6 +4,8 @@ import java.io.InputStream;
 
 import org.junit.Before;
 
+import es.tid.cosmos.mobility.conf.MobilityConfiguration;
+
 /**
  * Base class for tests that rely on sample configuration properties.
  *

@@ -3,7 +3,7 @@ Fabric script file to perform common tasks on remote machines. Requires fabric[1
 
 [1] http://fabfile.org.
 """
-from fabric.api import run,env
+from fabric.api import run,env,settings
 from time import sleep
 from random import randint
 
@@ -129,3 +129,18 @@ def samson_node():
 
     env.hosts = ['samson@%s-%d' % (env.basename, master)]
     env.password = 'samson'
+
+def start_svn_node(branch="/trunk", port=1324, web_port=1202, traces=None):
+    """
+    (re)start samsonWorker from an SVN build area
+    """
+    # Ingore errors
+    with settings(warn_only=True):
+        run('killall samsonWorker')
+        run('make -f src/samson/%s/makefile clear_ipcs'  % (branch))
+        run('. src/samson/%s/scripts/buildenv.sh && rm -rf $SAMSON_WORKING/*' % (branch))
+
+    if traces == None:
+       run('. src/samson/%s/scripts/buildenv.sh && samsonWorker -port %s -web_port %s' % (branch, port, web_port))
+    else:
+       run('. src/samson/%s/scripts/buildenv.sh && samsonWorker -port %s -web_port %s -t %s' % (branch, port, web_port, traces))

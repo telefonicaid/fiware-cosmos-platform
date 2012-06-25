@@ -22,6 +22,14 @@
 
 /* ****************************************************************************
 *
+* paUsageProgName -
+*/
+char* paUsageProgName = NULL;
+
+
+
+/* ****************************************************************************
+*
 * escape - replace '/' for '//' ...
 */
 char* escape(char out[], char* value)
@@ -207,7 +215,11 @@ void paUsage(void)
 	spacePad = (char*) strdup(progName);
 	memset(spacePad, 0x20202020, strlen(spacePad));  /* replace progName */
 
-	sprintf(s, "Usage: %s ", progName);
+    if (paUsageProgName != NULL)
+        sprintf(s, "Usage: %s ", paUsageProgName);
+    else
+        sprintf(s, "Usage: %s ", progName);
+
 	strncat(paResultString, s, sizeof(paResultString) - 1);
 
 	// paLogOn = true;

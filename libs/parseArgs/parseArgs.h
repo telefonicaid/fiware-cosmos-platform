@@ -226,6 +226,7 @@ typedef struct PaiArgument
 * variables
 */
 extern char*      progName;
+extern char*      paUsageProgName;
 extern char       paCommandLine[1024];
 extern PaWarning  paWarning[];
 extern int        paWarnings;

@@ -129,6 +129,12 @@ void paConfigCleanup(void)
 	//printf("Cleaning up parseArgs library\n");
 
 	PA_M(("freeing paPrefix"));
+    if (paUsageProgName != NULL)
+    {
+       free(paUsageProgName);
+       paUsageProgName = NULL;
+    }
+
 	if (paPrefix)
     {
 		free(paPrefix);

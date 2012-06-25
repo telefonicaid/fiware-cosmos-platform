@@ -77,21 +77,21 @@ unsigned short   log_port;
 */
 PaArgument paArgs[] =
 {
-    { "-log_host",          log_host,             "", PaString, PaOpt, _i "localhost", PaNL, PaNL,  "log server host"  },
-    { "-log_port",          &log_port,            "", PaInt,    PaOpt,  LOG_PORT,      0, 10000,  "log server port"    },
-    { "-log_file",          log_file,             "", PaString, PaOpt, _i "",          PaNL, PaNL,  "Local log file"   },
-    
+    { "-log_host",         log_host,              "",                       PaString, PaOpt, _i "localhost",      PaNL, PaNL,  "log server host"                        },
+    { "-log_port",         &log_port,             "",                       PaShortU, PaOpt,  LOG_PORT,           0,   10000,  "log server port"                        },
+    { "-log_file",         log_file,              "",                       PaString, PaOpt, _i "",               PaNL, PaNL,  "Local log file"                         },
     { "-user",             user,                  "",                       PaString, PaOpt, _i "anonymous",      PaNL, PaNL,  "User to connect to SAMSON cluster"      },
     { "-password",         password,              "",                       PaString, PaOpt, _i "anonymous",      PaNL, PaNL,  "Password to connect to SAMSON cluster"  },
     { "-memory",           &memory_gb,            "MEMORY",                 PaInt,    PaOpt, 1,                   1,    100,   "memory in GBytes"                       },
     { "-load_buffer_size", &load_buffer_size_mb,  "LOAD_BUFFER_SIZE",       PaInt,    PaOpt, 64,                  64,   2048,  "load buffer size in MBytes"             },
     { "-f",                commandFileName,       "FILE_NAME",              PaString, PaOpt, _i "",               PaNL, PaNL,  "File with commands to run"              },
-    { "-command",          command,               "", PaString, PaOpt, _i "",               PaNL, PaNL,  "Single command to be executed"          },
+    { "-command",          command,               "",                       PaString, PaOpt, _i "",               PaNL, PaNL,  "Single command to be executed"          },
     { "",                  target_host,           "",                       PaString, PaOpt, _i LOC,              PaNL, PaNL,  "SAMSON server hostname"                 },
     { "",                 &target_port,           "",                       PaInt,    PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
 
     PA_END_OF_ARGS
 };
+
 
 
 /* ****************************************************************************
@@ -194,7 +194,6 @@ extern size_t delilah_random_code;
 
 int main(int argC, const char *argV[])
 {
-
     paConfig("prefix",                        (void*) "DELILAH_");
     paConfig("builtin prefix",                (void*) "SS_DELILAH_");
     paConfig("usage and exit on any warning", (void*) true);
@@ -223,7 +222,8 @@ int main(int argC, const char *argV[])
 
     // Random code for delilah
     delilah_random_code = au::code64_rand();
-    paProgName = strdup( au::str("delilah_%s" , au::code64_str( delilah_random_code ).c_str() ).c_str() );
+    paUsageProgName     = strdup("delilah");
+    paProgName          = strdup( au::str("delilah_%s" , au::code64_str( delilah_random_code ).c_str() ).c_str() );
 
     paParse(paArgs, argC, (char**) argV, 1, true);
     lmAux((char*) "father");

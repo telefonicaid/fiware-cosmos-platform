@@ -6,8 +6,8 @@ import java.nio.charset.Charset;
  */
 public abstract class AbstractRawToIpmConverter implements RawToIpmConverter {
 
-    private String delimiter;
-    private Charset charset;
+    private final String delimiter;
+    private final Charset charset;
 
     protected AbstractRawToIpmConverter(String delimiter, Charset charset) {
         this.delimiter = delimiter;

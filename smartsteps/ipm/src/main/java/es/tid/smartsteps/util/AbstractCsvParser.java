@@ -10,8 +10,8 @@ import java.nio.charset.Charset;
  */
 public abstract class AbstractCsvParser<T> implements CsvParser<T> {
 
-    private String delimiter;
-    private Charset charset;
+    private final String delimiter;
+    private final Charset charset;
 
     /**
      * Create a new abstract CSV parser with given properties.

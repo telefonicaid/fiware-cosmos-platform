@@ -32,6 +32,7 @@ public abstract class RawToIpmConverterSupport<Raw, Ipm> extends
         }
         return result;
     }
+
     @Override
     public void convert(InputStream input, OutputStream output)
             throws IOException, ParseException {
@@ -42,5 +43,4 @@ public abstract class RawToIpmConverterSupport<Raw, Ipm> extends
         List<Ipm> convertedIpms = convert(parsedRaws);
         csvPrinter.print(convertedIpms, output);
     }
-
 }

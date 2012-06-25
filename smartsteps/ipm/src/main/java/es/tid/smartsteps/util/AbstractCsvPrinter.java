@@ -19,8 +19,8 @@ import static java.util.Arrays.asList;
  */
 public abstract class AbstractCsvPrinter<T> implements CsvPrinter<T> {
 
-    private String delimiter;
-    private Charset charset;
+    private final String delimiter;
+    private final Charset charset;
 
     /**
      * Create a new abstract CSV printer with given properties.

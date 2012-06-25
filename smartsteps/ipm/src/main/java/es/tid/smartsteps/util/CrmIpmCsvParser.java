@@ -22,7 +22,6 @@ public class CrmIpmCsvParser extends CsvParserSupport<CrmIpm> {
         public CrmIpm build() {
             return this.getBuilder().build();
         }
-
     }
 
     private static final FieldParser[] FIELD_PARSERS = {

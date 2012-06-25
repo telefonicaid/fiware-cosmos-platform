@@ -10,6 +10,10 @@ from fabric.utils import puts
 
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
+def install_git():
+    run('wget http://pkgs.repoforge.org/git/git-1.7.10.4-1.el6.rfx.x86_64.rpm')
+    run('rpm -Uvh --force --nodeps git-1.7.10.4-1.el6.rfx.x86_64.rpm')
+
 def install_and_patch_hue(config):
     local_patch_path = os.path.join(BASEPATH, config['hue_patch_dir'],
                                     config['hue_patch_name'])
@@ -23,7 +27,7 @@ def install_and_patch_hue(config):
         run("yum -y install hue")
         put(local_patch_path, remote_patch_path)
         with cd("/usr/share/hue"):
-            run("patch -p2 < {0}".format(remote_patch_path))
+            run("git apply -p2 --reject {0}".format(remote_patch_path))
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def install_hue_plugins():

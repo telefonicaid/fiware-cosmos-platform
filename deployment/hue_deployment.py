@@ -23,7 +23,7 @@ def install_and_patch_hue(config):
         run("yum -y install hue")
         put(local_patch_path, remote_patch_path)
         with cd("/usr/share/hue"):
-            run("git apply -p2 --reject {0}".format(remote_patch_path))
+            run("patch -p2 < {0}".format(remote_patch_path))
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def install_hue_plugins():

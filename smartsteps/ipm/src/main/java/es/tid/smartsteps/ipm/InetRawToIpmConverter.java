@@ -1,27 +1,30 @@
 package es.tid.smartsteps.ipm;
 
+import java.nio.charset.Charset;
 import java.security.NoSuchAlgorithmException;
 
 import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.base.util.SHAEncoder;
 import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetIpm;
 import es.tid.smartsteps.ipm.data.generated.InetProtocol.InetRaw;
-import es.tid.smartsteps.util.InetIpmUtil;
-import es.tid.smartsteps.util.InetRawUtil;
+import es.tid.smartsteps.util.InetIpmCsvPrinter;
+import es.tid.smartsteps.util.InetRawCsvParser;
 
 /**
  *
  * @author dmicol
+ * @author apv
  */
-public class InetRawToIpmConverter implements RawToIpmConverter {
-    public InetRawToIpmConverter() {
-    }
-    
+public class InetRawToIpmConverter extends
+        RawToIpmConverterSupport<InetRaw, InetIpm> {
+
+    private static final int IMEI_LENGTH = 15;
+    private static final int IMEI_PREFIX_LENGTH = 8;
+
     @Override
-    public String convert(String line) throws ParseException {
-        final InetRaw inetRaw = InetRawUtil.parse(line);
-        final String anonymisedImsi;
-        final String anonymisedImei;
+    protected InetIpm convert(InetRaw inetRaw) {
+        String anonymisedImsi;
+        String anonymisedImei;
         try {
             anonymisedImsi = SHAEncoder.encode(inetRaw.getImsi());
             anonymisedImei = SHAEncoder.encode(inetRaw.getImei());
@@ -29,16 +32,47 @@ public class InetRawToIpmConverter implements RawToIpmConverter {
             Logger.get(InetRawToIpmConverter.class).fatal(ex);
             throw new IllegalArgumentException("Failed to anonimise data", ex);
         }
-        final String imeiTac = (inetRaw.getImei().length() == 15) ?
-                inetRaw.getImei().substring(0, 8) : "";
-        final InetIpm inetIpm = InetIpmUtil.create(inetRaw.getType(),
-                inetRaw.getCallType(), anonymisedImsi,
-                inetRaw.getFirstTempImsi(), inetRaw.getLastTempImsi(),
-                imeiTac, anonymisedImei, inetRaw.getLacod(),
-                inetRaw.getCellId(), inetRaw.getEventDateTime(),
-                inetRaw.getDtapCause(), inetRaw.getBssmapCause(),
-                inetRaw.getCcCause(), inetRaw.getMmCause(),
-                inetRaw.getRanapCause());
-        return InetIpmUtil.toString(inetIpm);
+        String imeiTac = (inetRaw.getImei().length() == IMEI_LENGTH) ?
+                inetRaw.getImei().substring(0, IMEI_PREFIX_LENGTH) : "";
+        return InetIpm.newBuilder()
+                .setType(inetRaw.getType())
+                .setCallType(inetRaw.getCallType())
+                .setAnonymisedImsi(anonymisedImsi)
+                .setFirstTempImsi(inetRaw.getFirstTempImsi())
+                .setLastTempImsi(inetRaw.getLastTempImsi())
+                .setImeiTac(imeiTac)
+                .setAnonymisedImei(anonymisedImei)
+                .setLacod(inetRaw.getLacod())
+                .setCellId(inetRaw.getCellId())
+                .setEventDateTime(inetRaw.getEventDateTime())
+                .setDtapCause(inetRaw.getDtapCause())
+                .setBssmapCause(inetRaw.getBssmapCause())
+                .setCcCause(inetRaw.getCcCause())
+                .setMmCause(inetRaw.getMmCause())
+                .setRanapCause(inetRaw.getRanapCause())
+                .build();
+    }
+
+    @Override
+    protected InetRawCsvParser newParser() {
+        return new InetRawCsvParser(this.getDelimiter(), this.getCharset());
+    }
+
+    @Override
+    protected InetIpmCsvPrinter newPrinter() {
+        return new InetIpmCsvPrinter(this.getDelimiter(), this.getCharset());
+    }
+
+    public InetRawToIpmConverter(String delimiter, Charset charset) {
+        super(delimiter, charset);
+    }
+
+    public static final class Builder implements RawToIpmConverter.Builder {
+
+        @Override
+        public RawToIpmConverter newConverter(String delimiter,
+                                              Charset charset) {
+            return new InetRawToIpmConverter(delimiter, charset);
+        }
     }
 }

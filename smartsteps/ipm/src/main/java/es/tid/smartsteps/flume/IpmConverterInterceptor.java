@@ -1,9 +1,14 @@
 package es.tid.smartsteps.flume;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.base.Charsets;
 import org.apache.flume.Context;
 import org.apache.flume.Event;
 import org.apache.flume.conf.ConfigurationException;
@@ -20,10 +25,12 @@ import es.tid.smartsteps.ipm.RawToIpmConverter;
  * @author apv
  */
 public class IpmConverterInterceptor implements Interceptor {
-    private static final Logger logger =
+    private static final Logger LOGGER =
             LoggerFactory.getLogger(IpmConverterInterceptor.class);
 
     public static final String PROPERTY_CONVERTER = "converter";
+    public static final String PROPERTY_DELIMITER = "delimiter";
+    public static final String PROPERTY_CHARSET   = "charset";
 
     private RawToIpmConverter converter;
 
@@ -43,13 +50,18 @@ public class IpmConverterInterceptor implements Interceptor {
 
     @Override
     public Event intercept(Event event) {
-        String body = new String(event.getBody());
         try {
-            event.setBody(this.converter.convert(body).getBytes(
-                    Charsets.US_ASCII));
+            ByteArrayInputStream oldBody = new ByteArrayInputStream(event
+                    .getBody());
+            ByteArrayOutputStream newBody = new ByteArrayOutputStream();
+            this.converter.convert(oldBody, newBody);
+            event.setBody(newBody.toByteArray());
             return event;
         } catch (ParseException e) {
-            logger.warn("event discarded due to parsing error", e);
+            LOGGER.warn("event discarded due to parsing error", e);
+            return null;
+        } catch (IOException e) {
+            LOGGER.warn("event discarded due to IO error", e);
             return null;
         }
     }
@@ -72,58 +84,93 @@ public class IpmConverterInterceptor implements Interceptor {
     }
 
     public static class Builder implements Interceptor.Builder {
+
         private RawToIpmConverter converter = null;
+
+        private static RawToIpmConverter.Builder getBuilderFromClass(
+                String className) {
+            String errorMessage = String.format("invalid value %s for '%s' property",
+                    className, PROPERTY_CONVERTER);
+            loadDerivedClass(className, RawToIpmConverter.class, errorMessage);
+            Class<? extends RawToIpmConverter.Builder> factoryClass =
+                    loadDerivedClass(className + "$Builder",
+                            RawToIpmConverter.Builder.class,
+                            errorMessage);
+            try {
+                return factoryClass.newInstance();
+            } catch (Exception e) {
+                throw new ConfigurationException(errorMessage + "; inner " +
+                        "class Builder for given class cannot be " +
+                        "instantiated", e);
+            }
+        }
+
+        private static <Base, Derived> Class<Derived> loadDerivedClass(
+                String className, Class<Base> baseClass, String errorMessage) {
+            try {
+                Class clazz = Class.forName(className);
+                if (!baseClass.isAssignableFrom(clazz)) {
+                    throw new ConfigurationException(String.format(
+                            "%s; class %s is not derived from %s",
+                            errorMessage, className, baseClass));
+                }
+                return (Class<Derived>) clazz;
+
+            } catch (ClassNotFoundException e) {
+                throw new ConfigurationException(String.format(
+                        "%s; missing class %s", errorMessage, className), e);
+            }
+        }
 
         @Override
         public Interceptor build() {
             if (this.converter == null) {
-                throw new RuntimeException("cannot build IPM converter " +
+                throw new IllegalStateException("cannot build IPM converter " +
                         "interceptor: the builder has not been initialized yet");
             }
             return new IpmConverterInterceptor(this.converter);
         }
 
-        @Override
-        public void configure(Context context) throws ConfigurationException {
-            String converterName = context.getString(PROPERTY_CONVERTER);
-            if (converterName == null) {
-                throw new ConfigurationException(String.format(
-                        "missing '%s' property for IPM converter interceptor",
-                        PROPERTY_CONVERTER));
+        private static void checkPropertiesOrThrow(Context ctx) {
+            for (String property : new String[] { PROPERTY_CONVERTER,
+                    PROPERTY_DELIMITER, PROPERTY_CHARSET }) {
+                if (ctx.getString(property) == null) {
+                    throw new ConfigurationException(String.format(
+                            "missing '%s' property for IPM converter interceptor",
+                            property));
+                }
             }
-            Class<? extends RawToIpmConverter> converterClass;
+        }
+
+        @Override
+        public void configure(Context context) {
+            checkPropertiesOrThrow(context);
+
+            String converterName = context.getString(PROPERTY_CONVERTER);
+            String delimiter = context.getString(PROPERTY_DELIMITER);
+            String charset = context.getString(PROPERTY_CHARSET);
+
+            RawToIpmConverter.Builder converterBuilder;
             try {
                 IpmConverterType converterType =
                         IpmConverterType.valueOf(converterName.toUpperCase());
-                converterClass = converterType.getConverterClass();
+                converterBuilder = converterType.getConverterBuilder();
             } catch (IllegalArgumentException ignorable) {
                 // The converter name is unknown. Let's check whether it
                 // is a valid class name implementing RawToIpmConverter
-                try {
-                    converterClass = (Class<? extends RawToIpmConverter>)
-                            this.getClass().getClassLoader().loadClass(
-                                    converterName);
-                } catch (ClassNotFoundException e) {
-                    throw new ConfigurationException(String.format(
-                            "unknown value %s for '%s' property " +
-                                    "of IPM converter interceptor",
-                            converterName, PROPERTY_CONVERTER), e);
-                } catch (ClassCastException e) {
-                    throw new ConfigurationException(String.format(
-                            "given value %s for '%s' property of IPM " +
-                                    "converter interceptor is not valid: " +
-                                    "not a %s instance",
-                            converterName,
-                            PROPERTY_CONVERTER,
-                            RawToIpmConverter.class.getName()), e);
-                }
+                converterBuilder = getBuilderFromClass(converterName);
             }
             try {
-                this.converter = converterClass.newInstance();
-            } catch (Exception e) {
-                throw new ConfigurationException(String.format("cannot " +
-                        "instantiate IPM converter from class %s",
-                        converterClass.getName()), e);
+                this.converter = converterBuilder.newConverter(delimiter,
+                        Charset.forName(charset));
+            } catch (IllegalCharsetNameException e) {
+                throw new ConfigurationException(String.format("invalid value" +
+                        " %s for property %s: unknown charset name",
+                        charset, PROPERTY_CHARSET), e);
+            } catch (UnsupportedCharsetException e) {
+                throw new ConfigurationException(String.format("invalid value" +
+                        " %s for property %s: charset is not supported",
+                        charset, PROPERTY_CHARSET), e);
             }
         }
     }

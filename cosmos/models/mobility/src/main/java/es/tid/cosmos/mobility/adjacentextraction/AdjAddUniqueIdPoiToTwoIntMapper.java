@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 class AdjAddUniqueIdPoiToTwoIntMapper extends Mapper<ProtobufWritable<TwoInt>,
         TypedProtobufWritable<Poi>, LongWritable, TypedProtobufWritable<TwoInt>> {
     
-    Counter counter;
+    private Counter counter;
     
     @Override
     protected void setup(Context context) throws IOException,

@@ -23,7 +23,7 @@ class AdjAddUniqueIdPoiToPoiNewMapper extends Mapper<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>,
         ProtobufWritable<TwoInt>, TypedProtobufWritable<PoiNew>> {
 
-    Counter counter;
+    private Counter counter;
     
     @Override
     protected void setup(Context context) throws IOException,

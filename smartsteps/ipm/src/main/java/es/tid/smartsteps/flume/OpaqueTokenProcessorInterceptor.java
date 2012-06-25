@@ -20,9 +20,10 @@ public class OpaqueTokenProcessorInterceptor extends AbstractInterceptor {
 
     private static final Logger LOGGER =
             LoggerFactory.getLogger(OpaqueTokenProcessorInterceptor.class);
-    private static final String HEADER_OPAQUE_TOKEN = "cosmos-opaque-token";
 
     private final UUID opaqueToken;
+
+    public static final String HEADER_OPAQUE_TOKEN = "cosmos-opaque-token";
 
     public OpaqueTokenProcessorInterceptor(UUID opaqueToken) {
         this.opaqueToken = opaqueToken;
@@ -45,9 +46,9 @@ public class OpaqueTokenProcessorInterceptor extends AbstractInterceptor {
 
     public static class Builder implements Interceptor.Builder {
 
-        private static final String PROPERTY_OPAQUE_TOKEN = "token";
-
         private UUID opaqueToken = null;
+
+        public static final String PROPERTY_OPAQUE_TOKEN = "token";
 
         @Override
         public Interceptor build() {

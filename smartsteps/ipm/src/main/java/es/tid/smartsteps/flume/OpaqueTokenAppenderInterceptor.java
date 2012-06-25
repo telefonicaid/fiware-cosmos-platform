@@ -11,21 +11,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A Flume interceptor that manages the opaque token of Cosmos's data injection
+ * A Flume interceptor that appends the opaque token of Cosmos's data injection
  * service.
  *
  * @author apv
  */
-public class OpaqueTokenProcessorInterceptor extends AbstractInterceptor {
+public class OpaqueTokenAppenderInterceptor extends AbstractInterceptor {
 
     private static final Logger LOGGER =
-            LoggerFactory.getLogger(OpaqueTokenProcessorInterceptor.class);
+            LoggerFactory.getLogger(OpaqueTokenAppenderInterceptor.class);
 
     private final UUID opaqueToken;
 
     public static final String HEADER_OPAQUE_TOKEN = "cosmos-opaque-token";
 
-    public OpaqueTokenProcessorInterceptor(UUID opaqueToken) {
+    public OpaqueTokenAppenderInterceptor(UUID opaqueToken) {
         this.opaqueToken = opaqueToken;
     }
 
@@ -56,7 +56,7 @@ public class OpaqueTokenProcessorInterceptor extends AbstractInterceptor {
                 throw new IllegalStateException("build() called on a " +
                         "non-configured interceptor builder");
             }
-            return new OpaqueTokenProcessorInterceptor(opaqueToken);
+            return new OpaqueTokenAppenderInterceptor(opaqueToken);
         }
 
         @Override

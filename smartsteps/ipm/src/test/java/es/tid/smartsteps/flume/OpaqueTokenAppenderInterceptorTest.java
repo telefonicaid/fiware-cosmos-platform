@@ -14,11 +14,11 @@ import org.junit.Test;
 import static junit.framework.Assert.*;
 
 /**
- * Unit test for opaque token processor interceptor.
+ * Unit test for opaque token appender interceptor.
  *
  * @author apv
  */
-public class OpaqueTokenProcessorInterceptorTest {
+public class OpaqueTokenAppenderInterceptorTest {
 
     private Interceptor interceptor;
     private UUID opaqueToken;
@@ -27,10 +27,10 @@ public class OpaqueTokenProcessorInterceptorTest {
     public void setup() {
         this.opaqueToken = UUID.randomUUID();
 
-        OpaqueTokenProcessorInterceptor.Builder builder =
-                new OpaqueTokenProcessorInterceptor.Builder();
+        OpaqueTokenAppenderInterceptor.Builder builder =
+                new OpaqueTokenAppenderInterceptor.Builder();
         Context ctx = new Context();
-        ctx.put(OpaqueTokenProcessorInterceptor.Builder.PROPERTY_OPAQUE_TOKEN,
+        ctx.put(OpaqueTokenAppenderInterceptor.Builder.PROPERTY_OPAQUE_TOKEN,
                 this.opaqueToken.toString());
         builder.configure(ctx);
         this.interceptor = builder.build();
@@ -43,7 +43,7 @@ public class OpaqueTokenProcessorInterceptorTest {
         Event outputEvent = this.interceptor.intercept(inputEvent);
         assertNotNull(outputEvent);
         assertEquals(outputEvent.getHeaders().get(
-                OpaqueTokenProcessorInterceptor.HEADER_OPAQUE_TOKEN),
+                OpaqueTokenAppenderInterceptor.HEADER_OPAQUE_TOKEN),
                 this.opaqueToken.toString());
     }
 
@@ -52,7 +52,7 @@ public class OpaqueTokenProcessorInterceptorTest {
         Event inputEvent = EventBuilder.withBody("Hello world!",
                 Charset.forName("UTF-8"));
         inputEvent.getHeaders().put(
-                OpaqueTokenProcessorInterceptor.HEADER_OPAQUE_TOKEN,
+                OpaqueTokenAppenderInterceptor.HEADER_OPAQUE_TOKEN,
                 this.opaqueToken.toString());
         Event outputEvent = this.interceptor.intercept(inputEvent);
         assertNull(outputEvent);
@@ -60,17 +60,17 @@ public class OpaqueTokenProcessorInterceptorTest {
 
     @Test(expected = ConfigurationException.class)
     public void testConfigureInterceptorWithMissingToken() {
-        OpaqueTokenProcessorInterceptor.Builder builder =
-                new OpaqueTokenProcessorInterceptor.Builder();
+        OpaqueTokenAppenderInterceptor.Builder builder =
+                new OpaqueTokenAppenderInterceptor.Builder();
         builder.configure(new Context());
     }
 
     @Test(expected = ConfigurationException.class)
     public void testConfigureInterceptorWithInvalidToken() {
-        OpaqueTokenProcessorInterceptor.Builder builder =
-                new OpaqueTokenProcessorInterceptor.Builder();
+        OpaqueTokenAppenderInterceptor.Builder builder =
+                new OpaqueTokenAppenderInterceptor.Builder();
         Context ctx = new Context();
-        ctx.put(OpaqueTokenProcessorInterceptor.Builder.PROPERTY_OPAQUE_TOKEN,
+        ctx.put(OpaqueTokenAppenderInterceptor.Builder.PROPERTY_OPAQUE_TOKEN,
                 "123456789");
         builder.configure(ctx);
     }

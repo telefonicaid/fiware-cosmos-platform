@@ -149,6 +149,14 @@ def deploy_mongo():
         if not files.exists('10gen.repo'):
             put(os.path.join(BASEPATH, 'templates/10gen.repo'), '10gen.repo')
     run('yum -y install mongo-10gen mongo-10gen-server')
+    
+    mongo_conf = StringIO()
+    template = Template(filename = os.path.join(BASEPATH,
+                                              'templates/mongod.conf.mako'))
+    mongo_conf.write(template.render(
+            dbpath = CONFIG['mongo_db_path']))
+    put(mongo_conf, '/etc/mongod.conf')
+    
     run('service mongod start')
     run('chkconfig mongod on')
     run("mongo --eval \"db.adminCommand('listDatabases').databases.forEach("

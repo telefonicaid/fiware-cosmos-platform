@@ -1,7 +1,6 @@
 package es.tid.cosmos.mobility.itineraries;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -14,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.data.DateUtil;
 import es.tid.cosmos.mobility.data.ItinMovementUtil;
 import es.tid.cosmos.mobility.data.ItinTimeUtil;
@@ -28,7 +27,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
  *
  * @author dmicol
  */
-public class ItinMoveClientPoisReducerTest {
+public class ItinMoveClientPoisReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<ItinTime>,
             LongWritable, TypedProtobufWritable<ItinMovement>> instance;
     
@@ -38,11 +37,7 @@ public class ItinMoveClientPoisReducerTest {
                 TypedProtobufWritable<ItinTime>, LongWritable,
                 TypedProtobufWritable<ItinMovement>>(
                         new ItinMoveClientPoisReducer());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.instance.setConfiguration(conf);
+        this.instance.setConfiguration(this.getConf());
     }
 
     @Test

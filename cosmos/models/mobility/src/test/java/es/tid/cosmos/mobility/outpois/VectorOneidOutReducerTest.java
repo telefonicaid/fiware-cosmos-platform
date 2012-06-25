@@ -1,10 +1,9 @@
 package es.tid.cosmos.mobility.outpois;
 
 import java.io.IOException;
-import java.io.InputStream;
-import static java.util.Arrays.asList;
 import java.util.List;
 
+import static java.util.Arrays.asList;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -16,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.data.ClusterUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
@@ -25,7 +24,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
  *
  * @author dmicol
  */
-public class VectorOneidOutReducerTest {
+public class VectorOneidOutReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Cluster>, NullWritable,
             Text> driver;
     
@@ -33,11 +32,7 @@ public class VectorOneidOutReducerTest {
     public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Cluster>,
                 NullWritable, Text>(new VectorOneidOutReducer());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.driver.setConfiguration(conf);
+        this.driver.setConfiguration(this.getConf());
     }
 
     @Test

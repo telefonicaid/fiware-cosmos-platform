@@ -1,12 +1,11 @@
 package es.tid.cosmos.mobility.preparing;
 
 import java.io.IOException;
-import java.io.InputStream;
-import static java.util.Arrays.asList;
 import java.util.LinkedList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import static java.util.Arrays.asList;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
@@ -24,6 +23,8 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.base.data.generated.BaseTypes.Null;
+import es.tid.cosmos.mobility.ConfiguredTest;
+import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.CdrUtil;
 import es.tid.cosmos.mobility.data.CellUtil;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
@@ -31,7 +32,6 @@ import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
-import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.util.CellsCatalogue;
 
 /**
@@ -40,7 +40,7 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(CellsCatalogue.class)
-public class JoinBtsNodeToNodeBtsReducerTest {
+public class JoinBtsNodeToNodeBtsReducerTest extends ConfiguredTest {
     private List<Cell> cells;
     private ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
             ProtobufWritable<NodeBts>, TypedProtobufWritable<Null>> driver;
@@ -58,10 +58,7 @@ public class JoinBtsNodeToNodeBtsReducerTest {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
             ProtobufWritable<NodeBts>, TypedProtobufWritable<Null>>(
                        new JoinBtsNodeToNodeBtsReducer());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
+        MobilityConfiguration conf = this.getConf();
         conf.set("cells", "/home/test");
         this.driver.setConfiguration(conf);
     }

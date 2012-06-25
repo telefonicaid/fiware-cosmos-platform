@@ -2,7 +2,6 @@ package es.tid.cosmos.mobility;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -40,27 +39,22 @@ import es.tid.cosmos.mobility.preparing.PreparingRunner;
  * @author dmicol
  */
 public class MobilityMain extends Configured implements Tool {
+
     @Override
     public int run(String[] args) throws Exception {
         WorkflowList wfList = new WorkflowList(); 
         ArgumentParser arguments = new ArgumentParser();
         arguments.parse(args);
-        
-        InputStream configInput;
-        if (arguments.has("config")) {
-            configInput = new FileInputStream(arguments.getString("config"));
-        } else {
-            configInput = MobilityConfiguration.class.getResource(
-                    "/mobility.properties").openStream();
-        }
-        
+
         // Override the actual configuration with a mobility-based one, in order
         // to have the corresponding execution parameters
         final MobilityConfiguration conf = new MobilityConfiguration(
                 this.getConf());
-        conf.load(configInput);
         this.setConf(conf);
-        
+        if (arguments.has("config")) {
+            conf.load(new FileInputStream(arguments.getString("config")));
+        }
+
         if (!conf.getSysExecMode().equalsIgnoreCase("complete")) {
             throw new UnsupportedOperationException(
                     "Only complete execution mode is supported");

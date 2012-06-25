@@ -1,10 +1,9 @@
 package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
-import java.io.InputStream;
-import static java.util.Arrays.asList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import static java.util.Arrays.asList;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
@@ -12,8 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.data.ClusterUtil;
-import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
@@ -23,7 +22,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  *
  * @author dmicol
  */
-public class ExportClusterToTextByTwoIntReducerTest {
+public class ExportClusterToTextByTwoIntReducerTest extends ConfiguredTest {
     private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Cluster>,
             NullWritable, Text> driver;
     
@@ -32,11 +31,7 @@ public class ExportClusterToTextByTwoIntReducerTest {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<Cluster>, NullWritable, Text>(
                         new ExportClusterToTextByTwoIntReducer());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.driver.setConfiguration(conf);
+        this.driver.setConfiguration(this.getConf());
     }
     
     @Test

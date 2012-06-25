@@ -1,7 +1,6 @@
 package es.tid.cosmos.mobility.populationdensity.profile;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -21,6 +20,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.base.data.generated.BaseTypes.Null;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.*;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
@@ -35,7 +35,7 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(CellsCatalogue.class)
-public class PopdenSpreadNodebtsdayhourReducerTest {
+public class PopdenSpreadNodebtsdayhourReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
             ProtobufWritable<NodeBtsDate>, TypedProtobufWritable<Null>> instance;
     private List<Cell> cells;
@@ -50,10 +50,7 @@ public class PopdenSpreadNodebtsdayhourReducerTest {
         this.instance = new ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
                 ProtobufWritable<NodeBtsDate>, TypedProtobufWritable<Null>>(
                         new PopdenSpreadNodebtsdayhourReducer());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
+        MobilityConfiguration conf = this.getConf();
         conf.set("cells", "/home/test");
         this.instance.setConfiguration(conf);
     }

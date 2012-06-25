@@ -1,7 +1,6 @@
 package es.tid.cosmos.mobility.parsing;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
@@ -16,14 +15,14 @@ import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.base.data.generated.BaseTypes.Null;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
  *
  * @author dmicol
  */
-public class AdjParseAdjBtsMapperTest {
+public class AdjParseAdjBtsMapperTest extends ConfiguredTest {
     private MapDriver<LongWritable, Text, ProtobufWritable<TwoInt>,
             TypedProtobufWritable<Null>> driver;
     
@@ -32,11 +31,7 @@ public class AdjParseAdjBtsMapperTest {
         this.driver = new MapDriver<LongWritable, Text,
                 ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>>(
                         new AdjParseAdjBtsMapper());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.driver.setConfiguration(conf);
+        this.driver.setConfiguration(this.getConf());
     }
 
     @Test

@@ -57,7 +57,8 @@ class JobRun(models.Model):
     def mongo_url(self, collection=None):
         if collection is None:
             collection = self.mongo_collection()
-        return '%s/%s.%s' % (conf.MONGO_BASE.get(), self.mongo_db(), collection)
+        return '%s/%s.%s' % (conf.MONGO_BASE.get(), self.mongo_db(),
+                             collection)
 
     def hadoop_args(self, jar_name):
         args = ['jar', jar_name]
@@ -117,12 +118,13 @@ class JobRun(models.Model):
                 'class': 'results',
                 'target': None,
                 'href': reverse('show_results', args=[self.id])
-            });
+            })
 
         links.append({
                 'name': 'Detailed status',
                 'class': 'status',
                 'target': 'JobSub',
                 'href': self.submission.watch_url()
-            });
+            })
+
         return links

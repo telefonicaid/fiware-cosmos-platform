@@ -1,10 +1,9 @@
 package es.tid.cosmos.mobility.pois;
 
 import java.io.IOException;
-import java.io.InputStream;
-import static java.util.Arrays.asList;
 
 import com.google.protobuf.Message;
+import static java.util.Arrays.asList;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
@@ -12,15 +11,15 @@ import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.base.data.generated.BaseTypes.Int;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.data.NodeBtsDayUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
-import es.tid.cosmos.mobility.MobilityConfiguration;
 
 /**
  *
  * @author dmicol
  */
-public class RepbtsFilterNumCommsReducerTest {
+public class RepbtsFilterNumCommsReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Message>, LongWritable,
             TypedProtobufWritable<Int>> driver;
     
@@ -29,11 +28,7 @@ public class RepbtsFilterNumCommsReducerTest {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
                 LongWritable, TypedProtobufWritable<Int>>(
                         new RepbtsFilterNumCommsReducer());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.driver.setConfiguration(conf);
+        this.driver.setConfiguration(this.getConf());
     }
 
     @Test

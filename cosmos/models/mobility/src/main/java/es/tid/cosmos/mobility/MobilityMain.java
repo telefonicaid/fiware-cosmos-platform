@@ -2,7 +2,6 @@ package es.tid.cosmos.mobility;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -21,6 +20,7 @@ import es.tid.cosmos.mobility.activitydensity.profile.ActivityDensityProfileRunn
 import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.group.AggregatedMatrixGroupRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.simple.AggregatedMatrixSimpleRunner;
+import es.tid.cosmos.mobility.conf.MobilityConfiguration;
 import es.tid.cosmos.mobility.itineraries.ItinerariesRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;
@@ -40,27 +40,25 @@ import es.tid.cosmos.mobility.preparing.PreparingRunner;
  * @author dmicol
  */
 public class MobilityMain extends Configured implements Tool {
+
+    public static final String CONFIG_FLAG = "config";
+
     @Override
-    public int run(String[] args) throws Exception {
+    public int run(String[] args) throws IOException, InterruptedException,
+                                         ClassNotFoundException {
         WorkflowList wfList = new WorkflowList(); 
         ArgumentParser arguments = new ArgumentParser();
         arguments.parse(args);
-        
-        InputStream configInput;
-        if (arguments.has("config")) {
-            configInput = new FileInputStream(arguments.getString("config"));
-        } else {
-            configInput = MobilityConfiguration.class.getResource(
-                    "/mobility.properties").openStream();
-        }
-        
+
         // Override the actual configuration with a mobility-based one, in order
         // to have the corresponding execution parameters
         final MobilityConfiguration conf = new MobilityConfiguration(
                 this.getConf());
-        conf.load(configInput);
         this.setConf(conf);
-        
+        if (arguments.has(CONFIG_FLAG)) {
+            conf.load(new FileInputStream(arguments.getString(CONFIG_FLAG)));
+        }
+
         if (!conf.getSysExecMode().equalsIgnoreCase("complete")) {
             throw new UnsupportedOperationException(
                     "Only complete execution mode is supported");

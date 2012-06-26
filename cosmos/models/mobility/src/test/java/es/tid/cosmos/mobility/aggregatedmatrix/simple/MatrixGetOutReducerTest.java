@@ -1,23 +1,20 @@
 package es.tid.cosmos.mobility.aggregatedmatrix.simple;
 
 import java.io.IOException;
-import java.io.InputStream;
-import static java.util.Arrays.asList;
 import java.util.List;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import static java.util.Arrays.asList;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -26,7 +23,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  *
  * @author dmicol
  */
-public class MatrixGetOutReducerTest {
+public class MatrixGetOutReducerTest extends ConfiguredTest {
     private ReduceDriver<ProtobufWritable<TwoInt>,
             TypedProtobufWritable<ClusterVector>, NullWritable, Text> instance;
 
@@ -35,11 +32,7 @@ public class MatrixGetOutReducerTest {
         this.instance = new ReduceDriver<ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<ClusterVector>, NullWritable, Text>(
                         new MatrixGetOutReducer());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.instance.setConfiguration(conf);
+        this.instance.setConfiguration(this.getConf());
     }
     
     @Test

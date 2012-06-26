@@ -41,8 +41,11 @@ import es.tid.cosmos.mobility.preparing.PreparingRunner;
  */
 public class MobilityMain extends Configured implements Tool {
 
+    public static final String CONFIG_FLAG = "config";
+
     @Override
-    public int run(String[] args) throws Exception {
+    public int run(String[] args) throws IOException, InterruptedException,
+                                         ClassNotFoundException {
         WorkflowList wfList = new WorkflowList(); 
         ArgumentParser arguments = new ArgumentParser();
         arguments.parse(args);
@@ -52,8 +55,8 @@ public class MobilityMain extends Configured implements Tool {
         final MobilityConfiguration conf = new MobilityConfiguration(
                 this.getConf());
         this.setConf(conf);
-        if (arguments.has("config")) {
-            conf.load(new FileInputStream(arguments.getString("config")));
+        if (arguments.has(CONFIG_FLAG)) {
+            conf.load(new FileInputStream(arguments.getString(CONFIG_FLAG)));
         }
 
         if (!conf.getSysExecMode().equalsIgnoreCase("complete")) {

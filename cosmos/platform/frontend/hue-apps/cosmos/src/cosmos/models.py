@@ -7,8 +7,9 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
-from jobsubd.ttypes import State
 from jobsub.models import Submission
+from jobsubd.ttypes import State
+import jobsub.views as jobsub
 
 from cosmos import conf
 
@@ -87,10 +88,10 @@ class JobRun(models.Model):
             conf.MIN_POLLING_INTERVAL):
             return
 
-        submission = job_run.submission
-        job_data = jobsub.get_client().get_job_data(submission.submission_handle)
-        submission.last_seen_state = job_data.state
-        submission.save()
+        job_data = jobsub.get_client().get_job_data(
+            self.submission.submission_handle)
+        self.submission.last_seen_state = job_data.state
+        self.submission.save()
         self.last_submission_refresh = now
         self.save()
 

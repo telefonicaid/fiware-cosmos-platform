@@ -8,7 +8,6 @@ from django.core import validators
 from django.forms.util import ErrorList
 from django.utils.safestring import mark_safe
 
-from cosmos import conf
 from cosmos import models
 
 

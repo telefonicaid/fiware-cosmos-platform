@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import logging
 
-from desktop.lib.django_util import PopupException, render, render_to_string
+from desktop.lib.django_util import PopupException, render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.forms.util import ErrorList

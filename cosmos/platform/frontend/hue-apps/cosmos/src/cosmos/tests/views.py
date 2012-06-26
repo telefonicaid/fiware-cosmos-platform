@@ -3,17 +3,11 @@
 View tests.
 
 """
-from os import path
-import tempfile
-import shutil
-
-from desktop.lib import fsmanager
 from django import test
 from hadoop.fs import LocalSubFileSystem
 from pymongo import Connection
 
 from cosmos.models import JobRun
-
 
 class JobRunsTestCase(test.TestCase):
     fixtures = ['users', 'sample_runs']
@@ -23,7 +17,7 @@ class JobRunsTestCase(test.TestCase):
 
     def test_jobruns_listed(self):
         response = self.client.get('/cosmos/')
-        listed_names = map(lambda x: x.name, response.context['job_runs'])
+        listed_names = [x.name for x in response.context['job_runs']]
         self.assertEquals(response.status_code, 200)
         self.assertTrue('running_wc' in listed_names,
                         msg="Running jobs should be listed")

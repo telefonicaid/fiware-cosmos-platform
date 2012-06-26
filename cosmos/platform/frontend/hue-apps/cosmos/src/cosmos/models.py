@@ -45,6 +45,9 @@ class JobRun(models.Model):
     def __unicode__(self):
         return self.name
 
+    def is_parameterized(self):
+        return self.parameters is not None
+
     def mongo_db(self):
         return 'db_%d' % self.user.id
 
@@ -58,7 +61,7 @@ class JobRun(models.Model):
 
     def hadoop_args(self, jar_name):
         args = ['jar', jar_name]
-        if self.parameters is not None:
+        if self.is_parameterized():
             for parameter in self.parameters:
                 args.extend(parameter.as_job_argument(self))
         else:
@@ -102,20 +105,24 @@ class JobRun(models.Model):
         Each link is a dict of the form:
             {href: '/path', class: 'class', target: 'HueApp', name: 'name'}
         """
-        if self.submission is None:
-            return []
         links = []
-        if self.submission.last_seen_state == State.SUCCESS:
+
+        if self.submission is None:
+            return links
+
+        if (not self.is_parameterized() and
+            self.submission.last_seen_state == State.SUCCESS):
             links.append({
                 'name': 'Results',
                 'class': 'results',
                 'target': None,
                 'href': reverse('show_results', args=[self.id])
             });
+
         links.append({
-            'name': 'Detailed status',
-            'class': 'status',
-            'target': 'JobSub',
-            'href': self.submission.watch_url()
-        });
+                'name': 'Detailed status',
+                'class': 'status',
+                'target': 'JobSub',
+                'href': self.submission.watch_url()
+            });
         return links

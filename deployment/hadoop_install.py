@@ -23,6 +23,7 @@ def install_cdh(config):
         run('rm -rf /tmp/hadoop-*')
         run('wget %s' % config["cdh_version_repo"])
         run('rpm -Uvh --force %s' % cdh_repo)
+        run('rm -f ' + cdh_repo)
         if not files.exists('/etc/pki/rpm-gpg/RPM-GPG-KEY-cloudera'):
             run(('rpm --import'
                  ' http://archive.cloudera.com/redhat/cdh/'

@@ -57,7 +57,7 @@ def install_dependencies(pkg_list):
     """
     for pkg_name in pkg_list:
         if not has_package(pkg_name):
-            run("yum -y install {}".format(pkg_name))
+            run("yum -y install {0}".format(pkg_name))
 
 def clean_host_list(hosts):
     """

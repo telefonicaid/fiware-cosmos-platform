@@ -30,6 +30,8 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     """
     Deploys all the necessary components to get a running Cosmos cluster
     """
+    puts(yellow("Opening FTP ports"))
+    execute(open_ftp_port)
     process_start_msg = "DEPLOY: stating %s deployment"
     puts(yellow(process_start_msg % "JDK"))
     execute(deploy_jdk, os.path.join(dependenciespath, jdk_rpm))
@@ -43,6 +45,17 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     execute(deploy_ganglia)
     puts(yellow(process_start_msg % "Mongo"))
     execute(deploy_mongo)
+    
+@task
+@roles('namenode', 'frontend', 'jobtracker', 'mongo', 'datanodes', 'tasktrackers')
+def open_ftp_port():
+    """
+    Opening the FTP port is necessary in the staging cluster because  the
+    internal yum repositories are FTP-based instead of the standard HTTP
+    repos
+    """
+    sudo("iptables -A OUTPUT -p tcp --dport 21 -j ACCEPT")
+    sudo("iptables -A OUTPUT -p tcp --dport 22 -j ACCEPT")
 
 @task
 @roles('frontend')

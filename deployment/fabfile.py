@@ -226,8 +226,8 @@ def install_gmetad():
         epel_installed = any([line.split()[0] == 'epel'
                               for line in repolist.splitlines()])
         if not epel_installed:
-            major_version = 5
-            minor_version = 4
+            major_version = 6
+            minor_version = 7
             repo_rpm = 'epel-release-{0}-{1}.noarch.rpm'.format(
                     major_version, minor_version)
             base_url = ('http://download.fedoraproject.org/pub/epel/{0}/i386/'
@@ -260,8 +260,8 @@ def install_ganglia_frontend():
         epel_installed = any([line.split()[0] == 'epel'
                               for line in repolist.splitlines()])
         if not epel_installed:
-            major_version = 5
-            minor_version = 4
+            major_version = 6
+            minor_version = 7
             repo_rpm = 'epel-release-{0}-{1}.noarch.rpm'.format(
                     major_version, minor_version)
             base_url = ('http://download.fedoraproject.org/pub/epel/{0}/i386/'
@@ -290,8 +290,8 @@ def install_gmond():
         epel_installed = any([line.split()[0] == 'epel'
                               for line in repolist.splitlines()])
         if not epel_installed:
-            major_version = 5
-            minor_version = 4
+            major_version = 6
+            minor_version = 7
             repo_rpm = 'epel-release-{0}-{1}.noarch.rpm'.format(
                     major_version, minor_version)
             base_url = ('http://download.fedoraproject.org/pub/epel/{0}/i386/'

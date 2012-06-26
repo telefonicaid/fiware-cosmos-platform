@@ -194,16 +194,20 @@ def deploy_ganglia():
 @roles('namenode', 'namenode', 'jobtracker', 'frontend', 'datanodes', 'mongo',
        'tasktrackers')
 def configure_ntp():
+    common.install_dependencies(['ntp'])
     ntp_conf = StringIO()
     template = Template(filename='templates/ntp.conf.mako')
     content = template.render()
     ntp_conf.write(content)
     ntp_conf_path = "/etc/ntp.conf"
     put(ntp_conf, ntp_conf_path)
+    sudo(("iptables -A OUTPUT -p udp -d 0.rhel.pool.ntp.org "
+          "--dport 123 -j ACCEPT"))
+    sudo("service iptables restart")
     run("chkconfig --level 2 ntpd on")
     run("service ntpd start")
 
-@roles('namenode')
+@roles('frontend')
 def install_gmetad():
     with ctx.hide('stdout'):
         repolist = run("yum repolist")
@@ -234,7 +238,7 @@ def install_gmetad():
     run("service gmetad start")
     run("chkconfig --level 2 gmetad on")
 
-@roles('namenode')
+@roles('frontend')
 def install_ganglia_frontend():
     with ctx.hide('stdout'):
         repolist = run("yum repolist")

@@ -247,6 +247,9 @@ def install_gmetad():
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmetad_cfg_path))
     put(gmetad_conf, gmetad_cfg_path)
+    sudo("iptables -A INPUT -p tcp -d {0} --dport 8649 -j ACCEPT"
+            .format(common.clean_host_list(CONFIG['hosts']['frontend'])))
+    sudo("service iptables restart")
     run("service gmetad start")
     run("chkconfig --level 2 gmetad on")
 
@@ -308,6 +311,9 @@ def install_gmond():
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmond_conf_path))
     put(gmond_conf, gmond_conf_path)
+    sudo("iptables -A OUTPUT -p udp -d {0} --dport 8649 -j ACCEPT"
+            .format(common.clean_host_list(CONFIG['hosts']['frontend'])))
+    sudo("service iptables restart")
     run("service gmond start")
     run("chkconfig --level 2 gmond on")
 

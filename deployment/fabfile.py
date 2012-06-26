@@ -22,8 +22,6 @@ import hue_deployment
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 CONFIG = json.loads(open(env.config, 'r').read())
 env.roledefs = CONFIG['hosts']
-if CONFIG.has_key('key_filename'):
-    env.key_filename = CONFIG['key_filename']
 
 @task
 def deploy(dependenciespath, thrift_tar, jdk_rpm):

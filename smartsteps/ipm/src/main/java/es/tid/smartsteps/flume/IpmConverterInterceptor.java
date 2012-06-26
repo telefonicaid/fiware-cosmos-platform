@@ -14,6 +14,7 @@ import org.apache.flume.interceptor.Interceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import es.tid.cosmos.platform.injection.flume.AbstractInterceptor;
 import es.tid.smartsteps.ipm.ParseException;
 import es.tid.smartsteps.ipm.RawToIpmConverter;
 

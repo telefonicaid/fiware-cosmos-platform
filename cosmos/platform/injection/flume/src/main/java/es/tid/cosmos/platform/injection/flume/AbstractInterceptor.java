@@ -1,4 +1,4 @@
-package es.tid.smartsteps.flume;
+package es.tid.cosmos.platform.injection.flume;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -10,6 +10,8 @@ import org.apache.flume.interceptor.Interceptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import es.tid.cosmos.platform.injection.flume.AbstractInterceptor;
+
 /**
  * A Flume interceptor that appends the opaque token of Cosmos's data injection
  * service.

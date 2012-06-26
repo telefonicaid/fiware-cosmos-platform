@@ -30,20 +30,6 @@ data Data2
 # Operations with data
 # -------------------------------------------------
 
-generator fake_moduletemplate
-{
-	out	system.UInt moduletemplate.Data1
-
-	helpLine "Generate a random set of key-values of type (system.UInt moduletemplate.Data1). Number of key-values can be read from environment"
-
-	help
-	{
-		"Generate a random set of key-values of type (system.UInt moduletemplate.Data1)." 
-		"Number of key-values can be read from environment"
-		"Help can be made as complete as needed"
-	}
-}
-
 parser parse_example
 {
         out	system.UInt moduletemplate.Data1
@@ -77,7 +63,7 @@ reduce reduce_example
 	in	system.UInt system.UInt	
 	out	system.UInt system.UInt	
 
-	helpLine "Example of reduce operation. In this case, we have 2 input datasets"
+	helpLine "Example of reduce operation with state. In this case, we have 2 input datasets, the second one is also the output state"
 
 	help
 	{
@@ -99,14 +85,8 @@ parserOut parserOut_example
 	}
 }
 
-script script_example
+script init_stream
 {
-	in 	txt txt
-	in  system.UInt system.UInt	
-	out txt txt
-
-	helpLine "Script example"
-
 	help
 	{
 		"help1"
@@ -115,11 +95,39 @@ script script_example
 
 	code
 	{
-		clear $3;	# Clear the output queue
-		moduletemplate.parse_example $1 $1.kv -create -clear;         #parse text input (already uploaded)
-		moduletemplate.map_example $1.kv $1.kv_mapped -create -clear; #map key-values
-		moduletemplate.reduce_example $1.kv_mapped $2 $3.reduced -create -clear;    #reduce key-values
-		moduletemplate.parserOut_example $3.reduced $3 -create -clear;    #reduce key-values
+
+        # ----------------------------------------------------------------
+        # Input queues
+        # ----------------------------------------------------------------        
+        alias [input]                input;
+        
+        # ----------------------------------------------------------------
+        # Output queues
+        # ----------------------------------------------------------------
+        alias [state]           output_state;
+        
+        # ----------------------------------------------------------------
+        # Internal queues
+        # ----------------------------------------------------------------
+        alias [tmp1]         input_parsed;
+        alias [tmp2]    input_mapped;
+        
+  
+        # ----------------------------------------------------------------
+        # Operations
+        # ----------------------------------------------------------------        
+        alias [p]              0.parse;
+        alias [m]              1.map;
+        alias [r]              2.reduce;
+       
+        # ----------------------------------------------------------------
+        # Definitions
+        # ----------------------------------------------------------------
+
+		add_stream_operation [p] moduletemplate.parse_example [input] [tmp1];
+		add_stream_operation [m] moduletemplate.map_example [tmp1] [tmp2];
+		add_stream_operation [r] moduletemplate.reduce_example [tmp2] [state] [state]; 
+		set_stream_operation_property [r] update_only true;
 	}
 }
 

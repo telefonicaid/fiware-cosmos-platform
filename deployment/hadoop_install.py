@@ -19,12 +19,10 @@ BASEPATH = os.path.dirname(os.path.realpath(__file__))
 def install_cdh(config):
     """Install the latest Hadoop distribution in CDH3"""
     with ctx.hide('stdout'):
-        cdh_repo = config["cdh_version_repo"]
+        cdh_repo = config["cdh_version_repo"].split("/")[-1]
         run('rm -rf /tmp/hadoop-*')
-        repo_rpm = ('http://archive.cloudera.com/redhat/cdh/' + cdh_repo)
-        if not files.exists('~/cdh3-repository-1.0-1.noarch.rpm'):
-            run('wget %s' % repo_rpm)
-            run('rpm -Uvh --force %s' % cdh_repo)
+        run('wget %s' % config["cdh_version_repo"])
+        run('rpm -Uvh --force %s' % cdh_repo)
         if not files.exists('/etc/pki/rpm-gpg/RPM-GPG-KEY-cloudera'):
             run(('rpm --import'
                  ' http://archive.cloudera.com/redhat/cdh/'

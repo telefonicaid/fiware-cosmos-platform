@@ -35,6 +35,9 @@ namespace samson
             return;
         }
 
+        // We move the reset here, because if not, the Engine does not live enough to do that
+        ((DelilahNetwork*)network)->reset();
+
         // Schedule destruction of this element in the main engine
         engine::Engine::shared()->add( new DelilahNetworkRemove( (DelilahNetwork*) network ) );
         
@@ -58,6 +61,8 @@ namespace samson
     {
         au::TokenTaker tt(&token);
         
+        LM_T( LmtNetworkConnection , ("delilah_connect called of type %s for %s:%d, delilah_random_code:%lu", connection_type.c_str(), host.c_str(), port, delilah_random_code));
+
         if( network )
         {
             LM_E(("Currently connected to %s" , network->getLoginInfo().c_str()));
@@ -71,6 +76,7 @@ namespace samson
         network = _network;
         network->setReceiver(this);
         
+        LM_T( LmtNetworkConnection , ("calling addMainDelilahConnection for %s:%d, delilah_random_code:%lu", host.c_str(), port, delilah_random_code));
         // Add main delilah connection with specified worker
         samson::Status s = _network->addMainDelilahConnection( host , port , user , password );        
         

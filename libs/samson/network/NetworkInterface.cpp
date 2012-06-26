@@ -37,7 +37,7 @@ namespace samson
         }
         
         // Using the engine to call the packet receiver asynchronously in a unique thread form
-        LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet type %s",messageCode(packet->msgCode)));
+        LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet(%p) type %s ", packet, messageCode(packet->msgCode)));
         engine::Engine::shared()->add( new PacketReceivedNotification( network_interface_receiver , packet ) );
     }
     

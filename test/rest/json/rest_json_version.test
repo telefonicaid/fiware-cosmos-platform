@@ -1,6 +1,6 @@
 --NAME--
 REST JSON version
 --SHELL--
-curl http://localhost:1202/samson/version.json
+curl http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/version.json
 --EXPECT--
 {"version":"SAMSON v 0.7.0"}

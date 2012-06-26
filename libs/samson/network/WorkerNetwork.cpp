@@ -150,7 +150,7 @@ namespace samson {
                 node_identifier = NodeIdentifier( WorkerNode , assigned_id );
                 update_cluster_information( &new_cluster_information  , assigned_id );
                 
-                // Notify worker to reset everyting 
+                // Notify worker to reset everything
                 // ------------------------------------------------------------
                 Packet *packet = new Packet( Message::WorkerCommand );
                 network::WorkerCommand * worker_command = packet->message->mutable_worker_command();

@@ -157,7 +157,7 @@ namespace samson {
      */
     void Delilah::receive( Packet* packet )
     {
-        LM_T(LmtNetworkNodeMessages, ("Delilah received %s" , packet->str().c_str()));
+        LM_T(LmtNetworkNodeMessages, ("Delilah received packet(%p) type:%s" , packet, packet->str().c_str()));
 
         // Message received
         Message::MessageCode msgCode = packet->msgCode;

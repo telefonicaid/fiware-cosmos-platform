@@ -1,9 +1,9 @@
 --NAME--
 samsonPop - pop_from_queue
 --SHELL--
-delilah -command remove_all_stream
-samsonPush input < input.txt
-samsonPop -max_size 1 input
+delilah ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV}  -command remove_all_stream
+samsonPush -port_node ${SAMSON_WORKER_PORT_ENV} input < input.txt
+samsonPop -max_size 1 -port_node ${SAMSON_WORKER_PORT_ENV} input
 --EXPECT--
 015211078
 072866046

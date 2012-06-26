@@ -34,7 +34,14 @@ TEST(delilahConsoleTest, getPrompt)
     EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah>") << "Wrong prompt before connecting";
     // Stupid warning on deprecated conversion from string constant to ‘char*’
     char *host = strdup("localhost");
+
     int port = SAMSON_WORKER_PORT;
+    char *env_port = getenv("SAMSON_WORKER_PORT_ENV");
+    if (env_port != NULL)
+    {
+        port = atoi(env_port);
+    }
+
     char *user = strdup("anonymous");
     char *password = strdup("anonymous");
     LM_M(("delilah_console->connect"));
@@ -82,6 +89,11 @@ TEST(delilahConsoleTest, runAsyncCommand)
 
     char *host = strdup("localhost");
     int port = SAMSON_WORKER_PORT;
+    char *env_port = getenv("SAMSON_WORKER_PORT_ENV");
+    if (env_port != NULL)
+    {
+        port = atoi(env_port);
+    }
     char *user = strdup("anonymous");
     char *password = strdup("anonymous");
     delilah_console->connect( host , port , user , password );
@@ -325,6 +337,11 @@ TEST(delilahConsoleTest, voids)
 
     char *host = strdup("localhost");
     int port = SAMSON_WORKER_PORT;
+    char *env_port = getenv("SAMSON_WORKER_PORT_ENV");
+    if (env_port != NULL)
+    {
+        port = atoi(env_port);
+    }
     char *user = strdup("anonymous");
     char *password = strdup("anonymous");
     LM_M(("delilah_console->connect"));
@@ -918,6 +935,11 @@ TEST(delilahConsoleTest, delilahBase)
     // Stupid warning on deprecated conversion from string constant to ‘char*’
     char *host = strdup("localhost");
     int port = SAMSON_WORKER_PORT;
+    char *env_port = getenv("SAMSON_WORKER_PORT_ENV");
+    if (env_port != NULL)
+    {
+        port = atoi(env_port);
+    }
     char *user = strdup("anonymous");
     char *password = strdup("anonymous");
     LM_M(("delilah_console->connect"));

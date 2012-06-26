@@ -2,14 +2,20 @@
 samsonMemCheck - insufficient kernel.shmmax
 --SHELL-INIT--
 #Set shmmax to a small value
-sudo sysctl -w kernel.shmmax=33554432
+#Problems to have it working. Moved to the shell
 --SHELL--
+sysctl kernel.shmmax 
+sudo sysctl -w kernel.shmmax=33554432
+sysctl kernel.shmmax 
 samsonMemCheck
 # Oh what the heck since we don't know what we had before 
 # we'll just assign 256MB as the size of a shared memory segment
 # Revise as needed :)
 sudo sysctl -q -w kernel.shmmax=268435456
 --EXPECT--
-Found enough shared memory for SAMSON
+kernel.shmmax = 268435456
+kernel.shmmax = 33554432
+kernel.shmmax = 33554432
+Found enough shared memory for SAMSON, samson_required_mem(536870912) <= max_memory_size(8589934592)
 The system shared memory segment size (kernel.shmmax) is too small for samson. The system allows for a maximum size of 33554432 and we need 268435456
 Set kernel.shmmax to 268435456 using the command 'sysctl -w kernel.shmmax=268435456'.

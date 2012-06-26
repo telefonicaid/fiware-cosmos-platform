@@ -74,7 +74,7 @@ namespace samson {
             //std::cerr << au::str("Error: Not possible to open connection with %s:%d (%s)\n" , host.c_str() , port , status(s));
             return au_status(s); // Best conversion between error codes
         }
-        LM_T( LmtNetworkConnection , ("addMainDelilahConnection" ));
+        LM_T( LmtNetworkConnection , ("addMainDelilahConnection after creating newSocketConnection" ));
         
         
         // Create network connection with this socket
@@ -171,7 +171,7 @@ namespace samson {
                 // ---------------------------------------------------------------
                 Packet * packet = helloMessage( connection );
                 
-                // Asigned id to this worker "0"
+                // Assigned id to this worker "0"
                 packet->message->mutable_hello()->mutable_cluster_information()->set_assigned_id( 0 );
                 
                 connection->push(packet);
@@ -187,7 +187,7 @@ namespace samson {
                                 )
                         );
 
-                // Recolocation of connection ( it is alwasy worker_0 )
+                // Recolocation of connection ( it is always worker_0 )
                 connection->setNodeIdentifier( NodeIdentifier(WorkerNode,0) );
                 NetworkManager::move_connection( MAIN_DELILAH_CONNECTION_NAME , "worker_0" );
                 

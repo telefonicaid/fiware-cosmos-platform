@@ -23,7 +23,7 @@
 
 
 //Test void samson_file();
-TEST(SamsonFileTest, DISABLED_samson_file)
+TEST(SamsonFileTest, samson_file)
 {
 
    // Check error is detected in non-exiting files
@@ -47,6 +47,11 @@ TEST(SamsonFileTest, DISABLED_samson_file)
 
     char *host = strdup("localhost");
     int port = SAMSON_WORKER_PORT;
+    char *env_port = getenv("SAMSON_WORKER_PORT_ENV");
+    if (env_port != NULL)
+    {
+        port = atoi(env_port);
+    }
     char *user = strdup("anonymous");
     char *password = strdup("anonymous");
     LM_M(("delilah_console->connect"));

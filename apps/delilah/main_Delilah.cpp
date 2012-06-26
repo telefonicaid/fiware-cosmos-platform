@@ -1,25 +1,31 @@
 /* ****************************************************************************
-*
-* FILE            main_Delilah.cpp
-*
-* AUTHOR          Andreu Urruela
-*
-* DATE            July 2011
-*
-* DESCRIPTION
-*
-* Main file for the "delilah" console app
-*
-*/
+ *
+ * FILE            main_Delilah.cpp
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * DATE            July 2011
+ *
+ * DESCRIPTION
+ *
+ * Main file for the "delilah" console app
+ *
+ */
+
+#include "parseArgs/parseArgs.h"
 #include "parseArgs/paBuiltin.h"        // paLsHost, paLsPort
 #include "parseArgs/paConfig.h"         // paConfig()
 #include "parseArgs/paIsSet.h"
-#include "parseArgs/parseArgs.h"
+
+#include "logMsg/logMsg.h"
+#include "logMsg/traceLevels.h"
+
 
 #include "au/string.h"
 #include "au/mutex/LockDebugger.h"            // au::LockDebugger
 #include "au/ThreadManager.h"
 #include "au/log/LogToServer.h"
+#include "au/log/Log.h"
 #include "au/log/log_server_common.h"
 
 
@@ -33,6 +39,7 @@
 #include "samson/common/ports.h"
 #include "samson/common/status.h"
 #include "samson/common/samsonVersion.h"
+#include "samson/common/samsonVars.h"
 #include "samson/common/SamsonSetup.h"
 
 #include "samson/network/DelilahNetwork.h"
@@ -46,9 +53,11 @@
 
 
 /* ****************************************************************************
-*
-* Option variables
-*/
+ *
+ * Option variables
+ */
+SAMSON_ARG_VARS;
+
 char             target_host[80];
 char             user[1024];
 char             password[1024];
@@ -63,14 +72,15 @@ char             command[1024];
 char             log_file[1024]; 
 char             log_host[1024];
 unsigned short   log_port; 
+bool             log_classic;
 
 
 #define LOC "localhost"
 #define LOG_PORT AU_LOG_SERVER_PORT
 /* ****************************************************************************
-*
-* parse arguments
-*/
+ *
+ * parse arguments
+ */
 PaArgument paArgs[] =
 {
     { "-log_host",         log_host,              "",                       PaString, PaOpt, _i "localhost",      PaNL, PaNL,  "log server host"                        },
@@ -85,30 +95,39 @@ PaArgument paArgs[] =
     { "",                  target_host,           "",                       PaString, PaOpt, _i LOC,              PaNL, PaNL,  "SAMSON server hostname"                 },
     { "",                 &target_port,           "",                       PaInt,    PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
 
-    PA_END_OF_ARGS
+ { "-user",             user,                  "",                       PaString, PaOpt, _i "anonymous",      PaNL, PaNL,  "User to connect to SAMSON cluster"      },
+ { "-password",         password,              "",                       PaString, PaOpt, _i "anonymous",      PaNL, PaNL,  "Password to connect to SAMSON cluster"  },
+ { "-memory",           &memory_gb,            "MEMORY",                 PaInt,    PaOpt, 1,                   1,    100,   "memory in GBytes"                       },
+ { "-load_buffer_size", &load_buffer_size_mb,  "LOAD_BUFFER_SIZE",       PaInt,    PaOpt, 64,                  64,   2048,  "load buffer size in MBytes"             },
+ { "-f",                commandFileName,       "FILE_NAME",              PaString, PaOpt, _i "",               PaNL, PaNL,  "File with commands to run"              },
+ { "-command",          command,               "", PaString, PaOpt, _i "",               PaNL, PaNL,  "Single command to be executed"          },
+ { "",                  target_host,           "",                       PaString, PaOpt, _i LOC,              PaNL, PaNL,  "SAMSON server hostname"                 },
+ { "",                 &target_port,           "",                       PaInt,    PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
+
+ PA_END_OF_ARGS
 };
 
 
 
 /* ****************************************************************************
-*
-* logFd - file descriptor for log file used in all libraries
-*/
+ *
+ * logFd - file descriptor for log file used in all libraries
+ */
 int logFd = -1;
 
 
 
 /* ****************************************************************************
-*
-* man texts -
-*/
+ *
+ * man texts -
+ */
 static const char* manSynopsis         = " [OPTION]";
 static const char* manShortDescription =  "delilah is the command-line client for SAMSON system\n";
 static const char* manDescription      =
-    "\n"
-    "delilah is the command-line client to upload & download data, run processing commands and monitor a SAMSON system.\n"
-    "See pdf document about samson system to get more information about how to use delilah client"
-    "\n";
+        "\n"
+        "delilah is the command-line client to upload & download data, run processing commands and monitor a SAMSON system.\n"
+        "See pdf document about samson system to get more information about how to use delilah client"
+        "\n";
 
 static const char* manExitStatus    = "0      if OK\n 1-255  error\n";
 static const char* manAuthor        = "Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.";
@@ -131,13 +150,13 @@ void cleanup(void)
 
     if( delilahConsole )
         delilahConsole->stop();
-    
+
     // Wait all threads to finsih
     au::ThreadManager::shared()->wait("Delilah");
 
     // Clear google protocol buffers library
     google::protobuf::ShutdownProtobufLibrary();
-    
+
     LM_T(LmtCleanup, ("Shutting down delilah components (delilahConsole at %p)", delilahConsole));
     if (delilahConsole != NULL)
     {
@@ -145,7 +164,7 @@ void cleanup(void)
         delete delilahConsole;
         delilahConsole = NULL;
     }
-    
+
     LM_T(LmtCleanup, ("Shutting down LockDebugger"));
     au::LockDebugger::destroy();
 
@@ -166,17 +185,27 @@ void cleanup(void)
 
     LM_T(LmtCleanup, ("Shutting down SamsonSetup"));
     samson::SamsonSetup::destroy();
-    
+
     LM_T(LmtCleanup, ("Calling paConfigCleanup"));
     paConfigCleanup();
     LM_T(LmtCleanup, ("Calling lmCleanProgName"));
     lmCleanProgName();
     LM_T(LmtCleanup, ("Cleanup DONE"));
-    
+
     // Stop logging to server
     au::stop_log_to_server();
 }
 
+// Handy function to find a flag in command line without starting paParse
+bool find_flag( int argc , const char * argV[] , const char* flag )
+{
+    for ( int i = 0 ; i < argc ; i++ )
+    {
+        if( strcmp(argV[i], flag) == 0 )
+            return true;
+    }
+    return false;
+}
 
 
 // Custom name for the log file
@@ -184,9 +213,9 @@ extern char * paProgName;
 extern size_t delilah_random_code;
 
 /* ****************************************************************************
-*
-* main - 
-*/
+ *
+ * main -
+ */
 
 int main(int argC, const char *argV[])
 {
@@ -208,7 +237,16 @@ int main(int argC, const char *argV[])
     paConfig("man version",                   (void*) manVersion);
 
     paConfig("default value", "-logDir", (void*) "/var/log/samson");
-    paConfig("if hook active, no traces to file", (void*) true);
+
+    bool flag_log_classic = find_flag( argC , argV , "-log_classic" );
+
+    if( flag_log_classic )
+    {
+        paConfig("if hook active, no traces to file", (void*) false);
+        paConfig("log to file",                       (void*) true);
+    }
+    else
+        paConfig("if hook active, no traces to file", (void*) true);
 
     // Random initialization
     struct timeval tp;
@@ -222,24 +260,30 @@ int main(int argC, const char *argV[])
     paProgName          = strdup( au::str("delilah_%s" , au::code64_str( delilah_random_code ).c_str() ).c_str() );
 
     paParse(paArgs, argC, (char**) argV, 1, true);
-    lmAux((char*) "father");
-    logFd = lmFirstDiskFileDescriptor();
+
 
     // Clean up function
     atexit(cleanup);
 
     // Start connection with log server....
-    std::string local_log_file;
-    if( strlen(log_file) > 0 )
+    if (!flag_log_classic)
     {
-        local_log_file = log_file;
+        std::string local_log_file;
+        if( strlen(log_file) > 0 )
+        {
+            local_log_file = log_file;
+        }
+        else
+        {
+            local_log_file = au::str("%s/delilahLog_%s_%d" , paLogDir, au::code64_str( delilah_random_code ).c_str(), (int) getpid() );
+        }
+        au::start_log_to_server( log_host , log_port , local_log_file );
     }
-    else
-        local_log_file = au::str("%s/delilahLog_%s_%d" , paLogDir 
-                                                       , au::code64_str( delilah_random_code ).c_str() 
-                                                       , (int) getpid() );
-    
-    au::start_log_to_server( log_host , log_port , local_log_file );
+
+    lmAux((char*) "father");
+      logFd = lmFirstDiskFileDescriptor();
+
+
 
     if ((strcmp(target_host, "localhost") == 0) || (strcmp(target_host, "127.0.0.1") == 0))
     {
@@ -269,16 +313,17 @@ int main(int argC, const char *argV[])
     engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
 
     samson::ModulesManager::init("delilah");         // Init the modules manager
-    
-    
+
+
     // Create a DelilahControler once network is ready
     delilahConsole = new samson::DelilahConsole();
+    LM_M(("Delilah connecting to %s:%d", target_host, target_port));
     delilahConsole->connect( target_host , target_port , user , password );
-    
+
     // ----------------------------------------------------------------
     // Special mode with one command line command
     // ----------------------------------------------------------------
-    
+
     if ( strcmp( command , "" ) != 0 )
     {
         {
@@ -288,6 +333,7 @@ int main(int argC, const char *argV[])
                 usleep(100000);
                 if( cronometer.diffTime() > 1 )
                 {
+                    LM_W(("delilahConsoleConnection is not ready, waiting to connect to all workers"));
                     LM_V(("Waiting delilah to connect to all workers"));
                     cronometer.reset();
                 }
@@ -305,7 +351,7 @@ int main(int argC, const char *argV[])
                 // Wait until command is finished
                 usleep(1000);
             }
-            
+
             if( delilahConsole->hasError( id ) )
             {
                 LM_E(("Error running '%s' \n", command ));
@@ -316,26 +362,26 @@ int main(int argC, const char *argV[])
                 printf("%s" , delilahConsole->getOutputForComponent(id).c_str());
                 fflush(stdout);
             }
-            
+
         }
-        
+
         exit(0);
     }
-    
+
     LM_M(("Delilah random code %s" , au::code64_str( delilah_random_code ).c_str() ));
     LM_M(("Running delilah console..."));
     lmFdUnregister(2); // no more traces to stdout
-    
+
     // ----------------------------------------------------------------
     // Special mode for file-based commands
     // ----------------------------------------------------------------
 
     if ( strcmp( commandFileName,"") != 0 )
     {
-        
+
         // Set simple output
         delilahConsole->setSimpleOutput();
-        
+
         {
             au::Cronometer cronometer;
             while ( !delilahConsole->isConnectionReady() ) 
@@ -348,17 +394,17 @@ int main(int argC, const char *argV[])
                 }
             }
         }
-        
+
         FILE *f = fopen( commandFileName , "r" );
         if( !f )
         {
             LM_E(("Error opening commands file %s", commandFileName));
             exit(0);
         }
-        
+
         int num_line = 0;
         char line[1024];
-        
+
         std::cerr << au::str("Processing commands file %s\n", commandFileName );
 
         while( fgets(line, sizeof(line), f) )
@@ -366,34 +412,34 @@ int main(int argC, const char *argV[])
             // Remove the last return of a string
             while( ( strlen( line ) > 0 ) && ( line[ strlen(line)-1] == '\n') > 0 )
                 line[ strlen(line)-1]= '\0';
-            
+
             //LM_M(("Processing line: %s", line ));
             num_line++;
-            
+
             if( ( line[0] != '#' ) && ( strlen(line) > 0) )
             {
-                
+
                 std::cerr << au::str("Processing: '%s'\n", line);
                 size_t id = delilahConsole->runAsyncCommand( line );
                 std::cerr << au::str("Delilah id generated %lu\n" , id);
-                
+
                 if( id != 0)
                 {
                     //LM_M(("Waiting until delilah-component %ul finish", id ));
                     // Wait until this operation is finished
                     while (delilahConsole->isActive( id ) )
                         usleep(1000);
-                    
+
                     if( delilahConsole->hasError( id ) )
                     {
                         LM_E(("Error running '%s' at line %d", line, num_line));
                         LM_E(("Error: %s",  delilahConsole->errorMessage( id ).c_str()));
                     }
-                    
+
                 }
             }
         }
-        
+
         fclose(f);
 
         // Flush content of console

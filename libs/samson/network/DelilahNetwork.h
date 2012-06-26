@@ -136,8 +136,8 @@ namespace samson {
         
         void run()
         {
-            delilah_network->reset();
-            delete delilah_network;
+           // We should check that threads are gone
+            //delete delilah_network;
         }
         
     };

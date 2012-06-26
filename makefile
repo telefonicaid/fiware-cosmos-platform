@@ -37,6 +37,32 @@ ifndef CPU_COUNT
 	endif
 endif
 
+# Port number to handle tests for multiple version simultaneously
+ifndef SAMSON_WORKER_PORT_ENV
+SAMSON_WORKER_PORT_ENV=1324
+endif
+
+# Web port number to handle tests for multiple version simultaneously
+ifndef SAMSON_WORKER_WEB_PORT_ENV
+SAMSON_WORKER_WEB_PORT_ENV=1202
+endif
+
+# Log port number to handle tests for multiple version simultaneously
+ifndef SAMSON_LOG_PORT_ENV
+SAMSON_LOG_PORT_ENV=6001
+endif
+
+# Log query port number to handle tests for multiple version simultaneously
+ifndef SAMSON_LOGQUERY_PORT_ENV
+SAMSON_LOGQUERY_PORT_ENV=6000
+endif
+
+# Log dir to handle tests for multiple version simultaneously
+ifndef LOGSERVER_LOG_DIR
+LOGSERVER_LOG_DIR=/var/log/logserver
+endif
+
+
 # ------------------------------------------------
 # Default compilation mode
 # ------------------------------------------------
@@ -165,15 +191,16 @@ clean:
 # ------------------------------------------------
 
 run_coverage: install_coverage
-	killall samsonWorker || true
-	killall logServer || true
+	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
+	#killall samsonWorker || true
+	kill `ps -efl | fgrep "logServer -port ${SAMSON_LOG_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
 	bash -x scripts/lib_shared_memory.scr || true
 	lcov --directory BUILD_COVERAGE --zerocounters	
-	logServer
-	samsonWorker -log_classic -t 15,20,22,31,32,33,34,35,210
+	logServer -port ${SAMSON_LOG_PORT_ENV} -dir ${LOGSERVER_LOG_DIR} -query_port ${SAMSON_LOGQUERY_PORT_ENV}
+	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} -log_port ${SAMSON_LOG_PORT_ENV} -log_classic ${SAMSON_LOG_LEVELS}
 	make test_coverage
-	killall samsonWorker || true
-	killall logServer || true
+	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
+	kill `ps -efl | fgrep "logServer -port ${SAMSON_LOG_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
 	bash -x scripts/lib_shared_memory.scr
 	mkdir -p coverage
 	lcov --directory BUILD_COVERAGE --capture --output-file coverage/samson.info
@@ -201,10 +228,10 @@ begin_mac_coverage:
 	echo "NOTE: PLEASE MAKE SURE YOU RUN  export GCOV_PREFIX=$$PWD"
 
 process_mac_coverage:
-	killall samsonWorker || true
-	samsonWorker -log_classic -t 15,20,22,31,32,33,34,35,210
+	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
+	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} -log_port ${SAMSON_LOG_PORT_ENV} -log_classic ${SAMSON_LOG_LEVELS}
 	make test_coverage
-	killall samsonWorker || true
+	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
 
 finish_mac_coverage:
 	mkdir -p coverage
@@ -233,7 +260,7 @@ ctest: debug_all
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
-	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest -t 15,20,22,31,32,33,34,35,210 --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
+	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest ${SAMSON_LOG_LEVELS} --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG_ALL/samson_test.xml
 
@@ -247,7 +274,7 @@ unit_test: debug_all
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
-	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest  -t 15,20,22,31,32,33,34,35,210 --gtest_shuffle --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
+	ulimit -c unlimited && BUILD_DEBUG_ALL/apps/unitTest/unitTest  ${SAMSON_LOG_LEVELS} --gtest_shuffle --gtest_output=xml:BUILD_DEBUG_ALL/samson_test.xml
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' BUILD_DEBUG_ALL/samson_test.xml
 
@@ -262,7 +289,7 @@ test_coverage:
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs
-	ulimit -c unlimited && BUILD_COVERAGE/apps/unitTest/unitTest  -t 15,20,22,31,32,33,34,35,210 --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
+	ulimit -c unlimited && BUILD_COVERAGE/apps/unitTest/unitTest  ${SAMSON_LOG_LEVELS} --gtest_output=xml:BUILD_COVERAGE/samson_test.xml || true
 	# Convert "disabled" tests to "skipped" tests so we can keep track in Jenkins
 	sed -i -e 's/disabled/skipped/' -e 's,\(<testcase name="\)DISABLED_\(.*status="notrun".*\) />,\1\2>\n      <skipped/>\n    </testcase>,' BUILD_COVERAGE/samson_test.xml
 
@@ -443,8 +470,8 @@ init_home:
 	mkdir -p $(SAMSON_HOME)
 	mkdir -p $(SAMSON_WORKING)
 	mkdir -p /var/log/samson
-	mkdir -p /var/log/logserver
-	chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME) $(SAMSON_WORKING) /var/log/samson /var/log/logserver
+	mkdir -p ${LOGSERVER_LOG_DIR}
+	chown -R $(SAMSON_OWNER):$(SAMSON_OWNER) $(SAMSON_HOME) $(SAMSON_WORKING) /var/log/samson ${LOGSERVER_LOG_DIR}
 
 help:
 	less doc/makefile_targets

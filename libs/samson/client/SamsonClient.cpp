@@ -156,7 +156,8 @@ namespace samson
     {
         LM_T( LmtNetworkConnection , ("In samsonClient::disconnect(): delilah->stop()" ));
         // Stop all connections of my delilah
-        delilah->stop();
+        au::ErrorManager error;
+        delilah->delilah_disconnect(&error);
     }
 
     

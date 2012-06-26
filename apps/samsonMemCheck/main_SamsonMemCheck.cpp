@@ -129,7 +129,7 @@ int main(int argC, const char *argV[])
     }
     else
     {
-        printf ("Found enough shared memory for SAMSON\n");
+        printf ("Found enough shared memory for SAMSON, samson_required_mem(%ld) <= max_memory_size(%ld)\n", samson_required_mem, max_memory_size);
     }
 
     // Check to see if the segment size (shmmax) is big enough for each SAMSON buffer
@@ -140,7 +140,7 @@ int main(int argC, const char *argV[])
     }
     else
     {
-        printf ("The maximum shared memory segment size is sufficent for SAMSON.\n");
+        printf ("The maximum shared memory segment size is sufficent for SAMSON. shared_memory_size_per_buffer(%ld) <=  kernel_shmmax(%ld)\n", shared_memory_size_per_buffer, kernel_shmmax);
     }
 
 }

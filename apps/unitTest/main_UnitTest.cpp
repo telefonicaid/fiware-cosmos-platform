@@ -17,6 +17,10 @@
 #include "gtest/gtest.h"
 
 #include "parseArgs/parseArgs.h"
+#include "parseArgs/paBuiltin.h"        // paLsHost, paLsPort
+#include "parseArgs/paConfig.h"         // paConfig()
+#include "parseArgs/paIsSet.h"
+
 #include "samson/common/traces.h"
 #include "samson/common/SamsonSetup.h"
 
@@ -31,11 +35,12 @@ PaArgument paArgs[] =
     PA_END_OF_ARGS
 };
 
+
 /* ****************************************************************************
  *
  * global variables
  */
-int                           logFd             = -1;
+int              logFd             = -1;
 
 /* ****************************************************************************
 *
@@ -52,6 +57,7 @@ int main(int argC, char **argV) {
     paConfig("default value", "-logDir",      (void*) "/var/log/samson");
     
     paConfig("man author",                    "Samson team");
+
 
     // Goyo. trying to get traces
     if (strcmp(argV[1], "-t") == 0)

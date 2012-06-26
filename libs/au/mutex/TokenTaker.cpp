@@ -20,6 +20,7 @@ TokenTaker::TokenTaker( Token* _token  )
     token = _token;
     name = "Unknown";
     
+    //LM_M(("New TokenTaker %s for token %s", name ,  token->name));
     token->retain();
 }
 

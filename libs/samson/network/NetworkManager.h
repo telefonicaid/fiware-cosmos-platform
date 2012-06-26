@@ -36,7 +36,7 @@ namespace samson {
 
         // All managed connection
         au::map<std::string , NetworkConnection> connections;
-        
+
         // Token to block add and move operations on connections
         au::Token token_connections_;
 
@@ -69,7 +69,7 @@ namespace samson {
         // Check connection
         bool isConnected( std::string connection_name );
         
-        // Extract next unconnected netwokr connection ... to be deleted
+        // Extract next unconnected network connection ... to be deleted
         NetworkConnection* extractNextDisconnectedConnection(  );
         
         // simply remove all unconnected connections

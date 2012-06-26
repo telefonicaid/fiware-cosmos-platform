@@ -11,7 +11,7 @@ namespace samson {
 
     Status NetworkManager::move_connection( std::string connection_from , std::string connection_to )
     {
-        au::TokenTaker tt(&token_connections_);
+        au::TokenTaker tt(&token_connections_, "token_connections_.move_connection");
 
         if( connections.findInMap(connection_to) != NULL )
             return Error;
@@ -32,15 +32,20 @@ namespace samson {
  
     Status NetworkManager::add( NetworkConnection * network_connection )
     {
-        au::TokenTaker tt(&token_connections_);
-
         std::string name = network_connection->getName();
+        LM_T(LmtNetworkConnection, ("Adding network_connection:%s", name.c_str()));
+
+        au::TokenTaker tt(&token_connections_, "token_connections_.add");
 
         if( connections.findInMap( name ) != NULL )
+        {
+            LM_W(("network_connection:%s already connected", name.c_str()));
             return Error;
+        }
         
         // Add to the map of connections
         connections.insertInMap( name , network_connection );
+        LM_T(LmtNetworkConnection, ("Inserted in map network_connection:%s", name.c_str()));
 
         // recover pending packets if any...
         multi_packet_queue.pop_pending_packet( name,  &network_connection->packet_queue );
@@ -50,24 +55,25 @@ namespace samson {
         
         return OK;
     }
-    
+
     size_t NetworkManager::getNumConnections()
     {
-        au::TokenTaker tt(&token_connections_);
+        au::TokenTaker tt(&token_connections_, "token_connections_.getNumConnections");
         return connections.size();
     }
     
     bool NetworkManager::isConnected( std::string connection_name )
     {
-        au::TokenTaker tt(&token_connections_);
+        au::TokenTaker tt(&token_connections_, "token_connections_.isConnected");
+
+        LM_T(LmtNetworkConnection, ("Asked for connections for network_connection:%s", connection_name.c_str()));
 
         return (connections.findInMap(connection_name) != NULL);
     }
     
-    
     au::tables::Table * NetworkManager::getConnectionsTable()
     {
-        au::TokenTaker tt(&token_connections_);
+        au::TokenTaker tt(&token_connections_, "token_connections_.getConnectionsTable");
         
         au::tables::Table* table = new au::tables::Table( au::StringVector( "Name" , "Host" , "In" , "Out" ) );
         
@@ -100,7 +106,9 @@ namespace samson {
         {
             NetworkConnection* connection = extractNextDisconnectedConnection();
             if( connection )
+            {
                 delete connection;
+            }
             else
                 return;
         }
@@ -109,7 +117,7 @@ namespace samson {
 
     NetworkConnection* NetworkManager::extractNextDisconnectedConnection( )
     {
-        au::TokenTaker tt(&token_connections_);
+        au::TokenTaker tt(&token_connections_, "token_connections_.extractNextDisconnectedConnection");
 
         au::map<std::string , NetworkConnection>::iterator it_connections;
         for (it_connections = connections.begin() ; it_connections != connections.end() ; it_connections++ )
@@ -119,6 +127,8 @@ namespace samson {
             if( network_connection->isDisconnected() )
                 if( network_connection->noThreadsRunning() )
                 {
+                    LM_T(LmtNetworkConnection, ("Removing connection '%s' because disconnected and no threads running", it_connections->first.c_str()));
+
                     connections.erase( it_connections );
                     return network_connection;
                 }

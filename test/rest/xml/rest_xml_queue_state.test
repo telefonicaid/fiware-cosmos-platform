@@ -1,13 +1,13 @@
 --NAME--
 REST XML queue_state
 --SHELL--
-delilah -command remove_all_stream 2> /dev/null
-delilah -command "add_stream_operation o1 txt.parser_words input words" 2> /dev/null
-delilah -command "add_stream_operation o2 txt.word_count_accumulate words words_count words_count" 2> /dev/null
-delilah -command "push input.txt input"
-delilah -command flush_buffers
-delilah -command "wait"
-curl http://localhost:1202/samson/queues/words_count/state/015211078.xml
+delilah ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command remove_all_stream 2> /dev/null
+delilah ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command "add_stream_operation o1 txt.parser_words input words" 2> /dev/null
+delilah ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV}  -command "add_stream_operation o2 txt.word_count_accumulate words words_count words_count" 2> /dev/null
+delilah ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV}  -command "push input.txt input"
+delilah ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV}  -command flush_buffers
+delilah ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV}  -command "wait"
+curl http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/queues/words_count/state/015211078.xml
 --EXPECT--
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- SAMSON Rest interface -->

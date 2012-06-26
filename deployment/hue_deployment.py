@@ -7,6 +7,7 @@ import fabric.context_managers as ctx
 from fabric.contrib import files
 from fabric.decorators import roles
 from fabric.utils import puts
+import common
 
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -16,6 +17,7 @@ def install_git():
     run('rm -f git-1.7.10.4-1.el6.rfx.x86_64.rpm')
 
 def install_and_patch_hue(config):
+    common.install_cdh_repo(config)
     local_patch_path = os.path.join(BASEPATH, config['hue_patch_dir'],
                                     config['hue_patch_name'])
     remote_patch_path = os.path.join('~', config['hue_patch_name'])

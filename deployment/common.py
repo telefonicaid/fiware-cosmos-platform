@@ -5,8 +5,22 @@ common functionality for Fabric deployments
 """
 from fabric.api import env, roles, run, settings
 from fabric.colors import red, green
+from fabric.contrib import files
 from fabric.decorators import roles
 import fabric.context_managers as ctx
+
+def install_cdh_repo(config):
+    """Install the Hadoop distribution repo"""
+    with ctx.hide('stdout'):
+        cdh_repo = config["cdh_version_repo"].split("/")[-1]
+        run('rm -rf /tmp/hadoop-*')
+        run('wget %s' % config["cdh_version_repo"])
+        run('rpm -Uvh --force %s' % cdh_repo)
+        run('rm -f ' + cdh_repo)
+        if not files.exists('/etc/pki/rpm-gpg/RPM-GPG-KEY-cloudera'):
+            run(('rpm --import'
+                 ' http://archive.cloudera.com/redhat/cdh/'
+                 ' RPM-GPG-KEY-cloudera'))
 
 @roles('namenode')
 def has_package(pkg):

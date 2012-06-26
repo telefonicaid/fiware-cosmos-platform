@@ -10,6 +10,7 @@ from fabric.decorators import roles, parallel
 from fabric.utils import puts
 from StringIO import StringIO
 from mako.template import Template
+import common
 
 COSMOS_CLASSPATH = '/usr/lib/hadoop-0.20/lib/cosmos/'
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
@@ -18,16 +19,8 @@ BASEPATH = os.path.dirname(os.path.realpath(__file__))
 @parallel
 def install_cdh(config):
     """Install the latest Hadoop distribution in CDH3"""
+    common.install_cdh_repo(config)
     with ctx.hide('stdout'):
-        cdh_repo = config["cdh_version_repo"].split("/")[-1]
-        run('rm -rf /tmp/hadoop-*')
-        run('wget %s' % config["cdh_version_repo"])
-        run('rpm -Uvh --force %s' % cdh_repo)
-        run('rm -f ' + cdh_repo)
-        if not files.exists('/etc/pki/rpm-gpg/RPM-GPG-KEY-cloudera'):
-            run(('rpm --import'
-                 ' http://archive.cloudera.com/redhat/cdh/'
-                 ' RPM-GPG-KEY-cloudera'))
         run('yum -y install hadoop-0.20 hadoop-0.20-native')
 
 

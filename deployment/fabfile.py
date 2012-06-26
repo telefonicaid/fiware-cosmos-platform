@@ -54,6 +54,7 @@ def open_ftp_port():
     """
     sudo("iptables -A OUTPUT -p tcp --dport 21 -j ACCEPT")
     sudo("iptables -A OUTPUT -p tcp --dport 22 -j ACCEPT")
+    sudo("service iptables restart")
 
 @task
 @roles('frontend')

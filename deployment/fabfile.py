@@ -10,9 +10,9 @@ from StringIO import StringIO
 from fabric.api import run, execute, sudo, put, cd, env
 from fabric.contrib import files
 import fabric.context_managers as ctx
-from fabric.colors import red, white
+from fabric.colors import red, white, yellow
 from fabric.decorators import roles, task, parallel
-from fabric.utils import puts, error
+from fabric.utils import puts, error, warn
 from mako.template import Template
 
 import common
@@ -24,7 +24,7 @@ CONFIG = json.loads(open(env.config, 'r').read())
 env.roledefs = CONFIG['hosts']
 
 @task
-def deploy(dependenciespath, thrift_tar, jdk_rpm):
+def deploy(dependenciespath, thrift_tar, jdk_rpm, sshd_needs_moved=False):
     """
     Deploys all the necessary components to get a running Cosmos cluster
     """
@@ -38,7 +38,7 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     puts(white(process_start_msg % "HUE", True))
     execute(deploy_hue, os.path.join(dependenciespath, thrift_tar))
     puts(white(process_start_msg % "SFTP", True))
-    execute(deploy_sftp)
+    execute(deploy_sftp, sshd_needs_moved)
     puts(white(process_start_msg % "Ganglia", True))
     execute(deploy_ganglia)
     puts(white(process_start_msg % "Mongo", True))
@@ -112,10 +112,17 @@ def deploy_hue(thrift_tarpath):
 
 @task
 @roles('frontend')
-def deploy_sftp():
+def deploy_sftp(sshd_needs_moved=False):
     """
     Deploys the SFTP server as a Java JAR and starts it
     """
+    if isinstance(sshd_needs_moved, basestring) and\
+            sshd_needs_moved in ['False', 'false', 'N', 'n']:
+        sshd_needs_moved = False
+    if isinstance(sshd_needs_moved, basestring) and\
+            sshd_needs_moved in ['True', 'true', 'Y', 'y']:
+        sshd_needs_moved = True
+
     injection_exec = 'injection-server-{0}.jar'.format(CONFIG['version'])
     injection_jar = os.path.join(CONFIG['injection_path'], 'target',
                                  injection_exec)
@@ -147,7 +154,12 @@ def deploy_sftp():
         run("echo '' >> {0}".format(pidfile))
     put(os.path.join(BASEPATH, "templates/injection.init.d"),
                                "/etc/init.d/injection")
-    move_sshd()
+    if sshd_needs_moved:
+        custom_port = 2222
+        warn(yellow("Moving sshd at %s to port %s" %\
+                    (env.host_string, custom_port)))
+        move_sshd(custom_port) 
+
     with ctx.settings(warn_only=True):
         start = run("/etc/init.d/injection start", pty=False)
         if start.failed:

@@ -43,7 +43,7 @@ def install_and_patch_hue(config):
                                                 'templates/hue.ini.mako'))
     hueconf.write(template.render(
             jobtracker = config['hosts']['jobtracker'][0],
-            namenode = config['hosts']['namenode'][0])
+            namenode = config['hosts']['namenode'][0]))
     put(hueconf, '/etc/hue/hue.ini')
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')

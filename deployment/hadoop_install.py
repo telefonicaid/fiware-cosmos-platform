@@ -145,7 +145,6 @@ def deploy_jobtracker_daemon():
     common.add_iptables_rule("INPUT -p tcp --dport 50030 -j ACCEPT")
     common.add_iptables_rule("INPUT -p tcp --dport 9290 -j ACCEPT")
     sudo("service iptables save")
-    deploy_daemon('namenode')
     deploy_daemon('jobtracker')
     start_daemon('jobtracker')
 

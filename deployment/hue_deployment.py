@@ -58,6 +58,7 @@ def install_and_patch_hue(config):
     sudo('hadoop dfs -chown -R hive /user/hive/', user='hdfs')
     sudo('hadoop dfs -mkdir /tmp', user='hdfs')
     sudo('hadoop dfs -chmod +777 /tmp', user='hdfs')
+    sudo('chown -R hue /var/lib/hive/')
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def install_hue_plugins():

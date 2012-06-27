@@ -59,6 +59,7 @@ def install_and_patch_hue(config):
     put(hueconf, '/etc/hue/hue.ini')
     sudo('hadoop dfs -mkdir /user/hive/warehouse', user='hdfs')
     sudo('hadoop dfs -chown -R hive /user/hive/', user='hdfs')
+    sudo('hadoop dfs -chmod +777 /user/hive/warehouse', user='hdfs')
     sudo('hadoop dfs -mkdir /tmp', user='hdfs')
     sudo('hadoop dfs -chmod +777 /tmp', user='hdfs')
     sudo('chown -R hue /var/lib/hive/')

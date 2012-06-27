@@ -49,7 +49,7 @@
   <!-- HUE integration -->
   <property>        
     <name>jobtracker.thrift.address</name>
-    <value>0.0.0.0:9290</value>
+    <value>${jobtracker}:9290</value>
   </property>
   <property>        
     <name>mapred.jobtracker.plugins</name>

@@ -5,7 +5,7 @@ import os
 import shutil
 from StringIO import StringIO
 
-from fabric.api import run, put, cd, env
+from fabric.api import run, put, cd, env, sudo
 from fabric.colors import red, yellow
 import fabric.context_managers as ctx
 from fabric.contrib import files
@@ -57,6 +57,10 @@ def install_and_patch_hue(config):
             jobtracker = config['hosts']['jobtracker'][0],
             namenode = config['hosts']['namenode'][0]))
     put(hueconf, '/etc/hue/hue.ini')
+    sudo('hadoop dfs -mkdir /user/hive/warehouse', user='hdfs')
+    sudo('hadoop dfs -chown -R hive /user/hive/', user='hdfs')
+    sudo('hadoop dfs -mkdir /tmp', user='hdfs')
+    sudo('hadoop dfs -chmod +777 /tmp', user='hdfs')
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def install_hue_plugins():

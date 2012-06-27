@@ -54,7 +54,7 @@ def open_ftp_port():
     """
     sudo("iptables -A OUTPUT -p tcp --dport 21 -j ACCEPT")
     sudo("iptables -A OUTPUT -p tcp --dport 22 -j ACCEPT")
-    sudo("service iptables restart")
+    sudo("service iptables save")
 
 @task
 @roles('frontend')
@@ -249,7 +249,7 @@ def install_gmetad():
     put(gmetad_conf, gmetad_cfg_path)
     sudo("iptables -A INPUT -p tcp -d {0} --dport 8649 -j ACCEPT"
             .format(common.clean_host_list(CONFIG['hosts']['frontend'])))
-    sudo("service iptables restart")
+    sudo("service iptables save")
     run("service gmetad start")
     run("chkconfig --level 2 gmetad on")
 
@@ -313,7 +313,7 @@ def install_gmond():
     put(gmond_conf, gmond_conf_path)
     sudo("iptables -A OUTPUT -p udp -d {0} --dport 8649 -j ACCEPT"
             .format(common.clean_host_list(CONFIG['hosts']['frontend'])))
-    sudo("service iptables restart")
+    sudo("service iptables save")
     run("service gmond start")
     run("chkconfig --level 2 gmond on")
 

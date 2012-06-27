@@ -110,7 +110,7 @@ def deploy_datanode_daemon():
     sudo("iptables -A INPUT -p tcp --dport 1006 -j ACCEPT")
     sudo("iptables -A INPUT -p tcp --dport 50020 -j ACCEPT")
     sudo("iptables -A INPUT -p tcp --dport 0 -j ACCEPT")
-    sudo("service iptables restart")
+    sudo("service iptables save")
     deploy_daemon('datanode')
     start_daemon('datanode')
 
@@ -124,7 +124,7 @@ def deploy_namenode_daemon():
     sudo("iptables -A INPUT -p tcp --dport 10090 -j ACCEPT")
     sudo("iptables -A INPUT -p tcp --dport 50090 -j ACCEPT")
     sudo("iptables -A INPUT -p tcp --dport 50495 -j ACCEPT")
-    sudo("service iptables restart")
+    sudo("service iptables save")
     deploy_daemon('namenode')
     output = sudo('yes Y | hadoop namenode -format', user='hdfs')
     if output.return_code != 0:
@@ -143,7 +143,7 @@ def deploy_jobtracker_daemon():
     sudo("iptables -A INPUT -p tcp --dport 8021 -j ACCEPT")
     sudo("iptables -A INPUT -p tcp --dport 50030 -j ACCEPT")
     sudo("iptables -A INPUT -p tcp --dport 9290 -j ACCEPT")
-    sudo("service iptables restart")
+    sudo("service iptables save")
     deploy_daemon('namenode')
     deploy_daemon('jobtracker')
     start_daemon('jobtracker')
@@ -154,6 +154,6 @@ def deploy_tasktracker_daemon():
     """Deploys the tasktracker Hadoop daemon"""
     sudo("iptables -A INPUT -p tcp --dport 50060 -j ACCEPT")
     sudo("iptables -A INPUT -p tcp --dport 0 -j ACCEPT")
-    sudo("service iptables restart")
+    sudo("service iptables save")
     deploy_daemon('tasktracker')
     start_daemon('tasktracker')

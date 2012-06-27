@@ -7,6 +7,8 @@ import fabric.context_managers as ctx
 from fabric.contrib import files
 from fabric.decorators import roles
 from fabric.utils import puts
+from StringIO import StringIO
+from mako.template import Template
 import common
 
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
@@ -35,6 +37,14 @@ def install_and_patch_hue(config):
     common.add_iptables_rule('INPUT -p tcp -m tcp --dport 8001 -j ACCEPT')
     common.add_iptables_rule('INPUT -p tcp -m tcp --dport 8002 -j ACCEPT')
     common.add_iptables_rule('INPUT -p tcp -m tcp --dport 8003 -j ACCEPT')
+    
+    hueconf = StringIO()
+    template = Template(filename = os.path.join(BASEPATH,
+                                                'templates/hue.ini.mako'))
+    hueconf.write(template.render(
+            jobtracker = config['hosts']['jobtracker'][0],
+            namenode = config['hosts']['namenode'][0])
+    put(hueconf, '/etc/hue/hue.ini')
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def install_hue_plugins():

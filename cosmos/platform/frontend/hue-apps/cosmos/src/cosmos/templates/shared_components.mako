@@ -32,9 +32,10 @@ from django.template.defaultfilters import urlencode, escape
                      is_selected(section, 'job_runs'))}
       ${toolbar_icon('define_job', 'New job', url('define_job'),
                      is_selected(section, 'run_job'))}
-      ${toolbar_icon('upload', 'Upload',
-                     url('cosmos.views.upload_index'),
+      ${toolbar_icon('upload', 'Upload', url('cosmos.views.upload_index'),
                      is_selected(section, 'upload'))}
+      ${toolbar_icon('results', 'Results', url('list_results'),
+                     is_selected(section, 'results'))}
       <li>
         <a class="jframe-refresh large" data-filters="ArtButton">Refresh</a>
       </li>

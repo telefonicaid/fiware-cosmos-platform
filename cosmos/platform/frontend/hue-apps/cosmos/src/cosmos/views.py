@@ -234,6 +234,10 @@ def upload_index(request):
     ))
 
 
+def list_results(request):
+    pass
+
+
 def show_results(request, job_id):
     job = get_object_or_404(JobRun, pk=job_id, user=request.user)
     if job.submission is None:

@@ -35,7 +35,7 @@ class AbstractParameter(object):
 
         To be override by subclasses.
         """
-        raise NotImplemented("AbstractParameter#form_field must be override")
+        raise NotImplementedError("AbstractParameter#form_field must be override")
 
     def as_job_argument(self, job):
         """Returns a list of command line arguments to inject this

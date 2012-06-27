@@ -36,7 +36,7 @@ from django.template.defaultfilters import urlencode, escape
                      url('cosmos.views.upload_index'),
                      is_selected(section, 'upload'))}
       <li>
-	<a class="jframe-refresh large" data-filters="ArtButton">Refresh</a>
+        <a class="jframe-refresh large" data-filters="ArtButton">Refresh</a>
       </li>
     </ul>
     % endif
@@ -56,17 +56,17 @@ from django.template.defaultfilters import urlencode, escape
 <%def name="wizard_navigation()">
     <br/>
     <div class="cos-wizard_nav">
-	<a class="cos-cancel" href="${ url('cancel_job') }">Cancel</a>
-	% if wizard_nav.has_key('finish'):
-	<input class="submit" name="next" type="submit"
-	       value="${ wizard_nav['finish'] }" />
-	% endif
-	% if wizard_nav['next']:
-	<input class="submit" name="next" type="submit" value="Next >" />
-	% endif
-	% if wizard_nav['back']:
-	<input class="submit" name="back" type="submit" value="< Back" />
-	% endif
+        <a class="cos-cancel" href="${ url('cancel_job') }">Cancel</a>
+        % if wizard_nav.has_key('finish'):
+        <input class="submit" name="next" type="submit"
+               value="${ wizard_nav['finish'] }" />
+        % endif
+        % if wizard_nav['next']:
+        <input class="submit" name="next" type="submit" value="Next >" />
+        % endif
+        % if wizard_nav['back']:
+        <input class="submit" name="back" type="submit" value="< Back" />
+        % endif
     </div>
 </%def>
 ## vim:set syntax=mako:

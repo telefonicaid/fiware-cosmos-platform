@@ -120,7 +120,8 @@ def deploy_sftp():
     injection_jar = os.path.join(CONFIG['injection_path'], 'target',
                                  injection_exec)
     if not os.path.exists(injection_jar):
-        error(red('ERROR: injection server file not found: %s' % injection_jar))
+        error(red('ERROR: injection server file not found: %s' %\
+                  injection_jar))
         return
     exec_path = os.path.join('~', 'injection', injection_exec)
     if not files.exists(exec_path):
@@ -146,6 +147,7 @@ def deploy_sftp():
         run("echo '' >> {0}".format(pidfile))
     put(os.path.join(BASEPATH, "templates/injection.init.d"),
                                "/etc/init.d/injection")
+    move_sshd()
     with ctx.settings(warn_only=True):
         start = run("/etc/init.d/injection start", pty=False)
         if start.failed:
@@ -153,6 +155,17 @@ def deploy_sftp():
             if restart.failed and 'Permission denied' in restart.stdout:
                 sudo('chmod +x /etc/init.d/injection')
                 run("service injection start")
+
+def move_sshd():
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 2222 -j ACCEPT")
+    sudo("service iptables save")
+    sshd_conf = StringIO()
+    template = Template(filename = os.path.join(BASEPATH,
+                                                'templates/sshd_config.mako')
+    content = template.render(new_port = 2222)
+    sshd_conf.write(content)
+    put(sshd_conf, "/etc/ssh/sshd_config")
+    run("service sshd restart")
 
 @task
 def deploy_cdh():
@@ -226,11 +239,11 @@ def configure_ntp():
     put(ntp_conf, ntp_conf_path)
     common.add_iptables_rule(("OUTPUT -p udp -d 0.rhel.pool.ntp.org "
           "--dport 123 -j ACCEPT"))
-    sudo("service iptables restart")
+    sudo("service iptables save")
     run("chkconfig --level 2 ntpd on")
     run("service ntpd start")
 
-@roles('frontend')
+@roles('namenode')
 def install_gmetad():
     with ctx.hide('stdout'):
         repolist = run("yum repolist")
@@ -264,7 +277,7 @@ def install_gmetad():
     run("service gmetad start")
     run("chkconfig --level 2 gmetad on")
 
-@roles('frontend')
+@roles('namenode')
 def install_ganglia_frontend():
     with ctx.hide('stdout'):
         repolist = run("yum repolist")

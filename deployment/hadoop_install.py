@@ -38,7 +38,7 @@ def create_hadoop_dirs(config):
         
     run('install -o root   -g hadoop -m 755 -d %s' % COSMOS_CLASSPATH)
  
-@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
+@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers', 'frontend')
 @parallel
 def configure_hadoop(config):
     """Generate  Hadoop configuration files"""
@@ -79,7 +79,8 @@ def configure_hadoop(config):
                 namedirs=','.join([dir + '/name'
                                    for dir in config["hadoop_data_dirs"]]),
                 datadirs=','.join([dir + '/data'
-                                   for dir in config["hadoop_data_dirs"]])))
+                                   for dir in config["hadoop_data_dirs"]]),
+                namenode = config['hosts']['namenode'][0])))
         put(hdfssite, 'hdfs-site.xml')
         
         hadoop_env = StringIO()

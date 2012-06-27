@@ -13,7 +13,7 @@ def add_iptables_rule(rule):
     """
     Adds a rule to iptables as the first rule only if the rule didn't
     previously exist.
-    
+
     The string that should be passed to this method is the following:
     Type "iptables -A [your rule here]" on the console. Then type "iptables -S"
     and look for your rule. Everything after the "-A" is the string that should
@@ -28,7 +28,8 @@ def add_iptables_rule(rule):
                 print white("Rule '%s' does not exist. Adding..." % rule, True)
                 sudo('iptables -I %s' % rule)
             else:
-                print white("Rule '%s' already exists. Will not add again." % rule, True)
+                print white("Rule '%s' already exists. Will not add again." %\
+                            rule, True)
                 return 1
 
 def install_cdh_repo(config):

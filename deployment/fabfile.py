@@ -45,7 +45,7 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     execute(deploy_mongo)
 
 @task
-@parallel 
+@parallel
 @roles('namenode', 'frontend', 'jobtracker', 'mongo', 'datanodes', 'tasktrackers')
 def restore_iptables():
     """

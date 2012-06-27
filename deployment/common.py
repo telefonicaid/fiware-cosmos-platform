@@ -3,11 +3,28 @@ common.py -
 
 common functionality for Fabric deployments
 """
-from fabric.api import env, roles, run, settings
-from fabric.colors import red, green
+from fabric.api import env, roles, run, sudo, settings
+from fabric.colors import red, green, white
 from fabric.contrib import files
 from fabric.decorators import roles
 import fabric.context_managers as ctx
+
+def add_iptables_rule(rule):
+    """
+    Adds a rule to iptables as the first rule only if the rule didn't
+    previously exist
+    """
+    with ctx.hide('stdout'):
+        # Need to consider this settings context and warn_only
+        # to have full control over the run commands.
+        with settings(warn_only=True):
+            output = run("iptables -S | grep -q -e '%s'" % rule)
+            if output.return_code != 0:
+                print white("Rule '%s' does not exist. Adding..." % rule, True)
+                sudo('iptables -I %s' % rule)
+            else:
+                print white("Rule '%s' already exists. Will not add again." % rule, True)
+                return 1
 
 def install_cdh_repo(config):
     """Install the Hadoop distribution repo"""
@@ -33,8 +50,8 @@ def has_package(pkg):
         with settings(warn_only=True):
             output = run('yum list -q installed | grep -qi %s' % pkg)
             if output.return_code != 0:
-                print red("ERROR: Package %s NOT installed on %s" %
-                          (pkg , env.host_string))
+                print white("Package %s NOT installed on %s" %
+                            (pkg , env.host_string), True)
                 print output.stdout
                 return 0
             else:

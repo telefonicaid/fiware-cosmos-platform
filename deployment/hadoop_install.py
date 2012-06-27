@@ -104,12 +104,12 @@ def start_daemon(daemon):
 @parallel
 def deploy_datanode_daemon():
     """Deploys the datanode Hadoop daemon"""
-    sudo("iptables -A INPUT -p tcp --dport 50010 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 1004 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 50075 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 1006 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 50020 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 0 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50010 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 1004 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50075 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 1006 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50020 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 0 -j ACCEPT")
     sudo("service iptables save")
     deploy_daemon('datanode')
     start_daemon('datanode')
@@ -118,12 +118,12 @@ def deploy_datanode_daemon():
 @parallel
 def deploy_namenode_daemon():
     """Deploys the namenode Hadoop daemon"""
-    sudo("iptables -A INPUT -p tcp --dport 8020 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 50070 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 50470 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 10090 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 50090 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 50495 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 8020 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50070 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50470 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 10090 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50090 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50495 -j ACCEPT")
     sudo("service iptables save")
     deploy_daemon('namenode')
     output = sudo('yes Y | hadoop namenode -format', user='hdfs')
@@ -140,9 +140,9 @@ def deploy_namenode_daemon():
 @parallel
 def deploy_jobtracker_daemon():
     """Deploys the jobtracker Hadoop daemon"""
-    sudo("iptables -A INPUT -p tcp --dport 8021 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 50030 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 9290 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp --dport 8021 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp --dport 50030 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp --dport 9290 -j ACCEPT")
     sudo("service iptables save")
     deploy_daemon('namenode')
     deploy_daemon('jobtracker')
@@ -152,8 +152,8 @@ def deploy_jobtracker_daemon():
 @parallel 
 def deploy_tasktracker_daemon():
     """Deploys the tasktracker Hadoop daemon"""
-    sudo("iptables -A INPUT -p tcp --dport 50060 -j ACCEPT")
-    sudo("iptables -A INPUT -p tcp --dport 0 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50060 -j ACCEPT")
+    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 0 -j ACCEPT")
     sudo("service iptables save")
     deploy_daemon('tasktracker')
     start_daemon('tasktracker')

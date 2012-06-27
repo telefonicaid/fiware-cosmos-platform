@@ -10,7 +10,7 @@ from StringIO import StringIO
 from fabric.api import run, execute, sudo, put, cd, env
 from fabric.contrib import files
 import fabric.context_managers as ctx
-from fabric.colors import green, red, yellow
+from fabric.colors import red, white
 from fabric.decorators import roles, task, parallel
 from fabric.utils import puts
 from mako.template import Template
@@ -28,21 +28,30 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     """
     Deploys all the necessary components to get a running Cosmos cluster
     """
-    puts(yellow("Opening FTP ports"))
+    puts(white("Opening FTP ports", True))
     execute(open_ftp_port)
     process_start_msg = "DEPLOY: stating %s deployment"
-    puts(yellow(process_start_msg % "JDK"))
+    puts(white(process_start_msg % "JDK", True))
     execute(deploy_jdk, os.path.join(dependenciespath, jdk_rpm))
-    puts(yellow(process_start_msg % "CDH"))
+    puts(white(process_start_msg % "CDH", True))
     deploy_cdh()
-    puts(yellow(process_start_msg % "HUE"))
+    puts(white(process_start_msg % "HUE", True))
     execute(deploy_hue, os.path.join(dependenciespath, thrift_tar))
-    puts(yellow(process_start_msg % "SFTP"))
+    puts(white(process_start_msg % "SFTP", True))
     execute(deploy_sftp)
-    puts(yellow(process_start_msg % "Ganglia"))
+    puts(white(process_start_msg % "Ganglia", True))
     execute(deploy_ganglia)
-    puts(yellow(process_start_msg % "Mongo"))
+    puts(white(process_start_msg % "Mongo", True))
     execute(deploy_mongo)
+
+@task    
+@roles('namenode', 'frontend', 'jobtracker', 'mongo', 'datanodes', 'tasktrackers')
+def restore_iptables():
+    """
+    Debug function to revert to the default iptables in case something goes wrong
+    """
+    put(os.path.join(BASEPATH, 'templates/iptables'), '/etc/sysconfig/iptables')
+    sudo("service iptables restart")
     
 @task
 @roles('namenode', 'frontend', 'jobtracker', 'mongo', 'datanodes', 'tasktrackers')
@@ -52,8 +61,8 @@ def open_ftp_port():
     internal yum repositories are FTP-based instead of the standard HTTP
     repos
     """
-    sudo("iptables -A OUTPUT -p tcp --dport 21 -j ACCEPT")
-    sudo("iptables -A OUTPUT -p tcp --dport 22 -j ACCEPT")
+    common.add_iptables_rule("OUTPUT -p tcp -m tcp --dport 21 -j ACCEPT")
+    common.add_iptables_rule("OUTPUT -p tcp -m tcp --dport 22 -j ACCEPT")
     sudo("service iptables save")
 
 @task
@@ -213,7 +222,7 @@ def configure_ntp():
     ntp_conf.write(content)
     ntp_conf_path = "/etc/ntp.conf"
     put(ntp_conf, ntp_conf_path)
-    sudo(("iptables -A OUTPUT -p udp -d 0.rhel.pool.ntp.org "
+    common.add_iptables_rule(("OUTPUT -p udp -d 0.rhel.pool.ntp.org "
           "--dport 123 -j ACCEPT"))
     sudo("service iptables restart")
     run("chkconfig --level 2 ntpd on")
@@ -247,7 +256,7 @@ def install_gmetad():
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmetad_cfg_path))
     put(gmetad_conf, gmetad_cfg_path)
-    sudo("iptables -A INPUT -p tcp -d {0} --dport 8649 -j ACCEPT"
+    common.add_iptables_rule("INPUT -p tcp -d {0} --dport 8649 -j ACCEPT"
             .format(common.clean_host_list(CONFIG['hosts']['frontend'])))
     sudo("service iptables save")
     run("service gmetad start")
@@ -311,7 +320,7 @@ def install_gmond():
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmond_conf_path))
     put(gmond_conf, gmond_conf_path)
-    sudo("iptables -A OUTPUT -p udp -d {0} --dport 8649 -j ACCEPT"
+    common.add_iptables_rule("OUTPUT -p udp -d {0} --dport 8649 -j ACCEPT"
             .format(common.clean_host_list(CONFIG['hosts']['frontend'])))
     sudo("service iptables save")
     run("service gmond start")

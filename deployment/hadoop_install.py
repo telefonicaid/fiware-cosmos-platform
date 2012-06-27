@@ -80,7 +80,7 @@ def configure_hadoop(config):
                                    for dir in config["hadoop_data_dirs"]]),
                 datadirs=','.join([dir + '/data'
                                    for dir in config["hadoop_data_dirs"]]),
-                namenode = config['hosts']['namenode'][0])))
+                namenode = config['hosts']['namenode'][0]))
         put(hdfssite, 'hdfs-site.xml')
         
         hadoop_env = StringIO()

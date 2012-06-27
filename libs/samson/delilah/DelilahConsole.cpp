@@ -579,7 +579,6 @@ namespace samson
             
             char line[1024];
             
-            //LM_M(("Processing commands file %s", commandFileName ));
             while( fgets(line, sizeof(line), f) )
             {
                 // Remove the last return of a string

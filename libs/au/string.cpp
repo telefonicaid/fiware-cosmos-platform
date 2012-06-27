@@ -49,6 +49,19 @@ std::string str_timestamp( time_t t )
     return std::string( buffer_time );
 }
 
+std::string str_time_simple( size_t seconds )
+{
+    if( seconds < 2*60 )
+        return au::str( seconds , "s" );
+    else if( seconds < 2*60*60 )
+        return au::str( (double)seconds/ 60.0 , "m" );
+    else if( seconds < 2*24*60*60 )
+        return au::str( (double)seconds/ ( 60.0*60.0) , "h" );
+    else if( seconds < 2*365*24*60*60 )
+        return au::str( (double)seconds/ ( 24.0*60.0*60.0) , "d" );
+    else
+        return au::str( (double)seconds/ ( 365.0*24.0*60.0*60.0) , "y" );
+}
 
 std::string str_time( size_t seconds )
 {

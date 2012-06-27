@@ -84,6 +84,12 @@ std::string Cronometer::str()
    return str_time( diffTimeInSeconds() );
 }
 
+std::string Cronometer::str_simple()
+{
+    return str_time_simple( diffTimeInSeconds() );
+}
+
+
 std::string Cronometer::strClock()
 {
     char c = '-';

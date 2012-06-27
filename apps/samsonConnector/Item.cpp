@@ -8,30 +8,70 @@ namespace samson
 {
     namespace connector
     {
-        Item::Item ( Channel * _channel , ConnectionType _type , std::string _name , std::string short_name ) 
+        Item::Item ( Channel * _channel , ConnectionType _type , std::string description ) 
         : token("connector::Item")
         {
             channel = _channel;
             type = _type;
-            name = _name;
-            short_name_ = short_name;
+            description_ = description;
             
             next_id = 0;
+                        
+            canceled = false; // Default value
+            finished = false;
             
-            removing = false;
         }
+        
+        Item::~Item()
+        {
+            // Cancel this item to make sure we do not remove with any thread running here
+            cancel_item();
+
+            // Remover all connections
+            connections.clearMap();
+            
+        }
+
+        ConnectionType Item::getType()
+        {
+            return type;
+        }
+        
+        std::string Item::getName()
+        {
+            return name_;
+        }
+        
+        std::string Item::getFullName()
+        {
+            return au::str("%s.%s" ,  channel->getName().c_str() , name_.c_str() );
+        }
+        
+        std::string Item::getDescription()
+        {
+            return description_;
+        }
+        
+        const char* Item::getTypeStr()
+        {
+            return str_ConnectionType(type);
+        }
+
         
         void Item::add( Connection* connection )
         {
             au::TokenTaker tt(&token);
             
-            if( removing )
-            {
-                // this should never happen...
-                return; 
-            }
-            
             connections.insertInMap( next_id , connection );
+            connection->id = next_id;
+
+            log("Message", au::str("Connection %s (%s) added" 
+                                   , connection->getFullName().c_str() 
+                                   , connection->getDescription().c_str() ));
+            
+            // Init the connection properly
+            connection->init_connecton();
+            
             next_id++;
         }
         
@@ -48,14 +88,15 @@ namespace samson
                 if( connection->getType() == connection_output )
                     connection->push(buffer);
             }
-            
-            
         }
         
         void Item::review()
         {            
-            // Review item itself
-            review_item();
+            if( canceled )
+                return; // Not call review
+
+            if( !finished )
+                review_item();
             
             // Review all connections
             {
@@ -67,52 +108,93 @@ namespace samson
                     ; it_connections++ )
                 {
                     Connection* connection = it_connections->second;
-
-                    // Review connection
                     connection->review();
-
-                    // Remove if necessary
-                    if ( connection->canBeRemoved() )
-                        connections.erase( it_connections );
                 }
 
             }
             
         }
         
+        void Item::cancel_item()
+        {
+            canceled = true; // This will block future calls to review
+            
+            stop_item();
+            {
+                // Mutex protectio
+                au::TokenTaker tt( &token );
+                
+                // Cancel all connections
+                au::map<int, Connection>::iterator it_connections;
+                for( it_connections = connections.begin() 
+                    ; it_connections != connections.end() 
+                    ; it_connections++ )
+                {
+                    Connection* connection = it_connections->second;
+                    connection->cancel_connecton();
+                }
+            }
+        }
         int Item::getNumConnections()
         {
             au::TokenTaker tt(&token);
             return connections.size();
         }
         
-        bool Item::isRemoving()
+        void Item::set_as_finished()
         {
-            return removing;
+            if( finished ) 
+                return;
+
+            // Log activity
+            log("Message", "Set as finished");
+            finished = true;
+        }
+        
+        bool Item::is_finished()
+        {
+            return finished;
         }
 
-        // Set removing
-        void Item::set_removing()
+        void Item::remove_finished_connections(au::ErrorManager* error)
         {
-            au::TokenTaker tt(&token);
+            // Mutex protectio
+            au::TokenTaker tt( &token );
             
-            if( removing )
-                return; // Already in removing mode...
-
-            removing = true;
-            
-            // Set current connection to removing...
+            // Cancel all connections
             au::map<int, Connection>::iterator it_connections;
-            
             for( it_connections = connections.begin() 
                 ; it_connections != connections.end() 
                 ; it_connections++ )
             {
                 Connection* connection = it_connections->second;
-                connection->set_removing();
+                if( connection->is_finished() )
+                {
+                    log("Message", au::str( "Removing connection %s" , connection->getFullName().c_str() ) ); 
+                    
+                    connection->cancel_connecton();
+                    delete connection;
+                    connections.erase( it_connections );
+                }
             }
+            
+        }
+        
+        void Item::write( au::ErrorManager * error )
+        {
+            channel->write( error );
         }
 
+        // Log system
+        void Item::log( std::string type , std::string message )
+        {
+            log( new Log( getFullName() , type , message ) );
+        }
+        void Item::log( Log* log )
+        {
+            LogManager* log_manager = Singleton<LogManager>::shared();
+            log_manager->log( log );
+        }
 
         
     }

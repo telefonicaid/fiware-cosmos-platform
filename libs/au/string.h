@@ -48,6 +48,7 @@ std::string str_tabs(int t);
 
 // String with time information
 std::string str_time( size_t seconds );
+std::string str_time_simple( size_t seconds );
 std::string str_timestamp( time_t t );
 
 // String with percentdge information

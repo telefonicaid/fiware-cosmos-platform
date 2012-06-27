@@ -202,9 +202,8 @@ namespace samson
                 return true;
             }
             
-            size_t getSerializationSize()
+            size_t getSize()
             {
-                
                 // Recompute 
                 recompute_sizes_in_header();
                 
@@ -219,7 +218,7 @@ namespace samson
             std::string str()
             {
                 std::ostringstream output;
-                output << "InterChannelPacket ( " << au::str(getSerializationSize() , "B") <<  " )";
+                output << "InterChannelPacket ( " << au::str(getSize() , "B") <<  " )";
                 
                 if ( !is_valid_packet() )
                 {
@@ -299,6 +298,21 @@ namespace samson
             {
                 packet_reader_writer->push(packet);
             }
+
+            void push( au::ClassObjectListContainer<InterChannelPacket>* packets )
+            {
+                while( true )
+                {
+                    au::ClassObjectContainer<InterChannelPacket> packet_container;
+                    packets->extract_front( packet_container );
+                    
+                    InterChannelPacket* packet = packet_container.getObject();
+                    if( packet )
+                        push( packet );
+                    else
+                        return; // No more packets to be push
+                }
+            }
             
             // Return If this can be removed looking at threads
             bool isRunning()
@@ -322,6 +336,26 @@ namespace samson
                 socket_connection_->close();
             }
             
+            // Stop all threads
+            void close_and_stop()
+            {
+                socket_connection_->close();
+                packet_reader_writer->stop_threads();
+            }
+            
+            size_t getBufferedSize()
+            {
+                return packet_reader_writer->getOutputBufferedSize();
+            }
+            
+            void extract_pending_packets( au::ClassObjectListContainer<InterChannelPacket>* packets )
+            {
+                packet_reader_writer->extract_pending_packets(packets);
+                
+            }
+
+
+            
         };
         
         
@@ -332,25 +366,45 @@ namespace samson
         {
             InterChannelLink * link_;
           
+            // Keep a poiter to the socket connection
+            au::SocketConnection * socket_connection_;
+            
             // Global pointer ( necessary to select channel )
             SamsonConnector * samson_connector_;
 
+            // Keep information about host
+            std::string host_name_;
+            
             // Selected channel
             std::string target_channel_;
-            
+            std::string source_channel_name_; // Information about the source
             
         public:
             
             InputInterChannelConnection( SamsonConnector * samson_connector,
-                                        std::string name 
+                                        std::string host_name 
                                         , au::SocketConnection * socket_connection )
-            : Connection( NULL , connection_output , name ) // No item until we identify target channel
+            : Connection( NULL , connection_output , getName( host_name , "???") ) // No item until we identify target channel
             {
+                if( !socket_connection )
+                    LM_X(1, ("Internal error"));
+                
                 // Keep a pointer to SamsonConnector
                 samson_connector_ = samson_connector;
                 
-                // Create link
-                link_ = new InterChannelLink( name , socket_connection , this );
+                // Keep a pointer to the socket connection
+                socket_connection_ = socket_connection;
+
+                // Keep the host name for updating description when channel name is available
+                host_name_ = host_name;
+                
+                // No link until start_connection is called
+                link_ = NULL;
+            }
+            
+            static std::string getName( std::string host , std::string channel )
+            {
+                return "from channel " + host + ":" + channel; 
             }
             
             // au::network::PacketReaderInteface<InterChannelPacket>
@@ -367,10 +421,26 @@ namespace samson
                 else
                     return "Non Connected";
             }
-            
-            virtual bool canBeRemoved()
+
+            virtual void review_connection()
             {
-                return !link_->isRunning();
+                if( link_ )
+                    set_as_connected( link_->isConnected() );
+            }
+            
+            virtual void start_connection()
+            {
+                if( link_ )
+                    return;
+                
+                // Create link
+                link_ = new InterChannelLink( getFullName() , socket_connection_ , this );
+            }
+
+            virtual void stop_connection()
+            {
+                if( link_ )
+                    link_->close_and_stop();
             }
             
             // More information for this connection ( during first step )
@@ -387,20 +457,47 @@ namespace samson
         , public au::network::PacketReaderInteface<InterChannelPacket>
         {
             
+            // Information about connection
+            std::string channel_name_;
+            std::string host_;
+            
+            // Information about retrials
+            au::Cronometer connection_cronometer;
+            int connection_trials;
+
+            // Link ( when established )
             InterChannelLink * link_;
 
+            // Last error while trying to connect
+            std::string last_error;
+            
+            // finish handshare
             bool hand_shake_finished;
+
+            // List of pending packets from previous connection
+            au::ClassObjectListContainer<InterChannelPacket> pending_packets;
             
         public:
             
-            OutputInterChannelConnection( Item  * item , std::string name , au::SocketConnection * socket_connection )
-            : Connection( item , connection_output , name )
+            OutputInterChannelConnection( Item  * item 
+                                         , std::string host 
+                                         , std::string channel_name 
+                                         )
+            : Connection( item , connection_output , au::str("to channel %s:%s" , host.c_str() , channel_name.c_str() ))
             {
-                link_ = new InterChannelLink( name , socket_connection , this );
+                // At the moment not connected to anyone
+                link_ = NULL;
+
+                // Keep information for this connection
+                host_ = host;
+                channel_name_ = channel_name;
+                
+                // Init cronometer and trials counter
+                connection_cronometer.reset();
+                connection_trials = 0;
 
                 // Flag to indicate that we can start sending data
                 hand_shake_finished = false;
-                
             }
             
             void init_hand_shake( std::string target_channel )
@@ -410,16 +507,14 @@ namespace samson
                 
                 // Select target channel
                 packet->getMessage()->set_target_channel( target_channel );
+                packet->getMessage()->set_source_channel( getFullName() );
                 link_->push(packet);
             }
             
             virtual void process_packet( InterChannelPacket* packet )
             {
                 Message* message = packet->getMessage();
-                
-                // Process incomming message from the other endpoint
-                printf("Packet received %s\n" , packet->str().c_str() );
-                
+                                
                 // Hand shake confirmation
                 if( message->has_ack() )
                     if( message->ack() == true )
@@ -429,34 +524,147 @@ namespace samson
 
             virtual std::string getStatus()
             {
+                
+                if( !link_ )
+                {
+                    return au::str("Connecting... [ %d trials %s (last error %s) ] )" 
+                                   , connection_trials 
+                                   , connection_cronometer.str().c_str()
+                                   , last_error.c_str() );
+                }
+                
                 if( link_->isConnected() )
                     return "Connected";
                 else
                     return "Non Connected";
             }
             
-            virtual bool canBeRemoved()
+            // Get currect size accumulated here
+            virtual size_t getBufferedSize()
             {
-                return !link_->isRunning();
+                // Base size ( internal list of buffers in class Connection )
+                size_t total = Connection::getBufferedSize();
+                
+                if( link_ )
+                    total += link_->getBufferedSize();
+                
+                return total;
+            }
+
+            
+            virtual void start_connection()
+            {
+                if( !link_ )
+                {
+                    try_connect();
+                    return;
+                }
             }
             
-            virtual void review()
+            virtual void stop_connection()
             {
+                // Close all threads related with this connection
+                if( link_ )
+                    link_->close_and_stop();
+            }
+            
+            virtual void review_connection()
+            {
+                // If link_ is not valid any more, just remove it...
+                if( link_ && !link_->isConnected() )
+                {
+                    link_->close_and_stop();
+                    
+                    // Reset the handshake flag
+                    hand_shake_finished = false;
+
+                    // Recover unsent packets
+                    link_->extract_pending_packets( &pending_packets );
+                    
+                    delete link_;
+                    link_ = NULL;
+                }
+                
+                if( !link_ )
+                {
+                    if( connection_cronometer.diffTimeInSeconds() < 3 )
+                        return; // No retray at the moment
+                    
+                    try_connect();
+                    return;
+                }
+                
+                if( ! link_->isConnected() )
+                {
+                    // Lost connection with link....
+                    // Recover messages and remove the link
+                    
+                }
+                
+                
+                set_as_connected( link_->isConnected() );
+                
                 // Only start sending data if hand-shake is finished
                 if( hand_shake_finished )
                 {
-                    engine::BufferContainer buffer_container;
-                    getNextBufferToSent(&buffer_container);
-                    engine::Buffer * buffer = buffer_container.getBuffer();
-                    if( buffer )
+                    while( true )
                     {
-                        // Put buffer in a packet and send
-                        InterChannelPacket * packet = new InterChannelPacket();
-                        packet->setBuffer(buffer);
-                        link_->push(packet);
+                        // Check included size in link_ is not too large
+                        if( link_->getBufferedSize() > 256*1024*1024 )
+                            break;
+                        
+                        engine::BufferContainer buffer_container;
+                        getNextBufferToSent(&buffer_container);
+                        engine::Buffer * buffer = buffer_container.getBuffer();
+                        if( buffer )
+                        {
+                            // Put buffer in a packet and send
+                            InterChannelPacket * packet = new InterChannelPacket();
+                            packet->setBuffer(buffer);
+                            link_->push(packet);
+                        }
+                        else
+                            break;
                     }
                 }
             };
+            
+            // Type to establish this connection with remote server
+            
+            void try_connect()
+            {
+                if( link_ ) 
+                    return; // Already connected
+                
+                au::SocketConnection* socket_connection;
+                au::Status s = au::SocketConnection::newSocketConnection( host_
+                                                                         , SAMSON_CONNECTOR_INTERCHANNEL_PORT
+                                                                         , &socket_connection);                                  
+                
+                if( s == au::OK )
+                {
+                    
+                    link_ = new InterChannelLink( "link_" + getFullName() , socket_connection , this );
+
+                    // Push pending packets ( if any )
+                    link_->push( &pending_packets );
+                    pending_packets.clear();
+                    
+                    // Init all hand shake for this connection
+                    init_hand_shake( channel_name_ );
+                    
+                    // Reset counters of reconnection
+                    connection_cronometer.reset();
+                    connection_trials = 0;
+                }
+                else
+                {
+                    last_error = au::status(s);
+                    connection_trials++;
+                }
+                
+            }
+
             
             
         };
@@ -469,9 +677,6 @@ namespace samson
             std::string channel_name_;
             std::string host_;
             
-            // Information about retrials
-            au::Cronometer connection_cronometer;
-            int connection_trials;
             
         public:
             
@@ -480,7 +685,6 @@ namespace samson
                                    , const std::string& channel_name ) 
             : Item( channel 
                    , connection_output
-                   , au::str("Connecting to %s:%s" , host.c_str() , channel_name.c_str() )
                    , au::str("CHANNEL(%s:%s)" , host.c_str() , channel_name.c_str() ) )
             {
                 
@@ -488,66 +692,24 @@ namespace samson
                 host_ = host;
                 channel_name_ = channel_name;
                 
-                // Init cronometer and trials counter
-                connection_cronometer.reset();
-                connection_trials = 0;
-                
-                // Review item to establish connection
-                try_connect();
 
             }
             
-            void try_connect()
+            virtual void start_item()
             {
-                au::SocketConnection* socket_connection;
-                au::Status s = au::SocketConnection::newSocketConnection( host_
-                                                                         , SAMSON_CONNECTOR_INTERCHANNEL_PORT
-                                                                         , &socket_connection);                                  
-                if( s == au::OK )
-                {
-                    std::string name = au::str( "channel list to %s:%s" , host_.c_str() , channel_name_.c_str() );
-                    
-                    // Create a link to interact with this
-                    OutputInterChannelConnection* connection = new  OutputInterChannelConnection( this 
-                                                                                                 , name 
-                                                                                                 , socket_connection );
-                    // Add connections to my list
-                    add( connection );
-                    
-                    // Add handshare connection
-                    connection->init_hand_shake( channel_name_ );
-
-                    // Reset counters of reconnection
-                    connection_cronometer.reset();
-                    connection_trials = 0;
-                }
-                else
-                    connection_trials++;
-                
-            }
-            
+                // Create a single connection for this item
+                add( new OutputInterChannelConnection( this , host_ , channel_name_ ) );
+            };
             
             // Get status of this element
             std::string getStatus()
             {
-                if( getNumConnections() > 0 )
-                    return "connected";
-                
-                return au::str("connecting... [ %d trials %s ] )" , connection_trials , au::str_time( connection_cronometer.diffTimeInSeconds() ).c_str() );
+                return "Ok";
             }
             
             void review_item()
             {
-                if( getNumConnections() > 0 )
-                    return; // Connection is established
-                if( connection_cronometer.diffTimeInSeconds() < 3 )
-                    return; // No retray
-                try_connect();
-            }
-            
-            bool canBeRemoved()
-            {
-                return true; // No problem to remove this
+                // Nothing to do here
             }
             
         };
@@ -564,7 +726,6 @@ namespace samson
             InputInterChannelItem( Channel * channel ) 
             : Item( channel 
                    , connection_input 
-                   , au::str("Listening inter chnanel")
                    , au::str("CHANNELS(*)" ) )
             {
             }
@@ -580,12 +741,7 @@ namespace samson
             {
                 
             }
-            
-            bool canBeRemoved()
-            {
-                return true; // No problem to remove this
-            }
-            
+                        
             // Check if we accept a particular connection
             // We have not implemented any criteria to reject this connection
             virtual bool accept( InputInterChannelConnection* connection )

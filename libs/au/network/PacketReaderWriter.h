@@ -39,8 +39,7 @@ namespace au { namespace network {
         au::FileDescriptor * fd_;
         PacketReaderInteface<P> * interface_;
         
-    public:
-        
+    public:        
         
         PacketReader( std::string name , au::FileDescriptor * fd , PacketReaderInteface<P> * interface  )
         : Thread( name )
@@ -95,15 +94,17 @@ namespace au { namespace network {
         
         au::Token token; // Token to protect the list
         ClassObjectListContainer<P> packets_;
-        //au::list<P> packets_;
         
+        // Size accumulated to be sent
+        size_t buffered_size;
+    
     public:
-        
         
         PacketWriter( std::string name , au::FileDescriptor * fd )
         : Thread( name )  , token( "PacketWriter" )
         {
             fd_ = fd;
+            buffered_size =0;
             
             // Start me as a thread
             start_thread();
@@ -146,6 +147,7 @@ namespace au { namespace network {
                     {
                         au::TokenTaker tt(&token); // Mutex protection
                         packets_.pop_front();
+                        buffered_size -= packet->getSize();
                     }
                     
                 }
@@ -159,6 +161,23 @@ namespace au { namespace network {
             }
         }
         
+        void extract_pending_packets( ClassObjectListContainer<P>* packets )
+        {
+            while( true )
+            {
+                ClassObjectContainer<P> container;
+                packets_.extract_front( container );
+                
+                P* p = container.getObject();
+                
+                if( !p )
+                    return;
+
+                // Push to the provided list
+                packets->push_back( p );
+            }
+        }
+        
         virtual void cancel_thread()
         {
             // TODO: This will wake up thread when implemented correctly using a blocking mechanism
@@ -168,7 +187,15 @@ namespace au { namespace network {
         {
             au::TokenTaker tt(&token); // Mutex protection
             packets_.push_back(packet);
-        }            
+            
+            buffered_size += packet->getSize();
+        }     
+        
+        size_t getBufferedSize()
+        {
+            return buffered_size;
+        }
+
         
     };
     
@@ -193,6 +220,9 @@ namespace au { namespace network {
         
         ~PacketReaderWriter()
         {
+            // Just in case
+            stop_threads();
+            
             delete packet_writer_;
             delete packet_reader_;
             delete fd_;
@@ -229,6 +259,15 @@ namespace au { namespace network {
             return !fd_->isDisconnected();
         }
         
+        size_t getOutputBufferedSize()
+        {
+            return packet_writer_->getBufferedSize();
+        }
+        
+        void extract_pending_packets( ClassObjectListContainer<P>* packets )
+        {
+            packet_writer_->extract_pending_packets( packets );
+        }
         
     };
     

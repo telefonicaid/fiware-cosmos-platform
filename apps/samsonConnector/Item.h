@@ -26,8 +26,8 @@ namespace samson
             au::Token token;
 
             // Name describing this item
-            std::string name;
-            std::string short_name_; // Quick name for the channel summary
+            std::string name_;                   // Assigned when added to a channel
+            std::string description_;       // Description of this element
             
             // Collection of connections
             int next_id; // Next identifier
@@ -45,38 +45,31 @@ namespace samson
             friend class Connection;
             friend class Channel;
             friend class SamsonConnector;
-            
-            // Bool removing falg ( used when this item is being removed )
-            bool removing;
-            
+                        
+            bool canceled; // Flag to indicate this is canceled ( not call review again )
+            bool finished; // Flag to indicate this component is finished
+
         public:
 
-            Item ( Channel * _channel , ConnectionType _type , std::string _name , std::string short_name );
-            virtual ~Item(){}
-            
-            std::string getName()
-            {
-                return name;
-            }
+            Item ( Channel * _channel , ConnectionType _type , std::string description );
+            virtual ~Item();            
 
             // Add a connection
             void add( Connection* Connection );
-            
+
+            // Push a new buffer to all connections
             void push( engine::Buffer * buffer );
 
+            // Reviewing item and all associated connections
             void review();
 
+            // Getting information
             int getNumConnections();
-            
-            ConnectionType getType()
-            {
-                return type;
-            }
-            
-            const char* getTypeStr()
-            {
-                return str_ConnectionType(type);
-            }
+            ConnectionType getType();
+            std::string getName();
+            std::string getFullName();
+            std::string getDescription();
+            const char* getTypeStr();
             
             // Review connections ( overload in specific items )
             virtual void review_item(){}
@@ -84,21 +77,38 @@ namespace samson
             // Get information about status
             virtual std::string getStatus() { return ""; }
             
-            // Check if if it is possible to remove
-            virtual bool canBeRemoved()=0;
+            // Stop all threads to be deleted
+            virtual void stop_item(){};
 
-            // Set removing
-            void set_removing();
+            void init_item()
+            {
+                start_item();
+            };
             
-            // Check if we are in removing state
-            bool isRemoving();
+            virtual void start_item(){};
+            
+            // Cancel this item and all associated connections
+            void cancel_item();
           
             // Check if we accept a particular connection
             virtual bool accept( InputInterChannelConnection* connection )
             {
+                // By default, we do not accept interchannel connections
                 return false;
             }
+
+            // Mark this element as finished ( can be removed by remove_finished_* commands )
+            void set_as_finished();
+            bool is_finished();
+
+            void remove_finished_connections(au::ErrorManager* error);
+          
+            void write( au::ErrorManager * error );
             
+
+            // Log system
+            void log( std::string type , std::string message );
+            void log( Log* log );
             
         };
 

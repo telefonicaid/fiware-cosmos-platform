@@ -70,6 +70,15 @@ namespace au
             return background_thread_running;
         }
         
+        std::string getStatus()
+        {
+            if( background_thread_running )
+                return "listening";
+            else
+                return "not listening";
+                
+        }
+        
     private:
         
         SocketConnection* acceptNewNetworkConnection(void);

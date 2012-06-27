@@ -28,7 +28,7 @@ namespace au
             token = token_vector.getNextToken();
         }
         
-        LM_V(("LogFormatter %s %lu fields" , definition.c_str() , fields.size() ));
+        LM_VV(("LogFormatter %s %lu fields" , definition.c_str() , fields.size() ));
         
     }
     

@@ -41,9 +41,19 @@ namespace samson {
                 delete client;
             }
             
-            bool canBeRemoved()
+            virtual void start_connection()
             {
-                return false; // Still not considered how to cancel this connection
+                // ?
+            }
+            
+            virtual void stop_connection()
+            {
+                // TODO: Stop all theads since it will be removed
+            }
+            
+            virtual void review_connection()
+            {
+                // Nothing to do here
             }
             
             size_t getSize()
@@ -84,7 +94,7 @@ namespace samson {
                 else
                 {
                     LM_W(("Received a binary buffer %s from %s. Still not implemented how to process this" 
-                          , au::str( buffer->getSize() , "B" ).c_str() , getName().c_str() ));
+                          , au::str( buffer->getSize() , "B" ).c_str() , getFullName().c_str() ));
                 }
             }
             
@@ -112,10 +122,6 @@ namespace samson {
                        , int _port 
                        , std::string _queue );
                         
-            bool canBeRemoved()
-            {
-                return false; // Still not considered how to cancel this connection
-            }
 
             // Get status of this element
             std::string getStatus()

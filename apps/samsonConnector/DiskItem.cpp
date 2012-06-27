@@ -93,6 +93,22 @@ namespace samson {
             
             // No file descriptor by default
             file_descriptor = NULL;
+
+            // Thread to executed by default
+            thread_running = false;
+        }
+
+        DiskConnection::~DiskConnection()
+        {
+        }
+        
+        void DiskConnection::start_connection()
+        {
+            if ( thread_running )
+                return;
+            
+            // Flag to indidicate the background thread should return ASAP
+            stoping_threads = false;
             
             // Create the background thread
             thread_running = true;
@@ -100,10 +116,16 @@ namespace samson {
             au::ThreadManager::shared()->addThread("DiskConnection",&t, NULL, run_DiskConnection, this );
         }
         
-        DiskConnection::~DiskConnection()
+        void DiskConnection::stop_connection()
         {
+            // Create the background thread
+            stoping_threads = true;
+            
+            while( thread_running )
+                usleep(100000);
         }
-
+        
+        
         void DiskConnection::run_as_output()
         {
             std::string current_file_name;
@@ -113,6 +135,9 @@ namespace samson {
             
             while( true )
             {
+                if( stoping_threads )
+                    return;
+                
                 // Get the next buffer to be transmitted
                 engine::BufferContainer container;
                 getNextBufferToSent(&container);
@@ -201,6 +226,9 @@ namespace samson {
             while( true )
             {
                 
+                if( stoping_threads )
+                    return;
+
                 if( file_descriptor )
                 {
                     // Still reading from a file...
@@ -280,12 +308,12 @@ namespace samson {
             
             return "Stopped";
         }
-        
-        bool DiskConnection::canBeRemoved()
+
+        void DiskConnection::review_connection()
         {
-            return !thread_running;
+            // nothing to do here
         }
-     
+        
     }
     
 }

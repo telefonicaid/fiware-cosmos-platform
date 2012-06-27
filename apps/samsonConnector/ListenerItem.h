@@ -24,7 +24,7 @@ namespace samson
         public:
             
             ListenerItem( Channel * channel , ConnectionType type , int _port ) : 
-            Item( channel , type , au::str("Listener port %d" , _port ) , au::str("LISTEN(%d)" , _port ) ) ,
+            Item( channel , type , au::str("LISTEN(%d)" , _port ) ) ,
             au::NetworkListener( this )
             {
                 // Keep the port
@@ -53,14 +53,6 @@ namespace samson
             // Review item: open port if it was not possible in the past...
             void review_item()
             {
-                if( isRemoving() )
-                {
-                    // Stop listener
-                    if( isNetworkListenerRunning() )
-                        stop(true);
-                    // nothing else
-                    return;
-                }
                 
                 if( !isNetworkListenerRunning() )
                 {
@@ -72,14 +64,12 @@ namespace samson
                 }
             }
             
-            bool canBeRemoved()
+            void stop_item()
             {
+                // Stop listener
                 if( isNetworkListenerRunning() )
-                    return false; // Listener still running...
-                
-                return true; // Not it is possible to remove this item
+                    stop(true);
             }
-            
             
         };
     }

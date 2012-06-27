@@ -10,11 +10,12 @@ message Message
 
 	// Identifier of the target channel 
 	optional string target_channel = 1;	
+	optional string source_channel = 2;	
 
 	// Error messageo
-	optional string error = 2;
+	optional string error = 10;
 
 	// HandShake confirmation
-	optional bool ack = 3;
+	optional bool ack = 50;
 
 }

@@ -31,6 +31,7 @@ char input[1024];
 char output[1024];
 char input_splitter_name[1024];
 char file_name[1024];
+char working_directory[1024];
 
 bool interactive;
 bool run_as_daemon;
@@ -91,6 +92,7 @@ PaArgument paArgs[] =
     { "-console_port",     &sc_console_port,    "",  PaInt,     PaOpt,    SC_CONSOLE_PORT,     1,      9999,  "Port to receive new console connections"   },
     { "-web_port",         &sc_web_port,        "",  PaInt,     PaOpt,    SC_WEB_PORT,         1,      9999,  "Port to receive REST connections"   },
 	{ "-f",                file_name,           "",  PaString,  PaOpt, _i "",   PaNL, PaNL,  "Input file with commands to setup channels and adapters"  },
+	{ "-working",          working_directory,   "",  PaString,  PaOpt, _i ".",   PaNL, PaNL,  "Directory to store persistance data if necessary"  },
 	PA_END_OF_ARGS
 };
 
@@ -149,8 +151,8 @@ int main( int argC , const char *argV[] )
     
     // Engine and its associated elements
 	engine::Engine::init();
-	engine::MemoryManager::init( 1000000000 );
-	//engine::DiskManager::init(1);
+	engine::MemoryManager::init( 10000000000 );
+	engine::DiskManager::init(1);
 	//engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
     
 	samson::ModulesManager::init("samsonConnector");         // Init the modules manager
@@ -180,7 +182,8 @@ int main( int argC , const char *argV[] )
         int num_line = 0;
         char line[1024];
         
-        LM_M(("Processing commands file %s", file_name ));
+        std::string message = au::str("Setup file %s. Opening...", file_name);
+        samson_connector->log( new samson::connector::Log( "SamsonConnector" , "Message" , message ) );  
         
         while( fgets(line, sizeof(line), f) )
         {
@@ -193,14 +196,22 @@ int main( int argC , const char *argV[] )
             
             if( ( line[0] != '#' ) && ( strlen(line) > 0) )
             {
+                
+                message = au::str("%s ( File %s )", line , file_name);
+                samson_connector->log( new samson::connector::Log( "SamsonConnector" , "Message" , message ) );  
+                
                 au::ErrorManager error;
-                error.add_message(au::str("Processing: '%s'" , line ));
                 samson_connector->process_command( line  , &error );
-                std::cerr << error.str();
+
+                // Show only if an error happen there
+                if( error.isActivated() )
+                    std::cerr << error.str();
             }
         }
         
         // Print the error on screen
+        message = au::str("Setup file %s. Finished", file_name);
+        samson_connector->log( new samson::connector::Log( "SamsonConnector" , "Message" , message ) );  
         
         
         fclose(f);
@@ -209,21 +220,41 @@ int main( int argC , const char *argV[] )
     else
     {
         // Create default channel
-        au::ErrorManager error;
-        samson_connector->process_command( au::str("add_channel default %s" , input_splitter_name )  , &error );
+        {
+            au::ErrorManager error;
+            samson_connector->process_command( au::str("add_channel default %s" , input_splitter_name )  , &error );
+            if( error.isActivated() )
+                samson_connector->writeError( error.getMessage().c_str()  );
+        }
+        
+        size_t adapter_id = 1;
         
         // Add outputs
-        samson_connector->process_command( au::str("add_output_to_channel default %s" , output )  , &error );
-        if( error.isActivated() )
-            samson_connector->writeError( error.getMessage().c_str()  );
+        std::vector<std::string> output_components = au::split( output , ' ' );
+        for ( size_t i = 0 ; i < output_components.size() ; i++ )
+        {
+            std::string name = au::str("adapter_%lu" , adapter_id++ );
+            std::string command = au::str("add_output_adapter default.%s %s" , name.c_str() , output_components[i].c_str() );
+
+            au::ErrorManager error;
+            samson_connector->process_command( command , &error );
+            if( error.isActivated() )
+                samson_connector->writeError( error.getMessage().c_str()  );
+        }
         
         // Add inputs
-        samson_connector->process_command( au::str("add_input_to_channel default %s" , input )  , &error );
-        if( error.isActivated() )
-            samson_connector->writeError( error.getMessage().c_str()  );
+        std::vector<std::string> input_components = au::split( input , ' ' );
+        for ( size_t i = 0 ; i < input_components.size() ; i++ )
+        {
+            std::string name = au::str("adapter_%lu" , adapter_id++ );
+            std::string command = au::str("add_input_adapter default.%s %s" , name.c_str() , input_components[i].c_str() );
+            
+            au::ErrorManager error;
+            samson_connector->process_command( command , &error );
+            if( error.isActivated() )
+                samson_connector->writeError( error.getMessage().c_str()  );
+        }
 
-        // Print all setup on screen
-        std::cerr << error.str();
     }
         
     // Run console if interactive mode is activated
@@ -252,15 +283,33 @@ int main( int argC , const char *argV[] )
         samson_connector->runConsole();
     }
     else
+    {
+        au::Cronometer cronometer_notification;
         while( true )
         {
+            // Close finish items and connections
+            au::ErrorManager error;
+            samson_connector->remove_finished_items_and_connections( &error );
+            //std::cerr << error.str();
+            
+            size_t num_input_items = samson_connector->getNumInputItems();
+            size_t pending_size =  samson_connector->getOutputConnectionsSize();
+            
+            if( cronometer_notification.diffTime() > 1 )
+            {
+                cronometer_notification.reset();
+                LM_V(("Review samsonConnnector : %lu input-items & %s pending to be sent" ,
+                      num_input_items, au::str( pending_size , "B" ).c_str()  ));
+            }
+            
             // Verify if can exit....
-            if( samson_connector->getNumInputItems() == 0 )
-                if( samson_connector->getOutputConnectionsSize() == 0 )                 // Check no pending data to be send....
+            if( num_input_items == 0 ) // Verify no input source is connected
+                if( pending_size == 0 )  // Check no pending data to be send....
                     LM_X(0, ("Finish correctly. No more inputs data"));
             
             usleep(100000);
         }
+    }
     
     
     

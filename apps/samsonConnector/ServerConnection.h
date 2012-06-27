@@ -38,11 +38,10 @@ namespace samson
             // Information about status
             std::string getStatus();
             
-            // Review this item to establish connection
-            void review_item();
-            
-            // Remove connection
-            bool canBeRemoved();
+            // Item methods
+            virtual void start_item();
+            virtual void review_item();
+            virtual void stop_item();
             
         private:
             
@@ -63,8 +62,11 @@ namespace samson
             
             // Information about status
             std::string getStatus();
+            
+            void start_item();
             void review_item();
-            bool canBeRemoved();
+            void stop_item();
+            
             
         };
         
@@ -79,8 +81,10 @@ namespace samson
             StdoutItem( Channel* _channel );
             
             std::string getStatus();
+            
+            void start_item();
             void review_item();
-            bool canBeRemoved();
+            void stop_item();
             
             
         };

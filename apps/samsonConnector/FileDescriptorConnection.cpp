@@ -30,17 +30,33 @@ namespace samson {
         {
             // Keep pointer to file descriptor
             file_descriptor = _file_descriptor;
+         
+            // By default, thread is not running
+            thread_running =  false;
+            
+        }
+        
+        void FileDescriptorConnection::start_connection()
+        {
+            if( thread_running )
+                return;
+         
+            log("Message", au::str( "Start connection with fd %d" , file_descriptor->getFd() ));
             
             // Create the thread
             thread_running = true;
             pthread_t t;
             au::ThreadManager::shared()->addThread("SamsonConnectorConnection",&t, NULL, run_FileDescriptorConnection, this);
         }
+
         
         FileDescriptorConnection::~FileDescriptorConnection()
         {
             if( file_descriptor )
+            {
+                file_descriptor->close();
                 delete file_descriptor;
+            }
         }
         
         void FileDescriptorConnection::run_as_output()
@@ -69,6 +85,9 @@ namespace samson {
         
         void FileDescriptorConnection::run_as_input()
         {
+            // Log activity
+            log("Message", "Connection starts" );
+            
             // Read from stdin and push blocks to the samson_connector
             while( true )
             {
@@ -78,6 +97,12 @@ namespace samson {
                 //LM_V(("%s: Reading buffer up to %s" , file_descriptor->getName().c_str() , au::str(buffer_size).c_str() ));
                 
                 // Read the entire buffer
+                /*
+                log("Message", au::str("Reading buffer of size %s from file descriptor %d"
+                                       , au::str( input_buffer_size ,"B").c_str()
+                                       , file_descriptor->getFd() ));
+*/
+                
                 size_t read_size = 0;
                 au::Status s = file_descriptor->partRead(buffer->getData()
                                                          , input_buffer_size
@@ -99,6 +124,12 @@ namespace samson {
                 // If last read is not ok...
                 if( s != au::OK )
                 {
+                    // Log activity
+                    log("Message", au::str("Connection finished (%s) " , au::status(s) ));
+                    
+                    // Close fd
+                    file_descriptor->close();
+                    
                     // Flush whatever we have..
                     flushInputBuffers();
                     

@@ -23,14 +23,15 @@ namespace samson
             
             CommandLine( std::string command )
             {
-                set_flag_string("channel", "default");
+                set_flag_boolean("data");
                 parse( command );
             }
             
-            std::string getChannel()
+            bool isDataFlag()
             {
-                return get_flag_string("channel");
+                return get_flag_bool("data");
             }
+            
             
         };
     }

@@ -47,24 +47,33 @@ namespace samson {
             
             std::string getStatus()
             {
-                if( thread_running )
-                    return au::str( "Connected %s" , cronometer.str().c_str() );
+                if( file_descriptor->isDisconnected() )
+                    return "Closed fd";
                 else
-                    return "Not connected";
-            }
-            
-            // Can be removed ( no background threads and so... )
-            bool canBeRemoved()
-            {
-                return !thread_running;
+                    return au::str( "Connected (fd %d)" , file_descriptor->getFd() );
             }
 
-            // Review
-            void review_connection()
+            virtual void start_connection();
+            
+            virtual void stop_connection()
             {
-                // Close connection
-                if( isRemoving() )
-                    file_descriptor->close();
+                
+                log("Message", "Connection stoped");
+                
+                // Stop thread in the background
+                file_descriptor->close();
+                while( thread_running )
+                    usleep(100000);
+            }
+            
+            // Review
+            virtual void review_connection()
+            {
+                if( file_descriptor->isDisconnected() )
+                    set_as_finished();
+                
+                set_as_connected( !file_descriptor->isDisconnected() );
+
             }
             
         };

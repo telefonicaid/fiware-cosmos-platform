@@ -70,6 +70,15 @@ namespace au
             // Constructor with the port to open
             Service( int _port );            
             
+            // DEbug informatation
+            std::string getStatus()
+            {
+                if( listener.isNetworkListenerRunning() )
+                    return "listening";
+                else
+                    return "not listening";
+            }
+            
             // Init the service to recover the error code if not possible to open port
             Status initService( );
 

@@ -91,7 +91,7 @@ namespace samson
 			return;
 		}
         
-        LM_V(("Init ModulesManager"));
+        LM_VV(("Init ModulesManager"));
 		modulesManager = new ModulesManager(calling_module);
 		LM_T(LmtModuleManager,("ModulesManager created by %s", calling_module.c_str()));
 	}

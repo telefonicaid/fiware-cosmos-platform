@@ -225,6 +225,37 @@ namespace au {
         
     };
     
+    //
+    // RepeateObjectCallThread
+    //
+    // Simple thread to repeatelly call a method over an object
+    //
+    // Example:  RepeateObjectCallThread<A,&A::run> t;
+
+    template< class C , void (C::*f)() >
+    class RepeateObjectCallThread : public Thread
+    {
+        C* object_;
+        
+    public:
+        
+        RepeateObjectCallThread( C* object )
+        {
+            object_ = object;
+        }
+        
+        virtual void run()
+        {
+            while( true )
+            {
+                if( thread_should_quit() )
+                    return; // Quit this thread when necessary
+                object_->f();
+            }
+        }
+        
+    };
+    
     
 }
 

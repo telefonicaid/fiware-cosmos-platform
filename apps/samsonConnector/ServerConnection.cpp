@@ -16,7 +16,6 @@ namespace samson {
         ConnectionItem::ConnectionItem( Channel* _channel , ConnectionType _type , std::string _host , int _port  )
         : Item( _channel 
                , _type
-               , au::str("Connection to %s:%d" , _host.c_str() , _port) 
                , au::str("CONNECTION(%s:%d)" , _host.c_str() , _port) 
                ) 
         {
@@ -27,10 +26,9 @@ namespace samson {
             connection_cronometer.reset();
             connection_trials = 0;
             
-            // Review item to establish connection
-            try_connect();
             
         }
+        
         
         void ConnectionItem::try_connect()
         {
@@ -51,6 +49,11 @@ namespace samson {
             
         }
         
+        void ConnectionItem::start_item()
+        {
+            // Review item to establish connection
+            try_connect();
+        }
         
         void ConnectionItem::review_item()
         {
@@ -69,9 +72,9 @@ namespace samson {
             return au::str("connecting... [ %d trials ] )" , connection_trials );
         }
         
-        bool ConnectionItem::canBeRemoved()
+        void ConnectionItem::stop_item()
         {
-            return true; // No threads to check
+            // Nothing to do here
         }
         
         // ---------------------------------
@@ -80,13 +83,9 @@ namespace samson {
 
         
         // Constructor & Destructor
-        StdinItem::StdinItem( Channel* _channel ) : Item( _channel , connection_input , "stdin" , "STDIN" ) 
+        StdinItem::StdinItem( Channel* _channel ) : Item( _channel , connection_input , "STDIN" ) 
         {
-            // Add connection
-            add( new FileDescriptorConnection( this , connection_input , "stdin" , new au::FileDescriptor( "stdin" , 0 ) ) );
             
-            // Set as removing since it will be closed when no more inputs available
-            set_removing();
         }
         
         // Information about status
@@ -101,10 +100,21 @@ namespace samson {
         {
             // Nothing to do here
         }
-        
-        bool StdinItem::canBeRemoved()
+        void StdinItem::start_item()
         {
-            return true;
+            // Add connection
+            add( new FileDescriptorConnection( this 
+                                              , connection_input 
+                                              , "stdin" 
+                                              , new au::FileDescriptor( "stdin" , 0 ) ) );
+            
+            // No more connections will be stablished, so consider it finished
+            set_as_finished();
+        }
+        
+        void StdinItem::stop_item()
+        {
+            // Nothing to do here
         }
         
         
@@ -113,13 +123,8 @@ namespace samson {
         // ---------------------------------
         
         // Constructor & Destructor
-        StdoutItem::StdoutItem( Channel* _channel ) : Item( _channel , connection_output , "stdout" , "STDOUT" ) 
+        StdoutItem::StdoutItem( Channel* _channel ) : Item( _channel , connection_output , "STDOUT" ) 
         {
-            // Add connection
-            add( new FileDescriptorConnection( this , connection_output , "stdout" , new au::FileDescriptor( "stdout" , 1 ) ) );
-            
-            // Set as removing since it will be closed when no more inputs available
-            set_removing();
         }
         
         // Information about status
@@ -130,16 +135,22 @@ namespace samson {
             return "closed";
         }
         
+        void StdoutItem::start_item()
+        {
+            // Add connection
+            add( new FileDescriptorConnection( this , connection_output , "stdout" , new au::FileDescriptor( "stdout" , 1 ) ) );
+        }
+        
         void StdoutItem::review_item()
         {
             // Nothing to do here
         }
         
-        bool StdoutItem::canBeRemoved()
+        void StdoutItem::stop_item()
         {
-            return true;
+            // nothing to do here
         }
-        
+
         
         
         

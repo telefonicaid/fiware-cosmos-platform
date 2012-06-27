@@ -22,6 +22,7 @@
 
 #include "SamsonConnector.h"
 
+char command[1024];
 char host[1024];
 
 static const char* manShortDescription = "samsonConnectorClient is the client for samsonConnector";
@@ -35,6 +36,7 @@ PaArgument paArgs[] =
 {   
 	{ "",        host,     "",  PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,        "Host to connect"     },
     { "-port",   &sc_console_port,    "",  PaInt,     PaOpt,    SC_CONSOLE_PORT,     1,      9999,  "Port for console connections in samsonConnector"   },
+	{ "-c",      command,  "",  PaString,  PaOpt, _i ""        , PaNL, PaNL,        "Single command to execute"  },
 	PA_END_OF_ARGS
 };
 
@@ -66,6 +68,19 @@ int main( int argC , const char *argV[] )
         if( error.isActivated() )
             LM_X(1, ("Error: %s" , error.getMessage().c_str() ));
     }
+    
+    if( strcmp(command, "") != 0 )
+    {
+        LM_V(("Executing single command %s" , command ));
+        
+        au::ErrorManager error;
+        console.ConsoleServiceClientBase::evalCommand( command , &error );
+        std::cout << error.str();
+
+        return 0;
+    }
+    
+    
     
     // Run console
     console.runConsole();

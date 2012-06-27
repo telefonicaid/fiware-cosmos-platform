@@ -149,6 +149,12 @@ namespace au
             // Service interface
             void run( SocketConnection * socket_connection , bool *quit );
             
+            // Debug information
+            std::string getStatus()
+            {
+                return Service::getStatus();
+            }
+            
         };
         
     }

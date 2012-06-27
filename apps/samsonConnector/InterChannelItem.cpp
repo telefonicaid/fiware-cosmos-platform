@@ -19,6 +19,14 @@ namespace samson {
         {
             Message * message = packet->getMessage();
             
+
+            // Informas about source data
+            if( message->has_source_channel() )
+            {
+                source_channel_name_ = message->source_channel();
+                setDescription( getName( host_name_ , source_channel_name_ ) );
+            }
+            
             // Select target channel...
             if( message->has_target_channel() )
             {
@@ -49,8 +57,6 @@ namespace samson {
             if( buffer )
                 pushInputBuffer(buffer);
             
-            // Process incomming message from the other endpoint
-            printf("Packet received %s\n" , packet->str().c_str() );
         }
 
         void InputInterChannelConnection::close_connection( std::string error_message )

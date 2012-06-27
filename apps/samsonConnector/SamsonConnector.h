@@ -83,6 +83,9 @@ namespace samson
         , public au::network::RESTServiceInterface 
         , public au::NetworkListenerInterface
         {
+            friend class SamsonConnectorService;
+            friend class Connection;
+            
             // List of channels in this samsonConnector
             au::map<std::string, Channel> channels;
 
@@ -91,8 +94,6 @@ namespace samson
             
             // Service to accept monitor connection
             SamsonConnectorService* service;
-            
-            friend class SamsonConnectorService;
 
             // General environment
             au::Token token_environment;
@@ -106,6 +107,12 @@ namespace samson
             
             // List of connection for interchannel
             au::list<InputInterChannelConnection> input_inter_channel_connections;
+            
+            // Information about input & output
+            TrafficStatistics traffic_statistics;  
+            
+            // Global cronometer
+            au::Cronometer cronometer;
             
         public:
             
@@ -128,6 +135,7 @@ namespace samson
             void evalCommand( std::string command );
             void autoComplete( au::ConsoleAutoComplete* info );
             void autoCompleteWithChannelNames( au::ConsoleAutoComplete* info );
+            void autoCompleteWithAdaptorsNames( au::ConsoleAutoComplete* info );
             
             // Review
             void review();
@@ -137,6 +145,9 @@ namespace samson
 
             // Get pending data to be sent
             size_t getOutputConnectionsSize();
+            
+            // Get number of unfinished input connections 
+            size_t getNumUnfinishedInputConnections();
             
             std::string getPasswordForUser( std::string user )
             {
@@ -158,18 +169,26 @@ namespace samson
                                              , au::SocketConnection * socket_connetion );
 
             // Write errors depending on setup ( interactive, deamon, normal )
+            void log( Log* log );
+            void write( au::ErrorManager * error );
             void writeError( std::string message );
             
             // Select channel for an interchannel connection
             void select_channel( InputInterChannelConnection* connection , std::string target_channel , au::ErrorManager *error );
 
+            // Close finished items and connections
+            void remove_finished_items_and_connections( au::ErrorManager * error );
+
+            
         private:
             
-            au::tables::Table* getChannelsTable();
-            au::tables::Table* getItemsTable();
-            au::tables::Table* getItemsTableForChannel( std::string channel );
-            au::tables::Table* getConnectionsTable();
-            au::tables::Table* getConnectionsTableForChannel( std::string channel );
+
+            au::tables::Table* getSummaryTable( );
+            au::tables::Table* getChannelsTable( std::string type = "default" );
+            au::tables::Table* getItemsTable( std::string type = "default" );
+            au::tables::Table* getConnectionsTable( std::string type = "default" , std::string select_channel = "" );
+            au::tables::Table* getInputConnectionsTable();
+            au::tables::Table* getOutputConnectionsTable();
 
             au::tables::Table* getInputInterChannelConnections();
             
@@ -187,6 +206,11 @@ namespace samson
             SamsonConnectorService( SamsonConnector * _samson_connector ) : au::network::ConsoleService( sc_console_port )
             {
                 samson_connector = _samson_connector;
+            }
+            
+            virtual ~SamsonConnectorService()
+            {
+                
             }
             
             virtual void runCommand( std::string command , au::Environment* environment ,au::ErrorManager* error )
@@ -258,7 +282,10 @@ namespace samson
                     return;
                 }
                 
-                // Direct connection
+                // Log activity
+                samson_connector->log( new Log( "RemoteConsole", "Message", command ) );
+                
+                // Direct activity
                 samson_connector->process_command(command, error);
             }
             

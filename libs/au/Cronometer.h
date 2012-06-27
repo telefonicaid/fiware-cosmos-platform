@@ -51,6 +51,7 @@ public:
     
     // Get a string with the time ellapsed since last reset or creation
     std::string str();
+    std::string str_simple();
     
     // Check if time is grater than this and reset if so. Return true if time has been reset.
     bool check( double time );

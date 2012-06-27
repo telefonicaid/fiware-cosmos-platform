@@ -36,6 +36,7 @@ namespace samson
         public:
             
             bool thread_running;
+            bool stoping_threads; // Flag to stop the background thread
             
         public:
             
@@ -43,11 +44,14 @@ namespace samson
             DiskConnection( Item  * _item , ConnectionType _type , std::string directory );
             ~DiskConnection();
             
-            // Can be removed
-            bool canBeRemoved();
+            // Connection methods
+            virtual void start_connection();
+            virtual void stop_connection();
+            virtual void review_connection();
             
             // Main method to run from background thread
-            void run();
+            void run();             
+
 
             // Status of this connection
             std::string getStatus();
@@ -68,7 +72,7 @@ namespace samson
         public:
             
             DiskItem( Channel * _channel , ConnectionType _type ,  std::string _directory ) : 
-            Item( _channel , _type , au::str("DISK %s" , _directory.c_str() ) , au::str("FILE(%s)" , _directory.c_str() ) ) 
+            Item( _channel , _type , au::str("FILE(%s)" , _directory.c_str() ) ) 
             {
                 // Information for connection
                 directory = _directory;

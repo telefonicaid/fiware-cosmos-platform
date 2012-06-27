@@ -28,13 +28,13 @@ def install_cdh(config):
 @parallel
 def create_hadoop_dirs(config):
     """Create necessary directories for Hadoop"""
-    for dir in config["hadoop_data_dirs"]:
-        run('rm -rf %s/*' % dir)
-        if not files.exists(dir):
-            run('mkdir %s' % dir)
-        run('install -o hdfs   -g hadoop -m 755 -d %s/data' % dir)
-        run('install -o mapred -g hadoop -m 755 -d %s/mapred' % dir)
-        run('install -o hdfs   -g hadoop -m 755 -d %s/name' % dir)
+    for conf_dir in config["hadoop_data_dirs"]:
+        run('rm -rf %s/*' % conf_dir)
+        if not files.exists(conf_dir):
+            run('mkdir %s' % conf_dir)
+        run('install -o hdfs   -g hadoop -m 755 -d %s/data' % conf_dir)
+        run('install -o mapred -g hadoop -m 755 -d %s/mapred' % conf_dir)
+        run('install -o hdfs   -g hadoop -m 755 -d %s/name' % conf_dir)
         
     run('install -o root   -g hadoop -m 755 -d %s' % COSMOS_CLASSPATH)
  
@@ -67,8 +67,8 @@ def configure_hadoop(config):
                                                 'templates/mapred-site.mako'))
         mapredsite.write(template.render(
                 jobtracker = config['hosts']['jobtracker'][0],
-                dirs = ','.join([dir + '/mapred'
-                                 for dir in config["hadoop_data_dirs"]]),
+                dirs = ','.join([directory + '/mapred'
+                                 for directory in config["hadoop_data_dirs"]]),
                 reduce_tasks = 2*len(config['hosts']['datanodes'])))
         put(mapredsite, 'mapred-site.xml')
         
@@ -76,10 +76,10 @@ def configure_hadoop(config):
         template = Template(filename = os.path.join(BASEPATH,
                                                    'templates/hdfs-site.mako'))
         hdfssite.write(template.render(
-                namedirs=','.join([dir + '/name'
-                                   for dir in config["hadoop_data_dirs"]]),
-                datadirs=','.join([dir + '/data'
-                                   for dir in config["hadoop_data_dirs"]]),
+                namedirs=','.join([directory + '/name'
+                               for directory in config["hadoop_data_dirs"]]),
+                datadirs=','.join([directory + '/data'
+                               for directory in config["hadoop_data_dirs"]]),
                 namenode = config['hosts']['namenode'][0]))
         put(hdfssite, 'hdfs-site.xml')
         

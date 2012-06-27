@@ -46,7 +46,8 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm, sshd_needs_moved=False):
 
 @task
 @parallel
-@roles('namenode', 'frontend', 'jobtracker', 'mongo', 'datanodes', 'tasktrackers')
+@roles('namenode', 'frontend', 'jobtracker', 'mongo',
+       'datanodes', 'tasktrackers')
 def restore_iptables():
     """
     Debug function to revert to the default iptables in case something goes wrong
@@ -56,7 +57,8 @@ def restore_iptables():
     
 @task
 @parallel
-@roles('namenode', 'frontend', 'jobtracker', 'mongo', 'datanodes', 'tasktrackers')
+@roles('namenode', 'frontend', 'jobtracker', 'mongo',
+       'datanodes', 'tasktrackers')
 def open_ftp_port():
     """
     Opening the FTP port is necessary in the staging cluster because  the
@@ -77,8 +79,8 @@ def add_test_setup():
                           '../cosmos/tests/testUser.json'), 'testUser.json')
     with cd('/usr/share/hue'):
         run('build/env/bin/hue loaddata ~/testUser.json')
-    for f in files_to_delete:
-        run('rm %s' % f)
+    for file_to_remove in files_to_delete:
+        run('rm %s' % file_to_remove)
 
 @task
 @parallel
@@ -169,6 +171,7 @@ def deploy_sftp(sshd_needs_moved=False):
                 run("service injection start")
 
 def move_sshd(custom_port=2222):
+    """Changes the port where the ssh daemon is listening"""
     common.add_iptables_rule("INPUT -p tcp -m tcp --dport 2222 -j ACCEPT")
     sudo("service iptables save")
     sshd_conf = StringIO()
@@ -223,7 +226,6 @@ def deploy_models():
     idea on what is needed to deploy a model, but we currently have no models
     to deploy
     """
-    ## TODO: define in configuration
     model_paths = []
     for model in model_paths:
         put(model)
@@ -232,6 +234,10 @@ def deploy_models():
 
 @task
 def deploy_ganglia():
+    """
+    Executes a number of steps in order to have Ganglia monitoring
+    in the deployment cluster
+    """
     execute(configure_hadoop_metrics)
     execute(configure_ntp)
     execute(install_gmetad)
@@ -242,6 +248,10 @@ def deploy_ganglia():
 @roles('namenode', 'namenode', 'jobtracker', 'frontend', 'datanodes', 'mongo',
        'tasktrackers')
 def configure_ntp():
+    """
+    Configures -- and if not present, installs -- the NTP daemon. A coordinated
+    time set in all hosts is necessary to have Ganglia monitoring.
+    """
     common.install_dependencies(['ntp'])
     ntp_conf = StringIO()
     template = Template(filename='templates/ntp.conf.mako')
@@ -257,6 +267,10 @@ def configure_ntp():
 
 @roles('namenode')
 def install_gmetad():
+    """
+    Installs the Ganglia daemon that collects monitoring information from many
+    other Ganglia daemons
+    """
     with ctx.hide('stdout'):
         repolist = run("yum repolist")
         epel_installed = any([line.split()[0] == 'epel'
@@ -291,6 +305,11 @@ def install_gmetad():
 
 @roles('namenode')
 def install_ganglia_frontend():
+    """
+    Installs the package that holds PHP scripts to query the gmetad daemon and
+    present the results in graphical format. Also, starts an httpd to serve the
+    resulting webpages.
+    """
     with ctx.hide('stdout'):
         repolist = run("yum repolist")
         epel_installed = any([line.split()[0] == 'epel'
@@ -321,6 +340,10 @@ def install_ganglia_frontend():
 @roles('namenode', 'jobtracker', 'frontend', 'datanodes', 'mongo',
        'tasktrackers')
 def install_gmond():
+    """
+    Installs the Ganglia daemon that collects information at each host in the
+    cluster and should send this information to the gmetad.
+    """
     with ctx.hide('stdout'):
         repolist = run("yum repolist")
         epel_installed = any([line.split()[0] == 'epel'
@@ -356,6 +379,10 @@ def install_gmond():
 @parallel
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def configure_hadoop_metrics():
+    """
+    Configures the Hadoop damons to send some metrics about their state to the
+    gmond daemons
+    """
     hadoop_metrics_conf = StringIO()
     template = Template(filename='templates/hadoop-metrics.properties.mako')
     content = template.render(

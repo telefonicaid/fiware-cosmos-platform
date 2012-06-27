@@ -4,7 +4,7 @@ common.py -
 common functionality for Fabric deployments
 """
 from fabric.api import env, roles, run, sudo, settings
-from fabric.colors import red, green, white
+from fabric.colors import green, white
 from fabric.contrib import files
 from fabric.decorators import roles
 import fabric.context_managers as ctx
@@ -94,7 +94,6 @@ def flatten(nested_list):
     Flattens a list that only contains strings or lists of strings, with only
     one level of depth.
     """
-    ## TODO: review in light of: all roles are lists
     ans = []
     for elem in nested_list:
         if isinstance(elem, basestring):

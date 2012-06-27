@@ -18,6 +18,10 @@ import common
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
 def install_git():
+    """
+    Installs GIT from a non-standard repository, because standard versions
+    of GIT for our current OS can be very outdated.
+    """
     git_version_string = run('git --version')
     version_string = git_version_string.split()[-1]
     version_numbers = map(int, version_string.split('.'))
@@ -31,6 +35,10 @@ def install_git():
         run('rm -f git-1.7.10.4-1.el6.rfx.x86_64.rpm')
 
 def install_and_patch_hue(config):
+    """
+    Installs HUE from the Cloudera-provided RPM, and then patches the installed
+    sources and binaries with Cosmos behaviour and look.
+    """
     common.install_cdh_repo(config)
     local_patch_path = os.path.join(BASEPATH, config['hue_patch_dir'],
                                     config['hue_patch_name'])
@@ -66,10 +74,16 @@ def install_and_patch_hue(config):
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def install_hue_plugins():
+    """
+    Installs HUE plugins from Cloudera-provided packages
+    """
     env.port = '22'
     run("yum -y install hue-plugins")
 
 def install_thrift(thrift_tarpath):
+    """
+    Installs Thrift from sources, only if not already present in the system.
+    """
     if files.exists('/usr/local/bin/thrift'):
         puts("Thrift already installed, skipping ...")
     else:
@@ -86,6 +100,10 @@ def install_thrift(thrift_tarpath):
                 run("make install")
                
 def install_cosmos_app():
+    """
+    Install the Cosmos app into HUE, by registering it as a new app. The Cosmos
+    app has a buildout script that takes care of the registration process.
+    """
     cosmos_app_install_path = '/usr/share/hue/apps/cosmos/'
     if files.exists(cosmos_app_install_path):
         puts("Found an existing installation of Cosmos app!")
@@ -111,10 +129,16 @@ def install_cosmos_app():
         run("bin/buildout -c buildout.prod.cfg")
 
 def start_daemons():
+    """
+    Start HUE daemons, including jobsubd
+    """
     with cd("/etc/init.d"):
         run("./hue start")
 
 def cleanup():
+    """
+    Clean up uploaded files and directories
+    """
     patch = "hue-patch-cdh3u4-r0.4.diff"
     if files.exists(patch):
         run("rm {0}".format(patch))

@@ -12,7 +12,7 @@ from fabric.contrib import files
 import fabric.context_managers as ctx
 from fabric.colors import red, white
 from fabric.decorators import roles, task, parallel
-from fabric.utils import puts
+from fabric.utils import puts, error
 from mako.template import Template
 
 import common
@@ -44,7 +44,8 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm):
     puts(white(process_start_msg % "Mongo", True))
     execute(deploy_mongo)
 
-@task    
+@task
+@parallel 
 @roles('namenode', 'frontend', 'jobtracker', 'mongo', 'datanodes', 'tasktrackers')
 def restore_iptables():
     """
@@ -54,6 +55,7 @@ def restore_iptables():
     sudo("service iptables restart")
     
 @task
+@parallel
 @roles('namenode', 'frontend', 'jobtracker', 'mongo', 'datanodes', 'tasktrackers')
 def open_ftp_port():
     """
@@ -118,7 +120,7 @@ def deploy_sftp():
     injection_jar = os.path.join(CONFIG['injection_path'], 'target',
                                  injection_exec)
     if not os.path.exists(injection_jar):
-        puts(red('ERROR: injection server file not found: %s' % injection_jar))
+        error(red('ERROR: injection server file not found: %s' % injection_jar))
         return
     exec_path = os.path.join('~', 'injection', injection_exec)
     if not files.exists(exec_path):

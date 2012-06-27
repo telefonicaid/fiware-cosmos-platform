@@ -12,7 +12,12 @@ import fabric.context_managers as ctx
 def add_iptables_rule(rule):
     """
     Adds a rule to iptables as the first rule only if the rule didn't
-    previously exist
+    previously exist.
+    
+    The string that should be passed to this method is the following:
+    Type "iptables -A [your rule here]" on the console. Then type "iptables -S"
+    and look for your rule. Everything after the "-A" is the string that should
+    be passed to this method.
     """
     with ctx.hide('stdout'):
         # Need to consider this settings context and warn_only

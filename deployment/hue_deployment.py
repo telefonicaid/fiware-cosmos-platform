@@ -31,6 +31,10 @@ def install_and_patch_hue(config):
         put(local_patch_path, remote_patch_path)
         with cd("/usr/share/hue"):
             run("git apply -p2 --reject {0}".format(remote_patch_path))
+    common.add_iptables_rule('INPUT -p tcp -m tcp --dport 8088 -j ACCEPT')
+    common.add_iptables_rule('INPUT -p tcp -m tcp --dport 8001 -j ACCEPT')
+    common.add_iptables_rule('INPUT -p tcp -m tcp --dport 8002 -j ACCEPT')
+    common.add_iptables_rule('INPUT -p tcp -m tcp --dport 8003 -j ACCEPT')
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def install_hue_plugins():

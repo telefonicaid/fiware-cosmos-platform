@@ -3,7 +3,7 @@ HUE automatic deployment
 """
 import os
 import shutil
-from fabric.api import run, put, cd, env
+from fabric.api import run, put, cd, env, sudo
 import fabric.context_managers as ctx
 from fabric.contrib import files
 from fabric.decorators import roles

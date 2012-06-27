@@ -2,11 +2,12 @@
 HUE automatic deployment
 """
 import os
+import shutil
 from fabric.api import run, put, cd, env
 import fabric.context_managers as ctx
 from fabric.contrib import files
 from fabric.decorators import roles
-from fabric.utils import puts
+from fabric.utils import puts, error
 from StringIO import StringIO
 from mako.template import Template
 import common
@@ -76,12 +77,19 @@ def install_cosmos_app():
     if files.exists("cosmos-app"):
         run("rm -rf cosmos-app")
     run("mkdir cosmos-app")
-    put(os.path.join(BASEPATH,
-               "../cosmos/platform/frontend/hue-apps/cosmos"), "cosmos-app")
+    local_cosmos_app = os.path.join(BASEPATH,
+                                "../cosmos/platform/frontend/hue-apps/cosmos")
+    if os.path.exists(os.path.join(local_cosmos_app, "parts")):
+        error(red("Project root was built with buildout"))
+        os.remove(os.path.join(local_cosmos_app, ".installed.cfg"))
+        shutil.rmtree(os.path.join(local_cosmos_app, "bin"))
+        shutil.rmtree(os.path.join(local_cosmos_app, "develop-eggs"))
+        shutil.rmtree(os.path.join(local_cosmos_app, "eggs"))
+        shutil.rmtree(os.path.join(local_cosmos_app, "parts"))
+    put(local_cosmos_app, "cosmos-app")
     with cd("cosmos-app/cosmos"):
         puts("About to run buildout")
-        ## TODO: check the python version before running
-        run("python2.6 bootstrap.py")
+        run("python bootstrap.py")
         run("bin/buildout -c buildout.prod.cfg")
 
 def start_daemons():

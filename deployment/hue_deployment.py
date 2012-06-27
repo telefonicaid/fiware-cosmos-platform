@@ -15,9 +15,17 @@ import common
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
 def install_git():
-    run('wget http://pkgs.repoforge.org/git/git-1.7.10.4-1.el6.rfx.x86_64.rpm')
-    run('rpm -Uvh --force --nodeps git-1.7.10.4-1.el6.rfx.x86_64.rpm')
-    run('rm -f git-1.7.10.4-1.el6.rfx.x86_64.rpm')
+    git_version_string = run('git --version')
+    version_string = git_version_string.split()[-1]
+    version_numbers = map(int, version_string.split('.'))
+    if version_numbers[0] < 1 or version_numbers[1] < 7 or\
+        version_numbers[2] < 10:
+        git_repo = 'http://pkgs.repoforge.org/git/'
+        git_pkg = 'git-1.7.10.4-1.el6.rfx.x86_64.rpm'
+        git_url = git_repo + git_pkg
+        run('wget %s' % git_url)
+        run('rpm -Uvh --force --nodeps git-1.7.10.4-1.el6.rfx.x86_64.rpm')
+        run('rm -f git-1.7.10.4-1.el6.rfx.x86_64.rpm')
 
 def install_and_patch_hue(config):
     common.install_cdh_repo(config)

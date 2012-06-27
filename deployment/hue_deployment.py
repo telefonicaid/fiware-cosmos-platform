@@ -3,13 +3,16 @@ HUE automatic deployment
 """
 import os
 import shutil
+from StringIO import StringIO
+
 from fabric.api import run, put, cd, env
+from fabric.colors import red, yellow
 import fabric.context_managers as ctx
 from fabric.contrib import files
 from fabric.decorators import roles
-from fabric.utils import puts, error
-from StringIO import StringIO
+from fabric.utils import puts, warn
 from mako.template import Template
+
 import common
 
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
@@ -88,7 +91,8 @@ def install_cosmos_app():
     local_cosmos_app = os.path.join(BASEPATH,
                                 "../cosmos/platform/frontend/hue-apps/cosmos")
     if os.path.exists(os.path.join(local_cosmos_app, "parts")):
-        error(red("Project root was built with buildout"))
+        warn(yellow("Project root was built with buildout"))
+        warn(yellow("Going to remove all buildout by-products"))
         os.remove(os.path.join(local_cosmos_app, ".installed.cfg"))
         shutil.rmtree(os.path.join(local_cosmos_app, "bin"))
         shutil.rmtree(os.path.join(local_cosmos_app, "develop-eggs"))

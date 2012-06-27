@@ -15,8 +15,8 @@ def add_iptables_rule(rule):
     previously exist.
 
     The string that should be passed to this method is the following:
-    Type "iptables -A [your rule here]" on the console. Then type "iptables -S"
-    and look for your rule. Everything after the "-A" is the string that should
+    Type "iptables -I [your rule here]" on the console. Then type "iptables -S"
+    and look for your rule. Everything after the "-I" is the string that should
     be passed to this method.
     """
     with ctx.hide('stdout'):

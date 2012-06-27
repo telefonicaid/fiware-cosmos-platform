@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import es.tid.cosmos.platform.injection.flume.AbstractInterceptor;
+import es.tid.cosmos.platform.injection.flume.OpaqueTokenConstants;
 
 /**
  * A Flume interceptor that appends the opaque token of Cosmos's data injection
@@ -25,8 +26,6 @@ public class OpaqueTokenAppenderInterceptor extends AbstractInterceptor {
 
     private final UUID opaqueToken;
 
-    public static final String HEADER_OPAQUE_TOKEN = "cosmos-opaque-token";
-
     public OpaqueTokenAppenderInterceptor(UUID opaqueToken) {
         this.opaqueToken = opaqueToken;
     }
@@ -34,15 +33,17 @@ public class OpaqueTokenAppenderInterceptor extends AbstractInterceptor {
     @Override
     public Event intercept(Event event) {
         Map<String, String> headers = event.getHeaders();
-        String prevValue = headers.get(HEADER_OPAQUE_TOKEN);
+        String prevValue = headers.get(
+                OpaqueTokenConstants.EVENT_HEADER_OPAQUE_TOKEN);
         if (prevValue != null) {
             LOGGER.error(String.format("header '%s' already present in " +
                     "intercepted event with value '%s'; discarding due to " +
                     "illegal manipulation of reserved header",
-                    HEADER_OPAQUE_TOKEN, prevValue));
+                    OpaqueTokenConstants.EVENT_HEADER_OPAQUE_TOKEN, prevValue));
             return null;
         }
-        headers.put(HEADER_OPAQUE_TOKEN, this.opaqueToken.toString());
+        headers.put(OpaqueTokenConstants.EVENT_HEADER_OPAQUE_TOKEN,
+                this.opaqueToken.toString());
         return event;
     }
 

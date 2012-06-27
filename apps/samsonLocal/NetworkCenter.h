@@ -91,6 +91,8 @@ namespace samson {
         
 		NetworkFake* getNetwork( NodeIdentifier node_identifier )
 		{
+            LM_T(LmtNetworkInterface, ("getNetwork for packet with node_intifier:%s", node_identifier.str().c_str()));
+
             if( node_identifier.node_type == DelilahNode )
             {
                 if ( node_identifier.id != DELILAH_ID )
@@ -109,7 +111,7 @@ namespace samson {
                 return NULL;
             }
             
-            LM_X(1,("Error in fake network"));
+            LM_E(("Error in fake network, unknown node_type(%d) in node_identifier (DelilahNode(%d), WorkerNode(%d))", node_identifier.node_type, DelilahNode, WorkerNode ));
             return NULL;
 		}
 		void runInBackground();
@@ -118,7 +120,7 @@ namespace samson {
 		{
 			while( true )
 			{
-				// Send packets to the rigth directions
+				// Send packets to the right directions
                 std::vector<Packet*> sendingPackets;
                 
                 {
@@ -136,7 +138,9 @@ namespace samson {
 					for (std::vector<Packet*>::iterator p = sendingPackets.begin() ; p < sendingPackets.end() ; p++)
 					{
 						Packet* packet = *p;
+						LM_T(LmtNetworkInterface, ("Sending to processing packet %p to %s", packet, packet->to.str().c_str()));
 						processPendingPacket( packet );
+						packet->release();
 					}
 				}
 				else
@@ -151,6 +155,8 @@ namespace samson {
 		{
             au::TokenTaker tt( &token );
 
+            p->retain();
+
 			pendingPackets.push_back(p);
 
             
@@ -161,7 +167,15 @@ namespace samson {
 		
 		void processPendingPacket( Packet *packet )
 		{
+            LM_T(LmtNetworkInterface, ("Processing packet %p to %s", packet, packet->to.str().c_str()));
+
 			NetworkFake* network = getNetwork( packet->to );
+
+			if (network == NULL)
+			{
+	            LM_E(("Error processing corrupted packet %p to %s", packet, packet->to.str().c_str()));
+
+			}
 			network->schedule_receive( packet );			
 		}
 	};

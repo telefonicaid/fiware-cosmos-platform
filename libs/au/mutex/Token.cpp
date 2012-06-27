@@ -48,7 +48,7 @@ void Token::retain(  )
     {
         LM_LE(("Error %d getting mutex  (EINVAL:%d, EFAULT:%d, EDEADLK:%d", ans, EINVAL, EFAULT, EDEADLK));
         //assert(false);
-        if ((name != NULL) & (name != (char *)0xffffffff))
+        if ((name != NULL) && (name != (char *)0xffffffff) && (name > (char *)0x10000000) && ((name[0] > 'a') && (name[0] < 'Z')) && ((name[1] > 'a') && (name[1] < 'Z')))
         {
             LM_LE(("Token %s: pthread_mutex_lock returned error %d (%p)", name, ans, this));
         }

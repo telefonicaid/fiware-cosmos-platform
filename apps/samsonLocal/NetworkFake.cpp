@@ -19,6 +19,8 @@ namespace samson {
         
 		// Add packet in the list of the center
         center->addPacket( packet );
+        LM_T(LmtNetworkInterface, ("Added packet %p to %s", packet, packet->to.str().c_str()));
+
 
 		return OK;
 	}

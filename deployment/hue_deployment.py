@@ -75,7 +75,7 @@ def install_thrift(thrift_tarpath):
                 run("./configure")
                 run("make")
                 run("make install")
-
+               
 def install_cosmos_app():
     cosmos_app_install_path = '/usr/share/hue/apps/cosmos/'
     if files.exists(cosmos_app_install_path):
@@ -102,7 +102,6 @@ def install_cosmos_app():
 
 def start_daemons():
     with cd("/etc/init.d"):
-        put(os.path.join(BASEPATH, "templates/hue.init"), "hue")
         run("./hue start")
 
 def cleanup():

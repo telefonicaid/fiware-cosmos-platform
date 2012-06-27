@@ -156,13 +156,13 @@ def deploy_sftp():
                 sudo('chmod +x /etc/init.d/injection')
                 run("service injection start")
 
-def move_sshd():
+def move_sshd(custom_port=2222):
     common.add_iptables_rule("INPUT -p tcp -m tcp --dport 2222 -j ACCEPT")
     sudo("service iptables save")
     sshd_conf = StringIO()
     template = Template(filename = os.path.join(BASEPATH,
-                                                'templates/sshd_config.mako')
-    content = template.render(new_port = 2222)
+                                                'templates/sshd_config.mako'))
+    content = template.render(new_port = custom_port)
     sshd_conf.write(content)
     put(sshd_conf, "/etc/ssh/sshd_config")
     run("service sshd restart")

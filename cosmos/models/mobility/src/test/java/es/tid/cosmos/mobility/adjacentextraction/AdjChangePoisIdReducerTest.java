@@ -55,4 +55,32 @@ public class AdjChangePoisIdReducerTest {
         final TypedProtobufWritable<Poi> outValue = res.get(0).getSecond();
         assertEquals(10, outValue.get().getId());
     }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testMoreThanOnePoi() throws IOException {
+        final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 88L);
+        final TypedProtobufWritable<Message> value1 =
+                new TypedProtobufWritable<Message>(PoiUtil.create(1, 2L, 3L, 4,
+                        5, 6, 7D, 8, 9, 10, 11, 12, 13, 14, 15D, 16, 17));
+        final TypedProtobufWritable<Message> value2 =
+                new TypedProtobufWritable<Message>(PoiNewUtil.create(10, 20L,
+                        30L, 40, 50));
+        this.instance
+                .withInput(key, Arrays.asList(value1, value1, value2))
+                .runTest();
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testMoreThanOnePoiNew() throws IOException {
+        final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 88L);
+        final TypedProtobufWritable<Message> value1 =
+                new TypedProtobufWritable<Message>(PoiUtil.create(1, 2L, 3L, 4,
+                        5, 6, 7D, 8, 9, 10, 11, 12, 13, 14, 15D, 16, 17));
+        final TypedProtobufWritable<Message> value2 =
+                new TypedProtobufWritable<Message>(PoiNewUtil.create(10, 20L,
+                        30L, 40, 50));
+        this.instance
+                .withInput(key, Arrays.asList(value1, value2, value2))
+                .runTest();
+    }
 }

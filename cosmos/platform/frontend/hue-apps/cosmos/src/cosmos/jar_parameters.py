@@ -5,6 +5,7 @@ JAR parameters representation.
 from django import forms
 
 from cosmos.forms import ABSOLUTE_PATH_VALIDATOR, ID_VALIDATOR, HDFSFileChooser
+from cosmos.mongo import user_coll_url
 
 
 class AbstractParameter(object):
@@ -74,7 +75,11 @@ class MongoCollParameter(AbstractParameter):
                                validators=[ID_VALIDATOR])
 
     def as_job_argument(self, job):
-        mongo_url = job.mongo_url(collection=self.get_value())
+        collection = self.get_value()
+        if collection is None:
+            # Fallback to default collection name
+            collection = job.mongo_collection()
+        mongo_url = user_coll_url(job.user.id, collection)
         return ["-D", "%s=%s" % (self.name, mongo_url)]
 
 

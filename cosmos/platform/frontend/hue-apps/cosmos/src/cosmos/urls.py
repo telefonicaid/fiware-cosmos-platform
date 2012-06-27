@@ -12,5 +12,5 @@ urlpatterns = patterns('cosmos',
   url(r'^jobs/run/cancel/$',   'views.cancel_job',     name='cancel_job'),
   url(r'^upload/$',            'views.upload_index',   name='upload_index'),
   url(r'^results/$',           'views.list_results',   name='list_results'),
-  url(r'^job/(\d+)/results/$', 'views.show_results',   name='show_results'),
+  url(r'^results/(\w+)/$',     'views.show_results',   name='show_results'),
 )

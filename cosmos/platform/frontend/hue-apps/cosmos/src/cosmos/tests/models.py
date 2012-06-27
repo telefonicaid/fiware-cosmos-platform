@@ -5,10 +5,9 @@ Models tests.
 """
 from django import test
 from django.contrib.auth.models import User
-from jobsubd.ttypes import State
 from jobsub.models import Submission
+from jobsubd.ttypes import State
 
-from cosmos.jar_parameters import make_parameter
 from cosmos.models import JobRun
 
 
@@ -21,20 +20,6 @@ class JobRunTestCase(test.TestCase):
                           dataset_path='/user/jsmith/datasets/text.txt',
                           jar_path='/user/jsmith/jars/wordcount.jar',
                           submission=Submission(id=23))
-
-    def test_hadoop_args(self):
-        self.assertEquals(self.job.hadoop_args('job.jar'),
-                          ['jar', 'job.jar', '/user/jsmith/datasets/text.txt',
-                           '/user/jsmith/tmp/job_15/',
-                           'mongodb://localhost/db_1.job_15'])
-
-    def test_hadoop_args_with_parameters(self):
-        self.job.parameters = [make_parameter('foo', 'string|bar'),
-                               make_parameter('mongo1', 'mongocoll|col_a')]
-        self.assertEquals(self.job.hadoop_args('job.jar'),
-                          ['jar', 'job.jar',
-                           '-D', 'foo=bar',
-                           '-D', 'mongo1=mongodb://localhost/db_1.col_a'])
 
     def assert_link_in_states(self, link, states):
         for state in states:
@@ -49,7 +34,7 @@ class JobRunTestCase(test.TestCase):
         self.assert_link_in_states({'name': 'Results',
                                     'class': 'results',
                                     'target': None,
-                                    'href': '/cosmos/job/15/results/'},
+                                    'href': '/cosmos/results/job_15/'},
                                    [State.SUCCESS])
 
         self.assert_link_in_states({'name': 'Detailed status',

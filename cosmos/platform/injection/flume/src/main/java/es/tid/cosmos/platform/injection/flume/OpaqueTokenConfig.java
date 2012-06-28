@@ -33,10 +33,6 @@ public final class OpaqueTokenConfig {
      * @throws IllegalStateException when token config is not completed
      */
     private void validate() {
-        if (this.transformation == null) {
-            throw new IllegalStateException("missing value for transformation" +
-                    " property in opaque token config object");
-        }
         if (this.destinationPath == null) {
             throw new IllegalStateException("missing value for destinationPath" +
                     " property in opaque token config object");
@@ -54,11 +50,22 @@ public final class OpaqueTokenConfig {
             this.config = new OpaqueTokenConfig();
         }
 
+        /**
+         * Set the transformation to be applied to the event data. This
+         * field is optional and defaulted to null.
+         */
         public Builder withTransformation(String transformation) {
             this.config.transformation = transformation;
             return this;
         }
 
+        /**
+         * Set the destination path in datastore to persist the event data.
+         * This field is mandatory. If missing, the {@link #build()}
+         * operation will raise a {@link IllegalStateException}.
+         * @param destinationPath
+         * @return
+         */
         public Builder withDestinationPath(String destinationPath) {
             this.config.destinationPath = destinationPath;
             return this;
@@ -68,8 +75,8 @@ public final class OpaqueTokenConfig {
          * Build the opaque token config.
          *
          * @return the resulting opaque token config.
-         * @throws IllegalStateException when there are uninitialized
-         * properties
+         * @throws IllegalStateException when one or more mandatory properties
+         * are uninitialized.
          */
         public OpaqueTokenConfig build() {
             this.config.validate();

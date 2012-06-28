@@ -32,6 +32,6 @@ public class OpaqueTokenConfigTest {
     public void testBuildNotCompletedConfig() {
         OpaqueTokenConfig.newBuilder()
                 .withTransformation("fakeTransformation")
-                .build();
+                .build(); // missing mandatory field 'destinationPath'
     }
 }

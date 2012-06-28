@@ -28,17 +28,17 @@ public class TrafficCountsEntry implements FieldsEntry {
     public double longitude;
     public HashMap<String, ArrayList<BigDecimal>> counts;
     public ArrayList<Integer> poiFive = new ArrayList<Integer>(HOURLY_SLOTS);
-    public HashMap<String, ArrayList<Integer>> pois;
+    public HashMap<String, ArrayList<BigDecimal>> pois;
     public String microgridId;
     public String polygonId;
 
     public TrafficCountsEntry(String[] countFields) {
-        this.pois = new HashMap<String, ArrayList<Integer>>();
-        this.pois.put("HOME", new ArrayList<Integer>(HOURLY_SLOTS));
-        this.pois.put("WORK", new ArrayList<Integer>(HOURLY_SLOTS));
-        this.pois.put("NONE", new ArrayList<Integer>(HOURLY_SLOTS));
-        this.pois.put("OTHER", new ArrayList<Integer>(HOURLY_SLOTS));
-        this.pois.put("BILL", new ArrayList<Integer>(HOURLY_SLOTS));
+        this.pois = new HashMap<String, ArrayList<BigDecimal>>();
+        this.pois.put("HOME", new ArrayList<BigDecimal>(HOURLY_SLOTS));
+        this.pois.put("WORK", new ArrayList<BigDecimal>(HOURLY_SLOTS));
+        this.pois.put("NONE", new ArrayList<BigDecimal>(HOURLY_SLOTS));
+        this.pois.put("OTHER", new ArrayList<BigDecimal>(HOURLY_SLOTS));
+        this.pois.put("BILL", new ArrayList<BigDecimal>(HOURLY_SLOTS));
         this.counts = new HashMap<String, ArrayList<BigDecimal>>();
         for (String countField : countFields) {
             this.counts.put(countField, new ArrayList<BigDecimal>());
@@ -81,13 +81,15 @@ public class TrafficCountsEntry implements FieldsEntry {
         for (String countField : this.counts.keySet()) {
             final ArrayList<BigDecimal> countsForField =
                     this.counts.get(countField);
-            ArrayList<BigDecimal> scaledCountsForField =
-                    new ArrayList<BigDecimal>();
             for (int i = 0; i < countsForField.size(); i++) {
-                scaledCountsForField.add(countsForField.get(i)
-                        .multiply(factor));
+                countsForField.set(i, countsForField.get(i).multiply(factor));
             }
-            scaledCounts.put(countField, scaledCountsForField);
+        }
+        for (String poi : this.pois.keySet()) {
+            ArrayList<BigDecimal> countsForPoi = this.pois.get(poi);
+            for (int i = 0; i < countsForPoi.size(); i++) {
+                countsForPoi.set(i, countsForPoi.get(i).multiply(factor));
+            }
         }
         return scaledCounts;
     }

@@ -15,7 +15,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import static junit.framework.Assert.*;
+import static org.junit.Assert.*;
 
 /**
  *
@@ -40,8 +40,10 @@ public class OpaqueTokenProcessorInterceptorTest {
         }
     }
 
+    private Context context;
     private Interceptor interceptor;
     private UUID opaqueToken;
+    private Event inputEvent;
     private String destination;
     private String transformation;
 
@@ -51,22 +53,25 @@ public class OpaqueTokenProcessorInterceptorTest {
         this.destination = "/home/apv/data";
         this.transformation = "tango-delta-mike";
 
+        this.inputEvent = EventBuilder.withBody("Hello world!",
+                Charset.forName("UTF-8"));
+
         Interceptor.Builder builder =
                 new OpaqueTokenProcessorInterceptor.Builder();
-        Context ctx = new Context();
+        this.context = new Context();
         String prefix = OpaqueTokenProcessorInterceptor.Builder
                 .PROPERTY_TOKEN_CONFIG_PROVIDER;
-        ctx.put(prefix, OpaqueTokenConfigProviderType.STATIC.name());
-        ctx.put(prefix + "." +
+        this.context.put(prefix, OpaqueTokenConfigProviderType.STATIC.name());
+        this.context.put(prefix + "." +
                 StaticOpaqueTokenConfigProvider.Builder.PROPERTY_TOKEN,
                 this.opaqueToken.toString());
-        ctx.put(prefix + "." +
+        this.context.put(prefix + "." +
                 StaticOpaqueTokenConfigProvider.Builder.PROPERTY_TRANSFORMATION,
                 this.transformation);
-        ctx.put(prefix + "." +
+        this.context.put(prefix + "." +
                 StaticOpaqueTokenConfigProvider.Builder.PROPERTY_DESTINATION,
                 this.destination);
-        builder.configure(ctx);
+        builder.configure(this.context);
         this.interceptor = builder.build();
         this.interceptor.initialize();
     }
@@ -78,12 +83,10 @@ public class OpaqueTokenProcessorInterceptorTest {
 
     @Test
     public void testInterceptEvent() {
-        Event inputEvent = EventBuilder.withBody("Hello world!",
-                Charset.forName("UTF-8"));
-        inputEvent.getHeaders().put(
+        this.inputEvent.getHeaders().put(
                 OpaqueTokenConstants.EVENT_HEADER_OPAQUE_TOKEN,
                 this.opaqueToken.toString());
-        Event outputEvent = this.interceptor.intercept(inputEvent);
+        Event outputEvent = this.interceptor.intercept(this.inputEvent);
         assertNotNull(outputEvent);
         assertEquals(this.destination, outputEvent.getHeaders().get(
                 OpaqueTokenConstants.EVENT_HEADER_DESTINATION_PATH));
@@ -95,8 +98,7 @@ public class OpaqueTokenProcessorInterceptorTest {
     public void testInterceptEventList() {
         List<Event> inputEvents = new LinkedList<Event>();
         for (int i = 0; i < 10; i++) {
-            Event event = EventBuilder.withBody("Hello world!",
-                    Charset.forName("UTF-8"));
+            Event event = EventBuilder.withBody(this.inputEvent.getBody());
             event.getHeaders().put(
                     OpaqueTokenConstants.EVENT_HEADER_OPAQUE_TOKEN,
                     this.opaqueToken.toString());
@@ -115,19 +117,15 @@ public class OpaqueTokenProcessorInterceptorTest {
 
     @Test
     public void testInterceptEventWithMissingToken() {
-        Event inputEvent = EventBuilder.withBody("Hello world!",
-                Charset.forName("UTF-8"));
-        Event outputEvent = this.interceptor.intercept(inputEvent);
+        Event outputEvent = this.interceptor.intercept(this.inputEvent);
         assertNull(outputEvent);
     }
 
     @Test
     public void testInterceptEventWithMalformedToken() {
-        Event inputEvent = EventBuilder.withBody("Hello world!",
-                Charset.forName("UTF-8"));
-        inputEvent.getHeaders().put(
+        this.inputEvent.getHeaders().put(
                 OpaqueTokenConstants.EVENT_HEADER_OPAQUE_TOKEN, "0123456789");
-        Event outputEvent = this.interceptor.intercept(inputEvent);
+        Event outputEvent = this.interceptor.intercept(this.inputEvent);
         assertNull(outputEvent);
     }
 
@@ -135,38 +133,35 @@ public class OpaqueTokenProcessorInterceptorTest {
     public void testInitBuilderWithMissingConfigProvider() {
         Interceptor.Builder builder =
                 new OpaqueTokenProcessorInterceptor.Builder();
-        Context ctx = new Context();
-        builder.configure(ctx);
+        this.context.clear();
+        builder.configure(this.context);
     }
 
     @Test(expected = ConfigurationException.class)
     public void testInitBuilderWithUnknownConfigProvider() {
         Interceptor.Builder builder =
                 new OpaqueTokenProcessorInterceptor.Builder();
-        Context ctx = new Context();
-        ctx.put(OpaqueTokenProcessorInterceptor.Builder
+        this.context.put(OpaqueTokenProcessorInterceptor.Builder
                 .PROPERTY_TOKEN_CONFIG_PROVIDER, "foobar");
-        builder.configure(ctx);
+        builder.configure(this.context);
     }
 
     @Test(expected = ConfigurationException.class)
     public void testInitBuilderWithInvalidConfigProviderClass() {
         Interceptor.Builder builder =
                 new OpaqueTokenProcessorInterceptor.Builder();
-        Context ctx = new Context();
-        ctx.put(OpaqueTokenProcessorInterceptor.Builder
+        this.context.put(OpaqueTokenProcessorInterceptor.Builder
                 .PROPERTY_TOKEN_CONFIG_PROVIDER, this.getClass().getName());
-        builder.configure(ctx);
+        builder.configure(this.context);
     }
 
     @Test
     public void testInitBuilderWithCustomConfigProvider() {
         Interceptor.Builder builder =
                 new OpaqueTokenProcessorInterceptor.Builder();
-        Context ctx = new Context();
-        ctx.put(OpaqueTokenProcessorInterceptor.Builder
+        this.context.put(OpaqueTokenProcessorInterceptor.Builder
                 .PROPERTY_TOKEN_CONFIG_PROVIDER,
                 CustomOpaqueTokenConfigProvider.Builder.class.getName());
-        builder.configure(ctx);
+        builder.configure(this.context);
     }
 }

@@ -30,7 +30,7 @@ public class OpaqueTokenConfigTest {
 
     @Test(expected = IllegalStateException.class)
     public void testBuildNotCompletedConfig() {
-        OpaqueTokenConfig config = OpaqueTokenConfig.newBuilder()
+        OpaqueTokenConfig.newBuilder()
                 .withTransformation("fakeTransformation")
                 .build();
     }

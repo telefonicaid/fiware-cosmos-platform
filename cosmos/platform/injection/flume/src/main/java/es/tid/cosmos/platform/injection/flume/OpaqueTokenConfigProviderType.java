@@ -4,8 +4,8 @@ package es.tid.cosmos.platform.injection.flume;
  * An enumeration of the known opaque token config providers.
  */
 public enum OpaqueTokenConfigProviderType {
-    STATIC(new StaticOpaqueTokenConfigProvider.Builder())
-    ;
+
+    STATIC(new StaticOpaqueTokenConfigProvider.Builder());
 
     /**
      * Obtains the builder class of the represented token config provider.

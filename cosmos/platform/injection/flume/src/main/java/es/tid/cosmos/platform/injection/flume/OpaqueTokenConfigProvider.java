@@ -11,6 +11,14 @@ import java.util.UUID;
  */
 public interface OpaqueTokenConfigProvider {
 
+    /**
+     * Obtains configuration for given opaque token. If no config was found,
+     * return null.
+     * @param opaqueToken the opaque token which configuration is to be
+     *                    obtained.
+     * @return the opaque token configuration or null if given token is
+     * unknown.
+     */
     OpaqueTokenConfig forToken(UUID opaqueToken);
 
     /**

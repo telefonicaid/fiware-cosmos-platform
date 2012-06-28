@@ -14,9 +14,14 @@ import org.apache.flume.interceptor.Interceptor;
  */
 public abstract class AbstractInterceptor implements Interceptor {
 
+    /**
+     * Default implementation for initialization of interceptor objects. By
+     * default, there is no specific behavior associated to interceptor
+     * initialization. If needed, concrete interceptors may override this
+     * method.
+     */
     @Override
     public void initialize() {
-        // Nothing to do
     }
 
     @Override
@@ -31,8 +36,13 @@ public abstract class AbstractInterceptor implements Interceptor {
         return result;
     }
 
+    /**
+     * Default implementation for closing of interceptor objects. By
+     * default, there is no specific behavior associated to interceptor
+     * closing. If needed, concrete interceptors may override this
+     * method.
+     */
     @Override
     public void close() {
-        // Nothing to do
     }
 }

@@ -20,7 +20,7 @@ public class TrafficCountsEntryParser extends Parser<TrafficCountsEntry> {
     
     public TrafficCountsEntryParser(String[] countFields) {
         super(null);
-        this.countFields = countFields;
+        this.countFields = countFields.clone();
     }
     
     @Override

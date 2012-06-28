@@ -26,9 +26,8 @@ public class TrafficCountsEntryParser extends Parser<TrafficCountsEntry> {
         TrafficCountsEntry entry = new TrafficCountsEntry();
         entry.date = jsonObject.getString("date");
         entry.cellId = jsonObject.getString("cellid");
-        entry.northing = jsonObject.getLong("northing");
-        entry.easting = jsonObject.getLong("easting");
-        entry.lat = jsonObject.getDouble("lat");
+        entry.latitude = jsonObject.getDouble("lat");
+        entry.longitude = jsonObject.getDouble("long");
         entry.counts = new HashMap<String, ArrayList<BigDecimal>>();
         for (String countField : TrafficCountsEntry.COUNT_FIELDS) {
             final JSONArray parsedCounts = jsonObject.getJSONArray(countField);

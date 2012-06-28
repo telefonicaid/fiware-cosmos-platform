@@ -33,9 +33,8 @@ public class TrafficCountsEntry implements FieldsEntry {
 
     public String cellId;
     public String date;
-    public long northing;
-    public long easting;
-    public double lat;
+    public double latitude;
+    public double longitude;
     public HashMap<String, ArrayList<BigDecimal>> counts;
     public ArrayList<Integer> poiFive = new ArrayList<Integer>(HOURLY_SLOTS);
     public HashMap<String, ArrayList<Integer>> pois;
@@ -66,9 +65,8 @@ public class TrafficCountsEntry implements FieldsEntry {
     public List<Object> getFields() {
         ArrayList<Object> ans = new ArrayList<Object>();
         ans.add(this.date);
-        ans.add(this.northing);
-        ans.add(this.easting);
-        ans.add(this.lat);
+        ans.add(this.latitude);
+        ans.add(this.longitude);
         ans.add(this.counts);
         ans.add(this.poiFive);
         ans.add(this.pois);
@@ -81,9 +79,8 @@ public class TrafficCountsEntry implements FieldsEntry {
         TrafficCountsEntry scaledEntry = new TrafficCountsEntry();
         scaledEntry.date = this.date;
         scaledEntry.cellId = this.cellId;
-        scaledEntry.northing = this.northing;
-        scaledEntry.easting = this.easting;
-        scaledEntry.lat = this.lat;
+        scaledEntry.latitude = this.latitude;
+        scaledEntry.longitude = this.longitude;
         scaledEntry.counts = this.scaleCounts(factor);
         scaledEntry.poiFive = (ArrayList<Integer>) this.poiFive.clone();
         scaledEntry.pois =
@@ -132,9 +129,8 @@ public class TrafficCountsEntry implements FieldsEntry {
         final JSONObject obj = new JSONObject();
         obj.put("cellId", this.cellId);
         obj.put("date", this.date);
-        obj.put("northing", this.northing);
-        obj.put("easting", this.easting);
-        obj.put("lat", this.lat);
+        obj.put("lat", this.latitude);
+        obj.put("long", this.longitude);
         for (String field : TrafficCountsEntry.COUNT_FIELDS) {
             obj.put(field, this.counts.get(field));
         }

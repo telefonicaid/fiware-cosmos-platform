@@ -16,6 +16,7 @@ from fabric.utils import puts, error, warn
 from mako.template import Template
 
 import common
+import iptables
 import hadoop_install
 import hue_deployment
 
@@ -65,8 +66,8 @@ def open_ftp_port():
     internal yum repositories are FTP-based instead of the standard HTTP
     repos
     """
-    common.add_iptables_rule("OUTPUT -p tcp -m tcp --dport 21 -j ACCEPT")
-    common.add_iptables_rule("OUTPUT -p tcp -m tcp --dport 22 -j ACCEPT")
+    iptables.accept_out_tcp(21)
+    iptables.accept_out_tcp(22)
     sudo("service iptables save")
 
 @task
@@ -172,7 +173,7 @@ def deploy_sftp(sshd_needs_moved=False):
 
 def move_sshd(custom_port=2222):
     """Changes the port where the ssh daemon is listening"""
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 2222 -j ACCEPT")
+    iptables.add_rule("INPUT -p tcp -m tcp --dport 2222 -j ACCEPT")
     sudo("service iptables save")
     sshd_conf = StringIO()
     template = Template(filename = os.path.join(BASEPATH,
@@ -259,8 +260,8 @@ def configure_ntp():
     ntp_conf.write(content)
     ntp_conf_path = "/etc/ntp.conf"
     put(ntp_conf, ntp_conf_path)
-    common.add_iptables_rule(("OUTPUT -p udp -d 0.rhel.pool.ntp.org "
-          "--dport 123 -j ACCEPT"))
+    iptables.add_rule(("OUTPUT -p udp -d 0.rhel.pool.ntp.org "
+                       "--dport 123 -j ACCEPT"))
     sudo("service iptables save")
     run("chkconfig --level 2 ntpd on")
     run("service ntpd start")
@@ -297,7 +298,7 @@ def install_gmetad():
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmetad_cfg_path))
     put(gmetad_conf, gmetad_cfg_path)
-    common.add_iptables_rule("INPUT -p tcp -d {0} --dport 8649 -j ACCEPT"
+    iptables.add_rule("INPUT -p tcp -d {0} --dport 8649 -j ACCEPT"
             .format(common.clean_host_list(CONFIG['hosts']['frontend'])))
     sudo("service iptables save")
     run("service gmetad start")
@@ -370,7 +371,7 @@ def install_gmond():
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmond_conf_path))
     put(gmond_conf, gmond_conf_path)
-    common.add_iptables_rule("OUTPUT -p udp -d {0} --dport 8649 -j ACCEPT"
+    iptables.add_rule("OUTPUT -p udp -d {0} --dport 8649 -j ACCEPT"
             .format(common.clean_host_list(CONFIG['hosts']['frontend'])))
     sudo("service iptables save")
     run("service gmond start")

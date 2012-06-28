@@ -14,6 +14,8 @@ from fabric.utils import puts, warn
 from mako.template import Template
 
 import common
+import iptables
+
 
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
@@ -53,11 +55,11 @@ def install_and_patch_hue(config):
         put(local_patch_path, remote_patch_path)
         with cd("/usr/share/hue"):
             run("git apply -p2 --reject {0}".format(remote_patch_path))
-    common.add_iptables_rule('INPUT -p tcp -m tcp --dport 80 -j ACCEPT')
-    common.add_iptables_rule('INPUT -p tcp -m tcp --dport 8001 -j ACCEPT')
-    common.add_iptables_rule('INPUT -p tcp -m tcp --dport 8002 -j ACCEPT')
-    common.add_iptables_rule('INPUT -p tcp -m tcp --dport 8003 -j ACCEPT')
-    
+    iptables.accept_in_tcp(80)
+    iptables.accept_in_tcp(8001)
+    iptables.accept_in_tcp(8002)
+    iptables.accept_in_tcp(8003)
+
     hueconf = StringIO()
     template = Template(filename = os.path.join(BASEPATH,
                                                 'templates/hue.ini.mako'))
@@ -98,7 +100,7 @@ def install_thrift(thrift_tarpath):
                 run("./configure")
                 run("make")
                 run("make install")
-               
+
 def install_cosmos_app():
     """
     Install the Cosmos app into HUE, by registering it as a new app. The Cosmos

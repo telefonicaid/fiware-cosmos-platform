@@ -49,11 +49,11 @@ public class EntryScalerMapper extends Mapper<LongWritable, Text,
         String cellId;
         Entry entry;
         final String valueStr = value.toString();
-        if ((entry = this.countsParser.safeParse(valueStr)) != null || 
-                (entry = this.lookupParser.safeParse(valueStr)) != null) {
+        if ((entry = this.countsParser.parse(valueStr)) != null || 
+                (entry = this.lookupParser.parse(valueStr)) != null) {
             cellId = entry.getKey();
         } else {
-            throw new IllegalArgumentException("Invalid input data");
+            throw new IllegalArgumentException("Invalid input data: " + valueStr);
         }
         context.write(new Text(cellId), value);
     }

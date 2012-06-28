@@ -2,9 +2,9 @@ package es.tid.smartsteps.dispersion.parsing;
 
 import java.io.IOException;
 
-import net.sf.json.JSONException;
 import org.apache.hadoop.conf.Configuration;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -66,9 +66,8 @@ public class TrafficCountsEntryParserTest {
         assertEquals("20120527", entry.date);
     }
 
-    @Test(expected=JSONException.class)
     public void testInvalidEntry() {
         final String value = "blahblah";
-        this.parser.parse(value);
+        assertNull(this.parser.parse(value));
     }
 }

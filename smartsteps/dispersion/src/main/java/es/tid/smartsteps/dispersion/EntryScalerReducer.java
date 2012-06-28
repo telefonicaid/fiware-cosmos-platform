@@ -57,10 +57,9 @@ public class EntryScalerReducer extends Reducer<Text, Text,
         LookupTable lookupTable = new LookupTable();
         for (Text value : values) {
             Entry entry;
-            if ((entry = this.countsParser.safeParse(value.toString()))
-                    != null) {
+            if ((entry = this.countsParser.parse(value.toString())) != null) {
                 trafficCountsEntries.add((TrafficCountsEntry) entry);
-            } else if ((entry = this.lookupParser.safeParse(value.toString()))
+            } else if ((entry = this.lookupParser.parse(value.toString()))
                     != null) {
                 lookupTable.add(entry);
             } else {
@@ -70,6 +69,11 @@ public class EntryScalerReducer extends Reducer<Text, Text,
         
         for (TrafficCountsEntry entry : trafficCountsEntries) {
             final List<LookupEntry> lookups = lookupTable.get(key.toString());
+            if (lookups == null) {
+                context.getCounter(Counters.ENTRIES_NOT_IN_LOOKUP).increment(1L);
+                continue;
+            }
+            context.getCounter(Counters.ENTRIES_IN_LOOKUP).increment(1L);
             for (LookupEntry lookup : lookups) {
                 entry.scale(lookup.getProportion());
                 switch (this.type) {

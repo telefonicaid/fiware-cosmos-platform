@@ -33,7 +33,8 @@ public abstract class Config {
         for (String countField : props.getProperty(COUNT_FIELDS).split(",")) {
             countFields.add(countField.trim().replaceAll("\"", ""));
         }
-        conf.setStrings(COUNT_FIELDS, countFields.toArray(new String[countFields.size()]));
+        conf.setStrings(COUNT_FIELDS,
+                        countFields.toArray(new String[countFields.size()]));
         
         return conf;
     }

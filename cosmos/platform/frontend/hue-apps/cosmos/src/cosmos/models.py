@@ -48,28 +48,8 @@ class JobRun(models.Model):
     def is_parameterized(self):
         return self.parameters is not None
 
-    def mongo_db(self):
-        return 'db_%d' % self.user.id
-
     def mongo_collection(self):
         return 'job_%d' % self.id
-
-    def mongo_url(self, collection=None):
-        if collection is None:
-            collection = self.mongo_collection()
-        return '%s/%s.%s' % (conf.MONGO_BASE.get(), self.mongo_db(),
-                             collection)
-
-    def hadoop_args(self, jar_name):
-        args = ['jar', jar_name]
-        if self.is_parameterized():
-            for parameter in self.parameters:
-                args.extend(parameter.as_job_argument(self))
-        else:
-            input_path = self.dataset_path
-            output_path = '/user/%s/tmp/job_%d/' % (self.user.username, self.id)
-            args.extend([input_path, output_path, self.mongo_url()])
-        return args
 
     def state(self):
         if self.submission is None:
@@ -117,7 +97,7 @@ class JobRun(models.Model):
                 'name': 'Results',
                 'class': 'results',
                 'target': None,
-                'href': reverse('show_results', args=[self.id])
+                'href': reverse('show_results', args=[self.mongo_collection()])
             })
 
         links.append({

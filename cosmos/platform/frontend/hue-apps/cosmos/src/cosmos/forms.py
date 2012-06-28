@@ -27,6 +27,7 @@ JAR_FILE_VALIDATOR = validators.RegexValidator(
 
 
 class HDFSFileChooser(forms.TextInput):
+    """Text input box with a file selector dialog."""
     FORMAT_STRING = ('%s <a class="hue-choose_file" data-filters="ArtButton" ' +
                      'data-chooseFor="%s">...</a>')
 
@@ -36,6 +37,7 @@ class HDFSFileChooser(forms.TextInput):
 
 
 def validate_hdfs_path(form, field, fs):
+    """Make sure that an HDFS path exists or report validation error."""
     path = form.cleaned_data[field]
     has_file = fs.exists(path)
     if not has_file:

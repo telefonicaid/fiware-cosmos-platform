@@ -38,61 +38,49 @@ def create_hadoop_dirs(config):
         run('install -o hdfs   -g hadoop -m 755 -d %s/data' % conf_dir)
         run('install -o mapred -g hadoop -m 755 -d %s/mapred' % conf_dir)
         run('install -o hdfs   -g hadoop -m 755 -d %s/name' % conf_dir)
-        
+
     run('install -o root   -g hadoop -m 755 -d %s' % COSMOS_CLASSPATH)
- 
+
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers', 'frontend')
 @parallel
 def configure_hadoop(config):
     """Generate  Hadoop configuration files"""
     with cd('/etc/hadoop/conf'):
-        coresite = StringIO()
-        template = Template(filename = os.path.join(BASEPATH,
-                                                   'templates/core-site.mako'))
-        coresite.write(template.render(
-                namenode=config['hosts']['namenode'][0]))
-        put(coresite, 'core-site.xml')
-        
+        common.instantiate_template('templates/core-site.mako',
+                                    'core-site.xml', context=dict(
+                                        namenode=config['hosts']['namenode'][0]
+                                    )))
         masters = StringIO()
         for master in set(config['hosts']['namenode'] +\
                           config['hosts']['jobtracker']):
             masters.write('%s\n' % master)
         put(masters, 'masters')
-        
+
         slaves = StringIO()
         for slave in set(config['hosts']['datanodes'] +\
                          config['hosts']['tasktrackers']):
             slaves.write('%s\n' % slave)
         put(slaves, 'slaves')
-            
-        mapredsite = StringIO()
-        template = Template(filename = os.path.join(BASEPATH,
-                                                'templates/mapred-site.mako'))
-        mapredsite.write(template.render(
-                jobtracker = config['hosts']['jobtracker'][0],
-                dirs = ','.join([directory + '/mapred'
-                                 for directory in config["hadoop_data_dirs"]]),
-                reduce_tasks = 2*len(config['hosts']['datanodes'])))
-        put(mapredsite, 'mapred-site.xml')
-        
-        hdfssite = StringIO()
-        template = Template(filename = os.path.join(BASEPATH,
-                                                   'templates/hdfs-site.mako'))
-        hdfssite.write(template.render(
+
+        common.instantiate_template(
+            'templates/mapred-site.mako', 'mapred-site.xml', context=dict(
+                jobtracker=config['hosts']['jobtracker'][0],
+                dirs=','.join([directory + '/mapred'
+                               for directory in config["hadoop_data_dirs"]]),
+                reduce_tasks=2*len(config['hosts']['datanodes'])))
+
+        common.instantiate_template(
+            'templates/hdfs-site.mako', 'hdfs-site.xml', context=dict(
                 namedirs=','.join([directory + '/name'
                                for directory in config["hadoop_data_dirs"]]),
                 datadirs=','.join([directory + '/data'
                                for directory in config["hadoop_data_dirs"]]),
                 namenode = config['hosts']['namenode'][0]))
-        put(hdfssite, 'hdfs-site.xml')
-        
-        hadoop_env = StringIO()
-        template = Template(filename = os.path.join(BASEPATH,
-                                                  'templates/hadoop-env.mako'))
-        hadoop_env.write(template.render(
-            cosmos_classpath=COSMOS_CLASSPATH))
-        put(hadoop_env, 'hadoop-env.sh')
-           
+
+        common.instantiate_template('templates/hadoop-env.mako',
+                                    'hadoop-env.sh', context=dict(
+                                        cosmos_classpath=COSMOS_CLASSPATH))
+
 def deploy_daemon(daemon):
     """Deploys a Hadoop daemon"""
     daemon_path = '/etc/init.d/hadoop-0.20-%s' % daemon
@@ -151,8 +139,8 @@ def deploy_jobtracker_daemon():
     deploy_daemon('jobtracker')
     start_daemon('jobtracker')
 
-@roles('tasktrackers')   
-@parallel 
+@roles('tasktrackers')
+@parallel
 def deploy_tasktracker_daemon():
     """Deploys the tasktracker Hadoop daemon"""
     iptables.accept_in_tcp(50060)

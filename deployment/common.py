@@ -3,11 +3,17 @@ common.py -
 
 common functionality for Fabric deployments
 """
-from fabric.api import env, roles, run, sudo, settings
+import os.path
+from StringIO import StringIO
+
+from fabric.api import env, put, roles, run, sudo, settings
 from fabric.colors import green, white
 from fabric.contrib import files
 from fabric.decorators import roles
 import fabric.context_managers as ctx
+
+
+BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
 
 def install_cdh_repo(config):
@@ -97,3 +103,25 @@ def remove_port_info(hosts):
         else:
             ans.append(host)
     return ans
+
+
+def instantiate_template(template_file, output_file, context={},
+                         basepath=BASEPATH):
+    """
+    Instantiate a mako template on a file on the destination host
+    (fabric.api.put).
+    """
+    template = Template(filename = os.path.join(basepath, template_file))
+    content = StringIO()
+    content.write(template.render(**context))
+    put(content, output_file)
+
+
+def touch_file(file_path):
+    """
+    Makes sure a file exists creating an empty one if it does not exists.
+    """
+    if not files.exists(file_path):
+        dir_path = os.path.dirname(file_path)
+        run("mkdir -p %s" % dir_path)
+        run("echo '' >> {0}".format(file_path))

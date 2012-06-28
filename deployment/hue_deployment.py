@@ -60,13 +60,11 @@ def install_and_patch_hue(config):
     iptables.accept_in_tcp(8002)
     iptables.accept_in_tcp(8003)
 
-    hueconf = StringIO()
-    template = Template(filename = os.path.join(BASEPATH,
-                                                'templates/hue.ini.mako'))
-    hueconf.write(template.render(
-            jobtracker = config['hosts']['jobtracker'][0],
-            namenode = config['hosts']['namenode'][0]))
-    put(hueconf, '/etc/hue/hue.ini')
+    common.instantiate_template('templates/hue.ini.mako', '/etc/hue/hue.ini',
+                                context=dict(
+                                    jobtracker = config['hosts']['jobtracker'][0],
+                                    namenode = config['hosts']['namenode'][0]))
+
     sudo('hadoop dfs -mkdir /user/hive/warehouse', user='hdfs')
     sudo('hadoop dfs -chown -R hive /user/hive/', user='hdfs')
     sudo('hadoop dfs -chmod +777 /user/hive/warehouse', user='hdfs')

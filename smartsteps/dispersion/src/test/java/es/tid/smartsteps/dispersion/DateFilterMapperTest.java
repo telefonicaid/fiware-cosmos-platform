@@ -1,5 +1,8 @@
 package es.tid.smartsteps.dispersion;
 
+import java.io.IOException;
+
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
@@ -11,14 +14,19 @@ import org.junit.Test;
  * @author dmicol
  */
 public class DateFilterMapperTest {
+
     private MapDriver<LongWritable, Text, LongWritable, Text> instance;
     private LongWritable key;
     private Text value;
     
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.instance = new MapDriver<LongWritable, Text, LongWritable, Text>(
                 new DateFilterMapper());
+        final Configuration config = Config.load(
+                Config.class.getResource("/config.properties").openStream(),
+                this.instance.getConfiguration());
+        this.instance.setConfiguration(config);
         this.key = new LongWritable(102L);
         this.value = new Text("{\"date\": \"20120527\", "
                 + "\"footfall_observed_basic\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
@@ -43,7 +51,7 @@ public class DateFilterMapperTest {
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "
                 + "\"BILL\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0]}, "
-                + "\"footfall_observed_age_0\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
+                + "\"footfall_observed_0\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "
                 + "\"footfall_observed_age_60\": [0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "
@@ -58,7 +66,6 @@ public class DateFilterMapperTest {
     @Test
     public void testFilterMatchingDate() {
         this.instance.getConfiguration().set(Config.DATE_TO_FILTER, "20120527");
-
         this.instance
                 .withInput(this.key, this.value)
                 .withOutput(this.key, this.value)

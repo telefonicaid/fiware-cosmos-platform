@@ -16,6 +16,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsEntryParser;
  */
 public class DateFilterMapper extends Mapper<LongWritable, Text,
                                              LongWritable, Text> {
+
     private String dateToFilter;
     private Parser trafficCountsEntryPaser;
     
@@ -24,7 +25,8 @@ public class DateFilterMapper extends Mapper<LongWritable, Text,
                                                  InterruptedException {
         this.dateToFilter = context.getConfiguration().get(
                 Config.DATE_TO_FILTER);
-        this.trafficCountsEntryPaser = new TrafficCountsEntryParser();
+        this.trafficCountsEntryPaser = new TrafficCountsEntryParser(
+                context.getConfiguration().getStrings(Config.COUNT_FIELDS));
     }
     
     @Override

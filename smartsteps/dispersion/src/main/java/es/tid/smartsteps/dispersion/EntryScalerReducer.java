@@ -23,6 +23,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsEntryParser;
  */
 public class EntryScalerReducer extends Reducer<Text, Text,
                                                 NullWritable, Text> {
+
     private LookupType type;
     private Parser countsParser;
     private Parser lookupParser;
@@ -32,7 +33,8 @@ public class EntryScalerReducer extends Reducer<Text, Text,
                                                  InterruptedException {
         this.type = context.getConfiguration().getEnum(
                 LookupType.class.getName(), LookupType.INVALID);
-        this.countsParser = new TrafficCountsEntryParser();
+        this.countsParser = new TrafficCountsEntryParser(
+                context.getConfiguration().getStrings(Config.COUNT_FIELDS));
         switch (this.type) {
             case CELL_TO_MICROGRID:
                 this.lookupParser = new CellToMicrogridEntryParser(
@@ -69,21 +71,20 @@ public class EntryScalerReducer extends Reducer<Text, Text,
         for (TrafficCountsEntry entry : trafficCountsEntries) {
             final List<LookupEntry> lookups = lookupTable.get(key.toString());
             for (LookupEntry lookup : lookups) {
-                TrafficCountsEntry scaledEntry = entry.scale(
-                        lookup.getProportion());
+                entry.scale(lookup.getProportion());
                 switch (this.type) {
                     case CELL_TO_MICROGRID:
-                        scaledEntry.microgridId = lookup.getSecondaryKey();
+                        entry.microgridId = lookup.getSecondaryKey();
                         break;
                     case MICROGRID_TO_POLYGON:
-                        scaledEntry.polygonId = lookup.getSecondaryKey();
-                        scaledEntry.counts = scaledEntry.roundCounts();
+                        entry.polygonId = lookup.getSecondaryKey();
+                        entry.counts = entry.roundCounts();
                         break;
                     default:
                         throw new IllegalStateException();
                 }
                 context.write(NullWritable.get(),
-                              new Text(scaledEntry.toJSON().toString()));
+                              new Text(entry.toJSON().toString()));
             }
         }
     }

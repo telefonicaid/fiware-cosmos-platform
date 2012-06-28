@@ -1,10 +1,12 @@
 package es.tid.smartsteps.dispersion;
 
+import java.io.IOException;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -21,6 +23,7 @@ import org.junit.Test;
  * @author logc
  */
 public class EntryScalerTest {
+
     private MapReduceDriver<LongWritable, Text, Text, Text, NullWritable, Text>
             instance;
     private LongWritable key;
@@ -30,10 +33,14 @@ public class EntryScalerTest {
     private Text micro2polygon;
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         this.instance = new MapReduceDriver<LongWritable, Text,
                                             Text, Text,  NullWritable, Text>(
-                            new EntryScalerMapper(), new EntryScalerReducer());
+                new EntryScalerMapper(), new EntryScalerReducer());
+        final Configuration config = Config.load(
+                Config.class.getResource("/config.properties").openStream(),
+                this.instance.getConfiguration());
+        this.instance.setConfiguration(config);
         this.key = new LongWritable(102L);
         this.inputValue = new Text("{\"date\": \"20120527\", "
                 + "\"footfall_observed_basic\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
@@ -58,7 +65,7 @@ public class EntryScalerTest {
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "
                 + "\"BILL\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0]}, "
-                + "\"footfall_observed_age_0\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
+                + "\"footfall_observed_0\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "
                 + "\"footfall_observed_age_60\": [0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "

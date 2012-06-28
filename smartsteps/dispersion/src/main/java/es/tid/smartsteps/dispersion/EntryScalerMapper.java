@@ -18,13 +18,15 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsEntryParser;
  */
 public class EntryScalerMapper extends Mapper<LongWritable, Text,
                                               Text, Text> {
+
     private Parser countsParser;
     private Parser lookupParser;
     
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        this.countsParser = new TrafficCountsEntryParser();
+        this.countsParser = new TrafficCountsEntryParser(
+                context.getConfiguration().getStrings(Config.COUNT_FIELDS));
         LookupType type = context.getConfiguration().getEnum(
                 LookupType.class.getName(), LookupType.INVALID);
         switch (type) {

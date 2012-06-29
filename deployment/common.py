@@ -45,7 +45,6 @@ def install_cdh_repo(config):
                  ' http://archive.cloudera.com/redhat/cdh/'
                  ' RPM-GPG-KEY-cloudera'))
 
-@roles('namenode')
 def has_package(pkg):
     """
     Checks that a package is installed using the OS package manager
@@ -64,14 +63,6 @@ def has_package(pkg):
                 print green("Package %s installed in %s" %
                             (pkg, env.host_string))
                 return 1
-
-def has_package2(pkg):
-    """
-    Checks that a package is installed using the OS package manager
-    """
-    with ctx.hide('stdout'):
-        out = run('yum list -q installed | grep ^%s\\. || echo' % pkg)
-        return len(out.strip()) > 0
 
 def install_dependencies(pkg_list):
     """

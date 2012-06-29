@@ -126,7 +126,7 @@ def deploy_sftp(sshd_needs_moved=False):
         sshd_needs_moved = True
 
     injection_exec = 'injection-server-{0}.jar'.format(CONFIG['version'])
-    injection_jar = os.path.join(CONFIG['injection_path'], 'target',
+    injection_jar = os.path.join(BASEPATH, CONFIG['injection_path'], 'target',
                                  injection_exec)
     if not os.path.exists(injection_jar):
         error(red('ERROR: injection server file not found: %s' %\
@@ -166,9 +166,10 @@ def deploy_sftp(sshd_needs_moved=False):
         start = run("/etc/init.d/injection start", pty=False)
         if start.failed:
             restart = run("/etc/init.d/injection restart", pty=False)
-            if restart.failed and 'Permission denied' in restart.stdout:
-                sudo('chmod +x /etc/init.d/injection')
-                run("service injection start")
+
+    if restart.failed and 'Permission denied' in restart.stdout:
+        sudo('chmod +x /etc/init.d/injection')
+        run("service injection start")
 
 def move_sshd(custom_port=2222):
     """Changes the port where the ssh daemon is listening"""
@@ -254,7 +255,8 @@ def configure_ntp():
     """
     common.install_dependencies(['ntp'])
     ntp_conf = StringIO()
-    template = Template(filename='templates/ntp.conf.mako')
+    template = Template(filename=os.path.join(BASEPATH,
+                                              'templates/ntp.conf.mako'))
     content = template.render()
     ntp_conf.write(content)
     ntp_conf_path = "/etc/ntp.conf"

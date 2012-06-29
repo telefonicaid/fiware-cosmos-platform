@@ -75,20 +75,21 @@ public class EntryScalerReducer extends Reducer<Text, Text,
             }
             context.getCounter(Counters.ENTRIES_IN_LOOKUP).increment(1L);
             for (LookupEntry lookup : lookups) {
-                entry.scale(lookup.getProportion());
+                TrafficCountsEntry scaledEntry = entry.scale(
+                        lookup.getProportion());
                 switch (this.type) {
                     case CELL_TO_MICROGRID:
-                        entry.microgridId = lookup.getSecondaryKey();
+                        scaledEntry.microgridId = lookup.getSecondaryKey();
                         break;
                     case MICROGRID_TO_POLYGON:
-                        entry.polygonId = lookup.getSecondaryKey();
-                        entry.counts = entry.roundCounts();
+                        scaledEntry.polygonId = lookup.getSecondaryKey();
+                        scaledEntry.counts = scaledEntry.roundCounts();
                         break;
                     default:
                         throw new IllegalStateException();
                 }
                 context.write(NullWritable.get(),
-                              new Text(entry.toJSON().toString()));
+                              new Text(scaledEntry.toJSON().toString()));
             }
         }
     }

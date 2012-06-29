@@ -27,8 +27,9 @@ public final class IpmMain {
         final String outputFilename = args[1];
         final String type = args[2];
         String charset = System.getProperty(PROPERTY_CHARSET);
-        if (charset == null)
+        if (charset == null) {
             charset = DEFAULT_CHARSET;
+        }
         RawToIpmConverter converter;
         if (type.equals(INET_TYPE)) {
             converter = new InetRawToIpmConverter("|", Charset.forName(charset));

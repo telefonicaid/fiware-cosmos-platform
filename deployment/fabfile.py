@@ -16,6 +16,7 @@ from fabric.utils import puts, error, warn
 from mako.template import Template
 
 import common
+import iptables
 import hadoop_install
 import hue_deployment
 
@@ -65,8 +66,8 @@ def open_ftp_port():
     internal yum repositories are FTP-based instead of the standard HTTP
     repos
     """
-    common.add_iptables_rule("OUTPUT -p tcp -m tcp --dport 21 -j ACCEPT")
-    common.add_iptables_rule("OUTPUT -p tcp -m tcp --dport 22 -j ACCEPT")
+    iptables.accept_out_tcp(21)
+    iptables.accept_out_tcp(22)
     sudo("service iptables save")
 
 @task
@@ -137,23 +138,15 @@ def deploy_sftp(sshd_needs_moved=False):
         run("mkdir -p {0}".format(os.path.join('~', 'injection')))
     put(injection_jar, exec_path)
 
-    injection_conf = StringIO()
-    template = Template(filename = os.path.join(BASEPATH,
-                                              'templates/injection.conf.mako'))
-    injection_conf.write(template.render(
-            namenode = CONFIG['hosts']['namenode'][0]))
-    put(injection_conf, "/etc/injection.cfg")
+    common.instantiate_template('templates/injection.conf.mako',
+                                '/etc/injection.cfg', context=dict(
+                                    namenode=CONFIG['hosts']['namenode'][0]
+                                ))
     symlink = "/usr/local/injection-server"
     if not files.exists(symlink):
         run("ln -s {0} {1}".format(exec_path, symlink))
-    logfile = "/var/log/injection/server.log"
-    if not files.exists(logfile):
-        run("mkdir -p /var/log/injection")
-        run("echo '' >> {0}".format(logfile))
-    pidfile = "/var/run/injection/server.pid"
-    if not files.exists(pidfile):
-        run("mkdir -p /var/run/injection")
-        run("echo '' >> {0}".format(pidfile))
+    common.touch_file("/var/log/injection/server.log")
+    common.touch_file("/var/run/injection/server.pid")
     put(os.path.join(BASEPATH, "templates/injection.init.d"),
                                "/etc/init.d/injection")
     if sshd_needs_moved:
@@ -173,14 +166,11 @@ def deploy_sftp(sshd_needs_moved=False):
 
 def move_sshd(custom_port=2222):
     """Changes the port where the ssh daemon is listening"""
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 2222 -j ACCEPT")
+    iptables.add_rule("INPUT -p tcp -m tcp --dport 2222 -j ACCEPT")
     sudo("service iptables save")
-    sshd_conf = StringIO()
-    template = Template(filename = os.path.join(BASEPATH,
-                                                'templates/sshd_config.mako'))
-    content = template.render(new_port = custom_port)
-    sshd_conf.write(content)
-    put(sshd_conf, "/etc/ssh/sshd_config")
+    common.instantiate_template('templates/sshd_config.mako',
+                                '/etc/ssh/sshd_config',
+                                context=dict(new_port=custom_port))
     run("service sshd restart")
 
 @task
@@ -202,14 +192,10 @@ def deploy_mongo():
         if not files.exists('10gen.repo'):
             put(os.path.join(BASEPATH, 'templates/10gen.repo'), '10gen.repo')
     run('yum -y install mongo-10gen mongo-10gen-server')
-    
-    mongo_conf = StringIO()
-    template = Template(filename = os.path.join(BASEPATH,
-                                              'templates/mongod.conf.mako'))
-    mongo_conf.write(template.render(
-            dbpath = CONFIG['mongo_db_path']))
-    put(mongo_conf, '/etc/mongod.conf')
-    
+    common.instantiate_template('templates/mongod.conf.mako',
+                                '/etc/mongod.conf', context=dict(
+                                    dbpath=CONFIG['mongo_db_path']
+                                ))
     run('service mongod start')
     run('chkconfig mongod on')
     run("mongo --eval \"db.adminCommand('listDatabases').databases.forEach("
@@ -254,15 +240,9 @@ def configure_ntp():
     time set in all hosts is necessary to have Ganglia monitoring.
     """
     common.install_dependencies(['ntp'])
-    ntp_conf = StringIO()
-    template = Template(filename=os.path.join(BASEPATH,
-                                              'templates/ntp.conf.mako'))
-    content = template.render()
-    ntp_conf.write(content)
-    ntp_conf_path = "/etc/ntp.conf"
-    put(ntp_conf, ntp_conf_path)
-    common.add_iptables_rule(("OUTPUT -p udp -d 0.rhel.pool.ntp.org "
-          "--dport 123 -j ACCEPT"))
+    common.instantiate_template('templates/ntp.conf.mako', "/etc/ntp.conf")
+    iptables.add_rule(("OUTPUT -p udp -d 0.rhel.pool.ntp.org "
+                       "--dport 123 -j ACCEPT"))
     sudo("service iptables save")
     run("chkconfig --level 2 ntpd on")
     run("service ntpd start")
@@ -289,17 +269,17 @@ def install_gmetad():
             run('rpm -Uvh %s' % repo_rpm)
         run("yum -y erase ganglia-gmetad")
         run("yum -y install ganglia-gmetad")
-    gmetad_conf = StringIO()
-    template = Template(filename='templates/gmetad.conf.mako')
-    content = template.render(
-            monitored_hosts = common.clean_host_list(CONFIG['hosts'].values()))
-    gmetad_conf.write(content)
+
+    # FIXME: where does gmetad.conf go? /etc or /etc/ganglia
     gmetad_cfg_path = "/etc/gmetad.conf"
     if not files.exists(gmetad_cfg_path):
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmetad_cfg_path))
-    put(gmetad_conf, gmetad_cfg_path)
-    common.add_iptables_rule("INPUT -p tcp -d {0} --dport 8649 -j ACCEPT"
+    common.instantiate_template('templates/gmetad.conf.mako', gmetad_cfg_path,
+                                context=dict(
+                                    monitored_hosts=common.clean_host_list(
+                                        CONFIG['hosts'].values())))
+    iptables.add_rule("INPUT -p tcp -d {0} --dport 8649 -j ACCEPT"
             .format(common.clean_host_list(CONFIG['hosts']['frontend'])))
     sudo("service iptables save")
     run("service gmetad start")
@@ -328,12 +308,9 @@ def install_ganglia_frontend():
             run('rpm -Uvh %s' % repo_rpm)
         run("yum -y erase ganglia-web")
         run("yum -y install ganglia-web")
-    ganglia_web_conf = StringIO()
-    template = Template(filename='templates/conf.php.mako')
-    content = template.render(gmetad_port = 8651)
-    ganglia_web_conf.write(content)
-    ganglia_web_conf_path = "/usr/share/ganglia/conf.php"
-    put(ganglia_web_conf, ganglia_web_conf_path)
+    common.instantiate_template('templates/conf.php.mako', 
+                                '/usr/share/ganglia/conf.php',
+                                context=dict(gmetad_port = 8651))
     start = run("apachectl start")
     if start.endswith("already running"):
         run("apachectl restart")
@@ -362,17 +339,15 @@ def install_gmond():
             run('rpm -Uvh %s' % repo_rpm)
         run("yum -y erase ganglia-gmond")
         run("yum -y install ganglia-gmond")
-    gmond_conf = StringIO()
-    template = Template(filename='templates/gmond.conf.mako')
-    content = template.render(
-            gmetad_host = common.clean_host_list(CONFIG['hosts']['namenode']))
-    gmond_conf.write(content)
+    # FIXME: where gmond.conf goes? /etc or /etc/ganglia
     gmond_conf_path = "/etc/gmond.conf"
     if not files.exists(gmond_conf_path):
         run("mkdir -p /etc/ganglia")
         run("echo '' >> {0}".format(gmond_conf_path))
-    put(gmond_conf, gmond_conf_path)
-    common.add_iptables_rule("OUTPUT -p udp -d {0} --dport 8649 -j ACCEPT"
+    gmetad_host = common.clean_host_list(CONFIG['hosts']['namenode'])
+    common.instantiate_template('templates/gmond.conf.mako', gmond_conf_path,
+                                context=dict(gmetad_host=gmetad_host))
+    iptables.add_rule("OUTPUT -p udp -d {0} --dport 8649 -j ACCEPT"
             .format(common.clean_host_list(CONFIG['hosts']['frontend'])))
     sudo("service iptables save")
     run("service gmond start")
@@ -385,17 +360,13 @@ def configure_hadoop_metrics():
     Configures the Hadoop damons to send some metrics about their state to the
     gmond daemons
     """
-    hadoop_metrics_conf = StringIO()
-    template = Template(filename='templates/hadoop-metrics.properties.mako')
-    content = template.render(
-            namenode = common.clean_host_list(CONFIG['hosts']['namenode']))
-    hadoop_metrics_conf.write(content)
-    ## TODO: parametize Hadoop version
     hadoop_metrics_path = "/etc/hadoop-0.20/conf/hadoop-metrics.properties"
-    if not files.exists(hadoop_metrics_path):
-        run("mkdir -p /etc/hadoop-0.20/conf/")
-        run("echo '' >> {0}".format(hadoop_metrics_path))
-    put(hadoop_metrics_conf, hadoop_metrics_path)
+    common.touch_file(hadoop_metrics_path)
+    namenode = common.clean_host_list(CONFIG['hosts']['namenode']))
+    ## TODO: parametize Hadoop version
+    common.instantiate_template('templates/hadoop-metrics.properties.mako',
+                                hadoop_metrics_path,
+                                context=dict(namenode=namenode))
     if files.exists("/etc/init.d/hadoop-0.20-tasktracker"):
         with ctx.hide('stdout'):
             run("service hadoop-0.20-tasktracker restart")

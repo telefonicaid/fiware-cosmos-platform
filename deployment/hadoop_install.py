@@ -2,6 +2,7 @@
 Hadoop automatic deployment
 """
 import os.path
+
 from fabric.api import cd, env, put, run, sudo
 import fabric.context_managers as ctx
 from fabric.contrib import files
@@ -10,7 +11,9 @@ from fabric.decorators import roles, parallel
 from fabric.utils import puts
 from StringIO import StringIO
 from mako.template import Template
+
 import common
+import iptables
 
 COSMOS_CLASSPATH = '/usr/lib/hadoop-0.20/lib/cosmos/'
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
@@ -35,61 +38,49 @@ def create_hadoop_dirs(config):
         run('install -o hdfs   -g hadoop -m 755 -d %s/data' % conf_dir)
         run('install -o mapred -g hadoop -m 755 -d %s/mapred' % conf_dir)
         run('install -o hdfs   -g hadoop -m 755 -d %s/name' % conf_dir)
-        
+
     run('install -o root   -g hadoop -m 755 -d %s' % COSMOS_CLASSPATH)
- 
+
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers', 'frontend')
 @parallel
 def configure_hadoop(config):
     """Generate  Hadoop configuration files"""
     with cd('/etc/hadoop/conf'):
-        coresite = StringIO()
-        template = Template(filename = os.path.join(BASEPATH,
-                                                   'templates/core-site.mako'))
-        coresite.write(template.render(
-                namenode=config['hosts']['namenode'][0]))
-        put(coresite, 'core-site.xml')
-        
+        common.instantiate_template('templates/core-site.mako',
+                                    'core-site.xml', context=dict(
+                                        namenode=config['hosts']['namenode'][0]
+                                    )))
         masters = StringIO()
         for master in set(config['hosts']['namenode'] +\
                           config['hosts']['jobtracker']):
             masters.write('%s\n' % master)
         put(masters, 'masters')
-        
+
         slaves = StringIO()
         for slave in set(config['hosts']['datanodes'] +\
                          config['hosts']['tasktrackers']):
             slaves.write('%s\n' % slave)
         put(slaves, 'slaves')
-            
-        mapredsite = StringIO()
-        template = Template(filename = os.path.join(BASEPATH,
-                                                'templates/mapred-site.mako'))
-        mapredsite.write(template.render(
-                jobtracker = config['hosts']['jobtracker'][0],
-                dirs = ','.join([directory + '/mapred'
-                                 for directory in config["hadoop_data_dirs"]]),
-                reduce_tasks = 2*len(config['hosts']['datanodes'])))
-        put(mapredsite, 'mapred-site.xml')
-        
-        hdfssite = StringIO()
-        template = Template(filename = os.path.join(BASEPATH,
-                                                   'templates/hdfs-site.mako'))
-        hdfssite.write(template.render(
+
+        common.instantiate_template(
+            'templates/mapred-site.mako', 'mapred-site.xml', context=dict(
+                jobtracker=config['hosts']['jobtracker'][0],
+                dirs=','.join([directory + '/mapred'
+                               for directory in config["hadoop_data_dirs"]]),
+                reduce_tasks=2*len(config['hosts']['datanodes'])))
+
+        common.instantiate_template(
+            'templates/hdfs-site.mako', 'hdfs-site.xml', context=dict(
                 namedirs=','.join([directory + '/name'
                                for directory in config["hadoop_data_dirs"]]),
                 datadirs=','.join([directory + '/data'
                                for directory in config["hadoop_data_dirs"]]),
                 namenode = config['hosts']['namenode'][0]))
-        put(hdfssite, 'hdfs-site.xml')
-        
-        hadoop_env = StringIO()
-        template = Template(filename = os.path.join(BASEPATH,
-                                                  'templates/hadoop-env.mako'))
-        hadoop_env.write(template.render(
-            cosmos_classpath=COSMOS_CLASSPATH))
-        put(hadoop_env, 'hadoop-env.sh')
-           
+
+        common.instantiate_template('templates/hadoop-env.mako',
+                                    'hadoop-env.sh', context=dict(
+                                        cosmos_classpath=COSMOS_CLASSPATH))
+
 def deploy_daemon(daemon):
     """Deploys a Hadoop daemon"""
     daemon_path = '/etc/init.d/hadoop-0.20-%s' % daemon
@@ -105,12 +96,12 @@ def start_daemon(daemon):
 @parallel
 def deploy_datanode_daemon():
     """Deploys the datanode Hadoop daemon"""
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50010 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 1004 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50075 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 1006 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50020 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 0 -j ACCEPT")
+    iptables.accept_in_tcp(50010)
+    iptables.accept_in_tcp(1004)
+    iptables.accept_in_tcp(50075)
+    iptables.accept_in_tcp(1006)
+    iptables.accept_in_tcp(50020)
+    iptables.accept_in_tcp(0)
     sudo("service iptables save")
     deploy_daemon('datanode')
     start_daemon('datanode')
@@ -119,12 +110,12 @@ def deploy_datanode_daemon():
 @parallel
 def deploy_namenode_daemon():
     """Deploys the namenode Hadoop daemon"""
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 8020 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50070 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50470 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 10090 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50090 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50495 -j ACCEPT")
+    iptables.accept_in_tcp(8020)
+    iptables.accept_in_tcp(50070)
+    iptables.accept_in_tcp(50470)
+    iptables.accept_in_tcp(10090)
+    iptables.accept_in_tcp(50090)
+    iptables.accept_in_tcp(50495)
     sudo("service iptables save")
     deploy_daemon('namenode')
     output = sudo('yes Y | hadoop namenode -format', user='hdfs')
@@ -141,19 +132,19 @@ def deploy_namenode_daemon():
 @parallel
 def deploy_jobtracker_daemon():
     """Deploys the jobtracker Hadoop daemon"""
-    common.add_iptables_rule("INPUT -p tcp --dport 8021 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp --dport 50030 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp --dport 9290 -j ACCEPT")
+    iptables.add_rule("INPUT -p tcp --dport 8021 -j ACCEPT")
+    iptables.add_rule("INPUT -p tcp --dport 50030 -j ACCEPT")
+    iptables.add_rule("INPUT -p tcp --dport 9290 -j ACCEPT")
     sudo("service iptables save")
     deploy_daemon('jobtracker')
     start_daemon('jobtracker')
 
-@roles('tasktrackers')   
-@parallel 
+@roles('tasktrackers')
+@parallel
 def deploy_tasktracker_daemon():
     """Deploys the tasktracker Hadoop daemon"""
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 50060 -j ACCEPT")
-    common.add_iptables_rule("INPUT -p tcp -m tcp --dport 0 -j ACCEPT")
+    iptables.accept_in_tcp(50060)
+    iptables.accept_in_tcp(0)
     sudo("service iptables save")
     deploy_daemon('tasktracker')
     start_daemon('tasktracker')

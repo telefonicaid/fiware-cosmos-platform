@@ -3,34 +3,18 @@ common.py -
 
 common functionality for Fabric deployments
 """
-from fabric.api import env, roles, run, sudo, settings
+import os.path
+from StringIO import StringIO
+
+from fabric.api import env, put, roles, run, sudo, settings
 from fabric.colors import green, white
 from fabric.contrib import files
 from fabric.decorators import roles
 import fabric.context_managers as ctx
 
-def add_iptables_rule(rule):
-    """
-    Adds a rule to iptables as the first rule only if the rule didn't
-    previously exist.
 
-    The string that should be passed to this method is the following:
-    Type "iptables -I [your rule here]" on the console. Then type "iptables -S"
-    and look for your rule. Everything after the "-I" is the string that should
-    be passed to this method.
-    """
-    with ctx.hide('stdout'):
-        # Need to consider this settings context and warn_only
-        # to have full control over the run commands.
-        with settings(warn_only=True):
-            output = run("iptables -S | grep -q -e '%s'" % rule)
-            if output.return_code != 0:
-                print white("Rule '%s' does not exist. Adding..." % rule, True)
-                sudo('iptables -I %s' % rule)
-            else:
-                print white("Rule '%s' already exists. Will not add again." %\
-                            rule, True)
-                return 1
+BASEPATH = os.path.dirname(os.path.realpath(__file__))
+
 
 def install_cdh_repo(config):
     """Install the Hadoop distribution repo"""
@@ -73,12 +57,14 @@ def install_dependencies(pkg_list):
         if not has_package(pkg_name):
             run("yum -y install {0}".format(pkg_name))
 
+
 def clean_host_list(hosts):
     """
     Perform all necessary operations to have a host list that can appear in
     monitoring configurations.
     """
     return ' '.join(set(remove_port_info(flatten(hosts))))
+
 
 def flatten(nested_list):
     """
@@ -93,6 +79,7 @@ def flatten(nested_list):
             ans.extend(elem)
     return ans
 
+
 def remove_port_info(hosts):
     """
     Remove port informations from a list of host IPs
@@ -104,3 +91,25 @@ def remove_port_info(hosts):
         else:
             ans.append(host)
     return ans
+
+
+def instantiate_template(template_file, output_file, context={},
+                         basepath=BASEPATH):
+    """
+    Instantiate a mako template on a file on the destination host
+    (fabric.api.put).
+    """
+    template = Template(filename = os.path.join(basepath, template_file))
+    content = StringIO()
+    content.write(template.render(**context))
+    put(content, output_file)
+
+
+def touch_file(file_path):
+    """
+    Makes sure a file exists creating an empty one if it does not exists.
+    """
+    if not files.exists(file_path):
+        dir_path = os.path.dirname(file_path)
+        run("mkdir -p %s" % dir_path)
+        run("echo '' >> {0}".format(file_path))

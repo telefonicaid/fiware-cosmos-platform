@@ -123,7 +123,7 @@ public class TrafficCountsEntry implements FieldsEntry {
 
     public JSONObject toJSON(){
         final JSONObject obj = new JSONObject();
-        obj.put("cellId", this.cellId);
+        obj.put("cellid", this.cellId);
         obj.put("date", this.date);
         obj.put("lat", this.latitude);
         obj.put("long", this.longitude);

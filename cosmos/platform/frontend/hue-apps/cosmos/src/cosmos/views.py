@@ -30,12 +30,27 @@ def index(request):
     job_runs = JobRun.objects.filter(user=request.user).order_by('-start_date')
     for job_run in job_runs:
         job_run.refresh_state()
-    return render('index.mako', request, dict(
+    return render('job_list.mako', request, dict(
         job_runs=job_runs
     ))
 
 
+def hadoop_args(job, jar_name):
+    args = ['jar', jar_name]
+    if job.is_parameterized():
+        for parameter in job.parameters:
+            args.extend(parameter.as_job_argument(job))
+    else:
+        input_path = job.dataset_path
+        output_path = paths.tmp_path(job.user, job.id)
+        args.extend([input_path, output_path,
+                     mongo.user_coll_url(job.user.id, job.mongo_collection())])
+    return args
+
+
 def submit(job):
+    """Submit a job through the jobsubd infrastructure."""
+
     LOGGER.info("Submitting job %s (%d) for %s with JAR=%s on dataset %s" %
                 (job.name, job.id, job.user.username, job.jar_path,
                  job.dataset_path))
@@ -66,14 +81,17 @@ def submit(job):
 
 
 def job_wizard(request):
+    """Failsafe access to the wizard state."""
     return request.session.get('job_wizard', {})
 
 
 def clear_job_wizard(request):
+    """Forget wizard state."""
     request.session.pop('job_wizard', '')
 
 
 def update_job_wizard(request, wizard):
+    """Make sure wizard state is made persistent."""
     request.session['job_wizard'] = wizard
 
 
@@ -234,14 +252,19 @@ def upload_index(request):
     ))
 
 
-def show_results(request, job_id):
-    job = get_object_or_404(JobRun, pk=job_id, user=request.user)
-    if job.submission is None:
-        raise Http404
+def list_results(request):
+    """List result collections."""
 
+    return render('results_list.mako', request, dict(
+        collections=mongo.list_collections(request.user.id)
+    ))
+
+
+def show_results(request, collection_name):
     try:
         primary_key = request.GET.get('primary_key')
-        paginator = mongo.retrieve_results(job.id, primary_key)
+        paginator = mongo.retrieve_results(request.user.id, collection_name,
+                                           primary_key)
 
         try:
             page_num = request.GET.get('page', DEFAULT_PAGE)
@@ -259,18 +282,16 @@ def show_results(request, job_id):
         if primary_key is None:
             primary_key = prototype_result.pk
 
-        return render('job_results.mako', request, dict(
-            title='Results of job %s' % job.id,
-            page=page,
-            hidden_keys=mongo.HIDDEN_KEYS,
-            primary_key=primary_key
-        ))
-
-    except mongo.NoResultsError:
-        return render('job_results.mako', request, dict(
-            title='Results of job %s' % job.id,
-            hidden_keys=mongo.HIDDEN_KEYS
-        ))
-
     except mongo.NoConnectionError:
         raise PopupException('Database not available')
+
+    except mongo.NoResultsError:
+        page = None
+
+    return render('results_detail.mako', request, dict(
+        title='Results collection %s' % collection_name,
+        page=page,
+        hidden_keys=mongo.HIDDEN_KEYS,
+        primary_key=primary_key
+    ))
+

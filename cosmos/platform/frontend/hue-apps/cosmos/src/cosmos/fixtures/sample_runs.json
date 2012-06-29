@@ -2,92 +2,92 @@
     "pk": 1,
     "model": "jobsub.submission",
     "fields": {
-	"name": "running_wc_submission",
-	"submission_date": "2012-01-01 01:00:00",
-	"submission_handle":"{\"id\": 4}",
-	"submission_plan":"{\"groups\": [\"cloudera\"], \"steps\": [{\"localize_files_step\": {\"localize_files\": [{\"target_name\": \"tmp.jar\", \"pre_fab_localized_file\": null, \"path_on_hdfs\": \"/user/cloudera/jars/hadoop-examples.jar\"}]}, \"bin_hadoop_step\": null}, {\"localize_files_step\": null, \"bin_hadoop_step\": {\"arguments\": [\"jar\", \"tmp.jar\", \"pi\", \"21000\"]}}], \"name\": \"test0\", \"save_output\": null, \"user\": \"cloudera\"}",
-	"last_seen_state": 2,
-	"owner": 101
+        "name": "running_wc_submission",
+        "submission_date": "2012-01-01 01:00:00",
+        "submission_handle":"{\"id\": 4}",
+        "submission_plan":"{\"groups\": [\"cloudera\"], \"steps\": [{\"localize_files_step\": {\"localize_files\": [{\"target_name\": \"tmp.jar\", \"pre_fab_localized_file\": null, \"path_on_hdfs\": \"/user/cloudera/jars/hadoop-examples.jar\"}]}, \"bin_hadoop_step\": null}, {\"localize_files_step\": null, \"bin_hadoop_step\": {\"arguments\": [\"jar\", \"tmp.jar\", \"pi\", \"21000\"]}}], \"name\": \"test0\", \"save_output\": null, \"user\": \"cloudera\"}",
+        "last_seen_state": 2,
+        "owner": 101
     }
 }, {
     "pk": 2,
     "model": "jobsub.submission",
     "fields": {
-	"name": "successful_wc_submission",
-	"submission_date": "2012-01-01 01:30:00",
-	"submission_handle":"{\"id\": 4}",
-	"submission_plan":"{\"groups\": [\"cloudera\"], \"steps\": [{\"localize_files_step\": {\"localize_files\": [{\"target_name\": \"tmp.jar\", \"pre_fab_localized_file\": null, \"path_on_hdfs\": \"/user/cloudera/jars/hadoop-examples.jar\"}]}, \"bin_hadoop_step\": null}, {\"localize_files_step\": null, \"bin_hadoop_step\": {\"arguments\": [\"jar\", \"tmp.jar\", \"pi\", \"21000\"]}}], \"name\": \"test0\", \"save_output\": null, \"user\": \"cloudera\"}",
-	"last_seen_state": 3,
-	"owner": 101
+        "name": "successful_wc_submission",
+        "submission_date": "2012-01-01 01:30:00",
+        "submission_handle":"{\"id\": 4}",
+        "submission_plan":"{\"groups\": [\"cloudera\"], \"steps\": [{\"localize_files_step\": {\"localize_files\": [{\"target_name\": \"tmp.jar\", \"pre_fab_localized_file\": null, \"path_on_hdfs\": \"/user/cloudera/jars/hadoop-examples.jar\"}]}, \"bin_hadoop_step\": null}, {\"localize_files_step\": null, \"bin_hadoop_step\": {\"arguments\": [\"jar\", \"tmp.jar\", \"pi\", \"21000\"]}}], \"name\": \"test0\", \"save_output\": null, \"user\": \"cloudera\"}",
+        "last_seen_state": 3,
+        "owner": 101
     }
 }, {
     "pk": 3,
     "model": "jobsub.submission",
     "fields": {
-	"name": "failed_wc_submission",
-	"submission_date": "2012-01-01 02:00:00",
-	"submission_handle":"{\"id\": 4}",
-	"submission_plan":"{\"groups\": [\"cloudera\"], \"steps\": [{\"localize_files_step\": {\"localize_files\": [{\"target_name\": \"tmp.jar\", \"pre_fab_localized_file\": null, \"path_on_hdfs\": \"/user/cloudera/jars/hadoop-examples.jar\"}]}, \"bin_hadoop_step\": null}, {\"localize_files_step\": null, \"bin_hadoop_step\": {\"arguments\": [\"jar\", \"tmp.jar\", \"pi\", \"21000\"]}}], \"name\": \"test0\", \"save_output\": null, \"user\": \"cloudera\"}",
-	"last_seen_state": 4,
-	"owner": 101
+        "name": "failed_wc_submission",
+        "submission_date": "2012-01-01 02:00:00",
+        "submission_handle":"{\"id\": 4}",
+        "submission_plan":"{\"groups\": [\"cloudera\"], \"steps\": [{\"localize_files_step\": {\"localize_files\": [{\"target_name\": \"tmp.jar\", \"pre_fab_localized_file\": null, \"path_on_hdfs\": \"/user/cloudera/jars/hadoop-examples.jar\"}]}, \"bin_hadoop_step\": null}, {\"localize_files_step\": null, \"bin_hadoop_step\": {\"arguments\": [\"jar\", \"tmp.jar\", \"pi\", \"21000\"]}}], \"name\": \"test0\", \"save_output\": null, \"user\": \"cloudera\"}",
+        "last_seen_state": 4,
+        "owner": 101
     }
 }, {
     "pk": 4,
     "model": "jobsub.submission",
     "fields": {
-	"name": "other_jobrun_submission",
-	"submission_date": "2012-01-01 02:30:00",
-	"submission_handle":"{\"id\": 4}",
-	"submission_plan":"{\"groups\": [\"cloudera\"], \"steps\": [{\"localize_files_step\": {\"localize_files\": [{\"target_name\": \"tmp.jar\", \"pre_fab_localized_file\": null, \"path_on_hdfs\": \"/user/cloudera/jars/hadoop-examples.jar\"}]}, \"bin_hadoop_step\": null}, {\"localize_files_step\": null, \"bin_hadoop_step\": {\"arguments\": [\"jar\", \"tmp.jar\", \"pi\", \"21000\"]}}], \"name\": \"test0\", \"save_output\": null, \"user\": \"cloudera\"}",
-	"last_seen_state": 3,
-	"owner": 102
+        "name": "other_jobrun_submission",
+        "submission_date": "2012-01-01 02:30:00",
+        "submission_handle":"{\"id\": 4}",
+        "submission_plan":"{\"groups\": [\"cloudera\"], \"steps\": [{\"localize_files_step\": {\"localize_files\": [{\"target_name\": \"tmp.jar\", \"pre_fab_localized_file\": null, \"path_on_hdfs\": \"/user/cloudera/jars/hadoop-examples.jar\"}]}, \"bin_hadoop_step\": null}, {\"localize_files_step\": null, \"bin_hadoop_step\": {\"arguments\": [\"jar\", \"tmp.jar\", \"pi\", \"21000\"]}}], \"name\": \"test0\", \"save_output\": null, \"user\": \"cloudera\"}",
+        "last_seen_state": 3,
+        "owner": 102
     }
 }, {
     "pk": 1,
     "model": "cosmos.jobrun",
     "fields": {
-	"name": "running_wc",
-	"user": 101,
-	"dataset_path": "/datasets/1",
-	"jar_path": "/jars/1.jar",
-	"start_date": "2012-01-01 01:00:00",
-	"description": "Running wordcount on the Quijote",
-	"submission": 1
+        "name": "running_wc",
+        "user": 101,
+        "dataset_path": "/datasets/1",
+        "jar_path": "/jars/1.jar",
+        "start_date": "2012-01-01 01:00:00",
+        "description": "Running wordcount on the Quijote",
+        "submission": 1
     }
 }, {
     "pk": 2,
     "model": "cosmos.jobrun",
     "fields": {
-	"name": "successful_wc",
-	"user": 101,
-	"dataset_path": "/datasets/1",
-	"jar_path": "/jars/1.jar",
-	"description": "Sucessful wordcount on the Quijote",
-	"start_date": "2012-01-01 01:30:00",
-	"submission": 2
+        "name": "successful_wc",
+        "user": 101,
+        "dataset_path": "/datasets/1",
+        "jar_path": "/jars/1.jar",
+        "description": "Sucessful wordcount on the Quijote",
+        "start_date": "2012-01-01 01:30:00",
+        "submission": 2
     }
 }, {
     "pk": 3,
     "model": "cosmos.jobrun",
     "fields": {
-	"name": "failed_wc",
-	"user": 101,
-	"dataset_path": "/datasets/1",
-	"jar_path": "/jars/1.jar",
-	"description": "Failed wordcount on the Quijote",
-	"start_date": "2012-01-01 02:00:00",
-	"submission": 3
+        "name": "failed_wc",
+        "user": 101,
+        "dataset_path": "/datasets/1",
+        "jar_path": "/jars/1.jar",
+        "description": "Failed wordcount on the Quijote",
+        "start_date": "2012-01-01 02:00:00",
+        "submission": 3
     }
 }, {
     "pk": 4,
     "model": "cosmos.jobrun",
     "fields": {
-	"name": "other_jobrun",
-	"user": 102,
-	"dataset_path": "/datasets/3",
-	"jar_path": "/jars/2.jar",
-	"description": "Pi estimation from other user",
-	"start_date": "2012-01-01 02:30:00",
-	"submission": 4
+        "name": "other_jobrun",
+        "user": 102,
+        "dataset_path": "/datasets/3",
+        "jar_path": "/jars/2.jar",
+        "description": "Pi estimation from other user",
+        "start_date": "2012-01-01 02:30:00",
+        "submission": 4
     }
 }]

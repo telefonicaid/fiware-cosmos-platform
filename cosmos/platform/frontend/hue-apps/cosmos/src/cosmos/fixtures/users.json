@@ -2,7 +2,7 @@
     "pk": 101,
     "model": "auth.user",
     "fields": {
-	"username": "user101",
+        "username": "user101",
         "first_name": "",
         "last_name": "",
         "is_active": true,

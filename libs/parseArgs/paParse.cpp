@@ -320,6 +320,10 @@ static char* paProgNameSet(char* pn, int levels, bool pid, const char* extra = N
 		++start;
 
 	strncpy(pName, start, sizeof(pName));
+
+    if (paUsageProgName == NULL)
+        paUsageProgName = strdup(pName);
+
 	if (pid == true)
 	{
 		char  pid[8];

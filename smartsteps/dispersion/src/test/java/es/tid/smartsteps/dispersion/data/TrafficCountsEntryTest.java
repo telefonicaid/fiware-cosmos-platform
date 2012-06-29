@@ -68,8 +68,9 @@ public class TrafficCountsEntryTest {
 
     @Test
     public void testScale() {
-        this.instance.scale(new BigDecimal(2.6D));
-        ArrayList<BigDecimal> counts = this.instance.counts.get(
+        TrafficCountsEntry scaledEntry = this.instance.scale(
+                new BigDecimal(2.6D));
+        ArrayList<BigDecimal> counts = scaledEntry.counts.get(
                 "footfall_observed_basic");
         assertEquals(0.0D, counts.get(0).doubleValue(), 0.0D);
         assertEquals(2.6D, counts.get(24).doubleValue(), 0.0D);

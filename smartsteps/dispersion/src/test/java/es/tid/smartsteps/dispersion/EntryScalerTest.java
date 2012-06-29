@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import org.apache.hadoop.conf.Configuration;
@@ -29,7 +30,8 @@ public class EntryScalerTest {
     private LongWritable key;
     private Text inputValue;
     private Text intermediateValue;
-    private Text cell2micro;
+    private Text cell2micro1;
+    private Text cell2micro2;
     private Text micro2polygon;
 
     @Before
@@ -71,18 +73,18 @@ public class EntryScalerTest {
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "
                 + "\"footfall_observed_age_20\": [0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "
-                + "\"cellid\": \"4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d3"
-                + "0f1f2ff3cdc0849b0c\", \"footfall_observed_age_40\": [0, 0, "
-                + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
-                + "0, 0, 0]}");
+                + "\"cellid\": \"033749032183\", \"footfall_observed_age_40\": "
+                + "[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,"
+                + "0, 0, 0, 0, 0]}");
         int inputPenultimate = this.inputValue.getLength() - 1;
         this.intermediateValue =
                 new Text(this.inputValue.toString().substring(0,
                         inputPenultimate) + ", \"microgrid_id\": 123}");
 
-        this.cell2micro =
-                new Text("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d3" +
-                        "0f1f2ff3cdc0849b0c|123|0.57");
+        this.cell2micro1 =
+                new Text("033749032183|123|0.57");
+        this.cell2micro2 =
+                new Text("033749032183|124|0.43");
         this.micro2polygon = new Text("123|345|1");
     }
 
@@ -93,15 +95,32 @@ public class EntryScalerTest {
         this.instance.getConfiguration().set(Config.DELIMITER, "\\|");
         List<Pair<NullWritable, Text>> allResults =
                 this.instance.withInput(this.key, this.inputValue)
-                    .withInput(new LongWritable(1L), this.cell2micro)
+                    .withInput(new LongWritable(1L), this.cell2micro1)
+                    .withInput(new LongWritable(1L), this.cell2micro2)
                     .run();
-        assertEquals(1, allResults.size());
-        Pair<NullWritable, Text> result = allResults.get(0);
-        JSONObject resultJson =
-                (JSONObject) JSONSerializer.toJSON(
+        assertEquals(2, allResults.size());
+        JSONObject result0 = this.getResult(allResults.get(0));
+        assertEquals("123", result0.get("microgrid_id"));
+        assertEquals("", result0.get("polygon_id"));
+        
+        
+        JSONObject result1 = this.getResult(allResults.get(1));
+        assertEquals("124", result1.get("microgrid_id"));
+        assertEquals("", result1.get("polygon_id"));
+        
+        JSONArray sum = result0.getJSONArray("footfall_observed_basic");
+        final JSONArray result1Array = result1.getJSONArray("footfall_observed_basic");
+        for(int i = 0; i < sum.size(); i++) {
+            sum.set(i, sum.getDouble(i) + result1Array.getDouble(i));
+        }
+        
+        JSONObject input = (JSONObject) JSONSerializer.toJSON(this.inputValue.toString());
+        assertEquals(input.getJSONArray("footfall_observed_basic"), sum);
+    }
+    
+    private JSONObject getResult(Pair<NullWritable, Text> result) {
+        return (JSONObject) JSONSerializer.toJSON(
                         result.getSecond().toString());
-        assertEquals("123", resultJson.get("microgrid_id"));
-        assertEquals("", resultJson.get("polygon_id"));
     }
 
     @Test

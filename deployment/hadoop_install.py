@@ -49,7 +49,7 @@ def configure_hadoop(config):
         common.instantiate_template('templates/core-site.mako',
                                     'core-site.xml', context=dict(
                                         namenode=config['hosts']['namenode'][0]
-                                    )))
+                                    ))
         masters = StringIO()
         for master in set(config['hosts']['namenode'] +\
                           config['hosts']['jobtracker']):

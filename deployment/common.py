@@ -11,6 +11,7 @@ from fabric.colors import green, white
 from fabric.contrib import files
 from fabric.decorators import roles
 import fabric.context_managers as ctx
+from mako.template import Template
 
 
 BASEPATH = os.path.dirname(os.path.realpath(__file__))

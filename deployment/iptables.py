@@ -31,7 +31,7 @@ def add_rule(rule):
                 return 1
 
 
-def accept_input_tcp(port):
+def accept_in_tcp(port):
     """
     Adds a rule to iptables for accepting incoming TCP connections to a given
     port.

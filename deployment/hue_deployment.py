@@ -19,6 +19,10 @@ import iptables
 
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
+REQUIRED_GIT_MAJOR_VERSION = 1
+REQUIRED_GIT_MINOR_VERSION = 7
+REQUIRED_GIT_RELEASE_VERSION = 10
+
 def install_git():
     """
     Installs GIT from a non-standard repository, because standard versions
@@ -27,8 +31,9 @@ def install_git():
     git_version_string = run('git --version')
     version_string = git_version_string.split()[-1]
     version_numbers = map(int, version_string.split('.'))
-    if version_numbers[0] < 1 or version_numbers[1] < 7 or\
-        version_numbers[2] < 10:
+    if version_numbers[0] < REQUIRED_GIT_MAJOR_VERSION or\
+            version_numbers[1] < REQUIRED_GIT_MINOR_VERSION or\
+            version_numbers[2] < REQUIRED_GIT_RELEASE_VERSION:
         git_repo = 'http://pkgs.repoforge.org/git/'
         git_pkg = 'git-1.7.10.4-1.el6.rfx.x86_64.rpm'
         git_url = git_repo + git_pkg

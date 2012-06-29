@@ -164,10 +164,11 @@ def deploy_sftp(move_sshd=False):
         start = run("/etc/init.d/injection start", pty=False)
         if start.failed:
             restart = run("/etc/init.d/injection restart", pty=False)
-
-    if restart.failed and 'Permission denied' in restart.stdout:
-        sudo('chmod +x /etc/init.d/injection')
-        run("service injection start")
+            if restart.failed and 'Permission denied' in restart.stdout:
+                sudo('chmod +x /etc/init.d/injection')
+                final_attempt = run("service injection start")
+                if final_attempt.failed:
+                    error(red("Injection service could not be started"))
 
 def move_sshd(custom_port=CONFIG['frontend_ssh_custom_port']):
     """
@@ -213,21 +214,6 @@ def deploy_mongo():
         "  if (d.name != 'local' && d.name != 'admin' && d.name != 'config')"
         "    db.getSiblingDB(d.name).dropDatabase();"
         "})\"")
-
-@task
-def deploy_models():
-    """
-    Deploys the preconfigured statistical models
-
-    This function is not ready for production. It is only here as a general
-    idea on what is needed to deploy a model, but we currently have no models
-    to deploy
-    """
-    model_paths = []
-    for model in model_paths:
-        put(model)
-        sudo('hadoop dfs -put {0} /models/{0}'.format(model))
-        run('rm %s' % model)
 
 @task
 def deploy_ganglia():
@@ -362,13 +348,13 @@ def configure_hadoop_metrics():
     Configures the Hadoop damons to send some metrics about their state to the
     gmond daemons
     """
-    hadoop_metrics_path = "/etc/hadoop-0.20/conf/hadoop-metrics.properties"
+    hadoop_version = CONFIG['hadoop_version']
+    hadoop_metrics_path = "/etc/hadoop/conf/hadoop-metrics.properties"
     common.touch_file(hadoop_metrics_path)
-    namenode = common.clean_host_list(CONFIG['hosts']['namenode']))
-    ## TODO: parametize Hadoop version
+    namenode = common.clean_host_list(CONFIG['hosts']['namenode'])
     common.instantiate_template('templates/hadoop-metrics.properties.mako',
                                 hadoop_metrics_path,
                                 context=dict(namenode=namenode))
-    if files.exists("/etc/init.d/hadoop-0.20-tasktracker"):
+    if files.exists("/etc/init.d/hadoop-%s-tasktracker" % hadoop_version):
         with ctx.hide('stdout'):
-            run("service hadoop-0.20-tasktracker restart")
+            run("service hadoop-%s-tasktracker restart" % hadoop_version)

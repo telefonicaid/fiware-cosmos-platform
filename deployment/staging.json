@@ -21,6 +21,7 @@
             "10.95.111.201"
             ]
     },
+    "hadoop_version": "0.20",
     "cdh_version_repo": "http://archive.cloudera.com/redhat/6/x86_64/cdh/cdh3-repository-1.0-1.noarch.rpm",
     "hadoop_data_dirs": [ "/data1" ],
     "hue_patch_dir": "../cosmos/platform/frontend/hue-patches",

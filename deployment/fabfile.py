@@ -25,25 +25,28 @@ CONFIG = json.loads(open(env.config, 'r').read())
 env.roledefs = CONFIG['hosts']
 
 @task
-def deploy(dependenciespath, thrift_tar, jdk_rpm, sshd_needs_moved=False):
+def deploy(dependenciespath, thrift_tar, jdk_rpm, move_sshd=False):
     """
     Deploys all the necessary components to get a running Cosmos cluster
     """
-    puts(white("Opening FTP ports", True))
+    report_current_task("open FTP ports configuration")
     execute(open_ftp_port)
-    process_start_msg = "DEPLOY: stating %s deployment"
-    puts(white(process_start_msg % "JDK", True))
+    report_current_task("JDK")
     execute(deploy_jdk, os.path.join(dependenciespath, jdk_rpm))
-    puts(white(process_start_msg % "CDH", True))
+    report_current_task("CDH")
     deploy_cdh()
-    puts(white(process_start_msg % "HUE", True))
+    report_current_task("HUE")
     execute(deploy_hue, os.path.join(dependenciespath, thrift_tar))
-    puts(white(process_start_msg % "SFTP", True))
-    execute(deploy_sftp, sshd_needs_moved)
-    puts(white(process_start_msg % "Ganglia", True))
+    report_current_task("SFTP")
+    execute(deploy_sftp, move_sshd)
+    report_current_task("Ganglia")
     execute(deploy_ganglia)
-    puts(white(process_start_msg % "Mongo", True))
+    report_current_task("Mongo")
     execute(deploy_mongo)
+
+def report_current_task(task_name):
+    report_start = "DEPLOY: starting %s deployment"
+    puts(white(report_start % task_name, True))
 
 @task
 @parallel
@@ -51,9 +54,11 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm, sshd_needs_moved=False):
        'datanodes', 'tasktrackers')
 def restore_iptables():
     """
-    Debug function to revert to the default iptables in case something goes wrong
+    Debug function to revert to the default iptables in case something goes
+    wrong
     """
-    put(os.path.join(BASEPATH, 'templates/iptables'), '/etc/sysconfig/iptables')
+    put(os.path.join(BASEPATH, 'templates/iptables'),
+                     '/etc/sysconfig/iptables')
     sudo("service iptables restart")
     
 @task
@@ -80,8 +85,8 @@ def add_test_setup():
                           '../cosmos/tests/testUser.json'), 'testUser.json')
     with cd('/usr/share/hue'):
         run('build/env/bin/hue loaddata ~/testUser.json')
-    for file_to_remove in files_to_delete:
-        run('rm %s' % file_to_remove)
+    for file_to_delete in files_to_delete:
+        run('rm %s' % file_to_delete)
 
 @task
 @parallel
@@ -115,16 +120,16 @@ def deploy_hue(thrift_tarpath):
 
 @task
 @roles('frontend')
-def deploy_sftp(sshd_needs_moved=False):
+def deploy_sftp(move_sshd=False):
     """
     Deploys the SFTP server as a Java JAR and starts it
     """
-    if isinstance(sshd_needs_moved, basestring) and\
-            sshd_needs_moved in ['False', 'false', 'N', 'n']:
-        sshd_needs_moved = False
-    if isinstance(sshd_needs_moved, basestring) and\
-            sshd_needs_moved in ['True', 'true', 'Y', 'y']:
-        sshd_needs_moved = True
+    if isinstance(move_sshd, basestring) and\
+            move_sshd in ['False', 'false', 'N', 'n']:
+        move_sshd = False
+    elif isinstance(move_sshd, basestring) and\
+            move_sshd in ['True', 'true', 'Y', 'y']:
+        move_sshd = True
 
     injection_exec = 'injection-server-{0}.jar'.format(CONFIG['version'])
     injection_jar = os.path.join(BASEPATH, CONFIG['injection_path'], 'target',
@@ -149,9 +154,9 @@ def deploy_sftp(sshd_needs_moved=False):
     common.touch_file("/var/run/injection/server.pid")
     put(os.path.join(BASEPATH, "templates/injection.init.d"),
                                "/etc/init.d/injection")
-    if sshd_needs_moved:
-        custom_port = 2222
-        warn(yellow("Moving sshd at %s to port %s" %\
+    if move_sshd:
+        custom_port = CONFIG['frontend_ssh_custom_port']
+        warn(yellow("Moving sshd at %s to port %s" %
                     (env.host_string, custom_port)))
         move_sshd(custom_port) 
 
@@ -164,9 +169,14 @@ def deploy_sftp(sshd_needs_moved=False):
         sudo('chmod +x /etc/init.d/injection')
         run("service injection start")
 
-def move_sshd(custom_port=2222):
-    """Changes the port where the ssh daemon is listening"""
-    iptables.add_rule("INPUT -p tcp -m tcp --dport 2222 -j ACCEPT")
+def move_sshd(custom_port=CONFIG['frontend_ssh_custom_port']):
+    """
+    Changes the port where the ssh daemon is listening. Note that after this
+    change other tasks might fail because they try to login at the standard
+    SSH port.
+    """
+    iptables.add_rule("INPUT -p tcp -m tcp --dport %s -j ACCEPT" %
+                      custom_port)
     sudo("service iptables save")
     common.instantiate_template('templates/sshd_config.mako',
                                 '/etc/ssh/sshd_config',
@@ -262,8 +272,8 @@ def install_gmetad():
             minor_version = 7
             repo_rpm = 'epel-release-{0}-{1}.noarch.rpm'.format(
                     major_version, minor_version)
-            base_url = ('http://download.fedoraproject.org/pub/epel/{0}/i386/'
-                            .format(major_version))
+            base_url = (('http://download.fedoraproject.org/pub/'
+                         'epel/{0}/x86_64/'.format(major_version)))
             repo_url = base_url + repo_rpm
             run('wget %s' % repo_url)
             run('rpm -Uvh %s' % repo_rpm)
@@ -285,13 +295,7 @@ def install_gmetad():
     run("service gmetad start")
     run("chkconfig --level 2 gmetad on")
 
-@roles('namenode')
-def install_ganglia_frontend():
-    """
-    Installs the package that holds PHP scripts to query the gmetad daemon and
-    present the results in graphical format. Also, starts an httpd to serve the
-    resulting webpages.
-    """
+def install_epel():
     with ctx.hide('stdout'):
         repolist = run("yum repolist")
         epel_installed = any([line.split()[0] == 'epel'
@@ -301,11 +305,21 @@ def install_ganglia_frontend():
             minor_version = 7
             repo_rpm = 'epel-release-{0}-{1}.noarch.rpm'.format(
                     major_version, minor_version)
-            base_url = ('http://download.fedoraproject.org/pub/epel/{0}/i386/'
-                            .format(major_version))
+            base_url = (('http://download.fedoraproject.org/pub/'
+                         'epel/{0}/x86_64/'.format(major_version)))
             repo_url = base_url + repo_rpm
             run('wget %s' % repo_url)
             run('rpm -Uvh %s' % repo_rpm)
+
+@roles('namenode')
+def install_ganglia_frontend():
+    """
+    Installs the package that holds PHP scripts to query the gmetad daemon and
+    present the results in graphical format. Also, starts an httpd to serve the
+    resulting webpages.
+    """
+    with ctx.hide('stdout'):
+        install_epel()
         run("yum -y erase ganglia-web")
         run("yum -y install ganglia-web")
     common.instantiate_template('templates/conf.php.mako', 
@@ -324,19 +338,7 @@ def install_gmond():
     cluster and should send this information to the gmetad.
     """
     with ctx.hide('stdout'):
-        repolist = run("yum repolist")
-        epel_installed = any([line.split()[0] == 'epel'
-                              for line in repolist.splitlines()])
-        if not epel_installed:
-            major_version = 6
-            minor_version = 7
-            repo_rpm = 'epel-release-{0}-{1}.noarch.rpm'.format(
-                    major_version, minor_version)
-            base_url = ('http://download.fedoraproject.org/pub/epel/{0}/i386/'
-                            .format(major_version))
-            repo_url = base_url + repo_rpm
-            run('wget %s' % repo_url)
-            run('rpm -Uvh %s' % repo_rpm)
+        install_epel()
         run("yum -y erase ganglia-gmond")
         run("yum -y install ganglia-gmond")
     # FIXME: where gmond.conf goes? /etc or /etc/ganglia

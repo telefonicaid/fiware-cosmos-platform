@@ -34,8 +34,6 @@ def has_package(pkg):
     Checks that a package is installed using the OS package manager
     """
     with ctx.hide('stdout'):
-        # Need to consider this settings context and warn_only
-        # to have full control over the run commands.
         with settings(warn_only=True):
             output = run('yum list -q installed | grep -qi %s' % pkg)
             if output.return_code != 0:

@@ -1,6 +1,7 @@
 {
     "version": "0.9.0.0-SNAPSHOT",
-    "hosts": {
+    "hosts":
+    {
         "namenode": [ "176.28.105.12" ],
         "jobtracker": [ "176.28.105.12" ],
         "frontend": [ "176.28.105.8" ],
@@ -33,11 +34,10 @@
         ]
     },
     "cdh_version_repo": "http://archive.cloudera.com/redhat/6/x86_64/cdh/cdh3-repository-1.0-1.noarch.rpm",
-    "hadoop_data_dirs": [
-        "/data"
-    ],
+    "hadoop_data_dirs": [ "/data" ],
     "hue_patch_dir": "../cosmos/platform/frontend/hue-patches",
     "hue_patch_name": "hue-patch-cdh3u4-r0.4.diff",
     "injection_path": "../cosmos/platform/injection/server/",
-    "mongo_db_path": "/data/lib/mongo"
+    "mongo_db_path": "/data/lib/mongo",
+    "frontend_ssh_custom_port": 2222
 }

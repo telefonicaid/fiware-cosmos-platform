@@ -34,7 +34,7 @@ def install_git():
         git_url = git_repo + git_pkg
         run('wget %s' % git_url)
         run('rpm -Uvh --force --nodeps git-1.7.10.4-1.el6.rfx.x86_64.rpm')
-        run('rm -f git-1.7.10.4-1.el6.rfx.x86_64.rpm')
+        run('rm -f %s' % git_pkg)
 
 def install_and_patch_hue(config):
     """

@@ -44,6 +44,23 @@ public class TrafficCountsEntry implements FieldsEntry {
         }
     }
     
+    public TrafficCountsEntry(TrafficCountsEntry entry) {
+        this.cellId = entry.cellId;
+        this.date = entry.date;
+        this.latitude = entry.latitude;
+        this.longitude = entry.longitude;
+        this.counts = new HashMap<String, ArrayList<BigDecimal>>();
+        for (String key : entry.counts.keySet()) {
+            this.counts.put(key, new ArrayList<BigDecimal>(entry.counts.get(key)));
+        }
+        this.pois = new HashMap<String, ArrayList<BigDecimal>>(entry.pois);
+        for (String key : entry.pois.keySet()) {
+            this.pois.put(key, new ArrayList<BigDecimal>(entry.pois.get(key)));
+        }
+        this.microgridId = entry.microgridId;
+        this.polygonId = entry.polygonId;
+    }
+    
     @Override
     public String getKey() {
         if (this.polygonId != null && !this.polygonId.isEmpty()) {
@@ -68,20 +85,23 @@ public class TrafficCountsEntry implements FieldsEntry {
         return ans;
     }
     
-    public void scale(BigDecimal factor) {
-        for (String countField : this.counts.keySet()) {
+    public TrafficCountsEntry scale(BigDecimal factor) {
+        TrafficCountsEntry scaled = new TrafficCountsEntry(this);
+        for (String countField : scaled.counts.keySet()) {
             final ArrayList<BigDecimal> countsForField =
-                    this.counts.get(countField);
+                    scaled.counts.get(countField);
             for (int i = 0; i < countsForField.size(); i++) {
                 countsForField.set(i, countsForField.get(i).multiply(factor));
             }
         }
-        for (String poi : this.pois.keySet()) {
-            ArrayList<BigDecimal> countsForPoi = this.pois.get(poi);
+        for (String poi : scaled.pois.keySet()) {
+            ArrayList<BigDecimal> countsForPoi = scaled.pois.get(poi);
             for (int i = 0; i < countsForPoi.size(); i++) {
                 countsForPoi.set(i, countsForPoi.get(i).multiply(factor));
             }
         }
+        
+        return scaled;
     }
     
     public HashMap<String, ArrayList<BigDecimal>> roundCounts() {

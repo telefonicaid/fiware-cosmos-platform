@@ -18,13 +18,15 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsEntryParser;
  */
 public class EntryScalerMapper extends Mapper<LongWritable, Text,
                                               Text, Text> {
+
     private Parser countsParser;
     private Parser lookupParser;
     
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
-        this.countsParser = new TrafficCountsEntryParser();
+        this.countsParser = new TrafficCountsEntryParser(
+                context.getConfiguration().getStrings(Config.COUNT_FIELDS));
         LookupType type = context.getConfiguration().getEnum(
                 LookupType.class.getName(), LookupType.INVALID);
         switch (type) {
@@ -47,11 +49,11 @@ public class EntryScalerMapper extends Mapper<LongWritable, Text,
         String cellId;
         Entry entry;
         final String valueStr = value.toString();
-        if ((entry = this.countsParser.safeParse(valueStr)) != null || 
-                (entry = this.lookupParser.safeParse(valueStr)) != null) {
+        if ((entry = this.countsParser.parse(valueStr)) != null || 
+                (entry = this.lookupParser.parse(valueStr)) != null) {
             cellId = entry.getKey();
         } else {
-            throw new IllegalArgumentException("Invalid input data");
+            throw new IllegalArgumentException("Invalid input data: " + valueStr);
         }
         context.write(new Text(cellId), value);
     }

@@ -17,18 +17,9 @@ import net.sf.json.JSONObject;
  * @author  logc
  */
 public class TrafficCountsEntry implements FieldsEntry {
+
     public static final String[] EXPECTED_POIS = {"HOME", "NONE", "WORK",
-                                                  "OTHER", "BILL"};
-    public static final String[] COUNT_FIELDS = { "footfall_observed_basic",
-                                                  "footfall_observed_female",
-                                                  "footfall_observed_male",
-                                                  "footfall_observed_age_0",
-                                                  "footfall_observed_age_20",
-                                                  "footfall_observed_age_30",
-                                                  "footfall_observed_age_40",
-                                                  "footfall_observed_age_50",
-                                                  "footfall_observed_age_60",
-                                                  "footfall_observed_age_70" };    
+                                                  "OTHER", "BILL"};  
     private static final int HOURLY_SLOTS = 25;
 
     public String cellId;
@@ -36,18 +27,38 @@ public class TrafficCountsEntry implements FieldsEntry {
     public double latitude;
     public double longitude;
     public HashMap<String, ArrayList<BigDecimal>> counts;
-    public ArrayList<Integer> poiFive = new ArrayList<Integer>(HOURLY_SLOTS);
-    public HashMap<String, ArrayList<Integer>> pois;
+    public HashMap<String, ArrayList<BigDecimal>> pois;
     public String microgridId;
     public String polygonId;
 
-    public TrafficCountsEntry() {
-        this.pois = new HashMap<String, ArrayList<Integer>>();
-        this.pois.put("HOME", new ArrayList<Integer>(HOURLY_SLOTS));
-        this.pois.put("WORK", new ArrayList<Integer>(HOURLY_SLOTS));
-        this.pois.put("NONE", new ArrayList<Integer>(HOURLY_SLOTS));
-        this.pois.put("OTHER", new ArrayList<Integer>(HOURLY_SLOTS));
-        this.pois.put("BILL", new ArrayList<Integer>(HOURLY_SLOTS));
+    public TrafficCountsEntry(String[] countFields) {
+        this.pois = new HashMap<String, ArrayList<BigDecimal>>();
+        this.pois.put("HOME", new ArrayList<BigDecimal>(HOURLY_SLOTS));
+        this.pois.put("WORK", new ArrayList<BigDecimal>(HOURLY_SLOTS));
+        this.pois.put("NONE", new ArrayList<BigDecimal>(HOURLY_SLOTS));
+        this.pois.put("OTHER", new ArrayList<BigDecimal>(HOURLY_SLOTS));
+        this.pois.put("BILL", new ArrayList<BigDecimal>(HOURLY_SLOTS));
+        this.counts = new HashMap<String, ArrayList<BigDecimal>>();
+        for (String countField : countFields) {
+            this.counts.put(countField, new ArrayList<BigDecimal>());
+        }
+    }
+    
+    public TrafficCountsEntry(TrafficCountsEntry entry) {
+        this.cellId = entry.cellId;
+        this.date = entry.date;
+        this.latitude = entry.latitude;
+        this.longitude = entry.longitude;
+        this.counts = new HashMap<String, ArrayList<BigDecimal>>();
+        for (String key : entry.counts.keySet()) {
+            this.counts.put(key, new ArrayList<BigDecimal>(entry.counts.get(key)));
+        }
+        this.pois = new HashMap<String, ArrayList<BigDecimal>>(entry.pois);
+        for (String key : entry.pois.keySet()) {
+            this.pois.put(key, new ArrayList<BigDecimal>(entry.pois.get(key)));
+        }
+        this.microgridId = entry.microgridId;
+        this.polygonId = entry.polygonId;
     }
     
     @Override
@@ -68,50 +79,35 @@ public class TrafficCountsEntry implements FieldsEntry {
         ans.add(this.latitude);
         ans.add(this.longitude);
         ans.add(this.counts);
-        ans.add(this.poiFive);
         ans.add(this.pois);
         ans.add(this.microgridId);
         ans.add(this.polygonId);
         return ans;
     }
-
-    public TrafficCountsEntry scale(BigDecimal factor) {
-        TrafficCountsEntry scaledEntry = new TrafficCountsEntry();
-        scaledEntry.date = this.date;
-        scaledEntry.cellId = this.cellId;
-        scaledEntry.latitude = this.latitude;
-        scaledEntry.longitude = this.longitude;
-        scaledEntry.counts = this.scaleCounts(factor);
-        scaledEntry.poiFive = (ArrayList<Integer>) this.poiFive.clone();
-        scaledEntry.pois =
-                (HashMap<String, ArrayList<Integer>>) this.pois.clone();
-        scaledEntry.microgridId = this.microgridId;
-        scaledEntry.polygonId = this.polygonId;
-        return scaledEntry;
-    }
     
-    private HashMap<String, ArrayList<BigDecimal>> scaleCounts(
-            BigDecimal factor) {
-        HashMap<String, ArrayList<BigDecimal>> scaledCounts =
-                new HashMap<String, ArrayList<BigDecimal>>();
-        for (String countField : COUNT_FIELDS) {
+    public TrafficCountsEntry scale(BigDecimal factor) {
+        TrafficCountsEntry scaled = new TrafficCountsEntry(this);
+        for (String countField : scaled.counts.keySet()) {
             final ArrayList<BigDecimal> countsForField =
-                    this.counts.get(countField);
-            ArrayList<BigDecimal> scaledCountsForField =
-                    new ArrayList<BigDecimal>();
+                    scaled.counts.get(countField);
             for (int i = 0; i < countsForField.size(); i++) {
-                scaledCountsForField.add(countsForField.get(i)
-                        .multiply(factor));
+                countsForField.set(i, countsForField.get(i).multiply(factor));
             }
-            scaledCounts.put(countField, scaledCountsForField);
         }
-        return scaledCounts;
+        for (String poi : scaled.pois.keySet()) {
+            ArrayList<BigDecimal> countsForPoi = scaled.pois.get(poi);
+            for (int i = 0; i < countsForPoi.size(); i++) {
+                countsForPoi.set(i, countsForPoi.get(i).multiply(factor));
+            }
+        }
+        
+        return scaled;
     }
     
     public HashMap<String, ArrayList<BigDecimal>> roundCounts() {
         HashMap<String, ArrayList<BigDecimal>> roundedCounts =
                 new HashMap<String, ArrayList<BigDecimal>>();
-        for (String countField : COUNT_FIELDS) {
+        for (String countField : this.counts.keySet()) {
             final ArrayList<BigDecimal> countsForField =
                     this.counts.get(countField);
             ArrayList<BigDecimal> roundedCountsForField =
@@ -131,10 +127,9 @@ public class TrafficCountsEntry implements FieldsEntry {
         obj.put("date", this.date);
         obj.put("lat", this.latitude);
         obj.put("long", this.longitude);
-        for (String field : TrafficCountsEntry.COUNT_FIELDS) {
+        for (String field : this.counts.keySet()) {
             obj.put(field, this.counts.get(field));
         }
-        obj.put("poi_5", this.poiFive);
         obj.put("pois", this.pois);
         obj.put("microgrid_id", this.microgridId);
         obj.put("polygon_id", this.polygonId);

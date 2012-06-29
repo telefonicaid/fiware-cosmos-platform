@@ -1,12 +1,15 @@
 package es.tid.smartsteps.dispersion.data;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import org.apache.hadoop.conf.Configuration;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.smartsteps.dispersion.Config;
 import es.tid.smartsteps.dispersion.parsing.TrafficCountsEntryParser;
 
 /**
@@ -17,8 +20,7 @@ public class TrafficCountsEntryTest {
     private TrafficCountsEntry instance;
     
     @Before
-    public void setUp() {
-        this.instance = new TrafficCountsEntry();
+    public void setUp() throws IOException {
         final String value = "{\"date\": \"20120527\", "
                 + "\"footfall_observed_basic\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "
@@ -42,7 +44,7 @@ public class TrafficCountsEntryTest {
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "
                 + "\"BILL\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0]}, "
-                + "\"footfall_observed_age_0\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
+                + "\"footfall_observed_0\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "
                 + "\"footfall_observed_age_60\": [0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "
@@ -52,7 +54,10 @@ public class TrafficCountsEntryTest {
                 + "0f1f2ff3cdc0849b0c\", \"footfall_observed_age_40\": [0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0]}";
-        this.instance = new TrafficCountsEntryParser().parse(value);
+        final Configuration config = Config.load(Config.class.getResource(
+                "/config.properties").openStream(), new Configuration());
+        this.instance = new TrafficCountsEntryParser(
+                config.getStrings(Config.COUNT_FIELDS)).parse(value);
     }
 
     @Test
@@ -63,7 +68,7 @@ public class TrafficCountsEntryTest {
 
     @Test
     public void testScale() {
-        final TrafficCountsEntry scaledEntry = this.instance.scale(
+        TrafficCountsEntry scaledEntry = this.instance.scale(
                 new BigDecimal(2.6D));
         ArrayList<BigDecimal> counts = scaledEntry.counts.get(
                 "footfall_observed_basic");

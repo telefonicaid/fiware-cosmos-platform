@@ -2,6 +2,7 @@
 #define _H_SAMSON_CONNECTOR_CONNECTION_FileDescriptorConnection
 
 #include "au/mutex/TokenTaker.h"
+#include "au/Cronometer.h"
 
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
@@ -20,63 +21,79 @@ namespace samson {
         class Item;
         
         /*
-         Simple FileDescriptor connection ( used in ListenerItem or ConnectionItem )
+         Simple FileDescriptor connection ( used in ListenerAdaptor or ConnectionItem )
          */
         
         class FileDescriptorConnection : public Connection
         {
             
-        private:
+            au::FileDescriptor * file_descriptor_;    // Current file descritor to read or write
+            bool thread_running_;                     // Flag to indicate if thread is still running in background
             
-            au::FileDescriptor * file_descriptor;    // File descritor to read or write
-            au::Cronometer cronometer;
-            
-            bool thread_running;                     // Flag to indicate if thread is still running in background
+
+            int num_connections_;                     // Number of connections
+            au::Cronometer cronometer_reconnection_;  // Cronometer since last reconnection
+
+            size_t input_buffer_size;                 // Variable length input buffer
             
         public:
             
-            FileDescriptorConnection( Item  * _item , ConnectionType _type , std::string _name
-                             , au::FileDescriptor * _file_descriptor );
-            
+            FileDescriptorConnection( Item  * _item , ConnectionType _type , std::string _name );
             ~FileDescriptorConnection();
+            
+            // Get the File descriptor
+            virtual au::FileDescriptor * getFileDescriptor()=0;
             
             // Main function of the dedicated thread
             void run();
             void run_as_input();
             void run_as_output();
             
-            std::string getStatus()
-            {
-                if( file_descriptor->isDisconnected() )
-                    return "Closed fd";
-                else
-                    return au::str( "Connected (fd %d)" , file_descriptor->getFd() );
-            }
-
+            // Connection virtual methods
             virtual void start_connection();
+            virtual void review_connection();
+            virtual void stop_connection();
+            virtual std::string getStatus();
             
-            virtual void stop_connection()
-            {
-                
-                log("Message", "Connection stoped");
-                
-                // Stop thread in the background
-                file_descriptor->close();
-                while( thread_running )
-                    usleep(100000);
-            }
+        private:
             
-            // Review
-            virtual void review_connection()
-            {
-                if( file_descriptor->isDisconnected() )
-                    set_as_finished();
-                
-                set_as_connected( !file_descriptor->isDisconnected() );
-
-            }
+            void connect();
             
         };
+        
+        
+        class SimpleFileDescriptorConnection : public FileDescriptorConnection
+        { 
+            au::FileDescriptor * file_descriptor_;
+            
+        public:
+            
+            SimpleFileDescriptorConnection( Item  * _item , ConnectionType _type , std::string _name , au::FileDescriptor * file_descriptor ) :
+            FileDescriptorConnection( _item , _type , _name )
+            {
+                // Keep the file descriptor
+                file_descriptor_ = file_descriptor;
+            }
+            
+            virtual au::FileDescriptor * getFileDescriptor()
+            {
+
+                // Mark component as finished
+                if( file_descriptor_ == NULL )
+                {
+                    set_as_finished(); // It is over
+                    return NULL;
+                }
+                
+                // Return the provided file descriptor just once.
+                au::FileDescriptor * return_file_descriptor = file_descriptor_;
+                file_descriptor_ = NULL;
+                return return_file_descriptor;
+            }
+            
+            
+        };
+        
     }
 }
 

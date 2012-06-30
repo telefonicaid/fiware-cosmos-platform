@@ -31,7 +31,7 @@ typedef enum
 {
     SetupItem_uint64,
     SetupItem_string
-} SamsonItemType;
+} SamsonAdaptorType;
 
 class SetupItem
 {
@@ -41,11 +41,11 @@ class SetupItem
         std::string value;
 
         std::string description;
-        SamsonItemType type;
+        SamsonAdaptorType type;
 
     public:
 
-        SetupItem( std::string _name , std::string _default_value , std::string _description , SamsonItemType _type );
+        SetupItem( std::string _name , std::string _default_value , std::string _description , SamsonAdaptorType _type );
 
         bool setValue( std::string _value );
         bool check_valid( std::string _value );        
@@ -66,7 +66,7 @@ class SetupItemCollection
         au::map< std::string , SetupItem > items;
 
         // Add a new parameter to consider
-        void  add( std::string _name , std::string _default_value , std::string _description , SamsonItemType type );
+        void  add( std::string _name , std::string _default_value , std::string _description , SamsonAdaptorType type );
 
     public:
 
@@ -106,7 +106,7 @@ class SamsonSetup : public SetupItemCollection
         static SamsonSetup *shared();
 
         // Used only in unitTests, to have them more complete
-        void addItem(std::string _name , std::string _default_value , std::string _description , SamsonItemType type);
+        void addItem(std::string _name , std::string _default_value , std::string _description , SamsonAdaptorType type);
 
         // Get access to parameters
         std::string get( std::string name );

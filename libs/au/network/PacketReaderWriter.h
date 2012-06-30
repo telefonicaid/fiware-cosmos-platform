@@ -93,7 +93,7 @@ namespace au { namespace network {
         au::FileDescriptor * fd_;
         
         au::Token token; // Token to protect the list
-        ClassObjectListContainer<P> packets_;
+        ObjectList<P> packets_;
         
         // Size accumulated to be sent
         size_t buffered_size;
@@ -161,11 +161,11 @@ namespace au { namespace network {
             }
         }
         
-        void extract_pending_packets( ClassObjectListContainer<P>* packets )
+        void extract_pending_packets( ObjectList<P>* packets )
         {
             while( true )
             {
-                ClassObjectContainer<P> container;
+                ObjectContainer<P> container;
                 packets_.extract_front( container );
                 
                 P* p = container.getObject();
@@ -264,7 +264,7 @@ namespace au { namespace network {
             return packet_writer_->getBufferedSize();
         }
         
-        void extract_pending_packets( ClassObjectListContainer<P>* packets )
+        void extract_pending_packets( ObjectList<P>* packets )
         {
             packet_writer_->extract_pending_packets( packets );
         }

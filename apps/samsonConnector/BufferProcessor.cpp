@@ -3,16 +3,15 @@
 
 #include "logMsg/logMsg.h"
 
-#include "SamsonConnector.h"
+#include "StreamConnector.h"
 #include "BufferProcessor.h" // Own interface
 
 #include "samson/module/ModulesManager.h"
 
-#include "Item.h"
+#include "Adaptor.h"
 #include "common.h"
 
 extern size_t buffer_size;
-extern size_t input_buffer_size;
 
 namespace samson {
 

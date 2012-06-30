@@ -3,7 +3,7 @@
 
 #include "au/mutex/Token.h"
 
-#include "Item.h"
+#include "Adaptor.h"
 #include "Connection.h"
 #include "common.h"
 
@@ -105,7 +105,7 @@ namespace samson {
             
         };
         
-        class SamsonItem : public Item
+        class SamsonAdaptor : public Item
         {
             // Information to stablish the connection with the SAMSON system
             std::string host;
@@ -117,7 +117,7 @@ namespace samson {
             
         public:
             
-            SamsonItem( Channel * _channel , ConnectionType _type , 
+            SamsonAdaptor( Channel * _channel , ConnectionType _type , 
                        std::string _host 
                        , int _port 
                        , std::string _queue );

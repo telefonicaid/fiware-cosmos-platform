@@ -81,7 +81,7 @@ namespace samson
         return path;
     }
     
-    SetupItem::SetupItem( std::string _name , std::string _default_value , std::string _description , SamsonItemType _type )
+    SetupItem::SetupItem( std::string _name , std::string _default_value , std::string _description , SamsonAdaptorType _type )
     {
         name = _name;
         default_value = _default_value;
@@ -167,7 +167,7 @@ namespace samson
        items.clearMap();
     }
 
-    void  SetupItemCollection::add( std::string _name , std::string _default_value , std::string _description , SamsonItemType type )
+    void  SetupItemCollection::add( std::string _name , std::string _default_value , std::string _description , SamsonAdaptorType type )
     {
         if( items.findInMap(_name) != NULL )
         {
@@ -378,7 +378,7 @@ namespace samson
         load( setupFileName() );
 	}
 
-	void SamsonSetup::addItem(std::string _name , std::string _default_value , std::string _description , SamsonItemType type)
+	void SamsonSetup::addItem(std::string _name , std::string _default_value , std::string _description , SamsonAdaptorType type)
 	{
 	    add( _name ,  _default_value , _description , type);
 	}

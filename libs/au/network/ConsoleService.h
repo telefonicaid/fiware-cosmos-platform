@@ -29,12 +29,18 @@ namespace au
             int port;
             SocketConnection * socket_connection;
             
+            // Prompt request delayed
+            au::Cronometer cronometer_prompt_request;
+            std::string current_prompt;
+            
         public:
             
             ConsoleServiceClientBase( int _port )
             {
                 port = _port;
                 socket_connection = NULL;
+                
+                current_prompt = ">>";
             }
             
             bool write( au::gpb::ConsolePacket* packet , au::ErrorManager *error )
@@ -132,8 +138,8 @@ namespace au
             
             std::string getPrompt()
             {
-                // Not used anymore since it get large delays...
-                return ">>";
+                if( cronometer_prompt_request.diffTime() < 2 )
+                    return current_prompt;
                 
                 // Prepare message to be send to server
                 au::gpb::ConsolePacket m;
@@ -143,20 +149,19 @@ namespace au
                 au::ErrorManager error;
                 // Send to server
                 if(! write(&m , &error) )
-                    return ">>";
+                    return current_prompt;
 
                 
                 // Recover answer from server
                 // Read answer from server
                 au::gpb::ConsolePacket *answer;                
                 if( !read( &answer , &error ) )
-                    return ">>";
+                    return current_prompt;
                 
-                std::string p = answer->prompt();
+                current_prompt = answer->prompt();
                 delete answer;
                 
-                // Still not implemented the remote-prompt mechanism...
-                return p;
+                return current_prompt;
             }
             
             void evalCommand( std::string command , au::ErrorManager *error )
@@ -315,16 +320,15 @@ namespace au
                 // Do soemthing...
             }
             
-            virtual void autoComplete( ConsoleAutoComplete* info )
+            virtual void autoComplete( ConsoleAutoComplete* info , au::Environment* environment )
             {
                 
             }
             
-            virtual std::string getPrompt()
+            virtual std::string getPrompt( au::Environment* environment )
             {
                 return ">>";
             }
-
             
             void fill_message( au::ErrorManager* error , au::gpb::ConsolePacket* message )
             {
@@ -381,7 +385,7 @@ namespace au
                     {
                         // Auto completion request....
                         ConsoleAutoComplete info( message->auto_complettion_command() );
-                        autoComplete( &info );
+                        autoComplete( &info , &environment );
                         
                         // Fill answer message with alternatives
                         for ( size_t i = 0 ; i < info.getNumAlternatives() ; i++ )
@@ -398,7 +402,7 @@ namespace au
                     else if( message->has_prompt_request() )
                     {
                         // Ignore prompt request fild.
-                        answer_message.set_prompt( getPrompt() );
+                        answer_message.set_prompt( getPrompt( &environment ) );
                     }
                     else
                     {

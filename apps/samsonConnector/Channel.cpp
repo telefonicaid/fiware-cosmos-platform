@@ -1,12 +1,12 @@
 
-#include "Item.h"
+#include "Adaptor.h"
 #include "common.h"
 #include "ServerConnection.h"
-#include "ListenerItem.h"
-#include "SamsonItem.h"
-#include "DiskItem.h"
-#include "InterChannelItem.h"
-#include "SamsonConnector.h"
+#include "ListenerAdaptor.h"
+#include "SamsonAdaptor.h"
+#include "DiskAdaptor.h"
+#include "ChannelAdaptor.h"
+#include "StreamConnector.h"
 #include "Channel.h" // Own interface
 
 
@@ -18,7 +18,7 @@ namespace samson {
     namespace connector 
     {
         
-        Channel::Channel( SamsonConnector * connector , std::string name , std::string splitter ) : token( "token_Channel")
+        Channel::Channel( StreamConnector * connector , std::string name , std::string splitter ) : token( "token_Channel")
         {
             // Keep name and pointer to connector
             connector_ = connector;
@@ -83,6 +83,15 @@ namespace samson {
         
         void Channel::add_output( std::string name , std::string output_string  , au::ErrorManager* error )
         {
+            // Mutex protection
+            au::TokenTaker tt(&token);
+            
+            Item* previous_item = items.findInMap(name);
+            if( previous_item )
+            {
+                error->set( au::str("Item %s already exist (%s)" , previous_item->getFullName().c_str()  , previous_item->getDescription().c_str() ));
+                return;
+            }
                         
             std::vector<std::string> components = au::split(output_string, ':');
             
@@ -114,7 +123,7 @@ namespace samson {
                 }
                 
                 // Add a listen item
-                add( name , new ListenerItem( this , connection_output , port ) );
+                add( name , new ListenerAdaptor( this , connection_output , port ) );
                 error->add_message( au::str("Added an output item to channel %s listening plain socket connection on port %d " , name_.c_str() , port ));
                 return;
                 
@@ -127,7 +136,7 @@ namespace samson {
                     return;
                 }
                 
-                add( name , new DiskItem( this , connection_output , components[1] ) );
+                add( name , new DiskAdaptor( this , connection_output , components[1] ) );
                 
             }
             else if( components[0] == "connection" )
@@ -171,7 +180,7 @@ namespace samson {
                     queue = components[3];
                 }            
                 
-                add(name ,  new SamsonItem( this , connection_output , host , port  , queue ) );
+                add(name ,  new SamsonAdaptor( this , connection_output , host , port  , queue ) );
             }
             else if( components[0] == "channel" )
             {
@@ -184,7 +193,7 @@ namespace samson {
                 std::string host = components[1];
                 std::string channel = components[2];
                 
-                add(name ,  new OutputInterChannelItem(this, host, channel ) );
+                add(name ,  new OutputChannelAdaptor(this, host, channel ) );
                 
             }
             
@@ -197,6 +206,16 @@ namespace samson {
         
         void Channel::add_input ( std::string name , std::string input_string , au::ErrorManager* error )
         {
+            // Mutex protection
+            au::TokenTaker tt(&token);
+            
+            Item* previous_item = items.findInMap(name);
+            if( previous_item )
+            {
+                error->set( au::str("Item %s already exist (%s)" , name.c_str()  , previous_item->getDescription().c_str() ));
+                return;
+            }
+            
             std::vector<std::string> components = au::split(input_string, ':');
             
             if( components[0] == "stdin" )
@@ -226,7 +245,7 @@ namespace samson {
                 }
                 
                 // Add a listen item
-                add( name ,new ListenerItem( this , connection_input , port ) );
+                add( name ,new ListenerAdaptor( this , connection_input , port ) );
                 error->add_message( au::str("Added an input item to channel %s listening plain socket connection on port %d " , name_.c_str() , port ));
                 return;
             }
@@ -238,7 +257,7 @@ namespace samson {
                     return;
                 }
                 
-                add( name ,new DiskItem( this , connection_input , components[1]  ) );
+                add( name ,new DiskAdaptor( this , connection_input , components[1]  ) );
             }
             else if( components[0] == "connection" )
             {
@@ -281,13 +300,13 @@ namespace samson {
                     queue = components[3];
                 }
                 
-                add( name ,new SamsonItem( this , connection_input , host , port  , queue ) );
+                add( name ,new SamsonAdaptor( this , connection_input , host , port  , queue ) );
                 
             }
             else if( components[0] == "channel" )
             {
                 // Able to receive connections for inter-channel connection
-                add( name ,new InputInterChannelItem( this ) );
+                add( name ,new InputChannelAdaptor( this ) );
             }
             else
             {
@@ -299,6 +318,9 @@ namespace samson {
         // Generic method to add an item
         void Channel::add( std::string name , Item * item )
         {
+            // Mutex protection
+            au::TokenTaker tt(&token);
+            
             if( !item )
                 return;
 
@@ -316,6 +338,26 @@ namespace samson {
             // Init the item
             item->init_item();
         }
+        
+        void Channel::remove_item( std::string name , au::ErrorManager * error )
+        {
+            // Mutex protection
+            au::TokenTaker tt(&token);
+            
+            Item* item = items.extractFromMap( name );
+            
+            if( !item )
+            {
+                error->set( au::str("Adaptor %s.%s not found" , getName().c_str() , name.c_str() ));
+                return;
+            }
+            
+            // Cancel item
+            item->cancel_item();
+            delete item;
+            
+        }
+
         
         void Channel::push( engine::Buffer * buffer )
         {
@@ -433,11 +475,23 @@ namespace samson {
             return output.str();
         }
         
-        void Channel::write( au::ErrorManager * error )
+        size_t Channel::getOutputConnectionsBufferedSize()
         {
-            connector_->write( error );
+            au::TokenTaker tt(&token);
+            
+            size_t total = 0;
+            
+            au::map<std::string, Item>::iterator it_items;
+            for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
+            {
+                Item *item = it_items->second;
+                
+                if( item->getType() == connection_output )
+                    total += item->getConnectionsBufferedSize();
+            }
+            return total;
         }
-
+    
         void Channel::log( std::string type , std::string message )
         {
             log( new Log( getName() , type , message ) );
@@ -446,6 +500,31 @@ namespace samson {
         {
             connector_->log( log );
         }
+        
+        void Channel::report_output_size( size_t size )
+        {
+            traffic_statistics.push_output(size);
+            connector_->report_output_size(size);
+        }
+        
+        void Channel::report_input_size( size_t size )
+        {
+            traffic_statistics.push_input(size);
+            connector_->report_input_size( size );
+        }
+
+        void Channel::autoCompleteWithAdaptorsNames( au::ConsoleAutoComplete* info )
+        {
+            au::TokenTaker tt(&token);
+            
+            au::map<std::string, Item>::iterator it_items;
+            for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
+            {
+                Item *item = it_items->second;
+                info->add( item->getFullName() );
+            }
+        }
+
 
         
     }

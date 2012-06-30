@@ -23,9 +23,10 @@
 #include "au/network/SocketConnection.h"
 
 #include "common.h"
-#include "SamsonConnector.h"
+#include "StreamConnector.h"
+#include "StreamConnectorService.h"
+#include "LogManager.h"
 
-size_t input_buffer_size;
 size_t buffer_size;
 char input[1024];
 char output[1024];
@@ -77,7 +78,6 @@ static const char* manSynopsis = "[-input input_description]  [-output output_de
 int sc_console_port;
 int sc_web_port;
 int default_buffer_size = 64*1024*1024 - sizeof(samson::KVHeader);
-int default_input_buffer_size = 100000; // 100Kb
 
 
 PaArgument paArgs[] =
@@ -85,7 +85,6 @@ PaArgument paArgs[] =
 	{ "-input",            input,               "",  PaString,  PaOpt, _i "stdin"  , PaNL, PaNL,        "Input sources "          },
 	{ "-output",           output,              "",  PaString,  PaOpt, _i "stdout"  , PaNL, PaNL,       "Output sources "         },
 	{ "-buffer_size",      &buffer_size,        "",  PaInt,     PaOpt, default_buffer_size,       1, default_buffer_size,  "Buffer size in bytes"    },
-	{ "-inputbuffer_size", &input_buffer_size,  "",  PaInt,     PaOpt, default_input_buffer_size, 1, 10000000,               "Read inputs in chunks of this size" },
 	{ "-splitter",         input_splitter_name, "",  PaString,  PaOpt, _i "",   PaNL, PaNL,  "Splitter to be used ( only valid for the default channel )"  },
 	{ "-i",                &interactive,        "",  PaBool,    PaOpt,    false,  false,   true,        "Interactive console"          },
 	{ "-daemon",           &run_as_daemon,      "",  PaBool,    PaOpt,    false,  false,   true,        "Run in background. Remove connection & REST interface activated"  },
@@ -101,7 +100,7 @@ int logFd = -1;
 
 
 // Network connections ( input and output )
-samson::connector::SamsonConnector* samson_connector;
+samson::connector::StreamConnector* stream_connector;
 
 
 // Instance of the client to connect to SAMSON system
@@ -163,7 +162,7 @@ int main( int argC , const char *argV[] )
     
     // Init samsonConnector
     
-    samson_connector = new samson::connector::SamsonConnector();
+    stream_connector = new samson::connector::StreamConnector();
 
 
     if( strcmp(file_name, "") != 0 )
@@ -183,7 +182,7 @@ int main( int argC , const char *argV[] )
         char line[1024];
         
         std::string message = au::str("Setup file %s. Opening...", file_name);
-        samson_connector->log( new samson::connector::Log( "SamsonConnector" , "Message" , message ) );  
+        stream_connector->log( new samson::connector::Log( "SamsonConnector" , "Message" , message ) );  
         
         while( fgets(line, sizeof(line), f) )
         {
@@ -198,10 +197,10 @@ int main( int argC , const char *argV[] )
             {
                 
                 message = au::str("%s ( File %s )", line , file_name);
-                samson_connector->log( new samson::connector::Log( "SamsonConnector" , "Message" , message ) );  
+                stream_connector->log( new samson::connector::Log( "SamsonConnector" , "Message" , message ) );  
                 
                 au::ErrorManager error;
-                samson_connector->process_command( line  , &error );
+                stream_connector->process_command( line  , &error );
 
                 // Show only if an error happen there
                 if( error.isActivated() )
@@ -211,7 +210,7 @@ int main( int argC , const char *argV[] )
         
         // Print the error on screen
         message = au::str("Setup file %s. Finished", file_name);
-        samson_connector->log( new samson::connector::Log( "SamsonConnector" , "Message" , message ) );  
+        stream_connector->log( new samson::connector::Log( "SamsonConnector" , "Message" , message ) );  
         
         
         fclose(f);
@@ -222,9 +221,9 @@ int main( int argC , const char *argV[] )
         // Create default channel
         {
             au::ErrorManager error;
-            samson_connector->process_command( au::str("add_channel default %s" , input_splitter_name )  , &error );
+            stream_connector->process_command( au::str("add_channel default %s" , input_splitter_name )  , &error );
             if( error.isActivated() )
-                samson_connector->writeError( error.getMessage().c_str()  );
+                stream_connector->log( new samson::connector::Log( "Init" , "Error" , error.getMessage().c_str()  ) );
         }
         
         size_t adapter_id = 1;
@@ -237,9 +236,9 @@ int main( int argC , const char *argV[] )
             std::string command = au::str("add_output_adapter default.%s %s" , name.c_str() , output_components[i].c_str() );
 
             au::ErrorManager error;
-            samson_connector->process_command( command , &error );
+            stream_connector->process_command( command , &error );
             if( error.isActivated() )
-                samson_connector->writeError( error.getMessage().c_str()  );
+                stream_connector->log( new samson::connector::Log( "Init" , "Error" , error.getMessage().c_str()  ));
         }
         
         // Add inputs
@@ -250,9 +249,9 @@ int main( int argC , const char *argV[] )
             std::string command = au::str("add_input_adapter default.%s %s" , name.c_str() , input_components[i].c_str() );
             
             au::ErrorManager error;
-            samson_connector->process_command( command , &error );
+            stream_connector->process_command( command , &error );
             if( error.isActivated() )
-                samson_connector->writeError( error.getMessage().c_str()  );
+                stream_connector->log( new samson::connector::Log( "Init" , "Error" , error.getMessage().c_str() ));
         }
 
     }
@@ -261,11 +260,11 @@ int main( int argC , const char *argV[] )
     if( run_as_daemon )
     {
         // Add service to accept monitor connections from samsonConnectorClient
-        samson_connector->add_service();               
+        stream_connector->init_remove_connections_service();               
         // Add REST service to accept REST-full connections
-        samson_connector->initRESTInterface();         
+        stream_connector->init_reset_service();
         // Add service to accept inter-channel connections
-        samson_connector->initInterChannelInteface();
+        stream_connector->init_inter_channel_connections_service();
         
         while( true )
             sleep(1000);
@@ -274,13 +273,13 @@ int main( int argC , const char *argV[] )
     else if( interactive )
     {
         // Add service to accept monitor connections from samsonConnectorClient
-        samson_connector->add_service();               
+        stream_connector->init_remove_connections_service();               
         // Add REST service to accept REST-full connections
-        samson_connector->initRESTInterface();         
+        stream_connector->init_reset_service();
         // Add service to accept inter-channel connections
-        samson_connector->initInterChannelInteface();
+        stream_connector->init_inter_channel_connections_service();
         
-        samson_connector->runConsole();
+        stream_connector->runConsole();
     }
     else
     {
@@ -289,17 +288,35 @@ int main( int argC , const char *argV[] )
         {
             // Close finish items and connections
             au::ErrorManager error;
-            samson_connector->remove_finished_items_and_connections( &error );
+            stream_connector->remove_finished_items_and_connections( &error );
             //std::cerr << error.str();
             
-            size_t num_input_items = samson_connector->getNumInputItems();
-            size_t pending_size =  samson_connector->getOutputConnectionsSize();
+            size_t num_input_items = stream_connector->getNumInputItems();
+            size_t pending_size =  stream_connector->getOutputConnectionsBufferedSize();
             
             if( cronometer_notification.diffTime() > 1 )
             {
                 cronometer_notification.reset();
+                
                 LM_V(("Review samsonConnnector : %lu input-items & %s pending to be sent" ,
                       num_input_items, au::str( pending_size , "B" ).c_str()  ));
+                
+                
+                if( paVerbose )
+                {
+                    au::tables::Table* table = stream_connector->getConnectionsTable();
+                    std::cerr << table->str();
+                    delete table;
+                }
+                
+                if( paVerbose )
+                {
+                    au::tables::Table* table = stream_connector->getConnectionsTable("data");
+                    std::cerr << table->str();
+                    delete table;
+                }
+                
+                
             }
             
             // Verify if can exit....

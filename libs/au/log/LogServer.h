@@ -34,8 +34,8 @@ namespace au {
         
         // au::network::ConsoleService
         void runCommand( std::string command , au::Environment* environment ,au::ErrorManager* error );
-        void autoComplete( ConsoleAutoComplete* info );
-        std::string getPrompt();
+        void autoComplete( ConsoleAutoComplete* info , au::Environment* environment );
+        std::string getPrompt( au::Environment* environment );
         
         
     };

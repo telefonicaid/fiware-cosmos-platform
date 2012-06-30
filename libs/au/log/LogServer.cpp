@@ -181,7 +181,7 @@ namespace au
         
     }
     
-    void LogServer::autoComplete( ConsoleAutoComplete* info )
+    void LogServer::autoComplete( ConsoleAutoComplete* info , au::Environment* environment )
     {
         if( info->completingFirstWord() )
         {
@@ -220,7 +220,7 @@ namespace au
         
     }
     
-    std::string LogServer::getPrompt()
+    std::string LogServer::getPrompt( au::Environment* environment )
     {
         return au::str("LogServer [%lu logs] >> " , channel->log_container.getSize() );
     }

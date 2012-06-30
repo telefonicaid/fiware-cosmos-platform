@@ -4,14 +4,15 @@
 
 #include "au/network/NetworkListener.h"
 #include "common.h"
-#include "Item.h"
+#include "LogManager.h"
+#include "Adaptor.h"
 
 namespace samson 
 {
     namespace connector
     {
         
-        class ListenerItem : public Item, public au::NetworkListener , public au::NetworkListenerInterface
+        class ListenerAdaptor : public Item, public au::NetworkListener , public au::NetworkListenerInterface
         {
 
             // Port to open to accept connections
@@ -23,7 +24,7 @@ namespace samson
             
         public:
             
-            ListenerItem( Channel * channel , ConnectionType type , int _port ) : 
+            ListenerAdaptor( Channel * channel , ConnectionType type , int _port ) : 
             Item( channel , type , au::str("LISTEN(%d)" , _port ) ) ,
             au::NetworkListener( this )
             {

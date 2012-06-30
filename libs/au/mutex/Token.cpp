@@ -20,14 +20,16 @@ Token::Token( const char * _name )
     name = _name;
     
     int r_init = pthread_mutex_init(&_lock, 0);
-    int t_init_cond = pthread_cond_init(&_block, NULL);
     
     if( r_init != 0 )
         LM_X(1, ("pthread_mutex_init for '%s' returned %d" , name , r_init ));
     
-    if( t_init_cond != 0 )
-        LM_X(1, ("pthread_cond_init for '%s' returned %d" , name , t_init_cond ));
+    int t_init_cond = pthread_cond_init(&_block, NULL);
     
+    if( t_init_cond != 0 )
+        LM_X(1, ("pthread_cond_init for '%s' returned %d" , name , r_init ));
+
+    locked = false;
 }
 
 Token::~Token()
@@ -39,6 +41,12 @@ Token::~Token()
 
 void Token::retain(  )
 {
+    if( locked &&  ( pthread_self() == t ) )
+    {
+        counter++;
+        return;
+    }
+    
 #ifdef DEBUG_AU_TOKEN
     LockDebugger::shared()->add_lock( this );
 #endif		
@@ -58,10 +66,35 @@ void Token::retain(  )
         }
     }
     
+    
+    if( locked )
+        LM_X(1,("Internal error: Retaining a locked au::Token"));
+    
+    t = pthread_self();
+    counter = 1;
+    locked = true;
+    
+    
 }
 
 void Token::release( )
 {
+    
+    if( !locked )
+        LM_E(("Internal error: Releasing a non-locked au::Token"));
+    
+    if( pthread_self() != t )
+        LM_E(("Internal error: Releasing an au::Token not locked by me"));
+    
+    if( locked &&  ( pthread_self() == t ) )
+    {
+        counter--;
+        if( counter > 0 )
+            return;
+    }
+    
+    // Flag this as unlocked
+    locked = false;
     
 #ifdef DEBUG_AU_TOKEN
     LockDebugger::shared()->remove_lock( this );

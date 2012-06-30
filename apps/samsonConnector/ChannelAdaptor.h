@@ -4,8 +4,11 @@
 
 #include "au/network/PacketReaderWriter.h"
 #include "au/network/SocketConnection.h"
+
+#include "engine/ProcessItem.h"
+
 #include "common.h"
-#include "Item.h"
+#include "Adaptor.h"
 #include "message.pb.h"
 #include "Connection.h"
 #include "common.h"
@@ -299,11 +302,11 @@ namespace samson
                 packet_reader_writer->push(packet);
             }
 
-            void push( au::ClassObjectListContainer<InterChannelPacket>* packets )
+            void push( au::ObjectList<InterChannelPacket>* packets )
             {
                 while( true )
                 {
-                    au::ClassObjectContainer<InterChannelPacket> packet_container;
+                    au::ObjectContainer<InterChannelPacket> packet_container;
                     packets->extract_front( packet_container );
                     
                     InterChannelPacket* packet = packet_container.getObject();
@@ -348,7 +351,7 @@ namespace samson
                 return packet_reader_writer->getOutputBufferedSize();
             }
             
-            void extract_pending_packets( au::ClassObjectListContainer<InterChannelPacket>* packets )
+            void extract_pending_packets( au::ObjectList<InterChannelPacket>* packets )
             {
                 packet_reader_writer->extract_pending_packets(packets);
                 
@@ -364,13 +367,14 @@ namespace samson
         : public Connection 
         , public au::network::PacketReaderInteface<InterChannelPacket>
         {
+            // Real element to exchange data using "InterChannelPacket"
             InterChannelLink * link_;
           
             // Keep a poiter to the socket connection
             au::SocketConnection * socket_connection_;
             
             // Global pointer ( necessary to select channel )
-            SamsonConnector * samson_connector_;
+            StreamConnector * stream_connector_;
 
             // Keep information about host
             std::string host_name_;
@@ -381,7 +385,7 @@ namespace samson
             
         public:
             
-            InputInterChannelConnection( SamsonConnector * samson_connector,
+            InputInterChannelConnection( StreamConnector * stream_connector,
                                         std::string host_name 
                                         , au::SocketConnection * socket_connection )
             : Connection( NULL , connection_output , getName( host_name , "???") ) // No item until we identify target channel
@@ -390,7 +394,7 @@ namespace samson
                     LM_X(1, ("Internal error"));
                 
                 // Keep a pointer to SamsonConnector
-                samson_connector_ = samson_connector;
+                stream_connector_ = stream_connector;
                 
                 // Keep a pointer to the socket connection
                 socket_connection_ = socket_connection;
@@ -452,6 +456,11 @@ namespace samson
             
         };
         
+        
+
+
+        
+        
         class OutputInterChannelConnection
         : public Connection 
         , public au::network::PacketReaderInteface<InterChannelPacket>
@@ -473,9 +482,9 @@ namespace samson
             
             // finish handshare
             bool hand_shake_finished;
-
+            
             // List of pending packets from previous connection
-            au::ClassObjectListContainer<InterChannelPacket> pending_packets;
+            au::ObjectList<InterChannelPacket> pending_packets;
             
         public:
             
@@ -498,6 +507,7 @@ namespace samson
 
                 // Flag to indicate that we can start sending data
                 hand_shake_finished = false;
+
             }
             
             void init_hand_shake( std::string target_channel )
@@ -513,6 +523,7 @@ namespace samson
             
             virtual void process_packet( InterChannelPacket* packet )
             {
+                
                 Message* message = packet->getMessage();
                                 
                 // Hand shake confirmation
@@ -570,9 +581,13 @@ namespace samson
             
             virtual void review_connection()
             {
+                if( !link_ )
+                    set_as_connected( false );
+
                 // If link_ is not valid any more, just remove it...
                 if( link_ && !link_->isConnected() )
                 {
+                    // Close connection
                     link_->close_and_stop();
                     
                     // Reset the handshake flag
@@ -594,28 +609,24 @@ namespace samson
                     return;
                 }
                 
-                if( ! link_->isConnected() )
-                {
-                    // Lost connection with link....
-                    // Recover messages and remove the link
-                    
-                }
-                
-                
                 set_as_connected( link_->isConnected() );
                 
                 // Only start sending data if hand-shake is finished
                 if( hand_shake_finished )
                 {
+                    
+                    // Encapsulate generated buffers in packets
                     while( true )
                     {
-                        // Check included size in link_ is not too large
+                        // Check generated packed included size in link_ is not too large ( always in memory )
                         if( link_->getBufferedSize() > 256*1024*1024 )
                             break;
-                        
+
+                        // Recover next generated buffer
                         engine::BufferContainer buffer_container;
                         getNextBufferToSent(&buffer_container);
                         engine::Buffer * buffer = buffer_container.getBuffer();
+                        
                         if( buffer )
                         {
                             // Put buffer in a packet and send
@@ -624,7 +635,7 @@ namespace samson
                             link_->push(packet);
                         }
                         else
-                            break;
+                            break; // No more generated packetd
                     }
                 }
             };
@@ -670,7 +681,7 @@ namespace samson
         };
         
         
-        class OutputInterChannelItem : public Item
+        class OutputChannelAdaptor : public Item
         {
             
             // Information about connection
@@ -680,7 +691,7 @@ namespace samson
             
         public:
             
-            OutputInterChannelItem( Channel * channel 
+            OutputChannelAdaptor( Channel * channel 
                                    , const std::string& host
                                    , const std::string& channel_name ) 
             : Item( channel 
@@ -691,8 +702,6 @@ namespace samson
                 // Information for connection
                 host_ = host;
                 channel_name_ = channel_name;
-                
-
             }
             
             virtual void start_item()
@@ -714,7 +723,7 @@ namespace samson
             
         };
         
-        class InputInterChannelItem : public Item
+        class InputChannelAdaptor : public Item
         {
             
             // Information about retrials
@@ -723,7 +732,7 @@ namespace samson
             
         public:
             
-            InputInterChannelItem( Channel * channel ) 
+            InputChannelAdaptor( Channel * channel ) 
             : Item( channel 
                    , connection_input 
                    , au::str("CHANNELS(*)" ) )

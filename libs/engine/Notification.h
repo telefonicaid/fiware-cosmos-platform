@@ -45,7 +45,8 @@ class Notification
     
     const char* name;                       // Name of the notification
     
-    au::ObjectContainer object_container;   // Single object to be used as parameter ( note retain / release model associated to au::Object )
+    // Single object to be used as parameter ( note retain / release model associated to au::Object )
+    au::ObjectContainer<au::Object> object_container;   
     
     std::set<size_t> targets;               // Identifiers that should receive this notification
     

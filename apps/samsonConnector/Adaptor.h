@@ -8,6 +8,7 @@
 #include "samson/client/SamsonClient.h"
 
 #include "common.h"
+#include "LogManager.h"
 #include "TrafficStatistics.h"
 #include "BufferProcessor.h"
 
@@ -44,7 +45,7 @@ namespace samson
             
             friend class Connection;
             friend class Channel;
-            friend class SamsonConnector;
+            friend class StreamConnector;
                         
             bool canceled; // Flag to indicate this is canceled ( not call review again )
             bool finished; // Flag to indicate this component is finished
@@ -54,6 +55,12 @@ namespace samson
             Item ( Channel * _channel , ConnectionType _type , std::string description );
             virtual ~Item();            
 
+            // Virtual methods to be implemented in sub-classes
+            virtual void start_item(){};
+            virtual void review_item(){}                                 // Review connections ( overload in specific items )
+            virtual std::string getStatus() { return ""; }               // Get information about status
+            virtual void stop_item(){};                                  // Stop all threads to be deleted
+            
             // Add a connection
             void add( Connection* Connection );
 
@@ -63,6 +70,10 @@ namespace samson
             // Reviewing item and all associated connections
             void review();
 
+            // Item management
+            void init_item();
+            void cancel_item();
+            
             // Getting information
             int getNumConnections();
             ConnectionType getType();
@@ -70,45 +81,27 @@ namespace samson
             std::string getFullName();
             std::string getDescription();
             const char* getTypeStr();
-            
-            // Review connections ( overload in specific items )
-            virtual void review_item(){}
-            
-            // Get information about status
-            virtual std::string getStatus() { return ""; }
-            
-            // Stop all threads to be deleted
-            virtual void stop_item(){};
-
-            void init_item()
-            {
-                start_item();
-            };
-            
-            virtual void start_item(){};
-            
-            // Cancel this item and all associated connections
-            void cancel_item();
+            size_t getConnectionsBufferedSize();
           
-            // Check if we accept a particular connection
+            // Check if we accept a particular inter channel connection
             virtual bool accept( InputInterChannelConnection* connection )
             {
                 // By default, we do not accept interchannel connections
-                return false;
+                // Only specific items accept this type of connection
+                return false;                
             }
 
-            // Mark this element as finished ( can be removed by remove_finished_* commands )
-            void set_as_finished();
-            bool is_finished();
-
-            void remove_finished_connections(au::ErrorManager* error);
+            // Finish managemnt
+            void set_as_finished();                                        // Mark this element as finished ( can be removed by remove_finished_* commands )
+            bool is_finished();                                            // Check if the connection is finished
+            void remove_finished_connections(au::ErrorManager* error);     // Remove connections that are already finished
           
-            void write( au::ErrorManager * error );
-            
-
             // Log system
             void log( std::string type , std::string message );
             void log( Log* log );
+            
+            void report_output_size( size_t size );
+            void report_input_size( size_t size );
             
         };
 

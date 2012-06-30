@@ -1,40 +1,44 @@
 
 SET (HEADERS
+	common.h
+	message.pb.h
+	LogManager.h
 	BufferList.h
 	BufferProcessor.h
 	Channel.h
 	Connection.h
 	ConnectorCommand.h
-	DiskItem.h
 	FileDescriptorConnection.h
-	Item.h
-	ListenerItem.h
-	InterChannelItem.h
-	SamsonConnector.h
-	SamsonItem.h
+	Adaptor.h
+	DiskAdaptor.h
+	ListenerAdaptor.h
+	SamsonAdaptor.h
+	ChannelAdaptor.h
+	StreamConnector.h
+	StreamConnectorService.h
 	ServerConnection.h
 	TrafficStatistics.h
-	common.h
-	message.pb.h
 )
 
 SET (SOURCES
+	common.cpp
+	message.pb.cc
+	LogManager.cpp
 	BufferList.cpp
 	BufferProcessor.cpp
 	Channel.cpp
 	Connection.cpp
 	ConnectorCommand.cpp
-	DiskItem.cpp
 	FileDescriptorConnection.cpp
-	Item.cpp
-	ListenerItem.cpp
-	InterChannelItem.cpp
-	SamsonConnector.cpp
-	SamsonItem.cpp
+	Adaptor.cpp
+	DiskAdaptor.cpp
+	ListenerAdaptor.cpp
+	SamsonAdaptor.cpp
+	ChannelAdaptor.cpp
+	StreamConnector.cpp
+	StreamConnectorService.cpp
 	ServerConnection.cpp
 	TrafficStatistics.cpp
-	common.cpp
-	message.pb.cc
 )
 
 SET( STATIC_LIBS
@@ -73,20 +77,20 @@ include_directories("${PROJECT_SOURCE_DIR}/libs")
 # Executable declaration
 # ------------------------------------------------------------
 
-ADD_EXECUTABLE(samsonConnector main_samsonConnector.cpp ${SOURCES} ${HEADERS} )
-TARGET_LINK_LIBRARIES(samsonConnector ${STATIC_LIBS})
+ADD_EXECUTABLE(streamConnector main_streamConnector.cpp ${SOURCES} ${HEADERS} )
+TARGET_LINK_LIBRARIES(streamConnector ${STATIC_LIBS})
 
-INSTALL(TARGETS               samsonConnector
+INSTALL(TARGETS               streamConnector
         RUNTIME DESTINATION   bin)
 
 
 # Executable declaration
 # ------------------------------------------------------------
 
-ADD_EXECUTABLE(samsonConnectorClient main_samsonConnectorClient.cpp  )
-TARGET_LINK_LIBRARIES(samsonConnectorClient ${STATIC_LIBS})
+ADD_EXECUTABLE(streamConnectorClient main_streamConnectorClient.cpp )
+TARGET_LINK_LIBRARIES(streamConnectorClient ${STATIC_LIBS})
 
-INSTALL(TARGETS               samsonConnectorClient
+INSTALL(TARGETS               streamConnectorClient
         RUNTIME DESTINATION   bin)
 
 

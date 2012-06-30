@@ -20,7 +20,7 @@
 
 #include "au/network/ConsoleService.h"
 
-#include "SamsonConnector.h"
+#include "StreamConnector.h"
 
 char command[1024];
 char host[1024];

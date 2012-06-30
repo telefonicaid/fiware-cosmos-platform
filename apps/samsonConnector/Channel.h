@@ -3,6 +3,7 @@
 
 #include "engine/Buffer.h"
 #include "common.h"
+#include "LogManager.h"
 #include "TrafficStatistics.h"
 #include "ConnectorCommand.h"
 
@@ -10,7 +11,7 @@ namespace samson {
     namespace connector {
         
         class Item;
-        class SamsonConnector;
+        class StreamConnector;
         
         class Channel 
         {
@@ -27,20 +28,30 @@ namespace samson {
             // All items ( adapters ) included in this channel
             au::map<std::string, Item> items;
             
-            // Input & Output statistics
-            TrafficStatistics traffic_statistics;
 
             // Pointer to the global connector
-            SamsonConnector * connector_;
+            StreamConnector * connector_;
             
             friend class Connection;
-            friend class SamsonConnector;
+            friend class StreamConnector;
+
+        public:
+            
+            // Input & Output statistics
+            TrafficStatistics traffic_statistics;
             
         public:
             
             // Constructor
-            Channel( SamsonConnector * connector , std::string name , std::string splitter );
+            Channel( StreamConnector * connector , std::string name , std::string splitter );
             ~Channel();
+            
+            // item management
+            void add_input ( std::string name , std::string input_string , au::ErrorManager* error );
+            void add_output ( std::string name , std::string input_string , au::ErrorManager* error );
+            void add( std::string name , Item * item );
+            void remove_item( std::string name , au::ErrorManager * error );
+
             
             // General review to check if there are connections to be closed
             void review();
@@ -48,34 +59,36 @@ namespace samson {
             // Common method to push data to all output connections ( from all items at input )
             void push( engine::Buffer * buffer );
             
+            // Channel management
+            void cancel_channel();
+            void remove_finished_items_and_connections( au::ErrorManager * error );
+            
+            
             // Information
             int getNumItems();
             int getNumInputItems();
             int getNumOutputItems();
             int getNumConnections();
+            
             std::string getName();
             std::string getSplitter();
             std::string getInputsString();
             std::string getOutputsString();
             
-            // Remove finished items and connections
-            void remove_finished_items_and_connections( au::ErrorManager * error );
+            size_t getOutputConnectionsBufferedSize();
             
-            void cancel_channel();
-            
-            void write( au::ErrorManager * error );
             
             // Log system
             void log( std::string type , std::string message );
             void log( Log* log );
+            
+            // Data report system
+            void report_output_size( size_t size );
+            void report_input_size( size_t size );
 
-        private:
+            // Auto complete
+            void autoCompleteWithAdaptorsNames( au::ConsoleAutoComplete* info );
             
-            
-            // Command to add or remove items
-            void add_input ( std::string name , std::string input_string , au::ErrorManager* error );
-            void add_output ( std::string name , std::string input_string , au::ErrorManager* error );
-            void add( std::string name , Item * item );
             
             
         };

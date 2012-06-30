@@ -112,7 +112,7 @@ public:
     au::Environment environment;
     
     // Constructor with priority
-    ProcessItem( int _priority );
+    ProcessItem( int _priority = 5 );
     virtual ~ProcessItem();
     
     // Status management

@@ -2,7 +2,7 @@
 
 #include "Connection.h"
 #include "Channel.h"
-#include "Item.h"        // Own interface
+#include "Adaptor.h"        // Own interface
 
 namespace samson 
 {
@@ -115,6 +115,10 @@ namespace samson
             
         }
         
+        void Item::init_item()
+        {
+            start_item();
+        };
         void Item::cancel_item()
         {
             canceled = true; // This will block future calls to review
@@ -156,6 +160,23 @@ namespace samson
             return finished;
         }
 
+        size_t Item::getConnectionsBufferedSize()
+        {
+            au::TokenTaker tt(&token);
+            size_t total = 0;
+            
+            au::map<int, Connection>::iterator it_connections;
+            for( it_connections = connections.begin() 
+                ; it_connections != connections.end() 
+                ; it_connections++ )
+            {
+                Connection* connection = it_connections->second;
+                total += connection->getBufferedSize();
+            }
+            
+            return total;
+        }
+        
         void Item::remove_finished_connections(au::ErrorManager* error)
         {
             // Mutex protectio
@@ -179,11 +200,6 @@ namespace samson
             }
             
         }
-        
-        void Item::write( au::ErrorManager * error )
-        {
-            channel->write( error );
-        }
 
         // Log system
         void Item::log( std::string type , std::string message )
@@ -196,6 +212,17 @@ namespace samson
             log_manager->log( log );
         }
 
+        void Item::report_output_size( size_t size )
+        {
+            traffic_statistics.push_output(size);
+            channel->report_output_size(size);
+        }
+        
+        void Item::report_input_size( size_t size )
+        {
+            traffic_statistics.push_input(size);
+            channel->report_input_size( size );
+        }
         
     }
 }

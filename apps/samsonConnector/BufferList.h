@@ -16,9 +16,13 @@ namespace samson
     namespace connector
     {
         
-        // BufferList
-        // ------------------------------------------
-        
+        // ------------------------------------------------------------------------------------
+        //
+        // Class BufferList
+        //
+        // List of buffers with a persistance mechanism based on DiskManager / Engine
+        //
+        // ------------------------------------------------------------------------------------
         
         class BufferListItem : public engine::Object
         {
@@ -218,6 +222,13 @@ namespace samson
             
         public:
             
+            BufferList( ) : token("BufferList")
+            {
+                // No limit in size
+                max_size_on_memory_ = 0;
+                file_id_ = 1;
+            }
+            
             BufferList( std::string persistence_directory , size_t max_size_on_memory ) : token("BufferList")
             {
                 persistence_directory_ = persistence_directory;
@@ -228,6 +239,9 @@ namespace samson
             
             void review_persistence()
             {
+                if( max_size_on_memory_ == 0 )
+                    return; // Nothing to do here
+                
                 // Schedule read or write tasks
                 au::list<BufferListItem>::iterator it;
                 size_t total = 0;
@@ -277,6 +291,20 @@ namespace samson
                 
             }
             
+            void extract_buffer_from( BufferList* buffer_list )
+            {
+                while( true )
+                {
+                    engine::BufferContainer buffer_container;
+                    buffer_list->pop( &buffer_container );
+                    engine::Buffer * buffer = buffer_container.getBuffer();
+                    if( buffer )
+                        push( buffer );
+                    else
+                        break;
+                }
+            }
+            
             size_t getSize()
             {
                 au::TokenTaker tt(&token);
@@ -301,6 +329,11 @@ namespace samson
                     total += item->getSizeOnMemory();
                 }
                 return total;
+            }
+            
+            size_t getNumBuffers()
+            {
+                return items.size();
             }
 
             

@@ -3,17 +3,20 @@
 
 #include "au/Cronometer.h"
 #include "engine/Buffer.h"
-#include "engine/BufferContainer.h"
-#include "samson/module/Operation.h"
 
+#include "engine/BufferContainer.h"
+#include "engine/ProcessItem.h"
+
+#include "samson/module/Operation.h"
+#include "BufferList.h"
 
 namespace samson 
 {
     namespace connector
     {
-        class SamsonConnector;
+        class StreamConnector;
         class Channel;
-        
+
         /*
          
          Class BufferProcessor

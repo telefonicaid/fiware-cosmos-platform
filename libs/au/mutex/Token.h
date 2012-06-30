@@ -35,6 +35,11 @@ class Token
     pthread_mutex_t _lock;			// Mutex to protect this tocken
     pthread_cond_t _block;          // Condition to block threads that call stop
     
+    // Mechanism to discover if you have locked this mutex
+    pthread_t t;
+    bool locked;
+    int counter; // Number of times this token is taken
+    
 public:
     
     Token( const char * name );

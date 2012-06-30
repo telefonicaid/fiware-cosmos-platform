@@ -1,8 +1,8 @@
 
-#include "SamsonConnector.h"
+#include "StreamConnector.h"
 #include "FileDescriptorConnection.h"
 
-#include "InterChannelItem.h" // Own interfave
+#include "ChannelAdaptor.h" // Own interfave
 
 namespace samson {
     namespace connector {
@@ -39,7 +39,7 @@ namespace samson {
                 // Switch to this channel
                 target_channel_ = target_channel;
                 au::ErrorManager error;
-                samson_connector_->select_channel( this , target_channel_ , &error );
+                stream_connector_->select_channel( this , target_channel_ , &error );
                 
                 if( error.isActivated() )
                     return close_connection( error.getMessage() );

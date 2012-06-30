@@ -1,8 +1,8 @@
 
 
 
-#include "Item.h"
-#include "SamsonConnector.h"
+#include "Adaptor.h"
+#include "StreamConnector.h"
 #include "BufferProcessor.h"
 #include "Connection.h" // Own interface
 
@@ -24,6 +24,9 @@ namespace samson {
             canceled = false;
             finished = false;
             initialized = false;
+
+            output_buffer_list = NULL;
+            input_buffer_list = NULL;
             
             id = (size_t ) -1;
         }
@@ -38,22 +41,18 @@ namespace samson {
             if ( output_buffer_list )
                 delete input_buffer_list;
         }
-        
+
         void Connection::report_output_size( size_t size )
         {
             traffic_statistics.push_output(size);
-            item->traffic_statistics.push_output( size );
-            item->channel->traffic_statistics.push_output( size );
-            item->channel->connector_->traffic_statistics.push_output( size );
+            item->report_output_size(size);
         }
+        
         void Connection::report_input_size( size_t size )
         {
             traffic_statistics.push_input(size);
-            item->traffic_statistics.push_input( size );
-            item->channel->traffic_statistics.push_input( size );
-            item->channel->connector_->traffic_statistics.push_input( size );
+            item->report_input_size( size );
         }
-
         
         void Connection::getNextBufferToSent( engine::BufferContainer * container )
         {
@@ -194,11 +193,6 @@ namespace samson {
         bool Connection::is_finished()
         {
             return finished;
-        }
-        
-        void Connection::write( au::ErrorManager * error )
-        {
-            item->write( error );
         }
 
         // Log system

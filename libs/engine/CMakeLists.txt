@@ -17,6 +17,8 @@ ReadFile.h
 ReadFileManager.h
 DiskManager.h
 DiskOperation.h
+ConnectionsManager.h
+Connection.h
 )
 
 SET (SOURCES
@@ -37,6 +39,8 @@ ReadFile.cpp
 ReadFileManager.cpp
 DiskManager.cpp
 DiskOperation.cpp
+ConnectionsManager.cpp
+Connection.cpp
 )
 
 # Inclue directories

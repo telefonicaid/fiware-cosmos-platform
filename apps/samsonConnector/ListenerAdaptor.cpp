@@ -1,18 +1,18 @@
 
-#include "SamsonConnector.h"
+#include "StreamConnector.h"
 #include "FileDescriptorConnection.h"
-#include "ListenerItem.h" // Own interfave
+#include "ListenerAdaptor.h" // Own interfave
 
 namespace samson {
     namespace connector {
         
-        void ListenerItem::newSocketConnection( au::NetworkListener* listener 
+        void ListenerAdaptor::newSocketConnection( au::NetworkListener* listener 
                                                , au::SocketConnection * socket_connetion )
         {
 
             std::string name  = au::str("Socket %s" , socket_connetion->getHostAndPort().c_str() );
             
-            FileDescriptorConnection* new_connection = new FileDescriptorConnection( this 
+            FileDescriptorConnection* new_connection = new SimpleFileDescriptorConnection( this 
                                                                               , getType() 
                                                                               , name 
                                                                               , socket_connetion );

@@ -8,7 +8,7 @@
 #include "au/mutex/TokenTaker.h"
 
 #include "common.h" 
-#include "Item.h" 
+#include "Adaptor.h" 
 #include "Connection.h" 
 #include "BufferProcessor.h"
 
@@ -32,6 +32,10 @@ namespace samson
             au::FileDescriptor * file_descriptor;
             
             au::ErrorManager error;              // Error
+            
+            
+            // Varialbe length input size
+            size_t input_buffer_size;
             
         public:
             
@@ -64,14 +68,14 @@ namespace samson
         };
         
         
-        class DiskItem : public Item
+        class DiskAdaptor : public Item
         {
             // Information to stablish the connection with the SAMSON system
             std::string directory;
             
         public:
             
-            DiskItem( Channel * _channel , ConnectionType _type ,  std::string _directory ) : 
+            DiskAdaptor( Channel * _channel , ConnectionType _type ,  std::string _directory ) : 
             Item( _channel , _type , au::str("FILE(%s)" , _directory.c_str() ) ) 
             {
                 // Information for connection

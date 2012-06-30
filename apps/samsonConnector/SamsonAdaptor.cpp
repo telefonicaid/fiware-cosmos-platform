@@ -4,14 +4,14 @@
 
 #include "Channel.h"
 
-#include "SamsonConnector.h"
-#include "SamsonItem.h" // Own interface
+#include "StreamConnector.h"
+#include "SamsonAdaptor.h" // Own interface
 
 
 namespace samson {
     namespace connector {
         
-        SamsonItem::SamsonItem( 
+        SamsonAdaptor::SamsonAdaptor( 
                                Channel * _channel 
                                , ConnectionType _type 
                                , 

@@ -33,38 +33,20 @@ namespace au {
         virtual void self_destroy();
         
     };
-    
-    // Simple object retainer
-    
-    class ObjectContainer
-    {
-        Object* object_;
-
-    public:
-        
-        ObjectContainer();
-        ~ObjectContainer();
-        
-        Object* getObject();
-        
-        void setObject( Object * object );
-        void release();
-
-    };
 
     template <class C>
-    class ClassObjectContainer
+    class ObjectContainer
     {
         C* object_;
         
     public:
         
-        ClassObjectContainer()
+        ObjectContainer()
         {
             object_ = NULL;
         }
         
-        ~ClassObjectContainer()
+        ~ObjectContainer()
         {
             if( object_ )
                 object_->release();
@@ -107,11 +89,12 @@ namespace au {
     };
 
     template <class C>
-    class ClassObjectListContainer
+    class ObjectList
     {
-        au::list<C> list; // List of elements
-        
+
     public:
+
+        au::list<C> list; // List of elements
         
         void push_back( C* c )
         {
@@ -129,8 +112,6 @@ namespace au {
         {
             return list.front();
         }
-        
-        
         
         void clear()
         {
@@ -150,7 +131,7 @@ namespace au {
             
         }
         
-        void extract_front( ClassObjectContainer<C>& container )
+        void extract_front( ObjectContainer<C>& container )
         {
             C* c = list.extractFront();
             
@@ -161,7 +142,7 @@ namespace au {
             c->release();
         }
 
-        void extract_back( ClassObjectContainer<C>& container )
+        void extract_back( ObjectContainer<C>& container )
         {
             C* c = list.extractBack();
             

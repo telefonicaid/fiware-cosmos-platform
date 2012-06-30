@@ -51,16 +51,32 @@ std::string str_timestamp( time_t t )
 
 std::string str_time_simple( size_t seconds )
 {
-    if( seconds < 2*60 )
-        return au::str( seconds , "s" );
-    else if( seconds < 2*60*60 )
-        return au::str( (double)seconds/ 60.0 , "m" );
-    else if( seconds < 2*24*60*60 )
-        return au::str( (double)seconds/ ( 60.0*60.0) , "h" );
-    else if( seconds < 2*365*24*60*60 )
-        return au::str( (double)seconds/ ( 24.0*60.0*60.0) , "d" );
-    else
-        return au::str( (double)seconds/ ( 365.0*24.0*60.0*60.0) , "y" );
+    int years = seconds/(365*24*3600);
+    seconds -= (365*24*3600)*years;
+    
+    int days = seconds/(24*3600);
+    seconds -= (24*3600)*days;
+    
+    int hours = seconds/3600;
+    seconds -= 3600*hours;
+    
+    int minutes = seconds/60;
+    seconds -= 60*minutes;
+    
+
+    if( years > 0 )
+        return au::str("%6dy", years);
+    if( days > 100 )
+        return au::str("%6dd", days);
+    if( days > 0 )
+        return au::str("%2dd%2dh", days , hours);
+    if( hours > 0 )
+        return au::str("%2dh%2dm", hours , minutes);
+    if( minutes > 0 )
+        return au::str("%2dm%2ds", minutes , seconds);
+
+    return au::str("%6ds", seconds);
+
 }
 
 std::string str_time( size_t seconds )

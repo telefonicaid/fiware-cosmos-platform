@@ -22,7 +22,7 @@ namespace samson
     {
         
         NetworkInterfaceReceiver* receiver;
-        au::ClassObjectContainer<Packet> packet_container; // Container keeping packet retained
+        au::ObjectContainer<Packet> packet_container; // Container keeping packet retained
         
     public:
         

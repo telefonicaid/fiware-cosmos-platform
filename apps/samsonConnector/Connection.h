@@ -7,6 +7,7 @@
 #include "samson/client/SamsonClient.h"
 #include "BufferList.h"
 #include "common.h"
+#include "LogManager.h"
 #include "TrafficStatistics.h"
 
 namespace samson 
@@ -116,7 +117,7 @@ namespace samson
         class Connection : public ConnectionBase
         {
             
-            friend class SamsonConnector;
+            friend class StreamConnector;
             friend class Item;
             
             au::Token token;                       // Mutex protection for this connection
@@ -130,9 +131,6 @@ namespace samson
             BufferList *input_buffer_list;          // List of buffers at the input
             BufferList *output_buffer_list;         // List of buffers at the output to be sent ( in output connections )
 
-            TrafficStatistics traffic_statistics;  // Information about input & output
-
-
             bool initialized;  // Falg to indicate init_connection has been called
             bool canceled;     // Flag to indicate this is canceled ( not call review again )
             bool finished;     // Falg to indicate this is finished ( no more data )
@@ -142,7 +140,11 @@ namespace samson
 
             // Information about this connection
             au::Cronometer cronometer;             // Global cronometer
-            
+
+        public:
+
+            TrafficStatistics traffic_statistics;  // Information about input & output
+
         protected:
             
             // Method to recover buffers to be pushed to the output ( output connections )
@@ -235,10 +237,6 @@ namespace samson
             void set_as_finished();
             bool is_finished();
 
-            
-            void write( au::ErrorManager * error );
-
-            
             // Log system
             void log( std::string type , std::string message );
             void log( Log* log );

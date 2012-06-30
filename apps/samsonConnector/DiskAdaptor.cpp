@@ -1,13 +1,8 @@
 #include <fcntl.h>
 #include <dirent.h>
-
 #include "au/ThreadManager.h"
-
-#include "SamsonConnector.h"
-
-#include "DiskItem.h" // Own interface
-
-extern size_t input_buffer_size; // Size of the chunks to read
+#include "StreamConnector.h"
+#include "DiskAdaptor.h" // Own interface
 
 namespace samson {
     namespace connector
@@ -43,6 +38,9 @@ namespace samson {
         {
             // Keep  copy of the file name
             file_name = _file_name;
+            
+            // Default input buffer size
+            input_buffer_size = 1024;
             
             // Open files if input
             if( getType() == connection_input )
@@ -232,15 +230,27 @@ namespace samson {
                 if( file_descriptor )
                 {
                     // Still reading from a file...
-                    engine::Buffer * buffer = engine::MemoryManager::shared()->createBuffer("stdin", "connector", input_buffer_size );
+                    engine::Buffer * buffer = engine::MemoryManager::shared()->createBuffer("stdin"
+                                                                                            , "connector"
+                                                                                            , input_buffer_size );
                     
                     // Read the entire buffer
                     size_t read_size = 0;
-                    au::Status s = file_descriptor->partRead(buffer->getData()
-                                                             , input_buffer_size
-                                                             , "read connector connections"
-                                                             , 300 
-                                                             , &read_size );
+                    au::Status s;
+                    {
+                        au::Cronometer c;
+                        s = file_descriptor->partRead(buffer->getData()
+                                                      , input_buffer_size
+                                                      , "read connector connections"
+                                                      , 300 
+                                                      , &read_size );
+                        
+                        if( c.diffTime() < 0.1 )
+                            input_buffer_size *= 2;
+                        else if( c.diffTime() > 3 )
+                            input_buffer_size /= 2;
+
+                    }
                     // If we have read something...
                     if( read_size > 0 )
                     {
@@ -299,19 +309,30 @@ namespace samson {
         std::string DiskConnection::getStatus()
         {
             au::TokenTaker tt(&token);
+            std::ostringstream output;
             
-            if( error.isActivated() )
-                return au::str("Error: %s" , error.getMessage().c_str() );
             
             if ( thread_running )
-                return "OK";
+                output << "Running";
+            else
+                output << "Stoped";
             
-            return "Stopped";
+            if( error.isActivated() )
+                output << au::str(" [Error:%s]" , error.getMessage().c_str() );
+
+            
+            if( getType() == connection_input) 
+                output << au::str( " [Buffer:%s]" , au::str(input_buffer_size).c_str() );
+
+            return output.str();
         }
 
         void DiskConnection::review_connection()
         {
-            // nothing to do here
+            if( file_descriptor )
+                set_as_connected( !file_descriptor->isDisconnected() );
+            else
+                set_as_connected(true);
         }
         
     }

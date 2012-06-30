@@ -5,8 +5,9 @@
 #include "parseArgs/paConfig.h"
 
 #include "Channel.h"
-#include "InterChannelItem.h"
-#include "SamsonConnector.h" // Own interface
+#include "ChannelAdaptor.h"
+#include "StreamConnectorService.h"
+#include "StreamConnector.h" // Own interface
 
 extern char input_splitter_name[1024];
 extern bool interactive;
@@ -17,7 +18,7 @@ namespace samson {
 
         void* review_samson_connector(void* p)
         {
-            SamsonConnector* samson_connector = (SamsonConnector*)p;
+            StreamConnector* samson_connector = (StreamConnector*)p;
             
             // Endless loop waiting for data....
             while( true )
@@ -25,13 +26,10 @@ namespace samson {
                 samson_connector->review();
                 usleep(100000);
             }
-
 			return NULL;
         }
         
-        SamsonConnector::SamsonConnector() 
-            : token("SamsonConnector") 
-            , token_environment("SamsonConnector::token_environment")
+        StreamConnector::StreamConnector() : token("SamsonConnector::token_channels") 
         {
             
             // No service by default
@@ -45,7 +43,28 @@ namespace samson {
             au::ThreadManager::shared()->addThread( "SamsonConector:review" , &t, NULL, review_samson_connector, this);
         }
         
-        void SamsonConnector::initRESTInterface()
+        void StreamConnector::init_remove_connections_service()
+        {
+            if( service )
+                return; // Already created
+            
+            service = new StreamConnectorService( this );
+            au::Status s = service->initService();
+            if( s != au::OK )
+            {
+                log( new Log("SamsonConnector" 
+                             , "Warning" 
+                             , "Not possible to start service to receive connections from samsonConnectorClient" ));
+                delete service;
+                service = NULL;
+            }
+            else
+                log( new Log("SamsonConnector" 
+                             , "Message" 
+                             , "Console Service started" ));
+        }
+
+        void StreamConnector::init_reset_service()
         {
             if( rest_service )
                 return; // Already init
@@ -55,13 +74,13 @@ namespace samson {
             au::Status s = rest_service->initRESTService();
             if( s != au::OK )
             {
-                writeError( au::str("Error opening REST interface on port %d" , sc_web_port) );
+                log( new Log("REST" , "error" , au::str("Error opening REST interface on port %d" , sc_web_port) ) );
                 delete rest_service;
                 rest_service = NULL;
             }
         }
-
-        void SamsonConnector::initInterChannelInteface()
+        
+        void StreamConnector::init_inter_channel_connections_service()
         {
             if( inter_channel_listener )
                 return;
@@ -70,13 +89,13 @@ namespace samson {
             int p = SAMSON_CONNECTOR_INTERCHANNEL_PORT;
             inter_channel_listener = new au::NetworkListener( this );
             au::Status s = inter_channel_listener->initNetworkListener( p );
-
+            
             if( s != au::OK )
             {
                 log( new Log("SamsonConnector" 
                              , "Warning" 
                              , au::str("Not possible to init inter-channel listener at port %d. This could be a major issue",p )));
-
+                
                 // Delete instance
                 delete inter_channel_listener;
                 inter_channel_listener=NULL;
@@ -88,20 +107,19 @@ namespace samson {
                 log( new Log("SamsonConnector" 
                              , "Message" 
                              , "Interchannel service started" ));
-
+                
             }
-            
-        }
+        }        
         
         // au::network::RESTServiceInterface
-        void SamsonConnector::process( au::network::RESTServiceCommand* command )
+        void StreamConnector::process( au::network::RESTServiceCommand* command )
         {
-            // Mutex protection
+            // Mutex protection for whatever update over stream connector
             au::TokenTaker tt(&token);
             
-            // No command error
             if( command->path_components.size() == 0 )
             {
+                // No command error
                 command->appendFormatedError("No command provided");
                 return;
             }
@@ -149,7 +167,7 @@ namespace samson {
             }
 
             
-            if( command->path_components[0] == "items" )
+            if( command->path_components[0] == "adaptors" )
             {
                 if( command->path_components.size() == 1 )
                 {
@@ -165,7 +183,7 @@ namespace samson {
                 }
                 else
                 {
-                    command->appendFormatedError("Wrong format. Only /items/format is supported");
+                    command->appendFormatedError("Wrong format. Only /adaptors/format is supported");
                     return;
                 }
                 
@@ -191,88 +209,32 @@ namespace samson {
                     return;
                 }
             }
-            
-
         }
         
-        void SamsonConnector::add_service()
+        int StreamConnector::getNumInputItems()
         {
-            if( service )
-                return;
-            
-            service = new SamsonConnectorService( this );
-            au::Status s = service->initService();
-            if( s != au::OK )
-            {
-                log( new Log("SamsonConnector" 
-                             , "Warning" 
-                             , "Not possible to start service to receive connections from samsonConnectorClient" ));
-                delete service;
-                service = NULL;
-            }
-            else
-                log( new Log("SamsonConnector" 
-                             , "Message" 
-                             , "Console Service started" ));
-        }
-        
-        
-        int SamsonConnector::getNumInputItems()
-        {
-            int total = 0;
-            
             au::TokenTaker tt(&token);
-            
-            // Review all channels
+            int total = 0;
             au::map<std::string, Channel>::iterator it_channels;
-            for( it_channels = channels.begin() ; it_channels != channels.end() ; it_channels++ )
+            for( it_channels = channels_.begin() ; it_channels != channels_.end() ; it_channels++ )
                 total += it_channels->second->getNumInputItems();
-         
             return total;
         }
         
-        size_t SamsonConnector::getOutputConnectionsSize()
+        size_t StreamConnector::getOutputConnectionsBufferedSize()
         {
-            size_t total = 0;
-            
             au::TokenTaker tt(&token);
-            
+            size_t total = 0;
             au::map<std::string, Channel>::iterator it_channels;
-            for( it_channels = channels.begin() ; it_channels != channels.end() ; it_channels++ )
+            for( it_channels = channels_.begin() ; it_channels != channels_.end() ; it_channels++ )
             {
                 Channel * channel = it_channels->second;
-                
-                // Lock the token in the channel
-                au::TokenTaker tt(&channel->token);
-                
-                au::map<std::string, Item>::iterator it_items;
-                for( it_items = channel->items.begin() ; it_items != channel->items.end() ; it_items++ )
-                {
-                    Item *item = it_items->second;
-                    
-                    if( item->getType() == connection_output )
-                    {
-                        
-                        // Lock the token in the item
-                        au::TokenTaker tt(&item->token);
-                        
-                        au::map<int, Connection>::iterator it_connections;
-                        for( it_connections = item->connections.begin() ; it_connections != item->connections.end() ; it_connections++ )
-                        {
-                            Connection * connection = it_connections->second;
-                            total += connection->getBufferedSize(); // Get accumulated size to be sent
-                        }
-                    }
-                }                
+                total += channel->getOutputConnectionsBufferedSize();
             }
-            
             return total;
-            
         }
 
-
-        
-        void SamsonConnector::review()
+        void StreamConnector::review()
         {
             au::TokenTaker tt(&token);
 
@@ -280,32 +242,26 @@ namespace samson {
             au::list<InputInterChannelConnection>::iterator it;
             for( it = input_inter_channel_connections.begin() ; it != input_inter_channel_connections.end() ; it++ )
             {
-                /*
-
                 InputInterChannelConnection* c = *it;
-                if( c->canBeRemoved() )
+                if( c->is_finished() )
                 {
                     delete c;
                     input_inter_channel_connections.erase( it );
                 }
-                 */
-                
             }
-            
             
             // Review all channels
             au::map<std::string, Channel>::iterator it_channels;
-            for( it_channels = channels.begin() ; it_channels != channels.end() ; it_channels++ )
+            for( it_channels = channels_.begin() ; it_channels != channels_.end() ; it_channels++ )
                 it_channels->second->review();
         }
-
         
-        std::string SamsonConnector::getPrompt()
+        std::string StreamConnector::getPrompt()
         {
-            return "SamsonConnector> ";
+            return "SC console> ";
         }
         
-        void SamsonConnector::evalCommand( std::string command )
+        void StreamConnector::evalCommand( std::string command )
         {
             // Log activity
             Log("Console", "Message", command );
@@ -315,38 +271,30 @@ namespace samson {
             write( &error );
         }
 
-        void SamsonConnector::autoCompleteWithChannelNames( au::ConsoleAutoComplete* info )
+        void StreamConnector::autoCompleteWithChannelNames( au::ConsoleAutoComplete* info )
         {
             // Mutex protection
             au::TokenTaker tt(&token);
             
             au::map<std::string, Channel>::iterator it;
-            for (it = channels.begin() ; it != channels.end() ; it++ )
+            for (it = channels_.begin() ; it != channels_.end() ; it++ )
                 info->add( it->first , it->first , false );
         }
         
-        void SamsonConnector::autoCompleteWithAdaptorsNames( au::ConsoleAutoComplete* info )
+        void StreamConnector::autoCompleteWithAdaptorsNames( au::ConsoleAutoComplete* info )
         {
             // Mutex protection
             au::TokenTaker tt(&token);
             
             au::map<std::string, Channel>::iterator it;
-            for (it = channels.begin() ; it != channels.end() ; it++ )
+            for (it = channels_.begin() ; it != channels_.end() ; it++ )
             {
                 Channel* channel = it->second;
-                au::TokenTaker tt2(&channel->token);
-
-                au::map<std::string, Item>::iterator it_items;
-                for( it_items = channel->items.begin() ; it_items != channel->items.end() ; it_items++ )
-                {
-                    Item *item = it_items->second;
-                    
-                    info->add( item->getFullName() );
-                }
+                channel->autoCompleteWithAdaptorsNames(info);
             }
         }
         
-        void SamsonConnector::autoComplete( au::ConsoleAutoComplete* info )
+        void StreamConnector::autoComplete( au::ConsoleAutoComplete* info )
         {
             if( info->completingFirstWord() )
             {
@@ -358,7 +306,7 @@ namespace samson {
                 info->add("logs");
                 
                 info->add("show_channels");
-                info->add("show_items");
+                info->add("show_adaptors");
                 info->add("show_connections");
 
                 info->add("show_input_connections");
@@ -374,7 +322,7 @@ namespace samson {
                 info->add("remove_channel");
                 info->add("remove_adapter");
                 
-                info->add("remove_finished_items_and_connections");
+                info->add("remove_finished_adaptors_and_connections");
                 
                 info->add( "summary" );
             }
@@ -387,6 +335,19 @@ namespace samson {
                 autoCompleteWithChannelNames( info );
             }
 
+            if( info->completingSecondWord("show_channels") )
+            {
+                info->add("-data");
+            }
+            if( info->completingSecondWord("show_adaptors") )
+            {
+                info->add("-data");
+            }
+            if( info->completingSecondWord("show_connections") )
+            {
+                info->add("-data");
+            }
+            
             if( info->completingSecondWord("remove_adapter") )
             {
                 // Autocomplete with channel names
@@ -411,11 +372,10 @@ namespace samson {
             }
         }
         
-        void SamsonConnector::process_command( std::string command , au::ErrorManager * error )
+        void StreamConnector::process_command( std::string command , au::ErrorManager * error )
         {
-            // Mutex protection
+            // Mutex protection for whatever manipulation
             au::TokenTaker tt(&token);
-            
             
             // Command line to be processed
             CommandLine cmdLine( command );
@@ -510,19 +470,14 @@ namespace samson {
                 au::tables::Table table( "Command|Description,left" );
                 
                 table.addRow( au::StringVector("help","Show this help"));
-                
                 table.addRow( au::StringVector("show_channels","Show current channels"));
-                table.addRow( au::StringVector("show_items","Show items for all channels"));
-                table.addRow( au::StringVector("show_connections","Show all connections for all items for all channels"));
-
+                table.addRow( au::StringVector("show_adaptors","Show adaptors for all channels"));
+                table.addRow( au::StringVector("show_connections","Show all connections for all adaptors for all channels"));
                 table.addRow( au::StringVector("show_input_connections","Show all input connections"));
                 table.addRow( au::StringVector("show_output_connections","Show all output connections"));
-                
-                table.addRow( au::StringVector("add_input_to_channel","add_input channel [port:8888] [connection:host:port] [samson:host:queue]"));
-                table.addRow( au::StringVector("add_output_to_channel","add_output channel [port:8888] [connection:host:port] [samson:host:queue]"));
-
-                table.addRow( au::StringVector("remove_item_in_channel","remove_item_in_channel channel item_id"));
-                
+                table.addRow( au::StringVector("add_input_adaptor_to_channel","add_adaptor_input channel.adaptor_name [port:8888] [connection:host:port] [samson:host:queue]"));
+                table.addRow( au::StringVector("add_output_adaptor_to_channel","add_adaptor_output channel.adaptor_name [port:8888] [connection:host:port] [samson:host:queue]"));
+                table.addRow( au::StringVector("remove_adaptor","remove_adaptor channel.adaptor"));
                 table.setTitle("Available commands for samsonConnector:");
                 
                 error->add_message( table.str() );
@@ -553,7 +508,7 @@ namespace samson {
                 
             }
             
-            if( main_command == "show_items" )
+            if( main_command == "show_adaptors" )
             {
                 std::string table_type = "default";
                 
@@ -578,22 +533,6 @@ namespace samson {
                     table_type = "data";
                 
                 au::tables::Table *table = getConnectionsTable( table_type , select_channel );
-                error->add_message(table->str());
-                delete table;
-                return;
-            }
-
-            if( main_command == "show_input_connections" )
-            {
-                au::tables::Table *table = getInputConnectionsTable();
-                error->add_message(table->str());
-                delete table;
-                return;
-            }
-
-            if( main_command == "show_output_connections" )
-            {
-                au::tables::Table *table = getOutputConnectionsTable();
                 error->add_message(table->str());
                 delete table;
                 return;
@@ -623,14 +562,14 @@ namespace samson {
                 if( cmdLine.get_num_arguments() > 2 ) 
                     splitter = cmdLine.get_argument(2);
                 
-                if( channels.findInMap( name ) != NULL )
+                if( channels_.findInMap( name ) != NULL )
                 {
                     error->set( au::str("Channel %s already exist" , name.c_str() ) );
                     return;
                 }
                 
                 // Insert new channel
-                channels.insertInMap( name , new Channel( this , name , splitter ) );
+                channels_.insertInMap( name , new Channel( this , name , splitter ) );
                 error->add_message( au::str("Channel %s added." , name.c_str() ) );
                 return;
             }
@@ -660,7 +599,7 @@ namespace samson {
                 std::string name = full_name_components[1];
                 
                 
-                Channel * channel = channels.findInMap( channel_name );
+                Channel * channel = channels_.findInMap( channel_name );
                 
                 if( !channel )
                 {
@@ -701,7 +640,7 @@ namespace samson {
                 std::string channel_name = full_name_components[0];
                 std::string name = full_name_components[1];
                 
-                Channel * channel = channels.findInMap( channel_name );
+                Channel * channel = channels_.findInMap( channel_name );
                 
                 if( !channel )
                 {
@@ -728,7 +667,7 @@ namespace samson {
                 
                 std::string channel_name = cmdLine.get_argument(1);
                 
-                Channel * channel = channels.extractFromMap( channel_name );
+                Channel * channel = channels_.extractFromMap( channel_name );
                 
                 if( !channel )
                 {
@@ -765,32 +704,22 @@ namespace samson {
                 
                 std::string channel_name = full_path_components[0];
                 
-                Channel * channel = channels.findInMap( channel_name );
+                Channel * channel = channels_.findInMap( channel_name );
                 
                 if( !channel )
                 {
                     error->set( au::str("Unknown channel %s" , channel_name.c_str() ));
                     return;
                 }
-                    
-                Item* item = channel->items.extractFromMap( full_path_components[1] );
                 
-                if( !item )
-                {
-                    error->set( au::str("Adapter %s not found" , full_name.c_str() ));
-                    return;
-                }
-                
-                // Cancel item
-                item->cancel_item();
-                delete item;
+                channel->remove_item( full_path_components[1] , error );
                 
                 if ( !error->isActivated() )
                     error->add_message( au::str("Adaptor %s removed correclty" , full_name.c_str() ) );
                 return;
             }
             
-            if( main_command == "remove_finished_items_and_connections" )
+            if( main_command == "remove_finished_adaptors_and_connections" )
             {
                 au::ErrorManager error;
                 remove_finished_items_and_connections( &error );
@@ -804,13 +733,13 @@ namespace samson {
             
         }
         
-        void SamsonConnector::remove_finished_items_and_connections( au::ErrorManager * error )
+        void StreamConnector::remove_finished_items_and_connections( au::ErrorManager * error )
         {
             au::TokenTaker tt(&token);
             
             // Review all channels
             au::map<std::string, Channel>::iterator it_channels;
-            for( it_channels = channels.begin() ; it_channels != channels.end() ; it_channels++ )
+            for( it_channels = channels_.begin() ; it_channels != channels_.end() ; it_channels++ )
             {
                 
                 Channel *channel = it_channels->second;
@@ -819,12 +748,12 @@ namespace samson {
         }
 
         
-        au::tables::Table* SamsonConnector::getChannelsTable( std::string type )
+        au::tables::Table* StreamConnector::getChannelsTable( std::string type )
         {
             std::string fields;
             
             if( type == "data" )
-                fields = "Channel,left|#items|#connections|In Bytes|In Bytes/s|Out Bytes|Out Bytes/s";
+                fields = "Channel,left|#adaptors|#connections|In Bytes|In Bytes/s|Out Bytes|Out Bytes/s";
             else
                 fields = "Channel,left|Inputs|splitter,left|Outputs,left";
                
@@ -833,7 +762,7 @@ namespace samson {
             
             // Review all channels
             au::map<std::string, Channel>::iterator it_channels;
-            for( it_channels = channels.begin() ; it_channels != channels.end() ; it_channels++ )
+            for( it_channels = channels_.begin() ; it_channels != channels_.end() ; it_channels++ )
             {
                 
                 Channel *channel = it_channels->second;
@@ -870,8 +799,9 @@ namespace samson {
         
 
         
-        au::tables::Table* SamsonConnector::getInputInterChannelConnections()
+        au::tables::Table* StreamConnector::getInputInterChannelConnections()
         {
+            au::TokenTaker tt(&token);
             
             au::tables::Table *table = new au::tables::Table( "Host&Port|Status,left" );
             table->setTitle( "Input InterChannel connections" );
@@ -886,8 +816,9 @@ namespace samson {
         }
 
         
-        au::tables::Table* SamsonConnector::getConnectionsTable( std::string type , std::string select_channel )
+        au::tables::Table* StreamConnector::getConnectionsTable( std::string type , std::string select_channel )
         {
+            au::TokenTaker tt(&token);
             
             std::string fields;
             if( type == "data" )
@@ -902,7 +833,7 @@ namespace samson {
             Channel *previous_channel = NULL; // Used to draw separation lines in the table
             
             au::map<std::string, Channel>::iterator it_channels;
-            for( it_channels = channels.begin() ; it_channels != channels.end() ; it_channels++  )
+            for( it_channels = channels_.begin() ; it_channels != channels_.end() ; it_channels++  )
             {
                 
                 Channel *channel = it_channels->second;
@@ -969,140 +900,10 @@ namespace samson {
             return table;
         }
 
-        au::tables::Table* SamsonConnector::getInputConnectionsTable()
+        au::tables::Table* StreamConnector::getSummaryTable( )
         {
-            std::string fields = "Name,left|Description,left|Status|In Bytes|In Bytes/s";
+            au::TokenTaker tt(&token);
             
-            au::tables::Table *table = new au::tables::Table( fields );
-            table->setTitle( "Input connections" );
-            
-            // Keep the last channel name to check if a separator is needed
-            std::string last_channel = ""; 
-            
-            au::map<std::string, Channel>::iterator it_channels;
-            for( it_channels = channels.begin() ; it_channels != channels.end() ; it_channels++ )
-            {
-                // Current channel
-                Channel *channel = it_channels->second;
-                
-                std::string current_channel = channel->getName();
-                
-                // Lock the token in the channel
-                au::TokenTaker tt(&channel->token);
-                
-                au::map<std::string, Item>::iterator it_items;
-                for( it_items = channel->items.begin() ; it_items != channel->items.end() ; it_items++  )
-                {
-                    Item *item = it_items->second;
-                    
-                    if( item->getType() == connection_input )
-                    {
-                    
-                        // Lock the token in the item
-                        au::TokenTaker tt(&item->token);
-                        
-                        au::map<int, Connection>::iterator it_connections;
-                        for( it_connections = item->connections.begin() ; it_connections != item->connections.end() ; it_connections++ )
-                        {
-                            
-                            if( ( last_channel != "" ) && ( last_channel != current_channel ) )
-                            {
-                                table->addSeparator();
-                                last_channel = current_channel;
-                            }
-                                
-                            Connection * connection = it_connections->second;
-                            
-                            au::StringVector values;
-                            values.push_back( connection->getFullName() );
-                            values.push_back( connection->getDescription() );
-                            
-                            values.push_back( connection->getStatus() );
-                            
-                            values.push_back( au::str( connection->traffic_statistics.get_input_total() ) );
-                            values.push_back( au::str( connection->traffic_statistics.get_input_rate() ) );
-                            
-                            table->addRow(values);
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-            }
-            
-            return table;
-        }
-        
-        au::tables::Table* SamsonConnector::getOutputConnectionsTable()
-        {
-            std::string fields = "Name,left|Description,left|Status|Out Bytes|Out Bytes/s";
-            
-            au::tables::Table *table = new au::tables::Table( fields );
-            table->setTitle( "Output connections" );
-            
-            // Keep the last channel name to check if a separator is needed
-            std::string last_channel = ""; 
-            
-            au::map<std::string, Channel>::iterator it_channels;
-            for( it_channels = channels.begin() ; it_channels != channels.end() ; it_channels++ )
-            {
-                // Current channel
-                Channel *channel = it_channels->second;
-                
-                std::string current_channel = channel->getName();
-                
-                // Lock the token in the channel
-                au::TokenTaker tt(&channel->token);
-                
-                au::map<std::string, Item>::iterator it_items;
-                for( it_items = channel->items.begin() ; it_items != channel->items.end() ; it_items++  )
-                {
-                    Item *item = it_items->second;
-                    
-                    if( item->getType() == connection_output )
-                    {
-                        
-                        // Lock the token in the item
-                        au::TokenTaker tt(&item->token);
-                        
-                        au::map<int, Connection>::iterator it_connections;
-                        for( it_connections = item->connections.begin() ; it_connections != item->connections.end() ; it_connections++ )
-                        {
-                            
-                            if( ( last_channel != "" ) && ( last_channel != current_channel ) )
-                            {
-                                table->addSeparator();
-                                last_channel = current_channel;
-                            }
-                            
-                            Connection * connection = it_connections->second;
-                            
-                            au::StringVector values;
-                            values.push_back( connection->getFullName() );
-                            values.push_back( connection->getDescription() );
-                            
-                            values.push_back( connection->getStatus() );
-                            
-                            values.push_back( au::str( connection->traffic_statistics.get_output_total() ) );
-                            values.push_back( au::str( connection->traffic_statistics.get_output_rate() ) );
-                            
-                            table->addRow(values);
-                            
-                        }
-                        
-                    }
-                    
-                }
-                
-            }
-            
-            return table;
-        }
-
-        au::tables::Table* SamsonConnector::getSummaryTable( )
-        {
             au::tables::Table* table = new au::tables::Table( "Concept|Value,left" );
             table->setTitle( "Summary" );
             
@@ -1120,8 +921,10 @@ namespace samson {
         }
 
         
-        au::tables::Table* SamsonConnector::getItemsTable( std::string type )
+        au::tables::Table* StreamConnector::getItemsTable( std::string type )
         {
+            au::TokenTaker tt(&token);
+            
             std::string fields;
             
             if( type == "data" )
@@ -1130,10 +933,10 @@ namespace samson {
                 fields = "Name,left|Type,left|Description,left|Finish|Status";
 
             au::tables::Table* table = new au::tables::Table( fields );
-            table->setTitle( "Items" );
+            table->setTitle( "Adaptors" );
             
             au::map<std::string, Channel>::iterator it_channels;
-            for( it_channels = channels.begin() ; it_channels != channels.end() ;  )
+            for( it_channels = channels_.begin() ; it_channels != channels_.end() ;  )
             {
                 
                 Channel *channel = it_channels->second;
@@ -1179,7 +982,7 @@ namespace samson {
                 it_channels++;
 
                 // Write a separator in the table if this is not the last line of the table
-                if( it_channels !=  channels.end() )
+                if( it_channels !=  channels_.end() )
                     if( channel->items.size() > 0 )
                         table->addSeparator();
                  
@@ -1189,11 +992,9 @@ namespace samson {
             return table;
         }
         
-        void SamsonConnector::log( Log* log )
+        void StreamConnector::log( Log* log )
         {
-            // Add to the log system
-            LogManager* log_manager = Singleton<LogManager>::shared();
-            log_manager->log( log );
+            au::TokenTaker tt(&token);
             
             // Create au::ErrorManager element
             au::ErrorManager error;
@@ -1220,35 +1021,15 @@ namespace samson {
                 if( paVerbose )
                     std::cerr << error.str();
             }
-
             
-        }
-
-
-        void SamsonConnector::write( au::ErrorManager * error )
-        {
-            if( interactive )
-            {
-                au::Console::write( error );
-                return;
-            }
             
-            if( run_as_daemon )
-            {
-                // Accumulate this error in a log system....
-            }
+            // Add to the log system
+            LogManager* log_manager = Singleton<LogManager>::shared();
+            log_manager->log( log );
 
-            std::cerr << error->str();
         }
         
-        void SamsonConnector::writeError( std::string message )
-        {
-            au::ErrorManager error;
-            error.set(message);
-            write( &error );
-        }
-        
-        void SamsonConnector::newSocketConnection( au::NetworkListener* listener 
+        void StreamConnector::newSocketConnection( au::NetworkListener* listener 
                                          , au::SocketConnection * socket_connetion )
         {
             
@@ -1260,14 +1041,13 @@ namespace samson {
             
             // Push into the list of connections
             input_inter_channel_connections.push_back( connection );
-                                          
         }
 
-        void SamsonConnector::select_channel( InputInterChannelConnection* connection , std::string target_channel , au::ErrorManager *error )
+        void StreamConnector::select_channel( InputInterChannelConnection* connection , std::string target_channel , au::ErrorManager *error )
         {
             au::TokenTaker tt(&token);
             
-            Channel* channel = channels.findInMap(target_channel);
+            Channel* channel = channels_.findInMap(target_channel);
             
             if( !channel )
             {
@@ -1302,6 +1082,27 @@ namespace samson {
             return;
         }
         
+        std::string StreamConnector::getPasswordForUser( std::string user )
+        {
+            au::TokenTaker tt( &token );
+            return environment.get( au::str("user_%s", user.c_str()) , "" );
+        }
+        
+        void StreamConnector::setPasswordForUser( std::string user , std::string password )
+        {
+            au::TokenTaker tt( &token );
+            environment.set( au::str("user_%s", user.c_str()) , password );
+        }
+
+        void StreamConnector::report_output_size( size_t size )
+        {
+            traffic_statistics.push_output(size);
+        }
+        
+        void StreamConnector::report_input_size( size_t size )
+        {
+            traffic_statistics.push_input(size);
+        }
 
         
     }

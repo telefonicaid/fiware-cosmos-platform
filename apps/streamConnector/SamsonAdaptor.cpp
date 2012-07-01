@@ -6,7 +6,7 @@
 
 namespace stream_connector {
     
-    SamsonConnection::SamsonConnection( Item  * _item 
+    SamsonConnection::SamsonConnection( Adaptor  * _item 
                                        , ConnectionType _type 
                                        , std::string name 
                                        , samson::SamsonClient * _client 
@@ -100,7 +100,7 @@ namespace stream_connector {
                                  , int _port 
                                  , std::string _queue )
     : 
-    Item( _channel 
+    Adaptor( _channel 
          , _type 
          , au::str("SAMSON(%s:%d)" , _host.c_str() , _port) ) 
     {

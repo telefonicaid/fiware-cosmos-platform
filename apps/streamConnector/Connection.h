@@ -13,7 +13,7 @@
 namespace stream_connector {
     
     class Channel;
-    class Item;
+    class Adaptor;
     class BufferProcessor;
     
     //
@@ -115,13 +115,13 @@ namespace stream_connector {
     {
         
         friend class StreamConnector;
-        friend class Item;
+        friend class Adaptor;
         
         au::Token token;                       // Mutex protection for this connection
         
         std::string description_;              // Description name
         ConnectionType type;                   // Type of item ( input or output )
-        Item * item;                           // My item            
+        Adaptor * item;                        // My adaptor            
         
         BufferProcessor* buffer_processor;     // Processor for input buffers ( only in input )
         
@@ -153,7 +153,7 @@ namespace stream_connector {
         
     public:
         
-        Connection( Item  * _item , ConnectionType _type , std::string _name );
+        Connection( Adaptor  * _item , ConnectionType _type , std::string _name );
         virtual ~Connection();
         
         ConnectionType getType();               // Get type

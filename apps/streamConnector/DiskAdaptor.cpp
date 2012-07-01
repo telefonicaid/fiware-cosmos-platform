@@ -28,7 +28,7 @@ namespace stream_connector {
         return "Error";
     }
     
-    DiskConnection::DiskConnection( Item  * _item 
+    DiskConnection::DiskConnection( Adaptor  * _item 
                                    , ConnectionType _type 
                                    , std::string _file_name ) 
     : Connection( _item , _type , nameDiskConnection( _type ,  _file_name ) )
@@ -335,7 +335,7 @@ namespace stream_connector {
     
     
     DiskAdaptor::DiskAdaptor( Channel * _channel , ConnectionType _type ,  std::string _directory ) : 
-    Item( _channel , _type , au::str("FILE(%s)" , _directory.c_str() ) ) 
+    Adaptor( _channel , _type , au::str("FILE(%s)" , _directory.c_str() ) ) 
     {
         // Information for connection
         directory = _directory;

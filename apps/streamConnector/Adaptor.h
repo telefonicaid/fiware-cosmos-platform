@@ -18,7 +18,7 @@ namespace stream_connector {
     class Channel;
     class InputInterChannelConnection;
     
-    class Item
+    class Adaptor
     {
         // Mutex protextion
         au::Token token;
@@ -49,15 +49,18 @@ namespace stream_connector {
         
     public:
         
-        Item ( Channel * _channel , ConnectionType _type , std::string description );
-        virtual ~Item();            
+        Adaptor ( Channel * _channel , ConnectionType _type , std::string description );
+        virtual ~Adaptor();            
         
         // Virtual methods to be implemented in sub-classes
         virtual void start_item(){};
         virtual void review_item(){}                                 // Review connections ( overload in specific items )
-        virtual std::string getStatus() { return ""; }               // Get information about status
         virtual void stop_item(){};                                  // Stop all threads to be deleted
-        
+        virtual std::string getStatus() { return ""; }               // Get information about status
+                                                                     // Check if we accept a particular inter channel connection
+        virtual bool accept( InputInterChannelConnection* connection );
+
+
         // Add a connection
         void add( Connection* Connection );
         
@@ -80,18 +83,17 @@ namespace stream_connector {
         const char* getTypeStr();
         size_t getConnectionsBufferedSize();
         
-        // Check if we accept a particular inter channel connection
-        virtual bool accept( InputInterChannelConnection* connection );
-        
         // Finish managemnt
-        void set_as_finished();                                        // Mark this element as finished ( can be removed by remove_finished_* commands )
+        void set_as_finished();                                        // Mark this element as finished 
+                                                                       // ( can be removed by remove_finished_* commands )
         bool is_finished();                                            // Check if the connection is finished
         void remove_finished_connections(au::ErrorManager* error);     // Remove connections that are already finished
         
         // Log system
         void log( std::string type , std::string message );
         void log( Log* log );
-        
+
+        // Report size of data managed by this adaptor
         void report_output_size( size_t size );
         void report_input_size( size_t size );
         

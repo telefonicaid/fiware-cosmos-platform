@@ -13,9 +13,11 @@ ADD_SUBDIRECTORY(samsonModuleCat)
 ADD_SUBDIRECTORY(passiveLocationPush)
 ADD_SUBDIRECTORY(samsonPush)
 ADD_SUBDIRECTORY(samsonPop)
-ADD_SUBDIRECTORY(samsonConnector)
 ADD_SUBDIRECTORY(samsonPushLogs)
 ADD_SUBDIRECTORY(samsonMemCheck)
+
+
+ADD_SUBDIRECTORY(streamConnector)
 
 ADD_SUBDIRECTORY(logServer)
 #ADD_SUBDIRECTORY(ngsi)

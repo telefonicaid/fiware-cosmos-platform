@@ -42,7 +42,7 @@ namespace stream_connector {
     public:
         
         // Constructor & Destructor
-        DiskConnection( Item  * _item , ConnectionType _type , std::string directory );
+        DiskConnection( Adaptor  * _item , ConnectionType _type , std::string directory );
         ~DiskConnection();
         
         // Connection methods
@@ -65,7 +65,7 @@ namespace stream_connector {
     };
     
     
-    class DiskAdaptor : public Item
+    class DiskAdaptor : public Adaptor
     {
         // Information to stablish the connection with the SAMSON system
         std::string directory;

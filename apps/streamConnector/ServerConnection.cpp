@@ -7,7 +7,7 @@
 namespace stream_connector {
     
     
-    ConnectionConnection::ConnectionConnection( Item* item , ConnectionType type , std::string host , int port )
+    ConnectionConnection::ConnectionConnection( Adaptor* item , ConnectionType type , std::string host , int port )
     : FileDescriptorConnection( item , type ,  au::str("CONNECTION(%s:%d)" , host.c_str() , port)  )
     {
         host_ = host;
@@ -33,7 +33,7 @@ namespace stream_connector {
     // ---------------------------------
     
     ConnectionItem::ConnectionItem( Channel* channel , ConnectionType type , std::string host , int port  )
-    : Item( channel 
+    : Adaptor( channel 
            , type
            , au::str("CONNECTION(%s:%d)" , host.c_str() , port) 
            ) 
@@ -69,7 +69,7 @@ namespace stream_connector {
     
     
     // Constructor & Destructor
-    StdinItem::StdinItem( Channel* _channel ) : Item( _channel , connection_input , "STDIN" ) 
+    StdinItem::StdinItem( Channel* _channel ) : Adaptor( _channel , connection_input , "STDIN" ) 
     {
         
     }
@@ -109,7 +109,7 @@ namespace stream_connector {
     // ---------------------------------
     
     // Constructor & Destructor
-    StdoutItem::StdoutItem( Channel* _channel ) : Item( _channel , connection_output , "STDOUT" ) 
+    StdoutItem::StdoutItem( Channel* _channel ) : Adaptor( _channel , connection_output , "STDOUT" ) 
     {
     }
     

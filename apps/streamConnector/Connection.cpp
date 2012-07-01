@@ -12,7 +12,7 @@ extern char working_directory[1024];
 namespace stream_connector {
     
     
-    Connection::Connection( Item  * _item , ConnectionType _type , std::string _name ) : token("Connection")
+    Connection::Connection( Adaptor * _item , ConnectionType _type , std::string _name ) : token("Connection")
     {
         // Keep information
         type = _type;

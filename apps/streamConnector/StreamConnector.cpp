@@ -842,10 +842,10 @@ namespace stream_connector {
             au::TokenTaker tt(&channel->token);
             
             
-            au::map<std::string, Item>::iterator it_items;
+            au::map<std::string, Adaptor>::iterator it_items;
             for( it_items = channel->items.begin() ; it_items != channel->items.end() ; it_items++ )
             {
-                Item *item = it_items->second;
+                Adaptor *item = it_items->second;
                 
                 // Lock the token in the item
                 au::TokenTaker tt(&item->token);
@@ -944,10 +944,10 @@ namespace stream_connector {
             // Lock the token in the channel
             au::TokenTaker tt(&channel->token);
             
-            au::map<std::string, Item>::iterator it_items;
+            au::map<std::string, Adaptor>::iterator it_items;
             for( it_items = channel->items.begin() ; it_items != channel->items.end() ; it_items++ )
             {
-                Item *item = it_items->second;
+                Adaptor *item = it_items->second;
                 
                 
                 au::StringVector values;
@@ -1057,10 +1057,10 @@ namespace stream_connector {
         
         au::TokenTaker tt2(&channel->token);
         
-        au::map<std::string, Item>::iterator it_items;
+        au::map<std::string, Adaptor>::iterator it_items;
         for( it_items = channel->items.begin() ; it_items != channel->items.end() ; it_items++ )
         {
-            Item* item = it_items->second;
+            Adaptor* item = it_items->second;
             
             // Check if this item can receive this connection
             if( item->accept(connection) )

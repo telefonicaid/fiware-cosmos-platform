@@ -6,7 +6,7 @@
 namespace stream_connector {
     
     ListenerAdaptor::ListenerAdaptor( Channel * channel , ConnectionType type , int _port ) : 
-    Item( channel , type , au::str("LISTEN(%d)" , _port ) ) ,
+    Adaptor( channel , type , au::str("LISTEN(%d)" , _port ) ) ,
     au::NetworkListener( this )
     {
         // Keep the port

@@ -39,10 +39,10 @@ namespace stream_connector {
         // Review all items
         // ------------------------------------------------------------
         
-        au::map<std::string, Item>::iterator it_items;
+        au::map<std::string, Adaptor>::iterator it_items;
         for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
         {
-            Item* item = it_items->second;
+            Adaptor* item = it_items->second;
             
             // Remove finished connections
             item->remove_finished_connections( error );
@@ -70,10 +70,10 @@ namespace stream_connector {
         // Review all items
         // ------------------------------------------------------------
         
-        au::map<std::string, Item>::iterator it_items;
+        au::map<std::string, Adaptor>::iterator it_items;
         for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
         {
-            Item* item = it_items->second;
+            Adaptor* item = it_items->second;
             item->review();
         }
     }
@@ -83,7 +83,7 @@ namespace stream_connector {
         // Mutex protection
         au::TokenTaker tt(&token);
         
-        Item* previous_item = items.findInMap(name);
+        Adaptor* previous_item = items.findInMap(name);
         if( previous_item )
         {
             error->set( au::str("Item %s already exist (%s)" , previous_item->getFullName().c_str()  , previous_item->getDescription().c_str() ));
@@ -206,7 +206,7 @@ namespace stream_connector {
         // Mutex protection
         au::TokenTaker tt(&token);
         
-        Item* previous_item = items.findInMap(name);
+        Adaptor* previous_item = items.findInMap(name);
         if( previous_item )
         {
             error->set( au::str("Item %s already exist (%s)" , name.c_str()  , previous_item->getDescription().c_str() ));
@@ -313,7 +313,7 @@ namespace stream_connector {
     }
     
     // Generic method to add an item
-    void Channel::add( std::string name , Item * item )
+    void Channel::add( std::string name , Adaptor * item )
     {
         // Mutex protection
         au::TokenTaker tt(&token);
@@ -341,7 +341,7 @@ namespace stream_connector {
         // Mutex protection
         au::TokenTaker tt(&token);
         
-        Item* item = items.extractFromMap( name );
+        Adaptor* item = items.extractFromMap( name );
         
         if( !item )
         {
@@ -361,7 +361,7 @@ namespace stream_connector {
         // Mutex protection
         au::TokenTaker tt(&token);
         
-        au::map<std::string, Item>::iterator it_items;
+        au::map<std::string, Adaptor>::iterator it_items;
         for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
         {
             if( it_items->second->getType() == connection_output )
@@ -381,7 +381,7 @@ namespace stream_connector {
         // Mutex protection
         au::TokenTaker tt(&token);
         int total = 0;
-        au::map<std::string, Item>::iterator it_items;
+        au::map<std::string, Adaptor>::iterator it_items;
         for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
         {
             if( it_items->second->getType() == connection_output )
@@ -396,7 +396,7 @@ namespace stream_connector {
         // Mutex protection
         au::TokenTaker tt(&token);
         int total = 0;
-        au::map<std::string, Item>::iterator it_items;
+        au::map<std::string, Adaptor>::iterator it_items;
         for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
         {
             if( it_items->second->getType() == connection_input )
@@ -412,7 +412,7 @@ namespace stream_connector {
         au::TokenTaker tt(&token);
         int total = 0;
         
-        au::map<std::string, Item>::iterator it_items;
+        au::map<std::string, Adaptor>::iterator it_items;
         for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
             total += it_items->second->getNumConnections();
         return total;
@@ -433,10 +433,10 @@ namespace stream_connector {
     {
         std::ostringstream output;
         
-        au::map<std::string, Item>::iterator it_items;
+        au::map<std::string, Adaptor>::iterator it_items;
         for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
         {
-            Item* item = it_items->second;
+            Adaptor* item = it_items->second;
             if( item->getType() == connection_input )
             {
                 output << item->getDescription()  << " ";
@@ -447,10 +447,10 @@ namespace stream_connector {
     
     void Channel::cancel_channel()
     {
-        au::map<std::string, Item>::iterator it_items;
+        au::map<std::string, Adaptor>::iterator it_items;
         for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
         {
-            Item* item = it_items->second;
+            Adaptor* item = it_items->second;
             item->cancel_item();
         }
     }
@@ -460,10 +460,10 @@ namespace stream_connector {
     {
         std::ostringstream output;
         
-        au::map<std::string, Item>::iterator it_items;
+        au::map<std::string, Adaptor>::iterator it_items;
         for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
         {
-            Item* item = it_items->second;
+            Adaptor* item = it_items->second;
             if( item->getType() == connection_output )
             {
                 output << item->getDescription() << " ";
@@ -478,10 +478,10 @@ namespace stream_connector {
         
         size_t total = 0;
         
-        au::map<std::string, Item>::iterator it_items;
+        au::map<std::string, Adaptor>::iterator it_items;
         for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
         {
-            Item *item = it_items->second;
+            Adaptor *item = it_items->second;
             
             if( item->getType() == connection_output )
                 total += item->getConnectionsBufferedSize();
@@ -514,10 +514,10 @@ namespace stream_connector {
     {
         au::TokenTaker tt(&token);
         
-        au::map<std::string, Item>::iterator it_items;
+        au::map<std::string, Adaptor>::iterator it_items;
         for( it_items = items.begin() ; it_items != items.end() ; it_items++ )
         {
-            Item *item = it_items->second;
+            Adaptor *item = it_items->second;
             info->add( item->getFullName() );
         }
     }

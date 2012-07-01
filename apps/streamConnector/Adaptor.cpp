@@ -8,7 +8,7 @@
 
 namespace stream_connector {
     
-    Item::Item ( Channel * _channel , ConnectionType _type , std::string description ) 
+    Adaptor::Adaptor ( Channel * _channel , ConnectionType _type , std::string description ) 
     : token("connector::Item")
     {
         channel = _channel;
@@ -22,7 +22,7 @@ namespace stream_connector {
         
     }
     
-    Item::~Item()
+    Adaptor::~Adaptor()
     {
         // Cancel this item to make sure we do not remove with any thread running here
         cancel_item();
@@ -32,33 +32,33 @@ namespace stream_connector {
         
     }
     
-    ConnectionType Item::getType()
+    ConnectionType Adaptor::getType()
     {
         return type;
     }
     
-    std::string Item::getName()
+    std::string Adaptor::getName()
     {
         return name_;
     }
     
-    std::string Item::getFullName()
+    std::string Adaptor::getFullName()
     {
         return au::str("%s.%s" ,  channel->getName().c_str() , name_.c_str() );
     }
     
-    std::string Item::getDescription()
+    std::string Adaptor::getDescription()
     {
         return description_;
     }
     
-    const char* Item::getTypeStr()
+    const char* Adaptor::getTypeStr()
     {
         return str_ConnectionType(type);
     }
     
     
-    void Item::add( Connection* connection )
+    void Adaptor::add( Connection* connection )
     {
         au::TokenTaker tt(&token);
         
@@ -75,7 +75,7 @@ namespace stream_connector {
         next_id++;
     }
     
-    void Item::push( engine::Buffer * buffer )
+    void Adaptor::push( engine::Buffer * buffer )
     {
         au::TokenTaker tt(&token);
         
@@ -90,7 +90,7 @@ namespace stream_connector {
         }
     }
     
-    void Item::review()
+    void Adaptor::review()
     {            
         if( canceled )
             return; // Not call review
@@ -115,11 +115,11 @@ namespace stream_connector {
         
     }
     
-    void Item::init_item()
+    void Adaptor::init_item()
     {
         start_item();
     };
-    void Item::cancel_item()
+    void Adaptor::cancel_item()
     {
         canceled = true; // This will block future calls to review
         
@@ -139,13 +139,13 @@ namespace stream_connector {
             }
         }
     }
-    int Item::getNumConnections()
+    int Adaptor::getNumConnections()
     {
         au::TokenTaker tt(&token);
         return connections.size();
     }
     
-    void Item::set_as_finished()
+    void Adaptor::set_as_finished()
     {
         if( finished ) 
             return;
@@ -155,12 +155,12 @@ namespace stream_connector {
         finished = true;
     }
     
-    bool Item::is_finished()
+    bool Adaptor::is_finished()
     {
         return finished;
     }
     
-    size_t Item::getConnectionsBufferedSize()
+    size_t Adaptor::getConnectionsBufferedSize()
     {
         au::TokenTaker tt(&token);
         size_t total = 0;
@@ -177,7 +177,7 @@ namespace stream_connector {
         return total;
     }
     
-    void Item::remove_finished_connections(au::ErrorManager* error)
+    void Adaptor::remove_finished_connections(au::ErrorManager* error)
     {
         // Mutex protectio
         au::TokenTaker tt( &token );
@@ -202,29 +202,29 @@ namespace stream_connector {
     }
     
     // Log system
-    void Item::log( std::string type , std::string message )
+    void Adaptor::log( std::string type , std::string message )
     {
         log( new Log( getFullName() , type , message ) );
     }
-    void Item::log( Log* log )
+    void Adaptor::log( Log* log )
     {
         LogManager* log_manager = au::Singleton<LogManager>::shared();
         log_manager->log( log );
     }
     
-    void Item::report_output_size( size_t size )
+    void Adaptor::report_output_size( size_t size )
     {
         traffic_statistics.push_output(size);
         channel->report_output_size(size);
     }
     
-    void Item::report_input_size( size_t size )
+    void Adaptor::report_input_size( size_t size )
     {
         traffic_statistics.push_input(size);
         channel->report_input_size( size );
     }
     
-    bool Item::accept( InputInterChannelConnection* connection )
+    bool Adaptor::accept( InputInterChannelConnection* connection )
     {
         // By default, we do not accept interchannel connections
         // Only specific items accept this type of connection

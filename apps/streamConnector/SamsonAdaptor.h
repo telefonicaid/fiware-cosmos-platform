@@ -22,7 +22,7 @@ namespace stream_connector {
     public:
         
         
-        SamsonConnection( Item  * _item 
+        SamsonConnection( Adaptor  * _item 
                          , ConnectionType _type 
                          , std::string name 
                          , samson::SamsonClient * _client 
@@ -46,7 +46,7 @@ namespace stream_connector {
         
     };
     
-    class SamsonAdaptor : public Item
+    class SamsonAdaptor : public Adaptor
     {
         // Information to stablish the connection with the SAMSON system
         std::string host;

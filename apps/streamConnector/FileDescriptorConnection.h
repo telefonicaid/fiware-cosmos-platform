@@ -17,7 +17,7 @@ extern size_t buffer_size;
 
 namespace stream_connector {
     
-    class Item;
+    class Adaptor;
     
     /*
      Simple FileDescriptor connection ( used in ListenerAdaptor or ConnectionItem )
@@ -37,7 +37,7 @@ namespace stream_connector {
         
     public:
         
-        FileDescriptorConnection( Item  * _item , ConnectionType _type , std::string _name );
+        FileDescriptorConnection( Adaptor  * _item , ConnectionType _type , std::string _name );
         ~FileDescriptorConnection();
         
         // Get the File descriptor
@@ -67,7 +67,7 @@ namespace stream_connector {
         
     public:
         
-        SimpleFileDescriptorConnection( Item  * _item 
+        SimpleFileDescriptorConnection( Adaptor  * _item 
                                        , ConnectionType _type 
                                        , std::string _name 
                                        , au::FileDescriptor * file_descriptor );

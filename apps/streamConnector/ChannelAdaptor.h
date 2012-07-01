@@ -89,7 +89,7 @@ namespace stream_connector {
         
     public:
         
-        OutputInterChannelConnection( Item  * item 
+        OutputInterChannelConnection( Adaptor  * item 
                                      , std::string host 
                                      , std::string channel_name 
                                      ); 
@@ -116,7 +116,7 @@ namespace stream_connector {
     };
     
     
-    class OutputChannelAdaptor : public Item
+    class OutputChannelAdaptor : public Adaptor
     {
         
         // Information about connection
@@ -129,7 +129,7 @@ namespace stream_connector {
         OutputChannelAdaptor( Channel * channel 
                              , const std::string& host
                              , const std::string& channel_name ) 
-        : Item( channel 
+        : Adaptor( channel 
                , connection_output
                , au::str("CHANNEL(%s:%s)" , host.c_str() , channel_name.c_str() ) )
         {
@@ -158,7 +158,7 @@ namespace stream_connector {
         
     };
     
-    class InputChannelAdaptor : public Item
+    class InputChannelAdaptor : public Adaptor
     {
         
         // Information about retrials
@@ -168,7 +168,7 @@ namespace stream_connector {
     public:
         
         InputChannelAdaptor( Channel * channel ) 
-        : Item( channel 
+        : Adaptor( channel 
                , connection_input 
                , au::str("CHANNELS(*)" ) )
         {

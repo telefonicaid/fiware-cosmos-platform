@@ -26,7 +26,7 @@ namespace stream_connector {
         
     public:
         
-        ConnectionConnection( Item* item , ConnectionType type , std::string host , int port );
+        ConnectionConnection( Adaptor* item , ConnectionType type , std::string host , int port );
         
         // FileDescriptorConnection virtual methods
         virtual au::FileDescriptor * getFileDescriptor();
@@ -35,7 +35,7 @@ namespace stream_connector {
     
     // Item to stablish a socket connection with a host:port
     
-    class ConnectionItem : public Item
+    class ConnectionItem : public Adaptor
     {
         // Information to establish connection
         std::string host_;
@@ -58,7 +58,7 @@ namespace stream_connector {
     
     
     // Item to read stdin
-    class StdinItem : public Item
+    class StdinItem : public Adaptor
     {
         
     public:
@@ -78,7 +78,7 @@ namespace stream_connector {
     
     
     // Item to write on stdout
-    class StdoutItem : public Item
+    class StdoutItem : public Adaptor
     {
         
     public:

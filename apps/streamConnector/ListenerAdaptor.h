@@ -9,7 +9,7 @@
 
 namespace stream_connector {
     
-    class ListenerAdaptor : public Item, public au::NetworkListener , public au::NetworkListenerInterface
+    class ListenerAdaptor : public Adaptor, public au::NetworkListener , public au::NetworkListenerInterface
     {
         
         // Port to open to accept connections

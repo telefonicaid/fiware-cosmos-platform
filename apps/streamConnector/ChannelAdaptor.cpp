@@ -139,7 +139,7 @@ namespace stream_connector {
     //
     // ----------------------------------------------------------------
 
-    OutputInterChannelConnection::OutputInterChannelConnection( Item  * item 
+    OutputInterChannelConnection::OutputInterChannelConnection( Adaptor  * item 
                                                                , std::string host 
                                                                , std::string channel_name 
                                                                )

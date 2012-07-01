@@ -23,7 +23,7 @@ namespace stream_connector {
         
     }
     
-    FileDescriptorConnection::FileDescriptorConnection( Item  * _item , ConnectionType _type , std::string _name )
+    FileDescriptorConnection::FileDescriptorConnection( Adaptor  * _item , ConnectionType _type , std::string _name )
     : Connection( _item , _type , _name )
     {
         // Keep pointer to file descriptor
@@ -239,7 +239,7 @@ namespace stream_connector {
     }
     
     
-    SimpleFileDescriptorConnection::SimpleFileDescriptorConnection( Item  * _item 
+    SimpleFileDescriptorConnection::SimpleFileDescriptorConnection( Adaptor  * _item 
                                                                    , ConnectionType _type 
                                                                    , std::string _name 
                                                                    , au::FileDescriptor * file_descriptor ) :

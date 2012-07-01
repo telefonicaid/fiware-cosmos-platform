@@ -9,7 +9,7 @@
 
 namespace stream_connector {
     
-    class Item;
+    class Adaptor;
     class StreamConnector;
     
     class Channel 
@@ -25,7 +25,7 @@ namespace stream_connector {
         std::string splitter_; 
         
         // All items ( adapters ) included in this channel
-        au::map<std::string, Item> items;
+        au::map<std::string, Adaptor> items;
         
         
         // Pointer to the global connector
@@ -48,7 +48,7 @@ namespace stream_connector {
         // item management
         void add_input ( std::string name , std::string input_string , au::ErrorManager* error );
         void add_output ( std::string name , std::string input_string , au::ErrorManager* error );
-        void add( std::string name , Item * item );
+        void add( std::string name , Adaptor * item );
         void remove_item( std::string name , au::ErrorManager * error );
         
         

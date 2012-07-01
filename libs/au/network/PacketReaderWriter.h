@@ -6,6 +6,7 @@
 #define _H_AU_NETWORK_PACKET_READER_WRITER
 
 #include "au/mutex/Token.h"
+#include "au/Object.h"
 #include "au/Status.h"
 #include "au/Cronometer.h"
 #include "au/network/FileDescriptor.h"

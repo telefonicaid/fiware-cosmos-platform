@@ -13,6 +13,8 @@ SET (HEADERS
 	DiskAdaptor.h
 	ListenerAdaptor.h
 	SamsonAdaptor.h
+	InterChannelPacket.h
+	InterChannelLink.h
 	ChannelAdaptor.h
 	StreamConnector.h
 	StreamConnectorService.h
@@ -34,6 +36,8 @@ SET (SOURCES
 	DiskAdaptor.cpp
 	ListenerAdaptor.cpp
 	SamsonAdaptor.cpp
+	InterChannelPacket.cpp
+	InterChannelLink.cpp
 	ChannelAdaptor.cpp
 	StreamConnector.cpp
 	StreamConnectorService.cpp

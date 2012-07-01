@@ -7,7 +7,6 @@
 #include <string>
 
 #include "au/string.h"	 
-
 #include "au/file.h"        // Own interface
 
 NAMESPACE_BEGIN(au)
@@ -173,6 +172,50 @@ std::string get_directory_from_path( std::string path )
     else
         return "./" + path.substr( 0 , pos+1 );
     
+}
+
+Status createDirectory( std::string path )
+{
+    if( mkdir(path.c_str()	, 0755) == -1 )
+    {
+        if( errno != EEXIST )
+        {
+            LM_W(("Error creating directory %s (%s)", path.c_str() , strerror(errno)  ));
+            return Error;
+        }
+    }
+    
+    return OK;
+}
+
+Status createFullDirectory( std::string path )
+{
+    if( path.length() == 0)
+        return au::Error;
+    
+    std::vector<std::string> components;
+    au::split( path , '/' , components );
+    
+    std::string accumulated_path;
+    if( path[0] == '/' )
+        accumulated_path += "/";
+    
+    
+    for ( size_t i = 0 ; i < components.size() ; i++)
+    {
+        accumulated_path += components[i];
+        Status s = createDirectory(accumulated_path);
+        if( s != OK )
+        {
+            LM_W(("Error creating directory %s (%s)" , accumulated_path.c_str()  , status(s) ));
+            return s;
+        }
+        
+        accumulated_path += "/";
+        
+    }
+    
+    return OK;
 }
 
 NAMESPACE_END

@@ -161,6 +161,7 @@ string/split.cpp
 SET (HEADERS
 Status.h
 Object.h
+Singleton.h
 au.pb.h
 TemporalBuffer.h
 namespace.h

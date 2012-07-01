@@ -25,11 +25,10 @@
 #include <sys/time.h>           // struct timeval
 #include <sstream>              // std::ostringstream
 #include "logMsg/logMsg.h"             // LM_W
-
 #include "au/ErrorManager.h"        // au::ErrorManager
 #include "au/containers/map.h"                 // au::map
-
 #include "au/namespace.h"
+#include "Status.h"
 
 
 NAMESPACE_BEGIN(au)
@@ -52,6 +51,10 @@ std::vector<std::string> getRegularFilesFromDirectory( std::string directory );
 std::string path_remove_last_component( std::string path );
 // Extract directory from path ( example /dir/dir2/file --> /dir/dir2 )
 std::string get_directory_from_path( std::string path );
+
+// Create directories
+Status createDirectory( std::string path );
+Status createFullDirectory( std::string path );
 
 NAMESPACE_END
 

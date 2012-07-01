@@ -16,24 +16,20 @@
 
 // ----------------------------------------------------------------
 
-namespace samson 
-{
-    namespace connector
+namespace stream_connector {
+
+    // ConnectionType
+    // ------------------------------------------
+    
+    typedef enum
     {
-        // ConnectionType
-        // ------------------------------------------
-        
-        typedef enum
-        {
-            connection_input,
-            connection_output
-        } ConnectionType;
-        
-        const char * str_ConnectionType( ConnectionType type );
-        
-        // Log system for channel - item - connection
-        
-    }
+        connection_input,
+        connection_output
+    } ConnectionType;
+
+    // Get string for each connection type
+    const char * str_ConnectionType( ConnectionType type );
+    
 }
 
 #endif

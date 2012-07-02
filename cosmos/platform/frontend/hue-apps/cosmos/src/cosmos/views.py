@@ -142,7 +142,10 @@ def configure_job(request):
     """Job configuration step."""
 
     wizard = job_wizard(request)
-    if wizard.has_key('parameterized'):
+    if not wizard.has_key('parameterized'):
+        return redirect(reverse('define_job'))
+
+    if wizard['parameterized']:
         return configure_parameterized_job(request)
     else:
         return configure_basic_job(request)

@@ -171,8 +171,8 @@ def deploy_sftp(move_sshd=False):
                 final_attempt = run("service injection start")
                 service_started = not final_attempt.failed
                 
-        if not service_started:
-            error(red("Injection service could not be started"))
+    if not service_started:
+        error(red("Injection service could not be started"))
 
 def move_sshd(custom_port=CONFIG['frontend_ssh_custom_port']):
     """

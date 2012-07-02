@@ -101,6 +101,7 @@ def deploy_datanode_daemon():
     iptables.accept_in_tcp(50075)
     iptables.accept_in_tcp(1006)
     iptables.accept_in_tcp(50020)
+    iptables.accept_in_tcp(10091)
     iptables.accept_in_tcp(0)
     sudo("service iptables save")
     deploy_daemon('datanode')

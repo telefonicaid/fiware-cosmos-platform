@@ -162,13 +162,17 @@ def deploy_sftp(move_sshd=False):
 
     with ctx.settings(warn_only=True):
         start = run("/etc/init.d/injection start", pty=False)
-        if start.failed:
+        service_started = not start.failed
+        if not service_started:
             restart = run("/etc/init.d/injection restart", pty=False)
-            if restart.failed and 'Permission denied' in restart.stdout:
+            service_started = not restart.failed
+            if not service_started and 'Permission denied' in restart.stdout:
                 sudo('chmod +x /etc/init.d/injection')
                 final_attempt = run("service injection start")
-                if final_attempt.failed:
-                    error(red("Injection service could not be started"))
+                service_started = not final_attempt.failed
+                
+        if not service_started:
+            error(red("Injection service could not be started"))
 
 def move_sshd(custom_port=CONFIG['frontend_ssh_custom_port']):
     """

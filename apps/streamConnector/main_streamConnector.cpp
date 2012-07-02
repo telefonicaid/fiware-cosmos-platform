@@ -232,7 +232,7 @@ int main( int argC , const char *argV[] )
         for ( size_t i = 0 ; i < output_components.size() ; i++ )
         {
             std::string name = au::str("adapter_%lu" , adapter_id++ );
-            std::string command = au::str("add_output_adapter default.%s %s" , name.c_str() , output_components[i].c_str() );
+            std::string command = au::str("add_output_adaptor default.%s %s" , name.c_str() , output_components[i].c_str() );
 
             au::ErrorManager error;
             main_stream_connector->process_command( command , &error );
@@ -245,7 +245,7 @@ int main( int argC , const char *argV[] )
         for ( size_t i = 0 ; i < input_components.size() ; i++ )
         {
             std::string name = au::str("adapter_%lu" , adapter_id++ );
-            std::string command = au::str("add_input_adapter default.%s %s" , name.c_str() , input_components[i].c_str() );
+            std::string command = au::str("add_input_adaptor default.%s %s" , name.c_str() , input_components[i].c_str() );
             
             au::ErrorManager error;
             main_stream_connector->process_command( command , &error );

@@ -209,6 +209,56 @@ namespace stream_connector {
                 return;
             }
         }
+        
+        
+        if( command->path_components[0] == "add_channel" )
+        {
+            if( command->path_components.size() == 1 )
+            {
+                command->appendFormatedError("Wrong format. /add_channe/channel_name[/splitter]");
+                return;
+            }
+            
+            std::string channel_name = command->path_components[1];
+            std::string splitter_name;
+            
+            if ( command->path_components.size() > 2 )
+                splitter_name = command->path_components[2];
+            
+
+            au::ErrorManager error;
+            process_command( au::str("add_channel %s %s" , channel_name.c_str() , splitter_name.c_str() ) , &error );
+            if( error.isActivated() )
+                command->appendFormatedError( error.getMessage() );
+            else
+                command->appendFormatedElement("Result", "OK");
+            
+            return;
+        }
+
+        if( ( command->path_components[0] == "add_input_adaptor" ) || ( command->path_components[0] == "add_output_adaptor" ) )
+        {
+            if( command->path_components.size() < 3 )
+            {
+                command->appendFormatedError("Wrong format. /add_[ input or output ]_adaptor/channel.adaptor_name/format");
+                return;
+            }
+            
+            std::string operation = command->path_components[0];
+            std::string name = command->path_components[1];
+            std::string format = command->path_components[2];
+            
+            au::ErrorManager error;
+            process_command( au::str("%s %s %s" , operation.c_str() , name.c_str() , format.c_str() ) , &error );
+            if( error.isActivated() )
+                command->appendFormatedError( error.getMessage() );
+            else
+                command->appendFormatedElement("Result", "OK");
+            
+            return;
+        }
+        
+        
     }
     
     int StreamConnector::getNumInputItems()
@@ -314,8 +364,8 @@ namespace stream_connector {
             
             info->add("add_channel");
             
-            info->add("add_input_adapter");
-            info->add("add_output_adapter");
+            info->add("add_input_adaptor");
+            info->add("add_output_adaptor");
             
             info->add("show_input_inter_channel_connections");
             
@@ -327,8 +377,8 @@ namespace stream_connector {
             info->add( "summary" );
         }
         
-        if( ( info->completingSecondWord("add_input_adapter") )
-           || ( info->completingSecondWord("add_output_adapter") )
+        if( ( info->completingSecondWord("add_input_adaptor") )
+           || ( info->completingSecondWord("add_output_adaptor") )
            || ( info->completingSecondWord("remove_channel") ))
         {
             // Autocomplete with channel names
@@ -575,11 +625,11 @@ namespace stream_connector {
         }
         
         
-        if( main_command == "add_input_adapter" )
+        if( main_command == "add_input_adaptor" )
         {
             if( cmdLine.get_num_arguments() < 3 )
             {
-                error->set("Usage: add_input_adapter channel.name adapter_definition" );
+                error->set("Usage: add_input_adaptor channel.name adapter_definition" );
                 return;
             }
             
@@ -591,7 +641,7 @@ namespace stream_connector {
             std::vector<std::string> full_name_components = au::split(full_name, '.');
             if( full_name_components.size() != 2 )
             {
-                error->set("Usage: add_input_adapter channel.name adapter_definition" );
+                error->set("Usage: add_input_adaptor channel.name adapter_definition" );
                 return;
             }
             
@@ -617,11 +667,11 @@ namespace stream_connector {
             return;
         }
         
-        if( main_command == "add_output_adapter" )
+        if( main_command == "add_output_adaptor" )
         {
             if( cmdLine.get_num_arguments() < 3 )
             {
-                error->set("Usage: add_output_adapter channel.name adapter_definition" );
+                error->set("Usage: add_output_adaptor channel.name adapter_definition" );
                 return;
             }
             
@@ -633,7 +683,7 @@ namespace stream_connector {
             std::vector<std::string> full_name_components = au::split(full_name, '.');
             if( full_name_components.size() != 2 )
             {
-                error->set("Usage: add_output_adapter channel.name adapter_definition" );
+                error->set("Usage: add_output_adaptor channel.name adapter_definition" );
                 return;
             }
             

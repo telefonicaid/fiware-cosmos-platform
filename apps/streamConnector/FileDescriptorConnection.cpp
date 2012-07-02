@@ -225,12 +225,15 @@ namespace stream_connector {
         if( !file_descriptor_ )
             output <<  "Not connected";
         else
+        {
             if( file_descriptor_->isDisconnected() )
                 output << "Closing connection";
             else
                 output << "Connected";
         
-        output << au::str( " [fd:%d]" , file_descriptor_->getFd() );
+            output << au::str( " [fd:%d]" , file_descriptor_->getFd() );
+            
+        }
         
         if( getType() == connection_input )
             output << au::str( " [buffer:%s]"  , au::str( input_buffer_size ).c_str() );

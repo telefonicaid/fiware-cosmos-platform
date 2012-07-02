@@ -10,8 +10,8 @@
 
 
 // ----------------------------------------------------------------
-#define SC_CONSOLE_PORT 5467
-#define SC_WEB_PORT     9999
+#define SC_CONSOLE_PORT                    5467
+#define SC_WEB_PORT                        9191
 #define SAMSON_CONNECTOR_INTERCHANNEL_PORT 9890
 
 // ----------------------------------------------------------------

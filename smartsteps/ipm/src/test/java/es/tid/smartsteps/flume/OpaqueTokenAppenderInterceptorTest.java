@@ -11,6 +11,8 @@ import org.apache.flume.interceptor.Interceptor;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.platform.injection.flume.OpaqueTokenConstants;
+
 import static junit.framework.Assert.*;
 
 /**
@@ -43,7 +45,7 @@ public class OpaqueTokenAppenderInterceptorTest {
         Event outputEvent = this.interceptor.intercept(inputEvent);
         assertNotNull(outputEvent);
         assertEquals(outputEvent.getHeaders().get(
-                OpaqueTokenAppenderInterceptor.HEADER_OPAQUE_TOKEN),
+                OpaqueTokenConstants.EVENT_HEADER_OPAQUE_TOKEN),
                 this.opaqueToken.toString());
     }
 
@@ -52,7 +54,7 @@ public class OpaqueTokenAppenderInterceptorTest {
         Event inputEvent = EventBuilder.withBody("Hello world!",
                 Charset.forName("UTF-8"));
         inputEvent.getHeaders().put(
-                OpaqueTokenAppenderInterceptor.HEADER_OPAQUE_TOKEN,
+                OpaqueTokenConstants.EVENT_HEADER_OPAQUE_TOKEN,
                 this.opaqueToken.toString());
         Event outputEvent = this.interceptor.intercept(inputEvent);
         assertNull(outputEvent);

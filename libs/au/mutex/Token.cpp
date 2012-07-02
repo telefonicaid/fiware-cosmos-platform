@@ -34,7 +34,7 @@ Token::Token( const char * _name )
     // Take the name for debuggin
     name = _name;
 
-    LM_LM(("Token %s created" , name ));
+    //LM_LM(("Token %s created" , name ));
 
     int r_init = pthread_mutex_init(&_lock, 0);
     
@@ -51,7 +51,7 @@ Token::Token( const char * _name )
 
 Token::~Token()
 {
-    LM_LM(("Token %s was destroyed" , name ));
+    //LM_LM(("Token %s was destroyed" , name ));
     
     //LM_M(("Destroying token '%s' (%p)", name, this));
     pthread_mutex_destroy(&_lock);
@@ -60,12 +60,12 @@ Token::~Token()
 
 void Token::retain(  )
 {
-    LM_LM(("Thread [%s] trying to token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
+    //LM_LM(("Thread [%s] trying to token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
     
     if( locked && pthread_equal(pthread_self(), t ) )
     {
         counter++;
-        LM_LM(("token %s was retained by me ( thread [%s] ) . Just updating counter to %d " , name , get_thread_id( pthread_self() ).c_str() ,  counter ));
+        //LM_LM(("token %s was retained by me ( thread [%s] ) . Just updating counter to %d " , name , get_thread_id( pthread_self() ).c_str() ,  counter ));
         return;
     }
     
@@ -96,13 +96,13 @@ void Token::retain(  )
     counter = 1;
     locked = true;
     
-    LM_LM(("Thread [%s] has retained token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
+    //LM_LM(("Thread [%s] has retained token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
     
 }
 
 void Token::release( )
 {
-    LM_LM(("Thread [%s] trying to releases token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
+    //LM_LM(("Thread [%s] trying to releases token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
     
     if( !locked )
         LM_E(("Internal error: Releasing a non-locked au::Token"));
@@ -113,7 +113,7 @@ void Token::release( )
     counter--;
     if( counter > 0 )
     {
-        LM_LM(("Token %s is still locked by thread [%s] with counter %d" , name , get_thread_id( pthread_self() ).c_str() , counter ));
+        //LM_LM(("Token %s is still locked by thread [%s] with counter %d" , name , get_thread_id( pthread_self() ).c_str() , counter ));
         return;
     }
     
@@ -139,14 +139,14 @@ void Token::release( )
         }
     }
     
-    LM_LM(("Thread [%s] completelly releases by token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
+    //LM_LM(("Thread [%s] completelly releases by token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
 
 }
 
 
 void Token::stop()
 {
-    LM_LM(("Thread [%s] is being stopeed at token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
+    //LM_LM(("Thread [%s] is being stopeed at token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
     
     // You are suppoused to be retaining this lock
     if( !locked )
@@ -162,7 +162,7 @@ void Token::stop()
     if( pthread_cond_wait(&_block, &_lock) != 0 )
         LM_X(1, ("Internal error at au::TokenTaker"));
 
-    LM_LM(("Thread [%s] is back from stopeed at token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
+    //LM_LM(("Thread [%s] is back from stopeed at token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
     
     // Now you are retaining again
     locked = true;

@@ -83,7 +83,7 @@ public final class OpaqueTokenProcessorInterceptor extends
             OpaqueTokenConfigProvider.Builder builder;
             try {
                 builder = OpaqueTokenConfigProviderType.valueOf
-                        (configProviderName).getBuilder();
+                        (configProviderName.toUpperCase()).getBuilder();
             } catch (IllegalArgumentException e) {
                 builder = builderForName(configProviderName);
             }

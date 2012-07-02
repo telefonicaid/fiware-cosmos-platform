@@ -1,7 +1,6 @@
 package es.tid.cosmos.mobility.activitydensity;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -10,14 +9,12 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -26,7 +23,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  *
  * @author dmicol
  */
-public class PopdenProfileGetOutReducerTest {
+public class PopdenProfileGetOutReducerTest extends ConfiguredTest {
     private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<ClusterVector>,
             NullWritable, Text> instance;
     
@@ -35,11 +32,7 @@ public class PopdenProfileGetOutReducerTest {
         this.instance = new ReduceDriver<ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<ClusterVector>, NullWritable, Text>(
                         new PopdenProfileGetOutReducer());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.instance.setConfiguration(conf);
+        this.instance.setConfiguration(this.getConf());
     }
     
     @Test

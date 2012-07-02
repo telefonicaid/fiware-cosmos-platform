@@ -1,9 +1,8 @@
 package es.tid.cosmos.mobility.util;
 
 import java.io.IOException;
-import java.io.InputStream;
-import static java.util.Arrays.asList;
 
+import static java.util.Arrays.asList;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -12,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.data.PoiUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 
@@ -20,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
  *
  * @author dmicol
  */
-public class ExportPoiToTextReducerTest {
+public class ExportPoiToTextReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Poi>, NullWritable,
             Text> driver;
     
@@ -28,11 +27,7 @@ public class ExportPoiToTextReducerTest {
     public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Poi>,
                 NullWritable, Text>(new ExportPoiToTextReducer());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.driver.setConfiguration(conf);
+        this.driver.setConfiguration(this.getConf());
     }
     
     @Test

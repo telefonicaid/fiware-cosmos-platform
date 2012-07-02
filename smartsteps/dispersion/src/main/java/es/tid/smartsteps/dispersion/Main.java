@@ -36,9 +36,10 @@ public class Main extends Configured implements Tool {
         final Path microgridToPolygonPath = new Path(args[2]);
         final Path outputDir = new Path(args[3]);
 
+        boolean shouldFilterByDate = !config.get(Config.DATE_TO_FILTER).isEmpty();
         Path trafficCountsFilteredPath = new Path(outputDir,
                                                   "traffic_counts_filtered");
-        {
+        if (shouldFilterByDate) {
             CosmosJob job = CosmosJob.createMapJob(config,
                     "DateFilter",
                     TextInputFormat.class,
@@ -59,8 +60,9 @@ public class Main extends Configured implements Tool {
                     TextOutputFormat.class);
             job.getConfiguration().setEnum(LookupType.class.getName(),
                                            LookupType.CELL_TO_MICROGRID);
-            FileInputFormat.setInputPaths(job, trafficCountsFilteredPath,
-                                          cellToMicrogridPath);
+            FileInputFormat.setInputPaths(job, shouldFilterByDate ?
+                    trafficCountsFilteredPath : trafficCountsPath,
+                    cellToMicrogridPath);
             FileOutputFormat.setOutputPath(job, countsByMicrogridPath);
             job.waitForCompletion(true);
         }

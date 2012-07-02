@@ -1,11 +1,10 @@
 package es.tid.cosmos.mobility.labelling.client;
 
 import java.io.IOException;
-import java.io.InputStream;
-import static java.util.Arrays.asList;
 import java.util.List;
 
 import com.google.protobuf.Message;
+import static java.util.Arrays.asList;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
@@ -15,15 +14,15 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.base.data.generated.BaseTypes.Int;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.ConfiguredTest;
+import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 
 /**
  *
  * @author dmicol
  */
-public class VectorFiltClientsReducerTest {
+public class VectorFiltClientsReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Message>, LongWritable,
             TypedProtobufWritable<Cdr>> driver;
     
@@ -32,11 +31,7 @@ public class VectorFiltClientsReducerTest {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
                 LongWritable, TypedProtobufWritable<Cdr>>(
                         new VectorFiltClientsReducer());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.driver.setConfiguration(conf);
+        this.driver.setConfiguration(this.getConf());
     }
 
     @Test

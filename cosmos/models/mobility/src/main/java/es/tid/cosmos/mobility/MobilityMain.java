@@ -2,7 +2,6 @@ package es.tid.cosmos.mobility;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
@@ -21,6 +20,7 @@ import es.tid.cosmos.mobility.activitydensity.profile.ActivityDensityProfileRunn
 import es.tid.cosmos.mobility.adjacentextraction.AdjacentExtractionRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.group.AggregatedMatrixGroupRunner;
 import es.tid.cosmos.mobility.aggregatedmatrix.simple.AggregatedMatrixSimpleRunner;
+import es.tid.cosmos.mobility.conf.MobilityConfiguration;
 import es.tid.cosmos.mobility.itineraries.ItinerariesRunner;
 import es.tid.cosmos.mobility.labelling.bts.BtsLabellingRunner;
 import es.tid.cosmos.mobility.labelling.client.ClientLabellingRunner;
@@ -40,27 +40,25 @@ import es.tid.cosmos.mobility.preparing.PreparingRunner;
  * @author dmicol
  */
 public class MobilityMain extends Configured implements Tool {
+
+    public static final String CONFIG_FLAG = "config";
+
     @Override
-    public int run(String[] args) throws Exception {
+    public int run(String[] args) throws IOException, InterruptedException,
+                                         ClassNotFoundException {
         WorkflowList wfList = new WorkflowList(); 
         ArgumentParser arguments = new ArgumentParser();
         arguments.parse(args);
-        
-        InputStream configInput;
-        if (arguments.has("config")) {
-            configInput = new FileInputStream(arguments.getString("config"));
-        } else {
-            configInput = MobilityConfiguration.class.getResource(
-                    "/mobility.properties").openStream();
-        }
-        
+
         // Override the actual configuration with a mobility-based one, in order
         // to have the corresponding execution parameters
         final MobilityConfiguration conf = new MobilityConfiguration(
                 this.getConf());
-        conf.load(configInput);
         this.setConf(conf);
-        
+        if (arguments.has(CONFIG_FLAG)) {
+            conf.load(new FileInputStream(arguments.getString(CONFIG_FLAG)));
+        }
+
         if (!conf.getSysExecMode().equalsIgnoreCase("complete")) {
             throw new UnsupportedOperationException(
                     "Only complete execution mode is supported");
@@ -81,7 +79,44 @@ public class MobilityMain extends Configured implements Tool {
         Path btsVectorTxtPath = new Path(inputPath, "btsVector");
         Path clientProfilePath = new Path(inputPath, "clientProfile");
         
-        boolean shouldRunAll = arguments.getBoolean("runAll");
+        /*
+         * Extract the list of phases to execute
+         */
+        boolean shouldParse = arguments.getBoolean("parse");
+        boolean shouldPrepare = arguments.getBoolean("prepare");
+        boolean shouldExtractMivs = arguments.getBoolean("extractMIVs");
+        boolean shouldExtractPois = arguments.getBoolean("extractPOIs");
+        boolean shouldLabelClient = arguments.getBoolean("labelClient");
+        boolean shouldLabelBts = arguments.getBoolean("labelBTS");
+        boolean shouldLabelClientbts = arguments.getBoolean("labelClientBTS");
+        boolean shouldJoinLabels = arguments.getBoolean("joinLabels");
+        boolean shouldDetectSecondHomes = arguments.getBoolean(
+                "detectSecondHomes");
+        boolean shouldGetActivityDensity = arguments.getBoolean(
+                "getActivityDensity");
+        boolean shouldGetActivityDensityProfile = arguments.getBoolean(
+                "getActivityDensityProfile");
+        boolean shouldGetPopulationDensity = arguments.getBoolean(
+                "getPopulationDensity");
+        boolean shouldGetPopulationDensityProfile = arguments.getBoolean(
+                "getPopulationDensityProfile");
+        boolean shouldGetAggregatedMatrixSimpleProfile = arguments.getBoolean(
+                "getAggregatedMatrixSimple");
+        boolean shouldGetAggregatedMatrixGroupProfile = arguments.getBoolean(
+                "getAggregatedMatrixGroup");
+        boolean shouldExtractAdjacents = arguments.getBoolean(
+                "extractAdjacents");
+        boolean shouldGetItineraries = arguments.getBoolean("getItineraries");
+        boolean shouldOutPois = arguments.getBoolean("outPois");
+        boolean shouldRunAll = !(shouldParse || shouldPrepare || shouldExtractMivs
+                || shouldExtractPois || shouldLabelClient || shouldLabelBts
+                || shouldLabelClientbts || shouldJoinLabels
+                || shouldDetectSecondHomes || shouldGetActivityDensity
+                || shouldGetActivityDensityProfile || shouldGetPopulationDensity
+                || shouldGetPopulationDensity || shouldGetPopulationDensityProfile
+                || shouldGetAggregatedMatrixSimpleProfile
+                || shouldGetAggregatedMatrixGroupProfile
+                || shouldExtractAdjacents || shouldGetItineraries || shouldOutPois);
         boolean isDebug = arguments.getBoolean("debug");
         
         Path tmpParsingPath = new Path(outputPath, "parsing");
@@ -91,7 +126,6 @@ public class MobilityMain extends Configured implements Tool {
         Path btsComareaPath = new Path(tmpParsingPath, "bts_comarea");
         Path clientProfileMobPath = new Path(tmpParsingPath,
                                              "clientprofile_mob");
-        boolean shouldParse = arguments.getBoolean("parse");
         CosmosWorkflow parsingWorkflow = null;
         if (shouldRunAll || shouldParse) {
             parsingWorkflow = ParsingRunner.run(cdrsPath, cdrsMobPath,
@@ -108,7 +142,6 @@ public class MobilityMain extends Configured implements Tool {
         Path btsCommsPath = new Path(tmpPreparingPath, "bts_comms");
         Path cdrsNoBtsPath = new Path(tmpPreparingPath, "cdrs_no_bts");
         Path viTelmonthBtsPath = new Path(tmpPreparingPath, "vi_telmonth_bts");
-        boolean shouldPrepare = arguments.getBoolean("prepare");
         CosmosWorkflow preparingWorkflow = null;
         if (shouldRunAll || shouldPrepare) {
             preparingWorkflow = PreparingRunner.run(tmpPreparingPath,
@@ -122,7 +155,6 @@ public class MobilityMain extends Configured implements Tool {
         Path tmpExtractMivsPath = new Path(outputPath, "mivs");
         Path viClientFuseAccPath = new Path(tmpExtractMivsPath,
                                             "vi_client_fuse_acc");
-        boolean shouldExtractMivs = arguments.getBoolean("extractMIVs");
         CosmosWorkflow mivsWorkflow = null;
         if (shouldRunAll || shouldExtractMivs) {
             mivsWorkflow = MivsRunner.run(viTelmonthBtsPath, viClientFuseAccPath,
@@ -136,7 +168,6 @@ public class MobilityMain extends Configured implements Tool {
         Path clientsInfoFilteredPath = new Path(tmpExtractPoisPath,
                                                 "clients_info_filtered");
         Path clientsRepbtsPath = new Path(tmpExtractPoisPath, "clients_repbts");
-        boolean shouldExtractPois = arguments.getBoolean("extractPOIs");
         CosmosWorkflow poisWorkflow = null;
         if (shouldRunAll || shouldExtractPois) {
             poisWorkflow = PoisRunner.run(tmpExtractPoisPath, clientsBtsPath,
@@ -149,7 +180,6 @@ public class MobilityMain extends Configured implements Tool {
         Path tmpLabelClientPath = new Path(outputPath, "label_client");
         Path vectorClientClusterPath = new Path(tmpLabelClientPath,
                                                 "vector_client_cluster");
-        boolean shouldLabelClient = arguments.getBoolean("labelClient");
         CosmosWorkflow clientLabellingWorkflow = null;
         if (shouldRunAll || shouldLabelClient) {
             Path centroidsPath = getOnlyFileInDirectory(
@@ -165,7 +195,6 @@ public class MobilityMain extends Configured implements Tool {
         Path tmpLabelBtsPath = new Path(outputPath, "label_bts");
         Path vectorBtsClusterPath = new Path(tmpLabelBtsPath,
                                              "vector_bts_cluster");
-        boolean shouldLabelBts = arguments.getBoolean("labelBTS");
         CosmosWorkflow btsLabellingWorkflow = null;
         if (shouldRunAll || shouldLabelBts) {
             Path centroidsPath = getOnlyFileInDirectory(
@@ -185,7 +214,6 @@ public class MobilityMain extends Configured implements Tool {
                                                  "points_of_interest_temp");
         Path vectorClientbtsClusterPath = new Path(tmpLabelClientbtsPath,
                                                    "vector_clientbts_cluster");
-        boolean shouldLabelClientbts = arguments.getBoolean("labelClientBTS");
         CosmosWorkflow clientBtsLabellingWorkflow = null;
         if (shouldRunAll || shouldLabelClientbts) {
             Path medoidsPath = getOnlyFileInDirectory(
@@ -202,7 +230,6 @@ public class MobilityMain extends Configured implements Tool {
         Path tmpLabelJoining = new Path(outputPath, "label_joining");
         Path pointsOfInterestTemp4Path = new Path(tmpLabelJoining,
                                                   "points_of_interest_temp4");
-        boolean shouldJoinLabels = arguments.getBoolean("joinLabels");
         CosmosWorkflow labelJoiningWorkflow = null;
         if (shouldRunAll || shouldJoinLabels) {
             labelJoiningWorkflow = LabelJoiningRunner.run(
@@ -218,8 +245,6 @@ public class MobilityMain extends Configured implements Tool {
         Path tmpSecondHomesPath = new Path(outputPath, "second_homes");
         Path pointsOfInterestPath = new Path(tmpSecondHomesPath,
                                              "points_of_interest");
-        boolean shouldDetectSecondHomes = arguments.getBoolean(
-                "detectSecondHomes");
         CosmosWorkflow detectSecondHomesWorkflow =  null;
         if (shouldRunAll || shouldDetectSecondHomes) {
             detectSecondHomesWorkflow = DetectSecondHomesRunner.run(
@@ -235,8 +260,6 @@ public class MobilityMain extends Configured implements Tool {
         Path tmpActivityDensityPath = new Path(outputPath, "activity_density");
         Path activityDensityOutPath = new Path(tmpActivityDensityPath,
                                                "activityDensityOut");
-        boolean shouldGetActivityDensity = arguments.getBoolean(
-                "getActivityDensity");
         CosmosWorkflow activityDensityWorkflow = null;
         if (shouldRunAll || shouldGetActivityDensity) {
             activityDensityWorkflow = ActivityDensityRunner.run(
@@ -250,8 +273,6 @@ public class MobilityMain extends Configured implements Tool {
                 "activity_density_profile");
         Path activityDensityProfileOutPath = new Path(
                 tmpActivityDensityProfilePath, "activityDensityProfileOut");
-        boolean shouldGetActivityDensityProfile = arguments.getBoolean(
-                "getActivityDensityProfile");
         CosmosWorkflow activityDensityProfileWorkflow = null;
         if (shouldRunAll || shouldGetActivityDensityProfile) {
             activityDensityProfileWorkflow = ActivityDensityProfileRunner.run(
@@ -267,8 +288,6 @@ public class MobilityMain extends Configured implements Tool {
                                                  "population_density");
         Path populationDensityOutPath = new Path(tmpPopulationDensityPath,
                                                "populationDensityOut");
-        boolean shouldGetPopulationDensity = arguments.getBoolean(
-                "getPopulationDensity");
         CosmosWorkflow populationDensityWorkflow = null;
         if (shouldRunAll || shouldGetPopulationDensity) {
             populationDensityWorkflow = PopulationDensityRunner.run(
@@ -283,8 +302,6 @@ public class MobilityMain extends Configured implements Tool {
                 "population_density_profile");
         Path populationDensityProfileOutPath = new Path(
                 tmpPopulationDensityProfilePath, "populationDensityProfileOut");
-        boolean shouldGetPopulationDensityProfile = arguments.getBoolean(
-                "getPopulationDensityProfile");
         CosmosWorkflow populationDensityProfileWorkflow = null;
         if (shouldRunAll || shouldGetPopulationDensityProfile) {
             populationDensityProfileWorkflow = PopulationDensityProfileRunner.run(
@@ -300,8 +317,6 @@ public class MobilityMain extends Configured implements Tool {
                 "aggregated_matrix_simple");
         Path matrixPairBtsTxtPath = new Path(tmpAggregatedMatrixSimplePath,
                                              "matrixPairBtsTxt");
-        boolean shouldGetAggregatedMatrixSimpleProfile = arguments.getBoolean(
-                "getAggregatedMatrixSimple");
         CosmosWorkflow aggregatedMatrixSimpleWorkflow = null;
         if (shouldRunAll || shouldGetAggregatedMatrixSimpleProfile) {
             aggregatedMatrixSimpleWorkflow = AggregatedMatrixSimpleRunner.run(
@@ -316,8 +331,6 @@ public class MobilityMain extends Configured implements Tool {
                                                      "aggregated_matrix_group");
         Path matrixPairGroupTxtPath = new Path(tmpAggregatedMatrixGroupPath,
                                                "matrixPairGroupTxt");
-        boolean shouldGetAggregatedMatrixGroupProfile = arguments.getBoolean(
-                "getAggregatedMatrixGroup");
         CosmosWorkflow aggregatedMatrixGroupWorkflow = null;
         if (shouldRunAll || shouldGetAggregatedMatrixGroupProfile) {
             aggregatedMatrixGroupWorkflow = AggregatedMatrixGroupRunner
@@ -336,8 +349,6 @@ public class MobilityMain extends Configured implements Tool {
         Path tmpAdjacentsPath = new Path(outputPath, "adjacents");
         Path pointsOfInterestIdPath = new Path(tmpAdjacentsPath,
                                                "points_of_interest_id");
-        boolean shouldExtractAdjacents = arguments.getBoolean(
-                "extractAdjacents");
         if (shouldRunAll || shouldExtractAdjacents) {
             AdjacentExtractionRunner.run(pointsOfInterestPath, pairbtsAdjPath,
                     pointsOfInterestIdPath, tmpAdjacentsPath, isDebug, conf);
@@ -346,14 +357,12 @@ public class MobilityMain extends Configured implements Tool {
         Path tmpItinerariesPath = new Path(outputPath, "itineraries");
         Path clientItinerariesTxtPath = new Path(tmpItinerariesPath,
                                                  "client_itineraries_txt");
-        boolean shouldGetItineraries = arguments.getBoolean("getItineraries");
         if (shouldRunAll || shouldGetItineraries) {
             ItinerariesRunner.run(cellsPath, cdrsInfoPath, pointsOfInterestIdPath,
                     clientItinerariesTxtPath, tmpItinerariesPath, isDebug, conf);
         }
         
         Path tmpOutPoisPath = new Path(outputPath, "out_pois");
-        boolean shouldOutPois = arguments.getBoolean("outPois");
         if (shouldRunAll || shouldOutPois) {
             OutPoisRunner.run(vectorClientbtsPath, pointsOfInterestIdPath,
                     vectorClientClusterPath, vectorBtsClusterPath,

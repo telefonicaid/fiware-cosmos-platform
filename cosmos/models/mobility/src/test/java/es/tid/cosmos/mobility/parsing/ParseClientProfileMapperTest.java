@@ -1,7 +1,6 @@
 package es.tid.cosmos.mobility.parsing;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 import org.apache.hadoop.io.LongWritable;
@@ -14,14 +13,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
 
 /**
  *
  * @author dmicol
  */
-public class ParseClientProfileMapperTest {
+public class ParseClientProfileMapperTest extends ConfiguredTest {
     private MapDriver<LongWritable, Text, LongWritable,
             TypedProtobufWritable<ClientProfile>> driver;
     
@@ -29,11 +28,7 @@ public class ParseClientProfileMapperTest {
     public void setUp() throws IOException {
         this.driver = new MapDriver<LongWritable, Text, LongWritable,
                 TypedProtobufWritable<ClientProfile>>(new ParseClientProfileMapper());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.driver.setConfiguration(conf);
+        this.driver.setConfiguration(this.getConf());
     }
 
     @Test

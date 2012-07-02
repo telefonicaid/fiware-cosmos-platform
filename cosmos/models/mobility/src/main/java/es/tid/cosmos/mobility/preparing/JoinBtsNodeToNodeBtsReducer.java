@@ -10,7 +10,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.base.data.generated.BaseTypes.Null;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.conf.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.NodeBtsUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;

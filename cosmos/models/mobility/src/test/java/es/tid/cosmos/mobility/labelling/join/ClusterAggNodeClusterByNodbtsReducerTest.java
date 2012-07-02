@@ -1,16 +1,17 @@
 package es.tid.cosmos.mobility.labelling.join;
 
-import static java.util.Arrays.asList;
-
 import com.google.protobuf.Message;
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import static java.util.Arrays.asList;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.data.*;
+import es.tid.cosmos.mobility.data.ClusterUtil;
+import es.tid.cosmos.mobility.data.PoiUtil;
+import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;

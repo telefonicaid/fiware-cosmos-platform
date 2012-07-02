@@ -30,14 +30,14 @@ class AdjChangePoisIdReducer extends Reducer<ProtobufWritable<TwoInt>,
                 values, Poi.class, PoiNew.class);
         final List<Poi> poiList = typeLists.get(Poi.class);
         final List<PoiNew> poiNewList = typeLists.get(PoiNew.class);
-        
-        for (Poi poi : poiList) {
-            for (PoiNew poiNew : poiNewList) {
-                Poi.Builder outputPoiBuilder = Poi.newBuilder(poi);
-                outputPoiBuilder.setId(poiNew.getId());
-                context.write(key, new TypedProtobufWritable<Poi>(
-                        outputPoiBuilder.build()));
-            }
+        if (poiList.size() != 1 || poiNewList.size() != 1) {
+            throw new IllegalArgumentException("Invalid number of input data");
         }
+        final Poi poi = poiList.get(0);
+        final PoiNew poiNew = poiNewList.get(0);
+        Poi.Builder outputPoiBuilder = Poi.newBuilder(poi);
+        outputPoiBuilder.setId(poiNew.getId());
+        context.write(key,
+                      new TypedProtobufWritable<Poi>(outputPoiBuilder.build()));
     }
 }

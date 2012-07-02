@@ -2,7 +2,6 @@ package es.tid.smartsteps.dispersion.parsing;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
@@ -16,44 +15,42 @@ import es.tid.smartsteps.dispersion.data.TrafficCountsEntry;
  * @author logc
  */
 public class TrafficCountsEntryParser extends Parser<TrafficCountsEntry> {
-    public TrafficCountsEntryParser() {
+
+    private final String[] countFields;
+    
+    public TrafficCountsEntryParser(String[] countFields) {
         super(null);
+        this.countFields = countFields.clone();
     }
     
     @Override
     public TrafficCountsEntry parse(String value) {
-        JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON(value);
-        TrafficCountsEntry entry = new TrafficCountsEntry();
-        entry.date = jsonObject.getString("date");
-        entry.cellId = jsonObject.getString("cellid");
-        entry.northing = jsonObject.getLong("northing");
-        entry.easting = jsonObject.getLong("easting");
-        entry.lat = jsonObject.getDouble("lat");
-        entry.counts = new HashMap<String, ArrayList<BigDecimal>>();
-        for (String countField : TrafficCountsEntry.COUNT_FIELDS) {
-            final JSONArray parsedCounts = jsonObject.getJSONArray(countField);
-            ArrayList<BigDecimal> counts = new ArrayList<BigDecimal>();
-            for (int i = 0; i < parsedCounts.size(); i++) {
-                counts.add(new BigDecimal(parsedCounts.getDouble(i)));
+        try { 
+            JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON(value);
+            TrafficCountsEntry entry = new TrafficCountsEntry(this.countFields);
+            entry.date = jsonObject.getString("date");
+            entry.cellId = jsonObject.getString("cellid");
+            entry.latitude = jsonObject.getDouble("lat");
+            entry.longitude = jsonObject.getDouble("long");
+            for (String countField : entry.counts.keySet()) {
+                final JSONArray parsedCounts =
+                        jsonObject.getJSONArray(countField);
+                ArrayList<BigDecimal> counts = entry.counts.get(countField);
+                for (int i = 0; i < parsedCounts.size(); i++) {
+                    counts.add(new BigDecimal(parsedCounts.getDouble(i)));
+                }
             }
-            entry.counts.put(countField, counts);
-        }
-        entry.poiFive = new ArrayList<Integer>(
-                jsonObject.getJSONArray("poi_5"));
-        JSONObject pois = jsonObject.getJSONObject("pois");
-        for (String expectedPoi : TrafficCountsEntry.EXPECTED_POIS) {
-            entry.pois.put(expectedPoi, new ArrayList<Integer>(
-                    pois.getJSONArray(expectedPoi)));
-        }
-        entry.microgridId = jsonObject.optString("microgrid_id");
-        entry.polygonId = jsonObject.optString("polygon_id");
-        return entry;
-    }
-
-    @Override
-    public TrafficCountsEntry safeParse(String line) {
-        try {
-            return this.parse(line);
+            JSONObject pois = jsonObject.getJSONObject("pois");
+            for (String expectedPoi : TrafficCountsEntry.EXPECTED_POIS) {
+                final JSONArray parsedCounts = pois.getJSONArray(expectedPoi);
+                ArrayList<BigDecimal> counts = entry.pois.get(expectedPoi);
+                for (int i = 0; i < parsedCounts.size(); i++) {
+                    counts.add(new BigDecimal(parsedCounts.getDouble(i)));
+                }
+            }
+            entry.microgridId = jsonObject.optString("microgrid_id");
+            entry.polygonId = jsonObject.optString("polygon_id");
+            return entry;
         } catch (Exception ex) {
             return null;
         }

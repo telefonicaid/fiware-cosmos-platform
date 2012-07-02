@@ -137,8 +137,13 @@ def start_daemons():
     """
     Start HUE daemons, including jobsubd
     """
-    with cd("/etc/init.d"):
-        run("./hue start")
+    run("service mysqld start")
+    ## TODO: this could be a template instantiation
+    put("templates/provision.sql")
+    run("mysql < provision.sql")
+    with cd("/usr/share/hue/build/env/"):
+        run("bin/hue syncdb")
+    run("service hue start")
 
 def cleanup():
     """

@@ -43,10 +43,21 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm, move_sshd=False):
     execute(deploy_ganglia)
     report_current_task("Mongo")
     execute(deploy_mongo)
+    report_current_task("Provisioning users")
+    execute(provision_users)
 
 def report_current_task(task_name):
     report_start = "DEPLOY: starting %s deployment"
     puts(white(report_start % task_name, True))
+
+@task
+@roles('frontend')
+def provision_users():
+    if not files.exists("provisioning"):
+        run("mkdir provisioning")
+    put("templates/hdfs_home_create.sh", "~/provisioning/hdfs_home_create.sh")
+    run("chmod +x provisioning/hdfs_home_create.sh")
+    run("~/provisioning/hdfs_home_create.sh root")
 
 @task
 @parallel
@@ -109,7 +120,7 @@ def deploy_hue(thrift_tarpath):
     """
     Deploys the HUE frontend from Cloudera, plus our fixes and our app
     """
-    common.install_dependencies(['mysql', 'wget'])
+    common.install_dependencies(['mysql-server', 'wget'])
     hue_deployment.install_git()
     hue_deployment.install_and_patch_hue(CONFIG)
     execute(hue_deployment.install_hue_plugins)

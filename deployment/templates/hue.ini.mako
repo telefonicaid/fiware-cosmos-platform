@@ -80,12 +80,12 @@ http_500_debug_mode=0
 #
 # Note that for sqlite3, 'name', below is a filename;
 # for other backends, it is the database name.
-## engine=sqlite3
-## host=
-## port=
-## user=
-## password=
-## name=
+engine=mysql
+host=localhost
+port=3306
+user=hue
+password=du7rkwhu
+name=hue
 
 
 # Configuration options for connecting to an external SMTP server

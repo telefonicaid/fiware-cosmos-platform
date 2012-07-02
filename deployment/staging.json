@@ -26,7 +26,7 @@
     "hadoop_data_dirs": [ "/data1" ],
     "hue_patch_dir": "../cosmos/platform/frontend/hue-patches",
     "hue_patch_name": "hue-patch-cdh3u4-r0.4.diff",
-    "injection_path": "../cosmos/platform/injection/sftp/",
+    "injection_path": "../cosmos/platform/injection/sftp/server/",
     "mongo_db_path": "/data/lib/mongo",
     "frontend_ssh_custom_port": 2222
 }

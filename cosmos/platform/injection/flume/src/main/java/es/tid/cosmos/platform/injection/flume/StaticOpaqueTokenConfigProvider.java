@@ -40,8 +40,7 @@ public final class StaticOpaqueTokenConfigProvider implements
         @Override
         public StaticOpaqueTokenConfigProvider newConfigProvider(Properties props) {
             String token = readPropertyNotNull(props, PROPERTY_TOKEN);
-            String transformation = readPropertyNotNull(props,
-                    PROPERTY_TRANSFORMATION);
+            String transformation = props.getProperty(PROPERTY_TRANSFORMATION);
             String destination = readPropertyNotNull(props,
                     PROPERTY_DESTINATION);
 

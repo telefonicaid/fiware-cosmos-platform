@@ -3,5 +3,4 @@ version: 0.1
 description: Cosmos shell app
 name: cosmos
 sources: [Source/third-party/jquery.js,
-          Source/third-party/visualize.js,
           Source/Cosmos/Cosmos.js]

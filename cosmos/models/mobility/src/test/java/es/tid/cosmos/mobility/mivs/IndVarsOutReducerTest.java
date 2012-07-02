@@ -1,9 +1,8 @@
 package es.tid.cosmos.mobility.mivs;
 
 import java.io.IOException;
-import java.io.InputStream;
-import static java.util.Arrays.asList;
 
+import static java.util.Arrays.asList;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
@@ -12,7 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.data.MobVarsUtil;
 import es.tid.cosmos.mobility.data.MobViMobVarsUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.MobVars;
@@ -22,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
  *
  * @author logc
  */
-public class IndVarsOutReducerTest {
+public class IndVarsOutReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<MobViMobVars>,
             NullWritable, Text> reducer;
 
@@ -31,11 +30,7 @@ public class IndVarsOutReducerTest {
         this.reducer = new ReduceDriver<LongWritable,
                 TypedProtobufWritable<MobViMobVars>, NullWritable, Text>(
                         new IndVarsOutReducer());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.reducer.setConfiguration(conf);
+        this.reducer.setConfiguration(this.getConf());
     }
 
     @Test

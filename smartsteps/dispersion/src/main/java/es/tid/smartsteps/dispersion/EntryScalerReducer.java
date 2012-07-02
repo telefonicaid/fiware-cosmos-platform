@@ -23,6 +23,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsEntryParser;
  */
 public class EntryScalerReducer extends Reducer<Text, Text,
                                                 NullWritable, Text> {
+
     private LookupType type;
     private Parser countsParser;
     private Parser lookupParser;
@@ -32,7 +33,8 @@ public class EntryScalerReducer extends Reducer<Text, Text,
                                                  InterruptedException {
         this.type = context.getConfiguration().getEnum(
                 LookupType.class.getName(), LookupType.INVALID);
-        this.countsParser = new TrafficCountsEntryParser();
+        this.countsParser = new TrafficCountsEntryParser(
+                context.getConfiguration().getStrings(Config.COUNT_FIELDS));
         switch (this.type) {
             case CELL_TO_MICROGRID:
                 this.lookupParser = new CellToMicrogridEntryParser(
@@ -55,10 +57,9 @@ public class EntryScalerReducer extends Reducer<Text, Text,
         LookupTable lookupTable = new LookupTable();
         for (Text value : values) {
             Entry entry;
-            if ((entry = this.countsParser.safeParse(value.toString()))
-                    != null) {
+            if ((entry = this.countsParser.parse(value.toString())) != null) {
                 trafficCountsEntries.add((TrafficCountsEntry) entry);
-            } else if ((entry = this.lookupParser.safeParse(value.toString()))
+            } else if ((entry = this.lookupParser.parse(value.toString()))
                     != null) {
                 lookupTable.add(entry);
             } else {
@@ -68,6 +69,11 @@ public class EntryScalerReducer extends Reducer<Text, Text,
         
         for (TrafficCountsEntry entry : trafficCountsEntries) {
             final List<LookupEntry> lookups = lookupTable.get(key.toString());
+            if (lookups == null) {
+                context.getCounter(Counters.ENTRIES_NOT_IN_LOOKUP).increment(1L);
+                continue;
+            }
+            context.getCounter(Counters.ENTRIES_IN_LOOKUP).increment(1L);
             for (LookupEntry lookup : lookups) {
                 TrafficCountsEntry scaledEntry = entry.scale(
                         lookup.getProportion());

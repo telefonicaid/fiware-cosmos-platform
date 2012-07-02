@@ -17,7 +17,7 @@
 from desktop.lib.windmill_util import logged_in_client
 
 def test_cosmos():
-  """ launches the default view for cosmos """
-  client = logged_in_client()
-  client.click(id='hue-cosmos-menu')
-  client.waits.forElement(classname='Hue-COSMOS', timeout='2000')  
+    """ launches the default view for cosmos """
+    client = logged_in_client()
+    client.click(id='hue-cosmos-menu')
+    client.waits.forElement(classname='Hue-COSMOS', timeout='2000')

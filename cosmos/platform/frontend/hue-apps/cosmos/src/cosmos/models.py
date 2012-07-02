@@ -7,8 +7,9 @@ from datetime import datetime
 from django.contrib.auth.models import User
 from django.core.urlresolvers import reverse
 from django.db import models
-from jobsubd.ttypes import State
 from jobsub.models import Submission
+from jobsubd.ttypes import State
+import jobsub.views as jobsub
 
 from cosmos import conf
 
@@ -44,27 +45,11 @@ class JobRun(models.Model):
     def __unicode__(self):
         return self.name
 
-    def mongo_db(self):
-        return 'db_%d' % self.user.id
+    def is_parameterized(self):
+        return self.parameters is not None
 
     def mongo_collection(self):
         return 'job_%d' % self.id
-
-    def mongo_url(self, collection=None):
-        if collection is None:
-            collection = self.mongo_collection()
-        return '%s/%s.%s' % (conf.MONGO_BASE.get(), self.mongo_db(), collection)
-
-    def hadoop_args(self, jar_name):
-        args = ['jar', jar_name]
-        if self.parameters is not None:
-            for parameter in self.parameters:
-                args.extend(parameter.as_job_argument(self))
-        else:
-            input_path = self.dataset_path
-            output_path = '/user/%s/tmp/job_%d/' % (self.user.username, self.id)
-            args.extend([input_path, output_path, self.mongo_url()])
-        return args
 
     def state(self):
         if self.submission is None:
@@ -87,10 +72,10 @@ class JobRun(models.Model):
             conf.MIN_POLLING_INTERVAL):
             return
 
-        submission = job_run.submission
-        job_data = jobsub.get_client().get_job_data(submission.submission_handle)
-        submission.last_seen_state = job_data.state
-        submission.save()
+        job_data = jobsub.get_client().get_job_data(
+            self.submission.submission_handle)
+        self.submission.last_seen_state = job_data.state
+        self.submission.save()
         self.last_submission_refresh = now
         self.save()
 
@@ -101,20 +86,25 @@ class JobRun(models.Model):
         Each link is a dict of the form:
             {href: '/path', class: 'class', target: 'HueApp', name: 'name'}
         """
-        if self.submission is None:
-            return []
         links = []
-        if self.submission.last_seen_state == State.SUCCESS:
+
+        if self.submission is None:
+            return links
+
+        if (not self.is_parameterized() and
+            self.submission.last_seen_state == State.SUCCESS):
             links.append({
                 'name': 'Results',
                 'class': 'results',
                 'target': None,
-                'href': reverse('show_results', args=[self.id])
-            });
+                'href': reverse('show_results', args=[self.mongo_collection()])
+            })
+
         links.append({
-            'name': 'Detailed status',
-            'class': 'status',
-            'target': 'JobSub',
-            'href': self.submission.watch_url()
-        });
+                'name': 'Detailed status',
+                'class': 'status',
+                'target': 'JobSub',
+                'href': self.submission.watch_url()
+            })
+
         return links

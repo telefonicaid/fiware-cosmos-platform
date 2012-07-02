@@ -1,7 +1,6 @@
 package es.tid.cosmos.mobility.pois;
 
 import java.io.IOException;
-import java.io.InputStream;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -10,8 +9,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.data.BtsCounterUtil;
-import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
@@ -20,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  *
  * @author dmicol
  */
-public class RepbtsGetRepresentativeBtsMapperTest {
+public class RepbtsGetRepresentativeBtsMapperTest extends ConfiguredTest {
     private MapDriver<LongWritable, TypedProtobufWritable<BtsCounter>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<BtsCounter>> driver;
     
@@ -29,11 +28,7 @@ public class RepbtsGetRepresentativeBtsMapperTest {
         this.driver = new MapDriver<LongWritable, TypedProtobufWritable<BtsCounter>,
                 ProtobufWritable<TwoInt>, TypedProtobufWritable<BtsCounter>>(
                         new RepbtsGetRepresentativeBtsMapper());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.driver.setConfiguration(conf);
+        this.driver.setConfiguration(this.getConf());
     }
 
     @Test

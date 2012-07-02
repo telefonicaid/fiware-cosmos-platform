@@ -1,4 +1,4 @@
-package es.tid.cosmos.mobility;
+package es.tid.cosmos.mobility.conf;
 
 import java.io.IOException;
 import java.io.InputStream;

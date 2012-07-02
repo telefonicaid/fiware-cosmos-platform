@@ -9,7 +9,7 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.mobility.MobilityConfiguration;
+import es.tid.cosmos.mobility.conf.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.ItinMovementUtil;
 import es.tid.cosmos.mobility.data.ItinTimeUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinMovement;

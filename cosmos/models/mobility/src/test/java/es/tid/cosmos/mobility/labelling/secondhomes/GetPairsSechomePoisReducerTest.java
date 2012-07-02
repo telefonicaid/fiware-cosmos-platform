@@ -1,20 +1,19 @@
 package es.tid.cosmos.mobility.labelling.secondhomes;
 
 import java.io.IOException;
-import java.io.InputStream;
-import static java.util.Arrays.asList;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
+import static java.util.Arrays.asList;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int64;
+import es.tid.cosmos.mobility.ConfiguredTest;
 import es.tid.cosmos.mobility.data.PoiPosUtil;
 import es.tid.cosmos.mobility.data.TwoIntUtil;
-import es.tid.cosmos.base.data.generated.BaseTypes.Int64;
-import es.tid.cosmos.mobility.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
@@ -22,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  *
  * @author dmicol
  */
-public class GetPairsSechomePoisReducerTest {
+public class GetPairsSechomePoisReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<PoiPos>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<Int64>> driver;
     
@@ -31,11 +30,7 @@ public class GetPairsSechomePoisReducerTest {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<PoiPos>,
                 ProtobufWritable<TwoInt>, TypedProtobufWritable<Int64>>(
                         new GetPairsSechomePoisReducer());
-        InputStream configInput = MobilityConfiguration.class.getResource(
-                "/mobility.properties").openStream();
-        MobilityConfiguration conf = new MobilityConfiguration();
-        conf.load(configInput);
-        this.driver.setConfiguration(conf);
+        this.driver.setConfiguration(this.getConf());
     }
 
     @Test

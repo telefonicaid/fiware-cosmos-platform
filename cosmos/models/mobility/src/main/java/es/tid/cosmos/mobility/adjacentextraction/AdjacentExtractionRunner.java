@@ -29,14 +29,13 @@ public class AdjacentExtractionRunner {
                            boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
-        
+
         Path poisIdPath = new Path(tmpDirPath, "pois_id");
         {
-            CosmosJob job = CosmosJob.createMapReduceJob(conf,
+            CosmosJob job = CosmosJob.createMapJob(conf,
                     "AdjAddUniqueIdPoiToPoiNew",
                     SequenceFileInputFormat.class,
-                    AdjAddUniqueIdPoiMapper.class,
-                    AdjAddUniqueIdPoiToPoiNewReducer.class,
+                    AdjAddUniqueIdPoiToPoiNewMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestPath);
             FileOutputFormat.setOutputPath(job, poisIdPath);
@@ -45,11 +44,10 @@ public class AdjacentExtractionRunner {
 
         Path poisTablePath = new Path(tmpDirPath, "pois_table");
         {
-            CosmosJob job = CosmosJob.createMapReduceJob(conf, 
+            CosmosJob job = CosmosJob.createMapJob(conf, 
                     "AdjAddUniqueIdPoiToTwoInt",
                     SequenceFileInputFormat.class,
-                    AdjAddUniqueIdPoiMapper.class,
-                    AdjAddUniqueIdPoiToTwoIntReducer.class,
+                    AdjAddUniqueIdPoiToTwoIntMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, pointsOfInterestPath);
             FileOutputFormat.setOutputPath(job, poisTablePath);

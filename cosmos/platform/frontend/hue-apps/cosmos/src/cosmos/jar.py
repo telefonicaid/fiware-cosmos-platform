@@ -24,6 +24,7 @@ class JarFile(object):
 
     def __init__(self, path):
         self.path = path
+        self.manifest = None
         try:
             self.jar = ZipFile(path, 'r')
         except BadZipfile:
@@ -44,7 +45,7 @@ class JarFile(object):
         elif path.endswith('.xml'):
             pairs = self.__load_from_xml(content)
         else:
-            raise InvalidJar("Unsupported properties template format")
+            raise InvalidJarFile("Unsupported properties template format")
         try:
             return [make_parameter(key, value) for key, value in pairs]
         except ValueError, ex:

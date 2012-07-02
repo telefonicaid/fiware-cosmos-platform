@@ -26,14 +26,13 @@ authors:
 requires:
 - JFrame/JFrame.Browser
 - fancyupload/FancyUpload3.Attach
-- visualize
 
 provides: [Cosmos]
 
 ...
 */
 ART.Sheet.define('window.art.browser.cosmos', {
-	'min-width': 620
+        'min-width': 620
 });
 
 // Utility function. Nice to have: having it available as part of the filters
@@ -86,17 +85,6 @@ var Cosmos = new Class({
                     var basePath = path.substring(0, path.indexOf('?')) || path;
                     frame.load({requestPath: basePath + queryString});
                 });
-            },
-            VisualizedTable: function (table) {
-                var options = {
-                    height: 800
-                };
-                jQuery(table).visualize($merge({
-                    type: 'pie',
-                    pieMargin: 60,
-                    pieLabelPos: 'outer'
-                }, options));
-                jQuery(table).visualize($merge({type: 'bar'}, options));
             }
         });
     },

@@ -16,17 +16,27 @@ namespace stream_connector {
     class SamsonConnection : public Connection , public samson::DelilahLiveDataReceiverInterface
     {
         
-        samson::SamsonClient * client;
-        std::string queue;
+        // Information to stablish the connection with the SAMSON system
+        std::string host_;
+        int port_;
+        std::string queue_;
+
+        samson::SamsonClient * client_;
+
+        // Connections trials information
+        int num_connection_trials;
+        au::Cronometer cronometer_reconnection;
+
         
     public:
         
         
         SamsonConnection( Adaptor  * _item 
                          , ConnectionType _type 
-                         , std::string name 
-                         , samson::SamsonClient * _client 
-                         , std::string _queue );
+                         , std::string host 
+                         , int port
+                         , std::string queue 
+                         );
         
         
         ~SamsonConnection();
@@ -44,6 +54,10 @@ namespace stream_connector {
         
         std::string getStatus();
         
+    private:
+        
+        void try_connect();
+        
     };
     
     class SamsonAdaptor : public Adaptor
@@ -53,8 +67,6 @@ namespace stream_connector {
         int port;
         std::string queue;
         
-        // Last connection trial
-        au::Cronometer cronometer;
         
     public:
         
@@ -66,10 +78,9 @@ namespace stream_connector {
         
         // Get status of this element
         std::string getStatus();
-        
-        void review_item();
 
-        
+        virtual void start_item();
+        virtual void review_item();
         
     };
     

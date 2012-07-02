@@ -257,6 +257,9 @@ namespace stream_connector {
                 return; // No retray at the moment
             
             try_connect();
+            
+            connection_cronometer.reset();
+            
             return;
         }
         
@@ -265,6 +268,9 @@ namespace stream_connector {
         // Only start sending data if hand-shake is finished
         if( hand_shake_finished )
         {
+            // Reset counters of reconnection
+            connection_trials = 0;
+
             
             // Encapsulate generated buffers in packets
             while( true )
@@ -303,6 +309,8 @@ namespace stream_connector {
                                                                  , SAMSON_CONNECTOR_INTERCHANNEL_PORT
                                                                  , &socket_connection);                                  
         
+        connection_trials++;
+        
         if( s == au::OK )
         {
             
@@ -314,15 +322,10 @@ namespace stream_connector {
             
             // Init all hand shake for this connection
             init_hand_shake( channel_name_ );
-            
-            // Reset counters of reconnection
-            connection_cronometer.reset();
-            connection_trials = 0;
         }
         else
         {
             last_error = au::status(s);
-            connection_trials++;
         }
         
     }

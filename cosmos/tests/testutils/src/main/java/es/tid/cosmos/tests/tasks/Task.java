@@ -1,5 +1,6 @@
 package es.tid.cosmos.tests.tasks;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -8,12 +9,23 @@ import java.util.Map;
  * @author ximo
  */
 public abstract class Task {
+    
     private static final int SLEEP_TIME = 30000; // 30 seconds
+    protected Map<String, String> parameters = new HashMap<String, String>();
+    protected String dataSet;
 
     /**
      * This function will start the execution of the task in the cluster
      */
-    public abstract void run() throws TestException;
+    public abstract void run();
+
+    public void setParameter(String paramName, String value) {
+        this.parameters.put(paramName, value);
+    }
+    
+    public void setDataset(String path) {
+        this.dataSet = path;
+    }
 
     /**
      * This function blocks until the task finished execution (i.e. it enters

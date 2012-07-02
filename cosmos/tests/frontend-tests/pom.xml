@@ -36,7 +36,7 @@
         <dependency>
             <groupId>org.testng</groupId>
             <artifactId>testng</artifactId>
-            <version>6.4</version>
+            <version>6.5.2</version>
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>

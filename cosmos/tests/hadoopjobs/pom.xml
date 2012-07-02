@@ -19,7 +19,10 @@
         <module>parameterizedjob-malformed3</module>
         <module>parameterizedjob-malformed4</module>
         <module>parameterizedjob-malformed5</module>
+        <module>parameterizedjob-malformed6</module>
+        <module>parameterizedjob-malformed7</module>
         <module>parameterizedjob-normal</module>
+        <module>parameterizedjob-normal-xml</module>
         <module>parameterizedjob-whitespace</module>
         <module>printprimes</module>
     </modules>

@@ -52,6 +52,8 @@ private:
     
     void retain();
     void release();
+
+    void stop();
     
 };
 

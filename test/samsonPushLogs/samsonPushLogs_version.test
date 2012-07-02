@@ -1,7 +1,7 @@
 --NAME--
-samsonConnector - version
+streamConnector - version
 --SHELL--
-samsonConnector -version
+streamConnector -version
 --EXPECT--
 No MAN version
 No MAN Copyright

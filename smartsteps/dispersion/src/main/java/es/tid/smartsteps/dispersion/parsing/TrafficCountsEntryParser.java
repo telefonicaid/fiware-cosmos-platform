@@ -16,6 +16,14 @@ import es.tid.smartsteps.dispersion.data.TrafficCountsEntry;
  */
 public class TrafficCountsEntryParser extends Parser<TrafficCountsEntry> {
 
+    public static final String DATE_FIELD_NAME = "date";
+    public static final String CELLID_FIELD_NAME = "cellid";
+    public static final String LATITUDE_FIELD_NAME = "lat";
+    public static final String LONGITUDE_FIELD_NAME = "long";
+    public static final String POIS_FIELD_NAME = "pois";
+    public static final String MICROGRIDID_FIELD_NAME = "microgrid_id";
+    public static final String POLYGONID_FIELD_NAME = "polygon_id";
+    
     private final String[] countFields;
     
     public TrafficCountsEntryParser(String[] countFields) {
@@ -28,10 +36,10 @@ public class TrafficCountsEntryParser extends Parser<TrafficCountsEntry> {
         try { 
             JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON(value);
             TrafficCountsEntry entry = new TrafficCountsEntry(this.countFields);
-            entry.date = jsonObject.getString("date");
-            entry.cellId = jsonObject.getString("cellid");
-            entry.latitude = jsonObject.getDouble("lat");
-            entry.longitude = jsonObject.getDouble("long");
+            entry.date = jsonObject.getString(DATE_FIELD_NAME);
+            entry.cellId = jsonObject.getString(CELLID_FIELD_NAME);
+            entry.latitude = jsonObject.getDouble(LATITUDE_FIELD_NAME);
+            entry.longitude = jsonObject.getDouble(LONGITUDE_FIELD_NAME);
             for (String countField : entry.counts.keySet()) {
                 final JSONArray parsedCounts =
                         jsonObject.getJSONArray(countField);
@@ -40,7 +48,7 @@ public class TrafficCountsEntryParser extends Parser<TrafficCountsEntry> {
                     counts.add(new BigDecimal(parsedCounts.getDouble(i)));
                 }
             }
-            JSONObject pois = jsonObject.getJSONObject("pois");
+            JSONObject pois = jsonObject.getJSONObject(POIS_FIELD_NAME);
             for (String expectedPoi : TrafficCountsEntry.EXPECTED_POIS) {
                 final JSONArray parsedCounts = pois.getJSONArray(expectedPoi);
                 ArrayList<BigDecimal> counts = entry.pois.get(expectedPoi);
@@ -48,8 +56,8 @@ public class TrafficCountsEntryParser extends Parser<TrafficCountsEntry> {
                     counts.add(new BigDecimal(parsedCounts.getDouble(i)));
                 }
             }
-            entry.microgridId = jsonObject.optString("microgrid_id");
-            entry.polygonId = jsonObject.optString("polygon_id");
+            entry.microgridId = jsonObject.optString(MICROGRIDID_FIELD_NAME);
+            entry.polygonId = jsonObject.optString(POLYGONID_FIELD_NAME);
             return entry;
         } catch (Exception ex) {
             return null;

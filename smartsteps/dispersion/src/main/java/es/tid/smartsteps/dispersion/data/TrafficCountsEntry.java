@@ -8,6 +8,8 @@ import java.util.List;
 
 import net.sf.json.JSONObject;
 
+import es.tid.smartsteps.dispersion.parsing.TrafficCountsEntryParser;
+
 /**
  * TrafficCountsEntry
  *
@@ -16,10 +18,10 @@ import net.sf.json.JSONObject;
  *
  * @author  logc
  */
-public class TrafficCountsEntry implements FieldsEntry {
+public class TrafficCountsEntry implements Entry {
 
-    public static final String[] EXPECTED_POIS = {"HOME", "NONE", "WORK",
-                                                  "OTHER", "BILL"};  
+    public static final String[] EXPECTED_POIS = { "HOME", "NONE", "WORK",
+                                                   "OTHER", "BILL" };  
     private static final int HOURLY_SLOTS = 25;
 
     public String cellId;
@@ -33,11 +35,9 @@ public class TrafficCountsEntry implements FieldsEntry {
 
     public TrafficCountsEntry(String[] countFields) {
         this.pois = new HashMap<String, ArrayList<BigDecimal>>();
-        this.pois.put("HOME", new ArrayList<BigDecimal>(HOURLY_SLOTS));
-        this.pois.put("WORK", new ArrayList<BigDecimal>(HOURLY_SLOTS));
-        this.pois.put("NONE", new ArrayList<BigDecimal>(HOURLY_SLOTS));
-        this.pois.put("OTHER", new ArrayList<BigDecimal>(HOURLY_SLOTS));
-        this.pois.put("BILL", new ArrayList<BigDecimal>(HOURLY_SLOTS));
+        for (String expectedPoi : EXPECTED_POIS) {
+            this.pois.put(expectedPoi, new ArrayList<BigDecimal>(HOURLY_SLOTS));
+        }
         this.counts = new HashMap<String, ArrayList<BigDecimal>>();
         for (String countField : countFields) {
             this.counts.put(countField, new ArrayList<BigDecimal>());
@@ -70,19 +70,6 @@ public class TrafficCountsEntry implements FieldsEntry {
         } else {
             return this.cellId;
         }
-    }
-
-    @Override
-    public List<Object> getFields() {
-        ArrayList<Object> ans = new ArrayList<Object>();
-        ans.add(this.date);
-        ans.add(this.latitude);
-        ans.add(this.longitude);
-        ans.add(this.counts);
-        ans.add(this.pois);
-        ans.add(this.microgridId);
-        ans.add(this.polygonId);
-        return ans;
     }
     
     public TrafficCountsEntry scale(BigDecimal factor) {
@@ -123,16 +110,16 @@ public class TrafficCountsEntry implements FieldsEntry {
 
     public JSONObject toJSON(){
         final JSONObject obj = new JSONObject();
-        obj.put("cellid", this.cellId);
-        obj.put("date", this.date);
-        obj.put("lat", this.latitude);
-        obj.put("long", this.longitude);
+        obj.put(TrafficCountsEntryParser.CELLID_FIELD_NAME, this.cellId);
+        obj.put(TrafficCountsEntryParser.DATE_FIELD_NAME, this.date);
+        obj.put(TrafficCountsEntryParser.LATITUDE_FIELD_NAME, this.latitude);
+        obj.put(TrafficCountsEntryParser.LONGITUDE_FIELD_NAME, this.longitude);
         for (String field : this.counts.keySet()) {
             obj.put(field, this.counts.get(field));
         }
-        obj.put("pois", this.pois);
-        obj.put("microgrid_id", this.microgridId);
-        obj.put("polygon_id", this.polygonId);
+        obj.put(TrafficCountsEntryParser.POIS_FIELD_NAME, this.pois);
+        obj.put(TrafficCountsEntryParser.MICROGRIDID_FIELD_NAME, this.microgridId);
+        obj.put(TrafficCountsEntryParser.POLYGONID_FIELD_NAME, this.polygonId);
         return obj;
     }
 }

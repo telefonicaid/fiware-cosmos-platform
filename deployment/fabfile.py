@@ -44,7 +44,7 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm, move_sshd=False):
     report_current_task("Mongo")
     execute(deploy_mongo)
     report_current_task("Provisioning users")
-    execute(provision_users)
+    execute(provision_user, admin)
 
 def report_current_task(task_name):
     report_start = "DEPLOY: starting %s deployment"
@@ -52,12 +52,11 @@ def report_current_task(task_name):
 
 @task
 @roles('frontend')
-def provision_users():
-    if not files.exists("provisioning"):
-        run("mkdir provisioning")
-    put("templates/hdfs_home_create.sh", "~/provisioning/hdfs_home_create.sh")
-    run("chmod +x provisioning/hdfs_home_create.sh")
-    run("~/provisioning/hdfs_home_create.sh root")
+def provision_user(user_name):
+    run('su hdfs -c "hadoop dfs -mkdir /user/%s/{datasets,jars,tmp}"' %
+            user_name)
+    run('su hdfs -c "hadoop dfs -chown -R %s:hue /user/%s"' %
+            (user_name, user_name))
 
 @task
 @parallel

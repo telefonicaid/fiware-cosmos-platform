@@ -164,11 +164,14 @@ def deploy_sftp(move_sshd=False):
     common.touch_file("/var/run/injection/server.pid")
     put(os.path.join(BASEPATH, "templates/injection.init.d"),
                                "/etc/init.d/injection")
+    sudo("chmod +x /etc/init.d/injection")
     if move_sshd:
         custom_port = CONFIG['frontend_ssh_custom_port']
         warn(yellow("Moving sshd at %s to port %s" %
                     (env.host_string, custom_port)))
         do_move_sshd(custom_port)
+        ## Only restart if we have moved sshd from its custom port
+        run("service injection restart")
 
 def do_move_sshd(custom_port=CONFIG['frontend_ssh_custom_port']):
     """

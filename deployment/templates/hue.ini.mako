@@ -84,7 +84,7 @@ engine=mysql
 host=localhost
 port=3306
 user=hue
-password=du7rkwhu
+password=${hue_db_pwd}
 name=hue
 
 

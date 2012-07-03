@@ -67,8 +67,11 @@ def install_and_patch_hue(config):
 
     common.instantiate_template('templates/hue.ini.mako', '/etc/hue/hue.ini',
                                 context=dict(
-                                    jobtracker = config['hosts']['jobtracker'][0],
-                                    namenode = config['hosts']['namenode'][0]))
+                                    hue_db_pass = env.hue_db_pass,
+                                    jobtracker =
+                                        config['hosts']['jobtracker'][0],
+                                    namenode =
+                                        config['hosts']['namenode'][0]))
 
     sudo('hadoop dfs -mkdir /user/hive/warehouse', user='hdfs')
     sudo('hadoop dfs -chown -R hive /user/hive/', user='hdfs')
@@ -138,9 +141,12 @@ def start_daemons():
     Start HUE daemons, including jobsubd
     """
     run("service mysqld start")
-    ## TODO: this could be a template instantiation
-    put("templates/provision.sql")
+    common.instantiate_template('templates/provision.sql.mako',
+                                'provision.sql',
+                                context=dict(hue_db_pwd=env.hue_db_pwd)
+                                )
     run("mysql < provision.sql")
+    run("rm provision.sql")
     with cd("/usr/share/hue/build/env/"):
         run("bin/hue syncdb")
     run("service hue start")

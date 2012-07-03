@@ -155,6 +155,7 @@ def deploy_sftp(move_sshd=False):
 
     common.instantiate_template('templates/injection.conf.mako',
                                 '/etc/injection.cfg', context=dict(
+                                    hue_db_pwd=env.hue_db_pwd,
                                     namenode=CONFIG['hosts']['namenode'][0]
                                 ))
     symlink = "/usr/local/injection-server"

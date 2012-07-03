@@ -10,9 +10,9 @@ import es.tid.cosmos.base.data.generated.BaseTypes.Int64;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 
 /**
- * Input: <Long, TwoInt>
+ * Input:  <Long, TwoInt>
  * Output: <Long, Long>
- * 
+ *
  * @author dmicol
  */
 class AdjSpreadTableByPoiIdMapper extends Mapper<LongWritable,

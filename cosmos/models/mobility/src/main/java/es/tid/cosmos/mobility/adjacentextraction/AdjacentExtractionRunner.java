@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.base.mapreduce.WorkflowList;
 import es.tid.cosmos.mobility.util.ExportPoiToTextByTwoIntReducer;
 import es.tid.cosmos.mobility.util.SetMobDataInputIdByTwoIntReducer;
 import es.tid.cosmos.mobility.util.SetMobDataInputIdReducer;
@@ -23,36 +24,50 @@ import es.tid.cosmos.mobility.util.SetMobDataInputIdReducer;
 public class AdjacentExtractionRunner {
     private AdjacentExtractionRunner() {
     }
-    
+
     public static void run(Path pointsOfInterestPath, Path pairbtsAdjPath,
                            Path pointsOfInterestIdPath, Path tmpDirPath,
                            boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
 
-        Path poisIdPath = new Path(tmpDirPath, "pois_id");
+        Path uuidPoisPath = new Path(tmpDirPath, "pois_uuid");
         {
             CosmosJob job = CosmosJob.createMapJob(conf,
+                    "AdjAddUUIDToPoi",
+                    SequenceFileInputFormat.class,
+                    AdjAddUUIDToPoiMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, pointsOfInterestPath);
+            FileOutputFormat.setOutputPath(job, uuidPoisPath);
+            job.waitForCompletion(true);
+        }
+
+        Path poisIdPath = new Path(tmpDirPath, "pois_id");
+        Path poisTablePath = new Path(tmpDirPath, "pois_table");
+        {
+            final CosmosJob poisJob = CosmosJob.createMapJob(conf,
                     "AdjAddUniqueIdPoiToPoiNew",
                     SequenceFileInputFormat.class,
                     AdjAddUniqueIdPoiToPoiNewMapper.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, pointsOfInterestPath);
-            FileOutputFormat.setOutputPath(job, poisIdPath);
-            job.waitForCompletion(true);
-        }
+            FileInputFormat.setInputPaths(poisJob, uuidPoisPath);
+            FileOutputFormat.setOutputPath(poisJob, poisIdPath);
 
-        Path poisTablePath = new Path(tmpDirPath, "pois_table");
-        {
-            CosmosJob job = CosmosJob.createMapJob(conf, 
+            final CosmosJob tableJob = CosmosJob.createMapJob(conf,
                     "AdjAddUniqueIdPoiToTwoInt",
                     SequenceFileInputFormat.class,
                     AdjAddUniqueIdPoiToTwoIntMapper.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, pointsOfInterestPath);
-            FileOutputFormat.setOutputPath(job, poisTablePath);
-            job.waitForCompletion(true);
+            FileInputFormat.setInputPaths(tableJob, uuidPoisPath);
+            FileOutputFormat.setOutputPath(tableJob, poisTablePath);
+
+            new WorkflowList() {{
+                add(poisJob);
+                add(tableJob);
+            }}.waitForCompletion(true);
         }
+
 
         Path poiPairbtsPath = new Path(tmpDirPath, "poi_pairbts");
         {
@@ -64,7 +79,7 @@ public class AdjacentExtractionRunner {
             FileOutputFormat.setOutputPath(job, poiPairbtsPath);
             job.waitForCompletion(true);
         }
-        
+
         Path poiPairbtsWithInputIdPath = new Path(tmpDirPath,
                                                   "poi_pairbts_with_input_id");
         {
@@ -77,7 +92,7 @@ public class AdjacentExtractionRunner {
             FileOutputFormat.setOutputPath(job, poiPairbtsWithInputIdPath);
             job.waitForCompletion(true);
         }
-        
+
         Path pairbtsAdjWithInputIdPath = new Path(tmpDirPath,
                                                   "pairbts_adj_with_input_id");
         {
@@ -90,7 +105,7 @@ public class AdjacentExtractionRunner {
             FileOutputFormat.setOutputPath(job, pairbtsAdjWithInputIdPath);
             job.waitForCompletion(true);
         }
-        
+
         Path poiPairbtsAdjPath = new Path(tmpDirPath, "poi_pairbts_adj");
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "AdjJoinPairbtsAdjbts",
@@ -102,7 +117,7 @@ public class AdjacentExtractionRunner {
             FileOutputFormat.setOutputPath(job, poiPairbtsAdjPath);
             job.waitForCompletion(true);
         }
-        
+
         long numIndicesLeft = 1L;
         while (numIndicesLeft > 0L) {
             Path poiPairbtsIndexPath = new Path(tmpDirPath,
@@ -129,7 +144,7 @@ public class AdjacentExtractionRunner {
                 FileOutputFormat.setOutputPath(job, poisTableWithInputIdPath);
                 job.waitForCompletion(true);
             }
-            
+
             Path poiPairbtsIndexWithInputIdPath = new Path(tmpDirPath,
                     "poi_pairbts_index_with_input_id");
             {
@@ -143,7 +158,7 @@ public class AdjacentExtractionRunner {
                         poiPairbtsIndexWithInputIdPath);
                 job.waitForCompletion(true);
             }
-            
+
             Path poisTableTmpPath = new Path(tmpDirPath, "pois_table_tmp");
             {
                 CosmosJob job = CosmosJob.createReduceJob(conf, "AdjUpdatePoisTable",
@@ -155,7 +170,7 @@ public class AdjacentExtractionRunner {
                 FileOutputFormat.setOutputPath(job, poisTableTmpPath);
                 job.waitForCompletion(true);
             }
-            
+
             fs.delete(poisTablePath, true);
             fs.delete(poisTableWithInputIdPath, true);
             fs.rename(poisTableTmpPath, poisTablePath);
@@ -173,7 +188,7 @@ public class AdjacentExtractionRunner {
                         poiPairbtsAdjWithInputIdPath);
                 job.waitForCompletion(true);
             }
-            
+
             Path poiPairbtsCh1Path = new Path(tmpDirPath, "poi_pairbts_ch1");
             {
                 CosmosJob job = CosmosJob.createReduceJob(conf, "AdjSwapPoiIdSt1",
@@ -189,7 +204,7 @@ public class AdjacentExtractionRunner {
 
             fs.delete(poiPairbtsAdjPath, true);
             fs.delete(poiPairbtsAdjWithInputIdPath, true);
-            
+
             Path poiPairbtsCh1WithInputIdPath = new Path(tmpDirPath,
                     "poi_pairbts_ch1_with_input_id");
             {
@@ -203,7 +218,7 @@ public class AdjacentExtractionRunner {
                         poiPairbtsCh1WithInputIdPath);
                 job.waitForCompletion(true);
             }
-            
+
             {
                 CosmosJob job = CosmosJob.createReduceJob(conf, "AdjSwapPoiIdSt2",
                         SequenceFileInputFormat.class,
@@ -215,7 +230,7 @@ public class AdjacentExtractionRunner {
                 FileOutputFormat.setOutputPath(job, poiPairbtsAdjPath);
                 job.waitForCompletion(true);
             }
-            
+
             Path nindSpreadPath = new Path(tmpDirPath, "nind_spread");
             {
                 CosmosJob job = CosmosJob.createReduceJob(conf, "AdjSpreadCount",
@@ -247,7 +262,7 @@ public class AdjacentExtractionRunner {
             fs.delete(nindSpreadPath, true);
             fs.delete(numIndexPath, true);
         }
-        
+
         Path poiPoimodPath = new Path(tmpDirPath, "poi_poimod");
         {
             CosmosJob job = CosmosJob.createMapJob(conf, "AdjSpreadTableByPoiId",
@@ -269,7 +284,7 @@ public class AdjacentExtractionRunner {
             FileOutputFormat.setOutputPath(job, poiIdPoiPath);
             job.waitForCompletion(true);
         }
-        
+
         Path pointsOfInterestModPath = new Path(tmpDirPath,
                                                 "points_of_interest_mod");
         {
@@ -282,7 +297,7 @@ public class AdjacentExtractionRunner {
             FileOutputFormat.setOutputPath(job, pointsOfInterestModPath);
             job.waitForCompletion(true);
         }
-        
+
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "AdjChangePoisId",
                     SequenceFileInputFormat.class,

@@ -67,7 +67,7 @@ def install_and_patch_hue(config):
 
     common.instantiate_template('templates/hue.ini.mako', '/etc/hue/hue.ini',
                                 context=dict(
-                                    hue_db_pass = env.hue_db_pass,
+                                    hue_db_pwd = env.hue_db_pwd,
                                     jobtracker =
                                         config['hosts']['jobtracker'][0],
                                     namenode =

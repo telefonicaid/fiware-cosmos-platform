@@ -59,16 +59,17 @@ int main(int argC, char **argV) {
     paConfig("man author",                    "Samson team");
 
 
-    // Goyo. trying to get traces
-    if (strcmp(argV[1], "-t") == 0)
-    {
-        paParse(paArgs, 3, (char**) argV, 3, false);
-    }
-    else
-    {
-        // Avoid parsing any argument
-        paParse(paArgs, 1, (char**) argV, 1, false);
-    }
+    // Goyo. trying to get traces	
+	if( ( argC > 2 ) &&  (strcmp(argV[1], "-t") == 0) )
+	{
+	   paParse(paArgs, 3, (char**) argV, 3, false);
+	}
+	else
+	{
+	   // Avoid parsing any argument
+	   paParse(paArgs, 1, (char**) argV, 1, false);
+	}
+
     // Run all tests
     ::testing::InitGoogleTest(&argC, argV);
     return RUN_ALL_TESTS();

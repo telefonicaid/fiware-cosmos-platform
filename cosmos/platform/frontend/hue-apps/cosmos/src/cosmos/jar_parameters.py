@@ -3,6 +3,7 @@
 JAR parameters representation.
 """
 from django import forms
+from django.core.exceptions import ValidationError
 
 from cosmos.forms import ABSOLUTE_PATH_VALIDATOR, ID_VALIDATOR, HDFSFileChooser
 from cosmos.mongo import user_coll_url
@@ -16,10 +17,12 @@ class AbstractParameter(object):
 
     def __init__(self, name, default_value=None):
         self.name = name
+        self.validate(default_value)
         self.default_value = default_value
         self.__value = None
 
     def set_value(self, value):
+        self.validate(value)
         self.__value = value
 
     def get_value(self):
@@ -31,12 +34,21 @@ class AbstractParameter(object):
     def has_value(self):
         return self.__value is not None
 
+    def validate(self, value):
+        """Throw ValueError if the value is not acceptable for the parameter.
+
+        To be overridden by subclasses.
+        """
+        raise NotImplementedError(
+            "AbstractParameter#validate must be overridden")
+
     def form_field(self):
         """Generate a field suitable for a django form.
 
-        To be override by subclasses.
+        To be overridden by subclasses.
         """
-        raise NotImplementedError("AbstractParameter#form_field must be override")
+        raise NotImplementedError(
+            "AbstractParameter#form_field must be overridden")
 
     def as_job_argument(self, job):
         """Returns a list of command line arguments to inject this
@@ -50,13 +62,31 @@ class AbstractParameter(object):
 class StringParameter(AbstractParameter):
     MAX_LENGTH = 255
 
+    def validate(self, value):
+        if value is None:
+            return
+        if type(value) != str:
+            raise ValueError('Found %s when string was expected' % type(value))
+        if len(value) > self.MAX_LENGTH:
+            raise ValueError('Max length of %d was exceed: %d characters' %
+                             (self.MAX_LENGTH, len(value)))
+
     def form_field(self):
         return forms.CharField(label=self.name,
                                max_length=self.MAX_LENGTH,
                                initial=self.default_value)
 
 
-class FilePathParameter(AbstractParameter):
+class FilePathParameter(StringParameter):
+
+    def validate(self, value):
+        super(FilePathParameter, self).validate(value)
+        if value is None:
+            return
+        try:
+            ABSOLUTE_PATH_VALIDATOR.__call__(value)
+        except ValidationError, e:
+            raise ValueError('Invalid HDFS path: "%s"' % value)
 
     def form_field(self):
         return forms.CharField(label=self.name,
@@ -66,7 +96,16 @@ class FilePathParameter(AbstractParameter):
                                validators=[ABSOLUTE_PATH_VALIDATOR])
 
 
-class MongoCollParameter(AbstractParameter):
+class MongoCollParameter(StringParameter):
+
+    def validate(self, value):
+        super(MongoCollParameter, self).validate(value)
+        if value is None:
+            return
+        try:
+            ID_VALIDATOR.__call__(value)
+        except ValidationError, e:
+            raise ValueError('Invalid MongoDB collection name: "%s"' % value)
 
     def form_field(self):
         return forms.CharField(label=self.name,

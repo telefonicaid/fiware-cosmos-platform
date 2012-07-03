@@ -55,6 +55,7 @@
                             <mainClass>es.tid.cosmos.tests.hadoopjobs.mapperfail.MapperFailTool</mainClass>
                         </transformer>
                     </transformers>
+                    <minimizeJar>true</minimizeJar>
                 </configuration>
                 <executions>
                     <execution>

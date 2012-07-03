@@ -20,6 +20,10 @@
   </property>
   <property>        
     <name>dfs.thrift.address</name>
-    <value>0.0.0.0:10090</value>
+    <value>${namenode}:10090</value>
+  </property>
+  <property>
+    <name>dfs.thrift.datanode.address</name>
+    <value>0.0.0.0:10091</value>
   </property>
 </configuration>

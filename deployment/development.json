@@ -9,9 +9,10 @@
         "datanodes": ["pshdp02", "pshdp03", "pshdp04", "pshdp05", "pshdp06"],
         "tasktrackers": ["pshdp02", "pshdp03", "pshdp04", "pshdp05", "pshdp06"]
     },
-    "cdh_version_repo": "cdh3-repository-1.0-1.noarch.rpm",
+    "cdh_version_repo": "http://archive.cloudera.com/redhat/cdh/cloudera-cdh3.repo",
     "hadoop_data_dirs": ["/data", "/data1", "/data2"],
     "hue_patch_dir": "../cosmos/platform/frontend/hue-patches",
     "hue_patch_name": "hue-patch-cdh3u4-r0.4.diff",
-    "injection_path": "../cosmos/platform/injection/sftp/"
+    "injection_path": "../cosmos/platform/injection/sftp/",
+    "mongo_db_path": "/var/lib/mongo"
 }

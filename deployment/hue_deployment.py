@@ -5,7 +5,7 @@ import os
 import shutil
 from StringIO import StringIO
 
-from fabric.api import run, put, cd, env, sudo
+from fabric.api import run, put, cd, env, settings, sudo
 from fabric.colors import red, yellow
 import fabric.context_managers as ctx
 from fabric.contrib import files
@@ -73,11 +73,13 @@ def install_and_patch_hue(config):
                                     namenode =
                                         config['hosts']['namenode'][0]))
 
-    sudo('hadoop dfs -mkdir /user/hive/warehouse', user='hdfs')
-    sudo('hadoop dfs -chown -R hive /user/hive/', user='hdfs')
-    sudo('hadoop dfs -chmod +777 /user/hive/warehouse', user='hdfs')
-    sudo('hadoop dfs -mkdir /tmp', user='hdfs')
-    sudo('hadoop dfs -chmod +777 /tmp', user='hdfs')
+    with settings(warn_only=True):
+        sudo('hadoop dfs -mkdir /user/hive/warehouse', user='hdfs')
+        sudo('hadoop dfs -chown -R hive /user/hive/', user='hdfs')
+        sudo('hadoop dfs -chmod +777 /user/hive/warehouse', user='hdfs')
+        sudo('hadoop dfs -mkdir /tmp', user='hdfs')
+        sudo('hadoop dfs -chmod +777 /tmp', user='hdfs')
+
     sudo('chown -R hue /var/lib/hive/')
 
 @parallel

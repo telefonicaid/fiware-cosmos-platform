@@ -208,6 +208,17 @@ namespace au
                     break;
             }
             
+            if (format == "json")
+                header << "Content-Type: application/json\n";
+            else if (format == "xml")
+                header << "Content-Type: application/xml\n";
+            else if (format == "html")
+                header << "Content-Type: application/html\n";
+            else if (format == "thtml")
+                header << "Content-Type: application/thtml\n";
+            else
+                LM_W(("no format (does this mean its XML?"));
+
             header << "Content-Length: " << data.length() << "\n";
             header << "Connection: close\n";
             header << "\n";

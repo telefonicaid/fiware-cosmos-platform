@@ -39,6 +39,7 @@
                             <mainClass>es.tid.cosmos.samples.wordcount.WordCountMain</mainClass>
                         </transformer>
                     </transformers>
+                    <minimizeJar>true</minimizeJar>
                 </configuration>
                 <executions>
                     <execution>

@@ -124,6 +124,7 @@
                             <mainClass>es.tid.cosmos.kpicalculation.KpiMain</mainClass>
                         </transformer>
                     </transformers>
+                    <minimizeJar>true</minimizeJar>
                 </configuration>
                 <executions>
                     <execution>

@@ -9,7 +9,7 @@ from fabric.api import run, put, cd, env, sudo
 from fabric.colors import red, yellow
 import fabric.context_managers as ctx
 from fabric.contrib import files
-from fabric.decorators import roles
+from fabric.decorators import roles, parallel
 from fabric.utils import puts, warn
 from mako.template import Template
 
@@ -80,6 +80,7 @@ def install_and_patch_hue(config):
     sudo('hadoop dfs -chmod +777 /tmp', user='hdfs')
     sudo('chown -R hue /var/lib/hive/')
 
+@parallel
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def install_hue_plugins():
     """

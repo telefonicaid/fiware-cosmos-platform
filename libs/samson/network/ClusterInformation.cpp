@@ -429,7 +429,11 @@ namespace samson {
             output << "  \"cluster_information\":\r\n";
             output << "  {\r\n";
             output << "    \"id\"      : " << id << ",\r\n";
-            output << "    \"version\" : " << version << ",\r\n";
+
+            if (nodes.size() == 0)
+                output << "    \"version\" : " << version << "\r\n";
+            else
+                output << "    \"version\" : " << version << ",\r\n";
         }
 
         for ( size_t i = 0 ; i < nodes.size() ; i++ )

@@ -27,17 +27,17 @@ public class AdjAddUUIDToPoiMapperTest {
     @Before
     public void setUp() {
         this.driver = new MapDriver<ProtobufWritable<TwoInt>,
-            TypedProtobufWritable<Poi>, LongWritable,
-            TypedProtobufWritable<Poi>>(new AdjAddUUIDToPoiMapper());
+                TypedProtobufWritable<Poi>, LongWritable,
+                TypedProtobufWritable<Poi>>(new AdjAddUUIDToPoiMapper());
     }
 
     @Test
     public void testReduce() throws Exception {
-        final ProtobufWritable<TwoInt> k1 = TwoIntUtil.createAndWrap(57L, 88L),
-                                       k2 = TwoIntUtil.createAndWrap(10L, 20L);
+        final ProtobufWritable<TwoInt> k1 = TwoIntUtil.createAndWrap(57L, 88L);
+        final ProtobufWritable<TwoInt> k2 = TwoIntUtil.createAndWrap(10L, 20L);
         final Poi poi1 = PoiUtil.create(1, 2L, 3, 4, 5, 1, 4.3D, 6, 7, 0,
-                                        9.1D, 10, 11, 1, 8.45D, 1, 0),
-                  poi2 = PoiUtil.create(9, 4L, 2, 4, 6, 8, 2.7d, 10, 12, 14,
+                                        9.1D, 10, 11, 1, 8.45D, 1, 0);
+        final Poi poi2 = PoiUtil.create(9, 4L, 2, 4, 6, 8, 2.7d, 10, 12, 14,
                                         9.1d, 10, 11, 1, 8.45d, 1, 0);
 
         Pair<LongWritable, TypedProtobufWritable<Poi>> firstResult =

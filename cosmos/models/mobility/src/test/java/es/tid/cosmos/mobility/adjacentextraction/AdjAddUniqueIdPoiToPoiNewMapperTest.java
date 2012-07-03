@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,15 +34,15 @@ public class AdjAddUniqueIdPoiToPoiNewMapperTest {
 
     @Test
     public void testConfidentNodeBts() throws IOException {
-        long uuid = 761478;
-        int confident = 1;
-        int labelGroupNodeBts = 11;
-        Poi poi = PoiUtil.create(1, 2L, 3, 4, 5, confident, 4.3D, 6,
-                                 7, 0, 9.1D, 10, labelGroupNodeBts, 1,
-                                 8.45D, 1, 0);
-        ProtobufWritable<TwoInt> expectedOutputKey =
+        final long uuid = 761478;
+        final int confident = 1;
+        final int labelGroupNodeBts = 11;
+        final Poi poi = PoiUtil.create(1, 2L, 3, 4, 5, confident, 4.3D, 6,
+                                       7, 0, 9.1D, 10, labelGroupNodeBts, 1,
+                                       8.45D, 1, 0);
+        final ProtobufWritable<TwoInt> expectedOutputKey =
                 TwoIntUtil.createAndWrap(2L, 11L);
-        PoiNew expectedOutputPoi = PoiNewUtil.create(uuid,
+        final PoiNew expectedOutputPoi = PoiNewUtil.create(uuid,
                 2L, 3, labelGroupNodeBts, confident);
 
         this.driver.withInput(new LongWritable(uuid),

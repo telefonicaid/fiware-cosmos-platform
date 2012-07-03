@@ -16,7 +16,7 @@ namespace samson {
         
         if( !S_ISDIR( filestatus.st_mode ) )
         {
-            error.set( au::str("%s is not a directory") );
+            error.set( au::str("%s is not a directory" , directory.c_str() ) );
             return;
         }
         

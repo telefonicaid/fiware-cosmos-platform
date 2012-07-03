@@ -13,18 +13,16 @@
 */
 
 #include <stdio.h>
-
 #include "gtest/gtest.h"
-
 #include "parseArgs/parseArgs.h"
 #include "parseArgs/paBuiltin.h"        // paLsHost, paLsPort
 #include "parseArgs/paConfig.h"         // paConfig()
 #include "parseArgs/paIsSet.h"
-
 #include "samson/common/traces.h"
 #include "samson/common/SamsonSetup.h"
-
 #include "logMsg/logMsg.h"
+
+extern bool lmAssertAtExit;
 
 /* ****************************************************************************
  *
@@ -50,10 +48,11 @@ int              logFd             = -1;
 int main(int argC, char **argV) {
 
     paConfig("usage and exit on any warning", (void*) true);
-    paConfig("log to screen",                 (void*) "only errors");
+//  paConfig("log to screen",                 (void*) "only errors");
+    paConfig("log to screen",                 (void*) false);
+    paConfig("log to file",                   (void*) true);
     paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
     paConfig("screen line format",            (void*) "TYPE@TIME  EXEC: TEXT");
-    paConfig("log to file",                   (void*) true);
     paConfig("default value", "-logDir",      (void*) "/var/log/samson");
     
     paConfig("man author",                    "Samson team");
@@ -69,6 +68,9 @@ int main(int argC, char **argV) {
 	   // Avoid parsing any argument
 	   paParse(paArgs, 1, (char**) argV, 1, false);
 	}
+
+    // Set assert flag to true ro force asserts instead of exits
+	lmAssertAtExit = true;
 
     // Run all tests
     ::testing::InitGoogleTest(&argC, argV);

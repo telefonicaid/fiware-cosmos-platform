@@ -53,6 +53,7 @@
  disk:D            Read content from directory D
  channel           All interchannel connections
  stdin             Standard input ( only in non iterative / deamon )
+ hdfs:H:D          Establish a connection with a HDFS service at host H and write content to direcotry D       
  
  Outputs
  
@@ -62,7 +63,7 @@
  disk:D            Read content from directory D
  channel:H:C       Connect to channel "C" at host "H"
  stdout            Standard output ( only in non iterative / deamon )
- 
+ hdfs:H:D          Establish a connection with a HDFS service at host H and write content to direcotry D       
  
  */
 

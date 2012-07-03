@@ -10,12 +10,14 @@ SET (HEADERS
 	ConnectorCommand.h
 	FileDescriptorConnection.h
 	Adaptor.h
+	SingleConnectionAdaptor.h
 	DiskAdaptor.h
 	ListenerAdaptor.h
 	SamsonAdaptor.h
 	InterChannelPacket.h
 	InterChannelLink.h
 	ChannelAdaptor.h
+	HDFSAdaptor.h
 	StreamConnector.h
 	StreamConnectorService.h
 	ServerConnection.h
@@ -30,6 +32,7 @@ SET (SOURCES
 	BufferProcessor.cpp
 	Channel.cpp
 	Connection.cpp
+	SingleConnectionAdaptor.cpp
 	ConnectorCommand.cpp
 	FileDescriptorConnection.cpp
 	Adaptor.cpp
@@ -39,6 +42,7 @@ SET (SOURCES
 	InterChannelPacket.cpp
 	InterChannelLink.cpp
 	ChannelAdaptor.cpp
+	HDFSAdaptor.cpp
 	StreamConnector.cpp
 	StreamConnectorService.cpp
 	ServerConnection.cpp

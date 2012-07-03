@@ -230,6 +230,13 @@ namespace stream_connector {
         // Only specific items accept this type of connection
         return false;                
     }
+    
+    Connection* Adaptor::getFirstConnection()
+    {
+        if( connections.size() == 0 )
+            return NULL;
+        return connections.begin()->second;
+    }
 
     
 }

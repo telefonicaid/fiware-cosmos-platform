@@ -7,8 +7,8 @@
 #include "DiskAdaptor.h"
 #include "ChannelAdaptor.h"
 #include "StreamConnector.h"
+#include "HDFSAdaptor.h"
 #include "Channel.h" // Own interface
-
 
 extern bool interactive;
 extern bool run_as_daemon;
@@ -193,7 +193,18 @@ namespace stream_connector {
             add(name ,  new OutputChannelAdaptor(this, host, channel ) );
             
         }
-        
+        else if( components[0] == "hdfs" )
+        {
+            if( components.size() < 3 )
+            {
+                error->set("Wrong format: hdfs:host:directory");
+                return;
+            }
+            
+            std::string host = components[1];
+            std::string directory = components[2];
+            add( name , new HDFSAdaptor( this , connection_output , host , directory ) );
+        }
         else
         {
             // Error message
@@ -304,6 +315,18 @@ namespace stream_connector {
         {
             // Able to receive connections for inter-channel connection
             add( name ,new InputChannelAdaptor( this ) );
+        }
+        else if( components[0] == "hdfs" )
+        {
+            if( components.size() < 3 )
+            {
+                error->set("Wrong format: hdfs:host:directory");
+                return;
+            }
+            
+            std::string host = components[1];
+            std::string directory = components[2];
+            add( name , new HDFSAdaptor( this , connection_input , host , directory ) );
         }
         else
         {

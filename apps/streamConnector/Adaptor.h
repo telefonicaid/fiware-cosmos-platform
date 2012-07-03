@@ -96,6 +96,9 @@ namespace stream_connector {
         // Report size of data managed by this adaptor
         void report_output_size( size_t size );
         void report_input_size( size_t size );
+      
+        // get first connection
+        Connection* getFirstConnection();
         
     };
     

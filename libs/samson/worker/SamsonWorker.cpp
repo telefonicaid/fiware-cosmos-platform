@@ -1095,6 +1095,10 @@ namespace samson {
             command->append("<!-- SAMSON Rest interface -->\n" );
             command->append( "<samson>\n" );
         }
+        else if ( command->format == "json" )
+        {
+            command->append("{\n");
+        }
         else if ( command->format == "html" )
         {
             command->append("<html><body>");
@@ -1108,7 +1112,7 @@ namespace samson {
         if (command->format == "xml")
             command->append("\n</samson>\n");
         else if( command->format == "json" )
-            command->append("\n");
+            command->append("}\n");
         else if (command->format == "html")
             command->append("</body></html>");
         

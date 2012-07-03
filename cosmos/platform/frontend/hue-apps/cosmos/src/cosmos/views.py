@@ -31,7 +31,7 @@ def index(request):
     for job_run in job_runs:
         job_run.refresh_state()
     return render('job_list.mako', request, dict(
-        job_runs=job_runs
+        job_runs=[job for job in job_runs if job.state() != 'unsubmitted']
     ))
 
 
@@ -57,7 +57,7 @@ def submit(job):
 
     lf = LocalizedFile(target_name=TEMP_JAR, path_on_hdfs=job.jar_path)
     lfs = LocalizeFilesStep(localize_files=[lf])
-    bhs = BinHadoopStep(arguments=job.hadoop_args(TEMP_JAR))
+    bhs = BinHadoopStep(arguments=hadoop_args(job, TEMP_JAR))
     plan = SubmissionPlan(name=job.name,
                           user=job.user.username,
                           groups=job.user.get_groups(),

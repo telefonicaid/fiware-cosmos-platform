@@ -29,7 +29,6 @@ public class EntryScalerTest {
             instance;
     private LongWritable key;
     private Text inputValue;
-    private Text intermediateValue;
     private Text cell2micro1;
     private Text cell2micro2;
     private Text micro2polygon;
@@ -76,16 +75,9 @@ public class EntryScalerTest {
                 + "\"cellid\": \"033749032183\", \"footfall_observed_age_40\": "
                 + "[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,"
                 + "0, 0, 0, 0, 0]}");
-        int inputPenultimate = this.inputValue.getLength() - 1;
-        this.intermediateValue =
-                new Text(this.inputValue.toString().substring(0,
-                        inputPenultimate) + ", \"microgrid_id\": 123}");
-
-        this.cell2micro1 =
-                new Text("033749032183|123|0.57");
-        this.cell2micro2 =
-                new Text("033749032183|124|0.43");
-        this.micro2polygon = new Text("123|345|1");
+        this.cell2micro1 = new Text("033749032183|123|0.57");
+        this.cell2micro2 = new Text("033749032183|124|0.43");
+        this.micro2polygon = new Text("033749032183|345|1");
     }
 
     @Test
@@ -95,26 +87,25 @@ public class EntryScalerTest {
         this.instance.getConfiguration().set(Config.DELIMITER, "\\|");
         List<Pair<NullWritable, Text>> allResults =
                 this.instance.withInput(this.key, this.inputValue)
-                    .withInput(new LongWritable(1L), this.cell2micro1)
-                    .withInput(new LongWritable(1L), this.cell2micro2)
-                    .run();
+                        .withInput(this.key, this.cell2micro1)
+                        .withInput(this.key, this.cell2micro2)
+                        .run();
         assertEquals(2, allResults.size());
         JSONObject result0 = this.getResult(allResults.get(0));
-        assertEquals("123", result0.get("microgrid_id"));
-        assertEquals("", result0.get("polygon_id"));
-        
+        assertEquals("123", result0.get("cellid"));
         
         JSONObject result1 = this.getResult(allResults.get(1));
-        assertEquals("124", result1.get("microgrid_id"));
-        assertEquals("", result1.get("polygon_id"));
+        assertEquals("124", result1.get("cellid"));
         
         JSONArray sum = result0.getJSONArray("footfall_observed_basic");
-        final JSONArray result1Array = result1.getJSONArray("footfall_observed_basic");
-        for(int i = 0; i < sum.size(); i++) {
+        final JSONArray result1Array = result1.getJSONArray(
+                "footfall_observed_basic");
+        for (int i = 0; i < sum.size(); i++) {
             sum.set(i, sum.getDouble(i) + result1Array.getDouble(i));
         }
         
-        JSONObject input = (JSONObject) JSONSerializer.toJSON(this.inputValue.toString());
+        JSONObject input = (JSONObject) JSONSerializer.toJSON(
+                this.inputValue.toString());
         assertEquals(input.getJSONArray("footfall_observed_basic"), sum);
     }
     
@@ -126,18 +117,18 @@ public class EntryScalerTest {
     @Test
     public void testFinalResults() throws Exception {
         this.instance.getConfiguration().setEnum(LookupType.class.getName(),
-                                             LookupType.MICROGRID_TO_POLYGON);
+                                                 LookupType.MICROGRID_TO_POLYGON);
         this.instance.getConfiguration().set(Config.DELIMITER, "\\|");
         List<Pair<NullWritable, Text>> allResults =
-                this.instance.withInput(this.key, this.intermediateValue)
-                        .withInput(new LongWritable(1L), this.micro2polygon)
+                this.instance
+                        .withInput(this.key, this.inputValue)
+                        .withInput(this.key, this.micro2polygon)
                         .run();
         assertEquals(1, allResults.size());
         Pair<NullWritable, Text> result = allResults.get(0);
         JSONObject resultJson =
                 (JSONObject) JSONSerializer.toJSON(
                         result.getSecond().toString());
-        assertEquals("123", resultJson.get("microgrid_id"));
-        assertEquals("345", resultJson.get("polygon_id"));
+        assertEquals("345", resultJson.get("cellid"));
     }
 }

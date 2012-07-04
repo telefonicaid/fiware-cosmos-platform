@@ -21,8 +21,6 @@ public class TrafficCountsEntryParser extends Parser<TrafficCountsEntry> {
     public static final String LATITUDE_FIELD_NAME = "lat";
     public static final String LONGITUDE_FIELD_NAME = "long";
     public static final String POIS_FIELD_NAME = "pois";
-    public static final String MICROGRIDID_FIELD_NAME = "microgrid_id";
-    public static final String POLYGONID_FIELD_NAME = "polygon_id";
     
     private final String[] countFields;
     
@@ -56,8 +54,6 @@ public class TrafficCountsEntryParser extends Parser<TrafficCountsEntry> {
                     counts.add(new BigDecimal(parsedCounts.getDouble(i)));
                 }
             }
-            entry.microgridId = jsonObject.optString(MICROGRIDID_FIELD_NAME);
-            entry.polygonId = jsonObject.optString(POLYGONID_FIELD_NAME);
             return entry;
         } catch (Exception ex) {
             return null;

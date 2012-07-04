@@ -164,5 +164,5 @@ def cleanup():
     patch = "hue-patch-cdh3u4-r0.4.diff"
     if files.exists(patch):
         run("rm {0}".format(patch))
-#     if files.exists("cosmos-app"):
-#         run("rm -rf cosmos-app")
+    if files.exists("cosmos-app"):
+        run("rm -rf cosmos-app")

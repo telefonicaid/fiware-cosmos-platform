@@ -4,6 +4,7 @@ JAR parameters representation.
 """
 from django import forms
 from django.core.exceptions import ValidationError
+from mako.template import Template
 
 from cosmos.forms import ABSOLUTE_PATH_VALIDATOR, ID_VALIDATOR, HDFSFileChooser
 from cosmos.mongo import user_coll_url
@@ -50,13 +51,16 @@ class AbstractParameter(object):
         raise NotImplementedError(
             "AbstractParameter#form_field must be overridden")
 
-    def as_job_argument(self, job):
+    def as_job_argument(self, job, context={}):
         """Returns a list of command line arguments to inject this
         parameter into a job.
 
+        Context is a dictionary with the variables subject to expansion.
+
         Can be overriden by subclasses.
         """
-        return ["-D", "%s=%s" % (self.name, self.get_value())]
+        template = Template(self.get_value())
+        return ["-D", "%s=%s" % (self.name, template.render(**context))]
 
 
 class StringParameter(AbstractParameter):
@@ -84,7 +88,7 @@ class FilePathParameter(StringParameter):
         if value is None:
             return
         try:
-            ABSOLUTE_PATH_VALIDATOR.__call__(value)
+            ABSOLUTE_PATH_VALIDATOR(value)
         except ValidationError, e:
             raise ValueError('Invalid absolute path: "%s"' % value)
 
@@ -98,12 +102,18 @@ class FilePathParameter(StringParameter):
 
 class MongoCollParameter(StringParameter):
 
+    def __init__(self, name, default_value=None):
+        if default_value is None:
+            default_value = "job_${job['id']}"
+        super(MongoCollParameter, self).__init__(
+            name, default_value=default_value)
+
     def validate(self, value):
         super(MongoCollParameter, self).validate(value)
         if value is None:
             return
         try:
-            ID_VALIDATOR.__call__(value)
+            ID_VALIDATOR(value)
         except ValidationError, e:
             raise ValueError(('Invalid MongoDB collection name: "%s" '
                               '(only letters, numbers and dashes)') % value)
@@ -114,11 +124,10 @@ class MongoCollParameter(StringParameter):
                                initial=self.default_value,
                                validators=[ID_VALIDATOR])
 
-    def as_job_argument(self, job):
-        collection = self.get_value()
-        if collection is None:
-            # Fallback to default collection name
-            collection = job.mongo_collection()
+    def as_job_argument(self, job, context={}):
+        template = Template(self.get_value())
+        collection = template.render(**context)
+        self.validate(collection)
         mongo_url = user_coll_url(job.user.id, collection)
         return ["-D", "%s=%s" % (self.name, mongo_url)]
 

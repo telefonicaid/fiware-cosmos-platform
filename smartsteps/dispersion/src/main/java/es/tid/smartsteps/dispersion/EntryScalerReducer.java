@@ -77,16 +77,7 @@ public class EntryScalerReducer extends Reducer<Text, Text,
             for (LookupEntry lookup : lookups) {
                 TrafficCountsEntry scaledEntry = entry.scale(
                         lookup.getProportion());
-                switch (this.type) {
-                    case CELL_TO_MICROGRID:
-                        scaledEntry.microgridId = lookup.getSecondaryKey();
-                        break;
-                    case MICROGRID_TO_POLYGON:
-                        scaledEntry.polygonId = lookup.getSecondaryKey();
-                        break;
-                    default:
-                        throw new IllegalStateException();
-                }
+                scaledEntry.cellId = lookup.getSecondaryKey();
                 context.write(NullWritable.get(),
                               new Text(scaledEntry.toJSON().toString()));
             }

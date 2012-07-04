@@ -29,8 +29,6 @@ public class TrafficCountsEntry implements Entry {
     public double longitude;
     public HashMap<String, ArrayList<BigDecimal>> counts;
     public HashMap<String, ArrayList<BigDecimal>> pois;
-    public String microgridId;
-    public String polygonId;
 
     public TrafficCountsEntry(String[] countFields) {
         this.pois = new HashMap<String, ArrayList<BigDecimal>>();
@@ -56,19 +54,11 @@ public class TrafficCountsEntry implements Entry {
         for (String key : entry.pois.keySet()) {
             this.pois.put(key, new ArrayList<BigDecimal>(entry.pois.get(key)));
         }
-        this.microgridId = entry.microgridId;
-        this.polygonId = entry.polygonId;
     }
     
     @Override
     public String getKey() {
-        if (this.polygonId != null && !this.polygonId.isEmpty()) {
-            return this.polygonId;
-        } else if (this.microgridId != null && !this.microgridId.isEmpty()) {
-            return this.microgridId;
-        } else {
-            return this.cellId;
-        }
+        return this.cellId;
     }
     
     public TrafficCountsEntry scale(BigDecimal factor) {
@@ -117,8 +107,6 @@ public class TrafficCountsEntry implements Entry {
             obj.put(field, this.counts.get(field));
         }
         obj.put(TrafficCountsEntryParser.POIS_FIELD_NAME, this.pois);
-        obj.put(TrafficCountsEntryParser.MICROGRIDID_FIELD_NAME, this.microgridId);
-        obj.put(TrafficCountsEntryParser.POLYGONID_FIELD_NAME, this.polygonId);
         return obj;
     }
 }

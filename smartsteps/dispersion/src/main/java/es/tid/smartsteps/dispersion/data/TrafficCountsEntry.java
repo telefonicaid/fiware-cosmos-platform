@@ -98,7 +98,7 @@ public class TrafficCountsEntry implements Entry {
                     this.counts.get(countField);
             ArrayList<BigDecimal> roundedCountsForField =
                     new ArrayList<BigDecimal>();
-            for (int i = 0; i < roundedCounts.size(); i++) {
+            for (int i = 0; i < countsForField.size(); i++) {
                 roundedCountsForField.add(i, countsForField.get(i).round(
                         MathContext.UNLIMITED));
             }

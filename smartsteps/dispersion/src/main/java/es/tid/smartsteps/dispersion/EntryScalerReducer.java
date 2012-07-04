@@ -83,7 +83,6 @@ public class EntryScalerReducer extends Reducer<Text, Text,
                         break;
                     case MICROGRID_TO_POLYGON:
                         scaledEntry.polygonId = lookup.getSecondaryKey();
-                        scaledEntry.counts = scaledEntry.roundCounts();
                         break;
                     default:
                         throw new IllegalStateException();

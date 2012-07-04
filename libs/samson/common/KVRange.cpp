@@ -80,7 +80,18 @@ namespace samson {
 		//LM_M(("KVRange for output block %s" , str().c_str()));
     }
     
-    
+    void KVRange::add( KVRange range )
+    {
+        if( !range.isValid() )
+            return;
+        
+        if( range.hg_begin < hg_begin )
+            hg_begin = range.hg_begin;
+        
+        if( range.hg_end > hg_end )
+            hg_end = range.hg_end;
+    }
+
     bool KVRange::isValid()
     {
         if ( ( hg_begin < 0 ) || (hg_begin > (KVFILE_NUM_HASHGROUPS) ) )

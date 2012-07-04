@@ -109,6 +109,7 @@ namespace samson {
                 KVHeader* tmp_header = (KVHeader*) buffer_list_container->front()->getData();
                 KVFormat format = tmp_header->getKVFormat();
                 KVInfo info;
+                KVRange range = tmp_header->range;
 
                 // Buffer finally considered to create the block
                 BlockBuilder * block_builder = new BlockBuilder(this);
@@ -127,8 +128,13 @@ namespace samson {
                     }
                     else
                     {
-                        // Append total info
+                        // Increase range to cover all individual buffers
+                        range.add( tmp_header->range );
+                        
+                        // Update counter for the final header
                         info.append( tmp_header->info );
+                        
+                        // Append total info
                         block_builder->buffer_list_container.push_back(buffer);
                     }
                     
@@ -143,6 +149,7 @@ namespace samson {
                 KVHeader* final_header = (KVHeader*) buffer_container.getBuffer()->getData();
                 memcpy( final_header , tmp_header, sizeof(KVHeader));
                 final_header->setInfo(info);
+                final_header->range = range; // Set the global range
                 
                 // State will be building until a BlockBuildtask is exewcuted
                 state = building;

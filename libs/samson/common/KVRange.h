@@ -20,6 +20,8 @@ namespace samson
         
         void set( int _hg_begin , int _hg_end );
         
+        void add( KVRange range );
+        
         void setFrom( KVInfo *info );        
         void setFrom( FullKVInfo *info );
         

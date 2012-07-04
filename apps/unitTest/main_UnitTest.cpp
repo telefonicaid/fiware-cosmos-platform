@@ -14,13 +14,16 @@
 
 #include <stdio.h>
 #include "gtest/gtest.h"
+#include "logMsg/logMsg.h"
+#include "au/log/log_server_common.h"
+#include "au/log/LogToServer.h"
 #include "parseArgs/parseArgs.h"
 #include "parseArgs/paBuiltin.h"        // paLsHost, paLsPort
 #include "parseArgs/paConfig.h"         // paConfig()
 #include "parseArgs/paIsSet.h"
 #include "samson/common/traces.h"
 #include "samson/common/SamsonSetup.h"
-#include "logMsg/logMsg.h"
+
 
 extern bool lmAssertAtExit;
 
@@ -71,6 +74,9 @@ int main(int argC, char **argV) {
 
     // Set assert flag to true ro force asserts instead of exits
 	lmAssertAtExit = true;
+
+	// Start login to server ( this avoids warning )
+	au::start_log_to_server( "localhost" , AU_LOG_SERVER_PORT , "/tmp/smson_unitTest" );
 
     // Run all tests
     ::testing::InitGoogleTest(&argC, argV);

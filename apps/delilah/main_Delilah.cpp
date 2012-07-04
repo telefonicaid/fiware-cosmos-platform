@@ -83,6 +83,7 @@ bool             log_classic;
  */
 PaArgument paArgs[] =
 {
+    { "-log_classic",      &log_classic,          "",                       PaBool,   PaOpt, false             , false, true,  "Use only the classical log system"      },
     { "-log_host",         log_host,              "",                       PaString, PaOpt, _i "localhost",      PaNL, PaNL,  "log server host"                        },
     { "-log_port",         &log_port,             "",                       PaShortU, PaOpt,  LOG_PORT,           0,   10000,  "log server port"                        },
     { "-log_file",         log_file,              "",                       PaString, PaOpt, _i "",               PaNL, PaNL,  "Local log file"                         },
@@ -95,14 +96,14 @@ PaArgument paArgs[] =
     { "",                  target_host,           "",                       PaString, PaOpt, _i LOC,              PaNL, PaNL,  "SAMSON server hostname"                 },
     { "",                 &target_port,           "",                       PaInt,    PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
 
- { "-user",             user,                  "",                       PaString, PaOpt, _i "anonymous",      PaNL, PaNL,  "User to connect to SAMSON cluster"      },
- { "-password",         password,              "",                       PaString, PaOpt, _i "anonymous",      PaNL, PaNL,  "Password to connect to SAMSON cluster"  },
- { "-memory",           &memory_gb,            "MEMORY",                 PaInt,    PaOpt, 1,                   1,    100,   "memory in GBytes"                       },
- { "-load_buffer_size", &load_buffer_size_mb,  "LOAD_BUFFER_SIZE",       PaInt,    PaOpt, 64,                  64,   2048,  "load buffer size in MBytes"             },
- { "-f",                commandFileName,       "FILE_NAME",              PaString, PaOpt, _i "",               PaNL, PaNL,  "File with commands to run"              },
+ { "-user",             user,                  "",                          PaString, PaOpt, _i "anonymous",      PaNL, PaNL,  "User to connect to SAMSON cluster"      },
+ { "-password",         password,              "",                          PaString, PaOpt, _i "anonymous",      PaNL, PaNL,  "Password to connect to SAMSON cluster"  },
+ { "-memory",           &memory_gb,            "MEMORY",                    PaInt,    PaOpt, 1,                   1,    100,   "memory in GBytes"                       },
+ { "-load_buffer_size", &load_buffer_size_mb,  "LOAD_BUFFER_SIZE",          PaInt,    PaOpt, 64,                  64,   2048,  "load buffer size in MBytes"             },
+ { "-f",                commandFileName,       "FILE_NAME",                 PaString, PaOpt, _i "",               PaNL, PaNL,  "File with commands to run"              },
  { "-command",          command,               "", PaString, PaOpt, _i "",               PaNL, PaNL,  "Single command to be executed"          },
- { "",                  target_host,           "",                       PaString, PaOpt, _i LOC,              PaNL, PaNL,  "SAMSON server hostname"                 },
- { "",                 &target_port,           "",                       PaInt,    PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
+ { "",                  target_host,           "",                          PaString, PaOpt, _i LOC,              PaNL, PaNL,  "SAMSON server hostname"                 },
+ { "",                 &target_port,           "",                          PaInt,    PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
 
  PA_END_OF_ARGS
 };

@@ -86,3 +86,11 @@ class JarParametersTestCase(test.TestCase):
             serialized_param = pickle.dumps(param)
             deserialized_param = pickle.loads(serialized_param)
             self.assertEquals(param.name, deserialized_param.name)
+
+    def test_invalid_default_value(self):
+        self.assertRaises(ValueError, make_parameter, 'too_long',
+                          'string|' + ('0123456789' * 30))
+        self.assertRaises(ValueError, make_parameter, 'unsafe_path',
+                          'filepath|../../etc/passwd')
+        self.assertRaises(ValueError, make_parameter, 'invalid_chars',
+                          'mongocoll|.&_$"')

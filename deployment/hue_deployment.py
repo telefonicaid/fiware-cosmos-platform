@@ -108,7 +108,7 @@ def install_thrift(thrift_tarpath):
                 run("make")
                 run("make install")
 
-def install_cosmos_app():
+def install_cosmos_app(config):
     """
     Install the Cosmos app into HUE, by registering it as a new app. The Cosmos
     app has a buildout script that takes care of the registration process.
@@ -132,7 +132,11 @@ def install_cosmos_app():
         shutil.rmtree(os.path.join(local_cosmos_app, "eggs"))
         shutil.rmtree(os.path.join(local_cosmos_app, "parts"))
     put(local_cosmos_app, "cosmos-app")
-#     common.instantiate_template(template_file, output_file, context={})
+    common.instantiate_template('templates/cosmos.ini.mako',
+                                os.path.join('cosmos-app', 'cosmos', 'conf',
+                                             'cosmos.ini'),
+                                context=dict(
+                                    mongo_host=config['hosts']['mongo'][0]))
     with cd("cosmos-app/cosmos"):
         puts("About to run buildout")
         run("python bootstrap.py")
@@ -160,5 +164,5 @@ def cleanup():
     patch = "hue-patch-cdh3u4-r0.4.diff"
     if files.exists(patch):
         run("rm {0}".format(patch))
-    if files.exists("cosmos-app"):
-        run("rm -rf cosmos-app")
+#     if files.exists("cosmos-app"):
+#         run("rm -rf cosmos-app")

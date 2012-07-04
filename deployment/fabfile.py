@@ -44,7 +44,7 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm, move_sshd=False):
     report_current_task("Mongo")
     execute(deploy_mongo)
     report_current_task("Provisioning users")
-    execute(provision_user, admin)
+    execute(provision_user, "admin")
 
 def report_current_task(task_name):
     report_start = "DEPLOY: starting %s deployment"
@@ -124,7 +124,7 @@ def deploy_hue(thrift_tarpath):
     hue_deployment.install_and_patch_hue(CONFIG)
     execute(hue_deployment.install_hue_plugins)
     hue_deployment.install_thrift(thrift_tarpath)
-    hue_deployment.install_cosmos_app()
+    hue_deployment.install_cosmos_app(CONFIG)
     hue_deployment.start_daemons()
     hue_deployment.cleanup()
 

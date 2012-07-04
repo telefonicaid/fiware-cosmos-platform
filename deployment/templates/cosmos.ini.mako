@@ -2,4 +2,4 @@
 
 [cosmos]
 
-mongo_base = "mongodb://localhost"
+mongo_base = "mongodb://${mongo_host}"

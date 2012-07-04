@@ -116,4 +116,4 @@ X11Forwarding yes
 #Banner /some/path
 
 # override default of no subsystems
-#Subsystem       sftp    /usr/libexec/openssh/sftp-server
+Subsystem       sftp    /usr/libexec/openssh/sftp-server

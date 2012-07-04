@@ -8,7 +8,7 @@ namespace samson
     {
         
         // Static pool for object resusage
-        au::Pool<Value> samson::system::Value::pool_values;
+        au::Pool<Value>* samson::system::Value::pool_values;
         
         
         bool is_double( const char* data )
@@ -1509,7 +1509,7 @@ namespace samson
             for( it = _value_map.begin() ; it != _value_map.end() ; it++ )
             {
                 it->second->clear(); // Recursive rehusage
-                pool_values.push( it->second );
+                reuseInstance(it->second);
             }
             _value_map.clear();
             
@@ -1517,7 +1517,7 @@ namespace samson
             for( size_t i = 0 ; i < _value_vector.size() ; i++ )
             {
                 _value_vector[i]->clear(); // Recursive rehusage
-                pool_values.push( _value_vector[i] );
+                reuseInstance( _value_vector[i] );
             }
             _value_vector.clear();
             

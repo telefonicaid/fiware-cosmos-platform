@@ -26,7 +26,7 @@ namespace samson{ namespace system{
     class Value : public samson::DataInstance
     {
         // Pool of Value instances for vector and map
-        static au::Pool<Value> pool_values;
+        static au::Pool<Value>* pool_values;
         
     public:
         
@@ -144,7 +144,10 @@ namespace samson{ namespace system{
         
         static Value * getInstance()
         {
-            Value * v = pool_values.pop();
+            if( !pool_values )
+                pool_values = new au::Pool<Value>();;
+
+            Value * v = pool_values->pop();
             if( v )
                 return v;
             return new Value();
@@ -152,8 +155,11 @@ namespace samson{ namespace system{
         
         static void reuseInstance( Value* value )
         {
+            if( !pool_values )
+                pool_values = new au::Pool<Value>();;
+            
             value->clear();
-            pool_values.push(value);
+            pool_values->push(value);
         }
         
         // Return the name of this data type ( syste.Value )

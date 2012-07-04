@@ -13,6 +13,7 @@ from jobsubd.ttypes import (BinHadoopStep, LocalizedFile, LocalizeFilesStep,
                             State, SubmissionPlan, SubmissionPlanStep)
 
 from cosmos import conf, mongo, paths
+from cosmos.expansion import ExpansionContext
 from cosmos.jar import InvalidJarFile, JarFile
 from cosmos.hdfs_util import CachedHDFSFile
 from cosmos.models import JobRun
@@ -35,20 +36,20 @@ def index(request):
     ))
 
 
-def hadoop_args(job, jar_name):
+def hadoop_args(job, jar_name, expansion):
     args = ['jar', jar_name]
     if job.is_parameterized():
         for parameter in job.parameters:
-            args.extend(parameter.as_job_argument(job))
+            args.extend(parameter.as_job_argument(job, expansion))
     else:
-        input_path = job.dataset_path
+        input_path = expansion.expand(job.dataset_path)
         output_path = paths.tmp_path(job.user, job.id)
         args.extend([input_path, output_path,
                      mongo.user_coll_url(job.user.id, job.mongo_collection())])
     return args
 
 
-def submit(job):
+def submit(job, expansion):
     """Submit a job through the jobsubd infrastructure."""
 
     LOGGER.info("Submitting job %s (%d) for %s with JAR=%s on dataset %s" %
@@ -57,7 +58,7 @@ def submit(job):
 
     lf = LocalizedFile(target_name=TEMP_JAR, path_on_hdfs=job.jar_path)
     lfs = LocalizeFilesStep(localize_files=[lf])
-    bhs = BinHadoopStep(arguments=hadoop_args(job, TEMP_JAR))
+    bhs = BinHadoopStep(arguments=hadoop_args(job, TEMP_JAR, expansion))
     plan = SubmissionPlan(name=job.name,
                           user=job.user.username,
                           groups=job.user.get_groups(),
@@ -180,7 +181,8 @@ def configure_parameterized_job(request):
         return redirect(reverse('define_job'))
     else:
         for param in parameters:
-            param.set_value(request.POST.get(param.name, None))
+            param.set_value(request.POST.get(param.name, None),
+                            ExpansionContext(user=request.user))
         form = ParameterizeJobForm(parameters)
         update_job_wizard(request, wizard)
         if form.is_valid():
@@ -218,7 +220,7 @@ def confirm_job(request):
         return redirect(reverse('configure_job'))
     else:
         job.save()
-        submit(job)
+        submit(job, ExpansionContext(job=job, user=request.user))
         clear_job_wizard(request)
         return redirect(reverse('list_jobs'))
 

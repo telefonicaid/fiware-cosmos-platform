@@ -9,6 +9,7 @@ from hadoop.fs import LocalSubFileSystem
 from jobsub.models import Submission
 from pymongo import Connection
 
+from cosmos.expansion import ExpansionContext
 from cosmos.jar_parameters import make_parameter
 from cosmos.models import JobRun
 from cosmos.views import hadoop_args
@@ -43,20 +44,26 @@ class HadoopArgsTestCase(test.TestCase):
                           dataset_path='/user/jsmith/datasets/text.txt',
                           jar_path='/user/jsmith/jars/wordcount.jar',
                           submission=Submission(id=23))
+        self.expansion = ExpansionContext(job=self.job,
+                                          user=User(id=101, username="user1"))
 
     def test_hadoop_args(self):
-        self.assertEquals(hadoop_args(self.job, 'job.jar'),
+        self.assertEquals(hadoop_args(self.job, 'job.jar', self.expansion),
                           ['jar', 'job.jar', '/user/jsmith/datasets/text.txt',
                            '/user/jsmith/tmp/job_15/',
                            'mongodb://localhost/db_1.job_15'])
 
     def test_hadoop_args_with_parameters(self):
+        custom = make_parameter('output', 'filepath')
+        custom.set_value('${user.home}/output', self.expansion)
         self.job.parameters = [make_parameter('foo', 'string|bar'),
-                               make_parameter('mongo1', 'mongocoll|col_a')]
-        self.assertEquals(hadoop_args(self.job, 'job.jar'),
+                               make_parameter('mongo1', 'mongocoll|col_a'),
+                               custom]
+        self.assertEquals(hadoop_args(self.job, 'job.jar', self.expansion),
                           ['jar', 'job.jar',
                            '-D', 'foo=bar',
-                           '-D', 'mongo1=mongodb://localhost/db_1.col_a'])
+                           '-D', 'mongo1=mongodb://localhost/db_1.col_a',
+                           '-D', 'output=/user/user1/output'])
 
 
 def local_mongo():
@@ -128,3 +135,4 @@ class ListResultsTestCase(test.TestCase):
                         msg="Collections owned by user should be listed")
         self.assertTrue('baz789' not in listed_names,
                         msg="Collections owned by other users should not be listed")
+

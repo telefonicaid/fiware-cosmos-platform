@@ -39,8 +39,8 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm, move_sshd=False):
     execute(deploy_hue, os.path.join(dependenciespath, thrift_tar))
     report_current_task("SFTP")
     execute(deploy_sftp, move_sshd)
-    report_current_task("Ganglia")
-    execute(deploy_ganglia)
+    # report_current_task("Ganglia")
+    # execute(deploy_ganglia)
     report_current_task("Mongo")
     execute(deploy_mongo)
     report_current_task("Provisioning users")
@@ -172,7 +172,10 @@ def deploy_sftp(move_sshd=False):
                     (env.host_string, custom_port)))
         do_move_sshd(custom_port)
 
-    run("service injection restart")
+    ## Fabric's pseudoterminal emulation does not play well with init scripts.
+    ## All other components are safe to start within a pseudoterminal, but for
+    ## the injection server it is safest to start from a real terminal.
+    run("service injection restart", pty=False)
 
 def do_move_sshd(custom_port=CONFIG['frontend_ssh_custom_port']):
     """

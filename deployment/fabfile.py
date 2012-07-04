@@ -171,8 +171,8 @@ def deploy_sftp(move_sshd=False):
         warn(yellow("Moving sshd at %s to port %s" %
                     (env.host_string, custom_port)))
         do_move_sshd(custom_port)
-        ## Only restart if we have moved sshd from its custom port
-        run("service injection restart")
+
+    run("service injection restart")
 
 def do_move_sshd(custom_port=CONFIG['frontend_ssh_custom_port']):
     """

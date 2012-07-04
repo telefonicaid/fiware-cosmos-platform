@@ -132,6 +132,7 @@ def install_cosmos_app():
         shutil.rmtree(os.path.join(local_cosmos_app, "eggs"))
         shutil.rmtree(os.path.join(local_cosmos_app, "parts"))
     put(local_cosmos_app, "cosmos-app")
+#     common.instantiate_template(template_file, output_file, context={})
     with cd("cosmos-app/cosmos"):
         puts("About to run buildout")
         run("python bootstrap.py")

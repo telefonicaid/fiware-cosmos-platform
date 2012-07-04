@@ -86,7 +86,7 @@ class FilePathParameter(StringParameter):
         try:
             ABSOLUTE_PATH_VALIDATOR.__call__(value)
         except ValidationError, e:
-            raise ValueError('Invalid HDFS path: "%s"' % value)
+            raise ValueError('Invalid absolute path: "%s"' % value)
 
     def form_field(self):
         return forms.CharField(label=self.name,
@@ -105,7 +105,8 @@ class MongoCollParameter(StringParameter):
         try:
             ID_VALIDATOR.__call__(value)
         except ValidationError, e:
-            raise ValueError('Invalid MongoDB collection name: "%s"' % value)
+            raise ValueError(('Invalid MongoDB collection name: "%s" '
+                              '(only letters, numbers and dashes)') % value)
 
     def form_field(self):
         return forms.CharField(label=self.name,

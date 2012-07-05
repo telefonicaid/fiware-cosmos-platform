@@ -11,6 +11,7 @@ import es.tid.smartsteps.dispersion.data.CellToMicrogridLookupEntry;
  * @author dmicol
  */
 public class CellToMicrogridEntryParserTest {
+
     private CellToMicrogridEntryParser parser;
     
     @Before
@@ -23,6 +24,6 @@ public class CellToMicrogridEntryParserTest {
         CellToMicrogridLookupEntry entry = this.parser.parse("assag43\t123\t0.57");
         assertEquals("assag43", entry.cellId);
         assertEquals("123", entry.microgridId);
-        assertEquals(0.57D, entry.proportion.doubleValue(), 0.0D);
+        assertEquals(0.57D, entry.proportion, 0.0D);
     }
 }

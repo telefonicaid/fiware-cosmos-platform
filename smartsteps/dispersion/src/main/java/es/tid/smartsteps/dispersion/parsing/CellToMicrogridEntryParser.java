@@ -1,7 +1,5 @@
 package es.tid.smartsteps.dispersion.parsing;
 
-import java.math.BigDecimal;
-
 import es.tid.smartsteps.dispersion.data.CellToMicrogridLookupEntry;
 
 /**
@@ -23,7 +21,7 @@ public class CellToMicrogridEntryParser
         }
         CellToMicrogridLookupEntry entry =
                 new CellToMicrogridLookupEntry(values[0], values[1],
-                                               new BigDecimal(values[2]));
+                                               Double.parseDouble(values[2]));
 
         return entry;
     }

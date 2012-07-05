@@ -9,8 +9,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>es.tid.cosmos.tests.hadoopjobs</groupId>
-    <artifactId>parameterizedjob-malformed4</artifactId>
-    <name>parameterizedjob-malformed4</name>
+    <artifactId>parameterizedjob-normal-xml</artifactId>
+    <name>parameterizedjob-normal-xml</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mainClass>es.tid.cosmos.tests.hadoopjobs.parameterizedjob.base.ParameterizedJobTool</mainClass>
@@ -37,7 +37,7 @@
                     <archive>
                         <manifestEntries>
                             <Cosmos-Parameters-Template>
-                                /conf/params.properties
+                                /conf/params.xml
                             </Cosmos-Parameters-Template>
                         </manifestEntries>
                     </archive>

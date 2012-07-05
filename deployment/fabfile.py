@@ -97,6 +97,7 @@ def add_test_setup():
         run('build/env/bin/hue loaddata ~/testUser.json')
     for file_to_delete in files_to_delete:
         run('rm %s' % file_to_delete)
+    execute(provision_user, 'test')
 
 @task
 @parallel

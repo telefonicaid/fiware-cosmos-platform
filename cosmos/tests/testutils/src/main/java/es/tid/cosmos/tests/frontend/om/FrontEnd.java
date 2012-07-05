@@ -25,7 +25,7 @@ import es.tid.cosmos.tests.tasks.TestException;
 public class FrontEnd {
     // HTML classes and ids
     public static final String UPLOAD_CLASS = "cos-upload_nav";
-    public static final String CREATE_JOB_CLASS = "cos-run_job_nav";
+    public static final String CREATE_JOB_CLASS = "cos-define_job_nav";
     public static final String TASK_STATUS_TABLE_CLASS = "job-listing";
     public static final String JOB_ACTION_CLASS = "job-action";
     public static final String RESULT_ACTION_CLASS = "results";
@@ -134,7 +134,7 @@ public class FrontEnd {
 
         String statusText = row.findElement(
                 By.className(RESULT_STATUS_CLASS)).getText();
-        if (statusText.equals("running")) {
+        if (statusText.equals("running") || statusText.equals("submitted")) {
             return TaskStatus.Running;
         } else if (statusText.equals("successful")) {
             return TaskStatus.Completed;
@@ -214,7 +214,9 @@ public class FrontEnd {
         WebElement createJobElement = this.driver.findElement(
                 By.className(CREATE_JOB_CLASS));
         createJobElement.click();
-        return new CreateJobPage(this.driver);
+        CreateJobPage createJobPage = new CreateJobPage(this.driver);
+        createJobPage.cancel();
+        return createJobPage;
     }
 
     public UploadPage goToUpload() {

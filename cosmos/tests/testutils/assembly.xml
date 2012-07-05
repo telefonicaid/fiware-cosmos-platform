@@ -15,10 +15,13 @@
                 <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed2</include> 
                 <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed3</include> 
                 <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed4</include> 
-                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed5</include> 
-                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-normal</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed5</include>
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed6</include>
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed7</include>
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-normal</include>
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-normal-xml</include>
                 <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-whitespace</include> 
-                <include>es.tid.cosmos:wordcount-core</include>
+                <include>es.tid.cosmos:wordcount-core-parameterized</include>
             </includes> 
             <useTransitiveDependencies>false</useTransitiveDependencies>
         </dependencySet> 

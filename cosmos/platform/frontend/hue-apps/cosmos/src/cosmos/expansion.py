@@ -41,7 +41,7 @@ class ExpansionContext(object):
     def __lookup(self, variable):
         variable = variable.strip()
         if self.__dict.has_key(variable):
-            return str(self.__dict[variable])
+            return unicode(self.__dict[variable])
         else:
             raise ValueError("Unknown varible to expand: '%s'" % variable)
 

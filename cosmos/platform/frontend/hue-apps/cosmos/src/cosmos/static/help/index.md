@@ -40,8 +40,8 @@ and, optionally, the default setting value.  Supported types are:
  * `mongocoll`: a valid collection URL (only numbers, letters, dashes and
    underlines, not starting by number) is requested but the application will
    get the full mongo collection URL (e.g. `mongodb://host/db.col`).
-   In the case of lacking a default value `db_${job.id}` is taken (see section
-   on variable expansion below).
+   In the case of no default value `db_${job.id}` is taken (see section on
+   variable expansion below).
 
 To enable this feature, the MANIFEST.MF should have a property
 `Cosmos-Parameters-Template` pointing to the properties file within the JAR.

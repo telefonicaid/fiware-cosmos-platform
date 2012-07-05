@@ -43,7 +43,7 @@ class AbstractParameter(object):
         raise NotImplementedError(
             "AbstractParameter#validate must be overridden")
 
-    def form_field(self, expansion=ExpansionContext()):
+    def form_field(self, expansion):
         """Generate a field suitable for a django form.
 
         To be overridden by subclasses.
@@ -55,7 +55,7 @@ class AbstractParameter(object):
         """Returns a list of command line arguments to inject this
         parameter into a job.
 
-        Context is a dictionary with the variables subject to expansion.
+        Variables on the paramters are expanded by means of expansion object.
 
         Can be overriden by subclasses.
         """
@@ -74,7 +74,7 @@ class StringParameter(AbstractParameter):
             raise ValueError('Max length of %d was exceed: %d characters' %
                              (self.MAX_LENGTH, len(value)))
 
-    def form_field(self, expansion=ExpansionContext()):
+    def form_field(self, expansion):
         return forms.CharField(label=self.name,
                                max_length=self.MAX_LENGTH,
                                initial=self.default_value)
@@ -92,7 +92,7 @@ class FilePathParameter(StringParameter):
         except ValidationError, e:
             raise ValueError('Invalid absolute path: "%s"' % value)
 
-    def form_field(self, expansion=ExpansionContext()):
+    def form_field(self, expansion):
         validator = expansion.decorate(ABSOLUTE_PATH_VALIDATOR)
         return forms.CharField(label=self.name,
                                max_length=StringParameter.MAX_LENGTH,
@@ -120,7 +120,7 @@ class MongoCollParameter(StringParameter):
             raise ValueError(('Invalid MongoDB collection name: "%s" '
                               '(only letters, numbers and dashes)') % value)
 
-    def form_field(self, expansion=ExpansionContext()):
+    def form_field(self, expansion):
         return forms.CharField(label=self.name,
                                max_length=StringParameter.MAX_LENGTH,
                                initial=self.default_value,

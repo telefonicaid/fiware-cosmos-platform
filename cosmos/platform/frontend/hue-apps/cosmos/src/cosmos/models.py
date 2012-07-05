@@ -69,7 +69,7 @@ class JobRun(models.Model):
 
         now = datetime.now()
         if ((now - self.last_submission_refresh).seconds <
-            conf.MIN_POLLING_INTERVAL):
+            conf.MIN_POLLING_INTERVAL.get()):
             return
 
         job_data = jobsub.get_client().get_job_data(

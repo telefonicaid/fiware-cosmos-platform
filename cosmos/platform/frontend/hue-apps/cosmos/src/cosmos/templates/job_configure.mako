@@ -17,9 +17,9 @@ ${shared.header("Run new job", section="define_job")}
         ${render_error(err)}
         % endfor
 
-	${ form.as_p() | n }
+        ${ form.as_p() | n }
 
-	${shared.wizard_navigation()}
+        ${shared.wizard_navigation()}
     </form>
 </div>
 

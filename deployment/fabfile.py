@@ -183,8 +183,7 @@ def do_move_sshd(custom_port=CONFIG['frontend_ssh_custom_port']):
     change other tasks might fail because they try to login at the standard
     SSH port.
     """
-    iptables.add_rule("INPUT -p tcp -m tcp --dport %s -j ACCEPT" %
-                      custom_port)
+    iptables.accept_in_tcp(custom_port)
     sudo("service iptables save")
     common.instantiate_template('templates/sshd_config.mako',
                                 '/etc/ssh/sshd_config',
@@ -206,6 +205,8 @@ def deploy_cdh():
 @roles('mongo')  
 def deploy_mongo():
     """Install the latest MongoDB distribution"""
+    iptables.accept_in_tcp(27017)
+    iptables.accept_in_tcp(28017)
     with cd('/etc/yum.repos.d'):
         if not files.exists('10gen.repo'):
             put(os.path.join(BASEPATH, 'templates/10gen.repo'), '10gen.repo')

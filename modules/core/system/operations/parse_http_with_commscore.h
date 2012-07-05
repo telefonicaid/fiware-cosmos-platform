@@ -586,7 +586,7 @@ class parse_http_with_commscore : public samson::Parser
 
 
         keyContainer->value->set_as_map();
-        keyContainer->value->add_value_to_map("app")->set_string("globalHits");
+        keyContainer->value->add_value_to_map("app")->set_string("globalTops");
         keyContainer->value->add_value_to_map("user")->set_double(static_cast<double>(userId));
         keyContainer->value->add_value_to_map("imei")->set_double(static_cast<double>(imei));
         keyContainer->value->add_value_to_map("timestamp")->set_double(static_cast<double>(timestamp.value));

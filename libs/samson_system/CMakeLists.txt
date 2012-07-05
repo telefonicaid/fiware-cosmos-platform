@@ -11,6 +11,7 @@ ValueVector.h
 ProcessComponent.h
 TopProcessComponent.h
 ProcessComponentManager.h
+HubMapProcess.h
 )
 
 SET (SOURCES
@@ -26,6 +27,7 @@ ValueVector.cpp
 ProcessComponent.cpp
 TopProcessComponent.cpp
 ProcessComponentManager.cpp
+HubMapProcess.cpp
 )
 
 # Include directories

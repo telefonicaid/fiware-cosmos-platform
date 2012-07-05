@@ -21,13 +21,13 @@ class ExpansionContext(object):
     def __init__(self, job=None, user=None):
         """Creates an expansion context based on a job and user objects or
         default values when not provided."""
-        self.__dict = self.__DEFAULT_VALUES.copy()
+        self.__variables = self.__DEFAULT_VALUES.copy()
         if job is not None:
-            self.__dict['job.id'] = job.id
-            self.__dict['job.name'] = job.name
+            self.__variables['job.id'] = job.id
+            self.__variables['job.name'] = job.name
         if user is not None:
-            self.__dict['user.name'] = user.username
-            self.__dict['user.home'] = "/user/" + user.username
+            self.__variables['user.name'] = user.username
+            self.__variables['user.home'] = "/user/" + user.username
 
     def expand(self, text):
         """Expands variables in the form ${ var_name } in a given text."""
@@ -43,10 +43,9 @@ class ExpansionContext(object):
 
     def __lookup(self, variable):
         """Looks up a variable by name."""
-        variable = variable.strip()
-        if self.__dict.has_key(variable):
-            return unicode(self.__dict[variable])
-        else:
+        try:
+            return unicode(self.__variables[variable.strip()])
+        except KeyError:
             raise ValueError("Unknown varible to expand: '%s'" % variable)
 
     def decorate(self, fun):

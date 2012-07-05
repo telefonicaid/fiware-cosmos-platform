@@ -80,6 +80,39 @@ public class TrafficCountsEntry implements Entry {
         return scaled;
     }
     
+    public TrafficCountsEntry aggregate(TrafficCountsEntry entry) {
+        TrafficCountsEntry aggregated = new TrafficCountsEntry(this);
+        for (String countField : aggregated.counts.keySet()) {
+            final ArrayList<BigDecimal> countsForField =
+                    aggregated.counts.get(countField);
+            final ArrayList<BigDecimal> entryCountsForField =
+                    entry.counts.get(countField);
+            if (countsForField.size() != entryCountsForField.size()) {
+                throw new IllegalArgumentException(
+                        "Mismatching sizes for field " + countField);
+            }
+            for (int i = 0; i < entryCountsForField.size(); i++) {
+                countsForField.set(i,
+                        countsForField.get(i).add(entryCountsForField.get(i)));
+            }
+        }
+        for (String poi : aggregated.pois.keySet()) {
+            final ArrayList<BigDecimal> countsForPoi = aggregated.pois.get(poi);
+            final ArrayList<BigDecimal> entryCountsForPoi =
+                    aggregated.pois.get(poi);
+            if (countsForPoi.size() != entryCountsForPoi.size()) {
+                throw new IllegalArgumentException(
+                        "Mismatching sizes for POI " + poi);
+            }
+            for (int i = 0; i < countsForPoi.size(); i++) {
+                countsForPoi.set(i,
+                        countsForPoi.get(i).add(entryCountsForPoi.get(i)));
+            }
+        }
+        
+        return aggregated;
+    }
+    
     public HashMap<String, ArrayList<BigDecimal>> roundCounts() {
         HashMap<String, ArrayList<BigDecimal>> roundedCounts =
                 new HashMap<String, ArrayList<BigDecimal>>();

@@ -82,14 +82,27 @@ public class Main extends Configured implements Tool {
             FileOutputFormat.setOutputPath(job, countsByPolygonPath);
             job.waitForCompletion(true);
         }
+
+        Path aggregatedCountsByPolygonPath = new Path(outputDir,
+                "aggregated_counts_by_polygon");
+        {
+            CosmosJob job = CosmosJob.createMapReduceJob(config,
+                    "AggregationByCellIdAndDate",
+                    TextInputFormat.class,
+                    CellIdAndDateMapper.class,
+                    AggregationReducer.class,
+                    TextOutputFormat.class);
+            FileInputFormat.setInputPaths(job, countsByPolygonPath);
+            FileOutputFormat.setOutputPath(job, aggregatedCountsByPolygonPath);
+            job.waitForCompletion(true);
+        }
         
         return 0;
     }
 
     public static void main(String[] args) throws Exception {
         try {
-            int res = ToolRunner.run(new Configuration(),
-                                     new Main(), args);
+            int res = ToolRunner.run(new Configuration(), new Main(), args);
             if (res != 0) {
                 throw new Exception("Uknown error");
             }

@@ -96,7 +96,10 @@ namespace samson {
             if( node_identifier.node_type == DelilahNode )
             {
                 if ( node_identifier.id != DELILAH_ID )
-                    LM_X(1,("Error in fake network"));
+                {
+                    LM_E(("Error in fake network for DelilahNode with node_identifier:%s", node_identifier));
+                    return NULL;
+                }
                 
                 return delilah_network_interface;
             }
@@ -107,7 +110,7 @@ namespace samson {
                     if( node_identifier == workers_network_interface[i]->node_identifier )
                         return workers_network_interface[i];
                 
-                     LM_X(1,("Error in fake network"));
+                     LM_E(("Error in fake network after trying workers_network_interface[%d] with unknown node_identifier:%s", workers_network_interface.size(), node_identifier));
                 return NULL;
             }
             

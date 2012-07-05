@@ -614,6 +614,159 @@ const char *laststrstr(const char *source , size_t source_length , const char *t
 }
 
 
+const char *strnstr_limitpattern(const char *text, const char *pattern, size_t max_length)
+{
+    char cpat, ctxt;
+    size_t len;
+
+    // Check for an empty pattern
+    if ((cpat = *pattern++) != '\0')
+    {
+        len = strlen(text);
+        do
+        {
+            do
+            {
+                if ((len-- < max_length) || (ctxt = *text++) == '\0')
+                {
+                    return ((const char *)NULL);
+                }
+            } while (ctxt != cpat);
+        } while (strncmp(text, pattern, max_length-1) != 0);
+        text--;
+    }
+    return (text);
+}
+
+bool matchPatterns (const char *inputString, const char *pattern, char wildcard)
+{
+    const char *p_input;
+    const char *p_pattern;
+    char *p_wildcard;
+    const char *p_match;
+    bool first_wildcard = false;
+
+
+    // First, lets skip trivial situations
+    if (inputString == NULL)
+    {
+        return false;
+    }
+
+    if (*inputString == '\0')
+    {
+        return false;
+    }
+
+    if (pattern == NULL)
+    {
+        return false;
+    }
+
+    if (*pattern == '\0')
+    {
+        return false;
+    }
+
+    p_input = inputString;
+    p_match = p_input;
+    p_pattern = pattern;
+    if (p_pattern[0] == wildcard)
+    {
+        first_wildcard = true;
+    }
+
+    while ((p_wildcard = strchr((char *)p_pattern, wildcard)) != NULL)
+    {
+        size_t len_pattern = p_wildcard - p_pattern;
+
+        if (first_wildcard == false)
+        {
+            if (strncmp(p_input, p_pattern, len_pattern) != 0)
+            {
+                return false;
+            }
+            first_wildcard = true;
+        }
+        else if (len_pattern > 0)
+        {
+            if ((p_match = strnstr_limitpattern(p_input, p_pattern, len_pattern)) == NULL)
+            {
+
+                return false;
+            }
+        }
+        p_input = p_match + len_pattern;
+        p_pattern = p_wildcard + 1;
+        if (*p_pattern == '\0')
+        {
+            return true;
+        }
+    }
+    if (first_wildcard == false)
+    {
+        if (strcmp(p_input, p_pattern) != 0)
+        {
+            return false;
+        }
+    }
+    else if (strlen(p_pattern) > 0)
+    {
+        if (((p_match = strstr(p_input, p_pattern)) == NULL) || (*(p_match + strlen(p_pattern))) != '\0')
+        {
+
+            return false;
+        }
+    }
+    return true;
+}
+
+
+void split_in_words( char *line , std::vector<char*>& words , char separator )
+{
+    size_t pos = 0;
+    size_t previous = 0;
+
+    bool finish = false;
+
+
+    // Clear words vector
+    words.clear();
+
+    while( !finish )
+    {
+
+        if( ( line[pos] == separator ) || ( line[pos] == '\0' ) )
+        {
+            if(( line[pos] == '\0' )|| (line[pos] == '\n'))
+                finish = true;
+
+            // Artifical termination of string
+            line[pos] = '\0';
+
+            // Add the found word
+            words.push_back(  &line[previous] );
+
+            // Point to the next words
+            // Jumps blank spaces
+            pos++;
+
+            // To avoid valgrind detected error when checking after the end of the buffer
+//            if (!finish)
+//            {
+//                while (line[pos] == ' ')
+//                {
+//                    pos++;
+//                }
+//            }
+            previous = pos;
+        }
+        else
+            pos++;
+    }
+}
+
+
 int getCommonChars( std::string& txt , std::string& txt2 )
 {
     size_t l = std::min( txt.length() , txt2.length() );

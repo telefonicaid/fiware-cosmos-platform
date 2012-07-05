@@ -65,6 +65,7 @@ std::string str_double_progress_bar( double p1 , double p2 , char c1 ,char c2 , 
 std::vector<std::string> simpleTockenize( std::string txt );
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
 std::vector<std::string> split(const std::string &s, char delim);  
+void split_in_words( char *line , std::vector<char*>& words , char separator );
 
 
 // Old functions to be reviews
@@ -106,6 +107,13 @@ std::string lineInConsole( char c );
 // Backward search of sequences
 const char *laststrstr(const char *source , const char *target );
 const char *laststrstr(const char *source , size_t source_length , const char *target );
+
+// Extract substrings (patterns) from a line
+const char *strnstr_limitpattern(const char *text, const char *pattern, size_t max_length);
+
+
+// Check simple regular expressions in string
+bool matchPatterns (const char *inputString, const char *pattern, char wildcard);
 
 // Get common number of chars
 int getCommonChars( std::string& txt , std::string& txt2 );    

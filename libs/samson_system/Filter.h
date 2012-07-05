@@ -490,7 +490,10 @@ namespace samson{
             {
                 // Key should be string for this operation
                 if ( !kv.key->isString() )
+                {
+                    LM_W(("key should be a string for this filter"));
                     return ;
+                }
                 
                 std::string line = kv.key->get_string();
 
@@ -498,6 +501,7 @@ namespace samson{
                 string_components.process_line( line.c_str() , line.length() , separator );
                 
                 keyContainer.value->set_as_vector();
+                keyContainer.value->clear();
 
                 if( fields.size() == 0 )
                 {

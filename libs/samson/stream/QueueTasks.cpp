@@ -93,6 +93,7 @@ namespace samson {
 
             if( !parser )
             {
+                LM_E(("Error getting an instance of this operation"));
                 setUserError("Error getting an instance of this operation");
                 return;
             }

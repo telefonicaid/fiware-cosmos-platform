@@ -44,7 +44,11 @@ class TrafficCountsJsonExporterMapper extends Mapper<
         for (Counts footfallCounts : counts.getFootfallsList()) {
             obj.put(footfallCounts.getName(), footfallCounts.getValuesList());
         }
-        obj.put(TrafficCountsParser.POIS_FIELD_NAME, counts.getPoisList());
+        JSONObject pois = new JSONObject();
+        for (Counts poiCounts : counts.getPoisList()) {
+            pois.put(poiCounts.getName(), poiCounts.getValuesList());
+        }
+        obj.put(TrafficCountsParser.POIS_FIELD_NAME, pois);
         return obj;
     }
 }

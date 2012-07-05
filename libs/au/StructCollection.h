@@ -76,7 +76,13 @@ namespace au {
             if ( size*sizeof(C) != _size )
                 LM_X(1, ("Problem reading %lu bytes for structs of size %lu" , _size , sizeof(C) ));
             
-            v = (C*) malloc( _size * sizeof(C) );
+            //v = (C*) malloc( _size * sizeof(C) );
+            v = (C*) malloc( _size );
+            if (v == NULL)
+            {
+                LM_E(("Error in malloc for reading %lu bytes in %d structs of size:%lu", _size, size, sizeof(C)));
+                return;
+            }
             max_size = _size;
             
             // Read content from file

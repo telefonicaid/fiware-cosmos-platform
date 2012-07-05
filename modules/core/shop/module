@@ -40,16 +40,6 @@ map map_by_user
         helpLine "Map example; from input_data [UInt - Transaction] emits key-values [UInt - UInt] with user-id and product-id"
 }
 
-reduce reduce_by_user
-{
-        in system.UInt system.UInt
-        out system.UInt shop.VectorProducts
-
-        top
-
-        helpLine "Reduce example; from key-values groups the list of products by user"
-}
-
 reduce reduce_by_user_state
 {
         in system.UInt system.UInt
@@ -61,12 +51,12 @@ reduce reduce_by_user_state
         helpLine "Reduce example; from key-values groups the list of products by user, working in streaming with a user state"
 }
 
-parserOut export_to_txt
-{
-        in system.UInt shop.VectorProducts
-
-	helpLine "Export system.UInt shop.VectorProducts key-values in a standard format. Use shop.separator to custommize separator"
-}
+#parserOut export_to_txt
+#{
+#        in system.UInt shop.VectorProducts
+#
+#	helpLine "Export system.UInt shop.VectorProducts key-values in a standard format. Use shop.separator to custommize separator"
+#}
 
 script init_stream
 {

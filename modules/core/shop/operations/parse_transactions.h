@@ -22,6 +22,8 @@ namespace shop{
 	{
 
 	    uint64_t local_count;
+	    std::string sep_string;
+	    char sep;
 	public:
 
 
@@ -37,12 +39,15 @@ namespace shop{
 		void init( samson::KVWriter *writer )
 		{
 		    local_count = 0;
+
+		    // Recovering parse separator from environment
+		    sep_string = environment->get("shop.separator", "|");
+		    sep = sep_string.c_str()[0];
 		}
 
 		void parseLine( char * line, samson::KVWriter *writer)
 		{
 		    std::vector<char*> fields;
-		    char sep = '|';
 		    char *endptr;
 
 		    split_in_words(line, fields, sep);
@@ -50,7 +55,7 @@ namespace shop{
             samson::system::UInt id;
             samson::shop::Transaction transaction;
 
-            id.value = local_count;
+            id.value = local_count++;
 
             transaction.user = strtoul(fields[0], &endptr, 10);
             transaction.product = strtoul(fields[1], &endptr, 10);

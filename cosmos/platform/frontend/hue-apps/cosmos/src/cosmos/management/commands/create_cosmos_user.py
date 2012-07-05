@@ -4,6 +4,7 @@ from optparse import make_option
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
+from hadoop import cluster
 
 
 class Command(BaseCommand):
@@ -22,12 +23,15 @@ class Command(BaseCommand):
     )
 
     def handle(self, *args, **options):
-        #import ipdb; ipdb.set_trace()
         if len(args) != 1:
             raise CommandError("A single login was expected")
         login = args[0]
         if options.get('password', None) is None:
             raise CommandError("Please specify a password with --password")
+        self.create_user(login, options)
+        self.create_home(login)
+
+    def create_user(self, login, options):
         try:
             User.objects.get(username=login)
             raise CommandError("User '%s' already exists" % login)
@@ -40,3 +44,10 @@ class Command(BaseCommand):
                 user.is_superuser = True
                 user.is_staff = True
             user.save()
+
+    def create_home(self, login):
+        home = '/user/%s' % login
+        hdfs = cluster.get_hdfs()
+        hdfs.setuser(login)
+        for path in ['jars', 'datasets', 'tmp']:
+            hdfs.mkdir('%s/%s' % (home, path))

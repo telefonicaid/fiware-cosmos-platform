@@ -66,6 +66,8 @@ class UseJarTestCase(test.TestCase):
         self.assertEquals(params[1].name, "bar")
         self.assertEquals(params[1].default_value, "hola")
         self.assertEquals(params[2].name, "tmp")
+        self.assertEquals(params[2].default_value, 
+                          "${ user.home }/tmp/run${ job.id }")
         self.assertEquals(params[3].name, "mongo1")
         self.assertEquals(params[4].name, "mongo2")
         self.assertEquals(params[4].default_value, "col_a")

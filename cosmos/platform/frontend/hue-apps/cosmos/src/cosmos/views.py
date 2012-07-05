@@ -319,7 +319,7 @@ def show_results(request, collection_name):
     ))
 
 def database_not_available(request):
-    """Render error page when database is no available."""
+    """Render error page when database is not available."""
     return render('error.mako', request, dict(
         error_title='Cannot contact database',
         error_details='Database backend is unreachable or not responding'))

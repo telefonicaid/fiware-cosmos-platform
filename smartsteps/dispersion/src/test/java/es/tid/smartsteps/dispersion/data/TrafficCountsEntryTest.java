@@ -1,7 +1,6 @@
 package es.tid.smartsteps.dispersion.data;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
@@ -17,6 +16,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsEntryParser;
  * @author dmicol
  */
 public class TrafficCountsEntryTest {
+
     private TrafficCountsEntry instance;
     
     @Before
@@ -68,11 +68,10 @@ public class TrafficCountsEntryTest {
 
     @Test
     public void testScale() {
-        TrafficCountsEntry scaledEntry = this.instance.scale(
-                new BigDecimal(2.6D));
-        ArrayList<BigDecimal> counts = scaledEntry.counts.get(
+        TrafficCountsEntry scaledEntry = this.instance.scale(2.6D);
+        ArrayList<Double> counts = scaledEntry.counts.get(
                 "footfall_observed_basic");
-        assertEquals(0.0D, counts.get(0).doubleValue(), 0.0D);
-        assertEquals(2.6D, counts.get(24).doubleValue(), 0.0D);
+        assertEquals(0.0D, counts.get(0), 0.0D);
+        assertEquals(2.6D, counts.get(24), 0.0D);
     }
 }

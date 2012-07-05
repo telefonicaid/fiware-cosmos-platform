@@ -1,7 +1,5 @@
 package es.tid.smartsteps.dispersion.data;
 
-import java.math.BigDecimal;
-
 /**
  * Represents an entry in a lookup table, where the lookup helps to join
  * a primary key to a secondary key.
@@ -9,6 +7,7 @@ import java.math.BigDecimal;
  * @author dmicol, logc
  */
 public interface LookupEntry extends Entry {
+
     /**
      * Gets the secondary key of this entry.
      *
@@ -21,5 +20,5 @@ public interface LookupEntry extends Entry {
      *
      * @return The corresponding proportion.
      */
-    BigDecimal getProportion();
+    double getProportion();
 }

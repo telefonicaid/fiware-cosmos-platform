@@ -1,7 +1,6 @@
 package es.tid.smartsteps.dispersion;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -90,7 +89,7 @@ public class AggregationReducerTest {
         assertEquals(NullWritable.get(), result.getFirst());
         final TrafficCountsEntry outValue = this.parser.parse(
                 result.getSecond().toString());
-        ArrayList<BigDecimal> counts = outValue.counts.get("footfall_observed_0");
+        ArrayList<Double> counts = outValue.counts.get("footfall_observed_0");
         assertEquals(0, counts.get(15).intValue());
         assertEquals(6, counts.get(19).intValue());
         assertEquals(3, counts.get(24).intValue());

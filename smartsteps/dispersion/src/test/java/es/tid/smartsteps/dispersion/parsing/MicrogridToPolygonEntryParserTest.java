@@ -11,6 +11,7 @@ import es.tid.smartsteps.dispersion.data.MicrogridToPolygonLookupEntry;
  * @author dmicol
  */
 public class MicrogridToPolygonEntryParserTest {
+
     private MicrogridToPolygonEntryParser parser;
     
     @Before
@@ -23,6 +24,6 @@ public class MicrogridToPolygonEntryParserTest {
         MicrogridToPolygonLookupEntry entry = this.parser.parse("456\t123\t0.57");
         assertEquals("456", entry.microgridId);
         assertEquals("123", entry.polygonId);
-        assertEquals(0.57D, entry.proportion.doubleValue(), 0.0D);
+        assertEquals(0.57D, entry.proportion, 0.0D);
     }
 }

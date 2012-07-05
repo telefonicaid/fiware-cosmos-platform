@@ -24,13 +24,13 @@ bool HubMapProcess::update( Value* key ,Value * state ,Value ** values ,size_t n
             new_key.add_value_to_map("app")->set_string(out_app_name().c_str());
             new_key.add_value_to_map(keys[i])->set_string("concept");
             new_value.set_string(key->get_string_from_map(keys[i].c_str()));
-            for (size_t j; (j < num_values); j++)
+            for (size_t j = 0; (j < num_values); j++)
             {
                 emit_output(&new_key, &new_value, writer);
             }
         }
         key->set_string_for_map("app", out_def_name().c_str());
-        for (size_t j; (j < num_values); j++)
+        for (size_t j = 0; (j < num_values); j++)
         {
             emit_feedback(key, values[j], writer);
         }

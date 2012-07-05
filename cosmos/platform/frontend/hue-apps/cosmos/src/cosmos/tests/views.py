@@ -5,7 +5,6 @@ View tests.
 """
 from django import test
 from django.contrib.auth.models import User
-from hadoop.fs import LocalSubFileSystem
 from jobsub.models import Submission
 from pymongo import Connection
 

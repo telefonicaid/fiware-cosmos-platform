@@ -2,17 +2,16 @@
 import logging
 
 from desktop.lib.django_util import PopupException, render
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.forms.util import ErrorList
-from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import redirect
 import jobsub.views as jobsub
 from jobsub.models import Submission
 from jobsubd.ttypes import (BinHadoopStep, LocalizedFile, LocalizeFilesStep,
                             State, SubmissionPlan, SubmissionPlanStep)
 
-from cosmos import conf, mongo, paths
+from cosmos import mongo, paths
 from cosmos.expansion import ExpansionContext
 from cosmos.jar import InvalidJarFile, JarFile
 from cosmos.hdfs_util import CachedHDFSFile

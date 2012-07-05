@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 '''Expansion tests.'''
-from datetime import datetime
 import unittest as test
 
 from django.contrib.auth.models import User

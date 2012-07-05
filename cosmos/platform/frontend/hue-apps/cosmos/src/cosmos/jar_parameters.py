@@ -116,7 +116,7 @@ class MongoCollParameter(StringParameter):
         validator = expansion.decorate(ID_VALIDATOR)
         try:
             validator(value)
-        except ValidationError, e:
+        except ValidationError:
             raise ValueError(('Invalid MongoDB collection name: "%s" '
                               '(only letters, numbers and dashes)') % value)
 

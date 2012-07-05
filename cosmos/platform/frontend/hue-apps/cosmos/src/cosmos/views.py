@@ -36,6 +36,7 @@ def index(request):
 
 
 def hadoop_args(job, jar_name, expansion):
+    """Generate command line arguments for a job execution."""
     args = ['jar', jar_name]
     if job.is_parameterized():
         for parameter in job.parameters:
@@ -152,6 +153,11 @@ def configure_job(request):
 
 
 def configure_basic_job(request):
+    """
+    Configure non-parameterized job.
+
+    Only input path is requested.
+    """
     wizard = job_wizard(request)
     if request.method != 'POST':
         form = BasicConfigurationForm(data=wizard.get('job'))
@@ -171,6 +177,11 @@ def configure_basic_job(request):
 
 
 def configure_parameterized_job(request):
+    """
+    Configure parameterized job.
+
+    A form is dynamically generated from the JAR metadata.
+    """
     wizard = job_wizard(request)
     parameters = wizard['parameters']
 
@@ -259,12 +270,20 @@ def upload_index(request):
 def list_results(request):
     """List result collections."""
 
+    try:
+        collections = mongo.list_collections(request.user.id)
+    except mongo.NoConnectionError:
+        return database_not_available(request)
+
     return render('results_list.mako', request, dict(
-        collections=mongo.list_collections(request.user.id)
+        collections=collections
     ))
 
 
 def show_results(request, collection_name):
+    """
+    Render a page of a collection documents.
+    """
     try:
         primary_key = request.GET.get('primary_key')
         paginator = mongo.retrieve_results(request.user.id, collection_name,
@@ -287,7 +306,7 @@ def show_results(request, collection_name):
             primary_key = prototype_result.pk
 
     except mongo.NoConnectionError:
-        raise PopupException('Database not available')
+        return database_not_available(request)
 
     except mongo.NoResultsError:
         page = None
@@ -299,3 +318,8 @@ def show_results(request, collection_name):
         primary_key=primary_key
     ))
 
+def database_not_available(request):
+    """Render error page when database is not available."""
+    return render('error.mako', request, dict(
+        error_title='Cannot contact database',
+        error_details='Database backend is unreachable or not responding'))

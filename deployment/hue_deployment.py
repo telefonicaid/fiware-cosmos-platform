@@ -5,7 +5,7 @@ import os
 import shutil
 from StringIO import StringIO
 
-from fabric.api import run, put, cd, env, settings, sudo
+from fabric.api import run, put, cd, env, sudo
 from fabric.colors import red, yellow
 import fabric.context_managers as ctx
 from fabric.contrib import files
@@ -153,8 +153,11 @@ def start_daemons():
                                 )
     run("mysql < provision.sql")
     run("rm provision.sql")
+    put("adminUser.json", "adminUser.json")
     with cd("/usr/share/hue/build/env/"):
-        run("bin/hue syncdb")
+        ## Say no to question: would you like to create a superuser now?
+        run("echo no | bin/hue syncdb")
+        run("bin/hue loaddata ~/adminUser.json")
     run("service hue start")
 
 def cleanup():
@@ -166,3 +169,7 @@ def cleanup():
         run("rm {0}".format(patch))
     if files.exists("cosmos-app"):
         run("rm -rf cosmos-app")
+    if files.exists("provision.sql"):
+        run("rm -rf provision.sql")
+    if files.exists("adminUser.json"):
+        run("rm -rf adminUser.json")

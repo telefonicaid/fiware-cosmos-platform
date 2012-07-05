@@ -13,6 +13,7 @@
     <name>parameterizedjob-base</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mainClass>es.tid.cosmos.tests.hadoopjobs.parameterizedjob.base.ParameterizedJobTool</mainClass>
     </properties>
     <dependencies>
         <dependency>

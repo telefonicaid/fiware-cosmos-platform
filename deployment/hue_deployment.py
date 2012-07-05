@@ -142,22 +142,36 @@ def install_cosmos_app(config):
         run("python bootstrap.py")
         run("bin/buildout -c buildout.prod.cfg")
 
-def start_daemons():
+def start_clean_database():
     """
-    Start HUE daemons, including jobsubd
+    Start a clean database server and create an empty database and user for HUE
     """
-    run("service mysqld start")
+    run("service mysqld restart")
     common.instantiate_template('templates/provision.sql.mako',
                                 'provision.sql',
                                 context=dict(hue_db_pwd=env.hue_db_pwd)
                                 )
     run("mysql < provision.sql")
-    run("rm provision.sql")
+
+def create_hue_tables():
+    """
+    With a started database server, create the necessary tables for HUE
+    """
+    with cd("/usr/share/hue/build/env/"):
+        run("bin/hue syncdb --noinput")
+
+def create_admin_account():
+    """
+    Load a HUE admin account from a fixture file
+    """
     put("adminUser.json", "adminUser.json")
     with cd("/usr/share/hue/build/env/"):
-        ## Say no to question: would you like to create a superuser now?
-        run("echo no | bin/hue syncdb")
         run("bin/hue loaddata ~/adminUser.json")
+
+def start_daemons():
+    """
+    Start HUE daemons, including jobsubd
+    """
     run("service hue start")
 
 def cleanup():

@@ -179,11 +179,9 @@ def cleanup():
     Clean up uploaded files and directories
     """
     patch = "hue-patch-cdh3u4-r0.4.diff"
-    if files.exists(patch):
-        run("rm {0}".format(patch))
-    if files.exists("cosmos-app"):
-        run("rm -rf cosmos-app")
-    if files.exists("provision.sql"):
-        run("rm -rf provision.sql")
-    if files.exists("adminUser.json"):
-        run("rm -rf adminUser.json")
+    cosmos_app = "cosmos-app"
+    sql_script = "provision.sql"
+    user_fixture = "adminUser.json"
+    for leftover in [patch, cosmos_app, sql_script, user_fixture]:
+        if files.exists(leftover):
+            run("rm -rf {0}".format(leftover))

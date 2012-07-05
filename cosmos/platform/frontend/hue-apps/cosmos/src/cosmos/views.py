@@ -190,8 +190,8 @@ def configure_parameterized_job(request):
     elif request.POST.has_key('back'):
         return redirect(reverse('define_job'))
     else:
-        for param in parameters:
-            param.set_value(request.POST.get(param.name, None),
+        for index, param in enumerate(parameters):
+            param.set_value(request.POST.get('param%d' % index, None),
                             ExpansionContext(user=request.user))
         form = ParameterizeJobForm(parameters)
         update_job_wizard(request, wizard)

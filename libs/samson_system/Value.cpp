@@ -1357,7 +1357,52 @@ namespace samson
             
         }
         
-        
+
+        std::string Value::strXML()
+        {
+            std::ostringstream output;
+            _strXML( output );
+            return output.str();
+        }
+
+        void Value::_strXML( std::ostream &output )
+        {
+            switch (value_type)
+            {
+            case value_void:
+                output << "null";
+                break;
+            case value_number:
+                output << _value_double;
+                break;
+            case value_string:
+                output << "<![CDATA[" << _value_string << "]]>" << "\n";
+                break;
+
+            case value_vector:
+            {
+                for(unsigned int i = 0 ; i < _value_vector.size() ; i++)
+                {
+                    output << "<values>" << _value_vector[i]->strXML() << "</values>\n";
+                }
+                break;
+            }
+
+            case value_map:
+            {
+                au::map<std::string,Value>::iterator it;
+                for( it = _value_map.begin() ; it != _value_map.end() ; it++ )
+                {
+                    output << "<value first=\"" << it->first << "\" second=\"" << it->second->str() << "\"/>\n";
+                }
+                break;
+            }
+            default:
+                output << "Error, unsupported system.Value type";
+                break;
+            }
+        }
+
         void Value::_strHTML(int level_html_heading , std::ostream &output)
         {
             switch (value_type)
@@ -1422,30 +1467,149 @@ namespace samson
             return output.str();
         }
         
-        std::string Value::strXML()
-        {
-            return "TO BE DEFINED";
-        }
-
-        
         std::string Value::strHTMLTable(std::string _varNameInternal)
         {
-            return "TO BE DEFINED";
+            std::ostringstream output;
+            output << "<style>";
+            output << "#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}";
+            output << "#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}";
+            output << "#table-5 tr{font-size:14px;font-weight:normal;color:#039;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;padding:10px 8px;}";
+            output << "#table-5 td{ color:#669;padding:9px 8px 0;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;border-left:1px solid #6678b1;border-right:1px solid #6678b1;}";
+            output <<  "#table-5 tbody tr:hover td{color:#009;}";
+            output << "</style>";
+
+            _strHTMLTable( _varNameInternal , output );
+            return output.str();
         }
-        
+
+        void Value::_strHTMLTable(std::string _varNameInternal, std::ostream &output)
+        {
+            switch (value_type)
+            {
+            case value_number:
+            case value_void:
+            case value_string:
+                output << "<table id=\"table-5\">\n";
+                output << "<caption>" <<  _varNameInternal << "</caption>\n";
+                output << "<tr>\n";
+                output << "<th>" << _varNameInternal << "</th>\n";
+                output << "</tr>\n";
+                output << "<tr>\n";
+                output << "<th>" << getName() << "</th>\n";
+                output << "</tr>\n";
+                output << "<td>" << str() << "</td>\n";
+                output << "</tr>\n";
+                output << "</table>\n";
+                output << _value_double;
+                break;
+            case value_vector:
+            {
+                output << "<table id=\"table-5\">\n";
+                output << "<caption>" <<  _varNameInternal << "</caption>\n";
+                int init_col = 0;
+                int end_col = 0;
+                output << "<tr>\n";
+                { // paint_header  vector values
+                    if (_value_vector.size() > 0)
+                    {
+                        end_col = init_col +  _value_vector[0]->num_basic_fields();
+                        output << "<th colspan=" << end_col << ">values</th>\n";
+                        init_col = end_col + 1;
+                    }else{
+                        output << "<th colspan=" << end_col << "></th>\n";
+                    }
+                }
+                output << "</tr>\n";
+                output << "<tr>\n";
+                { // paint_header_basic  vector values
+                    if (_value_vector.size() > 0)
+                    {
+                        if (_value_vector[0]->is_terminal())
+                        {
+                            output << "<th>values</th>\n";
+                        }
+                        else
+                        {
+                            output << _value_vector[0]->paint_header_basic(init_col);
+                        }
+                    }else
+                    {
+                        output << "<th></th>\n";
+                    }
+                }
+                output << "</tr>\n";
+                int m_num_values = max_num_values();
+                for (int index_row =0; (index_row < m_num_values); index_row++)
+                {
+                    output << "<tr>\n";
+                    { // paint_value of vector values
+                        if ((index_row >= 0) && (index_row < static_cast<int>(_value_vector.size())))
+                        {
+                            output << _value_vector[index_row]->paint_value(0) << "\n";
+                        }
+                        else
+                        {
+                            if (_value_vector.size() > 0)
+                            {
+                                output << _value_vector[0]->paint_value(-1) << "\n";
+                            }
+                            else
+                            {
+                                output << "<td></td>\n";
+                            }
+                        }
+                    }
+                    output << "</tr>\n";
+                }
+                output << "</table>\n";
+                break;
+            }
+            case value_map:
+            {
+                output << "<table id=\"table-5\">\n";
+                output << "<caption>" <<  _varNameInternal << "</caption>\n";
+                int level_html_heading = 1;
+
+                output << "<table id=\"table-5\">";
+                au::map<std::string,Value>::iterator it;
+                for( it = _value_map.begin() ; it != _value_map.end() ; it++ )
+                {
+                    output << "<tr><td>";
+                    output << it->first;
+                    output << "</td><td>";
+                    it->second->_strHTML( level_html_heading + 1 , output );
+                    output << "</tr></td>";
+                }
+                output << "</table>";
+                break;
+            }
+            default:
+                output << output << "Error, unsupported system.Value type";
+            }
+        }
+
         std::string Value::paint_header(int init_col)
         {
-            return "TO BE DEFINED";
+            return "Term";
         }
-        
+
         std::string Value::paint_header_basic(int init_col)
         {
-            return "TO BE DEFINED";
+            return "Term";
         }
-        
+
         std::string Value::paint_value(int index_row)
         {
-            return "TO BE DEFINED";
+            std::ostringstream o;
+            if (index_row >= 0)
+            {
+                o  << "<td>" << str() << "</td>";
+            }
+            else
+            {
+                o  << "<td></td>";
+            }
+            return o.str();
         }
         
         int Value::num_fields()

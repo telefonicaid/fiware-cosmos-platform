@@ -544,6 +544,8 @@ namespace samson {
                     break;
             }
             
+            LM_T(LmtIsolatedOutputs, ("Adding outputs for forward operation"));
+
             // Set the outputs    
             tmp->addOutputsForOperation(op);
             
@@ -817,6 +819,7 @@ namespace samson {
             if( update_only )
                 task->set_update_only();
             
+            LM_T(LmtIsolatedOutputs, ("Adding outputs for reduce operation"));
             task->addOutputsForOperation(op);
             
             // Special flag to indicate update_state mode ( process different output buffers )
@@ -1005,6 +1008,7 @@ namespace samson {
             QueueTask *tmp = new ReduceQueueTask( id , this , KVRange(0,KVFILE_NUM_HASHGROUPS) );
             
             // Set the outputs    
+            LM_T(LmtIsolatedOutputs, ("Adding outputs for  forward reduce operation"));
             tmp->addOutputsForOperation(op);
             
             // Copy input data

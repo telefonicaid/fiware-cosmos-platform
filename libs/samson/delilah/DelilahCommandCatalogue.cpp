@@ -59,7 +59,7 @@ namespace samson
             );
         
         add( "close_alerts_file" , "delilah", 
-            "Close local file opened to store with command 'open_traces_file'"
+            "Close local file opened to store with command 'open_alerts_file'"
             );
         
         add( "verbose" , "delilah", 

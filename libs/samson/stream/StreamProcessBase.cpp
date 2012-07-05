@@ -65,13 +65,15 @@ namespace samson {
         {
             finish = false;
             // Special case for logging
+            LM_T(LmtIsolatedOutputs, ("Checking output(%d) with output_queues.size(%d) to send logging for worker:%d", output, (int) streamOperation->output_queues.size(), outputWorker));
             if( output == (int) streamOperation->output_queues.size() )
             {
+            	LM_M(("Sending buffer to log_queue for stream_operation(%s)", streamOperation->name.c_str()));
                 sendBufferToQueue( buffer , outputWorker , au::str("log_%s", streamOperation->name.c_str() ) );
                 return;
             }
             
-            //LM_M(("[%s] Processing buffer %s" , streamOperation->operation.c_str(), au::str(buffer->getSize()).c_str() ));
+            LM_T(LmtIsolatedOutputs,("[%s] Processing buffer %s" , streamOperation->operation.c_str(), au::str(buffer->getSize()).c_str() ));
             sendBufferToQueue( buffer , outputWorker , streamOperation->output_queues[output] );
         }
         
@@ -88,6 +90,7 @@ namespace samson {
             size_t target_worker_id;
             if( outputWorker == -1 )
             {
+            	LM_M(("Buffer sent to myself"));
                 // To my self
                 target_worker_id = distribution_information.get_my_worker_id();
             }

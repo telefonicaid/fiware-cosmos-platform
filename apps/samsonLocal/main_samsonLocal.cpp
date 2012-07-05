@@ -20,6 +20,7 @@
 #include "samson/common/traces.h"				// Traces stuff: samsonInitTrace(.) , ...
 #include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
 #include "samson/common/SamsonSetup.h"		// samson::SamsonSetup
+#include "samson/common/MemoryCheck.h"
 #include "samson/common/samsonVars.h"       // SAMSON_
 
 #include "samson/module/ModulesManager.h"		// samson::ModulesManager
@@ -119,7 +120,7 @@ void deleteNetworkCenter()
 int main(int argC, const char *argV[])
 {
 	paConfig("usage and exit on any warning", (void*) true);
-    paConfig("log to screen",                 (void*) false);
+    paConfig("log to screen",                 (void*) "only errors");
 	paConfig("log file line format",          (void*) "TYPE:DATE:EXEC-AUX/FILE[LINE] (p.PID) FUNC: TEXT");
 	paConfig("screen line format",            (void*) "TYPE: TEXT");
 	paConfig("log to file",                   (void*) true);
@@ -145,6 +146,10 @@ int main(int argC, const char *argV[])
     
 	samson::SamsonSetup::init( samsonHome , samsonWorking );		// Load setup and create default directories
     samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
+
+    // Check to see if the current memory configuration is ok or not
+    if (samson::MemoryCheck() == false)
+        LM_X(1,("Insufficient memory configured. Check samsonLocalLog for more information."));
 
 	engine::Engine::init();
     

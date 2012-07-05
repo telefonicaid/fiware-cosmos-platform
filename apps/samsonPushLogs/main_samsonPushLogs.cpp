@@ -71,7 +71,7 @@ PaArgument paArgs[] =
     { "-lines",            &lines,                "",  PaBool,    PaOpt,          false,  false,         true,  "Read std-in line by line"                       },
     { "-memory",           &push_memory,          "",  PaInt,     PaOpt,           1000,      1,      1000000,  "Memory in Mb used to push data ( default 1000)" },
     { "-port",             &port,                 "",  PaInt,     PaOpt,              0,      0,        99999,  "Port to listen from" },
-    { "-dl",               dir_list,            "",  PaSList,  PaOpt, PaND,     PaNL,    PaNL,    "string list with all the datasets directories to be pushed, format: dir,extension,nfileds,time_pos,time_type,queue_name"         },
+    { "-dl",               dir_list,            "",  PaSList,  PaOpt, PaND,     PaNL,    PaNL,    "string list with all the datasets directories to be pushed, format: dir,extension,nfields,time_pos,time_type,queue_name"         },
     { "-fl",               file_list,            "",  PaSList,  PaOpt, PaND,     PaNL,    PaNL,    "string list with all the datasets files to be pushed, format: file,nfields,time_pos,time_type,queue_name"         },
     PA_END_OF_ARGS
 };

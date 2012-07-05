@@ -130,6 +130,7 @@ namespace samson
 		
 		//size_t task_id = task->workerTask.task_id();
 		
+		LM_M(("Processing flushKVBuffer  "));
 		for (int o = 0 ; o < num_outputs ; o++)
 		{
 			
@@ -195,6 +196,7 @@ namespace samson
                     free(info);
                     
                     // Process the output buffer
+                    LM_M(("Calling processOutputBuffer for output:%d,  to worker:%d", o,  s));
                     processOutputBuffer(buffer, o, s, finish);
                     
                     // we have created this buffer, we relase it!
@@ -301,6 +303,7 @@ namespace samson
     
     void ProcessIsolated::addOutputsForOperation( Operation *op )
     {
+    	LM_T(LmtIsolatedOutputs, ("Creating %d outputs, plus 1 for logging", op->getNumOutputs() ));
         for (int i = 0 ; i < op->getNumOutputs() ; i++)
             addOutput( op->getOutputFormat(i) );
         

@@ -726,6 +726,14 @@ namespace samson {
             finish = false;
 
             int output_channel = (int)streamOperation->output_queues.size() - 1 ;
+             // Special case for logging
+             LM_T(LmtIsolatedOutputs, ("Checking output(%d) with output_queues.size(%d) to send logging for worker:%d", output, (int) streamOperation->output_queues.size(), outputWorker));
+             if( output == (int) streamOperation->output_queues.size() )
+             {
+             	LM_T(LmtIsolatedOutputs, ("Sending buffer to log_queue for stream_operation(%s)", streamOperation->name.c_str()));
+                 sendBufferToQueue( buffer , outputWorker , au::str("log_%s", streamOperation->name.c_str() ) );
+                 return;
+             }
             
             
             if( update_state_mode && ( output == output_channel ) )

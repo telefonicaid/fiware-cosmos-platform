@@ -1286,6 +1286,7 @@ namespace samson {
 
             // Get all the information from the reference key
             reference_key_data_instance->setFromString( key.c_str() );
+            LM_T(LmtRest, ("Recovered key: '%s' --> '%s'", key.c_str(), reference_key_data_instance->str().c_str()));
             
             // Get hashgroup
             int hg = reference_key_data_instance->hash(KVFILE_NUM_HASHGROUPS);
@@ -1318,7 +1319,9 @@ namespace samson {
 
             if ( queue->list->blocks.size() == 0 )
             {
-                command->appendFormatedError( au::str("No data in queue %s" , queue_name.c_str()) );
+                LM_T(LmtRest, ("No data in queue %s with queue->list->blocks.size() == 0" , queue_name.c_str()));
+
+                command->appendFormatedError( au::str("No data in queue %s with queue->list->blocks.size() == 0" , queue_name.c_str()) );
                 return;
             }
 
@@ -1328,10 +1331,12 @@ namespace samson {
 
             if (list.blocks.size() == 0 )
             {
-                command->appendFormatedError( au::str("No data in queue %s for hashgroup %d (key %s)" 
+                LM_T(LmtRest, ("No data in queue %s for hashgroup %d (key %s, queue with %d blocks)", queue_name.c_str(), hg, reference_key_data_instance->str().c_str(), queue->list->blocks.size()));
+                command->appendFormatedError( au::str("No data in queue %s for hashgroup %d (key %s, queue with %d blocks)"
                                                       , queue_name.c_str()
                                                       , hg
-                                                      , reference_key_data_instance->str().c_str() ) );
+                                                      , reference_key_data_instance->str().c_str()
+                                                      , queue->list->blocks.size()) );
                 return;
             }
 

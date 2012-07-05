@@ -9,21 +9,21 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.smartsteps.dispersion.Config;
-import es.tid.smartsteps.dispersion.data.TrafficCountsEntry;
+import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 
 /**
  *
  * @author dmicol
  */
-public class TrafficCountsEntryParserTest {
+public class TrafficCountsParserTest {
 
-    private TrafficCountsEntryParser parser;
+    private TrafficCountsParser parser;
     
     @Before
     public void setUp() throws IOException {
         final Configuration config = Config.load(Config.class.getResource(
                 "/config.properties").openStream(), new Configuration());
-        this.parser = new TrafficCountsEntryParser(
+        this.parser = new TrafficCountsParser(
                 config.getStrings(Config.COUNT_FIELDS));
     }
     
@@ -62,8 +62,8 @@ public class TrafficCountsEntryParserTest {
                 + "0f1f2ff3cdc0849b0c\", \"footfall_observed_age_40\": [0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0]}";
-        TrafficCountsEntry entry = this.parser.parse(value);
-        assertEquals("20120527", entry.date);
+        final TrafficCounts counts = this.parser.parse(value);
+        assertEquals("20120527", counts.getDate());
     }
 
     public void testInvalidEntry() {

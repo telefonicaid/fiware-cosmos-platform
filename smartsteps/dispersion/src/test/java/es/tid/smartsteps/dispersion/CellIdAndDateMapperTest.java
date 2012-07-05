@@ -3,13 +3,15 @@ package es.tid.smartsteps.dispersion;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.base.mapreduce.BinaryKey;
+import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
+import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
 
 /**
  *
@@ -17,23 +19,30 @@ import es.tid.cosmos.base.mapreduce.BinaryKey;
  */
 public class CellIdAndDateMapperTest {
 
-    private MapDriver<LongWritable, Text, BinaryKey, Text> instance;
-    private LongWritable key;
-    private Text value;
+    private MapDriver<
+            Text, TypedProtobufWritable<TrafficCounts>,
+            BinaryKey, TypedProtobufWritable<TrafficCounts>> instance;
+    private Text key;
+    private TypedProtobufWritable<TrafficCounts> value;
     private BinaryKey outKey;
     
     @Before
     public void setUp() throws IOException {
-        this.instance = new MapDriver<LongWritable, Text, BinaryKey, Text>(
-                new CellIdAndDateMapper());
+        this.instance = new MapDriver<
+                Text, TypedProtobufWritable<TrafficCounts>,
+                BinaryKey, TypedProtobufWritable<TrafficCounts>>(
+                        new CellIdAndDateMapper());
         final Configuration config = Config.load(
                 Config.class.getResource("/config.properties").openStream(),
                 this.instance.getConfiguration());
         this.instance.setConfiguration(config);
-        this.key = new LongWritable(102L);
+        this.key = new Text("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d30f1f"
+                            + "2ff3cdc0849b0c");
         this.outKey = new BinaryKey("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6"
                                     + "d0d30f1f2ff3cdc0849b0c", "20120527");
-        this.value = new Text("{\"date\": \"20120527\", "
+        TrafficCountsParser parser = new TrafficCountsParser(
+                config.getStrings(Config.COUNT_FIELDS));
+        final TrafficCounts counts = parser.parse("{\"date\": \"20120527\", "
                 + "\"footfall_observed_basic\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "
                 + "\"footfall_observed_female\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,"
@@ -66,6 +75,7 @@ public class CellIdAndDateMapperTest {
                 + "0f1f2ff3cdc0849b0c\", \"footfall_observed_age_40\": [0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0]}");
+        this.value = new TypedProtobufWritable<TrafficCounts>(counts);
     }
 
     @Test

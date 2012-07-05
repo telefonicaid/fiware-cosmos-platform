@@ -3,7 +3,6 @@ package es.tid.smartsteps.dispersion;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -46,7 +45,7 @@ public class Main extends Configured implements Tool {
             CosmosJob job = CosmosJob.createMapJob(config,
                     "TrafficCountsParser",
                     TextInputFormat.class,
-                    TafficCountsParserMapper.class,
+                    TrafficCountsParserMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, trafficCountsPath);
             FileOutputFormat.setOutputPath(job, trafficCountsParsedPath);

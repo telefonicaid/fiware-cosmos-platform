@@ -4,26 +4,26 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.smartsteps.dispersion.data.CellToMicrogridLookupEntry;
+import es.tid.smartsteps.dispersion.data.generated.LookupProtocol.Lookup;
 
 /**
  *
  * @author dmicol
  */
-public class CellToMicrogridEntryParserTest {
+public class LookupParserTest {
 
-    private CellToMicrogridEntryParser parser;
+    private LookupParser parser;
     
     @Before
     public void setUp() {
-        this.parser = new CellToMicrogridEntryParser("\t");
+        this.parser = new LookupParser("\t");
     }
 
     @Test
     public void testParse() {
-        CellToMicrogridLookupEntry entry = this.parser.parse("assag43\t123\t0.57");
-        assertEquals("assag43", entry.cellId);
-        assertEquals("123", entry.microgridId);
-        assertEquals(0.57D, entry.proportion, 0.0D);
+        final Lookup lookup = this.parser.parse("assag43\t123\t0.57");
+        assertEquals("assag43", lookup.getKey());
+        assertEquals("123", lookup.getValue());
+        assertEquals(0.57D, lookup.getProportion(), 0.0D);
     }
 }

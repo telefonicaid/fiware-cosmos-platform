@@ -14,7 +14,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
  *
  * @author dmicol
  */
-class TafficCountsParserMapper extends Mapper<
+class TrafficCountsParserMapper extends Mapper<
         LongWritable, Text,
         Text, TypedProtobufWritable<TrafficCounts>> {
 
@@ -35,6 +35,10 @@ class TafficCountsParserMapper extends Mapper<
     protected void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
         final TrafficCounts counts = this.parser.parse(value.toString());
+        if (counts == null) {
+            context.getCounter(Counters.INVALID_TRAFFIC_COUNTS).increment(1L);
+            return;
+        }
         this.outKey.set(counts.getCellId());
         this.outValue.set(counts);
         context.write(this.outKey, this.outValue);

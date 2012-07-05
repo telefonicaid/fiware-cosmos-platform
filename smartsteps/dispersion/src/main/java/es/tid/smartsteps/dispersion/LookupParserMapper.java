@@ -34,6 +34,9 @@ class LookupParserMapper extends Mapper<LongWritable, Text,
     protected void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
         final Lookup lookup = this.parser.parse(value.toString());
+        if (lookup == null) {
+            context.getCounter(Counters.INVALID_LOOKUPS).increment(1L);
+        }
         this.outKey.set(lookup.getKey());
         this.outValue.set(lookup);
         context.write(this.outKey, this.outValue);

@@ -1,0 +1,10 @@
+package base;
+
+option java_package = "es.tid.smartsteps.dispersion.data.generated";
+option java_outer_classname = "LookupProtocol";
+
+message Lookup {
+    required string key = 1;
+    required string value = 2;
+    required double proportion = 3;
+}

@@ -9,6 +9,7 @@ SET (AUX_HEADERS
 	operations/parse_xml_documents.h
 	operations/parse_id_id.h
 	operations/parser_uint_void.h
+	operations/parse_http_with_commscore.h
 	operations/reduce.h
 	operations/process.h
 	operations/str.h
@@ -122,6 +123,7 @@ include_directories( "$ENV{SAMSON_HOME}/include" )
 link_directories( "$ENV{SAMSON_HOME}/lib" )
 
 ADD_LIBRARY(${MODULE_NAME} MODULE ${SOURCES} ${ADDITIONAL_SOURCES} ${AUX_HEADERS}  )
+TARGET_LINK_LIBRARIES( ${MODULE_NAME} samson_comscore )
 TARGET_LINK_LIBRARIES( ${MODULE_NAME}  samson_system lm au json )
 
 INSTALL(TARGETS ${MODULE_NAME} DESTINATION modules)

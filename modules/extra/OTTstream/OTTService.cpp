@@ -109,14 +109,14 @@ static bool matchPatterns (const char *inputString, const char *pattern, char wi
 }
 
 
-bool OTTService::checkHTTP(const char *url, const char *domain)
+bool OTTService::checkHTTP(const char *url, const char *host)
 {
 	char wildcard = '%';
 	const char *p_check;
 
 	if (category == true)
 	{
-		p_check = domain;
+		p_check = host;
 	}
 	else
 	{

@@ -46,7 +46,7 @@ public:
         dnsPatterns.push_back(_dnsPattern);
     }
     
-    bool checkHTTP(const char *url, const char *domain);
+    bool checkHTTP(const char *url, const char *host);
 
     bool checkDNS(const char *dns);
     

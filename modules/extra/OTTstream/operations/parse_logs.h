@@ -90,17 +90,17 @@ class parse_logs: public samson::system::SimpleParser
         return phone;
     }
 
-    OTTService *classify_http(const char *url, const char *domain)
+    OTTService *classify_http(const char *url, const char *host)
     {
         for (unsigned int i = 0; (i < services.size()); i++)
         {
-            if (services[i]->checkHTTP(url, domain))
+            if (services[i]->checkHTTP(url, host))
             {
-                //LM_M(("url:'%s', domain:'%s' identified as service:'%s' by category:%d", url, domain, services[i]->name.c_str(), services[i]->category));
+                //LM_M(("url:'%s', host:'%s' identified as service:'%s' by category:%d", url, host, services[i]->name.c_str(), services[i]->category));
                 return services[i];
             }
         }
-        //LM_M(("unknow url:'%s', domain:'%s'", url, domain));
+        //LM_M(("unknown url:'%s', host:'%s'", url, host));
         return services[0];
     }
 
@@ -161,7 +161,7 @@ class parse_logs: public samson::system::SimpleParser
 
 
         char *p_url;
-        const char *p_domain;
+        const char *p_host;
 
         split_in_words(line, fields, sep);
 
@@ -177,10 +177,10 @@ class parse_logs: public samson::system::SimpleParser
             return false;
         }
 
-        p_domain = fields[2];
+        p_host = fields[2];
         p_url = fields[8];
 
-        OTTService *detected_service = classify_http(p_url, p_domain);
+        OTTService *detected_service = classify_http(p_url, p_host);
         if (detected_service == NULL)
         {
             return false;
@@ -588,14 +588,14 @@ class parse_logs: public samson::system::SimpleParser
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("VodafoneADSL", 101, 100, true);
+            OTTService *newService = new OTTService("VodafoneADSL", 101, 100, false);
             newService->addHTTPPattern("%vodafone%/%internet-y-tv/adsl%");
             newService->addHTTPPattern("%adsl-vodafone%");
             newService->addHTTPPattern("%internetvodafone%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("VodafoneClientes", 102, 100, true);
+            OTTService *newService = new OTTService("VodafoneClientes", 102, 100, false);
             newService->addHTTPPattern("%club2020.mi.vodafone%");
             newService->addHTTPPattern("%mivodafone%");
             newService->addHTTPPattern("%vodafone.es/%amigo%");
@@ -611,7 +611,7 @@ class parse_logs: public samson::system::SimpleParser
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("VodafoneOnline", 103, 100, true);
+            OTTService *newService = new OTTService("VodafoneOnline", 103, 100, false);
             newService->addHTTPPattern("%atencionalcliente.vodafone%");
             newService->addHTTPPattern("%ayudacliente.vodafone%");
             newService->addHTTPPattern("%canalonline.vodafone%");
@@ -622,14 +622,14 @@ class parse_logs: public samson::system::SimpleParser
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("VodafoneContacto", 104, 100, true);
+            OTTService *newService = new OTTService("VodafoneContacto", 104, 100, false);
             newService->addHTTPPattern("%vodafone%/conocenos%");
             newService->addHTTPPattern("%vodafone%/%app%-y-descargas%");
             newService->addHTTPPattern("%vodafone%/%zonadescargas%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("VodafoneEmpresas", 105, 100, true);
+            OTTService *newService = new OTTService("VodafoneEmpresas", 105, 100, false);
             newService->addHTTPPattern("%mensaredempresas.vodafone%");
             newService->addHTTPPattern("%vodafone%/autonomos%");
             newService->addHTTPPattern("%vodafone%/empresas%");
@@ -637,156 +637,156 @@ class parse_logs: public samson::system::SimpleParser
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("VodafoneInternetMovil", 106, 100, true);
+            OTTService *newService = new OTTService("VodafoneInternetMovil", 106, 100, false);
             newService->addHTTPPattern("%vodafone%/%internet-y-correo%");
             newService->addHTTPPattern("%vodafone%/%internet-movil%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("VodafoneMovilFijo", 107, 100, true);
+            OTTService *newService = new OTTService("VodafoneMovilFijo", 107, 100, false);
             newService->addHTTPPattern("%vodafone%/%/moviles-%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("VodafoneTV", 108, 100, true);
+            OTTService *newService = new OTTService("VodafoneTV", 108, 100, false);
             newService->addHTTPPattern("%vodafone%/%internet-y-tv/television%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("VodafoneTienda", 109, 100, true);
+            OTTService *newService = new OTTService("VodafoneTienda", 109, 100, false);
             newService->addHTTPPattern("%tienda%.vodafone%");
             newService->addHTTPPattern("%tiendaempresasvodafone%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("OrangeClientes", 201, 200, true);
+            OTTService *newService = new OTTService("OrangeClientes", 201, 200, false);
             newService->addHTTPPattern("%area%clientes.orange.es%");
             newService->addHTTPPattern("%areaprivada.orange.es%");
             newService->addHTTPPattern("%clientes%.orange.es%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("OrangeOnline", 202, 200, true);
+            OTTService *newService = new OTTService("OrangeOnline", 202, 200, false);
             newService->addHTTPPattern("%ayuda.orange.es%");
             newService->addHTTPPattern("%configuratumovil.orange.es%");
             newService->addHTTPPattern("%foros.%orange.es%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("OrangeEmpresas", 203, 200, true);
+            OTTService *newService = new OTTService("OrangeEmpresas", 203, 200, false);
             newService->addHTTPPattern("%orange.es/empresas%");
             newService->addHTTPPattern("%orange.es%/autonomos%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("OrangeADSL", 204, 200, true);
+            OTTService *newService = new OTTService("OrangeADSL", 204, 200, false);
             newService->addHTTPPattern("%internet.orange.es%");
             newService->addHTTPPattern("%orange.es/internet%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("OrangeInfoMovil", 205, 200, true);
+            OTTService *newService = new OTTService("OrangeInfoMovil", 205, 200, false);
             newService->addHTTPPattern("%movil.orange.es%");
             newService->addHTTPPattern("%orange.es/movil%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("OrangePortabilidad", 206, 200, true);
+            OTTService *newService = new OTTService("OrangePortabilidad", 206, 200, false);
             newService->addHTTPPattern("%portabilidad%orange.es%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("OrangeTienda", 207, 200, true);
+            OTTService *newService = new OTTService("OrangeTienda", 207, 200, false);
             newService->addHTTPPattern("%tienda%orange.es%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("OrangeTonos", 208, 200, true);
+            OTTService *newService = new OTTService("OrangeTonos", 208, 200, false);
             newService->addHTTPPattern("%tonosdeespera%orange%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("YoigoClientes", 301, 300, true);
+            OTTService *newService = new OTTService("YoigoClientes", 301, 300, false);
             newService->addHTTPPattern("%miyoigo.yoigo%");
             newService->addHTTPPattern("%yoigo.com/mequedo%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("YoigoBlogs", 302, 300, true);
+            OTTService *newService = new OTTService("YoigoBlogs", 302, 300, false);
             newService->addHTTPPattern("%yoigo.blogspot%");
             newService->addHTTPPattern("%foroyoigo%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("YoigoOnline", 303, 300, true);
+            OTTService *newService = new OTTService("YoigoOnline", 303, 300, false);
             newService->addHTTPPattern("%yoigo.com/ayuda-al-cliente%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("YoigoCobertura", 304, 300, true);
+            OTTService *newService = new OTTService("YoigoCobertura", 304, 300, false);
             newService->addHTTPPattern("%cobertura.yoigo.com%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("YoigoComparadorMoviles", 305, 300, true);
+            OTTService *newService = new OTTService("YoigoComparadorMoviles", 305, 300, false);
             newService->addHTTPPattern("%yoigo.com/comparador%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("YoigoCondiciones", 306, 300, true);
+            OTTService *newService = new OTTService("YoigoCondiciones", 306, 300, false);
             newService->addHTTPPattern("%yoigo.com/%condiciones%");
             newService->addHTTPPattern("%yoigo.com/preguntas%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("YoigoInternet", 307, 300, true);
+            OTTService *newService = new OTTService("YoigoInternet", 307, 300, false);
 
             newService->addHTTPPattern("%yoigo.com/internet%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("YoigoRecarga", 308, 300, true);
+            OTTService *newService = new OTTService("YoigoRecarga", 308, 300, false);
             newService->addHTTPPattern("%yoigo.com/recarga%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("YoigoRevista", 309, 300, true);
+            OTTService *newService = new OTTService("YoigoRevista", 309, 300, false);
             newService->addHTTPPattern("%yoigo.com/revista%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("YoigoServicios", 310, 300, true);
+            OTTService *newService = new OTTService("YoigoServicios", 310, 300, false);
             newService->addHTTPPattern("%yoigo.com/servicios%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("YoigoTarifas", 311, 300, true);
+            OTTService *newService = new OTTService("YoigoTarifas", 311, 300, false);
             newService->addHTTPPattern("%yoigo.com/tarifas%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("YoigoTiendasFisicas", 312, 300, true);
+            OTTService *newService = new OTTService("YoigoTiendasFisicas", 312, 300, false);
             newService->addHTTPPattern("%yoigo.com/tiendasyoigo%");
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("voice", 1001, 1000, true);
+            OTTService *newService = new OTTService("voice", 1001, 1000, false);
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("SMS", 1002, 1000, true);
+            OTTService *newService = new OTTService("SMS", 1002, 1000, false);
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("seqLargaGTalk", 2001, 2000, true);
+            OTTService *newService = new OTTService("seqLargaGTalk", 2001, 2000, false);
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("seqCortaGTalk", 2002, 2000, true);
+            OTTService *newService = new OTTService("seqCortaGTalk", 2002, 2000, false);
             services.push_back(newService);
         }
         {
-            OTTService *newService = new OTTService("seqWhatsApp", 2003, 2000, true);
+            OTTService *newService = new OTTService("seqWhatsApp", 2003, 2000, false);
             services.push_back(newService);
         }
 

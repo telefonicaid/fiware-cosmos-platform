@@ -19,11 +19,11 @@ class ParameterizeFormTestCase(test.TestCase):
 
         self.assertEquals([(name, type(field).__name__) for (name, field)
                            in form.fields.items()],
-                          [('foo', 'CharField'),
-                           ('bar', 'CharField')])
-        self.assertEquals(type(form.fields['bar'].widget).__name__, 
+                          [('param0', 'CharField'),
+                           ('param1', 'CharField')])
+        self.assertEquals(type(form.fields['param1'].widget).__name__,
                           'HDFSFileChooser')
 
     def test_use_default_values(self):
         form = ParameterizeJobForm(self.parameters)
-        self.assertEquals(form.fields['bar'].initial, '/tmp/')
+        self.assertEquals(form.fields['param1'].initial, '/tmp/')

@@ -85,11 +85,12 @@ class ParameterizeJobForm(forms.Form):
         Parameters is a list of JAR parameters to be rendered as a form.
         """
         if any(param.has_value() for param in parameters):
-            data = dict([(param.name, param.get_value()) for param in
-                         parameters])
+            data = dict([('param%d' % index, param.get_value())
+                         for (index, param) in enumerate(parameters)])
         else:
             data = None
         super(ParameterizeJobForm, self).__init__(data)
 
-        for param in parameters:
-            self.fields[param.name] = param.form_field(ExpansionContext())
+        for (index, param) in enumerate(parameters):
+            self.fields['param%d' % index] = \
+                    param.form_field(ExpansionContext())

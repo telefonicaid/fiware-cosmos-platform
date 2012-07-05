@@ -8,6 +8,7 @@ from django.core import validators
 from django.forms.util import ErrorList
 from django.utils.safestring import mark_safe
 
+from cosmos.expansion import ExpansionContext
 from cosmos import models
 
 
@@ -91,4 +92,4 @@ class ParameterizeJobForm(forms.Form):
         super(ParameterizeJobForm, self).__init__(data)
 
         for param in parameters:
-            self.fields[param.name] = param.form_field()
+            self.fields[param.name] = param.form_field(ExpansionContext())

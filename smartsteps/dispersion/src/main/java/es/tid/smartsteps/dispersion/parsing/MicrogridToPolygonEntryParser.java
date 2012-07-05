@@ -1,7 +1,5 @@
 package es.tid.smartsteps.dispersion.parsing;
 
-import java.math.BigDecimal;
-
 import es.tid.smartsteps.dispersion.data.MicrogridToPolygonLookupEntry;
 
 /**
@@ -22,7 +20,7 @@ public class MicrogridToPolygonEntryParser
             return null;
         }
         MicrogridToPolygonLookupEntry entry = new MicrogridToPolygonLookupEntry(
-                values[0], values[1], new BigDecimal(values[2]));
+                values[0], values[1], Double.parseDouble(values[2]));
         return entry;
     }
 }

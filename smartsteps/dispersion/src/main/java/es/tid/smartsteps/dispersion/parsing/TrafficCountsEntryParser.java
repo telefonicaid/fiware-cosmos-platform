@@ -1,6 +1,5 @@
 package es.tid.smartsteps.dispersion.parsing;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 
 import net.sf.json.JSONArray;
@@ -41,17 +40,17 @@ public class TrafficCountsEntryParser extends Parser<TrafficCountsEntry> {
             for (String countField : entry.counts.keySet()) {
                 final JSONArray parsedCounts =
                         jsonObject.getJSONArray(countField);
-                ArrayList<BigDecimal> counts = entry.counts.get(countField);
+                ArrayList<Double> counts = entry.counts.get(countField);
                 for (int i = 0; i < parsedCounts.size(); i++) {
-                    counts.add(new BigDecimal(parsedCounts.getDouble(i)));
+                    counts.add(parsedCounts.getDouble(i));
                 }
             }
             JSONObject pois = jsonObject.getJSONObject(POIS_FIELD_NAME);
             for (String expectedPoi : TrafficCountsEntry.EXPECTED_POIS) {
                 final JSONArray parsedCounts = pois.getJSONArray(expectedPoi);
-                ArrayList<BigDecimal> counts = entry.pois.get(expectedPoi);
+                ArrayList<Double> counts = entry.pois.get(expectedPoi);
                 for (int i = 0; i < parsedCounts.size(); i++) {
-                    counts.add(new BigDecimal(parsedCounts.getDouble(i)));
+                    counts.add(parsedCounts.getDouble(i));
                 }
             }
             return entry;

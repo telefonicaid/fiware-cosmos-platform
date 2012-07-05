@@ -1,18 +1,17 @@
 package es.tid.smartsteps.dispersion.data;
 
-import java.math.BigDecimal;
-
 /**
  *
  * @author dmicol
  */
 public class MicrogridToPolygonLookupEntry implements LookupEntry {
+
     public final String microgridId;
     public final String polygonId;
-    public final BigDecimal proportion;
+    public final double proportion;
 
     public MicrogridToPolygonLookupEntry(String microgridId, String polygonId,
-                                         BigDecimal proportion) {
+                                         double proportion) {
         this.microgridId = microgridId;
         this.polygonId = polygonId;
         this.proportion = proportion;
@@ -29,7 +28,7 @@ public class MicrogridToPolygonLookupEntry implements LookupEntry {
     }
     
     @Override
-    public BigDecimal getProportion() {
+    public double getProportion() {
         return this.proportion;
     }
 }

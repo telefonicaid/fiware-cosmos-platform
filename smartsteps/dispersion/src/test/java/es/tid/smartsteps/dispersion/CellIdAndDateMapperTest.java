@@ -1,27 +1,39 @@
-package es.tid.smartsteps.dispersion.data;
+package es.tid.smartsteps.dispersion;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 import org.apache.hadoop.conf.Configuration;
-import static org.junit.Assert.assertEquals;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mrunit.mapreduce.MapDriver;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.smartsteps.dispersion.Config;
-import es.tid.smartsteps.dispersion.parsing.TrafficCountsEntryParser;
+import es.tid.cosmos.base.mapreduce.BinaryKey;
 
 /**
  *
  * @author dmicol
  */
-public class TrafficCountsEntryTest {
+public class CellIdAndDateMapperTest {
 
-    private TrafficCountsEntry instance;
+    private MapDriver<LongWritable, Text, BinaryKey, Text> instance;
+    private LongWritable key;
+    private Text value;
+    private BinaryKey outKey;
     
     @Before
     public void setUp() throws IOException {
-        final String value = "{\"date\": \"20120527\", "
+        this.instance = new MapDriver<LongWritable, Text, BinaryKey, Text>(
+                new CellIdAndDateMapper());
+        final Configuration config = Config.load(
+                Config.class.getResource("/config.properties").openStream(),
+                this.instance.getConfiguration());
+        this.instance.setConfiguration(config);
+        this.key = new LongWritable(102L);
+        this.outKey = new BinaryKey("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6"
+                                    + "d0d30f1f2ff3cdc0849b0c", "20120527");
+        this.value = new Text("{\"date\": \"20120527\", "
                 + "\"footfall_observed_basic\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "
                 + "\"footfall_observed_female\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,"
@@ -53,25 +65,14 @@ public class TrafficCountsEntryTest {
                 + "\"cellid\": \"4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d3"
                 + "0f1f2ff3cdc0849b0c\", \"footfall_observed_age_40\": [0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
-                + "0, 0, 0]}";
-        final Configuration config = Config.load(Config.class.getResource(
-                "/config.properties").openStream(), new Configuration());
-        this.instance = new TrafficCountsEntryParser(
-                config.getStrings(Config.COUNT_FIELDS)).parse(value);
+                + "0, 0, 0]}");
     }
 
     @Test
-    public void testGetKey() {
-        assertEquals("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d30f1f2ff3cdc"
-                + "0849b0c", this.instance.getKey());
-    }
-
-    @Test
-    public void testScale() {
-        TrafficCountsEntry scaledEntry = this.instance.scale(2.6D);
-        ArrayList<Double> counts = scaledEntry.counts.get(
-                "footfall_observed_basic");
-        assertEquals(0.0D, counts.get(0), 0.0D);
-        assertEquals(2.6D, counts.get(24), 0.0D);
+    public void testMap() {
+        this.instance
+                .withInput(this.key, this.value)
+                .withOutput(this.outKey, this.value)
+                .runTest();
     }
 }

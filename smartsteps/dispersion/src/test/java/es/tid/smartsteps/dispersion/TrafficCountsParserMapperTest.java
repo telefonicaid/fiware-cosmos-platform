@@ -86,7 +86,7 @@ public class TrafficCountsParserMapperTest {
         final Pair<Text, TypedProtobufWritable<TrafficCounts>> result =
                 results.get(0);
         assertEquals("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d30f1f2ff3cdc"
-                     + "0849b0c", result.getFirst());
+                     + "0849b0c", result.getFirst().toString());
         assertTrue(result.getSecond().get() instanceof TrafficCounts);
     }
     

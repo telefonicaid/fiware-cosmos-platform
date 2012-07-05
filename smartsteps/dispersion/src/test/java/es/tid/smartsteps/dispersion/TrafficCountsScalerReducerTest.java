@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import com.google.protobuf.Message;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
@@ -14,35 +15,36 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.base.mapreduce.BinaryKey;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
+import es.tid.smartsteps.dispersion.parsing.LookupParser;
 import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
 
 /**
  *
  * @author dmicol
  */
-public class AggregationReducerTest {
+public class TrafficCountsScalerReducerTest {
 
     private ReduceDriver<
-            BinaryKey, TypedProtobufWritable<TrafficCounts>,
+            Text, TypedProtobufWritable<Message>,
             Text, TypedProtobufWritable<TrafficCounts>> instance;
     private TrafficCountsParser parser;
-    private BinaryKey key;
-    private TypedProtobufWritable<TrafficCounts> value;
+    private Text key;
+    private TypedProtobufWritable<Message> countsValue;
+    private TypedProtobufWritable<Message> lookupValue;
     
     @Before
     public void setUp() throws IOException {
         this.instance = new ReduceDriver<
-                BinaryKey, TypedProtobufWritable<TrafficCounts>,
+                Text, TypedProtobufWritable<Message>,
                 Text, TypedProtobufWritable<TrafficCounts>>(
-                        new AggregationReducer());
+                        new TrafficCountsScalerReducer());
         final Configuration config = Config.load(
                 Config.class.getResource("/config.properties").openStream(),
                 this.instance.getConfiguration());
         this.instance.setConfiguration(config);
-        this.key = new BinaryKey("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6"
-                                 + "d0d30f1f2ff3cdc0849b0c", "20120527");
+        this.key = new Text("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d30f1f"
+                            + "2ff3cdc0849b0c");
         this.parser = new TrafficCountsParser(
                 config.getStrings(Config.COUNT_FIELDS));
         final TrafficCounts counts = this.parser.parse("{\"date\": \"20120527\", "
@@ -78,7 +80,11 @@ public class AggregationReducerTest {
                 + "0f1f2ff3cdc0849b0c\", \"footfall_observed_age_40\": [0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0]}");
-        this.value = new TypedProtobufWritable<TrafficCounts>(counts);
+        this.countsValue = new TypedProtobufWritable<Message>(counts);
+        LookupParser lookupParser = new LookupParser(config.get(Config.DELIMITER));
+        this.lookupValue = new TypedProtobufWritable<Message>(
+                lookupParser.parse("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d"
+                                   + "0d30f1f2ff3cdc0849b0c,fdsafs,0.37"));
     }
 
     @Test
@@ -86,19 +92,18 @@ public class AggregationReducerTest {
         List<Pair<Text, TypedProtobufWritable<TrafficCounts>>> results =
                 this.instance
                         .withInput(this.key,
-                                   Arrays.asList(this.value, this.value,
-                                                 this.value))
+                                   Arrays.asList(this.countsValue,
+                                                 this.lookupValue))
                         .run();
         assertNotNull(results);
         assertEquals(1, results.size());
         final Pair<Text, TypedProtobufWritable<TrafficCounts>> result =
                 results.get(0);
-        assertEquals(new Text("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d30f"
-                              + "1f2ff3cdc0849b0c"), result.getFirst());
+        assertEquals("fdsafs", result.getFirst().toString());
         final TrafficCounts outValue = result.getSecond().get();
         List<Double> counts = outValue.getFootfallsList().get(0).getValuesList();
-        assertEquals(0, counts.get(15).intValue());
-        assertEquals(6, counts.get(19).intValue());
-        assertEquals(3, counts.get(24).intValue());
+        assertEquals(0, counts.get(15).doubleValue(), 0.0D);
+        assertEquals(0.74D, counts.get(19).doubleValue(), 0.0D);
+        assertEquals(0.37D, counts.get(24).doubleValue(), 0.0D);
     }
 }

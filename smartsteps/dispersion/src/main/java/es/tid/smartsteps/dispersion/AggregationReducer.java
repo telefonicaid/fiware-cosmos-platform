@@ -42,7 +42,7 @@ class AggregationReducer extends Reducer<
             for (int i = 0; i < counts.getFootfallsCount(); i++) {
                 final Counts footfallCounts = counts.getFootfalls(i);
                 Counts.Builder footfallCountsBuilder =
-                        Counts.newBuilder(counts.getFootfalls(i));
+                        Counts.newBuilder(aggregatedCountsBuilder.getFootfalls(i));
                 for (int j = 0; j < footfallCountsBuilder.getValuesCount(); j++) {
                     footfallCountsBuilder.setValues(j,
                             footfallCountsBuilder.getValues(j)

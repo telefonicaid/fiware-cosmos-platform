@@ -1,12 +1,10 @@
 package es.tid.smartsteps.dispersion.parsing;
 
-import es.tid.smartsteps.dispersion.data.Entry;
-
 /**
  *
  * @author dmicol
  */
-public abstract class Parser<E extends Entry> {
+public abstract class Parser<E> {
 
     protected final String delimiter;
     

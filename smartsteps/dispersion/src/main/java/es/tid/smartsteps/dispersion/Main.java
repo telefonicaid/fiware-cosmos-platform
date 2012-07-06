@@ -4,8 +4,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -18,6 +20,7 @@ import es.tid.cosmos.base.mapreduce.CosmosJob;
  * @author dmicol
  */
 public class Main extends Configured implements Tool {
+
     private static final Logger LOGGER = Logger.getLogger(Main.class);
 
     @Override
@@ -35,50 +38,85 @@ public class Main extends Configured implements Tool {
         final Path cellToMicrogridPath = new Path(args[1]);
         final Path microgridToPolygonPath = new Path(args[2]);
         final Path outputDir = new Path(args[3]);
+        
+        Path trafficCountsParsedPath = new Path(outputDir,
+                                                "traffic_counts_parsed");
+        {
+            CosmosJob job = CosmosJob.createMapJob(config,
+                    "TrafficCountsParser",
+                    TextInputFormat.class,
+                    TrafficCountsParserMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, trafficCountsPath);
+            FileOutputFormat.setOutputPath(job, trafficCountsParsedPath);
+            job.waitForCompletion(true);
+        }
 
         boolean shouldFilterByDate = !config.get(Config.DATE_TO_FILTER).isEmpty();
-        Path trafficCountsFilteredPath = new Path(outputDir,
-                                                  "traffic_counts_filtered");
+        Path trafficCountsParsedFilteredPath = new Path(outputDir,
+                "traffic_counts_parsed_filtered");
         if (shouldFilterByDate) {
             CosmosJob job = CosmosJob.createMapJob(config,
                     "DateFilter",
-                    TextInputFormat.class,
+                    SequenceFileInputFormat.class,
                     DateFilterMapper.class,
-                    TextOutputFormat.class);
-            FileInputFormat.setInputPaths(job, trafficCountsPath);
-            FileOutputFormat.setOutputPath(job, trafficCountsFilteredPath);
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, trafficCountsParsedPath);
+            FileOutputFormat.setOutputPath(job, trafficCountsParsedFilteredPath);
+            job.waitForCompletion(true);
+        }
+        
+        Path cellToMicrogridParsedPath = new Path(outputDir,
+                                                  "cell_to_microgrid_parsed");
+        {
+            CosmosJob job = CosmosJob.createMapJob(config,
+                    "CellToMicrogridLookupParser",
+                    TextInputFormat.class,
+                    LookupParserMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, cellToMicrogridPath);
+            FileOutputFormat.setOutputPath(job, cellToMicrogridParsedPath);
             job.waitForCompletion(true);
         }
         
         Path countsByMicrogridPath = new Path(outputDir, "counts_by_microgrid");
         {
             CosmosJob job = CosmosJob.createMapReduceJob(config,
-                    "CellToMicrogrid",
-                    TextInputFormat.class,
-                    EntryScalerMapper.class,
-                    EntryScalerReducer.class,
-                    TextOutputFormat.class);
-            job.getConfiguration().setEnum(LookupType.class.getName(),
-                                           LookupType.CELL_TO_MICROGRID);
+                    "CellToMicrogridEntryScaler",
+                    SequenceFileInputFormat.class,
+                    TrafficCountsScalerMapper.class,
+                    TrafficCountsScalerReducer.class,
+                    SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, shouldFilterByDate ?
-                    trafficCountsFilteredPath : trafficCountsPath,
-                    cellToMicrogridPath);
+                    trafficCountsParsedFilteredPath : trafficCountsParsedPath,
+                    cellToMicrogridParsedPath);
             FileOutputFormat.setOutputPath(job, countsByMicrogridPath);
             job.waitForCompletion(true);
         }
 
+        Path microgridToPolygonParsedPath = new Path(outputDir,
+                "microgrid_to_polygon_parsed");
+        {
+            CosmosJob job = CosmosJob.createMapJob(config,
+                    "MicrogridToPolygonLookupParser",
+                    TextInputFormat.class,
+                    LookupParserMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, microgridToPolygonPath);
+            FileOutputFormat.setOutputPath(job, microgridToPolygonParsedPath);
+            job.waitForCompletion(true);
+        }
+        
         Path countsByPolygonPath = new Path(outputDir, "counts_by_polygon");
         {
             CosmosJob job = CosmosJob.createMapReduceJob(config,
-                    "MicrogridToPolygon",
-                    TextInputFormat.class,
-                    EntryScalerMapper.class,
-                    EntryScalerReducer.class,
-                    TextOutputFormat.class);
-            job.getConfiguration().setEnum(LookupType.class.getName(),
-                                           LookupType.MICROGRID_TO_POLYGON);
+                    "MicrogridToPolygonEntryScaler",
+                    SequenceFileInputFormat.class,
+                    TrafficCountsScalerMapper.class,
+                    TrafficCountsScalerReducer.class,
+                    SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, countsByMicrogridPath,
-                                          microgridToPolygonPath);
+                                          microgridToPolygonParsedPath);
             FileOutputFormat.setOutputPath(job, countsByPolygonPath);
             job.waitForCompletion(true);
         }
@@ -88,12 +126,26 @@ public class Main extends Configured implements Tool {
         {
             CosmosJob job = CosmosJob.createMapReduceJob(config,
                     "AggregationByCellIdAndDate",
-                    TextInputFormat.class,
+                    SequenceFileInputFormat.class,
                     CellIdAndDateMapper.class,
                     AggregationReducer.class,
-                    TextOutputFormat.class);
+                    SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, countsByPolygonPath);
             FileOutputFormat.setOutputPath(job, aggregatedCountsByPolygonPath);
+            job.waitForCompletion(true);
+        }
+
+        Path aggregatedCountsByPolygonTextPath = new Path(outputDir,
+                "aggregated_counts_by_polygon_text");
+        {
+            CosmosJob job = CosmosJob.createReduceJob(config,
+                    "TrafficCountsJsonExporter",
+                    SequenceFileInputFormat.class,
+                    TrafficCountsJsonExporterReducer.class,
+                    1,
+                    TextOutputFormat.class);
+            FileInputFormat.setInputPaths(job, aggregatedCountsByPolygonPath);
+            FileOutputFormat.setOutputPath(job, aggregatedCountsByPolygonTextPath);
             job.waitForCompletion(true);
         }
         

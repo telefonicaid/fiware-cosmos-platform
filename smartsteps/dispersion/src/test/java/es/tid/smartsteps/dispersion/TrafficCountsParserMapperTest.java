@@ -1,27 +1,46 @@
-package es.tid.smartsteps.dispersion.data;
+package es.tid.smartsteps.dispersion;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mrunit.mapreduce.MapDriver;
+import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.smartsteps.dispersion.Config;
-import es.tid.smartsteps.dispersion.parsing.TrafficCountsEntryParser;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 
 /**
  *
  * @author dmicol
  */
-public class TrafficCountsEntryTest {
+public class TrafficCountsParserMapperTest {
 
-    private TrafficCountsEntry instance;
+    private MapDriver<
+            LongWritable, Text,
+            Text, TypedProtobufWritable<TrafficCounts>> instance;
+    private LongWritable key;
+    private Text value;
     
     @Before
     public void setUp() throws IOException {
-        final String value = "{\"date\": \"20120527\", "
+        this.instance = new MapDriver<
+                LongWritable, Text,
+                Text, TypedProtobufWritable<TrafficCounts>>(
+                        new TrafficCountsParserMapper());
+        final Configuration config = Config.load(
+                Config.class.getResource("/config.properties").openStream(),
+                this.instance.getConfiguration());
+        this.instance.setConfiguration(config);
+        this.key = new LongWritable(102L);
+        this.value = new Text("{\"date\": \"20120527\", "
                 + "\"footfall_observed_basic\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "
                 + "\"footfall_observed_female\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,"
@@ -53,25 +72,28 @@ public class TrafficCountsEntryTest {
                 + "\"cellid\": \"4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d3"
                 + "0f1f2ff3cdc0849b0c\", \"footfall_observed_age_40\": [0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
-                + "0, 0, 0]}";
-        final Configuration config = Config.load(Config.class.getResource(
-                "/config.properties").openStream(), new Configuration());
-        this.instance = new TrafficCountsEntryParser(
-                config.getStrings(Config.COUNT_FIELDS)).parse(value);
+                + "0, 0, 0]}");
     }
 
     @Test
-    public void testGetKey() {
+    public void shouldProduceOutput() throws IOException {
+        List<Pair<Text, TypedProtobufWritable<TrafficCounts>>> results =
+                this.instance
+                        .withInput(this.key, this.value)
+                        .run();
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        final Pair<Text, TypedProtobufWritable<TrafficCounts>> result =
+                results.get(0);
         assertEquals("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d30f1f2ff3cdc"
-                + "0849b0c", this.instance.getKey());
+                     + "0849b0c", result.getFirst().toString());
+        assertTrue(result.getSecond().get() instanceof TrafficCounts);
     }
-
+    
     @Test
-    public void testScale() {
-        TrafficCountsEntry scaledEntry = this.instance.scale(2.6D);
-        ArrayList<Double> counts = scaledEntry.counts.get(
-                "footfall_observed_basic");
-        assertEquals(0.0D, counts.get(0), 0.0D);
-        assertEquals(2.6D, counts.get(24), 0.0D);
+    public void shouldFailToParse() {
+        this.instance
+                .withInput(this.key, new Text("blah blah"))
+                .runTest();
     }
 }

@@ -17,6 +17,7 @@ public abstract class Config {
     public static final String DELIMITER = "delimiter";
     public static final String DATE_TO_FILTER = "date_to_filter";
     public static final String COUNT_FIELDS = "count_fields";
+    public static final String ROUND_RESULTS = "round_results";
     
     private Config() {
     }
@@ -35,6 +36,9 @@ public abstract class Config {
         }
         conf.setStrings(COUNT_FIELDS,
                         countFields.toArray(new String[countFields.size()]));
+        conf.setBoolean(ROUND_RESULTS,
+                props.getProperty(ROUND_RESULTS).equalsIgnoreCase("true") ?
+                        true : false);
         
         return conf;
     }

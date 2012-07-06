@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
@@ -14,7 +15,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.cosmos.base.mapreduce.BinaryKey;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
 
@@ -22,32 +22,31 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
  *
  * @author dmicol
  */
-public class AggregationReducerTest {
+public class TrafficCountsJsonExporterReducerTest {
 
     private ReduceDriver<
-            BinaryKey, TypedProtobufWritable<TrafficCounts>,
-            Text, TypedProtobufWritable<TrafficCounts>> instance;
+            Text, TypedProtobufWritable<TrafficCounts>,
+            NullWritable, Text> instance;
     private TrafficCountsParser parser;
-    private BinaryKey key;
+    private Text key;
     private TypedProtobufWritable<TrafficCounts> value;
     
     @Before
     public void setUp() throws IOException {
         this.instance = new ReduceDriver<
-                BinaryKey, TypedProtobufWritable<TrafficCounts>,
-                Text, TypedProtobufWritable<TrafficCounts>>(
-                        new AggregationReducer());
+                Text, TypedProtobufWritable<TrafficCounts>,
+                NullWritable, Text>(new TrafficCountsJsonExporterReducer());
         final Configuration config = Config.load(
                 Config.class.getResource("/config.properties").openStream(),
                 this.instance.getConfiguration());
         this.instance.setConfiguration(config);
-        this.key = new BinaryKey("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6"
-                                 + "d0d30f1f2ff3cdc0849b0c", "20120527");
+        this.key = new Text("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d30f1f"
+                            + "2ff3cdc0849b0c");
         this.parser = new TrafficCountsParser(
                 config.getStrings(Config.COUNT_FIELDS));
-        final TrafficCounts counts = this.parser.parse("{\"date\": \"20120527\", "
+        final TrafficCounts counts = parser.parse("{\"date\": \"20120527\", "
                 + "\"footfall_observed_basic\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
-                + "0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1], "
+                + "0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.57], "
                 + "\"footfall_observed_female\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,"
                 + " 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"easting\": "
                 + "\"125053\", \"poi_5\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
@@ -69,7 +68,7 @@ public class AggregationReducerTest {
                 + "\"BILL\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0]}, "
                 + "\"footfall_observed_0\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
-                + "0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1], "
+                + "0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "
                 + "\"footfall_observed_age_60\": [0, 0, 0, 0, 0, 0, 0, 0, 0, "
                 + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "
                 + "\"footfall_observed_age_20\": [0, 0, 0, 0, 0, 0, 0, 0, 0, "
@@ -82,23 +81,32 @@ public class AggregationReducerTest {
     }
 
     @Test
-    public void testReduce() throws IOException {
-        List<Pair<Text, TypedProtobufWritable<TrafficCounts>>> results =
-                this.instance
-                        .withInput(this.key,
-                                   Arrays.asList(this.value, this.value,
-                                                 this.value))
-                        .run();
+    public void testExportNoRound() throws IOException {
+        this.instance.getConfiguration().setBoolean(Config.ROUND_RESULTS, false);
+        List<Pair<NullWritable, Text>> results = this.instance
+                .withInput(this.key, Arrays.asList(this.value, this.value))
+                .run();
         assertNotNull(results);
-        assertEquals(1, results.size());
-        final Pair<Text, TypedProtobufWritable<TrafficCounts>> result =
-                results.get(0);
-        assertEquals(new Text("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d0d30f"
-                              + "1f2ff3cdc0849b0c"), result.getFirst());
-        final TrafficCounts outValue = result.getSecond().get();
-        List<Double> counts = outValue.getFootfallsList().get(0).getValuesList();
-        assertEquals(0, counts.get(15).intValue());
-        assertEquals(6, counts.get(19).intValue());
-        assertEquals(3, counts.get(24).intValue());
+        assertEquals(2, results.size());
+        final Pair<NullWritable, Text> result0 = results.get(0);
+        assertEquals(NullWritable.get(), result0.getFirst());
+        TrafficCounts counts = this.parser.parse(result0.getSecond().toString());
+        assertNotNull(counts);
+        assertEquals(0.57D, counts.getFootfalls(0).getValues(24), 0.0D);
+    }
+
+    @Test
+    public void testExportRound() throws IOException {
+        this.instance.getConfiguration().setBoolean(Config.ROUND_RESULTS, true);
+        List<Pair<NullWritable, Text>> results = this.instance
+                .withInput(this.key, Arrays.asList(this.value, this.value))
+                .run();
+        assertNotNull(results);
+        assertEquals(2, results.size());
+        final Pair<NullWritable, Text> result0 = results.get(0);
+        assertEquals(NullWritable.get(), result0.getFirst());
+        TrafficCounts counts = this.parser.parse(result0.getSecond().toString());
+        assertNotNull(counts);
+        assertEquals(1.0D, counts.getFootfalls(0).getValues(24), 0.0D);
     }
 }

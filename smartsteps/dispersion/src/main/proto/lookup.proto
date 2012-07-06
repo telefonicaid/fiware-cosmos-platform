@@ -1,4 +1,4 @@
-package base;
+package lookup;
 
 option java_package = "es.tid.smartsteps.dispersion.data.generated";
 option java_outer_classname = "LookupProtocol";

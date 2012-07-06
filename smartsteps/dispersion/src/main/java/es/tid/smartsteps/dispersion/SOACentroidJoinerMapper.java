@@ -21,8 +21,7 @@ class SOACentroidJoinerMapper extends Mapper<
     private Text cellId;
     
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
+    protected void setup(Context context) {
         this.cellId = new Text();
     }
     

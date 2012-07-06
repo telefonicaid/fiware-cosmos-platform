@@ -22,8 +22,7 @@ class AggregationReducer extends Reducer<
     private TypedProtobufWritable<TrafficCounts> aggregatedCounts;
     
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
+    protected void setup(Context context) {
         this.outKey = new Text();
         this.aggregatedCounts = new TypedProtobufWritable<TrafficCounts>();
     }

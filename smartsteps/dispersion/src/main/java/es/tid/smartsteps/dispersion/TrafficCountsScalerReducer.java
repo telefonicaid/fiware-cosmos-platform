@@ -25,8 +25,7 @@ class TrafficCountsScalerReducer extends Reducer<
     private TypedProtobufWritable<TrafficCounts> scaledCounts;
     
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
+    protected void setup(Context context) {
         this.outKey = new Text();
         this.scaledCounts = new TypedProtobufWritable<TrafficCounts>();
     }

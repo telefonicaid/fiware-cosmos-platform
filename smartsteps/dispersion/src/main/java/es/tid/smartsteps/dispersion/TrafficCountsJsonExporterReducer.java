@@ -26,8 +26,7 @@ class TrafficCountsJsonExporterReducer extends Reducer<
     private Text outValue;
     
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
+    protected void setup(Context context) {
         this.shouldRoundResults = context.getConfiguration().getBoolean(
                 Config.ROUND_RESULTS, false);
         this.outValue = new Text();

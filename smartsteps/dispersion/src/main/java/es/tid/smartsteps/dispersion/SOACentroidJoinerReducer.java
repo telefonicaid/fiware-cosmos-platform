@@ -23,8 +23,7 @@ class SOACentroidJoinerReducer extends Reducer<
     private TypedProtobufWritable<TrafficCounts> joinedCounts;
     
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
+    protected void setup(Context context) {
         this.joinedCounts = new TypedProtobufWritable<TrafficCounts>();
     }
  

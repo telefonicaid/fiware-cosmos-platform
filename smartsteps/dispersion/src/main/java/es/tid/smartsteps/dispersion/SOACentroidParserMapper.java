@@ -23,8 +23,7 @@ class SOACentroidParserMapper extends Mapper<
     private TypedProtobufWritable<SOACentroid> outValue;
     
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
+    protected void setup(Context context) {
         this.parser = new SOACentroidParser(
                 context.getConfiguration().get(Config.DELIMITER));
         this.outKey = new Text();

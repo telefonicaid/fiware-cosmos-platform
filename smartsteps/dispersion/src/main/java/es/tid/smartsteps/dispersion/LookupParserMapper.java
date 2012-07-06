@@ -22,8 +22,7 @@ class LookupParserMapper extends Mapper<LongWritable, Text,
     private TypedProtobufWritable<Lookup> outValue;
     
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
+    protected void setup(Context context) {
         this.parser = new LookupParser(
                 context.getConfiguration().get(Config.DELIMITER));
         this.outKey = new Text();

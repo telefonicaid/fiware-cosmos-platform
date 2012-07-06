@@ -12,6 +12,8 @@ ProcessComponent.h
 TopProcessComponent.h
 ProcessComponentManager.h
 HubMapProcess.h
+HubMapTimeProcess.h
+HitCountProcess.h
 )
 
 SET (SOURCES
@@ -28,6 +30,8 @@ ProcessComponent.cpp
 TopProcessComponent.cpp
 ProcessComponentManager.cpp
 HubMapProcess.cpp
+HubMapTimeProcess.cpp
+HitCountProcess.cpp
 )
 
 # Include directories

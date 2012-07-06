@@ -84,7 +84,7 @@ public class TrafficCountsScalerReducerTest {
         LookupParser lookupParser = new LookupParser(config.get(Config.DELIMITER));
         this.lookupValue = new TypedProtobufWritable<Message>(
                 lookupParser.parse("4c92f73d4ff50489d8b3e8707d95ddf073fb81aac6d"
-                                   + "0d30f1f2ff3cdc0849b0c,fdsafs,0.37"));
+                                   + "0d30f1f2ff3cdc0849b0c,polygon123,0.37"));
     }
 
     @Test
@@ -99,7 +99,7 @@ public class TrafficCountsScalerReducerTest {
         assertEquals(1, results.size());
         final Pair<Text, TypedProtobufWritable<TrafficCounts>> result =
                 results.get(0);
-        assertEquals("fdsafs", result.getFirst().toString());
+        assertEquals("polygon123", result.getFirst().toString());
         final TrafficCounts outValue = result.getSecond().get();
         List<Double> counts = outValue.getFootfallsList().get(0).getValuesList();
         assertEquals(0, counts.get(15).doubleValue(), 0.0D);

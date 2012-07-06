@@ -39,7 +39,7 @@ public class LookupParserMapperTest {
                 this.instance.getConfiguration());
         this.instance.setConfiguration(config);
         this.key = new LongWritable(102L);
-        this.value = new Text("sdfasgsa,fdsfasr,0.57");
+        this.value = new Text("cell023,polygon123,0.57");
     }
 
     @Test
@@ -50,7 +50,7 @@ public class LookupParserMapperTest {
         assertNotNull(results);
         assertEquals(1, results.size());
         final Pair<Text, TypedProtobufWritable<Lookup>> result = results.get(0);
-        assertEquals("sdfasgsa", result.getFirst().toString());
+        assertEquals("cell023", result.getFirst().toString());
         assertTrue(result.getSecond().get() instanceof Lookup);
     }
     

@@ -37,7 +37,7 @@ public abstract class Config {
         conf.setStrings(COUNT_FIELDS,
                         countFields.toArray(new String[countFields.size()]));
         conf.setBoolean(ROUND_RESULTS,
-                        props.getProperty(DELIMITER).equalsIgnoreCase("true") ?
+                props.getProperty(ROUND_RESULTS).equalsIgnoreCase("true") ?
                         true : false);
         
         return conf;

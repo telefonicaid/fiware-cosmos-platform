@@ -158,7 +158,7 @@ def configure_basic_job(request):
     """
     wizard = job_wizard(request)
     if request.method != 'POST':
-        form = BasicConfigurationForm(data=wizard.get('job'))
+        form = BasicConfigurationForm()
     elif request.POST.has_key('back'):
         return redirect(reverse('define_job'))
     else:

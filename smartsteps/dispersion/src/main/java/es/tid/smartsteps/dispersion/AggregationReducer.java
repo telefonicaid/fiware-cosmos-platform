@@ -61,11 +61,11 @@ class AggregationReducer extends Reducer<
             throw new IllegalArgumentException(
                     "Counts to be aggregated are not compatible");
         }
-        Counts.Builder scaledCounts = Counts.newBuilder();
-        scaledCounts.setName(a.getName());
-        for (int i = 0; i < a.getValuesCount(); i++) {
-            scaledCounts.addValues(a.getValues(i) + b.getValues(i));
+        Counts.Builder aggregatedCounts = Counts.newBuilder(a);
+        for (int i = 0; i < aggregatedCounts.getValuesCount(); i++) {
+            aggregatedCounts.setValues(i,
+                    aggregatedCounts.getValues(i) + b.getValues(i));
         }
-        return scaledCounts.build();
+        return aggregatedCounts.build();
     }
 }

@@ -41,25 +41,26 @@ class TrafficCountsScalerReducer extends Reducer<
         List<Lookup> lookups = dividedLists.get(Lookup.class);
         if (lookups.isEmpty()) {
             context.getCounter(Counters.ENTRIES_NOT_IN_LOOKUP)
-                   .increment(lookups.size());
+                   .increment(counts.size());
             return;
+        } else {
+            context.getCounter(Counters.ENTRIES_IN_LOOKUP)
+                   .increment(counts.size());
         }
         
         for (TrafficCounts count : counts) {
-            context.getCounter(Counters.ENTRIES_IN_LOOKUP).increment(1L);
             for (Lookup lookup : lookups) {
+                final double proportion = lookup.getProportion();
                 TrafficCounts.Builder scaledCountsBuilder =
                         TrafficCounts.newBuilder(count);
                 scaledCountsBuilder.setCellId(lookup.getValue());
                 for (int i = 0; i < count.getFootfallsCount(); i++) {
                     scaledCountsBuilder.setFootfalls(i,
-                            scaleCounts(count.getFootfalls(i),
-                                        lookup.getProportion()));
+                            scaleCounts(count.getFootfalls(i), proportion));
                 }
                 for (int i = 0; i < count.getPoisCount(); i++) {
                     scaledCountsBuilder.setPois(i,
-                            scaleCounts(count.getPois(i),
-                                        lookup.getProportion()));
+                            scaleCounts(count.getPois(i), proportion));
                 }
                 this.outKey.set(scaledCountsBuilder.getCellId());
                 this.scaledCounts.set(scaledCountsBuilder.build());
@@ -69,10 +70,9 @@ class TrafficCountsScalerReducer extends Reducer<
     }
     
     private static Counts scaleCounts(Counts a, double proportion) {
-        Counts.Builder scaledCounts = Counts.newBuilder();
-        scaledCounts.setName(a.getName());
-        for (int i = 0; i < a.getValuesCount(); i++) {
-            scaledCounts.addValues(a.getValues(i) * proportion);
+        Counts.Builder scaledCounts = Counts.newBuilder(a);
+        for (int i = 0; i < scaledCounts.getValuesCount(); i++) {
+            scaledCounts.setValues(i, scaledCounts.getValues(i) * proportion);
         }
         return scaledCounts.build();
     }

@@ -25,10 +25,10 @@ public class Main extends Configured implements Tool {
 
     @Override
     public int run(String[] args) throws Exception {
-        if (args.length != 4) {
+        if (args.length != 5) {
             throw new IllegalArgumentException(
                     "Usage: trafficCountsPath cellToMicrogridPath "
-                    + "microgridToPolygonPath outputDir");
+                    + "soaCentroidsPath microgridToPolygonPath outputDir");
         }
 
         final Configuration config = Config.load(Config.class.getResource(
@@ -37,7 +37,8 @@ public class Main extends Configured implements Tool {
         final Path trafficCountsPath = new Path(args[0]);
         final Path cellToMicrogridPath = new Path(args[1]);
         final Path microgridToPolygonPath = new Path(args[2]);
-        final Path outputDir = new Path(args[3]);
+        final Path soaCentroidsPath = new Path(args[3]);
+        final Path outputDir = new Path(args[4]);
         
         Path trafficCountsParsedPath = new Path(outputDir,
                                                 "traffic_counts_parsed");
@@ -135,8 +136,36 @@ public class Main extends Configured implements Tool {
             job.waitForCompletion(true);
         }
 
-        Path aggregatedCountsByPolygonTextPath = new Path(outputDir,
-                "aggregated_counts_by_polygon_text");
+        Path soaCentroidsParsedPath = new Path(outputDir, "soa_centroids_parsed");
+        {
+            CosmosJob job = CosmosJob.createMapJob(config,
+                    "MicrogridToPolygonLookupParser",
+                    TextInputFormat.class,
+                    SOACentroidParserMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, soaCentroidsPath);
+            FileOutputFormat.setOutputPath(job, soaCentroidsParsedPath);
+            job.waitForCompletion(true);
+        }
+
+        Path aggregatedCountsByPolygonJoinedPath = new Path(outputDir,
+                "soa_centroids_parsed_joined");
+        {
+            CosmosJob job = CosmosJob.createMapReduceJob(config,
+                    "MicrogridToPolygonLookupParser",
+                    SequenceFileInputFormat.class,
+                    SOACentroidJoinerMapper.class,
+                    SOACentroidJoinerReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, aggregatedCountsByPolygonPath,
+                                          soaCentroidsParsedPath);
+            FileOutputFormat.setOutputPath(job,
+                                           aggregatedCountsByPolygonJoinedPath);
+            job.waitForCompletion(true);
+        }
+
+        Path aggregatedCountsByPolygonJoinedTextPath = new Path(outputDir,
+                "aggregated_counts_by_polygon_joined_text");
         {
             CosmosJob job = CosmosJob.createReduceJob(config,
                     "TrafficCountsJsonExporter",
@@ -144,8 +173,10 @@ public class Main extends Configured implements Tool {
                     TrafficCountsJsonExporterReducer.class,
                     1,
                     TextOutputFormat.class);
-            FileInputFormat.setInputPaths(job, aggregatedCountsByPolygonPath);
-            FileOutputFormat.setOutputPath(job, aggregatedCountsByPolygonTextPath);
+            FileInputFormat.setInputPaths(job,
+                                          aggregatedCountsByPolygonJoinedPath);
+            FileOutputFormat.setOutputPath(job,
+                    aggregatedCountsByPolygonJoinedTextPath);
             job.waitForCompletion(true);
         }
         

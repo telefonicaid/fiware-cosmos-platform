@@ -1,12 +1,13 @@
 package es.tid.smartsteps.dispersion;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mrunit.mapreduce.MapDriver;
+import org.apache.hadoop.mrunit.mapreduce.ReduceDriver;
 import org.apache.hadoop.mrunit.types.Pair;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -21,9 +22,9 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
  *
  * @author dmicol
  */
-public class TrafficCountsJsonExporterMapperTest {
+public class TrafficCountsJsonExporterReducerTest {
 
-    private MapDriver<
+    private ReduceDriver<
             Text, TypedProtobufWritable<TrafficCounts>,
             NullWritable, Text> instance;
     private TrafficCountsParser parser;
@@ -32,9 +33,9 @@ public class TrafficCountsJsonExporterMapperTest {
     
     @Before
     public void setUp() throws IOException {
-        this.instance = new MapDriver<
+        this.instance = new ReduceDriver<
                 Text, TypedProtobufWritable<TrafficCounts>,
-                NullWritable, Text>(new TrafficCountsJsonExporterMapper());
+                NullWritable, Text>(new TrafficCountsJsonExporterReducer());
         final Configuration config = Config.load(
                 Config.class.getResource("/config.properties").openStream(),
                 this.instance.getConfiguration());
@@ -82,12 +83,12 @@ public class TrafficCountsJsonExporterMapperTest {
     @Test
     public void testReduce() throws IOException {
         List<Pair<NullWritable, Text>> results = this.instance
-                .withInput(this.key, this.value)
+                .withInput(this.key, Arrays.asList(this.value, this.value))
                 .run();
         assertNotNull(results);
-        assertEquals(1, results.size());
-        final Pair<NullWritable, Text> result = results.get(0);
-        assertEquals(NullWritable.get(), result.getFirst());
-        assertNotNull(this.parser.parse(result.getSecond().toString()));
+        assertEquals(2, results.size());
+        final Pair<NullWritable, Text> result0 = results.get(0);
+        assertEquals(NullWritable.get(), result0.getFirst());
+        assertNotNull(this.parser.parse(result0.getSecond().toString()));
     }
 }

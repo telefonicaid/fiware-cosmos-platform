@@ -5,7 +5,7 @@ import java.io.IOException;
 import net.sf.json.JSONObject;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.Counts;
@@ -16,7 +16,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
  *
  * @author dmicol
  */
-class TrafficCountsJsonExporterMapper extends Mapper<
+class TrafficCountsJsonExporterReducer extends Reducer<
         Text, TypedProtobufWritable<TrafficCounts>,
         NullWritable, Text> {
 
@@ -29,10 +29,13 @@ class TrafficCountsJsonExporterMapper extends Mapper<
     }
     
     @Override
-    protected void map(Text key, TypedProtobufWritable<TrafficCounts> value,
+    protected void reduce(Text key,
+            Iterable<TypedProtobufWritable<TrafficCounts>> values,
             Context context) throws IOException, InterruptedException {
-        this.outValue.set(toJson(value.get()).toString());
-        context.write(NullWritable.get(), this.outValue);
+        for (TypedProtobufWritable<TrafficCounts> value : values) {
+            this.outValue.set(toJson(value.get()).toString());
+            context.write(NullWritable.get(), this.outValue);
+        }
     }
     
     private static JSONObject toJson(TrafficCounts counts) {

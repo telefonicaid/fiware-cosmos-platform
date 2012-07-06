@@ -138,10 +138,11 @@ public class Main extends Configured implements Tool {
         Path aggregatedCountsByPolygonTextPath = new Path(outputDir,
                 "aggregated_counts_by_polygon_text");
         {
-            CosmosJob job = CosmosJob.createMapJob(config,
+            CosmosJob job = CosmosJob.createReduceJob(config,
                     "AggregationByCellIdAndDate",
                     SequenceFileInputFormat.class,
-                    TrafficCountsJsonExporterMapper.class,
+                    TrafficCountsJsonExporterReducer.class,
+                    1,
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, aggregatedCountsByPolygonPath);
             FileOutputFormat.setOutputPath(job, aggregatedCountsByPolygonTextPath);

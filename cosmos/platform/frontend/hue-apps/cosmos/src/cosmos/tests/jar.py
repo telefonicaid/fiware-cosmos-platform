@@ -52,10 +52,10 @@ class UseJarTestCase(test.TestCase):
         self.assertFalse(self.nop_jar.is_parameterized())
 
     def test_error_on_invalid_parametrization(self):
-        self.assertRaises(InvalidJarFile, self.malformed_jar.parameters)
+        self.assertRaises(InvalidJarFile, self.malformed_jar.parameter_template)
 
     def test_get_parametrization_from_properties(self):
-        params = self.prop_jar.parameters().parameters
+        params = self.prop_jar.parameter_template().parameters
         self.assertEquals(len(params), 5)
         self.assertEquals(params[0].name, "foo")
         self.assertEquals(params[0].default_value, None)
@@ -69,7 +69,7 @@ class UseJarTestCase(test.TestCase):
         self.assertEquals(params[4].default_value, "col_a")
 
     def test_get_parametrization_from_xml(self):
-        params = self.xml_jar.parameters().parameters
+        params = self.xml_jar.parameter_template().parameters
         self.assertEquals(len(params), 3)
         self.assertEquals(params[0].name, "foo")
         self.assertEquals(params[1].default_value, "hola")

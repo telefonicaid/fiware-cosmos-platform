@@ -36,9 +36,8 @@ class ParameterTemplate(object):
         Adds a parameter to the template unless its name collides with a
         previous one.
         """
-        for param in self.parameters:
-            if param.name == new_param.name:
-                raise InvalidJarFile("Duplicated key '%s'" % param.name)
+        if new_param.name in (param.name for param in self.parameters):
+            raise InvalidJarFile("Duplicated key '%s'" % new_param.name)
         self.parameters.append(new_param)
 
     def as_form(self, expansion):
@@ -98,7 +97,7 @@ class JarFile(object):
     def is_parameterized(self):
         return self.manifest.has_key(PARAMETERS_TEMPLATE_KEY)
 
-    def parameters(self):
+    def parameter_template(self):
         """
         Builds a ParameterTemplate from the JAR metadata.
         """

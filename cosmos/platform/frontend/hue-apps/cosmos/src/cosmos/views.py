@@ -118,7 +118,7 @@ def define_job(request):
                     jar = JarFile(cached_file.local_path())
                     wizard['parameterized'] = jar.is_parameterized()
                     if wizard['parameterized']:
-                        wizard['parameters'] = jar.parameters()
+                        wizard['parameters'] = jar.parameter_template()
                     else:
                         wizard['parameters'] = None
                     return redirect(reverse('configure_job'))

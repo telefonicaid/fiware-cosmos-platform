@@ -5,7 +5,7 @@ import os
 import shutil
 from StringIO import StringIO
 
-from fabric.api import run, put, cd, env, settings, sudo
+from fabric.api import run, put, cd, env, sudo
 from fabric.colors import red, yellow
 import fabric.context_managers as ctx
 from fabric.contrib import files
@@ -142,19 +142,36 @@ def install_cosmos_app(config):
         run("python bootstrap.py")
         run("bin/buildout -c buildout.prod.cfg")
 
-def start_daemons():
+def start_clean_database():
     """
-    Start HUE daemons, including jobsubd
+    Start a clean database server and create an empty database and user for HUE
     """
-    run("service mysqld start")
+    run("service mysqld restart")
     common.instantiate_template('templates/provision.sql.mako',
                                 'provision.sql',
                                 context=dict(hue_db_pwd=env.hue_db_pwd)
                                 )
     run("mysql < provision.sql")
-    run("rm provision.sql")
+
+def create_hue_tables():
+    """
+    With a started database server, create the necessary tables for HUE
+    """
     with cd("/usr/share/hue/build/env/"):
-        run("bin/hue syncdb")
+        run("bin/hue syncdb --noinput")
+
+def create_admin_account():
+    """
+    Load a HUE admin account from a fixture file
+    """
+    put("adminUser.json", "adminUser.json")
+    with cd("/usr/share/hue/build/env/"):
+        run("bin/hue loaddata ~/adminUser.json")
+
+def start_daemons():
+    """
+    Start HUE daemons, including jobsubd
+    """
     run("service hue start")
 
 def cleanup():
@@ -162,7 +179,9 @@ def cleanup():
     Clean up uploaded files and directories
     """
     patch = "hue-patch-cdh3u4-r0.4.diff"
-    if files.exists(patch):
-        run("rm {0}".format(patch))
-    if files.exists("cosmos-app"):
-        run("rm -rf cosmos-app")
+    cosmos_app = "cosmos-app"
+    sql_script = "provision.sql"
+    user_fixture = "adminUser.json"
+    for leftover in [patch, cosmos_app, sql_script, user_fixture]:
+        if files.exists(leftover):
+            run("rm -rf {0}".format(leftover))

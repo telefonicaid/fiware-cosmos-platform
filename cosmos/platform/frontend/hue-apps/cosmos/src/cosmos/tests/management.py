@@ -8,7 +8,6 @@ from shutil import rmtree
 from django import test
 from django.contrib.auth.models import User
 from django.core.management import call_command
-from django.core.management.base import CommandError
 
 from cosmos.management.commands import create_cosmos_user
 

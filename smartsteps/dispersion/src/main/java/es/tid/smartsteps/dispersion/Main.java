@@ -139,7 +139,7 @@ public class Main extends Configured implements Tool {
                 "aggregated_counts_by_polygon_text");
         {
             CosmosJob job = CosmosJob.createReduceJob(config,
-                    "AggregationByCellIdAndDate",
+                    "TrafficCountsJsonExporter",
                     SequenceFileInputFormat.class,
                     TrafficCountsJsonExporterReducer.class,
                     1,

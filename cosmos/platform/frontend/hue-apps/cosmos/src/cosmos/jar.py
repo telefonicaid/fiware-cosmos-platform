@@ -5,6 +5,7 @@ JAR manipulation module.
 import re
 from zipfile import BadZipfile, ZipFile
 
+from django import forms
 from lxml import etree
 
 from cosmos.jar_parameters import make_parameter
@@ -15,6 +16,66 @@ PARAMETERS_TEMPLATE_KEY = 'Cosmos-Parameters-Template'
 
 class InvalidJarFile(Exception):
     pass
+
+
+def field_name(index):
+    """HTML-safe name for a form field."""
+    return 'param%d' % index
+
+
+class ParameterTemplate(object):
+    """
+    Represents the parametrization template of a job.
+    """
+
+    def __init__(self):
+        self.parameters = []
+
+    def add(self, new_param):
+        """
+        Adds a parameter to the template unless its name collides with a
+        previous one.
+        """
+        for param in self.parameters:
+            if param.name == new_param.name:
+                raise InvalidJarFile("Duplicated key '%s'" % param.name)
+        self.parameters.append(new_param)
+
+    def as_form(self, expansion):
+        """
+        Create a dynamic whose fields are dynamically generated from the
+        template.
+        """
+        form = forms.Form(self.__form_data())
+        for (index, param) in enumerate(self.parameters):
+            form.fields[field_name(index)] = param.form_field(expansion)
+        return form
+
+    def update_from_form(self, form):
+        """
+        Updates parameter values from a form.
+
+        Field names are assumed to be of the form "param<i>" where <i> is the
+        zero-based parameter index.
+        """
+        for index, param in enumerate(self.parameters):
+            param.set_value(form.get(field_name(index), None))
+
+    def as_hadoop_args(self, job, expansion):
+        """
+        Generates the command line arguments to pass template values to the
+        Hadoop job.
+        """
+        args = []
+        for param in self.parameters:
+            args.extend(param.as_job_argument(job, expansion))
+        return args
+
+    def __form_data(self):
+        if not any(param.has_value() for param in self.parameters):
+            return
+        return dict([(field_name(index), param.get_value())
+                     for (index, param) in enumerate(self.parameters)])
 
 
 class JarFile(object):
@@ -38,6 +99,9 @@ class JarFile(object):
         return self.manifest.has_key(PARAMETERS_TEMPLATE_KEY)
 
     def parameters(self):
+        """
+        Builds a ParameterTemplate from the JAR metadata.
+        """
         content = self.__parameters_template_content()
         path = self.__parameters_path()
         if path.endswith('.properties'):
@@ -47,7 +111,10 @@ class JarFile(object):
         else:
             raise InvalidJarFile("Unsupported properties template format")
         try:
-            return [make_parameter(key, value) for key, value in pairs]
+            template = ParameterTemplate()
+            for key, value in pairs:
+                template.add(make_parameter(key, value))
+            return template
         except ValueError, ex:
             raise InvalidJarFile("Invalid parameter description: %s" % ex)
 

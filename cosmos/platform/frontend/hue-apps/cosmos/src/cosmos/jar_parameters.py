@@ -22,8 +22,7 @@ class AbstractParameter(object):
         self.default_value = default_value
         self.__value = None
 
-    def set_value(self, value, expansion):
-        self.validate(value, expansion)
+    def set_value(self, value):
         self.__value = value
 
     def get_value(self):

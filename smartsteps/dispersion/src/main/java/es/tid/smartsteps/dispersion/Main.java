@@ -141,7 +141,7 @@ public class Main extends Configured implements Tool {
             CosmosJob job = CosmosJob.createMapJob(config,
                     "AggregationByCellIdAndDate",
                     SequenceFileInputFormat.class,
-                    TrafficCountsScalerMapper.class,
+                    TrafficCountsJsonExporterMapper.class,
                     TextOutputFormat.class);
             FileInputFormat.setInputPaths(job, aggregatedCountsByPolygonPath);
             FileOutputFormat.setOutputPath(job, aggregatedCountsByPolygonTextPath);

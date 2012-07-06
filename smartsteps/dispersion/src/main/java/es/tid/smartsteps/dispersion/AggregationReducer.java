@@ -40,19 +40,32 @@ class AggregationReducer extends Reducer<
                 continue;
             }
             for (int i = 0; i < counts.getFootfallsCount(); i++) {
-                final Counts footfallCounts = counts.getFootfalls(i);
-                Counts.Builder footfallCountsBuilder =
-                        Counts.newBuilder(aggregatedCountsBuilder.getFootfalls(i));
-                for (int j = 0; j < footfallCountsBuilder.getValuesCount(); j++) {
-                    footfallCountsBuilder.setValues(j,
-                            footfallCountsBuilder.getValues(j)
-                            + footfallCounts.getValues(j));
-                }
-                aggregatedCountsBuilder.setFootfalls(i, footfallCountsBuilder);
+                aggregatedCountsBuilder.setFootfalls(i,
+                        aggregateCounts(aggregatedCountsBuilder.getFootfalls(i),
+                                        counts.getFootfalls(i)));
+            }
+            for (int i = 0; i < counts.getPoisCount(); i++) {
+                aggregatedCountsBuilder.setPois(i,
+                        aggregateCounts(aggregatedCountsBuilder.getPois(i),
+                                        counts.getPois(i)));
             }
         }
         this.outKey.set(aggregatedCountsBuilder.getCellId());
         this.aggregatedCounts.set(aggregatedCountsBuilder.build());
         context.write(this.outKey, this.aggregatedCounts);
+    }
+    
+    private static Counts aggregateCounts(Counts a, Counts b) {
+        if (!a.getName().equals(b.getName()) ||
+                a.getValuesCount() != b.getValuesCount()) {
+            throw new IllegalArgumentException(
+                    "Counts to be aggregated are not compatible");
+        }
+        Counts.Builder scaledCounts = Counts.newBuilder();
+        scaledCounts.setName(a.getName());
+        for (int i = 0; i < a.getValuesCount(); i++) {
+            scaledCounts.addValues(a.getValues(i) + b.getValues(i));
+        }
+        return scaledCounts.build();
     }
 }

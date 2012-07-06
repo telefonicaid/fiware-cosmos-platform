@@ -52,20 +52,28 @@ class TrafficCountsScalerReducer extends Reducer<
                         TrafficCounts.newBuilder(count);
                 scaledCountsBuilder.setCellId(lookup.getValue());
                 for (int i = 0; i < count.getFootfallsCount(); i++) {
-                    final Counts footfallCounts = count.getFootfalls(i);
-                    Counts.Builder footfallCountsBuilder =
-                            Counts.newBuilder(footfallCounts);
-                    for (int j = 0; j < footfallCounts.getValuesCount(); j++) {
-                        footfallCountsBuilder.setValues(j,
-                                footfallCounts.getValues(j)
-                                * lookup.getProportion());
-                    }
-                    scaledCountsBuilder.setFootfalls(i, footfallCountsBuilder);
+                    scaledCountsBuilder.setFootfalls(i,
+                            scaleCounts(count.getFootfalls(i),
+                                        lookup.getProportion()));
+                }
+                for (int i = 0; i < count.getPoisCount(); i++) {
+                    scaledCountsBuilder.setPois(i,
+                            scaleCounts(count.getPois(i),
+                                        lookup.getProportion()));
                 }
                 this.outKey.set(scaledCountsBuilder.getCellId());
                 this.scaledCounts.set(scaledCountsBuilder.build());
                 context.write(this.outKey, this.scaledCounts);
             }
         }
+    }
+    
+    private static Counts scaleCounts(Counts a, double proportion) {
+        Counts.Builder scaledCounts = Counts.newBuilder();
+        scaledCounts.setName(a.getName());
+        for (int i = 0; i < a.getValuesCount(); i++) {
+            scaledCounts.addValues(a.getValues(i) * proportion);
+        }
+        return scaledCounts.build();
     }
 }

@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 """Create user command."""
 from optparse import make_option
+import subprocess
 
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand, CommandError
 from hadoop import cluster
+
+
+ADD_USER_COMMAND = '/usr/sbin/useradd'
+DEFAULT_USER_GROUP = 'nobody'
+DEFAULT_USER_SHELL = '/sbin/nologin'
 
 
 class Command(BaseCommand):
@@ -19,7 +25,8 @@ class Command(BaseCommand):
                     default='', help='First name'),
         make_option('--last', action='store',
                     default='', help='Family name'),
-        make_option('--admin', help='Grant administrative privileges')
+        make_option('--admin', action='store_true', default=False,
+                    help='Grant administrative privileges')
     )
 
     def handle(self, *args, **options):
@@ -28,26 +35,43 @@ class Command(BaseCommand):
         login = args[0]
         if options.get('password', None) is None:
             raise CommandError("Please specify a password with --password")
-        self.create_user(login, options)
-        self.create_home(login)
+        self.create_django_user(login, options)
+        self.create_hdfs_home(login)
+        self.create_unix_user(login)
 
-    def create_user(self, login, options):
+    def create_django_user(self, login, options):
         try:
-            User.objects.get(username=login)
-            raise CommandError("User '%s' already exists" % login)
+            user = User.objects.get(username=login)
+            self.stderr.write(('Warning: django user %s already exists, '
+                               'updating attributes\n') % login)
         except User.DoesNotExist:
             user = User.objects.create_user(login, options['email'],
-                                             options['password'])
-            user.first_name = options['first']
-            user.last_name = options['last']
-            if options.get('admin', False):
-                user.is_superuser = True
-                user.is_staff = True
-            user.save()
+                                            options['password'])
+        user.first_name = options['first']
+        user.last_name = options['last']
+        admin = options.get('admin', False)
+        user.is_superuser = admin
+        user.is_staff = admin
+        user.save()
 
-    def create_home(self, login):
+    def create_hdfs_home(self, login):
         home = '/user/%s' % login
         hdfs = cluster.get_hdfs()
         hdfs.setuser(login)
         for path in ['jars', 'datasets', 'tmp']:
             hdfs.mkdir('%s/%s' % (home, path))
+
+    def create_unix_user(self, login):
+        try:
+            ret_code = subprocess.call([ADD_USER_COMMAND, login,
+                                        '-g', DEFAULT_USER_GROUP,
+                                        '-s', DEFAULT_USER_SHELL])
+        except OSError, e:
+            raise CommandError('Cannot create unix account %s' % login, e)
+
+        if ret_code == 9:
+            self.stderr.write('Warning: unix account %s already exists\n' %
+                              login)
+        elif ret_code != 0:
+            raise CommandError(('Unexpected error (recode %d) when creating '
+                                'unix account for %s') % login)

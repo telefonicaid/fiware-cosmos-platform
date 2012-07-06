@@ -46,7 +46,7 @@ public class TrafficCountsJsonExporterReducerTest {
                 config.getStrings(Config.COUNT_FIELDS));
         final TrafficCounts counts = parser.parse("{\"date\": \"20120527\", "
                 + "\"footfall_observed_basic\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
-                + "0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1], "
+                + "0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0.57], "
                 + "\"footfall_observed_female\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0,"
                 + " 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], \"easting\": "
                 + "\"125053\", \"poi_5\": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "
@@ -81,7 +81,8 @@ public class TrafficCountsJsonExporterReducerTest {
     }
 
     @Test
-    public void testReduce() throws IOException {
+    public void testExportNoRound() throws IOException {
+        this.instance.getConfiguration().setBoolean(Config.ROUND_RESULTS, false);
         List<Pair<NullWritable, Text>> results = this.instance
                 .withInput(this.key, Arrays.asList(this.value, this.value))
                 .run();
@@ -89,6 +90,23 @@ public class TrafficCountsJsonExporterReducerTest {
         assertEquals(2, results.size());
         final Pair<NullWritable, Text> result0 = results.get(0);
         assertEquals(NullWritable.get(), result0.getFirst());
-        assertNotNull(this.parser.parse(result0.getSecond().toString()));
+        TrafficCounts counts = this.parser.parse(result0.getSecond().toString());
+        assertNotNull(counts);
+        assertEquals(0.57D, counts.getFootfalls(0).getValues(24), 0.0D);
+    }
+
+    @Test
+    public void testExportRound() throws IOException {
+        this.instance.getConfiguration().setBoolean(Config.ROUND_RESULTS, true);
+        List<Pair<NullWritable, Text>> results = this.instance
+                .withInput(this.key, Arrays.asList(this.value, this.value))
+                .run();
+        assertNotNull(results);
+        assertEquals(2, results.size());
+        final Pair<NullWritable, Text> result0 = results.get(0);
+        assertEquals(NullWritable.get(), result0.getFirst());
+        TrafficCounts counts = this.parser.parse(result0.getSecond().toString());
+        assertNotNull(counts);
+        assertEquals(1.0D, counts.getFootfalls(0).getValues(24), 0.0D);
     }
 }

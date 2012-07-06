@@ -117,7 +117,7 @@ message TelMonth {
 }
 
 message Poi {
-    optional uint32 id = 1;
+    optional uint64 id = 1;
     optional uint64 node = 2;
     optional uint64 bts = 3;
     optional uint32 labelnode = 4;
@@ -151,7 +151,7 @@ message PoiPos {
 }
 
 message PoiNew {
-    optional uint32 id = 1;
+    optional uint64 id = 1;
     optional uint64 node = 2;
     optional uint64 bts = 3;
     optional uint32 labelgroupnodebts = 4;

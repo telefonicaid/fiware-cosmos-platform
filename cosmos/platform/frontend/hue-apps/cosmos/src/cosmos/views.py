@@ -2,17 +2,17 @@
 import logging
 
 from desktop.lib.django_util import PopupException, render
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.paginator import EmptyPage, PageNotAnInteger
 from django.core.urlresolvers import reverse
 from django.forms.util import ErrorList
-from django.http import Http404
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import redirect
 import jobsub.views as jobsub
 from jobsub.models import Submission
 from jobsubd.ttypes import (BinHadoopStep, LocalizedFile, LocalizeFilesStep,
                             State, SubmissionPlan, SubmissionPlanStep)
 
-from cosmos import conf, mongo, paths
+from cosmos import mongo, paths
+from cosmos.expansion import ExpansionContext
 from cosmos.jar import InvalidJarFile, JarFile
 from cosmos.hdfs_util import CachedHDFSFile
 from cosmos.models import JobRun
@@ -31,24 +31,25 @@ def index(request):
     for job_run in job_runs:
         job_run.refresh_state()
     return render('job_list.mako', request, dict(
-        job_runs=job_runs
+        job_runs=[job for job in job_runs if job.state() != 'unsubmitted']
     ))
 
 
-def hadoop_args(job, jar_name):
+def hadoop_args(job, jar_name, expansion):
+    """Generate command line arguments for a job execution."""
     args = ['jar', jar_name]
     if job.is_parameterized():
         for parameter in job.parameters:
-            args.extend(parameter.as_job_argument(job))
+            args.extend(parameter.as_job_argument(job, expansion))
     else:
-        input_path = job.dataset_path
+        input_path = expansion.expand(job.dataset_path)
         output_path = paths.tmp_path(job.user, job.id)
         args.extend([input_path, output_path,
                      mongo.user_coll_url(job.user.id, job.mongo_collection())])
     return args
 
 
-def submit(job):
+def submit(job, expansion):
     """Submit a job through the jobsubd infrastructure."""
 
     LOGGER.info("Submitting job %s (%d) for %s with JAR=%s on dataset %s" %
@@ -57,7 +58,7 @@ def submit(job):
 
     lf = LocalizedFile(target_name=TEMP_JAR, path_on_hdfs=job.jar_path)
     lfs = LocalizeFilesStep(localize_files=[lf])
-    bhs = BinHadoopStep(arguments=job.hadoop_args(TEMP_JAR))
+    bhs = BinHadoopStep(arguments=hadoop_args(job, TEMP_JAR, expansion))
     plan = SubmissionPlan(name=job.name,
                           user=job.user.username,
                           groups=job.user.get_groups(),
@@ -152,6 +153,11 @@ def configure_job(request):
 
 
 def configure_basic_job(request):
+    """
+    Configure non-parameterized job.
+
+    Only input path is requested.
+    """
     wizard = job_wizard(request)
     if request.method != 'POST':
         form = BasicConfigurationForm(data=wizard.get('job'))
@@ -171,6 +177,11 @@ def configure_basic_job(request):
 
 
 def configure_parameterized_job(request):
+    """
+    Configure parameterized job.
+
+    A form is dynamically generated from the JAR metadata.
+    """
     wizard = job_wizard(request)
     parameters = wizard['parameters']
 
@@ -179,8 +190,9 @@ def configure_parameterized_job(request):
     elif request.POST.has_key('back'):
         return redirect(reverse('define_job'))
     else:
-        for param in parameters:
-            param.set_value(request.POST.get(param.name, None))
+        for index, param in enumerate(parameters):
+            param.set_value(request.POST.get('param%d' % index, None),
+                            ExpansionContext(user=request.user))
         form = ParameterizeJobForm(parameters)
         update_job_wizard(request, wizard)
         if form.is_valid():
@@ -218,7 +230,7 @@ def confirm_job(request):
         return redirect(reverse('configure_job'))
     else:
         job.save()
-        submit(job)
+        submit(job, ExpansionContext(job=job, user=request.user))
         clear_job_wizard(request)
         return redirect(reverse('list_jobs'))
 
@@ -258,12 +270,20 @@ def upload_index(request):
 def list_results(request):
     """List result collections."""
 
+    try:
+        collections = mongo.list_collections(request.user.id)
+    except mongo.NoConnectionError:
+        return database_not_available(request)
+
     return render('results_list.mako', request, dict(
-        collections=mongo.list_collections(request.user.id)
+        collections=collections
     ))
 
 
 def show_results(request, collection_name):
+    """
+    Render a page of a collection documents.
+    """
     try:
         primary_key = request.GET.get('primary_key')
         paginator = mongo.retrieve_results(request.user.id, collection_name,
@@ -286,7 +306,7 @@ def show_results(request, collection_name):
             primary_key = prototype_result.pk
 
     except mongo.NoConnectionError:
-        raise PopupException('Database not available')
+        return database_not_available(request)
 
     except mongo.NoResultsError:
         page = None
@@ -298,3 +318,8 @@ def show_results(request, collection_name):
         primary_key=primary_key
     ))
 
+def database_not_available(request):
+    """Render error page when database is not available."""
+    return render('error.mako', request, dict(
+        error_title='Cannot contact database',
+        error_details='Database backend is unreachable or not responding'))

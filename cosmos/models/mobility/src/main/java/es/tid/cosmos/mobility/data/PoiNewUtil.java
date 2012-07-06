@@ -12,7 +12,7 @@ public final class PoiNewUtil {
 
     private PoiNewUtil() {}
 
-    public static PoiNew create(int id, long node, long bts,
+    public static PoiNew create(long id, long node, long bts,
             int labelGroupNodeBts, int confidentNodeBts) {
         return PoiNew.newBuilder()
                 .setId(id)
@@ -29,8 +29,8 @@ public final class PoiNewUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
-    public static ProtobufWritable<PoiNew> createAndWrap(int id, long node,
+
+    public static ProtobufWritable<PoiNew> createAndWrap(long id, long node,
             long bts, int labelGroupNodeBts, int confidentNodeBts) {
         return wrap(create(id, node, bts, labelGroupNodeBts, confidentNodeBts));
     }

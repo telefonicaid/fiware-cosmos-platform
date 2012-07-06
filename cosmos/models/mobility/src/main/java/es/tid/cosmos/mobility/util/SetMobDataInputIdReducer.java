@@ -28,7 +28,7 @@ public class SetMobDataInputIdReducer extends Reducer<LongWritable,
             throw new IllegalArgumentException("Missing or invalid input ID");
         }
     }
-    
+
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Message>> values, Context context)

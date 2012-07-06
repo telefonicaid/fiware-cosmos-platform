@@ -6,6 +6,10 @@ import os.path
 import pickle
 import unittest as test
 
+from django.contrib.auth.models import User
+
+from cosmos.expansion import ExpansionContext
+from cosmos.models import JobRun
 from cosmos.jar import InvalidJarFile, JarFile
 from cosmos.jar_parameters import make_parameter
 
@@ -62,6 +66,8 @@ class UseJarTestCase(test.TestCase):
         self.assertEquals(params[1].name, "bar")
         self.assertEquals(params[1].default_value, "hola")
         self.assertEquals(params[2].name, "tmp")
+        self.assertEquals(params[2].default_value, 
+                          "${ user.home }/tmp/run${ job.id }")
         self.assertEquals(params[3].name, "mongo1")
         self.assertEquals(params[4].name, "mongo2")
         self.assertEquals(params[4].default_value, "col_a")
@@ -86,3 +92,21 @@ class JarParametersTestCase(test.TestCase):
             serialized_param = pickle.dumps(param)
             deserialized_param = pickle.loads(serialized_param)
             self.assertEquals(param.name, deserialized_param.name)
+
+    def test_invalid_default_value(self):
+        self.assertRaises(ValueError, make_parameter, 'too_long',
+                          'string|' + ('0123456789' * 30))
+        self.assertRaises(ValueError, make_parameter, 'unsafe_path',
+                          'filepath|../../etc/passwd')
+        self.assertRaises(ValueError, make_parameter, 'invalid_chars',
+                          'mongocoll|.&_$"')
+
+    def test_argument_expansion(self):
+        expansion = ExpansionContext()
+        self.foo.set_value('hello_foo_${ job.id }', expansion)
+        self.assertEquals(self.foo.as_job_argument(None, expansion),
+                          ['-D', 'foo=hello_foo_0'])
+        job = JobRun(id=15, user=User(id=7))
+        self.assertEquals(self.coll.as_job_argument(job, expansion),
+                          ['-D', 'coll=mongodb://localhost/db_7.job_0'])
+

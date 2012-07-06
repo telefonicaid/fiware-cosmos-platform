@@ -64,11 +64,11 @@ class MongoRecord(object):
         """Gets the values of all non-primary keys for this record. If the
         field is a dictionary or a list, it is encoded as JSON."""
         ans = {}
-        for k, v in self.document.iteritems():
-            if k != self.pk:
-                if type(v) in EXPAND_TYPES:
-                    v = json.dumps(v)
-                ans.setdefault(k, v)
+        for key, val in self.document.iteritems():
+            if key != self.pk:
+                if type(val) in EXPAND_TYPES:
+                    val = json.dumps(val)
+                ans.setdefault(key, val)
         return ans
 
 
@@ -99,7 +99,6 @@ def choose_default_primary_key(collection):
 
 
 def retrieve_results(user_id, collection_name, primary_key=None):
-    ans = []
     try:
         connection = Connection(conf.MONGO_BASE.get())
         try:

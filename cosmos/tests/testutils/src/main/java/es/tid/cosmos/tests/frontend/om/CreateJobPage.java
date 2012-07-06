@@ -6,6 +6,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotSame;
 
 /**
  *
@@ -13,7 +14,9 @@ import static org.testng.Assert.assertEquals;
  */
 public class CreateJobPage {
     // HTML classes and ids
-    public static final String INPUT_FILE_HTML_ID = "id_dataset_path";
+    public static final String CANCEL_LINK_CLASS = "cos-cancel";
+    public static final String NEXT_NAME = "next";
+    public static final String BACK_NAME = "back";
     public static final String JAR_FILE_HTML_ID = "id_jar_path";
     public static final String NAME_FILE_HTML_ID = "id_name";
     public static final String SAMPLE_JAR_LINK_ID = "sample-jar-link";
@@ -53,13 +56,6 @@ public class CreateJobPage {
         this.mainWindow = this.driver.getWindowHandle();
     }
 
-    public void setInputFile(String filePath) {
-        assertCorrectUrl();
-        WebElement inputElement = this.driver.findElement(
-                By.id(INPUT_FILE_HTML_ID));
-        inputElement.sendKeys(filePath);
-    }
-
     public void setName(String name) {
         assertCorrectUrl();
         WebElement inputElement = this.driver.findElement(
@@ -74,10 +70,24 @@ public class CreateJobPage {
         inputElement.sendKeys(filePath);
     }
 
-    public void create() {
+    public SetParametersPage next() {
         assertCorrectUrl();
-        WebElement inputElement = this.driver.findElement(
-                By.id(INPUT_FILE_HTML_ID));
-        inputElement.submit();
+        WebElement nextElement = this.driver.findElement(
+                By.name(NEXT_NAME));
+        nextElement.click();
+        return new SetParametersPage(this.driver);
+    }
+    
+    public CreateJobPage cancel() {
+        assertCorrectUrl();
+        WebElement cancelLink = this.driver.findElement(
+                By.className(CANCEL_LINK_CLASS));
+        cancelLink.click();
+        return new CreateJobPage(this.driver);
+    }
+    
+    public String getErrors() {
+        assertCorrectUrl();
+        return this.driver.findElement(By.className("errorlist")).getText();
     }
 }

@@ -4,4 +4,4 @@ JOBTRACKER_URL=
 FRONTEND_DB=jdbc:mysql://localhost/
 DB_NAME=hue
 DB_USER=hue
-DB_PASS=contrived#and#complicated#password
+DB_PASS=${hue_db_pwd}

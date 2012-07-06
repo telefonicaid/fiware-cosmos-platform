@@ -78,6 +78,7 @@
                             <mainClass>es.tid.cosmos.mobility.MobilityMain</mainClass>
                         </transformer>
                     </transformers>
+                    <minimizeJar>true</minimizeJar>
                 </configuration>
                 <executions>
                     <execution>

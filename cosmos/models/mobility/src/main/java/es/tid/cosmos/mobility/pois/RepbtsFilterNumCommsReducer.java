@@ -20,6 +20,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
  */
 class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Message>, LongWritable, TypedProtobufWritable<Int>> {
+
     private int minTotalCalls;
     private int maxTotalCalls;
     
@@ -39,6 +40,7 @@ class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
             throws IOException, InterruptedException {
         int numCommsInfo = 0;
         int numCommsNoInfoOrNoBts = 0;
+        boolean hasCommsInfo = false;
         for (TypedProtobufWritable<Message> value : values) {
             final Message message = value.get();
             if (message instanceof Cdr) {
@@ -46,9 +48,16 @@ class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
             } else if (message instanceof NodeBtsDay) {
                 final NodeBtsDay nodeBtsDay = (NodeBtsDay) message;
                 numCommsInfo += nodeBtsDay.getCount();
+                hasCommsInfo = true;
             } else {
                 throw new IllegalArgumentException();
             }
+        }
+        if (!hasCommsInfo) {
+            /*
+             * There is not any cdr with cell info. Produce no output
+             */
+            return;
         }
         int totalComms = numCommsInfo + numCommsNoInfoOrNoBts;
         if (totalComms >= this.minTotalCalls &&

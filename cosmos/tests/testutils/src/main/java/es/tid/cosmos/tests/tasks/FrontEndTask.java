@@ -9,7 +9,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.assertNotSame;
 
 import es.tid.cosmos.tests.environment.Environment;
 import es.tid.cosmos.tests.frontend.om.*;
@@ -24,7 +24,10 @@ public class FrontEndTask extends Task {
     private final FrontEnd frontend;
     private final String taskId;
     private final String jarHdfsPath;
-    private final String inputHdfsPath;
+    
+    public static String getOutputHdfsPath(String user, String outputDirName) {
+        return ("/user/" + user + "/" + outputDirName);
+    }
 
     public static String getJarHdfsPath(String user, String jarFileName) {
         return ("/user/" + user + "/jars/" + jarFileName);
@@ -83,44 +86,31 @@ public class FrontEndTask extends Task {
     }
 
     public FrontEndTask(FrontEnd frontend,
-                        String inputHdfsPath,
                         String jarHdfsPath,
                         String taskId) {
         this.frontend = frontend;
         this.taskId = taskId;
         this.jarHdfsPath = jarHdfsPath;
-        this.inputHdfsPath = inputHdfsPath;
         this.isRun = false;
     }
 
     public FrontEndTask(FrontEnd frontend,
-                        String inputFilePath,
                         String jarPath) {
-        this(frontend, inputFilePath, jarPath, UUID.randomUUID().toString());
+        this(frontend, jarPath, UUID.randomUUID().toString());
     }
 
-    public FrontEndTask(Environment env, String inputFilePath, String jarPath) {
-        this(new FrontEnd(env), inputFilePath, jarPath);
+    public FrontEndTask(Environment env, String jarPath) {
+        this(new FrontEnd(env), jarPath);
     }
 
-    public FrontEndTask(Environment env, String inputFilePath, String jarPath,
+    public FrontEndTask(Environment env, String jarPath,
                         String taskId) {
-        this(new FrontEnd(env), inputFilePath, jarPath, taskId);
-    }
-
-    private FrontEndTask(Environment env, String taskId) {
-        this.frontend = new FrontEnd(env);
-        assertTrue(this.frontend.taskExists(taskId));
-
-        this.taskId = taskId;
-        this.isRun = true;
-        this.jarHdfsPath = null;
-        this.inputHdfsPath = null;
+        this(new FrontEnd(env), jarPath, taskId);
     }
 
     public static FrontEndTask createFromExistingTaskId(Environment env,
                                                         String taskId) {
-        return new FrontEndTask(env, taskId);
+        return new FrontEndTask(env, null, taskId);
     }
 
     @Override
@@ -131,8 +121,20 @@ public class FrontEndTask extends Task {
         CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
         createJobPage.setName(this.taskId);
         createJobPage.setInputJar(this.jarHdfsPath);
-        createJobPage.setInputFile(this.inputHdfsPath);
-        createJobPage.create();
+        SetParametersPage setParamsPage = createJobPage.next();
+        if (this.dataSet != null) {
+            setParamsPage.setDatasetPath(this.dataSet);
+        }
+        
+        for(String key : this.parameters.keySet()) {
+            setParamsPage.setParameter(key, this.parameters.get(key));
+        }
+        
+        final String prevUrl = this.frontend.getDriver().getCurrentUrl();
+        setParamsPage.next().runJob();
+        assertNotSame(prevUrl, this.frontend.getDriver().getCurrentUrl(),
+                      "Veryfing job submission was successfull by looking at"
+                      + "the URL");
         this.isRun = true;
     }
 

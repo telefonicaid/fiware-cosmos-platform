@@ -10,6 +10,10 @@ ${shared.header("Run new job", section="define_job")}
 <div id="run_job" class="jframe_padded view">
     <h4 class="jframe-hidden">Run new job</h4>
 
+    <p>Please, configure your job.  You can use variable expansion, for
+    instance ${"${"} user.home }. Check the supported variables on the <a
+    href="/help/cosmos" target="Help">documentation page</a>.</p>
+
     <form action="${ url('configure_job') }" method="POST" class="cos-run_job_form"
           enctype="multipart/form-data">
 

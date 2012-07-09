@@ -3,7 +3,6 @@ package es.tid.smartsteps.dispersion;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mrunit.mapreduce.MapDriver;
@@ -21,7 +20,7 @@ import es.tid.smartsteps.dispersion.data.generated.LookupProtocol.Lookup;
  *
  * @author dmicol
  */
-public class LookupParserMapperTest {
+public class LookupParserMapperTest extends TrafficCountsBasedTest {
 
     private MapDriver<
             LongWritable, Text,
@@ -29,15 +28,15 @@ public class LookupParserMapperTest {
     private LongWritable key;
     private Text value;
     
+    public LookupParserMapperTest() throws IOException {
+    }
+    
     @Before
     public void setUp() throws IOException {
         this.instance = new MapDriver<
                 LongWritable, Text,
                 Text, TypedProtobufWritable<Lookup>>(new LookupParserMapper());
-        final Configuration config = Config.load(
-                Config.class.getResource("/config.properties").openStream(),
-                this.instance.getConfiguration());
-        this.instance.setConfiguration(config);
+        this.instance.setConfiguration(this.conf);
         this.key = new LongWritable(102L);
         this.value = new Text("cell023,polygon123,0.57");
     }

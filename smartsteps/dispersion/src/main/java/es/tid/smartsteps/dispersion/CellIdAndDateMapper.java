@@ -20,8 +20,7 @@ class CellIdAndDateMapper extends Mapper<
     private BinaryKey cellIdAndDate;
     
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
+    protected void setup(Context context) {
         this.cellIdAndDate = new BinaryKey();
     }
     

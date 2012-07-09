@@ -23,8 +23,7 @@ class TrafficCountsParserMapper extends Mapper<
     private TypedProtobufWritable<TrafficCounts> outValue;
     
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
+    protected void setup(Context context) {
         this.parser = new TrafficCountsParser(
                 context.getConfiguration().getStrings(Config.COUNT_FIELDS));
         this.outKey = new Text();

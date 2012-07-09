@@ -7,14 +7,14 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.SOACentroid;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
-import es.tid.smartsteps.dispersion.data.generated.LookupProtocol.Lookup;
 
 /**
  *
  * @author dmicol
  */
-class TrafficCountsScalerMapper extends Mapper<
+class SOACentroidJoinerMapper extends Mapper<
         Text, TypedProtobufWritable<Message>,
         Text, TypedProtobufWritable<Message>> {
 
@@ -30,9 +30,10 @@ class TrafficCountsScalerMapper extends Mapper<
             Context context) throws IOException, InterruptedException {
         final Message message = value.get();
         if (message instanceof TrafficCounts) {
+            // Here the cell ID should have been replaced by the SOA ID
             this.cellId.set(((TrafficCounts) message).getCellId());
-        } else if (message instanceof Lookup) {
-            this.cellId.set(((Lookup) message).getKey());
+        } else if (message instanceof SOACentroid) {
+            this.cellId.set(((SOACentroid) message).getSoaId());
         } else {
             throw new IllegalStateException("Unexpected input: "
                                             + message.toString());

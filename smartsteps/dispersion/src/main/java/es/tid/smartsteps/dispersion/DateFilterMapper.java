@@ -19,8 +19,7 @@ class DateFilterMapper extends Mapper<
     private String dateToFilter;
     
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
+    protected void setup(Context context) {
         this.dateToFilter = context.getConfiguration().get(Config.DATE_TO_FILTER);
     }
     

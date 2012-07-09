@@ -14,44 +14,46 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
+import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.SOACentroid;
 
 /**
  *
  * @author dmicol
  */
-public class TrafficCountsParserMapperTest extends TrafficCountsBasedTest {
+public class SOACentroidParserMapperTest extends TrafficCountsBasedTest {
 
     private MapDriver<
             LongWritable, Text,
-            Text, TypedProtobufWritable<TrafficCounts>> instance;
+            Text, TypedProtobufWritable<SOACentroid>> instance;
     private LongWritable key;
+    private Text value;
     
-    public TrafficCountsParserMapperTest() throws IOException {
+    public SOACentroidParserMapperTest() throws IOException {
     }
     
     @Before
     public void setUp() throws IOException {
         this.instance = new MapDriver<
                 LongWritable, Text,
-                Text, TypedProtobufWritable<TrafficCounts>>(
-                        new TrafficCountsParserMapper());
+                Text, TypedProtobufWritable<SOACentroid>>(
+                        new SOACentroidParserMapper());
         this.instance.setConfiguration(this.conf);
         this.key = new LongWritable(102L);
+        this.value = new Text("000012006440,0.3,0.5,0.4");
     }
 
     @Test
     public void shouldProduceOutput() throws IOException {
-        List<Pair<Text, TypedProtobufWritable<TrafficCounts>>> results =
+        List<Pair<Text, TypedProtobufWritable<SOACentroid>>> results =
                 this.instance
-                        .withInput(this.key, new Text(this.trafficCounts))
+                        .withInput(this.key, this.value)
                         .run();
         assertNotNull(results);
         assertEquals(1, results.size());
-        final Pair<Text, TypedProtobufWritable<TrafficCounts>> result =
+        final Pair<Text, TypedProtobufWritable<SOACentroid>> result =
                 results.get(0);
         assertEquals("000012006440", result.getFirst().toString());
-        assertTrue(result.getSecond().get() instanceof TrafficCounts);
+        assertTrue(result.getSecond().get() instanceof SOACentroid);
     }
     
     @Test

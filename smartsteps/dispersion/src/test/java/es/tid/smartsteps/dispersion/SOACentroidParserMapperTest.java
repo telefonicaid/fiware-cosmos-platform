@@ -20,7 +20,7 @@ import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.SOACentroid;
  *
  * @author dmicol
  */
-public class SOACentroidParserMapperTest extends BaseTest {
+public class SOACentroidParserMapperTest extends TrafficCountsBasedTest {
 
     private MapDriver<
             LongWritable, Text,

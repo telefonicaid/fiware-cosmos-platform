@@ -10,12 +10,12 @@ import org.apache.hadoop.conf.Configuration;
  *
  * @author dmicol
  */
-public class BaseTest {
+public class TrafficCountsBasedTest {
 
     protected final Configuration conf;
     protected final String trafficCounts;
     
-    public BaseTest() throws IOException {
+    public TrafficCountsBasedTest() throws IOException {
         this.conf = Config.load(
                 Config.class.getResource("/config.properties").openStream(),
                 new Configuration());

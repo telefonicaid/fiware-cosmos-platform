@@ -23,7 +23,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
  *
  * @author dmicol
  */
-public class TrafficCountsScalerMapperTest extends BaseTest {
+public class TrafficCountsScalerMapperTest extends TrafficCountsBasedTest {
 
     private MapDriver<
             Text, TypedProtobufWritable<Message>,

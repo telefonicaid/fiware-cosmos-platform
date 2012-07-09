@@ -21,7 +21,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
  *
  * @author dmicol
  */
-public class TrafficCountsJsonExporterReducerTest extends BaseTest {
+public class TrafficCountsJsonExporterReducerTest extends TrafficCountsBasedTest {
 
     private ReduceDriver<
             Text, TypedProtobufWritable<TrafficCounts>,

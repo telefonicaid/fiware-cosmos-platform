@@ -22,7 +22,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
  *
  * @author dmicol
  */
-public class TrafficCountsScalerReducerTest extends BaseTest {
+public class TrafficCountsScalerReducerTest extends TrafficCountsBasedTest {
 
     private ReduceDriver<
             Text, TypedProtobufWritable<Message>,

@@ -21,7 +21,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
  *
  * @author dmicol
  */
-public class AggregationReducerTest extends BaseTest {
+public class AggregationReducerTest extends TrafficCountsBasedTest {
 
     private ReduceDriver<
             BinaryKey, TypedProtobufWritable<TrafficCounts>,

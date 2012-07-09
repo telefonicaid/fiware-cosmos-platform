@@ -23,7 +23,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
  *
  * @author dmicol
  */
-public class SOACentroidJoinerMapperTest extends BaseTest {
+public class SOACentroidJoinerMapperTest extends TrafficCountsBasedTest {
 
     private MapDriver<
             Text, TypedProtobufWritable<Message>,

@@ -22,7 +22,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
  *
  * @author dmicol
  */
-public class SOACentroidJoinerReducerTest extends BaseTest {
+public class SOACentroidJoinerReducerTest extends TrafficCountsBasedTest {
 
     private ReduceDriver<
             Text, TypedProtobufWritable<Message>,

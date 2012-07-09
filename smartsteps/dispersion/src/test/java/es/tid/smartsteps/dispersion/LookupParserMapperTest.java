@@ -20,7 +20,7 @@ import es.tid.smartsteps.dispersion.data.generated.LookupProtocol.Lookup;
  *
  * @author dmicol
  */
-public class LookupParserMapperTest extends BaseTest {
+public class LookupParserMapperTest extends TrafficCountsBasedTest {
 
     private MapDriver<
             LongWritable, Text,

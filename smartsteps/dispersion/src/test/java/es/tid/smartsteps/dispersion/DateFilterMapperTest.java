@@ -15,7 +15,7 @@ import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
  *
  * @author dmicol
  */
-public class DateFilterMapperTest extends BaseTest {
+public class DateFilterMapperTest extends TrafficCountsBasedTest {
 
     private MapDriver<
             Text, TypedProtobufWritable<TrafficCounts>,

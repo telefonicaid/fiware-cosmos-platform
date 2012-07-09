@@ -20,7 +20,7 @@ import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
  *
  * @author dmicol
  */
-public class TrafficCountsParserMapperTest extends BaseTest {
+public class TrafficCountsParserMapperTest extends TrafficCountsBasedTest {
 
     private MapDriver<
             LongWritable, Text,

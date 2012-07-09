@@ -7,7 +7,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.smartsteps.dispersion.BaseTest;
+import es.tid.smartsteps.dispersion.TrafficCountsBasedTest;
 import es.tid.smartsteps.dispersion.Config;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 
@@ -15,7 +15,7 @@ import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
  *
  * @author dmicol
  */
-public class TrafficCountsParserTest extends BaseTest {
+public class TrafficCountsParserTest extends TrafficCountsBasedTest {
 
     private TrafficCountsParser parser;
     

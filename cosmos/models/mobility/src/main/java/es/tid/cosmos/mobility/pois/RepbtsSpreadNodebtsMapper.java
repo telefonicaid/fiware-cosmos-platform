@@ -14,22 +14,29 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
 /**
+ * Takes pairs of userid and NodeMxCounter and emits an output pair per BTS in
+ * NodeMxCounter with NodeBtsDay (user id, bts id, 0 and 0) as key and the
+ * number of BTS as value.
+ *
  * Input: <LongWritable, NodeMxCounter>
  * Output: <NodeBtsDay, Int>
- * 
+ *
  * @author dmicol
  */
 class RepbtsSpreadNodebtsMapper extends Mapper<LongWritable,
         TypedProtobufWritable<NodeMxCounter>, ProtobufWritable<NodeBtsDay>,
         TypedProtobufWritable<Int>> {
+
     @Override
-    public void map(LongWritable key, TypedProtobufWritable<NodeMxCounter> value,
-            Context context) throws IOException, InterruptedException {
+    public void map(LongWritable key,
+            TypedProtobufWritable<NodeMxCounter> value, Context context)
+            throws IOException, InterruptedException {
         final NodeMxCounter counter = value.get();
         for (BtsCounter bts : counter.getBtsList()) {
-            ProtobufWritable<NodeBtsDay> nodeBtsDay = NodeBtsDayUtil.
-                    createAndWrap(key.get(), bts.getBts(), 0, 0);
-            context.write(nodeBtsDay, TypedProtobufWritable.create(bts.getCount()));
+            ProtobufWritable<NodeBtsDay> nodeBtsDay =
+                    NodeBtsDayUtil.createAndWrap(key.get(), bts.getBts(), 0, 0);
+            context.write(nodeBtsDay,
+                          TypedProtobufWritable.create(bts.getCount()));
         }
     }
 }

@@ -136,5 +136,6 @@ class ListResultsTestCase(test.TestCase):
         self.assertTrue('foo123' in listed_names and 'bar456' in listed_names,
                         msg="Collections owned by user should be listed")
         self.assertTrue('baz789' not in listed_names,
-                        msg="Collections owned by other users should not be listed")
+                        msg=("Collections owned by other users should not be "
+                             "listed"))
 

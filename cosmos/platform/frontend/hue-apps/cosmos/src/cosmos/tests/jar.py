@@ -3,14 +3,10 @@
 JAR manipulation module tests.
 """
 import os.path
-import pickle
 import unittest as test
 
-from django.contrib.auth.models import User
-
 from cosmos.expansion import ExpansionContext
-from cosmos.models import JobRun
-from cosmos.jar import InvalidJarFile, JarFile
+from cosmos.jar import InvalidJarFile, JarFile, ParameterTemplate
 from cosmos.jar_parameters import make_parameter
 
 
@@ -56,57 +52,69 @@ class UseJarTestCase(test.TestCase):
         self.assertFalse(self.nop_jar.is_parameterized())
 
     def test_error_on_invalid_parametrization(self):
-        self.assertRaises(InvalidJarFile, self.malformed_jar.parameters)
+        self.assertRaises(InvalidJarFile, self.malformed_jar.parameter_template)
 
     def test_get_parametrization_from_properties(self):
-        params = self.prop_jar.parameters()
+        params = self.prop_jar.parameter_template().parameters
         self.assertEquals(len(params), 5)
         self.assertEquals(params[0].name, "foo")
         self.assertEquals(params[0].default_value, None)
         self.assertEquals(params[1].name, "bar")
         self.assertEquals(params[1].default_value, "hola")
         self.assertEquals(params[2].name, "tmp")
-        self.assertEquals(params[2].default_value, 
+        self.assertEquals(params[2].default_value,
                           "${ user.home }/tmp/run${ job.id }")
         self.assertEquals(params[3].name, "mongo1")
         self.assertEquals(params[4].name, "mongo2")
         self.assertEquals(params[4].default_value, "col_a")
 
     def test_get_parametrization_from_xml(self):
-        params = self.xml_jar.parameters()
+        params = self.xml_jar.parameter_template().parameters
         self.assertEquals(len(params), 3)
         self.assertEquals(params[0].name, "foo")
         self.assertEquals(params[1].default_value, "hola")
 
 
-class JarParametersTestCase(test.TestCase):
+class ParameterTemplateTestCase(test.TestCase):
 
     def setUp(self):
-        self.foo = make_parameter('foo', 'string')
-        self.bar = make_parameter('bar', 'string|value')
-        self.tmp = make_parameter('tmp', 'filepath|/tmp')
-        self.coll = make_parameter('coll', 'mongocoll')
+        self.instance = ParameterTemplate()
+        self.instance.add(make_parameter('string1', 'string'))
+        self.instance.add(make_parameter('string2', 'string|default'))
+        self.expansion = ExpansionContext()
 
-    def test_pickable(self):
-        for param in [self.foo, self.bar, self.tmp, self.coll]:
-            serialized_param = pickle.dumps(param)
-            deserialized_param = pickle.loads(serialized_param)
-            self.assertEquals(param.name, deserialized_param.name)
+    def test_error_on_duplicates(self):
+        self.assertRaises(InvalidJarFile, self.instance.add,
+                          make_parameter('string1', 'mongocoll'))
 
-    def test_invalid_default_value(self):
-        self.assertRaises(ValueError, make_parameter, 'too_long',
-                          'string|' + ('0123456789' * 30))
-        self.assertRaises(ValueError, make_parameter, 'unsafe_path',
-                          'filepath|../../etc/passwd')
-        self.assertRaises(ValueError, make_parameter, 'invalid_chars',
-                          'mongocoll|.&_$"')
+    def test_update_from_form(self):
+        self.instance.update_from_form({
+            'param0': 'hello',
+            'param1': None
+        })
+        self.assertEquals(['-D', 'string1=hello', '-D', 'string2=default'],
+                          self.instance.as_hadoop_args(None, self.expansion))
 
-    def test_argument_expansion(self):
-        expansion = ExpansionContext()
-        self.foo.set_value('hello_foo_${ job.id }', expansion)
-        self.assertEquals(self.foo.as_job_argument(None, expansion),
-                          ['-D', 'foo=hello_foo_0'])
-        job = JobRun(id=15, user=User(id=7))
-        self.assertEquals(self.coll.as_job_argument(job, expansion),
-                          ['-D', 'coll=mongodb://localhost/db_7.job_0'])
 
+class ParameterizeFormTestCase(test.TestCase):
+    """
+    Test dynamic form generation.
+    """
+
+    def setUp(self):
+        template = ParameterTemplate()
+        template.add(make_parameter('foo', 'string'))
+        template.add(make_parameter('bar', 'filepath|/tmp/'))
+        self.expansion = ExpansionContext()
+        self.form = template.as_form(self.expansion)
+
+    def test_generate_fields(self):
+        self.assertEquals([(name, type(field).__name__) for (name, field)
+                           in self.form.fields.items()],
+                          [('param0', 'CharField'),
+                           ('param1', 'CharField')])
+        self.assertEquals(type(self.form.fields['param1'].widget).__name__,
+                          'HDFSFileChooser')
+
+    def test_use_default_values(self):
+        self.assertEquals(self.form.fields['param1'].initial, '/tmp/')

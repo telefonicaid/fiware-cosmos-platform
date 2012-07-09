@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.parsing;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.StringTokenizer;
 
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
@@ -10,20 +12,44 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
  *
  * @author dmicol, sortega
  */
-public abstract class Parser extends StringTokenizer {
+public abstract class Parser {
+
     protected static final int MAX_CELL_DIGITS = 8;
     protected static final int MAX_CLIENT_LENGTH = 10;
     private static final int DEFAULT_RADIX = 10;
     
     protected final String line;
+    private final String[] values;
+    private int index;
 
     public Parser(String line, String separator) {
-        super(line, separator);
         this.line = line;
+        StringTokenizer tokenizer = new StringTokenizer(line, separator, true);
+        List<String> valuesList = new LinkedList<String>();
+        boolean isPreceededBySeparator = true;
+        boolean isSeparator;
+        while (tokenizer.hasMoreTokens()) {
+            final String token = tokenizer.nextToken();
+            isSeparator = token.equals(separator);
+            if (isSeparator) {
+                if (isPreceededBySeparator) {
+                    valuesList.add("");
+                }
+            } else {
+                valuesList.add(token);
+            }
+            isPreceededBySeparator = isSeparator;
+        }
+        this.values = valuesList.toArray(new String[valuesList.size()]);
+        this.index = 0;
     }
 
     public abstract Object parse();
-
+    
+    protected String nextToken() {
+        return this.values[this.index++];
+    }
+    
     protected int parseInt() {
         return Integer.parseInt(this.nextToken(), DEFAULT_RADIX);
     }

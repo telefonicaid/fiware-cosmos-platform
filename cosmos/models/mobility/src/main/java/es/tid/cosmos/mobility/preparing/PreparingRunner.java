@@ -18,6 +18,7 @@ import es.tid.cosmos.base.mapreduce.WorkflowList;
  * @author dmicol
  */
 public final class PreparingRunner {
+
     private PreparingRunner() {
     }
 
@@ -29,9 +30,10 @@ public final class PreparingRunner {
         WorkflowList wfList = new WorkflowList();
         CosmosJob cdrsInfoJob;
         {
-            cdrsInfoJob = CosmosJob.createMapJob(conf, "FilterCellnoinfoMapper",
+            cdrsInfoJob = CosmosJob.createMapJob(conf,
+                    "FilterCellnoinfoByCellIdMapper",
                     SequenceFileInputFormat.class,
-                    FilterCellnoinfoMapper.class,
+                    FilterCellnoinfoByCellIdMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(cdrsInfoJob, cdrsMobPath);
             FileOutputFormat.setOutputPath(cdrsInfoJob, cdrsInfoPath);
@@ -39,9 +41,10 @@ public final class PreparingRunner {
         }
         
         {
-            CosmosJob job = CosmosJob.createMapJob(conf, "FilterCellnoinfoMapper",
+            CosmosJob job = CosmosJob.createMapJob(conf,
+                    "FilterCellnoinfoByNodeIdMapper",
                     SequenceFileInputFormat.class,
-                    FilterCellnoinfoMapper.class,
+                    FilterCellnoinfoByNodeIdMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cdrsMobPath);
             FileOutputFormat.setOutputPath(job, cdrsNoinfoPath);
@@ -50,7 +53,8 @@ public final class PreparingRunner {
         }
 
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "JoinBtsNodeToNodeBts",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "JoinBtsNodeToNodeBts",
                     SequenceFileInputFormat.class,
                     JoinBtsNodeToNodeBtsReducer.class,
                     SequenceFileOutputFormat.class);
@@ -63,7 +67,8 @@ public final class PreparingRunner {
         }
 
         {
-            CosmosJob job = CosmosJob.createReduceJob(conf, "JoinBtsNodeToBtsDayRange",
+            CosmosJob job = CosmosJob.createReduceJob(conf,
+                    "JoinBtsNodeToBtsDayRange",
                     SequenceFileInputFormat.class,
                     JoinBtsNodeToBtsDayRangeReducer.class,
                     SequenceFileOutputFormat.class);

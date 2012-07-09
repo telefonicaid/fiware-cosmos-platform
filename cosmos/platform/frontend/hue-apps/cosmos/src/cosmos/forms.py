@@ -8,7 +8,6 @@ from django.core import validators
 from django.forms.util import ErrorList
 from django.utils.safestring import mark_safe
 
-from cosmos.expansion import ExpansionContext
 from cosmos import models
 
 
@@ -72,24 +71,3 @@ class BasicConfigurationForm(forms.Form):
     def is_valid(self, fs):
         return (super(forms.Form, self).is_valid() and
                 validate_hdfs_path(self, 'dataset_path', fs))
-
-
-class ParameterizeJobForm(forms.Form):
-    """
-    Job parametrization form whose fields are dynamically generated from
-    parameter descriptions.
-    """
-
-    def __init__(self, parameters):
-        """
-        Parameters is a list of JAR parameters to be rendered as a form.
-        """
-        if any(param.has_value() for param in parameters):
-            data = dict([(param.name, param.get_value()) for param in
-                         parameters])
-        else:
-            data = None
-        super(ParameterizeJobForm, self).__init__(data)
-
-        for param in parameters:
-            self.fields[param.name] = param.form_field(ExpansionContext())

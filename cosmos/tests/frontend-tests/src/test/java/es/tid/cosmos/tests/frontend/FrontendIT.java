@@ -33,12 +33,13 @@ import es.tid.cosmos.tests.tasks.TaskStatus;
  *
  * @author ximo
  */
-@Test(singleThreaded = true)
+@Test(singleThreaded = true, timeOut=300000L)
 public class FrontendIT {
     private static final String SIMPLE_TEXT = "Very simple text file";
     private static final String WHITESPACE_TEXT = "   \t\n    ";
     private static final String PRIMES_TEXT = "2 3 4 5 6 7 8 9 123\n19283";
     private static final int TASK_COUNT = 4;
+    
     private FrontEnd frontend;
     private String wordcountHdfsPath;
     private String mapperFailHdfsPath;
@@ -46,6 +47,10 @@ public class FrontendIT {
     private String invalidJarHdfsPath;
     private String simpleTextHdfsPath;
     private String whitespaceTextHdfsPath;
+    private String parameterizedNormal;
+    private String parameterizedNormalXml;
+    private String parameterizedWhitespace;
+    private String[] invalidParamJars;
 
     @Parameters("environment")
     @BeforeClass
@@ -63,6 +68,21 @@ public class FrontendIT {
                 FrontendIT.createAutoDeleteFile(SIMPLE_TEXT));
         this.whitespaceTextHdfsPath = this.ensureData(
                 FrontendIT.createAutoDeleteFile(WHITESPACE_TEXT));
+        this.invalidParamJars = new String[] {
+            this.ensureJar(HadoopJars.getPath(JarNames.ParameterizedMalformed1)),
+            this.ensureJar(HadoopJars.getPath(JarNames.ParameterizedMalformed2)),
+            this.ensureJar(HadoopJars.getPath(JarNames.ParameterizedMalformed3)),
+            this.ensureJar(HadoopJars.getPath(JarNames.ParameterizedMalformed4)),
+            this.ensureJar(HadoopJars.getPath(JarNames.ParameterizedMalformed5)),
+            this.ensureJar(HadoopJars.getPath(JarNames.ParameterizedMalformed6)),
+            this.ensureJar(HadoopJars.getPath(JarNames.ParameterizedMalformed7))
+        };
+        this.parameterizedNormal = this.ensureJar(HadoopJars.getPath(
+                JarNames.ParameterizedNormal));
+        this.parameterizedNormalXml = this.ensureJar(HadoopJars.getPath(
+                JarNames.ParameterizedNormalXml));
+        this.parameterizedWhitespace = this.ensureJar(HadoopJars.getPath(
+                JarNames.ParameterizedWhitespace));
     }
 
     private static String ensureJar(FrontEnd frontend, String localPath) {
@@ -167,6 +187,85 @@ public class FrontendIT {
         assertTrue(uploadJarPage.getErrorText().contains("rename"),
                    "Verifying page errors if file already exists");
     }
+    
+    public void testNormalParameterized() throws IOException {
+        testNormalParameterizedInternal(this.parameterizedNormal);
+    }
+    
+    public void testNormalXmlParameterized() throws IOException {
+        testNormalParameterizedInternal(this.parameterizedNormalXml);
+    }
+    
+    private void testNormalParameterizedInternal(String jarPath) throws IOException {
+        CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
+        final String taskId = UUID.randomUUID().toString();
+        createJobPage.setName(taskId);
+        createJobPage.setInputJar(jarPath);
+        SetParametersPage parametersPage = createJobPage.next();
+        assertEquals(parametersPage.getParameter("cosmos.test.number"), "1",
+                "Veriyfing cosmos.test.number is 1");
+        assertEquals(parametersPage.getParameter("cosmos.test.input").isEmpty(),
+                "Veriyfing cosmos.test.input is empty");
+        assertTrue(parametersPage.getParameter(
+                        "cosmos.test.mongo_output").startsWith("job_"),
+                "Veriyfing cosmos.test.mongo_output starts with job_");
+        
+        final String inputHdfsPath = this.ensureData(
+                FrontendIT.createAutoDeleteFile(PRIMES_TEXT));
+        parametersPage.setParameter("cosmos.test.input", inputHdfsPath);
+        parametersPage.setParameter("cosmos.test.number", "2");
+        ReviewSettings reviewPage = parametersPage.next();
+        reviewPage.runJob();
+        
+        FrontEndTask task = FrontEndTask.createFromExistingTaskId(
+                this.frontend.getEnvironment(), taskId);
+        task.waitForCompletion();
+        
+        List<Map<String, String>> results = task.getResults();
+        assertEquals(results.size(), 1, "Verifying a single result is returned");
+        assertEquals(results.get(0).get("multiple_list"), "[2,4,6,8]");
+    }
+    
+    public void testWhitespaceParameterized() throws IOException {
+        CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
+        final String taskId = UUID.randomUUID().toString();
+        createJobPage.setName(taskId);
+        createJobPage.setInputJar(this.parameterizedWhitespace);
+        SetParametersPage parametersPage = createJobPage.next();
+        assertEquals(parametersPage.getParameter("cosmos.test.number"), "  1  ",
+                "Veriyfing cosmos.test.number is \"  1  \"");
+        assertEquals(parametersPage.getParameter("cosmos.test.input").isEmpty(),
+                "Veriyfing cosmos.test.input is empty");
+        assertTrue(parametersPage.getParameter(
+                        "cosmos.test.mongo_output").startsWith("job_"),
+                "Veriyfing cosmos.test.mongo_output starts with job_");
+        
+        final String inputHdfsPath = this.ensureData(
+                FrontendIT.createAutoDeleteFile(PRIMES_TEXT));
+        parametersPage.setParameter("cosmos.test.input", inputHdfsPath);
+        ReviewSettings reviewPage = parametersPage.next();
+        reviewPage.runJob();
+        
+        FrontEndTask task = FrontEndTask.createFromExistingTaskId(
+                this.frontend.getEnvironment(), taskId);
+        task.waitForCompletion();
+        
+        List<Map<String, String>> results = task.getResults();
+        assertEquals(results.size(), 1, "Verifying a single result is returned");
+        assertEquals(results.get(0).get("multiple_list"),
+                     "[2,3,4,5,6,7,8,9,123,19283]");
+    }
+    
+    public void testMalformedParameterizedJars() throws IOException {
+        for(String malformedJar : this.invalidParamJars) {
+            CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
+            createJobPage.setInputJar(malformedJar);
+            createJobPage.setName(UUID.randomUUID().toString());
+            createJobPage.next();
+            assertTrue(!createJobPage.getErrors().isEmpty(),
+                    "Verifying error message exists");
+        }
+    }
 
     public void testUploadJarSubDirectory() throws IOException {
         String localTmpFile = FrontendIT.createAutoDeleteFile(SIMPLE_TEXT);
@@ -209,13 +308,12 @@ public class FrontendIT {
         String currentUrl = driver.getCurrentUrl();
 
         verifyLinks();
-        createJobPage.setInputFile(this.simpleTextHdfsPath);
         createJobPage.setInputJar(this.wordcountHdfsPath);
-        createJobPage.create();
+        createJobPage.next();
 
         // We should be in the same page, and the form should be complaining
         assertEquals(currentUrl, driver.getCurrentUrl());
-        driver.findElement(By.className("errorlist"));
+        createJobPage.getErrors();
         assertFalse(this.frontend.taskExists(""),
                     "Verify task hasn't been created");
         assertFalse(this.frontend.taskExists("null"),
@@ -229,10 +327,9 @@ public class FrontendIT {
         CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
         final String taskId = UUID.randomUUID().toString();
         createJobPage.setName(taskId);
-        createJobPage.setInputFile(this.simpleTextHdfsPath);
 
         String currentUrl = driver.getCurrentUrl();
-        createJobPage.create();
+        createJobPage.next();
 
         // We should be in the same page, and the form should be complaining
         assertEquals(currentUrl, driver.getCurrentUrl());
@@ -242,16 +339,15 @@ public class FrontendIT {
     }
 
     public void testNoInputFile() throws IOException {
-        final String taskId = UUID.randomUUID().toString();
-
         // Create job without data and verify we get an error if no data
         // is specified
         WebDriver driver = this.frontend.getDriver();
         CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
-        createJobPage.setName(taskId);
-        createJobPage.setInputJar(this.wordcountHdfsPath);
+        createJobPage.setName(UUID.randomUUID().toString());
+        createJobPage.setInputJar(this.mapperFailHdfsPath);
+        SetParametersPage parametersPage = createJobPage.next();
         String currentUrl = driver.getCurrentUrl();
-        createJobPage.create();
+        parametersPage.next();
 
         // We should be in the same page, and the form should be complaining
         assertEquals(currentUrl, driver.getCurrentUrl());
@@ -282,8 +378,10 @@ public class FrontendIT {
         // Submit job with sample JAR
         String hdfsSamplePath = FrontendIT.ensureJar(this.frontend, jarName);
         Task task = new FrontEndTask(this.frontend.getEnvironment(),
-                                     this.simpleTextHdfsPath,
                                      hdfsSamplePath);
+        task.setParameter("cosmos.wordcount.input", this.simpleTextHdfsPath);
+        task.setParameter("cosmos.wordcount.output", FrontEndTask.getOutputHdfsPath(
+                frontend.getUsername(), "sample_output"));
         task.run();
         task.waitForCompletion();
         assertEquals(task.getStatus(),
@@ -325,8 +423,10 @@ public class FrontendIT {
 
     public void testSimpleTask() throws IOException {
         Task task = new FrontEndTask(this.frontend.getEnvironment(),
-                                     this.simpleTextHdfsPath,
                                      this.wordcountHdfsPath);
+        task.setParameter("cosmos.wordcount.input", this.simpleTextHdfsPath);
+        task.setParameter("cosmos.wordcount.output", FrontEndTask.getOutputHdfsPath(
+                frontend.getUsername(), "wc_out"));
         task.run();
         task.waitForCompletion();
         assertEquals(task.getStatus(),
@@ -337,8 +437,10 @@ public class FrontendIT {
 
     public void testNoResultsTask() throws IOException {
         Task task = new FrontEndTask(this.frontend.getEnvironment(),
-                                     this.whitespaceTextHdfsPath,
                                      this.wordcountHdfsPath);
+        task.setParameter("cosmos.wordcount.input", this.whitespaceTextHdfsPath);
+        task.setParameter("cosmos.wordcount.output", FrontEndTask.getOutputHdfsPath(
+                frontend.getUsername(), "wc_whitespace_out"));
         task.run();
         task.waitForCompletion();
         assertEquals(task.getStatus(),
@@ -354,8 +456,10 @@ public class FrontendIT {
         Task[] tasks = new Task[TASK_COUNT];
         for (int i = 0; i < TASK_COUNT; ++i) {
             tasks[i] = new FrontEndTask(environment,
-                                        this.simpleTextHdfsPath,
                                         this.wordcountHdfsPath);
+            tasks[i].setParameter("cosmos.wordcount.input", this.simpleTextHdfsPath);
+            tasks[i].setParameter("cosmos.wordcount.output", FrontEndTask.getOutputHdfsPath(
+                frontend.getUsername(), "wc_whitespace_out" + i));
         }
         for (Task task : tasks) {
             task.run();
@@ -384,26 +488,19 @@ public class FrontendIT {
     }
 
     public void testInvalidJar() throws IOException {
-        final Task task = new FrontEndTask(this.frontend.getEnvironment(),
-                                           this.simpleTextHdfsPath,
-                                           this.invalidJarHdfsPath);
-        task.run();
-        TaskStatus jobStatus = task.getStatus();
-        assertTrue(jobStatus == TaskStatus.Error
-                || jobStatus == TaskStatus.Running,
-                   "Verifying task is in running or error state."
-                + " Task: " + task);
-        task.waitForCompletion();
-        assertEquals(task.getStatus(), TaskStatus.Error,
-                     "Verifying task is in error state."
-                + " Task: " + task);
+        CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
+        createJobPage.setInputJar(this.invalidJarHdfsPath);
+        createJobPage.setName(UUID.randomUUID().toString());
+        createJobPage.next();
+        assertTrue(createJobPage.getErrors().contains("ZIP"),
+                   "Verifying error message is accurate");
         verifyLinks();
     }
 
     public void testFailureJar() throws IOException {
         final Task task = new FrontEndTask(this.frontend.getEnvironment(),
-                                           this.simpleTextHdfsPath,
                                            this.mapperFailHdfsPath);
+        task.setDataset(this.simpleTextHdfsPath);
         task.run();
         TaskStatus jobStatus = task.getStatus();
         assertTrue(jobStatus == TaskStatus.Error
@@ -421,8 +518,8 @@ public class FrontendIT {
         final String inputHdfsPath = this.ensureData(
                 FrontendIT.createAutoDeleteFile(PRIMES_TEXT));
         final Task task = new FrontEndTask(this.frontend.getEnvironment(),
-                                           inputHdfsPath,
                                            this.printPrimesHdfsPath);
+        task.setDataset(inputHdfsPath);
         task.run();
         TaskStatus jobStatus = task.getStatus();
         assertTrue(jobStatus == TaskStatus.Completed

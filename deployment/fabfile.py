@@ -97,6 +97,7 @@ def add_test_setup():
         run('build/env/bin/hue loaddata ~/testUser.json')
     for file_to_delete in files_to_delete:
         run('rm %s' % file_to_delete)
+    execute(provision_user, 'test')
 
 @task
 @parallel
@@ -125,6 +126,9 @@ def deploy_hue(thrift_tarpath):
     execute(hue_deployment.install_hue_plugins)
     hue_deployment.install_thrift(thrift_tarpath)
     hue_deployment.install_cosmos_app(CONFIG)
+    hue_deployment.start_clean_database()
+    hue_deployment.create_hue_tables()
+    hue_deployment.create_admin_account()
     hue_deployment.start_daemons()
     hue_deployment.cleanup()
 

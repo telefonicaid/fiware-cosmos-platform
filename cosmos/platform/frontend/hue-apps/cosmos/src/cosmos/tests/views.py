@@ -9,6 +9,7 @@ from jobsub.models import Submission
 from pymongo import Connection
 
 from cosmos.expansion import ExpansionContext
+from cosmos.jar import ParameterTemplate
 from cosmos.jar_parameters import make_parameter
 from cosmos.models import JobRun
 from cosmos.views import hadoop_args
@@ -54,10 +55,12 @@ class HadoopArgsTestCase(test.TestCase):
 
     def test_hadoop_args_with_parameters(self):
         custom = make_parameter('output', 'filepath')
-        custom.set_value('${user.home}/output', self.expansion)
-        self.job.parameters = [make_parameter('foo', 'string|bar'),
-                               make_parameter('mongo1', 'mongocoll|col_a'),
-                               custom]
+        custom.set_value('${user.home}/output')
+        parameters = ParameterTemplate()
+        parameters.add(make_parameter('foo', 'string|bar'))
+        parameters.add(make_parameter('mongo1', 'mongocoll|col_a'))
+        parameters.add(custom)
+        self.job.parameters = parameters
         self.assertEquals(hadoop_args(self.job, 'job.jar', self.expansion),
                           ['jar', 'job.jar',
                            '-D', 'foo=bar',

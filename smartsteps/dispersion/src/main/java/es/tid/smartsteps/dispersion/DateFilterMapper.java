@@ -2,40 +2,32 @@ package es.tid.smartsteps.dispersion;
 
 import java.io.IOException;
 
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
-import es.tid.smartsteps.dispersion.data.TrafficCountsEntry;
-import es.tid.smartsteps.dispersion.parsing.Parser;
-import es.tid.smartsteps.dispersion.parsing.TrafficCountsEntryParser;
+import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 
 /**
  *
  * @author dmicol
  */
-public class DateFilterMapper extends Mapper<LongWritable, Text,
-                                             LongWritable, Text> {
+class DateFilterMapper extends Mapper<
+        Text, TypedProtobufWritable<TrafficCounts>,
+        Text, TypedProtobufWritable<TrafficCounts>> {
 
     private String dateToFilter;
-    private Parser trafficCountsEntryPaser;
     
     @Override
-    protected void setup(Context context) throws IOException,
-                                                 InterruptedException {
-        this.dateToFilter = context.getConfiguration().get(
-                Config.DATE_TO_FILTER);
-        this.trafficCountsEntryPaser = new TrafficCountsEntryParser(
-                context.getConfiguration().getStrings(Config.COUNT_FIELDS));
+    protected void setup(Context context) {
+        this.dateToFilter = context.getConfiguration().get(Config.DATE_TO_FILTER);
     }
     
     @Override
-    protected void map(LongWritable key, Text value, Context context)
-            throws IOException, InterruptedException {
-        TrafficCountsEntry entry =
-                (TrafficCountsEntry) this.trafficCountsEntryPaser
-                        .parse(value.toString());
-        if (!entry.date.equals(this.dateToFilter)) {
+    protected void map(Text key, TypedProtobufWritable<TrafficCounts> value,
+            Context context) throws IOException, InterruptedException {
+        final TrafficCounts counts = value.get();
+        if (!counts.getDate().equals(this.dateToFilter)) {
             return;
         }
         context.write(key, value);

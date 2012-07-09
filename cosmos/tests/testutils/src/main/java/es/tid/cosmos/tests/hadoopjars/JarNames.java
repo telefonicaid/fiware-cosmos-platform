@@ -13,6 +13,9 @@ public enum JarNames {
     ParameterizedMalformed3,
     ParameterizedMalformed4,
     ParameterizedMalformed5,
+    ParameterizedMalformed6,
+    ParameterizedMalformed7,
     ParameterizedNormal,
+    ParameterizedNormalXml,
     ParameterizedWhitespace
 }

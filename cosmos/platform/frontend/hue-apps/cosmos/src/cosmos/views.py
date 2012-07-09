@@ -16,8 +16,7 @@ from cosmos.expansion import ExpansionContext
 from cosmos.jar import InvalidJarFile, JarFile
 from cosmos.hdfs_util import CachedHDFSFile
 from cosmos.models import JobRun
-from cosmos.forms import (BasicConfigurationForm, DefineJobForm,
-                          ParameterizeJobForm)
+from cosmos.forms import BasicConfigurationForm, DefineJobForm
 
 LOGGER = logging.getLogger(__name__)
 TEMP_JAR = "tmp.jar"
@@ -39,8 +38,7 @@ def hadoop_args(job, jar_name, expansion):
     """Generate command line arguments for a job execution."""
     args = ['jar', jar_name]
     if job.is_parameterized():
-        for parameter in job.parameters:
-            args.extend(parameter.as_job_argument(job, expansion))
+        args.extend(job.parameters.as_hadoop_args(job, expansion))
     else:
         input_path = expansion.expand(job.dataset_path)
         output_path = paths.tmp_path(job.user, job.id)
@@ -120,7 +118,7 @@ def define_job(request):
                     jar = JarFile(cached_file.local_path())
                     wizard['parameterized'] = jar.is_parameterized()
                     if wizard['parameterized']:
-                        wizard['parameters'] = jar.parameters()
+                        wizard['parameters'] = jar.parameter_template()
                     else:
                         wizard['parameters'] = None
                     return redirect(reverse('configure_job'))
@@ -160,7 +158,7 @@ def configure_basic_job(request):
     """
     wizard = job_wizard(request)
     if request.method != 'POST':
-        form = BasicConfigurationForm(data=wizard.get('job'))
+        form = BasicConfigurationForm()
     elif request.POST.has_key('back'):
         return redirect(reverse('define_job'))
     else:
@@ -184,17 +182,16 @@ def configure_parameterized_job(request):
     """
     wizard = job_wizard(request)
     parameters = wizard['parameters']
+    expansion = ExpansionContext(user=request.user)
 
     if request.method != 'POST':
-        form = ParameterizeJobForm(parameters)
+        form = parameters.as_form(expansion)
     elif request.POST.has_key('back'):
         return redirect(reverse('define_job'))
     else:
-        for param in parameters:
-            param.set_value(request.POST.get(param.name, None),
-                            ExpansionContext(user=request.user))
-        form = ParameterizeJobForm(parameters)
+        parameters.update_from_form(request.POST)
         update_job_wizard(request, wizard)
+        form = parameters.as_form(expansion)
         if form.is_valid():
             return redirect(reverse('confirm_job'))
 

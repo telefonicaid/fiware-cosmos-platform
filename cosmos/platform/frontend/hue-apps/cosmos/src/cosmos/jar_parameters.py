@@ -22,8 +22,7 @@ class AbstractParameter(object):
         self.default_value = default_value
         self.__value = None
 
-    def set_value(self, value, expansion):
-        self.validate(value, expansion)
+    def set_value(self, value):
         self.__value = value
 
     def get_value(self):
@@ -95,13 +94,14 @@ class FilePathParameter(StringParameter):
     def form_field(self, expansion):
         validator = expansion.decorate(ABSOLUTE_PATH_VALIDATOR)
         return forms.CharField(label=self.name,
-                               max_length=StringParameter.MAX_LENGTH,
+                               max_length=self.MAX_LENGTH,
                                initial=self.default_value,
                                widget=HDFSFileChooser(),
                                validators=[validator])
 
 
 class MongoCollParameter(StringParameter):
+    MAX_LENGTH = 90
 
     def __init__(self, name, default_value=None, expansion=ExpansionContext()):
         if default_value is None:
@@ -122,7 +122,7 @@ class MongoCollParameter(StringParameter):
 
     def form_field(self, expansion):
         return forms.CharField(label=self.name,
-                               max_length=StringParameter.MAX_LENGTH,
+                               max_length=self.MAX_LENGTH,
                                initial=self.default_value,
                                validators=[expansion.decorate(ID_VALIDATOR)])
 

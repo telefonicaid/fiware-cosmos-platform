@@ -13,14 +13,9 @@
     <name>parameterizedjob-base</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mainClass>es.tid.cosmos.tests.hadoopjobs.parameterizedjob.base.ParameterizedJobTool</mainClass>
     </properties>
     <dependencies>
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongo-hadoop</artifactId>
-            <version>1.0</version>
-            <type>jar</type>
-        </dependency>
         <dependency>
             <groupId>es.tid.cosmos</groupId>
             <artifactId>base</artifactId>

@@ -164,7 +164,7 @@ def create_admin_account():
     """
     Load a HUE admin account from a fixture file
     """
-    put("adminUser.json", "adminUser.json")
+    put(os.path.join(BASEPATH, "adminUser.json"), "adminUser.json")
     with cd("/usr/share/hue/build/env/"):
         run("bin/hue loaddata ~/adminUser.json")
 

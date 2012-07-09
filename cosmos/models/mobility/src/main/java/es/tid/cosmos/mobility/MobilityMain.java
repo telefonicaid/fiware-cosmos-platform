@@ -174,7 +174,7 @@ public class MobilityMain extends Configured implements Tool {
                     clientsInfoPath, cdrsNoinfoPath, cdrsNoBtsPath,
                     clientsInfoFilteredPath, clientsRepbtsPath, isDebug, conf);
             poisWorkflow.addDependentWorkflow(preparingWorkflow);
-            wfList.add(preparingWorkflow);
+            wfList.add(poisWorkflow);
         }
 
         Path tmpLabelClientPath = new Path(outputPath, "label_client");

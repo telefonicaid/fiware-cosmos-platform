@@ -1,5 +1,7 @@
 package es.tid.cosmos.mobility.data;
 
+import static java.util.Arrays.asList;
+
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
 
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
@@ -7,19 +9,21 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
 /**
  *
- * @author dmicol
+ * @author dmicol, sortega
  */
 public final class NodeMxCounterUtil {
 
     private NodeMxCounterUtil() {}
 
-    public static NodeMxCounter create(Iterable<BtsCounter> allBts,
-                                       int btsLength,
-                                       int btsMaxLength) {
+    public static NodeMxCounter create(Iterable<BtsCounter> allBts) {
         return NodeMxCounter.newBuilder()
                 .addAllBts(allBts)
-                .setBtsLength(btsLength)
-                .setBtsMaxLength(btsMaxLength)
+                .build();
+    }
+
+    public static NodeMxCounter create(BtsCounter... allBts) {
+        return NodeMxCounter.newBuilder()
+                .addAllBts(asList(allBts))
                 .build();
     }
 
@@ -29,9 +33,9 @@ public final class NodeMxCounterUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<NodeMxCounter> createAndWrap(
-            Iterable<BtsCounter> allBts, int btsLength, int btsMaxLength) {
-        return wrap(create(allBts, btsLength, btsMaxLength));
+            Iterable<BtsCounter> allBts) {
+        return wrap(create(allBts));
     }
 }

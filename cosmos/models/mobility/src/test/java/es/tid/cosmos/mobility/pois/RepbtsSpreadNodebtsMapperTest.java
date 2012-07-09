@@ -11,11 +11,11 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.cosmos.mobility.data.BtsCounterUtil;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.data.generated.BaseTypes.Int;
+import es.tid.cosmos.mobility.data.BtsCounterUtil;
 import es.tid.cosmos.mobility.data.NodeMxCounterUtil;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.BtsCounter;
-import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 
@@ -24,23 +24,25 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
  * @author dmicol
  */
 public class RepbtsSpreadNodebtsMapperTest {
+
     private MapDriver<LongWritable, TypedProtobufWritable<NodeMxCounter>,
             ProtobufWritable<NodeBtsDay>, TypedProtobufWritable<Int>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new MapDriver<LongWritable,
                 TypedProtobufWritable<NodeMxCounter>, ProtobufWritable<NodeBtsDay>,
                 TypedProtobufWritable<Int>>(new RepbtsSpreadNodebtsMapper());
     }
-    
+
     @Test
     public void testMap() throws Exception {
         List<BtsCounter> bcList = new ArrayList<BtsCounter>();
         bcList.add(BtsCounterUtil.create(3L, 3, 4, 6));
         bcList.add(BtsCounterUtil.create(10L, 1, 9, 5));
-        TypedProtobufWritable<NodeMxCounter> counter = new TypedProtobufWritable<NodeMxCounter>(
-                NodeMxCounterUtil.create(bcList, 50, 70));
+        TypedProtobufWritable<NodeMxCounter> counter =
+                new TypedProtobufWritable<NodeMxCounter>(
+                NodeMxCounterUtil.create(bcList));
         List<Pair<ProtobufWritable<NodeBtsDay>, TypedProtobufWritable<Int>>>
                 results = this.driver
                         .withInput(new LongWritable(1L), counter)

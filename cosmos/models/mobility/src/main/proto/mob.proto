@@ -77,8 +77,6 @@ message NodeBtsDate {
 
 message NodeMxCounter {
     repeated BtsCounter bts = 1;
-    optional uint32 btsLength = 2;
-    optional uint32 btsMaxLength = 3;
 }
 
 message TwoInt {

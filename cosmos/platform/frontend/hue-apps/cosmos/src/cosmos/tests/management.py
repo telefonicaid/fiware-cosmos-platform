@@ -33,13 +33,15 @@ echo $* > %s
         rmtree(self.temp_dir)
         create_cosmos_user.ADD_USER_COMMAND = self.add_user_cmd
 
-    def test_create_user(self):
+    def test_create_unix_user(self):
         call_command('create_cosmos_user', 'usernew', password='s3cret')
 
         user = User.objects.get(username='usernew')
         self.assertFalse(user.is_superuser)
         self.assertFalse(user.is_staff)
 
+        # 'useradd' is not called to not to alter the system during testing.
+        # However, command arguments are saved and asserted upon.
         args_file = open(self.args_file, 'r')
         args = args_file.read()
         args_file.close()

@@ -139,7 +139,7 @@ public class Main extends Configured implements Tool {
         Path soaCentroidsParsedPath = new Path(outputDir, "soa_centroids_parsed");
         {
             CosmosJob job = CosmosJob.createMapJob(config,
-                    "MicrogridToPolygonLookupParser",
+                    "SOACentroidParser",
                     TextInputFormat.class,
                     SOACentroidParserMapper.class,
                     SequenceFileOutputFormat.class);
@@ -152,7 +152,7 @@ public class Main extends Configured implements Tool {
                 "soa_centroids_parsed_joined");
         {
             CosmosJob job = CosmosJob.createMapReduceJob(config,
-                    "MicrogridToPolygonLookupParser",
+                    "SOACentroidJoiner",
                     SequenceFileInputFormat.class,
                     SOACentroidJoinerMapper.class,
                     SOACentroidJoinerReducer.class,

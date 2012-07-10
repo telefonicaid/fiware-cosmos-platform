@@ -2,6 +2,7 @@ package es.tid.smartsteps.dispersion;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -40,6 +41,8 @@ public class Main extends Configured implements Tool {
         final Path soaCentroidsPath = new Path(args[3]);
         final Path outputDir = new Path(args[4]);
         
+        FileSystem fs = FileSystem.get(this.getConf());
+        
         Path trafficCountsParsedPath = new Path(outputDir,
                                                 "traffic_counts_parsed");
         {
@@ -65,6 +68,7 @@ public class Main extends Configured implements Tool {
             FileInputFormat.setInputPaths(job, trafficCountsParsedPath);
             FileOutputFormat.setOutputPath(job, trafficCountsParsedFilteredPath);
             job.waitForCompletion(true);
+            fs.delete(trafficCountsParsedPath, true);
         }
         
         Path cellToMicrogridParsedPath = new Path(outputDir,
@@ -80,6 +84,8 @@ public class Main extends Configured implements Tool {
             job.waitForCompletion(true);
         }
         
+        Path trafficCountsInputPath = shouldFilterByDate ?
+                trafficCountsParsedFilteredPath : trafficCountsParsedPath;
         Path countsByMicrogridPath = new Path(outputDir, "counts_by_microgrid");
         {
             CosmosJob job = CosmosJob.createMapReduceJob(config,
@@ -88,12 +94,14 @@ public class Main extends Configured implements Tool {
                     TrafficCountsScalerMapper.class,
                     TrafficCountsScalerReducer.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, shouldFilterByDate ?
-                    trafficCountsParsedFilteredPath : trafficCountsParsedPath,
-                    cellToMicrogridParsedPath);
+            FileInputFormat.setInputPaths(job, trafficCountsInputPath,
+                                          cellToMicrogridParsedPath);
             FileOutputFormat.setOutputPath(job, countsByMicrogridPath);
             job.waitForCompletion(true);
         }
+        
+        fs.delete(trafficCountsInputPath, true);
+        fs.delete(cellToMicrogridParsedPath, true);
 
         Path microgridToPolygonParsedPath = new Path(outputDir,
                 "microgrid_to_polygon_parsed");
@@ -121,6 +129,8 @@ public class Main extends Configured implements Tool {
             FileOutputFormat.setOutputPath(job, countsByPolygonPath);
             job.waitForCompletion(true);
         }
+        
+        fs.delete(microgridToPolygonParsedPath, true);
 
         Path aggregatedCountsByPolygonPath = new Path(outputDir,
                 "aggregated_counts_by_polygon");
@@ -135,6 +145,8 @@ public class Main extends Configured implements Tool {
             FileOutputFormat.setOutputPath(job, aggregatedCountsByPolygonPath);
             job.waitForCompletion(true);
         }
+        
+        fs.delete(countsByPolygonPath, true);
 
         Path soaCentroidsParsedPath = new Path(outputDir, "soa_centroids_parsed");
         {
@@ -163,6 +175,9 @@ public class Main extends Configured implements Tool {
                                            aggregatedCountsByPolygonJoinedPath);
             job.waitForCompletion(true);
         }
+        
+        fs.delete(aggregatedCountsByPolygonPath, true);
+        fs.delete(soaCentroidsParsedPath, true);
 
         Path aggregatedCountsByPolygonJoinedTextPath = new Path(outputDir,
                 "aggregated_counts_by_polygon_joined_text");
@@ -179,6 +194,8 @@ public class Main extends Configured implements Tool {
                     aggregatedCountsByPolygonJoinedTextPath);
             job.waitForCompletion(true);
         }
+        
+        fs.delete(aggregatedCountsByPolygonJoinedPath, true);
         
         return 0;
     }

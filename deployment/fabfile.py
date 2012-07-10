@@ -66,15 +66,15 @@ def provision_user(user_name):
 def deploy_models():
     spup = SockPuppet()
     wc_jar_path = os.path.join(BASEPATH, os.pardir, 'cosmos', 'models',
-                               'samples', 'wordcount', 'core', 'standalone',
-                               'target',
-                               'wordcount-core-standalone-0.9.0.0-SNAPSHOT.jar')
+                           'samples', 'wordcount', 'core', 'standalone',
+                           'target',
+                           'wordcount-core-standalone-0.9.0.0-SNAPSHOT.jar')
     wc_param_jar_path = os.path.join(BASEPATH, os.pardir, 'cosmos', 'models',
-                                     'samples', 'wordcount', 'core',
-                                     'parameterized', 'target',
-                                     'wordcount-core-parameterized-0.9.0.0-SNAPSHOT.jar')
-    spup.put(wc_jar_path, 'models/')
-    spup.put(wc_param_jar_path, 'models/')
+                           'samples', 'wordcount', 'core', 'parameterized',
+                           'target',
+                           'wordcount-core-parameterized-0.9.0.0-SNAPSHOT.jar')
+    spup.upload_file(wc_jar_path, 'models/')
+    spup.upload_file(wc_param_jar_path, 'models/')
     run('su hdfs -c "hadoop dfs -mkdir /share/samples/{jars,src}"')
     run('su hdfs -c "hadoop dfs -put /root/models/*.jar /share/samples/jars"')
 
@@ -85,11 +85,11 @@ def deploy_models():
         local('mvn clean')
         local('tar -c -f {0} {1}'.format( sources_tarball, sources_subtree))
         local('mvn clean install')
-    spup.put(sources_tarball, 'models-src/')
+    spup.upload_file(sources_tarball, 'models-src/')
     run(('su hdfs -c "hadoop dfs -put /root/models-src/* /share/samples/src"'))
 
     local('rm {0}'.format(sources_tarball))
-    spup.cleanup()
+    spup.cleanup_uploaded_files()
 
 @task
 @parallel

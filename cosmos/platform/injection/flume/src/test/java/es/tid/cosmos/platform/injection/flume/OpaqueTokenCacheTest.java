@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
 
 /**
  * @author apv
@@ -32,7 +33,9 @@ public class OpaqueTokenCacheTest {
         UUID tk1 = UUID.randomUUID();
         this.cache.fetch(tk1.toString()); // failure, fill cache
         UUID tk2 = this.cache.fetch(tk1.toString()); // success
+        UUID tk3 = this.cache.fetch(tk1.toString()); // success again
         assertEquals(tk1, tk2);
+        assertSame(tk2, tk3);
         assertEquals(1, this.cache.size());
     }
 

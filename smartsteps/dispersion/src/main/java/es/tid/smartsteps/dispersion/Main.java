@@ -28,7 +28,7 @@ public class Main extends Configured implements Tool {
         if (args.length != 5) {
             throw new IllegalArgumentException(
                     "Usage: trafficCountsPath cellToMicrogridPath "
-                    + "soaCentroidsPath microgridToPolygonPath outputDir");
+                    + "microgridToPolygonPath soaCentroidsPath outputDir");
         }
 
         final Configuration config = Config.load(Config.class.getResource(

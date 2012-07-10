@@ -24,7 +24,7 @@
   <!-- optional settings -->
   <property>
     <name>mapred.child.java.opts</name>
-    <value>-Xmx350m</value>
+    <value>-Xmx350m -Djava.library.path=${hadoopgpl_native_libs}</value>
   </property>
   <property>        
     <name>mapred.child.ulimit</name>

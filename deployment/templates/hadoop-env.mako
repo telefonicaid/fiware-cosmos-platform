@@ -11,7 +11,7 @@
 # Extra Java CLASSPATH elements.  Optional.
 # export HADOOP_CLASSPATH="<extra_entries>:$HADOOP_CLASSPATH"
 export COSMOS_CLASSPATH=${cosmos_classpath}
-export HADOOP_CLASSPATH="$(find $COSMOS_CLASSPATH -type f -name '*\.jar' | tr "\n" ":")$HADOOP_CLASSPATH"
+export HADOOP_CLASSPATH=${hadoopgpl_lzo_lib}:"$(find $COSMOS_CLASSPATH -type f -name '*\.jar' | tr "\n" ":")$HADOOP_CLASSPATH"
 
 # The maximum amount of heap to use, in MB. Default is 1000.
 # export HADOOP_HEAPSIZE=2000

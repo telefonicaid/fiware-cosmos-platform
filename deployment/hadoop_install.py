@@ -14,8 +14,10 @@ from mako.template import Template
 
 import common
 import iptables
+from sockpuppet import SockPuppet
 
 COSMOS_CLASSPATH = '/usr/lib/hadoop-0.20/lib/cosmos/'
+HADOOPGPL_CLASSPATH = '/opt/hadoopgpl'
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
 @roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
@@ -41,8 +43,20 @@ def create_hadoop_dirs(config):
 
     run('install -o root   -g hadoop -m 755 -d %s' % COSMOS_CLASSPATH)
 
-@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers', 'frontend')
 @parallel
+@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
+def hadoopgpl_compression(hadoopgpl_rpm):
+    sockpuppet = SockPuppet()
+    local_path = hadoopgpl_rpm
+    rpm_name = os.path.split(hadoopgpl_rpm)[-1]
+    remote_path = 'hadoopgpl-compression/'
+    sockpuppet.upload_file(local_path, remote_path)
+    with cd('hadoopgpl-compression'):
+        run('yum localinstall -y --nogpgcheck %s' % rpm_name)
+    sockpuppet.cleanup_uploaded_files()
+
+@parallel
+@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers', 'frontend')
 def configure_hadoop(config):
     """Generate  Hadoop configuration files"""
     with cd('/etc/hadoop/conf'):

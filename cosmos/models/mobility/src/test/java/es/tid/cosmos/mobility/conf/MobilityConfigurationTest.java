@@ -60,7 +60,7 @@ public class MobilityConfigurationTest {
 
     @Test
     public void testGetDataDateFormat() {
-        assertEquals("YYYYMMDD",
+        assertEquals("dd-mm-yyyy",
                      this.instance.getDataDateFormat());
     }
 

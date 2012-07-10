@@ -22,6 +22,7 @@ public class MobilityConfiguration extends Configuration {
     
     private static final String DATA_SEPARATOR = "mob.data_separator";
     private static final String DATA_DATE_FORMAT = "mob.data_date_format";
+    private static final String DEFAULT_DATA_DATE_FORMAT = "dd-mm-yyyy";
     private static final String DATA_START_DATE = "mob.data_start_date";
     private static final String DATA_END_DATE = "mob.data_end_date";
     
@@ -52,7 +53,7 @@ public class MobilityConfiguration extends Configuration {
             "mob.mtx_min_minutes_in_moves";
     private static final String MTX_INCLUDE_INTRA_MOVES =
             "mob.mtx_include_intra_moves";
-    
+
     public MobilityConfiguration() {
     }
     
@@ -222,7 +223,7 @@ public class MobilityConfiguration extends Configuration {
     }
 
     public String getDataDateFormat() {
-        return this.get(DATA_DATE_FORMAT);
+        return this.get(DATA_DATE_FORMAT, DEFAULT_DATA_DATE_FORMAT);
     }
 
     public String getDataStartDate() {

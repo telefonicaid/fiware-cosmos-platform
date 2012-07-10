@@ -1,5 +1,6 @@
 package es.tid.cosmos.platform.injection.flume;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -17,7 +18,7 @@ public class OpaqueTokenCache {
     public static final int DEFAULT_CAPACITY = 512;
 
     private int capacity;
-    private LinkedHashMap<String, UUID> tokens;
+    private HashMap<String, UUID> tokens;
 
     public OpaqueTokenCache() {
         this(DEFAULT_CAPACITY);

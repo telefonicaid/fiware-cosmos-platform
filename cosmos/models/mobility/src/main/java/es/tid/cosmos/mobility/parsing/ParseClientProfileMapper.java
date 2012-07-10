@@ -7,6 +7,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.mobility.conf.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
 
@@ -19,6 +20,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
  */
 public class ParseClientProfileMapper extends Mapper<LongWritable, Text,
         LongWritable, TypedProtobufWritable<ClientProfile>> {
+    
     private String separator;
     
     @Override
@@ -32,13 +34,17 @@ public class ParseClientProfileMapper extends Mapper<LongWritable, Text,
     @Override
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
+        final String line = value.toString();
         try {
             final ClientProfile clientProfile = new ClientProfileParser(
-                    value.toString(), this.separator).parse();
+                    line, this.separator).parse();
             context.write(new LongWritable(clientProfile.getUserId()),
                           new TypedProtobufWritable<ClientProfile>(clientProfile));
+            context.getCounter(Counters.VALID_RECORDS).increment(1L);
         } catch (Exception ex) {
-            context.getCounter(Counters.INVALID_CLIENT_PROFILES).increment(1L);
+            Logger.get(ParseClientProfileMapper.class).warn("Invalid line: "
+                                                            + line);
+            context.getCounter(Counters.INVALID_RECORDS).increment(1L);
         }
     }
 }

@@ -66,14 +66,12 @@ public class MobilityConfigurationTest {
 
     @Test
     public void testGetDataStartDate() {
-        assertEquals("20120527",
-                     this.instance.getDataStartDate());
+        assertEquals("", this.instance.getDataStartDate());
     }
 
     @Test
     public void testGetDataEndDate() {
-        assertEquals("20120528",
-                     this.instance.getDataEndDate());
+        assertEquals("", this.instance.getDataEndDate());
     }
 
     @Test

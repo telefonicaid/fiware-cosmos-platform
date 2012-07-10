@@ -53,4 +53,51 @@ public class ParseCdrMapperTest extends ConfiguredTest {
                            new Text("33F430521676F4|blah blah|43242"))
                 .runTest();
     }
+
+    @Test
+    public void testFilterBeforeStartDate() throws Exception {
+        this.driver.getConfiguration().set("mob.data_start_date", "02/01/2010");
+        List<Pair<LongWritable, TypedProtobufWritable<Cdr>>> res = this.driver
+                .withInput(new LongWritable(1L),
+                        new Text("33F430521676F4|2221436242|"
+                                + "33F430521676F4|0442224173253|2|"
+                                + "01/01/2010|02:00:01|2891|RMITERR"))
+                .run();
+        assertEquals(0, res.size());
+    }
+    @Test
+    public void testNotFilterBeforeStartDate() throws Exception {
+        this.driver.getConfiguration().set("mob.data_start_date", "02/01/2010");
+        List<Pair<LongWritable, TypedProtobufWritable<Cdr>>> res = this.driver
+                .withInput(new LongWritable(1L),
+                        new Text("33F430521676F4|2221436242|"
+                                + "33F430521676F4|0442224173253|2|"
+                                + "02/01/2010|02:00:01|2891|RMITERR"))
+                .run();
+        assertEquals(1, res.size());
+    }
+
+    @Test
+    public void testNotFilterAfterEndDate() throws Exception {
+        this.driver.getConfiguration().set("mob.data_end_date", "01/01/2010");
+        List<Pair<LongWritable, TypedProtobufWritable<Cdr>>> res = this.driver
+                .withInput(new LongWritable(1L),
+                        new Text("33F430521676F4|2221436242|"
+                                + "33F430521676F4|0442224173253|2|"
+                                + "01/01/2010|02:00:01|2891|RMITERR"))
+                .run();
+        assertEquals(1, res.size());
+    }
+
+    @Test
+    public void testFilterAfterEndDate() throws Exception {
+        this.driver.getConfiguration().set("mob.data_end_date", "01/01/2010");
+        List<Pair<LongWritable, TypedProtobufWritable<Cdr>>> res = this.driver
+                .withInput(new LongWritable(1L),
+                        new Text("33F430521676F4|2221436242|"
+                                + "33F430521676F4|0442224173253|2|"
+                                + "02/01/2010|02:00:01|2891|RMITERR"))
+                .run();
+        assertEquals(0, res.size());
+    }
 }

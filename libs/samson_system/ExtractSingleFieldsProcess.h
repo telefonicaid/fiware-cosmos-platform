@@ -1,25 +1,27 @@
-#ifndef _H_SAMSON_system_HUB_MAP_TIME_PROCESS
-#define _H_SAMSON_system_HUB_MAP_TIME_PROCESS
+#ifndef _H_SAMSON_system_EXTRACT_SINGLE_FIELDS_PROCESS
+#define _H_SAMSON_system_EXTRACT_SINGLE_FIELDS_PROCESS
 
 #include "samson_system/ProcessComponent.h"
 
 namespace samson{ namespace system{
 
-    class HubMapTimeProcess : public ProcessComponent
+    class ExtractSingleFieldsProcess : public ProcessComponent
     {
+        std::vector < std::string> concepts_;
         std::string out_app_name_;
         std::string out_def_name_;
 
     public:
 
-        HubMapTimeProcess( ): ProcessComponent("default")
+        ExtractSingleFieldsProcess( ): ProcessComponent("default")
         {
             out_app_name_ = "def_out";
             out_def_name_ = "def_def";
         };
 
-        HubMapTimeProcess( std::string name, std::string out_app, std::string out_def ): ProcessComponent(name)
+        ExtractSingleFieldsProcess( std::string name, std::vector <std::string> concepts, std::string out_app, std::string out_def ): ProcessComponent(name)
         {
+            concepts_ = concepts;
             out_app_name_ = out_app;
             out_def_name_ = out_def;
         }

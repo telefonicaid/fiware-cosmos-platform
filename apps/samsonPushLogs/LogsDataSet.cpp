@@ -570,7 +570,7 @@ bool LogsDataSet::Synchronize(time_t time_init)
 
 bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp)
 {
-#define LOGSDATASET_LINE_MAX_LENGTH 1024
+#define LOGSDATASET_LINE_MAX_LENGTH 512
     char temporal_buffer[LOGSDATASET_LINE_MAX_LENGTH + 1];
 
     for (int file_index = 0; file_index < num_files_; file_index++)
@@ -667,7 +667,7 @@ bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp)
 
 bool LogsDataSet::LookAtNextLogLineEntry(char **log, time_t *timestamp)
 {
-#define LOGSDATASET_LINE_MAX_LENGTH 1024
+#define LOGSDATASET_LINE_MAX_LENGTH 512
     char temporal_buffer[LOGSDATASET_LINE_MAX_LENGTH + 1];
 
     for (int file_index = 0; file_index < num_files_; file_index++)

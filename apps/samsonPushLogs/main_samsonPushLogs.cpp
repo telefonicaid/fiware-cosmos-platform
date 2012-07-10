@@ -34,12 +34,12 @@
 #include "SamsonPushLogsConnectionsManager.h"
 
 size_t buffer_size;
-char user[1024];
-char password[1024];
-char breaker_sequence[1024];
-char controller[1024];
+char user[64];
+char password[64];
+char breaker_sequence[64];
+char controller[64];
 int port_node;
-char queue_name[1024];
+char queue_name[64];
 bool lines;                         // Flag to indicate that input is read line by line
 int push_memory;                    // Global memory used as a bffer
 int max_rate;                       // Max rate

@@ -26,7 +26,7 @@ namespace samson{ namespace system{
             out_def_name_ = "def_def";
         };
 
-        HitCountProcess( double time_span, int n_top_items, std::string out_app, std::string out_def, std::string name ): ProcessComponent(name)
+        HitCountProcess( std::string name, double time_span, int n_top_items, std::string out_app, std::string out_def ): ProcessComponent(name)
         {
             time_span_ = time_span;
             forgetting_factor_ = (time_span_ - 1) / time_span_;

@@ -18,7 +18,7 @@ namespace samson{ namespace system{
             out_def_name_ = "def_def";
         };
 
-        HubMapProcess( std::string out_app, std::string out_def, std::string name ): ProcessComponent(name)
+        HubMapProcess( std::string name, std::string out_app, std::string out_def ): ProcessComponent(name)
         {
             out_app_name_ = out_app;
             out_def_name_ = out_def;

@@ -7,7 +7,7 @@ namespace samson
     namespace system
     {
         
-        // Static pool for object resusage
+        // Static pool for object reuse
         au::Pool<Value>* samson::system::Value::pool_values;
         
         
@@ -300,7 +300,7 @@ namespace samson
             {
                 case ser_string:
                     _value_string = &data[1];
-                    return  1 + _value_string.length() +1 ; // serializtion code, string, '\0'
+                    return  1 + _value_string.length() +1 ; // Serialization code, string, '\0'
                     
                 case ser_string_constant:
                     _value_string = get_constant_word( ((unsigned char) data[1]) );
@@ -341,6 +341,11 @@ namespace samson
             //printf("Parsing vector %p\n" , data);
             SerialitzationCode code = (SerialitzationCode)data[0];
             
+            // We want to start with an empty Value object
+            // (We have tried to made a clear() always in change_value_type(),
+            // but it is used too widely to be safe)
+            set_as_void();
+
             // Common init to value int
             set_as_vector();
             
@@ -400,6 +405,11 @@ namespace samson
             //printf("Parsing vector %p\n" , data);
             SerialitzationCode code = (SerialitzationCode)data[0];
             
+            // We want to start with an empty Value object
+            // (We have tried to made a clear() always in change_value_type(),
+            // but it is used too widely to be safe)
+            set_as_void();
+
             // Common init to value int
             set_as_map();
             
@@ -696,7 +706,7 @@ namespace samson
         
         int Value::serialize_string(char *data)
         {
-            // If constant word, prefered method
+            // If constant word, preferred method
             int index = get_constant_word_code( _value_string.c_str() );
             if( index != -1 )
             {
@@ -707,7 +717,7 @@ namespace samson
             
             if( _value_string.length() < 4096 )
             {
-                // Try compressed vertion
+                // Try compressed version
                 char line[8192];
                 size_t len = ::smaz_compress((char*) _value_string.c_str(), _value_string.length() , line, 8192);
                 
@@ -742,6 +752,7 @@ namespace samson
         {
             
             size_t offset = 1; //
+
             if( _value_vector.size() == 0)
                 data[0] = (char) ser_vector_len_0;
             else if( _value_vector.size() == 1)
@@ -773,6 +784,7 @@ namespace samson
         {
             
             size_t offset = 1; //
+
             if( _value_map.size() == 0)
                 data[0] = (char) ser_map_len_0;
             else if( _value_map.size() == 1)
@@ -1672,7 +1684,7 @@ namespace samson
             au::map<std::string,Value>::iterator it;
             for( it = _value_map.begin() ; it != _value_map.end() ; it++ )
             {
-                it->second->clear(); // Recursive rehusage
+                it->second->clear(); // Recursive reuse
                 reuseInstance(it->second);
             }
             _value_map.clear();
@@ -1680,7 +1692,7 @@ namespace samson
             // Clear elements in the vector
             for( size_t i = 0 ; i < _value_vector.size() ; i++ )
             {
-                _value_vector[i]->clear(); // Recursive rehusage
+                _value_vector[i]->clear(); // Recursive reuse
                 reuseInstance( _value_vector[i] );
             }
             _value_vector.clear();
@@ -1743,7 +1755,7 @@ namespace samson
             Value* value = getInstance();
             _value_vector.push_back( value );
             
-            // Alwyas return a void obnject
+            // Always return a void object
             value->set_as_void();
             return value;
         }
@@ -1758,7 +1770,7 @@ namespace samson
             Value* value = getInstance();
             _value_vector.insert( _value_vector.begin() + pos , value );
             
-            // Alwyas return a void obnject
+            // Always return a void object
             value->set_as_void();
             return value;
         }
@@ -1828,7 +1840,7 @@ namespace samson
             Value* value = getInstance();
             _value_map.insertInMap(key, value );
             
-            // Alwyas return a void object
+            // Always return a void object
             value->set_as_void();
             return value;
         }
@@ -1844,14 +1856,21 @@ namespace samson
         const char* Value::get_string_from_map( const char* key )
         {
             if( value_type != value_map )
+            {
+                LM_E(("Error looking for key '%s' in map, Value is not a map", key));
                 return NULL;
+            }
             
             std::string _key = key;
             Value* value = _value_map.findInMap(_key);
             
             if( !value )
+            {
+                LM_E(("Error looking for key in map, key:'%s' not found", key));
                 return NULL;
+            }
             
+            //LM_M(("OK looking for key in map, key:'%s' value:%p('%s')", key, value, value->c_str()));
             return value->c_str();
         }
         
@@ -1948,8 +1967,11 @@ namespace samson
         {
             if( value_type == new_value_type )
                 return; // Nothing to do
-            
-            // Rehuse all elements
+
+            // Now, if we change (or think we change) type, we want to be sure data are cleaned
+            // But perhaps we are using set_as_...() tin too many places to be sure,
+            // so it is returned back to its original place
+            // Reuse all elements
             clear();
             
             // Assign the new value_type
@@ -2097,7 +2119,10 @@ namespace samson
         const char* Value::c_str() const
         {
             if( value_type != value_string )
+            {
+                LM_W(("Error recovering c_str() from Value; it is not a string, but value_type:%d (value_string:%d)", value_type, value_string));
                 return NULL;
+            }
             return _value_string.c_str();
         }
         

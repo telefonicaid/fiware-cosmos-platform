@@ -13,6 +13,10 @@ TopProcessComponent.h
 ProcessComponentManager.h
 HubMapProcess.h
 HubMapTimeProcess.h
+ExtractSingleFieldsProcess.h
+ExtractSingleFieldsTimeProcess.h
+ExtractDependentFieldsProcess.h
+ExtractDependentFieldsTimeProcess.h
 HitCountProcess.h
 )
 
@@ -31,6 +35,10 @@ TopProcessComponent.cpp
 ProcessComponentManager.cpp
 HubMapProcess.cpp
 HubMapTimeProcess.cpp
+ExtractSingleFieldsProcess.cpp
+ExtractSingleFieldsTimeProcess.cpp
+ExtractDependentFieldsProcess.cpp
+ExtractDependentFieldsTimeProcess.cpp
 HitCountProcess.cpp
 )
 

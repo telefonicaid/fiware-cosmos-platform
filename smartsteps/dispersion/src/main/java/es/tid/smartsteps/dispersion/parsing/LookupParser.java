@@ -4,14 +4,14 @@ import es.tid.smartsteps.dispersion.data.generated.LookupProtocol.Lookup;
 
 /**
  *
- * @author dmicol
+ * @author dmicol, sortega
  */
 public class LookupParser extends Parser<Lookup> {
 
     public LookupParser(String delimiter) {
         super(delimiter);
     }
-    
+
     @Override
     public Lookup parse(String line) {
         final String[] values = line.split(this.delimiter);
@@ -19,8 +19,8 @@ public class LookupParser extends Parser<Lookup> {
             return null;
         }
         return Lookup.newBuilder()
-                .setKey(values[0])
-                .setValue(values[1])
+                .setKey(ParserUtil.safeUnquote(values[0]))
+                .setValue(ParserUtil.safeUnquote(values[1]))
                 .setProportion(Double.parseDouble(values[2]))
                 .build();
     }

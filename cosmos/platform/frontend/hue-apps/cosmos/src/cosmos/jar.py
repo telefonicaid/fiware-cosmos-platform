@@ -8,6 +8,7 @@ from zipfile import BadZipfile, ZipFile
 from django import forms
 from lxml import etree
 
+from cosmos import properties
 from cosmos.jar_parameters import make_parameter
 
 
@@ -161,7 +162,10 @@ class JarFile(object):
         """
         Parses parameters from a Java properties file
         """
-        return [(k, v) for k, v in re.findall('([^=\n\r]+)=(.*)', content)]
+        try:
+            return properties.loads(content)
+        except properties.InvalidPropertiesError, e:
+            raise InvalidJarFile(e)
 
     def __load_from_xml(self, content):
         """

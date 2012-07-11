@@ -10,4 +10,5 @@ from cosmos.tests.jar_parameters import *
 from cosmos.tests.management import *
 from cosmos.tests.models import *
 from cosmos.tests.mongo import *
+from cosmos.tests.properties import *
 from cosmos.tests.views import *

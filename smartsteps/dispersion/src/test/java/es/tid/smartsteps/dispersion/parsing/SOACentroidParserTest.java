@@ -13,7 +13,7 @@ import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.SOACentroid;
 public class SOACentroidParserTest {
 
     private SOACentroidParser parser;
-    
+
     @Before
     public void setUp() {
         this.parser = new SOACentroidParser("\t");
@@ -26,5 +26,12 @@ public class SOACentroidParserTest {
         assertEquals(0.3D, soaCentroid.getSquaredKilometers(), 0.0D);
         assertEquals(0.5D, soaCentroid.getLongitude(), 0.0D);
         assertEquals(0.4D, soaCentroid.getLatitude(), 0.0D);
+    }
+
+    @Test
+    public void testAutoUnquote() {
+        final SOACentroid soaCentroid =
+                this.parser.parse("\"abc\"\t0.3\t0.5\t0.4");
+        assertEquals("abc", soaCentroid.getSoaId());
     }
 }

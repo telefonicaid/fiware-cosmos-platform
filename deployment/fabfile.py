@@ -26,7 +26,7 @@ CONFIG = json.loads(open(env.config, 'r').read())
 env.roledefs = CONFIG['hosts']
 
 @task
-def deploy(dependenciespath, thrift_tar, jdk_rpm, move_sshd=False):
+def deploy(dependenciespath, thrift_tar, jdk_rpm, hadoopgpl_rpm, move_sshd=False):
     """
     Deploys all the necessary components to get a running Cosmos cluster
     """
@@ -35,7 +35,7 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm, move_sshd=False):
     report_current_task("JDK")
     execute(deploy_jdk, os.path.join(dependenciespath, jdk_rpm))
     report_current_task("CDH")
-    deploy_cdh()
+    deploy_cdh(os.path.join(dependenciespath, hadoopgpl_compression))
     report_current_task("HUE")
     execute(deploy_hue, os.path.join(dependenciespath, thrift_tar))
     report_current_task("SFTP")
@@ -228,10 +228,11 @@ def do_move_sshd(custom_port=CONFIG['frontend_ssh_custom_port']):
     run("service sshd restart")
 
 @task
-def deploy_cdh():
+def deploy_cdh(hadoopgpl_rpm):
     """Deploys the Cloudera Distribution for Hadoop"""
     execute(hadoop_install.install_cdh, CONFIG)
     execute(hadoop_install.create_hadoop_dirs, CONFIG)
+    execute(hadoop_install.hadoopgpl_compression, hadoopgpl_rpm)
     execute(hadoop_install.configure_hadoop, CONFIG)
     execute(hadoop_install.deploy_namenode_daemon)
     execute(hadoop_install.deploy_jobtracker_daemon)

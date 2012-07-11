@@ -14,12 +14,14 @@ from mako.template import Template
 
 import common
 import iptables
+from sockpuppet import SockPuppet
 
 COSMOS_CLASSPATH = '/usr/lib/hadoop-0.20/lib/cosmos/'
+HADOOP_GPL_CP = '/opt/hadoopgpl'
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
-@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 @parallel
+@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def install_cdh(config):
     """Install the latest Hadoop distribution in CDH3"""
     common.install_cdh_repo(config)
@@ -27,8 +29,8 @@ def install_cdh(config):
         run('yum -y install hadoop-0.20 hadoop-0.20-native')
 
 
-@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 @parallel
+@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
 def create_hadoop_dirs(config):
     """Create necessary directories for Hadoop"""
     for conf_dir in config["hadoop_data_dirs"]:
@@ -41,8 +43,20 @@ def create_hadoop_dirs(config):
 
     run('install -o root   -g hadoop -m 755 -d %s' % COSMOS_CLASSPATH)
 
-@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers', 'frontend')
 @parallel
+@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers')
+def hadoopgpl_compression(hadoopgpl_rpm):
+    sockpuppet = SockPuppet()
+    local_path = hadoopgpl_rpm
+    rpm_name = os.path.split(hadoopgpl_rpm)[-1]
+    remote_path = 'hadoopgpl-compression/'
+    sockpuppet.upload_file(local_path, remote_path)
+    with cd('hadoopgpl-compression'):
+        run('yum localinstall -y --nogpgcheck %s' % rpm_name)
+    sockpuppet.cleanup_uploaded_files()
+
+@parallel
+@roles('namenode', 'jobtracker', 'datanodes', 'tasktrackers', 'frontend')
 def configure_hadoop(config):
     """Generate  Hadoop configuration files"""
     with cd('/etc/hadoop/conf'):
@@ -63,23 +77,39 @@ def configure_hadoop(config):
         put(slaves, 'slaves')
 
         common.instantiate_template(
-            'templates/mapred-site.mako', 'mapred-site.xml', context=dict(
-                jobtracker=config['hosts']['jobtracker'][0],
-                dirs=','.join([directory + '/mapred'
-                               for directory in config["hadoop_data_dirs"]]),
-                reduce_tasks=2*len(config['hosts']['datanodes'])))
+            'templates/mapred-site.mako',
+            'mapred-site.xml',
+            context={
+                    'jobtracker': config['hosts']['jobtracker'][0],
+                    'dirs': common.append_subdir_to_dirs('mapred',
+                                                config['hadoop_data_dirs']),
+                    'reduce_tasks': 2*len(config['hosts']['datanodes']),
+                    'hadoopgpl_native_libs': os.path.join(HADOOP_GPL_CP,
+                                                   '/native/Linux-amd64-64')
+                    }
+            )
 
         common.instantiate_template(
-            'templates/hdfs-site.mako', 'hdfs-site.xml', context=dict(
-                namedirs=','.join([directory + '/name'
-                               for directory in config["hadoop_data_dirs"]]),
-                datadirs=','.join([directory + '/data'
-                               for directory in config["hadoop_data_dirs"]]),
-                namenode = config['hosts']['namenode'][0]))
+            'templates/hdfs-site.mako',
+            'hdfs-site.xml',
+            context={
+                'namedirs': common.append_subdir_to_dirs('name',
+                                                config['hadoop_data_dirs']),
+                'datadirs': common.append_subdir_to_dirs('data',
+                                                config['hadoop_data_dirs']),
+                'namenode': config['hosts']['namenode'][0]
+                }
+            )
 
-        common.instantiate_template('templates/hadoop-env.mako',
-                                    'hadoop-env.sh', context=dict(
-                                        cosmos_classpath=COSMOS_CLASSPATH))
+        common.instantiate_template(
+            'templates/hadoop-env.mako',
+            'hadoop-env.sh',
+            context={
+                'cosmos_classpath': COSMOS_CLASSPATH,
+                'hadoopgpl_lzo_lib': os.path.join(HADOOP_GPL_CP,
+                                                  '/lib/hadoop-lzo.jar')
+                }
+            )
 
 def deploy_daemon(daemon):
     """Deploys a Hadoop daemon"""
@@ -90,10 +120,10 @@ def deploy_daemon(daemon):
 
 def start_daemon(daemon):
     """Starts a Hadoop daemon"""
-    run('/etc/init.d/hadoop-0.20-%s start' % daemon)
+    run('/etc/init.d/hadoop-0.20-%s start' % daemon, pty=False)
 
-@roles('datanodes')
 @parallel
+@roles('datanodes')
 def deploy_datanode_daemon():
     """Deploys the datanode Hadoop daemon"""
     iptables.accept_in_tcp(50010)
@@ -108,7 +138,6 @@ def deploy_datanode_daemon():
     start_daemon('datanode')
 
 @roles('namenode')
-@parallel
 def deploy_namenode_daemon():
     """Deploys the namenode Hadoop daemon"""
     iptables.accept_in_tcp(8020)
@@ -130,7 +159,6 @@ def deploy_namenode_daemon():
     sudo('hadoop dfs -chown -R mapred /hadoop/mapred/', user='hdfs')
 
 @roles('jobtracker')
-@parallel
 def deploy_jobtracker_daemon():
     """Deploys the jobtracker Hadoop daemon"""
     iptables.add_rule("INPUT -p tcp --dport 8021 -j ACCEPT")
@@ -140,8 +168,8 @@ def deploy_jobtracker_daemon():
     deploy_daemon('jobtracker')
     start_daemon('jobtracker')
 
-@roles('tasktrackers')
 @parallel
+@roles('tasktrackers')
 def deploy_tasktracker_daemon():
     """Deploys the tasktracker Hadoop daemon"""
     iptables.accept_in_tcp(50060)

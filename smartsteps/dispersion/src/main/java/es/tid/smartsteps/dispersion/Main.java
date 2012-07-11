@@ -55,21 +55,6 @@ public class Main extends Configured implements Tool {
             FileOutputFormat.setOutputPath(job, trafficCountsParsedPath);
             job.waitForCompletion(true);
         }
-
-        boolean shouldFilterByDate = !config.get(Config.DATE_TO_FILTER).isEmpty();
-        Path trafficCountsParsedFilteredPath = new Path(outputDir,
-                "traffic_counts_parsed_filtered");
-        if (shouldFilterByDate) {
-            CosmosJob job = CosmosJob.createMapJob(config,
-                    "DateFilter",
-                    SequenceFileInputFormat.class,
-                    DateFilterMapper.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, trafficCountsParsedPath);
-            FileOutputFormat.setOutputPath(job, trafficCountsParsedFilteredPath);
-            job.waitForCompletion(true);
-            fs.delete(trafficCountsParsedPath, true);
-        }
         
         Path cellToMicrogridParsedPath = new Path(outputDir,
                                                   "cell_to_microgrid_parsed");
@@ -84,8 +69,6 @@ public class Main extends Configured implements Tool {
             job.waitForCompletion(true);
         }
         
-        Path trafficCountsInputPath = shouldFilterByDate ?
-                trafficCountsParsedFilteredPath : trafficCountsParsedPath;
         Path countsByMicrogridPath = new Path(outputDir, "counts_by_microgrid");
         {
             CosmosJob job = CosmosJob.createMapReduceJob(config,
@@ -94,13 +77,13 @@ public class Main extends Configured implements Tool {
                     TrafficCountsScalerMapper.class,
                     TrafficCountsScalerReducer.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, trafficCountsInputPath,
+            FileInputFormat.setInputPaths(job, trafficCountsParsedPath,
                                           cellToMicrogridParsedPath);
             FileOutputFormat.setOutputPath(job, countsByMicrogridPath);
             job.waitForCompletion(true);
         }
         
-        fs.delete(trafficCountsInputPath, true);
+        fs.delete(trafficCountsParsedPath, true);
         fs.delete(cellToMicrogridParsedPath, true);
 
         Path microgridToPolygonParsedPath = new Path(outputDir,

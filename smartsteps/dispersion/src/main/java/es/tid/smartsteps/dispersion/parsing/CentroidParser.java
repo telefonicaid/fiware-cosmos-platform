@@ -11,7 +11,7 @@ public class CentroidParser extends Parser<SOACentroid> {
     public CentroidParser(String delimiter) {
         super(delimiter);
     }
-    
+
     @Override
     public SOACentroid parse(String line) {
         final String[] values = line.split(this.delimiter);
@@ -19,7 +19,7 @@ public class CentroidParser extends Parser<SOACentroid> {
             return null;
         }
         return SOACentroid.newBuilder()
-                .setSoaId(values[0])
+                .setSoaId(ParserUtil.safeUnquote(values[0]))
                 .setSquaredKilometers(Double.parseDouble(values[1]))
                 .setLongitude(Double.parseDouble(values[2]))
                 .setLatitude(Double.parseDouble(values[3]))

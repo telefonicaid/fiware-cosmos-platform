@@ -7,6 +7,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.mobility.conf.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
 
@@ -18,6 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
  */
 class BorrarGetBtsComareaMapper extends Mapper<LongWritable, Text,
         LongWritable, TypedProtobufWritable<Bts>> {
+    
     private String separator;
     
     @Override
@@ -31,13 +33,16 @@ class BorrarGetBtsComareaMapper extends Mapper<LongWritable, Text,
     @Override
     protected void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
+        final String line = value.toString();
         try {
-            final Bts bts = new BtsParser(value.toString(),
-                                          this.separator).parse();
+            final Bts bts = new BtsParser(line, this.separator).parse();
             context.write(new LongWritable(bts.getPlaceId()),
                           new TypedProtobufWritable<Bts>(bts));
+            context.getCounter(Counters.VALID_RECORDS).increment(1L);
         } catch (Exception ex) {
-            context.getCounter(Counters.INVALID_BTS).increment(1L);
+            Logger.get(BorrarGetBtsComareaMapper.class).warn("Invalid line: "
+                                                             + line);
+            context.getCounter(Counters.INVALID_RECORDS).increment(1L);
         }
     }
 }

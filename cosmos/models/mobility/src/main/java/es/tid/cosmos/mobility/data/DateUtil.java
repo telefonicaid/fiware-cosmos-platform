@@ -43,4 +43,23 @@ public final class DateUtil {
         return (obj.getYear() + separator + obj.getMonth() + separator +
                 obj.getDay() + separator + obj.getWeekday());
     }
+
+    public static int compare(Date left, Date right) {
+        if (left.getYear() < right.getYear()) {
+            return -1;
+        } else if (left.getYear() > right.getYear()) {
+            return 1;
+        }
+        if (left.getMonth() < right.getMonth()) {
+            return -1;
+        } else if (left.getMonth() > right.getMonth()) {
+            return 1;
+        }
+        if (left.getDay() < right.getDay()) {
+            return -1;
+        } else if (left.getDay() > right.getDay()) {
+            return 1;
+        }
+        return 0;
+    }
 }

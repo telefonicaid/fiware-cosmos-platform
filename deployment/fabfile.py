@@ -7,7 +7,7 @@ import os
 import json
 from StringIO import StringIO
 
-from fabric.api import run, execute, sudo, put, cd, env
+from fabric.api import run, execute, sudo, put, cd, env, local, lcd
 from fabric.contrib import files
 import fabric.context_managers as ctx
 from fabric.colors import red, white, yellow
@@ -19,6 +19,7 @@ import common
 import iptables
 import hadoop_install
 import hue_deployment
+from sockpuppet import SockPuppet
 
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 CONFIG = json.loads(open(env.config, 'r').read())
@@ -39,6 +40,8 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm, move_sshd=False):
     execute(deploy_hue, os.path.join(dependenciespath, thrift_tar))
     report_current_task("SFTP")
     execute(deploy_sftp, move_sshd)
+    report_current_task("models")
+    execute(deploy_models)
     # report_current_task("Ganglia")
     # execute(deploy_ganglia)
     report_current_task("Mongo")
@@ -57,6 +60,36 @@ def provision_user(user_name):
             user_name)
     run('su hdfs -c "hadoop dfs -chown -R %s:hue /user/%s"' %
             (user_name, user_name))
+
+@task
+@roles('frontend')
+def deploy_models():
+    spup = SockPuppet()
+    wc_jar_path = os.path.join(BASEPATH, os.pardir, 'cosmos', 'models',
+                           'samples', 'wordcount', 'core', 'standalone',
+                           'target',
+                           'wordcount-core-standalone-0.9.0.0-SNAPSHOT.jar')
+    wc_param_jar_path = os.path.join(BASEPATH, os.pardir, 'cosmos', 'models',
+                           'samples', 'wordcount', 'core', 'parameterized',
+                           'target',
+                           'wordcount-core-parameterized-0.9.0.0-SNAPSHOT.jar')
+    spup.upload_file(wc_jar_path, 'models/')
+    spup.upload_file(wc_param_jar_path, 'models/')
+    run('su hdfs -c "hadoop dfs -mkdir /share/samples/{jars,src}"')
+    run('su hdfs -c "hadoop dfs -put /root/models/*.jar /share/samples/jars"')
+
+    sources_tarball = os.path.join(BASEPATH, 'wordcount-src.tar.gz')
+    sources_subtree = os.path.join(BASEPATH, os.pardir, 'cosmos', 'models',
+                                   'samples', 'wordcount')
+    with lcd(sources_subtree):
+        local('mvn clean')
+        local('tar -c -f {0} {1}'.format( sources_tarball, sources_subtree))
+        local('mvn clean install')
+    spup.upload_file(sources_tarball, 'models-src/')
+    run(('su hdfs -c "hadoop dfs -put /root/models-src/* /share/samples/src"'))
+
+    local('rm {0}'.format(sources_tarball))
+    spup.cleanup_uploaded_files()
 
 @task
 @parallel

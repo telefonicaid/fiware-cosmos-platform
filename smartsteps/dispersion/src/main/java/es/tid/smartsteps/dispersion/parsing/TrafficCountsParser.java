@@ -1,11 +1,10 @@
 package es.tid.smartsteps.dispersion.parsing;
 
-import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.Counts;
-
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 
+import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.Counts;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 
 /**
@@ -22,14 +21,14 @@ public class TrafficCountsParser extends Parser<TrafficCounts> {
     public static final String POIS_FIELD_NAME = "pois";
     public static final String[] EXPECTED_POIS = { "HOME", "NONE", "WORK",
                                                    "OTHER", "BILL" };
-    
+
     private final String[] countFields;
-    
+
     public TrafficCountsParser(String[] countFields) {
         super(null);
         this.countFields = countFields.clone();
     }
-    
+
     @Override
     public TrafficCounts parse(String value) {
         try {

@@ -41,7 +41,7 @@ public class TrafficCountsParserMapperTest extends TrafficCountsBasedTest {
     }
 
     @Test
-    public void shouldProduceOutput() throws IOException {
+    public void shouldProduceOutputNoDate() throws IOException {
         List<Pair<Text, TypedProtobufWritable<TrafficCounts>>> results =
                 this.instance
                         .withInput(this.key, new Text(this.trafficCounts))
@@ -52,6 +52,44 @@ public class TrafficCountsParserMapperTest extends TrafficCountsBasedTest {
                 results.get(0);
         assertEquals("000012006440", result.getFirst().toString());
         assertTrue(result.getSecond().get() instanceof TrafficCounts);
+    }
+
+    @Test
+    public void shouldProduceOutputEmptyDate() throws IOException {
+        this.instance.getConfiguration().set(Config.DATE_TO_FILTER, "");
+        List<Pair<Text, TypedProtobufWritable<TrafficCounts>>> results =
+                this.instance
+                        .withInput(this.key, new Text(this.trafficCounts))
+                        .run();
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        final Pair<Text, TypedProtobufWritable<TrafficCounts>> result =
+                results.get(0);
+        assertEquals("000012006440", result.getFirst().toString());
+        assertTrue(result.getSecond().get() instanceof TrafficCounts);
+    }
+    
+    @Test
+    public void shouldProduceOutputMatchingDate() throws IOException {
+        this.instance.getConfiguration().set(Config.DATE_TO_FILTER, "20120527");
+        List<Pair<Text, TypedProtobufWritable<TrafficCounts>>> results =
+                this.instance
+                        .withInput(this.key, new Text(this.trafficCounts))
+                        .run();
+        assertNotNull(results);
+        assertEquals(1, results.size());
+        final Pair<Text, TypedProtobufWritable<TrafficCounts>> result =
+                results.get(0);
+        assertEquals("000012006440", result.getFirst().toString());
+        assertTrue(result.getSecond().get() instanceof TrafficCounts);
+    }
+
+    @Test
+    public void shouldNotProduceOutputNonMatchingDate() throws IOException {
+        this.instance.getConfiguration().set(Config.DATE_TO_FILTER, "20110418");
+        this.instance
+                .withInput(this.key, new Text(this.trafficCounts))
+                .runTest();
     }
     
     @Test

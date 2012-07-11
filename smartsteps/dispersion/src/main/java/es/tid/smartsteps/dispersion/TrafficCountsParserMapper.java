@@ -19,6 +19,7 @@ class TrafficCountsParserMapper extends Mapper<
         Text, TypedProtobufWritable<TrafficCounts>> {
 
     private TrafficCountsParser parser;
+    private String dateToFilter;
     private Text outKey;
     private TypedProtobufWritable<TrafficCounts> outValue;
     
@@ -26,6 +27,7 @@ class TrafficCountsParserMapper extends Mapper<
     protected void setup(Context context) {
         this.parser = new TrafficCountsParser(
                 context.getConfiguration().getStrings(Config.COUNT_FIELDS));
+        this.dateToFilter = context.getConfiguration().get(Config.DATE_TO_FILTER);
         this.outKey = new Text();
         this.outValue = new TypedProtobufWritable<TrafficCounts>();
     }
@@ -36,6 +38,11 @@ class TrafficCountsParserMapper extends Mapper<
         final TrafficCounts counts = this.parser.parse(value.toString());
         if (counts == null) {
             context.getCounter(Counters.INVALID_TRAFFIC_COUNTS).increment(1L);
+            return;
+        }
+        if (this.dateToFilter != null && !this.dateToFilter.isEmpty() &&
+                !counts.getDate().equals(this.dateToFilter)) {
+            context.getCounter(Counters.FILTERED_TRAFFIC_COUNTS).increment(1L);
             return;
         }
         this.outKey.set(counts.getCellId());

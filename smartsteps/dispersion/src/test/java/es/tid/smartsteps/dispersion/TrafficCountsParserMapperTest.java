@@ -83,6 +83,14 @@ public class TrafficCountsParserMapperTest extends TrafficCountsBasedTest {
         assertEquals("000012006440", result.getFirst().toString());
         assertTrue(result.getSecond().get() instanceof TrafficCounts);
     }
+
+    @Test
+    public void shouldNotProduceOutputNonMatchingDate() throws IOException {
+        this.instance.getConfiguration().set(Config.DATE_TO_FILTER, "20110418");
+        this.instance
+                .withInput(this.key, new Text(this.trafficCounts))
+                .runTest();
+    }
     
     @Test
     public void shouldFailToParse() {

@@ -1,12 +1,12 @@
 package es.tid.cosmos.mobility.data;
 
 import com.twitter.elephantbird.mapreduce.io.ProtobufWritable;
-import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
-import org.junit.Test;
-
 import static es.tid.cosmos.base.test.UtilityClassTest.assertUtilityClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import org.junit.Test;
+
+import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 
 /**
  *
@@ -43,5 +43,21 @@ public class DateUtilTest {
     public void testToString() {
         Date obj = DateUtil.create(2012, 4, 20, 5);
         assertEquals("2012|4|20|5", DateUtil.toString(obj, "|"));
+    }
+
+    @Test
+    public void testCompare() {
+        Date d1 = DateUtil.create(2012, 11, 20, 0);
+        Date d2 = DateUtil.create(2013, 11, 20, 0);
+        Date d3 = DateUtil.create(2012, 12, 20, 0);
+        Date d4 = DateUtil.create(2012, 11, 21, 0);
+        assertEquals( 0, DateUtil.compare(d1, d1));
+        assertEquals( 0, DateUtil.compare(d2, d2));
+        assertEquals(-1, DateUtil.compare(d1, d2));
+        assertEquals( 1, DateUtil.compare(d2, d1));
+        assertEquals(-1, DateUtil.compare(d1, d3));
+        assertEquals( 1, DateUtil.compare(d3, d1));
+        assertEquals(-1, DateUtil.compare(d1, d4));
+        assertEquals( 1, DateUtil.compare(d4, d1));
     }
 }

@@ -7,8 +7,11 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
  * @author sortega
  */
 class CdrParser extends Parser {
-    public CdrParser(String line, String separator) {
+    private final DateParser dateParser;
+
+    public CdrParser(String line, String separator, DateParser dateParser) {
         super(line, separator);
+        this.dateParser = dateParser;
     }
 
     @Override
@@ -26,7 +29,7 @@ class CdrParser extends Parser {
             this.nextToken(); // Phone 2
             this.nextToken(); // Unknown field
 
-            cdr.setDate(this.parseDate());
+            cdr.setDate(this.dateParser.parse(this.nextToken()));
             cdr.setTime(this.parseTime());
 
             return cdr.build();

@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol.Time;
 import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 
@@ -16,8 +15,8 @@ public abstract class Parser {
 
     protected static final int MAX_CELL_DIGITS = 8;
     protected static final int MAX_CLIENT_LENGTH = 10;
-    private static final int DEFAULT_RADIX = 10;
-    
+    protected static final int DEFAULT_RADIX = 10;
+
     protected final String line;
     private final String[] values;
     private int index;
@@ -26,19 +25,19 @@ public abstract class Parser {
         this.line = line;
         StringTokenizer tokenizer = new StringTokenizer(line, separator, true);
         List<String> valuesList = new LinkedList<String>();
-        boolean isPreceededBySeparator = true;
+        boolean isPrecededBySeparator = true;
         boolean isSeparator;
         while (tokenizer.hasMoreTokens()) {
             final String token = tokenizer.nextToken();
             isSeparator = token.equals(separator);
             if (isSeparator) {
-                if (isPreceededBySeparator) {
+                if (isPrecededBySeparator) {
                     valuesList.add("");
                 }
             } else {
                 valuesList.add(token);
             }
-            isPreceededBySeparator = isSeparator;
+            isPrecededBySeparator = isSeparator;
         }
         this.values = valuesList.toArray(new String[valuesList.size()]);
         this.index = 0;
@@ -89,19 +88,6 @@ public abstract class Parser {
         return clusterVector.build();
     }
 
-    protected Date parseDate() {
-        String date = this.nextToken();
-        final int day = Integer.parseInt(date.substring(0, 2), DEFAULT_RADIX);
-        final int month = Integer.parseInt(date.substring(3, 5), DEFAULT_RADIX);
-        final int year = Integer.parseInt(date.substring(6, 10), DEFAULT_RADIX);
-        return Date.newBuilder()
-                .setDay(day)
-                .setMonth(month)
-                .setYear(year)
-                .setWeekday(dayOfWeek(day, month, year))
-                .build();
-    }
-
     protected Time parseTime() {
         String time = this.nextToken();
         return Time.newBuilder()
@@ -109,33 +95,5 @@ public abstract class Parser {
                 .setMinute(Integer.parseInt(time.substring(3, 5), DEFAULT_RADIX))
                 .setSeconds(Integer.parseInt(time.substring(6, 8), DEFAULT_RADIX))
                 .build();
-    }
-
-    private static int dayOfWeek(int day, int month, int year) {
-        int ix = (((year % 100) + 100 - 21) % 28) + monthOffset(month)
-                 + ((month > 2) ? 1 : 0);
-        int tx = (ix + (ix / 4)) % 7 + day;
-        return (tx + 1) % 7;
-    }
-
-    private static int monthOffset(int month) {
-        switch (month) {
-            case 2: case 6:
-                return 0;
-            case 8:
-                return 4;
-            case 10:
-                return 8;
-            case 9: case 12:
-                return 12;
-            case 3: case 11:
-                return 16;
-            case 1: case 5:
-                return 20;
-            case 4: case 7:
-                return 24;
-            default:
-                throw new IllegalArgumentException("Not a month");
-        }
     }
 }

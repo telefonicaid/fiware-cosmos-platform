@@ -7,8 +7,8 @@ import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.smartsteps.dispersion.Config;
 import es.tid.smartsteps.dispersion.TrafficCountsBasedTest;
+import es.tid.smartsteps.dispersion.config.Config;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 
 /**

@@ -14,16 +14,17 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.smartsteps.dispersion.config.Config;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.SOACentroid;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
-import es.tid.smartsteps.dispersion.parsing.SOACentroidParser;
+import es.tid.smartsteps.dispersion.parsing.CentroidParser;
 import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
 
 /**
  *
  * @author dmicol
  */
-public class SOACentroidJoinerMapperTest extends TrafficCountsBasedTest {
+public class CentroidJoinerMapperTest extends TrafficCountsBasedTest {
 
     private MapDriver<
             Text, TypedProtobufWritable<Message>,
@@ -33,22 +34,21 @@ public class SOACentroidJoinerMapperTest extends TrafficCountsBasedTest {
     private TypedProtobufWritable<Message> countsValue;
     private TypedProtobufWritable<Message> centroidValue;
     
-    public SOACentroidJoinerMapperTest() throws IOException {
+    public CentroidJoinerMapperTest() throws IOException {
     }
     
     @Before
     public void setUp() throws IOException {
         this.instance = new MapDriver<
                 Text, TypedProtobufWritable<Message>,
-                Text, TypedProtobufWritable<Message>>(
-                        new SOACentroidJoinerMapper());
+                Text, TypedProtobufWritable<Message>>(new CentroidJoinerMapper());
         this.instance.setConfiguration(this.conf);
         this.key = new Text("000012006440");
         this.parser = new TrafficCountsParser(
                 this.conf.getStrings(Config.COUNT_FIELDS));
         final TrafficCounts counts = this.parser.parse(this.trafficCounts);
         this.countsValue = new TypedProtobufWritable<Message>(counts);
-        SOACentroidParser soaCentroidParser = new SOACentroidParser(
+        CentroidParser soaCentroidParser = new CentroidParser(
                 this.conf.get(Config.DELIMITER));
         this.centroidValue = new TypedProtobufWritable<Message>(
                 soaCentroidParser.parse("000012006440,0.3,0.5,0.4"));

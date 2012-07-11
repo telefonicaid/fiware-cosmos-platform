@@ -10,13 +10,13 @@ import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.SOACentroid;
  *
  * @author dmicol
  */
-public class SOACentroidParserTest {
+public class CentroidParserTest {
 
-    private SOACentroidParser parser;
-
+    private CentroidParser parser;
+    
     @Before
     public void setUp() {
-        this.parser = new SOACentroidParser("\t");
+        this.parser = new CentroidParser("\t");
     }
 
     @Test

@@ -1,4 +1,4 @@
-package es.tid.smartsteps.dispersion;
+package es.tid.smartsteps.dispersion.config;
 
 import java.io.IOException;
 import java.io.InputStream;

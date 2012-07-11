@@ -15,6 +15,10 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.smartsteps.dispersion.config.Config;
+import es.tid.smartsteps.dispersion.parsing.CentroidParserMapper;
+import es.tid.smartsteps.dispersion.parsing.LookupParserMapper;
+import es.tid.smartsteps.dispersion.parsing.TrafficCountsParserMapper;
 
 /**
  *
@@ -136,7 +140,7 @@ public class Main extends Configured implements Tool {
             CosmosJob job = CosmosJob.createMapJob(config,
                     "SOACentroidParser",
                     TextInputFormat.class,
-                    SOACentroidParserMapper.class,
+                    CentroidParserMapper.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, soaCentroidsPath);
             FileOutputFormat.setOutputPath(job, soaCentroidsParsedPath);
@@ -149,8 +153,8 @@ public class Main extends Configured implements Tool {
             CosmosJob job = CosmosJob.createMapReduceJob(config,
                     "SOACentroidJoiner",
                     SequenceFileInputFormat.class,
-                    SOACentroidJoinerMapper.class,
-                    SOACentroidJoinerReducer.class,
+                    CentroidJoinerMapper.class,
+                    CentroidJoinerReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, aggregatedCountsByPolygonPath,
                                           soaCentroidsParsedPath);

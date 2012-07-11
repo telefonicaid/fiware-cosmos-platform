@@ -1,4 +1,4 @@
-package es.tid.smartsteps.dispersion;
+package es.tid.smartsteps.dispersion.parsing;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,6 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.smartsteps.dispersion.TrafficCountsBasedTest;
+import es.tid.smartsteps.dispersion.config.Config;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 
 /**

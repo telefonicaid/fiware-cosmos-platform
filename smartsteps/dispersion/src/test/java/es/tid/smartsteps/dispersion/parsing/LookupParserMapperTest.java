@@ -1,4 +1,4 @@
-package es.tid.smartsteps.dispersion;
+package es.tid.smartsteps.dispersion.parsing;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,46 +14,44 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.SOACentroid;
+import es.tid.smartsteps.dispersion.TrafficCountsBasedTest;
+import es.tid.smartsteps.dispersion.data.generated.LookupProtocol.Lookup;
 
 /**
  *
  * @author dmicol
  */
-public class SOACentroidParserMapperTest extends TrafficCountsBasedTest {
+public class LookupParserMapperTest extends TrafficCountsBasedTest {
 
     private MapDriver<
             LongWritable, Text,
-            Text, TypedProtobufWritable<SOACentroid>> instance;
+            Text, TypedProtobufWritable<Lookup>> instance;
     private LongWritable key;
     private Text value;
     
-    public SOACentroidParserMapperTest() throws IOException {
+    public LookupParserMapperTest() throws IOException {
     }
     
     @Before
     public void setUp() throws IOException {
         this.instance = new MapDriver<
                 LongWritable, Text,
-                Text, TypedProtobufWritable<SOACentroid>>(
-                        new SOACentroidParserMapper());
+                Text, TypedProtobufWritable<Lookup>>(new LookupParserMapper());
         this.instance.setConfiguration(this.conf);
         this.key = new LongWritable(102L);
-        this.value = new Text("000012006440,0.3,0.5,0.4");
+        this.value = new Text("cell023,polygon123,0.57");
     }
 
     @Test
     public void shouldProduceOutput() throws IOException {
-        List<Pair<Text, TypedProtobufWritable<SOACentroid>>> results =
-                this.instance
-                        .withInput(this.key, this.value)
-                        .run();
+        List<Pair<Text, TypedProtobufWritable<Lookup>>> results = this.instance
+                .withInput(this.key, this.value)
+                .run();
         assertNotNull(results);
         assertEquals(1, results.size());
-        final Pair<Text, TypedProtobufWritable<SOACentroid>> result =
-                results.get(0);
-        assertEquals("000012006440", result.getFirst().toString());
-        assertTrue(result.getSecond().get() instanceof SOACentroid);
+        final Pair<Text, TypedProtobufWritable<Lookup>> result = results.get(0);
+        assertEquals("cell023", result.getFirst().toString());
+        assertTrue(result.getSecond().get() instanceof Lookup);
     }
     
     @Test

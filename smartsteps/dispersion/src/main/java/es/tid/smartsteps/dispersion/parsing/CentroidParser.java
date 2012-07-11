@@ -6,9 +6,9 @@ import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.SOACentroid;
  *
  * @author dmicol
  */
-public class SOACentroidParser extends Parser<SOACentroid> {
+public class CentroidParser extends Parser<SOACentroid> {
 
-    public SOACentroidParser(String delimiter) {
+    public CentroidParser(String delimiter) {
         super(delimiter);
     }
 

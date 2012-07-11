@@ -1,4 +1,4 @@
-package es.tid.smartsteps.dispersion;
+package es.tid.smartsteps.dispersion.parsing;
 
 import java.io.IOException;
 
@@ -7,15 +7,16 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.smartsteps.dispersion.config.Config;
 import es.tid.smartsteps.dispersion.data.generated.LookupProtocol.Lookup;
-import es.tid.smartsteps.dispersion.parsing.LookupParser;
 
 /**
  *
  * @author dmicol
  */
-class LookupParserMapper extends Mapper<LongWritable, Text,
-                                        Text, TypedProtobufWritable<Lookup>> {
+public class LookupParserMapper extends Mapper<
+        LongWritable, Text,
+        Text, TypedProtobufWritable<Lookup>> {
 
     private LookupParser parser;
     private Text outKey;

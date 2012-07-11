@@ -10,6 +10,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.smartsteps.dispersion.config.Config;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.Counts;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;

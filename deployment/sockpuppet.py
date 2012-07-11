@@ -27,19 +27,29 @@ class SockPuppet(object):
 
     def __init__(self):
         self.__leftovers = []
-
-    def upload_file(self, local_path, remote_path='~'):
-        if remote_path != '~':
-            if remote_path.endswith(os.sep) and not files.exists(remote_path):
-                warn('creating requested directory: ~/{0}'.format(remote_path))
-                run('mkdir -p ~/{0}'.format(remote_path))
-            self.__leftovers.append(remote_path)
+        mktemp_call = run('mktemp -d')
+        if mktemp_call.succeeded:
+            self.__remote_tempdir = mktemp_call
+            run('chmod 777 {0}'.format(self.__remote_tempdir))
         else:
-            self.__leftovers.append(os.path.join(remote_path,
+            raise RuntimeError("could not create remote temporary directory")
+
+    def get_remote_tempdir(self):
+        return self.__remote_tempdir
+
+    def upload_file(self, local_path, remote_path):
+        temp_remote_path = os.path.join(self.__remote_tempdir, remote_path)
+        if remote_path.endswith(os.sep) and not files.exists(temp_remote_path):
+                warn('creating directory: {0}'.format(temp_remote_path))
+                run('mkdir -p {0}'.format(temp_remote_path))
+                self.__leftovers.append(temp_remote_path)
+        else:
+            self.__leftovers.append(os.path.join(temp_remote_path,
                                     os.path.split(local_path)[-1]))
-        put(local_path, remote_path)
+        put(local_path, temp_remote_path)
 
     def cleanup_uploaded_files(self):
         for leftover in self.__leftovers:
             if files.exists(leftover) and len(leftover) > 0:
-                run("rm -rf ~/{0}".format(leftover))
+                run("rm -rf {0}".format(leftover))
+        run("rm -rf {0}".format(self.__remote_tempdir))

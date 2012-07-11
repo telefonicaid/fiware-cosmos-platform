@@ -23,10 +23,12 @@ public final class OpaqueTokenProcessorInterceptor extends
             LoggerFactory.getLogger(OpaqueTokenProcessorInterceptor.class);
 
     private final OpaqueTokenConfigProvider configProvider;
+    private final OpaqueTokenCache cache;
 
     private OpaqueTokenProcessorInterceptor(
             OpaqueTokenConfigProvider configProvider) {
         this.configProvider = configProvider;
+        this.cache = new OpaqueTokenCache();
     }
 
     @Override
@@ -41,7 +43,7 @@ public final class OpaqueTokenProcessorInterceptor extends
         }
         UUID token;
         try {
-            token = UUID.fromString(strTk);
+            token = this.cache.fetch(strTk);
         } catch (IllegalArgumentException e) {
             LOGGER.warn(String.format("cannot parse opaque token from " +
                     "value '%s' obtained from '%s' header; event discarded",

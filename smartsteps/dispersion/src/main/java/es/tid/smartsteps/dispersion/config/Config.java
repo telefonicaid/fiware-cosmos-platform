@@ -15,7 +15,7 @@ import org.apache.hadoop.conf.Configuration;
 public abstract class Config {
 
     public static final String DELIMITER = "delimiter";
-    public static final String DATE_TO_FILTER = "date_to_filter";
+    public static final String DATES_TO_FILTER = "dates_to_filter";
     public static final String COUNT_FIELDS = "count_fields";
     public static final String ROUND_RESULTS = "round_results";
     
@@ -29,17 +29,24 @@ public abstract class Config {
         
         Configuration conf = new Configuration(configuration);
         conf.set(DELIMITER, props.getProperty(DELIMITER));
-        conf.set(DATE_TO_FILTER, props.getProperty(DATE_TO_FILTER));
-        List<String> countFields = new LinkedList<String>();
-        for (String countField : props.getProperty(COUNT_FIELDS).split(",")) {
-            countFields.add(countField.trim().replaceAll("\"", ""));
-        }
+        conf.setStrings(DATES_TO_FILTER,
+                        getMultiValueProperty(props, DATES_TO_FILTER));
+
         conf.setStrings(COUNT_FIELDS,
-                        countFields.toArray(new String[countFields.size()]));
+                        getMultiValueProperty(props, COUNT_FIELDS));
         conf.setBoolean(ROUND_RESULTS,
                 props.getProperty(ROUND_RESULTS).equalsIgnoreCase("true") ?
                         true : false);
         
         return conf;
+    }
+    
+    private static String[] getMultiValueProperty(Properties props,
+                                                  String name) {
+        List<String> values = new LinkedList<String>();
+        for (String field : props.getProperty(name).split(",")) {
+            values.add(field.trim().replaceAll("\"", ""));
+        }
+        return values.toArray(new String[values.size()]);
     }
 }

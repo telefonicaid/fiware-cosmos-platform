@@ -1,6 +1,9 @@
 package es.tid.smartsteps.dispersion.parsing;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -19,7 +22,7 @@ public class TrafficCountsParserMapper extends Mapper<
         Text, TypedProtobufWritable<TrafficCounts>> {
 
     private TrafficCountsParser parser;
-    private String dateToFilter;
+    private Set<String> dateToFilter;
     private Text outKey;
     private TypedProtobufWritable<TrafficCounts> outValue;
     
@@ -27,7 +30,12 @@ public class TrafficCountsParserMapper extends Mapper<
     protected void setup(Context context) {
         this.parser = new TrafficCountsParser(
                 context.getConfiguration().getStrings(Config.COUNT_FIELDS));
-        this.dateToFilter = context.getConfiguration().get(Config.DATE_TO_FILTER);
+        this.dateToFilter = new HashSet<String>();
+        final String[] dates = context.getConfiguration().getStrings(
+                Config.DATES_TO_FILTER);
+        if (dates != null) {
+            this.dateToFilter.addAll(Arrays.asList(dates));
+        }
         this.outKey = new Text();
         this.outValue = new TypedProtobufWritable<TrafficCounts>();
     }
@@ -40,8 +48,8 @@ public class TrafficCountsParserMapper extends Mapper<
             context.getCounter(Counters.INVALID_TRAFFIC_COUNTS).increment(1L);
             return;
         }
-        if (this.dateToFilter != null && !this.dateToFilter.isEmpty() &&
-                !counts.getDate().equals(this.dateToFilter)) {
+        if (!this.dateToFilter.isEmpty() &&
+                !this.dateToFilter.contains(counts.getDate())) {
             context.getCounter(Counters.FILTERED_TRAFFIC_COUNTS).increment(1L);
             return;
         }

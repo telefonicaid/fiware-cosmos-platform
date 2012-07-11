@@ -58,7 +58,7 @@ public class TrafficCountsParserMapperTest extends TrafficCountsBasedTest {
 
     @Test
     public void shouldProduceOutputEmptyDate() throws IOException {
-        this.instance.getConfiguration().set(Config.DATE_TO_FILTER, "");
+        this.instance.getConfiguration().set(Config.DATES_TO_FILTER, "");
         List<Pair<Text, TypedProtobufWritable<TrafficCounts>>> results =
                 this.instance
                         .withInput(this.key, new Text(this.trafficCounts))
@@ -73,7 +73,8 @@ public class TrafficCountsParserMapperTest extends TrafficCountsBasedTest {
     
     @Test
     public void shouldProduceOutputMatchingDate() throws IOException {
-        this.instance.getConfiguration().set(Config.DATE_TO_FILTER, "20120527");
+        this.instance.getConfiguration().set(Config.DATES_TO_FILTER,
+                                             "20120526,20120527,20120528");
         List<Pair<Text, TypedProtobufWritable<TrafficCounts>>> results =
                 this.instance
                         .withInput(this.key, new Text(this.trafficCounts))
@@ -88,7 +89,7 @@ public class TrafficCountsParserMapperTest extends TrafficCountsBasedTest {
 
     @Test
     public void shouldNotProduceOutputNonMatchingDate() throws IOException {
-        this.instance.getConfiguration().set(Config.DATE_TO_FILTER, "20110418");
+        this.instance.getConfiguration().set(Config.DATES_TO_FILTER, "20110418");
         this.instance
                 .withInput(this.key, new Text(this.trafficCounts))
                 .runTest();

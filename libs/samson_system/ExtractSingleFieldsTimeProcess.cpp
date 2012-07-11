@@ -20,7 +20,7 @@ bool ExtractSingleFieldsTimeProcess::update( Value* key ,Value * state ,Value **
             {
                 if (keys[i] == concepts_[j])
                 {
-                    new_key.set_as_void();
+                    //new_key.set_as_void();
                     new_key.set_as_map();
                     new_key.add_value_to_map("app")->set_string(out_app_name().c_str());
                     new_key.add_value_to_map("concept")->set_string(keys[i].c_str());
@@ -29,7 +29,7 @@ bool ExtractSingleFieldsTimeProcess::update( Value* key ,Value * state ,Value **
                     {
                         for (size_t k = 0; (k < p_value->get_vector_size()); k++)
                         {
-                            new_value.set_as_void();
+                            //new_value.set_as_void();
                             new_value.set_as_map();
                             new_value.add_value_to_map("item")->set_string( p_value->get_value_from_vector(k)->get_string());
                             new_value.add_value_to_map("time")->set_double( key->get_double_from_map("timestamp"));
@@ -46,7 +46,7 @@ bool ExtractSingleFieldsTimeProcess::update( Value* key ,Value * state ,Value **
                     }
                     else
                     {
-                        new_value.set_as_void();
+                        //new_value.set_as_void();
                         new_value.set_as_map();
                         new_value.add_value_to_map("item")->set_string( p_value->get_string());
                         new_value.add_value_to_map("time")->set_double( key->get_double_from_map("timestamp"));

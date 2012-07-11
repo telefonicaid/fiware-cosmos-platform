@@ -528,7 +528,7 @@ class parse_http_with_commscore : public samson::Parser
 
         if ((url == NULL) || (*url == '\0'))
         {
-            LM_W(("Empty url at fields[0]:'%s', fields[1]:'%s', fields[2]:'%s', fields[6]:'%s', fields[9]:'%s' ", fields[0], fields[1], fields[2], fields[6], fields[9]));
+            //LM_W(("Empty url at fields[0]:'%s', fields[1]:'%s', fields[2]:'%s', fields[6]:'%s', fields[9]:'%s' ", fields[0], fields[1], fields[2], fields[6], fields[9]));
             return false;
         }
         char *host = fields[2];
@@ -589,6 +589,7 @@ class parse_http_with_commscore : public samson::Parser
         keyContainer->value->add_value_to_map("group")->set_string(name_group);
 
         samson::system::Value *p_vector = keyContainer->value->add_value_to_map("categories");
+        p_vector->set_as_void();
         p_vector->set_as_vector();
         int categories_size = categories_ids.size();
         if (categories_size == 0)
@@ -612,13 +613,13 @@ class parse_http_with_commscore : public samson::Parser
         if ((p_search = strstr(url, "search?")) != NULL)
         {
             strncpy(query, p_search+strlen("search?"), MAX_LENGTH_QUERY);
-            LM_M(("Detected google query:'%s'", query));
+            //LM_M(("Detected google query:'%s'", query));
         }
         else if ((p_search = strstr(url, "search.php?")) != NULL)
         {
             //facebook search
             strncpy(query, p_search+strlen("search.php?"), MAX_LENGTH_QUERY);
-            LM_M(("Detected query:'%s'", query));
+            //LM_M(("Detected query:'%s'", query));
         }
         keyContainer->value->add_value_to_map("search_query")->set_string(query);
 

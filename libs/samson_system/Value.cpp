@@ -408,7 +408,7 @@ namespace samson
             // We want to start with an empty Value object
             // (We have tried to made a clear() always in change_value_type(),
             // but it is used too widely to be safe)
-            set_as_void();
+            //set_as_void();
 
             // Common init to value int
             set_as_map();

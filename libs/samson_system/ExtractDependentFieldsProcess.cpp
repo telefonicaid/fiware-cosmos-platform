@@ -30,7 +30,7 @@ bool ExtractDependentFieldsProcess::update( Value* key ,Value * state ,Value ** 
             {
                 if (keys[i] == dependent_concepts_[j])
                 {
-                    new_key.set_as_void();
+                    //new_key.set_as_void();
                     new_key.set_as_map();
                     new_key.add_value_to_map("app")->set_string(out_app_name().c_str());
                     new_key.add_value_to_map("independent_concept")->set_string(independent_value);

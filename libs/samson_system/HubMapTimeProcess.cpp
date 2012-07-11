@@ -20,7 +20,7 @@ bool HubMapTimeProcess::update( Value* key ,Value * state ,Value ** values ,size
             {
                 continue;
             }
-            new_key.set_as_void();
+            //new_key.set_as_void();
             new_key.set_as_map();
             new_key.add_value_to_map("app")->set_string(out_app_name().c_str());
             new_key.add_value_to_map("concept")->set_string(keys[i].c_str());
@@ -30,13 +30,13 @@ bool HubMapTimeProcess::update( Value* key ,Value * state ,Value ** values ,size
             {
                 for (size_t k = 0; (k < p_value->get_vector_size()); k++)
                 {
-                    new_value.set_as_void();
+                    //new_value.set_as_void();
                     new_value.set_as_map();
                     new_value.add_value_to_map("item")->set_string( p_value->get_value_from_vector(k)->get_string());
                     new_value.add_value_to_map("time")->set_double( key->get_double_from_map("timestamp"));
                     for (size_t j = 0; (j < num_values); j++)
                     {
-                        LM_M(("Emit vector item:'%s'(time:%lf) for concept:'%s'", p_value->get_value_from_vector(k)->get_string().c_str(), key->get_double_from_map("timestamp"), keys[i].c_str()));
+                        //LM_M(("Emit vector item:'%s'(time:%lf) for concept:'%s'", p_value->get_value_from_vector(k)->get_string().c_str(), key->get_double_from_map("timestamp"), keys[i].c_str()));
                         emit_feedback(&new_key, &new_value, writer);
                     }
                 }
@@ -54,7 +54,7 @@ bool HubMapTimeProcess::update( Value* key ,Value * state ,Value ** values ,size
                 new_value.add_value_to_map("time")->set_double( key->get_double_from_map("timestamp"));
                 for (size_t j = 0; (j < num_values); j++)
                 {
-                    LM_M(("Emit vector item:'%s'(time:%lf) for concept:'%s'", p_value->get_string().c_str(), key->get_double_from_map("timestamp"), keys[i].c_str()));
+                    //LM_M(("Emit vector item:'%s'(time:%lf) for concept:'%s'", p_value->get_string().c_str(), key->get_double_from_map("timestamp"), keys[i].c_str()));
                     emit_feedback(&new_key, &new_value, writer);
                 }
             }

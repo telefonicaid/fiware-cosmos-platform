@@ -20,7 +20,7 @@ bool ExtractSingleFieldsProcess::update( Value* key ,Value * state ,Value ** val
             {
                 if (keys[i] == concepts_[j])
                 {
-                    new_key.set_as_void();
+                    //new_key.set_as_void();
                     new_key.set_as_map();
                     new_key.add_value_to_map("app")->set_string(out_app_name().c_str());
                     new_key.add_value_to_map("concept")->set_string(keys[i].c_str());

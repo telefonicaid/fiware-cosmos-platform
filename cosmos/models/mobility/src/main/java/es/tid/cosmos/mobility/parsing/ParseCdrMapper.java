@@ -7,6 +7,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.cosmos.base.util.Logger;
 import es.tid.cosmos.mobility.conf.MobilityConfiguration;
 import es.tid.cosmos.mobility.data.DateUtil;
 import es.tid.cosmos.mobility.data.generated.BaseProtocol;
@@ -49,15 +50,19 @@ public class ParseCdrMapper extends Mapper<LongWritable, Text, LongWritable,
     @Override
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {
+        final String line = value.toString();
         try {
-            final Cdr cdr = new CdrParser(value.toString(), this.separator,
+            final Cdr cdr = new CdrParser(line, this.separator,
                                           this.dateParser).parse();
+            context.getCounter(Counters.VALID_RECORDS).increment(1L);
             if (this.isOnRange(cdr.getDate())) {
+                context.getCounter(Counters.SELECTED_RECORDS).increment(1L);
                 context.write(new LongWritable(cdr.getUserId()),
                               new TypedProtobufWritable<Cdr>(cdr));
             }
         } catch (Exception ex) {
-            context.getCounter(Counters.INVALID_CDRS).increment(1L);
+            Logger.get(ParseCdrMapper.class).warn("Invalid line: " + line);
+            context.getCounter(Counters.INVALID_RECORDS).increment(1L);
         }
     }
 

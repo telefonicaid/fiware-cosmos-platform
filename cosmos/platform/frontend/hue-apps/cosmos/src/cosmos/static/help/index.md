@@ -72,6 +72,19 @@ Supported variables are:
       paths.
 
 
+Sample jobs
+-----------
+
+You can play with the following Cosmos-compliant sample jobs:
+
+ * **Wordcount**: a simple word counter that exports its results to MongoDB.
+ * **Parameterized wordcount**: just like wordcount but making use of the
+   custom parametrization.
+
+Browse <a href="/filebrowser/view/share/samples/jars" target="FileBrowser">JAR
+files</a> and <a href="/filebrowser/view/share/samples/src"
+target="FileBrowser">sources</a>.
+
 Uploading data with SFTP
 ========================
 

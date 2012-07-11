@@ -16,6 +16,8 @@ import es.tid.cosmos.mobility.data.generated.BaseProtocol.Date;
  *     <li>'d' day field</li>
  * </ul>
  *
+ * Field specification is case-insensitive 'yymmdd' and 'YYMMDD' are equivalent.
+ *
  * Example use:
  *
  * <code>
@@ -34,9 +36,10 @@ public class DateParser {
     private final StringRange dayRange;
 
     public DateParser(String dateFormat) {
-        this.yearRange = findRange(dateFormat, 'y');
-        this.monthRange = findRange(dateFormat, 'm');
-        this.dayRange = findRange(dateFormat, 'd');
+        String lowerFormat = dateFormat.toLowerCase();
+        this.yearRange = this.findRange(lowerFormat, 'y');
+        this.monthRange = this.findRange(lowerFormat, 'm');
+        this.dayRange = this.findRange(lowerFormat, 'd');
     }
 
     private StringRange findRange(String dateFormat, char formatChar) {

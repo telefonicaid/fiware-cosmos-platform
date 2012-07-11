@@ -57,4 +57,14 @@ public class DateParserTest {
         assertEquals(6, date.getMonth());
         assertEquals(23, date.getDay());
     }
+
+    @Test
+    public void shouldBeCaseInsensitive() throws Exception {
+        this.instance = new DateParser("YYYYMMDD");
+        BaseProtocol.Date date = this.instance.parse("19460214");
+        assertNotNull(date);
+        assertEquals(1946, date.getYear());
+        assertEquals(2, date.getMonth());
+        assertEquals(14, date.getDay());
+    }
 }

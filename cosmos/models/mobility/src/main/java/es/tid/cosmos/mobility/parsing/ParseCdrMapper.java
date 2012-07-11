@@ -67,12 +67,9 @@ public class ParseCdrMapper extends Mapper<LongWritable, Text, LongWritable,
     }
 
     private boolean isOnRange(BaseProtocol.Date date) {
-        if (this.startDate != null && DateUtil.compare(date, this.startDate) < 0) {
-            return false;
-        }
-        if (this.endDate != null && DateUtil.compare(date, this.endDate) > 0) {
-            return false;
-        }
-        return true;
+        return (this.startDate == null ||
+                DateUtil.compare(date, this.startDate) >= 0) &&
+               (this.endDate == null ||
+                DateUtil.compare(date, this.endDate) <= 0);
     }
 }

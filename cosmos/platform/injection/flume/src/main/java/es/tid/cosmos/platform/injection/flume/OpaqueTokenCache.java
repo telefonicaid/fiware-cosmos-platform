@@ -1,6 +1,5 @@
 package es.tid.cosmos.platform.injection.flume;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -16,9 +15,10 @@ import java.util.UUID;
 public class OpaqueTokenCache {
 
     public static final int DEFAULT_CAPACITY = 512;
+    public static final float HASH_TABLE_LOAD_FACTOR = 0.75f;
 
-    private int capacity;
-    private HashMap<String, UUID> tokens;
+    private final int capacity;
+    private final Map<String, UUID> tokens;
 
     public OpaqueTokenCache() {
         this(DEFAULT_CAPACITY);
@@ -26,7 +26,11 @@ public class OpaqueTokenCache {
 
     public OpaqueTokenCache(int capacity) {
         this.capacity = capacity;
-        this.tokens = new LinkedHashMap<String, UUID>(capacity) {
+
+        // This constructor creates a linked hash map which behaves as a
+        // LRU cache. The LRU policy is determined by the boolean argument.
+        this.tokens = new LinkedHashMap<String, UUID>(capacity,
+                HASH_TABLE_LOAD_FACTOR, true) {
             @Override
             protected boolean removeEldestEntry(Map.Entry<String, UUID> e) {
                 return this.size() > OpaqueTokenCache.this.capacity;
@@ -60,5 +64,4 @@ public class OpaqueTokenCache {
         }
         return result;
     }
-
 }

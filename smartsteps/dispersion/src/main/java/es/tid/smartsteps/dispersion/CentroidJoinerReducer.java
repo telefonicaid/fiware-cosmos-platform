@@ -16,7 +16,7 @@ import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
  *
  * @author dmicol
  */
-class SOACentroidJoinerReducer extends Reducer<
+class CentroidJoinerReducer extends Reducer<
         Text, TypedProtobufWritable<Message>,
         Text, TypedProtobufWritable<TrafficCounts>> {
     

@@ -20,7 +20,7 @@ import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.SOACentroid;
  *
  * @author dmicol
  */
-public class SOACentroidParserMapperTest extends TrafficCountsBasedTest {
+public class CentroidParserMapperTest extends TrafficCountsBasedTest {
 
     private MapDriver<
             LongWritable, Text,
@@ -28,7 +28,7 @@ public class SOACentroidParserMapperTest extends TrafficCountsBasedTest {
     private LongWritable key;
     private Text value;
     
-    public SOACentroidParserMapperTest() throws IOException {
+    public CentroidParserMapperTest() throws IOException {
     }
     
     @Before
@@ -36,7 +36,7 @@ public class SOACentroidParserMapperTest extends TrafficCountsBasedTest {
         this.instance = new MapDriver<
                 LongWritable, Text,
                 Text, TypedProtobufWritable<SOACentroid>>(
-                        new SOACentroidParserMapper());
+                        new CentroidParserMapper());
         this.instance.setConfiguration(this.conf);
         this.key = new LongWritable(102L);
         this.value = new Text("000012006440,0.3,0.5,0.4");

@@ -14,7 +14,7 @@ import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
  *
  * @author dmicol
  */
-class SOACentroidJoinerMapper extends Mapper<
+class CentroidJoinerMapper extends Mapper<
         Text, TypedProtobufWritable<Message>,
         Text, TypedProtobufWritable<Message>> {
 

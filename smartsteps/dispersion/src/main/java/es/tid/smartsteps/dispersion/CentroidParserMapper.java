@@ -8,23 +8,23 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.SOACentroid;
-import es.tid.smartsteps.dispersion.parsing.SOACentroidParser;
+import es.tid.smartsteps.dispersion.parsing.CentroidParser;
 
 /**
  *
  * @author dmicol
  */
-class SOACentroidParserMapper extends Mapper<
+class CentroidParserMapper extends Mapper<
         LongWritable, Text,
         Text, TypedProtobufWritable<SOACentroid>> {
 
-    private SOACentroidParser parser;
+    private CentroidParser parser;
     private Text outKey;
     private TypedProtobufWritable<SOACentroid> outValue;
     
     @Override
     protected void setup(Context context) {
-        this.parser = new SOACentroidParser(
+        this.parser = new CentroidParser(
                 context.getConfiguration().get(Config.DELIMITER));
         this.outKey = new Text();
         this.outValue = new TypedProtobufWritable<SOACentroid>();

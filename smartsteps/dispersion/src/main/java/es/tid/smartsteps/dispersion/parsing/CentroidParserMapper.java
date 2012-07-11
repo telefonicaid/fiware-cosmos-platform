@@ -1,4 +1,4 @@
-package es.tid.smartsteps.dispersion;
+package es.tid.smartsteps.dispersion.parsing;
 
 import java.io.IOException;
 
@@ -7,14 +7,14 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.smartsteps.dispersion.config.Config;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.SOACentroid;
-import es.tid.smartsteps.dispersion.parsing.CentroidParser;
 
 /**
  *
  * @author dmicol
  */
-class CentroidParserMapper extends Mapper<
+public class CentroidParserMapper extends Mapper<
         LongWritable, Text,
         Text, TypedProtobufWritable<SOACentroid>> {
 

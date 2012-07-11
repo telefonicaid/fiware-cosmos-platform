@@ -117,6 +117,7 @@ public class Main extends Configured implements Tool {
             job.waitForCompletion(true);
         }
         
+        fs.delete(countsByMicrogridPath, true);
         fs.delete(microgridToPolygonParsedPath, true);
 
         Path aggregatedCountsByPolygonPath = new Path(outputDir,

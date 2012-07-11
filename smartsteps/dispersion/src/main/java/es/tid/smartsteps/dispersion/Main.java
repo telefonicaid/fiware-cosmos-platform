@@ -1,6 +1,5 @@
 package es.tid.smartsteps.dispersion;
 
-import es.tid.smartsteps.dispersion.config.Config;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
@@ -16,6 +15,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.smartsteps.dispersion.config.Config;
 import es.tid.smartsteps.dispersion.parsing.CentroidParserMapper;
 import es.tid.smartsteps.dispersion.parsing.LookupParserMapper;
 import es.tid.smartsteps.dispersion.parsing.TrafficCountsParserMapper;

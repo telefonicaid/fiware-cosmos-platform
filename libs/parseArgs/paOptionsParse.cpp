@@ -543,7 +543,6 @@ int paOptionsParse(PaiArgument* paList, char* argV[], int argC)
 	paIterateInit();
 	while ((aP = paIterateNext(paList)) != NULL)
 	{
-	    LM_T(LmtPaSList, ("checking var %s", valueP, aP->name));
 		if ((aP->sort == PaReq) && (aP->used == 0))
 		{
 			sprintf(w, "%s required", aP->name);

@@ -17,7 +17,7 @@ import iptables
 from sockpuppet import SockPuppet
 
 COSMOS_CLASSPATH = '/usr/lib/hadoop-0.20/lib/cosmos/'
-HADOOPGPL_CLASSPATH = '/opt/hadoopgpl'
+HADOOP_GPL_CP = '/opt/hadoopgpl'
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
 @parallel
@@ -81,10 +81,10 @@ def configure_hadoop(config):
             'mapred-site.xml',
             context={
                     'jobtracker': config['hosts']['jobtracker'][0],
-                    'dirs': ','.join([directory + '/mapred'
-                                      for directory in config["hadoop_data_dirs"]]),
+                    'dirs': common.append_subdir_to_dirs('mapred',
+                                                config['hadoop_data_dirs']),
                     'reduce_tasks': 2*len(config['hosts']['datanodes']),
-                    'hadoopgpl_native_libs': os.path.join(HADOOPGPL_CLASSPATH,
+                    'hadoopgpl_native_libs': os.path.join(HADOOP_GPL_CP,
                                                    '/native/Linux-amd64-64')
                     }
             )
@@ -93,10 +93,10 @@ def configure_hadoop(config):
             'templates/hdfs-site.mako',
             'hdfs-site.xml',
             context={
-                'namedirs': ','.join([directory + '/name'
-                                      for directory in config["hadoop_data_dirs"]]),
-                'datadirs': ','.join([directory + '/data'
-                                      for directory in config["hadoop_data_dirs"]]),
+                'namedirs': common.append_subdir_to_dirs('name',
+                                                config['hadoop_data_dirs']),
+                'datadirs': common.append_subdir_to_dirs('data',
+                                                config['hadoop_data_dirs']),
                 'namenode': config['hosts']['namenode'][0]
                 }
             )
@@ -106,7 +106,7 @@ def configure_hadoop(config):
             'hadoop-env.sh',
             context={
                 'cosmos_classpath': COSMOS_CLASSPATH,
-                'hadoopgpl_lzo_lib': os.path.join(HADOOPGPL_CLASSPATH,
+                'hadoopgpl_lzo_lib': os.path.join(HADOOP_GPL_CP,
                                                   '/lib/hadoop-lzo.jar')
                 }
             )

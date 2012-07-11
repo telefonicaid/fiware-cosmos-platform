@@ -17,6 +17,9 @@ from mako.template import Template
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
 
+def append_subdir_to_dirs(subdir_name, dirlist):
+    return ','.join([os.path.join(directory, subdir_name) for directory in dirlist])
+
 def install_cdh_repo(config):
     """Install the Hadoop distribution repo"""
     with ctx.hide('stdout'):

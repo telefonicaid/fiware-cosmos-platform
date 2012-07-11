@@ -34,11 +34,11 @@ public class OpaqueTokenCache {
         };
     }
 
-    public int capacity() {
+    public int getCapacity() {
         return this.capacity;
     }
 
-    public int size() {
+    public int getSize() {
         return this.tokens.size();
     }
 

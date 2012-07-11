@@ -25,7 +25,7 @@ public class OpaqueTokenCacheTest {
         UUID tk1 = UUID.randomUUID();
         UUID tk2 = this.cache.fetch(tk1.toString());
         assertEquals(tk1, tk2);
-        assertEquals(1, this.cache.size());
+        assertEquals(1, this.cache.getSize());
     }
 
     @Test
@@ -36,7 +36,7 @@ public class OpaqueTokenCacheTest {
         UUID tk3 = this.cache.fetch(tk1.toString()); // success again
         assertEquals(tk1, tk2);
         assertSame(tk2, tk3);
-        assertEquals(1, this.cache.size());
+        assertEquals(1, this.cache.getSize());
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -46,9 +46,9 @@ public class OpaqueTokenCacheTest {
 
     @Test
     public void testReplacement() {
-        for (int i = 0; i < this.cache.capacity() + 1; i++) {
+        for (int i = 0; i < this.cache.getCapacity() + 1; i++) {
             this.cache.fetch(UUID.randomUUID().toString());
         }
-        assertEquals(this.cache.capacity(), this.cache.size());
+        assertEquals(this.cache.getCapacity(), this.cache.getSize());
     }
 }

@@ -44,10 +44,10 @@ bool lines;                         // Flag to indicate that input is read line 
 int push_memory;                    // Global memory used as a bffer
 int max_rate;                       // Max rate
 float ntimes_real_time;             // Multiplicative factor respect real time
-char *initial_timestamp_commandline_str[32];
+char *initial_timestamp_commandline_str[64];
 int port;
-char*          dir_list[32];
-char*          file_list[32];
+char*          dir_list[64];
+char*          file_list[64];
 
 static const char* manShortDescription = 
     "samsonPushLogs is a easy-to-use client to send data to a SAMSON system. It emulates real_time streaming from any number of datasets, stored in local directories\n";

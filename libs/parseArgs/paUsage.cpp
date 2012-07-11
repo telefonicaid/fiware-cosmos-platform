@@ -204,7 +204,8 @@ static void getApVals
 void paUsage(void)
 {
 	char*         spacePad;
-	char          string[512];
+	const int MAX_LENGTH_FULL_NAME=512;
+	char          string[MAX_LENGTH_FULL_NAME+1];
 	char          s[1024];
 	PaiArgument*  aP;
 	int           ix       = -1;
@@ -222,7 +223,7 @@ void paUsage(void)
 
 	strncat(paResultString, s, sizeof(paResultString) - 1);
 
-	// paLogOn = true;
+	//paLogOn = true;
 	paIterateInit();
 	PA_M(("------------- presenting usage -------------"));
 	while ((aP = paIterateNext(paiList)) != NULL)
@@ -247,9 +248,9 @@ void paUsage(void)
 		}
 
 		if (PA_IS_OPTION(aP) && (aP->sort == PaOpt))
-			sprintf(xName, "[%s]", paFullName(string, aP));
+			sprintf(xName, "[%s]", paFullName(string, MAX_LENGTH_FULL_NAME, aP));
 		else if (PA_IS_OPTION(aP) && (aP->sort == PaReq))
-			sprintf(xName, "%s", paFullName(string, aP));
+			sprintf(xName, "%s", paFullName(string, MAX_LENGTH_FULL_NAME, aP));
 		else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt))
 			sprintf(xName, "[parameter: %s]", aP->description);
 		else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq))
@@ -282,7 +283,8 @@ void paUsage(void)
 void paExtendedUsage(void)
 {
 	char*         spacePad;
-	char          string[80];
+    const int MAX_LENGTH_FULL_NAME=256;
+    char          string[MAX_LENGTH_FULL_NAME+1];
 	PaiArgument*  aP;
 	int           optNameMaxLen = 0;
 	int           varNameMaxLen = 0;
@@ -313,9 +315,9 @@ void paExtendedUsage(void)
 		/* 1. Option Name */
 		memset(name, 0, sizeof(name));
 		if (PA_IS_OPTION(aP) && (aP->sort == PaOpt))
-			sprintf(name, "[%s]", paFullName(string, aP));
+			sprintf(name, "[%s]", paFullName(string, MAX_LENGTH_FULL_NAME, aP));
 		else if (PA_IS_OPTION(aP) && (aP->sort == PaReq))
-			sprintf(name, "%s", paFullName(string, aP));
+			sprintf(name, "%s", paFullName(string, MAX_LENGTH_FULL_NAME, aP));
 		else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt))
 			sprintf(name, "(%s)", aP->description);
 		else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq))
@@ -358,7 +360,7 @@ void paExtendedUsage(void)
 			varNameMaxLen + 2,
 			valsMaxLen + 2);
 
-	// paLogOn = true;
+	//paLogOn = true;
 	paIterateInit();
 	while ((aP = paIterateNext(paiList)) != NULL)
 	{
@@ -372,17 +374,21 @@ void paExtendedUsage(void)
 		char  realVal[80];
 		char  s[512];
 
+		PA_M(("processing '%s'\n", aP->name));
+
 		if (aP->sort == PaHid)
 		{
 			PA_M(("skipping hidden option '%s'", aP->option));
 			continue;
 		}
 
+		PA_M(("processing '%s' name\n", aP->name));
+
 		/* 1. Option Name */
 		if (PA_IS_OPTION(aP) && (aP->sort == PaOpt))
-			sprintf(optName, "[%s]", paFullName(string, aP));
+			sprintf(optName, "[%s]", paFullName(string, MAX_LENGTH_FULL_NAME, aP));
 		else if (PA_IS_OPTION(aP) && (aP->sort == PaReq))
-			sprintf(optName, "%s", paFullName(string, aP));
+			sprintf(optName, "%s", paFullName(string, MAX_LENGTH_FULL_NAME, aP));
 		else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt))
 			sprintf(optName, "(%s)", aP->description);
 		else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq))
@@ -390,13 +396,11 @@ void paExtendedUsage(void)
 		else
 			strcpy(optName, " ");
 
-	
 		/* 2. variable name */
 		if (PA_IS_VARIABLE(aP))
 			paEnvName(aP, varName);
 		else
 			strcpy(varName, " ");
-
 
 		/* 3. Limits */
 		if ((aP->type != PaSList) && (aP->type != PaIList))
@@ -428,16 +432,20 @@ void paExtendedUsage(void)
 			sprintf(vals, " ");
 			sprintf(from, " ");
 		}
-	
+
 		sprintf(s, format, (firstLine)? progNAME : spacePad, optName, varName, vals, from);
 		strncat(paResultString, s, sizeof(paResultString) - 1);
 	
+		PA_M(("Finished processing '%s'  \n", aP->name));
+
 		firstLine = false;
 	}
 	// paLogOn = false;
 
 	strncat(paResultString, "\r", sizeof(paResultString) - 1);
     
+	PA_M(("Finished paResultString \n"));
+
 	free(spacePad);
 
 	printf("%s\n", paResultString);

@@ -76,6 +76,7 @@ def configure_hadoop(config):
             slaves.write('%s\n' % slave)
         put(slaves, 'slaves')
 
+        max_reducers = 2*len(config['hosts']['datanodes'])
         common.instantiate_template(
             'templates/mapred-site.mako',
             'mapred-site.xml',
@@ -83,7 +84,8 @@ def configure_hadoop(config):
                     'jobtracker': config['hosts']['jobtracker'][0],
                     'dirs': common.append_subdir_to_dirs('mapred',
                                                 config['hadoop_data_dirs']),
-                    'reduce_tasks': 2*len(config['hosts']['datanodes']),
+                    'max_reduce_tasks': max_reducers,
+                    'reduce_tasks': int(0.9 * max_reducers),
                     'hadoopgpl_native_libs': os.path.join(HADOOP_GPL_CP,
                                                    '/native/Linux-amd64-64')
                     }

@@ -21,6 +21,10 @@
     <name>mapred.reduce.tasks</name>
     <value>${reduce_tasks}</value>
   </property>
+  <property>
+    <name>mapred.tasktracker.reduce.tasks.maximum</name>
+    <value>${max_reduce_tasks}</value>
+  </property>
   <!-- optional settings -->
   <property>
     <name>mapred.child.java.opts</name>

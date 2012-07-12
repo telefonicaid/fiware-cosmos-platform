@@ -35,7 +35,7 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm, hadoopgpl_rpm, move_sshd=False
     report_current_task("JDK")
     execute(deploy_jdk, os.path.join(dependenciespath, jdk_rpm))
     report_current_task("CDH")
-    deploy_cdh(os.path.join(dependenciespath, hadoopgpl_compression))
+    deploy_cdh(os.path.join(dependenciespath, hadoopgpl_rpm))
     report_current_task("HUE")
     execute(deploy_hue, os.path.join(dependenciespath, thrift_tar))
     report_current_task("SFTP")

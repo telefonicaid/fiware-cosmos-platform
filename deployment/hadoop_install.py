@@ -51,7 +51,7 @@ def hadoopgpl_compression(hadoopgpl_rpm):
     rpm_name = os.path.split(hadoopgpl_rpm)[-1]
     remote_path = 'hadoopgpl-compression/'
     sockpuppet.upload_file(local_path, remote_path)
-    with cd('hadoopgpl-compression'):
+    with cd(sockpuppet.get_remote_tempdir()):
         run('yum localinstall -y --nogpgcheck %s' % rpm_name)
     sockpuppet.cleanup_uploaded_files()
 

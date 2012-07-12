@@ -76,8 +76,8 @@ def deploy_models():
     spup.upload_file(wc_jar_path, 'models/')
     spup.upload_file(wc_param_jar_path, 'models/')
     run('su hdfs -c "hadoop dfs -mkdir /share/samples/{jars,src}"')
-    run('su hdfs -c "hadoop dfs -put {0}/models/*.jar /share/samples/jars"'
-            .format(spup.get_remote_tempdir()))
+    with cd(spup.get_remote_tempdir()):
+        run('su hdfs -c "hadoop dfs -put models/*.jar /share/samples/jars"')
 
     sources_tarball = os.path.join(BASEPATH, 'wordcount-src.tar.gz')
     sources_subtree = os.path.join(BASEPATH, os.pardir, 'cosmos', 'models',
@@ -87,8 +87,8 @@ def deploy_models():
         local('tar -c -f {0} {1}'.format(sources_tarball, sources_subtree))
         local('mvn clean install')
     spup.upload_file(sources_tarball, 'models-src/')
-    run('su hdfs -c "hadoop dfs -put {0}/models-src/* /share/samples/src"'
-            .format(spup.get_remote_tempdir()))
+    with cd(spup.get_remote_tempdir()):
+        run('su hdfs -c "hadoop dfs -put models-src/* /share/samples/src"')
 
     local('rm {0}'.format(sources_tarball))
     spup.cleanup_uploaded_files()

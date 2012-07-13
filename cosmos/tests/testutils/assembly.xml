@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.1 http://maven.apache.org/xsd/assembly-1.1.1.xsd "> 
+    <id>default</id> 
+    <formats> 
+        <format>dir</format> 
+    </formats> 
+    <includeBaseDirectory>false</includeBaseDirectory> 
+    <dependencySets> 
+        <dependencySet> 
+            <outputDirectory>/</outputDirectory> 
+            <includes> 
+                <include>es.tid.cosmos.tests.hadoopjobs:printprimes</include>
+                <include>es.tid.cosmos.tests.hadoopjobs:mapperfail</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed1</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed2</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed3</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed4</include> 
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed5</include>
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed6</include>
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-malformed7</include>
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-normal</include>
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-normal-xml</include>
+                <include>es.tid.cosmos.tests.hadoopjobs:parameterizedjob-whitespace</include> 
+                <include>es.tid.cosmos:wordcount-core-parameterized</include>
+            </includes> 
+            <useTransitiveDependencies>false</useTransitiveDependencies>
+        </dependencySet> 
+    </dependencySets> 
+</assembly>

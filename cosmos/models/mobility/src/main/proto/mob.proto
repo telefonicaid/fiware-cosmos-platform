@@ -1,0 +1,232 @@
+package mob;
+
+import "base.proto";
+
+option java_package = "es.tid.cosmos.mobility.data.generated";
+option java_outer_classname = "MobProtocol";
+
+message InputIdRecord {
+    required int32 inputId = 1;
+    required bytes messageBytes = 2;
+}
+
+message Cdr {
+    optional uint64 userId = 1;
+    optional uint64 cellId = 2;
+    optional base.Date date = 3;
+    optional base.Time time = 4;
+}
+
+message Cell {
+    optional uint64 cellId = 1;
+    optional uint64 bts = 2;
+    optional uint32 geoloc1 = 3;
+    optional uint32 geoloc2 = 4;
+    optional double posx = 5;
+    optional double posy = 6;
+}
+
+message ClientProfile {
+    optional uint64 userId = 1;
+    optional uint32 profileId = 2;
+}
+
+message Bts {
+    optional uint64 placeId = 1;
+    optional uint64 comms = 2;
+    optional double posx = 3;
+    optional double posy = 4;
+    optional double area = 5;
+    repeated uint64 adj_bts = 6;
+}
+
+message NodeBts {
+    optional uint64 userId = 1;
+    optional uint64 bts = 2;
+    optional uint32 weekday = 3;
+    optional uint32 range = 4;
+}
+
+message BtsCounter {
+    optional uint64 bts = 1;
+    optional uint32 weekday = 2;
+    optional uint32 range = 3;
+    optional uint32 count = 4;
+}
+
+message BtsProfile {
+    optional uint64 bts = 1;
+    optional uint32 profile = 2;
+    optional uint32 wday = 3;
+    optional uint32 hour = 4;
+}
+
+message NodeBtsDay {
+    optional uint64 userId = 1;
+    optional uint64 bts = 2;
+    optional uint32 workday = 3;
+    optional uint32 count = 4;
+}
+
+message NodeBtsDate {
+    optional uint64 userId = 1;
+    optional uint64 bts = 2;
+    optional base.Date date = 3;
+    optional uint32 hour = 4;
+}
+
+message NodeMxCounter {
+    repeated BtsCounter bts = 1;
+}
+
+message TwoInt {
+    optional uint64 num1 = 1;
+    optional uint64 num2 = 2;
+}
+
+message DailyVector {
+    repeated TwoInt hours = 1;
+}
+
+message ClusterVector {
+    repeated double coms = 1;
+}
+
+message Cluster {
+    optional uint32 label = 1;
+    optional uint32 labelgroup = 2;
+    optional uint32 confident = 3;
+    optional double mean = 4;
+    optional double distance = 5;
+    optional ClusterVector coords = 6;
+}
+
+message GLEvent {
+    optional uint64 userId = 1;
+    optional uint64 bts = 2;
+    optional base.Date date = 3;
+    optional base.Time time = 4;
+}
+
+message TelMonth {
+    optional uint64 phone = 1;
+    optional uint32 month = 2;
+    optional bool workingday = 3;
+}
+
+message Poi {
+    optional uint64 id = 1;
+    optional uint64 node = 2;
+    optional uint64 bts = 3;
+    optional uint32 labelnode = 4;
+    optional uint32 labelgroupnode = 5;
+    optional uint32 confidentnode = 6;
+    optional double distancenode = 7;
+    optional uint32 labelbts = 8;
+    optional uint32 labelgroupbts = 9;
+    optional uint32 confidentbts = 10;
+    optional double distancebts = 11;
+    optional uint32 labelnodebts = 12;
+    optional uint32 labelgroupnodebts = 13;
+    optional uint32 confidentnodebts = 14;
+    optional double distancenodebts = 15;
+    optional int32 inoutWeek = 16;
+    optional int32 inoutWend = 17;
+}
+
+message PoiPos {
+    optional uint64 node = 1;
+    optional uint64 bts = 2;
+    optional int32 label = 3;
+    optional double posx = 4;
+    optional double posy = 5;
+    optional int32 inoutWeek = 6;
+    optional int32 inoutWend = 7;
+    optional double radiusWeek = 8;
+    optional double distCMWeek = 9;
+    optional double radiusWend = 10;
+    optional double distCMWend = 11;
+}
+
+message PoiNew {
+    optional uint64 id = 1;
+    optional uint64 node = 2;
+    optional uint64 bts = 3;
+    optional uint32 labelgroupnodebts = 4;
+    optional uint32 confidentnodebts = 5;
+}
+
+message MobVars {
+    optional uint32 month = 1;
+    optional bool workingday = 2;
+    optional uint32 num_pos = 3;
+    optional uint32 dif_btss = 4;
+    optional uint32 dif_muns = 5;
+    optional uint32 dif_states = 6;
+    optional double masscenter_utmx = 7;
+    optional double masscenter_utmy = 8;
+    optional double radius = 9;
+    optional double diam_areainf = 10;
+}
+
+message MobViMobVars {
+    repeated MobVars vars = 1;
+}
+
+message ItinTime {
+    optional base.Date date = 1;
+    optional base.Time time = 2;
+    optional uint64 bts = 3;
+}
+
+message ItinMovement {
+    optional ItinTime source = 1;
+    optional ItinTime target = 2;
+}
+
+message ItinRange {
+    optional uint64 poiSrc = 1;
+    optional uint64 poiTgt = 2;
+    optional uint64 node = 3;
+    optional uint32 group = 4;
+    optional uint32 range = 5;
+}
+
+message ItinPercMove {
+    optional uint32 group = 1;
+    optional uint32 range = 2;
+    optional double percMoves = 3;
+}
+
+message Itinerary {
+    optional uint64 source = 1;
+    optional uint64 target = 2;
+    optional uint32 wdayPeakInit = 3;
+    optional uint32 rangePeakInit = 4;
+    optional uint32 wdayPeakFin = 5;
+    optional uint32 rangePeakFin = 6;
+    optional uint32 wdayInit = 7;
+    optional uint32 rangeInit = 8;
+    optional uint32 wdayFin = 9;
+    optional uint32 rangeFin = 10;
+}
+
+message CellGroup {
+    optional uint64 cellId = 1;
+    optional TwoInt group = 2;
+}
+
+message MatrixTime {
+    optional base.Date date = 1;
+    optional base.Time time = 2;
+    optional uint32 group = 3;
+    optional uint64 bts = 4;
+}
+
+message MatrixRange {
+    optional uint64 node = 1;
+    optional uint64 poiSrc = 2;
+    optional uint64 poiTgt = 3;
+    optional uint32 group = 4;
+    optional uint32 range = 5;
+}

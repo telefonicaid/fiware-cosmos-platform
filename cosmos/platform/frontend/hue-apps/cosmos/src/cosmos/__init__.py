@@ -1,0 +1,4 @@
+"""
+Cosmos HUE app.
+
+"""

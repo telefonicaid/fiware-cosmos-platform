@@ -1,0 +1,25 @@
+package entry;
+
+option java_package = "es.tid.smartsteps.dispersion.data.generated";
+option java_outer_classname = "EntryProtocol";
+
+message TrafficCounts {
+    required string cellId = 1;
+    required string date = 2;
+    required double latitude = 3;
+    required double longitude = 4;
+    repeated Counts footfalls = 5;
+    repeated Counts pois = 6;
+}
+
+message Counts {
+    required string name = 1;
+    repeated double values = 2;
+}
+
+message SOACentroid {
+    required string soaId = 1;
+    required double squaredKilometers = 2;
+    required double latitude = 3;
+    required double longitude = 4;
+}

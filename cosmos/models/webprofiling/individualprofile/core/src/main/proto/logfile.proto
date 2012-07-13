@@ -1,0 +1,46 @@
+package individualprofile;
+
+option java_package = "es.tid.cosmos.profile.generated.data";
+option java_outer_classname = "ProfileProtocol";
+
+message WebProfilingLog {
+  required string visitorId = 1;
+  required string protocol = 2;
+  required string fullUrl = 3;
+  required string urlDomain = 4;
+  required string urlPath = 5;
+  required string urlQuery = 6;
+  required string date = 7;
+  required string userAgent = 8;
+  required string browser = 9;
+  required string device = 10;
+  required string operSys = 11;
+  required string method = 12;
+  required string status = 13;
+  required string mimeType = 14;
+}
+
+message UserNavigation {
+  required string userId = 1;
+  required string url = 2;
+  required string date = 3;
+}
+
+message CategoryInformation {
+  required string userId = 1;
+  required string url = 2;
+  required string date = 3;
+  required int64 count = 4;
+  repeated string categories = 5;
+}
+
+message CategoryCount {
+  required string name = 1;
+  required int64 count = 2;
+}
+
+message UserProfile {
+  required string userId = 1;
+  required string date = 2;
+  repeated CategoryCount counts = 3;
+}

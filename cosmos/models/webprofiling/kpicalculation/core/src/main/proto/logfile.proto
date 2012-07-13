@@ -1,0 +1,21 @@
+package kpicalculation;
+
+option java_package = "es.tid.cosmos.kpicalculation.generated.data";
+option java_outer_classname = "KpiCalculationProtocol";
+
+message WebProfilingLog {
+  required string visitorId = 1;
+  required string protocol = 2;
+  required string fullUrl = 3;
+  required string urlDomain = 4;
+  required string urlPath = 5;
+  required string urlQuery = 6;
+  required string date = 7;
+  required string userAgent = 8;
+  required string browser = 9;
+  required string device = 10;
+  required string operSys = 11;
+  required string method = 12;
+  required string status = 13;
+  required string mimeType = 14;
+}

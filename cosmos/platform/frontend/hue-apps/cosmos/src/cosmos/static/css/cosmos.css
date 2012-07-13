@@ -1,0 +1,270 @@
+/*
+ * cosmos styles
+ */
+
+.cosmos img.cosmos_icon {
+        width: 55px;
+        height: 55px;
+        position: absolute;
+        top: 24px;
+        left: 14px;
+        z-index: 1;
+}
+
+/*
+ * General navigation
+ */
+
+.cosmos .nav, .cosmos .subnav {
+    position: absolute;
+    z-index: 1;
+    left: 80px;
+}
+.cosmos .nav {
+    top: 24px;
+}
+
+.cosmos .nav_icon {
+    padding: 6px 8px 6px 25px;
+    height: 25px;
+}
+
+.cosmos .nav li {
+    float: left;
+}
+
+.cosmos .subnav li {
+    margin-left: 1em;
+    float: left;
+}
+
+.cosmos .subnav {
+    top: 55px;
+}
+
+.cosmos .subnav_icon {
+    padding: 4px 8px 4px 24px;
+    height: 18px;
+}
+
+.cosmos a.cos-job_runs_nav {
+    background: url(/static/art/icons/application_view_list.png) no-repeat;
+}
+.cosmos a.cos-define_job_nav {
+    background: url(/static/art/icons/control_play_blue.png) no-repeat;
+}
+.cosmos a.cos-upload_nav {
+    background: url(/static/art/icons/add.png) no-repeat;
+}
+.cosmos a.cos-results_nav {
+    background: url(/static/art/icons/application_view_columns.png) no-repeat;
+}
+
+/*
+ * File upload
+ */
+
+.cosmos a.cos-upload_dataset,
+.cosmos a.cos-upload_jar {
+    background: url(/static/art/icons/add.png) no-repeat;
+}
+
+.cosmos .cos-upload_choices {
+    padding: 1em;
+}
+.cosmos .cos-upload_choices ul li {
+    display: block;
+    margin: 2em;
+}
+.cosmos a.cos-upload_dataset,
+.cosmos a.cos-upload_jar {
+    padding: 4px 8px 4px 24px;
+    height: 25px;
+}
+.cosmos a.cos-upload_dataset {
+    background: url(/static/art/icons/page_add.png) no-repeat;
+}
+.cosmos a.cos-upload_jar {
+    background: url(/static/art/icons/package_add.png) no-repeat;
+}
+
+.cos-noflash a {
+    color: #3e528c;
+}
+.cos-uploader {
+        width: 80%;
+        background: #fff;
+        border: 1px solid #000;
+        position: absolute;
+        border-radius: 4px;
+        -moz-border-radius: 4px;
+        -webkit-border-radius: 4px;
+        -moz-box-shadow: 0 1px 2px #999;
+        -webkit-box-shadow: 0 1px 2px #999;
+        padding: 4px;
+        z-index: 10003;
+        overflow: auto;
+}
+.cos-uploader .fb-cancel-upload {
+        z-index: 1;
+        cursor: pointer;
+        display: block;
+        height: 13px;
+        overflow: hidden;
+        position: absolute;
+        right: 2px;
+        text-indent: 300px;
+        width: 13px;
+        background: url(/static/art/close.png);
+}
+
+
+.cos-uploader a.hover {
+        color: red;
+}
+
+.cos-uploader .cos-upload-list {
+        height: 100px;
+        overflow: auto;
+        padding: 0;
+        list-style: none;
+        margin: 0 14px 0 0;
+}
+
+.cos-uploader .cos-upload-list .file-invalid {
+        cursor: pointer;
+        color: #514721;
+        padding-left: 48px;
+        line-height: 24px;
+        background: url(/static/js/ThirdParty/digitarald-fancyupload/assets/error.png) no-repeat 24px 5px;
+        margin-bottom: 1px;
+}
+.cos-uploader .cos-upload-list .file-invalid span {
+        background-color: #fff6bf;
+        padding: 1px;
+}
+
+.cos-uploader .cos-upload-list .file {
+        line-height: 2em;
+        padding-left: 22px;
+        background: url(/static/js/ThirdParty/digitarald-fancyupload/assets/attach.png) no-repeat 1px 50%;
+}
+
+.cos-uploader .cos-upload-list .file span,
+.cos-uploader .cos-upload-list .file a {
+        padding: 0 4px;
+}
+
+.cos-uploader .cos-upload-list .file .file-size {
+        color: #666;
+}
+
+.cos-uploader .cos-upload-list .file .file-error {
+        color: #8a1f11;
+}
+
+.cos-uploader .cos-upload-list .file .file-progress {
+        width: 125px;
+        height: 12px;
+        vertical-align: middle;
+        background-image: url(/static/js/ThirdParty/digitarald-fancyupload/assets/progress-bar/progress.gif);
+}
+
+/*
+ * Run job form wizard
+ */
+
+.cos-run_job_form dt,
+.cos-run_job_form p label {
+    width: 180px;
+    text-align: right;
+    margin: 0 1ex;
+}
+.cos-run_job_form dt {
+    float: left;
+    clear: both;
+}
+.cos-run_job_form p label {
+    display: inline-block;
+}
+.cos-run_job_form dd {
+    float: left;
+    text-align: left;
+    margin: 1ex;
+}
+.cos-run_job_form dl input {
+    width: 145px;
+}
+.cos-run_job_form .file_finder input {
+    width: 120px;
+}
+.cos-run_job_form br {
+    clear: both;
+}
+.cos-wizard_nav {
+    display: block;
+    position: relative;
+    width: 250px;
+}
+.cos-run_job_form .submit {
+    margin-left: 1ex;
+    float: right;
+}
+
+.cos-job_summary table {width: 100%; margin-left: 30px; }
+.cos-job_summary td,
+.cos-job_summary th {
+    font-size: 1em;
+    padding: 2px;
+    margin: 0 1ex;
+    border: 1px solid #999;
+}
+.cos-job_summary th { font-weight: bold; background-color:#f4f4f4; }
+
+/*
+ * Paginated navigation
+ */
+
+.cos-next_page {
+    background: url("/static/art/icons/control_play.png") no-repeat scroll 0 0 transparent;
+}
+.cos-prev_page {
+    background: url("/static/art/icons/control_previous.png") no-repeat scroll 0 0 transparent;
+}
+.cosmos .step-links a {
+    line-height: 19px;
+}
+.cosmos .step-links a {
+    float: none;
+    display: inline-block;
+    height: 16px;
+    width: 16px;
+    padding: 0;
+    margin: 0;
+    vertical-align: text-bottom;
+    text-indent: -500px;
+    overflow: hidden;
+}
+
+/*
+ * Tabular result visualization
+ */
+
+.cosmos #job-results-table table {
+    width: 100%;
+    height: 200px;
+    margin-left: 30px;
+    font-size:62.5%;
+}
+.cosmos #job-results-table table.accessHide {
+    position: absolute;
+    left: -999999px;
+}
+.cosmos #job-results-table td,
+.cosmos th {
+    font-size: 1.2em;
+    padding: 2px;
+    width: 13%;
+}
+.cosmos #job-results-table th { background-color:#f4f4f4; }
+.cosmos #job-results-table caption { font-size: 1.5em;  }

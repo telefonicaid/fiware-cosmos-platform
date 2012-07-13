@@ -1,0 +1,19 @@
+package weblog;
+
+option java_package = "es.tid.cosmos.base.data.generated";
+option java_outer_classname = "BaseTypes";
+
+message Null {
+}
+
+message Int {
+    optional uint32 value = 1;
+}
+
+message Int64 {
+    optional uint64 value = 1;
+}
+
+message Float64 {
+    optional double value = 1;
+}

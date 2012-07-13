@@ -83,9 +83,9 @@ def deploy_models():
     sources_subtree = os.path.join(BASEPATH, os.pardir, 'cosmos', 'models',
                                    'samples', 'wordcount')
     with lcd(sources_subtree):
-        local('mvn clean')
-        local('tar -c -f {0} {1}'.format(sources_tarball, sources_subtree))
-        local('mvn clean install')
+        local(('find {0} -name *.java -or -name *.xml -or -name *.properties '
+               '-or -name *.js | grep -v target| xargs tar cfz {1}')
+               .format(sources_subtree, sources_tarball))
     spup.upload_file(sources_tarball, 'models-src/')
     with cd(spup.get_remote_tempdir()):
         run('su hdfs -c "hadoop dfs -put models-src/* /share/samples/src"')

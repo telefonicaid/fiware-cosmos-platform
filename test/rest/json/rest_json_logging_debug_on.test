@@ -1,0 +1,6 @@
+--NAME--
+REST JSON /samson/logging/debug/on
+--SHELL--
+curl -s --request POST http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/logging/debug/on.json
+--EXPECT--
+{{"debug":"debug turned ON"}}

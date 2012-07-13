@@ -110,13 +110,9 @@ function execute_test
             echo "Initializing test using bash"
             cat $TEST_SHELL_INIT
         fi
-        if [ ! -z ${SAMSON_TEST_HOST} ]; then
-            "echo Remote shell initialization is currently not supported"
-        else
-            bash -x $TEST_SHELL_INIT 2> $TEST_SHELL_INIT.stderr > $TEST_SHELL_INIT.stdout
-            if [ $? -ne 0 ]; then
-                INIT_SHELL_ERROR=1
-            fi
+        bash -x $TEST_SHELL_INIT 2> $TEST_SHELL_INIT.stderr > $TEST_SHELL_INIT.stdout
+        if [ $? -ne 0 ]; then
+            INIT_SHELL_ERROR=1
         fi
     fi
 

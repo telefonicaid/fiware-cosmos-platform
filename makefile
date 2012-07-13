@@ -190,7 +190,16 @@ clean:
 # Platform Code Coverage Version
 # ------------------------------------------------
 
-run_coverage: install_coverage
+clean_samson:
+	if [ "${SAMSON_HOME}" != "/opt/samson" ]; then \
+		rm -rf ${SAMSON_HOME}/*; \
+	fi
+	if [ "${SAMSON_WORKING}" != "/var/samson" ]; then \
+		rm -rf ${SAMSON_WORKING}/log; \
+		rm -rf ${SAMSON_WORKING}/blocks; \
+	fi
+
+test_init:
 	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
 	#killall samsonWorker || true
 	kill `ps -efl | fgrep "logServer -port ${SAMSON_LOG_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
@@ -198,10 +207,13 @@ run_coverage: install_coverage
 	lcov --directory BUILD_COVERAGE --zerocounters	
 	logServer -port ${SAMSON_LOG_PORT_ENV} -dir ${LOGSERVER_LOG_DIR} -query_port ${SAMSON_LOGQUERY_PORT_ENV}
 	samsonWorker -port ${SAMSON_WORKER_PORT_ENV} -web_port ${SAMSON_WORKER_WEB_PORT_ENV} -log_port ${SAMSON_LOG_PORT_ENV} -log_classic ${SAMSON_LOG_LEVELS}
-	make test_coverage
+
+test_teardown:
 	kill `ps -efl | fgrep "samsonWorker -port ${SAMSON_WORKER_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
 	kill `ps -efl | fgrep "logServer -port ${SAMSON_LOG_PORT_ENV}" | fgrep -v fgrep | awk '{print $$4}'` || true
 	bash -x scripts/lib_shared_memory.scr
+
+test_report:
 	mkdir -p coverage
 	lcov --directory BUILD_COVERAGE --capture --output-file coverage/samson.info
 	lcov -r coverage/samson.info "/usr/include/*" -o coverage/samson.info
@@ -211,6 +223,7 @@ run_coverage: install_coverage
 	lcov -r coverage/samson.info "/opt/local/include/google/*" -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info
 
+run_coverage: install_coverage test_init test_coverage test_teardown test_report
 
 # There is a problem with coverage tool for mac.. please do use this output a mac environment
 

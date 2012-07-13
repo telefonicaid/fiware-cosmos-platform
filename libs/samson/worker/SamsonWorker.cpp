@@ -1100,11 +1100,9 @@ namespace samson {
             command->append("<html><body>");
         }
         else if ( command->format == "json" )
-            /*
         {
             command->append("{");
         }
-             */
 
         // Internal process of the command
         process_intern(command);
@@ -1115,11 +1113,8 @@ namespace samson {
             command->append("\n</samson>\n");
         else if (command->format == "html")
             command->append("</body></html>");
-        /*
         else if( command->format == "json" )
             command->append("}");
-         */
-        
     }
     
     

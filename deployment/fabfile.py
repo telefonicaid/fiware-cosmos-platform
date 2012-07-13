@@ -35,7 +35,7 @@ def deploy(dependenciespath, thrift_tar, jdk_rpm, hadoopgpl_rpm, move_sshd=False
     report_current_task("JDK")
     execute(deploy_jdk, os.path.join(dependenciespath, jdk_rpm))
     report_current_task("CDH")
-    deploy_cdh(os.path.join(dependenciespath, hadoopgpl_compression))
+    deploy_cdh(os.path.join(dependenciespath, hadoopgpl_rpm))
     report_current_task("HUE")
     execute(deploy_hue, os.path.join(dependenciespath, thrift_tar))
     report_current_task("SFTP")
@@ -76,17 +76,19 @@ def deploy_models():
     spup.upload_file(wc_jar_path, 'models/')
     spup.upload_file(wc_param_jar_path, 'models/')
     run('su hdfs -c "hadoop dfs -mkdir /share/samples/{jars,src}"')
-    run('su hdfs -c "hadoop dfs -put /root/models/*.jar /share/samples/jars"')
+    with cd(spup.get_remote_tempdir()):
+        run('su hdfs -c "hadoop dfs -put models/*.jar /share/samples/jars"')
 
     sources_tarball = os.path.join(BASEPATH, 'wordcount-src.tar.gz')
     sources_subtree = os.path.join(BASEPATH, os.pardir, 'cosmos', 'models',
                                    'samples', 'wordcount')
     with lcd(sources_subtree):
         local('mvn clean')
-        local('tar -c -f {0} {1}'.format( sources_tarball, sources_subtree))
+        local('tar -c -f {0} {1}'.format(sources_tarball, sources_subtree))
         local('mvn clean install')
     spup.upload_file(sources_tarball, 'models-src/')
-    run(('su hdfs -c "hadoop dfs -put /root/models-src/* /share/samples/src"'))
+    with cd(spup.get_remote_tempdir()):
+        run('su hdfs -c "hadoop dfs -put models-src/* /share/samples/src"')
 
     local('rm {0}'.format(sources_tarball))
     spup.cleanup_uploaded_files()

@@ -86,7 +86,6 @@ def install_hue_plugins():
     """
     Installs HUE plugins from Cloudera-provided packages
     """
-    env.port = '22'
     run("yum -y install hue-plugins")
 
 def install_thrift(thrift_tarpath):

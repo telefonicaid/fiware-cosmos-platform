@@ -4,7 +4,7 @@ Big Data Platform (codenamed Cosmos)
 
 The Big Data Platform is a product that allows you to:
 
- run map-reduce jobs in both batch and near-real-time modes
+- run map-reduce jobs in both batch and near-real-time modes
 - create and release clusters of different sizes
 - create and monitor jobs
 - set up external storage from Telefonica's cloud solution

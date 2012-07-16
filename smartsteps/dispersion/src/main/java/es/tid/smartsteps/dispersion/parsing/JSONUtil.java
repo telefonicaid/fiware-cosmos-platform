@@ -2,6 +2,7 @@ package es.tid.smartsteps.dispersion.parsing;
 
 import java.util.StringTokenizer;
 
+import net.sf.json.JSON;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
@@ -20,6 +21,9 @@ public final class JSONUtil {
      * Beans-like getter method that supports the dot character to access
      * nested fields.
      *
+     * Note that arrays can be accessed with the same notation, e.g. "array.0"
+     * would access the first array element.
+     *
      * @param json        JSON object or array
      * @param property    Property name (dot-delimited nested-field names)
      * @return            The value or null
@@ -28,7 +32,7 @@ public final class JSONUtil {
      *                    type different from JSONObject or JSONArray is
      *                    requested.
      */
-    public static Object getProperty(Object json, String property) {
+    public static Object getProperty(JSON json, String property) {
         final StringTokenizer fieldNames =
                 new StringTokenizer(property, FIELD_DELIMITER);
         if (!fieldNames.hasMoreTokens()) {
@@ -56,6 +60,9 @@ public final class JSONUtil {
      * Beans-like setter method that supports the dot character to access
      * nested fields.
      *
+     * Note that arrays can be accessed with the same notation, e.g. "array.0"
+     * would access the first array element.
+     *
      * @param object      JSON value to update
      * @param property    Property name (dot-delimited nested-field names)
      * @param value       Value to set
@@ -64,7 +71,7 @@ public final class JSONUtil {
      *                    type different from JSONObject or JSONArray is
      *                    accessed.
      */
-    public static void setProperty(Object object, String property,
+    public static void setProperty(JSON object, String property,
                                    Object value) {
         final StringTokenizer fieldNames =
                 new StringTokenizer(property, FIELD_DELIMITER);

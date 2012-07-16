@@ -1,6 +1,7 @@
 package es.tid.smartsteps.dispersion.parsing;
 
 import net.sf.json.JSONArray;
+import net.sf.json.JSONNull;
 import net.sf.json.JSONObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -88,7 +89,7 @@ public class JSONUtilTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowOnInvalidJSONElement() throws Exception {
-        JSONUtil.setProperty("not an object", "prop1.prop2", "value");
+        JSONUtil.setProperty(null, "prop1.prop2", "value");
     }
 
     @Test(expected = IllegalArgumentException.class)

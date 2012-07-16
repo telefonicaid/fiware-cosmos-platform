@@ -245,9 +245,8 @@ public class MobilityMain extends Configured implements Tool {
         Path tmpSecondHomesPath = new Path(outputPath, "second_homes");
         Path pointsOfInterestPath = new Path(tmpSecondHomesPath,
                                              "points_of_interest");
-        CosmosWorkflow detectSecondHomesWorkflow =  null;
         if (shouldRunAll || shouldDetectSecondHomes) {
-            detectSecondHomesWorkflow = DetectSecondHomesRunner.run(
+            CosmosWorkflow detectSecondHomesWorkflow = DetectSecondHomesRunner.run(
                     cellsMobPath, pointsOfInterestTemp4Path, viClientFuseAccPath,
                     pairbtsAdjPath, pointsOfInterestPath, tmpSecondHomesPath,
                     isDebug, conf);
@@ -260,9 +259,8 @@ public class MobilityMain extends Configured implements Tool {
         Path tmpActivityDensityPath = new Path(outputPath, "activity_density");
         Path activityDensityOutPath = new Path(tmpActivityDensityPath,
                                                "activityDensityOut");
-        CosmosWorkflow activityDensityWorkflow = null;
         if (shouldRunAll || shouldGetActivityDensity) {
-            activityDensityWorkflow = ActivityDensityRunner.run(
+            CosmosWorkflow activityDensityWorkflow = ActivityDensityRunner.run(
                     clientsInfoPath, activityDensityOutPath,
                     tmpActivityDensityPath, isDebug, conf);
             activityDensityWorkflow.addDependentWorkflow(poisWorkflow);
@@ -273,12 +271,11 @@ public class MobilityMain extends Configured implements Tool {
                 "activity_density_profile");
         Path activityDensityProfileOutPath = new Path(
                 tmpActivityDensityProfilePath, "activityDensityProfileOut");
-        CosmosWorkflow activityDensityProfileWorkflow = null;
         if (shouldRunAll || shouldGetActivityDensityProfile) {
-            activityDensityProfileWorkflow = ActivityDensityProfileRunner.run(
-                    clientProfileMobPath, clientsInfoPath,
-                    activityDensityProfileOutPath,
-                    tmpActivityDensityProfilePath, isDebug, conf);
+            CosmosWorkflow activityDensityProfileWorkflow =
+                    ActivityDensityProfileRunner.run(clientProfileMobPath,
+                            clientsInfoPath, activityDensityProfileOutPath,
+                            tmpActivityDensityProfilePath, isDebug, conf);
             activityDensityProfileWorkflow.addDependentWorkflow(parsingWorkflow);
             activityDensityProfileWorkflow.addDependentWorkflow(poisWorkflow);
             wfList.add(activityDensityProfileWorkflow);
@@ -288,9 +285,8 @@ public class MobilityMain extends Configured implements Tool {
                                                  "population_density");
         Path populationDensityOutPath = new Path(tmpPopulationDensityPath,
                                                "populationDensityOut");
-        CosmosWorkflow populationDensityWorkflow = null;
         if (shouldRunAll || shouldGetPopulationDensity) {
-            populationDensityWorkflow = PopulationDensityRunner.run(
+            CosmosWorkflow populationDensityWorkflow = PopulationDensityRunner.run(
                     cdrsInfoPath, cellsPath, populationDensityOutPath,
                     tmpPopulationDensityPath, isDebug, conf);
             populationDensityWorkflow.addDependentWorkflow(preparingWorkflow);
@@ -302,12 +298,11 @@ public class MobilityMain extends Configured implements Tool {
                 "population_density_profile");
         Path populationDensityProfileOutPath = new Path(
                 tmpPopulationDensityProfilePath, "populationDensityProfileOut");
-        CosmosWorkflow populationDensityProfileWorkflow = null;
         if (shouldRunAll || shouldGetPopulationDensityProfile) {
-            populationDensityProfileWorkflow = PopulationDensityProfileRunner.run(
-                    cdrsInfoPath, cellsPath, clientProfileMobPath,
-                    populationDensityProfileOutPath,
-                    tmpPopulationDensityProfilePath, isDebug, conf);
+            CosmosWorkflow populationDensityProfileWorkflow =
+                    PopulationDensityProfileRunner.run(cdrsInfoPath, cellsPath,
+                            clientProfileMobPath, populationDensityProfileOutPath,
+                            tmpPopulationDensityProfilePath, isDebug, conf);
             populationDensityProfileWorkflow.addDependentWorkflow(preparingWorkflow);
             populationDensityProfileWorkflow.addDependentWorkflow(parsingWorkflow);
             wfList.add(populationDensityProfileWorkflow);
@@ -317,11 +312,11 @@ public class MobilityMain extends Configured implements Tool {
                 "aggregated_matrix_simple");
         Path matrixPairBtsTxtPath = new Path(tmpAggregatedMatrixSimplePath,
                                              "matrixPairBtsTxt");
-        CosmosWorkflow aggregatedMatrixSimpleWorkflow = null;
         if (shouldRunAll || shouldGetAggregatedMatrixSimpleProfile) {
-            aggregatedMatrixSimpleWorkflow = AggregatedMatrixSimpleRunner.run(
-                    cdrsInfoPath, cellsPath, matrixPairBtsTxtPath,
-                    tmpAggregatedMatrixSimplePath, isDebug, conf);
+            CosmosWorkflow aggregatedMatrixSimpleWorkflow =
+                    AggregatedMatrixSimpleRunner.run(cdrsInfoPath, cellsPath,
+                            matrixPairBtsTxtPath, tmpAggregatedMatrixSimplePath,
+                            isDebug, conf);
             aggregatedMatrixSimpleWorkflow.addDependentWorkflow(preparingWorkflow);
             aggregatedMatrixSimpleWorkflow.addDependentWorkflow(parsingWorkflow);
             wfList.add(aggregatedMatrixSimpleWorkflow);
@@ -331,11 +326,11 @@ public class MobilityMain extends Configured implements Tool {
                                                      "aggregated_matrix_group");
         Path matrixPairGroupTxtPath = new Path(tmpAggregatedMatrixGroupPath,
                                                "matrixPairGroupTxt");
-        CosmosWorkflow aggregatedMatrixGroupWorkflow = null;
         if (shouldRunAll || shouldGetAggregatedMatrixGroupProfile) {
-            aggregatedMatrixGroupWorkflow = AggregatedMatrixGroupRunner
-                    .run(cdrsInfoPath, cellGroupsPath, matrixPairGroupTxtPath,
-                         tmpAggregatedMatrixGroupPath, isDebug, conf);
+            CosmosWorkflow aggregatedMatrixGroupWorkflow =
+                    AggregatedMatrixGroupRunner.run(cdrsInfoPath, cellGroupsPath,
+                            matrixPairGroupTxtPath, tmpAggregatedMatrixGroupPath,
+                            isDebug, conf);
             aggregatedMatrixGroupWorkflow.addDependentWorkflow(preparingWorkflow);
             aggregatedMatrixGroupWorkflow.addDependentWorkflow(parsingWorkflow);
             wfList.add(aggregatedMatrixGroupWorkflow);

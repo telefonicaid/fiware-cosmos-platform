@@ -1,5 +1,7 @@
 package es.tid.smartsteps.dispersion;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
@@ -29,7 +31,8 @@ public class Main extends Configured implements Tool {
     private static final Logger LOGGER = Logger.getLogger(Main.class);
 
     @Override
-    public int run(String[] args) throws Exception {
+    public int run(String[] args) throws ClassNotFoundException,
+                                         InterruptedException, IOException {
         if (args.length != 5) {
             throw new IllegalArgumentException(
                     "Usage: trafficCountsPath cellToMicrogridPath "
@@ -38,15 +41,15 @@ public class Main extends Configured implements Tool {
 
         final Configuration config = Config.load(Config.class.getResource(
                 "/config.properties").openStream(), this.getConf());
-        
+
         final Path trafficCountsPath = new Path(args[0]);
         final Path cellToMicrogridPath = new Path(args[1]);
         final Path microgridToPolygonPath = new Path(args[2]);
         final Path soaCentroidsPath = new Path(args[3]);
         final Path outputDir = new Path(args[4]);
-        
+
         FileSystem fs = FileSystem.get(this.getConf());
-        
+
         Path trafficCountsParsedPath = new Path(outputDir,
                                                 "traffic_counts_parsed");
         {
@@ -59,7 +62,7 @@ public class Main extends Configured implements Tool {
             FileOutputFormat.setOutputPath(job, trafficCountsParsedPath);
             job.waitForCompletion(true);
         }
-        
+
         Path cellToMicrogridParsedPath = new Path(outputDir,
                                                   "cell_to_microgrid_parsed");
         {
@@ -72,7 +75,7 @@ public class Main extends Configured implements Tool {
             FileOutputFormat.setOutputPath(job, cellToMicrogridParsedPath);
             job.waitForCompletion(true);
         }
-        
+
         Path countsByMicrogridPath = new Path(outputDir, "counts_by_microgrid");
         {
             CosmosJob job = CosmosJob.createMapReduceJob(config,
@@ -86,7 +89,7 @@ public class Main extends Configured implements Tool {
             FileOutputFormat.setOutputPath(job, countsByMicrogridPath);
             job.waitForCompletion(true);
         }
-        
+
         fs.delete(trafficCountsParsedPath, true);
         fs.delete(cellToMicrogridParsedPath, true);
 
@@ -102,7 +105,7 @@ public class Main extends Configured implements Tool {
             FileOutputFormat.setOutputPath(job, microgridToPolygonParsedPath);
             job.waitForCompletion(true);
         }
-        
+
         Path countsByPolygonPath = new Path(outputDir, "counts_by_polygon");
         {
             CosmosJob job = CosmosJob.createMapReduceJob(config,
@@ -116,7 +119,7 @@ public class Main extends Configured implements Tool {
             FileOutputFormat.setOutputPath(job, countsByPolygonPath);
             job.waitForCompletion(true);
         }
-        
+
         fs.delete(countsByMicrogridPath, true);
         fs.delete(microgridToPolygonParsedPath, true);
 
@@ -133,7 +136,7 @@ public class Main extends Configured implements Tool {
             FileOutputFormat.setOutputPath(job, aggregatedCountsByPolygonPath);
             job.waitForCompletion(true);
         }
-        
+
         fs.delete(countsByPolygonPath, true);
 
         Path soaCentroidsParsedPath = new Path(outputDir, "soa_centroids_parsed");
@@ -163,7 +166,7 @@ public class Main extends Configured implements Tool {
                                            aggregatedCountsByPolygonJoinedPath);
             job.waitForCompletion(true);
         }
-        
+
         fs.delete(aggregatedCountsByPolygonPath, true);
         fs.delete(soaCentroidsParsedPath, true);
 
@@ -182,9 +185,9 @@ public class Main extends Configured implements Tool {
                     aggregatedCountsByPolygonJoinedTextPath);
             job.waitForCompletion(true);
         }
-        
+
         fs.delete(aggregatedCountsByPolygonJoinedPath, true);
-        
+
         return 0;
     }
 

@@ -19,18 +19,18 @@ class TrafficCountsScalerMapper extends Mapper<
         Text, TypedProtobufWritable<Message>> {
 
     private Text cellId;
-    
+
     @Override
     protected void setup(Context context) {
         this.cellId = new Text();
     }
-    
+
     @Override
     protected void map(Text key, TypedProtobufWritable<Message> value,
             Context context) throws IOException, InterruptedException {
         final Message message = value.get();
         if (message instanceof TrafficCounts) {
-            this.cellId.set(((TrafficCounts) message).getCellId());
+            this.cellId.set(((TrafficCounts) message).getId());
         } else if (message instanceof Lookup) {
             this.cellId.set(((Lookup) message).getKey());
         } else {

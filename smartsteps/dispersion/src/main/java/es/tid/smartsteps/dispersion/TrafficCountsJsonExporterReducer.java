@@ -13,11 +13,12 @@ import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.smartsteps.dispersion.config.Config;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.Counts;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
+import es.tid.smartsteps.dispersion.parsing.JSONUtil;
 import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
 
 /**
  *
- * @author dmicol
+ * @author dmicol, sortega
  */
 class TrafficCountsJsonExporterReducer extends Reducer<
         Text, TypedProtobufWritable<TrafficCounts>,
@@ -25,14 +26,14 @@ class TrafficCountsJsonExporterReducer extends Reducer<
 
     private boolean shouldRoundResults;
     private Text outValue;
-    
+
     @Override
     protected void setup(Context context) {
         this.shouldRoundResults = context.getConfiguration().getBoolean(
                 Config.ROUND_RESULTS, false);
         this.outValue = new Text();
     }
-    
+
     @Override
     protected void reduce(Text key,
             Iterable<TypedProtobufWritable<TrafficCounts>> values,
@@ -43,26 +44,25 @@ class TrafficCountsJsonExporterReducer extends Reducer<
             context.write(NullWritable.get(), this.outValue);
         }
     }
-    
+
     private static JSONObject toJson(TrafficCounts counts, boolean shouldRound) {
         final JSONObject obj = new JSONObject();
-        obj.put(TrafficCountsParser.CELLID_FIELD_NAME, counts.getCellId());
+        /*
+         * Note: we use CELLID_FIELD_NAME despite it is a SOA id to conform
+         * with output format requirements.
+         */
+        obj.put(TrafficCountsParser.CELLID_FIELD_NAME, counts.getId());
         obj.put(TrafficCountsParser.DATE_FIELD_NAME, counts.getDate());
         obj.put(TrafficCountsParser.LATITUDE_FIELD_NAME, counts.getLatitude());
         obj.put(TrafficCountsParser.LONGITUDE_FIELD_NAME, counts.getLongitude());
-        for (Counts footfallCounts : counts.getFootfallsList()) {
-            obj.put(footfallCounts.getName(),
-                    toJsonArray(footfallCounts.getValuesList(), shouldRound));
+
+        for (Counts vectorNames : counts.getVectorsList()) {
+            JSONUtil.setProperty(obj, vectorNames.getName(),
+                    toJsonArray(vectorNames.getValuesList(), shouldRound));
         }
-        JSONObject pois = new JSONObject();
-        for (Counts poiCounts : counts.getPoisList()) {
-            pois.put(poiCounts.getName(),
-                     toJsonArray(poiCounts.getValuesList(), shouldRound));
-        }
-        obj.put(TrafficCountsParser.POIS_FIELD_NAME, pois);
         return obj;
     }
-    
+
     private static JSONArray toJsonArray(List<Double> values,
                                          boolean shouldRound) {
         JSONArray array = new JSONArray();

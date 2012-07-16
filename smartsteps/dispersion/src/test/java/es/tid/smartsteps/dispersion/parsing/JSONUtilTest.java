@@ -3,6 +3,7 @@ package es.tid.smartsteps.dispersion.parsing;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,10 +48,11 @@ public class JSONUtilTest {
     @Test
     public void shouldReturnNullWhenNotExists() throws Exception {
         assertNull(JSONUtil.getProperty(this.jsonObject, "nest.non-existant"));
+        assertNull(JSONUtil.getProperty(this.jsonObject, "nest.0.not"));
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void shouldThrowOnEmptyPropertyName() throws Exception {
+    public void shouldThrowOnGettingEmptyPropertyName() throws Exception {
         JSONUtil.getProperty(this.jsonObject, "");
     }
 
@@ -67,15 +69,26 @@ public class JSONUtilTest {
 
     @Test
     public void shouldSetNestedProperty() throws Exception {
-        JSONUtil.setProperty(this.jsonObject, "nest.subprop2.3", "value");
+        JSONArray value = new JSONArray();
+        JSONUtil.setProperty(this.jsonObject, "nest.subprop2.3", value);
         JSONObject nest1 = (JSONObject) this.jsonObject.get("nest");
         JSONArray nest2 = (JSONArray) nest1.get("subprop2");
-        assertEquals("value", nest2.get(3));
+        JSONArray nest3 = (JSONArray) nest2.get(3);
+        assertNotNull(nest3);
+
+        JSONUtil.setProperty(this.jsonObject, "nest.subprop2.3.0", 42);
+        assertEquals(42, JSONUtil.getProperty(this.jsonObject,
+                                              "nest.subprop2.3.0"));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowOnSettingEmptyPropertyName() throws Exception {
+        JSONUtil.setProperty(this.jsonObject, "", "value");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void shouldThrowOnInvalidJSONElement() throws Exception {
-        JSONUtil.setProperty("not an object", "prop1", "value");
+        JSONUtil.setProperty("not an object", "prop1.prop2", "value");
     }
 
     @Test(expected = IllegalArgumentException.class)

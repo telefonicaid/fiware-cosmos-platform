@@ -20,7 +20,7 @@ public final class JSONUtil {
      * Beans-like getter method that supports the dot character to access
      * nested fields.
      *
-     * @param json
+     * @param json        JSON object or array
      * @param property    Property name (dot-delimited nested-field names)
      * @return            The value or null
      * @throws IllegalArgumentException
@@ -31,14 +31,13 @@ public final class JSONUtil {
     public static Object getProperty(Object json, String property) {
         final StringTokenizer fieldNames =
                 new StringTokenizer(property, FIELD_DELIMITER);
-        if (!fieldNames.hasMoreElements()) {
+        if (!fieldNames.hasMoreTokens()) {
             throw new IllegalArgumentException("Empty property name");
         }
 
         Object value = json;
-        while (fieldNames.hasMoreElements()) {
+        while (fieldNames.hasMoreTokens()) {
             final String fieldName = fieldNames.nextToken();
-
             if (value == null) {
                 return null;
             } else if (value instanceof JSONObject) {
@@ -65,30 +64,31 @@ public final class JSONUtil {
      *                    type different from JSONObject or JSONArray is
      *                    accessed.
      */
-    public static void setProperty(Object object, String property, Object value) {
+    public static void setProperty(Object object, String property,
+                                   Object value) {
         final StringTokenizer fieldNames =
                 new StringTokenizer(property, FIELD_DELIMITER);
-        if (!fieldNames.hasMoreElements()) {
+        if (!fieldNames.hasMoreTokens()) {
             throw new IllegalArgumentException("Empty property name");
         }
 
+        Object lvalue = object;
         String fieldName = fieldNames.nextToken();
-
-        while (fieldNames.hasMoreElements()) {
-            if (object instanceof JSONObject) {
-                JSONObject jsonObject = (JSONObject) object;
+        while (fieldNames.hasMoreTokens()) {
+            if (lvalue instanceof JSONObject) {
+                JSONObject jsonObject = (JSONObject) lvalue;
                 if (!jsonObject.containsKey(fieldName)) {
                     jsonObject.put(fieldName, new JSONObject());
                 }
-                object = jsonObject.get(fieldName);
+                lvalue = jsonObject.get(fieldName);
 
-            } else if (value instanceof JSONArray) {
+            } else if (lvalue instanceof JSONArray) {
                 int index = Integer.parseInt(fieldName);
-                JSONArray jsonArray = (JSONArray) object;
+                JSONArray jsonArray = (JSONArray) lvalue;
                 if (jsonArray.get(index) == null) {
                     jsonArray.element(index, new JSONObject());
                 }
-                value = jsonArray.get(index);
+                lvalue = jsonArray.get(index);
 
             } else {
                 throwInvalidNest(fieldName, value);
@@ -97,18 +97,18 @@ public final class JSONUtil {
             fieldName = fieldNames.nextToken();
         }
 
-        if (object instanceof JSONObject) {
-            ((JSONObject) object).put(fieldName, value);
-        } else if (object instanceof JSONArray) {
-            ((JSONArray) object).element(Integer.parseInt(fieldName), value);
+        if (lvalue instanceof JSONObject) {
+            ((JSONObject) lvalue).put(fieldName, value);
+        } else if (lvalue instanceof JSONArray) {
+            ((JSONArray) lvalue).element(Integer.parseInt(fieldName), value);
         } else {
-            throwInvalidNest(fieldName, value);
+            throwInvalidNest(fieldName, lvalue);
         }
     }
 
     private static void throwInvalidNest(String fieldName, Object value) {
         throw new IllegalArgumentException(String.format(
-                    "Cannot access nested property '%s' on a value of class %s",
-                    fieldName, value.getClass()));
+                "Cannot access nested property '%s' on a value of class %s",
+                fieldName, value.getClass()));
     }
 }

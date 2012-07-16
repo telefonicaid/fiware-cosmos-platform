@@ -15,6 +15,7 @@ import org.junit.Test;
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.cosmos.base.mapreduce.BinaryKey;
 import es.tid.smartsteps.dispersion.config.Config;
+import es.tid.smartsteps.dispersion.data.TrafficCountsUtil;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
 
@@ -30,10 +31,10 @@ public class AggregationReducerTest extends TrafficCountsBasedTest {
     private TrafficCountsParser parser;
     private BinaryKey key;
     private TypedProtobufWritable<TrafficCounts> value;
-    
+
     public AggregationReducerTest() throws IOException {
     }
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new ReduceDriver<
@@ -62,7 +63,9 @@ public class AggregationReducerTest extends TrafficCountsBasedTest {
                 results.get(0);
         assertEquals(new Text("000012006440"), result.getFirst());
         final TrafficCounts outValue = result.getSecond().get();
-        List<Double> counts = outValue.getFootfallsList().get(0).getValuesList();
+        List<Double> counts = TrafficCountsUtil
+                .getVector(outValue, "footfall_observed_basic")
+                .getValuesList();
         assertEquals(0, counts.get(15).intValue());
         assertEquals(6, counts.get(19).intValue());
         assertEquals(3, counts.get(24).intValue());

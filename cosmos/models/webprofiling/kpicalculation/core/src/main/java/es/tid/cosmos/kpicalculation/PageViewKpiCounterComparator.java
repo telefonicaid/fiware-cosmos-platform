@@ -12,12 +12,12 @@ import es.tid.cosmos.kpicalculation.data.KpiCalculationCounter;
 /**
  * Class used in the compare and sort phases of process for simple aggregation
  * operations. This class is used to compare items of type WebLogCounter.
- * 
+ *
  * Note: Ideally this class should be used in a general way to use subclasses of
  * WebLog through casting operations. At this moment, and due to the flow of
  * hadoop map & reduce process, it is not possible to set a dynamic type to the
  * comparation objects so we have used to different comparator classes
- * 
+ *
  * @author javierb
  */
 public class PageViewKpiCounterComparator implements
@@ -30,7 +30,7 @@ public class PageViewKpiCounterComparator implements
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see org.apache.hadoop.io.RawComparator#compare(byte[], int, int, byte[],
      * int, int)
      */
@@ -52,7 +52,7 @@ public class PageViewKpiCounterComparator implements
 
     /*
      * (non-Javadoc)
-     * 
+     *
      * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
      */
     @Override

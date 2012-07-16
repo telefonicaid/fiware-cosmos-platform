@@ -57,7 +57,7 @@ public class ProfileDAO {
                 .limit(1)
                 .toArray());
     }
-    
+
     private CategoryMap toCategoryMap(DBObject resultCategories,
                                       CategoryMap categoryMap) {
         for (String categoryName : resultCategories.keySet()) {

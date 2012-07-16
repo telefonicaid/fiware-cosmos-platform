@@ -33,12 +33,12 @@ public class SetMobDataInputIdByTwoIntReducerTest {
                 TypedProtobufWritable<InputIdRecord>>(
                         new SetMobDataInputIdByTwoIntReducer());
     }
-    
+
     @Test(expected=IllegalArgumentException.class)
     public void testNoInputId() {
         this.driver.runTest();
     }
-    
+
     @Test
     public void testSetInputId() throws IOException {
         Configuration conf = this.driver.getConfiguration();

@@ -30,7 +30,7 @@ public class SetMobDataInputIdByTwoIntReducer extends Reducer<
             throw new IllegalArgumentException("Missing or invalid input ID");
         }
     }
-    
+
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<TypedProtobufWritable<Message>> values, Context context)

@@ -1,0 +1,141 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Samson Monitoring Page</title>
+	
+	<!-- CSS : implied media="all" -->
+	<link rel="stylesheet" href="css/reset.css">
+	<link rel="stylesheet" href="css/style.css"> 
+	
+    <!-- FLOT -->
+    <script language="javascript" type="text/javascript" src="flot/jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="flot/jquery.flot.js"></script>
+
+</head>
+<body>
+	<div id="header">
+		<h1>Samson <span class="opened">Monitoring</span></h1>
+	</div>
+	
+	<div id="content">
+	
+		<div class="box system FL">
+			<h2>CPU</h2>
+			<div id="cpu" class="content" id="lists_system"></div>
+		</div>
+		
+		<div class="box system FR">
+			<h2>Memory</h2>
+			<div id="memory" class="content"></div>
+		</div>
+		
+		<div class="box disk FL">
+			<h2>Disk in</h2>
+			<div id="disk_in" style="overflow:auto" class="content" id="lists_queues"></div>
+		</div>
+		<div class="box disk FR">
+			<h2>Disk out</h2>
+			<div id="disk_out" class="content"></div>
+		</div>
+
+		<div class="box queues FL">
+			<h2>Network in</h2>
+			<div id="network_in" style="overflow:auto" class="content" id="lists_queues"></div>
+		</div>
+        
+		<div class="box queues FR">
+			<h2>Network out</h2>
+			<div id="network_out" class="content"></div>
+		</div>
+
+	</div>
+    
+    <script type="text/javascript">
+
+$(function () 
+{
+
+    // Update period ( in miliseconds )
+    var updateInterval = 1000;
+    
+    // URL to fetch
+    var servers = [ "overthetop01" , "overthetop02" , "overthetop03" , "overthetop04" , "overthetop05" ];
+    //var servers = [ "samson05" , "samson06" , "samson07" , "samson08" ];
+    //var servers = [ "localhost" ];
+
+    // Different values from servers
+    var cpu_values = [];
+    var memory_values = [];
+    
+    var disk_in_values = [];
+    var disk_out_values = [];
+    
+    var network_in_values = [];
+    var network_out_values = [];
+
+    // Options fot the plot
+    var options = 
+    {
+        lines: { show: true , horizontal:true },
+        points: { show: true },
+        legend: { position: "nw"}
+    };
+
+    function update() 
+    {
+        // Generic function to plot data
+        function plot( ) 
+        {
+            $.plot( $("#cpu") , cpu_values , options);
+            $.plot( $("#memory") , memory_values , options);
+            
+            $.plot( $("#disk_in") , disk_in_values , options);
+            $.plot( $("#disk_out") , disk_out_values , options);
+            
+            $.plot( $("#network_in") , network_in_values , options);
+            $.plot( $("#network_out") , network_out_values , options);
+            
+         }
+
+         function send_ajax_request( url_data , server )
+         {
+            $.ajax({
+                url: url_data,
+                method: 'GET',
+                dataType: 'json',
+                success: function( data ) 
+                         {
+                            // Modify the label
+                            for( i = 0 ; i < 6 ; i++ )
+                                data[i].label = servers[server];
+                         
+                             cpu_values[server]         = data[0];
+                             memory_values[server]      = data[1];
+                             disk_in_values[server]     = data[2];
+                             disk_out_values[server]    = data[3];
+                             network_in_values[server]  = data[4];
+                             network_out_values[server] = data[5];
+                             
+                             plot( ); // Update the plot
+                         }
+            });
+         }
+        
+        for ( s = 0 ; s < servers.length ; s++ )
+            send_ajax_request( "http://" + servers[s] + ":1202/samson/node/general.json" , s );    
+
+ 
+        // Timeout call to update function to refresh data        
+        setTimeout(update, updateInterval);
+    }
+
+    // Call update ( it is auto-called periodically )
+    update();
+});
+</script>
+
+
+</body>
+</html>

@@ -26,7 +26,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class PopdenProfileGetOutReducerTest extends ConfiguredTest {
     private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<ClusterVector>,
             NullWritable, Text> instance;
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new ReduceDriver<ProtobufWritable<TwoInt>,
@@ -34,7 +34,7 @@ public class PopdenProfileGetOutReducerTest extends ConfiguredTest {
                         new PopdenProfileGetOutReducer());
         this.instance.setConfiguration(this.getConf());
     }
-    
+
     @Test
     public void testReduce() throws IOException {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 88L);

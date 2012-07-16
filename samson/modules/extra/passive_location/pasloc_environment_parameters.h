@@ -1,0 +1,121 @@
+/*
+ * pasloc_environment_parameters.h
+ *
+ *  Created on: 23/02/2011
+ *      Author: jges
+ */
+
+#ifndef pasloc_ENVIRONMENT_PARAMETERS_H_
+#define pasloc_ENVIRONMENT_PARAMETERS_H_
+
+#define PASLOC_PARAMETER_CONF_TIMESLOT_HOME			"pasloc.conf_timeslot_home"
+#define PASLOC_PARAMETER_CONF_TIMESLOT_HOME_DEFAULT		"3|0011111 00:00:00 07:00:00|0011110 20:00:00 23:59:59|1100000 08:00:00 12:59:59"
+
+#define PASLOC_PARAMETER_CONF_TIMESLOT_WORK			"pasloc.conf_timeslot_work"
+#define PASLOC_PARAMETER_CONF_TIMESLOT_WORK_DEFAULT		"1|0011111 09:00:00 16:59:59"
+
+#define PASLOC_PARAMETER_CONF_REFDAY         "pasloc.conf.ref_day"
+#define PASLOC_PARAMETER_CONF_REFDAY_DEFAULT 0
+
+#define PASLOC_PARAMETER_CONF_LENGTHWINDOWDAYS         "pasloc.conf.window_length_in_days"
+#define PASLOC_PARAMETER_CONF_LENGTHWINDOWDAYS_DEFAULT 30
+
+#define PASLOC_PARAMETER_CONF_THR_DAYACTIVITY         "pasloc.conf.day_activity_threshold"
+#define PASLOC_PARAMETER_CONF_THR_DAYACTIVITY_DEFAULT 1
+
+#define PASLOC_PARAMETER_CONF_THR_TOTALACTIVITY         "pasloc.conf.total_activity_threshold"
+#define PASLOC_PARAMETER_CONF_THR_TOTALACTIVITY_DEFAULT 0.30
+
+
+
+
+#define PASLOC_PARAMETER_MINMONTHCALLS_IN "pasloc.parameter_minMonthCalls_in"
+#define PASLOC_PARAMETER_MINMONTHCALLS_IN_DEFAULT 2
+
+#define PASLOC_PARAMETER_MINMONTHCALLS_NAT_HOME "pasloc.parameter_minMonthCalls_nat_home"
+#define PASLOC_PARAMETER_MINMONTHCALLS_NAT_HOME_DEFAULT 5
+
+#define PASLOC_PARAMETER_MINMONTHCALLS_STA "pasloc.parameter_minMonthCalls_sta"
+#define PASLOC_PARAMETER_MINMONTHCALLS_STA_DEFAULT 11
+
+#define PASLOC_PARAMETER_MINMONTHCALLS_LAC "pasloc.parameter_minMonthCalls_lac"
+#define PASLOC_PARAMETER_MINMONTHCALLS_LAC_DEFAULT 7
+
+#define PASLOC_PARAMETER_MINPERLACSTACALLS "pasloc.parameter_minPerLacStaCalls"
+#define PASLOC_PARAMETER_MINPERLACSTACALLS_DEFAULT 80
+
+#define PASLOC_PARAMETER_NUMDAYSMIN_CELL_HOME "pasloc.parameter_numDaysMin_cell_home"
+#define PASLOC_PARAMETER_NUMDAYSMIN_CELL_HOME_DEFAULT 1
+
+#define PASLOC_PARAMETER_FREQMIN_CELL_HOME "pasloc.parameter_freqMin_cell_home"
+#define PASLOC_PARAMETER_FREQMIN_CELL_HOME_DEFAULT 0.0
+
+#define PASLOC_PARAMETER_NUMDAYSMIN_BTS_HOME "pasloc.parameter_numDaysMin_bts_home"
+#define PASLOC_PARAMETER_NUMDAYSMIN_BTS_HOME_DEFAULT 1
+
+#define PASLOC_PARAMETER_FREQMIN_BTS_HOME "pasloc.parameter_freqMin_bts_home"
+#define PASLOC_PARAMETER_FREQMIN_BTS_HOME_DEFAULT 0
+
+#define PASLOC_PARAMETER_NUMDAYSMIN_LAC_HOME "pasloc.numDaysMin_lac_home"
+#define PASLOC_PARAMETER_NUMDAYSMIN_LAC_HOME_DEFAULT 1
+
+#define PASLOC_PARAMETER_FREQMIN_LAC_HOME "pasloc.freqMin_lac_home"
+#define PASLOC_PARAMETER_FREQMIN_LAC_HOME_DEFAULT 0
+
+#define PASLOC_PARAMETER_NUMDAYSMIN_STA_HOME "pasloc.numDaysMin_sta_home"
+#define PASLOC_PARAMETER_NUMDAYSMIN_STA_HOME_DEFAULT 1
+
+#define PASLOC_PARAMETER_FREQMIN_STA_HOME "pasloc.freqMin_sta_home"
+#define PASLOC_PARAMETER_FREQMIN_STA_HOME_DEFAULT 0
+
+#define PASLOC_PARAMETER_NUMDAYSMIN_CELL_WORK "pasloc.numDaysMin_cell_work"
+#define PASLOC_PARAMETER_NUMDAYSMIN_CELL_WORK_DEFAULT 1
+
+#define PASLOC_PARAMETER_FREQMIN_CELL_WORK "pasloc.freqMin_cell_work"
+#define PASLOC_PARAMETER_FREQMIN_CELL_WORK_DEFAULT 0
+
+#define PASLOC_PARAMETER_NUMDAYSMIN_BTS_WORK "pasloc.numDaysMin_bts_work"
+#define PASLOC_PARAMETER_NUMDAYSMIN_BTS_WORK_DEFAULT 1
+
+#define PASLOC_PARAMETER_FREQMIN_BTS_WORK "pasloc.freqMin_bts_work"
+#define PASLOC_PARAMETER_FREQMIN_BTS_WORK_DEFAULT 0
+
+#define PASLOC_PARAMETER_NUMDAYSMIN_LAC_WORK "pasloc.numDaysMin_lac_work"
+#define PASLOC_PARAMETER_NUMDAYSMIN_LAC_WORK_DEFAULT 1
+
+#define PASLOC_PARAMETER_FREQMIN_LAC_WORK "pasloc.freqMin_lac_work"
+#define PASLOC_PARAMETER_FREQMIN_LAC_WORK_DEFAULT 0
+
+#define PASLOC_PARAMETER_NUMDAYSMIN_STA_WORK "pasloc.numDaysMin_sta_work"
+#define PASLOC_PARAMETER_NUMDAYSMIN_STA_WORK_DEFAULT 1
+
+#define PASLOC_PARAMETER_FREQMIN_STA_WORK "pasloc.freqMin_sta_work"
+#define PASLOC_PARAMETER_FREQMIN_STA_WORK_DEFAULT 0
+
+
+
+
+
+
+
+
+#define PASLOC_FLAG_TRUE								"true"
+#define PASLOC_FLAG_FALSE								"false"
+
+#define PASLOC_FLAG_ONLY_EXTREME				"pasloc.only_extreme"
+#define PASLOC_FLAG_FUSING_COMMUNITIES		"pasloc.fusing_communities"
+#define PASLOC_FLAG_NO_DUPLICATE												"pasloc.no_duplicate"
+#define PASLOC_FLAG_NO_DUPLICATE_DEFAULT										0
+#define PASLOC_FLAG_NODES											"pasloc.customers"
+#define PASLOC_FLAG_PARSE_DIR													"pasloc.parse_dir"
+#define PASLOC_FLAG_PARSE_DIR_DEFAULT											0
+#define PASLOC_FLAG_TELEFONICA_NODES											"pasloc.telefonica_nodes"
+#define PASLOC_FLAG_TELEFONICA_NODES_DEFAULT											"true"
+#define PASLOC_FLAG_TELEFONICA_NODES_TRUE											"true"
+#define PASLOC_FLAG_TELEFONICA_NODES_FALSE											"true"
+#define PASLOC_FLAG_DUPLICATES														"pasloc.duplicates"
+#define PASLOC_FLAG_DUPLICATES_DEFAULT												"false"
+#define PASLOC_FLAG_EXTERN_MARK													"pasloc.extern_mark"
+#define PASLOC_FLAG_EXTERN_MARK_DEFAULT											"false"
+
+#endif /* pasloc_ENVIRONMENT_PARAMETERS_H_ */

@@ -77,7 +77,7 @@ public class CreateJobPage {
         nextElement.click();
         return new SetParametersPage(this.driver);
     }
-    
+
     public CreateJobPage cancel() {
         assertCorrectUrl();
         WebElement cancelLink = this.driver.findElement(
@@ -85,7 +85,7 @@ public class CreateJobPage {
         cancelLink.click();
         return new CreateJobPage(this.driver);
     }
-    
+
     public String getErrors() {
         assertCorrectUrl();
         return this.driver.findElement(By.className("errorlist")).getText();

@@ -26,7 +26,7 @@ public final class ItinPercMoveUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<ItinPercMove> createAndWrap(int group,
             int range, double percMoves) {
         return wrap(create(group, range, percMoves));

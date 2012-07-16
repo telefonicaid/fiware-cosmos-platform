@@ -1,0 +1,8 @@
+# Running inside build/testing
+../apps/samsonLocal/samsonLocal -working . -f test_complete_commands.txt >test_complete_stdout 2>test_complete_stderr
+
+cat out.txt | sort -n > test_complete_out.txt
+rm -f out.txt
+
+#Compare the produced output with the expected output
+diff  test_complete_out.txt test_complete_expected_out.txt

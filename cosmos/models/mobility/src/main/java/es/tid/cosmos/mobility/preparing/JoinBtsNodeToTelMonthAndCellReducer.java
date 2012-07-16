@@ -19,14 +19,14 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
 /**
  * Input: <Long, Cdr>
  * Output: <TelMonth, Cell>
- * 
+ *
  * @author dmicol
  */
 class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Cdr>, ProtobufWritable<TelMonth>,
         TypedProtobufWritable<Cell>> {
     private static List<Cell> cells = null;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
@@ -36,7 +36,7 @@ class JoinBtsNodeToTelMonthAndCellReducer extends Reducer<LongWritable,
             cells = CellsCatalogue.load(new Path(conf.get("cells")), conf);
         }
     }
-    
+
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Cdr>> values, Context context)

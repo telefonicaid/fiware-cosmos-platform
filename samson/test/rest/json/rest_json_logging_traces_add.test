@@ -1,0 +1,6 @@
+--NAME--
+REST JSON /samson/logging/traces/add
+--SHELL--
+curl -s --request POST http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/logging/traces/add/1,56.json
+--EXPECT--
+{{"trace":"added level(s) 1,56"}}

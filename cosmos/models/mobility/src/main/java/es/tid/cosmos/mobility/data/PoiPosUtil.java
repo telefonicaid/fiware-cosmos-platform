@@ -36,7 +36,7 @@ public final class PoiPosUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<PoiPos> createAndWrap(long node, long bts,
             int label, double posx, double posy, int inoutWeek, int inoutWend,
             double radiusWeek, double distCMWeek, double radiusWend,

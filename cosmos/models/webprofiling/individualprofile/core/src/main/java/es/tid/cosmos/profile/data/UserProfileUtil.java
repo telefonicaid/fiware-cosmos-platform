@@ -32,7 +32,7 @@ public final class UserProfileUtil {
         wrapper.set(create(userId, date, counts));
         return wrapper;
     }
-    
+
     public static String toString(UserProfile obj) {
         String str = obj.getUserId() + DELIMITER + obj.getDate();
         for (CategoryCount count : obj.getCountsList()) {

@@ -1,0 +1,17 @@
+#!/bin/bash -x
+#
+# Post install configuration after performing make install*
+SAMSON_HOME=$1
+SAMSON_WORKING=$2
+SAMSON_OWNER=$3
+mkdir -p ${SAMSON_HOME}/share/modules/moduletemplate
+cp README ${SAMSON_HOME}/share/README.txt
+cp modules/moduletemplate/CMakeLists.txt ${SAMSON_HOME}/share/modules/moduletemplate
+cp modules/moduletemplate/makefile ${SAMSON_HOME}/share/modules/moduletemplate
+cp modules/moduletemplate/module ${SAMSON_HOME}/share/modules/moduletemplate
+cp scripts/samsonModuleBootstrap ${SAMSON_HOME}/bin
+cp scripts/samsonProcessesSupervise ${SAMSON_HOME}/bin
+echo
+echo "Before starting Samson you need to run the following commands as root"
+echo "mkdir -p ${SAMSON_WORKING}"
+echo "chown -R ${SAMSON_OWNER}:${SAMSON_OWNER} ${SAMSON_WORKING}"

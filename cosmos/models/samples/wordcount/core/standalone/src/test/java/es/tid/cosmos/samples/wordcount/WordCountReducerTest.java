@@ -30,7 +30,7 @@ public class WordCountReducerTest {
             .withOutput(new Text("this"), new LongWritable(1L))
             .runTest();
     }
-    
+
     @Test
     public void shouldCountRepeatedWords() {
         this.driver

@@ -20,13 +20,13 @@ import es.tid.cosmos.base.mapreduce.CosmosJob;
 public final class OutPoisRunner {
     private OutPoisRunner() {
     }
-    
+
     public static void run(Path vectorClientbtsPath, Path pointsOfInterestIdPath,
                            Path vectorClientClusterPath, Path vectorBtsClusterPath,
                            Path tmpDirPath, boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         FileSystem fs = FileSystem.get(conf);
-        
+
         Path vectorClientbtsSpreadPath = new Path(tmpDirPath,
                                                   "vector_clientbts_spread");
         {
@@ -50,7 +50,7 @@ public final class OutPoisRunner {
             FileOutputFormat.setOutputPath(job, vectorClientpoiPath);
             job.waitForCompletion(true);
         }
-        
+
         Path vectorPoiClusterPath = new Path(tmpDirPath, "vector_poi_cluster");
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "PoiNormalizePoiVector",
@@ -99,7 +99,7 @@ public final class OutPoisRunner {
             FileOutputFormat.setOutputPath(job, vectorCommBtsTxtPath);
             job.waitForCompletion(true);
         }
-        
+
         Path vectorCommPoiTxtPath = new Path(tmpDirPath, "vectorCommPoiTxt");
         {
             CosmosJob job = CosmosJob.createReduceJob(conf, "VectorNodbtsOut",
@@ -111,7 +111,7 @@ public final class OutPoisRunner {
             FileOutputFormat.setOutputPath(job, vectorCommPoiTxtPath);
             job.waitForCompletion(true);
         }
-        
+
         if (!isDebug) {
             fs.delete(pointsOfInterestIdPath, true);
             fs.delete(vectorClientbtsPath, true);

@@ -1,0 +1,33 @@
+.TH SAMSON\-SORT 7 2011-07-08 "Samson" "Samson Module Libraries"
+.SH NAME
+samson\-sort \- big data sort
+.SH DESCRIPTION
+The samson SORT library is an example implementation just to evaluate the 
+capacity of the samon platform. Various alternatives to resolve the problem have been
+implemented. Here commented is only the most efficient implementation,
+made ad-hoc for this task.
+
+.SH DATA TYPES
+  Code (ad-hoc implementation)
+
+.SH FUNCTIONS
+  Parser            map    (out sort.Code system.UInt64)
+  ParserOutReduce   reduce (in sort.Code system.UInt64)
+
+.SH SCRIPTS
+  sort  -> map;
+           reduce
+
+.SH SEE ALSO
+.BR samson (1),
+.BR samson-cdr (7),
+.BR samson-example (7),
+.BR samson-graph (7),
+.BR samson-moduletemplate (7),
+.BR samson-osn (7),
+.BR samson-sna (7),
+.BR samson-system (7),
+.BR samson-terasort (7),
+.BR samson-test (7),
+.BR samson-txt (7),
+.BR samson-urlbenchmark (7)

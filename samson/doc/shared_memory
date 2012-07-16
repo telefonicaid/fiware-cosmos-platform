@@ -1,0 +1,31 @@
+
+
+
+Rational
+------------------------------------------
+
+
+samsonWorker uses shared memory areas to exchange data between background processes and foreground platform.
+Note that since samsonLocal incorporates an instance of samsonWorker, it can have the same kind of problems we will discuss here.
+
+Under some circumstances, samsonLocal or samsonWorker can fail at startup for shared-memory problems.
+This is a quick guide of how to solve this problems.
+
+* First, review the size of shared-memory buffers used by SAMSON in your distribution. This can be done checking the /var/samson/etc/setup.txt file in a line like:
+
+general.shared_memory_size_per_buffer     268435456
+
+* Second, review what is the maximum size in your linux box with "sysctl -a | grep shm" where you can see a line like
+
+kern.sysv.shmmax: 1610612736
+
+* If necessary, adapt the max size usign "sysctl -w kern.sysv.shmmax=256000000" or "sudo sysctl -w kernel.shmmax=268435456"
+
+* Finallly, it samsonLocal or samsonWorker does not finish correctly, the created shared-memory buffers persist in the system. This can be a problem since total available system-wide share memory could be reduced.
+
+In this situations, we can remove existing shared-memory buffers with ipcrm command using something like:
+
+for i in `ipcs -m | grep $USER | awk '{print $2}'`; do ipcrm -m $i; done
+
+
+

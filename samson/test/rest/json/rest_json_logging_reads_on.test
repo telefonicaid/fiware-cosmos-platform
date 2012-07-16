@@ -1,0 +1,6 @@
+--NAME--
+REST JSON /samson/logging/reads/on
+--SHELL--
+curl -s --request POST http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/logging/reads/on.json
+--EXPECT--
+{{"reads":"reads turned ON"}}

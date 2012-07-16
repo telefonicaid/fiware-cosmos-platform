@@ -1,0 +1,182 @@
+
+Module webp
+{
+	title	"Web Profiling"
+	author	"Andreu Urruela & Gregorio Escalad"
+	version "0.2"
+}
+
+
+data Category
+{
+	system.UInt id;
+	system.String name;
+}
+
+data Log
+{
+	system.String user;
+	system.String url;
+	system.TimeUnix time;
+
+	vector webp.Category categories;
+}
+
+data CategoryHits
+{
+	webp.Category category;
+	system.UInt hits;
+	system.Double current;
+}
+
+data User
+{
+	system.String id;
+	system.TimeUnix last_update;
+	vector webp.CategoryHits category_hits;
+	webp.Log last_log;
+}
+
+parser parse_web_logs
+{
+    out system.String webp.Log
+	
+	help
+    {
+       "Parse web logs"
+	   "Output: [ user Log ]"
+    }
+}
+
+
+parser parse_tid_web_logs
+{
+    out system.String webp.Log
+	
+	help
+    {
+       "Parse web logs"
+	   "Output: [ user Log ]"
+    }
+}
+
+map joint_comscore_dictionary
+{
+	in system.String webp.Log
+	out system.String webp.Log
+
+	help
+	{
+     	"Lookup all url agains the comscore dictionary"
+    }
+}			
+
+map map_comscore_lookup
+{
+	in system.Value system.Value
+	out system.Value system.Value
+
+	help
+	{
+     	"Lookup url agains the conscore_dictionary. Input is suppoused to be a map with url property as a string. categories property set at the output"
+    }
+}			
+
+map emit_hits
+{
+	in system.String webp.Log
+	out system.String system.UInt
+
+	helpLine "Emit all the strings to be tracked.To be connected with hit module..."
+}
+
+
+map emit_hits_for_urls
+{
+	in system.String system.UInt
+	out system.String system.UInt
+
+	helpLine "Process urls at the input and Emit all strings to be tracked: url , domain , category,..."
+}
+
+reduce update_user
+{
+	in  system.String webp.Log
+	in  system.String webp.User
+	out system.String webp.User
+
+	helpLine "Update profile for this user"
+}
+
+
+script web_profiling
+{
+    code
+    {
+        # Input queues
+        alias [input]             in_input;
+        alias [input_tid]         in_input_tid;
+
+		# Internal queues
+        alias [logs]              logs;
+        alias [errors]            errors;
+        alias [hits]              hits;
+
+        # Operations;
+        alias [parse_input]       parse;
+        alias [parse_input_tid]   parse_tid;
+        alias [emit_hits]         emit_hits;
+ 
+        # Definitions;
+        add_stream_operation      [parse_input]      webp.parse_web_logs      [input]       [logs];
+        add_stream_operation      [parse_input_tid]  webp.parse_tid_web_logs  [input_tid]   [logs];
+        add_stream_operation      [emit_hits]        webp.emit_hits           [logs]        [hits];
+
+		 # Auxiliar modules;
+        init_stream hit_5mins    hit.stream_block_simple;
+        init_stream hit_1hour    hit.stream_block_simple;
+        init_stream hit_24hours  hit.stream_block_simple;
+
+		#Properties
+		set_stream_operation_property hit_5mins.01.reduce_hits time_span 300;
+		set_stream_operation_property hit_5mins.20.reduce_tops time_span 300;
+
+		set_stream_operation_property hit_1hour.01.reduce_hits time_span 3600;
+		set_stream_operation_property hit_1hour.20.reduce_tops time_span 3600;
+
+		set_stream_operation_property hit_24hours.01.reduce_hits time_span 86400;
+		set_stream_operation_property hit_24hours.20.reduce_tops time_span 86400;
+
+		# Connect quuees
+		add_queue_connection      [hits] hit_5mins.in_input  hit_1hour.in_input hit_24hours.in_input
+    }
+
+    helpLine "Init stream operations"
+}
+
+script demo
+{
+    code
+    {
+        #remove_all_stream;
+
+		# ----------------------------------------------------------------
+		# Input queues
+		# ----------------------------------------------------------------        
+		alias [input]          in_web_logs;
+        alias [input_tid]      in_tid_web_logs;
+		# ----------------------------------------------------------------
+		
+		# ----------------------------------------------------------------
+		# wep profiling stream block
+		# ----------------------------------------------------------------
+        init_stream webp    webp.web_profiling;
+ 
+		add_queue_connection [input]     webp.in_input;
+		add_queue_connection [input_tid] webp.in_input_tid;
+		# ----------------------------------------------------------------
+
+    }
+
+    helpLine "Demo about web profiling"
+}

@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TelMonth;
 /**
  * Input: <TelMonth, Cell>
  * Output: <Long, MobVars>
- * 
+ *
  * @author logc
  */
 class ActivityAreaReducer extends Reducer<
@@ -34,7 +34,7 @@ class ActivityAreaReducer extends Reducer<
         double massCenterY;
         double radius;
     }
-    
+
     private Set<Long> allCells;
     private Set<Long> allBtss;
     private Set<Integer> allMuns;
@@ -64,7 +64,7 @@ class ActivityAreaReducer extends Reducer<
                 influenceAreaDiameter);
         context.write(newKey, new TypedProtobufWritable<MobVars>(ans));
     }
-    
+
     private Accumulations accumulate(
             Iterable<TypedProtobufWritable<Cell>> values) {
         Accumulations ans = new Accumulations();

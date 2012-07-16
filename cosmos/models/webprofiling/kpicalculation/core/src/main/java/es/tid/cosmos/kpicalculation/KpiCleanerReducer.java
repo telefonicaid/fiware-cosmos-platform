@@ -8,7 +8,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 /**
- * 
+ *
  * @author javierb
  */
 public class KpiCleanerReducer extends

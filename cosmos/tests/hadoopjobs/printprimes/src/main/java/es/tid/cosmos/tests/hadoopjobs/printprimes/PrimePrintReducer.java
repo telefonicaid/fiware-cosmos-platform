@@ -18,7 +18,7 @@ import org.bson.BasicBSONObject;
 public class PrimePrintReducer
         extends Reducer<Text, IntWritable, Text, BSONWritable> {
     @Override
-    public void reduce(Text key, Iterable<IntWritable> values, Context context) 
+    public void reduce(Text key, Iterable<IntWritable> values, Context context)
             throws IOException, InterruptedException {
         // Ignore KEY_COUNT for now
         if (PrimePrintMapper.KEY_LIST.equals(key)) {
@@ -29,7 +29,7 @@ public class PrimePrintReducer
             context.write(key, this.toBSON(valueList.toArray(new Integer[0])));
         }
     }
-    
+
     private BSONWritable toBSON(Integer[] primes) {
         BSONObject obj = new BasicBSONObject();
         obj.put("primes", primes);

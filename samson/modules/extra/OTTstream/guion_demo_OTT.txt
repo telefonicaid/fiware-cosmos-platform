@@ -1,0 +1,87 @@
+- Conectarse a overthetop01 con usuario samson061, passwd: samson
+- Recuperar sesión de tmux:
+	$ tmux a
+- En la primera pantall CONFIG:
+	- Asegurarse que todo está parado y limpio (salvo la configurcaión del cluster)
+		$ samsonKillAll
+		$ samsonCleanAll
+	- Arrancar los samsonWorker con
+		$ samsonSpawAll
+
+- En la tercera pantalla delilah:
+	- Arrancar delilah, y mostrar que el cluster está configurado, y vacío.
+		$ delilah061
+		Delilah> cluster info
+		Delilah> ls_workers
+		Delilah> ls
+
+- Volver a la segunda pantall delilaf_CONFIG
+	- Arrancar delilah, configurar la operación y cargar la tabla estática de clusters
+		$ delilah061 -f ~/bin/delilah_OTT.conf
+		Configura :     init_stream OTTstream.demo
+				push /home/datos/TRAFFICA/etiquetadoNov2011.txt input_user_cluster
+
+- Volver a la tercera pantalla delilah:
+	- Mostrar las operaciones y colas
+		Delilah> ls -group name 
+	Pero antes de mirar más se lanza la subida de los logs
+
+- En la cuarta pantalla PushLogs:
+
+	- Arrancar samsonPushLogs para subir datos al cluster.
+		$ ~/bin/lanzaOTT_samsonPushLogs.scr
+
+		Ejecuta:
+		samsonPushLogs -ti "2011-11-03 09:00:00" -nr 10.0 -node overthetop01 -port_node 1236 -dl "HTTP,timesorted,16,9,2,logs_http DNS,timesorted,11,4,2,logs_dns SMS,timesorted,18,12:14,2,logs_sms Voice,timesorted,35,1,1,logs_voice"
+		Primero sincroniza los logs hasta que todos ellos se situan en las 9 de la mañana del 3 de noviembre, y a partir de ahí va mandando línea a línea, de acuerdo a su timesteamp, a 10 veces tiempo real
+		Tarda casi un minuto en sincronizar los logs de HTPP y DNS.
+
+- Volver a la tercera pantalla delilah:
+	- Mostrar las operaciones y colas
+		Delilah> ls_operations OTT*
+		Delilah> ls_datas OTT*
+		Delilah> ls_stream_operations -group name
+		Delilah> ls -group name -rates (cuando salgan datos, comprobar desde el samsonPushlogs)
+
+- En la quinta pantalla LevelMonitor
+	- Arrancar la presentación del número de usuarios por servicio:
+		$ ~/bin/showOTTservices.scr
+
+		Ejecuta
+		$ samsonPop -port_node 1236 output_levels | samsonLevelMonitor -nr 10.0 -refresh 10 -concept Skype,Viber,Facebook,GTalk,WhatsApp,faceTime,iphoneMessage,Facebook,Tuenti,Google+,seq1,seq2 -title "Number of users in last 5 minutes"
+
+
+- En la sexta pantalla REST:
+	- Se puede consultar por curl:
+		$ curl -L http://overthetop01:1202/samson/version
+		$ curl -L http://overthetop01:1202/samson/state/01.OTTstream.service_state/10
+		$ curl -L http://overthetop01:1202/samson/state/01.OTTstream.service_state/2001 | fgrep 2001
+
+		Y también se puede probar desde el explorer
+
+- En las pantallas Queries y Alerts se mostrará la generación de alertas.
+- En la septima pantalla Queries
+	- Se lanza un samsonPush para escribir comandos (de uno en uno)
+		$ samsonPush -node overthetop01 -port_node 1236 -lines input_commands
+			Skype NEWER time_window=3600
+			GTalk NEWER time_window=600 clusterId=0
+			GTalk NEWER time_window=3600 clusterId=2
+			2001 OLDER time_window=600
+
+- En la octava pantalla Alerts aparecerán los datos de los usuarios en respuesta a las queries
+	- Se lanza un samsonPop a la cola correspondiente
+		$ samsonPop -node overthetop01 -port_node 1236 -new output_users_per_service
+
+		tarda un ratillo, por la latencia, ya que tienen que entrar tres operaciones. Un solución más elegante sería el interfaz REST (aunque para responder a los requisitos de filtrado, habría que haber organziado los estados de otra manera)
+
+- Finalmente, en la pantalla TopicMonitor, se mostrarán unas primeras actividades hacia un perfila de web profiling en continuo
+	- Arrancar la presentación de web profiling:
+		$ . ~/bin/showURLSTopics.scr
+
+		Ejecuta
+		samsonPop -port_node 1236 output_topics | samsonTopicMonitor -concept category -title "Top categories"  > /tmp/topic_categ 2>&1 &
+		samsonPop -port_node 1236 output_topics | samsonTopicMonitor -concept domain -title "Top domains" > /tmp/topic_domain 2>&1   &
+		samsonPop -port_node 1236 output_topics | samsonTopicMonitor -concept url -title "Top urls" > /tmp/topic_url 2>&1  &
+
+		Muestra los top 100 urls, dominios y categorías en los últimos 10 minutos
+

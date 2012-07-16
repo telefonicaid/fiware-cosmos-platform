@@ -1,0 +1,158 @@
+Module sort
+{
+
+	title	"sort  module"
+	author 	"Gregorio Escalada (jges@tid.es)"
+	version "0.1"
+	
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+# -------------------------------------------------
+# Operations with data
+# -------------------------------------------------
+
+generator random_sequence_generator
+{
+	out system.UInt system.Void
+	
+	helpLine "Generates a random sequence of UInt-Void key-values, as many as selected with the environment variable 'test.number_of_samples'"
+}
+
+generator random_sequence_generator_common_key
+{
+	out system.UInt8 system.UInt
+	
+	helpLine "Generates a random sequence of UInt-Void key-values, as many as selected with the environment variable 'test.number_of_samples'"
+}
+
+parser parse_file
+{
+	out system.UInt system.Void
+	
+	helpLine "Parse input file, one number per line. Emits key-values of type UInt-Void"
+}
+
+parser parse_file_common_key
+{
+	out system.UInt8 system.UInt
+	
+	helpLine "Parse input file, one number per line. Emits key-values of type UInt-Void"
+}
+
+parser parse_file_by_buckets
+{
+	out system.UInt8 system.UInt
+	
+	helpLine "Parse input file, one number per line. Emits key-values of type UInt-Void"
+}
+
+
+reduce reduce_identity
+{
+	in system.UInt system.Void
+	out system.UInt system.Void	
+
+	helpLine "Identity operation"
+	
+}
+
+reduce reduce_identity_common_key
+{
+	in system.UInt8 system.UInt
+	out system.UInt8 system.UInt	
+
+	helpLine "Identity operation"
+	
+}
+
+reduce reduce_to_common_key
+{
+	in system.UInt system.Void
+	out system.UInt8 system.UInt	
+
+	helpLine "Identity operation"
+	
+}
+
+parserOut export_sequence
+{
+	in system.UInt system.Void
+
+	helpLine "Export the ordered sequence of numbers (can also be used on the unordered sequence)"
+}
+
+parserOut export_sequence_common_key
+{
+	in system.UInt8 system.UInt
+
+	helpLine "Export the ordered sequence of numbers (can also be used on the unordered sequence)"
+}
+
+script ScriptSortDataFromTxt
+{
+	in txt txt 		# Input data ($1)
+	out txt txt     # Sorted data ($2)
+	
+	helpLine "Sequence to sort data, from uploaded text file, to textual data-set ready for download"
+	
+	code
+	{
+	sort.parse_file_by_buckets  $1 common -create -clear;
+	sort.reduce_identity_common_key common sorted -clear -create;
+	sort.export_sequence_common_key sorted $2  -clear -create;
+	}
+}
+
+script ScriptSortDataFromGenerator
+{
+	out txt txt     # Sorted data ($1)
+	
+	helpLine "Sequence to sort data, from generated random, to textual data-set ready for download"
+	
+	code
+	{
+	set test.number_of_samples              100000000;
+	sort.random_sequence_generator numbers -create -clear;
+	sort.reduce_to_common_key numbers common -clear -create;
+	sort.reduce_identity_common_key common sorted -clear -create;
+	sort.export_sequence_common_key sorted $2  -clear -create;
+	}
+}
+
+# ---------------------------------------------------------------------------
+# Andreu
+# ---------------------------------------------------------------------------
+
+data Code
+{
+	# Adhoc implementation	
+}
+
+parser map
+{
+	out sort.Code system.UInt64
+	helpLine "Parse data and divide across the cluster"
+}
+
+parserOutReduce reduce
+{
+	in sort.Code system.UInt64
+	helpLine "Sort data producing txt output"
+}
+
+script sort
+{
+	in txt txt
+	out txt txt
+
+	code
+	{
+		sort.map $1 $1_tmp -create;
+		sort.reduce $1_tmp $2 -create;
+		rm $1_tmp;
+	}
+}

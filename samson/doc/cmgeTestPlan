@@ -1,0 +1,114 @@
+For the first FI-WARE release 'R1', the Configuration Management Component (CMC)
+is to support a subset of the requests defined for NGSI9:
+
+  o registerContext              adds and updates entities 
+  o discoverContextAvailability  discovers available entities
+
+An entity is a kind of container for attributes, that have a name, a type and a value plus an associated list of metadata.
+
+Now, to test that these two requests are correctly implemented, a number of tests must be performed.
+First six 'standalone' tests are described, and after that, what to be done for the integration tests of
+this component.
+'cmc' is the name of the executable that implements the Configuration Management component.
+This executable should be cleanly started at the beginning of each test and killed afterwards (Ctrl-C).
+
+  [ The exact XML strings for the requests in this test cannot be specified at the moment of writing,
+    but will be provided as an appendix as soon as possible. ]
+
+CMC Standalone tests:
+------------------------------------------------------------------------------------------------------------
+1. Registration
+   - Start the CMC in 'clean mode':
+     % cmc -fg -reset
+
+   - Add an entity 'ConferenceRoom' of type 'Room' with one attribute 'temperature' of type 'degree' and one metadata
+     'ID' with value '123456':
+     % curl 'localhost:2121 /NGSI9/registerContextRequest -d 'XML1'  # XML1 is found in Appendix X
+
+   - Now, discover all entities of type 'Room':
+     % curl 'localhost:2121 /NGSI9/discoverContextAvailability -d 'XML2'
+
+   - Make sure nothing is returned for another type:
+     % curl 'localhost:2121 /NGSI9/discoverContextAvailability -d 'XML3' 
+
+
+2. Update
+   To update an entity, the registrationId that was returned in the creation of the entity must be used in the
+   request. In order to perform this test, the string 'XML5' must be edited by hand to insert this registrationId.
+   In this 'test-update', one attribute is added to the entity 'ConferenceRoom' of type 'Room'
+   Furthermore, the duration of the entity will be changed from the initial one month to one year.
+
+   - Start the CMC in 'clean mode':
+     % cmc -fg -reset
+
+   - Register the entity 'ConferenceRoom' (don't forget to remember the 'registrationId' from the output):
+     % curl 'localhost:2121 /NGSI9/registerContextRequest -d 'XML1'
+
+   - Check the entity is there
+     % curl 'localhost:2121 /NGSI9/discoverContextAvailability -d 'XML2'
+
+   - Update the entity 'ConferenceRoom' (don't forget to edit the 'XML5' string, adding the 'registrationId'):
+     % curl 'localhost:2121 /NGSI9/registerContextRequest -d 'XML5'
+
+   - Check the result
+     % curl 'localhost:2121 /NGSI9/discoverContextAvailability -d 'XML2'
+
+
+3. Erroneous Update 1
+   This test is a try to update an entity but without giving any registration id
+
+   - Start the CMC in 'clean mode':
+     % cmc -fg -reset
+
+   - Register the entity 'ConferenceRoom' (don't forget to remember the 'registrationId' from the output):
+     % curl 'localhost:2121 /NGSI9/registerContextRequest -d 'XML1'
+
+   - Check the entity is there
+     % curl 'localhost:2121 /NGSI9/discoverContextAvailability -d 'XML2'
+
+   - Erroneous try to update the entity (this time the 'registrationId' is NOT added to 'XML5')
+     % curl 'localhost:2121 /NGSI9/registerContextRequest -d 'XML5'
+     The output of this curl command should show an error.    
+
+
+4. Erroneous Update 2
+   This test is a try to update an entity but giving an erroneous registration id
+
+   - Start the CMC in 'clean mode':
+     % cmc -fg -reset
+
+   - Register the entity 'ConferenceRoom' (don't forget to remember the 'registrationId' from the output):
+     % curl 'localhost:2121 /NGSI9/registerContextRequest -d 'XML1'
+
+   - Check the entity is there
+     % curl 'localhost:2121 /NGSI9/discoverContextAvailability -d 'XML2'
+
+   - Erroneous try to update the entity (Add some 'registrationId' to 'XML5', but not the correct one!)
+     % curl 'localhost:2121 /NGSI9/registerContextRequest -d 'XML5'
+     The output of this curl command should show an error.    
+
+
+5. Erroneous Registration
+   This test is a try to register an entity that already exists.
+
+   - Start the CMC in 'clean mode':
+     % cmc -fg -reset
+
+   - Register the entity 'ConferenceRoom' (no need to remember the 'registrationId' from the output):
+     % curl 'localhost:2121 /NGSI9/registerContextRequest -d 'XML1'
+
+   - Check the entity is there
+     % curl 'localhost:2121 /NGSI9/discoverContextAvailability -d 'XML2'
+
+   - Register the entity 'ConferenceRoom' AGAIN:
+     % curl 'localhost:2121 /NGSI9/registerContextRequest -d 'XML1'
+     The output of this curl command should show an error.
+
+================================================================================================================
+
+Integration tests
+
+1. All six 'individual' tests to be performed NOT using curl, but using an appropriate IoT agent.
+   At the moment, I have no information about how this is to be done.
+
+2. Make sure that the CMC registers all incoming entities to the Pub/Sub Broker.

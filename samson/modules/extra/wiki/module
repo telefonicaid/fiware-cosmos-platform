@@ -1,0 +1,66 @@
+Module wiki
+{
+    title   "Wikipedia operations"
+    author  "Andreu Urruela & Gregorio Escalada"
+    version "0.2"
+}
+
+data WordInfo
+{
+	system.UInt totalCount;
+	system.StringVector page;
+	system.Vector_UInt count;
+}
+
+parser parse_pages_to_links
+{
+    out system.String system.StringVector
+
+    helpLine "Parse a web site (in wikipedia format) and emit one kv per page, with the vector of all links it points to"
+}
+
+parser parse_links
+{
+	out system.String system.String
+	
+	helpLine "Parse a web site (in wikipedia format) and emit one kv per link, with the destination as key, and the origin page as value (to build an inverted index)"	
+}
+
+parser parse_words
+{
+	out system.String system.String
+	
+	helpLine "Parse a web site (in wikipedia format) and emit one kv per word, with the word as key, and the page as value (to build an inverted index)"	
+}
+
+reduce reduce_inverted_index
+{
+	in system.String system.String
+	in system.String wiki.WordInfo
+	out system.String wiki.WordInfo
+	
+	helpLine "Builds an inverted index (words or links), working on a state"
+}
+
+
+
+script init_stream_operations
+{
+	code
+	{
+		rm_stream_operation wiki.parser -f;
+		add_stream_operation wiki.parser  txt.parser_words wiki.01.input.txt hit.01.input_words;
+	}
+}
+
+script demo
+{
+    code
+    {
+        remove_all_stream;
+        init_stream wiki.init_stream_operations;
+        init_stream hit.init_stream_operations;
+    }
+
+    helpLine "Init stream operations"
+}

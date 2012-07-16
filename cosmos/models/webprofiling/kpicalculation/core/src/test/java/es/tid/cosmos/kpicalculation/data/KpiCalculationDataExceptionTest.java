@@ -9,7 +9,7 @@ import org.junit.Test;
  */
 public class KpiCalculationDataExceptionTest {
     private KpiCalculationDataException instance;
-    
+
     @Test
     public void testConstructorWithCause() {
         String message = "Without cause exception";
@@ -21,7 +21,7 @@ public class KpiCalculationDataExceptionTest {
         assertEquals(KpiCalculationCounter.LINE_FILTERED_3RDPARTY,
                      this.instance.getCounter());
     }
-    
+
     @Test
     public void testConstructorWithoutCause() {
         String message = "Without cause exception";

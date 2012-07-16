@@ -9,9 +9,9 @@ import static org.testng.Assert.fail;
  *
  * @author ximo
  */
-public class HadoopJars {    
+public class HadoopJars {
     private static final Properties props;
-    
+
     static {
         props = new Properties();
         try {
@@ -20,10 +20,10 @@ public class HadoopJars {
             fail("IOException while loading configuration: " + ex.toString());
         }
     }
-    
+
     private HadoopJars() {
     }
-    
+
     public static String getPath(JarNames jar) {
         return props.getProperty(jar.toString());
     }

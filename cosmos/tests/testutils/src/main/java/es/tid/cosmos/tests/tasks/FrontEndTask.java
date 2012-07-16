@@ -24,7 +24,7 @@ public class FrontEndTask extends Task {
     private final FrontEnd frontend;
     private final String taskId;
     private final String jarHdfsPath;
-    
+
     public static String getOutputHdfsPath(String user, String outputDirName) {
         return ("/user/" + user + "/" + outputDirName);
     }
@@ -125,11 +125,11 @@ public class FrontEndTask extends Task {
         if (this.dataSet != null) {
             setParamsPage.setDatasetPath(this.dataSet);
         }
-        
+
         for(String key : this.parameters.keySet()) {
             setParamsPage.setParameter(key, this.parameters.get(key));
         }
-        
+
         final String prevUrl = this.frontend.getDriver().getCurrentUrl();
         setParamsPage.next().runJob();
         assertNotSame(prevUrl, this.frontend.getDriver().getCurrentUrl(),

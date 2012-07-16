@@ -1,0 +1,402 @@
+Module graph
+{
+	title	"Graph operations"
+	author	"Andreu Urruela"
+	version "0.1"
+}
+
+# Link : connection to another element
+
+data Link
+{
+	 system.UInt id;
+	 system.UInt weight;
+}
+
+# Node: Main element of the graph
+
+data Node
+{
+	 system.UInt id;
+	 vector graph.Link links;
+	 system.UInt8 flags;
+}
+
+data NodeDist
+{
+	 system.UInt id;
+	 vector graph.Link links;
+	 system.UInt distance;
+}
+
+data VectorNode
+{
+	 vector graph.Node items;
+}
+
+
+script compute_graph
+{
+	in		system.UInt cdr.CDR
+	in		system.UInt cdr.User
+	out	 system.UInt graph.Node
+
+	helpLine "Compute a graph from a set of CDRs"
+
+	help
+	{
+		"Compute the graph from the set of cdrs and a set of users"
+		"Note that users are necessary just to mark users as customers of Telefonica"
+	}
+
+	code
+	{
+		clear $3;	 # There is no sense to accumulate two graphs on the same output
+
+		cdr.spread_cdrs_to_links $1 $1.spread -create -clear;	 		# Get all the connections between cdrs in both directions
+		graph.get_graph_from_links $1.spread $1.graph -create -clear;	 # Compute the graph from the links ( couple of intergers )
+
+		graph.add_extern_mark_to_graph $1.graph $2 $3.previous -create -clear;	# Add extern flags when necessary
+
+		graph.filter_graph_map $3.previous $3.previous.spread -create -clear;	 # Filter graph
+		graph.filter_graph_reduce $3.previous.spread $3 -create -clear;
+
+		rm $1.spread -f;
+		rm $1.graph -f;
+		rm $3.previous -f;
+		rm $3.previous.spread -f;
+	}
+}
+
+
+reduce compute_links_from_simple_links
+{
+        in      system.UInt system.UInt
+	out 	system.UInt graph.Link
+	
+	helpLine "Transform simple links ( pairs of system.UInts into links )"
+
+}
+
+script compute_graph_from_simple_links
+{
+        in      system.UInt system.UInt
+        out     system.UInt graph.Node
+
+        helpLine "Compute a graph from a set of pairs of connections between nodes"
+
+        code
+        {
+				
+		graph.compute_links_from_simple_links $1 $1.links;
+                graph.get_graph_from_links $1.links $2 -create -clear;
+
+                rm $1.links -f;
+        }
+}
+
+
+script compute_graph_O2
+{
+	in		txt txt
+	in		txt txt
+	out	 system.UInt graph.Node
+
+	helpLine "Compute a graph from a set of CDRs (O2UK)"
+
+	help
+	{
+		"Compute the graph from the set of cdrs and a set of users"
+		"Note that users are necessary just to mark users as customers of O2"
+		"At the moment, we do not have this information, so we have selected it from the CDRs themselves"
+	}
+
+	code
+	{
+		set cdr.CDRs_source O2UKp2p;
+		cdr.parse_cdrs $1 $1.cdrs -create -clear; 		# Parse the txt format into keys-value for CDRs
+		cdr.parse_users_O2UK $2 $2.users -create -clear;
+		graph.accumulate_cdrs_into_links $1.cdrs $1.links -create -clear;
+
+		graph.compute_graph_from_links $1.links $1.graph -create -clear;	 # Compute the graph from the links ( couple of intergers )
+
+		graph.add_extern_mark_to_graph $1.graph $2.users $3.previous -create -clear;	# Add extern flags when necessary
+
+		graph.filter_graph_map $3.previous $3.previous.spread -create -clear;	 # Filter graph
+		graph.filter_graph_reduce $3.previous.spread $3 -create -clear;
+
+
+		rm $1.spread -f;
+		rm $1.graph -f;
+		rm $3.previous -f;
+		rm $3.previous.spread -f;
+	}
+}
+
+
+
+script compute_graph_from_links
+{
+	in system.UInt2 system.UInt
+	out system.UInt graph.Node
+
+	helpLine "Complete process to compute a graph from a set of ordered links (A-B and not B-A)"
+
+	code
+	{
+	graph.spread_links $1 $1.tmp -clear -create;
+	graph.get_graph_from_links $1.tmp $1.tmp2 -create -clear;
+	graph.filter_graph $1.tmp2 $2;
+	rm $1.tmp $1.tmp2 -f;
+	}
+}
+
+reduce get_graph_from_links
+{
+	in	 system.UInt graph.Link
+	out	 system.UInt graph.Node
+
+	helpLine "Get a graph from a set of links. It basically an accumulator function"
+
+}
+
+map spread_links
+{
+	in system.UInt2 system.UInt
+	out system.UInt graph.Link
+
+	helpLine "Transform links and counters into a graph-link. It uses graph.links_to_be_strong to determine the weight of the link"
+}
+
+
+reduce add_extern_mark_to_graph
+{
+	in system.UInt graph.Node
+	in system.UInt cdr.User
+	out system.UInt graph.Node
+
+	helpLine "Add the extern mark to all the nodes not included in the user file provided as second input"
+
+	help
+	{
+		"Operation to cross a graph set (system.UInt-graph.Node) with a file containing information about the user"
+		"It is only used to set the extern flag in the node elements where we do not have information about the user"
+	}
+}
+
+map filter_graph_map
+{
+	in		system.UInt graph.Node
+	out	 system.UInt graph.Node
+
+	help
+	{
+		"First phase of the filter-graph process. Please contcatenate wiht filter_graph_reduce to perform the filter graph"
+		"In this first step, graph elements are simply put at the output if they are correct."
+			"If they are not correct, a \"kill-node\" is send at the output to all its connections to be removed in the second phase"
+	}
+
+}
+
+reduce filter_graph_reduce
+{
+	in		system.UInt graph.Node
+	out	 system.UInt graph.Node
+
+	help
+	{
+		"Second phase of the filter-graph process."
+		"Here we only detect if a \"killing node\" has been sent in the first phase to remove a node"
+	}
+}
+
+
+script filter_graph
+{
+	in	   system.UInt graph.Node
+	out	   system.UInt graph.Node
+
+	helpLine "*Remove nodes with more than graph.max_strong_connections strong connections or more than graph.max_connections connections" 
+
+	code
+	{
+		graph.filter_graph_map $1 $1.spread -create -clear;
+		graph.filter_graph_reduce $1.spread $2 -create -clear;
+		rm $1.spread -f;
+	}
+}
+
+parserOut select_graph
+{
+	in system.UInt graph.Node
+
+	helpLine "Export system.UInt graph.Node key-values in a standard format."
+}
+
+parser parse_links
+{
+	out	 system.UInt graph.Link
+
+	helpLine "Parse a graph from txt files. Input format is expected to be links in the format 925513947|657056810|0.25"
+
+	help
+	{
+		"parse a graph in txt format. Every link is suppoused to be a connection "
+		"Format for each line: 925513947|657056810|0.25 "
+		"The output emits two key-values for each row (in both directions of the link)"
+		"If we only want to emit a single output add -no_duplicate at the output"
+	}
+}
+
+generator fake_graph
+{
+	out system.UInt graph.Node
+
+	helpLine "Generate some fake graphs to play with"
+
+	help
+	{
+		"Generate some example of simple graphs. Use graph.fake_graph to select differnt graphs\n"
+	}
+}
+
+script parse_graph
+{
+	in txt txt
+	out system.UInt graph.Node
+
+	top
+
+	helpLine "Still not implemented"
+
+	help
+	{
+		"Transform a txt-based file with a graph into a binary graph with key-value [system.UInt graph.Node]"
+		"The input graph is suppoused to be a list of connections between nodes. See graph.parse_links for more info"
+	}
+
+	code
+	{
+		graph.parse_links $1 $1_links -create -clear;		# parse links emiting two outputs per line
+		graph.get_graph_from_links $1_links $2 -create -clear;	# collapse all links into a graph
+		rm $1_links -f;
+	}
+
+}
+
+reduce accumulate_links
+{
+	in system.UInt2 system.Void
+	in system.UInt2 system.UInt
+	out system.UInt2 system.UInt
+
+	helpLine "Accumulate the number of times a particular link (UInt2) is at the input"
+}
+
+script accumulate_cdrs_into_links
+{
+	in system.UInt cdr.CDR
+	out system.UInt2 system.UInt
+
+	code
+	{
+	# Transform cdrs into links
+	cdr.spread_cdrs_to_links2 $1 $1.tmp -create -clear -clear_inputs;
+	
+	# Accumulate links
+	graph.accumulate_links $1.tmp $2 $2 -clear_inputs;
+	
+	# Remove temporal
+	rm $1.tmp;
+
+	}
+}
+
+map map_select_node_to_compute_distance
+{
+	in system.UInt graph.Node
+	out system.UInt graph.NodeDist
+
+	helpLine "Copies the graph to NodeDist format, and select the node to compute the distance from. The node is selected with the environment variable 'graph.first_node'"
+}
+
+map map_send_distance_through_links
+{
+	in system.UInt graph.NodeDist
+	out system.UInt graph.NodeDist
+	out system.UInt system.UInt
+
+	helpLine "Emits the distance for all the nodes in the adjancecy list"
+}
+
+reduce red_get_min_distance
+{
+	in system.UInt graph.NodeDist
+	in system.UInt system.UInt
+	out system.UInt graph.NodeDist
+
+	helpLine "Get a graph from a set of links. It basically an accumulator function"
+}
+
+
+parserOut export_graph_distances
+{
+	in system.UInt graph.NodeDist
+
+	helpLine "Export the nodes in the graph with their distance to 'graph.first_node'."
+}
+
+script compute_breadthfirst_algorithm
+{
+	in txt txt
+	out txt txt
+
+	helpLine "Explore a graph with Breadth-First Algorithm. Computes the distance of every node to the first node (selected with 'graph.first_node')"
+
+	help
+	{
+		"Explore a graph with Breadth-First Algorithm. "
+		"Computes the distance of every node to the first node (selected with 'graph.first_node')"
+		"I don't know yet how to evaluate stop condition in the script"
+	}
+
+	code
+	{
+		clear $2;
+
+		graph.parse_links $1 $1.parsed -clear -create; # Input file with links in the format 'node1|node2|weight'
+		graph.get_graph_from_links $1.parsed $1.nodes -clear -create;
+		graph.map_select_node_to_compute_distance $1.nodes $1.nodesDist -clear -create ;
+		graph.map_send_distance_through_links $1.nodesDist $1.nodesDist.next $1.distances -clear -create;
+		graph.red_get_min_distance $1.nodesDist.next $1.distances $1.nodesDist -clear -create;
+		#Repeat until condition
+		graph.map_send_distance_through_links $1.nodesDist $1.nodesDist.next $1.distances -clear -create;
+		graph.red_get_min_distance $1.nodesDist.next $1.distances $1.nodesDist -clear -create;
+		#Repeat until condition
+		graph.map_send_distance_through_links $1.nodesDist $1.nodesDist.next $1.distances -clear -create;
+		graph.red_get_min_distance $1.nodesDist.next $1.distances $1.nodesDist -clear -create;
+		#Repeat until condition
+		graph.map_send_distance_through_links $1.nodesDist $1.nodesDist.next $1.distances -clear -create;
+		graph.red_get_min_distance $1.nodesDist.next $1.distances $1.nodesDist -clear -create;
+		#Repeat until condition
+		graph.map_send_distance_through_links $1.nodesDist $1.nodesDist.next $1.distances -clear -create;
+		graph.red_get_min_distance $1.nodesDist.next $1.distances $1.nodesDist -clear -create;
+		#Repeat until condition
+		graph.map_send_distance_through_links $1.nodesDist $1.nodesDist.next $1.distances -clear -create;
+		graph.red_get_min_distance $1.nodesDist.next $1.distances $1.nodesDist -clear -create;
+		#Repeat until condition
+		graph.map_send_distance_through_links $1.nodesDist $1.nodesDist.next $1.distances -clear -create;
+		graph.red_get_min_distance $1.nodesDist.next $1.distances $1.nodesDist -clear -create;
+		#Repeat until condition
+		graph.map_send_distance_through_links $1.nodesDist $1.nodesDist.next $1.distances -clear -create;
+		graph.red_get_min_distance $1.nodesDist.next $1.distances $1.nodesDist -clear -create;
+
+		graph.export_graph_distances $1.nodesDist $2 -clear -create;
+
+		rm $1.parsed -f;
+		rm $1.nodes -f;
+		rm $1.nodesDist	-f;
+		rm $1.nodesDist.next -f;
+		rm $1.distances -f;
+	}
+}

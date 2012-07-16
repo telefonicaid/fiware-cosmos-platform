@@ -21,7 +21,7 @@ public class TextCategoryExtractionMapper extends Mapper<LongWritable, Text,
     private static final Logger LOG = Logger.getLogger(
             TextCategoryExtractionMapper.class);
     private static final LongWritable ONE = new LongWritable(1L);
-    
+
     private TernaryKey outKey;
 
     @Override

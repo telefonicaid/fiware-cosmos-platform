@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <registerContextRequest>
+    <contextRegistrationList>
+      <contextRegistration>
+        <entityIdList>
+          <entityId type="Room" isPattern="false">
+            <id>Toilet</id>
+          </entityId>
+          <entityId type="Room" isPattern="false">
+            <id>Salong</id>
+          </entityId>
+        </entityIdList>
+        <contextRegistrationAttributeList>
+          <contextRegistrationAttribute>
+            <name>temperature</name>
+            <type>degree</type>
+            <isDomain>false</isDomain>
+            <metaData>
+              <contextMetadata>
+                <name>ID</name>
+                <type>string</type>
+                <value>belongs to toilet and salong</value>
+              </contextMetadata>
+              <contextMetadata>
+                <name>cm2</name>
+                <type>string</type>
+                <value>belongs to toilet and salong</value>
+              </contextMetadata>
+            </metaData>
+          </contextRegistrationAttribute>
+        </contextRegistrationAttributeList>
+        <registrationMetaData>
+          <contextMetadata>
+            <name>ID</name>
+            <type>string</type>
+            <value>for another reg</value>
+          </contextMetadata>
+          <contextMetadata>
+            <name>ID2</name>
+            <type>string</type>
+            <value>for another reg</value>
+          </contextMetadata>
+        </registrationMetaData>
+        <providingApplication>http://192.168.100.1:70/application</providingApplication>
+      </contextRegistration>
+    </contextRegistrationList>
+    <duration>PT1M</duration>
+    <registrationId></registrationId>
+  </registerContextRequest>

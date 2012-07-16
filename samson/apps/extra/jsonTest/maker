@@ -1,0 +1,1 @@
+g++ -g -Wall -o json_parser json_parser.cpp /usr/lib/libjson.a

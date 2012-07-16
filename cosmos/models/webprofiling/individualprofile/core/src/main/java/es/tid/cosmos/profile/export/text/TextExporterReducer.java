@@ -22,7 +22,7 @@ public class TextExporterReducer extends Reducer<Text,
             throws IOException, InterruptedException {
         for (ProtobufWritable<UserProfile> value : values) {
             value.setConverter(UserProfile.class);
-            context.write(NullWritable.get(), 
+            context.write(NullWritable.get(),
                           new Text(UserProfileUtil.toString(value.get())));
         }
     }

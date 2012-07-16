@@ -24,7 +24,7 @@ import es.tid.cosmos.mobility.activitydensity.PopdenSumCommsReducer;
 public final class PopulationDensityProfileRunner {
     private PopulationDensityProfileRunner() {
     }
-    
+
     public static CosmosWorkflow run(Path cdrsInfoPath, Path cellsPath,
             Path clientProfileMobPath, Path populationDensityProfileOut,
             Path tmpDirPath, boolean isDebug, Configuration conf)
@@ -73,7 +73,7 @@ public final class PopulationDensityProfileRunner {
         FileOutputFormat.setOutputPath(popdenprofBtsprofJob, popdenprofBtsprofPath);
         popdenprofBtsprofJob.addDependentWorkflow(denpobNodeinfoNodupJob);
         wfList.add(popdenprofBtsprofJob);
-        
+
         Path popdenBtsprofCountPath = new Path(tmpDirPath,
                                                "popden_btsprof_count");
         CosmosJob popdenBtsprofCountJob = CosmosJob.createReduceJob(conf,
@@ -88,7 +88,7 @@ public final class PopulationDensityProfileRunner {
         popdenBtsprofCountJob.setDeleteOutputOnExit(!isDebug);
         popdenBtsprofCountJob.addDependentWorkflow(popdenprofBtsprofJob);
         wfList.add(popdenBtsprofCountJob);
-        
+
         Path populationDensityPath = new Path(tmpDirPath, "population_density");
         CosmosJob populationDensityJob = CosmosJob.createReduceJob(conf,
                 "PopdenSumComms",
@@ -102,7 +102,7 @@ public final class PopulationDensityProfileRunner {
         populationDensityJob.setDeleteOutputOnExit(!isDebug);
         populationDensityJob.addDependentWorkflow(popdenBtsprofCountJob);
         wfList.add(populationDensityJob);
-        
+
         {
             CosmosJob job = CosmosJob.createReduceJob(conf,
                     "PopdenProfileGetOut",

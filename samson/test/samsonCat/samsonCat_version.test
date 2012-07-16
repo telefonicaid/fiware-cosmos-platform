@@ -1,0 +1,8 @@
+--NAME--
+samsonCat - version
+--SHELL--
+samsonCat -version
+--EXPECT--
+No MAN version
+No MAN Copyright
+No MAN Author

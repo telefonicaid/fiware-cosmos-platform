@@ -10,10 +10,10 @@ import java.security.NoSuchAlgorithmException;
 public final class SHAEncoder {
     private SHAEncoder() {
     }
-    
+
     public static String encode(String value) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-512"); 
-        digest.update(value.getBytes()); 
+        MessageDigest digest = MessageDigest.getInstance("SHA-512");
+        digest.update(value.getBytes());
         byte messageDigest[] = digest.digest();
         StringBuilder hexString = new StringBuilder();
         for (int i = 0; i < messageDigest.length; i++) {

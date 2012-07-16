@@ -28,12 +28,12 @@ public final class NodeBtsUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<NodeBts> createAndWrap(long userId,
             long bts, int weekday, int range) {
         return wrap(create(userId, bts, weekday, range));
     }
-    
+
     public static String toString(NodeBts obj, String separator) {
         return obj.getUserId() + separator + obj.getBts() + separator
                 + obj.getWeekday() + separator + obj.getRange();

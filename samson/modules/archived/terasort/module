@@ -1,0 +1,38 @@
+Module terasort
+{
+
+	title	"terasort  module"
+	author 	"Gregorio Escalada (jges@tid.es)"
+	version "0.1"
+	
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+data Partition
+{
+	# Adhoc implementation	
+}
+
+data Record
+{
+	system.String keyf;
+	system.String num_rec;
+	system.String valf;
+}
+
+
+parser parse_file
+{
+	out terasort.Partition terasort.Record
+	helpLine "Parse data and divide across the cluster"
+}
+
+parserOutReduce reduce_and_export
+{
+	in terasort.Partition terasort.Record
+
+	helpLine "Sort data producing txt output"
+}

@@ -1,0 +1,26 @@
+add TEMM -txt
+upload GASSET_TRAFICO_VOZ_20090228.DAT TEMM
+upload fake_Cliques.DAT TEMM
+
+
+sna.mx_calls_cdrs_to_graph TEMM TEMM_graph -clear -create 
+	set sna.cdr_format TEMM_VOZ
+	set sna.num_cdrs_for_strong_connection 4
+	set sna.max_connections_per_node 50
+	set sna.max_strong_connections_per_node 400
+
+	sna.parse_cdrs TEMM TEMM_cdrs_bin_ini -clear -create
+    sna.acg_map_dup_cdrs TEMM_cdrs_bin_ini TEMM_cdrs_bin_dup -clear -create
+	sna.remove_duplicates TEMM_cdrs_bin_dup TEMM_cdrs_bin_fin -clear -create
+    sna.acg_red_cdrs_to_nodes TEMM_cdrs_bin_fin TEMM_graph_pre -clear -create
+
+	sna.filter_graph_map TEMM_graph_pre TEMM_graph_wkill -clear -create
+    sna.filter_graph_reduce TEMM_graph_wkill TEMM_graph -clear -create
+
+	sna.social_graph_parse_out_sinks TEMM_graph TEMM_graph_sinks_txt -clear -create
+	
+sna.compute_cliques TEMM_graph TEMM_cliques -clear -create
+	sna.spread_nodes_to_strong_connections TEMM_graph TEMM_graph_spread -clear -create
+	sna.compute_cliques_from_spread_graph TEMM_graph_spread TEMM_cliques -clear -create
+	sna.export_cliques TEMM_cliques TEMM_cliques.txt -clear -create
+	download TEMM_cliques.txt TEMM_cliques.txt

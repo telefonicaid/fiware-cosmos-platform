@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <Long, Poi|Cluster>
  * Output: <TwoInt, Poi>
- * 
+ *
  * @author dmicol
  */
 class ClusterAggNodeClusterByNodbtsReducer extends Reducer<LongWritable,
@@ -32,7 +32,7 @@ class ClusterAggNodeClusterByNodbtsReducer extends Reducer<LongWritable,
                 values, Poi.class, Cluster.class);
         List<Poi> poiList = dividedList.get(Poi.class);
         List<Cluster> clusterList = dividedList.get(Cluster.class);
-        
+
         for (Poi poi : poiList) {
             for (Cluster cluster : clusterList) {
                 ProtobufWritable<TwoInt> nodbts = TwoIntUtil.createAndWrap(

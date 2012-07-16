@@ -1,0 +1,8 @@
+--NAME--
+REST JSON /samson/logging/traces
+--SHELL-INIT--
+curl -s --request POST http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/logging/traces/set/1,56  > /dev/null
+--SHELL--
+curl -s http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/logging/traces.json
+--EXPECT--
+{{"title":"Trace information","items":[{"worker_id":"0","Trace levels":"1, 56"}]}}

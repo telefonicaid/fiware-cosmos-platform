@@ -1,0 +1,57 @@
+Module test
+{
+	title	"Simple module to test the platform"
+	author	"Andreu Urruela"
+	version "1.0"
+}
+
+data Integer
+{
+}
+
+
+generator generator
+{
+	out test.Integer test.Integer
+	helpLine "Simple generator that generates a list of ints"
+}
+
+
+map map
+{
+	in test.Integer test.Integer
+	out test.Integer test.Integer
+
+	helpLine "Simple map that inverts the order of the key and the value"
+}
+
+parserOut export_ints
+{
+	in test.Integer test.Integer
+	
+	helpLine "Export to txt file to be able to work with it"
+}
+
+script test_1
+{
+	code
+	{
+		remove_all;
+		test.generator a -create;
+		test.map a b -create;
+		test.export_ints b out.txt -create;
+		rm a;
+		rm b;
+	}
+
+	helpLine "Simple test script that produce a out_txt queue with some results to be compared"
+}
+
+map newtest
+{
+        in test.Integer test.Integer
+        out test.Integer test.Integer
+
+        helpLine "Simple map that inverts the order of the key and the value"
+
+}

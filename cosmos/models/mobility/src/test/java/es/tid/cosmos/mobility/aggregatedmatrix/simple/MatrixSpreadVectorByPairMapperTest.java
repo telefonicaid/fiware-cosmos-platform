@@ -20,7 +20,7 @@ public class MatrixSpreadVectorByPairMapperTest {
     private MapDriver<ProtobufWritable<ItinRange>,
             TypedProtobufWritable<ClusterVector>, ProtobufWritable<TwoInt>,
             TypedProtobufWritable<ClusterVector>> instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new MapDriver<ProtobufWritable<ItinRange>,
@@ -28,7 +28,7 @@ public class MatrixSpreadVectorByPairMapperTest {
                 TypedProtobufWritable<ClusterVector>>(
                         new MatrixSpreadVectorByPairMapper());
     }
-    
+
     @Test
     public void testMap() {
         final ProtobufWritable<ItinRange> key = ItinRangeUtil.createAndWrap(

@@ -1,0 +1,20 @@
+add xmls.txt -txt
+upload XMLs xmls.txt
+
+mob2.parse_xml_ARCANUM xmls.txt xmls phoneImeis imeisPhone tacsPhone -clear -create
+
+mob2.map_cdrs_to_user_timestamp xmls phoneTime -clear -create
+
+mob2.print_user_statistics phoneTime phoneTime.txt -clear -create
+mob2.print_user_imei phoneImeis phoneImeis.txt -clear -create
+mob2.print_imei_user imeisPhone imeisPhone.txt -clear -create
+mob2.print_TAC_users tacsPhone tacsPhone.txt -clear -create
+
+rm_local phoneTime
+download phoneTime.txt phoneTime
+rm_local phoneImeis
+download phoneImeis.txt phoneImeis
+rm_local imeisPhone
+download imeisPhone.txt imeisPhone
+rm_local tacsPhone
+download tacsPhone.txt tacsPhone

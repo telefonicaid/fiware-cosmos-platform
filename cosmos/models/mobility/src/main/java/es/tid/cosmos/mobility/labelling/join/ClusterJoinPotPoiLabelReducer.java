@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <Long, Poi|Long>
  * Output: <TwoInt, Null>
- * 
+ *
  * @author dmicol
  */
 class ClusterJoinPotPoiLabelReducer extends Reducer<
@@ -33,7 +33,7 @@ class ClusterJoinPotPoiLabelReducer extends Reducer<
                 values, Poi.class, Int64.class);
         List<Poi> poiList = dividedLists.get(Poi.class);
         List<Int64> longList = dividedLists.get(Int64.class);
-        
+
         for (Int64 majPoiInt64 : longList) {
             final long majPoiLbl = majPoiInt64.getValue();
             for (Poi potPoi : poiList) {

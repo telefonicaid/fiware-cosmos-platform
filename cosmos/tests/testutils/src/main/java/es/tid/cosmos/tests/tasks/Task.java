@@ -9,7 +9,7 @@ import java.util.Map;
  * @author ximo
  */
 public abstract class Task {
-    
+
     private static final int SLEEP_TIME = 30000; // 30 seconds
     protected Map<String, String> parameters = new HashMap<String, String>();
     protected String dataSet;
@@ -22,7 +22,7 @@ public abstract class Task {
     public void setParameter(String paramName, String value) {
         this.parameters.put(paramName, value);
     }
-    
+
     public void setDataset(String path) {
         this.dataSet = path;
     }

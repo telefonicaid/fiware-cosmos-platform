@@ -1,0 +1,59 @@
+# Some cleaning
+#
+if [ -z "${SAMSON_HOME}" ];
+then
+   echo SAMSON_HOME is not defined
+   exit 1
+fi
+if [ -z "${SAMSON_WORKING}" ];
+then
+   echo SAMSON_WORKING is not defined
+   exit 1
+fi
+echo "Starting sort 10MB test..."
+echo "Killing all previous processes..."
+${SAMSON_HOME}/bin/samsonKiller
+if [ -f  ${SAMSON_WORKING}/config/samsonPlatformProcesses ];
+then
+   rm ${SAMSON_WORKING}/config/samsonPlatformProcesses
+fi
+echo "Setting controller IP..."
+CONTROLLER_IP="localhost";
+export CONTROLLER_IP
+echo $CONTROLLER_IP
+
+echo "Generating input file..."
+# Generating random input data
+./generator 10000000 > data_10MB.txt
+# To compare
+sort -n  data_10MB.txt > data_10MB_sorted.txt
+
+# Running inside build/testing
+${SAMSON_HOME}/bin/samsonLocal -working . -f test_complete_10MB_commands.txt >test_complete_10MB_stdout
+if [ -n "${CONTROLLER_IP:+x}" ]; then
+        echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > test_complete_10MB_stdout
+        if [ $CONTROLLER_IP = "localhost" ]; then
+                if ! ps -C samsonSpawner  > /dev/null
+                then
+                        echo "Launching samsonSpawner" >> test_complete_10MB_stdout
+                        samsonSpawner -local  >> test_complete_10MB_stdout &
+                else
+                        echo "samsonSpawner already running" >> test_complete_10MB_stdout
+                fi
+        #       sleep 3
+        fi
+        $SAMSON_HOME/bin/delilah -controller $CONTROLLER_IP -f test_complete_10MB_commands.txt >> test_complete_10MB_stdout
+else
+        echo "Environment variable CONTROLLER_IP not defined, using samsonLocal" > test_complete_10MB_stdout
+        $SAMSON_HOME/bin/samsonLocal -working . -f test_complete_10MB_commands.txt >> test_complete_10MB_stdout
+fi
+
+echo "Saving the output into a file..."
+samsonCat out_10MB > test_complete_10MB_out.txt
+# Checking the sort in the output file
+./valsort_uints test_complete_10MB_out.txt
+diff data_10MB_sorted.txt test_complete_10MB_out.txt
+if [ $? -ne 0 ];
+then
+  exit 1
+fi

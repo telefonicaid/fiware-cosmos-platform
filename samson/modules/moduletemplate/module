@@ -1,0 +1,133 @@
+Module moduletemplate
+{
+
+	title	"moduletemplate  module"
+	author 	"Andreu Urruela (andreu@tid.es)"
+	version "0.1"
+	
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+data Data1
+{
+     system.String data_string;
+     system.UInt8 data_char;
+     system.UInt data_ulong;
+     system.Double data_long;
+}
+
+data Data2
+{
+     system.UInt id;
+     moduletemplate.Data1 data_cplex;
+}
+
+
+# -------------------------------------------------
+# Operations with data
+# -------------------------------------------------
+
+parser parse_example
+{
+        out	system.UInt moduletemplate.Data1
+        
+        helpLine "key-values can also be generated from a text dataset from uploaded data files."
+        
+        help
+        {
+        	"key-values can also be generated from a text dataset from uploaded data files."
+        	"Help can be made as complete as needed"
+        }
+}
+
+map map_example
+{
+	in	system.UInt moduletemplate.Data1
+	out system.UInt moduletemplate.Data2
+
+	helpLine "Example of map operation"
+
+	help
+	{
+		"Example of map operation"
+		"Help can be made as complete as needed"
+	}	
+}
+
+reduce reduce_example
+{
+	in 	system.UInt moduletemplate.Data2
+	in	system.UInt system.UInt	
+	out	system.UInt system.UInt	
+
+	helpLine "Example of reduce operation with state. In this case, we have 2 input datasets, the second one is also the output state"
+
+	help
+	{
+		"Example of reduce operation"
+	}
+	
+}
+
+parserOut parserOut_example
+{
+	in	system.UInt system.UInt
+
+	helpLine "Example of parserOut operation."
+	
+	help
+	{
+		"Example of parserOut operation."
+		"Transforms input dataset to a text dataset, that can be downloaded to the file system".
+	}
+}
+
+script init_stream
+{
+	help
+	{
+		"help1"
+		"help2"
+	}
+
+	code
+	{
+
+        # ----------------------------------------------------------------
+        # Input queues
+        # ----------------------------------------------------------------        
+        alias [input]                input;
+        
+        # ----------------------------------------------------------------
+        # Output queues
+        # ----------------------------------------------------------------
+        alias [state]           output_state;
+        
+        # ----------------------------------------------------------------
+        # Internal queues
+        # ----------------------------------------------------------------
+        alias [tmp1]         input_parsed;
+        alias [tmp2]    input_mapped;
+        
+  
+        # ----------------------------------------------------------------
+        # Operations
+        # ----------------------------------------------------------------        
+        alias [p]              0.parse;
+        alias [m]              1.map;
+        alias [r]              2.reduce;
+       
+        # ----------------------------------------------------------------
+        # Definitions
+        # ----------------------------------------------------------------
+
+		add_stream_operation [p] moduletemplate.parse_example [input] [tmp1];
+		add_stream_operation [m] moduletemplate.map_example [tmp1] [tmp2];
+		add_stream_operation [r] moduletemplate.reduce_example [tmp2] [state] [state]; 
+		set_stream_operation_property [r] update_only true;
+	}
+}
+

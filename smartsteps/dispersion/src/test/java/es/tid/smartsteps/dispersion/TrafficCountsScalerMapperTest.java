@@ -36,7 +36,7 @@ public class TrafficCountsScalerMapperTest extends TrafficCountsBasedTest {
 
     public TrafficCountsScalerMapperTest() throws IOException {
     }
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new MapDriver<

@@ -1,0 +1,19 @@
+
+echo "Simple mobility demo - visualitzation"
+
+# Check number of arguments
+if [ $# -ne 1 ]
+then
+  echo "Usage: `basename $0` {samson-controller}"
+  exit 1
+fi
+
+
+POP_QUEUE=demo.99.level.04.levels_updates_txt
+
+echo "------------------------------------------------------------------------"
+echo "** Run visualitzation tools"
+samsonPop $POP_QUEUE -new | samsonLevelMonitor -concept work -title "Users at work" -x_title "Time in seconds" -y_title "Number of users"   2> /tmp/smd_1 &
+samsonPop $POP_QUEUE -new | samsonLevelMonitor -concept home -title "Users at home" -x_title "Time in seconds" -y_title "Number of users"   2> /tmp/smd_2 &
+samsonPop $POP_QUEUE -new | samsonLevelMonitor -concept work_defined -title "Users with work defined" -x_title "Time in seconds" -y_title "Number of users"   2> /tmp/smd_1 &
+samsonPop $POP_QUEUE -new | samsonLevelMonitor -concept home_defined -title "Users with home defined" -x_title "Time in seconds" -y_title "Number of users"   2> /tmp/smd_2 &

@@ -1,0 +1,66 @@
+#!/bin/bash
+#
+# samson          Start/Stop the SAMSON platform
+#
+# chkconfig: 2345 99 60
+# description: SAMSON is a high-performance MapReduce platform that is \
+#              designed for scaling tasks on a cluster of commodity hardware. \
+#              This platform removes the need to develop a system for \
+#              parallelizing and synchronizing work between servers, allowing \
+#              a person to develop the analytical models needed to solve both \
+#              current and future problems.
+### BEGIN INIT INFO
+# Provides: samsonSpawner
+# Required-Start: $local_fs $syslog
+# Required-Stop: $local_fs $syslog
+# Default-Start:  345
+# Default-Stop: 90
+# Short-Description: run samsonSpawner
+# Description: SAMSON is a high-performance MapReduce platform that is \
+#              designed for scaling tasks on a cluster of commodity hardware. \
+#              This platform removes the need to develop a system for \
+#              parallelizing and synchronizing work between servers, allowing \
+#              a person to develop the analytical models needed to solve both \
+#              current and future problems.
+### END INIT INFO
+
+PARAM=$1
+PIDFILE=/var/log/samson/samsond.pid
+
+# Load the samson environment
+if [ -f /etc/profile.d/samson.sh ]; then
+    . /etc/profile.d/samson.sh
+fi
+
+if [ -z "${SAMSON_HOME}" ]; then
+  echo "\$SAMSON_HOME is not set, aborting"
+  exit 1
+fi
+
+
+samson_start()
+{
+    su - samson -c "${SAMSON_HOME}/bin/samsonWorker"
+}
+
+samson_stop()
+{
+    kill `cat $PIDFILE`
+}
+
+case $PARAM in
+
+        'start')
+                samson_start
+                ;;
+
+        'stop')
+                samson_stop
+                ;;
+
+        'restart')
+                samson_stop
+                samson_start
+                ;;
+esac
+

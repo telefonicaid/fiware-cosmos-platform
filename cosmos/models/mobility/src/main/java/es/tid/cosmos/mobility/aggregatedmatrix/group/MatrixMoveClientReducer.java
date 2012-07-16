@@ -29,11 +29,11 @@ class MatrixMoveClientReducer extends Reducer<LongWritable,
     private static final int HOURS_IN_ONE_DAY = 24;
     private static final int MINS_IN_ONE_DAY = MINS_IN_ONE_HOUR *
                                                HOURS_IN_ONE_DAY;
-    
+
     private int maxMinutesInMoves;
     private int minMinutesInMoves;
     private boolean includeIntraMoves;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {

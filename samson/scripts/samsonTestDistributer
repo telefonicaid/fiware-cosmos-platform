@@ -1,0 +1,41 @@
+#!/bin/bash
+hname=$(hostname)
+echo
+echo '-------------------------------------------------------------'
+echo $0 running in host \'$hname\'
+
+if [ "$hname" = "samson06" ]
+then
+	echo $hname: I am the distributer
+	for host in samson07 samson08
+	do
+		echo "$hname: Preparing $host receive directories"
+		ssh samson@$host rm -rf samsonToBeDistributed
+		ssh samson@$host mkdir samsonToBeDistributed
+		ssh samson@$host mkdir samsonToBeDistributed/bin
+		ssh samson@$host mkdir samsonToBeDistributed/modules
+		ssh samson@$host mkdir samsonToBeDistributed/etc
+	
+		echo "$hname: Sending all files to $host"
+		scp -r /usr/local/bin/*      samson@$host:samsonToBeDistributed/bin
+		scp -r /opt/samson/modules/* samson@$host:samsonToBeDistributed/modules
+		scp -r /opt/samson/etc/*     samson@$host:samsonToBeDistributed/etc
+
+		echo "$hname: Debug. ls samsonToBeDistributed on $host"
+		ssh samson@$host ls -l samsonToBeDistributed
+
+		echo "$hname: Sending distribute script to $host"
+		ssh samson@$host mkdir -p bin
+		scp $0 samson@$host:bin/
+		ssh samson@$host chmod 744 bin/samsonTestDistributer
+		ssh samson@$host bin/samsonTestDistributer
+	done
+else
+	echo $hname: I am NOT the distributer
+	echo $hname: Copying samson files to their respective directories
+	sudo cp ~/samsonToBeDistributed/bin/*     /usr/local/bin/
+	sudo cp ~/samsonToBeDistributed/modules/* /opt/samson/modules/
+	sudo cp ~/samsonToBeDistributed/etc/*     /opt/samson/etc/
+fi
+
+echo '-------------------------------------------------------------'

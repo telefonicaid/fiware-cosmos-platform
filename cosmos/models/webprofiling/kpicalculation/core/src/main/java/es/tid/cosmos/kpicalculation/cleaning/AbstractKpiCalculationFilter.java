@@ -16,7 +16,7 @@ public abstract class AbstractKpiCalculationFilter implements
 
     private Pattern pattern;
     private Matcher matcher;
-    
+
     protected void init(Configuration conf, String configParameter,
             String regularExpression) {
         String forbiddenPattern = setPattern(regularExpression,
@@ -32,7 +32,7 @@ public abstract class AbstractKpiCalculationFilter implements
      * Builds the regExp pattern that will filter input URL's using a predefined
      * regExp template specific of each filter and the values to be filtered
      * that will be in a config file
-     * 
+     *
      * @param regExp
      *            Basic template of the regExp
      * @param values

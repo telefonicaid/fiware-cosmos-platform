@@ -1,0 +1,212 @@
+USAGE:
+  valgrind --tool=$Tool  executable options
+
+  Tool:
+    o Memcheck (default) - memory error detector                - repotr memory leaks
+    o Cachegrind         - cache and branch-prediction profiler - makes your programs run faster
+    o Callgrind          - call-graph generating cache profiler - 
+    o Helgrind           - thread error detector                - corrects multi-threaded programs
+    o DRD                - another thread error detector        - finds different errors than Helgrind
+    o Massif             - heap profiler                        - helps to use less memory
+    o DHAT               - another heap profiler                - 
+    o Ptrcheck           - experimental heap, stack and global array overrun detector
+
+
+  Valgrind options
+    o --track-fds=yes           - print out a list of open file descriptors on exit. Along with each file descriptor 
+                                  is printed a stack backtrace of where the file was opened and any details relating 
+                                  to the file descriptor such as the file name or socket details.
+    o --trace-children=yes      - trace into sub-processes initiated via the exec system call.
+
+    o --trace-children-skip=pat - works only when --trace-children=yes is specified. It allows for some children to be skipped.
+                                  The option takes a comma separated list of patterns for the names of child executables that
+                                  Valgrind should not trace into.
+                                  Patterns may include the metacharacters ? and *, which have the usual meaning.
+
+    o --gen-suppressions=yes    - print suppression for errors (as to avoid uninteresting errors) 
+                                  The output should be copied into a 'suppressions' file.    
+
+  Compilation
+    o The executable (and its libraries) should be compiled with the '-g' option in order for valgrind to work ultimately.
+      Without debugging info, the best Valgrind tools will be able to do is guess which function a particular piece of code
+      belongs to andthis is not what you want ...
+
+    o Also, it is interesting to avoid using 'inline' functions - use the g++ option '-fno-inline' 
+
+    o Optimization confuses 'Memcheck', so the best solution is to turn off optimisation altogether - use the '-O' flag as is. 
+
+    o You should compile your code with -Wall because it can identify some or all of the problems that Valgrind can miss
+      at the higher optimisation levels.
+
+
+
+EXAMPLE USAGE
+  % valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  samsonLocal  2> valgrind.out.03
+  % valgrind -v  --leak-check=full --track-origins=yes --show-reachable=yes  --trace-children=yes --trace-children-skip=samsonWorker samsonSpawner -fg  2> valgrind.out.01
+
+
+PERFORMANCE ISSUES
+  Valgrind takes control of your program before it starts, makes the program run on a synthetic CPU provided by the Valgrind core.
+  'Memcheck' checks every memory access and every value computed, making it run 10-50 times slower than natively.
+  The minimal tool, called Nulgrind, adds no instrumentation at all and causes in total "only" about a 4 times slowdown.
+
+
+  
+INVOCATION
+  You should run the real (machine-code) executable here. If use're using a script to start the executable, please either prepare-
+  the shell with the stuff prepared in the script, or edit the script so valgrind is used to invoke the executable.
+
+
+
+VALGRIND CONSOLE OUTPUT
+  Valgrind tools write a commentary, a stream of text, detailing error reports and other significant events.
+  All lines in the commentary have following form:
+
+    ==12345== some-message-from-Valgrind
+
+  The '12345' is the PID of the process.
+
+  For a more verbose execution, pass the option '-v' to valgrind.
+  A second -v gives yet more detail.
+
+
+  By default, the output is written to stderr.
+  If you want to send it to some other file descriptor, for example number 9, you can specify --log-fd=9.
+  A better option is to write the commentary to a file, which you specify by --log-file=filename.
+
+  You can also ask valgrind to send the output to a network socket, e.g.:  --log-socket=10.95.105.227:1239
+  The default port is 1500.
+  There is a simple listener executable, 'valgrind-listener' that reads from the socket and prints the incoming messages
+  on stdout.
+
+  valgrind-listener options:
+    o --exit-at-zero:    when the number of connected processes falls back to zero, exit.
+    o portnumber: changes the port it listens on (1024 - 65535)
+
+  If no server is accepting connections, valgrind switches back to writing the commentary to stderr.
+
+
+
+ERROR REPORTING
+  An example from Memcheck:
+  --------------------------------------------------------------------------------------
+  ==25832== Invalid read of size 4
+  ==25832==    at 0x8048724: BandMatrix::ReSize(int, int, int) (bogon.cpp:45)
+  ==25832==    by 0x80487AF: main (bogon.cpp:66)
+  ==25832==  Address 0xBFFFF74C is not stack'd, malloc'd or free'd
+  --------------------------------------------------------------------------------------
+
+  Meaning:
+    The program did an illegal 4-byte read of address 0xBFFFF74C, which is not a valid stack address, nor corresponds
+    to any current heap blocks or recently freed heap blocks. The read is happening at line 45 of bogon.cpp,
+    called from line 66 of the same file, etc. 
+
+
+    Identical errors are stacked and reported only once.
+    If you want to know how many times each error occurred, run with the -v option.
+    When execution finishes, all the reports are printed out, along with, and sorted by, their occurrence counts.
+    This makes it easy to see which errors have occurred most frequently.
+
+    In general, you should try and fix errors in the order that they are reported, some errors depend on a previous error and
+    will disappear when the first error is fixed.
+
+    Valgrind stops collecting errors after 1,000 different errors have been seen, or 10,000,000 errors in total have been seen.
+    To avoid this cutoff you can use the --error-limit=no.
+
+
+
+SUPPRESSING ERRORS
+    The error-checking tools detect numerous problems in the system libraries, such as the C library, and as you can't do much 
+    about these errors, its normally better to just turn them off.
+    Valgrind reads a list of errors to suppress at startup. A default suppression file is created by the ./configure script
+    when the system is built.
+
+    By default, Valgrind uses $PREFIX/lib/valgrind/default.supp.
+    You can ask to add suppressions from another file, by specifying --suppressions=<path to suppression file>.
+    The easiest way to add suppressions is to use the --gen-suppressions=yes option and edit the suppressions file using the
+    knowledge of the suppression names.
+
+    Suppression file format
+      A file can contain various suppressions, each inside a {} block
+      Each valgrind subcommand (e.g. memcheck) can have different suppressions in the suppression file. So the suppression line
+      contains the name of the tool to use it.
+      The first line of a suppression block is a user-defined name of the suppression.
+      The second line contains the filter (that tells valgrind what tool should use it) and the real name of the suppression.
+      These 'real' suppression names are found in the output of a valgrind execution with the '--gen-suppressions=yes' option and '-v'
+
+      Example of a suppression file with two suppressions:
+      -----------------------------------------------------------
+      {
+        HackCond
+        Memcheck,Cachegrind:dl-hack3-cond-1
+      }
+
+      {
+        AnotherSuppression
+        Memcheck:Param
+      }
+      -----------------------------------------------------------
+
+      Now, we have a suppression file and we can start the execution using it by:
+      % valgrind --suppressions=<suppression file path> <executable> <options for executable>
+
+      After the first two lines in a suppression block comes the calling context for the error -
+      the chain of function calls that led to it.
+      This is how valgrind detects that two similar errors aren't identical.
+      The option '--gen-suppressions=yes' gives all the information about the errors, just copy and paste the valgrind
+      output suppression block into your suppression file to get 'rid of it'.
+
+      IMPORTANT NOTE: C++ function names must be mangled. If you are writing suppressions by hand, use the --demangle=no option 
+      to get the mangled names in your error messages. An example of a mangled C++ name is _ZN9QListView4showEv.
+      This is the form that the GNU C++ compiler uses internally, and the form that must be used in suppression files.
+      The equivalent demangled name, QListView::show(), is what you see at the C++ source code level.
+
+
+
+CONFIGURATION FILES
+
+  To run a simple valgrind test with samsonWorker, create the following files in your home directory:
+
+  * ~/.valgrindrc
+  -------------------------------------------------------------------------------------------------------
+  -v
+  --leak-check=full
+  --track-origins=yes
+  --suppressions=/home/XXX/Valgrind/warning-suppression   # Change 'XXX' ...
+  --show-reachable=yes
+  -------------------------------------------------------------------------------------------------------
+  
+  * Valgrind/warning-suppression
+  -------------------------------------------------------------------------------------------------------
+  {
+     <first_dlopen>
+     Memcheck:Leak
+     fun:calloc
+     fun:_dlerror_run
+     fun:dlopen@@GLIBC_2.2.5
+     fun:_ZN6samson14ModulesManager9addModuleESs
+     fun:_ZN6samson14ModulesManager23addModulesFromDirectoryESs
+     fun:_ZN6samson14ModulesManager10addModulesEv
+     fun:_ZN6samson14ModulesManager13reloadModulesEv
+     fun:_ZN6samson14ModulesManagerC1Ev
+     fun:_ZN6samson14ModulesManager4initEv
+     fun:main
+  }
+  -------------------------------------------------------------------------------------------------------
+
+  Now, to run the test:
+  $ valgrind samsonWorker -fg 2> samsonWorker.valgrind01
+
+
+===============================================================================
+
+Simple test for memory leakage
+  alias to_iso_latin='iconv -t ISO-8859-15 -f UTF-8'
+  alias to_utf8='iconv -f ISO-8859-15 -t UTF-8'
+
+  cat modules/core/txt/testing/quijote.txt | to_utf8 | samsonPush input.txt
+
+  run system.parse input.txt words env:command "parse_words | emit"    
+  run system.reduce words unique_words env:command sum 
+
+===============================================================================

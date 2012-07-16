@@ -14,7 +14,7 @@ import java.util.Locale;
  */
 public class KpiCalculationDateFormatter {
     private static final String DELIMITER = "-";
-    
+
     private SimpleDateFormat inputFormat;
     private SimpleDateFormat dateFormat;
     private Calendar calendar;

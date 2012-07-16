@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MatrixRange;
 public class MatrixCountRangesReducerTest {
     private ReduceDriver<ProtobufWritable<MatrixRange>, TypedProtobufWritable<Float64>,
             ProtobufWritable<MatrixRange>, TypedProtobufWritable<ItinPercMove>> instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<MatrixRange>,

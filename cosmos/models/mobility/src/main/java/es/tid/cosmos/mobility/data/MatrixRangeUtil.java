@@ -29,7 +29,7 @@ public final class MatrixRangeUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<MatrixRange> createAndWrap(long node,
             long poiSrc, long poiTgt, int group, int range) {
         return wrap(create(node, poiSrc, poiTgt, group, range));

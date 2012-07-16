@@ -28,10 +28,10 @@ public class CentroidParserMapperTest extends TrafficCountsBasedTest {
             Text, TypedProtobufWritable<SOACentroid>> instance;
     private LongWritable key;
     private Text value;
-    
+
     public CentroidParserMapperTest() throws IOException {
     }
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new MapDriver<
@@ -56,7 +56,7 @@ public class CentroidParserMapperTest extends TrafficCountsBasedTest {
         assertEquals("000012006440", result.getFirst().toString());
         assertTrue(result.getSecond().get() instanceof SOACentroid);
     }
-    
+
     @Test
     public void shouldFailToParse() {
         this.instance

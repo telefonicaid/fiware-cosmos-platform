@@ -1,0 +1,41 @@
+Module iwebp
+{
+
+	title	"iwebp  module"
+	author 	"Andreu Urruela, Gregorio Escalada (andreu@tid.es, jges@tid.es)"
+	version "0.1"
+	
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+# -------------------------------------------------
+# Operations with data
+# -------------------------------------------------
+
+parser parse_http_with_commscore
+{
+    out system.Value system.Value
+    helpLine "Parse lines from TRAFFICA http logs, enriching with commscore categories"
+}
+
+reduce process
+{
+	in 	system.Value system.Value
+	in  system.Value system.Value
+	out	system.Value system.Value
+	out system.Value system.Value
+	out system.Value system.Value
+
+	helpLine "Bulk process operation for instant individual web profiling. Instances added at init()"
+
+	help
+	{
+		"Bulk process operation for instant individual web profiling. Instances added at init()"
+		"As all the system.Value process(), one of the outputs is fedback to the stream input"
+	}
+	
+}
+

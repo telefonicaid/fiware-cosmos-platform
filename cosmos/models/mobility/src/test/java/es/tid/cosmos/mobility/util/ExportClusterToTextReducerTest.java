@@ -23,14 +23,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClusterVector;
 public class ExportClusterToTextReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Cluster>, NullWritable,
             Text> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Cluster>,
                 NullWritable, Text>(new ExportClusterToTextReducer());
         this.driver.setConfiguration(this.getConf());
     }
-    
+
     @Test
     public void testSetInputId() throws IOException {
         final LongWritable key = new LongWritable(57L);

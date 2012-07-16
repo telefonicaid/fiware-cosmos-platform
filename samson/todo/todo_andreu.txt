@@ -1,0 +1,101 @@
+
+* Report progress of reduce operations
+ 
+
+----------------------------------------------------------------------------------------------------
+he estado haciendo pruebas, con el ultimo comit delilah vuelve a tener comportamientos extraños, como aquel que se dejaba el prompt del cliente al lado de otro prompt junto con el último comando que habías ejecutado. Ejemplo: help devuelve un "Delilah> helpDelilah>" y esto pasa también con los resultados de algunas operaciones.
+
+ Delilah> upload 05092008.txt 05092008.txt
+[ 15 ] Load data process started with 1 files
+Delilah> upload 05092008.txt 05092008.txt Delilah>
+
+
+Saludos, Jorge.
+----------------------------------------------------------------------------------------------------
+
+
+
+
+BUGS FROM TEST:
+
+TODO:
+* Not updating information from workers
+* Name of the files with the job if to make sure names are not reused ( not random )
+* Not write kvs in the txt format when uploading files
+* Not accept parerOut with no output txt txt 
+* Wrong cores and memory reporting
+* Valgrind debuign
+* Reimplement system.compact
+* More information about the running tasks of the workers ( at least knowing the size generated )
+
+
+
+PENDING MORE TEST
+ Delilah crashes if the queue specified for the download command does not exists
+
+FUTURE:
+* review setup since the maximum number of outputs
+* Add a buffer of strings to notify in delilah insetead of flushing to the std::out in the middle of whatever...
+
+DONE
+* Kill jobs
+* More information in load processes ( waiting for upload without number pendign paket label)
+* Delilah to save pakets in order
+* Buffer of background notifictions
+* Delete notification objects in notifications without delivery ( at the end, it removes all pending objects after all deliveries )
+* Disk statictics with remove files wrong!
+* Crash of background process is not detected
+* Solve the current name miss match for the same concept "queue = set_name" 
+* Create folder config for Ken
+* Delilah displays the last performed command after it's execution. Example: execute help will display "Delilah> helpDelilah>"
+* Inform about the memory and process used when running samsonLocal
+* Error with shared memory
+* Engine status using work status message
+* Disk statictics
+* Check scandir
+* Fuse Process library with the Engine Lib
+* Notify Disk operations using Engine
+* Process manager implemented with priorities and not type ( priority to halt processes and top priority processes )
+* Avoid scripts to fail for too many outputs
+* Refactoring (m) independent Error.h Error.cpp files and remove Status.cpp/.h file since it is not used any more...
+* When all the "process" running are hold, we can not run "Process Buffers" to get buffer ready for writing!!
+* assetr -> LM_X
+* shared_memory automatization
+* Wait for killed process
+* Informacion about time in the jobs list
+* Limit the number of operaitons for outputs
+* File Management ( errors while uploading / downloading )
+* Check queues when uploading
+* New upload model notifying first the controller
+* rm at the DiskManager to avoid colision between read and rm
+* Remove help message since it is not used any more
+* Reload modules to detect changes
+* operations can emit errors to cancel the operation
+* samsonCat -header with information about hash-group distribution
+* Check String type
+* Memory problem with OSN Data ( Goyo )
+* Remove unnecessary files in /opt/samson/data
+
+Mail Goyo:
+
+PROBLEMAS
+
+
+
+FILE MANAGEMENT
+----------------------------------------------------------------------------------------------------------------
+
+- En la tarea de osn, calculando el total de URLs, aunque teóricamente la cola tiene un elemento
+(o dos, que he probado a replicarlo), el parserOut no ve ninguno.
+
+- En la tarea de osn, cuando lanzo los 5GB, el map (he probado un par de ellos), se bloquea porque
+parece que se come toda la memoria. Parece que usar .assign() en vez de = ha ayudado en el parser,
+pero no en el map. Voy a probar a hacer un clear() después del emit(), pero es posible que el problema
+esté en el hash del String, que mande todas las URLs al mismo mapper. Efectivamente, parece que el problema
+está más bien relacionado con el parse().
+
+SUGERENCIAS
+
+- Estaría bien si al crear el prototipo, se añadiera un comentario con los parámetros de entrada y salida
+
+123

@@ -19,7 +19,7 @@ import static org.junit.Assert.assertArrayEquals;
 public class CrmRawToIpmConverterTest {
     private CrmRawToIpmConverter instance;
     private Charset charset;
-    
+
     @Before
     public void setUp() {
         this.charset = Charset.forName("UTF-8");

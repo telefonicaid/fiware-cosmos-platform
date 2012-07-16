@@ -1,0 +1,5 @@
+ADD_SUBDIRECTORY(word_generator)
+ADD_SUBDIRECTORY(web_generator)
+ADD_SUBDIRECTORY(simple_mobility_generator)
+ADD_SUBDIRECTORY(passiveLocationGenerator)
+ADD_SUBDIRECTORY(samsonSandbox)

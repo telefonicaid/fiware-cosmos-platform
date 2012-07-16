@@ -1,0 +1,38 @@
+.TH SAMSON\-URLBENCHMARK 7 2011-07-08 "Samson" "Samson Module Libraries"
+.SH NAME
+samson\-urlbenchmark \- URL classification
+.SH DESCRIPTION
+The samson URLBENCHMARK library is a module that classifies URLs on categories
+and that detects the most visited URLs in each category.
+
+.SH DATA TYPES
+  URLHit  (UInt count, String URL)
+  TopHits (vector url_benchmark.URLHit hit)
+
+.SH FUNCTIONS
+  Parser     parse_visits (out system.String system.String)
+  Parser     parse_servers (out system.String system.UInt)
+  Reduce     join_URLs_category_per_server (in system.String system.String, in system.String system.UInt, out system.UInt url_benchmark.URLHit)
+  Reduce     select_top_hits_per_category (in system.UInt url_benchmark.URLHit, out system.UInt url_benchmark.TopHits)
+  ParserOut  export_top_hits_per_category (in system.UInt url_benchmark.TopHits)
+
+.SH SCRIPTS
+  ParseVisitsServers  -> parse_visits;
+  					  	 parse_servers
+  ProcessURLs         -> join_URLs_category_per_server;
+                         select_top_hits_per_category;
+                         export_top_hits_per_category
+
+.SH SEE ALSO
+.BR samson (1),
+.BR samson-cdr (7),
+.BR samson-example (7),
+.BR samson-graph (7),
+.BR samson-moduletemplate (7),
+.BR samson-osn (7),
+.BR samson-sna (7),
+.BR samson-sort (7),
+.BR samson-system (7),
+.BR samson-terasort (7),
+.BR samson-test (7),
+.BR samson-txt (7)

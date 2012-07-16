@@ -22,14 +22,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 public class ExportPoiToTextReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Poi>, NullWritable,
             Text> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Poi>,
                 NullWritable, Text>(new ExportPoiToTextReducer());
         this.driver.setConfiguration(this.getConf());
     }
-    
+
     @Test
     public void testSetInputId() throws IOException {
         final LongWritable key = new LongWritable(57L);

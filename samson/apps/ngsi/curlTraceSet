@@ -1,0 +1,7 @@
+traceLevels=$1
+if [ "$traceLevels" == "" ]
+then
+  echo usage: $0 '<traceLevels>'
+fi
+
+curl localhost:1025/log/trace/set/$traceLevels --request PUT

@@ -1,0 +1,4 @@
+remove_all
+urlbenchmark.test_1 out.txt -clear -create
+rm_local out
+download out.txt out

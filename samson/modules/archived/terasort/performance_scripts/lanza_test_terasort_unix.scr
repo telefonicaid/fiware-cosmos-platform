@@ -1,0 +1,15 @@
+#!/bin/bash
+
+fecha=`date +"%Y%m%d_%H%M"`
+
+echo "plataforma:unix size:1 cores:1" > time_terasort_unix_$fecha
+/usr/bin/time -pao time_terasort_unix_$fecha sort -o sorted_terasort_ref_1GB.txt data_terasort_1GB.txt
+echo "plataforma:unix size:1 cores:1 Done!"
+echo "plataforma:unix size:10 cores:1" >> time_terasort_unix_$fecha
+/usr/bin/time -pao time_terasort_unix_$fecha sort -o sorted_terasort_ref_10GB.txt data_terasort_10GB.txt
+echo "plataforma:unix size:10 cores:1 Done!"
+echo "plataforma:unix size:100 cores:1" >> time_terasort_unix_$fecha
+/usr/bin/time -pao time_terasort_unix_$fecha sort -o sorted_terasort_ref_100GB.txt data_terasort_100GB.txt
+echo "plataforma:unix size:100 cores:1 Done!"
+
+

@@ -14,14 +14,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 /**
  * Input: <Long, Text>
  * Output: <Long, Cell>
- * 
+ *
  * @author dmicol, sortega
  */
 public class ParseCellMapper extends Mapper<LongWritable, Text, LongWritable,
         TypedProtobufWritable<Cell>> {
 
     private String separator;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -29,7 +29,7 @@ public class ParseCellMapper extends Mapper<LongWritable, Text, LongWritable,
                 getConfiguration());
         this.separator = conf.getDataSeparator();
     }
-    
+
     @Override
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {

@@ -1,0 +1,115 @@
+Module page_rank
+{
+	title	"Page Rank algorithm (stream mode)"
+	author	"Andreu Urruela & SAMSON team. Help from DIONYSIOS LOGOTHETIS"
+	version "0.1"
+}
+
+data Message
+{
+	system.String node;
+	system.Double contribution;
+}
+
+data MessageCollection
+{
+	vector page_rank.Message message;
+}
+
+data Node
+{
+	# Collection of links I point to
+	vector system.String links;
+
+	# Messages received from other nodes ( replaced when a message is received from the same node )
+	vector page_rank.Message messages;
+
+	# My rank computed from received messages
+	system.Double rank;	
+
+	# Number of outputs updated last time
+	system.UInt updated_outputs;
+
+	# Number of times this particular node has been updated
+	system.UInt update_count;
+}
+
+
+parser parse_graph
+{
+	out system.String system.StringVector
+	helpLine "Parse a txt file where every line is node link1 link2 ...."
+}
+
+reduce updateLinks
+{
+	in system.String system.StringVector
+	in system.String page_rank.Node
+	out system.String page_rank.Message
+	out system.String page_rank.Node
+
+	helpLine "Update intenal information about links of nodes. Comming from crawling..."
+
+}
+
+reduce updateMessages
+{
+	in system.String page_rank.Message
+	in system.String page_rank.Node
+	out system.String page_rank.Message
+	out system.String page_rank.Node
+
+	helpLine "Update intenal information about rank of pages pointing to me"
+}
+
+
+script test
+{
+	code
+	{
+	  # First empty state
+      add node system.String page_rank.Node;
+
+      # first iteration with outputside info   
+      page_rank.updateLinks graph node messages2 nodes2;
+
+      # Next iterations
+      page_rank.updateMessages messages2 nodes2 messages3 nodes3 -c;
+
+	}
+}
+
+
+script demo
+{
+	code
+	{
+		remove_all_stream;
+		init_stream demo page_rank.init_stream_operations;
+	}
+}
+
+script init_stream_operations
+{
+	code
+	{		
+
+		alias [input]     01.graph.txt;
+		alias [links]     10.links;
+
+		alias [nodes]     20.nodes;
+		alias [messages]  30.messages;
+
+		alias [parser]           01.parser_links;
+		alias [update_links]     10.update_links;
+		alias [update_messages]  10.update_messages;
+
+		rm [input] [graph] [nodes] [messages] -f;
+		rm_stream_operation [parser] [update_links] [update_messages] -f;
+	
+		add_stream_operation [parser]           wiki.parse_pages_to_links    [input]             [links];
+
+		add_stream_operation [update_links]     page_rank.updateLinks        [links] [nodes]     [messages] [nodes];
+		add_stream_operation [update_messages]  page_rank.updateMessages     [messages] [nodes]  [messages] [nodes];
+	}
+}

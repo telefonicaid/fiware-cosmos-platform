@@ -28,7 +28,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class VectorPoisOutReducerTest extends ConfiguredTest {
     private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>,
             NullWritable, Text> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,

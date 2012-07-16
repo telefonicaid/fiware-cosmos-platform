@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * Utilities for ranking categories.
- * 
+ *
  * @author dmicol, sortega
  */
 public final class Categories {

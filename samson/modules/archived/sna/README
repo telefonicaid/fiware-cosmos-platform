@@ -1,0 +1,30 @@
+
+
+Introduction
+-------------
+
+
+SNA module is in charge of computing cliques and communities from a graph
+Please, see documentation of module cdr and graph for more information about the previous
+steps necessary to get a graph from cdrs.
+
+
+Quick tutorial
+----------------
+
+To start with cliques-finding problem, we should have a graph data-set.
+This is basically a data-set with key-value format (system.UInt graph.Node)
+If you want just to play a bit, use graph.fake_graph generator to get a simple graph.
+
+The main script to get cliques from a graph is sna.compute_cliques
+sna.compute_cliques takes a single input parameter ( graph data set ) and produce a cliques data-setsas an output. 
+
+Note that cliques data-sets have key-format ( sna.Clique system.Void )
+
+Finally, we can use sna.export_cliques to transform cliques data-set into a txt data-set and download it to local using "download" command in delilah console.
+
+Hope you enjoy this module!!!
+
+Andreu Urruela
+
+

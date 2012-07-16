@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 /**
  * Input: <Long, ItinTime>
  * Output: <Long, ItinMovement>
- * 
+ *
  * @author dmicol
  */
 public class ItinMoveClientPoisReducer extends Reducer<
@@ -27,10 +27,10 @@ public class ItinMoveClientPoisReducer extends Reducer<
     private static final int HOURS_IN_ONE_DAY = 24;
     private static final int MINS_IN_ONE_DAY = MINS_IN_ONE_HOUR *
                                                HOURS_IN_ONE_DAY;
-    
+
     private int maxMinutesInMoves;
     private int minMinutesInMoves;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -48,7 +48,7 @@ public class ItinMoveClientPoisReducer extends Reducer<
         for (TypedProtobufWritable<ItinTime> value : values) {
             locList.add(value.get());
         }
-        
+
         final GregorianCalendar calendar = new GregorianCalendar();
         for (ItinTime loc1 : locList) {
             int minDistance = Integer.MAX_VALUE;

@@ -1,0 +1,12 @@
+sudo rm -Rf /var/samson
+sudo rm -Rf /opt/var_samson
+
+sudo mkdir  /opt/var_samson
+sudo chown samson /opt/var_samson
+sudo ln -s /opt/var_samson /var/samson
+
+sudo mkdir /var/log/samson
+
+sudo sysctl -w kernel.shmmax=268435456
+
+

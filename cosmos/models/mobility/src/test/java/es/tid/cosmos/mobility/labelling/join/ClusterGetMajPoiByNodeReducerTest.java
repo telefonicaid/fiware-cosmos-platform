@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class ClusterGetMajPoiByNodeReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<TwoInt>, LongWritable,
             TypedProtobufWritable<Int64>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<TwoInt>,

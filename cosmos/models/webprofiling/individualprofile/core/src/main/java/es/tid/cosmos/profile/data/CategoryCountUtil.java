@@ -12,7 +12,7 @@ import es.tid.cosmos.profile.generated.data.ProfileProtocol.CategoryCount;
  */
 public final class CategoryCountUtil {
     private static final String DELIMITER = "\t";
-    
+
     private CategoryCountUtil() {
     }
 
@@ -31,7 +31,7 @@ public final class CategoryCountUtil {
         wrapper.set(create(name, count));
         return wrapper;
     }
-    
+
     public static String toString(CategoryCount obj) {
         return (obj.getName() + DELIMITER + obj.getCount());
     }

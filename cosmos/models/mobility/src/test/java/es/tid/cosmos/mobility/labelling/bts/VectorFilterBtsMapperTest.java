@@ -22,14 +22,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class VectorFilterBtsMapperTest {
     private MapDriver<LongWritable, TypedProtobufWritable<TwoInt>,
             ProtobufWritable<BtsCounter>, TypedProtobufWritable<Null>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new MapDriver<LongWritable, TypedProtobufWritable<TwoInt>,
                 ProtobufWritable<BtsCounter>, TypedProtobufWritable<Null>>(
                         new VectorFilterBtsMapper());
     }
-    
+
     @Test
     public void testMap() throws IOException {
         final LongWritable key = new LongWritable(3L);

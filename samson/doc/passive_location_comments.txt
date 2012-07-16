@@ -1,0 +1,31 @@
+
+Introduction
+-------------------------------------------------------
+
+Passive location pilot is a project where all available informtion about the location of users will be collected, stored and offer as a third party interface.
+In this project two different technologies will be used SAMSON and MongoDB.
+
+The first one is a big-data platform developed at Telefónica R&D focused on processing unbounded streams of data but also offering suppourt for batch processing over large data-sets. On the other hand mongoDB is a document-oriented databse with support for sharding.
+
+The main idea of the project is to collect and tranform data using SAMSON to be finally pushed to mongoDb. Once in mongoDb, data can be queried getting the last knwon position of a a user, or some historical.
+
+Additionally, SAMSON will execute some analytical algorithms on top of input records un run-time. Finally SAMSON will be also used to retrieve historical data from mongoDb to run batch analytical processes.
+
+
+The idea of this document is to explain a briefly both technologies and how samson modules have been developed in order to communicate with mongoDb. Finally a first test over mongoDb performance is executed generating fake-data and sending to SAMSON.
+
+Some conclusions about mongoDb setup are also displayed.
+
+
+
+-------------------------------------------------------
+Comments
+-------------------------------------------------------
+
+3.1.1 Borrar la última frase "This module is also the responsible of translating the Cell Tower ID to Latitude and Longitude coordinates."
+
+3.1.2 Add more explanation about this operations. This operation is a JOIN between inputs data at the output "XML parser" and the cell-cataloge. The advantadge of using SAMSON is that this JOINT is executed automatically in a continuous way. See samson documentation for more details about running stream-reduce operations.
+
+3.1.3 Add more details.. In this first approach, we are considering exporting records to mongo in real-time. This means that we push input records ( previously parsed and enriched with lat-lot with previous operations ) to mongoDb directoly. To this end, we have developed a simple map operation ( see samson doc ). Depending on the results, we may implement this buffering more or less data in SAMSON before pushing to mongoDb. 
+
+Review conclusions (XXX)

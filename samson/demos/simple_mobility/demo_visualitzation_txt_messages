@@ -1,0 +1,14 @@
+
+echo "Simple mobility demo"
+
+# Check number of arguments
+if [ $# -ne 1 ]
+then
+  echo "Usage: `basename $0` {samson-controller}"
+  exit 1
+fi
+
+POP_QUEUE=demo.30.messages
+LIMIT=10
+
+samsonPop -controller $1 $POP_QUEUE -limit $LIMIT

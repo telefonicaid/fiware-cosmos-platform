@@ -1,0 +1,15 @@
+remove_all
+add numbers.txt -txt
+upload numbers_100000000.txt numbers.txt
+sort.ScriptSortDataFromTxt numbers.txt sorted.txt -create -clear
+download sorted.txt sorted_100000000.txt 
+
+
+
+
+
+
+
+
+
+

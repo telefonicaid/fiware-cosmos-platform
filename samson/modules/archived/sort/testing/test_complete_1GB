@@ -1,0 +1,38 @@
+# Some cleaning
+echo "Starting sort 1GB test..."
+echo "Killing all previous processes..."
+samsonKiller
+rm /opt/samson/config/samsonPlatformProcesses
+echo "Setting controller IP..."
+CONTROLLER_IP="localhost";
+export CONTROLLER_IP
+echo $CONTROLLER_IP
+
+echo "Generating input file..."
+# Generating random input data
+./generator 1000000000 > data_1GB.txt
+
+# Running inside build/testing
+if [ -n "${CONTROLLER_IP:+x}" ]; then
+        echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > test_complete_1GB_stdout
+        if [ $CONTROLLER_IP = "localhost" ]; then
+                if ! ps -C samsonSpawner  > /dev/null
+                then
+                        echo "Launching samsonSpawner" >> test_complete_1GB_stdout
+                        samsonSpawner -local  >> test_complete_1GB_stdout &
+                else
+                        echo "samsonSpawner already running" >> test_complete_1GB_stdout
+                fi
+        #       sleep 3
+        fi
+        delilah -controller $CONTROLLER_IP -f test_complete_1GB_commands.txt >> test_complete_1GB_stdout
+else
+        echo "Environment variable CONTROLLER_IP not defined, using samsonLocal" > test_complete_1GB_stdout
+        samsonLocal -working . -f test_complete_1GB_commands.txt >> test_complete_1GB_stdout
+fi
+
+echo "Saving the output into a file..."
+samsonCat out_1GB > test_complete_1GB_out.txt
+# Checking the sort in the output file
+./valsort_uints test_complete_1GB_out.txt
+

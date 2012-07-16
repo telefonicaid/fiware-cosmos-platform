@@ -1,0 +1,68 @@
+#!/bin/bash
+
+
+plataforma=samson
+path=/home/jges/optlocal/samson/etc
+
+fecha=`date +"%Y%m%d_%H%M"`
+touch time_terasort_samson_$fecha
+
+for mem in 2 4 8 12 16 20 
+do
+	memory=`echo $mem | nawk '{printf ("%lu000", $0 * 1024 * 1024)}'`
+	for max_file_siz in 0.5 1 2
+	do
+		max_file_size=`echo $max_file_siz | nawk '{printf ("%lu", $0 * 1000000000)}'`
+		for num_processes in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16
+		do 
+			for shm_size_per_buff in 128 256 512
+			do
+				shm_size_per_buffer=`echo $shm_size_per_buff | nawk '{printf ("%lu", $0 * 1024 * 1024)}'`
+				for size in 1 
+				do
+					echo "mem:" $mem " memory:" $memory
+					echo "max_file_siz:" $max_file_siz " max_file_size:" $max_file_size
+					echo "shm_size_per_buff:" $shm_size_per_buff " shm_size_per_buffer:" $shm_size_per_buffer
+
+					echo "memory $memory" > $path/setup.txt
+					echo "max_file_size $max_file_size" >> $path/setup.txt
+					echo "num_processes $num_processes" >> $path/setup.txt
+					echo "shm_size_per_buffer $shm_size_per_buffer" >> $path/setup.txt
+					echo "max_open_files_per_device 20" >> $path/setup.txt
+					echo "plataforma:samson size:1 memory:$mem max_file_size:$max_file_siz shm_size_per_buffer:$shm_size_per_buff ncores:$num_processes download:yes" >> time_terasort_samson_$fecha
+					echo "_________________ plataforma:samson size:1 memory:$mem max_file_size:$max_file_siz shm_size_per_buffer:$shm_size_per_buff ncores:$num_processes download:yes"  
+					sleep 2
+					/usr/bin/time -pao time_terasort_samson_$fecha samsonLocal -working /home/jges/optlocal/samson -f script_terasort_${size}GB.cmd
+					OUT=$?
+					if [ $OUT -eq 0 ];then
+						echo "_________________ plataforma:samson size:1 memory:$mem max_file_size:$max_file_siz shm_size_per_buffer:$shm_size_per_buff ncores:$num_processes download:yes Done!" 
+					else
+						echo "_________________ ERROR!!! plataforma:samson size:1 memory:$mem max_file_size:$max_file_siz shm_size_per_buffer:$shm_size_per_buff ncores:$num_processes download:yes" 
+						cp /tmp/samsonLocalLog /tmp/samsonLocalLog.$fecha.$mem.$max_file_siz.$shm_size_per_buff.$num_processes
+						/home/jges/bin/lib_shared_memory.scr
+					fi
+					fgrep real time_terasort_samson_$fecha | tail -1
+					echo "______________________________________________________________________________"
+					echo "plataforma:samson size:1 memory:$mem max_file_size:$max_file_siz shm_size_per_buffer:$shm_size_per_buff ncores:$num_processes download:no" >> time_terasort_samson_$fecha
+					echo "_________________ plataforma:samson size:1 memory:$mem max_file_size:$max_file_siz shm_size_per_buffer:$shm_size_per_buff ncores:$num_processes download:no"  
+					sleep 2
+					/usr/bin/time -pao time_terasort_samson_$fecha samsonLocal -working /home/jges/optlocal/samson -f script_terasort_sindownload_${size}GB.cmd
+					OUT=$?
+					if [ $OUT -eq 0 ];then
+						echo "_________________ plataforma:samson size:1 memory:$mem max_file_size:$max_file_siz shm_size_per_buffer:$shm_size_per_buff ncores:$num_processes download:no Done!" 
+					else
+						echo "_________________ ERROR!!! plataforma:samson size:1 memory:$mem max_file_size:$max_file_siz shm_size_per_buffer:$shm_size_per_buff ncores:$num_processes download:no" 
+						cp /tmp/samsonLocalLog /tmp/samsonLocalLog.sindownload.$fecha.$mem.$max_file_siz.$shm_size_per_buff.$num_processes
+						/home/jges/bin/lib_shared_memory.scr
+					fi
+					fgrep real time_terasort_samson_$fecha | tail -1
+					echo "______________________________________________________________________________"
+					echo " "
+					echo " " 
+					#cp fich_limpia_cache fich_limpia_cache.copia
+				done
+			done
+		done
+	done
+done
+

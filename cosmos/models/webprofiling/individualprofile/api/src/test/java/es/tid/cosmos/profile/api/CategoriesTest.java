@@ -13,7 +13,7 @@ import static org.mockito.Mockito.*;
  */
 public class CategoriesTest {
     private ProfileDAO profile;
-    
+
     @Before
     public void setUp() {
         CategoryMap map = new CategoryMap();
@@ -36,7 +36,7 @@ public class CategoriesTest {
         List results = Categories.getTop(this.profile, "abc", 2);
         assertEquals(2, results.size());
     }
-    
+
     @Test(expected=IllegalArgumentException.class)
     public void testGetTopWithNegativeN() {
         Categories.getTop(null, null, -1);

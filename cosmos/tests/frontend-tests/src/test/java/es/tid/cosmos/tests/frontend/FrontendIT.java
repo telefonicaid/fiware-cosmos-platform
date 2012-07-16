@@ -39,7 +39,7 @@ public class FrontendIT {
     private static final String WHITESPACE_TEXT = "   \t\n    ";
     private static final String PRIMES_TEXT = "2 3 4 5 6 7 8 9 123\n19283";
     private static final int TASK_COUNT = 4;
-    
+
     private FrontEnd frontend;
     private String wordcountHdfsPath;
     private String mapperFailHdfsPath;
@@ -187,15 +187,15 @@ public class FrontendIT {
         assertTrue(uploadJarPage.getErrorText().contains("rename"),
                    "Verifying page errors if file already exists");
     }
-    
+
     public void testNormalParameterized() throws IOException {
         testNormalParameterizedInternal(this.parameterizedNormal);
     }
-    
+
     public void testNormalXmlParameterized() throws IOException {
         testNormalParameterizedInternal(this.parameterizedNormalXml);
     }
-    
+
     private void testNormalParameterizedInternal(String jarPath) throws IOException {
         CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
         final String taskId = UUID.randomUUID().toString();
@@ -209,23 +209,23 @@ public class FrontendIT {
         assertTrue(parametersPage.getParameter(
                         "cosmos.test.mongo_output").startsWith("job_"),
                 "Veriyfing cosmos.test.mongo_output starts with job_");
-        
+
         final String inputHdfsPath = this.ensureData(
                 FrontendIT.createAutoDeleteFile(PRIMES_TEXT));
         parametersPage.setParameter("cosmos.test.input", inputHdfsPath);
         parametersPage.setParameter("cosmos.test.number", "2");
         ReviewSettings reviewPage = parametersPage.next();
         reviewPage.runJob();
-        
+
         FrontEndTask task = FrontEndTask.createFromExistingTaskId(
                 this.frontend.getEnvironment(), taskId);
         task.waitForCompletion();
-        
+
         List<Map<String, String>> results = task.getResults();
         assertEquals(results.size(), 1, "Verifying a single result is returned");
         assertEquals(results.get(0).get("multiple_list"), "[2,4,6,8]");
     }
-    
+
     public void testWhitespaceParameterized() throws IOException {
         CreateJobPage createJobPage = this.frontend.goToCreateNewJob();
         final String taskId = UUID.randomUUID().toString();
@@ -239,23 +239,23 @@ public class FrontendIT {
         assertTrue(parametersPage.getParameter(
                         "cosmos.test.mongo_output").startsWith("job_"),
                 "Veriyfing cosmos.test.mongo_output starts with job_");
-        
+
         final String inputHdfsPath = this.ensureData(
                 FrontendIT.createAutoDeleteFile(PRIMES_TEXT));
         parametersPage.setParameter("cosmos.test.input", inputHdfsPath);
         ReviewSettings reviewPage = parametersPage.next();
         reviewPage.runJob();
-        
+
         FrontEndTask task = FrontEndTask.createFromExistingTaskId(
                 this.frontend.getEnvironment(), taskId);
         task.waitForCompletion();
-        
+
         List<Map<String, String>> results = task.getResults();
         assertEquals(results.size(), 1, "Verifying a single result is returned");
         assertEquals(results.get(0).get("multiple_list"),
                      "[2,3,4,5,6,7,8,9,123,19283]");
     }
-    
+
     public void testMalformedParameterizedJars() throws IOException {
         for(String malformedJar : this.invalidParamJars) {
             CreateJobPage createJobPage = this.frontend.goToCreateNewJob();

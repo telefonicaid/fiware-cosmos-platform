@@ -1,0 +1,9 @@
+--NAME--
+logClient - version
+--SHELL--
+logClient -version
+--EXPECT--
+0.1
+Copyright (C) 2011 Telefonica Digital
+
+Written by Andreu Urruela, Ken Zangelin and J.Gregorio Escalada.

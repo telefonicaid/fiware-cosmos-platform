@@ -1,0 +1,14 @@
+remove_all
+rm_local out_3
+remove_all_stream
+rm_queue quijote
+rm_queue parsed_quijote
+rm_queue counted_quijote
+remove_all_stream
+add_stream_operation parser txt.parser_words quijote parsed_quijote
+add_stream_operation counter txt.word_count2 parsed_quijote counted_quijote counted_quijote
+set_stream_operation_property parser delayed_processing no
+set_stream_operation_property counter delayed_processing no
+push quijote.txt quijote
+wait
+pop counted_quijote out_3

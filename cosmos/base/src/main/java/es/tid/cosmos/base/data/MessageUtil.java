@@ -11,7 +11,7 @@ import es.tid.cosmos.base.data.MessageDescriptor.MetaFields;
 public final class MessageUtil {
     private MessageUtil() {
     }
-    
+
     public static String toString(MessageDescriptor messageDescriptor,
                                   Message message) {
         final String delimiter = messageDescriptor.getMetaFieldValue(

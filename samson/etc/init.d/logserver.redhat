@@ -1,0 +1,68 @@
+#!/bin/bash
+#
+# logserver    Start/Stop the SAMSON logserver service
+#
+# chkconfig: 2345 99 60
+# description: SAMSON is a high-performance MapReduce platform that is \
+#              designed for scaling tasks on a cluster of commodity hardware. \
+#              This platform removes the need to develop a system for \
+#              parallelizing and synchronizing work between servers, allowing \
+#              a person to develop the analytical models needed to solve both \
+#              current and future problems.
+### BEGIN INIT INFO
+# Provides: samsonSpawner
+# Required-Start: $local_fs $syslog
+# Required-Stop: $local_fs $syslog
+# Default-Start:  345
+# Default-Stop: 90
+# Short-Description: run logServer
+# Description: SAMSON is a high-performance MapReduce platform that is \
+#              designed for scaling tasks on a cluster of commodity hardware. \
+#              This platform removes the need to develop a system for \
+#              parallelizing and synchronizing work between servers, allowing \
+#              a person to develop the analytical models needed to solve both \
+#              current and future problems.
+### END INIT INFO
+
+PARAM=$1
+PIDFILE=/var/log/samson/samsond.pid
+
+# Load the samson environment
+if [ -f /etc/profile.d/samson.sh ]; then
+    . /etc/profile.d/samson.sh
+else
+    SAMSON_HOME=/opt/samson
+fi
+
+if [ -z "${SAMSON_HOME}" ]; then
+  echo "\$SAMSON_HOME is not set, aborting"
+  exit 1
+fi
+
+
+logserver_start()
+{
+    su - samson -c "${SAMSON_HOME}/bin/logServer"
+}
+
+logserver_stop()
+{
+    killall logServer
+}
+
+case $PARAM in
+
+        'start')
+                logserver_start
+                ;;
+
+        'stop')
+                logserver_stop
+                ;;
+
+        'restart')
+                logserver_stop
+                logserver_start
+                ;;
+esac
+

@@ -21,14 +21,14 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
 /**
  * Input: <Long, Cdr>
  * Output: <TwoInt, ItinTime>
- * 
+ *
  * @author dmicol
  */
 public class ItinJoinCellBtsReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Cdr>, ProtobufWritable<TwoInt>,
         TypedProtobufWritable<ItinTime>> {
     private static List<Cell> cells;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -38,7 +38,7 @@ public class ItinJoinCellBtsReducer extends Reducer<LongWritable,
             cells = CellsCatalogue.load(new Path(conf.get("cells")), conf);
         }
     }
-    
+
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Cdr>> values, Context context)

@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 /**
  * Input: <TwoInt, NodeMxCounter>
  * Output: <BtsProfile, Int>
- * 
+ *
  * @author dmicol
  */
 class PopdenSpreadArrayReducer extends Reducer<LongWritable,
@@ -29,7 +29,7 @@ class PopdenSpreadArrayReducer extends Reducer<LongWritable,
         for (TypedProtobufWritable<NodeMxCounter> value : values) {
             final NodeMxCounter counter = value.get();
             for (BtsCounter btsCounter : counter.getBtsList()) {
-                final ProtobufWritable<BtsProfile> btsProfile = 
+                final ProtobufWritable<BtsProfile> btsProfile =
                         BtsProfileUtil.createAndWrap(btsCounter.getBts(), 0,
                                                      btsCounter.getWeekday(),
                                                      btsCounter.getRange());

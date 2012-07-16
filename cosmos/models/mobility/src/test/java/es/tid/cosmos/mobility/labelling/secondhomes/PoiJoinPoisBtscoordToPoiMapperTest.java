@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class PoiJoinPoisBtscoordToPoiMapperTest {
     private MapDriver<LongWritable, TypedProtobufWritable<Poi>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new MapDriver<LongWritable, TypedProtobufWritable<Poi>,

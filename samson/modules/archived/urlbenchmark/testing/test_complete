@@ -1,0 +1,32 @@
+# Some cleaning
+#rm /opt/samson/config/samsonPlatformProcesses
+CONTROLLER_IP="localhost";
+export CONTROLLER_IP
+echo $CONTROLLER_IP
+
+
+# Running inside build/testing
+if [ -n "${CONTROLLER_IP:+x}" ]; then
+        echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > test_complete_stdout
+        if [ $CONTROLLER_IP = "localhost" ]; then
+                if ! ps -C samsonSpawner > /dev/null
+                then
+                        echo "Launching samsonSpawner" >> test_complete_stdout
+                        samsonSpawner  >> test_complete_stdout &
+                else
+                        echo "samsonSpawner already running" >> test_complete_stdout
+                fi
+               # sleep 3
+        fi
+        /usr/local/bin/delilah -controller $CONTROLLER_IP -f test_complete_commands.txt >> test_complete_stdout 
+else
+        echo "Environment variable CONTROLLER_IP not defined, using samsonLocal" > test_complete_stdout
+        /usr/local/bin/samsonLocal -working . -f test_complete_commands.txt >> test_complete_stdout 2> test_complete_stderr
+fi
+
+
+samsonCat out | sort -n > test_complete_out.txt
+rm -rf out
+
+#Compare the produced output with the expected output
+cmp  test_complete_out.txt test_complete_expected_out.txt

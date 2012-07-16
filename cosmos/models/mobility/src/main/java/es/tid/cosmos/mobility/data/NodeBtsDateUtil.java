@@ -29,7 +29,7 @@ public final class NodeBtsDateUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<NodeBtsDate> createAndWrap(long userId,
             long bts, Date date, int hour) {
         return wrap(create(userId, bts, date, hour));

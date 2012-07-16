@@ -21,7 +21,7 @@ import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 public class RepbtsJoinDistCommsReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Message>, LongWritable,
             TypedProtobufWritable<BtsCounter>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,

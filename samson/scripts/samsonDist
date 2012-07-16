@@ -1,0 +1,123 @@
+#!/bin/bash
+
+#
+# Defining the clusters
+#
+# NOTE
+# This 'cluster vector' must start at index '0' and be consecutive.
+#
+cluster[0]="samson01 samson02 samson03 samson04"
+cluster[1]="samson05 samson06 samson07 samson08"
+
+
+
+#
+# Help ...
+#
+function help
+{
+	typeset -i ix
+	ix=0
+	while [ $ix -lt ${#cluster[@]} ]
+	do
+		echo "  Cluster " $ix ": ${cluster[$ix]}"
+		ix=$ix+1
+	done
+
+	echo
+	echo "  How to select the cluster (in order of precedence):"
+	echo "    1. Use option '-c <cluster number>' to select a cluster."
+	echo "    1. Use option '-C \"node1 node2 node3\"' to create a tailor-made cluster."
+	echo "    3. Use environment variable SAMSON_CLUSTER to create a tailor-made cluster:"
+	echo "       % export SAMSON_CLUSTER=\"node1 node2 node3\""
+	echo "    4. If you're inside a cluster, the cluster your node belongs to will be chosen."
+}
+
+if [ "$1" == "--help" ]
+then
+	help
+	exit 1
+fi
+
+
+
+#
+# Detecting on which host we're running
+#
+localMachine=$(uname -n)
+
+
+
+#
+# Detecting cluster, unless a cluster is given on command line ...
+# ... OR ...
+# The environment variable 'SAMSON_CLUSTER' is found
+#
+clusterIx=-1
+
+if [ "$1" == "-c" ] && [ "$2" != "" ]
+then
+	clusterIx=$2
+elif [ "$1" == "-C" ] && [ "$#" == 2 ]
+then
+	cluster[0]=$2
+	clusterIx=0
+elif [ "$SAMSON_CLUSTER" != "" ]
+then
+	cluster[0]=$SAMSON_CLUSTER
+	clusterIx=0
+else
+	typeset -i ix
+	ix=0
+	while [ $ix -lt ${#cluster[@]} ]
+	do
+		for name in ${cluster[$ix]}
+		do
+			if [ $localMachine == $name ]
+			then
+				clusterIx=$ix
+				break;
+			fi
+		done
+		ix=$ix+1
+	done
+fi
+
+if [ $clusterIx == -1 ]
+then
+	echo "No cluster found for $localMachine"
+	echo
+	help
+	exit 1
+fi
+
+echo Synching cluster $clusterIx: ${cluster[$clusterIx]}
+
+
+
+#
+# Ping all nodes in the cluster
+#
+for node in ${cluster[$clusterIx]}
+do
+	ping -c 1 $node > /dev/null 2>&1
+	if [ "$?" != 0 ]
+	then
+		echo No ping to cluster item $node
+		exit 1
+	fi
+done
+
+echo OK, rsynching $SAMSON_HOME to ${cluster[$clusterIx]}
+
+
+for node in ${cluster[$clusterIx]}
+do
+	if [ "$node" != "$localMachine" ]
+	then
+		echo Installing samson in $node
+		rsync -r $SAMSON_HOME/modules         $node:$SAMSON_HOME
+		rsync -r $SAMSON_HOME/bin	         $node:$SAMSON_HOME
+	fi
+done
+

@@ -1,0 +1,33 @@
+.TH SAMSON\-TEST 7 2011-07-08 "Samson" "Samson Module Libraries"
+.SH NAME
+samson\-test \- call data record processing
+.SH DESCRIPTION
+The samson TEST library is an example implementation to process data origining from an
+online-store, described in the section 'Ejemplo' in the document XXX.
+
+.SH DATA TYPES
+  Operation      (UInt user, UInt product, UInt operation)      Describes an operation.
+  VectorProducts (vector UInt products)                         List of products.
+
+.SH FUNCTIONS
+  Generator   test_generator (out UInt-OPeration)
+  ParserOut   dump_to_txt (in Uint-VectorProducts)
+  Map         map_by_user (in UInt-Operation, out UInt-UInt)
+  Reduce      reduce_by_user (in UInt-UInt, out UInt-VectorProducts)
+
+.SH SCRIPTS
+No scripts are defined in this module.
+
+.SH SEE ALSO
+.BR samson (1),
+.BR samson-cdr (7),
+.BR samson-example (7),
+.BR samson-graph (7),
+.BR samson-moduletemplate (7),
+.BR samson-osn (7),
+.BR samson-sna (7),
+.BR samson-sort (7),
+.BR samson-system (7),
+.BR samson-terasort (7),
+.BR samson-txt (7),
+.BR samson-urlbenchmark (7)

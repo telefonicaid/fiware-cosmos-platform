@@ -21,7 +21,7 @@ import es.tid.cosmos.base.data.generated.BaseTypes.Int;
 public class PopdenJoinNodeInfoProfileReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
             ProtobufWritable<BtsProfile>, TypedProtobufWritable<Int>> instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,

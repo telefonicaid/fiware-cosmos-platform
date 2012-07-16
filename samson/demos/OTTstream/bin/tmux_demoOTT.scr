@@ -1,0 +1,15 @@
+#!/bin/sh
+tmux new-session -d -s OTTdemo
+ 
+tmux new-window -t OTTdemo:0 -n 'CONF'
+tmux new-window -t OTTdemo:1 -n 'delilah'
+tmux new-window -t OTTdemo:2 -n 'PushLogs'
+tmux new-window -t OTTdemo:3 -n 'LevelMonitor'
+tmux new-window -t OTTdemo:4 -n 'TopicMonitor'
+tmux new-window -t OTTdemo:5 -n 'Queries'
+tmux new-window -t OTTdemo:6 -n 'Alerts'
+tmux new-window -t OTTdemo:7 -n 'tmp'
+tmux new-window -t OTTdemo:8 -n 'logs'
+  
+tmux select-window -t OTTdemo:0
+tmux -2 attach-session -t OTTdemo

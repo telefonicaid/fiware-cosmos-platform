@@ -18,13 +18,13 @@ import es.tid.cosmos.mobility.util.CellGroupsCatalogue;
 /**
  * Input: <Long, Cdr>
  * Output: <Long, MatrixTime>
- * 
+ *
  * @author dmicol
  */
 class MatrixJoinCellGroupReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Cdr>, LongWritable, TypedProtobufWritable<MatrixTime>> {
     private static List<CellGroup> cellGroups;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -35,7 +35,7 @@ class MatrixJoinCellGroupReducer extends Reducer<LongWritable,
                     new Path(conf.get("cell_groups")), conf);
         }
     }
-    
+
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Cdr>> values, Context context)

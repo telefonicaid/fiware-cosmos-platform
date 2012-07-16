@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# Generate the list of module inter-dependencies for generating packages
+
+# Remove existing dependency catalogs
+for module in `egrep -r "\#include.*modules" modules | grep -v system | grep -v txt | grep -v rpm | sed -e 's?^modules/\([a-z0-9_]\+\)/.*include ["<]samson/modules/\([a-z0-9_]\+\).*?\1 \2?' -e 's?^modules/\([a-z0-9_]\+\)/.*include["<]samson/modules/\([a-z0-9_]\+\).*?\1 \2?' | awk '{ if ($1 != $2) print $1 endif }' | sort | uniq`
+do
+  if [ -f modules/$module/depends.txt ]; then
+    rm modules/$module/depends.txt
+  fi
+done
+# Generate the module dependency pairs, i.e. module x uses module y
+for module_list in `egrep -r "\#include.*modules" modules | grep -v system | grep -v txt | grep -v rpm | sed -e 's?^modules/\([a-z0-9_]\+\)/.*include ["<]samson/modules/\([a-z0-9_]\+\).*?\1 \2?' -e 's?^modules/\([a-z0-9_]\+\)/.*include["<]samson/modules/\([a-z0-9_]\+\).*?\1 \2?' | awk '{ if ($1 != $2) print $1"-"$2 endif }' | sort | uniq`
+do
+  module_parent=`echo $module_list | cut -f1 -d"-"`
+  module_child=`echo $module_list | cut -f2 -d"-"`
+  echo $module_child >> modules/$module_parent/depends.txt
+done

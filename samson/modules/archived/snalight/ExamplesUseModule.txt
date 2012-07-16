@@ -1,0 +1,30 @@
+add TEMM -txt
+upload GASSET_TRAFICO_VOZ_20090228.DAT TEMM
+upload fake_Cliques.DAT TEMM
+
+
+snalight.mx_calls_cdrs_to_graph TEMM TEMM_graph -clear -create 
+	set sna.cdr_format TEMM_VOZ
+	set sna.num_cdrs_for_strong_connection 4
+	set sna.max_connections_per_node 50
+	set sna.max_strong_connections_per_node 400
+
+	snalight.parse_cdrs TEMM TEMM_cdrs_bin_ini -clear -create
+    snalight.acg_map_dup_cdrs TEMM_cdrs_bin_ini TEMM_cdrs_bin_dup -clear -create
+	snalight.remove_duplicates TEMM_cdrs_bin_dup TEMM_cdrs_bin_fin -clear -create
+    snalight.acg_red_cdrs_to_nodes TEMM_cdrs_bin_fin TEMM_graph_pre -clear -create
+
+	snalight.filter_graph_map TEMM_graph_pre TEMM_graph_wkill -clear -create
+    snalight.filter_graph_reduce TEMM_graph_wkill TEMM_graph -clear -create
+
+	snalight.social_graph_parse_out_sinks TEMM_graph TEMM_graph_sinks_txt -clear -create
+	download TEMM_graph_sinks_txt TEMM_graph_sinks
+
+	snalight.social_graph_out TEMM_graph TEMM_graph_links_txt -clear -create
+	download TEMM_graph_links_txt TEMM_graph_links
+	
+snalight.compute_cliques TEMM_graph TEMM_cliques -clear -create
+	snalight.spread_nodes_to_strong_connections TEMM_graph TEMM_graph_spread -clear -create
+	snalight.compute_cliques_from_spread_graph TEMM_graph_spread TEMM_cliques -clear -create
+	snalight.export_cliques TEMM_cliques TEMM_cliques.txt -clear -create
+	download TEMM_cliques.txt TEMM_cliques.txt

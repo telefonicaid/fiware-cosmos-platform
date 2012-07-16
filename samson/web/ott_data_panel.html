@@ -1,0 +1,185 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Samson OTT Pilot</title>
+	
+	<!-- CSS : implied media="all" -->
+	<link rel="stylesheet" href="css/reset.css">
+	<link rel="stylesheet" href="css/style.css"> 
+	
+    <!-- FLOT -->
+    <script language="javascript" type="text/javascript" src="flot/jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="flot/jquery.flot.js"></script>
+
+</head>
+<body>
+	<div id="header">
+		<h1>Samson <span class="opened">OTT Pilot</span></h1>
+	</div>
+	
+	<div id="content">
+	
+		<div class="box system FL">
+			<h2>#Users / service</h2>
+			<div id="plot_0" class="content" id="lists_system"></div>
+		</div>
+
+		<div class="box system FR">
+			<h2>Competence</h2>
+			<div id="plot_1" class="content"></div>
+		</div>
+		
+		<div class="box disk FL">
+			<h2>COMMS vs SOCIAL</h2>
+			<div id="plot_2" style="overflow:auto" class="content" id="lists_queues"></div>
+		</div>
+        
+<!--		
+        
+		<div class="box disk FR">
+			<h2>Disk out</h2>
+			<div id="disk_out" class="content"></div>
+		</div>
+
+		<div class="box queues FL">
+			<h2>Network in</h2>
+			<div id="network_in" style="overflow:auto" class="content" id="lists_queues"></div>
+		</div>
+        
+		<div class="box queues FR">
+			<h2>Network out</h2>
+			<div id="network_out" class="content"></div>
+		</div>
+-->
+
+	</div>
+    
+    <script type="text/javascript">
+
+$(function () 
+{
+
+    // Update period ( in miliseconds )
+    var updateInterval = 2000;
+    var plotInterval   = 2000;
+    
+    // URL to fetch
+    var servers = [ "overthetop01" , "overthetop02" , "overthetop03" , "overthetop04" , "overthetop05" ];
+
+    var services_0 = [ "GTalk" , "Skype" , "Viber", "WhatsApp" , "faceTime" , "iphoneMessage" , "Tango" , "Tuenti" , "Facebook"];
+    //var services_1 = [ "Vodafone" , "Orange" , "Yoigo" ];
+    var services_1 = [ "voice" , "sms" ];
+    var services_2 = [ "COMMS" , "SOCIAL" ];
+
+    //var servers = [ "samson05" , "samson06" , "samson07" , "samson08" ];
+    //var servers = [ "localhost" ];
+
+    // Different values from servers
+    var plot_values = [];
+    plot_values[0] = [];
+    plot_values[1] = [];
+    plot_values[2] = [];
+
+    // Init data
+    for( s = 0 ; s < services_0.length ; s++ )
+        plot_values[0][s] = { "label" : services_0[s] , "data" : [] };
+    for( s = 0 ; s < services_1.length ; s++ )
+        plot_values[1][s] = { "label" : services_1[s] , "data" : [] };
+    for( s = 0 ; s < services_2.length ; s++ )
+        plot_values[2][s] = { "label" : services_2[s] , "data" : [] };
+
+    // Options fot the plot
+    var options = 
+    {
+        lines: { show: true , horizontal:true },
+        points: { show: true },
+        legend: { position: "nw"}
+    };
+
+    // Generic function to plot data
+    function plot( ) 
+    {
+        // Plot users per value
+        $.plot( $("#plot_0") , plot_values[0] , options);
+        $.plot( $("#plot_1") , plot_values[1] , options);
+        $.plot( $("#plot_2") , plot_values[2] , options);
+        
+        // Timeout call to update function to refresh data        
+        setTimeout(plot, plotInterval);
+
+    }
+
+    function update() 
+    {
+
+         function send_ajax_request( url_data  , plot_number, plot_position , label )
+         {
+            $.ajax({
+                url: url_data,
+                method: 'GET',
+                dataType: 'json',
+                error: function(jqXHR, textStatus, errorThrown) 
+                {
+                    //alert( "Error parsing json " + textStatus );
+                    plot_values[plot_number][plot_position] = { "label": label , "data": [] };
+                },
+                success: function( data ) 
+                         {
+                         
+                            //alert( data.value );
+                            if( typeof( data.value ) != "object" )
+                            {
+                               plot_values[plot_number][plot_position] = { "label": label , "data": [] };
+                               return;
+                            }
+                               
+                           if( typeof( data.value.coord ) != "object" )
+                            {
+                               plot_values[plot_number][plot_position] = { "label": label , "data": [] };
+                               return;
+                            }
+                         
+
+                            // Create the serie with real numbers
+                            var serie = new Array(); ;
+                            for ( i = 0 ; i <  data.value.coord.length ; i++ )
+                            {
+                                serie[i] = [ data.value.coord[i].x[0] , data.value.coord[i].x[1] ];
+                            }                             
+                         
+                             // Update global plot_values variable
+                             plot_values[plot_number][plot_position] = { "label": label , "data": serie };
+                             
+                             // Update all plots
+                             //plot( ); 
+                         }
+            });
+         }
+         
+         // Send ajax requests to server[0]
+         
+         for ( s = 0 ; s < services_0.length ; s++ )
+            send_ajax_request( "http://" + servers[0] + ":1202/samson/queues/02.level.05.graph/state/" + services_0[s] + ".json" , 0 , s , services_0[s] );
+            
+         for ( s = 0 ; s < services_1.length ; s++ )
+            send_ajax_request( "http://" + servers[0] + ":1202/samson/queues/02.level.05.graph/state/" + services_1[s] + ".json" , 1 , s , services_1[s] );
+            
+         for ( s = 0 ; s < services_2.length ; s++ )
+            send_ajax_request( "http://" + servers[0] + ":1202/samson/queues/02.level.05.graph/state/" + services_2[s] + ".json" , 2 , s , services_2[s] );
+
+ 
+        // Timeout call to update function to refresh data        
+        setTimeout(update, updateInterval);
+    }
+
+    // Call update ( it is auto-called periodically )
+    update();
+    plot();
+});
+</script>
+
+
+</body>
+</html>

@@ -26,7 +26,7 @@ public final class TelMonthUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<TelMonth> createAndWrap(long phone,
                                                            int month,
                                                            boolean workingday) {

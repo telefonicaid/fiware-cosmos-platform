@@ -28,7 +28,7 @@ public class AdjChangePoisIdReducerTest {
 
     private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>> instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<TwoInt>,

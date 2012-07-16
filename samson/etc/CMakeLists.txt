@@ -1,0 +1,7 @@
+
+SET (SETUP_FILES
+	setup.txt
+)
+
+
+INSTALL(FILES ${SETUP_FILES} DESTINATION /opt/samson )

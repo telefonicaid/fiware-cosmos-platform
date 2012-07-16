@@ -1,0 +1,37 @@
+
+o Connections between QsiBase that moves with the objects they're tied to.
+
+    QsiBox::connectionAdd(QsiBase* point1, Qsi::Connection::Position pos1, QsiBase* point2, Qsi::Connection::Position pos2);
+
+    namespace Qsi
+    {
+
+    typedef struct Connection
+    {
+    	enum Position
+    	{
+    		NorthWest,
+    		North,
+    		NorthEast,
+    		CenterWest,
+    		Center,
+    		CenterEast,
+    		SouthWest,
+    		South,
+    		SouthEast,
+    	} Position;
+    
+    	QsiBase* point1;
+    	Position pos1;
+    
+    	QsiBase* point1;
+    	Position pos1;
+    } Connection;
+    
+    }
+
+-------------------------------------------------------------------------------
+
+o QComboBox
+
+o 

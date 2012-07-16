@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.*;
 
 /**
- * 
+ *
  * @author dmicol
  */
 public final class MessageDescriptor {
@@ -14,17 +14,17 @@ public final class MessageDescriptor {
         DELIMITER,
         ANONYMISE
     }
-    
+
     private Map<MetaFields, String> metaInfo;
     private Set<String> fieldsToAnonymise;
     private Map<String, Integer> fieldColumnIndices;
-    
+
     public MessageDescriptor() {
         this.metaInfo = new EnumMap<MetaFields, String>(MetaFields.class);
         this.fieldsToAnonymise = new HashSet<String>();
         this.fieldColumnIndices = new HashMap<String, Integer>();
     }
-    
+
     public MessageDescriptor(InputStream configInput) throws IOException {
         this();
         Properties props = new Properties();
@@ -44,7 +44,7 @@ public final class MessageDescriptor {
         }
         this.checkForConsistency();
     }
-    
+
     private void checkForConsistency() {
         for (String fieldToAnonymise : this.fieldsToAnonymise) {
             if (!this.fieldColumnIndices.containsKey(fieldToAnonymise)) {
@@ -53,7 +53,7 @@ public final class MessageDescriptor {
             }
         }
     }
-    
+
     public String getMetaFieldValue(MetaFields metaField) {
         if (!this.metaInfo.containsKey(metaField)) {
             throw new IllegalArgumentException("Not a meta field: "
@@ -82,11 +82,11 @@ public final class MessageDescriptor {
                 throw new IllegalArgumentException("Unsupported metadata type");
         }
     }
-    
+
     public boolean shouldAnonymiseField(String fieldName) {
         return this.fieldsToAnonymise.contains(fieldName);
     }
-    
+
     public int getFieldColumnIndex(String fieldName) {
         if (!this.fieldColumnIndices.containsKey(fieldName)) {
             throw new IllegalArgumentException("Not a regular field: "
@@ -94,11 +94,11 @@ public final class MessageDescriptor {
         }
         return this.fieldColumnIndices.get(fieldName);
     }
-    
+
     public Set<String> getFieldNames() {
         return this.fieldColumnIndices.keySet();
     }
-    
+
     public void setFieldColumnIndex(String fieldName, int columnIndex) {
         if (this.fieldColumnIndices.containsKey(fieldName)) {
             throw new IllegalArgumentException("Repeated field " + fieldName);

@@ -52,7 +52,7 @@ public class MessageGeneratorTest {
         assertEquals("mutxamel", uler.getHomeCity());
         assertEquals("03110", uler.getHomeZipCode());
     }
-    
+
     @Test
     public void shouldGenerateWebLog() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();
@@ -115,7 +115,7 @@ public class MessageGeneratorTest {
                 + "e812afcd2851c9fed142efa6ce1fbda7fa4cf2d10ea633c06d77bb4a017b"
                 + "a65d2bd827d", webLog.getDate());
     }
-    
+
     @Test(expected=IllegalArgumentException.class)
     public void shouldFailOnInvalidType() {
         MessageDescriptor messageDescriptor = new MessageDescriptor();

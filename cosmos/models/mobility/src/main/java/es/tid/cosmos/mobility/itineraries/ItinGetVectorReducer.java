@@ -14,14 +14,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
 /**
  * Input: <ItinRange, ItinPercMove>
  * Output: <ItinRange, ClusterVector>
- * 
+ *
  * @author dmicol
  */
 public class ItinGetVectorReducer extends Reducer<
         ProtobufWritable<ItinRange>, TypedProtobufWritable<ItinPercMove>,
         ProtobufWritable<ItinRange>, TypedProtobufWritable<ClusterVector>> {
     private double minItinMoves;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -29,7 +29,7 @@ public class ItinGetVectorReducer extends Reducer<
                 getConfiguration());
         this.minItinMoves = conf.getItinMinMoves();
     }
-    
+
     @Override
     protected void reduce(ProtobufWritable<ItinRange> key,
             Iterable<TypedProtobufWritable<ItinPercMove>> values,

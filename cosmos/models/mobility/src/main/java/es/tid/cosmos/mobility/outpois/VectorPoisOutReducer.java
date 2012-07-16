@@ -15,13 +15,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, Poi>
  * Output: <Null, Text>
- * 
+ *
  * @author dmicol
  */
 class VectorPoisOutReducer extends Reducer<ProtobufWritable<TwoInt>,
         TypedProtobufWritable<Poi>, NullWritable, Text> {
     private String separator;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -29,7 +29,7 @@ class VectorPoisOutReducer extends Reducer<ProtobufWritable<TwoInt>,
                 getConfiguration());
         this.separator = conf.getDataSeparator();
     }
-    
+
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<TypedProtobufWritable<Poi>> values, Context context)

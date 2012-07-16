@@ -14,7 +14,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, Cluster|Null>
  * Output: <TwoInt, Cluster>
- * 
+ *
  * @author dmicol
  */
 class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
@@ -38,7 +38,7 @@ class ClusterAggPotPoiPoisToClusterReducer extends Reducer<
                 throw new IllegalStateException("Unexpected input type: "
                         + message.getClass());
             }
-            
+
             if (cluster != null && hasNulls) {
                 break;
             }

@@ -1,0 +1,277 @@
+package samson.network;
+
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Common 
+//
+
+message EnvironmentVariable
+{
+	required string name	=1;	// Name of the property
+	required string value	=2;	// Value
+}
+
+message Environment
+{
+	repeated EnvironmentVariable variable=1;	// List of enrivonment variables
+}
+
+
+message Error
+{
+	// When Error is used inside another message, it is always optional
+	required string message = 2;	// String with the error definition ( if any )
+}
+
+message Alert
+{
+	
+	required string text     = 1; 
+	optional string type     = 2; // message , error , warning
+	optional string context  = 3; // Context where this was generated ( streaming , delilah , etc... ) 
+
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Hello message
+//
+
+message NodeIdentifier
+{
+    enum NodeType
+    {
+        Delilah    = 1;    
+        Worker     = 2;    
+		Unknown    = 3;
+    }	
+
+	required NodeType  node_type = 1;
+	required uint64    id        = 2;
+}
+
+message ClusterNode
+{
+	required string ip  = 1;    // IP adress of this worker
+	required int32 port = 2;    // Port ( SAMSON PORT by default )
+    required uint64 id  = 3;    // Identifier of this node in this cluster
+}
+
+message ClusterInformation
+{
+	required uint64 id          = 1;   // Identifier of the cluster
+	required uint64 version     = 2;   // Version of this cluster
+
+	repeated ClusterNode nodes  = 3;   // Vector of nodes involved in the cluster
+
+	optional uint64 assigned_id = 4;   // Id assigned to a worker in a particular node ( only in some messages )
+}
+
+message Hello
+{
+	required NodeIdentifier      node_identifier         = 1; // My node identifier
+	required ClusterInformation  cluster_information     = 2; // Cluster information
+
+	// Fields used when delilah sends hello
+	optional string user            = 3;
+	optional string password        = 4;
+	optional string connection_type = 5; 
+
+	required bool answer_hello_required = 6;       // It is necessary to answer back with a hello
+
+	optional bool reset_cluster_information = 7;   // Falg to reset a worker instance
+}	
+
+// ////////////////////////////////////////////////////////////////////////
+// Notifications from Network Interface
+// ////////////////////////////////////////////////////////////////////////
+
+message NetworkNotification
+{
+	// Inform about connected or disconnected worker
+	optional uint64 connected_worker_id                    = 1;
+	optional uint64 disconnected_worker_id                 = 2;
+
+	// Inform about connected or disconnected delilahs
+	optional uint64 connected_delilah_id                   = 3;
+	optional uint64 disconnected_delilah_id                = 4;;
+}
+
+// ////////////////////////////////////////////////////////////////////////
+
+// Messages used in the isolated process protocol
+
+// ////////////////////////////////////////////////////////////////////////
+
+
+message MessageProcessPlatform
+{
+	enum Code
+	{
+		code_begin		      = 1;    // Begin code
+        code_end           	  = 2;    // End code
+		code_operation	  	  = 3;	  // Run a particular operation
+		code_user_error	  	  = 5;	  // Error reported by user
+		code_progress		  = 6;	  // Report progress of a particular task
+    }
+
+	// Operation code
+    required Code code = 1;
+
+    // Optional parameters
+    optional int32 operation	     = 2;  // Indicator of the operation
+    optional double progress	     = 4;	// Optional progress report
+    optional string progress_status  = 6;   // Optinal string describing the internal status of this task
+    optional string error	         = 5;	// Error reported by user
+
+}
+
+message MessagePlatformProcess
+{
+    enum Code
+    {
+        code_ok            = 1;    // Continue after running operation
+        code_kill          = 2;    // Kill the process since it has been canceled at platform
+    }
+
+    required Code code = 1;
+
+}
+
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Message to push a Block into a particular queue
+//
+
+message PushBlock
+{
+	repeated string queue		= 1;	// Target QueueuChannels to push this block
+	required uint64 size		= 2;	// Size of the uploaded block ( used when comming back to delilah )
+}
+
+message PushBlockResponse
+{
+	required PushBlock request 	= 2;	// Original request
+}
+
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Message to pop  a particular queue from a worker
+//
+
+
+message PopQueue
+{
+	optional string queue		= 1;	// Queue we are interested in extracting data
+}
+
+message PopQueueResponse
+{
+	optional PopQueue request	= 1;	// Original request message
+
+	required bool finish		= 2;	// Flag to indicate that this operation is finished
+	optional Error error		= 3;	// Optional flag to notify errors
+}
+
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Streaming data output SAMSON cluster
+//
+
+message StreamOutQueue
+{
+	optional string queue  = 1;  // Name of the queue we are getting data 	
+
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Message to send a command to a particular worker
+//
+
+
+message WorkerCommand
+{
+	required string command			  = 1;	// Command to run
+	optional Environment environment  = 3;	// Enviroment properties ( including system.* for internal use )
+}
+
+message WorkerCommandResponse
+{
+	required WorkerCommand worker_command = 1;	// Copy of the original command ( Including the enviroment properties system.*)
+	optional Error error   = 2;	      			// Optional error message ( if any )
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Collection messages
+//
+
+message CollectionItem
+{
+	optional string name   = 1; // Name of this item
+	optional string value  = 2; // Vaue of this property
+	optional string format = 3; // Optional format for this field
+}
+
+message CollectionRecord
+{
+	 repeated CollectionItem item = 1; // Items in this collection
+}
+
+message Collection
+{
+     required string name = 1;
+	 required string title = 2;
+	 repeated CollectionRecord record = 3; 
+}
+
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// General message
+//
+message Message
+{
+
+	// Process identification inside delilah ( multiple push / pop / etc operations ... )
+	optional uint64  delilah_component_id = 1;	
+
+	// Push data to a worker ( push message and response )
+	optional PushBlock push_block = 2;	
+	optional PushBlockResponse push_block_response = 3;	
+
+	// Pop data from a worker ( push message and response )
+	optional PopQueue pop_queue	= 4;	
+	optional PopQueueResponse pop_queue_response = 5;	
+
+	// Streaming data from SAMSON to a delilah
+	optional StreamOutQueue	stream_output_queue = 6;
+
+	// Worker command ( message and reponse )
+	optional WorkerCommand worker_command = 7;
+	optional WorkerCommandResponse worker_command_response =8;
+
+	// Alerts to delilah elementrs
+	optional Alert alert = 9;
+
+	// XML report of status from all workers
+	optional string info = 10;
+
+	// Hello message ( used in the handshare between workers and delilahs )
+	optional Hello hello = 11;
+
+	// String Message ( used in the message Packet );
+	optional string message = 12;
+
+	// NetworkNotification message ( used to inform delilah and worker about changes in the network setup )	
+	optional NetworkNotification network_notification = 13;
+
+	// Collections .. used in some messages to report status ( ls_queues, ps_stream , etc... )
+	repeated Collection collection = 14; 
+}
+

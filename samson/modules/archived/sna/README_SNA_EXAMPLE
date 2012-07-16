@@ -1,0 +1,33 @@
+
+--------------------------------------------------------------------------
+Trasnform SNA file with graph information to cliques
+--------------------------------------------------------------------------
+
+
+add graph.txt -txt
+
+    --> Add a data-set for txt files named graph.txt
+
+upload GASSET_RES_SNA_RED_SOCIAL_30M graph.txt
+
+       --> Upload data to this data set
+
+graph.parse_graph graph.txt graph -create
+
+		  --> Transform a txt dat-set into a binary graph file
+
+graph.filter_graph graph graph_filtered -create
+
+	    --> Filter the graph to remove node with lots of contacts
+
+sna.compute_cliques graph_filtered cliques -create
+
+		    --> Compute cliques from the graph
+
+sna.export_cliques cliques cliques.txt -create
+
+		   --> Trasnform cliques into a txt file to be downloaded
+
+download cliques.txt cliques.txt
+
+	 --> Download to a local file with all the cliques

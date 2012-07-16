@@ -1,0 +1,81 @@
+
+#
+# There are different ways to build SAMSON:
+#
+# Mode          Build Directory     Description
+# ---------------------------------------------------------------------------------
+#
+# release      BUILD_RELEASE        Only platform in release mode
+# release_all  BUILD_RELEASE_ALL    Platform and modules in release mode
+# debug        BUILD_DEBUG          Only platform in debug mode
+# debug_all    BUILD_DEBUG_ALL      Platform and modules in debug mode
+# coverage     BUILD_COVERAGE       Platform and modules in coverage mode ( to test code coverate )
+
+# ------------------------------------------------------------------------
+# Building Samson
+# ------------------------------------------------------------------------
+
+make release             - Build the Samson platorm in release mode
+make release_all , all   - Build the Samson platform in release_all mode
+make debug               - Build the Samson platform in debug mode
+make debug_all           - Build the Samson platform in debug_all mode
+make coverage            - Build the Samson platform in coverage mode
+
+# ------------------------------------------------------------------------
+# Installing SAMSON
+# ------------------------------------------------------------------------
+
+init_home           - Pre-create the SAMSON_HOME/SAMSON_WORKING directories 
+                      assigning the owner as SAMSON_OWNER
+
+install_release, install, i   - Install the compiled binaries ( release mode )
+install_debug, di             - Install the compiled binaries ( debug mode )
+install_release_all           - Install the compiled binaries ( release_all mode )
+install_debug_all             - Install the compiled binaries ( debug_all mode )
+install_debug, di             - Install the compiled binaries ( coverage mode )
+
+# ------------------------------------------------------------------------ 
+# Package generation
+# ------------------------------------------------------------------------
+
+deb                 - Generate Ubuntu deb packages 
+rpm                 - Generate CentOS/RedHat RPM packages 
+publish_deb         - Publish the generated deb(s) to samson09.hi.inet
+publish_rpm         - Publish the generated RPM(s) to samson09.hi.inet
+
+# ------------------------------------------------------------------------
+# Cleaning up 
+# ------------------------------------------------------------------------
+
+clean               - Clean up the build environment
+cleansvn            - Remove any unversioned files in SVN
+clear_ipcs          - Remove any shared memory segments
+uninstall           - Uninstall the release images
+uninstall_debug     - Uninstall the debug images
+
+# ------------------------------------------------------------------------
+# Testing
+# ------------------------------------------------------------------------
+
+# Testing
+ctest
+itest
+test
+test_local_processes
+testdistribute
+
+run_coverage        - Run code coverage test
+
+# ------------------------------------------------------------------------
+# Auxiliar stuff
+# ------------------------------------------------------------------------
+
+eclipse
+valgrind, v         - Execute Valgrind against samsonLocal
+set_ssm_linux       - Configure the shared memory segment
+xcode
+
+
+distribute, d       - Deploy to the cluster identified by SAMSON_CLUSTER
+distributedebug, dd - Deploy debug images to the cluster identified by 
+                      SAMSON_CLUSTER

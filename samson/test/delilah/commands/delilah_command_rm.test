@@ -1,0 +1,18 @@
+--NAME--
+rm - delete a named queue
+--DELILAH-INIT--
+remove_all_stream
+push input.txt input
+push input.txt input2
+flush_buffers
+--SCRIPT--
+rm input
+ls
+--EXPECT--
+/----------------------------------------------------\
+| ls                                                 |
+|----------------------------------------------------|
+| worker_id | name   |   #kvs |   size | key | value | 
+|-----------+--------+--------+--------+-----+-------|
+|         0 | input2 |     0  |   100  | txt |   txt | 
+\----------------------------------------------------/

@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 /**
  * Input: <Long, Poi|Cluster>
  * Output: <Long, Poi>
- * 
+ *
  * @author dmicol
  */
 class ClusterAggBtsClusterReducer extends Reducer<LongWritable,
@@ -27,7 +27,7 @@ class ClusterAggBtsClusterReducer extends Reducer<LongWritable,
         Map<Class, List> dividedLists = TypedProtobufWritable.groupByClass(values, Poi.class, Cluster.class);
         List<Poi> poiList = dividedLists.get(Poi.class);
         List<Cluster> clusterList = dividedLists.get(Cluster.class);
-        
+
         for (Poi poi : poiList) {
             for (Cluster cluster : clusterList) {
                 Poi.Builder outputPoi = Poi.newBuilder(poi);

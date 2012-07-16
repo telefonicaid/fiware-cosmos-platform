@@ -18,7 +18,7 @@ import es.tid.cosmos.base.data.generated.BaseTypes.Int64;
  *
  * @author ximo
  */
-public class TypedProtobufWritable<M extends Message> extends BinaryWritable<M> { 
+public class TypedProtobufWritable<M extends Message> extends BinaryWritable<M> {
     public TypedProtobufWritable() {
         super(null, new TypedProtobufConverter<M>());
     }
@@ -26,7 +26,7 @@ public class TypedProtobufWritable<M extends Message> extends BinaryWritable<M> 
     public TypedProtobufWritable(M obj) {
         super(obj, new TypedProtobufConverter<M>());
     }
-    
+
     public static Map<Class, List> groupByClass(
             Iterable<TypedProtobufWritable<Message>> values,
             Class<? extends Message>... classes) {
@@ -45,17 +45,17 @@ public class TypedProtobufWritable<M extends Message> extends BinaryWritable<M> 
         }
         return ret;
     }
-    
+
     public static TypedProtobufWritable<Float64> create(double d) {
         return new TypedProtobufWritable<Float64>(
                 Float64.newBuilder().setValue(d).build());
     }
-    
+
     public static TypedProtobufWritable<Int> create(int d) {
         return new TypedProtobufWritable<Int>(
                 Int.newBuilder().setValue(d).build());
     }
-    
+
     public static TypedProtobufWritable<Int64> create(long d) {
         return new TypedProtobufWritable<Int64>(
                 Int64.newBuilder().setValue(d).build());

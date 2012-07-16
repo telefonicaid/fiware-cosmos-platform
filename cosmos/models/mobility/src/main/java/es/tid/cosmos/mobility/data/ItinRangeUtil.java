@@ -29,7 +29,7 @@ public final class ItinRangeUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<ItinRange> createAndWrap(long poiSrc,
             long poiTgt, int node, int group, int range) {
         return wrap(create(poiSrc, poiTgt, node, group, range));

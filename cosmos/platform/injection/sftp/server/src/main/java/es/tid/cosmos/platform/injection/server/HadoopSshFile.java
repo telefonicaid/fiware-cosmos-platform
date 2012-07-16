@@ -70,7 +70,7 @@ public class HadoopSshFile implements SshFile {
             return this.userName;
         }
     }
-    
+
     /**
      * Answer if the current path is a directory path
      *

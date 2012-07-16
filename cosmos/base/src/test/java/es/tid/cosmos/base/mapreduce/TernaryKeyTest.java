@@ -34,10 +34,10 @@ public class TernaryKeyTest {
         t2.setPrimaryKey("keya");
         t2.setSecondaryKey("1");
         t2.setTertiaryKey("b");
-        
+
         assertTrue(t1.equals(t2));
     }
-    
+
     @Test
     public void shouldBeOrderedByPrimaryKey() {
         CompositeKey a = new TernaryKey("keya", "3", "b");
@@ -60,13 +60,13 @@ public class TernaryKeyTest {
         CompositeKey a2 = new TernaryKey("keya", "2", "c");
         assertEquals(1, a.compareTo(a2));
     }
-    
+
     @Test
     public void testToString() {
         CompositeKey a = new TernaryKey("keya", "2", "d");
         assertEquals("keya\t2\td", a.toString());
     }
-    
+
     @Test
     public void testDifferentSizeKeys() {
         CompositeKey b = new BinaryKey("keya", "2");

@@ -1,0 +1,2 @@
+remove_all_stream
+remove_all

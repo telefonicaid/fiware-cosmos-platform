@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <BtsProfile, Int>
  * Output: <TwoInt, BtsCounter>
- * 
+ *
  * @author dmicol
  */
 public class PopdenSumCommsReducer extends Reducer<ProtobufWritable<BtsProfile>,

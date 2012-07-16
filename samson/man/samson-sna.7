@@ -1,0 +1,37 @@
+.TH SAMSON\-SNA 7 2011-07-08 "Samson" "Samson Module Libraries"
+.SH NAME
+samson\-sna \-  social network analysis
+.SH DESCRIPTION
+The samson SNA library performs the necessary actions to calculate cliques
+(groups of friends) from the information in a set of call data records (CDRs).
+
+.SH DATA TYPES
+  Clique (vector UInt nodes)
+  Clique_Link (Clique clique, Float weight)
+  Clique_Node (Clique clique, vector Clique_Link links)
+  VectorClique_Node (vector Clique_Node items)
+  Clique2 (Clique clique1, Clique clique2)
+  VectorClique (vector Clique items)
+
+.SH FUNCTIONS
+  Map        spread_nodes_to_strong_connections (in UInt-Node, out UInt-Node)
+  Reduce     compute_cliques_from_spread_graph (in UInt-Node, out Clique-Void)
+  ParserOut  export_cliques (in Clique-Void)
+
+.SH SCRIPTS
+  compute_cliques -> spread_nodes_to_strong_connections;
+                     compute_cliques_from_spread_graph
+
+.SH SEE ALSO
+.BR samson (1),
+.BR samson-cdr (7),
+.BR samson-example (7),
+.BR samson-graph (7),
+.BR samson-moduletemplate (7),
+.BR samson-osn (7),
+.BR samson-sort (7),
+.BR samson-system (7),
+.BR samson-terasort (7),
+.BR samson-test (7),
+.BR samson-txt (7),
+.BR samson-urlbenchmark (7)

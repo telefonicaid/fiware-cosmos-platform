@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class AdjSwapPoiIdSt1ReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<InputIdRecord>,
             LongWritable, TypedProtobufWritable<TwoInt>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable,
@@ -29,7 +29,7 @@ public class AdjSwapPoiIdSt1ReducerTest {
     @Test
     public void testReducer() {
         final LongWritable key = new LongWritable(85L);
-        
+
         TwoInt value1 = TwoInt.newBuilder().setNum1(1L).setNum2(2L).build();
         TypedProtobufWritable<InputIdRecord> record1 =
                 new TypedProtobufWritable<InputIdRecord>(InputIdRecord.newBuilder()
@@ -66,7 +66,7 @@ public class AdjSwapPoiIdSt1ReducerTest {
                         .setInputId(0)
                         .setMessageBytes(value6.toByteString())
                         .build());
-        
+
         TypedProtobufWritable<TwoInt> out1 = new TypedProtobufWritable<TwoInt>(
                 TwoInt.newBuilder().setNum1(6L).setNum2(2L).build());
         TypedProtobufWritable<TwoInt> out2 = new TypedProtobufWritable<TwoInt>(
@@ -84,11 +84,11 @@ public class AdjSwapPoiIdSt1ReducerTest {
                 .withOutput(new LongWritable(50L), out6)
                 .runTest();
     }
-    
+
     @Test
     public void testReducerNoInput1() {
         final LongWritable key = new LongWritable(85L);
-        
+
         TwoInt value1 = TwoInt.newBuilder().setNum1(1L).setNum2(2L).build();
         TypedProtobufWritable<InputIdRecord> record1 =
                 new TypedProtobufWritable<InputIdRecord>(InputIdRecord.newBuilder()
@@ -113,7 +113,7 @@ public class AdjSwapPoiIdSt1ReducerTest {
                         .setInputId(0)
                         .setMessageBytes(value6.toByteString())
                         .build());
-        
+
         TypedProtobufWritable<TwoInt> out1 = new TypedProtobufWritable<TwoInt>(
                 value1);
         TypedProtobufWritable<TwoInt> out2 = new TypedProtobufWritable<TwoInt>(

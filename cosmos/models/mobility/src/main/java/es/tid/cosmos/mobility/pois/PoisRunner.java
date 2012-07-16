@@ -22,14 +22,14 @@ import es.tid.cosmos.mobility.util.ExportBtsCounterToTextByTwoIntReducer;
 public final class PoisRunner {
     private PoisRunner() {
     }
-    
+
     public static CosmosWorkflow run(Path tmpDirPath, Path clientsBtsPath,
             Path clientsInfoPath, Path cdrsNoinfoPath, Path cdrsNoBtsPath,
             Path clientsInfoFilteredPath, Path clientsRepbtsPath,
             boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         WorkflowList wfList = new WorkflowList();
-        
+
         Path clientsBtscounterPath = new Path(tmpDirPath, "clients_btscounter");
         CosmosJob clientsBtscounterJob = CosmosJob.createReduceJob(
                 conf, "NodeBtsCounter",
@@ -79,7 +79,7 @@ public final class PoisRunner {
         clientsInfoAggbybtsJob.setDeleteOutputOnExit(!isDebug);
         clientsInfoAggbybtsJob.addDependentWorkflow(clientsInfoSpreadJob);
         wfList.add(clientsInfoAggbybtsJob);
-        
+
         CosmosJob clientsInfoFilteredJob = CosmosJob.createReduceJob(
                 conf, "RepbtsFilterNumComms",
                 SequenceFileInputFormat.class,
@@ -92,7 +92,7 @@ public final class PoisRunner {
         clientsInfoFilteredJob.setDeleteOutputOnExit(!isDebug);
         clientsInfoFilteredJob.addDependentWorkflow(clientsInfoAggbybtsJob);
         wfList.add(clientsInfoFilteredJob);
-        
+
         Path clientsInfoBtsPercPath = new Path(tmpDirPath,
                                                "clients_info_bts_perc");
         CosmosJob clientsInfoBtsPercJob = CosmosJob.createReduceJob(conf,

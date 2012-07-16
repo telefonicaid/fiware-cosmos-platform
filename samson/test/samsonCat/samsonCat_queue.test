@@ -1,0 +1,23 @@
+--NAME--
+samsonCat - queue
+--SHELL--
+delilah ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV}  -command remove_all_stream 2> /dev/null
+samsonPush -port_node ${SAMSON_WORKER_PORT_ENV} input < input.txt
+sleep 1
+delilah ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV}  -command "run txt.parser_words input words" 2> /dev/null
+sleep 1
+delilah ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV}  -command "run txt.word_count_accumulate words words_count words_count" 2> /dev/null
+sleep 1
+delilah ${SAMSON_LOG_LEVELS} -log_port ${SAMSON_LOG_PORT_ENV} ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV}  -command "pop words_count /tmp/words_count -force"
+samsonCat /tmp/words_count | sort
+--EXPECT--
+"015211078" 4
+"072866046" 3
+"140660895" 2
+"160420776" 1
+"221322853" 1
+"364161913" 1
+"446334716" 1
+"528316139" 1
+"549570687" 1
+"739014846" 1

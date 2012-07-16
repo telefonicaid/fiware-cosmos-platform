@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 public class MultiplePrintMapper
         extends Mapper<LongWritable, Text, Text, IntWritable> {
     public static final Text KEY_LIST = new Text("multiple_list");
-       
+
     @Override
     public void map(LongWritable keyin, Text value, Context context)
             throws IOException, InterruptedException {

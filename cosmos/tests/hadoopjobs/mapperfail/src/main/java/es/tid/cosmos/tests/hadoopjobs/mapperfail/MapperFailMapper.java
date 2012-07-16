@@ -12,7 +12,7 @@ import org.apache.hadoop.mapreduce.Mapper;
  * @author ximo
  */
 public class MapperFailMapper
-        extends Mapper<LongWritable, Text, Text, IntWritable> {    
+        extends Mapper<LongWritable, Text, Text, IntWritable> {
     @Override
     public void map(LongWritable keyin, Text value, Context context)
             throws IOException, InterruptedException {

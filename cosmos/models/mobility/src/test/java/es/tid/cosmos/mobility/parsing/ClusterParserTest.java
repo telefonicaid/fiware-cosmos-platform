@@ -10,10 +10,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
  * @author dmicol
  */
 public class ClusterParserTest {
-    
+
     @Test
     public void testParse() {
-        String line = "1|1|0.011890149404647|0.016823651640848|" 
+        String line = "1|1|0.011890149404647|0.016823651640848|"
                 + "0.00324639244853738|0.00134727223726977|0.000651018555796316|"
                 + "0.000412335701300108|0.000434298491874323|"
                 + "0.000889176445287108|0.0023228228580715|0.00531692656554713|"

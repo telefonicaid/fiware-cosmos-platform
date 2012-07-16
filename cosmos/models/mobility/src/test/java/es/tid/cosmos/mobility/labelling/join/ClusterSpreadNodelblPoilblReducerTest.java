@@ -29,7 +29,7 @@ public class ClusterSpreadNodelblPoilblReducerTest {
                 TypedProtobufWritable<Null>>(
                         new ClusterSpreadNodelblPoilblReducer());
     }
-    
+
     @Test
     public void testTwoOutputs() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);
@@ -73,7 +73,7 @@ public class ClusterSpreadNodelblPoilblReducerTest {
                 .withOutput(outKey, outValue)
                 .runTest();
     }
-    
+
     @Test
     public void testNoOutputs() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);

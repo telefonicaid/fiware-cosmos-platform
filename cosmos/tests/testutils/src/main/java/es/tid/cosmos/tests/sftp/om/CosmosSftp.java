@@ -12,7 +12,7 @@ import es.tid.cosmos.tests.environment.EnvironmentSetting;
 public final class CosmosSftp {
     private CosmosSftp() {
     }
-    
+
     public static Session createSession(Environment env)
             throws JSchException {
         return CosmosSftp.createSession(
@@ -35,7 +35,7 @@ public final class CosmosSftp {
         session.connect();
         return session;
     }
-    
+
     public static ChannelSftp connectToSftp(Session session)
             throws JSchException {
         Channel channel = session.openChannel("sftp");

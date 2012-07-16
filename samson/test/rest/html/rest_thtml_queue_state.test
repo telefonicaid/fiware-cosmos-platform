@@ -1,0 +1,33 @@
+--NAME--
+REST THTML queue_state
+--SHELL--
+delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command remove_all_stream 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command "add_stream_operation o1 txt.parser_words input words" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command "add_stream_operation o2 txt.word_count_accumulate words words_count words_count" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command "push input.txt input" 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command flush_buffers 2>/dev/null
+delilah  ${SAMSON_LOG_LEVELS} -log_classic ${SAMSON_TEST_HOST} ${SAMSON_WORKER_PORT_ENV} -command "wait" 2>/dev/null
+curl -s http://localhost:${SAMSON_WORKER_WEB_PORT_ENV}/samson/queues/words_count/state/015211078.thtml
+--EXPECT--
+<style>#table-5{font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{text-align:center;font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 td{color:#669;padding:9px 8px 0;}#table-5 tbody tr:hover td{color:#009;}</style><table id="table-5">
+<caption>key</caption>
+<tr>
+<th>key</th>
+</tr>
+<tr>
+<th>system.String</th>
+</tr>
+<td>"015211078"</td>
+</tr>
+</table>
+<style>#table-5{font-family:"Lucida Sans Unicode", "Lucida Grande", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}#table-5 th{text-align:center;font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}#table-5 td{color:#669;padding:9px 8px 0;}#table-5 tbody tr:hover td{color:#009;}</style><table id="table-5">
+<caption>value</caption>
+<tr>
+<th>value</th>
+</tr>
+<tr>
+<th>system.UInt</th>
+</tr>
+<td>4</td>
+</tr>
+</table>

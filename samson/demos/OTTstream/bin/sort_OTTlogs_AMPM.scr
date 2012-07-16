@@ -1,0 +1,26 @@
+EXPECTED_ARGS=3
+
+if [ $# -ne $EXPECTED_ARGS ]
+then
+        echo "Wrong number of parameters"
+        echo "Usage: sort_OTTlogs_AMPM.scr input_file time_field_number alternative_time_field_number"
+        exit -1
+fi
+
+file=$1
+time=$2
+time_alt=$3
+
+~/bin/add_timestamp_field -f $time -a $time_alt  $file | sort -t"¬" -T /var/samson/samson061/tmp -k 1n | sed 's/^..*¬//' > $file.timesorted
+
+#fgrep " AM	" $file | sort -t"	" -T /var/samson/samson061/tmp -k $time.11,$time.12 -k $time.14,$time.15 -k $time.17 -n > $file.AM
+#grep " PM	" $file | sort -t"	" -T /var/samson/samson061/tmp -k $time.11,$time.12 -k $time.14,$time.15 -k $time.17 -n > $file.PM
+#  for ((h=0; h <= 12; h++))
+#  do
+#	pat=`printf "11 %02d." $h`
+#	h_norm=`printf "%02d" $h`
+#	fgrep " AM	" $file | fgrep "$pat" | sort -t"	" -k $time.14,$time.15 -k $time.17 -n > $file.AM.$h_norm
+#	fgrep " PM	" $file | fgrep "$pat" | sort -t"	" -k $time.14,$time.15 -k $time.17 -n > $file.PM.$h_norm
+#  done
+#at $file.AM $file.PM > $file.timesorted
+#rm $file.AM $file.PM

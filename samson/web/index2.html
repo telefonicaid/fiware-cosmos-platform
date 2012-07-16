@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+ <head>
+ 
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    
+    <title>SAMSON</title>
+
+    <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="../excanvas.min.js"></script><![endif]-->
+    <script language="javascript" type="text/javascript" src="flot/jquery.js"></script>
+    <script language="javascript" type="text/javascript" src="flot/jquery.flot.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="style.css" />
+    
+ </head>
+    <body>
+
+<table width="800px">
+<tr>
+<td width="650px">
+        <h1> SAMSON system </h1>
+</td> 
+<td width="150px">
+        <img class="logo" src="logo.png" width="150px" />
+</td>
+</tr>
+</table>
+<div align=center>
+  <div style="width:800px;height:1000px; position:relative;" >
+    
+    <div class="title"  id="cpu_title" align=center>CPU</div>
+    <div class="plot"   id="cpu"  ></div>
+    
+    <div class="title"  id="memory_title" align="center">Memory</div>
+    <div class="plot"   id="memory" ></div>
+
+    <div class="title" id="disk_title"align=center>DISK in/out</div>
+    <div class="plot"  id="disk_in" ></div>
+    <div class="plot"  id="disk_out" ></div>
+
+    <div class="title" id="network_title" align="center">NET in/out</div>
+    <div class="plot"  id="network_in"> </div>
+    <div class="plot"  id="network_out"> </div>
+
+    
+</div>
+</div>
+<script type="text/javascript">
+
+$(function () 
+{
+
+    // Update period ( in miliseconds )
+    var updateInterval = 1000;
+    
+    // URL to fetch
+    //var servers = [ "samson05" , "samson06" , "samson07" , "samson08" ];
+    var servers = [ "localhost" ];
+
+    // Different values from servers
+    var cpu_values = [];
+    var memory_values = [];
+    
+    var disk_in_values = [];
+    var disk_out_values = [];
+    
+    var network_in_values = [];
+    var network_out_values = [];
+
+    // Options fot the plot
+    var options = 
+    {
+        lines: { show: true , horizontal:true },
+        points: { show: true },
+        legend: { position: "nw"}
+    };
+
+    function update() 
+    {
+        // Generic function to plot data
+        function plot( ) 
+        {
+            $.plot( $("#cpu") , cpu_values , options);
+            $.plot( $("#memory") , memory_values , options);
+            
+            $.plot( $("#disk_in") , disk_in_values , options);
+            $.plot( $("#disk_out") , disk_out_values , options);
+            
+            $.plot( $("#network_in") , network_in_values , options);
+            $.plot( $("#network_out") , network_out_values , options);
+            
+         }
+
+         function send_ajax_request( url_data , server )
+         {
+            $.ajax({
+                url: url_data,
+                method: 'GET',
+                dataType: 'json',
+                success: function( data ) 
+                         {
+                            // Modify the label
+                            for( i = 0 ; i < 6 ; i++ )
+                                data[i].label = servers[server];
+                         
+                             cpu_values[server]         = data[0];
+                             memory_values[server]      = data[1];
+                             disk_in_values[server]     = data[2];
+                             disk_out_values[server]    = data[3];
+                             network_in_values[server]  = data[4];
+                             network_out_values[server] = data[5];
+                             
+                             plot( ); // Update the plot
+                         }
+            });
+         }
+        
+        for ( s = 0 ; s < servers.length ; s++ )
+            send_ajax_request( "http://" + servers[s] + ":1202/samson/node/general.json" , s );    
+
+ 
+        // Timeout call to update function to refresh data        
+        setTimeout(update, updateInterval);
+    }
+
+    // Call update ( it is auto-called periodically )
+    update();
+});
+</script>
+
+ </body>
+</html>

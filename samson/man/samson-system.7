@@ -1,0 +1,45 @@
+.TH SAMSON\-SYSTEM 7 2011-07-08 "Samson" "Samson Module Libraries"
+.SH NAME
+samson\-system \- call data record processing
+.SH DESCRIPTION
+The samson SYSTEM library defines basic data types.
+These definitions include the functions to serialize and parse them, and some other methods needed by the platform.
+
+.SH DATA TYPES
+  Int32 (int)
+  Int16 (unsigned short)
+  Int8 (char)
+  UInt  (unsigned int, variable length)
+  UInt64 (size_t)
+  UInt32 (unsigned int)
+  UInt16 (short)
+  UInt8 (unsigned char)
+  Double (double)
+  Float (float)
+  String (string)
+  Void (void)
+  UInt2 (dupla de UInt)
+  TimeUnix (time_t)
+  Date (date format used in some cdr solutions)
+  Time (time format used in some cdr solutions)
+  TimeSlot (time slot with week day information used in mobility solution)
+  ComplexTimeSlot (set of TimeSlot)
+
+.SH FUNCTIONS
+Only two parsing functions are defined in this module:
+  Parser  parse_id_id(out UInt2-Void)
+  Parser  parser_uint_void(out UInt-Void)
+
+.SH SEE ALSO
+.BR samson (1),
+.BR samson-cdr (7),
+.BR samson-example (7),
+.BR samson-graph (7),
+.BR samson-moduletemplate (7),
+.BR samson-osn (7),
+.BR samson-sna (7),
+.BR samson-sort (7),
+.BR samson-terasort (7),
+.BR samson-test (7),
+.BR samson-txt (7),
+.BR samson-urlbenchmark (7)

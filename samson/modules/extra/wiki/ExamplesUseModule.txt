@@ -1,0 +1,13 @@
+trace on
+
+add_stream_operation 0_parse_words wiki.parse_words wiki.txt words
+add_stream_operation 1_update_inv_index wiki.reduce_inverted_index words wordsInfo wordsInfo
+
+set_stream_operation_property 0_parse_words max_latency 1
+set_stream_operation_property 1_update_inv_index max_latency 1
+
+push enwiki-latest-pages-articles.xml wiki.txt
+
+remove_all
+rm wiki.txt words wordsInfo
+

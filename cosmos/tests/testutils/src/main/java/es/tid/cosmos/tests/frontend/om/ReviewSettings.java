@@ -14,26 +14,26 @@ import static es.tid.cosmos.tests.frontend.om.CreateJobPage.NEXT_NAME;
  * @author ximo
  */
 public class ReviewSettings {
-    
+
     private WebDriver driver;
     private final String reviewSettingsUrl;
-    
+
     public ReviewSettings(WebDriver driver) {
         this.driver = driver;
         this.reviewSettingsUrl = driver.getCurrentUrl();
     }
-    
+
     private void assertCorrectUrl() {
         assertEquals(this.driver.getCurrentUrl(), this.reviewSettingsUrl);
     }
-    
+
     public void runJob() {
         assertCorrectUrl();
         WebElement nextElement = this.driver.findElement(
                 By.name(NEXT_NAME));
         nextElement.click();
     }
-    
+
     public SetParametersPage back() {
         assertCorrectUrl();
         WebElement backElement = this.driver.findElement(
@@ -41,7 +41,7 @@ public class ReviewSettings {
         backElement.click();
         return new SetParametersPage(this.driver);
     }
-    
+
     public CreateJobPage cancel() {
         assertCorrectUrl();
         WebElement cancelLink = this.driver.findElement(

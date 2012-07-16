@@ -1,0 +1,100 @@
+Module shop
+{
+
+	title	"shop  module"
+	author 	"Andreu Urruela (andreu@tid.es)"
+	version "0.1"
+	
+}
+
+# ---------------------------------------------------------------------------
+# datas
+# ---------------------------------------------------------------------------
+
+data Transaction
+{
+        system.UInt user;
+        system.UInt product;
+        system.UInt operationType;
+}
+
+data VectorProducts
+{
+        vector system.UInt products;
+}
+
+parser parse_transactions
+{
+		out system.UInt shop.Transaction
+		
+		helpLine "Parser to read generated transactions data"
+}
+
+map map_by_user
+{
+        in system.UInt shop.Transaction
+        out system.UInt system.UInt
+
+        top
+
+        helpLine "Map example; from input_data [UInt - Transaction] emits key-values [UInt - UInt] with user-id and product-id"
+}
+
+reduce reduce_by_user_state
+{
+        in system.UInt system.UInt
+        in system.UInt shop.VectorProducts
+        out system.UInt shop.VectorProducts
+
+        top
+
+        helpLine "Reduce example; from key-values groups the list of products by user, working in streaming with a user state"
+}
+
+#parserOut export_to_txt
+#{
+#        in system.UInt shop.VectorProducts
+#
+#	helpLine "Export system.UInt shop.VectorProducts key-values in a standard format. Use shop.separator to custommize separator"
+#}
+
+script init_stream
+{
+	helpLine "init_stream block"
+	
+	code
+	{
+        # ----------------------------------------------------------------
+        # Input queues
+        # ----------------------------------------------------------------        
+        alias [input]                transactions_txt;
+        
+        # ----------------------------------------------------------------
+        # Output queues
+        # ----------------------------------------------------------------
+        alias [user_state]           user_state;
+        
+        # ----------------------------------------------------------------
+        # Internal queues
+        # ----------------------------------------------------------------
+        alias [transactions]         transactions;
+        alias [user_transactions]    user_transactions;
+        
+  
+        # ----------------------------------------------------------------
+        # Operations
+        # ----------------------------------------------------------------        
+        alias [p]              0.parse;
+        alias [m]              1.map;
+        alias [r]              2.reduce;
+       
+        # ----------------------------------------------------------------
+        # Definitions
+        # ----------------------------------------------------------------
+
+		add_stream_operation [p] shop.parse_transactions [input] [transactions];
+		add_stream_operation [m] shop.map_by_user [transactions] [user_transactions];
+		add_stream_operation [r] shop.reduce_by_user_state [user_transactions] [user_state] [user_state]; 
+		set_stream_operation_property [r] update_only true;
+	}
+}

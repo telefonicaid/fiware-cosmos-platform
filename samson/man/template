@@ -1,0 +1,26 @@
+.TH SAMSON\-XXX 7 2011-07-08 "Samson" "Samson Module Libraries"
+.SH NAME
+samson\-XXX \- 
+.SH DESCRIPTION
+The samson XXX library is
+
+.SH DATA TYPES
+
+-.SH FUNCTIONS
+
+.SH SCRIPTS
+
+.SH SEE ALSO
+.BR samson (1),
+.BR samson-cdr (7),
+.BR samson-example (7),
+.BR samson-graph (7),
+.BR samson-moduletemplate (7),
+.BR samson-osn (7),
+.BR samson-sna (7),
+.BR samson-sort (7),
+.BR samson-system (7),
+.BR samson-terasort (7),
+.BR samson-test (7),
+.BR samson-txt (7),
+.BR samson-urlbenchmark (7)

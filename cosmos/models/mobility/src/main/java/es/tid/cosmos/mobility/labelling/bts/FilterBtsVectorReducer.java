@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 /**
  * Input: <Long, Bts|Cluster>
  * Output: <Long, Cluster>
- * 
+ *
  * @author dmicol
  */
 class FilterBtsVectorReducer extends Reducer<
@@ -24,7 +24,7 @@ class FilterBtsVectorReducer extends Reducer<
         LongWritable, TypedProtobufWritable<Cluster>> {
     private double maxBtsArea;
     private int minCommsBts;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -33,7 +33,7 @@ class FilterBtsVectorReducer extends Reducer<
         this.maxBtsArea = conf.getBtsMaxBtsArea();
         this.minCommsBts = conf.getBtsMinCommsBts();
     }
-    
+
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Message>> values, Context context)
@@ -42,7 +42,7 @@ class FilterBtsVectorReducer extends Reducer<
                 values, Bts.class, Cluster.class);
         List<Bts> btsList = dividedLists.get(Bts.class);
         List<Cluster> clusterList = dividedLists.get(Cluster.class);
-        
+
         for (Bts bts : btsList) {
             for (Cluster cluster : clusterList) {
                 int confident = cluster.getConfident();

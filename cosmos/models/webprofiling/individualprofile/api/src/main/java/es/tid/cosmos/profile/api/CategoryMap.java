@@ -31,7 +31,7 @@ public class CategoryMap extends HashMap<String, Long> {
         }
         return topN;
     }
-    
+
     public List<String> getAll() {
         return this.getTop(this.size());
     }

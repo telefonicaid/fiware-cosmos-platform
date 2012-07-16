@@ -1,0 +1,32 @@
+
+CELL_TXT_QUEUE=cells.txt
+CELL_QUEUE=04.cells
+
+
+# Check number of arguments
+# ------------------------------------------------------------
+if [ $# -ne 1 ]
+then
+  read -p "Enter server where SAMSON is running " SERVER
+else
+	SERVER=$1
+fi
+echo "Conecting to SAMSON in $SERVER"
+# ------------------------------------------------------------
+
+# Double check since this is a reset command
+# ------------------------------------------------------------
+read -p "Are you sure you want to continue? <y/N> " prompt
+if [[ $prompt == "y" || $prompt == "Y" || $prompt == "yes" || $prompt == "Yes" ]]
+then
+  echo "Ok"
+else
+  exit 0
+fi
+# ------------------------------------------------------------
+
+delilah -controller $SERVER -command "rm_queue $CELL_TXT_QUEUE $CELL_QUEUE"
+cat GSM_LATLONG.txt | samsonPush -controller $SERVER $CELL_TXT_QUEUE
+cat UMTS_LATLONG.txt  | samsonPush -controller $SERVER $CELL_TXT_QUEUE
+delilah -controller $SERVER -command "run_stream_operation passive_location.parse_cell_info $CELL_TXT_QUEUE $CELL_QUEUE"
+delilah -controller $SERVER -command "rm_queue $CELL_TXT_QUEUE"

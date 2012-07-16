@@ -1,0 +1,38 @@
+# Some cleaning
+echo "Starting word count stream test"
+echo "Killing all previous processes"
+samsonKiller
+rm /opt/samson/config/samsonPlatformProcesses
+echo "Setting controller IP"
+CONTROLLER_IP="localhost";
+export CONTROLLER_IP
+echo $CONTROLLER_IP
+
+./generator 10000000 > in_10MB.txt
+
+
+# Running inside build/testing
+if [ -n "${CONTROLLER_IP:+x}" ]; then
+        echo "Environment variable CONTROLLER_IP defined to: " $CONTROLLER_IP > test_10MB_stream_stdout
+        if [ $CONTROLLER_IP = "localhost" ]; then
+                if ! ps -C samsonSpawner  > /dev/null
+                then
+                        echo "Launching samsonSpawner" >> test_10MB_stream_stdout
+                        samsonSpawner -local >> test_10MB_stream_stdout
+                else
+                        echo "samsonSpawner already running" >> test_10MB_stream_stdout
+                fi
+               # sleep 3
+        fi
+        delilah -controller $CONTROLLER_IP -f test_10MB_stream_commands.txt >> test_10MB_stream_stdout
+else
+        echo "Environment variable CONTROLLER_IP not defined, using samsonLocal" > test_10MB_stream_stdout
+        samsonLocal -working . -f test_10MB_stream_commands.txt >> test_10MB_stream_stdout
+fi
+
+echo "Saving output into a single file..."
+samsonCat out_10MB > test_10MB_stream_out.txt
+# Checking the sort in the output file
+echo "Let's see if we did a good sort..."
+./valsort_uints test_10MB_stream_out.txt
+

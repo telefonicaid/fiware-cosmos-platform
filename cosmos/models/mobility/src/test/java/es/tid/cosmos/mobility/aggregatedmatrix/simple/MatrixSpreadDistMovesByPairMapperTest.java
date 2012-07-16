@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
 public class MatrixSpreadDistMovesByPairMapperTest {
     private MapDriver<ProtobufWritable<ItinRange>, TypedProtobufWritable<Float64>,
             ProtobufWritable<ItinRange>, TypedProtobufWritable<Float64>> instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new MapDriver<ProtobufWritable<ItinRange>,

@@ -23,14 +23,14 @@ import es.tid.cosmos.mobility.util.SetMobDataInputIdByTwoIntReducer;
 public final class DetectSecondHomesRunner {
     private DetectSecondHomesRunner() {
     }
-    
+
     public static CosmosWorkflow run(Path cellsMobPath,
             Path pointsOfInterestTemp4Path, Path viClientFuseAccPath,
             Path pairbtsAdjPath, Path pointsOfInterestPath, Path tmpDirPath,
             boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         WorkflowList wfList = new WorkflowList();
-        
+
         Path btsMobPath = new Path(tmpDirPath, "bts_mob");
         CosmosJob btsMobJob = CosmosJob.createMapJob(conf, "PoiCellToBts",
                 SequenceFileInputFormat.class,
@@ -40,7 +40,7 @@ public final class DetectSecondHomesRunner {
         FileOutputFormat.setOutputPath(btsMobJob, btsMobPath);
         btsMobJob.setDeleteOutputOnExit(!isDebug);
         wfList.add(btsMobJob);
-        
+
         Path sechPoiPosPath = new Path(tmpDirPath, "sech_poi_pos");
         CosmosJob sechPoiPosJob = CosmosJob.createReduceJob(conf,
                 "PoiJoinPoisBtscoordToPoiPos",
@@ -64,7 +64,7 @@ public final class DetectSecondHomesRunner {
         FileOutputFormat.setOutputPath(nodbtsPoiJob, nodbtsPoiPath);
         nodbtsPoiJob.setDeleteOutputOnExit(!isDebug);
         wfList.add(nodbtsPoiJob);
-        
+
         Path sechPoiInoutPath = new Path(tmpDirPath, "vector_bts");
         CosmosJob sechPoiInoutJob = CosmosJob.createReduceJob(conf,
                 "PoiJoinPoisViToPoiPos",
@@ -102,7 +102,7 @@ public final class DetectSecondHomesRunner {
         sechPotSecHomeJob.setDeleteOutputOnExit(!isDebug);
         sechPotSecHomeJob.addDependentWorkflow(sechPoiInoutJob);
         wfList.add(sechPotSecHomeJob);
-        
+
         Path sechPotSecHomeInputIdPath = new Path(tmpDirPath, "sech_pot_sec_home_id");
         CosmosJob sechPotSecHomeInputIdJob = CosmosJob.createReduceJob(conf,
                 "GetPairsSechomePois",
@@ -114,7 +114,7 @@ public final class DetectSecondHomesRunner {
         FileOutputFormat.setOutputPath(sechPotSecHomeInputIdJob, sechPotSecHomeInputIdPath);
         sechPotSecHomeInputIdJob.addDependentWorkflow(sechPotSecHomeJob);
         wfList.add(sechPotSecHomeInputIdJob);
-        
+
         Path pairbtsAdjInputIdPath = new Path(tmpDirPath, "pairbts_adj_id");
         CosmosJob pairbtsAdjInputIdJob = CosmosJob.createReduceJob(conf,
                 "GetPairsSechomePois",
@@ -125,7 +125,7 @@ public final class DetectSecondHomesRunner {
         FileInputFormat.setInputPaths(pairbtsAdjInputIdJob, pairbtsAdjPath);
         FileOutputFormat.setOutputPath(pairbtsAdjInputIdJob, pairbtsAdjInputIdPath);
         wfList.add(pairbtsAdjInputIdJob);
-        
+
         Path nodbtsSechomePath = new Path(tmpDirPath, "nodbts_sechome");
         CosmosJob nodbtsSechomeJob = CosmosJob.createReduceJob(conf,
                 "PoiFilterSechomeAdjacent",
@@ -139,7 +139,7 @@ public final class DetectSecondHomesRunner {
         nodbtsSechomeJob.addDependentWorkflow(sechPotSecHomeInputIdJob);
         nodbtsSechomeJob.addDependentWorkflow(pairbtsAdjInputIdJob);
         wfList.add(nodbtsSechomeJob);
-        
+
         Path nodbtsSechomeUniqPath = new Path(tmpDirPath,
                                               "nodbts_sechome_uniq");
         CosmosJob nodbtsSechomeUniqJob = CosmosJob.createReduceJob(conf,
@@ -152,7 +152,7 @@ public final class DetectSecondHomesRunner {
         nodbtsSechomeUniqJob.setDeleteOutputOnExit(!isDebug);
         nodbtsSechomeUniqJob.addDependentWorkflow(nodbtsSechomeJob);
         wfList.add(nodbtsSechomeUniqJob);
-        
+
         CosmosJob pointsOfInterestJob = CosmosJob.createReduceJob(conf,
                 "PoiJoinSechomeResults",
                 SequenceFileInputFormat.class,
@@ -167,7 +167,7 @@ public final class DetectSecondHomesRunner {
         pointsOfInterestJob.addDependentWorkflow(nodbtsInoutJob);
         pointsOfInterestJob.addDependentWorkflow(nodbtsSechomeUniqJob);
         wfList.add(pointsOfInterestJob);
-        
+
         if (isDebug) {
             Path pointsOfInterestTextPath = new Path(tmpDirPath,
                                                      "points_of_interest_text");

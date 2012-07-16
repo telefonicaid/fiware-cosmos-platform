@@ -1,0 +1,8 @@
+remove_all
+rm_local out_10MB
+add data.txt -txt
+upload data_10MB.txt data.txt
+sort.sort data.txt out.txt -create
+#rm_local data_10MB.txt
+download out.txt out_10MB
+

@@ -1,0 +1,167 @@
+
+	
+========================================================================================================================================================
+INTRO
+========================================================================================================================================================
+
+system.Value is a generic data type able to contain different data-types like: strings, numbers, vector of Values, map of Values, ...
+
+class samson::system::Value comes with the basic operations to play with system.Value elements.
+
+system module includes some basic operations to play with system.Values without developing new operations by your own.
+
+
+========================================================================================================================================================
+Operations to work with system.Value ( included in module system )
+========================================================================================================================================================
+
+system.parse                    // Parse ascii file into a system.Value system.Value dataset.
+                                // Additional commands specified with "command" environment variable 
+
+system.map                      // Map a system.Value-system.Value data-set into another system.Value-system.Value data-set with command specified in "command" environment variable
+system.map2                     // The same with 2 output channels
+system.map3                     // The same with 3 output channels
+
+system.reduce                   // Reduce a data set ( system.Value system.Value ) to create a nother one system.Value system.Value data-set
+
+system.update                   // Implements a simple stream processing update. Both input and state are considered system.Value-system.Value. An output is also used to emit key-values
+
+system.str                      // Export content of a system.Value-system.Value data-set into txt format.
+                                // Additional command can be specified with command environment variable also specifying format of output text
+
+========================================================================================================================================================
+Commands for system.parse & sytem.map
+========================================================================================================================================================
+
+With command environment variable we can specifiy the process to be perform over input key-values.
+Each key-value is process individually with the chain/s of operations provided in the command variable.
+
+The general format is as follows:
+
+run system.parse       <input> <output>                      -c " ...commands... " 
+run system.map         <input> <output>                      -c " ...commands... "
+run system.map2        <input> <output> <output2>            -c " ...commands... "
+run system.map3        <input> <output> <output2> <output3>  -c " ...commands... "
+run system.str         <input> <output>                      -c " ...commands... "
+
+Note that -c "command_sentence" can be also provided with env:command "command_sentence"
+
+Where command is following this pattern
+
+" command_1 | command_2 | command_3 | emit 0 ; command_1 | emit 0 ; command_1 | command_2 | emit 1 ; ....... "
+
+So, multiple chains of commands (separated by ";" token) can be executed.
+A chain of commands is a set of different commands separated by the "|" token indicating that key-values travel across pipes
+The following section shows available command to be used in the command chain.
+
+========================================================================================================================================================
+Individual Commands for system.parse & sytem.map & system.str
+========================================================================================================================================================
+
+parse [-separator X ] [field_1 filed_2 field_3]
+
+Parse input key ( assuming it is a strings ) generating a vector key at the output. Value is keep unchanged
+If no fields are specified, all of them ( varialbe number of fields per line ) are considered strings
+If fields are speficied, a different format is applyied to each field ( fixed number of fields per line )
+
+-separator X : Default separator is space. A different char can be used to separate columns
+    : tab is used to specify tabular
+
+field_x : string or number
+ More options will be added
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+parse_words
+
+Extract words ( only letters in ISO-LATIN-1 ) from key assuming it is a string. Value is keep unchanged
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+parse_chars
+
+Extract individual chars from key assuming it is a string. Value is keep unchanged
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+select key_selector value_selector 
+
+Construct a new key value form the original one
+
+Examples:
+
+     select value , key                       : Invert key and value
+     select key[0] ,  key[1]                  : Use first vector component of input key as output-key and second vector component of input key as output value. input value is ignored
+     select [ key value ] , 1                 : Construct a vector for the output-key. This vector is formed using input key and input value. output-value is a constant 1
+     select { "key":key "value":value } , 1   : Construct a map for the output-key. This map is formed using input key and values. output-value is a constant 1     
+     select key , strlen(key)                 : Emit the input key as output key. output-value is the length if input key assuming it is a string. strlen is a buildin function
+
+	 Note that output key and values are separated by a ","
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+filter condition
+
+ Filter key-values matching a particular criteria
+
+Example
+ 
+       filter key == 'andreu'         : key has to be "andreu"
+       filter strlen(key) >= 10       : Filter string keys with a length higher or equal 10
+       filter key == value            : Filter key-values with the same value in both places
+       filter strlen(key[0])<value    : Filter key-values where the first component of key ( assumed vector ) is lower than the value. Both assumed numbers
+
+       filter isAlpha( key ) == 1     : filter key-values with an alphanumeric value as key
+
+------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+========================================================================================================================================================
+Individual Commands for system.parse & sytem.map
+========================================================================================================================================================
+
+emit [channel]
+
+	 Emit data at the output of the operation. Note this emit binary outputs ( system.Value-system.Value)
+
+========================================================================================================================================================
+Individual Commands for system.str
+========================================================================================================================================================
+
+emit field1 field2 field3
+
+	 Emit data asci data at the output. Note that str is a parseOut operation, so asci data is expected at the output.
+
+ Examples:
+
+			emit key value                : Emits key and value
+			emit key[0] key[1] key[2]     : Emits the first three components of the key ( assuming it is a vector )
+
+
+========================================================================================================================================================
+Build-in functions to use when selecting or filtering key-values
+========================================================================================================================================================
+
+The following functions can be used everywhere in the definition of commands in system.parse, system.map, system.reduce system.update and system.str.
+
+srtlen( X )                Length of the input key assuming it is a string. If a vector is provided, it generated an output vector with components lengths.
+substr( X , from , to )    Extract a substring
+find(X , text )            Give the position of a particular substring in a larger string
+to_lower( X )              Return the same stirng with all letters lowered ( only in ISO-LATIN-1)
+to_upper( X )              Return the same stirng with all letters uppered ( only in ISO-LATIN-1)
+  
+str( X )                   Transform input value to a string. Tipically convert a number into a string
+json( X )                  JSON version of the provided value
+
+number( X )                Transform input value to a number. Tipically convert a string into a number
+string( X )                Transform input value to a string. Tipically convert a number into a string
+
+isAlpha( X )               Return "1" if all the letters in input are alphanumerical values. "0" is returned othersise
+match( X , pattern )       Eval a regular expression defined in pattern ( pattern is suppoused constant )
+
+getType( X )               Returns a string with the specific type ( string, number, vector or map )
+getSerialitzation( X )     Returns a string describing how this value is serialized. Note that several serializations can be used for the same type
+getSerialitzationLength(X) Return the number of bytes necessary to serialize this value
+
+ 

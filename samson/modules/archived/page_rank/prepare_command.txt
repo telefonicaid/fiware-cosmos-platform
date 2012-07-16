@@ -1,0 +1,23 @@
+
+
+# Add the parser for the input graph updates in txt mode
+add_stream_operation parser_links wiki.parse_pages_to_links graph.txt graph
+
+# Automatic update of the state if data is available at graph
+add_stream_operation update_links page_rank.updateLinks graph nodes messages nodes
+
+# Automatic update of the state if messages are available
+add_stream_operation update_messages page_rank.updateMessages messages nodes messages nodes
+
+# Set properties for this queues
+set_stream_operation_property parser_links max_latency 1
+set_stream_operation_property update_links max_latency 1
+set_stream_operation_property update_messages max_latency 1
+
+#set_stream_operation_property parser_links priority 3
+#set_stream_operation_property update_links priority 2
+#set_stream_operation_property update_messages priority 1
+
+#set_stream_operation_property update_links paused yes
+#set_stream_operation_property update_messages paused yes
+

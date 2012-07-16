@@ -1,0 +1,7 @@
+for mach in samson02 samson03 samson04 samson05 samson06 samson08
+do
+	echo Clearing samson log files in $mach
+	ssh samson@$mach rm -f /tmp/samson* /tmp/delilah*
+    echo '============================================='
+	echo
+done

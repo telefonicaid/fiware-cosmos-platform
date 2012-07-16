@@ -53,7 +53,7 @@ public class TrafficCountsParserMapper extends Mapper<
             context.getCounter(Counters.FILTERED_TRAFFIC_COUNTS).increment(1L);
             return;
         }
-        this.outKey.set(counts.getCellId());
+        this.outKey.set(counts.getId());
         this.outValue.set(counts);
         context.write(this.outKey, this.outValue);
     }

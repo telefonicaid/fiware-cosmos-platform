@@ -1,5 +1,7 @@
 package es.tid.smartsteps.dispersion;
 
+import java.io.IOException;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
@@ -29,7 +31,8 @@ public class Main extends Configured implements Tool {
     private static final Logger LOGGER = Logger.getLogger(Main.class);
 
     @Override
-    public int run(String[] args) throws Exception {
+    public int run(String[] args) throws ClassNotFoundException,
+                                         InterruptedException, IOException {
         if (args.length != 5) {
             throw new IllegalArgumentException(
                     "Usage: trafficCountsPath cellToMicrogridPath "

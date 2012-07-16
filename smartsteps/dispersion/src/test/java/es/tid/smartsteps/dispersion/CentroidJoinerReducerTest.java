@@ -68,7 +68,7 @@ public class CentroidJoinerReducerTest extends TrafficCountsBasedTest {
                 results.get(0);
         assertEquals("000012006440", result.getFirst().toString());
         final TrafficCounts outValue = result.getSecond().get();
-        List<Double> counts = outValue.getFootfallsList().get(0).getValuesList();
+        List<Double> counts = outValue.getVectorsList().get(0).getValuesList();
         assertEquals(0, counts.get(15).doubleValue(), 0.0D);
         assertEquals(0.4D, outValue.getLatitude(), 0.0D);
         assertEquals(0.5D, outValue.getLongitude(), 0.0D);

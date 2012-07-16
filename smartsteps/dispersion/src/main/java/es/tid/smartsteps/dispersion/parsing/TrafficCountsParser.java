@@ -1,67 +1,72 @@
 package es.tid.smartsteps.dispersion.parsing;
 
+import static java.util.Arrays.asList;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSortedSet;
 import net.sf.json.JSONArray;
+import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
+import org.apache.log4j.Logger;
 
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.Counts;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 
 /**
- * TrafficCountsEntryParser
+ * Parses traffic counts vectors for a given cell and day in JSON format.
  *
- * @author logc
+ * @author logc, sortega
  */
 public class TrafficCountsParser extends Parser<TrafficCounts> {
+
+    private static final Logger LOGGER =
+            Logger.getLogger(TrafficCountsParser.class);
 
     public static final String DATE_FIELD_NAME = "date";
     public static final String CELLID_FIELD_NAME = "cellid";
     public static final String LATITUDE_FIELD_NAME = "lat";
     public static final String LONGITUDE_FIELD_NAME = "long";
-    public static final String POIS_FIELD_NAME = "pois";
-    public static final String[] EXPECTED_POIS = { "HOME", "NONE", "WORK",
-                                                   "OTHER", "BILL" };
 
-    private final String[] countFields;
+    private final Set<String> vectorNames;
 
-    public TrafficCountsParser(String[] countFields) {
+    public TrafficCountsParser(String[] vectorNames) {
         super(null);
-        this.countFields = countFields.clone();
+        this.vectorNames = ImmutableSortedSet.<String>naturalOrder()
+                .addAll(asList(vectorNames))
+                .build();
     }
 
     @Override
     public TrafficCounts parse(String value) {
+        JSONObject jsonObject;
         try {
-            JSONObject jsonObject = (JSONObject) JSONSerializer.toJSON(value);
-            TrafficCounts.Builder builder = TrafficCounts.newBuilder();
-            builder.setCellId(jsonObject.getString(CELLID_FIELD_NAME));
-            builder.setDate(jsonObject.getString(DATE_FIELD_NAME));
-            builder.setLatitude(jsonObject.getDouble(LATITUDE_FIELD_NAME));
-            builder.setLongitude(jsonObject.getDouble(LONGITUDE_FIELD_NAME));
-            builder.setCellId(jsonObject.getString(CELLID_FIELD_NAME));
-            for (String countField : this.countFields) {
-                final JSONArray parsedCounts =
-                        jsonObject.getJSONArray(countField);
-                Counts.Builder countsBuilder = Counts.newBuilder();
-                countsBuilder.setName(countField);
-                for (int i = 0; i < parsedCounts.size(); i++) {
-                    countsBuilder.addValues(parsedCounts.getDouble(i));
-                }
-                builder.addFootfalls(countsBuilder);
-            }
-            JSONObject pois = jsonObject.getJSONObject(POIS_FIELD_NAME);
-            for (String expectedPoi : EXPECTED_POIS) {
-                final JSONArray parsedCounts = pois.getJSONArray(expectedPoi);
-                Counts.Builder countsBuilder = Counts.newBuilder();
-                countsBuilder.setName(expectedPoi);
-                for (int i = 0; i < parsedCounts.size(); i++) {
-                    countsBuilder.addValues(parsedCounts.getDouble(i));
-                }
-                builder.addPois(countsBuilder);
-            }
-            return builder.build();
-        } catch (Exception ex) {
+            jsonObject = (JSONObject) JSONSerializer.toJSON(value);
+        } catch (JSONException ex) {
+            LOGGER.warn("Cannot parse traffic count", ex);
             return null;
         }
+
+        TrafficCounts.Builder builder = TrafficCounts.newBuilder();
+        builder.setId(jsonObject.getString(CELLID_FIELD_NAME));
+        builder.setDate(jsonObject.getString(DATE_FIELD_NAME));
+        builder.setLatitude(jsonObject.getDouble(LATITUDE_FIELD_NAME));
+        builder.setLongitude(jsonObject.getDouble(LONGITUDE_FIELD_NAME));
+
+        for (String vectorName : this.vectorNames) {
+            JSONArray countsArray =
+                    (JSONArray) JSONUtil.getProperty(jsonObject, vectorName);
+            if (countsArray == null) {
+                LOGGER.warn("Vector named " + vectorName + " not found");
+                continue;
+            }
+            Counts.Builder countsBuilder = Counts.newBuilder()
+                    .setName(vectorName);
+            for (int i = 0; i < countsArray.size(); i++) {
+                countsBuilder.addValues(countsArray.getDouble(i));
+            }
+            builder.addVectors(countsBuilder);
+        }
+        return builder.build();
     }
 }

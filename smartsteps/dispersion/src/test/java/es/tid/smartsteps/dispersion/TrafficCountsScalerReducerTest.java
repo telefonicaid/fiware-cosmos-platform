@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.smartsteps.dispersion.config.Config;
+import es.tid.smartsteps.dispersion.data.TrafficCountsUtil;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 import es.tid.smartsteps.dispersion.parsing.LookupParser;
 import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
@@ -68,7 +69,9 @@ public class TrafficCountsScalerReducerTest extends TrafficCountsBasedTest {
                 results.get(0);
         assertEquals("polygon123", result.getFirst().toString());
         final TrafficCounts outValue = result.getSecond().get();
-        List<Double> counts = outValue.getFootfallsList().get(0).getValuesList();
+        List<Double> counts = TrafficCountsUtil
+                .getVector(outValue, "footfall_observed_basic")
+                .getValuesList();
         assertEquals(0, counts.get(15).doubleValue(), 0.0D);
         assertEquals(0.74D, counts.get(19).doubleValue(), 0.0D);
         assertEquals(0.37D, counts.get(24).doubleValue(), 0.0D);

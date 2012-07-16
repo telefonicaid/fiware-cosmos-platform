@@ -30,7 +30,7 @@ class TrafficCountsScalerMapper extends Mapper<
             Context context) throws IOException, InterruptedException {
         final Message message = value.get();
         if (message instanceof TrafficCounts) {
-            this.cellId.set(((TrafficCounts) message).getCellId());
+            this.cellId.set(((TrafficCounts) message).getId());
         } else if (message instanceof Lookup) {
             this.cellId.set(((Lookup) message).getKey());
         } else {

@@ -28,7 +28,7 @@ class CellIdAndDateMapper extends Mapper<
     protected void map(Text key, TypedProtobufWritable<TrafficCounts> value,
             Context context) throws IOException, InterruptedException {
         TrafficCounts counts = value.get();
-        this.cellIdAndDate.setPrimaryKey(counts.getCellId());
+        this.cellIdAndDate.setPrimaryKey(counts.getId());
         this.cellIdAndDate.setSecondaryKey(counts.getDate());
         context.write(this.cellIdAndDate, value);
     }

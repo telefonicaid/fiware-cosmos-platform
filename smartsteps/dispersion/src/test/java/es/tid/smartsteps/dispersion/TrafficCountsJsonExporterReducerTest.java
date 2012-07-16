@@ -15,14 +15,17 @@ import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.smartsteps.dispersion.config.Config;
+import es.tid.smartsteps.dispersion.data.TrafficCountsUtil;
+import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.Counts;
 import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 import es.tid.smartsteps.dispersion.parsing.TrafficCountsParser;
 
 /**
  *
- * @author dmicol
+ * @author dmicol, sortega
  */
-public class TrafficCountsJsonExporterReducerTest extends TrafficCountsBasedTest {
+public class TrafficCountsJsonExporterReducerTest
+        extends TrafficCountsBasedTest {
 
     private ReduceDriver<
             Text, TypedProtobufWritable<TrafficCounts>,
@@ -59,7 +62,9 @@ public class TrafficCountsJsonExporterReducerTest extends TrafficCountsBasedTest
         assertEquals(NullWritable.get(), result0.getFirst());
         TrafficCounts counts = this.parser.parse(result0.getSecond().toString());
         assertNotNull(counts);
-        assertEquals(0.57D, counts.getFootfalls(0).getValues(23), 0.0D);
+        Counts vector = TrafficCountsUtil.getVector(counts,
+                                                    "footfall_observed_basic");
+        assertEquals(0.57D, vector.getValues(23), 0.0D);
     }
 
     @Test
@@ -74,6 +79,8 @@ public class TrafficCountsJsonExporterReducerTest extends TrafficCountsBasedTest
         assertEquals(NullWritable.get(), result0.getFirst());
         TrafficCounts counts = this.parser.parse(result0.getSecond().toString());
         assertNotNull(counts);
-        assertEquals(1.0D, counts.getFootfalls(0).getValues(23), 0.0D);
+        Counts vector = TrafficCountsUtil.getVector(counts,
+                                                    "footfall_observed_basic");
+        assertEquals(1.0D, vector.getValues(23), 0.0D);
     }
 }

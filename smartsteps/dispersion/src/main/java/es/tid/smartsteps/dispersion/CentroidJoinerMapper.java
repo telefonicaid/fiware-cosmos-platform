@@ -18,11 +18,11 @@ class CentroidJoinerMapper extends Mapper<
         Text, TypedProtobufWritable<Message>,
         Text, TypedProtobufWritable<Message>> {
 
-    private Text cellId;
+    private Text id;
 
     @Override
     protected void setup(Context context) {
-        this.cellId = new Text();
+        this.id = new Text();
     }
 
     @Override
@@ -31,13 +31,13 @@ class CentroidJoinerMapper extends Mapper<
         final Message message = value.get();
         if (message instanceof TrafficCounts) {
             // Here the cell ID should have been replaced by the SOA ID
-            this.cellId.set(((TrafficCounts) message).getCellId());
+            this.id.set(((TrafficCounts) message).getId());
         } else if (message instanceof SOACentroid) {
-            this.cellId.set(((SOACentroid) message).getSoaId());
+            this.id.set(((SOACentroid) message).getSoaId());
         } else {
             throw new IllegalStateException("Unexpected input: "
                                             + message.toString());
         }
-        context.write(this.cellId, value);
+        context.write(this.id, value);
     }
 }

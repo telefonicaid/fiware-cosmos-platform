@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.util.CentroidsCatalogue;
 /**
  * Input: <NodeBts, ClusterVector>
  * Output: <Long, Poi>
- * 
+ *
  * @author dmicol
  */
 class ClusterClientBtsGetMinDistanceToPoiReducer extends Reducer<

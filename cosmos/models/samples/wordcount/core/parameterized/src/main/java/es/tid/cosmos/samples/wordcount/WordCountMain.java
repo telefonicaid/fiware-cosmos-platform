@@ -43,7 +43,7 @@ public class WordCountMain extends Configured implements Tool {
         if (!exJob.waitForCompletion(true)) {
             throw new Exception("Failed to export to MongoDB");
         }
-        
+
         return 0;
     }
 

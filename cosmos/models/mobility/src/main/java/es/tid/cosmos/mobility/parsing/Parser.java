@@ -44,11 +44,11 @@ public abstract class Parser {
     }
 
     public abstract Object parse();
-    
+
     protected String nextToken() {
         return this.values[this.index++];
     }
-    
+
     protected int parseInt() {
         return Integer.parseInt(this.nextToken(), DEFAULT_RADIX);
     }
@@ -60,7 +60,7 @@ public abstract class Parser {
     protected double parseDouble() {
         return Double.parseDouble(this.nextToken());
     }
-    
+
     protected long parseCellId() {
         String str = this.nextToken();
         if (str.isEmpty()) {
@@ -79,7 +79,7 @@ public abstract class Parser {
         }
         return Long.parseLong(str, DEFAULT_RADIX);
     }
-    
+
     protected ClusterVector parseClusterVector() {
         ClusterVector.Builder clusterVector = ClusterVector.newBuilder();
         for (int i = 0; i < 96; i++) {

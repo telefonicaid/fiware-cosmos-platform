@@ -15,14 +15,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
  *
  * Input: <Long, Text>
  * Output: <Long, ClientProfile>
- * 
+ *
  * @author dmicol, ximo
  */
 public class ParseClientProfileMapper extends Mapper<LongWritable, Text,
         LongWritable, TypedProtobufWritable<ClientProfile>> {
-    
+
     private String separator;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -30,7 +30,7 @@ public class ParseClientProfileMapper extends Mapper<LongWritable, Text,
                 getConfiguration());
         this.separator = conf.getDataSeparator();
     }
-    
+
     @Override
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {

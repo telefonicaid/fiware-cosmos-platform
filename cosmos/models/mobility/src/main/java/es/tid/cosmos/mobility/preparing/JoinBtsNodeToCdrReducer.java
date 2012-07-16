@@ -16,13 +16,13 @@ import es.tid.cosmos.mobility.util.CellsCatalogue;
 /**
  * Input: <Long, Cdr>
  * Output: <Long, Cdr>
- * 
+ *
  * @author dmicol
  */
 class JoinBtsNodeToCdrReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Cdr>, LongWritable, TypedProtobufWritable<Cdr>> {
     private static List<Cell> cells = null;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
@@ -32,7 +32,7 @@ class JoinBtsNodeToCdrReducer extends Reducer<LongWritable,
             cells = CellsCatalogue.load(new Path(conf.get("cells")), conf);
         }
     }
-    
+
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Cdr>> values, Context context)

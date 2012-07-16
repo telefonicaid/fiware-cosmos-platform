@@ -32,7 +32,7 @@ public class BinaryKeyTest {
         BinaryKey b2 = new BinaryKey();
         b2.setPrimaryKey("keya");
         b2.setSecondaryKey("1");
-        
+
         assertTrue(b1.equals(b2));
     }
 

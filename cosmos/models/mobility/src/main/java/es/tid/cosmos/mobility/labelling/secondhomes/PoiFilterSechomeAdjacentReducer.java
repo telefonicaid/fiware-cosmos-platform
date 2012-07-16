@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, Long>
  * Output: <TwoInt, Null>
- * 
+ *
  * @author dmicol
  */
 class PoiFilterSechomeAdjacentReducer extends Reducer<
@@ -34,9 +34,9 @@ class PoiFilterSechomeAdjacentReducer extends Reducer<
             final InputIdRecord record = value.get();
             if (record.getInputId() == 1) {
                 return;
-            }            
+            }
             nodeList.add(Int64.parseFrom(record.getMessageBytes()).getValue());
-        }        
+        }
         for (long node : nodeList) {
             context.write(TwoIntUtil.createAndWrap(node, pairbts.getNum2()),
                           new TypedProtobufWritable<Null>(Null.getDefaultInstance()));

@@ -31,7 +31,7 @@ public final class ClusterUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<Cluster> createAndWrap(int label,
             int labelgroup, int confident, double mean, double distance,
             ClusterVector coords) {

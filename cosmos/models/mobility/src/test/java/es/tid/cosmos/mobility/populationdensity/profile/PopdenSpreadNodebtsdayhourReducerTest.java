@@ -39,7 +39,7 @@ public class PopdenSpreadNodebtsdayhourReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
             ProtobufWritable<NodeBtsDate>, TypedProtobufWritable<Null>> instance;
     private List<Cell> cells;
-    
+
     @Before
     public void setUp() throws IOException {
         this.cells = new LinkedList<Cell>();

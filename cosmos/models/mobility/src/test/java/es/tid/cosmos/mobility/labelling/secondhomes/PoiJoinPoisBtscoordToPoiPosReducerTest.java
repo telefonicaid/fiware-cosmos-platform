@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
 public class PoiJoinPoisBtscoordToPoiPosReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Message>, LongWritable,
             TypedProtobufWritable<PoiPos>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,

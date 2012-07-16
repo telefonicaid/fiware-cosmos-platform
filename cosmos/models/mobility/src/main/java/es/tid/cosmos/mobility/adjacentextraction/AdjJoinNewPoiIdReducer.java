@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <Long, Long|PoiNew>
  * Output: <TwoInt, PoiNew>
- * 
+ *
  * @author dmicol
  */
 class AdjJoinNewPoiIdReducer extends Reducer<LongWritable,
@@ -32,7 +32,7 @@ class AdjJoinNewPoiIdReducer extends Reducer<LongWritable,
                 values, Int64.class, PoiNew.class);
         List<Int64> longList = dividedValues.get(Int64.class);
         List<PoiNew> poiNewList = dividedValues.get(PoiNew.class);
-        
+
         for (Int64 poiMod : longList) {
             int poiModVal = (int) poiMod.getValue();
             for (PoiNew poi : poiNewList) {

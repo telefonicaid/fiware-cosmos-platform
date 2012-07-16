@@ -19,14 +19,14 @@ import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.TrafficCounts;
 class CentroidJoinerReducer extends Reducer<
         Text, TypedProtobufWritable<Message>,
         Text, TypedProtobufWritable<TrafficCounts>> {
-    
+
     private TypedProtobufWritable<TrafficCounts> joinedCounts;
-    
+
     @Override
     protected void setup(Context context) {
         this.joinedCounts = new TypedProtobufWritable<TrafficCounts>();
     }
- 
+
     @Override
     protected void reduce(Text key,
             Iterable<TypedProtobufWritable<Message>> values, Context context)

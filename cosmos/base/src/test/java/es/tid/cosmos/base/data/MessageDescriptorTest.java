@@ -14,7 +14,7 @@ import org.junit.Test;
  */
 public class MessageDescriptorTest {
     private MessageDescriptor instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new MessageDescriptor();
@@ -62,9 +62,9 @@ public class MessageDescriptorTest {
         this.instance.setFieldColumnIndex("fake_field", 3);
         assertEquals(3, this.instance.getFieldColumnIndex("fake_field"));
     }
-    
+
     @Test(expected=IllegalArgumentException.class)
     public void testSetFieldColumnIndexForRepeatedField() {
         this.instance.setFieldColumnIndex("date", 2);
-    }    
+    }
 }

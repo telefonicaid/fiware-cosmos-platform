@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 public class ExportPoiToTextReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Poi>, NullWritable, Text> {
     private String separator;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -29,7 +29,7 @@ public class ExportPoiToTextReducer extends Reducer<LongWritable,
                 getConfiguration());
         this.separator = conf.getDataSeparator();
     }
-    
+
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Poi>> values, Context context)

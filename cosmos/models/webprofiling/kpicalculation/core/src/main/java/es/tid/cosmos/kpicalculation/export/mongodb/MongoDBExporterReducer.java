@@ -19,11 +19,11 @@ import org.bson.BasicBSONObject;
 public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
         LongWritable, BSONWritable> {
     private static final String DELIMITER = "\t";
-    
+
     private String name;
     private String[] fields;
     private List<String> columns;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {

@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class AdjPutMaxIdReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<TwoInt>, LongWritable,
             TypedProtobufWritable<TwoInt>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<TwoInt>,
@@ -29,7 +29,7 @@ public class AdjPutMaxIdReducerTest {
     @Test
     public void testReduce() {
         final LongWritable key = new LongWritable(57L);
-        final TypedProtobufWritable<TwoInt> value1 = 
+        final TypedProtobufWritable<TwoInt> value1 =
                 new TypedProtobufWritable<TwoInt>(TwoIntUtil.create(1L, 3L));
         final TypedProtobufWritable<TwoInt> value2 =
                 new TypedProtobufWritable<TwoInt>(TwoIntUtil.create(2L, 10L));

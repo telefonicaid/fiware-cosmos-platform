@@ -20,7 +20,7 @@ import static junit.framework.Assert.assertTrue;
 public class FrontendPasswordTest {
     private static final Logger LOG = LoggerFactory.getLogger(
             FrontendPasswordTest.class);
-    
+
     private FrontendPassword instance;
     private String fileName;
     private String frontendDbUrl;

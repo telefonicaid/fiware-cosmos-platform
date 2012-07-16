@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, Null>
  * Output: <Long, TwoInt>
- * 
+ *
  * @author dmicol
  */
 class ClusterCountMajPoiByNodeReducer extends Reducer<

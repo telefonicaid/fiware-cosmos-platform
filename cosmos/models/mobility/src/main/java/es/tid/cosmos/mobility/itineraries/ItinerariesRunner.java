@@ -20,7 +20,7 @@ import es.tid.cosmos.base.mapreduce.CosmosJob;
 public final class ItinerariesRunner {
     private ItinerariesRunner() {
     }
-    
+
     public static void run(Path cellsPath, Path cdrsInfoPath,
                            Path pointsOfInterestIdPath,
                            Path clientItinerariesTxtPath, Path tmpDirPath,
@@ -72,7 +72,7 @@ public final class ItinerariesRunner {
             FileOutputFormat.setOutputPath(job, itClientMovesRangesPath);
             job.waitForCompletion(true);
         }
-        
+
         Path itClientMovesCountPath = new Path(tmpDirPath,
                                                "it_client_moves_count");
         {
@@ -84,7 +84,7 @@ public final class ItinerariesRunner {
             FileOutputFormat.setOutputPath(job, itClientMovesCountPath);
             job.waitForCompletion(true);
         }
-        
+
         Path itClientMovesVectorPath = new Path(tmpDirPath,
                                                 "it_client_moves_vector");
         {
@@ -119,7 +119,7 @@ public final class ItinerariesRunner {
             FileOutputFormat.setOutputPath(job, clientItinerariesTxtPath);
             job.waitForCompletion(true);
         }
-        
+
         if (!isDebug) {
             FileSystem fs = FileSystem.get(conf);
             fs.delete(itClientbtsTimePath, true);

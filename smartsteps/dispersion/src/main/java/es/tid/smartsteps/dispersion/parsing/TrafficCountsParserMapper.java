@@ -25,7 +25,7 @@ public class TrafficCountsParserMapper extends Mapper<
     private Set<String> dateToFilter;
     private Text outKey;
     private TypedProtobufWritable<TrafficCounts> outValue;
-    
+
     @Override
     protected void setup(Context context) {
         this.parser = new TrafficCountsParser(
@@ -39,7 +39,7 @@ public class TrafficCountsParserMapper extends Mapper<
         this.outKey = new Text();
         this.outValue = new TypedProtobufWritable<TrafficCounts>();
     }
-    
+
     @Override
     protected void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {

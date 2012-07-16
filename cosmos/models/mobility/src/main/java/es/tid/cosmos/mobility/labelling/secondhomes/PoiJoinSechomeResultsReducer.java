@@ -14,7 +14,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, Poi|TwoInt|Null>
  * Output: <TwoInt, Poi>
- * 
+ *
  * @author dmicol
  */
 class PoiJoinSechomeResultsReducer extends Reducer<
@@ -43,14 +43,14 @@ class PoiJoinSechomeResultsReducer extends Reducer<
                 throw new IllegalStateException("Unexpected input type: "
                         + message.getClass());
             }
-            
+
             if (poi != null && ioweekIowend != null && hasSecHomeCount) {
                 // We already have all the required values, so there's no need
                 // to process more records
                 break;
             }
         }
-        
+
         Poi.Builder outputPoi = Poi.newBuilder(poi);
         outputPoi.setInoutWeek((int)ioweekIowend.getNum1());
         outputPoi.setInoutWend((int)ioweekIowend.getNum2());

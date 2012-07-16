@@ -28,7 +28,7 @@ public class ItinGetItineraryReducerTest extends ConfiguredTest {
     private ReduceDriver<ProtobufWritable<ItinRange>,
             TypedProtobufWritable<ClusterVector>, LongWritable,
             TypedProtobufWritable<Itinerary>> instance;
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new ReduceDriver<ProtobufWritable<ItinRange>,

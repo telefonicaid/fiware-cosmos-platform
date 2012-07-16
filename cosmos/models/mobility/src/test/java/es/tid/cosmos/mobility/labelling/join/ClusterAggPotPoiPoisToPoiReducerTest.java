@@ -23,7 +23,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class ClusterAggPotPoiPoisToPoiReducerTest {
     private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Message>,
             LongWritable, TypedProtobufWritable<Poi>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
@@ -53,7 +53,7 @@ public class ClusterAggPotPoiPoisToPoiReducerTest {
                 .withOutput(outKey, outValue)
                 .runTest();
     }
-    
+
     @Test
     public void shouldNotChangeConfidence() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);

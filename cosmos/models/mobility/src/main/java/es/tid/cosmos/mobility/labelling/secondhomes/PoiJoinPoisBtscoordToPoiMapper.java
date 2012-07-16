@@ -14,7 +14,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <Long, Poi>
  * Output: <TwoInt, Poi>
- * 
+ *
  * @author dmicol
  */
 class PoiJoinPoisBtscoordToPoiMapper extends Mapper<LongWritable,

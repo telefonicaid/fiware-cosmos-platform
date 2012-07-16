@@ -43,7 +43,7 @@ public class JoinBtsNodeToTelMonthAndCellReducerTest extends ConfiguredTest {
     private List<Cell> cells;
     private ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>,
             ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.cells = new LinkedList<Cell>();
@@ -80,7 +80,7 @@ public class JoinBtsNodeToTelMonthAndCellReducerTest extends ConfiguredTest {
         assertNotNull(res);
         assertEquals(0, res.size());
     }
-    
+
     @Test
     public void testNonEmptyOutput() throws IOException {
         List<Cell> filteredCells = new LinkedList<Cell>();

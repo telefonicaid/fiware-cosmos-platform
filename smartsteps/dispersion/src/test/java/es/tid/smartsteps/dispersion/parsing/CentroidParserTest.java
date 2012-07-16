@@ -13,7 +13,7 @@ import es.tid.smartsteps.dispersion.data.generated.EntryProtocol.SOACentroid;
 public class CentroidParserTest {
 
     private CentroidParser parser;
-    
+
     @Before
     public void setUp() {
         this.parser = new CentroidParser("\t");

@@ -32,10 +32,10 @@ public class TrafficCountsScalerReducerTest extends TrafficCountsBasedTest {
     private Text key;
     private TypedProtobufWritable<Message> countsValue;
     private TypedProtobufWritable<Message> lookupValue;
-    
+
     public TrafficCountsScalerReducerTest() throws IOException {
     }
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new ReduceDriver<

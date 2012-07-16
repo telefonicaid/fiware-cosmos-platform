@@ -44,7 +44,7 @@ public final class PoiUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<Poi> createAndWrap(int id, long node,
             long bts, int labelnode, int labelgroupnode, int confidentnode,
             double distancenode, int labelbts, int labelgroupbts,
@@ -56,7 +56,7 @@ public final class PoiUtil {
                 confidentbts, distancebts, labelnodebts, labelgroupnodebts,
                 confidentnodebts, distancenodebts, inoutWeek, inoutWend));
     }
-    
+
     public static String toString(Poi obj, String separator) {
         return (obj.getId() + separator + obj.getNode() + separator +
                 obj.getBts() + separator + obj.getLabelnode() + separator +

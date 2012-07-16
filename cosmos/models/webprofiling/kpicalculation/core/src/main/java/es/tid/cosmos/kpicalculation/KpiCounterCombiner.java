@@ -12,10 +12,10 @@ import es.tid.cosmos.base.mapreduce.CompositeKey;
  * of the web profiling module.When the target aggregation is a simple counter
  * of items depending on the values of some of its fields, this reducer will be
  * used.
- * 
+ *
  * For any of the keys, all their values are aggregated to emit only one integer
  * value per key
- * 
+ *
  * @author javierb
  */
 public class KpiCounterCombiner extends
@@ -24,7 +24,7 @@ public class KpiCounterCombiner extends
 
     /**
      * Method that creates the objects that will be used during the reduce
-     * 
+     *
      * @param context
      *            contains the context of the job run
      */

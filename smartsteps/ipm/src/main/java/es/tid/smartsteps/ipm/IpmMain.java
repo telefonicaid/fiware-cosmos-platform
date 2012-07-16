@@ -16,13 +16,13 @@ public final class IpmMain {
 
     private IpmMain() {
     }
-    
+
     public static void main(String[] args) throws IOException, ParseException {
         if (args.length != EXPECTED_ARGC) {
             throw new IllegalArgumentException("Invalid number of arguments.\n"
                     + "Usage: ipm.jar input output <inet|crm>");
         }
-        
+
         final String inputFilename = args[0];
         final String outputFilename = args[1];
         final String type = args[2];

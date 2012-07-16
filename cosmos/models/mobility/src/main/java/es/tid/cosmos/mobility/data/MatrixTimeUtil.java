@@ -29,7 +29,7 @@ public final class MatrixTimeUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<MatrixTime> createAndWrap(Date date,
             Time time, int group, long bts) {
         return wrap(create(date, time, group, bts));

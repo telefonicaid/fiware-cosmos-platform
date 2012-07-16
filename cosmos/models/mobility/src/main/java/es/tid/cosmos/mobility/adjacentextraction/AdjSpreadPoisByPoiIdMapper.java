@@ -13,7 +13,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, PoiNew>
  * Output: <Long, PoiNew>
- * 
+ *
  * @author dmicol
  */
 class AdjSpreadPoisByPoiIdMapper extends Mapper<

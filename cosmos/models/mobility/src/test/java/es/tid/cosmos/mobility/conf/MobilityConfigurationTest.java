@@ -13,7 +13,7 @@ import org.junit.Test;
  */
 public class MobilityConfigurationTest {
     private MobilityConfiguration instance;
-    
+
     @Before
     public void setUp() throws IOException {
         InputStream configInput = MobilityConfiguration.class.getResource(

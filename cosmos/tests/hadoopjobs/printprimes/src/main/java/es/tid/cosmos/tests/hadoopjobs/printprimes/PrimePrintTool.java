@@ -36,7 +36,7 @@ public class PrimePrintTool extends Configured implements Tool {
         testJob.waitForCompletion(true);
         return 0;
     }
-    
+
     public static void main(String[] args) throws Exception {
         int ret = ToolRunner.run(new Configuration(),
                        new PrimePrintTool(), args);

@@ -12,17 +12,17 @@ import org.apache.hadoop.io.WritableComparable;
  */
 public class CompositeKey implements WritableComparable<CompositeKey> {
     private static final int DEFAULT_KEY_SIZE = 2;
-    
+
     private String[] keys;
-    
+
     public CompositeKey() {
         this(DEFAULT_KEY_SIZE);
     }
-    
+
     public CompositeKey(int capacity) {
         this.keys = new String[capacity];
     }
-    
+
     public void set(int index, String key) {
         this.keys[index] = key;
     }

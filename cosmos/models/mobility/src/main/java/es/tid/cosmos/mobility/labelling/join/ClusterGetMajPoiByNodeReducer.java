@@ -12,7 +12,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <Long, TwoInt>
  * Output: <Long, Long>
- * 
+ *
  * @author dmicol
  */
 class ClusterGetMajPoiByNodeReducer extends Reducer<LongWritable,

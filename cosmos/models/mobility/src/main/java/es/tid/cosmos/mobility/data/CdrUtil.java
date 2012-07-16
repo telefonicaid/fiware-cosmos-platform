@@ -28,7 +28,7 @@ public final class CdrUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<Cdr> createAndWrap(long userId, long cellId,
                                                       Date date, Time time) {
         return wrap(create(userId, cellId, date, time));

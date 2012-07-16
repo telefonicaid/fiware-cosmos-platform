@@ -11,7 +11,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 /**
  * Input: <Long, Cdr>
  * Output: <Long, Cdr>
- * 
+ *
  * @author dmicol
  */
 class FilterCellnoinfoMapper extends Mapper<LongWritable,

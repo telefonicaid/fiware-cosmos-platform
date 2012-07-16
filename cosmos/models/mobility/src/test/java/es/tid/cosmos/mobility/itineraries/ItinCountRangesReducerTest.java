@@ -23,7 +23,7 @@ public class ItinCountRangesReducerTest {
     private ReduceDriver<ProtobufWritable<ItinRange>,
             TypedProtobufWritable<Float64>, ProtobufWritable<ItinRange>,
             TypedProtobufWritable<ItinPercMove>> instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<ItinRange>,

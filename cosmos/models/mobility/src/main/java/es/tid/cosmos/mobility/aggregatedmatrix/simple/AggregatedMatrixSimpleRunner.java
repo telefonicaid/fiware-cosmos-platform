@@ -22,13 +22,13 @@ import es.tid.cosmos.mobility.itineraries.*;
 public class AggregatedMatrixSimpleRunner {
     private AggregatedMatrixSimpleRunner() {
     }
-    
+
     public static CosmosWorkflow run(Path cdrsInfoPath, Path cellsPath,
                                      Path matrixPairBtsTxtPath, Path tmpDirPath,
                                      boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         WorkflowList wfList = new WorkflowList();
-        
+
         Path mtxClientbtsTimePath = new Path(tmpDirPath, "mtx_clientbts_time");
         CosmosJob mtxClientbtsTimeJob = CosmosJob.createReduceJob(conf,
                 "ItinJoinCellBts",
@@ -51,7 +51,7 @@ public class AggregatedMatrixSimpleRunner {
         mtxClientTimeJob.setDeleteOutputOnExit(!isDebug);
         mtxClientTimeJob.addDependentWorkflow(mtxClientbtsTimeJob);
         wfList.add(mtxClientTimeJob);
-        
+
         Path mtxClientMovesPath = new Path(tmpDirPath, "mtx_client_moves");
         CosmosJob mtxClientMovesJob = CosmosJob.createReduceJob(conf,
                 "ItinMoveClientPois",
@@ -95,7 +95,7 @@ public class AggregatedMatrixSimpleRunner {
 
         Path mtxPbtsMovesCountPath = new Path(tmpDirPath,
                                               "mtx_pbts_moves_count");
-        CosmosJob mtxPbtsMovesCountJob = CosmosJob.createReduceJob(conf, 
+        CosmosJob mtxPbtsMovesCountJob = CosmosJob.createReduceJob(conf,
                  "ItinCountRanges",
                 SequenceFileInputFormat.class,
                 ItinCountRangesReducer.class,
@@ -107,7 +107,7 @@ public class AggregatedMatrixSimpleRunner {
         mtxPbtsMovesCountJob.setDeleteOutputOnExit(!isDebug);
         mtxPbtsMovesCountJob.addDependentWorkflow(mtxPbtsMovesRangesJob);
         wfList.add(mtxPbtsMovesCountJob);
-        
+
         Path mtxPbtsMovesVectorBtsPath = new Path(tmpDirPath,
                                                   "mtx_pbts_moves_vector_bts");
         CosmosJob mtxPbtsMovesVectorBtsJob = CosmosJob.createReduceJob(conf, "ItinGetVector",
@@ -145,7 +145,7 @@ public class AggregatedMatrixSimpleRunner {
             job.addDependentWorkflow(mtxPairbtsVectorJob);
             wfList.add(job);
         }
-        
+
         return wfList;
     }
 }

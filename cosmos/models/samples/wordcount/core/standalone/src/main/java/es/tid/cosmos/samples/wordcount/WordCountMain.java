@@ -26,7 +26,7 @@ public class WordCountMain extends Configured implements Tool {
         final Path inputPath = new Path(args[0]);
         final Path outputPath = new Path(args[1]);
         final String mongoUrl = args[2];
-        
+
         WordCountJob wcJob = new WordCountJob(this.getConf());
         wcJob.configure(inputPath, outputPath);
         if (!wcJob.waitForCompletion(true)) {
@@ -38,7 +38,7 @@ public class WordCountMain extends Configured implements Tool {
         if (!exJob.waitForCompletion(true)) {
             throw new Exception("Failed to export to MongoDB");
         }
-        
+
         return 0;
     }
 

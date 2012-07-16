@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <Long, PoiPos|MobViMobVars>
  * Output: <TwoInt, TwoInt>
- * 
+ *
  * @author dmicol
  */
 class PoiJoinPoisViToTwoIntReducer extends Reducer<LongWritable,

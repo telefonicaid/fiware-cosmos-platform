@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 public class MongoDBExporterReducer extends Reducer<LongWritable, Text,
                                                     Text, LongWritable> {
     private static final String DELIMITER = "\t";
-    
+
     @Override
     public void reduce(LongWritable key, Iterable<Text> values, Context context)
             throws IOException, InterruptedException {

@@ -23,7 +23,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ClientProfile;
 public class ParseClientProfileMapperTest extends ConfiguredTest {
     private MapDriver<LongWritable, Text, LongWritable,
             TypedProtobufWritable<ClientProfile>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new MapDriver<LongWritable, Text, LongWritable,

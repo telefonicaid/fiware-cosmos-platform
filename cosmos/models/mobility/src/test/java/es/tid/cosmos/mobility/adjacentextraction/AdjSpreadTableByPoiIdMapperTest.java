@@ -24,7 +24,7 @@ public class AdjSpreadTableByPoiIdMapperTest {
                 LongWritable, TypedProtobufWritable<Int64>>(
                         new AdjSpreadTableByPoiIdMapper());
     }
-    
+
     @Test
     public void testMap() {
         this.driver

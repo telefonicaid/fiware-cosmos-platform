@@ -9,7 +9,7 @@ import es.tid.cosmos.kpicalculation.data.KpiCalculationCounter;
  * domain. Any URL which is not a third party domain ( which are not useful for
  * web profiling purposes) will pass the filter, and will call the next filter
  * of the "chain of responsibility" if exists.
- * 
+ *
  * @author javierb
  */
 public class ThirdPartyFilter extends AbstractKpiCalculationFilter {
@@ -22,7 +22,7 @@ public class ThirdPartyFilter extends AbstractKpiCalculationFilter {
 
     /**
      * (non-Javadoc)
-     * 
+     *
      * @see es.tid.cosmos.kpicalculation.cleaning.IKpiCalculationFilter#filter(String)
      */
     @Override

@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class AdjUpdatePoisTableReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<InputIdRecord>,
             LongWritable, TypedProtobufWritable<TwoInt>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable,
@@ -64,7 +64,7 @@ public class AdjUpdatePoisTableReducerTest {
                         .setInputId(0)
                         .setMessageBytes(value6.toByteString())
                         .build());
-        
+
         TypedProtobufWritable<TwoInt> out1 = new TypedProtobufWritable<TwoInt>(
                 TwoInt.newBuilder().setNum1(1L).setNum2(6L).build());
         TypedProtobufWritable<TwoInt> out2 = new TypedProtobufWritable<TwoInt>(
@@ -82,7 +82,7 @@ public class AdjUpdatePoisTableReducerTest {
                 .withOutput(new LongWritable(6L), out6)
                 .runTest();
     }
-    
+
     @Test
     public void testReducerNotInput1() {
         LongWritable key = new LongWritable(3L);

@@ -10,8 +10,8 @@ import org.apache.hadoop.io.WritableComparable;
 
 /**
  * Serializable key maps to a given Mongo document property.
- * 
- * Use it instead of Text to map output keys with a property different to 
+ *
+ * Use it instead of Text to map output keys with a property different to
  * "_id".
  *
  * @author sortega

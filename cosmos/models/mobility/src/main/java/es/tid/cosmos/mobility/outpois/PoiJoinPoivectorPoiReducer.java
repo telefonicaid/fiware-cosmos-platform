@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, ClusterVector|Poi>
  * Output: <TwoInt, Cluster>
- * 
+ *
  * @author dmicol
  */
 class PoiJoinPoivectorPoiReducer extends Reducer<
@@ -33,7 +33,7 @@ class PoiJoinPoivectorPoiReducer extends Reducer<
                 values, ClusterVector.class, Poi.class);
         List<ClusterVector> clusterVectorList = dividedLists.get(ClusterVector.class);
         List<Poi> poiList = dividedLists.get(Poi.class);
-        
+
         key.setConverter(TwoInt.class);
         final TwoInt nodeBts = key.get();
         for (ClusterVector clusterVector : clusterVectorList) {

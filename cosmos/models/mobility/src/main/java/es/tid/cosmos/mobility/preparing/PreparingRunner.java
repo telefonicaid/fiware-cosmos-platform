@@ -39,7 +39,7 @@ public final class PreparingRunner {
             FileOutputFormat.setOutputPath(cdrsInfoJob, cdrsInfoPath);
             wfList.add(cdrsInfoJob);
         }
-        
+
         {
             CosmosJob job = CosmosJob.createMapJob(conf,
                     "FilterCellnoinfoByNodeIdMapper",

@@ -17,9 +17,9 @@ import org.bson.BasicBSONObject;
  */
 public class MultiplePrintReducer
         extends Reducer<Text, IntWritable, Text, BSONWritable> {
-    
+
     @Override
-    public void reduce(Text key, Iterable<IntWritable> values, Context context) 
+    public void reduce(Text key, Iterable<IntWritable> values, Context context)
             throws IOException, InterruptedException {
         if (MultiplePrintMapper.KEY_LIST.equals(key)) {
             List<Integer> valueList = new ArrayList<Integer>();
@@ -31,7 +31,7 @@ public class MultiplePrintReducer
             throw new IllegalStateException("Unexpected key: " + key.toString());
         }
     }
-    
+
     private BSONWritable toBSON(Integer[] multiples) {
         BSONObject obj = new BasicBSONObject();
         obj.put("multiples", multiples);

@@ -31,7 +31,7 @@ public class ExportBtsCounterToTextByTwoIntReducerTest extends ConfiguredTest {
                         new ExportBtsCounterToTextByTwoIntReducer());
         this.driver.setConfiguration(this.getConf());
     }
-    
+
     @Test
     public void testSetInputId() throws IOException {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);

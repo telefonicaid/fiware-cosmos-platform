@@ -9,10 +9,10 @@ import java.util.Map;
  */
 public class ArgumentParser {
     private Map<String, String> arguments;
-    
+
     public ArgumentParser() {
     }
-    
+
     public void parse(String[] args) {
         this.arguments = new HashMap<String, String>();
         for (String arg : args) {
@@ -38,7 +38,7 @@ public class ArgumentParser {
     public boolean has(String name) {
         return this.has(name, false);
     }
-    
+
     public boolean has(String name, boolean required) {
         if (this.arguments.containsKey(name)) {
             return true;
@@ -49,22 +49,22 @@ public class ArgumentParser {
             return false;
         }
     }
-    
+
     public boolean getBoolean(String name) {
         return this.getBoolean(name, false);
     }
-    
+
     public boolean getBoolean(String name, boolean required) {
         if (!this.has(name, required)) {
             return false;
         }
         return Boolean.parseBoolean(this.arguments.get(name));
     }
-    
+
     public String getString(String name) {
         return this.getString(name, false);
     }
-    
+
     public String getString(String name, boolean required) {
         if (!this.has(name, required)) {
             return "";

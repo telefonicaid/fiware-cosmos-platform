@@ -10,7 +10,7 @@ import org.junit.Test;
  */
 public class ArgumentParserTest {
     private ArgumentParser instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new ArgumentParser();
@@ -22,7 +22,7 @@ public class ArgumentParserTest {
         assertEquals("true", this.instance.getString("arg1"));
         assertEquals("false", this.instance.getString("arg2"));
     }
-    
+
     @Test
     public void testBooleans() {
         this.instance.parse(new String[] { "--arg1", "--arg2=false" });
@@ -35,7 +35,7 @@ public class ArgumentParserTest {
         this.instance.parse(new String[] { "--arg1", "--arg2=false" });
         assertEquals(false, this.instance.has("arg3"));
     }
-    
+
     @Test(expected=IllegalArgumentException.class)
     public void testMissingAndRequired() {
         this.instance.parse(new String[] { "--arg1", "--arg2=false" });

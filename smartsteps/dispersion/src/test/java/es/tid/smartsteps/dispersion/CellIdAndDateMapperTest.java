@@ -25,10 +25,10 @@ public class CellIdAndDateMapperTest extends TrafficCountsBasedTest {
     private Text key;
     private TypedProtobufWritable<TrafficCounts> value;
     private BinaryKey outKey;
-    
+
     public CellIdAndDateMapperTest() throws IOException {
     }
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new MapDriver<

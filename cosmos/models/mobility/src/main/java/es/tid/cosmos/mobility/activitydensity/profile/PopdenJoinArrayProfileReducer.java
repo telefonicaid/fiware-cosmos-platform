@@ -20,7 +20,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 /**
  * Input: <TwoInt, NodeMxCounter|Int>
  * Output: <BtsProfile, Int>
- * 
+ *
  * @author dmicol
  */
 class PopdenJoinArrayProfileReducer extends Reducer<LongWritable,

@@ -18,14 +18,14 @@ public class KpiCounterByCombinerTest {
     private KpiCounterByCombiner instance;
     private ReduceDriver<CompositeKey, IntWritable, CompositeKey, IntWritable>
             driver;
-    
+
     @Before
     public void setUp() {
         this.instance = new KpiCounterByCombiner();
         this.driver = new ReduceDriver<CompositeKey, IntWritable, CompositeKey,
                 IntWritable>(this.instance);
     }
-    
+
     @Test
     public void testReduce() throws IOException {
         CompositeKey key = new CompositeKey(2);

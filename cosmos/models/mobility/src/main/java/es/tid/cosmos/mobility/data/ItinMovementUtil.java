@@ -26,7 +26,7 @@ public final class ItinMovementUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<ItinMovement> createAndWrap(ItinTime source,
             ItinTime target) {
         return wrap(create(source, target));

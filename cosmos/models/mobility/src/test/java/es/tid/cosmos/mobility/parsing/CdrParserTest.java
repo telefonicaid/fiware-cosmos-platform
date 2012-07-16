@@ -39,7 +39,7 @@ public class CdrParserTest {
                 .build()),
                 parser.parse());
     }
-    
+
     @Test
     public void testParseMissingFirstUserId() throws Exception {
         CdrParser parser = new CdrParser("|2221436242|"

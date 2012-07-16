@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class VectorGetNcomsNodedayhourReducerTest {
     private ReduceDriver<ProtobufWritable<NodeBts>, TypedProtobufWritable<Null>,
             ProtobufWritable<NodeBts>, TypedProtobufWritable<TwoInt>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<NodeBts>,

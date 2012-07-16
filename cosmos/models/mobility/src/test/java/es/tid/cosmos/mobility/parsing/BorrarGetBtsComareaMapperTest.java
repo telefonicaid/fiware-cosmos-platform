@@ -23,7 +23,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
 public class BorrarGetBtsComareaMapperTest extends ConfiguredTest {
     private MapDriver<LongWritable, Text, LongWritable,
             TypedProtobufWritable<Bts>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new MapDriver<LongWritable, Text, LongWritable,

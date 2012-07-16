@@ -12,7 +12,7 @@ import es.tid.cosmos.kpicalculation.data.KpiCalculationCounter;
  * extension. Any URL which does not contain a forbidden extension in its path
  * will pass the filter, and will call the next filter of the
  * "chain of responsibility" if exists.
- * 
+ *
  * @author javierb
  */
 public class ExtensionFilter extends AbstractKpiCalculationFilter {
@@ -25,7 +25,7 @@ public class ExtensionFilter extends AbstractKpiCalculationFilter {
 
     /**
      * (non-Javadoc)
-     * 
+     *
      * @see es.tid.cosmos.kpicalculation.cleaning.IKpiCalculationFilter#filter(String)
      */
     @Override

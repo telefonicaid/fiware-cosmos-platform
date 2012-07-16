@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, TwoInt>
  * Output: <Long, TwoInt>
- * 
+ *
  * @author dmicol
  */
 class AdjJoinPairbtsAdjbtsReducer extends Reducer<
@@ -43,7 +43,7 @@ class AdjJoinPairbtsAdjbtsReducer extends Reducer<
                             + record.getInputId());
             }
         }
-        
+
         if (hasAdjacentBts) {
             for (TwoInt pairPois : pairPoisList) {
                 context.write(new LongWritable(pairPois.getNum1()),

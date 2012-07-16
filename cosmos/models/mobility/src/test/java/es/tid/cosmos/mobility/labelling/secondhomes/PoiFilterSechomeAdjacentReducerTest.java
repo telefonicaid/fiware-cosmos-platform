@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class PoiFilterSechomeAdjacentReducerTest {
     private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<InputIdRecord>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
@@ -58,7 +58,7 @@ public class PoiFilterSechomeAdjacentReducerTest {
                 .withOutput(outKey2, outValue)
                 .runTest();
     }
-    
+
     @Test
     public void testEmptyOutput() {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);

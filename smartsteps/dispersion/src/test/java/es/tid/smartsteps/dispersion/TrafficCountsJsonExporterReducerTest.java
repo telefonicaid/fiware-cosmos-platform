@@ -30,10 +30,10 @@ public class TrafficCountsJsonExporterReducerTest extends TrafficCountsBasedTest
     private TrafficCountsParser parser;
     private Text key;
     private TypedProtobufWritable<TrafficCounts> value;
-    
+
     public TrafficCountsJsonExporterReducerTest() throws IOException {
     }
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new ReduceDriver<

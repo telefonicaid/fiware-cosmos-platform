@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDate;
 /**
  * Input: <NodeBtsDate, Null>
  * Output: <Long, NodeBts>
- * 
+ *
  * @author ximo
  */
 public class PopdenDeleteDuplicatesReducer extends Reducer<

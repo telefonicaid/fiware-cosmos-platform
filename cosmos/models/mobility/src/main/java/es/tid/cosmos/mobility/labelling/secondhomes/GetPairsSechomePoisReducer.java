@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <Long, PoiPos>
  * Output: <TwoInt, Long>
- * 
+ *
  * @author dmicol
  */
 class GetPairsSechomePoisReducer extends Reducer<LongWritable,
@@ -26,7 +26,7 @@ class GetPairsSechomePoisReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Int64>> {
     private int homeLabelgroupId;
     private double minDistSecondHome;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -35,7 +35,7 @@ class GetPairsSechomePoisReducer extends Reducer<LongWritable,
         this.homeLabelgroupId = conf.getPoiHomeLabelgroupId();
         this.minDistSecondHome = conf.getPoiMinDistSecondHome();
     }
-    
+
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<PoiPos>> values, Context context)

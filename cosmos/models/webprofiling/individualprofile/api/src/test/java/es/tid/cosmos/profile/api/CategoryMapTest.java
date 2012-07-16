@@ -30,7 +30,7 @@ public class CategoryMapTest {
     public void lessThanNecessaryTest() {
         assertEquals(asList("A", "B", "C", "D"), this.instance.getTop(5));
     }
-    
+
     @Test
     public void shouldGetAll() {
         assertEquals(asList("A", "B", "C", "D"), this.instance.getAll());

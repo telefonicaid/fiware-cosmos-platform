@@ -26,7 +26,7 @@ import es.tid.cosmos.mobility.populationdensity.profile.PopdenSpreadNodebtsdayho
 public final class PopulationDensityRunner {
     private PopulationDensityRunner() {
     }
-    
+
     public static CosmosWorkflow run(Path cdrsInfoPath, Path cellsPath,
                                      Path populationDensityOut, Path tmpDirPath,
                                      boolean isDebug, Configuration conf)
@@ -75,7 +75,7 @@ public final class PopulationDensityRunner {
                                        popdenprofBtsprofPath);
         popdenprofBtsprofJob.addDependentWorkflow(denpobNodeinfoNodupJob);
         wfList.add(popdenprofBtsprofJob);
-        
+
         Path popdenBtsprofCountPath = new Path(tmpDirPath,
                                                "popden_btsprof_count");
         CosmosJob popdenBtsprofCountJob = CosmosJob.createReduceJob(conf,
@@ -90,7 +90,7 @@ public final class PopulationDensityRunner {
         popdenBtsprofCountJob.setDeleteOutputOnExit(!isDebug);
         popdenBtsprofCountJob.addDependentWorkflow(popdenprofBtsprofJob);
         wfList.add(popdenBtsprofCountJob);
-        
+
         Path populationDensityPath = new Path(tmpDirPath,
                                               "population_density");
         CosmosJob populationDensityJob = CosmosJob.createReduceJob(conf,
@@ -105,7 +105,7 @@ public final class PopulationDensityRunner {
         populationDensityJob.setDeleteOutputOnExit(!isDebug);
         populationDensityJob.addDependentWorkflow(popdenBtsprofCountJob);
         wfList.add(populationDensityJob);
-        
+
         {
             CosmosJob job = CosmosJob.createReduceJob(conf,
                     "PopdenProfileGetOut",
@@ -118,7 +118,7 @@ public final class PopulationDensityRunner {
             job.addDependentWorkflow(populationDensityJob);
             wfList.add(job);
         }
-        
+
         return wfList;
     }
 }

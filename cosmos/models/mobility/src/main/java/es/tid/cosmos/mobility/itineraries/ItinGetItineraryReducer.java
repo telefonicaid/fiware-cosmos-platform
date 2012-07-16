@@ -15,14 +15,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
 /**
  * Input: <ItinRange, ClusterVector>
  * Output: <Long, Itinerary>
- * 
+ *
  * @author dmicol
  */
 class ItinGetItineraryReducer extends Reducer<
         ProtobufWritable<ItinRange>, TypedProtobufWritable<ClusterVector>,
         LongWritable, TypedProtobufWritable<Itinerary>> {
     private double percAbsoluteMax;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -30,7 +30,7 @@ class ItinGetItineraryReducer extends Reducer<
                 getConfiguration());
         this.percAbsoluteMax = conf.getItinPercAbsoluteMax();
     }
-    
+
     @Override
     protected void reduce(ProtobufWritable<ItinRange> key,
             Iterable<TypedProtobufWritable<ClusterVector>> values,

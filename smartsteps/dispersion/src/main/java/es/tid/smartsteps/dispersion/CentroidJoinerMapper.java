@@ -19,12 +19,12 @@ class CentroidJoinerMapper extends Mapper<
         Text, TypedProtobufWritable<Message>> {
 
     private Text cellId;
-    
+
     @Override
     protected void setup(Context context) {
         this.cellId = new Text();
     }
-    
+
     @Override
     protected void map(Text key, TypedProtobufWritable<Message> value,
             Context context) throws IOException, InterruptedException {

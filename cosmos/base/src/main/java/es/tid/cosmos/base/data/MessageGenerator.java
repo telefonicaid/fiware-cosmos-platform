@@ -12,16 +12,16 @@ import es.tid.cosmos.base.data.generated.WebLogProtocol.WebLog;
 import es.tid.cosmos.base.util.SHAEncoder;
 
 /**
- * 
+ *
  * @author dmicol
  */
 public abstract class MessageGenerator {
     private static final String ULER_TYPE_NAME = "uler";
     private static final String WEBLOG_TYPE_NAME = "weblog";
-    
+
     private MessageGenerator() {
     }
-    
+
     public static Message generate(MessageDescriptor messageDescriptor,
                                    String line) {
         final String type = messageDescriptor.getMetaFieldValue(
@@ -42,7 +42,7 @@ public abstract class MessageGenerator {
         }
         return setFields(builder, descriptor, messageDescriptor, fields);
     }
-    
+
     private static Message setFields(Builder builder, Descriptor descriptor,
                                      MessageDescriptor messageDescriptor,
                                      String[] fields) {

@@ -60,7 +60,7 @@ public abstract class CellGroupsCatalogue {
         }
         return cells;
     }
-    
+
     public static List<CellGroup> filter(List<CellGroup> cells, long cellId) {
         List<CellGroup> filteredCells = new LinkedList<CellGroup>();
         for (CellGroup cellGroup : cells) {

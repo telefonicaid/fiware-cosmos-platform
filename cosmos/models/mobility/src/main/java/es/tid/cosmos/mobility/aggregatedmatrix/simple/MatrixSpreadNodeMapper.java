@@ -13,7 +13,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, ItinTime>
  * Output: <Long, ItinTime>
- * 
+ *
  * @author dmicol
  */
 class MatrixSpreadNodeMapper extends Mapper<ProtobufWritable<TwoInt>,

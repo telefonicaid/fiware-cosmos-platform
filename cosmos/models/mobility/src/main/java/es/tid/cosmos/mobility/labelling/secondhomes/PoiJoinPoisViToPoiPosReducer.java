@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
 /**
  * Input: <Long, PoiPos|MobViMobVars>
  * Output: <Long, PoiPos>
- * 
+ *
  * @author dmicol
  */
 class PoiJoinPoisViToPoiPosReducer extends Reducer<LongWritable,

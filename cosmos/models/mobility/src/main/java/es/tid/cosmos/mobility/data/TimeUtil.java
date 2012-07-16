@@ -26,12 +26,12 @@ public final class TimeUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<Time> createAndWrap(int hour, int minute,
                                                        int seconds) {
         return wrap(create(hour, minute, seconds));
     }
-    
+
     public static String toString(Time obj, String separator) {
         return (obj.getHour() + separator + obj.getMinute() + separator +
                 obj.getSeconds());

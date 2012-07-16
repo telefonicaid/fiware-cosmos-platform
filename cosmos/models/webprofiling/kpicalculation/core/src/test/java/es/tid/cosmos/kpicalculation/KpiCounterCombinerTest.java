@@ -25,7 +25,7 @@ public class KpiCounterCombinerTest {
         this.driver = new ReduceDriver<CompositeKey, IntWritable, CompositeKey,
                 IntWritable>(this.instance);
     }
-    
+
     @Test
     public void shouldCountPairs() throws IOException {
         CompositeKey key = new CompositeKey(1);

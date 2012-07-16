@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, PoiNew>
  * Output: <TwoInt, TwoInt>
- * 
+ *
  * @author dmicol
  */
 class AdjGroupTypePoiClientReducer extends Reducer<
@@ -30,7 +30,7 @@ class AdjGroupTypePoiClientReducer extends Reducer<
             final PoiNew poiNew = value.get();
             poiNewList.add(poiNew);
         }
-        
+
         for (PoiNew curPoi : poiNewList) {
             for (PoiNew tempPoi : poiNewList) {
                 if (curPoi.getId() < tempPoi.getId()) {

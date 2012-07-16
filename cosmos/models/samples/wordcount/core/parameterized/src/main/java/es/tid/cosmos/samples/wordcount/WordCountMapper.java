@@ -16,7 +16,7 @@ public class WordCountMapper extends Mapper<LongWritable, Text,
                                             Text, IntWritable> {
     private static final String DELIMITER_KEY = "cosmos.wordcount.delim";
     private static final IntWritable ONE = new IntWritable(1);
-    
+
     private Text word;
     private String delimRegex;
 
@@ -26,7 +26,7 @@ public class WordCountMapper extends Mapper<LongWritable, Text,
         this.word = new Text();
         this.delimRegex = context.getConfiguration().get(DELIMITER_KEY);
     }
-        
+
     @Override
     public void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {

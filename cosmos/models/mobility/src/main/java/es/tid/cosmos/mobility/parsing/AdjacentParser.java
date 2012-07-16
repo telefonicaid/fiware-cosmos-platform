@@ -10,7 +10,7 @@ class AdjacentParser extends Parser {
     public AdjacentParser(String line, String separator) {
         super(line, separator);
     }
-    
+
     @Override
     public TwoInt parse() {
         try {

@@ -29,7 +29,7 @@ public final class BtsUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<Bts> createAndWrap(long placeId, long comms,
             double posx, double posy, double area, Iterable<Long> adjBts) {
         return wrap(create(placeId, comms, posx, posy, area, adjBts));

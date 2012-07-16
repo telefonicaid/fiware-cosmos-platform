@@ -24,7 +24,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
 public class ItinItineraryOutReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Itinerary>,
             NullWritable, Text> instance;
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new ReduceDriver<LongWritable,

@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.PoiPos;
 /**
  * Input: <Long, Poi|Cell>
  * Output: <Long, PoiPos>
- * 
+ *
  * @author dmicol
  */
 class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
@@ -41,7 +41,7 @@ class PoiJoinPoisBtscoordToPoiPosReducer extends Reducer<LongWritable,
                         + message.getClass());
             }
         }
-        
+
         for (Poi poi : poiList) {
             PoiPos poiPos = PoiPosUtil.create(
                     poi.getNode(), poi.getBts(),

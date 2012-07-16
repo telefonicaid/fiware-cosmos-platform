@@ -47,7 +47,7 @@ public final class ParsingRunner {
             FileOutputFormat.setOutputPath(job, cellsMobPath);
             wf.add(job);
         }
-        
+
         {
             CosmosJob job = CosmosJob.createMapJob(conf, "AdjParseAdjBts",
                     TextInputFormat.class,
@@ -67,7 +67,7 @@ public final class ParsingRunner {
             FileOutputFormat.setOutputPath(job, btsComareaPath);
             wf.add(job);
         }
-        
+
         {
             CosmosJob job = CosmosJob.createMapJob(conf, "ParserClientsInfo",
                     TextInputFormat.class,
@@ -77,7 +77,7 @@ public final class ParsingRunner {
             FileOutputFormat.setOutputPath(job, clientsInfoMobPath);
             wf.add(job);
         }
-        
+
         return wf;
     }
 }

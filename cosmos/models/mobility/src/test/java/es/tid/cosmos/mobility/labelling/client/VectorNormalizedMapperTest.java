@@ -21,11 +21,11 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
  * @author ximo
  */
 public class VectorNormalizedMapperTest {
-    
+
     private MapDriver<ProtobufWritable<NodeBts>,
             TypedProtobufWritable<ClusterVector>, ProtobufWritable<NodeBts>,
             TypedProtobufWritable<ClusterVector>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new MapDriver<ProtobufWritable<NodeBts>,
@@ -56,5 +56,5 @@ public class VectorNormalizedMapperTest {
             total += value;
         }
         assertEquals(total, 1.0D, 1e-9D);
-    }    
+    }
 }

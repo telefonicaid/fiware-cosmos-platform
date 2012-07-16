@@ -14,14 +14,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
 /**
  * Input: <Long, Text>
  * Output: <Long, Bts>
- * 
+ *
  * @author dmicol
  */
 class BorrarGetBtsComareaMapper extends Mapper<LongWritable, Text,
         LongWritable, TypedProtobufWritable<Bts>> {
-    
+
     private String separator;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -29,7 +29,7 @@ class BorrarGetBtsComareaMapper extends Mapper<LongWritable, Text,
                 getConfiguration());
         this.separator = conf.getDataSeparator();
     }
-    
+
     @Override
     protected void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {

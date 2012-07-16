@@ -28,10 +28,10 @@ public class LookupParserMapperTest extends TrafficCountsBasedTest {
             Text, TypedProtobufWritable<Lookup>> instance;
     private LongWritable key;
     private Text value;
-    
+
     public LookupParserMapperTest() throws IOException {
     }
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new MapDriver<
@@ -53,7 +53,7 @@ public class LookupParserMapperTest extends TrafficCountsBasedTest {
         assertEquals("cell023", result.getFirst().toString());
         assertTrue(result.getSecond().get() instanceof Lookup);
     }
-    
+
     @Test
     public void shouldFailToParse() {
         this.instance

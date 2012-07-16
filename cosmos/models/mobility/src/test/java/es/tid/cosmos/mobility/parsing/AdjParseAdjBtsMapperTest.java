@@ -25,7 +25,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class AdjParseAdjBtsMapperTest extends ConfiguredTest {
     private MapDriver<LongWritable, Text, ProtobufWritable<TwoInt>,
             TypedProtobufWritable<Null>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new MapDriver<LongWritable, Text,

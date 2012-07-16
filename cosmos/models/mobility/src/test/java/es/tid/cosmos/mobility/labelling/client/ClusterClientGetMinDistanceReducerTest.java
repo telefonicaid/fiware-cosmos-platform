@@ -36,14 +36,14 @@ import es.tid.cosmos.mobility.util.CentroidsCatalogue;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(CentroidsCatalogue.class)
 public class ClusterClientGetMinDistanceReducerTest {
-    
-    private static final int VECTOR_LENGTH = 24;    
-    
+
+    private static final int VECTOR_LENGTH = 24;
+
     private List<Cluster> centroids;
     private ReduceDriver<ProtobufWritable<NodeBts>,
             TypedProtobufWritable<ClusterVector>, LongWritable,
             TypedProtobufWritable<Cluster>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         Builder vectorBuilder = ClusterVector.newBuilder();
@@ -73,7 +73,7 @@ public class ClusterClientGetMinDistanceReducerTest {
         List<TypedProtobufWritable<ClusterVector>> vectors =
                 new LinkedList<TypedProtobufWritable<ClusterVector>>();
         for(int i = 0; i < 5; i++) {
-            Builder vectorBuilder = ClusterVector.newBuilder();            
+            Builder vectorBuilder = ClusterVector.newBuilder();
             for (int j = 0; j < VECTOR_LENGTH; j++) {
                 vectorBuilder.addComs(VECTOR_LENGTH*j + i);
             }

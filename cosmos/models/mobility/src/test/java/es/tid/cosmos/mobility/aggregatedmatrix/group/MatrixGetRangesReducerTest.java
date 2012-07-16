@@ -33,7 +33,7 @@ public class MatrixGetRangesReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<ItinMovement>,
             ProtobufWritable<MatrixRange>, TypedProtobufWritable<Float64>>
             instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<LongWritable,

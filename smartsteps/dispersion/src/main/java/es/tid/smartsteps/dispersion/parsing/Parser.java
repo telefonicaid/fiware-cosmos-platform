@@ -7,11 +7,11 @@ package es.tid.smartsteps.dispersion.parsing;
 public abstract class Parser<E> {
 
     protected final String delimiter;
-    
+
     public Parser(String delimiter) {
         this.delimiter = delimiter;
     }
-    
+
     /**
      * Parses a line. May throw an exception if the operation fails.
      * @param line The line to parse.
@@ -19,4 +19,3 @@ public abstract class Parser<E> {
      */
     public abstract E parse(String line);
 }
- 

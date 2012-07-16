@@ -26,14 +26,14 @@ import es.tid.cosmos.mobility.util.SetMobDataInputIdByTwoIntReducer;
 public final class ClientBtsLabellingRunner {
     private ClientBtsLabellingRunner() {
     }
-    
+
     public static CosmosWorkflow run(Path clientsInfoPath,
             Path clientsRepbtsPath, Path vectorClientbtsPath, Path centroidsPath,
             Path pointsOfInterestTempPath, Path vectorClientbtsClusterPath,
             Path tmpDirPath, boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         WorkflowList wfList = new WorkflowList();
-        
+
         Path clientsbtsSpreadPath = new Path(tmpDirPath, "clientsbts_spread");
         CosmosJob clientsbtsSpreadJob = CosmosJob.createReduceJob(conf,
                 "VectorSpreadNodbts",
@@ -87,7 +87,7 @@ public final class ClientBtsLabellingRunner {
                                        clientsRepbtsWithInputIdPath);
         clientsRepbtsWithInputIdJob.setDeleteOutputOnExit(true);
         wfList.add(clientsRepbtsWithInputIdJob);
-        
+
         Path clientsbtsRepbtsPath = new Path(tmpDirPath, "clientsbts_repbts");
         CosmosJob clientsbtsRepbtsJob = CosmosJob.createReduceJob(conf,
                 "VectorFiltClientbts",
@@ -101,7 +101,7 @@ public final class ClientBtsLabellingRunner {
         clientsbtsRepbtsJob.addDependentWorkflow(clientsbtsSumWithInputIdJob);
         clientsbtsRepbtsJob.addDependentWorkflow(clientsRepbtsWithInputIdJob);
         wfList.add(clientsbtsRepbtsJob);
-               
+
         Path clientsbtsGroupPath = new Path(tmpDirPath, "clientsbts_group");
         CosmosJob clientsbtsGroupJob = CosmosJob.createReduceJob(conf,
                 "VectorCreateNodeDayhour",
@@ -111,7 +111,7 @@ public final class ClientBtsLabellingRunner {
         FileInputFormat.setInputPaths(clientsbtsGroupJob, clientsbtsRepbtsPath);
         FileOutputFormat.setOutputPath(clientsbtsGroupJob, clientsbtsGroupPath);
         clientsbtsGroupJob.setDeleteOutputOnExit(!isDebug);
-        clientsbtsGroupJob.addDependentWorkflow(clientsbtsRepbtsJob);                                                                     
+        clientsbtsGroupJob.addDependentWorkflow(clientsbtsRepbtsJob);
         wfList.add(clientsbtsGroupJob);
 
         CosmosJob vectorClientbtsJob = CosmosJob.createReduceJob(conf,
@@ -152,7 +152,7 @@ public final class ClientBtsLabellingRunner {
             job.addDependentWorkflow(vectorClientbtsNormJob);
             wfList.add(job);
         }
-        
+
         CosmosJob vectorClientbtsClusterJob = CosmosJob.createReduceJob(conf,
                 "ClusterClientBtsGetMinDistanceToCluster",
                 SequenceFileInputFormat.class,

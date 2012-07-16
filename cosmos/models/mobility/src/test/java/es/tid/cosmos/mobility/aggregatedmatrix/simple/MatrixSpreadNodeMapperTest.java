@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class MatrixSpreadNodeMapperTest {
     private MapDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<ItinTime>,
             LongWritable, TypedProtobufWritable<ItinTime>> instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new MapDriver<ProtobufWritable<TwoInt>,

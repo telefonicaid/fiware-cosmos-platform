@@ -36,7 +36,7 @@ public class SingleKeyTest {
 
         SingleKey t2 = new SingleKey();
         t2.setKey("keya");
-        
+
         assertTrue(s1.equals(t2));
     }
 }

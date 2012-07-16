@@ -34,7 +34,7 @@ public class MatrixGetOutReducerTest extends ConfiguredTest {
                         new MatrixGetOutReducer());
         this.instance.setConfiguration(this.getConf());
     }
-    
+
     @Test
     public void testReduce() throws IOException {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L,

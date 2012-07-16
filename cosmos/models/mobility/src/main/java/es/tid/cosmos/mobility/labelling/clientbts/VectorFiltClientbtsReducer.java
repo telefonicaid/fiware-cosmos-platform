@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, BtsCounter>
  * Output: <NodeBts, TwoInt>
- * 
+ *
  * @author dmicol
  */
 class VectorFiltClientbtsReducer extends Reducer<
@@ -46,7 +46,7 @@ class VectorFiltClientbtsReducer extends Reducer<
                             + record.getInputId());
             }
         }
-        
+
         key.setConverter(TwoInt.class);
         final TwoInt twoInt = key.get();
         for (int i = 0; i < reprBtsCounterCount; i++) {

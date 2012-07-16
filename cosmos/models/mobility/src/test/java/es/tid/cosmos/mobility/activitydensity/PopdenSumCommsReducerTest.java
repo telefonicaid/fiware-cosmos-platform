@@ -22,14 +22,14 @@ public class PopdenSumCommsReducerTest {
     private ReduceDriver<ProtobufWritable<BtsProfile>,
             TypedProtobufWritable<Int>, ProtobufWritable<TwoInt>,
             TypedProtobufWritable<BtsCounter>> instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<BtsProfile>,
                 TypedProtobufWritable<Int>, ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<BtsCounter>>(new PopdenSumCommsReducer());
     }
-    
+
     @Test
     public void testReduce() {
         final ProtobufWritable<BtsProfile> key = BtsProfileUtil.createAndWrap(

@@ -42,7 +42,7 @@ public class JoinBtsNodeToBtsDayRangeReducerTest extends ConfiguredTest {
     private List<Cell> cells;
     private ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>, LongWritable,
             TypedProtobufWritable<TwoInt>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.cells = new LinkedList<Cell>();
@@ -77,7 +77,7 @@ public class JoinBtsNodeToBtsDayRangeReducerTest extends ConfiguredTest {
         assertNotNull(res);
         assertEquals(0, res.size());
     }
-    
+
     @Test
     public void testNonEmptyOutput() throws IOException {
         List<Cell> filteredCells = new LinkedList<Cell>();

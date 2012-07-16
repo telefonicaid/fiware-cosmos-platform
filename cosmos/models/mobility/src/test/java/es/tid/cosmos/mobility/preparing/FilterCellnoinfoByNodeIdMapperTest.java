@@ -26,7 +26,7 @@ public class FilterCellnoinfoByNodeIdMapperTest {
                 LongWritable, TypedProtobufWritable<Cdr>>(
                        new FilterCellnoinfoByNodeIdMapper());
     }
-    
+
     @Test
     public void testValidCellId() throws Exception {
         final TypedProtobufWritable<Cdr> value = new TypedProtobufWritable<Cdr>(

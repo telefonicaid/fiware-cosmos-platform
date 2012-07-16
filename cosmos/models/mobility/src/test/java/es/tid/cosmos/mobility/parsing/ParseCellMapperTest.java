@@ -23,7 +23,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 public class ParseCellMapperTest extends ConfiguredTest {
     private MapDriver<LongWritable, Text, LongWritable,
             TypedProtobufWritable<Cell>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new MapDriver<LongWritable, Text, LongWritable,

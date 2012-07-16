@@ -21,7 +21,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Poi;
 public class ClusterAggBtsClusterReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
             LongWritable, TypedProtobufWritable<Poi>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,

@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
 /**
  * Input: <Long, Int|NodeBtsDay>
  * Output: <Long, BtsCounter>
- * 
+ *
  * @author dmicol
  */
 class RepbtsJoinDistCommsReducer extends Reducer<LongWritable,

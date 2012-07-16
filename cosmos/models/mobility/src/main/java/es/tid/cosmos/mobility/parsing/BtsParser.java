@@ -10,7 +10,7 @@ public class BtsParser extends Parser {
     public BtsParser(String line, String separator) {
         super(line, separator);
     }
-    
+
     @Override
     public Bts parse() {
         try {

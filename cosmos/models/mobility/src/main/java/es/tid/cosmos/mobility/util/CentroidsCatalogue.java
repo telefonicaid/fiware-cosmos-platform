@@ -49,7 +49,7 @@ public abstract class CentroidsCatalogue {
             }
         }
     }
-    
+
     public static List<Cluster> load(Reader input, String separator)
             throws IOException {
         BufferedReader br = new BufferedReader(input);

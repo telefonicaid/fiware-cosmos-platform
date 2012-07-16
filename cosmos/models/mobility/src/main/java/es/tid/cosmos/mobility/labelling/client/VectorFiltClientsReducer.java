@@ -16,14 +16,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 /**
  * Input: <Long, Int|Cdr>
  * Output: <Long, Cdr>
- * 
+ *
  * @author dmicol
  */
 class VectorFiltClientsReducer extends Reducer<
         LongWritable, TypedProtobufWritable<Message>,
         LongWritable, TypedProtobufWritable<Cdr>> {
     private int maxTotalCalls;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -31,7 +31,7 @@ class VectorFiltClientsReducer extends Reducer<
                 getConfiguration());
         this.maxTotalCalls = conf.getClientMaxTotalCalls();
     }
-    
+
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Message>> values, Context context)
@@ -48,7 +48,7 @@ class VectorFiltClientsReducer extends Reducer<
                 throw new IllegalArgumentException("Invalid input type: "
                         + message.getClass());
             }
-            
+
             if (hasComms) {
                 break;
             }

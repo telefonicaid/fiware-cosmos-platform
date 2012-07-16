@@ -21,7 +21,7 @@ public class LookupParserMapper extends Mapper<
     private LookupParser parser;
     private Text outKey;
     private TypedProtobufWritable<Lookup> outValue;
-    
+
     @Override
     protected void setup(Context context) {
         this.parser = new LookupParser(
@@ -29,7 +29,7 @@ public class LookupParserMapper extends Mapper<
         this.outKey = new Text();
         this.outValue = new TypedProtobufWritable<Lookup>();
     }
-    
+
     @Override
     protected void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {

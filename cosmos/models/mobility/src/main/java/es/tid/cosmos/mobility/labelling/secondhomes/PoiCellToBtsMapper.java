@@ -11,7 +11,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 /**
  * Input: <Long, Cell>
  * Output: <Long, Cell>
- * 
+ *
  * @author dmicol
  */
 class PoiCellToBtsMapper extends Mapper<LongWritable,

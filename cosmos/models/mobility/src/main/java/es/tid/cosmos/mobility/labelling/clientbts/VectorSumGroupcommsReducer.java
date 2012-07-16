@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <NodeBts, Int>
  * Output: <TwoInt, BtsCounter>
- * 
+ *
  * @author dmicol
  */
 class VectorSumGroupcommsReducer extends Reducer<
@@ -30,7 +30,7 @@ class VectorSumGroupcommsReducer extends Reducer<
         final NodeBts nodeBts = key.get();
         ProtobufWritable<TwoInt> twoInt = TwoIntUtil.createAndWrap(
                 nodeBts.getUserId(), nodeBts.getBts());
-        
+
         int ncoms = 0;
         for (TypedProtobufWritable<Int> value : values) {
             ncoms += value.get().getValue();

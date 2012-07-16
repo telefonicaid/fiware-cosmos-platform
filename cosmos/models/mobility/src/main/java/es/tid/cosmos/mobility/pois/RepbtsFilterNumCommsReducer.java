@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBtsDay;
 /**
  * Input: <Long, Cdr|NodeBsDay>
  * Output: <Long, Int>
- * 
+ *
  * @author dmicol
  */
 class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
@@ -23,7 +23,7 @@ class RepbtsFilterNumCommsReducer extends Reducer<LongWritable,
 
     private int minTotalCalls;
     private int maxTotalCalls;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {

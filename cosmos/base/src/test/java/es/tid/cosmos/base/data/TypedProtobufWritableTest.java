@@ -58,7 +58,7 @@ public class TypedProtobufWritableTest {
         assertEquals(groups.get(Float64.class).size(), 3);
         assertEquals(groups.get(Message.class).size(), 0);
     }
-    
+
     @Test(expected=IllegalStateException.class)
     public void testGroupByClassFail() {
         List<TypedProtobufWritable<Message>> list =

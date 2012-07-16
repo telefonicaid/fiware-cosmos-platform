@@ -12,7 +12,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, Null>
  * Output: <TwoInt, Null>
- * 
+ *
  * @author dmicol
  */
 class PoiDeleteSechomeDuplicateReducer extends Reducer<

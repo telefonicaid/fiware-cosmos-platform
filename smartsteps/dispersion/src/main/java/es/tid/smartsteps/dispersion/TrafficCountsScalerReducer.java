@@ -20,16 +20,16 @@ import es.tid.smartsteps.dispersion.data.generated.LookupProtocol.Lookup;
 class TrafficCountsScalerReducer extends Reducer<
         Text, TypedProtobufWritable<Message>,
         Text, TypedProtobufWritable<TrafficCounts>> {
-    
+
     private Text outKey;
     private TypedProtobufWritable<TrafficCounts> scaledCounts;
-    
+
     @Override
     protected void setup(Context context) {
         this.outKey = new Text();
         this.scaledCounts = new TypedProtobufWritable<TrafficCounts>();
     }
- 
+
     @Override
     protected void reduce(Text key,
             Iterable<TypedProtobufWritable<Message>> values, Context context)
@@ -46,7 +46,7 @@ class TrafficCountsScalerReducer extends Reducer<
             context.getCounter(Counters.ENTRIES_IN_LOOKUP)
                    .increment(counts.size());
         }
-        
+
         for (TrafficCounts count : counts) {
             for (Lookup lookup : lookups) {
                 final double proportion = lookup.getProportion();
@@ -67,7 +67,7 @@ class TrafficCountsScalerReducer extends Reducer<
             }
         }
     }
-    
+
     private static Counts scaleCounts(Counts a, double proportion) {
         Counts.Builder scaledCounts = Counts.newBuilder(a);
         for (int i = 0; i < scaledCounts.getValuesCount(); i++) {

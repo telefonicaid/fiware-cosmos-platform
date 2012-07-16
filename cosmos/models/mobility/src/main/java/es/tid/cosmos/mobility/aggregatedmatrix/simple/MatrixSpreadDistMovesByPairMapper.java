@@ -13,7 +13,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinRange;
 /**
  * Input: <ItinRange, Double>
  * Output: <ItinRange, Double>
- * 
+ *
  * @author dmicol
  */
 class MatrixSpreadDistMovesByPairMapper extends Mapper<

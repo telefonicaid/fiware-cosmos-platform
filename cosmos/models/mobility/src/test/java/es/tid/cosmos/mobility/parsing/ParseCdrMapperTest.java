@@ -23,7 +23,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 public class ParseCdrMapperTest extends ConfiguredTest {
     private MapDriver<LongWritable, Text, LongWritable,
             TypedProtobufWritable<Cdr>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new MapDriver<LongWritable, Text, LongWritable,

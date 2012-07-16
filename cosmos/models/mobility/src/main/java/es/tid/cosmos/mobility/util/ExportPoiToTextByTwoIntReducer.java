@@ -23,7 +23,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class ExportPoiToTextByTwoIntReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>, NullWritable, Text> {
     private String separator;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -31,7 +31,7 @@ public class ExportPoiToTextByTwoIntReducer extends Reducer<
                 getConfiguration());
         this.separator = conf.getDataSeparator();
     }
-    
+
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<TypedProtobufWritable<Poi>> values, Context context)

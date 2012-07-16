@@ -70,7 +70,7 @@ public class RunnerTest {
         null,
         null,
     };
-    
+
     private static void testRunner(Class runnerClazz, Class exportToTextClazz,
             boolean isDebug) throws Exception {
         Configuration conf = new Configuration();
@@ -102,19 +102,19 @@ public class RunnerTest {
             assertEquals(exportToText, isDebug);
         }
     }
-    
+
     private static void testRunners(boolean isDebug) throws Exception {
         assertEquals(RUNNER_CLASSES.length, EXPORT_TO_TEXT_CLASSES.length);
         for (int i = 0; i < RUNNER_CLASSES.length; i++) {
             testRunner(RUNNER_CLASSES[i], EXPORT_TO_TEXT_CLASSES[i], isDebug);
         }
     }
-    
+
     @Test
     public void testRunnersDebug() throws Exception {
         testRunners(true);
     }
-    
+
     @Test
     public void testRunnersNoDebug() throws Exception {
         testRunners(false);

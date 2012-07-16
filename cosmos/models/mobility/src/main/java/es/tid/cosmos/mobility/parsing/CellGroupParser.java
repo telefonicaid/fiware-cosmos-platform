@@ -11,7 +11,7 @@ public class CellGroupParser extends Parser {
     public CellGroupParser(String line, String separator) {
         super(line, separator);
     }
-    
+
     @Override
     public CellGroup parse() {
         try {

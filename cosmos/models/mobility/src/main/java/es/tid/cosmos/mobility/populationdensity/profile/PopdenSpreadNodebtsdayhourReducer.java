@@ -29,7 +29,7 @@ public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
     private static List<Cell> cells = null;
     private static final TypedProtobufWritable<Null> nullValue =
             new TypedProtobufWritable<Null>(Null.getDefaultInstance());
-    
+
     @Override
     protected void setup(Context context) throws IOException,
             InterruptedException {
@@ -39,7 +39,7 @@ public class PopdenSpreadNodebtsdayhourReducer extends Reducer<LongWritable,
             cells = CellsCatalogue.load(new Path(conf.get("cells")), conf);
         }
     }
-    
+
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Cdr>> values, Context context)

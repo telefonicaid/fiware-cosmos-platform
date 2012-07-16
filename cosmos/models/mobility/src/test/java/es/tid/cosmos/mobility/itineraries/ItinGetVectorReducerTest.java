@@ -28,7 +28,7 @@ public class ItinGetVectorReducerTest extends ConfiguredTest {
     private ReduceDriver<ProtobufWritable<ItinRange>,
             TypedProtobufWritable<ItinPercMove>, ProtobufWritable<ItinRange>,
             TypedProtobufWritable<ClusterVector>> instance;
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new ReduceDriver<ProtobufWritable<ItinRange>,

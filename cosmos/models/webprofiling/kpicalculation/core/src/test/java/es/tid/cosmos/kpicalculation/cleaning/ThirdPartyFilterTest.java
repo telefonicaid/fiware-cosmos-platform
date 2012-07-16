@@ -10,7 +10,7 @@ import es.tid.cosmos.kpicalculation.data.KpiCalculationCounter;
 
 /**
  * @author javierb
- * 
+ *
  */
 public class ThirdPartyFilterTest extends TestCase {
     private IKpiCalculationFilter filter;

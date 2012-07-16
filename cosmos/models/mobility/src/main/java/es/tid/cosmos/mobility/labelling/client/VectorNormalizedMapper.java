@@ -12,7 +12,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 /**
  * Input: <NodeBts, ClusterVector>
  * Output: <NodeBts, ClusterVector>
- * 
+ *
  * @author dmicol
  */
 public class VectorNormalizedMapper extends Mapper<ProtobufWritable<NodeBts>,

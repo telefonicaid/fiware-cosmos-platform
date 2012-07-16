@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <BtsCounter, Null>
  * Output: <NodeBts, TwoInt>
- * 
+ *
  * @author dmicol
  */
 class VectorSumComsBtsReducer extends Reducer<
@@ -30,7 +30,7 @@ class VectorSumComsBtsReducer extends Reducer<
         for (TypedProtobufWritable<Null> value : values) {
             valueCount++;
         }
-        
+
         key.setConverter(BtsCounter.class);
         final BtsCounter counter = key.get();
         ProtobufWritable<NodeBts> nodeBts = NodeBtsUtil.createAndWrap(

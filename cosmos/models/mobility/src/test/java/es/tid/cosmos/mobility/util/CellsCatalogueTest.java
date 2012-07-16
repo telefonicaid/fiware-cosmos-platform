@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
  * @author dmicol
  */
 public class CellsCatalogueTest {
-    
+
     @Test
     public void testLoadAndfilter() throws IOException {
         String text = "334305|2221436242|12|34|56|78\n"
@@ -29,7 +29,7 @@ public class CellsCatalogueTest {
         assertEquals(3359494L, cells.get(1).getCellId());
         assertEquals(3359495L, cells.get(2).getCellId());
         assertEquals(3359493L, cells.get(3).getCellId());
-        
+
         List<Cell> filteredCells = CellsCatalogue.filter(cells, 3359493L);
         assertEquals(2, filteredCells.size());
         for (Cell cell : filteredCells) {

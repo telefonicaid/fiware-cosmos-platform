@@ -25,14 +25,14 @@ class TrafficCountsJsonExporterReducer extends Reducer<
 
     private boolean shouldRoundResults;
     private Text outValue;
-    
+
     @Override
     protected void setup(Context context) {
         this.shouldRoundResults = context.getConfiguration().getBoolean(
                 Config.ROUND_RESULTS, false);
         this.outValue = new Text();
     }
-    
+
     @Override
     protected void reduce(Text key,
             Iterable<TypedProtobufWritable<TrafficCounts>> values,
@@ -43,7 +43,7 @@ class TrafficCountsJsonExporterReducer extends Reducer<
             context.write(NullWritable.get(), this.outValue);
         }
     }
-    
+
     private static JSONObject toJson(TrafficCounts counts, boolean shouldRound) {
         final JSONObject obj = new JSONObject();
         obj.put(TrafficCountsParser.CELLID_FIELD_NAME, counts.getCellId());
@@ -62,7 +62,7 @@ class TrafficCountsJsonExporterReducer extends Reducer<
         obj.put(TrafficCountsParser.POIS_FIELD_NAME, pois);
         return obj;
     }
-    
+
     private static JSONArray toJsonArray(List<Double> values,
                                          boolean shouldRound) {
         JSONArray array = new JSONArray();

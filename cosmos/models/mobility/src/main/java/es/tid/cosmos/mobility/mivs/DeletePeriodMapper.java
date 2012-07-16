@@ -13,7 +13,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TelMonth;
 /**
  * Input: <TelMonth, Cell>
  * Output: <TelMonth, Cell>
- * 
+ *
  * @author logc
  */
 class DeletePeriodMapper extends Mapper<

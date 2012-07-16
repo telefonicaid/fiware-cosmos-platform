@@ -22,7 +22,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 public class PopdenJoinNodeWithoutProfileReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<NodeBts>,
             ProtobufWritable<BtsProfile>, TypedProtobufWritable<Int>> instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<LongWritable, TypedProtobufWritable<NodeBts>,

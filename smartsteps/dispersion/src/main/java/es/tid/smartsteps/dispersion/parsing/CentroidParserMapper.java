@@ -21,7 +21,7 @@ public class CentroidParserMapper extends Mapper<
     private CentroidParser parser;
     private Text outKey;
     private TypedProtobufWritable<SOACentroid> outValue;
-    
+
     @Override
     protected void setup(Context context) {
         this.parser = new CentroidParser(
@@ -29,7 +29,7 @@ public class CentroidParserMapper extends Mapper<
         this.outKey = new Text();
         this.outValue = new TypedProtobufWritable<SOACentroid>();
     }
-    
+
     @Override
     protected void map(LongWritable key, Text value, Context context)
             throws IOException, InterruptedException {

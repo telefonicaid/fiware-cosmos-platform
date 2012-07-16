@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, DailyVector>
  * Output: <NodeBts, ClusterVector>
- * 
+ *
  * @author dmicol
  */
 public class VectorFuseNodeDaygroupReducer extends Reducer
@@ -32,7 +32,7 @@ public class VectorFuseNodeDaygroupReducer extends Reducer
             final DailyVector dailyVector = value.get();
             valueList.add(dailyVector);
         }
-        
+
         ClusterVector.Builder clusterVectorBuilder = ClusterVector.newBuilder();
         for (int group = 0; group < 4; group++) {
             boolean added = false;

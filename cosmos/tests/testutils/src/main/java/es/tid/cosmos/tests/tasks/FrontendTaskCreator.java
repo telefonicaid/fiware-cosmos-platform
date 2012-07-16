@@ -8,11 +8,11 @@ import es.tid.cosmos.tests.environment.Environment;
  */
 public class FrontendTaskCreator implements TaskCreator {
     private final Environment env;
-    
+
     public FrontendTaskCreator(Environment env) {
         this.env = env;
     }
-    
+
     @Override
     public Task createTask(String inputFilePath, String jarPath) {
         return new FrontEndTask(this.env, inputFilePath, jarPath);

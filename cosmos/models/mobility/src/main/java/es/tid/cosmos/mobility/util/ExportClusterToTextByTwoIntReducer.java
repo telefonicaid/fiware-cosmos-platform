@@ -17,14 +17,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, Cluster>
  * Output: <Null, Text>
- * 
+ *
  * @author dmicol
  */
 public class ExportClusterToTextByTwoIntReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<Cluster>, NullWritable,
         Text> {
     private String separator;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -32,7 +32,7 @@ public class ExportClusterToTextByTwoIntReducer extends Reducer<
                 getConfiguration());
         this.separator = conf.getDataSeparator();
     }
-    
+
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<TypedProtobufWritable<Cluster>> values, Context context)

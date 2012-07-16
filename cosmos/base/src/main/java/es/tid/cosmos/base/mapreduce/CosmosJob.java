@@ -81,7 +81,7 @@ public class CosmosJob extends Job implements CosmosWorkflow {
         }
         return job;
     }
-    
+
     public static <
             InputFormatClass extends InputFormat<InputKeyClass, InputValueClass>,
             MapperClass extends Mapper<InputKeyClass, InputValueClass,
@@ -131,7 +131,7 @@ public class CosmosJob extends Job implements CosmosWorkflow {
                 conf, jobName, inputFormat, null, reducer, numReduceTasks,
                 outputFormat);
     }
-    
+
     public static <
             InputFormatClass extends InputFormat<InputKeyClass, InputValueClass>,
             ReducerClass extends Reducer<InputKeyClass, InputValueClass,
@@ -208,9 +208,9 @@ public class CosmosJob extends Job implements CosmosWorkflow {
      * signals errors through JobExecutionException, so the return value will
      * never be false.
      *
-     * @param verbose print the progress to the user 
+     * @param verbose print the progress to the user
      * @return Always true
-     * @throws IOException thrown if the communication with the JobTracker is lost 
+     * @throws IOException thrown if the communication with the JobTracker is lost
      * @throws InterruptedException
      * @throws ClassNotFoundException
      * @throws JobExecutionException
@@ -221,7 +221,7 @@ public class CosmosJob extends Job implements CosmosWorkflow {
         this.submit(verbose);
         this.submittedThread.join();
         this.submittedThread.throwErrors();
-        
+
         if (!this.callSuperWaitForCompletion(verbose)) {
             throw new JobExecutionException("Job failed: " + this.getJobName());
         }

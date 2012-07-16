@@ -14,7 +14,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <ItinRange, ClusterVector>
  * Output: <TwoInt, ClusterVector>
- * 
+ *
  * @author dmicol
  */
 class MatrixSpreadVectorByPairMapper extends Mapper<

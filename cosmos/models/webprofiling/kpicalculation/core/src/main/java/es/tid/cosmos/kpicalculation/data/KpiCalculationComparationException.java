@@ -5,7 +5,7 @@ import es.tid.cosmos.kpicalculation.data.KpiCalculationCounter;
 /**
  * Extends RuntimeException and allows to notify mappers about errors in the
  * input data received.
- * 
+ *
  * @author javierb
  */
 public class KpiCalculationComparationException extends RuntimeException {

@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
  *
  * Input: <Long, Text>
  * Output: <Long, Cdr>
- * 
+ *
  * @author dmicol, sortega
  */
 public class ParseCdrMapper extends Mapper<LongWritable, Text, LongWritable,

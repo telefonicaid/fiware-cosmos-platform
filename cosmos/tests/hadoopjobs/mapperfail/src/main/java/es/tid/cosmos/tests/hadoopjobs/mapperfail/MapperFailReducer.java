@@ -14,7 +14,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 public class MapperFailReducer
         extends Reducer<Text, IntWritable, Text, ArrayWritable> {
     @Override
-    public void reduce(Text key, Iterable<IntWritable> values, Context context) 
+    public void reduce(Text key, Iterable<IntWritable> values, Context context)
             throws IOException, InterruptedException {
         // No body since mapper will always fail
     }

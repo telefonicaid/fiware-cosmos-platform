@@ -18,14 +18,14 @@ import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 public class AdjCountIndexesReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Int64>, LongWritable,
             TypedProtobufWritable<Null>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Int64>,
                 LongWritable, TypedProtobufWritable<Null>>(
                         new AdjCountIndexesReducer());
     }
-    
+
     @Test
     public void testReduce() {
         this.driver

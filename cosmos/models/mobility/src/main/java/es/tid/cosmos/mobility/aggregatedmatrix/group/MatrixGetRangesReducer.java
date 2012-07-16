@@ -33,7 +33,7 @@ class MatrixGetRangesReducer extends Reducer<LongWritable,
             MatrixRange.Builder moveRange = MatrixRange.newBuilder();
             MatrixRange.Builder moveRangeFinal;
             double percMoves;
-            
+
             moveRange.setPoiSrc(source.getBts());
             moveRange.setPoiTgt(target.getBts());
             moveRange.setNode(moveRange.getPoiSrc() * moveRange.getPoiTgt());

@@ -14,12 +14,12 @@ public class WorkflowList extends LinkedList<CosmosWorkflow>
         implements CosmosWorkflow {
     private volatile ExceptionedThread submittedThread = null;
     private WorkflowList dependencies = null;
-    
+
     /**
      * This will call submit on all workflows in the list and then call
      * waitForCompletion on each of them.
-     * @param verbose print the progress to the user 
-     * @throws IOException thrown if the communication with the JobTracker is lost 
+     * @param verbose print the progress to the user
+     * @throws IOException thrown if the communication with the JobTracker is lost
      * @throws InterruptedException
      * @throws ClassNotFoundException
      */
@@ -36,7 +36,7 @@ public class WorkflowList extends LinkedList<CosmosWorkflow>
     public void submit() {
         this.submit(true);
     }
-    
+
     private synchronized void submit(final boolean verbose) {
         if (this.submittedThread != null) {
             return;
@@ -49,7 +49,7 @@ public class WorkflowList extends LinkedList<CosmosWorkflow>
                 try {
                     if (WorkflowList.this.dependencies != null) {
                         WorkflowList.this.dependencies.waitForCompletion(verbose);
-                    } 
+                    }
                     for (CosmosWorkflow wf : WorkflowList.this) {
                         wf.submit();
                     }
@@ -60,11 +60,11 @@ public class WorkflowList extends LinkedList<CosmosWorkflow>
                     this.setException(ex);
                 }
             }
-        };     
+        };
 
         this.submittedThread.start();
     }
-    
+
     @Override
     public void addDependentWorkflow(CosmosWorkflow wf) {
         if (this.submittedThread != null) {

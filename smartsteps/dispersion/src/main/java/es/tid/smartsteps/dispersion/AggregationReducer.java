@@ -20,13 +20,13 @@ class AggregationReducer extends Reducer<
 
     private Text outKey;
     private TypedProtobufWritable<TrafficCounts> aggregatedCounts;
-    
+
     @Override
     protected void setup(Context context) {
         this.outKey = new Text();
         this.aggregatedCounts = new TypedProtobufWritable<TrafficCounts>();
     }
-    
+
     @Override
     protected void reduce(BinaryKey key,
             Iterable<TypedProtobufWritable<TrafficCounts>> values,
@@ -53,7 +53,7 @@ class AggregationReducer extends Reducer<
         this.aggregatedCounts.set(aggregatedCountsBuilder.build());
         context.write(this.outKey, this.aggregatedCounts);
     }
-    
+
     private static Counts aggregateCounts(Counts a, Counts b) {
         if (!a.getName().equals(b.getName()) ||
                 a.getValuesCount() != b.getValuesCount()) {

@@ -18,22 +18,22 @@ public final class TwoIntUtil {
                 .setNum2(num2)
                 .build();
     }
-    
+
     public static ProtobufWritable<TwoInt> wrap(TwoInt obj) {
         ProtobufWritable<TwoInt> wrapper =
                 ProtobufWritable.newInstance(TwoInt.class);
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<TwoInt> createAndWrap(long num1, long num2) {
         return wrap(create(num1, num2));
     }
-    
+
     public static long getPartition(TwoInt obj, long maxNumPartitions) {
         return (obj.getNum1() % maxNumPartitions);
     }
-    
+
     public static String toString(TwoInt obj, String separator) {
         return (obj.getNum1() + separator + obj.getNum2());
     }

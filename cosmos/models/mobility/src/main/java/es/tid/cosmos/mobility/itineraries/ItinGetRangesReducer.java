@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 /**
  * Input: <Long, ItinMovement>
  * Output: <ItinRange, Double>
- * 
+ *
  * @author dmicol
  */
 public class ItinGetRangesReducer extends Reducer<LongWritable,
@@ -63,7 +63,7 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
                 moveRangeFinal = moveRange.clone();
                 context.write(ItinRangeUtil.wrap(moveRangeFinal.build()),
                               TypedProtobufWritable.create(percMoves));
-                
+
                 // Comunication in target hour
                 moveRange.setRange(target.getTime().getHour());
                 moveRange.setGroup(target.getDate().getWeekday());
@@ -71,7 +71,7 @@ public class ItinGetRangesReducer extends Reducer<LongWritable,
                 moveRangeFinal = moveRange.clone();
                 context.write(ItinRangeUtil.wrap(moveRangeFinal.build()),
                               TypedProtobufWritable.create(percMoves));
-                
+
                 // Fill the intermediate hours
                 for (int i = 1; i < diff; i++) {
                     int range = source.getTime().getHour() + i;

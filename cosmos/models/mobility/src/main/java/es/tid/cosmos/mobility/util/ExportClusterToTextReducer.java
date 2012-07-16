@@ -15,13 +15,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cluster;
 /**
  * Input: <Long, Cluster>
  * Output: <Null, Text>
- * 
+ *
  * @author dmicol
  */
 public class ExportClusterToTextReducer extends Reducer<
         LongWritable, TypedProtobufWritable<Cluster>, NullWritable, Text> {
     private String separator;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -29,7 +29,7 @@ public class ExportClusterToTextReducer extends Reducer<
                 getConfiguration());
         this.separator = conf.getDataSeparator();
     }
-    
+
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Cluster>> values, Context context)

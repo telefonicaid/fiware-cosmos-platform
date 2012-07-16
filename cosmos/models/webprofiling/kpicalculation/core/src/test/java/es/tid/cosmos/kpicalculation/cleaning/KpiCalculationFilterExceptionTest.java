@@ -13,7 +13,7 @@ import es.tid.cosmos.kpicalculation.data.KpiCalculationCounter;
  */
 public class KpiCalculationFilterExceptionTest {
     private KpiCalculationFilterException instance;
-    
+
     @Test
     public void testConstructorWithCause() {
         String message = "Without cause exception";
@@ -25,7 +25,7 @@ public class KpiCalculationFilterExceptionTest {
         assertEquals(KpiCalculationCounter.LINE_FILTERED_3RDPARTY,
                      this.instance.getCounter());
     }
-    
+
     @Test
     public void testConstructorWithoutCause() {
         String message = "Without cause exception";

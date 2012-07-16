@@ -27,7 +27,7 @@ public class ItinFilterPoisReducerTest {
     private ReduceDriver<ProtobufWritable<TwoInt>,
             TypedProtobufWritable<Message>, LongWritable,
             TypedProtobufWritable<ItinTime>> instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<TwoInt>,

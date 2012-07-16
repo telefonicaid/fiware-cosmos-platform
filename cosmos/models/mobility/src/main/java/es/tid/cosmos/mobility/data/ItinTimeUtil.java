@@ -28,7 +28,7 @@ public final class ItinTimeUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<ItinTime> createAndWrap(Date date, Time time,
                                                            long bts) {
         return wrap(create(date, time, bts));

@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cell;
 public class PoiCellToBtsMapperTest {
     private MapDriver<LongWritable, TypedProtobufWritable<Cell>, LongWritable,
             TypedProtobufWritable<Cell>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new MapDriver<LongWritable, TypedProtobufWritable<Cell>,

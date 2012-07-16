@@ -42,9 +42,9 @@ public class MongoDBExporterReducerTest {
                 .run();
         assertEquals(1, results.size());
         Pair<LongWritable, BSONWritable> result = results.get(0);
-        assertEquals("abc", 
+        assertEquals("abc",
                      result.getSecond().get("user").toString());
-        assertEquals("http", 
+        assertEquals("http",
                      result.getSecond().get("url").toString());
         assertEquals(9L, result.getSecond().get("count"));
     }

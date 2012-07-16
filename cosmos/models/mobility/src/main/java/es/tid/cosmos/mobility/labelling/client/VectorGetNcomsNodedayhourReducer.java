@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <NodeBts, Null>
  * Output: <NodeBts, TwoInt>
- * 
+ *
  * @author dmicol
  */
 class VectorGetNcomsNodedayhourReducer extends Reducer<
@@ -29,7 +29,7 @@ class VectorGetNcomsNodedayhourReducer extends Reducer<
         for (TypedProtobufWritable<Null> value : values) {
             valueCount++;
         }
-        
+
         key.setConverter(NodeBts.class);
         final NodeBts bts = key.get();
         ProtobufWritable<NodeBts> outputBts = NodeBtsUtil.createAndWrap(

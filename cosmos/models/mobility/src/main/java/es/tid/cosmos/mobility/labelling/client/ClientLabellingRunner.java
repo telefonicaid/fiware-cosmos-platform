@@ -23,7 +23,7 @@ import es.tid.cosmos.mobility.util.ExportClusterToTextReducer;
 public final class ClientLabellingRunner {
     private ClientLabellingRunner() {
     }
-    
+
     public static CosmosWorkflow run(Path cdrsMobPath,
             Path clientsInfoFilteredPath, Path centroidsPath,
             Path vectorClientClusterPath, Path tmpDirPath, boolean isDebug,
@@ -31,7 +31,7 @@ public final class ClientLabellingRunner {
                                        ClassNotFoundException {
         WorkflowList wfList = new WorkflowList();
         FileSystem fs = FileSystem.get(conf);
-        
+
         Path cdrsFilteredPath = new Path(tmpDirPath, "cdrs_filtered");
         CosmosJob cdrsFilteredJob = CosmosJob.createReduceJob(conf,
                 "VectorFiltClients",
@@ -43,7 +43,7 @@ public final class ClientLabellingRunner {
         FileOutputFormat.setOutputPath(cdrsFilteredJob, cdrsFilteredPath);
         cdrsFilteredJob.setDeleteOutputOnExit(!isDebug);
         wfList.add(cdrsFilteredJob);
-        
+
         Path vectorSpreadNodedayhourPath = new Path(tmpDirPath,
                                                     "clients_info_spread");
         CosmosJob vectorSpreadNodedayhourJob = CosmosJob.createReduceJob(conf,

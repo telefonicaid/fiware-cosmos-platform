@@ -14,7 +14,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <Long, TwoInt>
  * Output: <Long, TwoInt>
- * 
+ *
  * @author dmicol
  */
 class AdjSwapPoiIdSt2Reducer extends Reducer<LongWritable,
@@ -40,7 +40,7 @@ class AdjSwapPoiIdSt2Reducer extends Reducer<LongWritable,
                             + record.getInputId());
             }
         }
-        
+
         for (TwoInt pairPois : pairPoisList) {
             TwoInt.Builder outputPairPois = TwoInt.newBuilder(pairPois);
             if (lastPairIndex != null) {

@@ -32,7 +32,7 @@ public class ItinGetRangesReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<ItinMovement>,
             ProtobufWritable<ItinRange>, TypedProtobufWritable<Float64>>
             instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<LongWritable,

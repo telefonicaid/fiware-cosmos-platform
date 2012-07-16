@@ -87,7 +87,7 @@ public class IndividualProfileMain extends Configured implements Tool {
         TextInputFormat.setInputPaths(exTextJob, this.profilePath);
         FileOutputFormat.setOutputPath(exTextJob, textOutputPath);
         exTextJob.addDependentWorkflow(upJob);
-        
+
         CosmosJob exMongoJob = CosmosJob.createReduceJob(this.getConf(),
                 "MongoDBExporter",
                 SequenceFileInputFormat.class,
@@ -96,7 +96,7 @@ public class IndividualProfileMain extends Configured implements Tool {
         TextInputFormat.setInputPaths(exMongoJob, this.profilePath);
         MongoConfigUtil.setOutputURI(exMongoJob.getConfiguration(), mongoUrl);
         exMongoJob.addDependentWorkflow(upJob);
-        
+
         WorkflowList wfList = new WorkflowList();
         wfList.add(exTextJob);
         wfList.add(exMongoJob);

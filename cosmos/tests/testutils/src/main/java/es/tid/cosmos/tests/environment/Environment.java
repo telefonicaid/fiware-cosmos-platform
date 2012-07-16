@@ -12,13 +12,13 @@ import static org.testng.Assert.fail;
 public enum Environment {
     Test(Environment.TEST_CONFIG_FILE),
     Production(Environment.PRODUCTION_CONFIG_FILE);
-    
+
     private static final String TEST_CONFIG_FILE = "/test.properties";
     private static final String PRODUCTION_CONFIG_FILE
         = "/production.properties";
-    
+
     private Properties properties;
-    
+
     Environment(String configFilePath) {
         this.properties = new Properties();
         try {
@@ -28,7 +28,7 @@ public enum Environment {
             fail("IOException while loading configuration: " + ex.toString());
         }
     }
-    
+
     public String getProperty(EnvironmentSetting setting) {
         return this.properties.getProperty(setting.toString());
     }

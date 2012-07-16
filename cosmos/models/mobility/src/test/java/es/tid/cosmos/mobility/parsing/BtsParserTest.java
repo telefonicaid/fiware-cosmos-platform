@@ -10,7 +10,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Bts;
  * @author sortega
  */
 public class BtsParserTest {
-    
+
     @Test
     public void testParse() throws Exception {
         BtsParser parser = new BtsParser("173600|173601|711.862|66737", "|");

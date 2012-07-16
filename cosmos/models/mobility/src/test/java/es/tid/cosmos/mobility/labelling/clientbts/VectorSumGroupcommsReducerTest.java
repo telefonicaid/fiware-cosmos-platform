@@ -26,7 +26,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class VectorSumGroupcommsReducerTest {
     private ReduceDriver<ProtobufWritable<NodeBts>, TypedProtobufWritable<Int>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<BtsCounter>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<NodeBts>,

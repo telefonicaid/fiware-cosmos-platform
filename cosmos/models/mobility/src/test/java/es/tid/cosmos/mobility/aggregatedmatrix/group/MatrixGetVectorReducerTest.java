@@ -28,7 +28,7 @@ public class MatrixGetVectorReducerTest {
     private ReduceDriver<ProtobufWritable<ItinRange>,
             TypedProtobufWritable<ItinPercMove>, ProtobufWritable<TwoInt>,
             TypedProtobufWritable<ClusterVector>> instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<ItinRange>,

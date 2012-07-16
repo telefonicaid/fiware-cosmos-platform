@@ -22,7 +22,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class RepbtsGetRepresentativeBtsMapperTest extends ConfiguredTest {
     private MapDriver<LongWritable, TypedProtobufWritable<BtsCounter>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<BtsCounter>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new MapDriver<LongWritable, TypedProtobufWritable<BtsCounter>,

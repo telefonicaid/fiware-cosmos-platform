@@ -23,7 +23,7 @@ import es.tid.cosmos.base.data.generated.BaseTypes.Null;
 public class PopdenDeleteDuplicatesReducerTest {
     private ReduceDriver<ProtobufWritable<NodeBtsDate>, TypedProtobufWritable<Null>,
             LongWritable, TypedProtobufWritable<NodeBts>> instance;
-    
+
     @Before
     public void setUp() {
         this.instance = new ReduceDriver<ProtobufWritable<NodeBtsDate>,

@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class PoiSpreadNodebtsVectorMapperTest {
     private MapDriver<ProtobufWritable<NodeBts>, TypedProtobufWritable<ClusterVector>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<ClusterVector>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new MapDriver<ProtobufWritable<NodeBts>,
@@ -27,7 +27,7 @@ public class PoiSpreadNodebtsVectorMapperTest {
                 TypedProtobufWritable<ClusterVector>>(
                         new PoiSpreadNodebtsVectorMapper());
     }
-    
+
     @Test
     public void testMap() {
         final ProtobufWritable<NodeBts> inputKey = NodeBtsUtil.createAndWrap(

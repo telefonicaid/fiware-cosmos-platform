@@ -12,7 +12,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <Long, TwoInt>
  * Output: <Long, TwoInt>
- * 
+ *
  * @author dmicol
  */
 class AdjPutMaxIdReducer extends Reducer<LongWritable,

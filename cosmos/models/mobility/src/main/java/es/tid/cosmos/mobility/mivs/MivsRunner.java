@@ -25,7 +25,7 @@ public final class MivsRunner {
     public static CosmosWorkflow run(Path viTelmonthBts, Path viClientFuseAcc,
             Path tmpDir, boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
-        WorkflowList wfList = new WorkflowList();       
+        WorkflowList wfList = new WorkflowList();
         Path viTelmonthMobvars = new Path(tmpDir, "vi_telmonth_mobvars");
         CosmosJob viTelmonthMobvarsJob;
         {
@@ -39,7 +39,7 @@ public final class MivsRunner {
             viTelmonthMobvarsJob.setDeleteOutputOnExit(!isDebug);
             wfList.add(viTelmonthMobvarsJob);
         }
-        
+
         Path viClientFuse = new Path(tmpDir, "vi_client_fuse");
         CosmosJob viClientFuseJob;
         {
@@ -124,7 +124,7 @@ public final class MivsRunner {
                 wfList.add(job);
             }
         }
-        
+
         return wfList;
     }
 }

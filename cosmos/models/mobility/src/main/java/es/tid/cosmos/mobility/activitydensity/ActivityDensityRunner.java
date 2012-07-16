@@ -21,7 +21,7 @@ import es.tid.cosmos.base.mapreduce.WorkflowList;
 public final class ActivityDensityRunner {
     private ActivityDensityRunner() {
     }
-    
+
     public static CosmosWorkflow run(Path clientProfileMobPath,
             Path populationDensityOutPath, Path tmpDirPath, boolean isDebug,
             Configuration conf)
@@ -70,7 +70,7 @@ public final class ActivityDensityRunner {
         FileOutputFormat.setOutputPath(job, populationDensityOutPath);
         job.addDependentWorkflow(populationDensityJob);
         wfList.add(job);
-        
+
         return wfList;
     }
 }

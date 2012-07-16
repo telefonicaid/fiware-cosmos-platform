@@ -30,10 +30,10 @@ public class AggregationReducerTest extends TrafficCountsBasedTest {
     private TrafficCountsParser parser;
     private BinaryKey key;
     private TypedProtobufWritable<TrafficCounts> value;
-    
+
     public AggregationReducerTest() throws IOException {
     }
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new ReduceDriver<

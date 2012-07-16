@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 /**
  * Input: <Long, MobViMobVars>
  * Output: <Null, Text>
- * 
+ *
  * @author logc
  */
 class IndVarsOutReducer extends Reducer<LongWritable,
@@ -27,7 +27,7 @@ class IndVarsOutReducer extends Reducer<LongWritable,
     private static final int LAST_MONTH = 6;
 
     private String separator;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -35,7 +35,7 @@ class IndVarsOutReducer extends Reducer<LongWritable,
                 getConfiguration());
         this.separator = conf.getDataSeparator();
     }
-    
+
     @Override
     public void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<MobViMobVars>> values,

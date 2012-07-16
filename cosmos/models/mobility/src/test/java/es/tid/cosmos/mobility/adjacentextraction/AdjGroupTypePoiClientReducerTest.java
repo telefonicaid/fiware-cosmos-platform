@@ -24,14 +24,14 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class AdjGroupTypePoiClientReducerTest {
     private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<PoiNew>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<TwoInt>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<PoiNew>, ProtobufWritable<TwoInt>,
                 TypedProtobufWritable<TwoInt>>(new AdjGroupTypePoiClientReducer());
     }
-    
+
     @Test
     public void testSomeMethod() throws IOException {
         PoiNew pn1 = PoiNewUtil.create(1, 2L, 3L, 4, 1);

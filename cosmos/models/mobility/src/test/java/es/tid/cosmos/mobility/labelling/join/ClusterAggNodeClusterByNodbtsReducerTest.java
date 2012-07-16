@@ -23,7 +23,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class ClusterAggNodeClusterByNodbtsReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<Poi>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,

@@ -33,10 +33,10 @@ public class CentroidJoinerMapperTest extends TrafficCountsBasedTest {
     private Text key;
     private TypedProtobufWritable<Message> countsValue;
     private TypedProtobufWritable<Message> centroidValue;
-    
+
     public CentroidJoinerMapperTest() throws IOException {
     }
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new MapDriver<

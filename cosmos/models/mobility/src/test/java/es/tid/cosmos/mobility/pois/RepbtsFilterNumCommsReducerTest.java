@@ -23,7 +23,7 @@ public class RepbtsFilterNumCommsReducerTest extends ConfiguredTest {
 
     private ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
             LongWritable, TypedProtobufWritable<Int>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable,
@@ -44,7 +44,7 @@ public class RepbtsFilterNumCommsReducerTest extends ConfiguredTest {
                 .withInput(key, asList(cdr, nodeBtsDay))
                 .runTest();
     }
-    
+
     @Test
     public void testBetweenThresholds() throws Exception {
         final LongWritable key = new LongWritable(57L);
@@ -71,7 +71,7 @@ public class RepbtsFilterNumCommsReducerTest extends ConfiguredTest {
                 .withInput(key, asList(cdr, nodeBtsDay, cdr, cdr))
                 .runTest();
     }
-    
+
     @Test
     public void testNoCommsInfo() {
         final LongWritable key = new LongWritable(57L);

@@ -25,14 +25,14 @@ import es.tid.cosmos.mobility.util.ExportClusterToTextReducer;
 public final class BtsLabellingRunner {
     private BtsLabellingRunner() {
     }
-    
+
     public static CosmosWorkflow run(Path btsCommsPath, Path btsComareaPath,
             Path centroidsPath, Path vectorBtsClusterPath, Path tmpDirPath,
             boolean isDebug, Configuration conf) throws IOException,
                                                         InterruptedException,
                                                         ClassNotFoundException {
         WorkflowList wfList = new WorkflowList();
-        
+
         Path btsCountsPath = new Path(tmpDirPath, "bts_counts");
         CosmosJob btsCountsJob = CosmosJob.createMapJob(conf, "VectorFilterBts",
                 SequenceFileInputFormat.class,
@@ -135,7 +135,7 @@ public final class BtsLabellingRunner {
                 wfList.add(job);
             }
         }
-        
+
         return wfList;
     }
 }

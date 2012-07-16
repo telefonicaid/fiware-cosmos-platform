@@ -23,7 +23,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class ClusterJoinPotPoiLabelReducerTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<Null>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
@@ -49,7 +49,7 @@ public class ClusterJoinPotPoiLabelReducerTest {
                 .withOutput(outKey, outValue)
                 .runTest();
     }
-    
+
     @Test
     public void shouldProduceTwoOutputs() {
         final LongWritable key = new LongWritable(57L);

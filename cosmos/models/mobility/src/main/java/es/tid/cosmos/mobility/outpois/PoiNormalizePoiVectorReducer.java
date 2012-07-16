@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <TwoInt, Cluster>
  * Output: <TwoInt, Cluster>
- * 
+ *
  * @author dmicol
  */
 class PoiNormalizePoiVectorReducer extends Reducer<

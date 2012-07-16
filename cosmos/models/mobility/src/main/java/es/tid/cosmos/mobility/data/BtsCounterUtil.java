@@ -28,12 +28,12 @@ public final class BtsCounterUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<BtsCounter> createAndWrap(long bts,
             int weekday, int range, int count) {
         return wrap(create(bts, weekday, range, count));
     }
-    
+
     public static String toString(BtsCounter obj, String separator) {
         return (obj.getBts() + separator + obj.getWeekday() + separator +
                 obj.getRange() + separator + obj.getCount());

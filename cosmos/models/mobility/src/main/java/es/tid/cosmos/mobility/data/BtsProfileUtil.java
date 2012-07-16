@@ -28,7 +28,7 @@ public final class BtsProfileUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<BtsProfile> createAndWrap(long bts,
             int profile, int wday, int hour) {
         return wrap(create(bts, profile, wday, hour));

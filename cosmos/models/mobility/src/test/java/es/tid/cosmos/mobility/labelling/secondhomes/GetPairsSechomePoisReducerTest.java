@@ -24,7 +24,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class GetPairsSechomePoisReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<PoiPos>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<Int64>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<PoiPos>,
@@ -62,7 +62,7 @@ public class GetPairsSechomePoisReducerTest extends ConfiguredTest {
                 .withInput(key, asList(value1, value2))
                 .runTest();
     }
-    
+
     @Test
     public void shouldNotProduceOutputDueToDistanceOneBeingZero() {
         final LongWritable key = new LongWritable(57L);

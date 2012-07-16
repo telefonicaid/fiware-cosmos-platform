@@ -22,7 +22,7 @@ import es.tid.cosmos.mobility.aggregatedmatrix.simple.MatrixGetOutReducer;
 public class AggregatedMatrixGroupRunner {
     private AggregatedMatrixGroupRunner() {
     }
-    
+
     public static CosmosWorkflow run(Path cdrsInfoPath, Path cellsGroupPath,
             Path matrixPairGroupTxtPath, Path tmpDirPath, boolean isDebug,
             Configuration conf) throws IOException, InterruptedException,
@@ -41,7 +41,7 @@ public class AggregatedMatrixGroupRunner {
                                        mtxClientstaTimePath);
         mtxClientstaTimeJob.setDeleteOutputOnExit(!isDebug);
         wfList.add(mtxClientstaTimeJob);
-        
+
         Path mtxClientMovesPath = new Path(tmpDirPath, "mtx_client_moves");
         CosmosJob mtxClientMovesJob = CosmosJob.createReduceJob(conf,
                 "MatrixMoveClient",
@@ -53,7 +53,7 @@ public class AggregatedMatrixGroupRunner {
         mtxClientMovesJob.setDeleteOutputOnExit(!isDebug);
         mtxClientMovesJob.addDependentWorkflow(mtxClientstaTimeJob);
         wfList.add(mtxClientMovesJob);
-        
+
         Path mtxClientMovesRangesPath = new Path(tmpDirPath,
                                                  "mtx_client_moves_ranges");
         CosmosJob mtxClientMovesRangesJob = CosmosJob.createReduceJob(conf,
@@ -68,7 +68,7 @@ public class AggregatedMatrixGroupRunner {
         mtxClientMovesRangesJob.setDeleteOutputOnExit(!isDebug);
         mtxClientMovesRangesJob.addDependentWorkflow(mtxClientMovesJob);
         wfList.add(mtxClientMovesRangesJob);
-        
+
         Path mtxGroupMovesCountPath = new Path(tmpDirPath,
                                                "mtx_group_moves_count");
         CosmosJob mtxGroupMovesCountJob = CosmosJob.createReduceJob(conf,
@@ -110,7 +110,7 @@ public class AggregatedMatrixGroupRunner {
             job.addDependentWorkflow(mtxGroupMovesVectorBtsJob);
             wfList.add(job);
         }
-        
+
         return wfList;
     }
 }

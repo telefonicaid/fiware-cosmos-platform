@@ -16,7 +16,7 @@ public class PrimePrintMapper
     public static final Text KEY_COUNT = new Text("numprimes");
     public static final Text KEY_LIST = new Text("prime_list");
     private static final IntWritable ONE = new IntWritable(1);
-    
+
     private static boolean isPrime(int num) {
         int div = 2;
         while(div < num && num % div != 0) {
@@ -24,7 +24,7 @@ public class PrimePrintMapper
         }
         return div == num;
     }
-    
+
     @Override
     public void map(LongWritable keyin, Text value, Context context)
             throws IOException, InterruptedException {

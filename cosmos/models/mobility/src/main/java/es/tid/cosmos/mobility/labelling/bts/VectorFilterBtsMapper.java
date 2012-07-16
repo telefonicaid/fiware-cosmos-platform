@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <Long, TwoInt>
  * Output: <BtsCounter, Null>
- * 
+ *
  * @author dmicol
  */
 class VectorFilterBtsMapper extends Mapper<LongWritable,

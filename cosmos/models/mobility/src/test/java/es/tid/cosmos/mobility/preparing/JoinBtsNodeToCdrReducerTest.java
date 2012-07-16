@@ -41,7 +41,7 @@ public class JoinBtsNodeToCdrReducerTest extends ConfiguredTest {
     private List<Cell> cells;
     private ReduceDriver<LongWritable, TypedProtobufWritable<Cdr>, LongWritable,
             TypedProtobufWritable<Cdr>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.cells = new LinkedList<Cell>();
@@ -78,7 +78,7 @@ public class JoinBtsNodeToCdrReducerTest extends ConfiguredTest {
         assertNotNull(res);
         assertEquals(0, res.size());
     }
-    
+
     @Test
     public void testNonEmptyOutput() throws IOException {
         List<Cell> filteredCells = new LinkedList<Cell>();

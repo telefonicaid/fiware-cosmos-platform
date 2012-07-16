@@ -9,17 +9,17 @@ import java.util.Map;
 
 /**
  * Class that maps the category IDs to their respective names.
- * 
+ *
  * @author dmicol
  */
 public class CSCategoryIdToNameMap {
     private static final String DELIMITER = "\t";
-    
+
     private Map<Long, String> map;
-    
+
     public CSCategoryIdToNameMap() {
     }
-    
+
     public void init(Reader input) throws IOException {
         this.map = new HashMap<Long, String>();
 
@@ -33,11 +33,11 @@ public class CSCategoryIdToNameMap {
         }
         br.close();
     }
-    
+
     public Collection<String> getCategories() {
         return this.map.values();
     }
-    
+
     public String getCategoryName(long categoryId) {
         if (!this.map.containsKey(categoryId)) {
             throw new IllegalArgumentException("Unknown category ID: " +

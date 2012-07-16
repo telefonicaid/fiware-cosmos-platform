@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <NodeBts, TwoInt>
  * Output: <TwoInt, DailyVector>
- * 
+ *
  * @author dmicol
  */
 public class VectorCreateNodeDayhourReducer extends Reducer
@@ -28,12 +28,12 @@ public class VectorCreateNodeDayhourReducer extends Reducer
             throws IOException, InterruptedException {
         key.setConverter(NodeBts.class);
         final NodeBts bts = key.get();
-        
+
         List<TwoInt> valueList = new LinkedList<TwoInt>();
         for (TypedProtobufWritable<TwoInt> value : values) {
             valueList.add(value.get());
         }
-        
+
         DailyVector.Builder vectorBuilder = DailyVector.newBuilder();
         for (int hour = 0; hour < 24; hour++) {
             long num2 = 0L;

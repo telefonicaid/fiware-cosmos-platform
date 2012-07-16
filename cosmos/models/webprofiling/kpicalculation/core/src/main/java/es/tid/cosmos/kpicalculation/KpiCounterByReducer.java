@@ -13,17 +13,17 @@ import es.tid.cosmos.base.mapreduce.CompositeKey;
  * calculation of the web profiling module. When the target aggregation is a
  * counter of unique values of a field of the items, depending on the values of
  * some other of its fields, this reducer will be used.
- * 
+ *
  * The fields will be received sorted from the sorting phase depending on their
  * primary key ( filtering fields ), so in the reduce phase the number of
  * different elements ( depending on the grouping field ) with the same primary
  * key will be counted. When an item with a different primary key is received,
  * the previous key is emitted to the output and a new counting process for the
  * new key is performed.
- * 
+ *
  * In order to emit the last key will be necessary to perform a write operation
  * in the cleanup phase.
- * 
+ *
  * @author javierb
  */
 public class KpiCounterByReducer extends
@@ -39,7 +39,7 @@ public class KpiCounterByReducer extends
 
     /**
      * Method that creates the objects that will be used during the reduce
-     * 
+     *
      * @param context
      *            contains the context of the job run
      */
@@ -83,7 +83,7 @@ public class KpiCounterByReducer extends
     /**
      * The cleanup phase has to be override to be able to emit the last key
      * retrieved in the reduce process
-     * 
+     *
      * @param context
      *            contains the context of the job run
      */

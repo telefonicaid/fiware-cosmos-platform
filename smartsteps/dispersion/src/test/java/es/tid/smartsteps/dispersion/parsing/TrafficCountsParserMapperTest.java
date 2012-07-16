@@ -28,10 +28,10 @@ public class TrafficCountsParserMapperTest extends TrafficCountsBasedTest {
             LongWritable, Text,
             Text, TypedProtobufWritable<TrafficCounts>> instance;
     private LongWritable key;
-    
+
     public TrafficCountsParserMapperTest() throws IOException {
     }
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new MapDriver<
@@ -70,7 +70,7 @@ public class TrafficCountsParserMapperTest extends TrafficCountsBasedTest {
         assertEquals("000012006440", result.getFirst().toString());
         assertTrue(result.getSecond().get() instanceof TrafficCounts);
     }
-    
+
     @Test
     public void shouldProduceOutputMatchingDate() throws IOException {
         this.instance.getConfiguration().set(Config.DATES_TO_FILTER,
@@ -94,7 +94,7 @@ public class TrafficCountsParserMapperTest extends TrafficCountsBasedTest {
                 .withInput(this.key, new Text(this.trafficCounts))
                 .runTest();
     }
-    
+
     @Test
     public void shouldFailToParse() {
         this.instance

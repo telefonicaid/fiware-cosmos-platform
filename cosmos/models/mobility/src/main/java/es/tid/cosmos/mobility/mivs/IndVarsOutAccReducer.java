@@ -17,7 +17,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.MobViMobVars;
 /**
  * Input: <Long, MobViMobVars>
  * Output: <Null, Text>
- * 
+ *
  * @author logc
  */
 class IndVarsOutAccReducer extends Reducer<LongWritable,
@@ -25,7 +25,7 @@ class IndVarsOutAccReducer extends Reducer<LongWritable,
     private static final String MISSING = "-1|-1|-1|-1|-1|-1|-1|-1";
 
     private String separator;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {

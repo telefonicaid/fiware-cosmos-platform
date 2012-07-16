@@ -6,7 +6,7 @@ import java.io.Reader;
 
 /**
  * Class that maps the pattern IDs to their respective category IDs.
- * 
+ *
  * @author dmicol
  */
 public class CSPatternToCategoryMap {
@@ -15,10 +15,10 @@ public class CSPatternToCategoryMap {
     private long minPatternId;
     private int size;
     private long[][] map;
-    
+
     public CSPatternToCategoryMap() {
     }
-    
+
     public void init(Reader input) throws IOException {
         BufferedReader br = new BufferedReader(input);
         this.minPatternId = Long.parseLong(br.readLine());
@@ -38,7 +38,7 @@ public class CSPatternToCategoryMap {
         }
         br.close();
     }
-    
+
     public long[] getCategories(Long patternId) {
         long[] categories = this.map[this.getIndex(patternId)];
         if (categories == null) {
@@ -47,7 +47,7 @@ public class CSPatternToCategoryMap {
         }
         return categories;
     }
-    
+
     private int getIndex(long patternId) {
         int index = this.safeLongToInt(patternId - this.minPatternId);
         if (index < 0 || index >= this.size) {
@@ -56,7 +56,7 @@ public class CSPatternToCategoryMap {
         }
         return index;
     }
-    
+
     private int safeLongToInt(Long value) {
         if ((value < Integer.MIN_VALUE) || (value > Integer.MAX_VALUE)) {
             throw new IllegalArgumentException("Unable to cast value.");

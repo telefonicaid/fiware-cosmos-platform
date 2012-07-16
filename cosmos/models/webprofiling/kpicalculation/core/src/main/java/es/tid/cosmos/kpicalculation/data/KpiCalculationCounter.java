@@ -9,15 +9,15 @@ package es.tid.cosmos.kpicalculation.data;
  * LINE_FILTERED_PERSONAL_INFO: Number of lines filtered because of belonging to
  * Personal Info domains WRONG_FILTER_CONFIGURATION: Number of wrong configured
  * filters
- * 
+ *
  * @author javierb
  */
 public enum KpiCalculationCounter {
     LINE_STORED,
-    LINE_FILTERED_EXTENSION, 
-    LINE_FILTERED_3RDPARTY, 
-    LINE_FILTERED_PERSONAL_INFO, 
-    WRONG_FILTER_CONFIGURATION, 
+    LINE_FILTERED_EXTENSION,
+    LINE_FILTERED_3RDPARTY,
+    LINE_FILTERED_PERSONAL_INFO,
+    WRONG_FILTER_CONFIGURATION,
     WRONG_FILTERING_FIELDS,
     MALFORMED_URL,
     WRONG_LINE_FORMAT,

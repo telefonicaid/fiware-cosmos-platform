@@ -24,7 +24,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TelMonth;
  */
 public class ActivityAreaReducerTest {
     private static final double TOLERANCE = 0.1D;
-    
+
     private ReduceDriver<ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>,
             LongWritable, TypedProtobufWritable<MobVars>> reducer;
     private Cell firstCell;

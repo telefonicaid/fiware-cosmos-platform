@@ -15,7 +15,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 /**
  * Input: <Long, Cdr>
  * Output: <NodeBts, Null>
- * 
+ *
  * @author dmicol
  */
 class VectorSpreadNodedayhourReducer extends Reducer<LongWritable,

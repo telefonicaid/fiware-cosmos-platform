@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeMxCounter;
 /**
  * Input: <Long, NodeMxCounter>
  * Output: <NodeBts, Int>
- * 
+ *
  * @author dmicol
  */
 class VectorSpreadNodbtsReducer extends Reducer<LongWritable,

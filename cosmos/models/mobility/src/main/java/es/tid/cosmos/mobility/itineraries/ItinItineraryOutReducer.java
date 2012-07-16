@@ -14,13 +14,13 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Itinerary;
 /**
  * Input: <Long, Itinerary>
  * Output: <Null, Text>
- * 
+ *
  * @author dmicol
  */
 class ItinItineraryOutReducer extends Reducer<LongWritable,
         TypedProtobufWritable<Itinerary>, NullWritable, Text> {
     private String separator;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -28,7 +28,7 @@ class ItinItineraryOutReducer extends Reducer<LongWritable,
                 getConfiguration());
         this.separator = conf.getDataSeparator();
     }
-    
+
     @Override
     protected void reduce(LongWritable key,
             Iterable<TypedProtobufWritable<Itinerary>> values, Context context)

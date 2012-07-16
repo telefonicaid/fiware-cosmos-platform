@@ -16,7 +16,7 @@ public class TrafficCountsBasedTest {
 
     protected final Configuration conf;
     protected final String trafficCounts;
-    
+
     public TrafficCountsBasedTest() throws IOException {
         this.conf = Config.load(
                 Config.class.getResource("/config.properties").openStream(),

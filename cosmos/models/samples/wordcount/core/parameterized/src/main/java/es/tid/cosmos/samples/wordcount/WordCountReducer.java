@@ -15,15 +15,15 @@ import org.apache.hadoop.mapreduce.Reducer;
 public class WordCountReducer extends Reducer<Text, IntWritable,
                                               Text, LongWritable> {
     private LongWritable sum;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
         this.sum = new LongWritable();
     }
-    
+
     @Override
-    public void reduce(Text key, Iterable<IntWritable> values, Context context) 
+    public void reduce(Text key, Iterable<IntWritable> values, Context context)
             throws IOException, InterruptedException {
         long sumValue = 0L;
         for (IntWritable val : values) {

@@ -22,7 +22,7 @@ public class ExportBtsCounterToTextByTwoIntReducer extends Reducer<
         ProtobufWritable<TwoInt>, TypedProtobufWritable<BtsCounter>, NullWritable,
         Text> {
     private String separator;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -30,7 +30,7 @@ public class ExportBtsCounterToTextByTwoIntReducer extends Reducer<
                 getConfiguration());
         this.separator = conf.getDataSeparator();
     }
-    
+
     @Override
     protected void reduce(ProtobufWritable<TwoInt> key,
             Iterable<TypedProtobufWritable<BtsCounter>> values, Context context)

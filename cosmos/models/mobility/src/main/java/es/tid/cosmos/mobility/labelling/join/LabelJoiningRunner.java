@@ -22,14 +22,14 @@ import es.tid.cosmos.mobility.util.ExportPoiToTextReducer;
 public final class LabelJoiningRunner {
     private LabelJoiningRunner() {
     }
-    
+
     public static CosmosWorkflow run(Path pointsOfInterestTempPath,
             Path vectorClientClusterPath, Path vectorClientbtsClusterPath,
             Path vectorBtsClusterPath, Path pointsOfInterestTemp4Path,
             Path tmpDirPath, boolean isDebug, Configuration conf)
             throws IOException, InterruptedException, ClassNotFoundException {
         WorkflowList wfList = new WorkflowList();
-        
+
         Path pointsOfInterestTemp2Path = new Path(tmpDirPath,
                                                   "points_of_interest_temp2");
         CosmosJob pointsOfInterestTemp2Job = CosmosJob.createReduceJob(conf,
@@ -55,7 +55,7 @@ public final class LabelJoiningRunner {
         FileOutputFormat.setOutputPath(potpoiJob, potpoiPath);
         potpoiJob.setDeleteOutputOnExit(!isDebug);
         wfList.add(potpoiJob);
-        
+
         Path clientbtsNodpoilblPath = new Path(tmpDirPath,
                                                "clientbts_nodpoilbl");
         CosmosJob clientbtsNodpoilblJob = CosmosJob.createReduceJob(conf,
@@ -70,7 +70,7 @@ public final class LabelJoiningRunner {
         clientbtsNodpoilblJob.setDeleteOutputOnExit(!isDebug);
         clientbtsNodpoilblJob.addDependentWorkflow(pointsOfInterestTemp2Job);
         wfList.add(clientbtsNodpoilblJob);
-        
+
         Path clientbtsNodpoiCountPath = new Path(tmpDirPath,
                                                  "clientbts_nodpoi_count");
         CosmosJob clientbtsNodpoiCountJob = CosmosJob.createReduceJob(conf,
@@ -85,7 +85,7 @@ public final class LabelJoiningRunner {
         clientbtsNodpoiCountJob.setDeleteOutputOnExit(!isDebug);
         clientbtsNodpoiCountJob.addDependentWorkflow(clientbtsNodpoilblJob);
         wfList.add(clientbtsNodpoiCountJob);
-        
+
         Path clientbtsNodPoimajPath = new Path(tmpDirPath,
                                                "clientbts_nod_poimaj");
         CosmosJob clientbtsNodPoimajJob = CosmosJob.createReduceJob(conf,
@@ -114,7 +114,7 @@ public final class LabelJoiningRunner {
         poisLabeledJob.addDependentWorkflow(potpoiJob);
         poisLabeledJob.addDependentWorkflow(clientbtsNodPoimajJob);
         wfList.add(poisLabeledJob);
-        
+
         Path pointsOfInterestTemp3Path = new Path(tmpDirPath,
                                                   "points_of_interest_temp3");
         CosmosJob pointsOfInterestTemp3Job = CosmosJob.createReduceJob(conf,
@@ -130,7 +130,7 @@ public final class LabelJoiningRunner {
         pointsOfInterestTemp3Job.addDependentWorkflow(pointsOfInterestTemp2Job);
         pointsOfInterestTemp3Job.addDependentWorkflow(poisLabeledJob);
         wfList.add(pointsOfInterestTemp3Job);
-        
+
         Path vectorClientbtsClusterAddPath = new Path(tmpDirPath,
                 "vector_clientbts_cluster_add");
         {
@@ -146,7 +146,7 @@ public final class LabelJoiningRunner {
             job.addDependentWorkflow(poisLabeledJob);
             wfList.add(job);
         }
-        
+
         CosmosJob pointsOfInterestTemp4Job = CosmosJob.createReduceJob(conf,
                 "ClusterAggBtsCluster",
                 SequenceFileInputFormat.class,
@@ -158,7 +158,7 @@ public final class LabelJoiningRunner {
         pointsOfInterestTemp4Job.setDeleteOutputOnExit(!isDebug);
         pointsOfInterestTemp4Job.addDependentWorkflow(pointsOfInterestTemp3Job);
         wfList.add(pointsOfInterestTemp4Job);
-        
+
         if (isDebug) {
             Path pointsOfInterestTemp4TextPath = new Path(tmpDirPath,
                     "points_of_interest_temp4_text");

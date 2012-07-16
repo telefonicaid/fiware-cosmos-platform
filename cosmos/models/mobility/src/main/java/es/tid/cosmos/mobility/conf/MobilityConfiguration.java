@@ -19,13 +19,13 @@ public class MobilityConfiguration extends Configuration {
     private static final String SYS_EXEC_MODE = "mob.sys_exec_mode";
     private static final String SYS_EXEC_INCREMENTAL =
             "mob.sys_exec_incremental";
-    
+
     private static final String DATA_SEPARATOR = "mob.data_separator";
     private static final String DATA_DATE_FORMAT = "mob.data_date_format";
     private static final String DEFAULT_DATA_DATE_FORMAT = "dd-mm-yyyy";
     private static final String DATA_START_DATE = "mob.data_start_date";
     private static final String DATA_END_DATE = "mob.data_end_date";
-    
+
     private static final String CLIENT_MIN_TOTAL_CALLS =
             "mob.client_min_total_calls";
     private static final String CLIENT_MAX_TOTAL_CALLS =
@@ -56,15 +56,15 @@ public class MobilityConfiguration extends Configuration {
 
     public MobilityConfiguration() {
     }
-    
+
     public MobilityConfiguration(Configuration conf) {
         super(conf);
     }
-    
+
     public void load(InputStream configInput) throws IOException {
         Properties props = new Properties();
         props.load(configInput);
-        
+
         this.setSysInputFolder(props.getProperty(SYS_INPUT_FOLDER));
         this.setSysOutputTrainingFolder(props.getProperty(
                 SYS_OUTPUT_TRAINING_FOLDER));
@@ -72,12 +72,12 @@ public class MobilityConfiguration extends Configuration {
                 SYS_OUTPUT_COMPLETE_FOLDER));
         this.setSysExecMode(props.getProperty(SYS_EXEC_MODE));
         this.setSysExecIncremental(props.getProperty(SYS_EXEC_INCREMENTAL));
-        
+
         this.setDataSeparator(props.getProperty(DATA_SEPARATOR));
         this.setDataDateFormat(props.getProperty(DATA_DATE_FORMAT));
         this.setDataStartDate(props.getProperty(DATA_START_DATE));
         this.setDataEndDate(props.getProperty(DATA_END_DATE));
-        
+
         this.setClientMinTotalCalls(props.getProperty(CLIENT_MIN_TOTAL_CALLS));
         this.setClientMaxTotalCalls(props.getProperty(CLIENT_MAX_TOTAL_CALLS));
         this.setBtsMaxBtsArea(props.getProperty(BTS_MAX_BTS_AREA));
@@ -101,7 +101,7 @@ public class MobilityConfiguration extends Configuration {
         this.setMtxIncludeIntraMoves(props.getProperty(
                 MTX_INCLUDE_INTRA_MOVES));
     }
-    
+
     public void setSysInputFolder(String value) {
         this.set(SYS_INPUT_FOLDER, value);
     }
@@ -121,7 +121,7 @@ public class MobilityConfiguration extends Configuration {
     public void setSysExecIncremental(String value) {
         this.setBoolean(SYS_EXEC_INCREMENTAL, Boolean.parseBoolean(value));
     }
-    
+
     public void setDataSeparator(String value) {
         this.set(DATA_SEPARATOR, value);
     }
@@ -149,11 +149,11 @@ public class MobilityConfiguration extends Configuration {
     public void setBtsMaxBtsArea(String value) {
         this.setFloat(BTS_MAX_BTS_AREA, Float.parseFloat(value));
     }
-    
+
     public void setBtsMinCommsBts(String value) {
         this.setInt(BTS_MIN_COMMS_BTS, Integer.parseInt(value));
     }
-    
+
     public void setPoiHomeLabelgroupId(String value) {
         this.setInt(POI_HOME_LABELGROUP_ID, Integer.parseInt(value));
     }
@@ -197,7 +197,7 @@ public class MobilityConfiguration extends Configuration {
     public void setMtxIncludeIntraMoves(String value) {
         this.setBoolean(MTX_INCLUDE_INTRA_MOVES, Boolean.parseBoolean(value));
     }
-    
+
     public String getSysInputFolder() {
         return this.get(SYS_INPUT_FOLDER);
     }
@@ -217,7 +217,7 @@ public class MobilityConfiguration extends Configuration {
     public boolean getSysExecIncremental() {
         return this.getBoolean(SYS_EXEC_INCREMENTAL, false);
     }
-    
+
     public String getDataSeparator() {
         return this.get(DATA_SEPARATOR);
     }
@@ -245,11 +245,11 @@ public class MobilityConfiguration extends Configuration {
     public double getBtsMaxBtsArea() {
         return this.getFloat(BTS_MAX_BTS_AREA, Float.MAX_VALUE);
     }
-    
+
     public int getBtsMinCommsBts() {
         return this.getInt(BTS_MIN_COMMS_BTS, Integer.MIN_VALUE);
     }
-    
+
     public int getPoiHomeLabelgroupId() {
         return this.getInt(POI_HOME_LABELGROUP_ID, Integer.MIN_VALUE);
     }

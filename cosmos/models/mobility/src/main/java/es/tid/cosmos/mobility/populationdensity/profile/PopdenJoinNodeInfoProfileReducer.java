@@ -19,7 +19,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.NodeBts;
 /**
  * Input: <Long, NodeBts|Integer>
  * Output: <BtsProfile, Int>
- * 
+ *
  * @author ximo
  */
 class PopdenJoinNodeInfoProfileReducer extends Reducer<
@@ -33,7 +33,7 @@ class PopdenJoinNodeInfoProfileReducer extends Reducer<
                 values, NodeBts.class, ClientProfile.class);
         List<NodeBts> nodebtsList = dividedLists.get(NodeBts.class);
         List<ClientProfile> profileList = dividedLists.get(ClientProfile.class);
-        
+
         for (ClientProfile clientProfile : profileList) {
             final int profileId = clientProfile.getProfileId();
             for (NodeBts nodebts : nodebtsList) {

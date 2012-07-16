@@ -25,7 +25,7 @@ public final class ClientProfileUtil {
         wrapper.set(obj);
         return wrapper;
     }
-    
+
     public static ProtobufWritable<ClientProfile> createAndWrap(
             long userId, int profileId) {
         return wrap(create(userId, profileId));

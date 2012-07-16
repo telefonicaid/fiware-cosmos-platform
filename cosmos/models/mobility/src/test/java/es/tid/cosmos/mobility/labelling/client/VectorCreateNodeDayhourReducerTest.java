@@ -21,10 +21,10 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
  * @author ximo
  */
 public class VectorCreateNodeDayhourReducerTest {
-    
+
     private ReduceDriver<ProtobufWritable<NodeBts>, TypedProtobufWritable<TwoInt>,
             ProtobufWritable<TwoInt>, TypedProtobufWritable<DailyVector>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new ReduceDriver<ProtobufWritable<NodeBts>,
@@ -43,7 +43,7 @@ public class VectorCreateNodeDayhourReducerTest {
                     0, 1)));
         values.add(new TypedProtobufWritable<TwoInt>(TwoIntUtil.create(
                     2, 3)));
-        
+
         final ProtobufWritable<TwoInt> outKey = TwoIntUtil.createAndWrap(
                 key.get().getUserId(), key.get().getBts());
         Builder outputBuilder = DailyVector.newBuilder();

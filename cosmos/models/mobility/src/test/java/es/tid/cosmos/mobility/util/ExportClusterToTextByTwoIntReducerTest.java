@@ -25,7 +25,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 public class ExportClusterToTextByTwoIntReducerTest extends ConfiguredTest {
     private ReduceDriver<ProtobufWritable<TwoInt>, TypedProtobufWritable<Cluster>,
             NullWritable, Text> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new ReduceDriver<ProtobufWritable<TwoInt>,
@@ -33,7 +33,7 @@ public class ExportClusterToTextByTwoIntReducerTest extends ConfiguredTest {
                         new ExportClusterToTextByTwoIntReducer());
         this.driver.setConfiguration(this.getConf());
     }
-    
+
     @Test
     public void testSetInputId() throws IOException {
         final ProtobufWritable<TwoInt> key = TwoIntUtil.createAndWrap(57L, 32L);

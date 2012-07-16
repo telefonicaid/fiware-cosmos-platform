@@ -16,7 +16,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TwoInt;
 /**
  * Input: <Long, BtsCounter>
  * Output: <TwoInt, BtsCounter>
- * 
+ *
  * @author dmicol
  */
 class RepbtsGetRepresentativeBtsMapper extends Mapper<LongWritable,
@@ -24,7 +24,7 @@ class RepbtsGetRepresentativeBtsMapper extends Mapper<LongWritable,
         TypedProtobufWritable<BtsCounter>> {
     private int minPercRepBts;
     private int minNumberCallsBts;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -33,7 +33,7 @@ class RepbtsGetRepresentativeBtsMapper extends Mapper<LongWritable,
         this.minPercRepBts = conf.getPoiMinPercRepBts();
         this.minNumberCallsBts = conf.getPoiMinNumberCallsBts();
     }
-    
+
     @Override
     public void map(LongWritable key, TypedProtobufWritable<BtsCounter> value,
             Context context) throws IOException, InterruptedException {

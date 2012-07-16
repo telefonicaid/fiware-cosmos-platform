@@ -17,14 +17,14 @@ import org.junit.Test;
 public class KpiCleanerReducerTest {
     private KpiCleanerReducer instance;
     private ReduceDriver<LongWritable, Text, NullWritable, Text> driver;
-    
+
     @Before
     public void setUp() {
         this.instance = new KpiCleanerReducer();
         this.driver = new ReduceDriver<LongWritable, Text, NullWritable, Text>
                 (this.instance);
     }
-    
+
     @Test
     public void shouldRemoveFirstInput() throws IOException {
         Text a = new Text("a");

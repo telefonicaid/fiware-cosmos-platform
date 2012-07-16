@@ -30,7 +30,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.ItinTime;
 public class ItinMoveClientPoisReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<ItinTime>,
             LongWritable, TypedProtobufWritable<ItinMovement>> instance;
-    
+
     @Before
     public void setUp() throws IOException {
         this.instance = new ReduceDriver<LongWritable,
@@ -82,7 +82,7 @@ public class ItinMoveClientPoisReducerTest extends ConfiguredTest {
                 .withOutput(key, outValue)
                 .runTest();
     }
-    
+
     @Test
     public void testDateLogic() throws IOException {
         final LongWritable key = new LongWritable(57L);

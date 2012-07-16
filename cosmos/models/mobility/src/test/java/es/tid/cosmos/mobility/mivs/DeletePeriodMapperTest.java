@@ -18,7 +18,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.TelMonth;
 public class DeletePeriodMapperTest {
     private MapDriver<ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>,
         ProtobufWritable<TelMonth>, TypedProtobufWritable<Cell>> driver;
-    
+
     @Before
     public void setUp() {
         this.driver = new MapDriver<ProtobufWritable<TelMonth>,

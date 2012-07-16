@@ -3,7 +3,7 @@ package es.tid.cosmos.kpicalculation.cleaning;
 /**
  * This interface should be implemented by any filter to be applied to the web
  * profiling CDR's data
- * 
+ *
  * @author javierb
  */
 public interface IKpiCalculationFilter {
@@ -13,7 +13,7 @@ public interface IKpiCalculationFilter {
      * continues. If the URL does not pass the filter, then an exception is
      * thrown to indicate that the URL is forbidden as input of web profiling
      * module
-     * 
+     *
      * @param url
      *            url the filter will be applied to.
      */

@@ -25,7 +25,7 @@ import es.tid.cosmos.mobility.data.generated.MobProtocol.Cdr;
 public class VectorFiltClientsReducerTest extends ConfiguredTest {
     private ReduceDriver<LongWritable, TypedProtobufWritable<Message>, LongWritable,
             TypedProtobufWritable<Cdr>> driver;
-    
+
     @Before
     public void setUp() throws IOException {
         this.driver = new ReduceDriver<LongWritable, TypedProtobufWritable<Message>,
@@ -46,7 +46,7 @@ public class VectorFiltClientsReducerTest extends ConfiguredTest {
         assertNotNull(res);
         assertEquals(0, res.size());
     }
-    
+
     @Test(expected=IllegalStateException.class)
     public void testInvalidNumberOfCommunications() throws IOException {
         TypedProtobufWritable<Message> value1 = new TypedProtobufWritable<Message>(

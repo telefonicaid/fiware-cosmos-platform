@@ -19,14 +19,14 @@ import es.tid.cosmos.mobility.util.CentroidsCatalogue;
 /**
  * Input: <NodeBts, ClusterVector>
  * Output: <Long, Cluster>
- * 
+ *
  * @author dmicol
  */
 class ClusterBtsGetMinDistanceReducer extends Reducer<
         ProtobufWritable<NodeBts>, TypedProtobufWritable<ClusterVector>,
         LongWritable, TypedProtobufWritable<Cluster>> {
     private static List<Cluster> centroids = null;
-    
+
     @Override
     protected void setup(Context context) throws IOException,
                                                  InterruptedException {
@@ -37,7 +37,7 @@ class ClusterBtsGetMinDistanceReducer extends Reducer<
                                                 conf);
         }
     }
-    
+
     @Override
     protected void reduce(ProtobufWritable<NodeBts> key,
             Iterable<TypedProtobufWritable<ClusterVector>> values, Context context)

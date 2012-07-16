@@ -3,7 +3,6 @@ package es.tid.smartsteps.dispersion.parsing;
 import static java.util.Arrays.asList;
 import java.util.Set;
 
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
@@ -28,16 +27,12 @@ public class TrafficCountsParser extends Parser<TrafficCounts> {
     public static final String CELLID_FIELD_NAME = "cellid";
     public static final String LATITUDE_FIELD_NAME = "lat";
     public static final String LONGITUDE_FIELD_NAME = "long";
-    public static final Set<String> POIS_NAMES = ImmutableSet.of(
-            "pois.BILL", "pois.HOME", "pois.NONE", "pois.OTHER", "pois.WORK");
-
 
     private final Set<String> vectorNames;
 
     public TrafficCountsParser(String[] vectorNames) {
         super(null);
         this.vectorNames = ImmutableSortedSet.<String>naturalOrder()
-                .addAll(POIS_NAMES)
                 .addAll(asList(vectorNames))
                 .build();
     }

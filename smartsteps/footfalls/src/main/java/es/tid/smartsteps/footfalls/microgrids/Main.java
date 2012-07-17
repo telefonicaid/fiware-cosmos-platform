@@ -298,6 +298,18 @@ public class Main extends Configured implements Tool {
                                           cellToPolygonParsedPath);
             FileOutputFormat.setOutputPath(job, scaledTopCellsPath);
         }
+
+        Path propagatedCatchments = new Path(outputDir, "propagated_catchments");
+        {
+            CosmosJob job = CosmosJob.createMapReduceJob(config,
+                    "AggregateTopCells",
+                    SequenceFileInputFormat.class,
+                    TopCellAggregatorMapper.class,
+                    TopCellAggregatorReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, scaledTopCellsPath);
+            FileOutputFormat.setOutputPath(job, propagatedCatchments);
+        }
     }
 
     public static void main(String[] args) throws Exception {

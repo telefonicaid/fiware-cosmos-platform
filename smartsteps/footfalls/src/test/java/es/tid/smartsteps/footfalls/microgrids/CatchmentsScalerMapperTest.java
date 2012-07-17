@@ -34,9 +34,6 @@ public class CatchmentsScalerMapperTest extends CatchmentsBasedTest {
     private TypedProtobufWritable<Message> catchmentsValue;
     private TypedProtobufWritable<Message> lookupValue;
 
-    public CatchmentsScalerMapperTest() throws IOException {
-    }
-
     @Before
     public void setUp() throws IOException {
         this.instance = new MapDriver<

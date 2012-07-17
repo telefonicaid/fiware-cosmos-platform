@@ -14,9 +14,14 @@ public class ConfigurationBasedTest {
 
     protected final Configuration conf;
 
-    public ConfigurationBasedTest() throws IOException {
-        this.conf = Config.load(
-                Config.class.getResource("/config.properties").openStream(),
-                new Configuration());
+    public ConfigurationBasedTest() {
+        try {
+            this.conf = Config.load(
+                    Config.class.getResource("/config.properties")
+                    .openStream(),
+                    new Configuration());
+        } catch (IOException ex) {
+            throw new ExceptionInInitializerError(ex);
+        }
     }
 }

@@ -12,7 +12,6 @@ import fabric.context_managers as ctx
 from fabric.colors import red, white, yellow
 from fabric.decorators import roles, task, parallel
 from fabric.utils import puts, error, warn
-from xml.dom.minidom import parse
 
 import common
 import iptables
@@ -20,18 +19,9 @@ import hadoop_install
 import hue_deployment
 from sockpuppet import SockPuppet
 
-def get_cosmos_version():
-    """
-    Reads the Cosmos version from the root POM in the cosmos folder
-    """
-    root_pom = parse(os.path.join(BASEPATH, "../cosmos/pom.xml"))
-    version_node = next(node for node in root_pom.childNodes[0].childNodes
-                                if node.nodeName == "version")
-    return version_node.childNodes[0].nodeValue
-
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 CONFIG = json.loads(open(env.config, 'r').read())
-COSMOS_VERSION = get_cosmos_version()
+COSMOS_VERSION = common.get_cosmos_version()
 env.roledefs = CONFIG['hosts']
 
 @task

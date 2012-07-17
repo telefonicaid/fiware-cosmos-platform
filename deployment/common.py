@@ -12,10 +12,19 @@ from fabric.contrib import files
 from fabric.decorators import roles
 import fabric.context_managers as ctx
 from mako.template import Template
+from xml.dom.minidom import parse
 
 
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 
+def get_cosmos_version():
+    """
+    Reads the Cosmos version from the root POM in the cosmos folder
+    """
+    root_pom = parse(os.path.join(BASEPATH, "../cosmos/pom.xml"))
+    version_node = (node for node in root_pom.childNodes[0].childNodes
+                            if node.nodeName == "version").next()
+    return version_node.childNodes[0].nodeValue
 
 def append_subdir_to_dirs(subdir_name, dirlist):
     return ','.join([os.path.join(directory, subdir_name) for directory in dirlist])

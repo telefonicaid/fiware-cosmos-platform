@@ -95,7 +95,6 @@ public class Main extends Configured implements Tool {
         }
 
         fs.delete(trafficCountsParsedPath, true);
-        fs.delete(cellToMicrogridParsedPath, true);
 
         Path microgridToPolygonParsedPath = new Path(outputDir,
                 "microgrid_to_polygon_parsed");
@@ -125,7 +124,6 @@ public class Main extends Configured implements Tool {
         }
 
         fs.delete(countsByMicrogridPath, true);
-        fs.delete(microgridToPolygonParsedPath, true);
 
         Path aggregatedCountsByPolygonPath = new Path(outputDir,
                 "aggregated_counts_by_polygon");
@@ -235,6 +233,7 @@ public class Main extends Configured implements Tool {
         }
 
         fs.delete(cellToMicrogridParsedRekeyedByValuePath, true);
+        fs.delete(microgridToPolygonParsedPath, true);
 
         Path catchmentsByMicrogridPath = new Path(outputDir,
                                                   "catchments_by_microgrid");
@@ -267,6 +266,7 @@ public class Main extends Configured implements Tool {
         }
 
         fs.delete(catchmentsByMicrogridPath, true);
+        fs.delete(cellToPolygonParsedPath, true);
 
         return 0;
     }

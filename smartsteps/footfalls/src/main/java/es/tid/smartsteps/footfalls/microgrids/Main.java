@@ -203,6 +203,22 @@ public class Main extends Configured implements Tool {
             job.waitForCompletion(true);
         }
 
+        Path catchmentsByMicrogridPath = new Path(outputDir,
+                                                  "catchments_by_microgrid");
+        {
+            CosmosJob job = CosmosJob.createMapReduceJob(config,
+                    "CellToMicrogridCatchmentsScaler",
+                    SequenceFileInputFormat.class,
+                    CatchmentsScalerMapper.class,
+                    CatchmentsScalerReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, catchmentsParsedPath);
+            FileOutputFormat.setOutputPath(job, catchmentsByMicrogridPath);
+            job.waitForCompletion(true);
+        }
+
+        fs.delete(catchmentsParsedPath, true);
+
         return 0;
     }
 

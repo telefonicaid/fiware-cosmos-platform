@@ -12,24 +12,24 @@ import es.tid.smartsteps.footfalls.microgrids.config.Config;
  *
  * @author dmicol
  */
-public class TrafficCountsBasedTest {
+public class CatchmentsBasedTest {
 
     protected final Configuration conf;
-    protected final String trafficCounts;
+    protected final String catchments;
 
-    public TrafficCountsBasedTest() throws IOException {
+    public CatchmentsBasedTest() throws IOException {
         this.conf = Config.load(
                 Config.class.getResource("/config.properties").openStream(),
                 new Configuration());
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(
-                    new FileReader("src/test/resources/trafficdata.json"));
+                    new FileReader("src/test/resources/catchments.json"));
             String contents = "";
             while (reader.ready()) {
                 contents += reader.readLine() + "\n";
             }
-            this.trafficCounts = contents;
+            this.catchments = contents;
         } finally {
             if (reader != null) {
                 try {

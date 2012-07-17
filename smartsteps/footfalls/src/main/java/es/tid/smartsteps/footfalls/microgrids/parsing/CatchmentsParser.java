@@ -1,13 +1,12 @@
 package es.tid.smartsteps.footfalls.microgrids.parsing;
 
-import es.tid.smartsteps.footfalls.microgrids.data.generated.EntryProtocol;
-import es.tid.smartsteps.footfalls.microgrids.data.generated.EntryProtocol.Catchment;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
 import net.sf.json.JSONSerializer;
 import org.apache.log4j.Logger;
 
+import es.tid.smartsteps.footfalls.microgrids.data.generated.EntryProtocol.Catchment;
 import es.tid.smartsteps.footfalls.microgrids.data.generated.EntryProtocol.Catchments;
 import es.tid.smartsteps.footfalls.microgrids.data.generated.EntryProtocol.TopCell;
 

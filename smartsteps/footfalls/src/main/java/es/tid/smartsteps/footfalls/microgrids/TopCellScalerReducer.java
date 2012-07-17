@@ -21,7 +21,7 @@ import es.tid.smartsteps.footfalls.microgrids.data.generated.LookupProtocol.Look
  * m is the number of catchments for a given cell id.
  *
  * In: <id, Lookup> | <id, Catchemt>
- * Out: <id, Catchemt>
+ * Out: <id, Catchment>
  *
  * @author sortega
  */

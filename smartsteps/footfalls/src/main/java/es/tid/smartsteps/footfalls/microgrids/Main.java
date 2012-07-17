@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
 import es.tid.smartsteps.footfalls.microgrids.config.Config;
+import es.tid.smartsteps.footfalls.microgrids.parsing.CatchmentsParserMapper;
 import es.tid.smartsteps.footfalls.microgrids.parsing.CentroidParserMapper;
 import es.tid.smartsteps.footfalls.microgrids.parsing.LookupParserMapper;
 import es.tid.smartsteps.footfalls.microgrids.parsing.TrafficCountsParserMapper;
@@ -33,10 +34,11 @@ public class Main extends Configured implements Tool {
     @Override
     public int run(String[] args) throws ClassNotFoundException,
                                          InterruptedException, IOException {
-        if (args.length != 5) {
+        if (args.length != 6) {
             throw new IllegalArgumentException(
                     "Usage: trafficCountsPath cellToMicrogridPath "
-                    + "microgridToPolygonPath soaCentroidsPath outputDir");
+                    + "microgridToPolygonPath soaCentroidsPath catchmentsPath "
+                    + "outputDir");
         }
 
         final Configuration config = Config.load(Config.class.getResource(
@@ -46,7 +48,8 @@ public class Main extends Configured implements Tool {
         final Path cellToMicrogridPath = new Path(args[1]);
         final Path microgridToPolygonPath = new Path(args[2]);
         final Path soaCentroidsPath = new Path(args[3]);
-        final Path outputDir = new Path(args[4]);
+        final Path catchmentsPath = new Path(args[4]);
+        final Path outputDir = new Path(args[5]);
 
         FileSystem fs = FileSystem.get(this.getConf());
 
@@ -187,6 +190,18 @@ public class Main extends Configured implements Tool {
         }
 
         fs.delete(aggregatedCountsByPolygonJoinedPath, true);
+
+        Path catchmentsParsedPath = new Path(outputDir, "catchments_parsed");
+        {
+            CosmosJob job = CosmosJob.createMapJob(config,
+                    "CatchmentsParser",
+                    TextInputFormat.class,
+                    CatchmentsParserMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, catchmentsPath);
+            FileOutputFormat.setOutputPath(job, catchmentsParsedPath);
+            job.waitForCompletion(true);
+        }
 
         return 0;
     }

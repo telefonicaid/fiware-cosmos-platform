@@ -1,11 +1,13 @@
 package es.tid.smartsteps.footfalls.microgrids.parsing;
 
-import static org.junit.Assert.*;
+import java.io.IOException;
+
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.smartsteps.footfalls.microgrids.CatchmentsBasedTest;
-import java.io.IOException;
+import es.tid.smartsteps.footfalls.microgrids.data.generated.EntryProtocol.Catchments;
 
 /**
  *
@@ -24,6 +26,11 @@ public class CatchmentsParserTest extends CatchmentsBasedTest {
 
     @Test
     public void testParse() {
-        this.instance.parse(this.catchments);
+        final Catchments parsedCatchments = this.instance.parse(this.catchments);
+        assertEquals("cell_distinct_hours_b", parsedCatchments.getId());
+        assertEquals("20120424", parsedCatchments.getDate());
+        assertEquals(54.813522D, parsedCatchments.getLatitude(), 0.0D);
+        assertEquals(-1.845595, parsedCatchments.getLongitude(), 0.0D);
+        assertEquals(5, parsedCatchments.getCatchmentsCount());
     }
 }

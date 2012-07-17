@@ -22,3 +22,23 @@ message SOACentroid {
     required double latitude = 3;
     required double longitude = 4;
 }
+
+message Catchments {
+    required string id = 1;
+    required string date = 2;
+    required double latitude = 3;
+    required double longitude = 4;
+    repeated Catchment catchments = 5;
+}
+
+message Catchment {
+    required uint32 hour = 1;
+    repeated TopCell topCells = 2;
+}
+
+message TopCell {
+    required string id = 1;
+    required uint32 count = 2;
+    required double latitude = 3;
+    required double longitude = 4;
+}

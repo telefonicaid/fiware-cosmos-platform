@@ -228,7 +228,8 @@ public class Main extends Configured implements Tool {
                     TransitiveLookupReducer.class,
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job,
-                    cellToMicrogridParsedRekeyedByValuePath);
+                    cellToMicrogridParsedRekeyedByValuePath,
+                    microgridToPolygonParsedPath);
             FileOutputFormat.setOutputPath(job, cellToPolygonParsedPath);
             job.waitForCompletion(true);
         }

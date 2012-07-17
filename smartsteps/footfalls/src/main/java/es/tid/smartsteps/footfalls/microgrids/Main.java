@@ -17,6 +17,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.smartsteps.footfalls.microgrids.LookupRekeyerMapper.RekeyBy;
 import es.tid.smartsteps.footfalls.microgrids.config.Config;
 import es.tid.smartsteps.footfalls.microgrids.parsing.CatchmentsParserMapper;
 import es.tid.smartsteps.footfalls.microgrids.parsing.CentroidParserMapper;
@@ -211,6 +212,7 @@ public class Main extends Configured implements Tool {
                     SequenceFileInputFormat.class,
                     LookupRekeyerMapper.class,
                     SequenceFileOutputFormat.class);
+            job.getConfiguration().setEnum(RekeyBy.class.getName(), RekeyBy.VALUE);
             FileInputFormat.setInputPaths(job, cellToMicrogridParsedPath);
             FileOutputFormat.setOutputPath(job,
                     cellToMicrogridParsedRekeyedByValuePath);

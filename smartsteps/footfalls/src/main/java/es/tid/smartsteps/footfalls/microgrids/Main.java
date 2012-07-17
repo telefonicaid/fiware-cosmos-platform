@@ -253,6 +253,21 @@ public class Main extends Configured implements Tool {
 
         fs.delete(catchmentsParsedPath, true);
 
+        Path scaledTopCellsPath = new Path(outputDir, "scaled_topcells");
+        {
+            CosmosJob job = CosmosJob.createMapReduceJob(config,
+                    "ScaleTopCells",
+                    SequenceFileInputFormat.class,
+                    TopCellScalerMapper.class,
+                    TopCellScalerReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, catchmentsByMicrogridPath,
+                                          cellToPolygonParsedPath);
+            FileOutputFormat.setOutputPath(job, scaledTopCellsPath);
+        }
+
+        fs.delete(catchmentsByMicrogridPath, true);
+
         return 0;
     }
 

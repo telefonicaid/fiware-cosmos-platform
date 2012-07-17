@@ -17,6 +17,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.smartsteps.footfalls.microgrids.LookupRekeyerMapper.RekeyBy;
 import es.tid.smartsteps.footfalls.microgrids.config.Config;
 import es.tid.smartsteps.footfalls.microgrids.parsing.CatchmentsParserMapper;
 import es.tid.smartsteps.footfalls.microgrids.parsing.CentroidParserMapper;
@@ -203,6 +204,38 @@ public class Main extends Configured implements Tool {
             job.waitForCompletion(true);
         }
 
+        Path cellToMicrogridParsedRekeyedByValuePath = new Path(outputDir,
+                "cell_to_microgrid_parsed_rekeyed_by_value");
+        {
+            CosmosJob job = CosmosJob.createMapJob(config,
+                    "LookupRekeyer",
+                    SequenceFileInputFormat.class,
+                    LookupRekeyerMapper.class,
+                    SequenceFileOutputFormat.class);
+            job.getConfiguration().setEnum(RekeyBy.class.getName(), RekeyBy.VALUE);
+            FileInputFormat.setInputPaths(job, cellToMicrogridParsedPath);
+            FileOutputFormat.setOutputPath(job,
+                    cellToMicrogridParsedRekeyedByValuePath);
+            job.waitForCompletion(true);
+        }
+
+        Path cellToPolygonParsedPath = new Path(outputDir,
+                                                "cell_to_polygon_parsed");
+        {
+            CosmosJob job = CosmosJob.createReduceJob(config,
+                    "TransitiveLookup",
+                    SequenceFileInputFormat.class,
+                    TransitiveLookupReducer.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job,
+                    cellToMicrogridParsedRekeyedByValuePath,
+                    microgridToPolygonParsedPath);
+            FileOutputFormat.setOutputPath(job, cellToPolygonParsedPath);
+            job.waitForCompletion(true);
+        }
+
+        fs.delete(cellToMicrogridParsedRekeyedByValuePath, true);
+
         Path catchmentsByMicrogridPath = new Path(outputDir,
                                                   "catchments_by_microgrid");
         {
@@ -212,7 +245,8 @@ public class Main extends Configured implements Tool {
                     CatchmentsScalerMapper.class,
                     CatchmentsScalerReducer.class,
                     SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, catchmentsParsedPath);
+            FileInputFormat.setInputPaths(job, catchmentsParsedPath,
+                                          cellToPolygonParsedPath);
             FileOutputFormat.setOutputPath(job, catchmentsByMicrogridPath);
             job.waitForCompletion(true);
         }

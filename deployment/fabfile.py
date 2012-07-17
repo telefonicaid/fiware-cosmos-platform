@@ -332,8 +332,7 @@ def install_gmetad():
                                 context=dict(
                                     monitored_hosts=common.clean_host_list(
                                         CONFIG['hosts'].values())))
-    iptables.add_rule("INPUT -p tcp -d {0} --dport 8649 -j ACCEPT"
-            .format(common.clean_host_list(CONFIG['hosts']['frontend'])))
+    iptables.accept_in_tcp(8649)
     sudo("service iptables save")
     run("service gmetad start")
     run("chkconfig --level 2 gmetad on")

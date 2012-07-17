@@ -26,8 +26,8 @@ message SOACentroid {
 message Catchments {
     required string id = 1;
     required string date = 2;
-    optional double latitude = 3;
-    optional double longitude = 4;
+    required double latitude = 3;
+    required double longitude = 4;
     repeated Catchment catchments = 5;
 }
 

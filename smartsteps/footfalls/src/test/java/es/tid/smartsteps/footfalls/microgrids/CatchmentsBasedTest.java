@@ -4,23 +4,15 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-import org.apache.hadoop.conf.Configuration;
-
-import es.tid.smartsteps.footfalls.microgrids.config.Config;
-
 /**
  *
  * @author dmicol
  */
-public class CatchmentsBasedTest {
+public class CatchmentsBasedTest extends ConfigurationBasedTest {
 
-    protected final Configuration conf;
     protected final String catchments;
 
     public CatchmentsBasedTest() throws IOException {
-        this.conf = Config.load(
-                Config.class.getResource("/config.properties").openStream(),
-                new Configuration());
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(

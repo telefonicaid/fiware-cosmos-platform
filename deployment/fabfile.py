@@ -5,7 +5,6 @@ causes Fabric to deploy each Cosmos component at a configured host.
 """
 import os
 import json
-from StringIO import StringIO
 
 from fabric.api import run, execute, sudo, put, cd, env, local, lcd
 from fabric.contrib import files
@@ -13,7 +12,7 @@ import fabric.context_managers as ctx
 from fabric.colors import red, white, yellow
 from fabric.decorators import roles, task, parallel
 from fabric.utils import puts, error, warn
-from mako.template import Template
+from xml.dom.minidom import parse
 
 import common
 import iptables
@@ -21,8 +20,18 @@ import hadoop_install
 import hue_deployment
 from sockpuppet import SockPuppet
 
+def get_cosmos_version():
+    """
+    Reads the Cosmos version from the root POM in the cosmos folder
+    """
+    root_pom = parse(os.path.join(BASEPATH, "../cosmos/pom.xml"))
+    version_node = next(node for node in root_pom.childNodes[0].childNodes
+                                if node.nodeName == "version")
+    return version_node.childNodes[0].nodeValue
+
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 CONFIG = json.loads(open(env.config, 'r').read())
+COSMOS_VERSION = get_cosmos_version()
 env.roledefs = CONFIG['hosts']
 
 @task
@@ -68,11 +77,11 @@ def deploy_models():
     wc_jar_path = os.path.join(BASEPATH, os.pardir, 'cosmos', 'models',
                            'samples', 'wordcount', 'core', 'standalone',
                            'target',
-                           'wordcount-core-standalone-0.9.0.0-SNAPSHOT.jar')
+                           'wordcount-core-standalone-{0}.jar'.format(COSMOS_VERSION))
     wc_param_jar_path = os.path.join(BASEPATH, os.pardir, 'cosmos', 'models',
                            'samples', 'wordcount', 'core', 'parameterized',
                            'target',
-                           'wordcount-core-parameterized-0.9.0.0-SNAPSHOT.jar')
+                           'wordcount-core-parameterized-{0}.jar'.format(COSMOS_VERSION))
     spup.upload_file(wc_jar_path, 'models/')
     spup.upload_file(wc_param_jar_path, 'models/')
     run('su hdfs -c "hadoop dfs -mkdir /share/samples/{jars,src}"')
@@ -180,7 +189,7 @@ def deploy_sftp(move_sshd=False):
             move_sshd in ['True', 'true', 'Y', 'y']:
         move_sshd = True
 
-    injection_exec = 'injection-server-{0}.jar'.format(CONFIG['version'])
+    injection_exec = 'injection-server-{0}.jar'.format(COSMOS_VERSION)
     injection_jar = os.path.join(BASEPATH, CONFIG['injection_path'], 'target',
                                  injection_exec)
     if not os.path.exists(injection_jar):

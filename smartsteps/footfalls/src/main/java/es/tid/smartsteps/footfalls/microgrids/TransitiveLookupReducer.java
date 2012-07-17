@@ -35,17 +35,20 @@ class TransitiveLookupReducer extends Reducer<
         for (TypedProtobufWritable<Lookup> value : values) {
             final Lookup lookup = value.get();
             if (strKey.equals(lookup.getKey())) {
-                sourceLookups.add(lookup);
-            } else if (strKey.equals(lookup.getValue())) {
                 targetLookups.add(lookup);
+            } else if (strKey.equals(lookup.getValue())) {
+                sourceLookups.add(lookup);
+            } else {
+                throw new IllegalArgumentException(
+                        "Lookup does not match key " + strKey);
             }
         }
-        
+
         for (Lookup sourceLookup : sourceLookups) {
             for (Lookup targetLookup : targetLookups) {
                 Lookup.Builder transitiveLookup = Lookup.newBuilder();
                 transitiveLookup.setKey(sourceLookup.getKey());
-                transitiveLookup.setValue(targetLookup.getKey());
+                transitiveLookup.setValue(targetLookup.getValue());
                 transitiveLookup.setProportion(sourceLookup.getProportion()
                                                * targetLookup.getProportion());
                 this.outValue.set(transitiveLookup.build());

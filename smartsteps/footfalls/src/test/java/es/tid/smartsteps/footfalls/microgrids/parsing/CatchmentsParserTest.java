@@ -27,7 +27,7 @@ public class CatchmentsParserTest extends CatchmentsBasedTest {
     @Test
     public void testParse() {
         final Catchments parsedCatchments = this.instance.parse(this.catchments);
-        assertEquals("cell_distinct_hours_b", parsedCatchments.getId());
+        assertEquals("000012006440", parsedCatchments.getId());
         assertEquals("20120424", parsedCatchments.getDate());
         assertEquals(54.813522D, parsedCatchments.getLatitude(), 0.0D);
         assertEquals(-1.845595, parsedCatchments.getLongitude(), 0.0D);

@@ -37,7 +37,7 @@ class CatchmentsScalerReducer extends Reducer<
             Iterable<TypedProtobufWritable<Message>> values, Context context)
             throws IOException, InterruptedException {
         Map<Class, List> dividedLists = TypedProtobufWritable.groupByClass(
-                values, TrafficCounts.class, Lookup.class);
+                values, Catchments.class, Lookup.class);
         List<Catchments> catchmentsList = dividedLists.get(Catchments.class);
         List<Lookup> lookups = dividedLists.get(Lookup.class);
         if (lookups.isEmpty()) {
@@ -50,9 +50,8 @@ class CatchmentsScalerReducer extends Reducer<
 
         for (Catchments catchments : catchmentsList) {
             for (Lookup lookup : lookups) {
-                final double proportion = lookup.getProportion();
                 final Catchments scaledCatchments = scaleCatchments(catchments,
-                                                                    proportion);
+                                                                    lookup);
                 this.outKey.set(scaledCatchments.getId());
                 this.outValue.set(scaledCatchments);
                 context.write(this.outKey, this.outValue);
@@ -60,8 +59,10 @@ class CatchmentsScalerReducer extends Reducer<
         }
     }
 
-    private static Catchments scaleCatchments(Catchments a, double proportion) {
+    private static Catchments scaleCatchments(Catchments a, Lookup lookup) {
+        final double proportion = lookup.getProportion();
         Catchments.Builder scaledCatchments = Catchments.newBuilder(a);
+        scaledCatchments.setId(lookup.getValue());
         for (int i = 0; i < scaledCatchments.getCatchmentsCount(); i++) {
             final Catchment scaledCatchment = scaledCatchments.getCatchments(i);
             Catchment.Builder catchmentBuilder = Catchment.newBuilder();

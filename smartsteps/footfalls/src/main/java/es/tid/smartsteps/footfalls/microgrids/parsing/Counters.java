@@ -6,6 +6,7 @@ package es.tid.smartsteps.footfalls.microgrids.parsing;
  */
 enum Counters {
 
+    FILTERED_CATCHMENTS,
     FILTERED_TRAFFIC_COUNTS,
     INVALID_CATCHMENTS,
     INVALID_LOOKUPS,

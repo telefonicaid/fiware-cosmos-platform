@@ -1,6 +1,6 @@
 package entry;
 
-option java_package = "es.tid.smartsteps.dispersion.data.generated";
+option java_package = "es.tid.smartsteps.footfalls.microgrids.data.generated";
 option java_outer_classname = "EntryProtocol";
 
 message TrafficCounts {

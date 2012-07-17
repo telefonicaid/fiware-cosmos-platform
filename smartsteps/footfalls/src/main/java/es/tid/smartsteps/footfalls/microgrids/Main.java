@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -32,30 +31,77 @@ public class Main extends Configured implements Tool {
 
     private static final Logger LOGGER = Logger.getLogger(Main.class);
 
+    private enum Type {
+
+        TRAFFIC_COUNTS,
+        CATCHMENTS
+    }
+
     @Override
     public int run(String[] args) throws ClassNotFoundException,
                                          InterruptedException, IOException {
-        if (args.length != 6) {
+
+        if (args.length != 7) {
             throw new IllegalArgumentException(
-                    "Usage: trafficCountsPath cellToMicrogridPath "
-                    + "microgridToPolygonPath soaCentroidsPath catchmentsPath "
-                    + "outputDir");
+                    "Usage: [traffic_counts|catchments] trafficCountsPath "
+                    + "cellToMicrogridPath microgridToPolygonPath "
+                    + "soaCentroidsPath catchmentsPath outputDir");
         }
 
         final Configuration config = Config.load(Config.class.getResource(
                 "/config.properties").openStream(), this.getConf());
 
-        final Path trafficCountsPath = new Path(args[0]);
-        final Path cellToMicrogridPath = new Path(args[1]);
-        final Path microgridToPolygonPath = new Path(args[2]);
-        final Path soaCentroidsPath = new Path(args[3]);
-        final Path catchmentsPath = new Path(args[4]);
-        final Path outputDir = new Path(args[5]);
+        final Type type = Type.valueOf(args[0].toUpperCase());
+        final Path trafficCountsPath = new Path(args[1]);
+        final Path cellToMicrogridPath = new Path(args[2]);
+        final Path microgridToPolygonPath = new Path(args[3]);
+        final Path soaCentroidsPath = new Path(args[4]);
+        final Path catchmentsPath = new Path(args[5]);
+        final Path outputDir = new Path(args[6]);
 
-        FileSystem fs = FileSystem.get(this.getConf());
+        final Path trafficCountsParsedPath = new Path(outputDir,
+                "traffic_counts_parsed");
+        final Path cellToMicrogridParsedPath = new Path(outputDir,
+                "cell_to_microgrid_parsed");
+        final Path microgridToPolygonParsedPath = new Path(outputDir,
+                "microgrid_to_polygon_parsed");
+        final Path soaCentroidsParsedPath = new Path(outputDir,
+                                                     "soa_centroids_parsed");
+        final Path catchmentsParsedPath = new Path(outputDir,
+                                                   "catchments_parsed");
 
-        Path trafficCountsParsedPath = new Path(outputDir,
-                                                "traffic_counts_parsed");
+        parse(trafficCountsPath, trafficCountsParsedPath, cellToMicrogridPath,
+              cellToMicrogridParsedPath, microgridToPolygonPath,
+              microgridToPolygonParsedPath, soaCentroidsPath,
+              soaCentroidsParsedPath, catchmentsPath, catchmentsParsedPath,
+              config);
+
+        switch (type) {
+            case TRAFFIC_COUNTS:
+                propagateTrafficCounts(trafficCountsParsedPath,
+                        cellToMicrogridParsedPath, microgridToPolygonParsedPath,
+                        soaCentroidsParsedPath, outputDir, config);
+                break;
+            case CATCHMENTS:
+                propagateCatchments(catchmentsParsedPath,
+                        cellToMicrogridParsedPath, microgridToPolygonParsedPath,
+                        outputDir, config);
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid execution mode");
+        }
+
+        return 0;
+    }
+
+    private static void parse(
+            Path trafficCountsPath, Path trafficCountsParsedPath,
+            Path cellToMicrogridPath, Path cellToMicrogridParsedPath,
+            Path microgridToPolygonPath, Path microgridToPolygonParsedPath,
+            Path soaCentroidsPath, Path soaCentroidsParsedPath,
+            Path catchmentsPath, Path catchmentsParsedPath, Configuration config)
+            throws ClassNotFoundException, IOException, InterruptedException {
+
         {
             CosmosJob job = CosmosJob.createMapJob(config,
                     "TrafficCountsParser",
@@ -67,8 +113,6 @@ public class Main extends Configured implements Tool {
             job.waitForCompletion(true);
         }
 
-        Path cellToMicrogridParsedPath = new Path(outputDir,
-                                                  "cell_to_microgrid_parsed");
         {
             CosmosJob job = CosmosJob.createMapJob(config,
                     "CellToMicrogridLookupParser",
@@ -80,6 +124,44 @@ public class Main extends Configured implements Tool {
             job.waitForCompletion(true);
         }
 
+        {
+            CosmosJob job = CosmosJob.createMapJob(config,
+                    "MicrogridToPolygonLookupParser",
+                    TextInputFormat.class,
+                    LookupParserMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, microgridToPolygonPath);
+            FileOutputFormat.setOutputPath(job, microgridToPolygonParsedPath);
+            job.waitForCompletion(true);
+        }
+
+        {
+            CosmosJob job = CosmosJob.createMapJob(config,
+                    "SOACentroidParser",
+                    TextInputFormat.class,
+                    CentroidParserMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, soaCentroidsPath);
+            FileOutputFormat.setOutputPath(job, soaCentroidsParsedPath);
+            job.waitForCompletion(true);
+        }
+
+        {
+            CosmosJob job = CosmosJob.createMapJob(config,
+                    "CatchmentsParser",
+                    TextInputFormat.class,
+                    CatchmentsParserMapper.class,
+                    SequenceFileOutputFormat.class);
+            FileInputFormat.setInputPaths(job, catchmentsPath);
+            FileOutputFormat.setOutputPath(job, catchmentsParsedPath);
+            job.waitForCompletion(true);
+        }
+    }
+
+    private static void propagateTrafficCounts(Path trafficCountsParsedPath,
+            Path cellToMicrogridParsedPath, Path microgridToPolygonParsedPath,
+            Path soaCentroidsParsedPath, Path outputDir, Configuration config)
+            throws ClassNotFoundException, IOException, InterruptedException {
         Path countsByMicrogridPath = new Path(outputDir, "counts_by_microgrid");
         {
             CosmosJob job = CosmosJob.createMapReduceJob(config,
@@ -91,21 +173,6 @@ public class Main extends Configured implements Tool {
             FileInputFormat.setInputPaths(job, trafficCountsParsedPath,
                                           cellToMicrogridParsedPath);
             FileOutputFormat.setOutputPath(job, countsByMicrogridPath);
-            job.waitForCompletion(true);
-        }
-
-        fs.delete(trafficCountsParsedPath, true);
-
-        Path microgridToPolygonParsedPath = new Path(outputDir,
-                "microgrid_to_polygon_parsed");
-        {
-            CosmosJob job = CosmosJob.createMapJob(config,
-                    "MicrogridToPolygonLookupParser",
-                    TextInputFormat.class,
-                    LookupParserMapper.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, microgridToPolygonPath);
-            FileOutputFormat.setOutputPath(job, microgridToPolygonParsedPath);
             job.waitForCompletion(true);
         }
 
@@ -123,8 +190,6 @@ public class Main extends Configured implements Tool {
             job.waitForCompletion(true);
         }
 
-        fs.delete(countsByMicrogridPath, true);
-
         Path aggregatedCountsByPolygonPath = new Path(outputDir,
                 "aggregated_counts_by_polygon");
         {
@@ -136,20 +201,6 @@ public class Main extends Configured implements Tool {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, countsByPolygonPath);
             FileOutputFormat.setOutputPath(job, aggregatedCountsByPolygonPath);
-            job.waitForCompletion(true);
-        }
-
-        fs.delete(countsByPolygonPath, true);
-
-        Path soaCentroidsParsedPath = new Path(outputDir, "soa_centroids_parsed");
-        {
-            CosmosJob job = CosmosJob.createMapJob(config,
-                    "SOACentroidParser",
-                    TextInputFormat.class,
-                    CentroidParserMapper.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, soaCentroidsPath);
-            FileOutputFormat.setOutputPath(job, soaCentroidsParsedPath);
             job.waitForCompletion(true);
         }
 
@@ -169,9 +220,6 @@ public class Main extends Configured implements Tool {
             job.waitForCompletion(true);
         }
 
-        fs.delete(aggregatedCountsByPolygonPath, true);
-        fs.delete(soaCentroidsParsedPath, true);
-
         Path aggregatedCountsByPolygonJoinedTextPath = new Path(outputDir,
                 "aggregated_counts_by_polygon_joined_text");
         {
@@ -187,21 +235,12 @@ public class Main extends Configured implements Tool {
                     aggregatedCountsByPolygonJoinedTextPath);
             job.waitForCompletion(true);
         }
+    }
 
-        fs.delete(aggregatedCountsByPolygonJoinedPath, true);
-
-        Path catchmentsParsedPath = new Path(outputDir, "catchments_parsed");
-        {
-            CosmosJob job = CosmosJob.createMapJob(config,
-                    "CatchmentsParser",
-                    TextInputFormat.class,
-                    CatchmentsParserMapper.class,
-                    SequenceFileOutputFormat.class);
-            FileInputFormat.setInputPaths(job, catchmentsPath);
-            FileOutputFormat.setOutputPath(job, catchmentsParsedPath);
-            job.waitForCompletion(true);
-        }
-
+    private static void propagateCatchments(Path catchmentsParsedPath,
+            Path cellToMicrogridParsedPath, Path microgridToPolygonParsedPath,
+            Path outputDir, Configuration config)
+            throws ClassNotFoundException, IOException, InterruptedException {
         Path cellToMicrogridParsedRekeyedByValuePath = new Path(outputDir,
                 "cell_to_microgrid_parsed_rekeyed_by_value");
         {
@@ -232,9 +271,6 @@ public class Main extends Configured implements Tool {
             job.waitForCompletion(true);
         }
 
-        fs.delete(cellToMicrogridParsedRekeyedByValuePath, true);
-        fs.delete(microgridToPolygonParsedPath, true);
-
         Path catchmentsByMicrogridPath = new Path(outputDir,
                                                   "catchments_by_microgrid");
         {
@@ -250,8 +286,6 @@ public class Main extends Configured implements Tool {
             job.waitForCompletion(true);
         }
 
-        fs.delete(catchmentsParsedPath, true);
-
         Path scaledTopCellsPath = new Path(outputDir, "scaled_topcells");
         {
             CosmosJob job = CosmosJob.createMapReduceJob(config,
@@ -264,11 +298,6 @@ public class Main extends Configured implements Tool {
                                           cellToPolygonParsedPath);
             FileOutputFormat.setOutputPath(job, scaledTopCellsPath);
         }
-
-        fs.delete(catchmentsByMicrogridPath, true);
-        fs.delete(cellToPolygonParsedPath, true);
-
-        return 0;
     }
 
     public static void main(String[] args) throws Exception {

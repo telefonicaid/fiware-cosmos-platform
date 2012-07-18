@@ -1,5 +1,7 @@
 package es.tid.smartsteps.footfalls.catchments;
 
+import java.util.List;
+
 import net.sf.json.JSONArray;
 import net.sf.json.JSONException;
 import net.sf.json.JSONObject;
@@ -63,13 +65,58 @@ public class CatchmentsParser extends Parser<Catchments> {
                 topCellBuilder.setId(topCell.getString(CELLID_FIELD_NAME));
                 topCellBuilder.setCount(topCell.getInt(COUNT_FIELD_NAME));
                 JSONArray lonlat = topCell.getJSONArray(LONLAT_FIELD_NAME);
-                topCellBuilder.setLongitude(lonlat.getLong(0));
-                topCellBuilder.setLatitude(lonlat.getLong(1));
+                topCellBuilder.setLongitude(lonlat.getDouble(0));
+                topCellBuilder.setLatitude(lonlat.getDouble(1));
                 catchmentBuilder.addTopCells(topCellBuilder);
             }
             builder.addCatchments(catchmentBuilder);
         }
 
         return builder.build();
+    }
+
+    public JSONObject toJSON(Catchments value, boolean shouldRound) {
+        final JSONObject obj = new JSONObject();
+
+        obj.put(TOP_LEVEL_CELLID_FIELD_NAME, value.getId());
+        obj.put(DATE_FIELD_NAME, value.getDate());
+        obj.put(LATITUDE_FIELD_NAME, value.getLatitude());
+        obj.put(LONGITUDE_FIELD_NAME, value.getLongitude());
+
+        obj.put(CATCHMENTS_FIELD_NAME, this.jsonizeCatchments(
+                value.getCatchmentsList(), shouldRound));
+
+        return obj;
+    }
+
+    private JSONArray jsonizeCatchments(List<Catchment> values,
+                                        boolean shouldRound) {
+        final JSONArray array = new JSONArray();
+        for (Catchment value : values) {
+            final JSONObject catchmentObj = new JSONObject();
+            catchmentObj.put(HOUR_FIELD_NAME, value.getHour());
+            catchmentObj.put(TOP_CELLS_FIELD_NAME, this.jsonizeTopCells(
+                    value.getTopCellsList(), shouldRound));
+            array.add(catchmentObj);
+        }
+        return array;
+    }
+
+    private JSONArray jsonizeTopCells(List<TopCell> values,
+                                      boolean shouldRound) {
+        final JSONArray array = new JSONArray();
+        for (TopCell value : values) {
+            final JSONObject cellObj = new JSONObject();
+            cellObj.put(CELLID_FIELD_NAME, value.getId());
+            cellObj.put(COUNT_FIELD_NAME, (shouldRound ?
+                                           Math.round(value.getCount()) :
+                                           value.getCount()));
+            JSONArray lonlat = new JSONArray();
+            lonlat.add(value.getLongitude());
+            lonlat.add(value.getLatitude());
+            cellObj.put(LONLAT_FIELD_NAME, lonlat);
+            array.add(cellObj);
+        }
+        return array;
     }
 }

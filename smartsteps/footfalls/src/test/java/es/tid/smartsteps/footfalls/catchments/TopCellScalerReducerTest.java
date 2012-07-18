@@ -23,6 +23,7 @@ public class TopCellScalerReducerTest extends CatchmentsBasedTest {
     private ReduceDriver<
             Text, TypedProtobufWritable<Message>,
             Text, TypedProtobufWritable<Catchments>> instance;
+    private Text key;
 
     public TopCellScalerReducerTest() throws IOException {}
 
@@ -32,6 +33,7 @@ public class TopCellScalerReducerTest extends CatchmentsBasedTest {
                 Text, TypedProtobufWritable<Message>,
                 Text, TypedProtobufWritable<Catchments>>(
                         new TopCellScalerReducer());
+        this.key = new Text("src");
     }
 
     @Test
@@ -41,12 +43,11 @@ public class TopCellScalerReducerTest extends CatchmentsBasedTest {
                 .setValue("dst")
                 .setProportion(0.4d)
                 .build();
-        Text key = new Text("src");
-        this.instance.withInput(key,
+        this.instance.withInput(this.key,
                 asList(new TypedProtobufWritable<Message>(lookup),
                        new TypedProtobufWritable<Message>(
                         this.singletonCatchment("topLevelId", 22, "src", 100d))))
-                .withOutput(key, new TypedProtobufWritable<Catchments>(
+                .withOutput(this.key, new TypedProtobufWritable<Catchments>(
                         this.singletonCatchment("topLevelId", 22, "dst", 40d)))
                 .runTest();
     }
@@ -63,9 +64,7 @@ public class TopCellScalerReducerTest extends CatchmentsBasedTest {
                 .setValue("dst2")
                 .setProportion(0.6d)
                 .build();
-        Text key = new Text("src");
-
-        int results = this.instance.withInput(key,
+        int results = this.instance.withInput(this.key,
                 asList(new TypedProtobufWritable<Message>(lookup1),
                        new TypedProtobufWritable<Message>(lookup2),
                        new TypedProtobufWritable<Message>(
@@ -78,4 +77,17 @@ public class TopCellScalerReducerTest extends CatchmentsBasedTest {
         assertEquals(6, results);
     }
 
+    @Test
+    public void shouldCountDiscatedEntries() throws Exception {
+        this.instance.withInput(this.key,
+                asList(new TypedProtobufWritable<Message>(
+                        this.singletonCatchment("tld1", 22, "src", 100d)),
+                       new TypedProtobufWritable<Message>(
+                        this.singletonCatchment("tld2",  8, "src",  10d)),
+                       new TypedProtobufWritable<Message>(
+                        this.singletonCatchment("tld3",  8, "src", 200d))))
+                .runTest();
+        assertEquals(3, this.instance.getCounters()
+                .findCounter(Counters.ENTRIES_NOT_IN_LOOKUP));
+    }
 }

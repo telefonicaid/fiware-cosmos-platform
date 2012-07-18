@@ -310,6 +310,19 @@ public class Main extends Configured implements Tool {
             FileInputFormat.setInputPaths(job, scaledTopCellsPath);
             FileOutputFormat.setOutputPath(job, propagatedCatchments);
         }
+
+        Path soaCatchments = new Path(outputDir, "soa_catchments");
+        {
+            CosmosJob job = CosmosJob.createReduceJob(config,
+                    "CatchmetnsJsonExporter",
+                    SequenceFileInputFormat.class,
+                    CatchmentsJsonExporterReducer.class,
+                    1,
+                    TextOutputFormat.class);
+            FileInputFormat.setInputPaths(job, propagatedCatchments);
+            FileOutputFormat.setOutputPath(job, soaCatchments);
+            job.waitForCompletion(true);
+        }
     }
 
     public static void main(String[] args) throws Exception {

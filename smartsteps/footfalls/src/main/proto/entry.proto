@@ -1,6 +1,6 @@
 package entry;
 
-option java_package = "es.tid.smartsteps.footfalls.microgrids.data.generated";
+option java_package = "es.tid.smartsteps.footfalls.data.generated";
 option java_outer_classname = "EntryProtocol";
 
 message TrafficCounts {
@@ -19,6 +19,26 @@ message Counts {
 message SOACentroid {
     required string soaId = 1;
     required double squaredKilometers = 2;
+    required double latitude = 3;
+    required double longitude = 4;
+}
+
+message Catchments {
+    required string id = 1;
+    required string date = 2;
+    required double latitude = 3;
+    required double longitude = 4;
+    repeated Catchment catchments = 5;
+}
+
+message Catchment {
+    required uint32 hour = 1;
+    repeated TopCell topCells = 2;
+}
+
+message TopCell {
+    required string id = 1;
+    required double count = 2;
     required double latitude = 3;
     required double longitude = 4;
 }

@@ -1,5 +1,6 @@
 package es.tid.smartsteps.footfalls.microgrids;
 
+import java.io.IOException;
 import static java.util.Arrays.asList;
 
 import com.google.protobuf.Message;
@@ -10,22 +11,21 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.smartsteps.footfalls.microgrids.data.generated.EntryProtocol.Catchment;
 import es.tid.smartsteps.footfalls.microgrids.data.generated.EntryProtocol.Catchments;
-import es.tid.smartsteps.footfalls.microgrids.data.generated.EntryProtocol.TopCell;
 import es.tid.smartsteps.footfalls.microgrids.data.generated.LookupProtocol.Lookup;
 
 /**
  *
  * @author sortega
  */
-public class TopCellScalerReducerTest {
-    private static final String SAMPLE_DATE = "20120504";
+public class TopCellScalerReducerTest extends CatchmentsBasedTest {
 
     private ReduceDriver<
             Text, TypedProtobufWritable<Message>,
             Text, TypedProtobufWritable<Catchments>> instance;
     private Text key;
+
+    public TopCellScalerReducerTest() throws IOException {}
 
     @Before
     public void setUp() {
@@ -68,11 +68,11 @@ public class TopCellScalerReducerTest {
                 asList(new TypedProtobufWritable<Message>(lookup1),
                        new TypedProtobufWritable<Message>(lookup2),
                        new TypedProtobufWritable<Message>(
-                        singletonCatchment("tld1", 22, "src", 100d)),
+                        this.singletonCatchment("tld1", 22, "src", 100d)),
                        new TypedProtobufWritable<Message>(
-                        singletonCatchment("tld2",  8, "src",  10d)),
+                        this.singletonCatchment("tld2",  8, "src",  10d)),
                        new TypedProtobufWritable<Message>(
-                        singletonCatchment("tld3",  8, "src", 200d))))
+                        this.singletonCatchment("tld3",  8, "src", 200d))))
                 .run().size();
         assertEquals(6, results);
     }
@@ -89,21 +89,5 @@ public class TopCellScalerReducerTest {
                 .runTest();
         assertEquals(3, this.instance.getCounters()
                 .findCounter(Counters.ENTRIES_NOT_IN_LOOKUP));
-    }
-
-    private Catchments singletonCatchment(String topLevelId, int hour,
-                                          String cellId, double count) {
-        Catchment.Builder catchment = Catchment.newBuilder()
-                .setHour(hour)
-                .addTopCells(TopCell.newBuilder()
-                        .setId(cellId)
-                        .setCount(count)
-                        .setLatitude(0d)
-                        .setLongitude(0d));
-        return Catchments.newBuilder()
-                .setId(topLevelId)
-                .setDate(SAMPLE_DATE)
-                .addCatchments(catchment)
-                .build();
     }
 }

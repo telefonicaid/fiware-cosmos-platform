@@ -1,6 +1,5 @@
 package es.tid.smartsteps.footfalls.microgrids;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,10 +33,8 @@ public class CatchmentsScalerReducerTest extends CatchmentsBasedTest {
     private TypedProtobufWritable<Message> countsValue;
     private TypedProtobufWritable<Message> lookupValue;
 
-    public CatchmentsScalerReducerTest() throws IOException {}
-
     @Before
-    public void setUp() throws IOException {
+    public void setUp() {
         this.instance = new ReduceDriver<
                 Text, TypedProtobufWritable<Message>,
                 Text, TypedProtobufWritable<Catchments>>(
@@ -54,7 +51,7 @@ public class CatchmentsScalerReducerTest extends CatchmentsBasedTest {
     }
 
     @Test
-    public void testReduce() throws IOException {
+    public void testReduce() throws Exception {
         List<Pair<Text, TypedProtobufWritable<Catchments>>> results =
                 this.instance
                         .withInput(this.key,

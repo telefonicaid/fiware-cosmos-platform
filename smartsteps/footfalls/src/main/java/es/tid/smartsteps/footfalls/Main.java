@@ -19,8 +19,8 @@ import es.tid.cosmos.base.mapreduce.CosmosJob;
 import es.tid.smartsteps.footfalls.aggregation.AggregationReducer;
 import es.tid.smartsteps.footfalls.aggregation.CellIdAndDateMapper;
 import es.tid.smartsteps.footfalls.catchments.*;
-import es.tid.smartsteps.footfalls.centroids.CentroidJoinerReducer;
 import es.tid.smartsteps.footfalls.centroids.CentroidJoinerMapper;
+import es.tid.smartsteps.footfalls.centroids.CentroidJoinerReducer;
 import es.tid.smartsteps.footfalls.centroids.CentroidParserMapper;
 import es.tid.smartsteps.footfalls.config.Config;
 import es.tid.smartsteps.footfalls.lookups.LookupParserMapper;
@@ -318,6 +318,19 @@ public class Main extends Configured implements Tool {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, scaledTopCellsPath);
             FileOutputFormat.setOutputPath(job, propagatedCatchments);
+        }
+
+        Path soaCatchments = new Path(outputDir, "soa_catchments");
+        {
+            CosmosJob job = CosmosJob.createReduceJob(config,
+                    "CatchmetnsJsonExporter",
+                    SequenceFileInputFormat.class,
+                    CatchmentsJsonExporterReducer.class,
+                    1,
+                    TextOutputFormat.class);
+            FileInputFormat.setInputPaths(job, propagatedCatchments);
+            FileOutputFormat.setOutputPath(job, soaCatchments);
+            job.waitForCompletion(true);
         }
     }
 

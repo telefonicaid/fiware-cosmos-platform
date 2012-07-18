@@ -47,7 +47,7 @@ public class WordCountMain extends Configured implements Tool {
             int res = ToolRunner.run(new Configuration(),
                                      new WordCountMain(), args);
             if (res != 0) {
-                throw new Exception("Uknown error");
+                throw new Exception("Unknown error");
             }
         } catch (Exception ex) {
             LOGGER.fatal(ex);

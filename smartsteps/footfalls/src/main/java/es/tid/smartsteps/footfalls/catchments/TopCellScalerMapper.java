@@ -17,7 +17,7 @@ import es.tid.smartsteps.footfalls.data.generated.LookupProtocol.Lookup;
  * There will be an output Catchments per input TopCell.
  *
  * In: <key, Lookup> | <key, Catchments>
- * Out: <id, Lookup> | <id, Catchemts>
+ * Out: <id, Lookup> | <id, Catchments>
  *
  * @author sortega
  */

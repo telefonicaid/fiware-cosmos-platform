@@ -46,9 +46,9 @@ public class TopCellScalerReducerTest extends CatchmentsTestBase {
         this.instance.withInput(this.key,
                 asList(new TypedProtobufWritable<Message>(lookup),
                        new TypedProtobufWritable<Message>(
-                        this.singletonCatchment("topLevelId", 22, "src", 100d))))
+                        singletonCatchment("topLevelId", 22, "src", 100d))))
                 .withOutput(this.key, new TypedProtobufWritable<Catchments>(
-                        this.singletonCatchment("topLevelId", 22, "dst", 40d)))
+                        singletonCatchment("topLevelId", 22, "dst", 40d)))
                 .runTest();
     }
 
@@ -68,11 +68,11 @@ public class TopCellScalerReducerTest extends CatchmentsTestBase {
                 asList(new TypedProtobufWritable<Message>(lookup1),
                        new TypedProtobufWritable<Message>(lookup2),
                        new TypedProtobufWritable<Message>(
-                        this.singletonCatchment("tld1", 22, "src", 100d)),
+                        singletonCatchment("tld1", 22, "src", 100d)),
                        new TypedProtobufWritable<Message>(
-                        this.singletonCatchment("tld2",  8, "src",  10d)),
+                        singletonCatchment("tld2",  8, "src",  10d)),
                        new TypedProtobufWritable<Message>(
-                        this.singletonCatchment("tld3",  8, "src", 200d))))
+                        singletonCatchment("tld3",  8, "src", 200d))))
                 .run().size();
         assertEquals(6, results);
     }
@@ -81,11 +81,11 @@ public class TopCellScalerReducerTest extends CatchmentsTestBase {
     public void shouldCountDiscatedEntries() throws Exception {
         this.instance.withInput(this.key,
                 asList(new TypedProtobufWritable<Message>(
-                        this.singletonCatchment("tld1", 22, "src", 100d)),
+                        singletonCatchment("tld1", 22, "src", 100d)),
                        new TypedProtobufWritable<Message>(
-                        this.singletonCatchment("tld2",  8, "src",  10d)),
+                        singletonCatchment("tld2",  8, "src",  10d)),
                        new TypedProtobufWritable<Message>(
-                        this.singletonCatchment("tld3",  8, "src", 200d))))
+                        singletonCatchment("tld3",  8, "src", 200d))))
                 .runTest();
         assertEquals(3, this.instance.getCounters()
                 .findCounter(Counters.ENTRIES_NOT_IN_LOOKUP).getValue());

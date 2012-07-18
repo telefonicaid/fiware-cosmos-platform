@@ -44,8 +44,8 @@ public class CatchmentsTestBase extends ConfigurationTestBase {
         }
     }
 
-    public Catchments singletonCatchment(String topLevelId, int hour,
-                                          String cellId, double count) {
+    protected static Catchments singletonCatchment(String topLevelId, int hour,
+                                                   String cellId, double count) {
         Catchment.Builder catchment = Catchment.newBuilder()
                 .setHour(hour)
                 .addTopCells(TopCell.newBuilder()

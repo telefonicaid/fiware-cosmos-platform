@@ -51,16 +51,17 @@ public class TopCellAggregatorReducerTest extends CatchmentsTestBase {
         this.instance
                 .withInput(key, asList(
                     new TypedProtobufWritable<Catchments>(
-                        this.singletonCatchment("topLevelId", 0, "0", 10d)),
+                        singletonCatchment("topLevelId", 0, "0", 10d)),
                     new TypedProtobufWritable<Catchments>(
-                        this.singletonCatchment("topLevelId", 0, "1", 10d)),
+                        singletonCatchment("topLevelId", 0, "1", 10d)),
                     new TypedProtobufWritable<Catchments>(
-                        this.singletonCatchment("topLevelId", 1, "2", 10d)),
+                        singletonCatchment("topLevelId", 1, "2", 10d)),
                     new TypedProtobufWritable<Catchments>(
-                        this.singletonCatchment("topLevelId", 1, "3",  5d)),                       new TypedProtobufWritable<Catchments>(
-                        this.singletonCatchment("topLevelId", 1, "2",  5d)),
+                        singletonCatchment("topLevelId", 1, "3",  5d)),
                     new TypedProtobufWritable<Catchments>(
-                        this.singletonCatchment("topLevelId", 1, "3", 10d))
+                        singletonCatchment("topLevelId", 1, "2",  5d)),
+                    new TypedProtobufWritable<Catchments>(
+                        singletonCatchment("topLevelId", 1, "3", 10d))
                 ))
                 .withOutput(key, expectedOutput)
                 .runTest();

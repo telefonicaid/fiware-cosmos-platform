@@ -88,6 +88,6 @@ public class TopCellScalerReducerTest extends CatchmentsBasedTest {
                         this.singletonCatchment("tld3",  8, "src", 200d))))
                 .runTest();
         assertEquals(3, this.instance.getCounters()
-                .findCounter(Counters.ENTRIES_NOT_IN_LOOKUP));
+                .findCounter(Counters.ENTRIES_NOT_IN_LOOKUP).getValue());
     }
 }

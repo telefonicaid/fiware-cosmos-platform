@@ -230,7 +230,7 @@ public class SftpIT {
             sftpChannel.mkdir(dirName);
             sftpChannel.cd(dirName);
             List<LsEntry> ls = sftpChannel.ls(".");
-            assertEquals(ls.size(), 2); // "." and ".."
+            assertEquals(ls.size(), 0);
             for (LsEntry entry : ls) {
                 assertTrue(entry.getLongname().contains("rw"),
                            "Verifying ls returns permissions data");

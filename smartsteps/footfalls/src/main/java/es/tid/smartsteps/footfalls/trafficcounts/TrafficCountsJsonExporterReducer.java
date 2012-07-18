@@ -51,7 +51,8 @@ public class TrafficCountsJsonExporterReducer extends Reducer<
          * with output format requirements.
          */
         obj.put(TrafficCountsParser.CELLID_FIELD_NAME, counts.getId());
-        obj.put(TrafficCountsParser.DATE_FIELD_NAME, counts.getDate());
+        obj.put(TrafficCountsParser.DATE_FIELD_NAME,
+                Integer.parseInt(counts.getDate()));
         obj.put(TrafficCountsParser.LATITUDE_FIELD_NAME, counts.getLatitude());
         obj.put(TrafficCountsParser.LONGITUDE_FIELD_NAME, counts.getLongitude());
 

@@ -72,8 +72,8 @@ def deploy_models():
                            'samples', 'wordcount', 'core', 'parameterized',
                            'target',
                            'wordcount-core-parameterized-{0}.jar'.format(COSMOS_VERSION))
-    spup.upload_file(wc_jar_path, 'models/')
-    spup.upload_file(wc_param_jar_path, 'models/')
+    spup.upload_file(wc_jar_path, 'models/wordcount-core-standalone.jar')
+    spup.upload_file(wc_param_jar_path, 'models/wordcount-core-parameterized.jar')
     run('su hdfs -c "hadoop dfs -mkdir /share/samples/{jars,src}"')
     with cd(spup.get_remote_tempdir()):
         run('su hdfs -c "hadoop dfs -put models/*.jar /share/samples/jars"')

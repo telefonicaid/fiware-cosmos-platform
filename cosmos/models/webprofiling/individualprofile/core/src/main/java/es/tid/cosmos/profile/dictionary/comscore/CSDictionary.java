@@ -84,7 +84,7 @@ public class CSDictionary implements Dictionary {
         } else if (patternId == 0) {
             throw new IllegalArgumentException("Invalid pattern ID.");
         } else if (patternId == 1) {
-            return this.processUknownUrl();
+            return this.processUnknownUrl();
         } else {
             return this.processKnownUrl(patternId);
         }
@@ -118,7 +118,7 @@ public class CSDictionary implements Dictionary {
         return categorization;
     }
 
-    private Categorization processUknownUrl() {
+    private Categorization processUnknownUrl() {
         Categorization categorization = new Categorization();
         categorization.setResult(CategorizationResult.UNKNOWN_URL);
         return categorization;

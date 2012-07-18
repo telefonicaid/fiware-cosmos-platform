@@ -9,7 +9,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
+import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.Catchment;
 import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.Catchments;
+import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.TopCell;
 import es.tid.smartsteps.footfalls.data.generated.LookupProtocol.Lookup;
 
 /**
@@ -53,10 +55,26 @@ public class TopCellScalerReducer extends Reducer<
 
         for (Catchments catchments : catchmentsList) {
             for (Lookup lookup : lookups) {
-                this.outValue.set(CatchmentUtil.scaleCatchments(catchments,
-                                                                lookup));
+                this.outValue.set(scaleCatchments(catchments, lookup));
                 context.write(key, this.outValue);
             }
         }
+    }
+
+    private static Catchments scaleCatchments(Catchments input, Lookup lookup) {
+        final TopCell inputTopCell = input.getCatchments(0).getTopCells(0);
+        final double scaledCount = lookup.getProportion() *
+                                   inputTopCell.getCount();
+        TopCell.Builder scaledTopCell = TopCell.newBuilder()
+                .setId(lookup.getValue())
+                .setCount(scaledCount)
+                .setLatitude(inputTopCell.getLatitude())
+                .setLongitude(inputTopCell.getLongitude());
+        Catchment.Builder scaledCatchment = Catchment.newBuilder()
+                .setHour(input.getCatchments(0).getHour())
+                .addTopCells(scaledTopCell);
+        return Catchments.newBuilder(input)
+                .setCatchments(0, scaledCatchment)
+                .build();
     }
 }

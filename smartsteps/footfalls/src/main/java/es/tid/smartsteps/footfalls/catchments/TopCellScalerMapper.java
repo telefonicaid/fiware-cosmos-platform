@@ -16,8 +16,8 @@ import es.tid.smartsteps.footfalls.data.generated.LookupProtocol.Lookup;
  * Maps lookups to their source id and partial Catchments to their TopCell id.
  * There will be an output Catchments per input TopCell.
  *
- * In: <key, Lookup> | <key, Catchment>
- * Out: <id, Lookup> | <id, Catchemt>
+ * In: <key, Lookup> | <key, Catchments>
+ * Out: <id, Lookup> | <id, Catchemts>
  *
  * @author sortega
  */

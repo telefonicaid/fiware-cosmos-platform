@@ -6,14 +6,13 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
 
-import es.tid.smartsteps.footfalls.catchments.CatchmentsBasedTest;
 import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.Catchments;
 
 /**
  *
  * @author dmicol
  */
-public class CatchmentsParserTest extends CatchmentsBasedTest {
+public class CatchmentsParserTest extends CatchmentsTestBase {
 
     private CatchmentsParser instance;
     private Catchments parsedCatchments;

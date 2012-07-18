@@ -20,7 +20,7 @@ import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.Catchments;
  *
  * @author dmicol
  */
-public class CatchmentsParserMapperTest extends CatchmentsBasedTest {
+public class CatchmentsParserMapperTest extends CatchmentsTestBase {
 
     private MapDriver<
             LongWritable, Text,

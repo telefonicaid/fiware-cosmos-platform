@@ -24,7 +24,7 @@ import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.TrafficCounts;
  * @author dmicol, sortega
  */
 public class TrafficCountsJsonExporterReducerTest
-        extends TrafficCountsBasedTest {
+        extends TrafficCountsTestBase {
 
     private ReduceDriver<
             Text, TypedProtobufWritable<TrafficCounts>,

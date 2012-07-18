@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-import es.tid.smartsteps.footfalls.ConfigurationBasedTest;
+import es.tid.smartsteps.footfalls.ConfigurationTestBase;
 import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.Catchment;
 import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.Catchments;
 import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.TopCell;
@@ -13,12 +13,13 @@ import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.TopCell;
  *
  * @author dmicol
  */
-public class CatchmentsBasedTest extends ConfigurationBasedTest {
+public class CatchmentsTestBase extends ConfigurationTestBase {
+
     public static final String SAMPLE_DATE = "20120504";
 
     protected final String catchments;
 
-    public CatchmentsBasedTest() {
+    public CatchmentsTestBase() {
         try {
             BufferedReader reader = null;
             try {

@@ -23,7 +23,7 @@ import es.tid.smartsteps.footfalls.lookups.LookupParser;
  *
  * @author dmicol
  */
-public class CatchmentsScalerMapperTest extends CatchmentsBasedTest {
+public class CatchmentsScalerMapperTest extends CatchmentsTestBase {
 
     private MapDriver<
             Text, TypedProtobufWritable<Message>,

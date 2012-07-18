@@ -21,7 +21,7 @@ import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.TrafficCounts;
  *
  * @author dmicol
  */
-public class TrafficCountsParserMapperTest extends TrafficCountsBasedTest {
+public class TrafficCountsParserMapperTest extends TrafficCountsTestBase {
 
     private MapDriver<
             LongWritable, Text,

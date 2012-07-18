@@ -12,7 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.smartsteps.footfalls.catchments.CatchmentsBasedTest;
+import es.tid.smartsteps.footfalls.catchments.CatchmentsTestBase;
 import es.tid.smartsteps.footfalls.config.Config;
 import es.tid.smartsteps.footfalls.data.generated.LookupProtocol.Lookup;
 import es.tid.smartsteps.footfalls.lookups.LookupRekeyerMapper.RekeyBy;
@@ -21,7 +21,7 @@ import es.tid.smartsteps.footfalls.lookups.LookupRekeyerMapper.RekeyBy;
  *
  * @author dmicol
  */
-public class LookupRekeyerMapperTest extends CatchmentsBasedTest {
+public class LookupRekeyerMapperTest extends CatchmentsTestBase {
 
     private Text key;
     private TypedProtobufWritable<Lookup> value;

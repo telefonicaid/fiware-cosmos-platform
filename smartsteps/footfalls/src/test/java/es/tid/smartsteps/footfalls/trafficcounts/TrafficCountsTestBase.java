@@ -4,17 +4,17 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-import es.tid.smartsteps.footfalls.ConfigurationBasedTest;
+import es.tid.smartsteps.footfalls.ConfigurationTestBase;
 
 /**
  *
  * @author dmicol
  */
-public class TrafficCountsBasedTest extends ConfigurationBasedTest {
+public class TrafficCountsTestBase extends ConfigurationTestBase {
 
     protected final String trafficCounts;
 
-    public TrafficCountsBasedTest() throws IOException {
+    public TrafficCountsTestBase() throws IOException {
         BufferedReader reader = null;
         try {
             reader = new BufferedReader(

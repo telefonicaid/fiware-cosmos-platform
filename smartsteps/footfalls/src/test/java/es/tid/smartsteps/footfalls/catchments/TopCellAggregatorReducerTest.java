@@ -16,7 +16,7 @@ import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.TopCell;
  *
  * @author sortega
  */
-public class TopCellAggregatorReducerTest extends CatchmentsBasedTest {
+public class TopCellAggregatorReducerTest extends CatchmentsTestBase {
 
     private ReduceDriver<
         BinaryKey, TypedProtobufWritable<Catchments>,

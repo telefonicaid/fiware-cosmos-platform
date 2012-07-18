@@ -14,7 +14,7 @@ import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.TrafficCounts;
  *
  * @author dmicol
  */
-public class TrafficCountsParserTest extends TrafficCountsBasedTest {
+public class TrafficCountsParserTest extends TrafficCountsTestBase {
 
     private TrafficCountsParser parser;
 

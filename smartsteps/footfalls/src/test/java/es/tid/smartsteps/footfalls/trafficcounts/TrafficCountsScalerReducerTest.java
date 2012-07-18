@@ -18,13 +18,12 @@ import es.tid.smartsteps.footfalls.config.Config;
 import es.tid.smartsteps.footfalls.data.TrafficCountsUtil;
 import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.TrafficCounts;
 import es.tid.smartsteps.footfalls.lookups.LookupParser;
-import es.tid.smartsteps.footfalls.trafficcounts.TrafficCountsParser;
 
 /**
  *
  * @author dmicol
  */
-public class TrafficCountsScalerReducerTest extends TrafficCountsBasedTest {
+public class TrafficCountsScalerReducerTest extends TrafficCountsTestBase {
 
     private ReduceDriver<
             Text, TypedProtobufWritable<Message>,

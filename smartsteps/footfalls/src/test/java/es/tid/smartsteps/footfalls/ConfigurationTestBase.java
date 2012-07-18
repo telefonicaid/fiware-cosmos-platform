@@ -10,11 +10,11 @@ import es.tid.smartsteps.footfalls.config.Config;
  *
  * @author dmicol
  */
-public class ConfigurationBasedTest {
+public class ConfigurationTestBase {
 
     protected final Configuration conf;
 
-    public ConfigurationBasedTest() {
+    public ConfigurationTestBase() {
         try {
             this.conf = Config.load(
                     Config.class.getResource("/config.properties")

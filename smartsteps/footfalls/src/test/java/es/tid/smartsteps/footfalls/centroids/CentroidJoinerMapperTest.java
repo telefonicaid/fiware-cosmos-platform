@@ -17,14 +17,14 @@ import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.smartsteps.footfalls.config.Config;
 import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.SOACentroid;
 import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.TrafficCounts;
-import es.tid.smartsteps.footfalls.trafficcounts.TrafficCountsBasedTest;
 import es.tid.smartsteps.footfalls.trafficcounts.TrafficCountsParser;
+import es.tid.smartsteps.footfalls.trafficcounts.TrafficCountsTestBase;
 
 /**
  *
  * @author dmicol
  */
-public class CentroidJoinerMapperTest extends TrafficCountsBasedTest {
+public class CentroidJoinerMapperTest extends TrafficCountsTestBase {
 
     private MapDriver<
             Text, TypedProtobufWritable<Message>,

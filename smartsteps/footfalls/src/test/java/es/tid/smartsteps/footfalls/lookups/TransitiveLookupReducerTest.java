@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
-import es.tid.smartsteps.footfalls.ConfigurationBasedTest;
+import es.tid.smartsteps.footfalls.ConfigurationTestBase;
 import es.tid.smartsteps.footfalls.config.Config;
 import es.tid.smartsteps.footfalls.data.generated.LookupProtocol.Lookup;
 
@@ -21,7 +21,7 @@ import es.tid.smartsteps.footfalls.data.generated.LookupProtocol.Lookup;
  *
  * @author dmicol
  */
-public class TransitiveLookupReducerTest extends ConfigurationBasedTest {
+public class TransitiveLookupReducerTest extends ConfigurationTestBase {
 
     private ReduceDriver<Text, TypedProtobufWritable<Lookup>,
             Text, TypedProtobufWritable<Lookup>> instance;

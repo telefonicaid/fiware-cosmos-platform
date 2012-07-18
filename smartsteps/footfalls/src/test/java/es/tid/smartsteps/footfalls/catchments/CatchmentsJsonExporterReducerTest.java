@@ -18,7 +18,7 @@ import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.Catchments;
  *
  * @author sortega
  */
-public class CatchmentsJsonExporterReducerTest extends CatchmentsBasedTest {
+public class CatchmentsJsonExporterReducerTest extends CatchmentsTestBase {
 
     private CatchmentsParser parser;
     private ReduceDriver<
@@ -30,7 +30,8 @@ public class CatchmentsJsonExporterReducerTest extends CatchmentsBasedTest {
         this.parser = mock(CatchmentsParser.class);
         this.instance = new ReduceDriver<
                 Text, TypedProtobufWritable<Catchments>,
-                NullWritable, Text>(new CatchmentsJsonExporterReducer(this.parser));
+                NullWritable, Text>(
+                        new CatchmentsJsonExporterReducer(this.parser));
     }
 
     @Test

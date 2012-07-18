@@ -18,7 +18,7 @@ import es.tid.smartsteps.footfalls.data.generated.LookupProtocol.Lookup;
  *
  * @author sortega
  */
-public class TopCellScalerReducerTest extends CatchmentsBasedTest {
+public class TopCellScalerReducerTest extends CatchmentsTestBase {
 
     private ReduceDriver<
             Text, TypedProtobufWritable<Message>,

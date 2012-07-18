@@ -15,13 +15,13 @@ import org.junit.Test;
 
 import es.tid.cosmos.base.data.TypedProtobufWritable;
 import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.SOACentroid;
-import es.tid.smartsteps.footfalls.trafficcounts.TrafficCountsBasedTest;
+import es.tid.smartsteps.footfalls.trafficcounts.TrafficCountsTestBase;
 
 /**
  *
  * @author dmicol
  */
-public class CentroidParserMapperTest extends TrafficCountsBasedTest {
+public class CentroidParserMapperTest extends TrafficCountsTestBase {
 
     private MapDriver<
             LongWritable, Text,

@@ -17,14 +17,14 @@ import es.tid.cosmos.base.mapreduce.BinaryKey;
 import es.tid.smartsteps.footfalls.config.Config;
 import es.tid.smartsteps.footfalls.data.TrafficCountsUtil;
 import es.tid.smartsteps.footfalls.data.generated.EntryProtocol.TrafficCounts;
-import es.tid.smartsteps.footfalls.trafficcounts.TrafficCountsBasedTest;
 import es.tid.smartsteps.footfalls.trafficcounts.TrafficCountsParser;
+import es.tid.smartsteps.footfalls.trafficcounts.TrafficCountsTestBase;
 
 /**
  *
  * @author dmicol
  */
-public class AggregationReducerTest extends TrafficCountsBasedTest {
+public class AggregationReducerTest extends TrafficCountsTestBase {
 
     private ReduceDriver<
             BinaryKey, TypedProtobufWritable<TrafficCounts>,

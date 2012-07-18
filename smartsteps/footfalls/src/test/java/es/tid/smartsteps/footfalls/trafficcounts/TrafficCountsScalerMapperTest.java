@@ -23,7 +23,7 @@ import es.tid.smartsteps.footfalls.lookups.LookupParser;
  *
  * @author dmicol
  */
-public class TrafficCountsScalerMapperTest extends TrafficCountsBasedTest {
+public class TrafficCountsScalerMapperTest extends TrafficCountsTestBase {
 
     private MapDriver<
             Text, TypedProtobufWritable<Message>,

@@ -16,6 +16,7 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.Logger;
 
 import es.tid.cosmos.base.mapreduce.CosmosJob;
+import es.tid.cosmos.base.mapreduce.WorkflowList;
 import es.tid.smartsteps.footfalls.aggregation.AggregationReducer;
 import es.tid.smartsteps.footfalls.aggregation.CellIdAndDateMapper;
 import es.tid.smartsteps.footfalls.catchments.*;
@@ -110,6 +111,7 @@ public class Main extends Configured implements Tool {
             Path soaCentroidsPath, Path soaCentroidsParsedPath,
             Path catchmentsPath, Path catchmentsParsedPath, Configuration config)
             throws ClassNotFoundException, IOException, InterruptedException {
+        WorkflowList wfl = new WorkflowList();
 
         {
             CosmosJob job = CosmosJob.createMapJob(config,
@@ -119,7 +121,7 @@ public class Main extends Configured implements Tool {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, trafficCountsPath);
             FileOutputFormat.setOutputPath(job, trafficCountsParsedPath);
-            job.waitForCompletion(true);
+            wfl.add(job);
         }
 
         {
@@ -130,7 +132,7 @@ public class Main extends Configured implements Tool {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, cellToMicrogridPath);
             FileOutputFormat.setOutputPath(job, cellToMicrogridParsedPath);
-            job.waitForCompletion(true);
+            wfl.add(job);
         }
 
         {
@@ -141,7 +143,7 @@ public class Main extends Configured implements Tool {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, microgridToPolygonPath);
             FileOutputFormat.setOutputPath(job, microgridToPolygonParsedPath);
-            job.waitForCompletion(true);
+            wfl.add(job);
         }
 
         {
@@ -152,7 +154,7 @@ public class Main extends Configured implements Tool {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, soaCentroidsPath);
             FileOutputFormat.setOutputPath(job, soaCentroidsParsedPath);
-            job.waitForCompletion(true);
+            wfl.add(job);
         }
 
         {
@@ -163,13 +165,16 @@ public class Main extends Configured implements Tool {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, catchmentsPath);
             FileOutputFormat.setOutputPath(job, catchmentsParsedPath);
-            job.waitForCompletion(true);
+            wfl.add(job);
         }
+
+        wfl.waitForCompletion(true);
     }
 
-    private static void propagateTrafficCounts(Path trafficCountsParsedPath,
-            Path cellToMicrogridParsedPath, Path microgridToPolygonParsedPath,
-            Path soaCentroidsParsedPath, Path outputDir, Configuration config)
+    private static void propagateTrafficCounts(
+            Path trafficCountsParsedPath, Path cellToMicrogridParsedPath,
+            Path microgridToPolygonParsedPath, Path soaCentroidsParsedPath,
+            Path outputDir, Configuration config)
             throws ClassNotFoundException, IOException, InterruptedException {
         Path countsByMicrogridPath = new Path(outputDir, "counts_by_microgrid");
         {
@@ -246,9 +251,9 @@ public class Main extends Configured implements Tool {
         }
     }
 
-    private static void propagateCatchments(Path catchmentsParsedPath,
-            Path cellToMicrogridParsedPath, Path microgridToPolygonParsedPath,
-            Path outputDir, Configuration config)
+    private static void propagateCatchments(
+            Path catchmentsParsedPath, Path cellToMicrogridParsedPath,
+            Path microgridToPolygonParsedPath,Path outputDir, Configuration config)
             throws ClassNotFoundException, IOException, InterruptedException {
         Path cellToMicrogridParsedRekeyedByValuePath = new Path(outputDir,
                 "cell_to_microgrid_parsed_rekeyed_by_value");
@@ -306,6 +311,7 @@ public class Main extends Configured implements Tool {
             FileInputFormat.setInputPaths(job, catchmentsByMicrogridPath,
                                           cellToPolygonParsedPath);
             FileOutputFormat.setOutputPath(job, scaledTopCellsPath);
+            job.waitForCompletion(true);
         }
 
         Path propagatedCatchments = new Path(outputDir, "propagated_catchments");
@@ -318,6 +324,7 @@ public class Main extends Configured implements Tool {
                     SequenceFileOutputFormat.class);
             FileInputFormat.setInputPaths(job, scaledTopCellsPath);
             FileOutputFormat.setOutputPath(job, propagatedCatchments);
+            job.waitForCompletion(true);
         }
 
         Path soaCatchments = new Path(outputDir, "soa_catchments");
@@ -338,7 +345,7 @@ public class Main extends Configured implements Tool {
         try {
             int res = ToolRunner.run(new Configuration(), new Main(), args);
             if (res != 0) {
-                throw new Exception("Uknown error");
+                throw new Exception("Unknown error");
             }
         } catch (Exception ex) {
             LOGGER.fatal(ex);

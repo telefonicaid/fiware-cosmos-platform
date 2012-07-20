@@ -1,5 +1,4 @@
 {
-    "version": "0.9.0.0-SNAPSHOT",
     "hosts":
     {
         "namenode": [ "176.28.105.12" ],

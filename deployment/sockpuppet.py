@@ -26,7 +26,6 @@ class SockPuppet(object):
     """
 
     def __init__(self):
-        self.__leftovers = []
         mktemp_call = run('mktemp -d')
         if mktemp_call.succeeded:
             self.__remote_tempdir = mktemp_call
@@ -39,17 +38,11 @@ class SockPuppet(object):
 
     def upload_file(self, local_path, remote_path):
         temp_remote_path = os.path.join(self.__remote_tempdir, remote_path)
-        if remote_path.endswith(os.sep) and not files.exists(temp_remote_path):
-                warn('creating directory: {0}'.format(temp_remote_path))
-                run('mkdir -p {0}'.format(temp_remote_path))
-                self.__leftovers.append(temp_remote_path)
-        else:
-            self.__leftovers.append(os.path.join(temp_remote_path,
-                                    os.path.split(local_path)[-1]))
+        directory = os.path.join(*os.path.split(remote_path)[:-1])
+        if directory and not files.exists(directory):
+                warn('creating directory: {0}'.format(directory))
+                run('mkdir -p {0}'.format(directory))
         put(local_path, temp_remote_path)
 
     def cleanup_uploaded_files(self):
-        for leftover in self.__leftovers:
-            if files.exists(leftover) and len(leftover) > 0:
-                run("rm -rf {0}".format(leftover))
         run("rm -rf {0}".format(self.__remote_tempdir))

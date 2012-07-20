@@ -5,7 +5,6 @@ causes Fabric to deploy each Cosmos component at a configured host.
 """
 import os
 import json
-from StringIO import StringIO
 
 from fabric.api import run, execute, sudo, put, cd, env, local, lcd
 from fabric.contrib import files
@@ -13,7 +12,6 @@ import fabric.context_managers as ctx
 from fabric.colors import red, white, yellow
 from fabric.decorators import roles, task, parallel
 from fabric.utils import puts, error, warn
-from mako.template import Template
 
 import common
 import iptables
@@ -23,6 +21,7 @@ from sockpuppet import SockPuppet
 
 BASEPATH = os.path.dirname(os.path.realpath(__file__))
 CONFIG = json.loads(open(env.config, 'r').read())
+COSMOS_VERSION = common.get_cosmos_version()
 env.roledefs = CONFIG['hosts']
 
 @task
@@ -68,13 +67,13 @@ def deploy_models():
     wc_jar_path = os.path.join(BASEPATH, os.pardir, 'cosmos', 'models',
                            'samples', 'wordcount', 'core', 'standalone',
                            'target',
-                           'wordcount-core-standalone-0.9.0.0-SNAPSHOT.jar')
+                           'wordcount-core-standalone-{0}.jar'.format(COSMOS_VERSION))
     wc_param_jar_path = os.path.join(BASEPATH, os.pardir, 'cosmos', 'models',
                            'samples', 'wordcount', 'core', 'parameterized',
                            'target',
-                           'wordcount-core-parameterized-0.9.0.0-SNAPSHOT.jar')
-    spup.upload_file(wc_jar_path, 'models/')
-    spup.upload_file(wc_param_jar_path, 'models/')
+                           'wordcount-core-parameterized-{0}.jar'.format(COSMOS_VERSION))
+    spup.upload_file(wc_jar_path, 'models/wordcount-core-standalone.jar')
+    spup.upload_file(wc_param_jar_path, 'models/wordcount-core-parameterized.jar')
     run('su hdfs -c "hadoop dfs -mkdir /share/samples/{jars,src}"')
     with cd(spup.get_remote_tempdir()):
         run('su hdfs -c "hadoop dfs -put models/*.jar /share/samples/jars"')
@@ -180,7 +179,7 @@ def deploy_sftp(move_sshd=False):
             move_sshd in ['True', 'true', 'Y', 'y']:
         move_sshd = True
 
-    injection_exec = 'injection-server-{0}.jar'.format(CONFIG['version'])
+    injection_exec = 'injection-server-{0}.jar'.format(COSMOS_VERSION)
     injection_jar = os.path.join(BASEPATH, CONFIG['injection_path'], 'target',
                                  injection_exec)
     if not os.path.exists(injection_jar):
@@ -323,8 +322,7 @@ def install_gmetad():
                                 context=dict(
                                     monitored_hosts=common.clean_host_list(
                                         CONFIG['hosts'].values())))
-    iptables.add_rule("INPUT -p tcp -d {0} --dport 8649 -j ACCEPT"
-            .format(common.clean_host_list(CONFIG['hosts']['frontend'])))
+    iptables.accept_in_tcp(8649)
     sudo("service iptables save")
     run("service gmetad start")
     run("chkconfig --level 2 gmetad on")

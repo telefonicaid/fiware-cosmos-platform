@@ -16,7 +16,7 @@ namespace samson{
 namespace page_rank{
 
 	
-	class parse_graph : samson::system::SimpleParser
+	class parse_graph : public samson::system::SimpleParser
 	{
 
 		   samson::system::String key;

@@ -73,7 +73,7 @@ namespace stream_connector {
             // Create the thread
             thread_running_ = true;
             pthread_t t;
-            au::ThreadManager::shared()->addThread("SamsonConnectorConnection",&t, NULL, run_FileDescriptorConnection, this);
+            au::ThreadManager::shared()->addThread("StreamConnectorConnection",&t, NULL, run_FileDescriptorConnection, this);
         }
     }
     
@@ -134,7 +134,7 @@ namespace stream_connector {
             engine::Buffer* buffer = container.getBuffer();
             if( buffer )
             {
-                au::Status s = file_descriptor_->partWrite(buffer->getData(), buffer->getSize(), "samsonConnectorConnection");
+                au::Status s = file_descriptor_->partWrite(buffer->getData(), buffer->getSize(), "StreamConnectorConnection");
                 
                 if( s != au::OK )
                     return; // Just quit

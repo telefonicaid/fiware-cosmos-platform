@@ -38,7 +38,7 @@ bool interactive;
 bool run_as_daemon;
 
 static const char* manShortDescription = 
-"samsonConnector is a easy-to-use network tool used for small processing and data transportation in a SAMSON system.\n"
+"StreamConnector is a easy-to-use network tool used for small processing and data transportation in a SAMSON system.\n"
 "Several inputs and outputs can be especified as follows:\n"
 "\n"
 "------------------------------------------------------------------------------------\n"
@@ -61,11 +61,11 @@ static const char* manShortDescription =
 " Examples:\n"
 "------------------------------------------------------------------------------------\n"
 "\n"
-" samsonConnector -input stdin -output samson:samson01:input\n"
+" StreamConnector -input stdin -output samson:samson01:input\n"
 "\n"
 "        Data is read from stdin and pushed to queue 'input' in a SAMSON cluster deployed in server 'samson01'\n"
 "\n"
-" samsonConnector -input port:10000 -output \"port:20000 samson:samson01:input\"\n"
+" StreamConnector -input port:10000 -output \"port:20000 samson:samson01:input\"\n"
 "\n"
 "        Data is read from incomming connections to port 10000.\n"
 "        Data is then pushed to queue 'input' in a SAMSON cluster deployed in server 'samson01' and to any connection to port 20000\n"
@@ -154,13 +154,13 @@ int main( int argC , const char *argV[] )
 	engine::DiskManager::init(1);
 	//engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
     
-	samson::ModulesManager::init("samsonConnector");         // Init the modules manager
+	samson::ModulesManager::init("StreamConnector");         // Init the modules manager
 
     // Ignore verbose mode if interactive is activated
     if( interactive )
         lmVerbose = false;
     
-    // Init samsonConnector
+    // Init StreamConnector
     
     main_stream_connector = new stream_connector::StreamConnector();
 
@@ -181,7 +181,7 @@ int main( int argC , const char *argV[] )
         char line[1024];
         
         std::string message = au::str("Setup file %s. Opening...", file_name);
-        main_stream_connector->log( new stream_connector::Log( "SamsonConnector" , "Message" , message ) );  
+        main_stream_connector->log( new stream_connector::Log( "StreamConnector" , "Message" , message ) );
         
         while( fgets(line, sizeof(line), f) )
         {
@@ -196,7 +196,7 @@ int main( int argC , const char *argV[] )
             {
                 
                 message = au::str("%s ( File %s )", line , file_name);
-                main_stream_connector->log( new stream_connector::Log( "SamsonConnector" , "Message" , message ) );  
+                main_stream_connector->log( new stream_connector::Log( "StreamConnector" , "Message" , message ) );
                 
                 au::ErrorManager error;
                 main_stream_connector->process_command( line  , &error );
@@ -209,7 +209,7 @@ int main( int argC , const char *argV[] )
         
         // Print the error on screen
         message = au::str("Setup file %s. Finished", file_name);
-        main_stream_connector->log( new stream_connector::Log( "SamsonConnector" , "Message" , message ) );  
+        main_stream_connector->log( new stream_connector::Log( "StreamConnector" , "Message" , message ) );
         
         
         fclose(f);
@@ -258,7 +258,7 @@ int main( int argC , const char *argV[] )
     // Run console if interactive mode is activated
     if( run_as_daemon )
     {
-        // Add service to accept monitor connections from samsonConnectorClient
+        // Add service to accept monitor connections from StreamConnectorClient
         main_stream_connector->init_remove_connections_service();               
         // Add REST service to accept REST-full connections
         main_stream_connector->init_reset_service();
@@ -271,7 +271,7 @@ int main( int argC , const char *argV[] )
     }
     else if( interactive )
     {
-        // Add service to accept monitor connections from samsonConnectorClient
+        // Add service to accept monitor connections from StreamConnectorClient
         main_stream_connector->init_remove_connections_service();               
         // Add REST service to accept REST-full connections
         main_stream_connector->init_reset_service();

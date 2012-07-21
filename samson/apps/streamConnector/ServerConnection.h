@@ -15,7 +15,7 @@ namespace stream_connector {
     
     class Channel;
     class SocketConnection;
-    class SamsonConnector;
+    class StreamConnector;
     
     class ConnectionConnection : public FileDescriptorConnection
     {

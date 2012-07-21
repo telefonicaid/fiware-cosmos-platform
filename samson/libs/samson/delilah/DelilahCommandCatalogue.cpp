@@ -151,6 +151,13 @@ namespace samson
             "set_mode normal/database/logs"
             );
         
+        add( "remove_all_stream" , "delilah",
+        	 "Remove all data, queues and scheduled operations",
+        		"remove_all_stream");
+
+        add( "remove_all" , "delilah",
+        	 "Remove all data, queues and scheduled operations",
+        		"remove_all");
         
         add("ls_local", "local", 
             "Show a list of current directory with relevant information about local data-sets");

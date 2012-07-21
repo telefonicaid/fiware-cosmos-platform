@@ -14,8 +14,8 @@
 
 namespace stream_connector {
     
-    class SamsonConnectorConnection;
-    class SamsonConnector;
+    class StreamConnectorConnection;
+    class StreamConnector;
     
     
     class DiskConnection : public Connection

@@ -15,7 +15,7 @@ namespace stream_connector {
         // Port to open to accept connections
         int port;
         
-        friend class SamsonConnector;
+        friend class StreamConnector;
         
         au::Status status_init;
         

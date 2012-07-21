@@ -6,9 +6,9 @@ namespace stream_connector {
     
     /*
      
-     StreamConnectorCommandLine
+     SamsonConnectorCommandLine
      
-     Command for a StreamConnector instance
+     Command for a samsonConnector instance
      It is passes acros multiple elements Channel, Item, etc...
      
      */

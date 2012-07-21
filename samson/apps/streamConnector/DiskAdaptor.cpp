@@ -198,7 +198,7 @@ namespace stream_connector {
             }
             
             // Write to disk
-            au::Status s = file_descriptor->partWrite(current_buffer->getData(), current_buffer->getSize(), "StreamConnectorConnection");
+            au::Status s = file_descriptor->partWrite(current_buffer->getData(), current_buffer->getSize(), "samsonConnectorConnection");
             
             if( s != au::OK )
             {

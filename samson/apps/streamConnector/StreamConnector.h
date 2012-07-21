@@ -88,7 +88,7 @@ namespace stream_connector {
         au::Token token;
         
         
-        // List of channels in this StreamConnector
+        // List of channels in this samsonConnector
         au::map<std::string, Channel> channels_;
         
         // General environment

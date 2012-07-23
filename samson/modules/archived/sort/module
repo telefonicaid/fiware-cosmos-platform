@@ -144,15 +144,15 @@ parserOutReduce reduce
 	helpLine "Sort data producing txt output"
 }
 
-script demo
+script sort
 {
 	in txt txt
 	out txt txt
 
 	code
 	{
-		add_stream_operation parse sort.map $1 $1_tmp;
-		add_stream_operation reduce sort.reduce $1_tmp $2;
+		sort.map $1 $1_tmp -create;
+		sort.reduce $1_tmp $2 -create;
 		rm $1_tmp;
 	}
 }

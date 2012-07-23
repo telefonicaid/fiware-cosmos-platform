@@ -29,7 +29,7 @@ namespace stream_connector {
         return NULL;
     }
     
-    StreamConnector::StreamConnector() : token("StreamConnector::token_channels")
+    StreamConnector::StreamConnector() : token("SamsonConnector::token_channels") 
     {
         
         // No service by default
@@ -52,14 +52,14 @@ namespace stream_connector {
         au::Status s = service->initService();
         if( s != au::OK )
         {
-            log( new Log("StreamConnector"
+            log( new Log("SamsonConnector" 
                          , "Warning" 
-                         , "Not possible to start service to receive connections from StreamConnectorClient" ));
+                         , "Not possible to start service to receive connections from samsonConnectorClient" ));
             delete service;
             service = NULL;
         }
         else
-            log( new Log("StreamConnector"
+            log( new Log("SamsonConnector" 
                          , "Message" 
                          , "Console Service started" ));
     }
@@ -92,7 +92,7 @@ namespace stream_connector {
         
         if( s != au::OK )
         {
-            log( new Log("StreamConnector"
+            log( new Log("SamsonConnector" 
                          , "Warning" 
                          , au::str("Not possible to init inter-channel listener at port %d. This could be a major issue",p )));
             
@@ -104,7 +104,7 @@ namespace stream_connector {
         {
             inter_channel_listener->runNetworkListenerInBackground();
             
-            log( new Log("StreamConnector"
+            log( new Log("SamsonConnector" 
                          , "Message" 
                          , "Interchannel service started" ));
             
@@ -528,7 +528,7 @@ namespace stream_connector {
             table.addRow( au::StringVector("add_input_adaptor_to_channel","add_adaptor_input channel.adaptor_name [port:8888] [connection:host:port] [samson:host:queue]"));
             table.addRow( au::StringVector("add_output_adaptor_to_channel","add_adaptor_output channel.adaptor_name [port:8888] [connection:host:port] [samson:host:queue]"));
             table.addRow( au::StringVector("remove_adaptor","remove_adaptor channel.adaptor"));
-            table.setTitle("Available commands for StreamConnector:");
+            table.setTitle("Available commands for samsonConnector:");
             
             error->add_message( table.str() );
             return;
@@ -597,7 +597,7 @@ namespace stream_connector {
         }
         
         // Log activity ( command that modify state )
-        log( new Log( "StreamConnector" , "Message" , command ) );
+        log( new Log( "SamsonConnector" , "Message" , command ) ); 
         
         if( main_command == "add_channel" )
         {

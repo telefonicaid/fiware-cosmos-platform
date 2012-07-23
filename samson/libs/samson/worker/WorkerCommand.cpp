@@ -244,7 +244,7 @@ namespace samson {
             return;
         }
         
-        LM_M(("SamsonWorker command received: '%s'", command.c_str()));
+        LM_M(("SamsonWorker command received:%s", command.c_str()));
         // Set the main command
         std::string main_command = cmd.get_argument(0);
 
@@ -252,7 +252,7 @@ namespace samson {
         {
             if( cmd.get_num_arguments() < 2 )
             {
-                error->set( au::str("Not enough parameters for command 'init_stream' (only %d arguments provided)" , cmd.get_num_arguments()  ) );
+                error->set( au::str("Not enough parameters for command 'init_stream' ( only %d argument provided )" , cmd.get_num_arguments()  ) );
                 return;
             }
             
@@ -363,7 +363,7 @@ namespace samson {
             }
         }
         
-        if(( main_command == "remove_all_stream" ) || (main_command == "remove_all"))
+        if( main_command == "remove_all_stream" )
         {
             samsonWorker->streamManager->reset();
             return;
@@ -566,9 +566,10 @@ namespace samson {
                 error->set( au::str("Error in unset_stream_operation_property %s" , status(s)  ));
             
             return;
-        }       
-        LM_E(("Unknown command: '%s'", main_command.c_str()));
+        } 
+        
         error->set( au::str("Unknown command %s" , main_command.c_str()  ) );
+        
     }
     
     

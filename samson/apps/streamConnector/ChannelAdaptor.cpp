@@ -21,7 +21,7 @@ namespace stream_connector {
         if( !socket_connection )
             LM_X(1, ("Internal error"));
         
-        // Keep a pointer to StreamConnector
+        // Keep a pointer to SamsonConnector
         stream_connector_ = stream_connector;
         
         // Keep a pointer to the socket connection

@@ -62,6 +62,10 @@ ifndef LOGSERVER_LOG_DIR
 LOGSERVER_LOG_DIR=/var/log/logserver
 endif
 
+# Lint for C/C++ code
+ifndef CPPLINT
+	CPPLINT:=$(shell pwd)/scripts/cpplint.py
+endif
 
 # ------------------------------------------------
 # Default compilation mode
@@ -497,3 +501,20 @@ test_makefile:
 	make install_release_all
 	make install_debug_all
 	make install coverage
+
+# Verify that any new/changed source code is "compliant"
+code_lint:
+	for file in $$(git status --porcelain -s | grep -v \?\? | awk '{print $$2}'); \
+	do \
+		extension=$$(basename $${file} | sed 's/.*\.//'); \
+		case "$$extension" in \
+			c|h|cpp|hpp)  \
+				$(CPPLINT) $${file} ; \
+				;;  \
+			makefile)  \
+				;;  \
+			*)  \
+				echo "Lint for .$$extension files not currently supported" ;  \
+				;;  \
+		esac \
+	done

@@ -65,4 +65,14 @@ public class TypedProtobufWritable<M extends Message> extends BinaryWritable<M> 
     protected BinaryConverter<M> getConverterFor(Class<M> clazz) {
         return new TypedProtobufConverter();
     }
+
+    public static<T extends Message> List<TypedProtobufWritable<T>>
+            asList(T... messages) {
+        List<TypedProtobufWritable<T>> protobufList =
+                new LinkedList<TypedProtobufWritable<T>>();
+        for (T message : messages) {
+            protobufList.add(new TypedProtobufWritable<T>(message));
+        }
+        return protobufList;
+    }
 }

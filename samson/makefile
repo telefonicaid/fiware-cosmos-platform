@@ -13,7 +13,7 @@ ifndef SAMSON_VERSION
 SAMSON_VERSION=0.7.0
 endif
 ifndef SAMSON_RELEASE
-	SAMSON_RELEASE:=$(shell svn info . | grep "Last Changed Rev: " | cut -f4 -d" ")
+	SAMSON_RELEASE=1
 endif
 # Who to install samson as
 ifndef SAMSON_OWNER
@@ -415,12 +415,11 @@ publish_packages:
 		fi; \
 	fi
 
-rpm: clean cleansvn
+rpm: clean
 	mkdir -p ~/rpmbuild/{BUILD,RPMS,S{OURCE,PEC,RPM}S}
 	rm -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
 	tar cz --transform 's,^./,samson-$(SAMSON_VERSION)/,' .  --show-transformed-names --exclude=*.svn* -f ~/rpmbuild/SOURCES/samson-$(SAMSON_VERSION).tar.gz
-	sed -e "s/SAMSON_VERSION/$(SAMSON_VERSION)/g" -e "s/SAMSON_RELEASE/$(SAMSON_RELEASE)/g" rpm/samson.spec > rpm/samson-$(SAMSON_VERSION).spec
-	rpmbuild -bb rpm/samson-$(SAMSON_VERSION).spec
+	rpmbuild -bb rpm/samson.spec --define 'version $(SAMSON_VERSION)' --define 'release $(SAMSON_RELEASE)'
 
 publish_rpm: rpm
 	rpm/rpm-sign.exp ~/rpmbuild/RPMS/x86_64/samson-*$(SAMSON_VERSION)-$(SAMSON_RELEASE).x86_64.rpm

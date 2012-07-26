@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import com.twitter.elephantbird.mapreduce.io.BinaryConverter;
 import static org.junit.Assert.assertEquals;
@@ -36,6 +37,17 @@ public class TypedProtobufWritableTest {
         TypedProtobufWritable<Int> intObj = TypedProtobufWritable.create(4);
         BinaryConverter<Int> converter = intObj.getConverterFor(null);
         assertEquals(TypedProtobufConverter.class, converter.getClass());
+    }
+
+    @Test
+    public void testAsList() {
+        List<TypedProtobufWritable<Message>> list = TypedProtobufWritable.asList();
+        assertEquals(list.size(), 0);
+        List<TypedProtobufWritable<GeneratedMessage>> list2 = TypedProtobufWritable.asList(
+                Int.getDefaultInstance(), Float64.getDefaultInstance());
+        assertEquals(list2.size(), 2);
+        assertEquals(list2.get(0).get(), Int.getDefaultInstance());
+        assertEquals(list2.get(1).get(), Float64.getDefaultInstance());
     }
 
     @Test

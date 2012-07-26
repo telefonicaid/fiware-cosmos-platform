@@ -47,7 +47,7 @@ public class CosmosJob extends Job implements CosmosWorkflow {
         if (mapper != null) {
             job.setJarByClass(mapper);
 
-            Class[] mapperClasses = getGenericParameters(mapper);
+            Class[] mapperClasses = getGenericParameters(mapper, Mapper.class);
             job.setMapperClass(mapper);
             job.setMapOutputKeyClass(mapperClasses[2]);
             job.setMapOutputValueClass(mapperClasses[3]);
@@ -57,7 +57,7 @@ public class CosmosJob extends Job implements CosmosWorkflow {
         if (reducer != null) {
             job.setJarByClass(reducer);
 
-            Class[] reducerClasses = getGenericParameters(reducer);
+            Class[] reducerClasses = getGenericParameters(reducer, Reducer.class);
             job.setReducerClass(reducer);
             outputKey = reducerClasses[2];
             outputValue = reducerClasses[3];
@@ -157,21 +157,37 @@ public class CosmosJob extends Job implements CosmosWorkflow {
     }
 
     /**
-     * This method returns the list of types used for the closest generic type
-     * implemented by "originalClass". For example, if A extends B&lt;T&gt; and
+     * This method returns the list of types used for the generic type "clazz"
+     * extended by "originalClass". For example, if A extends B&lt;T&gt; and
      * B&lt;T&gt; extends C&lt;String,T&gt;, then calling this method with
      * A.class will return an array that contains a single element: T.class
      *
      * @param originalClass
+     * @param clazz A generic class that is being extended by originalClass
      * @return the list of types used for the closest generic type implemented
      * by "originalClass"
      * @throws Exception
      */
-    static Class[] getGenericParameters(Class originalClass) {
+    static Class[] getGenericParameters(Class originalClass, Class clazz) {
+        if (clazz.getTypeParameters().length == 0) {
+            throw new IllegalArgumentException("Parameter class does not "
+                    + " represent a generic class!");
+        }
+
         try {
             Type parent = originalClass.getGenericSuperclass();
             Class superClass;
-            if (parent instanceof ParameterizedType) {
+            if (parent instanceof Class) {
+                superClass = (Class) parent;
+            } else if (parent instanceof ParameterizedType) {
+                superClass = (Class) ((ParameterizedType)parent).getRawType();
+            } else {
+                throw new IllegalStateException("parent is not a class! parent: "
+                        + parent.toString());
+            }
+
+            if (parent instanceof ParameterizedType &&
+                    superClass == clazz) {
                 ParameterizedType parameterizedType = (ParameterizedType)parent;
                 Type[] args = parameterizedType.getActualTypeArguments();
                 ArrayList<Class> retVal = new ArrayList<Class>(args.length);
@@ -185,18 +201,14 @@ public class CosmosJob extends Job implements CosmosWorkflow {
                     }
                 }
                 return retVal.toArray(new Class[0]);
-            } else {
-                if (!(parent instanceof Class)) {
-                    throw new Exception("parent is not a class! parent: "
-                            + parent.toString());
-                }
-                superClass = (Class)parent;
-                if (superClass == Object.class) {
-                    throw new Exception("The passed in type does not extend any"
-                            + " generic class!");
-                }
             }
-            return getGenericParameters(superClass);
+
+            if (superClass == Object.class) {
+                throw new IllegalArgumentException("The passed in type does not"
+                        + " extend the clazz generic class!");
+            }
+
+            return getGenericParameters(superClass, clazz);
         } catch (Exception ex) {
             throw new RuntimeException("[Debug Info] originalClass: "
                     + originalClass.toString(), ex);

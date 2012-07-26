@@ -29,16 +29,22 @@ public class CosmosJobTest {
     private static abstract class Generic<T, U> {
     }
 
+    private static abstract class GenericExt<T> extends Generic<Integer,String> {
+    }
+
     private static final class GenericImpl1 extends Generic<Integer, Integer> {
     }
 
     private static final class GenericImpl2 extends Generic<Integer, Generic<Integer, Integer>> {
     }
 
+    private static final class GenericImpl3 extends GenericExt<Double> {
+    }
+
     @Test
     public void testGetGenericParameters1() throws Exception {
         GenericImpl1 l = new GenericImpl1();
-        Class[] p = CosmosJob.getGenericParameters(l.getClass());
+        Class[] p = CosmosJob.getGenericParameters(l.getClass(), Generic.class);
         assertEquals(p.length, 2);
         assertEquals(p[0], Integer.class);
         assertEquals(p[1], Integer.class);
@@ -47,10 +53,31 @@ public class CosmosJobTest {
     @Test
     public void testGetGenericParameters2() throws Exception {
         GenericImpl2 l = new GenericImpl2();
-        Class[] p = CosmosJob.getGenericParameters(l.getClass());
+        Class[] p = CosmosJob.getGenericParameters(l.getClass(), Generic.class);
         assertEquals(p.length, 2);
         assertEquals(p[0], Integer.class);
         assertEquals(p[1], Generic.class);
+    }
+
+    @Test
+    public void testGetGenericParameters3() throws Exception {
+        GenericImpl3 l = new GenericImpl3();
+        Class[] p = CosmosJob.getGenericParameters(l.getClass(), Generic.class);
+        assertEquals(p.length, 2);
+        assertEquals(p[0], Integer.class);
+        assertEquals(p[1], String.class);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void testGetGenericParameters4() throws Exception {
+        GenericImpl3 l = new GenericImpl3();
+        Class[] p = CosmosJob.getGenericParameters(l.getClass(), Integer.class);
+    }
+
+    @Test(expected=RuntimeException.class)
+    public void testGetGenericParameters5() throws Exception {
+        GenericImpl2 l = new GenericImpl2();
+        Class[] p = CosmosJob.getGenericParameters(l.getClass(), GenericExt.class);
     }
 
     private static class FakeJob extends CosmosJob {

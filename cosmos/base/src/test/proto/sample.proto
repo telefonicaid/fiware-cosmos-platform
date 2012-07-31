@@ -1,0 +1,19 @@
+/**
+ *
+ * @author sortega
+ */
+
+option java_package = "es.tid.cosmos.base.data.generated";
+option java_outer_classname = "SampleProtocol";
+
+message MessageA {
+    required string id = 1;
+}
+
+message MessageB {
+    required string id = 1;
+}
+
+message MessageC {
+    required string id = 1;
+}

@@ -45,8 +45,8 @@ public class CosmosJobTest {
     private static final class GenericImpl3 extends GenericExt<Double> {
     }
 
-    public class JoinerTest extends TypedProtobufJoiner<Text,
-        Message, Message, Text, Text> {
+    public class JoinerTest extends TypedProtobufJoiner<Text, Message, Message,
+            Text, Text> {
 
         public JoinerTest() {
             super(Message.class, Message.class);

@@ -189,7 +189,7 @@ public class CosmosJob extends Job implements CosmosWorkflow {
             if (parent instanceof Class) {
                 superClass = (Class) parent;
             } else if (parent instanceof ParameterizedType) {
-                ParameterizedType paramType = (ParameterizedType)parent;
+                ParameterizedType paramType = (ParameterizedType) parent;
                 Type[] actualTypeArguments = paramType.getActualTypeArguments();
                 superClass = (Class) paramType.getRawType();
                 TypeVariable[] typeParameters = superClass.getTypeParameters();

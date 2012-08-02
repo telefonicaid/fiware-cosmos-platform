@@ -1,7 +1,9 @@
 package es.tid.cosmos.base.mapreduce;
 
 import java.io.IOException;
+import java.util.List;
 
+import com.google.protobuf.Message;
 import com.mongodb.hadoop.io.BSONWritable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -17,6 +19,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
+
+import es.tid.cosmos.base.data.TypedProtobufWritable;
 
 /**
  *
@@ -39,6 +43,20 @@ public class CosmosJobTest {
     }
 
     private static final class GenericImpl3 extends GenericExt<Double> {
+    }
+
+    public class JoinerTest extends TypedProtobufJoiner<Text,
+        Message, Message, Text, Text> {
+
+        public JoinerTest() {
+            super(Message.class, Message.class);
+        }
+
+        @Override
+        protected void join(Text key, List<? extends Message> a,
+                List<? extends Message> b, Context context) {
+
+        }
     }
 
     @Test
@@ -78,6 +96,17 @@ public class CosmosJobTest {
     public void testGetGenericParameters5() throws Exception {
         GenericImpl2 l = new GenericImpl2();
         Class[] p = CosmosJob.getGenericParameters(l.getClass(), GenericExt.class);
+    }
+
+    @Test
+    public void testGetGenericParameters6() throws Exception {
+        JoinerTest l = new JoinerTest();
+        Class[] p = CosmosJob.getGenericParameters(l.getClass(), Reducer.class);
+        assertEquals(4, p.length);
+        assertEquals(p[0], Text.class);
+        assertEquals(p[1], TypedProtobufWritable.class);
+        assertEquals(p[2], Text.class);
+        assertEquals(p[3], Text.class);
     }
 
     private static class FakeJob extends CosmosJob {
@@ -158,8 +187,7 @@ public class CosmosJobTest {
     public void testDeleteOnExit() throws Exception {
         FakeJob job = new FakeJob(new Configuration(), "Test", true);
         job.setDeleteOutputOnExit(true);
-        FileOutputFormat.setOutputPath(job,
-                                       NON_EXISITING_PATH);
+        FileOutputFormat.setOutputPath(job, NON_EXISITING_PATH);
         job.waitForCompletion(true);
     }
 

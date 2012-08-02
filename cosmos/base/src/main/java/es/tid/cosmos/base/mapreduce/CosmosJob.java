@@ -3,7 +3,10 @@ package es.tid.cosmos.base.mapreduce;
 import java.io.IOException;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.*;
@@ -169,6 +172,12 @@ public class CosmosJob extends Job implements CosmosWorkflow {
      * @throws Exception
      */
     static Class[] getGenericParameters(Class originalClass, Class clazz) {
+        return getGenericParameters(originalClass, clazz,
+                                    new HashMap<String, Class>());
+    }
+
+    private static Class[] getGenericParameters(Class originalClass, Class clazz,
+            Map<String,Class> typeVariables) {
         if (clazz.getTypeParameters().length == 0) {
             throw new IllegalArgumentException("Parameter class does not "
                     + " represent a generic class!");
@@ -180,7 +189,14 @@ public class CosmosJob extends Job implements CosmosWorkflow {
             if (parent instanceof Class) {
                 superClass = (Class) parent;
             } else if (parent instanceof ParameterizedType) {
-                superClass = (Class) ((ParameterizedType)parent).getRawType();
+                ParameterizedType paramType = (ParameterizedType)parent;
+                Type[] actualTypeArguments = paramType.getActualTypeArguments();
+                superClass = (Class) paramType.getRawType();
+                TypeVariable[] typeParameters = superClass.getTypeParameters();
+                for (int i = 0; i < typeParameters.length; i++) {
+                    Class value = getClassForType(actualTypeArguments[i], typeVariables);
+                    typeVariables.put(typeParameters[i].getName(), value);
+                }
             } else {
                 throw new IllegalStateException("parent is not a class! parent: "
                         + parent.toString());
@@ -192,13 +208,7 @@ public class CosmosJob extends Job implements CosmosWorkflow {
                 Type[] args = parameterizedType.getActualTypeArguments();
                 ArrayList<Class> retVal = new ArrayList<Class>(args.length);
                 for (Type arg : args) {
-                    if (arg instanceof Class) {
-                        retVal.add((Class)arg);
-                    } else if (arg instanceof ParameterizedType) {
-                        retVal.add((Class)((ParameterizedType)arg).getRawType());
-                    } else {
-                        throw new Exception("Unknown arg type: " + arg.toString());
-                    }
+                    retVal.add(getClassForType(arg, typeVariables));
                 }
                 return retVal.toArray(new Class[0]);
             }
@@ -208,10 +218,22 @@ public class CosmosJob extends Job implements CosmosWorkflow {
                         + " extend the clazz generic class!");
             }
 
-            return getGenericParameters(superClass, clazz);
+            return getGenericParameters(superClass, clazz, typeVariables);
         } catch (Exception ex) {
             throw new RuntimeException("[Debug Info] originalClass: "
                     + originalClass.toString(), ex);
+        }
+    }
+
+    private static Class getClassForType(Type t, Map<String, Class> typeVariables) {
+        if (t instanceof Class) {
+            return (Class)t;
+        } else if (t instanceof ParameterizedType) {
+            return (Class)((ParameterizedType)t).getRawType();
+        } else if (t instanceof TypeVariable) {
+            return typeVariables.get(((TypeVariable)t).getName());
+        } else {
+            throw new IllegalArgumentException("Unknown arg type: " + t.toString());
         }
     }
 

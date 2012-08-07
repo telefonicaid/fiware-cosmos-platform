@@ -15,6 +15,10 @@ else (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     endif (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
+if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
+    set (SOLARIS_LIBS "-lsocket -lnsl -ljson-c")
+endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
+
 SET (LIBS
     samsonWorkerLib
 	delilahLib
@@ -27,6 +31,7 @@ SET (LIBS
     engine
     au
     ${ICONV_LIB}
+    ${SOLARIS_LIBS}
     pa
     lm
 	au

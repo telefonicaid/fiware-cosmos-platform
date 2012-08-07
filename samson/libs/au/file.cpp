@@ -5,6 +5,7 @@
 #include <sstream>              // std::ostringstream
 #include <dirent.h>
 #include <string>
+#include <unistd.h>             /* rmdir() */
 
 #include "au/string.h"	 
 #include "au/file.h"        // Own interface

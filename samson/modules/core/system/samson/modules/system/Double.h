@@ -8,6 +8,7 @@
 
 
 #include <samson/modules/system/FixedLengthDataInstance.h>
+#include <cmath>
 
 namespace samson{
 namespace system{
@@ -25,7 +26,7 @@ public:
 
 	int hash(int max_num_partitions)
 	{
-		return abs((int) 1000*value) % max_num_partitions;
+		return fmod(abs((double) 1000*value), max_num_partitions);
 	}
 
 	void setFromString(const char *_data)

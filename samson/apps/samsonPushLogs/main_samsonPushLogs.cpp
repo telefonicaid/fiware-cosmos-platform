@@ -65,7 +65,7 @@ PaArgument paArgs[] =
     { "-password",         password,              "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
     { "-buffer_size",      &buffer_size,          "",  PaInt,     PaOpt,       default_buffer_size,         1,   default_buffer_size,  "Buffer size in bytes"    },
     { "-mr",               &max_rate,             "",  PaInt,     PaOpt,       10000000,      100,  100000000,  "Max rate in bytes/s"                            },
-    { "-nr",               &ntimes_real_time,     "",  PaFloat,     PaOpt,       1.0,      0.01,  10000.0,  "Number of time real time"                            },
+    { "-nr",               &ntimes_real_time,     "",  PaFloat,     PaOpt,       1,      1 /* was 0.01 */,  10000,  "Number of time real time"                            },
     { "-ti",                initial_timestamp_commandline_str, "", PaSList, PaOpt, PaND, PaNL, PaNL, "Initial timestamp (by default, first timestamp in input data"},
     { "-breaker_sequence", breaker_sequence, "",  PaString,  PaOpt,        _i "\n",   PaNL,         PaNL,  "Breaker sequence ( by default \\n )"            },
     { "-lines",            &lines,                "",  PaBool,    PaOpt,          false,  false,         true,  "Read std-in line by line"                       },

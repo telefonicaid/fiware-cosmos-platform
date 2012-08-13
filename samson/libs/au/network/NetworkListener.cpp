@@ -136,7 +136,6 @@ namespace au
         struct timeval   tv;
         
         int              fds;
-        int              eps;
         
         while ( true )
         {
@@ -150,7 +149,6 @@ namespace au
                 
                 // One fd to read connections
                 FD_ZERO(&rFds);
-                eps = 1;
                 max = rFd;
                 FD_SET(rFd, &rFds);
                 

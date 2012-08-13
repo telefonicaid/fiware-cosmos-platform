@@ -24,43 +24,50 @@ extern "C" void exit(int);
 */
 void daemonize(void)
 {
-	pid_t  pid;
-	pid_t  sid;
+    pid_t  pid;
+    pid_t  sid;
 
-	// already daemon
-	if (getppid() == 1)
-		return;
+    // already daemon
+    if (getppid() == 1)
+        return;
 
-	pid = fork();
-	if (pid == -1)
-		LM_X(1, ("fork: %s", strerror(errno)));
+    pid = fork();
+    if (pid == -1)
+        LM_X(1, ("fork: %s", strerror(errno)));
 
-	// Exiting father process
-	if (pid > 0)
-		exit(0);
+    // Exiting father process
+    if (pid > 0)
+        exit(0);
 
-	// Change the file mode mask */
-	umask(0);
+    // Change the file mode mask */
+    umask(0);
 
-	// Removing the controlling terminal
-	sid = setsid();
-	if (sid == -1)
-		LM_X(1, ("setsid: %s", strerror(errno)));
+    // Removing the controlling terminal
+    sid = setsid();
+    if (sid == -1)
+        LM_X(1, ("setsid: %s", strerror(errno)));
 
-	// Change current working directory.
-	// This prevents the current directory from being locked; hence not being able to remove it.
-	if (chdir("/") == -1)
-		LM_X(1, ("chdir: %s", strerror(errno)));
+    // Change current working directory.
+    // This prevents the current directory from being locked; hence not being able to remove it.
+    if (chdir("/") == -1)
+        LM_X(1, ("chdir: %s", strerror(errno)));
 
 }
 
 void deamonize_close_all(void)
 {
-	FILE*  s;
-    
     // Redirect standard files to /dev/null
-	s = freopen("/dev/null", "r", stdin);
-	s = freopen("/dev/null", "w", stdout);
-	s = freopen("/dev/null", "w", stderr);
+    if (freopen("/dev/null", "r", stdin) == NULL)
+    {
+        LM_X(1, ("Error setting STDIN redirect to /dev/null: %s", strerror(errno)));
+    }
+    if (freopen("/dev/null", "r", stdout) == NULL)
+    {
+        LM_X(1, ("Error setting STDOUT redirect to /dev/null: %s", strerror(errno)));
+    }
+    if (freopen("/dev/null", "r", stderr) == NULL)
+    {
+        LM_X(1, ("Error setting STDERR redirect to /dev/null: %s", strerror(errno)));
+    }
 
 }

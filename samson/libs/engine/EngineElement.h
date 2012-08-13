@@ -19,6 +19,7 @@
 
 #include <sstream>                      // std::ostringstream 
 #include <string>
+#include <unistd.h>                     // sleep
 
 #include "logMsg/logMsg.h"              // Lmt
 #include "logMsg/traceLevels.h"         // LmtEngine

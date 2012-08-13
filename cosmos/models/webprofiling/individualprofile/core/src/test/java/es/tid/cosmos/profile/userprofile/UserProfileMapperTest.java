@@ -1,16 +1,13 @@
-// <editor-fold defaultstate="collapsed" desc="Copyright © 2012 Telefónica Investigación y Desarrollo S.A.U.">
-//
-//   File        : UserProfileMapperTest.java
-//
-//   Copyright © 2012 Telefónica Investigación y Desarrollo S.A.U.
-//
-//   The copyright to the file(s) is property of Telefonica I+D.
-//   The file(s) may be used and or copied only with the express written
-//   consent of Telefonica I+D or in accordance with the terms and conditions
-//   stipulated in the agreement/contract under which the files(s) have
-//   been supplied.
-//
-// </editor-fold>
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 package es.tid.cosmos.profile.userprofile;
 
 import static java.util.Arrays.asList;

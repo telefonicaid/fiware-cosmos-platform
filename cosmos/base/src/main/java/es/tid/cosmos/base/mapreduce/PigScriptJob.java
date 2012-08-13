@@ -35,7 +35,6 @@ public class PigScriptJob implements CosmosWorkflow {
         this.runner = null;
     }
 
-
     @Override
     public boolean waitForCompletion(boolean verbose)
             throws IOException, InterruptedException, ClassNotFoundException {
@@ -93,5 +92,4 @@ public class PigScriptJob implements CosmosWorkflow {
                     "in MAPREDUCE execution mode", e);
         }
     }
-
 }

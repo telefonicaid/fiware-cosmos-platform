@@ -14,7 +14,11 @@ public class PigScriptJobTest {
 
     private static class FakeJob implements CosmosWorkflow {
 
-        private boolean completed = false;
+        private boolean completed;
+
+        private FakeJob() {
+            this.completed = false;
+        }
 
         @Override
         public boolean waitForCompletion(boolean verbose) {

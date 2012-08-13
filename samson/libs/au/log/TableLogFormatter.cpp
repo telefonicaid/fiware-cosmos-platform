@@ -5,13 +5,6 @@
 
 #define Char_to_int(x) ((x)-48)
 
-/* Map timelocal() to mktime() since the latter is compatible with the former, 
- * which does not exist on Solaris.
- */
-#if defined(__sun__)
-#define timelocal(x) mktime(x)
-#endif  /* __sun__ */
-
 namespace au 
 {
     TableLogFormatter::TableLogFormatter( std::string _format )
@@ -332,4 +325,3 @@ namespace au
     }
 
 }
-

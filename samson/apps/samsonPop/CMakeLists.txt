@@ -5,10 +5,6 @@ SET (SOURCES
 SET (HEADERS
 )
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
-    set (SOLARIS_LIBS "-lsocket -lnsl -ljson-c")
-endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
-
 SET( STATIC_LIBS
      samsonClient
      samsonWorkerLib
@@ -26,7 +22,6 @@ SET( STATIC_LIBS
      protobuf
      dl
      pthread
-     ${SOLARIS_LIBS}
 )
 
 # Include directories

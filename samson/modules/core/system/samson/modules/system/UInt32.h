@@ -23,7 +23,7 @@ public:
 
 
 	int hash(int max_num_partitions){
-		return abs((int)value)%max_num_partitions;
+		return abs(value)%max_num_partitions;
 	}
 
 	void setFromString(const char *_data)

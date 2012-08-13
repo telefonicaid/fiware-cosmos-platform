@@ -25,7 +25,6 @@
 #include <vector>	// std::vector
 #include <set>		// std::set
 #include <pthread.h>
-#include <unistd.h>
 
 #include "au/string.h"
 #include "au/Cronometer.h"

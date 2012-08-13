@@ -69,7 +69,7 @@ public class PigScriptJob implements CosmosWorkflow {
                 try {
                     PigScriptJob.this.dependencies.submit();
                     PigScriptJob.this.dependencies.waitForCompletion(true);
-                    PigScriptJob.this.pigServer.executeBatch();
+                    PigScriptJob.this.submitScript();
                 } catch (Exception e) {
                     this.setException(e);
                 }

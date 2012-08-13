@@ -44,10 +44,6 @@
 #include <malloc.h>             /* free                                      */
 #endif
 
-#if defined(__sun__)
-#include <thread.h>		/* thr_self()				     */
-#endif  /* __sun__ */
-
 #include <fcntl.h>              /* O_RDWR, O_TRUNC, O_CREAT                  */
 #include <ctype.h>              /* isprint                                   */
 #include <sys/stat.h>           /* fstat, S_IFDIR                            */
@@ -863,15 +859,9 @@ static char* lmLineFix
     fLen = strlen(format);
     while (fi < fLen)
     {
-#if defined(__sun__)
-	    thread_t tid;
-
-        tid = thr_self();
-#else
         pid_t tid;
 
         tid = syscall(SYS_gettid);
-#endif  /* __sun__ */
         if (strncmp(&format[fi], "TYPE", 4) == 0)
             CHAR_ADD((type == 'P')? 'E' : type, 4);
         else if (strncmp(&format[fi], "PID", 3) == 0)
@@ -2576,7 +2566,6 @@ LmStatus lmClear(int index, int keepLines, int lastLines)
                 CLEANUP("fseek", LmsFseek);
 
             lineP = fgets(line, LINE_MAX, fP);
-
             if (strncmp(line, "Cleared at", 10) != 0)
             {
                 len = strlen(line);

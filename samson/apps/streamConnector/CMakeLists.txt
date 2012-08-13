@@ -49,10 +49,6 @@ SET (SOURCES
 	TrafficStatistics.cpp
 )
 
-if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
-    set (SOLARIS_LIBS "-lsocket -lnsl")
-endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
-
 SET( STATIC_LIBS
      samsonClient
      samsonWorkerLib
@@ -70,7 +66,6 @@ SET( STATIC_LIBS
      protobuf
      dl
      pthread
-     ${SOLARIS_LIBS}
 )
 
 # Generate 'message.pb.h' and 'message.pb.cc' from ''message.proto''

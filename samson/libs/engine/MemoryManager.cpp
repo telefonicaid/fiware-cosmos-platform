@@ -17,7 +17,6 @@
 #include "engine/Buffer.h"		              // samson::Buffer
 
 #include <sstream>		              // std::stringstream
-#include <unistd.h>                         // usleep
 
 #include "engine/Notification.h"                // engine::Notification
 #include "engine/MemoryRequest.h"	          // engine::MemoryRequest

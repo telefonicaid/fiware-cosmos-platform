@@ -32,11 +32,8 @@ ifndef CPU_COUNT
 	OS=$(shell uname -s)
 	ifeq ($(OS),Darwin)
 		CPU_COUNT:=$(shell sysctl hw.ncpu | cut -f 2 -d" ")
-	endif
-	ifeq ($(OS),Linux)
-		CPU_COUNT:=$(shell cat /proc/cpuinfo | grep processor | wc -l)
 	else
-		CPU_COUNT=1
+		CPU_COUNT:=$(shell cat /proc/cpuinfo | grep processor | wc -l)
 	endif
 endif
 

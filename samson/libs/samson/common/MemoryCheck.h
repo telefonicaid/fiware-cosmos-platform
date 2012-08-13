@@ -26,9 +26,17 @@
 #include "samson/common/samsonVersion.h"
 #include "samson/common/MemoryCheck.h"          // samson::MemoryCheck
 
+
+#if defined (__sun__)
+typedef unsigned long long int samson_sysctl_t ;
+#else
+typedef unsigned long int samson_sysctl_t;
+#endif  /* __sun__ */
+
+
 namespace samson
 {
-    void sysctl_value(char *param_name, long int *param_value);
+    void sysctl_value(char *param_name, samson_sysctl_t *param_value);
     bool MemoryCheck();
 }
 #endif

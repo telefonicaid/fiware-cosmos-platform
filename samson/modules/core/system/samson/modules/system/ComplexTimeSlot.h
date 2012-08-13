@@ -271,7 +271,7 @@ public:
 
 		for( int i=0; i<7; i++ )
 		{
-		   _mask = (unsigned char)::pow( 2, i );
+		   _mask = (unsigned char)::pow( 2.0, i );
 
 			if( (wdaysMask.value & _mask) == _mask )
 			{

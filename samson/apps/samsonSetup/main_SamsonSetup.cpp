@@ -162,7 +162,7 @@ public:
 #ifdef LINUX
         if( main_command == "auto_configure" )
         {
-            long int kernel_shmmax = 0;
+            samson_sysctl_t kernel_shmmax = 0;
             const char *KERNEL_SHMMAX = "/proc/sys/kernel/shmmax";
 
             // Determine how much memory we have access to

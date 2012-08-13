@@ -26,6 +26,7 @@
         <jvm.version>1.6</jvm.version>
         <org.apache.hadoop>0.20.2</org.apache.hadoop>
         <thrift.version>0.8.0</thrift.version>
+        <apache-pig.version>0.10.0</apache-pig.version>
     </properties>
 
     <developers>

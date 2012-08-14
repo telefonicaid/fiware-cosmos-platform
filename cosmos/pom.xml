@@ -28,7 +28,7 @@
         <thrift.version>0.8.0</thrift.version>
         <apache-pig.version>0.9.2</apache-pig.version>
         <antlr.version>3.4</antlr.version>
-        <cosmos.common.version>0.9.1.0</cosmos.common.version>
+        <cosmos.common.version>0.9.2.0</cosmos.common.version>
     </properties>
 
     <developers>

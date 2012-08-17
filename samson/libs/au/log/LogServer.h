@@ -19,7 +19,6 @@
 
 namespace au {
     
-    class LogServerQuery;
     class LogServerChannel;
     
     class LogServer : au::network::ConsoleService

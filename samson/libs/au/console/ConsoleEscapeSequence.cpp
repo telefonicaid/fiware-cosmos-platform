@@ -2,7 +2,7 @@
 #include "au/console/ConsoleEscapeSequence.h" // Own interface
 #include "au/string.h"
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 ConsoleEscapeSequence::ConsoleEscapeSequence()
 {
@@ -23,4 +23,4 @@ ConsoleEscapeSequence::ConsoleEscapeSequence()
 }
 
 
-NAMESPACE_END
+}

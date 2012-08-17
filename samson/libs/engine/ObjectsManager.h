@@ -23,9 +23,9 @@
 #include "au/containers/simple_map.h"     // au::simple_map
 #include "au/mutex/Token.h"     // au::Token
 #include "au/mutex/TokenTaker.h" 
-#include "au/namespace.h"
 
-NAMESPACE_BEGIN(engine)
+
+namespace engine {
 
 class Object;
 class Notification;
@@ -100,10 +100,10 @@ public:
     void send( Notification* notification ); 
     
     // Get the object registered with this name
-    Object* getObjectByName( const char *name );
+    Object* objectByName( const char *name );
     
     // Recover ids for a particular channel
-    void getObjectIdsForChannel( const char* name , std::set<size_t>& ids );
+    void objectIdsForChannel( const char* name , std::set<size_t>& ids );
     
 private:
     
@@ -117,7 +117,7 @@ private:
 };
 
 
-NAMESPACE_END
+}
 
 
 #endif

@@ -24,10 +24,10 @@
 
 #include "logMsg/logMsg.h"      // LM_X
 
-#include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 
 /**
  Class to use map structures of <typedef,typedef> with addittional function for easy manitpulation
@@ -45,14 +45,14 @@ public:
     
     // Insert a pair of elements ( easy method )
     // Returns the previous elements if any
-    void insertInMap( K& key , V& value)
+    void insertInMap( const K& key , const V& value)
     {
         removeInMap( key );
         std::map<K, V >::insert( std::pair<K,V>( key, value) );
     }
     
     
-    bool isInMap( K& key ) 
+    bool isInMap( const K& key ) 
     {
         typename std::map<K, V >::iterator iter = std::map<K, V >::find(key);
         return( iter != std::map<K,V>::end() );
@@ -63,7 +63,7 @@ public:
      NULL if not found
      */
     
-    V findInMap( K& key ) 
+    V findInMap( const K& key ) 
     {
         typename std::map<K, V >::iterator iter = std::map<K, V >::find(key);
         typename std::map<K, V >::iterator iter_end = std::map<K, V >::end();
@@ -80,7 +80,7 @@ public:
      Return if it really existed
      */
     
-    bool removeInMap( K& key ) 
+    bool removeInMap( const K& key ) 
     {
         typename std::map<K, V >::iterator iter = std::map<K,V>::find(key);
         
@@ -93,7 +93,7 @@ public:
         }
     }
     
-    V extractFromMap(  K& key )
+    V extractFromMap(  const K& key )
     {
         typename std::map<K, V >::iterator iter = std::map<K,V>::find(key);
         typename std::map<K, V >::iterator iter_end = std::map<K,V>::end();
@@ -121,6 +121,6 @@ public:
     { return strcmp(str1, str2) < 0; }
 };
 
-NAMESPACE_END
+}
 
 #endif

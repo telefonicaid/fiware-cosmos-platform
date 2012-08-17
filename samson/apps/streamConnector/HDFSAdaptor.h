@@ -2,7 +2,7 @@
 #ifndef _H_STREAM_CONNECTOR_HDFS_ADAPTOR
 #define _H_STREAM_CONNECTOR_HDFS_ADAPTOR
 
-#include "engine/BufferContainer.h"
+
 
 #include "SingleConnectionAdaptor.h" // parent class SingleConnectionAdaptor
 
@@ -39,17 +39,15 @@ namespace stream_connector {
         {
             // This method is periodically called if you have to do any periodic review
             // This method has to return quickly ( no heavy operations are permitted )
-            LM_W(("review in HDFS: Pending %s to be sent " , au::str(getBufferedSize(),"B").c_str() ));
+            LM_W(("review in HDFS: Pending %s to be sent " , au::str(bufferedSize(),"B").c_str() ));
         
             
             // How to extract data to be sent ( this has not to be done here )
             while ( true )
             {
-                engine::BufferContainer buffer_container;
-                getNextBufferToSent( &buffer_container );
-                engine::Buffer* buffer = buffer_container.getBuffer();
+                engine::BufferPointer buffer = getNextBufferToSent( );
                 
-                if( buffer )
+                if( buffer != NULL )
                 {
                     LM_W(("Sending buffer of %s" , au::str( buffer->getSize() , "B" ).c_str() ));
                 }

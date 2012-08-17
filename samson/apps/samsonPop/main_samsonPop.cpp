@@ -28,7 +28,8 @@
 size_t buffer_size;
 size_t timeOut;
 
-char controller[1024];
+char host[1024];
+
 int port_node;
 char queue_name[1024];
 char format[81];
@@ -42,7 +43,7 @@ int max_size; // Max size downloading in bytes ( just for testing )
 
 PaArgument paArgs[] =
 {
-	{ "-node",      controller,    "",  PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SAMSON node to connect with "         },
+    { "-node",      host,          "",  PaString, PaOpt, _i "localhost",    PaNL, PaNL,    "SAMSON Worker node"   },
 	{ "-port_node", &port_node,    "",  PaInt,     PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
 	{ "-user",      user,          "",  PaString,  PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
 	{ "-password",  password,      "",  PaString,  PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
@@ -133,19 +134,18 @@ int main( int argC , const char *argV[] )
     samson::SamsonClient::general_init(  1024*1024*1024 );
     
     // Instance of the client to connect to SAMSON system
-    samson::SamsonClient client("pop");
+    samson::SamsonClient client("pop" );
     
-    LM_V(("Connecting to %s ..." , controller));
+    if( !client.connect(host) )
+        LM_X(1, ("Not possible to connect with %s", host ));
     
     // Init connection
     au::ErrorManager error;
-    client.initConnection( &error, controller , port_node , user , password );
-    if( error.isActivated() )
+    if( error.IsActivated() )
     {
-        fprintf(stderr, "Error connecting with samson cluster: %s\n" , error.getMessage().c_str() );
+        fprintf(stderr, "Error connecting with samson cluster: %s\n" , error.GetMessage().c_str() );
         exit(0);
     }
-    LM_V(("Conection to %s OK" , controller));
 
     
     // Connect to a particular queue
@@ -191,9 +191,9 @@ int main( int argC , const char *argV[] )
     }
     
     // Wait until all operations are complete
-    LM_V(("Waiting for all the pop operations to complete..."));
-    client.waitUntilFinish();
-    LM_V(("Finish correctly\n"));
+    LM_V(("Waiting forever..."));
+    while(true)
+        sleep(10);
     
 	
 }

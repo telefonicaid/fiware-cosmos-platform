@@ -131,7 +131,7 @@ namespace au
                 // Read data if any....
                 if( header.isSet("Content-Length") )
                 {
-                    size_t size = header.getSizeT("Content-Length", 0);
+                    size_t size = header.get("Content-Length", 0);
                     if( size > 0 )
                     {
                         LM_T(LmtRest, ("REST Reading body of %lu bytes", size ));
@@ -330,7 +330,7 @@ namespace au
             socket_connection->close();
             
             // Release the command
-            command->release();
+            command->Release();
             
         }
         

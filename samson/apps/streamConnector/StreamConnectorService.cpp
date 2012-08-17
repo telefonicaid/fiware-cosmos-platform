@@ -42,12 +42,12 @@ namespace stream_connector {
                 
                 if( password == samson_connector->getPasswordForUser( user ) )
                 {
-                    error->add_warning(au::str("Login correct as %s" , user.c_str()));
+                    error->AddWarning(au::str("Login correct as %s" , user.c_str()));
                     environment->set("user" , user );
                 }
                 else
                 {
-                    error->add_error(au::str("Wrong password for user %s" , user.c_str()));
+                    error->AddError(au::str("Wrong password for user %s" , user.c_str()));
                 }
                 return;
             }
@@ -69,7 +69,7 @@ namespace stream_connector {
                 std::string user = environment->get("user","no-user");
                 std::string new_password = cmdLine.get_argument(1);
                 samson_connector->setPasswordForUser( user , new_password );
-                error->add_warning(au::str("Set new password for user %s correctly" , user.c_str()));
+                error->AddWarning(au::str("Set new password for user %s correctly" , user.c_str()));
                 return;
                 
             }

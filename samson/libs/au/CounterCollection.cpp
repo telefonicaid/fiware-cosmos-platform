@@ -2,7 +2,7 @@
 
 #include "CounterCollection.h"      // Own interface
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 Counter::Counter()
 {
@@ -18,4 +18,4 @@ void Counter::append( int v )
     c += v;
 }
 
-NAMESPACE_END  
+}  

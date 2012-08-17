@@ -30,10 +30,10 @@
 #include "au/ErrorManager.h"        // au::ErrorManager
 #include "au/containers/map.h"                 // au::map
 
-#include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 
 typedef enum 
 {
@@ -65,7 +65,6 @@ std::string str_double_progress_bar( double p1 , double p2 , char c1 ,char c2 , 
 std::vector<std::string> simpleTockenize( std::string txt );
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
 std::vector<std::string> split(const std::string &s, char delim);  
-void split_in_words( char *line , std::vector<char*>& words , char separator );
 
 
 // Old functions to be reviews
@@ -81,6 +80,7 @@ std::string str(const char* format, ...);
 std::string str( double value );
 std::string str_detail( size_t value );
 
+std::string str( const std::vector<std::string>& hosts );
 
 // Strings in color
 std::string str( Color color, const char* format, ...);
@@ -107,13 +107,6 @@ std::string lineInConsole( char c );
 // Backward search of sequences
 const char *laststrstr(const char *source , const char *target );
 const char *laststrstr(const char *source , size_t source_length , const char *target );
-
-// Extract substrings (patterns) from a line
-const char *strnstr_limitpattern(const char *text, const char *pattern, size_t max_length);
-
-
-// Check simple regular expressions in string
-bool matchPatterns (const char *inputString, const char *pattern, char wildcard);
 
 // Get common number of chars
 int getCommonChars( std::string& txt , std::string& txt2 );    
@@ -147,7 +140,7 @@ std::string substring_without_prefix_and_posfix( std::string& str , std::string 
 std::string reverse_lines( std::string& txt );
 
 
-NAMESPACE_END
+}
 
 
 #endif

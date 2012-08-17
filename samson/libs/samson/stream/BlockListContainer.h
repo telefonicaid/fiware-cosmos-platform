@@ -19,49 +19,50 @@
 
 #include "BlockInfo.h"                              // struct BlockInfo
 
-namespace samson 
+namespace samson
 {
-    namespace stream
+  namespace stream
+  {
+    class BlockList;
+    class Block;
+    
+    /*
+     
+     Collection of block lists
+     
+     */
+    
+    class BlockListContainer
     {
-        class BlockList;
-        class Block;
-        
-        class BlockListContainer
-        {
-            std::string container_name;
-            
-        protected:
-            
-            au::map<std::string, BlockList > blockLists;
-            
-        public:
-
-            BlockListContainer( std::string _container_name );
-            ~BlockListContainer();
-            
-            BlockList* getBlockList( std::string name );
-            
-            void copyFrom( BlockListContainer* other );
-            
-            void clearBlockListcontainer();
-            
-            // Get the information about contained blocks considering them only one if there are contained in multiple BlockLists    
-            BlockInfo getUniqueBlockInfo();
-            
-            // Check is a particular block is included here
-            bool isBlockIncluded( Block* block );
-          
-            // Get the list of names for all the block lists...
-            std::vector<std::string> get_block_list_names();
-            
-            // Get a description of the contents
-            std::string getBlockListContainerDataDescription();
-            
-            // Get the total number of blocks included in all the block lists
-            size_t getNumBlocks();
-            
-        };
-    }
+      std::string container_name;
+      au::map<std::string, BlockList > blockLists;
+      
+    public:
+      
+      // Constructor and destructor
+      BlockListContainer( std::string _container_name );
+      ~BlockListContainer();
+      
+      // Get a particular block list
+      BlockList* getBlockList( std::string name );
+      
+      // Remove all block lists contained here
+      void clearBlockListcontainer();
+      
+      // Get the list of names for all the block lists...
+      std::vector<std::string> get_block_list_names();
+      
+      // Get the total number of blocks included in all the block lists
+      size_t getNumBlocks();
+      
+      // Check if all blocks are on memory
+      bool is_content_in_memory();
+      
+      // Lock content on memory
+      void lock_content_in_memory();
+      
+    };
+  }
 }
-        
+
 #endif

@@ -5,7 +5,7 @@
 #include "au/mutex/Token.h"
 #include "au/Rate.h"
 
-#include "engine/Notification.h"
+
 
 namespace  samson 
 {
@@ -20,34 +20,32 @@ namespace  samson
     class SamsonPushBuffer
     {
         
-        SamsonClient *client;
-        std::string queue;
+        SamsonClient *samson_client_;  // Client to use to push data
+        std::string queue_;            // Queue to push data to
         
         // Buffer
-        char *buffer;
-        size_t max_buffer_size;
-        
-        size_t size;    // Current size of the buffer
-        
-        au::Token token;
+        engine::BufferPointer buffer_;
+
+        // Mutes protection
+        au::Token token_;
         
     public:
         
-        au::rate::Rate rate; // Statistics about rate
-        
+        // Statistics about rate
+        au::rate::Rate rate_; 
+
+        // Constructor
         SamsonPushBuffer( SamsonClient *client , std::string queue );
         ~SamsonPushBuffer();
-        
+
+        // Method to push data
         void push( const char *data , size_t length , bool flushing );
+        
+        // Flush accumulated data to samson client
         void flush();
         
         // Recevie notifications
         void notify( engine::Notification* notification );
-        
-    private:
-        
-        void _flush();      // No token protected flush operation
-        
         
     };
     

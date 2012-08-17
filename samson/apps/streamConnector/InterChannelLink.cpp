@@ -39,7 +39,7 @@ namespace stream_connector {
             au::ObjectContainer<InterChannelPacket> packet_container;
             packets->extract_front( packet_container );
             
-            InterChannelPacket* packet = packet_container.getObject();
+            InterChannelPacket* packet = packet_container.object();
             if( packet )
                 push( packet );
             else
@@ -76,7 +76,7 @@ namespace stream_connector {
         packet_reader_writer->stop_threads();
     }
     
-    size_t InterChannelLink::getBufferedSize()
+    size_t InterChannelLink::bufferedSize()
     {
         return packet_reader_writer->getOutputBufferedSize();
     }

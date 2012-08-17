@@ -28,10 +28,7 @@
 
 #include "logMsg/logMsg.h"					 // LM_M()
 
-#include "au/namespace.h"
-
-
-NAMESPACE_BEGIN(au)
+namespace au {
 
 /**
  ListMap is a container that can be used as map and as list.
@@ -226,6 +223,6 @@ public:
     
 };	
 
-NAMESPACE_END
+}
 
 #endif

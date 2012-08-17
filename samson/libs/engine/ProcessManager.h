@@ -22,10 +22,10 @@
 #include <iostream>                 // std::cout
 #include <set>                      // std::set
 
-#include "au/containers/map.h"                 // au::list
-#include "au/containers/set.h"                 // au::set
+#include "au/containers/Queue.h"
+#include "au/containers/Box.h"
 #include "au/mutex/Token.h"               // au::Token
-#include "au/namespace.h"
+
 
 #include "engine/Engine.h"     // engine::Engine
 #include "engine/Object.h"     // engine::EngineNotification
@@ -34,46 +34,26 @@
 
 #define notification_process_request_response                   "notification_process_request_response"
 
-NAMESPACE_BEGIN(engine)
-
-class EngineElement;
-class ProcessItem;
-class DiskOperation;
-class Notification;
-
-/**
- Class to manage background jobs
- */
-
-class ProcessManager  :  engine::Object
-{
+namespace engine {
+  
+  class EngineElement;
+  class ProcessItem;
+  class DiskOperation;
+  class Notification;
+  
+  /**
+   Class to manage background jobs
+   */
+  
+  class ProcessManager  :  engine::Object
+  {
     static ProcessManager* processManager;  //Singleton Instance pointer
     
-    // Mutex to protect different queues
-    au::Token token;
-    
-    au::set<ProcessItem> items;				// List of items to be executed ( all priorities  )
-    au::set<ProcessItem> running_items;		// Set of items currently being executed
-
-    int num_processes;						// Number of maximum simultaneous process running ( from setup )
-
     // Private constructor to be a singleton
-    ProcessManager( int _num_processes);
+    ProcessManager( int _num_processes );
     
-    pthread_t t_scheduler; // Thread continuously checking for new process to be executed
+  public:
 
-public:
-    
-    bool thread_running;   // Flag to indicate that the background thread is running
-    bool quitting;         // Flag to indicate that we are quitting
-    
-public:
-    
-    int public_max_proccesses;
-    int public_num_proccesses;
-    
-public:
-    
     ~ProcessManager();
     
     static void init( int _num_processes );
@@ -81,52 +61,38 @@ public:
     static void destroy( );
     static ProcessManager* shared();
     
-    static int getNumCores();
-    static int getNumUsedCores();
-    
+    // Generic notification system
     void notify( Notification* notification );
-    
-public:
-    
+        
     // Function to add a Process. It will be notifier by delegate mechanism
-    void add( ProcessItem *item , size_t listenerId );                          
+    void Add( au::SharedPointer<ProcessItem> item , size_t listenerId );
     
-    // Function to cancel a Process. 
-    void cancel( ProcessItem *item );                   
+    // Function to cancel a Process.
+    void Cancel( au::SharedPointer<ProcessItem>item );
     
-public:
-    
-    // Notification that this ProcessItem has finished
-    // Public but only called from SAMSON platform ( background process notifying ... )
-    void finishProcessItem( ProcessItem *item );		
-    
-public:
-    
-    // Get information for monitoring
-    void getInfo( std::ostringstream& output);
-    
-public:
-    
-    // Only public to be executed from a separate thread
-    // Check background process in order to see if new threads have to be created
-    void check_background_processes();                    
-    
-    // Run next item if possible
-    void run_next_items();
-    
-private:
- 
-    // Operations over the lists of processes with token protection
-    
-    void token_add( ProcessItem* item );
-    ProcessItem* token_getNextProcessItem();
-    ProcessItem* token_finishProcessItem( ProcessItem* item );
-    ProcessItem* token_cancelProcessItem( ProcessItem* item );
-    void token_getInfo( std::ostringstream& output);
-    size_t token_getNumRunningProcessItem();
-    
-};
+    // Get the number of running items or maximum items
+    int num_used_procesors();
+    int max_num_procesors();
+  
+  private:
 
-NAMESPACE_END
+    // Method executed by background threads to run tasks
+    void run_worker();
+
+    // Function to run background threads
+    friend void* ProcessManager_run_worker( void* p );
+
+    // Mutex to protect different queues
+    au::Token token_;
+    
+    au::Queue<ProcessItem> items_;				  // List of items to be executed ( all priorities  )
+    au::Box<ProcessItem> running_items_;		// Set of items currently being executed
+    
+    int num_procesors_;                     // Number of background workers to perform tasks
+    int max_num_procesors_;					  	    // Maximum number of background processors
+    
+  };
+  
+}
 
 #endif

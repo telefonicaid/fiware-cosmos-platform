@@ -29,10 +29,10 @@
 
 #include "logMsg/logMsg.h"					 // LM_M()
 
-#include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 
 /**
  CLass to use list structures of <class*> with additional function for easy manipulation
@@ -85,6 +85,6 @@ public:
     
 };	
 
-NAMESPACE_END
+}
 
 #endif

@@ -19,9 +19,9 @@
 
 #include <string>           // std::string
 #include <stdio.h>          // FILE*
-#include "au/namespace.h"
 
-NAMESPACE_BEGIN(engine)
+
+namespace engine {
 
 class ReadFile
 {
@@ -44,6 +44,6 @@ public:
     
 };
 
-NAMESPACE_END
+}
 
 #endif

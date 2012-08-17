@@ -6,6 +6,7 @@ SET (HEADERS
 )
 
 SET (STATIC_LIBS
+  	 zookeeper_mt
      delilahLib
      pa
      lm
@@ -18,6 +19,7 @@ SET (STATIC_LIBS
      dl
      engine
      samsonCommon	
+	 samsonZoo
 	 samson_system
      au
      ${COMMON_SAMSON_LIBS}

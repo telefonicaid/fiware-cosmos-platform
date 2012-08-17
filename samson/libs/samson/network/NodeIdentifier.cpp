@@ -10,19 +10,16 @@ namespace samson {
         id = (size_t)-1;
     }
     
-    NodeIdentifier::NodeIdentifier( network::NodeIdentifier pb_node_identifier  )
+    NodeIdentifier::NodeIdentifier( gpb::NodeIdentifier pb_node_identifier  )
     {
         
         switch ( pb_node_identifier.node_type() ) 
         {
-            case network::NodeIdentifier_NodeType_Delilah:
+            case gpb::NodeIdentifier_NodeType_Delilah:
                 node_type = DelilahNode;
                 break;
-            case network::NodeIdentifier_NodeType_Worker:
+            case gpb::NodeIdentifier_NodeType_Worker:
                 node_type = WorkerNode;
-                break;
-            case network::NodeIdentifier_NodeType_Unknown:
-                node_type = UnknownNode;
                 break;
                 
             default:
@@ -39,20 +36,43 @@ namespace samson {
         node_type = _node_type;
         id = _id;
     }
-
     
-    void NodeIdentifier::fill( network::NodeIdentifier* pb_node_identifier )
+    NodeIdentifier::NodeIdentifier( const std::string& name )
+    {
+        std::vector<std::string> components =  au::split(name, '_' );
+        if( components.size() != 2 )
+        {
+            node_type = UnknownNode;
+            id = 0;
+            return;
+        }
+        
+        if( components[0] == ClusterNodeType2str( WorkerNode ) )
+        {
+            node_type = WorkerNode;
+            id = atoll( components[1].c_str() );
+        }
+        
+        if( components[1] == ClusterNodeType2str( DelilahNode ) )
+        {
+            node_type = WorkerNode;
+            id = atoll( components[1].c_str() );
+        }
+        
+    }
+    
+    void NodeIdentifier::fill( gpb::NodeIdentifier* pb_node_identifier )
     {
         switch ( node_type ) 
         {
             case DelilahNode:
-                pb_node_identifier->set_node_type( network::NodeIdentifier_NodeType_Delilah );
+                pb_node_identifier->set_node_type( gpb::NodeIdentifier_NodeType_Delilah );
                 break;
             case WorkerNode:
-                pb_node_identifier->set_node_type( network::NodeIdentifier_NodeType_Worker );
+                pb_node_identifier->set_node_type( gpb::NodeIdentifier_NodeType_Worker );
                 break;
             case UnknownNode:
-                pb_node_identifier->set_node_type( network::NodeIdentifier_NodeType_Unknown );
+                LM_X(1, ("Internal error"));
                 break;
         }            
         pb_node_identifier->set_id(id);
@@ -77,7 +97,7 @@ namespace samson {
         return au::str("%s:%lu" , ClusterNodeType2str( node_type ) , id );
     }
     
-    std::string NodeIdentifier::getCodeName()
+    std::string NodeIdentifier::getCodeName() const
     {
         if( node_type == DelilahNode )
         {

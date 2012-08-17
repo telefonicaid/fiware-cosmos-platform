@@ -33,7 +33,7 @@ namespace samson {
         // Pointer to the global samson worker
         SamsonWorker * samsonWorker;
         
-        // Manager of the current "stream-tasks" running on this worker
+        // Manager of the worker_commands
         au::map< size_t , WorkerCommand > workerCommands; 
         
         // Internal counter to WorkerTasks
@@ -57,7 +57,7 @@ namespace samson {
         void getInfo( std::ostringstream& output);
 
         // Get Collection of worker_commands ( for ls_worker_commands )
-        samson::network::Collection* getCollectionOfWorkerCommands( Visualization * visualization );
+        samson::gpb::Collection* getCollectionOfWorkerCommands( const Visualization& visualization );
         
         
     };

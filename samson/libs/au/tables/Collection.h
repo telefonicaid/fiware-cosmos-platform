@@ -3,10 +3,10 @@
 #define _H_AU_TABLE_COLLECTION
 
 #include "au/containers/simple_map.h"
-#include "au/namespace.h"
 
-NAMESPACE_BEGIN(au)
-NAMESPACE_BEGIN(tables)
+
+namespace au {
+namespace tables {
 
 class Table;
 
@@ -59,7 +59,7 @@ public:
     
 };
 
-NAMESPACE_END
-NAMESPACE_END
+}
+}
 
 #endif

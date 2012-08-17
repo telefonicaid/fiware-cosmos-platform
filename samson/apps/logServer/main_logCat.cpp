@@ -101,8 +101,8 @@ int main(int argC, const char *argV[])
         au::ErrorManager error;
         table_log_formater.init(&error);
         
-        if( error.isActivated() )
-            LM_X(1, ("Error: %s" , error.getMessage().c_str() ));
+        if( error.IsActivated() )
+            LM_X(1, ("Error: %s" , error.GetMessage().c_str() ));
         
         size_t num_logs = logFile->logs.size();
         for( size_t i = 0 ; i <  num_logs ; i++ )

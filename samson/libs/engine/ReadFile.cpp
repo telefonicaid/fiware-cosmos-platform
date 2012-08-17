@@ -3,7 +3,7 @@
 #include "ReadFile.h"       // Own interface
 #include "logMsg/logMsg.h"         // LM_M ...
 
-NAMESPACE_BEGIN(engine)
+namespace engine {
 
 ReadFile::ReadFile( std::string _fileName )
 {
@@ -70,4 +70,4 @@ void ReadFile::close()
     }
 }
 
-NAMESPACE_END
+}

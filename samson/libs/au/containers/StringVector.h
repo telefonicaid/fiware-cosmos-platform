@@ -16,10 +16,10 @@
 #include "au/string.h"              // au::str(...)
 #include "au/console/ConsoleAutoComplete.h"
 
-#include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 
 class StringVector : public std::vector<std::string>
 {
@@ -62,6 +62,6 @@ public:
     std::string str_vector();
 };
 
-NAMESPACE_END
+}
 
 #endif

@@ -30,10 +30,10 @@
 #include "au/ErrorManager.h"        // au::ErrorManager
 #include "au/containers/map.h"                 // au::map
 
-#include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 
 
 int ellapsedSeconds(struct timeval *init_time);    
@@ -50,6 +50,6 @@ size_t seconds_to_microseconds( double time );
 size_t seconds_to_nanoseconds( double time );
 
 
-NAMESPACE_END
+}
 
 #endif

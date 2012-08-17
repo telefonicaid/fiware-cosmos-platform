@@ -28,7 +28,7 @@ namespace au
     
     void OnOffMonitor::set_on( bool _on )
     {
-        double t = cronometer.diffTime();
+        double t = cronometer.seconds();
         
         if( on )
             on_time += t;
@@ -40,7 +40,7 @@ namespace au
         on_time *= ::pow( f , t ); 
         
         // Reset cronometer
-        cronometer.reset();
+        cronometer.Reset();
         
         // Change state if any
         on = _on;
@@ -48,7 +48,7 @@ namespace au
     
     double OnOffMonitor::getActivity()
     {
-        double t = cronometer.diffTime();
+        double t = cronometer.seconds();
         double _on_time = on_time;
         double _off_time = off_time;
         if( on )

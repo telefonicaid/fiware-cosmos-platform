@@ -6,7 +6,7 @@
 
 #include "Object.h"                 // Own interface
 
-NAMESPACE_BEGIN(engine)
+namespace engine {
 
 size_t Object::getEngineId()
 {
@@ -55,5 +55,5 @@ void Object::listen( const char* notification_name )
 }
 
 
-NAMESPACE_END
+}
 

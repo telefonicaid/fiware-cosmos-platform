@@ -63,7 +63,7 @@ int main( int argC , const char*argV[] )
 	size_t counter=0;
 	while( true )
 	{
-	   size_t time = cronometer.diffTimeInSeconds();
+	   size_t time = cronometer.seconds();
 
 	   if( time == 0 )
 		  if( counter >= (size_t)rate )

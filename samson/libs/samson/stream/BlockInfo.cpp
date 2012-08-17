@@ -24,31 +24,6 @@ namespace samson
         min_time = 0;
         max_time = 0;
         
-        accumulate_divisions = 0;
-        
-    }
-    
-    void BlockInfo::getInfo( std::ostringstream &output )
-    {
-        au::xml_open( output , "block_info" );
-        au::xml_simple( output , "num_blocks" , num_blocks );
-        
-        au::xml_simple( output , "size" , size );
-        au::xml_simple( output , "size_on_memory" , size_on_memory );
-        au::xml_simple( output , "size_on_disk" , size_on_disk );
-        au::xml_simple( output , "size_locked" , size_locked );
-        
-        
-        au::xml_simple( output , "min_time_diff" , (size_t)min_time_diff() );
-        au::xml_simple( output , "max_time_diff" , (size_t)max_time_diff() );
-        
-        au::xml_simple( output , "num_divisions" , getAverageNumDivisions() );
-        
-        info.getInfo( output );
-        
-        format.getInfo( output );
-        
-        au::xml_close( output , "block_info" );
     }
     
     double BlockInfo::onMemoryPercentadge()
@@ -86,15 +61,6 @@ namespace samson
                        , au::str_percentage( size_locked , size).c_str()
                        , info.str().c_str()
                        );
-    }
-    
-    
-    double BlockInfo::getAverageNumDivisions()
-    {
-        if( num_blocks == 0)
-            return 1;
-        
-        return (double) accumulate_divisions / (double) num_blocks;
     }
     
     void BlockInfo::push( KVFormat _format )
@@ -165,7 +131,7 @@ namespace samson
         if (num_blocks == 0 )
             return "empty";
         
-        return au::str( "%3d %s %s %c%c" 
+        return au::str( "%3dbs %s %s %c%c" 
                        , num_blocks 
                        , au::str( info.kvs , "kvs" ).c_str()
                        , au::str( info.size ,"B" ).c_str()

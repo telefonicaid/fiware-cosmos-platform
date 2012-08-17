@@ -9,8 +9,8 @@
 
 namespace samson {
 
-	void copyEnviroment( Environment* from , network::Environment * to );
-	void copyEnviroment( const network::Environment & from , Environment* to  );
+	void copyEnviroment( Environment* from , gpb::Environment * to );
+	void copyEnviroment( const gpb::Environment & from , Environment* to  );
     
 }
 

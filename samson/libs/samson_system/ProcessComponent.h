@@ -22,8 +22,6 @@ namespace samson{ namespace system{
             use_counter_ = 0; // Init counter
         }
         
-        std::string name() { return name_; }
-
         // Update this state based on input values ( return true if this state has been updated with this component )
         virtual bool update( Value* key , 
                             Value * state , 

@@ -14,99 +14,107 @@
 #include "engine/Notification.h"
 #include "engine/Object.h"
 
-#include "samson/network/ClusterInformation.h"
 #include "samson/network/Packet.h"
 #include "samson/network/PacketQueue.h"
 #include "au/network/NetworkListener.h"
 
 
+namespace au
+{
+  class SocketConnection;
+}
+ 
 namespace samson {
+  
+  
+  class NetworkConnection;
+  class NetworkListener;
+  
+  class NetworkManager
+  {
+    // Multi queue for all unconnected connections
+    MultiPacketQueue multi_packet_queue;
     
-
-    class NetworkConnection;
-    class SocketConnection;
-    class NetworkListener;
+    // All managed connection ( name = code name of node identifier )
+    au::map<std::string , NetworkConnection> connections;
     
-        
+    // Token to block add and move operations on connections
+    au::Token token_connections_;
     
-    class NetworkManager
+    friend class NetworkConnection;
+    
+  public:
+    
+    NetworkManager():token_connections_("token_connections_")
     {
-        // Multi queue for all unconnected connections
-        MultiPacketQueue multi_packet_queue;
-
-        // All managed connection
-        au::map<std::string , NetworkConnection> connections;
-
-        // Token to block add and move operations on connections
-        au::Token token_connections_;
-
-    public:
-        
-        NetworkManager():token_connections_("token_connections_")
-        {
-        }
-                
-        ~NetworkManager()
-        {
-            multi_packet_queue.clear();
-        }
-        
-        // Interface to inform about a received packet from a network connection
-        virtual void receive( NetworkConnection* connection, Packet* packet )
-        {
-            LM_W(("NetworkManager::receive not implemented"));
-        }
-        
-        // Push a packet to a connection
-        Status send( Packet* packet );
-
-        // Add a network connection
-        Status add( NetworkConnection * network_connection );
-        
-        // Mode a connection to another name
-        Status move_connection( std::string connection_from , std::string connection_to );
-
-        // Check connection
-        bool isConnected( std::string connection_name );
-        
-        // Extract next unconnected network connection ... to be deleted
-        NetworkConnection* extractNextDisconnectedConnection(  );
-        
-        // simply remove all unconnected connections
-        void remove_disconnected_connections();
-        
-        // Get table with connection information
-        au::tables::Table * getConnectionsTable();
-
-        // Get pending packets table
-        au::tables::Table * getPendingPacketsTable();
-        
-        // API to access internal multi packet queue
-        void check();
-        void push_pending_packet( std::string name , PacketQueue * packet_queue );
-
-        // Get delilah ids
-        std::vector<size_t> getDelilahIds();
-
-        // Debug str
-        std::string str();
-        
-        // Get a collection for all connections
-        network::Collection* getConnectionsCollection( Visualization* visualization );
-       
-        // Reset all connections
-        void reset();
-        
-        // Get number of connections
-        size_t getNumConnections();
-        
-        size_t get_rate_in();
-        size_t get_rate_out();
-        std::string getStatusForConnection( std::string connection_name );
-    };
+    }
     
+    ~NetworkManager()
+    {
+      // Remove all pending packets to be sent
+      multi_packet_queue.Clear();
+    }
+
+    // Unique method to add connections
+    void AddConnection( NodeIdentifier new_node_identifier , au::SocketConnection* socket_connection );
     
+    // Interface to inform about a received packet from a network connection
+    virtual void receive( NetworkConnection* connection, const PacketPointer& packet )
+    {
+      LM_W(("NetworkManager::receive not implemented"));
+    }
     
+    // Push a packet to a connection
+    void Send( const PacketPointer& packet );
+    void SendToAllDelilahs( const PacketPointer& packet );
+
+    // Review
+    //  --> Remove packets sent to long unconnected nodes
+    //  --> Remove disconnected connections
+    void Review();
+
+    
+    // Remove this connection ( whatever name it has )
+    void Remove( NetworkConnection * network_connection );
+    void Remove( const std::string& connection_name );
+
+    // Remove all unconnected connections
+    void RemoveDisconnectedConnections();
+    
+    // Check connection
+    bool isConnected( std::string connection_name );
+    
+    // Get table with connection information
+    au::tables::Table * getConnectionsTable();
+    
+    // Get pending packets table
+    au::tables::Table * getPendingPacketsTable();
+    
+    // Get delilah ids
+    std::vector<size_t> getDelilahIds();
+    
+    // Get all connections
+    std::vector<std::string> getAllConnectionNames();
+    
+    // Debug str
+    std::string str();
+    
+    // Get a collection for all connections
+    gpb::Collection* getConnectionsCollection( const Visualization& visualization );
+    
+    // Reset all connections
+    void reset();
+    
+    // Get number of connections
+    size_t getNumConnections();
+    
+    size_t get_rate_in();
+    size_t get_rate_out();
+    std::string getStatusForConnection( std::string connection_name );
+  };
+  
+  
+  
 }
 
 #endif

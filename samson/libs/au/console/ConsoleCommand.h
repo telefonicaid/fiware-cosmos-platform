@@ -5,9 +5,9 @@
 
 #include <string>
 
-#include "au/namespace.h"
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 
 
 class ConsoleCommand
@@ -44,6 +44,6 @@ public:
     
 };
 
-NAMESPACE_END
+}
 
 #endif

@@ -11,8 +11,8 @@
 #include "Tree.h"    // Own interface
 
 
-NAMESPACE_BEGIN(au)
-NAMESPACE_BEGIN(tables)
+namespace au {
+namespace tables {
 
 
 #pragma mark TreeCollection
@@ -443,7 +443,8 @@ TreeItem *TreeItem::getTreeFromXML(  std::string &data )
     
     // Parser the xml document into "doc"
     std::istringstream is_xml_document( output.str() );
-    pugi::xml_parse_result result = doc.load( is_xml_document );
+
+	doc.load( is_xml_document );
     
     // Create a tree based on the document we have just scanned
     return pugi::treeItemFromDocument(doc);
@@ -466,5 +467,5 @@ void TreeItem::replaceNode( TreeItem* item )
 }
 
 
-NAMESPACE_END
-NAMESPACE_END
+}
+}

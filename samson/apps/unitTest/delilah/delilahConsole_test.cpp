@@ -24,10 +24,14 @@
 
 #include "common_delilah_test.h"
 
+/*
+
 
 //Test void getPrompt();
 TEST(delilahConsoleTest, getPrompt)
 {
+
+
     samson::DelilahConsole *delilah_console = init_delilah_test();
 
     EXPECT_TRUE(delilah_console != NULL);
@@ -42,13 +46,7 @@ TEST(delilahConsoleTest, getPrompt)
         port = atoi(env_port);
     }
 
-    char *user = strdup("anonymous");
-    char *password = strdup("anonymous");
-    LM_M(("delilah_console->connect"));
-    delilah_console->connect( host , port , user , password );
-
     char expected_result[1024];
-    sprintf(expected_result, "[%s@%s:%d] Delilah>", user, host, port);
     EXPECT_EQ(delilah_console->getPrompt(), expected_result) << "Wrong prompt after connected (samsonWorker should be running in localhost)";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set_mode"), 0) << "Wrong result from (set_mode)";
@@ -60,24 +58,15 @@ TEST(delilahConsoleTest, getPrompt)
     EXPECT_EQ(delilah_console->getPrompt(), ">>") << "Wrong prompt after set_mode logs";
 
     EXPECT_EQ(delilah_console->runAsyncCommand("set_mode normal"), 0) << "Wrong result from (set_mode normal)";
-    sprintf(expected_result, "[%s@%s:%d] Delilah>", user, host, port);
     EXPECT_EQ(delilah_console->getPrompt(), expected_result) << "Wrong prompt after set_mode normal";
 
-
-
-    au::ErrorManager error;
-    LM_M(("delilah_disconnect()"));
-    delilah_console->delilah_disconnect( &error );
     EXPECT_TRUE(error.isActivated() == false);
     EXPECT_EQ(delilah_console->getPrompt(), "[Unconnected] Delilah>") << "Wrong prompt after disconnecting";
-
-    delilah_console->connect( host , port , user , password );
-
-    LM_M(("quit delilah"));
 
     EXPECT_EQ(delilah_console->runAsyncCommand("quit"), 0) << "Wrong result from runAsyncCommand(quit)";
 
     close_delilah_test(delilah_console);
+
 }
 
 //Test size_t runAsyncCommand( std::string command);
@@ -96,7 +85,6 @@ TEST(delilahConsoleTest, runAsyncCommand)
     }
     char *user = strdup("anonymous");
     char *password = strdup("anonymous");
-    delilah_console->connect( host , port , user , password );
 
     delilah_console->add_alias("test", "ls");
     delilah_console->remove_alias("test");
@@ -980,3 +968,4 @@ TEST(delilahConsoleTest, delilahBase)
     close_delilah_test(delilah_console);
 }
 
+*/

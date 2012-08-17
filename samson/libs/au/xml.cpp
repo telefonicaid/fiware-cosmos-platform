@@ -1,7 +1,7 @@
 
 #include "xml.h"        // Own interface
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 void xml_open( std::ostringstream& output, std::string name )
 {
@@ -18,4 +18,4 @@ void xml_content( std::ostringstream& output , std::string _content )
     output << "<![CDATA[" << _content << "]]>";        
 }
 
-NAMESPACE_END
+}

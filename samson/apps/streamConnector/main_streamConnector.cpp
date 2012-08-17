@@ -202,7 +202,7 @@ int main( int argC , const char *argV[] )
                 main_stream_connector->process_command( line  , &error );
 
                 // Show only if an error happen there
-                if( error.isActivated() )
+                if( error.IsActivated() )
                     std::cerr << error.str();
             }
         }
@@ -221,8 +221,8 @@ int main( int argC , const char *argV[] )
         {
             au::ErrorManager error;
             main_stream_connector->process_command( au::str("add_channel default %s" , input_splitter_name )  , &error );
-            if( error.isActivated() )
-                main_stream_connector->log( new stream_connector::Log( "Init" , "Error" , error.getMessage().c_str()  ) );
+            if( error.IsActivated() )
+                main_stream_connector->log( new stream_connector::Log( "Init" , "Error" , error.GetMessage().c_str()  ) );
         }
         
         size_t adapter_id = 1;
@@ -236,8 +236,8 @@ int main( int argC , const char *argV[] )
 
             au::ErrorManager error;
             main_stream_connector->process_command( command , &error );
-            if( error.isActivated() )
-                main_stream_connector->log( new stream_connector::Log( "Init" , "Error" , error.getMessage().c_str()  ));
+            if( error.IsActivated() )
+                main_stream_connector->log( new stream_connector::Log( "Init" , "Error" , error.GetMessage().c_str()  ));
         }
         
         // Add inputs
@@ -249,8 +249,8 @@ int main( int argC , const char *argV[] )
             
             au::ErrorManager error;
             main_stream_connector->process_command( command , &error );
-            if( error.isActivated() )
-                main_stream_connector->log( new stream_connector::Log( "Init" , "Error" , error.getMessage().c_str() ));
+            if( error.IsActivated() )
+                main_stream_connector->log( new stream_connector::Log( "Init" , "Error" , error.GetMessage().c_str() ));
         }
 
     }
@@ -293,9 +293,9 @@ int main( int argC , const char *argV[] )
             size_t num_input_items = main_stream_connector->getNumInputItems();
             size_t pending_size =  main_stream_connector->getOutputConnectionsBufferedSize();
             
-            if( cronometer_notification.diffTime() > 1 )
+            if( cronometer_notification.seconds() > 1 )
             {
-                cronometer_notification.reset();
+                cronometer_notification.Reset();
                 
                 LM_V(("Review samsonConnnector : %lu input-items & %s pending to be sent" ,
                       num_input_items, au::str( pending_size , "B" ).c_str()  ));

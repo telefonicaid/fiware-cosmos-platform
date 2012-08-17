@@ -9,77 +9,73 @@
 
 
 namespace samson {
-
+  
+  
+  SamsonPushBuffer::SamsonPushBuffer( SamsonClient * client , std::string queue  ) : token_("SamsonPushBuffer")
+  {
+    // Client and queue name to push data to
+    samson_client_ = client;
+    queue_ = queue;
     
-    SamsonPushBuffer::SamsonPushBuffer( SamsonClient *_client , std::string _queue  ) : token("SamsonPushBuffer")
+    // Init buffer
+    buffer_ = engine::Buffer::create("SamsonPushBuffer", "push", 64*1024*1024 );
+    
+  }
+  
+  SamsonPushBuffer::~SamsonPushBuffer()
+  {
+  }
+  
+  void SamsonPushBuffer::push( const char *data , size_t size , bool flushing )
+  {
+    // Mutex protection
+    au::TokenTaker tt(&token_);
+    
+    // Statistics
+    rate_.push( size );
+    
+    if( ( size + buffer_->getSize() ) > buffer_->getMaxSize() )
+      flush();
+    
+    if( size > 1024*1024*1024 )
+      LM_X(1, ("Non supported size to push %s" , au::str(size,"B").c_str() ));
+    
+    if( size > buffer_->getSize() )
     {
-        // Client and queue name to push data to
-        client = _client;
-        queue = _queue;
-        
-        
-        // Init the simple buffer
-        max_buffer_size = 64*1024*1024 - sizeof(KVHeader) ; // Perfect size for this ;)
-        buffer = (char*) malloc( max_buffer_size );
-        size = 0;
-        
-        
+      flush(); // Flush current buffer
+      // Create another buffer to meet the size
+      buffer_ = engine::Buffer::create("SamsonPushBuffer", "push", size );
     }
     
-    SamsonPushBuffer::~SamsonPushBuffer()
-    {
-        if( buffer )
-            free(buffer);
-    }
+    buffer_->write(data, size);
     
-    void SamsonPushBuffer::push( const char *data , size_t length , bool flushing )
-    {
-        // Mutex protection
-        au::TokenTaker tt(&token);
-        
-        // Statistics
-        rate.push( length );
-        
-        if( (size + length ) > max_buffer_size )
-        {
-            // Push to the client
-            client->push(  queue , buffer, size );
-            
-            // Come back to "0"
-            size = 0;
-        }
-        
-        // Copy new content to the upload buffer
-        {
-            // Acumulate contents
-            memcpy(buffer+size, data, length);
-            size += length;
-            
-        }
-        
-        if( flushing )
-            _flush();
-    }
+    LM_V(("Accumulated %s in push buffer" , au::str( buffer_->getSize() ,"B" ).c_str() ));
     
-    void SamsonPushBuffer::flush()
-    {
-        au::TokenTaker tt(&token);
-        _flush();
-    }
+    if( flushing )
+      flush();
+  }
+  
+  void SamsonPushBuffer::flush()
+  {
+    au::TokenTaker tt(&token_);
     
-    void SamsonPushBuffer::_flush()
-    {
-        if ( size > 0 )
-        {
-            // Process buffer
-            LM_V(("SamsonPushBuffer: Pushing %s to queue %s\n" , au::str(size,"B").c_str() , queue.c_str()));
-            client->push(  queue , buffer, size );
-            
-            // Come back to "0"
-            size = 0;
-            
-        }
-    }
     
-
+    if ( buffer_->getSize() > 0 )
+    {
+      // Push to the client
+      LM_V(("SamsonPushBuffer: Pushing a bufer %s to SAMSON queue %s"
+            , au::str( buffer_->getSize() ).c_str()
+            , queue_.c_str() ));
+      
+      samson_client_->push( buffer_ , queue_ );
+      
+      // Create a new buffer to continue
+      buffer_ = engine::Buffer::create("SamsonPushBuffer", "push", 64*1024*1024 );
+      
+    }
+    else
+      LM_V(("Not flishing since no data accumulated in push_buffer "));
+  }
+  
+  
 }

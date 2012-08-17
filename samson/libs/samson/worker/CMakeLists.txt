@@ -3,12 +3,18 @@ SET (HEADERS
 	WorkerCommandManager.h
 	WorkerCommand.h
 	SamsonWorker.h
+	PushManager.h
+	DistributionBlocks.h
+	SamsonWorkerSamples.h
 )
 
 SET (SOURCES
 	WorkerCommandManager.cpp
 	WorkerCommand.cpp
 	SamsonWorker.cpp
+	PushManager.cpp
+	DistributionBlocks.cpp
+	SamsonWorkerSamples.cpp
 )
 
 # Include directories

@@ -56,7 +56,7 @@ namespace stream_connector {
         void review();
         
         // Common method to push data to all output connections ( from all items at input )
-        void push( engine::Buffer * buffer );
+        void push( engine::BufferPointer buffer );
         
         // Channel management
         void cancel_channel();

@@ -19,48 +19,52 @@
  *
  * ****************************************************************************/
 
-#ifndef _H_AU_DESCRIPTORS
-#define _H_AU_DESCRIPTORS
+#ifndef AU_DESCRIPTORS_H_
+#define AU_DESCRIPTORS_H_
 
 #include <string>
 #include <sstream>
 #include "au/containers/map.h"       // au::map
 
-#include "au/namespace.h"
+namespace au {
+  
+  class DescriptorsCounter
+  {
+    
+  public:
+    
+    DescriptorsCounter( const std::string& description);
+    void Increase();
+    friend std::ostream& operator<<( std::ostream& o , const DescriptorsCounter& descriptors );
+    
+  private:
+    
+    std::string description_;
+    int counter_;
+    
+  };
+  
+  class Descriptors
+  {
 
-NAMESPACE_BEGIN(au)
-
-
-class DescriptorsCounter
-{
-    std::string description;
-    int counter;
+  public:
     
-public:
-    
-    DescriptorsCounter( std::string _description);
-    void increase();
-    std::string str();
-    
-};
-
-class Descriptors
-{
-    
-    au::map< std::string , DescriptorsCounter> concepts;
-    
-public:
-    
+    Descriptors();
     ~Descriptors();
     
-    void add( std::string txt );
-
+    void Add( const std::string& txt );
     size_t size();
-    
     std::string str();
     
-};
+  private:
 
-NAMESPACE_END
+    friend std::ostream& operator<<( std::ostream& o , const Descriptors& descriptors );
+    au::map< std::string , DescriptorsCounter> concepts_;
+   
+  };
+  
+  
+  
+}
 
 #endif

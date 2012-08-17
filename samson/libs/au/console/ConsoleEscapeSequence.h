@@ -6,10 +6,10 @@
 #include "au/string.h"
 #include "au/console/ConsoleCode.h"
 
-#include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 
 
 typedef enum
@@ -48,7 +48,7 @@ public:
     // Init the sequence detector
     void init()
     {
-        current_sequence == "";
+        current_sequence = "";
         current_sequence.clear();
     }
     
@@ -104,6 +104,6 @@ public:
     
 };
 
-NAMESPACE_END
+}
 
 #endif

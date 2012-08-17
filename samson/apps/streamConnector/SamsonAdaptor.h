@@ -45,12 +45,12 @@ namespace stream_connector {
         virtual void stop_connection();
         virtual void review_connection();
         
-        size_t getSize();
+        size_t bufferedSize();
         
-        void push( engine::Buffer* buffer );
+        void push( engine::BufferPointer buffer );
         
         // Overwriteen method of SamsonClient
-        void receive_buffer_from_queue(std::string queue , engine::Buffer* buffer);
+        void receive_buffer_from_queue(std::string queue , engine::BufferPointer buffer);
         
         std::string getStatus();
         

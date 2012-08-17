@@ -4,16 +4,16 @@
 #include <string>
 #include <vector>
 
-#include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
 
-
-class ConsoleAutoCompleteAlternative
-{
+namespace au {
+  
+  
+  class ConsoleAutoCompleteAlternative
+  {
     
-public:
+  public:
     
     std::string label;     // Label to show on screen
     std::string command;   // Text to be compared with the current last word
@@ -23,29 +23,29 @@ public:
     
     ConsoleAutoCompleteAlternative( std::string txt )
     {
-        label = txt;
-        command = txt;
-        add_space_if_unique = true;
+      label = txt;
+      command = txt;
+      add_space_if_unique = true;
     }
     
     ConsoleAutoCompleteAlternative( std::string _label, std::string _command ,  bool _add_space_if_unique  )
     {
-        command = _command;
-        label = _label;
-        add_space_if_unique = _add_space_if_unique;
+      command = _command;
+      label = _label;
+      add_space_if_unique = _add_space_if_unique;
     }
     
-};
-
-class ConsoleAutoComplete
-{
+  };
+  
+  class ConsoleAutoComplete
+  {
     
     // Alternatives for the last word        
     std::vector<ConsoleAutoCompleteAlternative> last_word_alternatives;
-
+    
     std::string help_message;
     
-protected:
+  protected:
     
     // Current message introduced so far
     std::string current_command;
@@ -56,7 +56,7 @@ protected:
     
     bool add_space_if_unique_alternative;
     
-public:
+  public:
     
     ConsoleAutoComplete( std::string command );
     
@@ -73,10 +73,17 @@ public:
     std::string firstWord();
     std::string secondWord();
     
+    std::string lastCompletedWord();
+    
+    const std::vector<std::string>& get_previous_words()
+    {
+      return previous_words;
+    }
+    
     // Add an alternative for the last word
-    void add( std::string command );
+    void add( const std::string& command );
     void add( std::vector<std::string> commands );
-    void add( std::string label , std::string command , bool add_space );
+    void add( const std::string& label , const std::string& command , bool add_space );
     void add( ConsoleAutoCompleteAlternative alternative );
     
     // Set some help message
@@ -98,18 +105,18 @@ public:
     // Access options directly
     size_t getNumAlternatives()
     {
-        return last_word_alternatives.size();
+      return last_word_alternatives.size();
     }
     
     ConsoleAutoCompleteAlternative getAlternative( size_t i )
     {
-        if( i >= last_word_alternatives.size() )
-            LM_X(1, ("Major error"));
-        return last_word_alternatives[i];
+      if( i >= last_word_alternatives.size() )
+        LM_X(1, ("Major error"));
+      return last_word_alternatives[i];
     }
     
-};
-
-NAMESPACE_END
+  };
+  
+}
 
 #endif

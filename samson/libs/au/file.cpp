@@ -9,7 +9,7 @@
 #include "au/string.h"	 
 #include "au/file.h"        // Own interface
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 size_t sizeOfFile( std::string fileName )
 {
@@ -218,4 +218,4 @@ Status createFullDirectory( std::string path )
     return OK;
 }
 
-NAMESPACE_END
+}

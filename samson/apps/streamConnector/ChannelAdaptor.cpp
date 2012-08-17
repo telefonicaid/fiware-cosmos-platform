@@ -1,4 +1,5 @@
 
+#include "au/S.h"
 #include "StreamConnector.h"
 #include "FileDescriptorConnection.h"
 
@@ -101,8 +102,8 @@ namespace stream_connector {
             au::ErrorManager error;
             stream_connector_->select_channel( this , target_channel_ , &error );
             
-            if( error.isActivated() )
-                return close_connection( error.getMessage() );
+            if( error.IsActivated() )
+                return close_connection( error.GetMessage() );
             
             // Send ACK
             InterChannelPacket* packet = new InterChannelPacket();
@@ -113,8 +114,8 @@ namespace stream_connector {
         }
         
         // If buffer, push it ( no transformation at the moment )
-        engine::Buffer* buffer = packet->getBuffer();
-        if( buffer )
+        engine::BufferPointer buffer = packet->buffer();
+        if( buffer != NULL )
             pushInputBuffer(buffer);
         
     }
@@ -153,7 +154,7 @@ namespace stream_connector {
         channel_name_ = channel_name;
         
         // Init cronometer and trials counter
-        connection_cronometer.reset();
+        connection_cronometer.Reset();
         connection_trials = 0;
         
         // Flag to indicate that we can start sending data
@@ -191,7 +192,7 @@ namespace stream_connector {
         {
             return au::str("Connecting... [ %d trials %s (last error %s) ] )" 
                            , connection_trials 
-                           , connection_cronometer.str().c_str()
+                           , au::S( connection_cronometer ).str().c_str()
                            , last_error.c_str() );
         }
         
@@ -202,13 +203,13 @@ namespace stream_connector {
     }
     
     // Get currect size accumulated here
-    size_t OutputInterChannelConnection::getBufferedSize()
+    size_t OutputInterChannelConnection::bufferedSize()
     {
         // Base size ( internal list of buffers in class Connection )
-        size_t total = Connection::getBufferedSize();
+        size_t total = Connection::bufferedSize();
         
         if( link_ )
-            total += link_->getBufferedSize();
+            total += link_->bufferedSize();
         
         return total;
     }
@@ -253,12 +254,12 @@ namespace stream_connector {
         
         if( !link_ )
         {
-            if( connection_cronometer.diffTimeInSeconds() < 3 )
+            if( connection_cronometer.seconds() < 3 )
                 return; // No retray at the moment
             
             try_connect();
             
-            connection_cronometer.reset();
+            connection_cronometer.Reset();
             
             return;
         }
@@ -276,19 +277,17 @@ namespace stream_connector {
             while( true )
             {
                 // Check generated packed included size in link_ is not too large ( always in memory )
-                if( link_->getBufferedSize() > 256*1024*1024 )
+                if( link_->bufferedSize() > 256*1024*1024 )
                     break;
                 
                 // Recover next generated buffer
-                engine::BufferContainer buffer_container;
-                getNextBufferToSent(&buffer_container);
-                engine::Buffer * buffer = buffer_container.getBuffer();
+                engine::BufferPointer buffer = getNextBufferToSent();
                 
-                if( buffer )
+                if( buffer != NULL )
                 {
                     // Put buffer in a packet and send
                     InterChannelPacket * packet = new InterChannelPacket();
-                    packet->setBuffer(buffer);
+                    packet->set_buffer(buffer);
                     link_->push(packet);
                 }
                 else

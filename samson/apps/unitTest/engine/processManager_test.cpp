@@ -26,7 +26,7 @@
 #include "unitTest/common_engine_test.h"
 
 
-// Tests ProcessManager's instantiation
+
 TEST(processManagerTest, instantiationTest) 
 {
     init_engine_test();
@@ -36,13 +36,4 @@ TEST(processManagerTest, instantiationTest)
     close_engine_test();
 }
 
-//Test static int getNumCores();
-TEST(processManagerTest, getNumCoresTest) 
-{
-    init_engine_test();
-    
-    EXPECT_EQ(engine::ProcessManager::shared()->getNumCores(), 4);
-
-    close_engine_test();
-}
 

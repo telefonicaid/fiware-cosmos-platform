@@ -12,7 +12,7 @@
 //#define DEBUG_SS_THREADS
 
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 Lock::Lock()
 {
@@ -88,4 +88,4 @@ void Lock::wakeUpAllStopLock( StopLock *stopLock )
     pthread_mutex_unlock(&_lock);
 }
 
-NAMESPACE_END
+}

@@ -94,7 +94,9 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
 include_directories("/opt/local/include")
 include_directories("/usr/include")
+include_directories("/usr/local/include")
 include_directories("/usr/local/include/json")
+include_directories("/usr/local/include/c-client-src")
 include_directories("/usr/include/json")
 
 #
@@ -102,6 +104,7 @@ include_directories("/usr/include/json")
 #
 
 link_directories("/opt/local/lib")
+link_directories("/usr/local/lib")
 link_directories("/usr/lib64")
 
 # ---------------------------------------------------------
@@ -117,16 +120,16 @@ if (HAVE_KDCHART)
   link_directories("${HAVE_KDCHART}/../lib")
 endif (HAVE_KDCHART)
 
-# QT check
-FIND_PATH( HAVE_QT Qt PATHS /opt/local/include /usr/include/qt4 )
-if ( HAVE_QT )
-    MESSAGE("Using ${HAVE_QT} for QT")
-else ( HAVE_QT )
-    MESSAGE("Not using QT library")
-endif (HAVE_QT)
+## QT check
+#FIND_PATH( HAVE_QT Qt PATHS /opt/local/include /usr/include/qt4 )
+#if ( HAVE_QT )
+#    MESSAGE("Using ${HAVE_QT} for QT")
+#else ( HAVE_QT )
+#    MESSAGE("Not using QT library")
+#endif (HAVE_QT)
 
 # Google Test - http://code.google.com/p/googletest/downloads/list
-FIND_LIBRARY ( HAVE_GTEST gtest PATHS /usr/lib /usr/lib64 /usr/local/lib64 )
+FIND_LIBRARY ( HAVE_GTEST gtest PATHS /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64 )
 if ( HAVE_GTEST )
     MESSAGE("Using ${HAVE_GTEST} for Google Test")
 else ( HAVE_GTEST )

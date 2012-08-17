@@ -3,7 +3,7 @@
 
 #include "au/console/ConsoleCommand.h" // Own interface
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 ConsoleCommand::ConsoleCommand()
 {
@@ -115,4 +115,4 @@ bool ConsoleCommand::isCursorAtEnd()
     return (pos == (int)command.length() );
 }
 
-NAMESPACE_END
+}

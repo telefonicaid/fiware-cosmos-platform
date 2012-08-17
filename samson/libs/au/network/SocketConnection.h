@@ -43,7 +43,7 @@ namespace au
         // Get connection time;
         size_t getTime()
         {
-            return cronometer.diffTimeInSeconds();
+            return cronometer.seconds();
         }
         
         // Duplicate this socket connection invalidating this instance

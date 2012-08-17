@@ -21,7 +21,6 @@
 #include "parseArgs/paBuiltin.h"        // paLsHost, paLsPort
 #include "parseArgs/paConfig.h"         // paConfig()
 #include "parseArgs/paIsSet.h"
-#include "samson/common/traces.h"
 #include "samson/common/SamsonSetup.h"
 
 

@@ -36,9 +36,10 @@ size_t buffer_size;
 char user[1024];
 char password[1024];
 char breaker_sequence[1024];
-char controller[1024];
 int port_node;
 char queue_name[1024];
+char host[1024];
+char cluster_id[1024];
 bool lines;                         // Flag to indicate that input is read line by line
 int push_memory;                    // Global memory used as a bffer
 int max_rate;                       // Max rate
@@ -54,8 +55,7 @@ int default_buffer_size = 64*1024*1024 - sizeof(samson::KVHeader);
 
 PaArgument paArgs[] =
 {   
-	{ "-node",        controller,            "",    PaString,  PaOpt, _i "localhost"  , PaNL, PaNL,       "SAMSON node to connect with "         },
-	{ "-port_node",    &port_node,           "",                       PaInt,    PaOpt, SAMSON_WORKER_PORT,  1,    99999, "SAMSON server port"                     },
+    { "-node",             host,                  "", PaString, PaOpt, _i "localhost",        PaNL, PaNL,    "SAMSON worker node"   },
 	{ "-user",             user,                  "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "User to connect to SAMSON cluster"  },
 	{ "-password",         password,              "",       PaString, PaOpt,  _i "anonymous", PaNL, PaNL, "Password to connect to SAMSON cluster"  },
 	{ "-buffer_size",      &buffer_size,          "",  PaInt,     PaOpt,       default_buffer_size,         1,   default_buffer_size,  "Buffer size in bytes"    },
@@ -114,15 +114,13 @@ void receive_data_from_port()
     
     SamsonPushConnectionsManager manager;
     au::NetworkListener listener( &manager );
-    listener.initNetworkListener( port );    
-    listener.runNetworkListenerInBackground();
+    listener.InitNetworkListener( port );
     
     while( true )
     {
         sleep(5);
         manager.review_connections();
         LM_M(("samsonPush listening from port %d with %lu active connections" , port ,  manager.getNumConnections() ));
-        
     }
 }
 
@@ -165,19 +163,18 @@ int main( int argC , const char *argV[] )
     samson::SamsonClient::general_init( total_memory );
     samson_client = new samson::SamsonClient("push");
     
-    
-    LM_V(("Connecting to %s ..." , controller));
-    
-    au::ErrorManager error;
-    samson_client->initConnection( &error, controller , port_node , user , password );
-    if( error.isActivated() )
-    {
-        fprintf(stderr, "Error connecting with samson cluster: %s\n" , error.getMessage().c_str() );
-        exit(0);
-    }
-    LM_V(("Conection to %s OK" , controller));
+    if( !samson_client->connect(host) )
+        LM_X(1, ("Not possible to connect with %s", host ));
 
-    
+    LM_V(("Waiting connection to %s" , host ));
+    while( true )
+    {
+        if( samson_client->connection_ready() )
+            break;
+        else
+            usleep(100000);
+    }
+    LM_V(("Connected to %s" , host ));
     
     if ( port != 0 )
     {
@@ -185,8 +182,6 @@ int main( int argC , const char *argV[] )
         LM_V(("Exit after listenning from port %d" , port));
         exit(0);
     }
-    
-    
     
     
     // Create the push buffer to send data to a queue in buffer-mode
@@ -239,13 +234,16 @@ int main( int argC , const char *argV[] )
         rate_stdin.push( read_bytes );
         
         // Information about current status....
-        size_t memory = engine::MemoryManager::shared()->getMemory();
-        size_t used_memory = engine::MemoryManager::shared()->getUsedMemory();
-        double memory_usage = engine::MemoryManager::shared()->getMemoryUsage();
+        size_t memory = engine::MemoryManager::shared()->memory();
+        size_t used_memory = engine::MemoryManager::shared()->used_memory();
+        double memory_usage = engine::MemoryManager::shared()->memory_usage();
+
+        if( read_bytes == 0 )
+            break;
 
         LM_V(("Stdin info: %s", rate_stdin.str().c_str())); 
         
-        if( used_memory > 0 )
+        if( memory_usage > 0.8 )
         {
             LM_V(("Memory used %s / %s ( %s )", 
                   au::str( used_memory , "B" ).c_str() , 
@@ -253,18 +251,10 @@ int main( int argC , const char *argV[] )
                   au::str_percentage( memory_usage ).c_str() 
                   ));
         }
-       
-        // Print verbose the list of push components ( if any )
-        samson_client->getInfoAboutPushConnections(true);
         
-        //LM_M(("Read command for %lu bytes. Read %lu" , buffer_size - size , read_bytes ));
         
-        if( read_bytes == 0 )
-            break;
-
         // Increase the size of data contained in the buffer
         size += read_bytes;
-
         
         // Processing data contained in "data" with size "size"
         // -----------------------------------------------------------------
@@ -280,10 +270,10 @@ int main( int argC , const char *argV[] )
         //LM_M(("Processing buffer with %s --> %s block push to queue" , au::str(size).c_str() , au::str(output_size).c_str() ));
         
         // Emit this block of data ( always flushing to the platform )
-        pushBuffer->push(data, output_size, true );
+        LM_V(("Pushing a buffer of %s bytes to our push buffer" , au::str(output_size).c_str() ));
+        pushBuffer->push(data, output_size, false );
 
         // -----------------------------------------------------------------
-
 
         // Sleep if necessary
         if ( rate_stdin.getRate() > (double) max_rate )
@@ -293,7 +283,6 @@ int main( int argC , const char *argV[] )
             sleep ( 1 );
         }
         
-
         // Move rest of data to the begining of the buffer
         if( output_size < size )
         {
@@ -306,18 +295,20 @@ int main( int argC , const char *argV[] )
     }
     
     // Last push
+
+    LM_V(("Flushing push buffer"));
     pushBuffer->flush();
 
     LM_V(("--------------------------------------------------------------------------------"));
     LM_V(("Stdin info:        %s", rate_stdin.str().c_str())); 
-    LM_V(("PushBuffer info:   %s", pushBuffer->rate.str().c_str())); 
+    LM_V(("PushBuffer info:   %s", pushBuffer->rate_.str().c_str())); 
     LM_V(("SamsonClient info: %s", samson_client->push_rate.str().c_str())); 
     LM_V(("--------------------------------------------------------------------------------"));
     
     
     // Wait until all operations are complete
     LM_V(("Waiting for all the push operations to complete..."));
-    samson_client->waitUntilFinish();
+    samson_client->waitFinishPushingData();
 
     
     

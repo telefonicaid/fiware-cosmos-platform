@@ -4,7 +4,7 @@
 
 #include "au/cpu.h"  // Own interface
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 void cpuID2(unsigned i, unsigned regs[4]) 
 {
@@ -68,5 +68,5 @@ int get_cpu_info( cpu_info* _info )
 }
 #endif
 
-NAMESPACE_END
+}
 

@@ -27,11 +27,11 @@
 #include "logMsg/logMsg.h"             // LM_W
 #include "au/ErrorManager.h"        // au::ErrorManager
 #include "au/containers/map.h"                 // au::map
-#include "au/namespace.h"
+
 #include "Status.h"
 
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 // Get sie of a particular file ( 0 if error )
 size_t sizeOfFile( std::string fileName );
@@ -56,6 +56,6 @@ std::string get_directory_from_path( std::string path );
 Status createDirectory( std::string path );
 Status createFullDirectory( std::string path );
 
-NAMESPACE_END
+}
 
 #endif

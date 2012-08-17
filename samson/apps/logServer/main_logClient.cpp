@@ -79,8 +79,8 @@ int main(int argC, const char *argV[])
     {
         au::ErrorManager error;
         console.connect( target_host , &error );    // Connect to the given host
-        if( error.isActivated() )
-            LM_X(1, ("Error: %s" , error.getMessage().c_str() ));
+        if( error.IsActivated() )
+            LM_X(1, ("Error: %s" , error.GetMessage().c_str() ));
     }
     
     // Run console

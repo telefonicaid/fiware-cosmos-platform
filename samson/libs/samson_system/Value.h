@@ -343,15 +343,11 @@ namespace samson{ namespace system{
         std::string strJSON();
         void _strJSON( std::ostream &output );
         
-        std::string strXML();
-        void _strXML( std::ostream &output );
-
         std::string strHTML(int level_html_heading);
         void _strHTML(int level_html_heading , std::ostream &output);
-
-        std::string strHTMLTable(std::string _varNameInternal);
-        void _strHTMLTable(std::string _varNameInternal, std::ostream &output);
         
+        std::string strXML();
+        std::string strHTMLTable(std::string _varNameInternal);
         std::string paint_header(int init_col);
         std::string paint_header_basic(int init_col);
         std::string paint_value(int index_row);

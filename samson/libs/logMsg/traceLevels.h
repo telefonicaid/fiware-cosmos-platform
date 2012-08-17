@@ -48,9 +48,10 @@ typedef enum TraceLevels
 
     LmtBuffer                 = 206, 
 
-	LmtModuleManager          = 210,                // Module Manager component
-	LmtThreadManager          = 211,    // Tracking threads in ThreadManager
+	LmtModuleManager          = 210, // Module Manager component
+	LmtThreadManager          = 211, // Tracking threads in ThreadManager
 
+    LmtClusterSetup           = 212, // Cluster setup ( interaction with zookeeper  )
     
 	LmtIsolated               = 215, // Isolated mechanism
     LmtIsolatedOperations     = 216, // Traces to see start and stop of executions

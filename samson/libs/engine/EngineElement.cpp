@@ -4,7 +4,7 @@
 
 #include "engine/EngineElement.h"   // Own interface
 
-NAMESPACE_BEGIN(engine)
+namespace engine {
 
 
 EngineElement::EngineElement( std::string name )
@@ -40,7 +40,7 @@ EngineElement::EngineElement( std::string name , int seconds )
 void EngineElement::Reschedule()
 {
     // Reset cronometer
-    cronometer.reset();
+    cronometer.Reset();
 
     // Increse the counter to get an idea of the number of times a repeated task is executed
     counter++;
@@ -52,7 +52,7 @@ double EngineElement::getTimeToTrigger()
     // Time for the next execution
     if( type == repeated )
     {
-        double t = cronometer.diffTime();
+        double t = cronometer.seconds();
         LM_T(LmtEngineTime, ("getTimeToTrigger: Period %d Cronometer: %f" , period , t ));
         return period - t; 
     }
@@ -67,7 +67,7 @@ double EngineElement::getPeriod()
 double EngineElement::getWaitingTime()
 {
     // Time for the next execution
-    return cronometer.diffTime(); 
+    return cronometer.seconds(); 
 }
 
 
@@ -126,4 +126,4 @@ bool EngineElement::isNormal()
 
 
 
-NAMESPACE_END
+}

@@ -3,7 +3,7 @@
 
 #include "au/CommandLine.h"		// Own interface
 
-NAMESPACE_BEGIN(au)	
+namespace au {	
 
 CommandLine::CommandLine( std::string _command )
 {
@@ -393,4 +393,4 @@ bool CommandLine::getBoolValue( std::string value )
     return ( value == "true" );
 }
 
-NAMESPACE_END
+}

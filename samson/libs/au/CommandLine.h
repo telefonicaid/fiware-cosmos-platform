@@ -48,28 +48,27 @@
 #include <cstdlib>
 #include <map>
 
-#include "au/namespace.h"
 
-NAMESPACE_BEGIN(au)
 
-typedef struct CommandLineFlag
-{
+namespace au {
+  
+  typedef struct CommandLineFlag
+  {
     std::string type;
     std::string default_value;
     std::string value;
-} CommandLineFlag;
-
-class CommandLine 
-{
+  } CommandLineFlag;
+  
+  class CommandLine 
+  {
     
-public:
+  public:
     
-    std::string command;											//!<< Incoming General command
-    std::map< std::string , CommandLineFlag > flags;				//!<< Map of flags
+    std::string command;											        //!<< Incoming General command
+    std::map< std::string , CommandLineFlag > flags;	//!<< Map of flags
     std::vector<std::string> arguments;								//!<< Command line arguments separated in "words"
     
-    
-public:
+  public:
     
     /** 
      Simple constructor
@@ -131,8 +130,7 @@ public:
     std::string get_flag_string( std::string flag_name );
     size_t get_flag_uint64( std::string flag_name );
     
-private:
-    
+  private:
     
     /**
      Functions to transform values
@@ -142,14 +140,14 @@ private:
     size_t getUint64Value	( std::string value );
     double getDoubleValue	(  std::string value );
     bool getBoolValue( std::string value );
-  
-
+    
+    
     // Internal function to parse content
     void clear_values();
     void parse_tockens( std::vector<std::string> &tockens );
     
-};
-
-NAMESPACE_END
+  };
+  
+}
 
 #endif

@@ -47,7 +47,7 @@ TEST(engineTest, getObjectByNameTest)
     engine::Object* testObject = new engine::Object("test_object");
     
     //Now the object should be registered in engine
-    EXPECT_EQ(engine::Engine::shared()->getObjectByName("test_object"), testObject);
+    EXPECT_EQ(engine::Engine::shared()->objectByName("test_object"), testObject);
     
     // Remove test object
     delete testObject;

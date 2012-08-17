@@ -7,8 +7,8 @@
 
 #include "Select.h" // Own interface
 
-NAMESPACE_BEGIN(au)
-NAMESPACE_BEGIN(tables)
+namespace au {
+namespace tables {
 
 bool compare_strings( std::string& pattern , std::string& value)
 {
@@ -28,5 +28,5 @@ bool SelectCondition::check( TreeItem *tree )
 
 
 
-NAMESPACE_END
-NAMESPACE_END
+}
+}

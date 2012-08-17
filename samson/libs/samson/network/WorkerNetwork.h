@@ -18,9 +18,6 @@ namespace samson {
     class WorkerNetwork : public CommonNetwork , public au::NetworkListenerInterface
     {
         
-        // Counter to asign new names
-        size_t tmp_counter;
-        
         // Worker listtener for new worker / delilah connections
         au::NetworkListener * worker_listener;
         
@@ -28,16 +25,13 @@ namespace samson {
         
         // Constructor
         // ------------------------------------------------------------
-        WorkerNetwork( int port , int web_port );        
+        WorkerNetwork( size_t worker_id 
+                      , int port 
+                      , NetworkInterfaceReceiver * receiver 
+                      , gpb::ClusterInfo* cluster_information
+                      , size_t cluster_information_version );
+        
         ~WorkerNetwork();
-        
-        // NetworkManager interface
-        // ------------------------------------------------------------
-        void processHello( NetworkConnection* connection, Packet* packet );
-        
-        // NetworkInterface
-        // ------------------------------------------------------------
-        std::string cluster_command( std::string command );
         
         // Stop background threads
         void stop();
@@ -45,11 +39,6 @@ namespace samson {
         // NetworkManager interface
         void newSocketConnection( au::NetworkListener* listener , au::SocketConnection * socket_connetion );
     
-        
-    private:
-        
-        void update_cluster_information( ClusterInformation * new_cluster_information );
-        void update_cluster_information( ClusterInformation * new_cluster_information , size_t assigned_id );
         
     };
     

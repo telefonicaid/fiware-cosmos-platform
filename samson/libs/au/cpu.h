@@ -4,10 +4,10 @@
 #include <iostream>
 #include <string>
 
-#include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 
 struct cpu_info
 {
@@ -19,6 +19,6 @@ struct cpu_info
 // Function to get information about cores and logical cores
 int get_cpu_info( cpu_info* _info );
 
-NAMESPACE_END
+}
 
 #endif

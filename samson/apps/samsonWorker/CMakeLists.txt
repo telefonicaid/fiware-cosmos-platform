@@ -23,6 +23,8 @@ SET (LIBS
     samsonStream
     samsonIsolated
     samsonCommon
+	samsonZoo
+	zookeeper_mt
 	samson_system
     engine
     au

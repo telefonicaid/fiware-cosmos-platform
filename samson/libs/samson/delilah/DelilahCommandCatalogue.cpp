@@ -1,526 +1,349 @@
 
+#include "DelilahCommandCatalogue.h"
 
-#include "DelilahCommandCatalogue.h" // Own interface
 
-namespace samson
+namespace samson 
 {
-    DelilahCommandCatalogue::DelilahCommandCatalogue()
-    {
-        
-        // DELILAH
-        // ------------------------------------------------------------------
-        
-        add( "help","delilah","Get some help about SAMSON platform",
-            "help                        Get general help\n"
-            "help all [-category cat]    Get all available commands ( optional category )\n" 
-            "help command                Get help for a particular command\n"
-            );
-
-        add( "connect","delilah",
-            "Connect to a SAMSON system",
-            "connect host [-port X] [-user X] [-password X]"
-            );
-        
-        add( "disconnect","delilah",
-            "Disconnect from a SAMSON system",
-            "disconnect"
-            );
-        
-        add( "alerts" , "delilah", 
-            "Activate or disactivate showing alerts from SAMSON platform on console",
-            "alerts <on> <off>"
-            );
-        
-        add( "local_logs" , "delilah", 
-            "Activate or disactivate logs for this delilah",
-            "local_logss <on> <off>"
-            );
-
-        
-        add( "set_log_server" , "delilah",
-            "Set log server for all workers",
-            "set_log_server host [port]"
-            );
-        
-        add( "log" , "delilah", 
-             "log - view lines of the log files of the workers (last 20 lines by default - change using option '-lines')",
-             "  log 'pattern'     only lines that match 'pattern'\n"
-             "  log Type=X        only lines of Type 'X'\n"
-             "  log FileName=X    only lines from the file X"
-            );
-        
-        add( "show_alerts" , "delilah", 
-            "Show the last alerts received from SAMSON cluster"
-            );
-        
-        add( "open_alerts_file" , "delilah", 
-            "Open a local file to store all received alerts",
-            "open_alerts_file [file_name]"
-            );
-        
-        add( "close_alerts_file" , "delilah", 
-            "Close local file opened to store with command 'open_alerts_file'"
-            );
-        
-        add( "verbose" , "delilah", 
-            "Activate or disactivate verbose mode. This shows extra information for commands executed in delilah",
-            "verbose <on> <off>"
-            );
-
-        add( "wlog" , "delilah", 
-            "Show information about what logs are activated at samson nodes. Debug, Writes, Reads, Traces, etc",
-            "wlog\n"
-            );
-        
-        add( "wverbose" , "delilah", 
-            "Activate or disactivate verbose mode for workers. This shows extra information for worker commands",
-            "verbose <0-5>\n"
-            "verbose off\n"
-            "verbose get\n"
-            );
-        
-        add( "wdebug" , "delilah", 
-             "Activate or disactivate debug mode for workers. This shows extra information for worker commands",
-             "debug on\n"
-             "debug off\n"
-             "debug get\n"
-            );
-        
-        add( "wreads" , "delilah", 
-            "Activate or disactivate reads mode for workers. This shows extra information for worker commands",
-            "reads on\n"
-            "reads off\n"
-            "reads get\n"
-            );
-        
-        add( "wwrites" , "delilah", 
-            "Activate or disactivate writes mode for workers. This shows extra information for worker commands",
-            "writes <on> <off> <get>"
-            );
-        
-        add( "wtrace", "delilah",
-             "Activate or disactivate trace levels for workers (trace level format example: '1-5,7,76-99'). This shows extra information for worker commands",
-             "wtrace off\n"
-             "wtrace get\n"
-             "wtrace set <levels>\n"
-             "wtrace add <levels>\n"
-             "wtrace remove <levels>\n");
-
-        add( "send_alert" , "delilah", 
-            "Send an alert to all connected delilahs using a random worker as sender",
-            "send_alert [-worker X] [-error] [-warning] \"Message to be sent\"\n"
-            "      -worker X     Use only this worker as broadcaster\n"
-            "      -error        Mark this trace as an error for correct visualization\n"
-            "      -warning      Mark this trace as a warning for correct visualization\n"
-            "      message       The text message of this alert\n"
-            );
-
-        /*
-        add( "repeat" , "delilah",
-            "Repeat a command continuously",
-            "repeat <command>. Stop them using stop_repeat\n\n"
-            );
-        
-        add( "stop_repeat" , "delilah",
-             "Stop a repeat-command or all of them ( see help repeat for more info)",
-             "stop_repeat [process_id]\n"
-             "            [process_id] optional id to be stoped\n"
-            );
-         */
-        
-        
-        add( "ps" , "delilah" ,   
-            "Show information about delilah processes",
-            "ps <-clear> <id> \n"
-            "\n"
-            "      -clear    removes finished or error processes\n"
-            "      id        It gets more help about a particular process\n" 
-            );                
-        
-        add( "set" , "delilah" ,
-            "Set environment variable in delilah",
-            "set <var> <value>"
-            );
-        
-        add( "unset" , "delilah" ,
-            "Remove an environment variable",
-            "unset <var>");
-        
-        add( "set_mode"  , "delilah",
-            "Select delilah working mode: normal, database, logs",
-            "set_mode normal/database/logs"
-            );
-        
-        
-        add("ls_local", "local", 
-            "Show a list of current directory with relevant information about local data-sets");
-
-        
-        add("rm_local", "local",
-            "Remove a local file or directory (and all its contents)"); 
-
-        add("history", "local",
-            "Show the history of the last commands",
-            "history [num_items]   Optional parameter to limit the number of history items to show "); 
-        
-        
-        // DATA MANIPULATION
-        // ------------------------------------------------------------------
-        
-        add( "ls" , "data" , "Show a list of all data queues in the system",
-			 "ls [-rates] [-blocks] [-properties] [-group group_field]\n"
-			 "      -rates        Information about total size and current rate\n"
-			 "      -blocks       Detailes information about blocks\n"
-			 "      -properties   Get properties assigned to queues\n"
-			 "      -group X      Group results by a particular field"
-		   );
-        
-        add( "rm" , "data" , 
-			 "Remove a queue",
-			 "rm <queue>"
-		   );
-                
-        add( "set_queue_property" , "data" ,
-            "Specify the value of property <property> for queue <queue>",
-            "set_queue_property <queue> <property> <value>"
-            );
-        
-        add( "unset_queue_property" , "data" ,
-            "Remove a previously defined property property for a queue",
-            "unset_queue_property [queue] [property]"
-            );
-        
-        add( "show_stream_block" ,"data" , "Show data activity in a particular stream block",
-            "It shows input and output queues, state queues, stream operations and internal states included in inner stream blocks\n"
-            "show_stream_block path [-rates]\n"
-            );
-        
-        add( "ls_blocks" , "data" , "Show the list of data blocks managed in a SAMSON cluster. This is a debug tool",
-            "ls_blocks" );
-        
-        add( "ls_buffers" , "data" , "Show the list of data buffers managed in a SAMSON cluster. This is a debug tool",
-            "ls_buffers" );
-
-        
-        // MODULES
-        // ------------------------------------------------------------------
-        
-        
-        add( "ls_modules" , "modules",
-            "Show a list of modules installed in SAMSON node workers",
-            "ls_module [module_name_pattern]. E.g. ls_modules web*\n");
-        
-        add(  "ls_operations","modules", 
-            "Shows a list of available operations",
-            "ls_operations [operation_name_pattern]. E.g. ls_operations web*");
-        
-        add( "ls_datas" , "modules" ,
-            "Shows a list of available data-types.",
-            "ls_datas [data_name_pattern]. E.g. ls_datas web*"
-            );
-        
-        add( "reload_modules" , "modules", 
-            "Reload modules in all workers");
-        
-        add( "push_module" , "modules", 
-            "Push a module to the cluster. The module has to be compatible with hardware architecture",
-            "push_module <module_file>"
-            );
-        
-        // STREAM
-        // ------------------------------------------------------------------
-        
-        
-        add( "ls_stream_operations"  , "stream" , 
-            "Show a list of stream operations defined( added with add_stream_operation)",
-            "ls_stream_operations [-in] [-out] [-running] [-properties]\n"
-            "      -in          Information about data accepted to these operations\n"
-            "      -out         Information about data emitted\n"
-            "      -running     Currently running operations and status\n"
-            "      -properties  Show properties associated to each stream operation\n"
-            );
-        
-        add( "add_stream_operation" , "stream"    ,   
-            "Add an operation to automatically process data from input queues to output queues",
-            "add_stream_operation <name> <operation> <input-queues> <output-queues> [-forward]\n"
-            "    -forward      Option that allows to schedule reduce operations without state. Joint against a constant queue");
-        
-        add( "rm_stream_operation" , "stream"  ,  
-            "Remove a previously defined operation with add_stream_operation",
-            "rm_stream_operation name <-f>\n"
-            "      -f      Option avoids complaints when the operation does not exist");
-        
-        add( "run" , "stream" ,
-            "Run a particular operation over queues manually",
-            "run <op_name> [queues...] [-clear_inputs]\n"
-            "           <op_name>        : Name of the operation. See 'help ls_operations' for more info\n"
-            "           [queues]         : Name of the queues involved in this operation (inputs and outputs)\n"
-            "           [-clear_inputs]  : clear content from input queues before running this operation\n"
-            );
-
-        add( "cancel_stream_operation" , "stream" ,
-            "Cancel a particular operation",
-            "cancel_stream_operation <op_id>\n"
-            "           <op_id>        : Identifier of the operation. Usually something like XXXXX_XXX\n"
-            );
-        
-        
-        add( "set_stream_operation_property"    , "stream" ,  
-            "Set value of an enviroment property associated to a stream operation (see add_stream_operation)",
-            "set_stream_operation_property <stream_operation_name> <variable_name> <value>");
-        
-        add( "unset_stream_operation_property"    , "stream" ,  
-            "Remove an enviroment property associated to a stream operation (see add_stream_operation)",
-            "unset_stream_operation_property <stream_operation_name> <variable_name>");
-        
-        
-        add( "add_queue_connection"    , "stream" ,  
-            "Connect a queue to a set of queues. Data will be automatically redirected to target queues",
-            "add_queue_connection <source_queue> <target_queue_1> <target_queue_2> ... <target_queue_N>");
-
-        add( "rm_queue_connection"    , "stream" ,  
-            "Remove a connected queue, previously established with 'add_queue_connection'",
-            "rm_queue_connection <source_queue> <target_queue>");
-        
-        add( "ls_queues_connections"    , "stream" ,  
-            "Show queue_connections defined with the add_queue_connection command");
-        
-        add( "ps_stream" , "stream" ,
-            "Get a list of current stream tasks currently running in all workers"
-            );
-        
-        
-        add( "ls_workers" , "stream" ,
-            "Get a list of current workers with current memory/disk/process status",
-            "ls_workers [-disk] [-engine]\n"
-            "           [-disk]   Show more information about disk activity in each worker\n"
-            "           [-engine] Show more information about engine activity in each worker"
-            );
-        
-        add( "init_stream" , "stream" ,
-            "Execute am initialization script to setup some automatic stream operations",
-            "init_stream [prefix] <script_name>\n"
-            "          [prefix]         It is used to name operations and queues\n"
-            "          <script_name>    Name of the script (e.g. module.script)\n"
-            );
-        
-        
-        add( "ps_workers"  , "stream" , 
-            "Show a list of commands being executed in each node of the cluster",
-            "ps_workers <command pattern>\n"
-            );
-
-        
-        add( "defrag"  , "stream" , 
-            "Defrag content of a particular queue",
-            "defrag <queue> <destination_queue>\n"
-            );
-        
-        
-        // PUSH&POP
-        // ------------------------------------------------------------------
-        
-        add( "push" , "push&pop" ,
-            "Push content of a list of local file/directories to a queue",
-            "push file1/dir1 file2/dir2 file3/dir3 ... fileN/dirN <queue>");
-        
-        add( "pop" , "push&pop"  ,
-            "Pop content of a queue to a local directory. Also working for binary queues. Use samsonCat to check content",
-            "pop  <queue> <local_file_or_dir> [-force] [-show]");
-        
-        
-        add( "connect_to_queue" , "push&pop"  
-            , "Connect to a  queue to receive live data from SAMSON."
-            , "connect_to_queue queue" );
-        
-        add( "disconnect_from_queue" , "push&pop" ,
-            "Disconnects from a particular queue to not receive live data from SAMSON",
-            "disconnect_from_queue queue"
-            );
-        
-        add( "ls_pop_connections" , "push&pop"  
-            , "Show a list of connections to receive live data from SAMSON."
-            , "ls_pop_connections" );
-        
-        
-        add("ls_local_queues", "push&pop", 
-            "Show a list of local queues ( current directory ).");
-        
-        add( "show_local_queue" , "push&pop"  ,
-            "Show contents of a queue downloaded using pop. Modules should be installed locally",
-            "show_local_queue <local_dir> [-header] [-limit X]\n"
-            "          <local_dir>    Name of local directory where queue has been saved\n"
-            "          [-header]      Show only headers\n"
-            "          [-limit X]     Limit the number of key-values to show ( 10 by default )\n"
-            );
-        
-        add( "push_queue" , "push&pop", 
-            "Push content of a queue to another queue/s",
-            "push_queue  <from_queue> <to_queue> [ <to_queue2> ... ]"
-            );
-        
-        
-        // CLUSTER
-        // ------------------------------------------------------------------
-        
-        add( "ls_connections" , "management" ,
-            "Show status of all connections in the cluster");
-        
-        add( "cluster" , "management" ,
-            "Command for cluster related operation",
-            "cluster info/connect/add/remove/reset/get_my_id [...options...]\n"
-            "\n"
-            "           info                                         : Show current cluster definition and connection status\n"
-            "           connections                                  : Show more information about current connections\n"
-            "           pending                                      : Show pending packets for unconnected workers\n"
-            "           connect host[:port] [-user X] [-password X]  : Connect to another SAMSON cluster instance.\n"
-            "           add host[:port]                              : Add a node to this cluster. A samsond clear instance should be running there\n"
-            "           remove id                                    : Remove one of the involved workers. The worker id should be provided ( see cluster info )\n"
-            "           get_my_id                                    : Get this delilah identifier ( see ls_connections )\n"
-            );
-        
-        
-        
-        // Extra description
-        add_description("connect_to_queue", "Received data will be stored in a local directory called stream_out_<queue>");
-        add_description("ls_local_queues", "These queues have been typically being downloaded with command pop.");
-
-        add_description( "cancel_stream_operation" ,"This command cancels both"
-                        "\n\toperations executed manually ( see run )"
-                        "\n\toperations executed automatically  ( see add_stream_operation )");
-        
-    }
+  
+  DelilahCommandCatalogue::DelilahCommandCatalogue()
+  {
     
-    void DelilahCommandCatalogue::add(
-                                      std::string name 
-                                      , std::string category 
-                                      , std::string short_description 
-                                      , std::string usage )
-    {
-        commands.push_back( DelilahCommand(name , category , short_description , usage ) );            
-    }
+    // SETUP
+    // ------------------------------------------------------------------
     
-    void DelilahCommandCatalogue::autoComplete( au::ConsoleAutoComplete* info )
-    {
-        for ( size_t i = 0 ; i < commands.size() ; i++ )
-            info->add(commands[i].name);
-    }
+    add( "show_cluster_setup","setup","Show cluster setup"
+        ,"Get information about workers currently connected to current ( number of cores, memory, etc... )\n"
+        );
     
-    void DelilahCommandCatalogue::add_description( std::string name , std::string description )
-    {
-        for ( size_t i = 0 ; i < commands.size() ; i++ )
-            if( commands[i].name == name )
-            {
-                commands[i].description = description;
-                return;
-            }
-        
-        DelilahCommand command( name , "general" );
-        command.description = description;
-        commands.push_back(command);
-    }
+    add( "show_cluster_assignation","setup","Show cluster assignation",
+        "Get information about what hash-groups are assigned to what workers\n"
+        );
+    
+    add( "ls_connections" , "management" , "Show status of all connections in the cluster");
+    add_bool_option("ls_connections" , "-a" , "Show content in all workers" );
+    add_uint64_option("ls_connections" , "-w" , 0 , "Specify a particular worker" );
+    
+    add( "ls_local_connections" , "management" ,
+        "Show status of all connections of this delilah ( typically to all workers of the SAMSON cluster )");
+    
+    // DELILAH
+    // ------------------------------------------------------------------
+    
+    add( "connect","delilah", "Connect to a SAMSON system");
+    add_string_option( "connect" , "-host" , "localhost" , "host or hosts of SAMSON nodes to connect (host:port host:port ...)" );
+    add_string_option( "connect" , "-digest" ,"", "Username and password used to connect to this SAMSON cluster" ); 
+
+    add( "disconnect", "delilah", "Disconnect from a SAMSON system");
+    
+    add( "alerts" , "delilah", "Activate or disactivate showing alerts from SAMSON platform on console" );
+    add_string_options_argument("alerts", "action", "Options:on:off" , "Command to activate or disactivate alerts");
+    
+    add( "local_logs" , "delilah", "Activate or disactivate logs for this delilah" );
+    add_string_options_argument("local_logs", "action", "Options:on:off");
+    
+    add( "set_log_server" , "delilah", "Set log server for all workers" );
+    add_string_argument( "set_log_server" , "host" , "localhost" , "host to send logs for current SAMSON cluster" );
+    
+    add( "log" , "delilah", "Show log generated at nodes of current SAMSON cluster");
+    add_string_argument( "log" , "pattern" ,"" , "Pattern for logs to display" );
+    add_string_option( "log" , "-type" , "" , "Select only a particular type of message ( M,W,E,X )" );
+    add_string_option( "log" , "-file" , "" , "Select logs generated at a particular file" );
+    add_int_option("log", "-lines", 0 , "Number of lines to show");
+    
+    add( "show_alerts" , "delilah", "Show the last alerts received from current SAMSON cluster at this delilah" );
+    
+    add( "open_alerts_file" , "delilah", "Open a local file to store all received alerts" );
+    add_mandatory_string_argument("open_alerts_file", "file", "Local file to store alerts");
+    
+    add( "close_alerts_file" , "delilah", "Close local file opened to store with command 'open_traces_file'");
+    
+    add( "verbose" , "delilah", "Activate or disactivate verbose mode",
+        "In verbose mode, extra information is shown to the user");
+    add_string_options_argument("verbose", "action", "Options::on:off");
+
+    add( "wlog" , "delilah", "Show information about what logs are activated at nodes of current SAMSON cluster");
+    
+    add( "wverbose" , "delilah", "Activate or disactivate verbose mode for workers",
+        "verbose <0-5>   set level of verbosity\n"
+        "verbose off     disable verbose mode\n"
+        "verbose get     get level of verbosity\n"
+        );
+    
+    add( "wdebug" , "delilah", "Activate or disactivate debug mode for workers",
+        "debug on\n"
+        "debug off\n"
+        "debug get\n"
+        );
+    
+    add( "wreads" , "delilah", "Activate or disactivate reads mode for workers.",
+        "reads on\n"
+        "reads off\n"
+        "reads get\n"
+        );
+    
+    add( "wwrites" , "delilah", "Activate or disactivate writes mode for workers",
+        "writes <on> <off> <get>"
+        );
+    
+    add( "wtrace", "delilah","Activate or disactivate trace levels for workers.");
+    add_string_options_argument( "wtrace", "action", "Options::off:set:add:remove", "Acction to be performced over trace levels");
+    add_string_argument("wtrace", "levels", "", "Levels selection. Example '1-5,7,76-99'");
+    
+    add( "send_alert" , "delilah", "Send an alert to all connected delilahs using a random worker as sender");
+    add_string_option("send_alert", "-worker", "" , "Select broadcaster worker");
+    add_bool_option("send_alert", "-error", "Mark message as an error");
+    add_bool_option("send_alert", "-warning", "Mark message as a warning");
+    add_string_argument("send_alert", "message", "" , "Content of the message" );
+    
+    add( "ps" , "delilah" , "Show information about delilah processes" );
+    add_bool_option("ps", "-clear" , "Remove finished processes");
+    add_string_argument("ps", "id" , "", "Show more information for this process");
+    
+    add( "set" , "delilah" , "Set environment variable in delilah client" );
+    add_string_argument("set", "name",  "", "Name of the variable to set");
+    add_string_argument("set", "value", "", "Value to assign");
+    
+    add( "unset" , "delilah" , "Remove an environment variable in delilah client");
+    add_string_argument("set", "name",  "", "Name of the variable to set");
+    
+    add( "set_mode"  , "delilah", "Select delilah working mode: normal, database, logs" );
+    add_string_options_argument("set_mode", "mode", "Options:normal:database:logs");
+    
+    add("ls_local", "local", "Show a list of current directory with relevant information about local queues");
+    add_string_argument("ls_local", "file", "*", "File or pattern to be displayed");
+    
+    add("ls_local_queues", "local", "Show a list of local queues");
+    add_string_argument("ls_local", "file", "*", "File or pattern to be displayed");
+    
+    add("rm_local", "local", "Remove a local file or directory (and all its contents)" ); 
+    add_mandatory_string_argument("rm_local", "file", "Local file or directory to be removed");
+    
+    add("history", "local", "Show the history of the last commands" );
+    add_int_option("history", "limit", 0 );
     
     
-    std::string DelilahCommandCatalogue::getCommandsTable( std::string category )
-    {
-        au::StringVector columns = au::StringVector("Command"  , "Category,left" , "Description,left" );
-        au::tables::Table table( columns );
-        
-        for( size_t i = 0 ; i < commands.size() ; i++ )
-        {
-            if( category == "" || (commands[i].category == category ) )
-                table.addRow( au::StringVector( commands[i].name , commands[i].category ,  commands[i].short_description ) );
-        }
+    // DATA MANIPULATION
+    // ------------------------------------------------------------------
+    
+    add( "ls" , "data" , "Show a list of all data queues in the system" );
+    add_bool_option("ls", "-rates" , "Show information about data rate in queues (data movement)");
+    add_bool_option("ls", "-blocks" , "Show information about blocks contained at each queue");
+    add_bool_option("ls", "-properties" , "Show information about propeties at each queue");
+    add_bool_option("ls", "-a" , "Show hiden queues as well ( used internally by the platform )");
+    add_string_option("ls", "-group", "" , "Group results by a particular column");
+    
+    add( "add" , "data" ,  "Create a new queue" );
+    add_mandatory_string_argument("add", "queue", "Name of the new queue");
+    add_mandatory_string_argument("add", "key_format", "Format for the key's in new queue (txt is accepted)");
+    add_string_argument("add", "value_format", "txt" , "Format for the value's in new queue (txt is accepted)");
+    
+    add( "remove_all_data" , "data" , "Remove all queues in the system" );
 
-        // Print the table
-        
-        if( category == "" )
-            table.setTitle( "All commands" );
-        else
-            table.setTitle( au::str( "Commands of category %s" , category.c_str() ) );
-        
-        return table.str();
-    }
+    add( "remove_all" , "data" , "Remove all queues and stream_operations in the current SAMSON cluster" );
     
+    add( "rm" , "data" , "Remove a queue" );
+    add_mandatory_string_argument("rm", "queue", "Queue to be removed");
     
-    std::string DelilahCommandCatalogue::getHelpForCommand( std::string name )
-    {
-        for ( size_t i = 0 ; i <  commands.size() ; i++ )
-            if( commands[i].name == name )
-            {
-                std::ostringstream output;
-                
-                output << au::lineInConsole('-') << "\n";
-                output << au::str( au::purple , " COMMAND %s       ( %s )" , name.c_str() , commands[i].category.c_str() );
-                output << "\n";
-                output << au::lineInConsole('-') << "\n";
-                output << "\n";
-                output << au::str( au::purple , "DESCRIPTION:  " ) << commands[i].short_description << "\n";
-                if( commands[i].description != "" )
-                {
-                    output << au::str_indent( commands[i].description , 14 );
-                    output << "\n";
-                }
-                
-                
-                if( commands[i].usage != "" )
-                {
-                    output << au::str( au::purple , "USAGE: ") << "\n";
-                    output << au::str_indent( commands[i].usage , 14 );
-                    output << "\n";
-                }
-                
-                output << au::lineInConsole('-') << "\n";
-                
-                return output.str();
-            }
-        
-        
-        // Check if it is a category...
-        if( isValidCategory( name ) )
-            return getCommandsTable( name );
-        
-        // Show list of categories
-        if( name == "categories" )
-        {
-            au::StringVector cats = getCategories();
-            std::ostringstream output;
-            output << "\nCategories:\n\n";
-            for ( size_t i = 0 ; i < cats.size() ; i++ )
-                output << "\tCategory " << cats[i] << "\n";
-            return output.str();
-        }
-        
-        return au::str( "Unknown command %s\n" , name.c_str() );
-    }
+    add( "set_queue_property" , "data" , "Specify the value of a property in a queue " );
+    add_mandatory_string_argument("set_queue_property", "queue", "Queue to be updated");
+    add_mandatory_string_argument("set_queue_property", "property", "Name of the property we want to update");
+    add_mandatory_string_argument("set_queue_property", "value", "Value for the selected property");
     
-    
-    au::StringVector DelilahCommandCatalogue::getCategories()
-    {
-        au::StringVector categories;
-        for ( size_t i = 0 ; i < commands.size() ; i++ )
-            categories.push_back( commands[i].category );
-        
-        categories.unique();
-        return categories;
-    }
-    
-    
-    bool DelilahCommandCatalogue::isValidCommand( std::string command )
-    {
-        for ( size_t i = 0 ; i < commands.size() ; i++ )
-            if( commands[i].name == command )
-                return true;
-        return  false;
-    }
-
-    bool DelilahCommandCatalogue::isValidCategory( std::string category )
-    {
-        for ( size_t i = 0 ; i < commands.size() ; i++ )
-            if( commands[i].category == category )
-                return true;
-        return  false;
-    }
+    add( "unset_queue_property" , "data" , "Remove a previously defined property for a queue" );
+    add_mandatory_string_argument("unset_queue_property", "queue", "Queue to be updated");
+    add_mandatory_string_argument("unset_queue_property", "property", "Name of the property we want to update");
     
 
+    // Debug 
+    // ------------------------------------------------------------------
+    
+    add( "threads" , "debug" , "Show current threads in this delilah" );
+    
+    add( "ls_blocks" , "debug" , "Show a list of data blocks managed by SAMSON nodes");
+    add_uint64_option("ls_blocks", "-w", (size_t) -1 );
+
+    add( "ls_queue_blocks" , "debug" , "Show detailed list of the blocks included in every queue");
+    
+    add( "ls_buffers" , "debug" , "Show the list of data buffers managed in a SAMSON cluster. This is a debug tool",
+        "ls_buffers" );
+    
+    add( "ls_block_distribution" , "debug" , "Show current bloc distribution operations in SAMSON nodes" );
+    add( "ls_block_requests" , "debug" , "Show current block requests operations in SAMSON nodes" );
+
+    add( "ls_data_commits" , "debug" , "Show last 100 commits on data model." );
+
+    add( "ls_last_tasks" , "debug" , "Show last 100 tasks sqcheduled in workers" );
+    
+    // MODULES
+    // ------------------------------------------------------------------
+    
+    
+    add( "ls_modules" , "modules", "Show a list of modules installed in SAMSON node workers");
+    add_string_argument("ls_modules", "pattern", "*", "Filter modules with this pattern (* system.* ... )");
+
+    add(  "ls_operations","modules",  "Shows a list of available operations");
+    add_string_argument("ls_operations", "pattern", "*", "Filter operations with this pattern (* system.* ... )");
+    add_bool_option("ls_operations", "-v" , "Show more details about input/output parameters");
+    
+    add( "ls_datas" , "modules" , "Shows a list of available data-types." );
+    add_string_argument("ls_datas", "pattern", "*", "Filter data-types with this pattern (* system.* ... )");
+    
+    add( "reload_modules" , "modules", 
+        "Reload modules in all workers");
+    
+    add( "push_module" , "modules", 
+        "Push a module to the cluster. The module has to be compatible with hardware architecture",
+        "push_module <module_file>"
+        );
+    
+    // STREAM
+    // ------------------------------------------------------------------
+    
+    
+    add( "ls_stream_operations"  , "stream" , "Show a list of stream operations",
+        "Stream operations are operations that are automatically executed in a SAMSON cluster\n"
+        "They consist in aplying a particular operation ( defined in a module ) to process data from\n"
+        "one or multiple input queues and send result to one or multiple output queues\n" 
+        "Please, add new stream operations with add_stream_operations command");
+    add_bool_option("ls_stream_operations", "-a" , "Show hiden stream operations as well ( used internally by the platform )");
+
+    add( "ps_stream_operations"  , "stream" , "Show a list of stream operations with information about processes",
+        "Stream operations are operations that are automatically executed in a SAMSON cluster\n"
+        "They consist in aplying a particular operation ( defined in a module ) to process data from\n"
+        "one or multiple input queues and send result to one or multiple output queues\n" 
+        "Please, add new stream operations with add_stream_operations command");
+    add_bool_option("ps_stream_operations" , "-state", "Show planning state ( paused, error, ready for scheduling...)");
+    add_bool_option("ps_stream_operations" , "-tasks", "Show tasks associated to stream_operations");
+    add_bool_option("ps_stream_operations" , "-properties", "Information about properties of each stream opertion");
+    add_bool_option("ps_stream_operations" , "-data", "Show input and output data processed of each operation");
+    add_bool_option("ps_stream_operations" , "-rates", "Show input and output data rates of each operation");
+    
+    add( "add_stream_operation" , "stream" , "Add a new stream operation to the current SAMSON cluster",
+        "A stream operation is an operation that is automatically executed to transform data readed from one queue\n"
+        "and store produced data in another set of queues\n");
+    add_mandatory_string_argument("add_stream_operation", "name", "Name of the new stream  operations");
+    add_mandatory_string_argument("add_stream_operation", "operation", "Name of the operation to run");
+    
+    add_string_option("add_stream_operation", "-input", "" , "Input queues to get data from");
+    add_string_option("add_stream_operation", "-output", "" , "Output queues to push data to");
+    
+    add_bool_option("add_stream_operation", "-forward" , "Forward reduce operations are scheduled. ( No state )");
+    add_bool_option("add_stream_operation", "-update_only" , "Only update state for keys with new input values");
+    
+    add( "rm_stream_operation" , "stream"  ,  
+        "Remove a previously defined operation with add_stream_operation",
+        "rm_stream_operation name <-f>\n"
+        "      -f      Option avoids complaints when the operation does not exist");
+    
+    add( "remove_all_stream_operations" , "stream" , "Remove all stream operations" );
+    
+    
+    add( "cancel_stream_operation" , "stream" , "Cancel of  execution of a particular stream operation" );
+    add_string_option("cancel_stream_operation", "name", "" , "Name of the stream operation to be canceled");
+
+    
+    add( "set_stream_operation_property"    , "stream" ,  
+        "Set value of an enviroment property associated to a stream operation (see add_stream_operation)",
+        "set_stream_operation_property <stream_operation_name> <variable_name> <value>");
+    
+    add( "unset_stream_operation_property"    , "stream" ,  
+        "Remove an enviroment property associated to a stream operation (see add_stream_operation)",
+        "unset_stream_operation_property <stream_operation_name> <variable_name>");
+    
+    
+    add( "add_queue_connection"    , "stream" , "Connect a queue to other queues to duplicate data automatically");
+    
+    add_mandatory_string_argument("add_queue_connection", "source_queue", "Source queue");
+    add_mandatory_string_argument("add_queue_connection", "target_queue", "Target queue ( or queues )");
+    
+    add( "rm_queue_connection"    , "stream" , "Remove a connection between queues (see  add_queue_connection )");
+    add_mandatory_string_argument("rm_queue_connection", "source_queue", "Source queue");
+    add_mandatory_string_argument("rm_queue_connection", "target_queue", "Target queue ( or queues )");
+    
+    add( "ls_queue_connections"    , "stream" , "Show a list with all queue connections ( see add_queue_connection ) ");
+    add_bool_option("ls_queue_connections", "-a" , "Show hiden items as well ( used internally by the platform )");
+    
+    add( "ps_tasks" , "stream" , "Get a list of current stream tasks currently running in all workers" );
+    add_bool_option("ps_tasks", "-data" , "Get detailed informaiton of input/output data");
+    
+    add( "ls_workers" , "stream" , "Get a list of current workers" );
+    add_bool_option("ls_workers", "-engine" , "Show details about underlying engines at worker nodes");
+    add_bool_option("ls_workers", "-disk" , "Show details about underlying engines at worker nodes");
+    
+    add( "init_stream" , "stream" ,
+        "Execute am initialization script to setup some automatic stream operations",
+        "init_stream [prefix] <script_name>\n"
+        "          [prefix]         It is used to name operations and queues\n"
+        "          <script_name>    Name of the script (e.g. module.script)\n"
+        );
+    
+    
+    add( "ps_workers"  , "stream" , 
+        "Show a list of commands being executed in each node of the cluster",
+        "ps_workers <command pattern>\n"
+        );
+    
+    
+    add( "defrag"  , "stream" , 
+        "Defrag content of a particular queue",
+        "defrag <queue> <destination_queue>\n"
+        );
+    
+    
+    // BATCH
+    
+    add( "run" , "batch" , "Run a particular operation over queues in batch mode");
+    add_mandatory_string_argument("run", "operation", "Name of the operation to run");
+    add_string_option("run", "-input", "" , "Input queues to get data from");
+    add_string_option("run", "-output", "" , "Output queues to push data to");
+
+    add("ls_batch_operations" , "batch" , "Show a list of current batch operations scheduled");
+    
+    // PUSH&POP
+    // ------------------------------------------------------------------
+    
+    add( "push" , "push&pop" , "Push content of a local file or a directory to a set of queues");
+    add_mandatory_string_argument("push", "file", "Local file or directory")->set_options_group("#file");
+    add_mandatory_string_argument("push", "queue", "queue or queues to push data (queue1 queue2 queue3 ...)");
+    
+    add( "pop" , "push&pop" , "Pop content of a queue to a local directory");
+    add_mandatory_string_argument("pop", "queue", "Name of the queue we want to pop");
+    add_mandatory_string_argument("pop", "file_name", "Local directory to save downloaded blocks");
+    add_bool_option("pop", "-force" , "Delete local directory if it exists");
+    add_bool_option("pop", "-show" , "Show first lines of the content once downloaded");
+    
+    add( "ls_push_operations" , "push&pop"  ,
+        "Show local list of push pending operations",
+        "ls_push_operations");
+    
+    add( "ls_local_push_operations" , "push&pop" ,
+        "Show list of pending push operations on SAMSON workers",
+        "ls_push_operations");
+    
+    
+    add( "connect_to_queue" , "push&pop" , "Connect to a queue to receive live data from a SAMSON cluster");
+    add_mandatory_string_argument("connect_to_queue", "queue", "Source queue ( see ls command )");
+    
+    add( "disconnect_from_queue" , "push&pop" , "Disconnects from a particular queue to not receive live data from a SAMSON cluster");
+    add_mandatory_string_argument("disconnect_from_queue", "queue", "Source queue ( see ls command )");
+    
+    add( "ls_pop_connections" , "push&pop"  
+        , "Show a list of connections to receive live data from SAMSON."
+        , "ls_pop_connections" );
+    
+    
+    add( "show_local_queue" , "push&pop"  , "Show contents of a local queue downloaded using pop",
+        "Note: Modules should be installed locally");
+
+    add_mandatory_string_argument("show_local_queue", "queue", "Local queue to be displayed");
+    add_bool_option("show_local_queue", "-header" , "Display only header information" );
+    add_bool_option("show_local_queue", "-show_hg" , "Show hash-group for each key-vakue" );
+    add_uint64_option("show_local_queue", "-limit", 0 , "Limit the number of records displayed");
+    
+    add( "push_queue" , "push&pop", "Push content of a queue to another queue/s" );
+    add_mandatory_string_argument("push_queue", "queue_from", "Source queue to get data from");
+    add_mandatory_string_argument("push_queue", "queue_to", "Target queue to push data to");
+    
+    
+  }
 }

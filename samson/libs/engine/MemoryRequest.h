@@ -19,10 +19,10 @@
 
 #include <cstring>
 
-#include "au/namespace.h"
+
 #include "au/Object.h"
 
-NAMESPACE_BEGIN(engine)
+namespace engine {
 
 /**
  Information about a particular request
@@ -57,6 +57,6 @@ public:
 };    
 
 
-NAMESPACE_END
+}
 
 #endif

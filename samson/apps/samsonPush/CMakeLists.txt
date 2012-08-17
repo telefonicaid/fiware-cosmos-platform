@@ -17,6 +17,8 @@ SET( STATIC_LIBS
      samsonIsolated
      samsonNetwork
      samsonCommon
+	 samsonZoo
+	 zookeeper_mt
      au
      lm
 	au

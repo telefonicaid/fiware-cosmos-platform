@@ -86,7 +86,7 @@ namespace au
         // Open the first file-descriptor
         openFileDescriptor( error );
         
-        if( error->isActivated() )
+        if( error->IsActivated() )
             return;
         
         au::Status s = initService();
@@ -155,7 +155,7 @@ namespace au
             
             au::ErrorManager error;
             openFileDescriptor(&error);        
-            if( error.isActivated() )
+            if( error.IsActivated() )
             {
                 LM_W(("Not possible to open local file to save logs. Logs will be deninitelly lost"));
                 return;
@@ -218,7 +218,7 @@ namespace au
             std::string type = log->get("TYPE");
             if( type == "" )
                 type = "?";
-            descriptors_.add(type);
+            descriptors_.Add(type);
         }
     };
     
@@ -403,8 +403,8 @@ namespace au
         au::ErrorManager error;
         table_log_formater.init(&error);
 
-        if( error.isActivated() )
-            return au::str("Error: %s" , error.getMessage().c_str() );
+        if( error.IsActivated() )
+            return au::str("Error: %s" , error.GetMessage().c_str() );
         
         // Get current log file
         int tmp_file_counter = file_counter;

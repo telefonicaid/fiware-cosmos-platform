@@ -47,7 +47,7 @@ namespace samson {
         
         au::tables::TreeItem* update( std::string _txt )
         {
-            cronometer.reset();
+            cronometer.Reset();
             counter++;
             
             xml_data = _txt;    // Keep the xml document just for debuggin
@@ -57,7 +57,7 @@ namespace samson {
         
         size_t getTime()
         {
-            return cronometer.diffTimeInSeconds();
+            return cronometer.seconds();
         }
         
         size_t getNumUpdated()

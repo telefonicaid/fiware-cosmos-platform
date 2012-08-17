@@ -118,7 +118,7 @@ namespace au
             
             std::string getErrorMessage()
             {
-                return error.getMessage();
+                return error.GetMessage();
             }
             
             

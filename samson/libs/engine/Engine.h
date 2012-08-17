@@ -30,7 +30,7 @@
 #include "au/containers/list.h"                        // au::list
 #include "au/mutex/Token.h"                       // au::Token
 #include "au/Cronometer.h"                  // au::Cronometer
-#include "au/namespace.h"                // NAMESPACE_BEGIN & NAMESPACE_END
+                // NAMESPACE_BEGIN & }
 #include "au/containers/vector.h"
 #include "au/mutex/TokenTaker.h"
 #include "au/mutex/Token.h"
@@ -39,12 +39,12 @@
 #include "engine/ObjectsManager.h"          // engine::ObjectsManager
 #include "engine/EngineElementCollection.h"
 
-NAMESPACE_BEGIN(au)
+namespace au {
 class Error;
 class Token;
-NAMESPACE_END
+}
 
-NAMESPACE_BEGIN(engine)
+namespace engine {
 
 class EngineElement;
 class ProcessItem;
@@ -133,7 +133,7 @@ public:
     void add( EngineElement *element );	
     
     // Get an object by its registry names
-    Object* getObjectByName( const char *name );
+    Object* objectByName( const char *name );
     
     // Info functions 
     int getNumElementsInEngineStack();
@@ -164,6 +164,6 @@ private:
     
 };
 
-NAMESPACE_END
+}
 
 #endif

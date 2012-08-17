@@ -194,7 +194,7 @@ int main( int argC , const char*argV[] )
         buffer_to_screen.flush();
         
         // Get the total number of seconds running...
-        size_t total_seconds = cronometer.diffTimeInSeconds();
+        size_t total_seconds = cronometer.seconds();
 
         // Compute the number of lines per second, so far...
         if( total_seconds > 0 )
@@ -233,7 +233,7 @@ int main( int argC , const char*argV[] )
     
     buffer_to_screen.flush();
     
-    size_t total_seconds = cronometer.diffTimeInSeconds();
+    size_t total_seconds = cronometer.seconds();
     LM_V(( "Generated %s lines ( %s bytes ) in %s. Rate: %s / %s", 
           au::str(num_lines).c_str() , au::str(total_size).c_str(), au::str_time( total_seconds ).c_str() ,
           au::str( (double)num_lines/(double)total_seconds ,"Lines/s" ).c_str() , au::str( (double)total_size/(double)total_seconds,"Bps").c_str() ));

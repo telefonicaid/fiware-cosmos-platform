@@ -8,7 +8,7 @@
 #include "au/console/ConsoleCommandHistory.h" // Own interface
 
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 ConsoleCommandHistory::ConsoleCommandHistory()
 {
@@ -122,4 +122,4 @@ void ConsoleCommandHistory::new_command()
     
 }
 
-NAMESPACE_END
+}

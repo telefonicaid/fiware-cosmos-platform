@@ -3,7 +3,7 @@
 
 #include "au/ThreadManager.h"
 #include "engine/Buffer.h"
-#include "engine/BufferContainer.h"
+
 #include "samson/client/SamsonClient.h"
 #include "BufferList.h"
 #include "common.h"
@@ -47,11 +47,11 @@ namespace stream_connector {
             
             // Accumulate time
             if( connected )
-                time_connected += connection_cronometer.diffTime();
+                time_connected += connection_cronometer.seconds();
             else
-                time_disconnected += connection_cronometer.diffTime();
+                time_disconnected += connection_cronometer.seconds();
             
-            connection_cronometer.reset();
+            connection_cronometer.Reset();
             
             
             // Set flag connected
@@ -64,9 +64,9 @@ namespace stream_connector {
             double nc = time_connected;
             
             if( connected )
-                c += connection_cronometer.diffTimeInSeconds();
+                c += connection_cronometer.seconds();
             else
-                nc += connection_cronometer.diffTimeInSeconds();
+                nc += connection_cronometer.seconds();
             
             
             double t = c + nc;
@@ -93,7 +93,7 @@ namespace stream_connector {
                     output << "( never connected )";
                 else
                 {
-                    output << connection_cronometer.str_simple();
+                    output << connection_cronometer;
                     output << " ago ( ";
                     output << au::str_time_simple( time_connected );
                     output << " time connectd )";
@@ -101,7 +101,7 @@ namespace stream_connector {
             }
             else
             {
-                output << "Connected " << connection_cronometer.str_simple();
+                output << "Connected " << connection_cronometer;
                 if( rate < 0.8 )
                     output << " ( " << au::str_percentage( rate ) <<  ")";
             }
@@ -145,10 +145,10 @@ namespace stream_connector {
     protected:
         
         // Method to recover buffers to be pushed to the output ( output connections )
-        void getNextBufferToSent( engine::BufferContainer * container );
+        engine::BufferPointer getNextBufferToSent( );
         
         // Method to push any input buffer ( input connections )
-        void pushInputBuffer( engine::Buffer * buffer );
+        void pushInputBuffer( engine::BufferPointer buffer );
         void flushInputBuffers();
         
     public:
@@ -168,11 +168,11 @@ namespace stream_connector {
             description_ = description;
         }
         
-        virtual size_t getBufferedSize();               // Get currect size accumulated here
-        virtual size_t getBufferedSizeOnMemory();       // Get current size accumulated in memory
+        virtual size_t bufferedSize();               // Get currect size accumulated here
+        virtual size_t bufferedSizeOnMemory();       // Get current size accumulated in memory
         
         // Method to push data from channel ( only output )
-        virtual void push( engine::Buffer* buffer );
+        virtual void push( engine::BufferPointer buffer );
         
         virtual std::string getStatus()=0;      // Get status of this element
         virtual void review_connection()=0;     // Method called to review this connection

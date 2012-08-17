@@ -7,7 +7,7 @@ namespace samson
     namespace system
     {
         
-        // Static pool for object reuse
+        // Static pool for object resusage
         au::Pool<Value>* samson::system::Value::pool_values;
         
         
@@ -300,7 +300,7 @@ namespace samson
             {
                 case ser_string:
                     _value_string = &data[1];
-                    return  1 + _value_string.length() +1 ; // Serialization code, string, '\0'
+                    return  1 + _value_string.length() +1 ; // serializtion code, string, '\0'
                     
                 case ser_string_constant:
                     _value_string = get_constant_word( ((unsigned char) data[1]) );
@@ -341,11 +341,6 @@ namespace samson
             //printf("Parsing vector %p\n" , data);
             SerialitzationCode code = (SerialitzationCode)data[0];
             
-            // We want to start with an empty Value object
-            // (We have tried to made a clear() always in change_value_type(),
-            // but it is used too widely to be safe)
-            set_as_void();
-
             // Common init to value int
             set_as_vector();
             
@@ -405,11 +400,6 @@ namespace samson
             //printf("Parsing vector %p\n" , data);
             SerialitzationCode code = (SerialitzationCode)data[0];
             
-            // We want to start with an empty Value object
-            // (We have tried to made a clear() always in change_value_type(),
-            // but it is used too widely to be safe)
-            //set_as_void();
-
             // Common init to value int
             set_as_map();
             
@@ -706,7 +696,7 @@ namespace samson
         
         int Value::serialize_string(char *data)
         {
-            // If constant word, preferred method
+            // If constant word, prefered method
             int index = get_constant_word_code( _value_string.c_str() );
             if( index != -1 )
             {
@@ -717,7 +707,7 @@ namespace samson
             
             if( _value_string.length() < 4096 )
             {
-                // Try compressed version
+                // Try compressed vertion
                 char line[8192];
                 size_t len = ::smaz_compress((char*) _value_string.c_str(), _value_string.length() , line, 8192);
                 
@@ -752,7 +742,6 @@ namespace samson
         {
             
             size_t offset = 1; //
-
             if( _value_vector.size() == 0)
                 data[0] = (char) ser_vector_len_0;
             else if( _value_vector.size() == 1)
@@ -784,7 +773,6 @@ namespace samson
         {
             
             size_t offset = 1; //
-
             if( _value_map.size() == 0)
                 data[0] = (char) ser_map_len_0;
             else if( _value_map.size() == 1)
@@ -1369,52 +1357,7 @@ namespace samson
             
         }
         
-
-        std::string Value::strXML()
-        {
-            std::ostringstream output;
-            _strXML( output );
-            return output.str();
-        }
-
-        void Value::_strXML( std::ostream &output )
-        {
-            switch (value_type)
-            {
-            case value_void:
-                output << "null";
-                break;
-            case value_number:
-                output << _value_double;
-                break;
-            case value_string:
-                output << "<![CDATA[" << _value_string << "]]>" << "\n";
-                break;
-
-            case value_vector:
-            {
-                for(unsigned int i = 0 ; i < _value_vector.size() ; i++)
-                {
-                    output << "<values>" << _value_vector[i]->strXML() << "</values>\n";
-                }
-                break;
-            }
-
-            case value_map:
-            {
-                au::map<std::string,Value>::iterator it;
-                for( it = _value_map.begin() ; it != _value_map.end() ; it++ )
-                {
-                    output << "<value first=\"" << it->first << "\" second=\"" << it->second->str() << "\"/>\n";
-                }
-                break;
-            }
-            default:
-                output << "Error, unsupported system.Value type";
-                break;
-            }
-        }
-
+        
         void Value::_strHTML(int level_html_heading , std::ostream &output)
         {
             switch (value_type)
@@ -1479,149 +1422,30 @@ namespace samson
             return output.str();
         }
         
+        std::string Value::strXML()
+        {
+            return "TO BE DEFINED";
+        }
+
+        
         std::string Value::strHTMLTable(std::string _varNameInternal)
         {
-            std::ostringstream output;
-            output << "<style>";
-            output << "#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}";
-            output << "#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}";
-            output << "#table-5 tr{font-size:14px;font-weight:normal;color:#039;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;padding:10px 8px;}";
-            output << "#table-5 td{ color:#669;padding:9px 8px 0;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;border-left:1px solid #6678b1;border-right:1px solid #6678b1;}";
-            output <<  "#table-5 tbody tr:hover td{color:#009;}";
-            output << "</style>";
-
-            _strHTMLTable( _varNameInternal , output );
-            return output.str();
+            return "TO BE DEFINED";
         }
-
-        void Value::_strHTMLTable(std::string _varNameInternal, std::ostream &output)
-        {
-            switch (value_type)
-            {
-            case value_number:
-            case value_void:
-            case value_string:
-                output << "<table id=\"table-5\">\n";
-                output << "<caption>" <<  _varNameInternal << "</caption>\n";
-                output << "<tr>\n";
-                output << "<th>" << _varNameInternal << "</th>\n";
-                output << "</tr>\n";
-                output << "<tr>\n";
-                output << "<th>" << getName() << "</th>\n";
-                output << "</tr>\n";
-                output << "<td>" << str() << "</td>\n";
-                output << "</tr>\n";
-                output << "</table>\n";
-                output << _value_double;
-                break;
-            case value_vector:
-            {
-                output << "<table id=\"table-5\">\n";
-                output << "<caption>" <<  _varNameInternal << "</caption>\n";
-                int init_col = 0;
-                int end_col = 0;
-                output << "<tr>\n";
-                { // paint_header  vector values
-                    if (_value_vector.size() > 0)
-                    {
-                        end_col = init_col +  _value_vector[0]->num_basic_fields();
-                        output << "<th colspan=" << end_col << ">values</th>\n";
-                        init_col = end_col + 1;
-                    }else{
-                        output << "<th colspan=" << end_col << "></th>\n";
-                    }
-                }
-                output << "</tr>\n";
-                output << "<tr>\n";
-                { // paint_header_basic  vector values
-                    if (_value_vector.size() > 0)
-                    {
-                        if (_value_vector[0]->is_terminal())
-                        {
-                            output << "<th>values</th>\n";
-                        }
-                        else
-                        {
-                            output << _value_vector[0]->paint_header_basic(init_col);
-                        }
-                    }else
-                    {
-                        output << "<th></th>\n";
-                    }
-                }
-                output << "</tr>\n";
-                int m_num_values = max_num_values();
-                for (int index_row =0; (index_row < m_num_values); index_row++)
-                {
-                    output << "<tr>\n";
-                    { // paint_value of vector values
-                        if ((index_row >= 0) && (index_row < static_cast<int>(_value_vector.size())))
-                        {
-                            output << _value_vector[index_row]->paint_value(0) << "\n";
-                        }
-                        else
-                        {
-                            if (_value_vector.size() > 0)
-                            {
-                                output << _value_vector[0]->paint_value(-1) << "\n";
-                            }
-                            else
-                            {
-                                output << "<td></td>\n";
-                            }
-                        }
-                    }
-                    output << "</tr>\n";
-                }
-                output << "</table>\n";
-                break;
-            }
-            case value_map:
-            {
-                output << "<table id=\"table-5\">\n";
-                output << "<caption>" <<  _varNameInternal << "</caption>\n";
-                int level_html_heading = 1;
-
-                output << "<table id=\"table-5\">";
-                au::map<std::string,Value>::iterator it;
-                for( it = _value_map.begin() ; it != _value_map.end() ; it++ )
-                {
-                    output << "<tr><td>";
-                    output << it->first;
-                    output << "</td><td>";
-                    it->second->_strHTML( level_html_heading + 1 , output );
-                    output << "</tr></td>";
-                }
-                output << "</table>";
-                break;
-            }
-            default:
-                output << output << "Error, unsupported system.Value type";
-            }
-        }
-
+        
         std::string Value::paint_header(int init_col)
         {
-            return "Term";
+            return "TO BE DEFINED";
         }
-
+        
         std::string Value::paint_header_basic(int init_col)
         {
-            return "Term";
+            return "TO BE DEFINED";
         }
-
+        
         std::string Value::paint_value(int index_row)
         {
-            std::ostringstream o;
-            if (index_row >= 0)
-            {
-                o  << "<td>" << str() << "</td>";
-            }
-            else
-            {
-                o  << "<td></td>";
-            }
-            return o.str();
+            return "TO BE DEFINED";
         }
         
         int Value::num_fields()
@@ -1684,7 +1508,7 @@ namespace samson
             au::map<std::string,Value>::iterator it;
             for( it = _value_map.begin() ; it != _value_map.end() ; it++ )
             {
-                it->second->clear(); // Recursive reuse
+                it->second->clear(); // Recursive rehusage
                 reuseInstance(it->second);
             }
             _value_map.clear();
@@ -1692,7 +1516,7 @@ namespace samson
             // Clear elements in the vector
             for( size_t i = 0 ; i < _value_vector.size() ; i++ )
             {
-                _value_vector[i]->clear(); // Recursive reuse
+                _value_vector[i]->clear(); // Recursive rehusage
                 reuseInstance( _value_vector[i] );
             }
             _value_vector.clear();
@@ -1755,7 +1579,7 @@ namespace samson
             Value* value = getInstance();
             _value_vector.push_back( value );
             
-            // Always return a void object
+            // Alwyas return a void obnject
             value->set_as_void();
             return value;
         }
@@ -1770,7 +1594,7 @@ namespace samson
             Value* value = getInstance();
             _value_vector.insert( _value_vector.begin() + pos , value );
             
-            // Always return a void object
+            // Alwyas return a void obnject
             value->set_as_void();
             return value;
         }
@@ -1840,7 +1664,7 @@ namespace samson
             Value* value = getInstance();
             _value_map.insertInMap(key, value );
             
-            // Always return a void object
+            // Alwyas return a void object
             value->set_as_void();
             return value;
         }
@@ -1856,21 +1680,14 @@ namespace samson
         const char* Value::get_string_from_map( const char* key )
         {
             if( value_type != value_map )
-            {
-                LM_E(("Error looking for key '%s' in map, Value is not a map", key));
                 return NULL;
-            }
             
             std::string _key = key;
             Value* value = _value_map.findInMap(_key);
             
             if( !value )
-            {
-                LM_E(("Error looking for key in map, key:'%s' not found", key));
                 return NULL;
-            }
             
-            //LM_M(("OK looking for key in map, key:'%s' value:%p('%s')", key, value, value->c_str()));
             return value->c_str();
         }
         
@@ -1967,11 +1784,8 @@ namespace samson
         {
             if( value_type == new_value_type )
                 return; // Nothing to do
-
-            // Now, if we change (or think we change) type, we want to be sure data are cleaned
-            // But perhaps we are using set_as_...() tin too many places to be sure,
-            // so it is returned back to its original place
-            // Reuse all elements
+            
+            // Rehuse all elements
             clear();
             
             // Assign the new value_type
@@ -2119,10 +1933,7 @@ namespace samson
         const char* Value::c_str() const
         {
             if( value_type != value_string )
-            {
-                LM_W(("Error recovering c_str() from Value; it is not a string, but value_type:%d (value_string:%d)", value_type, value_string));
                 return NULL;
-            }
             return _value_string.c_str();
         }
         

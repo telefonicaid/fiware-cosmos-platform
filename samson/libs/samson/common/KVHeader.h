@@ -20,27 +20,21 @@ namespace samson
 		int magic_number;			// Magic number to make sure reception is correct
 		char keyFormat[100];		// Format for the key
 		char valueFormat[100];		// Format for the value
-        
+    
 		KVInfo info;				// Total information in this package ( in all hash-groups )
-        KVRange range;              // Range of has-groups used in this file
+    KVRange range;              // Range of has-groups used in this file
 		
-        time_t time;                // Time stamp for this block
-        
-		// Specific fields only used in particular operations
-		// ---------------------------------------------------------------
-		
-		int input;				// Input channel
-		int num_inputs;			// Total number of inputs
-        
+    time_t time;                // Time stamp for this block
+    
 		// Init header
 		// ---------------------------------------------------------------
 		
 		void init( KVFormat format , KVInfo _info );
-        void initForTxt( size_t size );
-        
+    void initForTxt( size_t size );
+    
 		// Set extra information
 		// ---------------------------------------------------------------
-        
+    
 		void setHashGroups( uint32 _hg_begin , uint32 _hg_end );
 		void setInfo( KVInfo _info );
 		void setFormat( KVFormat format );
@@ -51,7 +45,7 @@ namespace samson
 		
 		uint32 getTotalSize();
 		uint32 getNumHashGroups();
-        bool isTxt();
+    bool isTxt();
 		
 		// Format operations
 		// ---------------------------------------------------------------
@@ -60,20 +54,19 @@ namespace samson
 		
 		// Check operations ( magic number and other conditions )
 		// ---------------------------------------------------------------
-
-        bool check_size( size_t total_size );
+    
+    bool check_size( size_t total_size );
 		bool check();
-		bool checkInput();
-
+    
 		// Debug strings
 		// ---------------------------------------------------------------
 		
-        std::string str();
-        void getInfo( std::ostringstream &output );
-
+    std::string str();
+    void getInfo( std::ostringstream &output );
+    
     
 	};
-    
+  
 }
 
 #endif

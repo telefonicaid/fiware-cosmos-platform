@@ -24,11 +24,11 @@
 #include "logMsg/traceLevels.h"         // LmtEngine
 
 #include "au/string.h"                  // au::Format
-#include "au/namespace.h"
+
 #include "au/Cronometer.h"
 
 
-NAMESPACE_BEGIN(engine)
+namespace engine {
 
 class EngineElement 
 {
@@ -124,6 +124,6 @@ public:
     
 };
 
-NAMESPACE_END
+}
 
 #endif

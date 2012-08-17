@@ -47,15 +47,14 @@
 *
 * REQUIRE - error handling for option requiring value
 */
-#define REQUIRE(aP)                                                                            \
-do                                                                                             \
-{                                                                                              \
-    const int MAX_LENGTH_FULL_NAME=256;                                                               \
-    char e[MAX_LENGTH_FULL_NAME+1];                                                            \
-	char w[512];                                                                               \
-                                                                                               \
-	sprintf(w, "%s requires %s", paFullName(e, MAX_LENGTH_FULL_NAME, aP), require(aP->type));  \
-	PA_WARNING(PasMissingValue, w);                                                            \
+#define REQUIRE(aP)                                                       \
+do                                                                        \
+{                                                                         \
+	char e[80];                                                           \
+	char w[512];                                                          \
+                                                                          \
+	sprintf(w, "%s requires %s", paFullName(e, aP), require(aP->type));   \
+	PA_WARNING(PasMissingValue, w);                                       \
 } while (0)
 
 
@@ -351,9 +350,8 @@ int paOptionsParse(PaiArgument* paList, char* argV[], int argC)
 	PA_M(("incoming arg list of %d args", argC));
 	while (++argNo < argC)
 	{
-	    const int MAX_LENGTH_FULL_NAME=256;
-		char  e[MAX_LENGTH_FULL_NAME+1];
-		char  o[MAX_LENGTH_FULL_NAME+1];
+		char  e[80];
+		char  o[80];
 		int   eee;
 		int*  eP;
 
@@ -431,7 +429,7 @@ int paOptionsParse(PaiArgument* paList, char* argV[], int argC)
 			{
 				char tmp[128];
 				sprintf(w, "boolean option '%s' doesn't take parameters",
-						paFullName(e, MAX_LENGTH_FULL_NAME, aP));
+						paFullName(e, aP));
 				/* PA_WARNING(PasValueToBooleanOption, w); */
 				sprintf(tmp, "%c%s", argV[argNo][0], &argV[argNo][2]);
 				LM_W(("Changing arg %d from '%s' to '%s'", argNo, argV[argNo], tmp));
@@ -452,7 +450,7 @@ int paOptionsParse(PaiArgument* paList, char* argV[], int argC)
 			break;
 		}
 
-		paFullName(o, MAX_LENGTH_FULL_NAME, aP);
+		paFullName(o, aP);
 
 		switch (aP->type)
 		{
@@ -539,7 +537,6 @@ int paOptionsParse(PaiArgument* paList, char* argV[], int argC)
 
 
 	/* checking that all required arguments are set */
-	LM_T(LmtPaSList, ("Checking that all requires arguments are set"));
 	paIterateInit();
 	while ((aP = paIterateNext(paList)) != NULL)
 	{
@@ -550,7 +547,6 @@ int paOptionsParse(PaiArgument* paList, char* argV[], int argC)
 		}
 	}		
 
-	LM_T(LmtPaSList, ("Checking extended usage"));
 	if (extendedUsage == true)
 	{
 		paExtendedUsage();

@@ -20,9 +20,7 @@
 #include <cstdlib>			// malloc, ...
 #include <fstream>			// std::ifstream
 
-#include "au/namespace.h"
-
-NAMESPACE_BEGIN(engine)
+namespace engine {
 
 /**
  Simple class to specify an allocated space in memory
@@ -65,6 +63,6 @@ public:
     
 };
 
-NAMESPACE_END
+}
 
 #endif

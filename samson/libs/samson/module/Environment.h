@@ -97,7 +97,7 @@ namespace samson {
 			v << value;
 			set( name , v.str() ); 
 		}	
-		void setSizeT( std::string name  , size_t value)
+		void set( std::string name  , size_t value)
 		{
 			std::ostringstream v;
 			v << value;
@@ -119,7 +119,7 @@ namespace samson {
 			return atoi( get( name , "0" ).c_str() );
 		}
 
-		size_t getSizeT( std::string name , size_t defaultValue)
+		size_t get( std::string name , size_t defaultValue)
 		{
 			if( !isSet(name) )
 				return defaultValue;

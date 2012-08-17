@@ -1,4 +1,159 @@
-package samson.network;
+package samson.gpb;
+
+message KVRange
+{
+	required int32  hg_begin = 1;
+	required int32  hg_end   = 2;
+}
+
+
+message KVInfo
+{
+	required int64  kvs = 1;
+	required int64  size   = 2;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Stream Operations model
+//
+
+message StreamOperation
+{
+	required uint64 stream_operation_id  = 1; // Unique identifier of this operation
+	required string name                 = 2; // Name assigned to this operation
+	required string operation            = 3; // Operation to be executed
+
+	repeated string inputs               = 4; // Queues used as inputs;
+	repeated string outputs              = 5; // Queues used as outputs;
+
+	required bool paused                 = 6; // Flag to indicate that this operation is paused
+
+	optional Environment environment     = 10; // Environment variables for this operation
+
+	optional bool reduce_forward         = 11; // Flag to indicate a reduce forward operation
+	optional bool reduce_update_only     = 12; // Flag to indicate that only key-values with new data is really executed
+	
+}
+
+
+message BatchOperation
+{
+	required uint64 delilah_id           = 1; // Delilah that originated this command
+	required uint64 delilah_component_id = 2; // Component inside this delilah
+	
+	repeated KVInfo input_info           = 3; // Data sets to be process at the input
+	
+	required string operation            = 4; // Operation to be executed
+    repeated string inputs               = 5; // Queues used as inputs;
+    repeated string outputs              = 6; // Queues used as outputs;
+
+	required bool finished               = 7; // Flag to indicate that the operation is finished
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Data model for a worker
+//
+
+message KVRanges
+{
+	repeated KVRange range    = 1; // Ranges considered for this block
+}
+
+message Block
+{
+	required uint64   block_id  = 1; // Identifier of this block
+	required KVRanges ranges    = 2; // Ranges considered for this block
+	required uint64   size      = 3; // Size in bytes for this block 
+	required uint64   kvs       = 4; // Number of key-values for this block
+	required uint64   time      = 5; // Creation time
+	required uint64   commit_id = 7; // Commit number where this block was added
+}
+
+message Queue
+{
+	required string name   = 1;        // Name of this queue
+	repeated Block  blocks = 2;        // Blocks contained in this queue
+	required string key_format = 3;    // Format for the key
+	required string value_format = 4;  // Format for the value
+}
+
+message QueueConnection
+{
+	required string queue_source = 1; // Source queue
+	required string queue_target = 2; // Target queu
+}
+
+message Data
+{
+	// Queues included in the model
+	repeated Queue queue = 1;
+	
+	// Stream operations scheduled 
+	repeated StreamOperation operations = 2;
+	required uint64 next_stream_operation_id = 3; 	// Identifier for the next stream operation
+
+	// Batch operations
+	repeated BatchOperation batch_operations = 4;
+
+	// Queue connections ( to duplicate data automatically when added to a queue )
+	repeated QueueConnection queue_connections = 5;
+	
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Worker Information ( Used in zookeeper at node  /samson/workers/wXXXXXXXXXX )
+//
+
+message WorkerInfo
+{
+	// Address information to access this worker
+	required string host = 1;
+	required int32 port = 2;
+	required int32 port_web = 3;
+
+	// Server info
+	required int32 cores = 5;
+	required uint64 memory = 6;
+
+	// Information about the blocks in the block manager
+	repeated uint64 block_id = 10;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+//
+// Cluster Information ( Used in zookeeper at node /samson/clusters )
+//
+
+message ClusterWorker
+{
+	required uint64 worker_id = 1;          // General identifiers for all workers
+	required WorkerInfo worker_info = 2;    // Information for this worker
+}
+
+message ProcessUnit
+{
+    // Range of key-values
+	required uint32 hg_begin = 1;
+	required uint32 hg_end = 2;
+
+	// Responsible for this range
+	required uint64 worker_id =3;
+
+	// Replicas of data
+	repeated uint64 replica_worker_id =4;
+}
+
+message ClusterInfo
+{
+	// Workers considered in this cluster
+	repeated ClusterWorker workers = 2;
+
+    // Ranges for each worker
+	repeated ProcessUnit process_units = 3;  
+}
 
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -44,64 +199,20 @@ message NodeIdentifier
     {
         Delilah    = 1;    
         Worker     = 2;    
-		Unknown    = 3;
     }	
 
 	required NodeType  node_type = 1;
 	required uint64    id        = 2;
 }
 
-message ClusterNode
-{
-	required string ip  = 1;    // IP adress of this worker
-	required int32 port = 2;    // Port ( SAMSON PORT by default )
-    required uint64 id  = 3;    // Identifier of this node in this cluster
-}
-
-message ClusterInformation
-{
-	required uint64 id          = 1;   // Identifier of the cluster
-	required uint64 version     = 2;   // Version of this cluster
-
-	repeated ClusterNode nodes  = 3;   // Vector of nodes involved in the cluster
-
-	optional uint64 assigned_id = 4;   // Id assigned to a worker in a particular node ( only in some messages )
-}
-
 message Hello
 {
 	required NodeIdentifier      node_identifier         = 1; // My node identifier
-	required ClusterInformation  cluster_information     = 2; // Cluster information
-
-	// Fields used when delilah sends hello
-	optional string user            = 3;
-	optional string password        = 4;
-	optional string connection_type = 5; 
-
-	required bool answer_hello_required = 6;       // It is necessary to answer back with a hello
-
-	optional bool reset_cluster_information = 7;   // Falg to reset a worker instance
 }	
 
-// ////////////////////////////////////////////////////////////////////////
-// Notifications from Network Interface
-// ////////////////////////////////////////////////////////////////////////
-
-message NetworkNotification
-{
-	// Inform about connected or disconnected worker
-	optional uint64 connected_worker_id                    = 1;
-	optional uint64 disconnected_worker_id                 = 2;
-
-	// Inform about connected or disconnected delilahs
-	optional uint64 connected_delilah_id                   = 3;
-	optional uint64 disconnected_delilah_id                = 4;;
-}
 
 // ////////////////////////////////////////////////////////////////////////
-
 // Messages used in the isolated process protocol
-
 // ////////////////////////////////////////////////////////////////////////
 
 
@@ -139,24 +250,6 @@ message MessagePlatformProcess
 
 }
 
-
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Message to push a Block into a particular queue
-//
-
-message PushBlock
-{
-	repeated string queue		= 1;	// Target QueueuChannels to push this block
-	required uint64 size		= 2;	// Size of the uploaded block ( used when comming back to delilah )
-}
-
-message PushBlockResponse
-{
-	required PushBlock request 	= 2;	// Original request
-}
-
-
 // ////////////////////////////////////////////////////////////////////////////
 //
 // Message to pop  a particular queue from a worker
@@ -165,34 +258,22 @@ message PushBlockResponse
 
 message PopQueue
 {
-	optional string queue		= 1;	// Queue we are interested in extracting data
+	required string queue		= 1;	// Queue we are interested in extracting data
+	required int32 commit_id    = 2;    // Last commit_id requested for this queue ( get only updates ) 
+                                        // -1 --> Initial popQueue request
 }
 
 message PopQueueResponse
 {
-	optional PopQueue request	= 1;	// Original request message
-
-	required bool finish		= 2;	// Flag to indicate that this operation is finished
-	optional Error error		= 3;	// Optional flag to notify errors
+	optional Queue queue    = 1;	// Information about selected queue
+	optional Error error    = 2;	// Optional error
 }
 
-
-// ////////////////////////////////////////////////////////////////////////////
-//
-// Streaming data output SAMSON cluster
-//
-
-message StreamOutQueue
-{
-	optional string queue  = 1;  // Name of the queue we are getting data 	
-
-}
 
 // ////////////////////////////////////////////////////////////////////////////
 //
 // Message to send a command to a particular worker
 //
-
 
 message WorkerCommand
 {
@@ -231,32 +312,45 @@ message Collection
 }
 
 
+
 // ////////////////////////////////////////////////////////////////////////////
 //
-// General message
+// General message between delilahs and workers or between workers
 //
+
 message Message
 {
 
 	// Process identification inside delilah ( multiple push / pop / etc operations ... )
-	optional uint64  delilah_component_id = 1;	
+	optional uint64  delilah_component_id = 1;
 
-	// Push data to a worker ( push message and response )
-	optional PushBlock push_block = 2;	
-	optional PushBlockResponse push_block_response = 3;	
+	// Identifier of the block ( used in several messages )
+	optional uint64 block_id = 100;
+
+	// Uses in some pop messages
+	optional KVRanges ranges = 106;
+
+	// Identifier of the delilah push operation ( used in all Push-like messages )
+	optional uint64 push_id = 101;
+
+    // Identifier of the pop item ( in PopBlockRequest ) 
+	optional uint64 pop_id = 105;
+
+	// List of queues ( used in PushBlock messages )
+	repeated string queue = 103;
+
+	// General error ( used in almost all messges )
+	optional Error error   = 102;
 
 	// Pop data from a worker ( push message and response )
 	optional PopQueue pop_queue	= 4;	
 	optional PopQueueResponse pop_queue_response = 5;	
 
-	// Streaming data from SAMSON to a delilah
-	optional StreamOutQueue	stream_output_queue = 6;
-
 	// Worker command ( message and reponse )
 	optional WorkerCommand worker_command = 7;
 	optional WorkerCommandResponse worker_command_response =8;
 
-	// Alerts to delilah elementrs
+	// Alerts to delilah nodes
 	optional Alert alert = 9;
 
 	// XML report of status from all workers
@@ -268,10 +362,13 @@ message Message
 	// String Message ( used in the message Packet );
 	optional string message = 12;
 
-	// NetworkNotification message ( used to inform delilah and worker about changes in the network setup )	
-	optional NetworkNotification network_notification = 13;
-
 	// Collections .. used in some messages to report status ( ls_queues, ps_stream , etc... )
 	repeated Collection collection = 14; 
+
+	// Information about cluster ( sent from workers to delilahs )
+	optional ClusterInfo cluster_info = 15;
+	optional uint64 cluster_info_version = 16;
+
 }
+
 

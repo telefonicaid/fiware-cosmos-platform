@@ -7,12 +7,12 @@
 
 namespace samson {
 
-	void copyEnviroment( Environment* from , network::Environment * to )
+	void copyEnviroment( Environment* from , gpb::Environment * to )
 	{
 		std::map<std::string,std::string>::iterator iter;
 		for ( iter = from->environment.begin() ; iter != from->environment.end() ; iter++)
 		{
-			network::EnvironmentVariable *ev = to->add_variable();			
+			gpb::EnvironmentVariable *ev = to->add_variable();			
 			
 			ev->set_name( iter->first );
 			ev->set_value( iter->second );
@@ -20,7 +20,7 @@ namespace samson {
 		
 	}
 
-	void copyEnviroment( const network::Environment & from , Environment* to  )
+	void copyEnviroment( const gpb::Environment & from , Environment* to  )
 	{
 		for( int i = 0 ; i < from.variable_size() ; i++ )
 		{

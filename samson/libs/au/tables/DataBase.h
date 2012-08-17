@@ -14,15 +14,15 @@
 #include "au/string.h"              // au::str(...)
 #include "au/console/ConsoleAutoComplete.h"
 
-#include "au/namespace.h"
+
 
 
 #include "au/tables/Table.h"
 #include "au/tables/Tree.h"
 #include "au/tables/Collection.h"
 
-NAMESPACE_BEGIN(au)
-NAMESPACE_BEGIN(tables)
+namespace au {
+namespace tables {
 
 // Ecosystem of tables to work with them
 
@@ -95,7 +95,7 @@ private:
     
 };
 
-NAMESPACE_END
-NAMESPACE_END
+}
+}
 
 #endif

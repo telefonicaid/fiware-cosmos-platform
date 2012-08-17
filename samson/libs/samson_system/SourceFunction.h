@@ -7,7 +7,7 @@
 #include "au/containers/vector.h"
 #include "au/StringComponents.h"
 #include "au/Tokenizer.h"
-#include "au/charset.h"
+//#include "au/charset.h"
 
 #include <samson/module/samson.h>
 #include "samson_system/Value.h"
@@ -666,7 +666,8 @@ namespace samson{
                 }
                 
                 for ( int i = 0 ; i < input_line_size ; i++ )
-                    line[i] =  au::iso_8859_to_lower( input_line[i] );
+                  line[i] =  input_line[i];
+              //                    line[i] =  au::iso_8859_to_lower( input_line[i] );
 
                 line[input_line_size] = 0;
                 
@@ -802,7 +803,8 @@ namespace samson{
                     }
                 
                 for ( int i = 0 ; i < input_line_size ; i++ )
-                    line[i] =  au::iso_8859_to_upper( input_line[i] );
+                    line[i] = input_line[i];
+              //line[i] =  au::iso_8859_to_upper( input_line[i] );
                 line[input_line_size] = 0;
                 
                 value_container.value->set_string( line );

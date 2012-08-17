@@ -45,7 +45,7 @@ namespace au
             socket_connection = NULL;
             
             // This is the time counter since last connection
-            time_since_last_connection.reset();
+            time_since_last_connection.Reset();
             
             // Force try reconnect in next log
             time_reconnect = 0; 
@@ -170,7 +170,7 @@ namespace au
         }
         
         // Reconnect to server if necessary
-        size_t time = time_since_last_connection.diffTimeInSeconds();
+        size_t time = time_since_last_connection.seconds();
         if( !socket_connection && ( host != "" )  && ( time >= time_reconnect ) )
         {
             // Try new connection with the server

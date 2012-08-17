@@ -1,60 +1,73 @@
 
 #include "Descriptors.h"        // Own interface
 
-NAMESPACE_BEGIN(au)
-
-DescriptorsCounter::DescriptorsCounter( std::string _description)
-{
-    description = _description;
-    counter = 0;
-}
-
-void DescriptorsCounter::increase()
-{
-    counter++;
-}
-
-std::string DescriptorsCounter::str()
-{
-    std::ostringstream output;
-    output << counter << " X " << description; 
-    return output.str();
-}
-
-
-Descriptors::~Descriptors()
-{
+namespace au {
+  
+  DescriptorsCounter::DescriptorsCounter( const std::string& description)
+  : description_( description )
+  {
+    counter_ = 0;
+  }
+  
+  void DescriptorsCounter::Increase()
+  {
+    counter_++;
+  }
+  
+  std::ostream& operator<<( std::ostream& o , const DescriptorsCounter& descriptor_counter )
+  {
+    o << descriptor_counter.counter_ << " X " << descriptor_counter.description_; 
+    return o;
+  }
+  
+  Descriptors::Descriptors()
+  {
+    
+  }
+  
+  Descriptors::~Descriptors()
+  {
     // Delete is called for each conunter
-    concepts.clearMap();
-}
-
-size_t Descriptors::size()
-{
-    return concepts.size();
-}
-
-
-void Descriptors::add( std::string txt )
-{
-    DescriptorsCounter* counter = concepts.findInMap( txt );
+    concepts_.clearMap();
+  }
+  
+  size_t Descriptors::size()
+  {
+    return concepts_.size();
+  }
+  
+  void Descriptors::Add( const std::string& txt )
+  {
+    DescriptorsCounter* counter = concepts_.findInMap( txt );
     
     if( !counter )
     {
-        counter = new DescriptorsCounter( txt );
-        concepts.insertInMap( txt, counter );
+      counter = new DescriptorsCounter( txt );
+      concepts_.insertInMap( txt, counter );
     }
     
-    counter->increase();
-}
-
-std::string Descriptors::str()
-{
-    au::map< std::string , DescriptorsCounter>::iterator i;
+    counter->Increase();
+  }
+  
+  std::string Descriptors::str()
+  {
     
     std::ostringstream output;
-    for ( i =  concepts.begin() ; i != concepts.end() ; i++)
-        output << i->second->str() << " "; 
     return output.str();
-}
+  }
+ 
+  std::ostream& operator<<( std::ostream& o , const Descriptors& descriptors )
+  {    
+    au::map< std::string , DescriptorsCounter>::const_iterator it;
+    for ( it = descriptors.concepts_.begin() ; it != descriptors.concepts_.end() ; )
+    {
+      o << it->second; 
+      it++;
+      if( it != descriptors.concepts_.end() )
+        o << " ";
+    }
+    return o;
+  }
 
-NAMESPACE_END
+  
+}

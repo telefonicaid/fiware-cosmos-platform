@@ -4,7 +4,7 @@
 #include "au/containers/map.h"
 
 #include "engine/Buffer.h"
-#include "engine/BufferContainer.h"
+
 #include "samson/client/SamsonClient.h"
 
 #include "common.h"
@@ -65,7 +65,7 @@ namespace stream_connector {
         void add( Connection* Connection );
         
         // Push a new buffer to all connections
-        void push( engine::Buffer * buffer );
+        void push( engine::BufferPointer buffer );
         
         // Reviewing item and all associated connections
         void review();

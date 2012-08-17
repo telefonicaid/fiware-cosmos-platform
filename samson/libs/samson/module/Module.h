@@ -12,7 +12,6 @@
 #include "logMsg/traceLevels.h"         // LmtModuleManager
 
 
-
 namespace samson
 {	
 	class Module 

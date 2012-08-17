@@ -4,95 +4,100 @@
 #include <cstring>
 
 /* ****************************************************************************
-*
-* FILE                     Message.h - message definitions for all Samson IPC
-*
-*/
+ *
+ * FILE                     Message.h - message definitions for all Samson IPC
+ *
+ */
 
-namespace samson
-{
-namespace Message
-{
-
-
-
-/* ****************************************************************************
-*
-* CODE - Legible message codes and types
-*/
-#define CODE(c1, c2, c3, c4) ((c4 << 24) + (c3 << 16) + (c2 << 8) + c1)
+namespace samson { namespace Message {
 	
-/* ****************************************************************************
-*
-* MessageCode
-*/
-typedef enum MessageCode
-{
-	Hello							= CODE('H', 'e', 'l', 'l'), 
-
-    NetworkNotification             = CODE('N', 'o', 't', 'i'),
+  /* ****************************************************************************
+   *
+   * MessageCode
+   */
+  typedef enum MessageCode
+  {
+    Hello,
     
-    StatusReport					= CODE('S', 'R', 'p', ' '),
+    StatusReport,
     
-    Alert                           = CODE('A', 'l', 'e', 'r'),
-
-    WorkerCommand                   = CODE('W', 'C', '-', ' '),
-    WorkerCommandResponse           = CODE('W', 'C', 'R', ' '),
-
-    PushBlock                       = CODE('P', 'B', 'l', ' '),
-    PushBlockResponse               = CODE('P', 'B', 'r', ' '),
-    PopQueue                        = CODE('P', 'Q', 'r', ' '),
-    PopQueueResponse                = CODE('P', 'Q', 'R', ' '),
+    Alert,
     
-    StreamOutQueue                  = CODE('S', 'O', 'Q', ' '),
+    ClusterInfoUpdate,
     
-	Message							= CODE('M', 'e', 's', 'g'),
+    WorkerCommand,
+    WorkerCommandResponse,
     
-    Unknown                         = CODE('U', 'n', 'k', ' ')
-} MessageCode;
-
-
-
-/* ****************************************************************************
-*
-* Header - 
-*/
-typedef struct Header
-{
-	size_t magic;
-	MessageCode    code;
-	size_t gbufLen;
-	size_t kvDataLen;
+    PushBlock,                    // Push a block from delilah
+    PushBlockResponse,            // Confirmation from worker that block has been distributed
+    
+    PushBlockCommit,              // Commit uploaded block  
+    PushBlockCommitResponse,      // Confirmation from worker that block has been commited
+    
+    PopQueue,                     // Request for information
+    PopQueueResponse,
+    
+    PopBlockRequest,              // Request for a block and range
+    PopBlockRequestConfirmation,  // Confirmation this block can be served
+    PopBlockRequestResponse,      // Block response
+    
+    StreamOutQueue,
+    
+    Message,
+    
+    DuplicateBlock,
+    DuplicateBlockResponse,
+    
+    BlockRequest,                  // requesting a blocl
+    BlockRequestResponse,          // Return content of a block
+    
+    Unknown,
+    
+  } MessageCode;
+  
+  
+  
+  /* ****************************************************************************
+   *
+   * Header - 
+   */
+  
+  typedef struct Header
+  {
+    size_t magic;
+    MessageCode    code;
+    size_t gbufLen;
+    size_t kvDataLen;
     
     bool check()
     {
-        if( magic != 4050769273219470657 )
-            return false;
-        
-        if( gbufLen > 10000000 )
-            return false;
-        
-        if( kvDataLen > ( 200 * 1024 * 1024 ) )
-            return false;
-        
-        return true;
+      if( magic != 4050769273219470657 )
+        return false;
+      
+      if( gbufLen > 10000000 )
+        return false;
+      
+      if( kvDataLen > ( 200 * 1024 * 1024 ) )
+        return false;
+      
+      return true;
     }
     
     void setMagicNumber()
     {
-        magic = 4050769273219470657;
+      magic = 4050769273219470657;
     }
     
-} Header;
-
-
-/* ****************************************************************************
-*
-* messageCode - 
-*/
-extern char* messageCode(MessageCode code);
-
-}
-}
+  } Header;
+  
+  
+  /* ****************************************************************************
+   *
+   * messageCode - 
+   */
+  
+  const char* messageCode(MessageCode code);
+  
+}} // end of namespace samson::Message
 
 #endif

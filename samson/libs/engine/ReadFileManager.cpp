@@ -4,7 +4,7 @@
 
 #include "logMsg/traceLevels.h"            // LmtIsolated, etc.
 
-NAMESPACE_BEGIN(engine)
+namespace engine {
 
 ReadFileManager::ReadFileManager()
 {
@@ -54,4 +54,4 @@ ReadFile *ReadFileManager::getReadFile( std::string fileName )
 }
 
 
-NAMESPACE_END
+}

@@ -82,16 +82,16 @@ namespace samson {
         
     }
 
-    samson::network::Collection* WorkerCommandManager::getCollectionOfWorkerCommands( Visualization * visualization )
+    samson::gpb::Collection* WorkerCommandManager::getCollectionOfWorkerCommands( const Visualization& visualization )
     {
-        samson::network::Collection* collection = new samson::network::Collection();
+        samson::gpb::Collection* collection = new samson::gpb::Collection();
         collection->set_name("worker_commands");
         
         au::map< size_t , WorkerCommand >::iterator it;
         for( it = workerCommands.begin() ; it != workerCommands.end() ; it++ )
         {
             std::string command = it->second->command;
-            if( match( visualization->pattern , command ) )
+            if( match( visualization.pattern() , command ) )
                 it->second->fill( collection->add_record() , visualization );
         }
         return collection;

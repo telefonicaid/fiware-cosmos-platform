@@ -11,7 +11,8 @@
  *
  * DESCRIPTION
  *
- *  read and write operations using google prototol buffer to comunicate using a pipe
+ *  read and write operations using google prototol buffer 
+ *  to comunicate using a fd ( usually a pipe )
  *
  * COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
  *
@@ -34,37 +35,37 @@
 
 #include "au/Status.h"  // au::Status
 
-#include "au/namespace.h"
 
-NAMESPACE_BEGIN(au)
 
-Status iomMsgAwait( int fd, int secs );
-
-struct GPBHeader
-{
+namespace au {
+  
+  Status iomMsgAwait( int fd, int secs );
+  
+  
+  // Header used for frame-control and size definition
+  struct GPBHeader
+  {
     int magic;
     ssize_t size;
     
     void init( ssize_t _size )
     {
-        size = _size;
-        magic = 8537465;
+      size = _size;
+      magic = 8537465;
     }
     
     bool check( )
     {
-        return ( magic == 8537465 );
+      return ( magic == 8537465 );
     }
     
-};
-
-
-
-// Read a google protocol buffer message    
-
-template <class T>
-au::Status readGPB( int fd , T** t , int time_out )
-{
+  };
+  
+  // Read a google protocol buffer message    
+  
+  template <class T>
+  au::Status readGPB( int fd , T** t , int time_out )
+  {
     
     LM_T(LmtIsolated, ("Reading a GPB message from fd:%d with timeout %d", fd, time_out ));
     
@@ -72,17 +73,17 @@ au::Status readGPB( int fd , T** t , int time_out )
     
     if (iom != OK)
     {
-        if( iom == Timeout)
+      if( iom == Timeout)
 	    {
-	        //Trazas Goyo
-	        LM_E(("readGPB(): Error(%d) in iomMsgAwait from fd:%d by Timeout after %d secs\n", iom, fd, time_out));
-            return GPB_Timeout;   // Timeout
+        //Trazas Goyo
+        LM_E(("readGPB(): Error(%d) in iomMsgAwait from fd:%d by Timeout after %d secs\n", iom, fd, time_out));
+        return GPB_Timeout;   // Timeout
 	    }
-        else
+      else
 	    {
-	        //Trazas Goyo
-	        LM_E(("readGPB(): Error(%d) in iomMsgAwait from fd:%d after %d secs\n", iom, fd, time_out));
-            return iom;
+        //Trazas Goyo
+        LM_E(("readGPB(): Error(%d) in iomMsgAwait from fd:%d after %d secs\n", iom, fd, time_out));
+        return iom;
 	    }
     }
     LM_T(LmtIsolated,("readGPB(): iomMsgAwait returned OK on fd:%d", fd));
@@ -91,40 +92,40 @@ au::Status readGPB( int fd , T** t , int time_out )
     int nb = read( fd , &header , sizeof(header) );
     
     if( nb == 0)
-	{
+    {
 	    //Trazas Goyo
 	    LM_E(("readGPB(): Error reading header from fd:%d, nb(%d) == 0 bytes read\n", fd, nb));
-        return GPB_ReadError;
-	}
+      return GPB_ReadError;
+    }
     
     if( nb < 0)
-	{
+    {
 	    //Trazas Goyo
 	    LM_E(("readGPB(): Error reading header from fd:%d, nb(%d) < 0 bytes read\n", fd, nb));
-        return GPB_ReadError;
-	}
+      return GPB_ReadError;
+    }
     
     if( !header.check() )
-	{
+    {
 	    //Trazas Goyo
 	    LM_E(("readGPB(): Error corrupted header from fd:%d, nb(%d) bytes read\n", fd, nb));
-        return GPB_CorruptedHeader;
-	}
+      return GPB_CorruptedHeader;
+    }
     
     // If not received the rigth size, return NULL
     if (nb != sizeof(header))
-	{
+    {
 	    //Trazas Goyo
 	    LM_E(("readGPB(): Error corrupted header from fd:%d, nb(%d) != sizeof_header(%d) bytes read\n", fd, nb, sizeof(header)));
-        return GPB_WrongReadSize;   // Error reading the size
-	}
+      return GPB_WrongReadSize;   // Error reading the size
+    }
     
     //LM_M(("Reading a GPB message from fd:%d (size:%d)", fd , (int) size ));
     
     if( header.size > 1000000)
     {
-        LM_W(("Large size %l for a background process message",header.size));
-        //return 3;    // Too much bytes to read
+      LM_W(("Large size %l for a background process message",header.size));
+      //return 3;    // Too much bytes to read
     }
     
     void *data  = (void*) malloc( header.size );
@@ -133,8 +134,8 @@ au::Status readGPB( int fd , T** t , int time_out )
     
     if( nb != header.size )
     {
-        free( data );
-        return GPB_ReadError;
+      free( data );
+      return GPB_ReadError;
     }
     
     *t = new T();
@@ -144,32 +145,32 @@ au::Status readGPB( int fd , T** t , int time_out )
     
     if( !parse )
     {
-        LM_W(("Error parsing a GPB message of %d bytes", header.size));
-        delete (*t);
-        return GPB_ReadErrorParsing; // Error parsing the document
+      LM_W(("Error parsing a GPB message of %d bytes", header.size));
+      delete (*t);
+      return GPB_ReadErrorParsing; // Error parsing the document
     }
     
     return OK;   // Correct
     
-}
-
-// Write a google protocol buffer message    
-
-template <class T>
-Status writeGPB( int fd , T* t  )
-{
+  }
+  
+  // Write a google protocol buffer message    
+  
+  template <class T>
+  Status writeGPB( int fd , T* t  )
+  {
     LM_T(LmtIsolated,("Writing a GPB message to fd:%d ( Size:%d )", fd , (int) t->ByteSize() ));
     
     if( !t->IsInitialized()  )
-        return GPB_NotInitializedMessage;
+      return GPB_NotInitializedMessage;
     
     GPBHeader header;
     header.init(  t->ByteSize() );
     
     if ( header.size > 100000 )
     {
-        LM_W(("Large size %l for a background process message",header.size));
-        //return 3;
+      LM_W(("Large size %l for a background process message",header.size));
+      //return 3;
     }
     
     void *data = (void*) malloc( header.size );
@@ -178,34 +179,34 @@ Status writeGPB( int fd , T* t  )
     
     if( !serialize )
     {
-        free( data );
+      free( data );
 	    LM_E(("Error serializing data, header.size:%d, preparing for fd:%d\n", header.size, fd));
-        return GPB_WriteErrorSerializing;
+      return GPB_WriteErrorSerializing;
     }
     
     // If not received the rigth size, return NULL
     int nw = write( fd , &header , sizeof(header) );
     if (nw != sizeof(header))
     {
-        free( data );
+      free( data );
 	    LM_E(("Error writing header: nw(%d) != sizeof(header)(%d) on fd:%d\n", nw, sizeof(header), fd));
-        return GPB_WriteError;
+      return GPB_WriteError;
     }
     
     // If not received the rigth size, return NULL
     nw = write( fd , data , header.size );
     if (nw != header.size)
     {
-        free( data );
+      free( data );
 	    LM_E(("Error writing data: nw(%d) != header.size(%d) on fd:%d\n", nw, header.size, fd));
-        return GPB_WriteError;
+      return GPB_WriteError;
     }
     
     free( data );
     
     return OK;
-} 
-
-NAMESPACE_END
+  } 
+  
+}
 
 #endif

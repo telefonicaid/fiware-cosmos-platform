@@ -18,8 +18,8 @@
  *
  * ****************************************************************************/
 
-#ifdef _H_VAR_INT
-#define _H_VAR_INT
+#ifdef AU_VAR_INT_H_
+#define AU_VAR_INT_H_
 
 /**
  Variable length integer definition

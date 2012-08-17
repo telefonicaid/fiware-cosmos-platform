@@ -8,35 +8,30 @@ namespace au {
 
     
     
-    void Object::release()
+    void Object::Release()
     {
         bool run_self_destroy = false;
         
         {
-            TokenTaker tt(&token);
-            retain_counter--;
-            if( retain_counter == 0 )
+            TokenTaker tt(&token_);
+            retain_counter_--;
+            if( retain_counter_ == 0 )
                 run_self_destroy =true;
         }
         
         if( run_self_destroy )
-            self_destroy();
+          delete this;
     }
     
-    void Object::retain()
+    void Object::Retain()
     {
-        TokenTaker tt(&token);
-        retain_counter++;
+        TokenTaker tt(&token_);
+        retain_counter_++;
     }
     
-    void Object::self_destroy()
+    int Object::retain_counter()
     {
-        delete this;
-    }
-    
-    int Object::get_retain_counter()
-    {
-        return retain_counter;
+        return retain_counter_;
     }
 
     

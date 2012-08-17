@@ -17,157 +17,135 @@
 
 #include "au/containers/list.h"            // au::list
 #include "au/containers/map.h"             // au::map
+#include "au/containers/SharedPointer.h"
 #include "au/Cronometer.h"      // au::cronometer
 
 #include "engine/Buffer.h"      // engine::Buffer
-#include "engine/BufferContainer.h"
+
 #include "engine/Object.h"                  // engine::Object
 
 #include "samson/common/coding.h"           // FullKVInfo
+#include "samson/common/KVFile.h"
 #include "samson/common/samson.pb.h"        // network::
 
 #include "samson/stream/BlockInfo.h"        // BlockInfo
-
-
+#include "samson/stream/Block.h"
 
 /**
  
  BlockList: container Blocks.
-    
-    Note:   All the nodes are contained in at least one BlockList.
-            If a block is not contained in any of them, it is automatically removed from the Block Manager
+ 
+ Note:   All the nodes are contained in at least one BlockList.
+ If a block is not contained in any of them, it is automatically removed from the Block Manager
  
  */
 
+
 namespace samson {
+  
+  class Info;
+  
+  namespace stream
+  {
+    class Block;
+    class Queue;
+    class StreamManager;
+    class QueueItem;
+    class BlockMatrix;
     
-    class Info;
     
-    namespace stream
+    /*
+     
+     BlockListItem
+     
+     
+     Reference for a block and a particular range of key-values
+     Information about number of key-values and size is also included
+     
+     */
+    
+    class BlockRef
     {
-        class Block;
-        class Queue;
-        class StreamManager;
-        class QueueItem;
-        class BlockMatrix;
-        
-        class BlockList
-        {
-
-            BlockInfo accumulated_block_info;       // Accumulated information
-            
-        public:
-            
-            std::string name;                       // Name of this block list ( for debugging )
-            size_t task_id;                         // Order of the task if really a task
-            bool lock_in_memory;                    // Lock in memory
-            int priority;                           // Priority level for blocks that are not involved in tasks
-            bool queue;                             // Flag to indicate that this list is a queue
-            
-            au::list< Block > blocks;               // List of blocks
-
-            BlockList( std::string _name = "no_name" , size_t _task_id = ( size_t) - 1 , bool _lock_in_memory = false )
-            {
-                name = _name;
-                task_id             = _task_id;             // Task is the order of priority
-                lock_in_memory      = _lock_in_memory;      // By default no lock in memory
-                priority = 0;                               // Default priority level
-                queue = false;                              // By default this is not a queue
-            }
-            
-            ~BlockList();
-            
-            // Create a block for this BlockList
-            Block* createBlock( engine::Buffer *buffer );
-            Block* createBlock( engine::BufferListContainer *buffer_list_container );
-
-            // Create a block for this BlockList
-            Block* createBlockFromFile( std::string fileName );
-            
-            // Get the next element to be processed
-            Block* top( );
-            
-            // Get next block for defrag ( minimum hash-group )
-            Block* getNextBlockForDefrag();
-            
-            // Simple add or remove blocks
-            void add( Block *b );
-            void remove( Block* block );
-
-            // remove a particular block with this id
-            void remove( size_t id );
-            void remove( BlockList* list );
-            
-            // get a block with this id ( if included in this list )
-            Block* getBlock( size_t id );
-            
-            // Remove all the blocks contained in the list
-            void clearBlockList();
-            
-            // Replace block scontained in from for blocks contained in to ( only if this block list contains all blocks contained in "from" )
-            void replace( BlockList *from , BlockList *to);
-            
-            // Get information
-            size_t getSize();
-            
-            bool isEmpty();
-            
-            bool isContentOnMemory();
-            
-            // Get information about this block
-            void update( BlockInfo &block_info);
-            BlockInfo getBlockInfo();
-
-            size_t getNumBlocks();
-            
-            //void copyFrom( BlockMatrix* matrix , int channel );
-            void copyFrom( BlockList* list );
-            void copyFrom( BlockList* list , size_t max_size );
-            void copyFrom( BlockList* list , KVRange range );
-            void copyFrom( BlockList* list , KVRange range , bool exclusive , size_t max_size );
-            void copyFirstBlockFrom(BlockList* list, int hashgroup);
-
-            // Extract blocks of data
-            void extractFrom( BlockList* list , size_t max_size = 0 );
-            void extractFromForDefrag( BlockList* list , size_t max_size = 0 );
-            bool extractBlockFrom( BlockList *list );
-            
-            // Get information for monitoring
-            void getInfo( std::ostringstream& output);
-            
-            // string containing all block_ids ( only debugging )
-            std::string strBlockIds();
-            
-            // Check if all the blocks are contained in this range
-            bool isContained( KVRange range );
-            
-            // Operations with block ids
-            void addBlockIdsTo( std::set<size_t> &block_ids );
-            void removeBlockIdsAt( std::set<size_t> &block_ids );
-            bool isAnyBlockIncludedIn( std::set<size_t> &block_ids);
-
-            // Get a unit of defragmentation
-            double getFragmentationFactor();
-            
-            //Debugging str
-            std::string strRanges();
-            std::string strShortDescription();
-            
-            // Modify prioriyt of the queue
-            void setPriority(int p );
-
-            // Set the queue flag
-            void setAsQueueBlockList();
-            size_t getOldestBlockTime();
-            size_t getPosition(Block* b);
-            
-            // Check if a particular block is included
-            bool isBlockIncluded( Block* block );
-
-        };
-        
-        
-    }
+      
+    public:
+      
+      BlockRef( BlockPointer block , KVRange range , KVInfo info );
+      ~BlockRef();
+      
+      BlockPointer block();
+      size_t block_id();
+      KVInfo info();
+      KVRange range();
+      au::SharedPointer<KVFile> file();
+      
+      // Accumulate content
+      void append( BlockInfo& );
+      
+      // Review BlockReference
+      void review( au::ErrorManager& error );
+      
+    private:
+      
+      BlockPointer block_;    // Pointer to the block
+      KVRange range_;   // Range associated with this block
+      KVInfo info_;     // Size and # of kvs to be processed
+      
+      // Extra information anout hg organitzation
+      au::SharedPointer<KVFile> file_;
+      
+      
+    };
+    
+    class BlockList
+    {
+      
+      std::string name_;                       // Name of this block list ( for debugging )
+      size_t task_id_;                         // Order of the task if really a task
+      bool lock_in_memory_;                    // Lock in memory
+      int priority_;                           // Priority level for blocks that are not involved in tasks
+      
+    public:
+      
+      au::list< BlockRef > blocks;            // List of blocks references
+      
+    public:
+      
+      
+      BlockList( std::string name = "no_name" , size_t task_id = ( size_t) - 1 )
+      {
+        name = name;
+        task_id_  = task_id;       // Task is the order of priority
+        lock_in_memory_ = false;   // By default no lock in memory
+        priority_ = 0;             // Default priority level
+      }
+      
+      ~BlockList();
+      
+      // Simple add or remove blocks
+      void add( BlockRef *blobk_ref  );
+      void remove( BlockRef* block_ref );
+      
+      // Remove all the blocks contained in the list
+      void clearBlockList();
+      
+      // Get information
+      size_t getNumBlocks();
+      
+      void lock_content_in_memory();
+      
+      // Get information
+      size_t task_id();
+      int priority();
+      
+      // Get information about content included in this list
+      BlockInfo getBlockInfo();
+      
+      // Review blocks to verify number of key-values
+      void ReviewBlockReferences( au::ErrorManager& error );
+    
+  };
+  
+}
 }
 
 #endif

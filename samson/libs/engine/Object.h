@@ -19,9 +19,7 @@
 
 #include <string>   // size_t
 
-#include "au/namespace.h"
-
-NAMESPACE_BEGIN(engine)
+namespace engine {
 
 class Notification;
 
@@ -43,9 +41,9 @@ class Object
     
 public:        
     
-    Object();                               // Simple constructor ( object has an id )
-    Object( const char* engine_name);       // Object can be accessed by this name anywhere
-    virtual ~Object();                      // Destructor. ( virtual destructor is mandatory for generic remov
+    Object();                                // Simple constructor ( object has an id )
+    Object( const char* engine_name );       // Object can be accessed by this name anywhere
+    virtual ~Object();                       // Destructor. ( virtual destructor is mandatory for generic remov
     
 public:
     
@@ -63,6 +61,6 @@ protected:
     
 };
 
-NAMESPACE_END
+}
 
 #endif

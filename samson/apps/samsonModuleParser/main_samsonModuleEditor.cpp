@@ -93,8 +93,8 @@ public:
                 au::ErrorManager error;
                 samson::ModuleInformation * module_information = samson::ModuleInformation::parse(module_fileName , &error);
                 
-                if( error.isActivated() )
-                    writeErrorOnConsole( error.getMessage() );
+                if( error.IsActivated() )
+                    writeErrorOnConsole( error.GetMessage() );
                 else
                 {
                     if( module_information->module.name != fileName )

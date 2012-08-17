@@ -6,8 +6,8 @@
 #include "Select.h"
 #include "DataBase.h" // Own interface
 
-NAMESPACE_BEGIN(au)
-NAMESPACE_BEGIN(tables)
+namespace au {
+namespace tables {
 
 DataBase::DataBase() : token("DataBase")
 {
@@ -650,6 +650,6 @@ void DataBase::replaceNodeInTree( std::string tree_name , TreeItem* node )
 
 
 
-NAMESPACE_END
-NAMESPACE_END
+}
+}
 

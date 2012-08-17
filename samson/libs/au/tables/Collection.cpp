@@ -1,13 +1,13 @@
 
 #include <set>
 
-#include "au/namespace.h"
+
 
 #include "Table.h"
 #include "Collection.h" // Own interface
 
-NAMESPACE_BEGIN(au)
-NAMESPACE_BEGIN(tables)
+namespace au {
+namespace tables {
 
 
 #pragma mark CollectionItem
@@ -190,5 +190,5 @@ void Collection::remove( std::string name , std::string value)
 }
 
 
-NAMESPACE_END
-NAMESPACE_END
+}
+}

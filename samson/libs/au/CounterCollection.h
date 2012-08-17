@@ -25,7 +25,7 @@
 #include <sstream>
 #include "au/containers/map.h"       // au::map
 
-#include "au/namespace.h"
+
 
 
 namespace au {

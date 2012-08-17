@@ -11,13 +11,6 @@ ValueVector.h
 ProcessComponent.h
 TopProcessComponent.h
 ProcessComponentManager.h
-HubMapProcess.h
-HubMapTimeProcess.h
-ExtractSingleFieldsProcess.h
-ExtractSingleFieldsTimeProcess.h
-ExtractDependentFieldsProcess.h
-ExtractDependentFieldsTimeProcess.h
-HitCountProcess.h
 )
 
 SET (SOURCES
@@ -33,13 +26,6 @@ ValueVector.cpp
 ProcessComponent.cpp
 TopProcessComponent.cpp
 ProcessComponentManager.cpp
-HubMapProcess.cpp
-HubMapTimeProcess.cpp
-ExtractSingleFieldsProcess.cpp
-ExtractSingleFieldsTimeProcess.cpp
-ExtractDependentFieldsProcess.cpp
-ExtractDependentFieldsTimeProcess.cpp
-HitCountProcess.cpp
 )
 
 # Include directories

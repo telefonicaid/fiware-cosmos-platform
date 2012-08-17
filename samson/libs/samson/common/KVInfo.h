@@ -10,7 +10,7 @@
 
 #include "KVRange.h"
 
-namespace samson 
+namespace samson
 {
 	
 	/****************************************************************
@@ -21,30 +21,30 @@ namespace samson
 	{
 		uint32 size;	// Total size
 		uint32 kvs;		// Total number of kvs
-        
+    
 		
 		KVInfo(uint32 _size ,uint32 _kvs );
 		KVInfo();
-        
-        void set(uint32 _size ,uint32 _kvs );
+    
+    void set(uint32 _size ,uint32 _kvs );
 		void clear();
 		void append( uint32 _size , uint32 _kvs );
 		void append( KVInfo other );
-        bool canAppend( KVInfo other );
+    bool canAppend( KVInfo other );
 		void remove( uint32 _size , uint32 _kvs );
 		void remove( KVInfo other );
 		std::string str();
 		bool isEmpty();
-        void getInfo( std::ostringstream& output);
-        
-	};	
-
-    // Create an allocated vector of KVInfo with information for all hash-groups
-    KVInfo* createKVInfoVector( char* data , au::ErrorManager *error );
+    void getInfo( std::ostringstream& output);
     
-    // Get the agregation of
-    KVInfo selectRange( KVInfo* info , KVRange range );
-
+	};
+  
+  // Create an allocated vector of KVInfo with information for all hash-groups
+  KVInfo* createKVInfoVector( char* data , au::ErrorManager *error );
+  
+  // Get the agregation of
+  KVInfo selectRange( KVInfo* info , KVRange range );
+  
 }
 
 #endif

@@ -272,8 +272,8 @@ namespace au
                 std::string host = cmdLine.get_argument(1);
                 connect(host, LOG_SERVER_DEFAULT_QUERY_CHANNEL_PORT  , &error);
                 
-                if( error.isActivated() )
-                    console->writeErrorOnConsole( error.getMessage() );
+                if( error.IsActivated() )
+                    console->writeErrorOnConsole( error.GetMessage() );
                 else
                     console->writeWarningOnConsole( str("Connected to %s" , socket_connection->getHostAndPort().c_str() ));
                 
@@ -287,8 +287,8 @@ namespace au
             ErrorManager error;
             closeConnection( &error );
             
-            if( error.isActivated() )
-                console->writeErrorOnConsole( error.getMessage() );
+            if( error.IsActivated() )
+                console->writeErrorOnConsole( error.GetMessage() );
             else
                 console->writeWarningOnConsole("Disconnected");
             
@@ -299,18 +299,18 @@ namespace au
         au::ErrorManager error;
         sent_command( command , &error );
         
-        if( error.isActivated() )
+        if( error.IsActivated() )
         {
-            console->writeErrorOnConsole( error.getMessage() );
+            console->writeErrorOnConsole( error.GetMessage() );
             return;
         }
         
         // Read answer message and write on screen
         std::string message = getMessageFromLogServer( &error );
         
-        if( error.isActivated() )
+        if( error.IsActivated() )
         {
-            console->writeErrorOnConsole( error.getMessage() );
+            console->writeErrorOnConsole( error.GetMessage() );
             return;
         }
         

@@ -31,11 +31,11 @@
 
 #include "logMsg/logMsg.h"					 // LM_M()
 
-#include "au/namespace.h"
+
 
 // Usefull define for full iteration over a map structure
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 /**
  Class to use map structures of <typedef,class*> with addittional function for easy manitpulation
@@ -51,7 +51,7 @@ public:
 
     // Insert a pair of elements ( easy method )
     // If a previous element was inserted with the same key, it is automatically deleted
-    void insertInMap( K& key , V* value)
+    void insertInMap( const K& key , V* value)
     {
         V* tmp =  extractFromMap( key );
         if( tmp )
@@ -62,7 +62,7 @@ public:
 
     // Insert a pair of elements ( easy method )
     // No check over previous 
-    void insertNewInMap( K& key , V* value)
+    void insertNewInMap( const K& key , V* value)
     {
         insert( std::pair<K,V*>( key, value) );
     }
@@ -73,7 +73,7 @@ public:
      NULL if not found
      */
     
-    V* findInMap( K& key ) 
+    V* findInMap( const K& key )
     {
         typename std::map<K, V*,_Compare >::iterator iter = std::map<K, V*,_Compare >::find(key);
         
@@ -87,7 +87,7 @@ public:
      Function to easily get value for a key creating if necessary ( only used with simple constructor )
      */
     
-    V* findOrCreate( K& key )
+    V* findOrCreate( const K& key )
     {
         V* tmp = findInMap(key);
         if( !tmp )
@@ -99,7 +99,7 @@ public:
     }
     
     template <typename T>
-    V* findOrCreate( K& key , T a )
+    V* findOrCreate( const K& key , T a )
     {
         V* tmp = findInMap(key);
         if( !tmp )
@@ -118,7 +118,7 @@ public:
      Return if it really existed
      */
     
-    bool removeInMap( K key ) 
+    bool removeInMap( const K& key ) 
     {
         typename std::map<K, V*,_Compare >::iterator iter = std::map<K,V*,_Compare>::find(key);
         
@@ -132,7 +132,7 @@ public:
         }
     }
     
-    void removeInMap( std::set<K> &keys )
+    void removeInMap( const std::set<K>& keys )
     {
         typename std::set<K>::iterator iter;
         for ( iter = keys.begin() ; iter != keys.end() ; iter++ )
@@ -161,7 +161,7 @@ public:
         return keys_to_remove.size();
     }
     
-    V* extractFromMap(  K key )
+    V* extractFromMap( const K& key )
     {
         typename std::map<K, V*,_Compare >::iterator iter = std::map<K,V*,_Compare>::find(key);
         
@@ -212,6 +212,6 @@ public:
 
 
 
-NAMESPACE_END
+}
 
 #endif

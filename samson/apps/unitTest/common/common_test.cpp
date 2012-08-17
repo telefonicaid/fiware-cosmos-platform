@@ -26,17 +26,6 @@
 #include "gtest/gtest.h"
 
 
-//Test void MemoryCheck();
-TEST(commonTest, MemoryCheck)
-{
-    // Better not to set /opt/samson and /var/samson, so init() can get environment variables
-    //samson::SamsonSetup::init("/opt/samson", "/var/samson");
-    samson::SamsonSetup::init("", "");
-
-    EXPECT_EQ(samson::MemoryCheck(), true) << "Error in MemoryCheck test";
-
-    samson::SamsonSetup::destroy();
-}
 
 //Test void MessagesOperations();
 TEST(commonTest, MessagesOperations)
@@ -206,11 +195,11 @@ TEST(commonTest, testKVRange)
     EXPECT_EQ(range_2.str(), "[1 10]") << "Error in KVRange str";
     EXPECT_EQ(range_2.getNumHashGroups(), 9) << "Error in KVRange getNumHashGroups";
 
-    EXPECT_EQ(range_1.overlap(range_2), true) << "Error in KVRange overlap true";
-    EXPECT_EQ(range_2.overlap(range_1), true) << "Error in KVRange overlap true";
+    EXPECT_EQ(range_1.IsOverlapped(range_2), true) << "Error in KVRange overlap true";
+    EXPECT_EQ(range_2.IsOverlapped(range_1), true) << "Error in KVRange overlap true";
     samson::KVRange range_3(10, 30);
-    EXPECT_EQ(range_3.overlap(range_1), true) << "Error in KVRange overlap true";
-    EXPECT_EQ(range_3.overlap(range_2), false) << "Error in KVRange overlap false";
+    EXPECT_EQ(range_3.IsOverlapped(range_1), true) << "Error in KVRange overlap true";
+    EXPECT_EQ(range_3.IsOverlapped(range_2), false) << "Error in KVRange overlap false";
 
     EXPECT_EQ(range_1.includes(range_2), true) << "Error in KVRange includes true";
     EXPECT_EQ(range_2.includes(range_1), false) << "Error in KVRange includes false";
@@ -314,6 +303,8 @@ TEST(commonTest, testFullKVInfo)
 
 #include "samson/common/KVFile.h"
 
+/*
+
 //Test  KVFile;
 TEST(commonTest, KVFile)
 {
@@ -326,6 +317,8 @@ TEST(commonTest, KVFile)
     EXPECT_EQ(wrong_header_kvfile.getErrorMessage(), "KVHeader error: wrong magic number") << "Error in KVFile constructor for wrong_header";
     free(wrong_header);
 }
+
+*/
 
 #include "samson/common/KVInputVector.h"
 

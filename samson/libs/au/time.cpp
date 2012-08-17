@@ -11,7 +11,7 @@
 #include "au/string.h"		
 
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 int ellapsedSeconds(struct timeval* init_time)
 {
@@ -61,5 +61,5 @@ size_t seconds_to_nanoseconds( double time )
 
 
 
-NAMESPACE_END
+}
 

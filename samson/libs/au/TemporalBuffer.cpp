@@ -3,14 +3,26 @@
 
 namespace au 
 {
-    TemporalBuffer::TemporalBuffer( size_t size )
-    {
-        data = (char*) malloc(size);
-    }
-    
-    TemporalBuffer::~TemporalBuffer()
-    {
-        if(data)
-            free (data);
-    }
+  TemporalBuffer::TemporalBuffer( size_t size )
+  {
+    data_ = (char*) malloc(size);
+    size_ = size;
+  }
+  
+  char* TemporalBuffer::data()
+  {
+    return data_;
+  }
+  
+  size_t TemporalBuffer::size()
+  {
+    return size_;
+  }
+  
+  
+  TemporalBuffer::~TemporalBuffer()
+  {
+    if(data_)
+      free (data_);
+  }
 }

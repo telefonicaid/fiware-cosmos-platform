@@ -20,6 +20,7 @@
 
 #include "unitTest/common_engine_test.h"
 
+/*
 
 //Test void getInfo( std::ostringstream& output);
 TEST(diskOperationTest, getInfoTest) 
@@ -39,9 +40,9 @@ TEST(diskOperationTest, newWriteOperationTest)
 {
     init_engine_test();
     
-    engine::Buffer* buffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test" , 15 , 1 );
+    engine::Buffer* buffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test" , 15 );
     engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer , "test_data/test_data.txt" , 2 );
-    buffer->release();
+    buffer->Release();
     
     EXPECT_EQ(operation->getType(), engine::DiskOperation::write) << "Wrong type value";
     
@@ -54,9 +55,9 @@ TEST(diskOperationTest, newAppendOperationTest)
 {
     init_engine_test();
 
-    engine::Buffer* buffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test",  15 , 1 );
+    engine::Buffer* buffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test",  15 );
     engine::DiskOperation* operation = engine::DiskOperation::newAppendOperation( buffer , "test_filename.txt" , 2 );
-    buffer->release();
+    buffer->Release();
     
     EXPECT_EQ(operation->getType(), engine::DiskOperation::append) << "Wrong type value";
 
@@ -96,7 +97,7 @@ TEST(diskOperationTest, getDescriptionTest)
     init_engine_test();
     
     char charBuffer[1024*1024];
-    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test",  15 , 1 );
+    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test",  15 );
     
     engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 6, 2 );
     engine::DiskOperation* operation2 = engine::DiskOperation::newWriteOperation( engineBuffer , "test_filename.txt" , 2 );
@@ -108,7 +109,7 @@ TEST(diskOperationTest, getDescriptionTest)
     EXPECT_EQ(operation3->getDescription(), "Append to file: 'test_filename.txt' Size:    0 B") << "Description error";
     EXPECT_EQ(operation4->getDescription(), "Remove file: 'test_filename.txt'") << "Description error";
     
-    engineBuffer->release();
+    engineBuffer->Release();
     
     close_engine_test();
 }
@@ -119,7 +120,7 @@ TEST(diskOperationTest, getShortDescriptionTest)
     init_engine_test();
     
     char charBuffer[1024*1024];
-    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test", 15 , 1 );
+    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test", 15 );
     
     engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 6, 2 );
     engine::DiskOperation* operation2 = engine::DiskOperation::newWriteOperation( engineBuffer , "test_filename.txt" , 2 );
@@ -131,7 +132,7 @@ TEST(diskOperationTest, getShortDescriptionTest)
     EXPECT_EQ(operation3->getShortDescription(), "A:    0 ") << "Description error";
     EXPECT_EQ(operation4->getShortDescription(), "X") << "Description error";
     
-    engineBuffer->release();
+    engineBuffer->Release();
     
     close_engine_test();
 } 
@@ -144,7 +145,7 @@ TEST(diskOperationTest, getSizeTest)
     init_engine_test();
     
     char charBuffer[1024*1024];
-    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" ,"test",  15 , 1 );
+    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" ,"test",  15 );
     
     engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 5, 2 );
     engine::DiskOperation* operation2 = engine::DiskOperation::newWriteOperation( engineBuffer , "test_filename.txt" , 2 );
@@ -152,44 +153,13 @@ TEST(diskOperationTest, getSizeTest)
     EXPECT_EQ(operation1->getSize(), 5) << "Error in getSize()";
     EXPECT_EQ(operation2->getSize(), 0) << "Error in getSize()";
 
-    engineBuffer->release();
+    engineBuffer->Release();
     
     close_engine_test();
 }
 
-//Test bool compare( DiskOperation *operation );
-TEST(diskOperationTest, compareTest) 
-{
-    
-    init_engine_test();
-    
-	char charBuffer[1024*1024];
-    engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" ,"test",  15 , 1 );
-    
-    engine::DiskOperation* operationRead1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 5, 2 );
-    engine::DiskOperation* operationRead2 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 5, 2 );
-    engine::DiskOperation* operationWrite1 = engine::DiskOperation::newWriteOperation( engineBuffer , "test_filename.txt" , 2 );
-    engine::DiskOperation* operationWrite2 = engine::DiskOperation::newWriteOperation( engineBuffer , "test_filename.txt" , 2 );
-    engine::DiskOperation* operationAppend = engine::DiskOperation::newAppendOperation( engineBuffer , "test_filename.txt" , 2 );
-    
-    //with read operation always return false
-    EXPECT_TRUE(operationRead1->compare(operationRead2)==false); 
-    EXPECT_TRUE(operationRead1->compare(operationWrite1)==false); 
-    EXPECT_TRUE(operationRead1->compare(operationAppend)==false); 
-    //write/append operation returns true if compared operation is not write or append. Otherwise return false
-    EXPECT_TRUE(operationWrite1->compare(operationRead1)); 
-    EXPECT_TRUE(operationAppend->compare(operationRead1)); 
-    EXPECT_TRUE(operationWrite1->compare(operationWrite2) == false); 
-    EXPECT_TRUE(operationWrite1->compare(operationAppend) == false); 
-    EXPECT_TRUE(operationAppend->compare(operationWrite1) == false); 
-    
-    engineBuffer->release();
-
-    
-    close_engine_test();
-    
-}    
 
 //Test void addListener( size_t id )
     
 
+*/

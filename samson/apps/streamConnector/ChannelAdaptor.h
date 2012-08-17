@@ -105,7 +105,7 @@ namespace stream_connector {
         virtual void stop_connection();
         virtual void review_connection();        
         virtual std::string getStatus();        
-        virtual size_t getBufferedSize();
+        virtual size_t bufferedSize();
 
         
     private:

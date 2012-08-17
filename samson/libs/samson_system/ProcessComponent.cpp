@@ -9,7 +9,7 @@ namespace samson{ namespace system{
     void emit_output(  Value* key , Value * state , samson::KVWriter * writer )
     {
         // Debug
-        //emit_log( "debug" , au::str("Emit output %s - %s" , key->str().c_str() , state->str().c_str() ) , writer );
+        emit_log( "debug" , au::str("Emit output %s - %s" , key->str().c_str() , state->str().c_str() ) , writer );
         
         // Emit using 0- channel
         writer->emit( 0, key, state );
@@ -18,7 +18,7 @@ namespace samson{ namespace system{
     void emit_feedback(  Value* key , Value * state , samson::KVWriter * writer )
     {
         // Debug
-        //emit_log( "debug" , au::str("Emit feedback %s - %s" , key->str().c_str() , state->str().c_str() ) , writer );
+        emit_log( "debug" , au::str("Emit feedback %s - %s" , key->str().c_str() , state->str().c_str() ) , writer );
         
         // Emit using 1- channel
         writer->emit( 1, key, state );
@@ -27,7 +27,7 @@ namespace samson{ namespace system{
     void emit_state(  Value* key , Value * state , samson::KVWriter * writer )
     {
         // Debug
-        //emit_log( "debug" , au::str("Emit state %s - %s" , key->str().c_str() , state->str().c_str() ) , writer );
+        emit_log( "debug" , au::str("Emit state %s - %s" , key->str().c_str() , state->str().c_str() ) , writer );
         
         // Emit using 2- channel
         writer->emit( 2, key, state );

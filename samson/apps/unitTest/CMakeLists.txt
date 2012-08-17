@@ -1,16 +1,29 @@
 SET (SOURCES
     main_UnitTest.cpp
 
+	# AU LIBRARY
+	lib/au/containers/SharedPointerTest.cpp
+	lib/au/containers/DictionaryTest.cpp
+	lib/au/containers/QueueTest.cpp
+	lib/au/containers/BoxTest.cpp
+
 	#Common files
 	common_engine_test.h
 	common_engine_test.cpp
+	test_common.h
+	test_common.cpp
 
-	#au
+	#au lib
+
 	au/CommandLine_test.cpp
 	au/au.cpp
 	au/au_string_test.cpp
 	au/au_Token_test.cpp
 	au/au_Table_test.cpp
+
+	#samson lib
+
+	samson/common/SamsonFileTest.cpp
 
     #engine
     engine/object_test.cpp
@@ -36,8 +49,6 @@ SET (SOURCES
 	delilah/common_delilah_test.h
 	delilah/common_delilah_test.cpp
 	delilah/delilahConsole_test.cpp
-	delilah/SamsonFile_test.cpp
-	delilah/PushDelilahComponent_test.cpp
 	
 	#samson/client library
 	samson/client/SamsonClient_test.cpp
@@ -72,6 +83,8 @@ SET (STATIC_LIBS
      samsonModule
      samsonWorkerLib
      samsonCommon
+	 samsonZoo
+	 zookeeper_mt
 	 samson_comscore
 	 samson_system
 	 samsonClient
@@ -89,6 +102,7 @@ SET (STATIC_LIBS
 include_directories("${PROJECT_SOURCE_DIR}/libs")
 include_directories("${PROJECT_SOURCE_DIR}/apps")
 include_directories("${PROJECT_SOURCE_DIR}/extern")
+include_directories("/usr/include")
 
 # Executable declaration
 # ------------------------------------------------------------

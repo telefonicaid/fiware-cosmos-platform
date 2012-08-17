@@ -58,8 +58,8 @@ TEST(diskManagerTest, addTest)
             au::TokenTaker tt(&token);
             
             char buffer[1024*1024];
-            engine::DiskOperation* operation = engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 );
-            engine::DiskManager::shared()->add(operation);
+			au::SharedPointer<engine::DiskOperation> operation( engine::DiskOperation::newReadOperation( buffer , "test_filename.txt" , 0 , 1, 0 ));
+            engine::DiskManager::shared()->Add(operation);
             
             EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 1) << "Wrong number of disk operations";
             

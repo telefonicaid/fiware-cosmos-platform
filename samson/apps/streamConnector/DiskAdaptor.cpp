@@ -135,13 +135,9 @@ namespace stream_connector {
                 return;
             
             // Get the next buffer to be transmitted
-            engine::BufferContainer container;
-            getNextBufferToSent(&container);
+            engine::BufferPointer current_buffer = getNextBufferToSent();
             
-            // Get a pointer to this buffer
-            engine::Buffer* current_buffer = container.getBuffer();
-            
-            if( !current_buffer )
+            if( current_buffer == NULL )
             {
                 usleep(100000);
                 continue;
@@ -228,9 +224,9 @@ namespace stream_connector {
             if( file_descriptor )
             {
                 // Still reading from a file...
-                engine::Buffer * buffer = engine::MemoryManager::shared()->createBuffer("stdin"
-                                                                                        , "connector"
-                                                                                        , input_buffer_size );
+              engine::BufferPointer buffer = engine::Buffer::create("stdin"
+                                                                    , "connector"
+                                                                    , input_buffer_size );
                 
                 // Read the entire buffer
                 size_t read_size = 0;
@@ -243,9 +239,9 @@ namespace stream_connector {
                                                   , 300 
                                                   , &read_size );
                     
-                    if( c.diffTime() < 0.1 )
+                    if( c.seconds() < 0.1 )
                         input_buffer_size *= 2;
-                    else if( c.diffTime() > 3 )
+                    else if( c.seconds() > 3 )
                         input_buffer_size /= 2;
                     
                 }
@@ -257,8 +253,6 @@ namespace stream_connector {
                     pushInputBuffer(buffer);
                 }
                 
-                // Release alocated buffer
-                buffer->release();
                 
                 // If last read is not ok...
                 if( s != au::OK )
@@ -295,7 +289,7 @@ namespace stream_connector {
     
     void DiskConnection::run()
     {
-        if( error.isActivated() )
+        if( error.IsActivated() )
             return;
         
         if( getType() == connection_input )
@@ -315,8 +309,8 @@ namespace stream_connector {
         else
             output << "Stoped";
         
-        if( error.isActivated() )
-            output << au::str(" [Error:%s]" , error.getMessage().c_str() );
+        if( error.IsActivated() )
+            output << au::str(" [Error:%s]" , error.GetMessage().c_str() );
         
         
         if( getType() == connection_input) 

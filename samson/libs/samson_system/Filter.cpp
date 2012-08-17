@@ -66,7 +66,7 @@ namespace samson{
             {
                 
                 Source* key_source = getSource(token_vector, error);
-                if( error->isActivated() )
+                if( error->IsActivated() )
                     return NULL; 
                 
                 // Expect a ","
@@ -81,7 +81,7 @@ namespace samson{
                 if( !token_vector->eof() )
                 {
                     value_source = getSource(token_vector, error);
-                    if( error->isActivated() )
+                    if( error->IsActivated() )
                         return NULL;
                 }
                 else
@@ -136,7 +136,7 @@ namespace samson{
                 else if ( txt_writer )
                 {
                     FilterEmitTxt * filter_emit = new FilterEmitTxt( txt_writer , token_vector , error );                        
-                    if( error->isActivated() )
+                    if( error->IsActivated() )
                     {
                         delete filter_emit;
                         return NULL;
@@ -149,7 +149,7 @@ namespace samson{
             {
                 
                 Source* eval_source = getSource(token_vector, error );
-                if( error->isActivated() )
+                if( error->IsActivated() )
                     return NULL;
                 if( !eval_source )
                 {
@@ -186,7 +186,7 @@ namespace samson{
                 Filter * filter = getFilter( &sub_token_vector , writer , txt_writer , error );
                 
                 // If there is an error, just return
-                if( error->isActivated() )
+                if( error->IsActivated() )
                 {
                     tmp_filters.clearVector();
                     return NULL;
@@ -231,7 +231,7 @@ namespace samson{
                 Filter * filter = getFilterChain( &sub_token_vector , writer , txt_writer , error );
                 
                // If there is an error, just return
-                if( error->isActivated() )
+                if( error->IsActivated() )
                 {
                     filters.clearVector();
                     return;

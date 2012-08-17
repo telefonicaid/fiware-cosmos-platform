@@ -26,12 +26,11 @@
 #include "samson/module/Environment.h"      // samson::Environment
 #include "samson/module/ModulesManager.h"   // samson::ModulesManager
 
-#include "samson/stream/QueueTaskManager.h" // samson::stream::QueueTaskManager
-#include "samson/stream/StreamManager.h" 
+#include "samson/stream/WorkerTaskManager.h" // samson::stream::WorkerTaskManager
 
 #include "engine/Object.h"                  // engine::Object
 #include "engine/Buffer.h"                  // engine::Buffer
-#include "engine/BufferContainer.h"
+
 
 namespace samson {
     
@@ -54,15 +53,14 @@ namespace samson {
         std::string worker_command_id; // Unique identifier ( used to associate all items associated with this worker_command )
         
         bool notify_finish;                                         // Flag to mark if it is necessary to notify when finish
-        network::WorkerCommand *originalWorkerCommand;              // Copy of the original message
+        gpb::WorkerCommand *originalWorkerCommand;                  // Copy of the original message
         
         // Identifiers to notify when finished
         size_t delilah_id;                                          // Delilah identifier of this task   
         size_t delilah_component_id;                                // Identifier inside delilah
         
-        // Pointer to the samsonWorker and streamManager to interact with everything inside this worker
+        // Pointer to the samsonWorker
         SamsonWorker * samsonWorker;
-        stream::StreamManager* streamManager;
         
         // Error management
         au::ErrorManager error;
@@ -72,9 +70,6 @@ namespace samson {
         
         // Environment properties
         Environment enviroment;
-        
-        // Flag to flush queues at the end of the operation
-        bool flush_queues;
         
         // Flag to indicate that this command is still pending to be executed
         bool pending_to_be_executed;
@@ -87,21 +82,20 @@ namespace samson {
         int num_pending_disk_operations;
         
         // Collections added in the response message
-        au::vector< samson::network::Collection > collections;
+        au::vector< samson::gpb::Collection > collections;
         
-        // BufferContainer to hold the buffer to send back to the delilah client
-        engine::BufferContainer buffer_container;
         
         friend class WorkerCommandManager;
         
     public:
         
-        WorkerCommand( std::string worker_command_id ,size_t _delilah_id , size_t _delilah_component_id , const network::WorkerCommand& _command );
+        WorkerCommand( std::string worker_command_id 
+                      , size_t _delilah_id 
+                      , size_t _delilah_component_id 
+                      , const gpb::WorkerCommand& _command );
+        
         ~WorkerCommand();
-        
-        // Handy function to set the internal buffer in buffer_container
-        void setBuffer( engine::Buffer * buffer );
-        
+                
         void setSamsonWorker( SamsonWorker * _samsonWorker );
         bool isFinished();
         
@@ -114,7 +108,7 @@ namespace samson {
         void getInfo( std::ostringstream& output);
 
         // Fill a collection record
-        void fill( samson::network::CollectionRecord* record , Visualization* visualization );
+        void fill( samson::gpb::CollectionRecord* record , const Visualization& visualization );
         
     private:
         
@@ -125,12 +119,10 @@ namespace samson {
         stream::StreamOperationBase *getStreamOperation( Operation *op );
         
         // Create collection for buffers (Memory manager )
-        network::Collection* getCollectionOfBuffers( Visualization* visualization );
-
+        gpb::Collection* getCollectionOfBuffers( const Visualization& visualization );
         
         // Function to check everything is finished
         void checkFinish();
-        
         
         
     };

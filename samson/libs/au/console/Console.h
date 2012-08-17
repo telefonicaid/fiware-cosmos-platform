@@ -8,14 +8,14 @@
 
 #include "au/console/ConsoleCode.h"
 #include "au/mutex/Token.h"
-#include "au/namespace.h"
+
 #include "au/console/ConsoleEntry.h"
 #include "au/ErrorManager.h"
 #include "au/log/LogPlugin.h"
 #include "au/log/LogFormatter.h"
 #include "ConsoleEscapeSequence.h"
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 class Console;
 class ConsoleAutoComplete;
@@ -110,7 +110,7 @@ private:
     
 };
 
-NAMESPACE_END
+}
 
 #endif
 

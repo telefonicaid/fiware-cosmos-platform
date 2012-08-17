@@ -38,7 +38,6 @@ log/Log.h
 log/LogClient.h
 log/LogServer.h
 log/LogServerChannel.h
-log/LogServerQuery.h
 log/LogToServer.h
 log/LogFile.h
 log/LogFormatter.h
@@ -50,7 +49,6 @@ log/Log.cpp
 log/LogClient.cpp
 log/LogServer.cpp
 log/LogServerChannel.cpp
-log/LogServerQuery.cpp
 log/LogToServer.cpp
 log/LogFile.cpp
 log/LogFormatter.cpp
@@ -63,6 +61,10 @@ log/TableLogFormatter.cpp
 
 SET( CONTAINERS_FILES
 
+containers/SharedPointer.h
+containers/Dictionary.h
+containers/Queue.h
+containers/Box.h
 containers/map.h
 containers/simple_map.h
 containers/list.h
@@ -134,6 +136,7 @@ console/ConsoleCommandHistory.h
 console/ConsoleEscapeSequence.h
 console/ConsoleCode.h
 console/ConsoleAutoComplete.h
+console/CommandCatalogue.h
 
 console/Console.cpp
 console/ConsoleEntry.cpp
@@ -142,6 +145,7 @@ console/ConsoleCommandHistory.cpp
 console/ConsoleEscapeSequence.cpp
 console/ConsoleCode.cpp
 console/ConsoleAutoComplete.cpp
+console/CommandCatalogue.cpp
 )
 
 
@@ -159,13 +163,13 @@ string/split.cpp
 # ---------------------------------------------------
 
 SET (HEADERS
-Status.h
+S.h
 Object.h
+Status.h
 Singleton.h
 au.pb.h
 TemporalBuffer.h
-namespace.h
-charset.h
+#charset.h
 utils.h
 Descriptors.h
 gpb.h
@@ -175,13 +179,14 @@ CommandLine.h
 ErrorManager.h
 varint.h
 Cronometer.h
+CronometerSystem.h
+ExecesiveTimeAlarm.h
 Rate.h
 CounterCollection.h
 file.h
 time.h
 string.h
 xml.h
-RRT.h
 cpu.h
 ProcessStats.h
 
@@ -201,11 +206,11 @@ daemonize.h
 )
 
 SET (SOURCES
-Status.cpp
 Object.cpp
+Status.cpp
 au.pb.cc
 TemporalBuffer.cpp
-charset.cpp
+#charset.cpp
 utils.cpp
 
 Descriptors.cpp
@@ -216,13 +221,14 @@ Environment.cpp
 
 ErrorManager.cpp
 Cronometer.cpp
+CronometerSystem.cpp
+ExecesiveTimeAlarm.cpp
 Rate.cpp
 CounterCollection.cpp
 file.cpp
 time.cpp
 string.cpp
 xml.cpp
-RRT.cpp
 cpu.cpp
 ProcessStats.cpp
 

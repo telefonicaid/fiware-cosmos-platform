@@ -52,7 +52,7 @@ namespace stream_connector {
         bool isConnected();
 
         std::string getHostAndPort();
-        size_t getBufferedSize();
+        size_t bufferedSize();
 
         void extract_pending_packets( au::ObjectList<InterChannelPacket>* packets );
         

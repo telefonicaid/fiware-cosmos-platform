@@ -29,28 +29,34 @@ namespace samson {
 	
 	class ProcessWriter : public KVWriter
 	{
-		ProcessIsolated * processIsolated;          // Pointer to the processIsolated to emit codes through the pipe
+		ProcessIsolated * processIsolated;    // Pointer to the processIsolated to emit codes through the pipe
 		
 		engine::SharedMemoryItem *item;				// Shared memory item used at this side ( fork in the middle )
 		
 		char * buffer;		// General output buffer
-		size_t size;		// General output buffer size
+		size_t size;		  // General output buffer size
 		
-		int num_outputs;	// Number of global outputs ( channels of output )
-        
+		int num_outputs;	     // Number of global outputs ( channels of output )
+    int num_hg_divisions;  // Number of hg divisions
+    
+    /*
+     Output key-values for a particular output channel will be dividided in "num_hg_divisions" blocks
+     dividing the full range of hash-groups in groups of hash-groups
+     */
+    
 		// Minibuffer to serialize
 		char *miniBuffer;
 		size_t miniBufferSize;
-        
-        // Collection of output data instances and hash-values to check we are using the rigth DataInstance
-        DataInstance **outputKeyDataInstance;
-        DataInstance **outputValueDataInstance;
+    
+    // Collection of output data instances and hash-values to check we are using the rigth DataInstance
+    DataInstance **outputKeyDataInstance;
+    DataInstance **outputValueDataInstance;
 		KeyValueHash* keyValueHash;
         
-		// Output
+		// Structure to divide shared memory buffer to emit key-values
 		OutputChannel * channel;
 		
-		// Node buffers
+		// Node buffers ( inodes in the shared-memory buffer )
 		NodeBuffer *node;	// Pointer to the entire node set
 		uint32 num_nodes;	// Total number of nodes ( to fit inside the shared memory block)
 		
@@ -61,26 +67,26 @@ namespace samson {
 		friend class ProcessIsolated;
 		ProcessWriter( ProcessIsolated * _processIsolated  );
     
-    public:
+  public:
         
 		~ProcessWriter();
 		
-		/**
-		 Public function to emit key and values
-		 Called allways from the Process side 
-		 */
-		
-		void emit( int output  , DataInstance *key , DataInstance *value );
-        
-        // Emit data for a particular output channel
-        void internal_emit( int output , int hg , char* data , size_t size );
+		// KVWriter interface
+		virtual void emit( int output  , DataInstance *key , DataInstance *value );
+
+    // Function used to flush the content of the buffer ( it sends a code to the "parent" process )
+		void flushBuffer( bool finish );
+
+    // Emit data for a particular output channel
+    // It is not public since it is used in WorkerTask to bypass key-values
+    // not processed in update_only reduce operations
+    void internal_emit( int output , int hg , char* data , size_t size );
+
+  private:
         
 		// Clear the current buffer to submit new key-values
 		void clear();
-
-		// Function used to flush the content of the buffer ( it sends a code to the "parent" process to emit througt network )
-		void flushBuffer( bool finish );
-		
+    
 	};
 	
 	class ProcessTXTWriter : public TXTWriter
@@ -88,6 +94,8 @@ namespace samson {
 		
 	public:
 
+    ~ProcessTXTWriter();
+    
 		ProcessIsolated * workerTaskItem;	// Pointer to the workTaskItem to emit codes through the pipe
 		
 		char *data;

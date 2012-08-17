@@ -6,34 +6,34 @@
 #include "engine/NotificationElement.h"      // Own interface
 
 
-NAMESPACE_BEGIN(engine)
-
-NotificationElement::NotificationElement(  Notification * _notification ) 
-: EngineElement( au::str("notification_%s" , _notification->getName()) )
-{
-    notification      = _notification;
-    description       =  notification->getDescription();
-    shortDescription  =  notification->getShortDescription();
+namespace engine {
+  
+  NotificationElement::NotificationElement(  Notification * notification )
+  : EngineElement( au::str("notification_%s" , notification->name()) )
+  {
+    notification_      = notification;
+    description       =  notification_->getDescription();
+    shortDescription  =  notification_->getShortDescription();
+  }
+  
+  NotificationElement::~NotificationElement()
+  {
+    delete notification_;
+  }
+  
+  
+  NotificationElement::NotificationElement(  Notification * notification , int seconds )
+  : EngineElement( au::str("notification_%s_repeated_%d" , notification->name()  , seconds ) , seconds )
+  {
+    notification_ = notification;
+    description = au::str("%s", notification_->getDescription().c_str() );
+    shortDescription = "Not:" + notification_->getShortDescription();
+  }
+  
+  void NotificationElement::run()
+  {
+    LM_T(LmtEngineNotification, ("Running notification %s", notification_->getDescription().c_str() ));
+    Engine::shared()->send( notification_ );
+  }
+  
 }
-
-NotificationElement::~NotificationElement()
-{
-    delete notification;
-}
-
-
-NotificationElement::NotificationElement(  Notification * _notification , int seconds ) 
-: EngineElement( au::str("notification_%s_repeated_%d" , _notification->getName()  , seconds ) , seconds )
-{
-    notification = _notification;
-    description = au::str("%s", notification->getDescription().c_str() );
-    shortDescription = "Not:" + notification->getShortDescription();
-}
-
-void NotificationElement::run()
-{
-    LM_T(LmtEngineNotification, ("Running notification %s", notification->getDescription().c_str() ));
-    Engine::shared()->send( notification );
-}
-
-NAMESPACE_END

@@ -28,8 +28,8 @@
 #include "samson/module/KVFormat.h"                 // samson::KVFormat
 #include "samson/module/ModulesManager.h"			// samson::ModulesManager
 
-#include "samson/delilah/SamsonFile.h"              // samson::SamsonFile
-#include "samson/delilah/SamsonDataSet.h"           // samson::SamsonDataSet
+#include "samson/common/SamsonFile.h"              // samson::SamsonFile
+#include "samson/common/SamsonDataSet.h"           // samson::SamsonDataSet
 
 
 /* ****************************************************************************

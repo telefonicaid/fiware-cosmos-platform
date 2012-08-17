@@ -39,41 +39,45 @@
 #include "au/string.h"			// au::Format
 #include "au/ErrorManager.h"			// samson::Error
 #include "au/Environment.h"     // au::Environment
-#include "au/namespace.h"
+
 
 #include "engine/MemoryManager.h"       // engine::BufferContainer
 #include "engine/Buffer.h"              // engine::Buffer
-#include "engine/BufferContainer.h"
-#include "au/Object.h" 
+
+#include "engine/Notification.h"
+#include "au/Object.h"
 
 
-NAMESPACE_BEGIN(engine)
-
-class DiskManager;
-
-class DiskOperation : public au::Object
-{
+namespace engine {
+  
+  class DiskManager;
+  
+  // Note: NotificationObject is an empty class to allow us to include a
+  // disk operation in a notification dictionary
+  
+  class DiskOperation : public NotificationObject
+  {
     
-public:
+  public:
     
     au::Environment environment;    // Environment properties
     
     typedef enum
     {
-        read,
-        write,
-        append,
-        remove
-    } DiskOperationType;		
+      read,
+      write,
+      append,
+      remove
+    } DiskOperationType;
     
-private:
+  private:
     
     DiskOperationType type;				// Type of operation ( read, write , remove , etc.. )
     std::string fileName;				// FileName to open
     
-    engine::BufferContainer buffer_container;    // Auto-retained pointer to a buffer
+    engine::BufferPointer buffer;    // Auto-retained pointer to a buffer
     
-    char *read_buffer;					// Buffer used when reading from disk	
+    char *read_buffer;					// Buffer used when reading from disk
     size_t size;						// Size to read/write
     size_t offset;						// Offset inside the file ( only for read operations )
     
@@ -81,12 +85,12 @@ private:
     
     friend class DiskManagerNotification;
     friend class DiskManager;
-	
+    
     pthread_t t;						// Background thread to run the operation
     
     DiskOperation( );
     
-public:
+  public:
     
     DiskManager *diskManager;           // Pointer to the disk manager to notify
     
@@ -99,8 +103,8 @@ public:
     // Constructors used to create Disk Operations ( to be submitted to Engine )
     
     static DiskOperation* newReadOperation( char *data , std::string fileName , size_t offset , size_t size , size_t _listenerId  );
-    static DiskOperation* newWriteOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId  );
-    static DiskOperation* newAppendOperation( Buffer* buffer ,  std::string fileName , size_t _listenerId  );
+    static DiskOperation* newWriteOperation( BufferPointer buffer ,  std::string fileName , size_t _listenerId  );
+    static DiskOperation* newAppendOperation( BufferPointer buffer ,  std::string fileName , size_t _listenerId  );
     static DiskOperation* newRemoveOperation( std::string fileName, size_t _listenerId );
     
     static DiskOperation * newReadOperation( std::string _fileName , size_t _offset , size_t _size ,  SimpleBuffer simpleBuffer , size_t _listenerId );
@@ -113,50 +117,48 @@ public:
     
     DiskOperationType getType()
     {
-        return type;
+      return type;
     }
     
     size_t getSize()
     {
-        return size;
+      return size;
     }
     
-public:
+  public:
     
     // Run the operation
-    void run();			
+    void run();
     
-private:
+  private:
     
     friend class DiskOperationGroup;
     
     size_t id;
     void setId( size_t _id)
     {
-        id = _id;
+      id = _id;
     }
     
     size_t getId()
     {
-        return id;
+      return id;
     }
     
-public:
-    
-    bool compare( DiskOperation *operation );
+  public:
     
     void addListener( size_t id )
     {
-        listeners.insert( id );
+      listeners.insert( id );
     }
     
-public:
+  public:
     
     void getInfo( std::ostringstream& output);
     
     
-};
-
-NAMESPACE_END
+  };
+  
+}
 
 #endif

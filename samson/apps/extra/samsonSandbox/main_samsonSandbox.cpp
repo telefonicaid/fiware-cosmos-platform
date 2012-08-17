@@ -2,24 +2,20 @@
 
 #include "samson_system/Value.h"
 #include "au/string.h"
+#include "engine/Buffer.h"
 
-int main( int argC , const char*argV[] )
+
+int main( int argc , char* argv[] ) 
 {
-
-    double a = -0.000000000000000001234;
-    for( int i = 0 ; i < 40 ; i ++ )
-    {
-        printf("%s\n" , au::str(a).c_str() );
-        a*=10;
-    }
-    a = 0;
-    printf("%s\n" , au::str( a ).c_str() );
-    a = 0.000000000000000001234;
-    for( int i = 0 ; i < 40 ; i ++ )
-    {
-        printf("%s\n" , au::str(a).c_str() );
-        a*=10;
-    }
-
+/*
+    SamsonController controller;
     
+    while( !controller.isReady() )
+    {
+        std::cout << "Waiting connection..." << "\n";
+        sleep(1);
+    }
+
+    controller.runConsole();
+*/    
 }

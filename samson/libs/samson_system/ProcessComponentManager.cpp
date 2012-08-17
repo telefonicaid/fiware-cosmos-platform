@@ -46,10 +46,7 @@ namespace samson{ namespace system{
             stateContainer.value->set_as_void();
         }
         else
-        {
-            LM_E(("Error, nothing to do because no key"));
-            return;  // Nothing to do if no key ( this should never happen )
-        }
+            return;  // Nothing to do if no key ( this should never happen )          
         
         // Recover values to be processed
         // ---------------------------------------------------------
@@ -57,7 +54,6 @@ namespace samson{ namespace system{
             value_vector.add( inputs[0].kvs[i]->value );
         
         // Update state ( if possible )
-        LM_M(("Calling ProcessComponentsManager::update"));
         update( keyContainer.value, stateContainer.value , value_vector.values_, value_vector.num_values_ , writer );
         
     }
@@ -73,21 +69,16 @@ namespace samson{ namespace system{
             emit_log( "debug" , au::str("Input value %lu/%lu: %s " , i , num_values , values[i]->str().c_str() ) , writer );
         
         // Look into components
-        LM_M(("Loop for components, with components_.size():%lu", components_.size()));
         for ( size_t i = 0 , l = components_.size() ; i < l  ; i++ )
         {
-            LM_M(("Calling component[%d](%s)->update()", i, components_[i]->name_.c_str()));
             if( components_[i]->update( key, state , values, num_values , writer ) )
             {
-                LM_M(("Processed component[%d](%s)->update()", i, components_[i]->name_.c_str()));
-
                 emit_log( "debug" , au::str("Processed this state with component %s" , components_[i]->name_.c_str() ) , writer );
                 components_[i]->use_counter_++;
                 
                 // Check to swap positions in the vector
                 while( ( i > 0 ) && ( components_[i]->use_counter_ > components_[i-1]->use_counter_ ) )
                 {
-                    LM_M(("Swapping components i(%d, '%s') with (i-1)(%d, '%s')", i, components_[i]->name_.c_str(), i-1, components_[i-1]->name_.c_str()));
                     // Swap positions
                     std::swap( components_[i] , components_[i-1] );
                     i--;

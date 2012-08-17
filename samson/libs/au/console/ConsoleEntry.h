@@ -8,7 +8,7 @@
 
 #include "au/console/ConsoleCode.h"
 #include "au/mutex/Token.h"
-#include "au/namespace.h"
+
 
 #include "ConsoleEscapeSequence.h"
 

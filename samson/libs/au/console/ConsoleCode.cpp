@@ -1,7 +1,7 @@
 
 #include "au/console/ConsoleCode.h"
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 /*
 const char* getConsoleCodeName( ConsoleCode code )
@@ -32,4 +32,4 @@ const char* getConsoleCodeName( ConsoleCode code )
 }
  */
 
-NAMESPACE_END
+}

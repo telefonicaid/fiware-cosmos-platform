@@ -6,7 +6,7 @@
 #include "au/containers/vector.h"
 #include "au/StringComponents.h"
 #include "au/Tokenizer.h"
-#include "au/charset.h"
+//#include "au/charset.h"
 
 #include <samson/module/samson.h>
 
@@ -342,7 +342,7 @@ namespace samson{
                         break;
                     
                     Source* source = getSource( token_vector , error );
-                    if( error->isActivated() )
+                    if( error->IsActivated() )
                         return;
                     
                     fields.push_back( source );
@@ -490,10 +490,7 @@ namespace samson{
             {
                 // Key should be string for this operation
                 if ( !kv.key->isString() )
-                {
-                    LM_W(("key should be a string for this filter"));
                     return ;
-                }
                 
                 std::string line = kv.key->get_string();
 
@@ -501,7 +498,6 @@ namespace samson{
                 string_components.process_line( line.c_str() , line.length() , separator );
                 
                 keyContainer.value->set_as_vector();
-                keyContainer.value->clear();
 
                 if( fields.size() == 0 )
                 {
@@ -574,7 +570,7 @@ namespace samson{
                 size_t len = line.length();
                 for ( size_t i = 0 ; i < len ; i++ )
                 {
-                    if( ! au::iso_8859_is_letter( line[i] ) )
+                    if( line[i] == ' ' )
                     {
                         if( pos < i )
                         {

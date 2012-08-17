@@ -73,7 +73,7 @@ namespace au
             // DEbug informatation
             std::string getStatus()
             {
-                if( listener.isNetworkListenerRunning() )
+                if( listener.IsNetworkListenerRunning() )
                     return "listening";
                 else
                     return "not listening";

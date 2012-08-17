@@ -35,13 +35,11 @@ namespace au
     int serialize_utf8_symbol( unsigned long s , char* str );
     unsigned long get_utf8_symbol( const char * str , int* length );
 
-
     bool iso_8859_is_letter( unsigned char c );
     bool iso_8859_is_printable( unsigned char c );
     
     unsigned char iso_8859_to_lower (unsigned  char c );
     unsigned char iso_8859_to_upper (unsigned  char c );
-    
     
 } // end namespace au
 

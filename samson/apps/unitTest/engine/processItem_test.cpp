@@ -50,9 +50,9 @@ TEST(processItemTest, getStatusTest)
     
     ProcessItemExample item;
     
-    EXPECT_EQ(item.getStatus(), "Q:5:unknown") << "Error getting status";
-    EXPECT_EQ(item.getDescription(), "Process Item 'unknown' Status: Q:5:unknown") << "Error in description";
-    EXPECT_TRUE(item.isRunning()==false) << "Process item is not supposed to be running at this point";
+    EXPECT_EQ(item.getStatus(), "Queued : 5 : ") << "Error getting status";
+    EXPECT_EQ(item.getDescription(), "Process Item 'unknown' Status: Queued : 5 : ") << "Error in description";
+    EXPECT_TRUE(item.running()==false) << "Process item is not supposed to be running at this point";
 
     close_engine_test();
     

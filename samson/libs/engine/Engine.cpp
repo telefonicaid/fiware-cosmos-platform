@@ -31,7 +31,7 @@
 // Goyo. From 60 to 60000
 #define ENGINE_MAX_RUNNING_TIME     60000
 
-NAMESPACE_BEGIN(engine)
+namespace engine {
 
 
 std::list<EngineElement*>::iterator EngineElementCollection::_find_pos_in_repeated_elements( EngineElement *e )
@@ -181,7 +181,7 @@ void Engine::runElement( EngineElement* running_element )
         // Run the running element ;)
         running_element->run();
         
-        int execution_time = c.diffTime();
+        int execution_time = c.seconds();
         if ( execution_time > 10 )
         {
             LM_W(("Engine has executed an item in %d seconds." , execution_time ));
@@ -305,7 +305,7 @@ void Engine::getInfo( std::ostringstream& output)
     
     au::xml_simple(output , "loops" , counter );
     
-    au::xml_simple( output , "uptime" , uptime.diffTimeInSeconds() );
+    au::xml_simple( output , "uptime" , uptime.seconds() );
     
     au::xml_close(output , "engine");
     
@@ -366,11 +366,11 @@ void Engine::add( EngineElement *element )
 }
 
 // Get an object by its registry names
-Object* Engine::getObjectByName( const char *name )
+Object* Engine::objectByName( const char *name )
 {
-    return objectsManager.getObjectByName(name);
+    return objectsManager.objectByName(name);
     
 }
 
 
-NAMESPACE_END
+}

@@ -214,7 +214,7 @@ namespace au {
         while (true)
         {
             // Read a byte
-            Status s = partRead(line + tot , 1 , "web line character", max_seconds - c.diffTimeInSeconds() );
+            Status s = partRead(line + tot , 1 , "web line character", max_seconds - c.seconds() );
             
             if( s!= OK )
             {
@@ -275,7 +275,7 @@ namespace au {
                 
                 // Report timeout if max seconds is excedded
                 if( max_seconds > 0 )
-                    if( cronometer.diffTime() > max_seconds )
+                    if( cronometer.seconds() > max_seconds )
                     {
                         if ( read_size )
                             *read_size = tot;

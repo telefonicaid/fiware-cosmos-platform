@@ -29,33 +29,26 @@ namespace stream_connector {
     
     void SamsonConnection::try_connect()
     {
-        if( client_ )
+        if( ( client_ ) && (client_->connection_ready() ) )
             return;
+
+        if( !client_ )
+        {
+            client_ = new samson::SamsonClient("connector" );
+            client_->set_receiver_interface(this);            // Set me as the receiver of live data from SAMSON
+        }
         
         // Update counter to trials
         num_connection_trials++;
-        cronometer_reconnection.reset();
+        cronometer_reconnection.Reset();
         
-        // Try to connect to this SAMSON
-        client_ = new samson::SamsonClient("connector");
-        
-        au::ErrorManager error;
-        client_->initConnection( &error , host_ , port_ );
-        
-        if( error.isActivated() )
+        // Try to reconnect
+        if( client_->connect(au::str("%s:%d" , host_.c_str() , port_ )) )
         {
-            // Not possible to establish connection
-            delete client_;
-            client_ = NULL;
-            return;
+            // Note: At the moment, it is not possible to specify flags new of clear here
+            if( getType() == connection_input )
+                client_->connect_to_queue(queue_, false, false); 
         }
-        
-        // At the moment, it is not possible to specify flags new of clear here
-        if( getType() == connection_input )
-            client_->connect_to_queue(queue_, false, false); 
-        
-        // Set me as the receiver of live data from SAMSON
-        client_->set_receiver_interface(this);
 
     }
     
@@ -83,7 +76,7 @@ namespace stream_connector {
         if( !client_ )
         {
             set_as_connected(false);
-            if( cronometer_reconnection.diffTime() < 3 )
+            if( cronometer_reconnection.seconds() < 3 )
                 return; // Do not try to connect again...
             
             // Try to reconnect here...
@@ -95,17 +88,19 @@ namespace stream_connector {
         
     }
     
-    size_t SamsonConnection::getSize()
+    size_t SamsonConnection::bufferedSize()
     {
+        // It is not the size in bytes but at least is >0 if not all data is emitted
+        
         if( getType() == connection_output )
-            return client_->getNumPendingOperations(); // It is not the size in bytes but at least is >0 if not all data is emitted
+            return  Connection::bufferedSize() + client_->getNumPendingPushItems(); 
         else
             return 0;
     }
     
     
     // Overload method to push blocks using samsonClient
-    void SamsonConnection::push( engine::Buffer* buffer )
+    void SamsonConnection::push( engine::BufferPointer buffer )
     {
         if( getType() == connection_input )
             return; // Nothing to do if we are input
@@ -114,12 +109,11 @@ namespace stream_connector {
         report_output_size( buffer->getSize() );
         
         // Push this block directly to the SAMSON client
-        //client->push( queue , new BlockDataSource( buffer ) );
-        client_->push( queue_ , buffer );
+        client_->push( buffer , queue_ );
     }
     
     // Overwriteen method of SamsonClient
-    void SamsonConnection::receive_buffer_from_queue(std::string queue , engine::Buffer* buffer)
+    void SamsonConnection::receive_buffer_from_queue(std::string queue , engine::BufferPointer buffer)
     {
         // Transformation of buffer
         samson::KVHeader *header = (samson::KVHeader*) buffer->getData();
@@ -143,13 +137,10 @@ namespace stream_connector {
             return "Not connected";
         
         if( client_->connection_ready() )
-            return client_->getStatisticsString();
+            return "Connected";
         else
             return "Trying to connect...";
-            
     }
-    
-    
     
     SamsonAdaptor::SamsonAdaptor( 
                                  Channel * _channel 

@@ -15,7 +15,7 @@ namespace samson
 	  case UnknownNode: return "unknown";
 	  }
 	  
-	  LM_E(("Impossible to got here with type:%d", type));
+	  LM_X( 1 , ("Impossible to got here with type:%d", type));
 	  return "Error";
    }
    

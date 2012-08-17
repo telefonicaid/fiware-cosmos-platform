@@ -121,7 +121,7 @@ namespace stream_connector {
             
             // Add a listen item
             add( name , new ListenerAdaptor( this , connection_output , port ) );
-            error->add_message( au::str("Added an output item to channel %s listening plain socket connection on port %d " , name_.c_str() , port ));
+            error->AddMessage( au::str("Added an output item to channel %s listening plain socket connection on port %d " , name_.c_str() , port ));
             return;
             
         }
@@ -208,7 +208,7 @@ namespace stream_connector {
         else
         {
             // Error message
-            error->add_error( au::str("Unknown output definition %s" , components[0].c_str() ) );
+            error->AddError( au::str("Unknown output definition %s" , components[0].c_str() ) );
         }
     }
     
@@ -233,7 +233,7 @@ namespace stream_connector {
             else
             {
                 // Not adding stdin in interactive mode
-                error->add_error( "stdin is not available in daemon mode" );
+                error->AddError( "stdin is not available in daemon mode" );
                 return;
             }
         }
@@ -254,7 +254,7 @@ namespace stream_connector {
             
             // Add a listen item
             add( name ,new ListenerAdaptor( this , connection_input , port ) );
-            error->add_message( au::str("Added an input item to channel %s listening plain socket connection on port %d " , name_.c_str() , port ));
+            error->AddMessage( au::str("Added an input item to channel %s listening plain socket connection on port %d " , name_.c_str() , port ));
             return;
         }
         else if( components[0] == "disk" )
@@ -331,7 +331,7 @@ namespace stream_connector {
         else
         {
             // Error message
-            error->add_error( au::str("Unknown input definition %s" , components[0].c_str() ) );
+            error->AddError( au::str("Unknown input definition %s" , components[0].c_str() ) );
         }
     }
     
@@ -379,7 +379,7 @@ namespace stream_connector {
     }
     
     
-    void Channel::push( engine::Buffer * buffer )
+    void Channel::push( engine::BufferPointer buffer )
     {
         // Mutex protection
         au::TokenTaker tt(&token);

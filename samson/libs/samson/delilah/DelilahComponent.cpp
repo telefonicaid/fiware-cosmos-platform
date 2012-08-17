@@ -23,7 +23,7 @@ namespace samson {
 		component_finished =  false;
 		type = _type;
         
-        cronometer.start();
+        cronometer.Start();
         
         concept = "Unknown";
         progress = 0;
@@ -45,7 +45,6 @@ namespace samson {
             case push:                  return "[ Push    ]";
             case pop:                   return "[ Pop     ]";
             case worker_command:        return "[ Comamnd ]";
-            case repeat:                return "[ Repeat  ]";
         }
         
         LM_X(1, ("Impossible error"));
@@ -56,7 +55,7 @@ namespace samson {
     {
         std::ostringstream output;
 
-        if( error.isActivated() )
+        if( error.IsActivated() )
             output << "ERROR";
         else
         {
@@ -66,7 +65,7 @@ namespace samson {
             {
                 output << "RUNNING ";
                 output << "[ Progress: " << au::str_percentage( progress ) << " ] ";
-                output << "[ Time: " << cronometer.str() << " ]";
+                output << "[ Time: " << cronometer << " ]";
             }
         }
         return output.str();
@@ -94,7 +93,7 @@ namespace samson {
         //LM_M(("Set component finish (%s)" , concept.c_str() ));
         
         component_finished = true;
-        cronometer.stop();
+        cronometer.Stop();
 
         // Show ourput on screen
         if( print_output_at_finish )
@@ -110,7 +109,7 @@ namespace samson {
             return;
         
         component_finished = true;
-        cronometer.stop();
+        cronometer.Stop();
         
         error.set( error_message );
         delilah->delilahComponentFinishNotification( this );

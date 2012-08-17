@@ -18,64 +18,64 @@
  *
  * ****************************************************************************/
 
-#ifndef _H_ENGINE_ENVIRONMENT
-#define _H_ENGINE_ENVIRONMENT
+#ifndef AU_ENVIRONMENT_H_
+#define AU_ENVIRONMENT_H_
 
 #include <math.h>
 #include <sstream>         // std::ostringstream
 #include <map>			   // std::map
 #include <stdlib.h>
 
-#include "au/namespace.h"
+namespace au {
+  
+  class Environment
+  {
+    
+  public:
+    
+    Environment(){}
+    ~Environment(){}
 
-NAMESPACE_BEGIN(au)
-
-class Environment
-{
+    // Add all elements from another Environment
+    void Add( const Environment& environment );
     
-public:
-    
-    std::map<std::string,std::string> environment;	
-    
+    // Clear environment previously defined
     void clearEnvironment();
+
+    // Get methods
+    std::string get( const std::string& name , const std::string& default_value ) const;
+    int get( const std::string& name , int defaultValue) const;
+    size_t get( const std::string& name , size_t defaultValue) const;
+    double get( const std::string& name  , double value) const;
     
-    std::string get( std::string name , std::string default_value );
-    void set( std::string name , std::string value );
-    void unset( std::string name );
-    bool isSet( std::string name );
-    
-    void copyFrom( Environment *other );
-    
+    // Set methods
+    void set( const std::string& , const std::string& value );
+    void unset( const std::string& name );
+    bool isSet( const std::string& name ) const;
+
+    // Templarized assignation
     template<typename T>
     void set( std::string name  , T value)
     {
-        std::ostringstream v;
-        v << value;
-        set( name , v.str() ); 
-    }	
+      std::ostringstream v;
+      v << value;
+      set( name , v.str() ); 
+    }
     
-    void setInt( std::string name  , int value);
-    void setSizeT( std::string name  , size_t value);
-    void setDouble( std::string name  , double value);
-    
-    int getInt( std::string name , int defaultValue);
-    size_t getSizeT( std::string name , size_t defaultValue);
-    double getDouble( std::string name , double defaultValue);
-    
-    void appendInt( std::string name , int value );
-    void appendSizeT( std::string name , int value );
-    
-    // Description
-    std::string toString();
-    std::string getEnvironmentDescription();
-    
+    // Asignation operator
+    Environment& operator=( Environment& environment );
+
     // Save and restore from string
     std::string saveToString();
-    void recoverFromString( std::string input );
+    void recoverFromString( const std::string& input );
     
+  private:
     
-};	
-
-NAMESPACE_END
+    friend std::ostream& operator<<( std::ostream& o , Environment& enviroment );
+    std::map<std::string,std::string> items_;
+    
+  };	
+  
+}
 
 #endif

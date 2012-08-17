@@ -18,7 +18,7 @@ namespace samson {
             {
 
                 Source* source = getSource(token_vector, error);
-                if( !source || error->isActivated() )
+                if( !source || error->IsActivated() )
                     return NULL;
                 
                 if( !token_vector->popNextTokenIfItIs(")") )
@@ -55,7 +55,7 @@ namespace samson {
                     }
                     
                     Source* tmp = getSource(token_vector, error);
-                    if( error->isActivated() )
+                    if( error->IsActivated() )
                     {
                         source_components.clearVector();
                         return NULL;
@@ -103,7 +103,7 @@ namespace samson {
                     }
                     
                     Source* tmp_key = getSource(token_vector, error);
-                    if( error->isActivated() )
+                    if( error->IsActivated() )
                     {
                         source_keys.clearVector();
                         source_values.clearVector();
@@ -119,7 +119,7 @@ namespace samson {
                     }
                     
                     Source* tmp_value = getSource(token_vector, error);
-                    if( error->isActivated() )
+                    if( error->IsActivated() )
                     {
                         source_keys.clearVector();
                         source_values.clearVector();
@@ -195,7 +195,7 @@ namespace samson {
                         
                         // Another component
                         Source* tmp = getSource(token_vector, error);
-                        if( error->isActivated() )
+                        if( error->IsActivated() )
                         {
                             source_components.clearVector();
                             return NULL;
@@ -249,7 +249,7 @@ namespace samson {
                     {
                         
                         Source* index = getSource(token_vector, error);
-                        if( error->isActivated() )
+                        if( error->IsActivated() )
                         {
                             delete main;
                             return NULL;
@@ -271,7 +271,7 @@ namespace samson {
                     {
                         
                         Source* index = getSource(token_vector, error);
-                        if( error->isActivated() )
+                        if( error->IsActivated() )
                         {
                             delete main;
                             return NULL;
@@ -332,7 +332,7 @@ namespace samson {
                 if( !source )
                 {
                     source = getSingleSource( token_vector , error );
-                    if( !source || error->isActivated() )
+                    if( !source || error->IsActivated() )
                         return NULL;
                 }
                 
@@ -349,7 +349,7 @@ namespace samson {
                     token_vector->popToken();
                     
                     Source * _source = getSingleSource(token_vector, error);
-                    if( !_source || error->isActivated() )
+                    if( !_source || error->IsActivated() )
                     {
                         delete source;
                         return NULL;
@@ -370,7 +370,7 @@ namespace samson {
                     token_vector->popToken();
                     
                     Source * _source = getSingleSource(token_vector, error);
-                    if( !_source || error->isActivated() )
+                    if( !_source || error->IsActivated() )
                     {
                         delete source;
                         return NULL;
@@ -389,7 +389,7 @@ namespace samson {
                 {
                     
                     Source * first_source = getSingleSource(token_vector, error);
-                    if( !first_source || error->isActivated() )
+                    if( !first_source || error->IsActivated() )
                     {
                         delete source;
                         return NULL;
@@ -406,7 +406,7 @@ namespace samson {
                     }
                     
                     Source * second_source = getSingleSource(token_vector, error);
-                    if( !second_source || error->isActivated() )
+                    if( !second_source || error->IsActivated() )
                     {
                         delete source;
                         return NULL;

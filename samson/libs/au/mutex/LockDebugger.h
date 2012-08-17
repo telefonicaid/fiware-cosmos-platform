@@ -26,9 +26,9 @@
 #include <set>                   /* set                                      */
 #include <pthread.h>             /* pthread_mutex_t                          */
 
-#include "au/namespace.h"
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 
 class Lock;
 
@@ -61,6 +61,6 @@ private:
 	
 };
 
-NAMESPACE_END
+}
 
 #endif

@@ -9,7 +9,7 @@
 #include "engine/MemoryRequest.h"		// Own interface
 #include "engine/Buffer.h"				// samson::Buffer
 
-NAMESPACE_BEGIN(engine)
+namespace engine {
 
 
 MemoryRequest::MemoryRequest( size_t _size , double _mem_percentadge , size_t _listener_id )
@@ -31,4 +31,4 @@ void MemoryRequest::getInfo( std::ostringstream& output)
     au::xml_close( output , "memory_request" );
 }
 
-NAMESPACE_END
+}

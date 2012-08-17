@@ -77,7 +77,7 @@ namespace au {
         void ActivityMonitor::start_activity( std::string activity_name )
         {
             au::TokenTaker tt(&token);
-            double stop_time = cronometer_.diffTime();
+            double stop_time = cronometer_.seconds();
             double time = stop_time - current_activirty_start_time_;
             
             push( new ActivityItem( current_activty_ , time ) );
@@ -140,14 +140,14 @@ namespace au {
             // No necessary for mutex ( this is a private method )
             
             // Inset in the list of last items
-            activity_item->retain();
+            activity_item->Retain();
             items_.push_back( activity_item );
             
             // Only keep the list of last 100 elements
             while( items_.size() > 100 )
             {
                 ActivityItem* tmp_item = items_.extractFront();
-                tmp_item->release();
+                tmp_item->Release();
             }
             
             // Update the associated element statustics

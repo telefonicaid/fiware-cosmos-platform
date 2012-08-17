@@ -23,74 +23,76 @@
 
 #include "unitTest/common_engine_test.h"
 
+/*
+
 //Test void add( MemoryRequest *request );
 TEST(memoryManagerTest, addTest) 
 {
 
    init_engine_test();
 
-    engine::Buffer *buffer = engine::MemoryManager::shared()->createBuffer( "test_buffer" , "test" , 100 , 0.0 );
+    engine::Buffer *buffer = engine::MemoryManager::shared()->createBuffer( "test_buffer" , "test" , 100 );
     EXPECT_TRUE( buffer != NULL ) << "Buffer was not creatd";
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 1) << "Memory request was not added";
+    EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 1) << "Memory request was not added";
 
     EXPECT_TRUE( buffer->getMaxSize() >= 100 ) << "Buffer size is not correct";
     
     // Destroy buffer
-    buffer->release();
+    buffer->Release();
 
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 0) << "Buffer is not removed correctly";
+    EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 0) << "Buffer is not removed correctly";
 
 	close_engine_test();
 
 }    
 
-//Test int getNumBuffers();
-TEST(memoryManagerTest, getNumBuffersTest) 
+//Test int num_buffers();
+TEST(memoryManagerTest, num_buffersTest) 
 {
 	init_engine_test();
     
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 0) << "Should be no buffers";
+    EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 0) << "Should be no buffers";
     
     engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 100  );
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 1) << "Wrong number of buffers";
+    EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 1) << "Wrong number of buffers";
     
     engine::Buffer* buffer2 = engine::MemoryManager::shared()->createBuffer( "buffer2" ,  "test" , 100  );
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 2) << "Wrong number of buffers";
+    EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 2) << "Wrong number of buffers";
 
-    buffer1->release();
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 1) << "Wrong number of buffers";
+    buffer1->Release();
+    EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 1) << "Wrong number of buffers";
     
-    buffer2->release();
-    EXPECT_EQ(engine::MemoryManager::shared()->getNumBuffers(), 0) << "Wrong number of buffers";
+    buffer2->Release();
+    EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 0) << "Wrong number of buffers";
 
 	close_engine_test();    
     
 }
 
-//Test size_t getUsedMemory();
+//Test size_t used_memory();
 //Test double getMemoryUsage();
-TEST(memoryManagerTest, getUsedMemoryTest) 
+TEST(memoryManagerTest, used_memoryTest) 
 {
    
    init_engine_test();    
        
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 0) << "Used memory does not match";
+    EXPECT_EQ(engine::MemoryManager::shared()->used_memory(), 0) << "Used memory does not match";
     
     engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 100  );
 
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 100) << "Used memory does not match";
+    EXPECT_EQ(engine::MemoryManager::shared()->used_memory(), 100) << "Used memory does not match";
     
     engine::Buffer* buffer2 = engine::MemoryManager::shared()->createBuffer( "buffer2" , "test" , 100  );
 
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 200) << "Used memory does not match";
+    EXPECT_EQ(engine::MemoryManager::shared()->used_memory(), 200) << "Used memory does not match";
     
-    buffer1->release();
+    buffer1->Release();
 
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 100) << "Used memory does not match";
+    EXPECT_EQ(engine::MemoryManager::shared()->used_memory(), 100) << "Used memory does not match";
 
-    buffer2->release();
+    buffer2->Release();
 
-    EXPECT_EQ(engine::MemoryManager::shared()->getUsedMemory(), 0) << "Used memory does not match";
+    EXPECT_EQ(engine::MemoryManager::shared()->used_memory(), 0) << "Used memory does not match";
  
 	close_engine_test();
 
@@ -101,3 +103,4 @@ TEST(memoryManagerTest, getUsedMemoryTest)
 //Test void runThread();        
     
 
+*/

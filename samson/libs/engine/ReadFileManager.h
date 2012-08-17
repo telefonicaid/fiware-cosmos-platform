@@ -21,9 +21,9 @@
 #include <string>           // std::string
 
 #include "au/containers/ListMap.h"     // au::ListMap
-#include "au/namespace.h"
 
-NAMESPACE_BEGIN(engine)
+
+namespace engine {
 
 
 class ReadFile;
@@ -42,6 +42,6 @@ public:
     
 };
 
-NAMESPACE_END
+}
 
 #endif

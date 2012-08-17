@@ -1,6 +1,5 @@
 
 #include "au/log/LogServerChannel.h"
-#include "au/log/LogServerQuery.h"
 #include "au/log/log_server_common.h"
 
 #include "LogServer.h" // Own interface
@@ -19,8 +18,8 @@ namespace au
         channel = new LogServerChannel( AU_LOG_SERVER_PORT , AU_LOG_SERVER_DIRECTORY );
         channel->initLogServerChannel( &error );
         
-        if( error.isActivated() )
-            LM_X(1, ( "Not possible to open channel for logs %s\n" , error.getMessage().c_str() ));
+        if( error.IsActivated() )
+            LM_X(1, ( "Not possible to open channel for logs %s\n" , error.GetMessage().c_str() ));
         
     }
 
@@ -42,7 +41,7 @@ namespace au
         
         if( cmdLine.get_num_arguments() == 0)
         {
-            error->add_error("No command provided\n");
+            error->AddError("No command provided\n");
             return;
         }
         
@@ -89,7 +88,7 @@ namespace au
             "------------------------------------------------------------------------------------------------------------------\n"\
             "";
             
-            error->add_message( message + "\n" ); 
+            error->AddMessage( message + "\n" ); 
             
             return;
         }                
@@ -126,13 +125,13 @@ namespace au
 
             table.addRow( au::StringVector("channel","Channel associated to the connection with the log server") );
             
-            error->add_message( table.str() + "\n" ); 
+            error->AddMessage( table.str() + "\n" ); 
         }
         
         if( main_command == "new_session" )
         {
             channel->addNewSession();
-            error->add_message( "OK" );
+            error->AddMessage( "OK" );
             return;
         }
         
@@ -151,33 +150,33 @@ namespace au
             table->setTitle( "Log connections" );
             output << table->str();
             delete table;
-            error->add_message( output.str() );
+            error->AddMessage( output.str() );
             return;
         }
         
         
         if( main_command == "info" )
         {
-            error->add_message( channel->getInfo() );
+            error->AddMessage( channel->getInfo() );
             return;
         }
         
         // Show channels
         if( main_command == "show_channels" )
         {
-            error->add_message( channel->getChannelsTable(&cmdLine) );
+            error->AddMessage( channel->getChannelsTable(&cmdLine) );
             return;
         }
         
         // Show logs
         if( main_command == "show" )
         {
-            error->add_message( channel->getTable( &cmdLine ));
+            error->AddMessage( channel->getTable( &cmdLine ));
             return;
         }
 
         // Unknown command error
-        error->add_error( au::str("Unknown command %s\n" , main_command.c_str() ) );
+        error->AddError( au::str("Unknown command %s\n" , main_command.c_str() ) );
         
     }
     

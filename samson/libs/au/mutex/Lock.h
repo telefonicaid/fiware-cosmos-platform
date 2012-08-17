@@ -25,10 +25,10 @@
 #include <string>                /* std::string                              */
 
 #include "au/mutex/StopLock.h"            /* StopLock                                 */
-#include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 
 class Lock 
 {
@@ -68,6 +68,6 @@ public:
     }
 };
 
-NAMESPACE_END
+}
 
 #endif

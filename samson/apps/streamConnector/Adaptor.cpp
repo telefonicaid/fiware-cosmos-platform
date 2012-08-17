@@ -75,7 +75,7 @@ namespace stream_connector {
         next_id++;
     }
     
-    void Adaptor::push( engine::Buffer * buffer )
+    void Adaptor::push( engine::BufferPointer buffer )
     {
         au::TokenTaker tt(&token);
         
@@ -171,7 +171,7 @@ namespace stream_connector {
             ; it_connections++ )
         {
             Connection* connection = it_connections->second;
-            total += connection->getBufferedSize();
+            total += connection->bufferedSize();
         }
         
         return total;

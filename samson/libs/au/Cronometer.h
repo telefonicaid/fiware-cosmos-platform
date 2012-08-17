@@ -18,8 +18,8 @@
  *
  * ****************************************************************************/
 
-#ifndef SAMSON_CRONOMETER_H
-#define SAMSON_CRONOMETER_H
+#ifndef AU_CRONOMETER_H
+#define AU_CRONOMETER_H
 
 #include <stdio.h>             /* sprintf */
 #include <sys/time.h>	       // struct timeval
@@ -28,106 +28,43 @@
 #include "logMsg/logMsg.h"
 #include "logMsg/traceLevels.h"
 
-#include "au/namespace.h"
 
-NAMESPACE_BEGIN(au)
+namespace au {
+  
+  class Cronometer
+  {
+    
+  public:
 
-class Cronometer
-{
-    struct timeval t;
-    
-public:
-    
+    // Constructor & Destructor
     Cronometer();
+    ~Cronometer(){}
     
     // Reset the count to 0
-    void reset();
+    void Reset();
     
     // Get the time difference since the last reset ( or creation ) in second
-    time_t diffTimeInSeconds();
-
-    double diffTime();
-    double diffTimeAndReset();
+    double seconds() const;
     
-    // Get a string with the time ellapsed since last reset or creation
-    std::string str();
-    std::string str_simple();
+    // Get time and reset cronometer
+    double secondsAndReset();
     
-    // Check if time is grater than this and reset if so. Return true if time has been reset.
-    bool check( double time );
-      
+    // Check if time is grater than this and reset if so. 
+    // Return true if time has been reset.
+    bool ResetIfGreaterThan( double time );
     
-    std::string strClock();
-
+    // Manual offset of the time
+    void AddOffset( int offset );
     
-};
-
-
-
-class CronometerSystem
-{
-    Cronometer c;
-    int seconds;
-    bool running;
-    
-public:
-    
-    CronometerSystem();
-    
-    void start();
-    void stop();
-    
-    // Reset the count to 0
-    void reset();
-    
-    // Get a string with the time ellapsed since last reset or creation
+    // String vecrsion of this
     std::string str();
     
-    size_t getSecondRunnig();
+    friend std::ostream& operator<<( std::ostream& , const Cronometer& cronometer );
     
-    int getSeconds();
-    
-};   
+    struct timeval t_;
 
-
-class ExecesiveTimeAlarm
-{
-    
-    std::string title;
-    double max_time;
-    
-    Cronometer c;
-    
-public:
-    
-    ExecesiveTimeAlarm( std::string _title )
-    {
-        title = _title;        
-        max_time = 0.5;  // Default value
-    }
-
-    ExecesiveTimeAlarm( std::string _title , double _max_time )
-    {
-        title = _title;        
-        max_time = _max_time;
-    }
-    
-    ~ExecesiveTimeAlarm()
-    {
-        double t = c.diffTime();
-        if(  t > max_time )
-        {
-            LM_T( LmtExcesiveTime , ("Excessive time ( %.4f > %.4f secs ) for '%s' "
-                  ,t
-                  ,max_time
-                  ,title.c_str()
-                  ));
-        }
-        
-    }
-    
-};
-
-NAMESPACE_END
+  };
+ 
+}
 
 #endif

@@ -2,6 +2,8 @@
 
 #include <sys/stat.h>		// mkdir
 
+#include "au/S.h"
+
 #include "engine/MemoryManager.h"					// samson::MemoryManager
 #include "engine/MemoryRequest.h"
 #include "engine/Notification.h"                // engine::Notification
@@ -16,357 +18,208 @@
 #include "samson/common/samson.pb.h"						// network::...
 #include "samson/common/SamsonSetup.h"					// samson::SamsonSetup
 #include "samson/common/KVHeader.h"
-#include "samson/common/MemoryTags.h"                     // samson::MemoryInput , samson::MemoryOutput...
+                     // samson::MemoryInput , samson::MemoryOutput...
 
 #include "PushDelilahComponent.h"                      // Own interface
 
 
 namespace samson
 {
-
-	PushDelilahComponent::PushDelilahComponent( DataSource * _dataSource , std::string _queue  ) : DelilahComponent( DelilahComponent::push ) 
+  
+  void* run_PushDelilahComponent( void* p)
+  {
+    PushDelilahComponent* component = (PushDelilahComponent*)p;
+    component->run_in_background();
+    return  NULL;
+  }
+  
+  
+	PushDelilahComponent::PushDelilahComponent( DataSource * data_source , const std::vector<std::string>& queues   ) 
+  : DelilahComponent( DelilahComponent::push ) 
+  , token("PushDelilahComponent")
 	{
 		
-		// Queue name 
-		queues.insert( _queue );
-
-        // Data source
-        dataSource = _dataSource;
-        
-		uploadedSize = 0;
-		processedSize = 0;
-        totalSize = dataSource->getTotalSize();
-        
-        // Set this to false ( true will be the end of processing data )
-        finish_process = false;
+		// copy Queues 
+    for( size_t i = 0 ; i < queues.size() ; i++ )
+      queues_.push_back(queues[i]);
+    
+    // Data source
+    data_source_ = data_source;
+    
+		uploaded_size_ = 0;
+		sent_size_ = 0;
+    
+    // Set this to false ( true will be the end of processing data )
+    finish_process = false;
 		
-        setConcept( 
-           au::str("Pushing %s to queue/s %s" , au::str( totalSize , "bytes").c_str() , _queue.c_str() ) 
-                   );
+    setConcept( 
+               au::str("Pushing data from '%s' to queue/s '%s'" , data_source_->get_name().c_str() , queues_.str().c_str() ) 
+               );
+    
+    listen("push_operation_finished");
+    
 	}	
-    
-    std::string PushDelilahComponent::getShortDescription()
-    {
-        if( isComponentFinished() )
-        {
-            std::ostringstream output;
-            output << "[ ";
-            output << "Id " << id << " ";
-            output << "Finished ";
-            output << "]";
-            return output.str();
-            
-        }
-        
-        
-        std::ostringstream output;
-        output << "[ ";
-        output << "Id " << id << " ";
-        output << "Pushed ";
-        output << au::str( processedSize , "B" ) << " / " << au::str( totalSize , "B" );
-        output << "]";
-        return output.str();
-    }
-    
-    
-    void PushDelilahComponent::addQueue( std::string  _queue )
-    {
-		queues.insert( _queue );
-    }
-    
-    void PushDelilahComponent::run()
-    {
-       
-        if( !delilah->isConnected() )
-            setComponentFinishedWithError("Not connected to any SAMSON system");
-        
-		if( totalSize == 0)
-		{
-			error.set("Not data to upload.");
-            finish_process = true;
-            setComponentFinished();
-		}
-        else
-        {
-            // Request the first buffer of memory
-            requestMemoryBuffer();
-        }
-        
-    }
-	
-	PushDelilahComponent::~PushDelilahComponent()
+  
+  PushDelilahComponent::~PushDelilahComponent()
 	{
-        delete dataSource;
+    delete data_source_;
 	}
-    
-    // Request a memory buffer to upload the next packet...
-    
-    void PushDelilahComponent::requestMemoryBuffer()
+  
+  std::string PushDelilahComponent::getShortDescription()
+  {
+    if( isComponentFinished() )
     {
-        // Add a memory request to be responded to me
-    	//LM_M(("PushDelilahComponent::requestMemoryBuffer: Request size:%lu by %lu", 64*1024*1024, getEngineId()));
-        engine::MemoryManager::shared()->add( new engine::MemoryRequest( 64*1024*1024 , 1.0 , getEngineId() ) );
-    }
-
-    // Receive packets
-    void PushDelilahComponent::receive( Packet* packet )
-    {
-        // At the moment we do not receive anything
-        if( packet->msgCode != Message::PushBlockResponse )
-            LM_X(1, ("Received an unexpected packet in a push block operation"));
-        
-        uploadedSize += packet->message->push_block_response().request().size();
-        
-        if( totalSize > 0 )
-            setProgress((double) uploadedSize / (double) totalSize );
-        
-        if( finish_process )
-        {
-            
-            if( totalSize == uploadedSize )
-            {
-                // Set this flag to indicate that the process has finished
-                finish_process = true;
-                setComponentFinished();
-            }
-        }
-        
-        
-    }
-
-    
-    // Notifications
-    
-    void PushDelilahComponent::notify( engine::Notification* notification )
-    {
-        if( notification->isName( notification_memory_request_response ) )
-        {
-            // New buffer to be used to send data to the workers
-        	//LM_M(("PushDelilahComponent::notify: Received notification from memory request"));
-            engine::MemoryRequest *memoryRequest = (engine::MemoryRequest *) notification->getObject();
-
-            if( !memoryRequest )
-                LM_X(1, ("Internal error: Memory request returns without a buffer"));
-
-            
-            if ( !memoryRequest->buffer )
-            {
-                setComponentFinishedWithError( "Memory request returned without the allocated buffer" );
-                return;
-            }
-
-            // Recover the buffer from memory request
-            engine::Buffer *buffer = memoryRequest->buffer;
-            
-            // Skip to write the header at the end
-            buffer->skipWrite( sizeof(KVHeader) );
-            
-            // Full the buffer with the content from the files
-            if( dataSource->fill( buffer ) != 0)
-            {
-                setComponentFinishedWithError("Error filling buffer");
-                return;
-            }
-
-            // Set the header    
-            KVHeader *header = (KVHeader*) buffer->getData();
-            header->initForTxt( buffer->getSize() - sizeof(KVHeader) );
-            
-            // Get the size to update the total process info
-            processedSize += buffer->getSize();
-            
-            Packet* packet = new Packet( Message::PushBlock );
-            packet->setBuffer( buffer );    // Set the buffer of data
-            buffer->release();              // Now it is retaiend by packet
-            
-            packet->message->set_delilah_component_id( id );
-
-            network::PushBlock* pb =  packet->message->mutable_push_block();
-
-            // Add queue
-            std::set<std::string>::iterator q;
-            for (q = queues.begin() ; q != queues.end() ; q++)
-                pb->add_queue( *q );
-            
-            pb->set_size( buffer->getSize() - sizeof(KVHeader) );
-            
-            // Get the next worker_id to send data...
-            size_t worker_id = delilah->getNextWorkerId();
-            
-            // Information about destination
-            packet->to.node_type = WorkerNode;
-            packet->to.id = worker_id;
-            
-            // Send packet
-            delilah->send( packet , &error );
-            
-            // Release packet
-            packet->release();
-            
-            if( error.isActivated() )
-                setComponentFinished();
-            
-            if( !dataSource->isFinish() )
-            {
-            	LM_M(("PushDelilahComponent::notify: Request a new MemoryBuffer"));
-                requestMemoryBuffer();  // Request the next element
-            }
-            else
-                finish_process = true;  // Mark as finished
-        }
-        else
-        {
-        	LM_M(("PushDelilahComponent::notify: Received another type of notification"));
-        }
+      std::ostringstream output;
+      output << "[ ";
+      output << "Id " << id << " ";
+      output << "Finished uploaded " << au::str( uploaded_size_ , "B" );
+      output << "]";
+      return output.str();
     }
     
-    std::string PushDelilahComponent::getStatus()
+    std::ostringstream output;
+    output << "[ ";
+    output << "Id " << id << " ";
+    output << "Pushed ";
+    output << au::str( sent_size_ , "B" ) << " Uploaded " << au::str( uploaded_size_ , "B" );
+    output << "]";
+    return output.str();
+  }
+  
+  void PushDelilahComponent::run()
+  {
+    pthread_t t;
+    au::ThreadManager::shared()->addThread("PushDelilahComponent", &t, NULL, run_PushDelilahComponent, this);
+  }
+  
+  void PushDelilahComponent::run_in_background()
+  {
+    while( true )
     {
+      current_status_ = "Looping to push new data...";
+      
+      // If data_source if finished, just wait for push_operations to finish
+      if( data_source_->isFinish() )
+      {
+        // Activate this flag just to show information correctly
+        finish_process = true;
         
-        std::ostringstream output;
-
-        au::tables::Table table( au::StringVector("Concept" , "Size" , "Percentadge" ) );
-        table.setTitle(concept);
-
-        au::StringVector values;
-
+        while( true )
         {
-            values.push_back("Pushed");
-            values.push_back(au::str( processedSize , "B" ));
-            values.push_back(au::str_percentage(processedSize, totalSize));              
-            table.addRow(values);
-        }
-
-        {
-            values.clear();
-            values.push_back("Confirmed Pushed");
-            values.push_back(au::str( uploadedSize , "B" ));
-            values.push_back(au::str_percentage(uploadedSize, totalSize));              
-            table.addRow(values);
-        }
-        
-        output << table.str();                        
-        return output.str();
-    }
-   
-    // --------------------------------------------------------------------
-    // BufferPushDelilahComponent
-    // --------------------------------------------------------------------
-    
-    BufferPushDelilahComponent::BufferPushDelilahComponent(  engine::Buffer * buffer , std::string queue ) : DelilahComponent( DelilahComponent::push ) 
-	{
-        if( !buffer )
-            LM_X(1, ("Internal error"));
-        
-		// Queue name 
-		queues.insert( queue );
-        
-        // Data source
-        buffer_container.setBuffer( buffer );
-
-        // Set concept
-        setConcept( au::str("Pushing single buffer %s to queue/s %s" , au::str( buffer->getSize() , "bytes").c_str() , queue.c_str() ) );
-	}	
-    
-    void BufferPushDelilahComponent::addQueue( std::string  _queue )
-    {
-		queues.insert( _queue );
-    }
-
-    
-    std::string BufferPushDelilahComponent::getShortDescription()
-    {
-        if( isComponentFinished() )
-        {
-            std::ostringstream output;
-            output << "[ ";
-            output << "Id " << id << " ";
-            output << "Finished ";
-            output << "]";
-            return output.str();
-            
-        }
-        
-        std::ostringstream output;
-        output << "[ ";
-        output << "Id " << id << " ";
-        output << "Pushing buffer " << au::str( buffer_container.getBuffer()->getSize() , "B" );
-        output << "]";
-        return output.str();
-    }
-    
-    // Function to start running
-    void BufferPushDelilahComponent::run()
-    {
-        
-        // Request another buffer to add the header
-        engine::BufferContainer new_buffer_container;
-        new_buffer_container.create("BufferPushDelilahComponent", "push",  buffer_container.getBuffer()->getSize() + sizeof(KVHeader) );
-
-        // Pointer to the old and new buffer
-        engine::Buffer * original_buffer = buffer_container.getBuffer();
-        engine::Buffer * buffer = new_buffer_container.getBuffer();
-        
-        // Set the header    
-        KVHeader *header = (KVHeader*) buffer->getData();
-        header->initForTxt( original_buffer->getSize() );
-        buffer->skipWrite(sizeof(KVHeader));
-        
-        // Copy content
-        buffer->write( original_buffer->getData() , original_buffer->getSize() );
-        
-        // Create the packet to send to the worker        
-        Packet* packet = new Packet( Message::PushBlock );
-        packet->setBuffer( buffer );                            // Set the buffer of data
-        packet->message->set_delilah_component_id( id );        // Set my delilah id to get answer from worker
- 
-        // Fill packet information
-        network::PushBlock* pb =  packet->message->mutable_push_block();
-        std::set<std::string>::iterator q;
-        for (q = queues.begin() ; q != queues.end() ; q++)
-            pb->add_queue( *q );
-        pb->set_size( original_buffer->getSize() );
-        
-        // Get the next worker_id to send data...
-        size_t worker_id = delilah->getNextWorkerId();
-        
-        // Information about destination
-        packet->to.node_type = WorkerNode;
-        packet->to.id = worker_id;
-        
-        // Send packet
-        delilah->send( packet , &error );
-
-        // Release packet
-        packet->release();
-        
-        // If error sending packet, just finish
-        if( error.isActivated() )
+          if( push_ids_.size() == 0 )
+          {
             setComponentFinished();
+            return;
+          }
+        }
+      }
+      
+      // Wait until memory is available
+      au::Cronometer cronometer;
+      current_status_ = "Waiting until used memory is under 70%";
+      while( engine::MemoryManager::shared()->memory_usage() > 0.7 )
+        usleep(100000);
+      
+      // Create a buffer to be filled
+      engine::BufferPointer buffer = engine::Buffer::create("PushDelilahComponent", "push", 64*1024*1024);
+      
+      // Skip KVHeader to write the header at the end
+      buffer->skipWrite( sizeof(KVHeader) );
+      
+      // Full the buffer with the content from the files
+      current_status_ = au::S() <<  "Filling a new buffer " << buffer->str();
+      if( data_source_->fill( buffer ) != 0 )
+      {
+        setComponentFinishedWithError( au::str( "Error filling buffer from '%s'" , data_source_->get_name().c_str() ) );
+        return;
+      }
+      
+      // Set the header    
+      KVHeader *header = (KVHeader*) buffer->getData();
+      header->initForTxt( buffer->getSize() - sizeof(KVHeader) );
+      
+      // Get the size to update the total process info
+      sent_size_ += buffer->getSize();
+      
+      // Add this buffer to be pushed by delilah
+      current_status_ = au::S() <<  "Pushing block " << buffer->str() << " using delilah component ";
+      size_t push_id = delilah->push(buffer, queues_ );
+      
+      // Collect this push_id to be tracked...
+      {
+        au::TokenTaker tt(&token);
+        push_ids_.insert( push_id );
+      }
     }
     
-    // Function to receive packets
-    void BufferPushDelilahComponent::receive( Packet* packet )
+  }
+	
+  
+  // Notifications
+  
+  void PushDelilahComponent::notify( engine::Notification* notification )
+  {
+    
+    // Remove confirmed push operations
+    if( notification->isName("push_operation_finished") )
     {
-        // At the moment we do not receive anything
-        if( packet->msgCode != Message::PushBlockResponse )
-            LM_X(1, ("Received an unexpected packet in a push block operation"));
-        
-        size_t uploadedSize = packet->message->push_block_response().request().size();
-        
-        if( uploadedSize != buffer_container.getBuffer()->getSize() )
-            setComponentFinishedWithError("Non correct size for push operation");
-        else
-            setComponentFinished();
+      au::TokenTaker tt(&token);
+      size_t push_id = notification->environment().get("push_id", (size_t)-1 );
+      size_t size    = notification->environment().get("size", 0 );
+      uploaded_size_ += size;
+      
+      push_ids_.erase( push_id ); 
+    }
+  }
+  
+  std::string PushDelilahComponent::getStatus()
+  {
+    
+    std::ostringstream output;
+    
+    au::tables::Table table( au::StringVector("Concept" , "Value" ) );
+    table.setTitle(concept);
+    
+
+    {
+      au::StringVector values;
+      values.push_back("Current task");
+      values.push_back( current_status_ );
+      table.addRow(values);
+    }
+    
+    {
+      au::StringVector values;
+      values.push_back("Sent");
+      values.push_back(au::str( sent_size_ , "B" ));
+      table.addRow(values);
+    }
+    
+    {
+      au::StringVector values;
+      values.push_back("Uploaded");
+      values.push_back(au::str( uploaded_size_ , "B" ));
+      table.addRow(values);
+    }
+    
+    {
+      au::StringVector values;
+      values.push_back("Pending push operations");
+      values.push( push_ids_.size() );
+      table.addRow(values);
     }
 
-    
-    // Function to get the status
-    std::string BufferPushDelilahComponent::getStatus()
     {
-        return au::str("Sending buffer %s", au::str( buffer_container.getBuffer()->getSize() , "B" ).c_str() );
+      au::StringVector values;
+      values.push_back("Finish input data");
+      values.push( finish_process?"yes":"no" );
+      table.addRow(values);
     }
-		
-
     
+    
+    
+    output << table.str();                        
+    return output.str();
+  }
+  
 }

@@ -153,7 +153,7 @@ namespace au
         log_central->write( log );
         
         // Release log
-        log->release();
+        log->Release();
         
     }
     

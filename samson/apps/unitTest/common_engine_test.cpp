@@ -61,8 +61,11 @@ samson::SamsonClient* init_samson_client_test()
 
    // Create client connection
    LM_M(("creating samson_client"));
-   samson::SamsonClient* samson_client = new samson::SamsonClient("SamsonClientTest");
+   samson::SamsonClient* samson_client = new samson::SamsonClient("SamsonClientTest"  );
    LM_M(("samson_client created"));
+
+   if( samson_client->connect("localhost") )
+	  LM_W(("Not possible to samson_client to  localhost"));
 
    // SamsonClient to play with
    return samson_client;
@@ -78,7 +81,7 @@ void close_samson_client_test( samson::SamsonClient* samson_client  )
    LM_M(("waitUntilFinish finished"));
 
    // Disconnect from worker ( if previously connected )
-   samson_client->disconnect();
+   //samson_client->disconnect();
 
    LM_M(("client disconnected"));
 

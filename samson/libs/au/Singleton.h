@@ -11,24 +11,27 @@ namespace au {
     template< class C >
     class Singleton
     {
-        static au::Token token;
-        static C* instance;
         
     public:
         
         static C* shared()
         {
-            au::TokenTaker tt(&token);
-            if( !instance )
-                instance = new C();
-            return instance;
+            au::TokenTaker tt(&token_);
+            if( !instance_ )
+                instance_ = new C();
+            return instance_;
         }
-        
+      
+    private:
+      
+      static au::Token token_;
+      static C* instance_;
+      
     };
     
     // Static members
-    template <class C> C* Singleton<C>::instance;
-    template <class C> au::Token Singleton<C>::token("singleton");
+    template <class C> C* Singleton<C>::instance_;
+    template <class C> au::Token Singleton<C>::token_("singleton");
     
 } // end of au namesapce
 

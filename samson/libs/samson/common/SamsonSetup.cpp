@@ -403,9 +403,9 @@ namespace samson
         return _samson_working + "/blocks";
     }
     
-    std::string SamsonSetup::blockFileName( size_t worker_id , size_t id )
+    std::string SamsonSetup::blockFileName( size_t block_id )
     {
-        return _samson_working + "/blocks/" + au::str("%lu_%lu", worker_id , id);
+        return _samson_working + "/blocks/" + au::str("%block_%lu", block_id );
     }
     
     bool isNumber( std::string txt )
@@ -416,31 +416,17 @@ namespace samson
         return  true;
     }
     
-    bool SamsonSetup::blockIdFromFileName( std::string fileName , size_t *worker_id , size_t *block_id )
+    size_t SamsonSetup::blockIdFromFileName( std::string fileName )
     {
-        std::string path = _samson_working + "/blocks/";
+        std::string path = _samson_working + "/blocks/block_";
         
         if( fileName.substr(0,path.size()) != path )
             return false;
         
         // Take the rest of the name
         std::string res_path = fileName.substr( path.size() );
-        
-        std::vector<std::string> components = au::split(res_path, '_');
 
-        if( components.size() != 2 )
-            return false;
-        
-        if( !isNumber( components[0] ) )
-            return false;
-
-        if( !isNumber( components[0] ) )
-            return false;
-        
-        *worker_id = atoll( components[0].c_str() );
-        *block_id  = atoll( components[1].c_str() );
-        
-        return true;
+        return atoll( res_path.c_str() );
     }
     
     std::string SamsonSetup::streamManagerLogFileName()

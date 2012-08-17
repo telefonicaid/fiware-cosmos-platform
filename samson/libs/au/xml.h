@@ -25,10 +25,10 @@
 
 #include "au/containers/map.h"
 
-#include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 
 // Simple xml tags
 void xml_open( std::ostringstream& output , std::string name );
@@ -130,6 +130,6 @@ void xml_iterate_map( std::ostringstream& output , std::string name , au::map< K
     
 }
 
-NAMESPACE_END
+}
 
 #endif

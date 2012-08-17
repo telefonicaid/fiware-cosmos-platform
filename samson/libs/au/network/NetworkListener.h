@@ -5,87 +5,70 @@
 
 #include "au/Status.h"
 
-namespace au 
+namespace au
 {
+  
+  class SocketConnection;
+  class NetworkListener;
+  
+  class NetworkListenerInterface
+  {
+  public:
     
-    class SocketConnection;
-    class NetworkListener;
-    
-    class NetworkListenerInterface
-    {
-        public:
-        
-        virtual void newSocketConnection( NetworkListener* listener , SocketConnection * socket_connetion )=0;
-    };
-    
-    
-    class NetworkListener
-    {
-        // Network manager to be notified
-        NetworkListenerInterface * network_listener_interface;
-        
-        // Port where we are listening
-        int port;
-        
-        // Internal file descriptor
-        int rFd;
-        
-        // Flag to inform that background thread should finish
-        bool quit_flag;
-        
-        // Thread listening connections...
-        pthread_t t;
-        
-    public: 
-        
-        // Flag indicating if the background thread is running
-        bool background_thread_running;
-        
-    public:
+    virtual void newSocketConnection( NetworkListener* listener , SocketConnection * socket_connetion )=0;
+  };
+  
 
-        // Constructor
-        NetworkListener( NetworkListenerInterface * _network_listener_interface );
-        ~NetworkListener();
-
-        // Get port
-        int getPort()
-        {
-            return port;
-        }
-        
-        // Init and close functions
-        Status initNetworkListener( int port );        
-
-        // Function to cancel banground thread accepting connections
-        void stop( bool wait );
-        
-        // Non blocking and blocking calls to accept connections
-        void runNetworkListenerInBackground();
-        void runNetworkListener();
-        
-        
-        // Check running status
-        bool isNetworkListenerRunning()
-        {
-            return background_thread_running;
-        }
-        
-        std::string getStatus()
-        {
-            if( background_thread_running )
-                return "listening";
-            else
-                return "not listening";
-                
-        }
-        
-    private:
-        
-        SocketConnection* acceptNewNetworkConnection(void);
-
-        
-    };
+  void* NetworkListener_run(void*p);
+  
+  class NetworkListener
+  {
     
+  public:
+    
+    // Constructor
+    NetworkListener( NetworkListenerInterface * _network_listener_interface );
+    ~NetworkListener();
+    
+    // Init and close functions
+    Status InitNetworkListener( int port );
+    
+    // Function to cancel banground thread accepting connections
+    void StopNetworkListener( );
+    
+    // Get port
+    int port();
+
+    // Debug information
+    bool IsNetworkListenerRunning();
+    std::string getStatus();
+    
+  private:
+    
+    // Main function to run in background
+    void runNetworkListener();
+
+    SocketConnection* acceptNewNetworkConnection(void);
+    
+    // Network manager to be notified
+    NetworkListenerInterface * network_listener_interface;
+    
+    // Port where we are listening
+    int port_;
+    
+    // Internal file descriptor
+    int rFd;
+    
+    // Background thread
+    bool background_thread_running;     // Flag indicating if the background thread is running ( to joint at destructor )
+    pthread_t t;
+
+    // Background thread function
+    friend void* NetworkListener_run(void*p);
+
+    
+  };
+  
 }
 
 #endif

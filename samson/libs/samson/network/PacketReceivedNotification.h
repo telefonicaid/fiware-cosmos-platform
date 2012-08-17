@@ -2,6 +2,7 @@
 #define _H_PACKET_RECEIVER_NOTIFICATION
 
 #include "au/Object.h"
+#include "au/containers/SharedPointer.h"
 
 #include "engine/EngineElement.h"// samson::EngineElement
 #include "engine/MemoryManager.h"
@@ -10,49 +11,48 @@
 
 namespace samson
 {
-
-/**
- 
- PacketReceived
- Process a packet received from the network library
- 
- */
+  
+  /**
+   
+   PacketReceived
+   Process a packet received from the network library
+   
+   */
+  
+  class PacketReceivedNotification : public engine::EngineElement
+  {
     
-    class PacketReceivedNotification : public engine::EngineElement
+    NetworkInterfaceReceiver* receiver_;
+    PacketPointer packet_;
+    
+  public:
+    
+    PacketReceivedNotification( NetworkInterfaceReceiver* receiver , const PacketPointer& packet )
+    : engine::EngineElement( "packet_received" )
+    , packet_( packet )
     {
-        
-        NetworkInterfaceReceiver* receiver;
-        au::ObjectContainer<Packet> packet_container; // Container keeping packet retained
-        
-    public:
-        
-        PacketReceivedNotification( NetworkInterfaceReceiver* _receiver , Packet *_packet )
-        : engine::EngineElement( "packet_received" )
-        {
-            if( !_packet )
-                LM_X(1,("Internal error"));
-            
-            receiver = _receiver;
-            packet_container.setObject( _packet );
-            
-            std::ostringstream txt;
-            txt << "PacketReceivedNotification: ";
-            txt << " Packet: " << packet_container.getObject()->str() << "";
-            description = txt.str();
-            shortDescription = "Packet";
-            
-        }
-        
-        void run()
-        {
-            if( ! receiver )
-                LM_W(("Packet %s lost since network interface is still not activated." , packet_container.getObject()->str().c_str() ));
-            else
-                receiver->receive( packet_container.getObject() );
-        }
-        
-    };
+      if( packet_ == NULL )
+        LM_X(1,("Internal error"));
+      
+      receiver_ = receiver;
+      
+      std::ostringstream txt;
+      txt << "PacketReceivedNotification: ";
+      txt << " Packet: " << packet_->str() << "";
+      description = txt.str();
+      shortDescription = "Packet";
+    }
     
+    void run()
+    {
+      if( ! receiver_ )
+        LM_W(("Packet %s lost since network interface is still not activated." , packet_->str().c_str() ));
+      else
+        receiver_->receive( packet_ );
+    }
+    
+  };
+  
 }
 
 #endif

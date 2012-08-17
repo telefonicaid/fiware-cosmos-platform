@@ -10,7 +10,7 @@
 
 #include "au/utils.h" // Own interface
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 
 const char * valid_chars = "01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRTSUVXYZ";
@@ -94,4 +94,4 @@ void remove_return_chars( char* line )
 }
 
 
-NAMESPACE_END
+}

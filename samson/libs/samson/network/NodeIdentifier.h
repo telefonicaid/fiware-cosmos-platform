@@ -9,7 +9,7 @@
 #include "au/Status.h"
 
 #include "samson/common/samson.pb.h"     // google protocol buffers
-#include "samson/common/EnvironmentOperations.h"        // str( network::Message* )
+#include "samson/common/EnvironmentOperations.h"        // str( gpb::Message* )
 
 #include "engine/MemoryManager.h"        // MemoryManager
 #include "engine/Object.h"
@@ -30,16 +30,17 @@ namespace samson
         size_t id;
         
         NodeIdentifier();
-        NodeIdentifier( network::NodeIdentifier pb_node_identifier  );
-        NodeIdentifier ( ClusterNodeType _node_type , size_t _id );
+        NodeIdentifier( gpb::NodeIdentifier pb_node_identifier  );
+        NodeIdentifier( ClusterNodeType _node_type , size_t _id );
+        NodeIdentifier( const std::string& name );
         
-        void fill( network::NodeIdentifier* pb_node_identifier );
+        void fill( gpb::NodeIdentifier* pb_node_identifier );
         
         bool operator==(const NodeIdentifier&  other);
         
         std::string str();
         
-        std::string getCodeName();
+        std::string getCodeName() const;
         
         bool isDelilahOrUnknown();
         

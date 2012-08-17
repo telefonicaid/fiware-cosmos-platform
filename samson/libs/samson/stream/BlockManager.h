@@ -2,7 +2,8 @@
 #define _H_BLOCK_MANAGER
 
 #include "Block.h"                      // samson::stream::Block
-#include "au/containers/list.h"
+#include "au/containers/Dictionary.h"
+#include "au/containers/SharedPointer.h"
 
 #include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"
@@ -13,100 +14,88 @@
 #include <vector>
 
 namespace samson {
-    namespace stream {
-        
-        class BlockList;
-        
-        /**
-         Manager of all the blocks running on the system
-         */
-        
-        bool compare_blocks( Block*b1 , Block *b2 );
+  namespace stream {
+    
+    class BlockList;
+    
+    /**
+     Manager of all the blocks running on the system
+     */
+    
+    
+    class BlockManager : public engine::Object
+    {
+     
+      
+      BlockManager();                 // Private constructor for singleton implementation
+      ~BlockManager();
+      
+    public:
+      
+      // Singleton 
+      static void init();
+      static BlockManager* shared(); 
+      static void destroy();
+      
+    public:
+      
+      // Create blocks
+      void create_block( size_t block_id , engine::BufferPointer buffer );
+      void create_block( size_t block_id , KVHeader* header );
 
-        
-        class BlockManager : public engine::Object 
-        {
-            
-            au::list<Block> blocks;         // List of blocks in the system ( ordered by priority / creation time )
-            
-            BlockManager();                 // Private constructor for singleton implementation
-            ~BlockManager();
+      // Get a particular block
+      BlockPointer getBlock( size_t _id );
+      
+      // Reset the entire block manager
+      void resetBlockManager( );
+      
+      // Function to review pending read / free / write operations
+      void review();
+      
+      // Remove blocks not included in this list
+      void RemoveBlocksNotIncluded( const std::set<size_t>& blocks );
+      
+      // Notification interface
+      virtual void notify( engine::Notification* notification );
+      
+      // To be removed....
+      void update( BlockInfo &block_info );
+      
+      // Get collection of blocks for remote listing
+      gpb::Collection* getCollectionOfBlocks( const Visualization& visualization );
+      
+      size_t get_scheduled_write_size()
+      {
+        return scheduled_write_size;
+      }
+      
+      size_t get_scheduled_read_size()
+      {
+        return scheduled_read_size;
+      }
+      
+      std::set<size_t> GetPendingBlockIds( const std::set<size_t>& block_ids );
+      std::set<size_t> GetBlockIds();
+      
+    private:
+      
+      void create_block_from_disk( const std::string& path );
+      void recover_blocks_from_disks();
+      
+      void schedule_remove_operation( BlockPointer block );
+      void schedule_read_operation( BlockPointer block );
+      void schedule_write_operation( BlockPointer block );
+      
+      au::Dictionary<size_t, Block> blocks_; // Dictionary of blocks
+      std::list<size_t> block_ids_;          // list of block identifiers in order
+      
+      size_t scheduled_write_size;    // Amount of bytes scheduled to be writen to disk
+      size_t scheduled_read_size;     // Amount of bytes scheduled to be read from disk
+      size_t max_memory;              // Maximum amount of memory to be used by this block manager
 
-            size_t worker_id;               // Identifier of the worker in the cluster
-            size_t id;                      // Next id to give to a block
-
-            size_t scheduled_write_size;
-            size_t scheduled_read_size;
-            
-            size_t max_memory;              // Maximum amount of memory to be used by this block manager
-            
-        public:
-
-            // Singleton 
-            static void init();
-            static BlockManager* shared(); 
-            static void destroy();
-            
-        public:
-
-            // Auxiliar function to rise the next block identifier to not colide with previous blocks
-            void setMinimumNextId( size_t min_id );
-            
-            // Update the worker id
-            void resetBlockManager( size_t _worker_id )
-            {
-                worker_id = _worker_id;
-                
-                // Remover all blocks
-                blocks.clearList();
-                
-                // Remove all files...
-                LM_TODO(("Remove all files at BlockManager"));
-            }
-            
-            // Function to get a new id for a block
-            size_t getNextBlockId();
-            size_t getWorkerId();
-            
-            // Add a block to the block manager
-            // It is assumed block is NOT inside the list "blocks"
-            
-            void insert( Block* b );
-
-            // Function to review pending read / free / write operations
-            void review();
-            
-        public:
-            
-            // Get a particular block ( only for debugging )
-            Block* getBlock( size_t _id );
-
-        public:
-            
-            virtual void notify( engine::Notification* notification );
-            
-        public:
-            
-            void update( BlockInfo &block_info );
-            void getInfo( std::ostringstream& output);
-            
-            network::Collection* getCollectionOfBlocks( Visualization* visualization );
-            
-            size_t get_scheduled_write_size()
-            {
-                return scheduled_write_size;
-            }
-            
-            size_t get_scheduled_read_size()
-            {
-                return scheduled_read_size;
-            }
-
-            
-            
-            
-        };
-    }
+      
+    };
+  }
 }
 
 #endif

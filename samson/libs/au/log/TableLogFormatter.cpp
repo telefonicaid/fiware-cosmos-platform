@@ -176,7 +176,7 @@ namespace au
         if( str_pattern != "" )
         {
             pattern = new Pattern( str_pattern , error );
-            if( error->isActivated() )
+            if( error->IsActivated() )
                 return;
         }
         

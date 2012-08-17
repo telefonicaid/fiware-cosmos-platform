@@ -18,11 +18,8 @@ namespace samson
 
      // Function to report progress of the operation
      virtual void reportProgress( double p )=0;
-
 	   
    };
-	
-	
 	
 }
 

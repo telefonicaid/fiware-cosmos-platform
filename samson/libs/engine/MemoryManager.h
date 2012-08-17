@@ -34,119 +34,70 @@
 #include "au/containers/map.h"                         // au::map
 #include "au/containers/list.h"                        // au::list
 #include "au/string.h"                      // au::Format
-#include "au/namespace.h"
+
 
 #include "au/tables/Table.h"
 
 #define notification_memory_request_response    "notification_memory_request_response"
 
-NAMESPACE_BEGIN(engine)
-
-class MemoryRequest;
-
-/**
- 
- Memory manager is a singleton implementation to manager the memory used by any component of SAMSON
- A unifierd view of the memory is necessary to block some data-generator elements when we are close to the maximum memory
- It is also responsible to manage shared-memory areas to share between differnt processes. 
- 
- */
-
-class MemoryManager
-{
-    static MemoryManager* memoryManager;            // Singleton Instance pointer
-    au::Token token;                                // Token to protect this instance and memoryRequests
-                                                    // It is necessary to protect since network thread can access directly here
+namespace engine {
+  
+  class MemoryRequest;
+  
+  /**
+   
+   Memory manager is a singleton implementation to manager the memory used by any component of SAMSON
+   A unifierd view of the memory is necessary to block some data-generator elements when we are close to the maximum memory
+   It is also responsible to manage shared-memory areas to share between differnt processes. 
+   
+   */
+  
+  class MemoryManager
+  {
     
-    size_t memory;                                  // Total available memory
+  public:
     
-    // List of memory requests
-    au::list <MemoryRequest> memoryRequests;        // Request for memory
-    
-    // List of active buffers for better monitoring
-    std::set<Buffer*> buffers;
-    
-    // Private constructor for
-    MemoryManager( size_t _memory );
-    
-    friend class Buffer;            // Buffer class can call to destoryBuffer
-    friend class BufferContainer;   // Buffer container is the only one that can create Buffers directly
-    
-public:
-    
-    size_t public_max_memory;
-    size_t public_used_memory;
-    
-public:
-    
-    static void destroy( );
-    static void init( size_t _memory );
-    static MemoryManager *shared();
-    
+    // Note: Constuctor is private to make sure Singleton is used correctly
     ~MemoryManager();
     
-    /*
-     --------------------------------------------------------------------
-     DIRECT mecanish to request buffers ( synchronous interface )
-     --------------------------------------------------------------------
-     */
+    // Singleton functions
+    static void destroy( );
+    static void init( size_t memory );
+    static MemoryManager *shared();
 
-    Buffer *createBuffer( std::string name , std::string type ,  size_t size , double mem_limit=0.0 );
-
-private:
+    // Register and Unregister buffers to keep track of memory allocated
+    void Add( Buffer* buffer );
+    void Remove( Buffer* buffer );
     
-    Buffer *_newBuffer( std::string name , std::string type , size_t size , double mem_limit );
-    
-    
-    /*
-     --------------------------------------------------------------------
-     INDIRECT mecanish to request buffers ( asynchronous interface )
-     --------------------------------------------------------------------
-     */
-    
-    
-public:
-    
-    void add( MemoryRequest *request );
-    
-    void cancel( MemoryRequest *request );
-    
-private:
-    
-    void _checkMemoryRequests();         // Check the pending memory requests
-    
-    
-private:
-
-    // This method is called automatically when relese a Buffer that nodoby retained
-    void destroyBuffer( Buffer *b );    		 //Interface to destroy a buffer of memory
-    
-public:
-    
-    /*
-     --------------------------------------------------------------------
-     Get information about memory usage
-     --------------------------------------------------------------------
-     */
-    
-    size_t getMemory();
-    
-    int getNumBuffers();
-    size_t getUsedMemory();
-    double getMemoryUsage();
-    
-    
-    
-private:
-    
-    double _getMemoryUsage();
-    size_t _getUsedMemory();
-    
-public:
-    
+    // Get table with all buffer
     au::tables::Table getTableOfBuffers();    
-};
+    
+    // Accessors
+    size_t memory();
+    int num_buffers();
+    size_t used_memory();
+    double memory_usage();
+    
+  private:
 
-NAMESPACE_END
+    // Constructor is private to make sure singleton is used correctly
+    MemoryManager( size_t memory );
+    
+    static MemoryManager* memoryManager;       // Singleton Instance pointer
+    
+    au::Token token_;                          // Token to protect this instance and memoryRequests
+                                               // It is necessary to protect since network thread can access directly here
+    
+    size_t used_memory_;                       // Total memory used 
+    size_t memory_;                            // Total available memory
+        
+    std::set<Buffer*> buffers_;                // List of active buffers for better monitoring
+    
+    friend class Buffer;                       // Buffer class can call to destoryBuffer
+    friend class BufferContainer;              // Buffer container is the only one that can create Buffers directly
+    
+  };
+  
+}
 
 #endif

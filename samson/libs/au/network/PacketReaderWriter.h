@@ -81,7 +81,7 @@ namespace au { namespace network {
                 interface_->process_packet(packet);
                 
                 // Release this object
-                packet->release();
+                packet->Release();
             }
         }
         
@@ -169,7 +169,7 @@ namespace au { namespace network {
                 ObjectContainer<P> container;
                 packets_.extract_front( container );
                 
-                P* p = container.getObject();
+                P* p = container.object();
                 
                 if( !p )
                     return;
@@ -192,7 +192,7 @@ namespace au { namespace network {
             buffered_size += packet->getSize();
         }     
         
-        size_t getBufferedSize()
+        size_t bufferedSize()
         {
             return buffered_size;
         }
@@ -262,7 +262,7 @@ namespace au { namespace network {
         
         size_t getOutputBufferedSize()
         {
-            return packet_writer_->getBufferedSize();
+            return packet_writer_->bufferedSize();
         }
         
         void extract_pending_packets( ObjectList<P>* packets )

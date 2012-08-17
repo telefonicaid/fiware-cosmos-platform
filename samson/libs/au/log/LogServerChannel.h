@@ -24,7 +24,6 @@ namespace au
 {
     
     class LogServer;
-    class LogServerQuery;
     
     // On memory container of logs ( for fast queries )
     class LogContainer
@@ -57,7 +56,7 @@ namespace au
             au::TokenTaker tt(&token);
             
             // Retain log...
-            log->retain();
+            log->Retain();
             
             // Total size and num
             num++;
@@ -75,7 +74,7 @@ namespace au
                 size-=log->getTotalSerialitzationSize();
 
                 // Release the log
-                tmp_log->release();
+                tmp_log->Release();
             }
         }
         
@@ -89,7 +88,7 @@ namespace au
 
             au::list<Log>::iterator it;
             for( it = logs.begin() ; it != logs.end() ; it++ )
-                (*it)->release();
+                (*it)->Release();
             logs.clear(); // Not remove internal elements
         }
         
@@ -109,8 +108,8 @@ namespace au
             for( it = logs.begin() ; it != logs.end() ; it++ )
             {
                 Log* log = *it;
-                types.add( log->get("TYPE" ) );
-                channels.add( log->get("channel" ) );
+                types.Add( log->get("TYPE" ) );
+                channels.Add( log->get("channel" ) );
             }
             
             

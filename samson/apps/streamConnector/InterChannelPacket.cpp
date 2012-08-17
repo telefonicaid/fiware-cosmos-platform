@@ -1,7 +1,7 @@
 
 
 #include "engine/Buffer.h"
-#include "engine/BufferContainer.h"
+
 #include "InterChannelPacket.h" // Own interface
 
 namespace stream_connector {
@@ -24,18 +24,14 @@ namespace stream_connector {
         return message;
     }
     
-    engine::Buffer* InterChannelPacket::getBuffer()
+    engine::BufferPointer InterChannelPacket::buffer()
     {
-        return buffer_container_.getBuffer();
+      return buffer_;
     }
     
-    void InterChannelPacket::setBuffer( engine::Buffer * buffer )
+    void InterChannelPacket::set_buffer( engine::BufferPointer buffer )
     {
-        buffer_container_.setBuffer( buffer );
-        if( buffer )
-            header_.buffer_size = buffer->getSize();
-        else
-            header_.buffer_size = 0;
+      buffer_ = buffer;
     }
     
     au::Status InterChannelPacket::read( au::FileDescriptor * fd )
@@ -86,15 +82,14 @@ namespace stream_connector {
         if( header_.buffer_size > 0 )
         {
             
-            buffer_container_.create("InterChannelPacket", "streamConnector", header_.buffer_size );
-            s = fd->partRead( buffer_container_.getBuffer()->getData() 
-                             , header_.buffer_size 
-                             , "data"
-                             , 0 );
+          buffer_ = engine::Buffer::create("InterChannelPacket", "streamConnector", header_.buffer_size );
+          s = fd->partRead( buffer_->getData()
+                           , header_.buffer_size
+                           , "data"
+                           , 0 );
             
             // Set the correct size for this buffer
-            engine::Buffer * buffer = buffer_container_.getBuffer();
-            buffer->setSize( header_.buffer_size );
+            buffer_->setSize( header_.buffer_size );
             
         }
         if( s != au::OK )
@@ -107,9 +102,8 @@ namespace stream_connector {
     void InterChannelPacket::recompute_sizes_in_header()
     {
         header_.message_size = message->ByteSize();
-        engine::Buffer * buffer = buffer_container_.getBuffer();
-        if( buffer )
-            header_.buffer_size = buffer->getSize();
+        if( buffer_ != NULL )
+            header_.buffer_size = buffer_->getSize();
         else
             header_.buffer_size = 0;
     }
@@ -147,10 +141,9 @@ namespace stream_connector {
                 LM_RE(s, ("partWrite:GoogleProtocolBuffer(): %s", status(s)));
         }
         
-        engine::Buffer * buffer = buffer_container_.getBuffer();
-        if( buffer )
+        if( buffer_ != NULL )
         {
-            s = fd->partWrite(buffer->getData(), buffer->getSize(), "buffer" );
+            s = fd->partWrite(buffer_->getData(), buffer_->getSize(), "buffer" );
             if( s != au::OK )
                 return s;
         }
@@ -202,10 +195,9 @@ namespace stream_connector {
         output << " ]";
         
         // Buffer at the end of the message
-        engine::Buffer* buffer = buffer_container_.getBuffer();
         
-        if( buffer )
-            output << "[ Buffer " << au::str( buffer->getSize() , "B" ) << " ]";
+        if( buffer_ != NULL )
+            output << "[ Buffer " << au::str( buffer_->getSize() , "B" ) << " ]";
         else
             output << "[ No buffer ]";
         

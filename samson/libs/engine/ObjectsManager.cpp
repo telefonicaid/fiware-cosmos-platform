@@ -8,7 +8,7 @@
 
 #include "ObjectsManager.h"     // Own interface
 
-NAMESPACE_BEGIN(engine)
+namespace engine {
 
 ObjectsManager::ObjectsManager() : token("Engine::ObjectsManager")
 {
@@ -79,7 +79,7 @@ void ObjectsManager::remove(Object* o , const char* name )
 
 
 // Get the collections of ids for a particular channel
-void ObjectsManager::getObjectIdsForChannel( const char* name , std::set<size_t>& ids )
+void ObjectsManager::objectIdsForChannel( const char* name , std::set<size_t>& ids )
 {
     au::TokenTaker tt( &token );
     
@@ -116,11 +116,11 @@ void ObjectsManager::send( Notification* notification )
     std::set<size_t> ids; // Total list of objects that should be notified
 
     // Get list of objects that should be notified because they are listening the channel
-    getObjectIdsForChannel( notification->getName() , ids );
+    objectIdsForChannel( notification->name() , ids );
     
     // Add objects that should be notified directly...
-    std::set<size_t>::iterator t;
-    for( t = notification->targets.begin() ; t != notification->targets.end() ; t++ )
+    std::set<size_t>::const_iterator t;
+    for( t = notification->targets().begin() ; t != notification->targets().end() ; t++ )
         ids.insert(*t);
     
     // Notify all the objects
@@ -145,11 +145,11 @@ void ObjectsManager::send( Notification *notification, size_t target )
 }
 
 // Get the object registered with this name
-Object* ObjectsManager::getObjectByName( const char *name )
+Object* ObjectsManager::objectByName( const char *name )
 {
     return objects_by_name.findInMap(name);
 }
 
 
 
-NAMESPACE_END
+}

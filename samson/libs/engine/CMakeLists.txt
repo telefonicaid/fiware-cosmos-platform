@@ -2,7 +2,6 @@ SET (HEADERS
 Object.h
 ObjectsManager.h
 Buffer.h
-BufferContainer.h
 SimpleBuffer.h
 EngineElementCollection.h
 Engine.h
@@ -17,15 +16,12 @@ ReadFile.h
 ReadFileManager.h
 DiskManager.h
 DiskOperation.h
-ConnectionsManager.h
-Connection.h
 )
 
 SET (SOURCES
 Object.cpp
 ObjectsManager.cpp
 Buffer.cpp
-BufferContainer.cpp
 EngineElementCollection.cpp
 Engine.cpp
 Notification.cpp
@@ -39,8 +35,6 @@ ReadFile.cpp
 ReadFileManager.cpp
 DiskManager.cpp
 DiskOperation.cpp
-ConnectionsManager.cpp
-Connection.cpp
 )
 
 # Inclue directories

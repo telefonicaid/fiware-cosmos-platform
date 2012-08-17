@@ -20,11 +20,8 @@
 #ifndef _H_AU_STATUS
 #define _H_AU_STATUS
 
-#include "au/namespace.h"
-
 namespace au 
 {
-    
     typedef enum Status
     {
         OK,

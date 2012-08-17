@@ -190,7 +190,7 @@ int main( int argC , const char*argV[] )
             total_num++;
         }
         
-        size_t total_seconds = cronometer.diffTimeInSeconds();
+        size_t total_seconds = cronometer.seconds();
         
         if( total_seconds < theoretical_seconds )
         {

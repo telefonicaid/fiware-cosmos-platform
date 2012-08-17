@@ -31,11 +31,11 @@
 #include "au/containers/map.h"                 // au::map
 #include "au/string.h"              // au::str(...)
 
-#include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
-NAMESPACE_BEGIN(tables)
+
+namespace au {
+namespace tables {
 
 class Table;
 class TreeItem;
@@ -139,7 +139,7 @@ public:
     
 };
 
-NAMESPACE_END
-NAMESPACE_END
+}
+}
 
 #endif

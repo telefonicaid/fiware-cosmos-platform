@@ -11,7 +11,7 @@
 #include "au/containers/list.h"                        // au::list
 #include "au/mutex/Token.h"                       // au::Token
 #include "au/Cronometer.h"                  // au::Cronometer
-#include "au/namespace.h"                // NAMESPACE_BEGIN & NAMESPACE_END
+                // NAMESPACE_BEGIN & }
 #include "au/containers/vector.h"
 #include "au/mutex/TokenTaker.h"
 #include "au/mutex/Token.h"

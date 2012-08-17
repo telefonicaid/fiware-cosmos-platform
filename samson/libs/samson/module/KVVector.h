@@ -15,8 +15,6 @@
 
 #include <samson/module/KV.h>                  /* KV                                       */
 
-
-
 namespace samson
 {
 	class KVVector
@@ -29,11 +27,6 @@ namespace samson
 		{
 			num_kvs = _num_kvs;
 			kvs     = (KV*) malloc(num_kvs * sizeof(KV));
-
-			/*
-			if (kvs == NULL)
-				LOG_ERROR(("error allocating KV Vector of %llu items: %s", (unsigned long long int) _num_kvs, strerror(errno)));
-			 */
 		}
 		
 		~KVVector()

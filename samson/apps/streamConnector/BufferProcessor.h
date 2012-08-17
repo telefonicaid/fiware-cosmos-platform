@@ -4,7 +4,7 @@
 #include "au/Cronometer.h"
 #include "engine/Buffer.h"
 
-#include "engine/BufferContainer.h"
+
 #include "engine/ProcessItem.h"
 
 #include "samson/module/Operation.h"
@@ -40,14 +40,14 @@ namespace stream_connector {
         size_t size;
         
         // Buffer used to emit output produced by the splitter
-        engine::BufferContainer output_buffer_container;
+        engine::BufferPointer output_buffer_;
         
     public:
         
         BufferProcessor( Channel* _channel );
         ~BufferProcessor();
         
-        void push( engine::Buffer * bufer );
+        void push( engine::BufferPointer bufer );
         void flush( );
         
         // SplitterEmitter interface

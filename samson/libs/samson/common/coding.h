@@ -2,10 +2,10 @@
 #define _H_CODING
 
 /* ****************************************************************************
-*
-* FILE                 coding.h - 
-*
-*/
+ *
+ * FILE                 coding.h -
+ *
+ */
 #include <sys/time.h>                   // struct timeval
 #include <string.h>                     // std::string
 
@@ -29,13 +29,13 @@
 #define KV_NODE_UNASIGNED 4294967295u	// 2^32-1
 
 namespace samson {
-
+  
 	
-    
-    bool operator!=(const KVFormat & left, const KVFormat & right);
-    bool operator==(const KVFormat & left, const KVFormat & right);
-
-
+  
+  bool operator!=(const KVFormat & left, const KVFormat & right);
+  bool operator==(const KVFormat & left, const KVFormat & right);
+  
+  
 	struct HashGroupOutput {
 		
 		KVInfo info;		// Basic info of this hg
@@ -49,7 +49,7 @@ namespace samson {
 			last_node = KV_NODE_UNASIGNED;
 		}
 		
-	};	
+	};
 	
 	/**
 	 A channel is the unit of data for a particular server and output
@@ -68,7 +68,7 @@ namespace samson {
 		}
 	};
 	
-	/* 
+	/*
 	 Basic unit of storage for output key-values
 	 It is used by a particular output channel in a linked-chain way
 	 */
@@ -118,24 +118,24 @@ namespace samson {
 		}
 		
 	};
+  
+  /**
+   Structure to save the hash-code of the datainstance
+   */
+  
+  struct KeyValueHash
+  {
+    size_t key_hash;
+    size_t value_hash;
     
-    /**
-     Structure to save the hash-code of the datainstance
-     */
-    
-    struct KeyValueHash
+    KeyValueHash()
     {
-        size_t key_hash;
-        size_t value_hash;
-        
-        KeyValueHash()
-        {
-            key_hash = 0;
-            value_hash = 0;
-        }
-    };
+      key_hash = 0;
+      value_hash = 0;
+    }
+  };
 	
-    
+  
 }
 
 #endif

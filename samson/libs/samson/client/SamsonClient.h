@@ -59,74 +59,57 @@ namespace  samson {
     
     class SamsonClient : public DelilahLiveDataReceiverInterface
     {
-        std::string connection_type;            // String to describe connection with SAMSON (pop, push, console, ...)
+        std::string connection_type_;           // String to describe connection with SAMSON (pop, push, console, ...)
         
-        std::vector<size_t> delilah_ids;        // Delilah operation to wait for... ( mainly push opertions )
+        samson::Delilah* delilah_;              // Delilah client   
         
-        samson::Delilah* delilah;               // Delilah client   
-        
-        BufferContainer buffer_container;       // Blocks of data received so far ( live data )
+        BufferContainer buffer_container_;      // Blocks of data received so far ( live data )
         
 	public:
         
         au::rate::Rate push_rate;               // Statistics about rate
         au::rate::Rate pop_rate;                // Statistics about rate
-        
-        // Default constructor
-        SamsonClient( std::string connection_type );
-        virtual ~SamsonClient();
-        
-        // General init ( Init engine )
+
+        // General static init ( Init engine )
         static void general_init( size_t memory = 1000000000 , size_t load_buffer_size = 64000000 );
         static void general_close( );
         
-        // Init the connection with a SAMSON cluster
-        void initConnection( au::ErrorManager * error
-                            , std::string samson_node 
-                            , int port = SAMSON_WORKER_PORT 
-                            , std::string user = "anonymous" 
-                            , std::string password = "anonymous"
-                            );
-        
-        void disconnect();
-        
-        // DelilahLiveDataReceiverInterface
-        void receive_buffer_from_queue( std::string queue , engine::Buffer* buffer );
-        
-        // Push content to a particular queue
-        size_t push( std::string queue , char *data , size_t length );
-        size_t push( std::string queue , DataSource *data_source );
-        size_t push( std::string queue , engine::Buffer * buffer );
+        // Constructor and destructor
+        SamsonClient( std::string connection_type );
+        virtual ~SamsonClient();
 
-        // Wait until all operations are finished
-        void waitUntilFinish();        
-        
-        // Check if all operations are finished
-        bool areAllOperationsFinished();
+        // Connect with a cluter
+        bool connect( const std::vector<std::string>& hosts );
+        bool connect( const std::string& host );
         
         // Check if connection is ready
         bool connection_ready();
         
+                
+        // Push content to a particular queue ( returns a push_id )
+        size_t push( engine::BufferPointer buffer , const std::string& queue );
+        size_t push( engine::BufferPointer buffer , const std::vector<std::string>& queues );
+        size_t getNumPendingPushItems();        // Get number of operations we are waiting for...
+        bool isFinishedPushingData();           // Check if all operations are finished
+        void waitFinishPushingData();           // Wait until all operations are finished
+
         // Live data connection
         void connect_to_queue( std::string queue, bool flag_new , bool flag_remove );
         SamsonClientBlockInterface* getNextBlock( std::string queue );
-        
-        // Getting information about my connection
-        std::string getInfoAboutPushConnections( bool print_verbose );
-        std::string getInfoAboutDelilahComponents();
       
         // Change the interface to receive live data from SAMSON
         void set_receiver_interface( DelilahLiveDataReceiverInterface* interface );
 
-        // Get number of operations we are waiting for...
-        size_t getNumPendingOperations();
+        // DelilahLiveDataReceiverInterface
+        void receive_buffer_from_queue( std::string queue , engine::BufferPointer buffer );
+
+        // Wait until everything is finished
+        void waitUntilFinish();
         
-        std::string getStatisticsString()
-        {
-            return au::str("Pushed %s in %d blocs", 
-                           au::str(push_rate.getTotalSize(),"B").c_str() , 
-                           push_rate.getTotalNumberOfHits() );
-        }
+    private:
+        
+        void init( std::string connection_type , const std::vector<std::string>& hosts );
+        
         
     };
     

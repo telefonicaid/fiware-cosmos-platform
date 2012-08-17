@@ -1,34 +1,28 @@
 
 SET (HEADERS
 	DelilahBase.h
-	DelilahBaseConnection.h
 	Delilah.h
+	PushManager.h
 	DelilahConsole.h
 	DelilahComponent.h
-	WorkerCommandDelilahComponent.h
 	PushDelilahComponent.h
 	PopDelilahComponent.h
-	RepeatDelilahComponent.h
+	WorkerCommandDelilahComponent.h
 	TXTFileSet.h
-	SamsonDataSet.h
-	SamsonFile.h
 	DelilahCommandCatalogue.h
 	AlertCollection.h
 )
 
 SET (SOURCES
-	Delilah.cpp
 	DelilahBase.cpp
-	DelilahBaseConnection.cpp	
+	Delilah.cpp
+	PushManager.cpp
 	DelilahConsole.cpp
 	DelilahComponent.cpp
-	WorkerCommandDelilahComponent.cpp
 	PushDelilahComponent.cpp
 	PopDelilahComponent.cpp
-	RepeatDelilahComponent.cpp
+	WorkerCommandDelilahComponent.cpp
 	TXTFileSet.cpp
-	SamsonDataSet.cpp
-	SamsonFile.cpp
 	DelilahCommandCatalogue.cpp
 	AlertCollection.cpp
 )

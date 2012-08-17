@@ -16,7 +16,7 @@
 #include "samson/common/status.h"
 
 
-NAMESPACE_BEGIN(au)
+namespace au {
 class ErrorManager;
 }
 
@@ -122,8 +122,8 @@ class SamsonSetup : public SetupItemCollection
         std::string modulesDirectory();
         std::string blocksDirectory();
 
-        std::string blockFileName( size_t worker_id , size_t id );
-        bool blockIdFromFileName( std::string fileName , size_t* worker_id , size_t *id );
+    std::string blockFileName( size_t block_id );
+    size_t blockIdFromFileName( std::string fileName );
 
         std::string streamManagerLogFileName();
 

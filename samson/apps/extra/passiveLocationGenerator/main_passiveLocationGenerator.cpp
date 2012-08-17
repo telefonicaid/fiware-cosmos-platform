@@ -116,7 +116,7 @@ int main( int argc , const char *argv[] )
 	   // Detect if we need to sleep....
 	   theoretical_seconds += 5;
 	   
-	   size_t ellapsed_seconds = cronometer.diffTimeInSeconds();
+	   size_t ellapsed_seconds = cronometer.seconds();
 	   
 	   // Sleep some time to simulate a particular rate
 	   if( ellapsed_seconds < theoretical_seconds )

@@ -300,7 +300,7 @@ void ModuleInformation::printMainFile( std::string outputFileName )
     output << "\t{" << std::endl;
     output << "\t\treturn new " << module.getFullClassName() << "();" << std::endl;
     output << "\t}" << std::endl;
-    output << "\tstd::string getSamsonVersion()" << std::endl;
+    output << "\tconst char* getSamsonVersion()" << std::endl;
     output << "\t{" << std::endl;
     output << "\t\treturn SAMSON_VERSION;" << std::endl;
     output << "\t}" << std::endl;

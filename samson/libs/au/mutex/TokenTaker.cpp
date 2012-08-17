@@ -7,11 +7,12 @@
 #include "LockDebugger.h"               // LockDebugger
 #include "au/mutex/Token.h"                   // au::Token
 #include "au/Cronometer.h"              // au::Cronometer
+#include "au/ExecesiveTimeAlarm.h"
 #include "TokenTaker.h"				    // Own interface
 
 //#define DEBUG_AU_TOKEN
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 TokenTaker::TokenTaker( Token* _token  )
 {
@@ -21,7 +22,7 @@ TokenTaker::TokenTaker( Token* _token  )
     name = "Unknown";
     
     //LM_M(("New TokenTaker %s for token %s", name ,  token->name));
-    token->retain();
+    token->Retain();
 }
 
 TokenTaker::TokenTaker( Token* _token , const char* _name )
@@ -32,19 +33,19 @@ TokenTaker::TokenTaker( Token* _token , const char* _name )
     name = _name;
     
     //LM_M(("New TokenTaker %s for token %s", name ,  token->name));
-    token->retain();
+    token->Retain();
 }
 
 TokenTaker::~TokenTaker()
 {
     //LM_M(("Destroy TokenTaker %s for token %s", name ,  token->name));
-    token->release();
+    token->Release();
 }
 
 
 void TokenTaker::stop(  )
 {
-    token->stop();
+    token->Stop();
 }
 
 void TokenTaker::wakeUp()
@@ -67,4 +68,4 @@ void TokenTaker::wakeUpAll()
         LM_X(1, ("Internal error at au::TokenTaker"));
 }
 
-NAMESPACE_END
+}

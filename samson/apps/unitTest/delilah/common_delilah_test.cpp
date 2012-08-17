@@ -13,12 +13,9 @@
 
 #include "samson/delilah/DelilahConsole.h"
 
-extern size_t delilah_random_code;
 
 samson::DelilahConsole *init_delilah_test()
 {
-   // Random code for delilah
-   delilah_random_code = au::code64_rand();
 
     // Make sure this singleton is created just once
     au::LockDebugger::shared();
@@ -36,8 +33,8 @@ samson::DelilahConsole *init_delilah_test()
     // Create a DelilahConsole once network is ready
     samson::DelilahConsole *delilahConsole = new samson::DelilahConsole();
 
-	// Not connect since it depends on the test
-    //delilahConsole->connect( "localhost" , 1234 , "anonymous" , "empty" );
+    // Not connected since it depends on the test
+    //delilahConsole->connect( "localhost" );
 
     return delilahConsole;
 }

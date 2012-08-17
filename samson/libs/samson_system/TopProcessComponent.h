@@ -18,7 +18,7 @@ namespace samson{ namespace system{
         
         TopProcessComponent() : ProcessComponent("top")
         {
-            //time_span = environment->getSizeT( "time_span" ,  300 ); // By default 5 minuts average
+            //time_span = environment->get( "time_span" ,  300 ); // By default 5 minuts average
             time_span = 300;
             top_list_max_size = 100;
             

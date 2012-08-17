@@ -136,10 +136,10 @@ int main( int argC , const char *argV[])
     
 	samson::ModuleInformation * module_information = samson::ModuleInformation::parse( moduleFileName , &error );     
 
-    if( error.isActivated() )
+    if( error.IsActivated() )
     {
         std::cerr << "Error parsing file " << moduleFileName << "\n";
-        std::cerr << error.getMessage();
+        std::cerr << error.GetMessage();
     }
     
 	// Print all the files

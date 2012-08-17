@@ -64,7 +64,7 @@ namespace stream_connector {
         
         // Update the counter of connections
         num_connections_++;
-        cronometer_reconnection_.reset(); // Start cronometer to do not restart inmediatelly
+        cronometer_reconnection_.Reset(); // Start cronometer to do not restart inmediatelly
         
         // Get file descriptor and start background thread
         file_descriptor_ = getFileDescriptor();
@@ -93,7 +93,7 @@ namespace stream_connector {
         {
             set_as_connected(false);
             
-            if( cronometer_reconnection_.diffTime() < 3 )
+            if( cronometer_reconnection_.seconds() < 3 )
                 return ; // Wait a little bit
             
             // Reconnect if possible
@@ -128,11 +128,9 @@ namespace stream_connector {
                 LM_X(1, ("Internal error"));
             
             // Container to keep a retained version of buffer
-            engine::BufferContainer container;
-            getNextBufferToSent(&container);
+            engine::BufferPointer buffer = getNextBufferToSent();
             
-            engine::Buffer* buffer = container.getBuffer();
-            if( buffer )
+            if( buffer != NULL )
             {
                 au::Status s = file_descriptor_->partWrite(buffer->getData(), buffer->getSize(), "samsonConnectorConnection");
                 
@@ -157,9 +155,9 @@ namespace stream_connector {
                 LM_X(1, ("Internal error"));
             
             //Get a buffer
-            engine::Buffer * buffer = engine::MemoryManager::shared()->createBuffer("stdin"
-                                                                                    , "connector"
-                                                                                    , input_buffer_size );
+          engine::BufferPointer buffer = engine::Buffer::create("stdin"
+                                                                , "connector"
+                                                                , input_buffer_size );
             
             
             size_t read_size = 0;
@@ -171,9 +169,9 @@ namespace stream_connector {
                                                , "read connector connections"
                                                , 300 
                                                , &read_size );
-                if( c.diffTime() < 0.1 )
+                if( c.seconds() < 0.1 )
                     input_buffer_size *= 2;
-                else if( c.diffTime() > 3 )
+                else if( c.seconds() > 3 )
                     input_buffer_size /= 2;
             }
             
@@ -184,9 +182,6 @@ namespace stream_connector {
                 buffer->setSize(read_size);
                 pushInputBuffer( buffer );
             }
-            
-            // Relase allocated buffer
-            buffer->release();
             
             // If last read is not ok...
             if( s != au::OK )

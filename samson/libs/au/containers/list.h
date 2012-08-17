@@ -29,10 +29,10 @@
 
 #include "logMsg/logMsg.h"					 // LM_M()
 
-#include "au/namespace.h"
 
 
-NAMESPACE_BEGIN(au)
+
+namespace au {
 
 /**
  CLass to use list structures of <class*> with additional function for easy manipulation
@@ -118,10 +118,21 @@ public:
         }
         std::list<V*>::clear();
     }
+
+    void releaseList()
+    {
+        typename std::list<V* >::iterator iter;
+        
+        for (iter =  std::list<V*>::begin() ; iter != std::list<V*>::end() ; iter++)
+        {
+            (*iter)->Release();
+        }
+        std::list<V*>::clear();
+    }
     
     
 };	
 
-NAMESPACE_END
+}
 
 #endif

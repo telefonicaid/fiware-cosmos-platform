@@ -15,7 +15,7 @@
 //#define DEBUG_AU_THREADS
 //#define FULL_DEBUG_AU_THREADS
 
-NAMESPACE_BEGIN(au)
+namespace au {
 
 class LockDebugger;
 LockDebugger* lockDebugger;
@@ -205,5 +205,5 @@ void LockDebugger::setThreadTitle(std::string title)
 }
 
 
-NAMESPACE_END
+}
 

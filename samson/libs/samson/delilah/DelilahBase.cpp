@@ -58,7 +58,7 @@ namespace samson {
     std::vector<std::string> DelilahBase::getOperationNames(  )
     {
         au::StringVector values = database.getValuesFromColumn("operations", "name");
-        values.unique();
+        values.RemoveDuplicated();
         return values;
     }
 
@@ -66,7 +66,7 @@ namespace samson {
     {
         au::tables::TableSelectCondition condition( "type" , type );
         au::StringVector values = database.getValuesFromColumn("operations", "name" , &condition );
-        values.unique();
+        values.RemoveDuplicated();
         return values;
     }
     
@@ -74,7 +74,7 @@ namespace samson {
     std::vector<std::string> DelilahBase::getQueueNames()
     {
         au::StringVector values = database.getValuesFromColumn("queues", "name");
-        values.unique();
+        values.RemoveDuplicated();
         return values;
     }
 
@@ -88,7 +88,7 @@ namespace samson {
         // Get all the values
         au::StringVector values = database.getValuesFromColumn("queues", "name");
 
-        values.unique();
+        values.RemoveDuplicated();
         return values;
     }
     

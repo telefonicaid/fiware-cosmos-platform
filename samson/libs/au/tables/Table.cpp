@@ -86,11 +86,11 @@ namespace au
     
     void SelectTableInformation::add_conditions( std::string txt_conditions )
     {
-      StringVector where_clauses = StringVector::parseFromString(txt_conditions , ',');
+      StringVector where_clauses = StringVector::ParseFromString(txt_conditions , ',');
       
       for ( size_t w = 0 ; w < where_clauses.size() ; w++ )
       {
-        StringVector where_clause_parts = StringVector::parseFromString(where_clauses[w] , '=');
+        StringVector where_clause_parts = StringVector::ParseFromString(where_clauses[w] , '=');
         if( where_clause_parts.size() == 2)
         {
           std::string name = where_clause_parts[0];
@@ -457,7 +457,7 @@ namespace au
           
         case different:
         {
-          values.unique();
+          values.RemoveDuplicated();
           if( values.size() == 1 )
             return values[0];
           
@@ -554,7 +554,7 @@ namespace au
     
     Table::Table( std::string description )
     {
-      StringVector _columns = StringVector::parseFromString(description, '|');
+      StringVector _columns = StringVector::ParseFromString(description, '|');
       for( size_t i = 0 ; i < _columns.size() ; i++ )
         columns.push_back( new TableColumn( _columns[i] ) );
     }
@@ -921,7 +921,7 @@ namespace au
     
     TableColumn* Table::getSelectColumn( std::string description )
     {
-      StringVector components = StringVector::parseFromString( description , ',' );
+      StringVector components = StringVector::ParseFromString( description , ',' );
       std::string name = components[0];
       
       for( size_t i = 0 ; i < columns.size() ; i++ )

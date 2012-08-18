@@ -268,15 +268,15 @@ std::string DataBase::runCommand( std::string command )
         else
             select.title = au::str("Table %s" , table_name.c_str());
         
-        select.group_columns = StringVector::parseFromString( group , ',' );
-        select.sort_columns = StringVector::parseFromString( sort , ',' );
-        select.divide_columns = StringVector::parseFromString( divide , ',' );
+        select.group_columns = StringVector::ParseFromString( group , ',' );
+        select.sort_columns = StringVector::ParseFromString( sort , ',' );
+        select.divide_columns = StringVector::ParseFromString( divide , ',' );
         
         // Where clause
-        StringVector where_clauses = StringVector::parseFromString(where , ',');
+        StringVector where_clauses = StringVector::ParseFromString(where , ',');
         for ( size_t w = 0 ; w < where_clauses.size() ; w++ )
         {
-            StringVector where_clause_parts = StringVector::parseFromString(where_clauses[w] , '=');
+            StringVector where_clause_parts = StringVector::ParseFromString(where_clauses[w] , '=');
             if( where_clause_parts.size() == 2)
             {
                 std::string name = where_clause_parts[0];
@@ -321,7 +321,7 @@ std::string DataBase::runCommand( std::string command )
         for ( int i = 2 ;  i < cmdLine.get_num_arguments() ; i++ )
             select.columns.push_back( cmdLine.get_argument(i) );
         select.title = au::str("Table %s" , table_name.c_str());
-        select.group_columns = StringVector::parseFromString( group , ',' );
+        select.group_columns = StringVector::ParseFromString( group , ',' );
         
         Table* table_result = table->selectTable( &select );
         

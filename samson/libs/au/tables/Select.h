@@ -95,10 +95,10 @@ namespace au { namespace tables {
     
     void addConditions( std::string conditions_description )
     {
-      StringVector conditions_descriptions = StringVector::parseFromString(conditions_description, ',');
+      StringVector conditions_descriptions = StringVector::ParseFromString(conditions_description, ',');
       for ( size_t i = 0 ; i < conditions_descriptions.size() ; i++ )
       {
-        StringVector parts = StringVector::parseFromString(conditions_descriptions[i], '=');
+        StringVector parts = StringVector::ParseFromString(conditions_descriptions[i], '=');
         if ( parts.size() == 2 )
           addCondition(parts[0], parts[1] );
       }

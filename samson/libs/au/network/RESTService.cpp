@@ -74,7 +74,7 @@ namespace au
                 
                 
                 // Get path componenets and format
-                path_components = StringVector::parseFromString( resource , '/' );
+                path_components = StringVector::ParseFromString( resource , '/' );
                 
                 // Extract extension from the last one
                 format = ""; // Default values

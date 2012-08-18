@@ -476,7 +476,7 @@ namespace stream_connector {
       
       {
         au::StringVector values ("Remove console");
-        values.push( sc_console_port );
+        values.Push( sc_console_port );
         
         if( service )
           values.push_back( service->getStatus() );
@@ -488,7 +488,7 @@ namespace stream_connector {
       
       {
         au::StringVector values ("REST");
-        values.push( sc_web_port );
+        values.Push( sc_web_port );
         
         if( rest_service )
           values.push_back( rest_service->getStatus() );
@@ -501,7 +501,7 @@ namespace stream_connector {
       
       {
         au::StringVector values ("InterChannel");
-        values.push( SAMSON_CONNECTOR_INTERCHANNEL_PORT );
+        values.Push( SAMSON_CONNECTOR_INTERCHANNEL_PORT );
         
         if( inter_channel_listener )
           values.push_back( inter_channel_listener->getStatus() );

@@ -6,6 +6,7 @@ SET (SOURCES
 	lib/au/containers/DictionaryTest.cpp
 	lib/au/containers/QueueTest.cpp
 	lib/au/containers/BoxTest.cpp
+	lib/au/containers/StringVectorTest.cpp
 
 	#Common files
 	common_engine_test.h

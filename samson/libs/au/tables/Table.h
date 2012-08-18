@@ -134,20 +134,20 @@ namespace au
                 values.push_back(value);
             }
 
-            TableCell( StringVector _values )
+            TableCell( const StringVector& _values )
             {
-                values.copyFrom(_values);
+                values = _values;
             }
             
             // Duplicate a cell
             TableCell( TableCell* cell )
             {
-                values.copyFrom( cell->values );
+                values = cell->values;
             }
             
             void addFrom( TableCell* cell )
             {
-                values.copyFrom( cell->values );
+                values.Append( cell->values );
             }
             
             void set( std::string value )
@@ -166,7 +166,7 @@ namespace au
                 if( values.size() == 1 )
                     return values[0];
                 else
-                    return values.str_vector();
+                    return "[ " + values.str() + " ]";
             }
             
         };

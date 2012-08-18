@@ -361,7 +361,7 @@ testdistribute: install
 
 xcode:
 	mkdir xcode_proj || true
-	cd xcode_proj; cmake .. -DIGNORE_UNI_TEST=1 -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=False -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME) -G Xcode
+	cd xcode_proj; cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DBUILD_MODULES=False -DCMAKE_INSTALL_PREFIX=$(SAMSON_HOME) -G Xcode
 
 eclipse:	
 	./scripts/prepareEclipse

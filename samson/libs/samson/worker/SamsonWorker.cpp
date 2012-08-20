@@ -516,7 +516,7 @@ namespace samson {
         return;
       }
       
-      int commit_id = packet->message->pop_queue().commit_id();
+      uint64 commit_id = packet->message->pop_queue().commit_id();
       size_t delilah_id = packet->from.id;
       std::string original_queue = packet->message->pop_queue().queue();
       std::string pop_queue = au::str(".%s_%lu_%s"
@@ -537,7 +537,7 @@ namespace samson {
       // Get a copy of the entire data model
       au::SharedPointer<gpb::Data> data = data_model->getCurrentModel();
       
-      if( commit_id == -1 )
+      if (commit_id == static_cast<size_t>(-1))
       {
         // Duplicate queue and link
         au::ErrorManager error;
@@ -545,11 +545,11 @@ namespace samson {
         
         if( error.IsActivated() )
         {
-          LM_W(("Internall error with add_queue_connection command in pop request: %s" , error.GetMessage().c_str() ));
+          LM_W(("Internal error with add_queue_connection command in pop request: %s" , error.GetMessage().c_str() ));
           return;
         }
 
-        // If the queu really exist, return all its content to be poped
+        // If the queue really exist, return all its content to be popped
         gpb::Queue* queue = get_queue( data.shared_object() , original_queue );
         if( queue )
           gpb_queue->CopyFrom( *queue );
@@ -557,11 +557,11 @@ namespace samson {
       }
       else
       {
-        // Copy blocks newver than commit_id
+        // Copy blocks newer than commit_id
         gpb::Queue* queue = get_queue( data.shared_object() , pop_queue );
         if ( queue )
           for ( int i = 0 ; i < queue->blocks_size() ; i++ )
-            if( queue->blocks(i).commit_id() > commit_id )
+            if (queue->blocks(i).commit_id() > commit_id)
               gpb_queue->add_blocks()->CopyFrom( queue->blocks(i) );
       }
 

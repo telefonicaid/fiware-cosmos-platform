@@ -1735,7 +1735,7 @@ namespace samson {
     
     if( main_command == "show_engine_current_element" )
     {
-      writeOnConsole( engine::Engine::shared()->get_activity_monitor()->getCurrentActivity() + "\n" );
+      writeOnConsole( engine::Engine::shared()->get_activity_monitor()->GetCurrentActivity() + "\n" );
       return;
     }
     

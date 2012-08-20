@@ -154,7 +154,7 @@ void sleep_select( double time )
 
 void Engine::runElement( EngineElement* running_element )
 {
-    activity_monitor.start_activity( running_element->getName() );
+    activity_monitor.StartActivity( running_element->getName() );
     
     // Execute the item selected as running_element
     LM_T( LmtEngineTime, ("[START] Engine:  executing %s" , running_element->str().c_str() ));
@@ -192,7 +192,7 @@ void Engine::runElement( EngineElement* running_element )
     LM_T( LmtEngineTime, ("[DONE] Engine:  executing %s" , running_element->str().c_str()));
     
     // Collect information about this execution
-    activity_monitor.start_activity( "engine_management" );
+    activity_monitor.StartActivity( "engine_management" );
 }
 
 void Engine::run()
@@ -277,11 +277,11 @@ void Engine::run()
         if( t_next_repeated_elements < 0.01 )
             continue;
 
-        activity_monitor.start_activity("sleep");
+        activity_monitor.StartActivity("sleep");
 
         sleep_select( 0.1 );
 
-        activity_monitor.start_activity( "engine_management" );
+        activity_monitor.StartActivity( "engine_management" );
 
     }
 }

@@ -13,6 +13,9 @@ SET (SOURCES
 	lib/au/network/NetworkListenerTest.cpp
 	lib/au/network/RESTServiceTest.cpp
 
+	# AU STATISTICS LIBRARY
+    lib/au/statistics/ActivityMonitorTest.cpp
+
 	#Common files
 	common_engine_test.h
 	common_engine_test.cpp

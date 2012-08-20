@@ -43,16 +43,16 @@ public:
 			return;
 
 		// Recover the number of users in this demo
-		size_t num_users  = environment->getSizeT( "urlbenchmark.num_users" ,  1000000 );
+		size_t num_users  = environment->get( "urlbenchmark.num_users" ,  1000000 );
 
 		// Recover the number of urls per user
-		size_t num_urls_per_user = environment->getSizeT( "urlbenchmark.num_urls_per_user" ,  100 );
+		size_t num_urls_per_user = environment->get( "urlbenchmark.num_urls_per_user" ,  100 );
 
 		// Recover the number of paths per server
-		size_t num_paths_per_server = environment->getSizeT( "urlbenchmark.num_paths_per_server" ,  10 );
+		size_t num_paths_per_server = environment->get( "urlbenchmark.num_paths_per_server" ,  10 );
 
 		// Recover the number of servers from the environment
-		size_t num_servers = environment->getSizeT( "urlbenchmark.num_servers" ,  1000000 );
+		size_t num_servers = environment->get( "urlbenchmark.num_servers" ,  1000000 );
 
 
 		samson::system::UInt userId;

@@ -9,7 +9,6 @@ SET (AUX_HEADERS
 	operations/parse_xml_documents.h
 	operations/parse_id_id.h
 	operations/parser_uint_void.h
-	operations/parse_http_with_commscore.h
 	operations/reduce.h
 	operations/process.h
 	operations/str.h

@@ -28,8 +28,8 @@ void test( std::string txt )
 
     printf("-----------------------------------\n");
 
-    if( error.isActivated() )
-        printf("Error %s\n" , error.getMessage().c_str() );
+    if (error.IsActivated())
+        printf("Error %s\n", error.GetMessage().c_str());
     else
     {
         printf( "%s\n" , source->str().c_str() );

@@ -53,8 +53,8 @@ helpLine: Generate 'txt.num_samples' random words. By default it generates 1M wa
 		  // Output keys are always value 1
 		  value.value = 1;
 
-		  num_samples = environment->getSizeT( "txt.num_samples" ,  1000000 );
-		  line_length = environment->getSizeT( "txt.word_length" ,  6  );
+		  num_samples = environment->get( "txt.num_samples" ,  1000000 );
+		  line_length = environment->get( "txt.word_length" ,  6  );
 
 		  if ( line_length > 1023 )
 		    line_length = 1023;

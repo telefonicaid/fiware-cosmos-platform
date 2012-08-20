@@ -22,7 +22,7 @@ namespace example{
 		void run( samson::KVWriter *writer )
 		{
 		  // Recover the number of samples from the environment variables                                                                                                                                  
-		  size_t num_samples = environment->getSizeT( "example.samples" ,  0 );
+		  size_t num_samples = environment->get( "example.samples" ,  0 );
 
 
 		  if( num_samples == 0)

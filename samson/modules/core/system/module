@@ -102,12 +102,6 @@ parser parse_xml_documents
 	helpLine "Parse xml documents and generate system.Values as maps"
 }
 
-parser parse_http_with_commscore
-{
-    out system.Value system.Value
-    helpLine "Parse lines from TRAFFICA http logs, enriching with commscore categories"
-}
-
 parserOut str
 {
 	in  system.Value system.Value

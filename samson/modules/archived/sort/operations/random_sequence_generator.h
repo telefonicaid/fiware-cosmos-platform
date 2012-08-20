@@ -33,7 +33,7 @@ namespace sort{
 
 		void run( samson::KVWriter *writer )
 		{
-            size_t num_samples = environment->getSizeT( "test.number_of_samples", 1000000000);
+            size_t num_samples = environment->get( "test.number_of_samples", 1000000000);
 
             samson::system::UInt val1;
             samson::system::UInt val2;

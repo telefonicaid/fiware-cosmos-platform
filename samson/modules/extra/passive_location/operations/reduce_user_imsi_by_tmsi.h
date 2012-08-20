@@ -46,14 +46,14 @@ public:
 
     void init( samson::KVWriter *writer )
     {
-        record_timespan = environment->getSizeT("pl.record_retry.timespan", 0);
+        record_timespan = environment->get("pl.record_retry.timespan", 0);
         //LM_M(("pl.record_retry.timespan:%lu", record_timespan));
         if ( record_timespan != 0)
         {
             now = time(NULL);
         }
 
-        timespanTMSI = environment->getSizeT("pl.TMSI.timespan", 0);
+        timespanTMSI = environment->get("pl.TMSI.timespan", 0);
     }
 
     void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )

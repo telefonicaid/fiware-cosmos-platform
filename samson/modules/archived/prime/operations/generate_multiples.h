@@ -45,7 +45,7 @@ helpLine: Emit the same numbers at the output and the multiple until prime.limit
 		void run(  samson::KVSetStruct* inputs , samson::KVWriter *writer )
 		{
 
-           size_t num_samples = environment->getSizeT( "prime.limit" ,  100 );
+           size_t num_samples = environment->get( "prime.limit" ,  100 );
 
 		   for( size_t i = 0 ; i < inputs[0].num_kvs ; i++ )
 		   {

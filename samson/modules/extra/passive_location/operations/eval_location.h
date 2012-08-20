@@ -97,7 +97,7 @@ public:
 
         LM_M(("home:'%s' and work:'%s'\n", conf_timeslot_home.c_str(), conf_timeslot_work.c_str()));
         lengthWindowDays = environment->getInt(PASLOC_PARAMETER_CONF_LENGTHWINDOWDAYS, PASLOC_PARAMETER_CONF_LENGTHWINDOWDAYS_DEFAULT);
-        thresholdDailyActivity = environment->getSizeT(PASLOC_PARAMETER_CONF_THR_DAYACTIVITY, PASLOC_PARAMETER_CONF_THR_DAYACTIVITY_DEFAULT);
+        thresholdDailyActivity = environment->get(PASLOC_PARAMETER_CONF_THR_DAYACTIVITY, PASLOC_PARAMETER_CONF_THR_DAYACTIVITY_DEFAULT);
         thresholdTotalActivity = environment->getDouble(PASLOC_PARAMETER_CONF_THR_TOTALACTIVITY, PASLOC_PARAMETER_CONF_THR_TOTALACTIVITY_DEFAULT);
     }
 

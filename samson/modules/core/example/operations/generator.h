@@ -45,7 +45,7 @@ namespace example{
 		    return;
 
 		  // Recover the number of samples from the environment variables
-		  size_t num_samples = environment->getSizeT( "example.samples" ,  10 );
+		  size_t num_samples = environment->get( "example.samples" ,  10 );
 
 		  // Trace to monitor the operation
 		  // tracer->trace_print( 0 , "example.generator init with %d samples" , num_samples );

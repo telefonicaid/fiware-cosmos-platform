@@ -53,9 +53,8 @@ namespace system{
             filters_collection.addFilters( command , NULL , writer , &error );
             
             // Error defined by user
-            if( error.isActivated() )
-                tracer->setUserError( error.getMessage() );
-            
+            if (error.IsActivated())
+                tracer->setUserError(error.GetMessage());
 		}
 
 		void run( KVSetStruct* inputs , TXTWriter *writer )

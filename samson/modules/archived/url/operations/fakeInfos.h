@@ -27,9 +27,9 @@ namespace url{
 		{
 			OLM_M(("Starts run for Generator fakeInfos"));
 
-			size_t num_servers = environment->getSizeT( "url.num_servers" ,  1000000 );
-			size_t num_servers_ref = environment->getSizeT("url.num_servers_ref", 1000);
-			size_t num_categories = environment->getSizeT("url.num_categories", 100);
+			size_t num_servers = environment->get( "url.num_servers" ,  1000000 );
+			size_t num_servers_ref = environment->get("url.num_servers_ref", 1000);
+			size_t num_categories = environment->get("url.num_categories", 100);
 
 			int fixed_categories = environment->getInt("url.fixed_categories", 0);
 

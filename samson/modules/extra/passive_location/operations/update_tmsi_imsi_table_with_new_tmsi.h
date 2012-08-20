@@ -44,7 +44,7 @@ public:
 
     void init( samson::KVWriter *writer )
     {
-        tmps_timespan = environment->getSizeT("pl.tmps_age.timespan", 0);
+        tmps_timespan = environment->get("pl.tmps_age.timespan", 0);
         if ( tmps_timespan != 0)
         {
             now = time(NULL);

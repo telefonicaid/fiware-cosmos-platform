@@ -48,9 +48,8 @@ namespace system{
             filters_collection.addFilters( command , writer ,NULL, &error );
             
             // Error defined by user
-            if( error.isActivated() )
-                tracer->setUserError( error.getMessage() );
-
+            if (error.IsActivated())
+                tracer->setUserError(error.GetMessage());
 		}
 
 		void run( samson::KVSetStruct* inputs , samson::KVWriter *writer )

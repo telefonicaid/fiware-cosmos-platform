@@ -40,7 +40,7 @@ namespace au
     {
         if( socket_connection ) 
         {
-            socket_connection->close();
+            socket_connection->Close();
             delete socket_connection;
             socket_connection = NULL;
             
@@ -56,7 +56,7 @@ namespace au
     {
         if( local_file_descriptor ) 
         {
-            local_file_descriptor->close();
+            local_file_descriptor->Close();
             delete local_file_descriptor;
             local_file_descriptor = NULL;
         }
@@ -163,7 +163,7 @@ namespace au
         // In direct mode, we do not reconnect
         
         // Check if the estabished connection should be canceled
-        if( socket_connection && socket_connection->isDisconnected() )
+        if( socket_connection && socket_connection->IsClosed() )
         {
             close_socket_connection();
             fd = -1;
@@ -174,7 +174,7 @@ namespace au
         if( !socket_connection && ( host != "" )  && ( time >= time_reconnect ) )
         {
             // Try new connection with the server
-            au::Status s = au::SocketConnection::newSocketConnection( host , port , &socket_connection );
+            au::Status s = au::SocketConnection::Create( host , port , &socket_connection );
             
             if( s != au::OK )
             {
@@ -195,7 +195,7 @@ namespace au
             else
             {
                 // Set the used fd
-                fd = socket_connection->getFd();
+                fd = socket_connection->fd();
                 
                 if( time  > 10 )
                     LM_LW(("Connected to log server after %s disconnected" , au::str_time(time).c_str() ));

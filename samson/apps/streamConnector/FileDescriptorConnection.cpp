@@ -51,7 +51,7 @@ namespace stream_connector {
         
         // Stop thread in the background
         if ( file_descriptor_ )
-            file_descriptor_->close();
+            file_descriptor_->Close();
         
         while( thread_running_ )
             usleep(100000);
@@ -82,7 +82,7 @@ namespace stream_connector {
     {
         if( file_descriptor_ )
         {
-            file_descriptor_->close();
+            file_descriptor_->Close();
             delete file_descriptor_;
         }
     }
@@ -103,7 +103,7 @@ namespace stream_connector {
         }
         
         // If we are disconnected, wait until thread finish and delte it to reconnect
-        if( file_descriptor_->isDisconnected() )
+        if( file_descriptor_->IsClosed() )
         {
             set_as_connected(false);
             if( thread_running_ ) // Still waiting for the threads to finish
@@ -114,7 +114,7 @@ namespace stream_connector {
         }
         
         // Set connection based on file descriptor
-        set_as_connected( !file_descriptor_->isDisconnected() );
+        set_as_connected( !file_descriptor_->IsClosed() );
         
     }
     
@@ -190,7 +190,7 @@ namespace stream_connector {
                 log("Message", au::str("Connection finished (%s) " , au::status(s) ));
                 
                 // Close fd
-                file_descriptor_->close();
+                file_descriptor_->Close();
                 
                 // Flush whatever we have..
                 flushInputBuffers();
@@ -221,12 +221,12 @@ namespace stream_connector {
             output <<  "Not connected";
         else
         {
-            if( file_descriptor_->isDisconnected() )
+            if( file_descriptor_->IsClosed() )
                 output << "Closing connection";
             else
                 output << "Connected";
         
-            output << au::str( " [fd:%d]" , file_descriptor_->getFd() );
+            output << au::str( " [fd:%d]" , file_descriptor_->fd() );
             
         }
         

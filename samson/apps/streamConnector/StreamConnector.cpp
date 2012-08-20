@@ -4,6 +4,7 @@
 #include "au/string.h"
 #include "au/Singleton.h"
 #include "au/ThreadManager.h"
+#include "au/network/RESTServiceCommand.h"
 #include "parseArgs/paConfig.h"
 
 #include "Channel.h"
@@ -50,7 +51,7 @@ namespace stream_connector {
       return; // Already created
     
     service = new StreamConnectorService( this );
-    au::Status s = service->initService();
+    au::Status s = service->InitService();
     if( s != au::OK )
     {
       log( new Log("SamsonConnector" 
@@ -72,7 +73,7 @@ namespace stream_connector {
     
     // Create the rest service
     rest_service = new au::network::RESTService( sc_web_port , this );
-    au::Status s = rest_service->initRESTService();
+    au::Status s = rest_service->InitService();
     if( s != au::OK )
     {
       log( new Log("REST" , "error" , au::str("Error opening REST interface on port %d" , sc_web_port) ) );
@@ -111,54 +112,54 @@ namespace stream_connector {
   }        
   
   // au::network::RESTServiceInterface
-  void StreamConnector::process( au::network::RESTServiceCommand* command )
+  void StreamConnector::process( au::SharedPointer<au::network::RESTServiceCommand> command )
   {
     // Mutex protection for whatever update over stream connector
     au::TokenTaker tt(&token);
     
-    if( command->path_components.size() == 0 )
+    if( command->path_components().size() == 0 )
     {
       // No command error
-      command->appendFormatedError("No command provided");
+      command->AppendFormatedError("No command provided");
       return;
     }
     
-    if( command->path_components[0] == "summary" )
+    if( command->path_components()[0] == "summary" )
     {
       au::tables::Table* table = getSummaryTable();
-      command->append( table->strFormatted( command->format ) );
+      command->Append( table->strFormatted( command->format() ) );
       delete table;
       return;
     }
     
-    if( command->path_components[0] == "logs" )
+    if( command->path_components()[0] == "logs" )
     {
       LogManager * log_manager = au::Singleton<LogManager>::shared();
       au::tables::Table* table = log_manager->getLogsTable(100);
-      command->append( table->strFormatted( command->format ) );
+      command->Append( table->strFormatted( command->format() ) );
       delete table;
       return;
     }
     
-    if( command->path_components[0] == "channels" )
+    if( command->path_components()[0] == "channels" )
     {
-      if( command->path_components.size() == 1 )
+      if( command->path_components().size() == 1 )
       {
         au::tables::Table* table = getChannelsTable( );
-        command->append( table->strFormatted( command->format ) );
+        command->Append( table->strFormatted( command->format() ) );
         delete table;
         return;
       }
-      else if( command->path_components.size() == 2 )
+      else if( command->path_components().size() == 2 )
       {
-        au::tables::Table* table = getChannelsTable( command->path_components[1] );
-        command->append( table->strFormatted( command->format ) );
+        au::tables::Table* table = getChannelsTable( command->path_components()[1] );
+        command->Append( table->strFormatted( command->format() ) );
         delete table;
         return;
       }
       else
       {
-        command->appendFormatedError("Wrong format. Only /channels/format is supported");
+        command->AppendFormatedError("Wrong format. Only /channels/format is supported");
         return;
       }
       
@@ -166,93 +167,93 @@ namespace stream_connector {
     }
     
     
-    if( command->path_components[0] == "adaptors" )
+    if( command->path_components()[0] == "adaptors" )
     {
-      if( command->path_components.size() == 1 )
+      if( command->path_components().size() == 1 )
       {
         au::tables::Table* table = getItemsTable();
-        command->append( table->strFormatted( command->format ) );
+        command->Append( table->strFormatted( command->format() ) );
         return;
       }
-      else if( command->path_components.size() == 2 )
+      else if( command->path_components().size() == 2 )
       {
-        au::tables::Table* table = getItemsTable( command->path_components[1]);
-        command->append( table->strFormatted( command->format ) );
+        au::tables::Table* table = getItemsTable( command->path_components()[1]);
+        command->Append( table->strFormatted( command->format() ) );
         return;
       }
       else
       {
-        command->appendFormatedError("Wrong format. Only /adaptors/format is supported");
+        command->AppendFormatedError("Wrong format. Only /adaptors/format is supported");
         return;
       }
       
     }
     
-    if( command->path_components[0] == "connections" )
+    if( command->path_components()[0] == "connections" )
     {
-      if( command->path_components.size() == 1 )
+      if( command->path_components().size() == 1 )
       {
         au::tables::Table* table = getConnectionsTable();
-        command->append( table->strFormatted( command->format ) );
+        command->Append( table->strFormatted( command->format() ) );
         return;
       }
-      else if( command->path_components.size() == 2 )
+      else if( command->path_components().size() == 2 )
       {
-        au::tables::Table* table = getConnectionsTable( command->path_components[1] );
-        command->append( table->strFormatted( command->format ) );
+        au::tables::Table* table = getConnectionsTable( command->path_components()[1] );
+        command->Append( table->strFormatted( command->format() ) );
         return;
       }
       else
       {
-        command->appendFormatedError("Wrong format. Only /connections/format is supported");
+        command->AppendFormatedError("Wrong format. Only /connections/format is supported");
         return;
       }
     }
     
     
-    if( command->path_components[0] == "add_channel" )
+    if( command->path_components()[0] == "add_channel" )
     {
-      if( command->path_components.size() == 1 )
+      if( command->path_components().size() == 1 )
       {
-        command->appendFormatedError("Wrong format. /add_channe/channel_name[/splitter]");
+        command->AppendFormatedError("Wrong format. /add_channe/channel_name[/splitter]");
         return;
       }
       
-      std::string channel_name = command->path_components[1];
+      std::string channel_name = command->path_components()[1];
       std::string splitter_name;
       
-      if ( command->path_components.size() > 2 )
-        splitter_name = command->path_components[2];
+      if ( command->path_components().size() > 2 )
+        splitter_name = command->path_components()[2];
       
       
       au::ErrorManager error;
       process_command( au::str("add_channel %s %s" , channel_name.c_str() , splitter_name.c_str() ) , &error );
       if( error.IsActivated() )
-        command->appendFormatedError( error.GetMessage() );
+        command->AppendFormatedError( error.GetMessage() );
       else
-        command->appendFormatedElement("Result", "OK");
+        command->AppendFormatedElement("Result", "OK");
       
       return;
     }
     
-    if( ( command->path_components[0] == "add_input_adaptor" ) || ( command->path_components[0] == "add_output_adaptor" ) )
+    if( ( command->path_components()[0] == "add_input_adaptor" ) || ( command->path_components()[0] == "add_output_adaptor" ) )
     {
-      if( command->path_components.size() < 3 )
+      if( command->path_components().size() < 3 )
       {
-        command->appendFormatedError("Wrong format. /add_[ input or output ]_adaptor/channel.adaptor_name/format");
+        command->AppendFormatedError("Wrong format. /add_[ input or output ]_adaptor/channel.adaptor_name/format");
         return;
       }
       
-      std::string operation = command->path_components[0];
-      std::string name = command->path_components[1];
-      std::string format = command->path_components[2];
+      std::string operation = command->path_components()[0];
+      std::string name = command->path_components()[1];
+      std::string format = command->path_components()[2];
       
       au::ErrorManager error;
       process_command( au::str("%s %s %s" , operation.c_str() , name.c_str() , format.c_str() ) , &error );
       if( error.IsActivated() )
-        command->appendFormatedError( error.GetMessage() );
+        command->AppendFormatedError( error.GetMessage() );
       else
-        command->appendFormatedElement("Result", "OK");
+        command->AppendFormatedElement("Result", "OK");
       
       return;
     }
@@ -479,7 +480,7 @@ namespace stream_connector {
         values.Push( sc_console_port );
         
         if( service )
-          values.push_back( service->getStatus() );
+          values.push_back( service->GetStringStatus() );
         else
           values.push_back( "NOT ACTIVATED" );
         
@@ -491,7 +492,7 @@ namespace stream_connector {
         values.Push( sc_web_port );
         
         if( rest_service )
-          values.push_back( rest_service->getStatus() );
+          values.push_back( rest_service->GetStringStatus() );
         else
           values.push_back( "NOT ACTIVATED" );
         
@@ -504,7 +505,12 @@ namespace stream_connector {
         values.Push( SAMSON_CONNECTOR_INTERCHANNEL_PORT );
         
         if( inter_channel_listener )
-          values.push_back( inter_channel_listener->getStatus() );
+        {
+          if( inter_channel_listener->IsNetworkListenerRunning() )
+            values.push_back( "Listening" );
+          else
+            values.push_back( "Not Listening" );
+        }
         else
           values.push_back( "NOT ACTIVATED" );
         
@@ -861,7 +867,7 @@ namespace stream_connector {
     for( it = input_inter_channel_connections.begin() ; it != input_inter_channel_connections.end() ; it++ )
     {
       InputInterChannelConnection* c = *it;
-      table->addRow( au::StringVector(c->getHostAndPort() , c->getStatus() ));
+      table->addRow( au::StringVector(c->host_and_port() , c->getStatus() ));
     }
     return table;
   }
@@ -1085,7 +1091,7 @@ namespace stream_connector {
   {
     
     // Create a new connection
-    InputInterChannelConnection * connection = new InputInterChannelConnection( this , socket_connetion->getHostAndPort() , socket_connetion ); 
+    InputInterChannelConnection * connection = new InputInterChannelConnection( this , socket_connetion->host_and_port() , socket_connetion ); 
     
     // We start connection here
     connection->init_connecton();

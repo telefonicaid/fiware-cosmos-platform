@@ -58,21 +58,21 @@ namespace stream_connector {
         return packet_reader_writer->isConnected();
     }
     
-    std::string InterChannelLink::getHostAndPort()
+    std::string InterChannelLink::host_and_port()
     {
-        return socket_connection_->getHostAndPort();
+        return socket_connection_->host_and_port();
     }
     
     // Cancel connection
     void InterChannelLink::close_socket_connection()
     {
-        socket_connection_->close();
+        socket_connection_->Close();
     }
     
     // Stop all threads
     void InterChannelLink::close_and_stop()
     {
-        socket_connection_->close();
+        socket_connection_->Close();
         packet_reader_writer->stop_threads();
     }
     

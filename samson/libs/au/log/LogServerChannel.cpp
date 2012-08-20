@@ -33,7 +33,7 @@ namespace au
         
         // Check if disconnected
         if ( fd )
-            if( fd->isDisconnected() )
+            if( fd->IsClosed() )
             {
                 delete fd;
                 fd = NULL;
@@ -89,7 +89,7 @@ namespace au
         if( error->IsActivated() )
             return;
         
-        au::Status s = initService();
+        au::Status s = InitService();
         if( s!= au::OK )
         {
             error->set( au::str("Error initializing server (%s)" , au::status(s) ) );
@@ -105,11 +105,11 @@ namespace au
         {
             // Rean a log
             Log *log = new Log( );
-            log->add_field("host", socket_connection->getHostAndPort() );
+            log->add_field("host", socket_connection->host_and_port() );
             
             if( !log->read( socket_connection ) )
             {
-                LM_V(("Closed connection from %s" , socket_connection->getHostAndPort().c_str() ));
+                LM_V(("Closed connection from %s" , socket_connection->host_and_port().c_str() ));
                 return; // Not possible to read a log...
             }
             
@@ -117,7 +117,7 @@ namespace au
             std::string exec_name = log->get("EXEC");
             std::string channel = au::str("%s_%s_%d"
                                           , exec_name.c_str()
-                                          , socket_connection->getHostAndPort().c_str() 
+                                          , socket_connection->host_and_port().c_str() 
                                           , log->log_data.pid );
             log->add_field("channel", channel );
 
@@ -143,7 +143,7 @@ namespace au
         if( fd )
             if( current_size > 64000000 )
             {
-                fd->close();
+                fd->Close();
                 delete fd;
                 fd = NULL;
             }

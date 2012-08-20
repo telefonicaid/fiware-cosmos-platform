@@ -16,6 +16,8 @@
 #include "au/ThreadManager.h"
 #include "au/tables/pugixml.hpp"                  // pugixml
 
+#include "au/network/RESTServiceCommand.h"
+
 #include "au/log/LogToServer.h"
 
 #include "engine/Notification.h"                  // engine::Notification
@@ -154,7 +156,7 @@ namespace samson {
     
     // Run REST interface
     rest_service = new au::network::RESTService( web_port  , this );
-    rest_service->initRESTService();
+    rest_service->InitService();
     
     // Review notification
     listen("samson_worker_review");
@@ -738,7 +740,7 @@ namespace samson {
     return  getFormatedElement( "error" , message , format );
   }
   
-  void SamsonWorker::process_delilah_command( std::string delilah_command , au::network::RESTServiceCommand* command )
+  void SamsonWorker::process_delilah_command( std::string delilah_command , au::SharedPointer<au::network::RESTServiceCommand> command )
   {
     
     // Create client if not created
@@ -757,7 +759,7 @@ namespace samson {
         usleep(10000);
         if( c.seconds() > 2 )
         {
-          command->appendFormatedError(500, au::str( "Timeout awaiting response from REST client (task %lu)" , command_id ));
+          command->AppendFormatedError(500, au::str( "Timeout awaiting response from REST client (task %lu)" , command_id ));
           LM_E(("Timeout awaiting response from REST client"));
           return;
         }
@@ -768,7 +770,7 @@ namespace samson {
     WorkerCommandDelilahComponent* component = (WorkerCommandDelilahComponent*) delilah->getComponent( command_id );
     if( !component )
     {
-      command->appendFormatedError(500, "Internal error recovering answer from REST client" );
+      command->AppendFormatedError(500, "Internal error recovering answer from REST client" );
       LM_E(("Internal error recovering answer from REST client"));
       return;
     }
@@ -778,7 +780,7 @@ namespace samson {
     
     if( !table )
     {
-      // command->appendFormatedError(500, "No content in answer from REST client" );
+      // command->AppendFormatedError(500, "No content in answer from REST client" );
       LM_E(("No content in answer from REST client"));
       return;
     }
@@ -787,35 +789,35 @@ namespace samson {
     
     LM_T(LmtRest, ("appending delilah output to command: '%s'", table->str().c_str()));
     
-    if( command->format == "xml" )
-      command->append( table->str_xml() );
-    else if( command->format == "json" )
-      command->append( table->str_json() );
-    else if( command->format == "html" )
-      command->append( table->str_html() );
+    if( command->format() == "xml" )
+      command->Append( table->str_xml() );
+    else if( command->format() == "json" )
+      command->Append( table->str_json() );
+    else if( command->format() == "html" )
+      command->Append( table->str_html() );
     else
-      command->append( table->str() ); // Default non-format
+      command->Append( table->str() ); // Default non-format
     
     delete table;
     
   }
   
 #define TF(b) ((b == true)? "true" : "false")
-  void SamsonWorker::process_logging(au::network::RESTServiceCommand* command)
+  void SamsonWorker::process_logging( au::SharedPointer<au::network::RESTServiceCommand> command)
   {
     std::ostringstream  logdata;
     std::string         logCommand  = "";
     std::string         sub         = "";
     std::string         arg         = "";
     
-    command->http_state = 200;
+    command->set_http_state(200);
     
-    if (command->path_components.size() > 2)
-      logCommand = command->path_components[2];
-    if (command->path_components.size() > 3)
-      sub = command->path_components[3];
-    if (command->path_components.size() > 4)
-      arg = command->path_components[4];
+    if (command->path_components().size() > 2)
+      logCommand = command->path_components()[2];
+    if (command->path_components().size() > 3)
+      sub = command->path_components()[3];
+    if (command->path_components().size() > 4)
+      arg = command->path_components()[4];
     
     //
     // Treat all possible errors
@@ -823,40 +825,40 @@ namespace samson {
     
     if (logCommand == "")
     {
-      command->http_state = 400;
-      command->appendFormatedElement("message", au::str("no logging subcommand"));
+      command->set_http_state(400);
+      command->AppendFormatedElement("message", au::str("no logging subcommand"));
     }
     else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "traces") && (logCommand != "verbose") && (logCommand != "debug"))
     {
-      command->http_state = 400;
-      command->appendFormatedElement("message", au::str("bad logging command: '%s'", logCommand.c_str()));
+      command->set_http_state(400);
+      command->AppendFormatedElement("message", au::str("bad logging command: '%s'", logCommand.c_str()));
     }
     else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off"))
     {
-      command->http_state = 400;
-      command->appendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+      command->set_http_state(400);
+      command->AppendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
     }
     else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off"))
     {
-      command->http_state = 400;
-      command->appendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+      command->set_http_state(400);
+      command->AppendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
     }
     else if ((logCommand == "verbose") && (sub == "set") && (arg != "0") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") && (arg != "5"))
     {
-      command->http_state = 400;
-      command->appendFormatedElement("message", au::str("bad logging argument for 'verbose': %s", arg.c_str()));
+      command->set_http_state(400);
+      command->AppendFormatedElement("message", au::str("bad logging argument for 'verbose': %s", arg.c_str()));
     }
     else if ((logCommand == "traces") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off") && (sub != ""))
     {
-      command->http_state = 400;
-      command->appendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+      command->set_http_state(400);
+      command->AppendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
     }
     else if ((logCommand == "traces") && ((sub != "set") || (sub != "add") || (sub != "remove")))
     {
       if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
       {
-        command->http_state = 400;
-        command->appendFormatedElement("message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
+        command->set_http_state(400);
+        command->AppendFormatedElement("message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
       }
     }
     
@@ -865,7 +867,7 @@ namespace samson {
     //
     // Checking the VERB
     //
-    std::string verb = command->command;
+    std::string verb = command->command();
     std::string path = logCommand;
     
     if (sub != "") path += '/' + sub;
@@ -891,12 +893,12 @@ namespace samson {
     else if ((path == "verbose/set")   && (verb == "POST"));
     else
     {
-      command->http_state = 404;
-      command->appendFormatedElement("error", "BAD VERB");
+      command->set_http_state( 404 );
+      command->AppendFormatedElement("error", "BAD VERB");
       return;
     }
     
-    if (command->http_state != 200)
+    if (command->http_state() != 200)
       return;
     
     //
@@ -907,13 +909,13 @@ namespace samson {
       if (sub == "on")
       {
         process_delilah_command("wreads on", command);
-        command->appendFormatedElement("reads", au::str("reads turned ON"));
+        command->AppendFormatedElement("reads", au::str("reads turned ON"));
         LM_F(("Turning on READS for entire cluster"));
       }
       else if (sub == "off")
       {
         process_delilah_command("wreads off", command);
-        command->appendFormatedElement("reads", au::str("reads turned OFF"));
+        command->AppendFormatedElement("reads", au::str("reads turned OFF"));
         LM_F(("Turning off READS for entire cluster"));
       }
     }
@@ -922,13 +924,13 @@ namespace samson {
       if (sub == "on")
       {
         process_delilah_command("wwrites on", command);
-        command->appendFormatedElement("writes", au::str("writes turned ON"));
+        command->AppendFormatedElement("writes", au::str("writes turned ON"));
         LM_F(("Turning on WRITES for entire cluster"));
       }
       else if (sub == "off")
       {
         process_delilah_command("wwrites off", command);
-        command->appendFormatedElement("writes", au::str("writes turned OFF"));
+        command->AppendFormatedElement("writes", au::str("writes turned OFF"));
         LM_F(("Turning off WRITES for entire cluster"));
       }
     }
@@ -937,14 +939,14 @@ namespace samson {
       if (sub == "on")
       {
         process_delilah_command("wdebug on", command);
-        command->appendFormatedElement("debug", au::str("debug turned ON"));
+        command->AppendFormatedElement("debug", au::str("debug turned ON"));
         LM_F(("Turning on DEBUG for entire cluster"));
         LM_D(("Debug should be ON"));
       }
       else if (sub == "off")
       {
         process_delilah_command("wdebug off", command);
-        command->appendFormatedElement("debug", au::str("debug turned OFF"));
+        command->AppendFormatedElement("debug", au::str("debug turned OFF"));
         LM_F(("Turning off DEBUG for entire cluster"));
         LM_D(("Debug should be OFF"));
       }
@@ -964,7 +966,7 @@ namespace samson {
       else if ((sub == "off") || (sub == "0"))
       {
         process_delilah_command("wverbose off", command);
-        command->appendFormatedElement("verbose", au::str("verbose mode turned OFF"));
+        command->AppendFormatedElement("verbose", au::str("verbose mode turned OFF"));
         LM_F(("Turning off VERBOSE for entire cluster"));
         LM_V(("VERBOSE should be OFF"));
       }
@@ -974,7 +976,7 @@ namespace samson {
         
         snprintf(delilahCommand, sizeof(delilahCommand), "wverbose %s", arg.c_str());
         process_delilah_command(delilahCommand, command);
-        command->appendFormatedElement("verbose", au::str("verbose levels upto %s SET", arg.c_str()));
+        command->AppendFormatedElement("verbose", au::str("verbose levels upto %s SET", arg.c_str()));
         LM_F(("Setting VERBOSE level to %s for entire cluster", arg.c_str()));
         LM_V(("VERBOSE level 1"));
         LM_V2(("VERBOSE level 2"));
@@ -994,7 +996,7 @@ namespace samson {
         
         snprintf(delilahCommand, sizeof(delilahCommand), "wtrace set %s",  arg.c_str());
         process_delilah_command(delilahCommand, command);
-        command->appendFormatedElement("trace", au::str("trace level: %s", arg.c_str()));
+        command->AppendFormatedElement("trace", au::str("trace level: %s", arg.c_str()));
         LM_F(("Setting TRACE levels to '%s'", arg.c_str()));
       }
       else if (sub == "get")    // /samson/logging/trace/get
@@ -1008,7 +1010,7 @@ namespace samson {
       else if (sub == "off")    // /samson/logging/trace/off
       {
         process_delilah_command("wtrace off", command);
-        command->appendFormatedElement("trace", au::str("all trace levels turned off"));
+        command->AppendFormatedElement("trace", au::str("all trace levels turned off"));
         LM_F(("Resetting TRACE levels to 'NADA DE NADA'"));
       }
       else if (sub == "add")    // /samson/logging/trace/add
@@ -1017,7 +1019,7 @@ namespace samson {
         
         snprintf(delilahCommand, sizeof(delilahCommand), "wtrace add %s", arg.c_str());
         process_delilah_command(delilahCommand, command);
-        command->appendFormatedElement("trace", au::str("added level(s) %s", arg.c_str()));
+        command->AppendFormatedElement("trace", au::str("added level(s) %s", arg.c_str()));
         LM_F(("Adding TRACE levels '%s'", arg.c_str()));
       }
       else if (sub == "remove")     // /samson/logging/trace/remove
@@ -1026,7 +1028,7 @@ namespace samson {
         
         snprintf(delilahCommand, sizeof(delilahCommand), "wtrace remove %s", arg.c_str());
         process_delilah_command(delilahCommand, command);
-        command->appendFormatedElement("trace", au::str("removed level(s) %s", arg.c_str()));
+        command->AppendFormatedElement("trace", au::str("removed level(s) %s", arg.c_str()));
         LM_F(("Removing TRACE levels '%s'", arg.c_str()));
       }
     }
@@ -1107,21 +1109,21 @@ namespace samson {
   }
 #endif
   
-  void SamsonWorker::process_ilogging(au::network::RESTServiceCommand* command)
+  void SamsonWorker::process_ilogging( au::SharedPointer<au::network::RESTServiceCommand> command)
   {
     std::ostringstream  logdata;
     std::string         logCommand  = "";
     std::string         sub         = "";
     std::string         arg         = "";
     
-    command->http_state = 200;
+    command->set_http_state( 200 );
     
-    if (command->path_components.size() > 2)
-      logCommand = command->path_components[2];
-    if (command->path_components.size() > 3)
-      sub = command->path_components[3];
-    if (command->path_components.size() > 4)
-      arg = command->path_components[4];
+    if (command->path_components().size() > 2)
+      logCommand = command->path_components()[2];
+    if (command->path_components().size() > 3)
+      sub = command->path_components()[3];
+    if (command->path_components().size() > 4)
+      arg = command->path_components()[4];
     
     //
     // Treat all possible errors
@@ -1129,40 +1131,40 @@ namespace samson {
     
     if (logCommand == "")
     {
-      command->http_state = 400;
-      command->appendFormatedElement("message", au::str("no ilogging subcommand"));
+      command->set_http_state( 400 );
+      command->AppendFormatedElement("message", au::str("no ilogging subcommand"));
     }
     else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "traces") && (logCommand != "verbose") && (logCommand != "debug"))
     {
-      command->http_state = 400;
-      command->appendFormatedElement("message", au::str("bad ilogging command: '%s'", logCommand.c_str()));
+      command->set_http_state( 400 );
+      command->AppendFormatedElement("message", au::str("bad ilogging command: '%s'", logCommand.c_str()));
     }
     else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off"))
     {
-      command->http_state = 400;
-      command->appendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+      command->set_http_state( 400 );
+      command->AppendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
     }
     else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off") && (sub != ""))
     {
-      command->http_state = 400;
-      command->appendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+      command->set_http_state( 400 );
+      command->AppendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
     }
     else if ((logCommand == "verbose") && (sub == "set") && (arg != "0") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") && (arg != "5"))
     {
-      command->http_state = 400;
-      command->appendFormatedElement("message", au::str("bad ilogging argument for 'verbose': %s", arg.c_str()));
+      command->set_http_state( 400 );
+      command->AppendFormatedElement("message", au::str("bad ilogging argument for 'verbose': %s", arg.c_str()));
     }
     else if ((logCommand == "traces") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off") && (sub != ""))
     {
-      command->http_state = 400;
-      command->appendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+      command->set_http_state( 400 );
+      command->AppendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
     }
     else if ((logCommand == "traces") && ((sub != "set") || (sub != "add") || (sub != "remove")))
     {
       if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
       {
-        command->http_state = 400;
-        command->appendFormatedElement("message", au::str("bad ilogging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
+        command->set_http_state( 400 );
+        command->AppendFormatedElement("message", au::str("bad ilogging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
       }
     }
     
@@ -1170,7 +1172,7 @@ namespace samson {
     //
     // Checking the VERB
     //
-    std::string verb = command->command;
+    std::string verb = command->command();
     std::string path = logCommand;
     
     if (sub != "") path += '/' + sub;
@@ -1196,12 +1198,12 @@ namespace samson {
     else if ((path == "verbose/set")   && (verb == "POST"));
     else
     {
-      command->http_state = 404;
-      command->appendFormatedElement("error", "BAD VERB");
+      command->set_http_state( 404 );
+      command->AppendFormatedElement("error", "BAD VERB");
       return;
     }
     
-    if (command->http_state != 200)
+    if (command->http_state() != 200)
       return;
     
     //
@@ -1212,13 +1214,13 @@ namespace samson {
       if (sub == "on")
       {
         lmReads  = true;
-        command->appendFormatedElement("reads", au::str("reads turned ON"));
+        command->AppendFormatedElement("reads", au::str("reads turned ON"));
         LM_F(("Turned on READS for this node only"));
       }
       else if (sub == "off")
       {
         lmReads  = false;
-        command->appendFormatedElement("reads", au::str("reads turned OFF"));
+        command->AppendFormatedElement("reads", au::str("reads turned OFF"));
         LM_F(("Turned off READS for this node only"));
       }
     }
@@ -1227,13 +1229,13 @@ namespace samson {
       if (sub == "on")
       {
         lmWrites  = true;
-        command->appendFormatedElement("writes", au::str("writes turned ON"));
+        command->AppendFormatedElement("writes", au::str("writes turned ON"));
         LM_F(("Turned on WRITES for this node only"));
       }
       else if (sub == "off")
       {
         lmWrites  = false;
-        command->appendFormatedElement("writes", au::str("writes turned OFF"));
+        command->AppendFormatedElement("writes", au::str("writes turned OFF"));
         LM_F(("Turned off WRITES for this node only"));
       }
     }
@@ -1242,14 +1244,14 @@ namespace samson {
       if (sub == "on")
       {
         lmDebug  = true;
-        command->appendFormatedElement("debug", au::str("debug turned ON"));
+        command->AppendFormatedElement("debug", au::str("debug turned ON"));
         LM_F(("Turned on DEBUG for this node only"));
         LM_D(("Turned on DEBUG for this node only"));
       }
       else if (sub == "off")
       {
         lmDebug  = false;
-        command->appendFormatedElement("debug", au::str("debug turned OFF"));
+        command->AppendFormatedElement("debug", au::str("debug turned OFF"));
         LM_F(("Turned off DEBUG for this node only"));
         LM_D(("This line should not be seen ..."));
       }
@@ -1273,7 +1275,7 @@ namespace samson {
         else if (lmVerbose  == true)  vLevel = 1;
         else                          vLevel = 0;
         
-        command->appendFormatedElement("verbose", au::str("verbosity level: %d", vLevel));
+        command->AppendFormatedElement("verbose", au::str("verbosity level: %d", vLevel));
       }
       else
       {
@@ -1299,7 +1301,7 @@ namespace samson {
           case 1: lmVerbose  = true;
         }
         
-        command->appendFormatedElement("verbose", au::str("verbosity level: %d", verboseLevel));
+        command->AppendFormatedElement("verbose", au::str("verbosity level: %d", verboseLevel));
         LM_F(("New verbose level for this node only: %d", verboseLevel));
       }
     }
@@ -1311,7 +1313,7 @@ namespace samson {
       if (sub == "set")
       {
         lmTraceSet((char*) arg.c_str());
-        command->appendFormatedElement("trace", au::str("trace level: %s", arg.c_str()));
+        command->AppendFormatedElement("trace", au::str("trace level: %s", arg.c_str()));
         LM_F(("Set trace levels to '%s' for this node only", arg.c_str()));
       }
       else if (sub == "get")    // /samson/ilogging/trace/get
@@ -1319,24 +1321,24 @@ namespace samson {
         char traceLevels[1024];
         lmTraceGet(traceLevels);
         
-        command->appendFormatedElement("trace", au::str("trace level: %s", traceLevels));
+        command->AppendFormatedElement("trace", au::str("trace level: %s", traceLevels));
       }
       else if (sub == "off")    // /samson/ilogging/trace/off
       {
         lmTraceSet(NULL);
-        command->appendFormatedElement("trace", au::str("all trace levels turned off"));
+        command->AppendFormatedElement("trace", au::str("all trace levels turned off"));
         LM_F(("Turned off trace levels for this node only"));
       }
       else if (sub == "add")    // /samson/ilogging/trace/add
       {
         lmTraceAdd((char*) arg.c_str());
-        command->appendFormatedElement("trace", au::str("added level(s) %s", arg.c_str()));
+        command->AppendFormatedElement("trace", au::str("added level(s) %s", arg.c_str()));
         LM_F(("Added trace levels '%s' for this node only", arg.c_str()));
       }
       else if (sub == "remove")     // /samson/ilogging/trace/remove
       {
         lmTraceSub((char*) arg.c_str());
-        command->appendFormatedElement("trace", au::str("removed level(s) %s", arg.c_str()));
+        command->AppendFormatedElement("trace", au::str("removed level(s) %s", arg.c_str()));
         LM_F(("Removed trace levels '%s' for this node only", arg.c_str()));
       }
     }
@@ -1344,29 +1346,29 @@ namespace samson {
   
   
   
-  void SamsonWorker::process( au::network::RESTServiceCommand* command )
+  void SamsonWorker::process( au::SharedPointer<au::network::RESTServiceCommand> command )
   {
     // Default format
-    if( command->format == "" )
-      command->format = "xml";
+    if( command->format() == "" )
+      command->set_format( "xml" );
     
     
     // Begin data for each format
     // ---------------------------------------------------
-    if ( command->format == "xml" )
+    if ( command->format() == "xml" )
     {
-      command->append( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-      command->append("<!-- SAMSON Rest interface -->\n" );
-      command->append( "<samson>\n" );
+      command->Append( "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+      command->Append("<!-- SAMSON Rest interface -->\n" );
+      command->Append( "<samson>\n" );
     }
-    else if ( command->format == "html" )
+    else if ( command->format() == "html" )
     {
-      command->append("<html><body>");
+      command->Append("<html><body>");
     }
-    else if ( command->format == "json" )
+    else if ( command->format() == "json" )
     /*
      {
-     command->append("{");
+     command->Append("{");
      }
      */
       
@@ -1375,313 +1377,32 @@ namespace samson {
     
     // Close data content
     // ---------------------------------------------------
-    if (command->format == "xml")
-      command->append("\n</samson>\n");
-    else if (command->format == "html")
-      command->append("</body></html>");
+    if (command->format() == "xml")
+      command->Append("\n</samson>\n");
+    else if (command->format() == "html")
+      command->Append("</body></html>");
     /*
      else if( command->format == "json" )
-     command->append("}");
+     command->Append("}");
      */
     
   }
-  
-  
-  /* ****************************************************************************
-   *
-   * jsonTypeName - 
-   */
-  static const char* jsonTypeName(json_type type)
-  {
-    switch (type)
-    {
-      case json_type_null:       return "json_type_null";
-      case json_type_boolean:    return "json_type_boolean";
-      case json_type_double:     return "json_type_double";
-      case json_type_int:        return "json_type_int";
-      case json_type_object:     return "json_type_object";
-      case json_type_array:      return "json_type_array";
-      case json_type_string:     return "json_type_string";
-    }
     
-    return "json_type_unknown";
-  }
-  
-  
-  
-  /* ****************************************************************************
-   *
-   * jsonParse - 
-   */
-  static int jsonParse(char* in, char* host, char* port)
-  {
-    struct json_object* json;
-    struct json_object* jsonObj;
-    struct lh_table*    table;
-    lh_entry*           entry;
-    char*               key;
-    
-    json  = json_tokener_parse(in);
-    table = json_object_get_object(json);
-    entry = table->head;
-    
-    while (entry != NULL)
-    {
-      key     = (char*) entry->k;
-      jsonObj = json_object_object_get(json, key);
-      
-      json_type type = json_object_get_type(jsonObj);
-      
-      LM_T(LmtRestData, ("got a '%s'", jsonTypeName(type)));
-      if (type == json_type_object)
-      {
-        struct lh_table*    table2;
-        lh_entry*           entry2;
-        
-        table2 = json_object_get_object(jsonObj);
-        entry2 = table2->head;
-        
-        LM_T(LmtRestData, ("Starting while 2 (%p)", entry2));
-        while (entry2 != NULL)
-        {
-          char*                key2     = (char*) entry2->k;
-          struct json_object*  jsonObj2 = json_object_object_get(jsonObj, key2);
-          json_type            type2    = json_object_get_type(jsonObj2);
-          
-          if (type2 == json_type_string)
-          {
-            const char* s = json_object_get_string(jsonObj2);
-            LM_T(LmtRestData, ("json: '%s' : %s (%s)", key2, s, jsonTypeName(type2)));
-            
-            if (strcmp(key2, "name") == 0)
-              strcpy(host, s);
-            else if (strcmp(key2, "port") == 0)
-              strcpy(port, s);
-          }
-          else if (type2 == json_type_int)
-          {
-            int i = json_object_get_int(jsonObj2);
-            LM_T(LmtRestData, ("json: '%s' : %d (%s)", key2, i, jsonTypeName(type)));
-            
-            if (strcmp(key2, "port") == 0)
-            {
-              LM_T(LmtRestData, ("found an integer port: %d", i));
-              sprintf(port, "%d", i);
-              LM_T(LmtRestData, ("found an integer port: '%s'", port));
-            }
-          }
-          
-          entry2 = entry2->next;
-        }
-      }
-      else if (type == json_type_boolean)
-      {
-        bool b = json_object_get_boolean(jsonObj);
-        LM_T(LmtRestData, ("json: '%s' : %s (%s)", key, (b==true)? "true" : "false", jsonTypeName(type)));
-      }
-      else if (type == json_type_double)
-      {
-        double d = json_object_get_double(jsonObj);
-        LM_T(LmtRestData, ("json: '%s' : %f (%s)", key, d, jsonTypeName(type)));
-      }
-      else if (type == json_type_int)
-      {
-        int i = json_object_get_int(jsonObj);
-        LM_T(LmtRestData, ("json: '%s' : %d (%s)", key, i, jsonTypeName(type)));
-        
-        if (strcmp(key, "port") == 0)
-          sprintf(port, "%d", i);
-      }
-      else if (type == json_type_string)
-      {
-        const char* s = json_object_get_string(jsonObj);
-        LM_T(LmtRestData, ("json: '%s' : %s (%s)", key, s, jsonTypeName(type)));
-        
-        if (strcmp(key, "host") == 0)
-          strcpy(host, s);
-        else if (strcmp(key, "port") == 0)
-          strcpy(port, s);
-      }
-			
-      entry = entry->next;
-    }
-    
-    return 0;
-  }
-  
-  
-  
   /* ****************************************************************************
    *
    * clusterNodeAdd - 
    */
-  void SamsonWorker::process_clusterNodeAdd(au::network::RESTServiceCommand* command)
+
+  void SamsonWorker::process_intern( au::SharedPointer<au::network::RESTServiceCommand> command )
   {
-    char delilahCommand[256];
-    
-    if (command->data == NULL)
-    {
-      command->appendFormatedError(404, au::str("no data"));
-      return;
-    }
-    
-    if (command->format == "xml")
-    {
-      char*                   commandData = (char*) malloc(command->data_size + 1);
-      char                    delilahCommand[256];
-      pugi::xml_document      doc;
-      pugi::xml_parse_result  pugiResult;
-      
-      strncpy(commandData, command->data, command->data_size);
-      commandData[command->data_size] = 0;
-      
-      LM_T(LmtRest, ("Adding a node - parse the data '%s' of size %d", commandData, command->data_size));
-      pugiResult = doc.load(commandData);
-      free(commandData);
-      if (!pugiResult)
-      {
-        command->appendFormatedError(404, au::str("error in XML data: '%s'", pugiResult.description()));
-        return;
-      }
-      
-      pugi::xml_node  samson = doc.child("samson");
-      pugi::xml_node  node   = samson.child("node");
-      char*           host = (char*) node.child_value("name");
-      char*           port = (char*) node.child_value("port");
-      
-      snprintf(delilahCommand, sizeof(delilahCommand), "cluster add %s:%s", host, port);
-      LM_T(LmtRest, ("processing delilah command '%s'", delilahCommand));
-      process_delilah_command(delilahCommand, command);
-      
-      // How do I know that the 'cluster add' command worked ... ?
-      // command->error ?
-      
-      // Now, as there is no output from this command, I need to 'reset' the return buffer
-      command->output.str("");
-      
-      // And as the trailing '</samson>' is appended, I start the chain here ...
-      command->output << "<samson>" << "\n" << "<result>OK</result>";
-    }
-    else if (command->format == "json")
-    {
-      char* commandData = (char*) malloc(command->data_size + 1);
-      char  host[256];
-      char  port[32];
-      
-      strncpy(commandData, command->data, command->data_size);
-      commandData[command->data_size] = 0;
-      LM_T(LmtRestData, ("commandData: '%s'", commandData));
-      
-      if (jsonParse(commandData, host, port) != 0)
-      {
-        command->appendFormatedError(404, au::str("JSON parse error"));
-        return;
-      }
-      
-      LM_T(LmtRestData, ("host: '%s'", host));
-      LM_T(LmtRestData, ("port: '%s'", port));
-      
-      snprintf(delilahCommand, sizeof(delilahCommand), "cluster add %s %s", host, port);
-      LM_T(LmtRest, ("processing delilah command '%s'", delilahCommand));
-      process_delilah_command(delilahCommand, command);
-      
-      command->output.str("");
-      command->output << "{ \"result\" : \"OK\" }";
-    }
-  }
-  
-  
-  
-  /* ****************************************************************************
-   *
-   * clusterNodeDelete - 
-   */
-  void SamsonWorker::process_clusterNodeDelete(au::network::RESTServiceCommand* command)
-  {
-    char delilahCommand[256];
-    
-    if (command->data == NULL)
-    {
-      command->appendFormatedError(404, au::str("no data"));
-      return;
-    }
-    
-    if (command->format == "xml")
-    {
-      char*                   commandData = (char*) malloc(command->data_size + 1);
-      char                    delilahCommand[256];
-      pugi::xml_document      doc;
-      pugi::xml_parse_result  pugiResult;
-      
-      strncpy(commandData, command->data, command->data_size);
-      commandData[command->data_size] = 0;
-      
-      LM_T(LmtRest, ("Removing a node - parse the data '%s' of size %d", commandData, command->data_size));
-      pugiResult = doc.load(commandData);
-      free(commandData);
-      if (!pugiResult)
-      {
-        command->appendFormatedError(404, au::str("error in XML data: '%s'", pugiResult.description()));
-        return;
-      }
-      
-      pugi::xml_node  samson = doc.child("samson");
-      pugi::xml_node  node   = samson.child("node");
-      char*           host = (char*) node.child_value("name");
-      char*           port = (char*) node.child_value("port");
-      
-      snprintf(delilahCommand, sizeof(delilahCommand), "cluster remove %s:%s", host, port);
-      LM_T(LmtRest, ("processing delilah command '%s'", delilahCommand));
-      process_delilah_command(delilahCommand, command);
-      
-      // How do I know that the 'cluster add' command worked ... ?
-      // command->error ?
-      
-      // Now, as there is no output from this command, I need to 'reset' the return buffer
-      command->output.str("");
-      
-      // And as the trailing '</samson>' is appended, I start the chain here ...
-      command->output << "<samson>" << "\n" << "<result>OK</result>";
-    }
-    else if (command->format == "json")
-    {
-      char* commandData = (char*) malloc(command->data_size + 1);
-      char  host[256];
-      char  port[32];
-      
-      strncpy(commandData, command->data, command->data_size);
-      commandData[command->data_size] = 0;
-      LM_T(LmtRestData, ("commandData: '%s'", commandData));
-      
-      if (jsonParse(commandData, host, port) != 0)
-      {
-        command->appendFormatedError(404, au::str("JSON parse error"));
-        return;
-      }
-      
-      LM_T(LmtRestData, ("host: '%s'", host));
-      LM_T(LmtRestData, ("port: '%s'", port));
-      
-      snprintf(delilahCommand, sizeof(delilahCommand), "cluster remove %s %s", host, port);
-      LM_T(LmtRest, ("processing delilah command '%s'", delilahCommand));
-      process_delilah_command(delilahCommand, command);
-      
-      command->output.str("");
-      command->output << "{ \"result\" : \"OK\" }";
-    }
-  }
-  
-  void SamsonWorker::process_intern( au::network::RESTServiceCommand* command )
-  {
-    std::string         main_command  = command->path_components[1];
+    std::string         main_command  = command->path_components()[1];
     std::string         path          = "";
-    std::string         verb          = command->command;
-    unsigned int        components    = command->path_components.size();
+    std::string         verb          = command->command();
+    unsigned int        components    = command->path_components().size();
     
     for (unsigned int ix = 0; ix < components; ix++)
-      path += std::string("/") + command->path_components[ix];
+      path += std::string("/") + command->path_components()[ix];
     LM_T(LmtRest, ("Incoming REST request: %s '%s'", verb.c_str(), path.c_str()));
-    
     
     //
     // Quick sanity check
@@ -1689,13 +1410,13 @@ namespace samson {
     
     if (components < 2)
     {
-      command->appendFormatedError(400 , "Only /samson/option paths are valid");
+      command->AppendFormatedError(400 , "Only /samson/option paths are valid");
       return;
     }
     
-    if (command->path_components[0] != "samson")
+    if (command->path_components()[0] != "samson")
     {
-      command->appendFormatedError(400 , "Only /samson/option paths are valid");
+      command->AppendFormatedError(400 , "Only /samson/option paths are valid");
       return;
     }
     
@@ -1705,14 +1426,14 @@ namespace samson {
     
     if ((path == "/samson/version") && (verb == "GET"))
     {
-      command->appendFormatedElement("version", au::str("SAMSON v %s" , SAMSON_VERSION ));
+      command->AppendFormatedElement("version", au::str("SAMSON v %s" , SAMSON_VERSION ));
     }
     else if ((path == "/samson/status") && (verb == "GET"))
     {
       /*
        std::ostringstream data;
        network->getInfo(data, "cluster", command->format);
-       command->append( data.str() );
+       command->Append( data.str() );
        */
     }
     else if ((path == "/samson/cluster") && (verb == "GET"))
@@ -1720,16 +1441,8 @@ namespace samson {
       /*
        std::ostringstream data;
        network->getInfo(data, "cluster", command->format);
-       command->append( data.str() );
+       command->Append( data.str() );
        */
-    }
-    else if ((path == "/samson/cluster/add_node") && (verb == "POST"))
-    {
-      process_clusterNodeAdd(command);
-    }
-    else if ((path == "/samson/cluster/remove_node") && (verb == "DELETE"))
-    {
-      process_clusterNodeDelete(command);
     }
     else if (main_command == "ilogging")
     {
@@ -1757,15 +1470,15 @@ namespace samson {
       
       if ((components == 3) && (verb == "GET"))
       {
-        snprintf(delilahCommand, sizeof(delilahCommand), "ls %s", command->path_components[2].c_str());
+        snprintf(delilahCommand, sizeof(delilahCommand), "ls %s", command->path_components()[2].c_str());
         process_delilah_command(delilahCommand, command);
       }
-      else if ((components == 4) && (command->path_components[3] == "delete") && (verb == "DELETE"))
+      else if ((components == 4) && (command->path_components()[3] == "delete") && (verb == "DELETE"))
       {
-        snprintf(delilahCommand, sizeof(delilahCommand), "rm %s", command->path_components[2].c_str());
+        snprintf(delilahCommand, sizeof(delilahCommand), "rm %s", command->path_components()[2].c_str());
         process_delilah_command(delilahCommand, command);
       }
-      else if ((components == 5) && (command->path_components[3] == "state") && (verb == "GET"))
+      else if ((components == 5) && (command->path_components()[3] == "state") && (verb == "GET"))
       {
         // This is done synchronous with engine
         
@@ -1777,30 +1490,30 @@ namespace samson {
         engine::Engine::shared()->notify( notification );
         
         // Wait until it is resolved
-        command->wait();
+        command->WaitUntilFinished();
       }
       else
-        command->appendFormatedError(404, au::str("Bad VERB or PATH"));
+        command->AppendFormatedError(404, au::str("Bad VERB or PATH"));
     }
     else if (main_command == "command" ) /* /samson/command */
     {
       std::string delilah_command = "";
       
-      if (command->command != "GET")
+      if (command->command() != "GET")
       {
-        command->appendFormatedError(404, au::str("bad VERB for command"));
+        command->AppendFormatedError(404, au::str("bad VERB for command"));
         return;
       }
       
       if (components == 2)
         delilah_command = "ls"; // 'ls' is the default command
       else if (components == 3)
-        delilah_command = command->path_components[2];
+        delilah_command = command->path_components()[2];
       
       if (delilah_command != "")
         process_delilah_command(delilah_command, command);
       else
-        command->appendFormatedError(404, au::str("bad path for command"));
+        command->AppendFormatedError(404, au::str("bad path for command"));
     }
     else if ((path == "/samson/modules") && (verb == "GET"))
     {
@@ -1810,44 +1523,44 @@ namespace samson {
     {
       char delilahCommand[256];
       
-      snprintf(delilahCommand, sizeof(delilahCommand), "ls_modules %s -group name", command->path_components[2].c_str());
+      snprintf(delilahCommand, sizeof(delilahCommand), "ls_modules %s -group name", command->path_components()[2].c_str());
       process_delilah_command(delilahCommand, command);
     }
     else if ( main_command == "stream_operations" )
     {
-      if(command->command != "GET")
+      if(command->command() != "GET")
       {
-        command->appendFormatedError(404, au::str("bad VERB for command"));
+        command->AppendFormatedError(404, au::str("bad VERB for command"));
         return;
       }
       std::string filter;
       if( components == 3 )
-        filter = command->path_components[2];
+        filter = command->path_components()[2];
       process_delilah_command( au::str("ls_stream_operations %s -group name" , filter.c_str())  , command);
     }
     else if ( main_command == "workers" )
     {
-      if(command->command != "GET")
+      if(command->command() != "GET")
       {
-        command->appendFormatedError(404, au::str("bad VERB for command"));
+        command->AppendFormatedError(404, au::str("bad VERB for command"));
         return;
       }
       process_delilah_command( "ls_workers" , command );
     }
     else if ( main_command == "connections" )
     {
-      if(command->command != "GET")
+      if(command->command() != "GET")
       {
-        command->appendFormatedError(404, au::str("bad VERB for command"));
+        command->AppendFormatedError(404, au::str("bad VERB for command"));
         return;
       }
       process_delilah_command( "ls_connections -group name" , command );
     }
     else if ( main_command == "stream_operations_instances" )
     {
-      if(command->command != "GET")
+      if(command->command() != "GET")
       {
-        command->appendFormatedError(404, au::str("bad VERB for command"));
+        command->AppendFormatedError(404, au::str("bad VERB for command"));
         return;
       }
       process_delilah_command( "ps_tasks" , command );
@@ -1856,88 +1569,88 @@ namespace samson {
     {
       char delilahCommand[256];
       
-      if ((command->command == "GET") && (components == 2))
+      if ((command->command() == "GET") && (components == 2))
       {
         snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations -group name");
         process_delilah_command(delilahCommand, command);
       }
-      else if ((command->command == "GET") && (components == 3))
+      else if ((command->command() == "GET") && (components == 3))
       {
-        snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations %s -group name", command->path_components[2].c_str());
+        snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations %s -group name", command->path_components()[2].c_str());
         process_delilah_command(delilahCommand, command);
       }
-      else if ((command->command == "PUT") && (components == 3))
+      else if ((command->command() == "PUT") && (components == 3))
       {
         // Need to parse the XML here ...
-        command->appendFormatedError(400, au::str("Not Implemented"));
+        command->AppendFormatedError(400, au::str("Not Implemented"));
       }
-      else if ((command->command == "DELETE") && (components == 4) && (command->path_components[2] == "delete"))
+      else if ((command->command() == "DELETE") && (components == 4) && (command->path_components()[2] == "delete"))
       {
         // snprintf(delilahCommand, sizeof(delilahCommand), "rm_stream_operation %s", command->path_components[3].c_str());
         // process_delilah_command(delilahCommand, command);
-        command->appendFormatedError(400, au::str("Not Implemented"));
+        command->AppendFormatedError(400, au::str("Not Implemented"));
       }
       else
-        command->appendFormatedError(404, au::str("bad path/verb"));
+        command->AppendFormatedError(404, au::str("bad path/verb"));
     }
 #if 0
     else if( ( main_command == "state" ) || ( main_command == "queue" ) ) 
     {
       /* /samson/state/queue/key */
       if ( components < 4 )
-        command->appendFormatedError(400 , "Only /samson/state/queue/key paths are valid");
+        command->AppendFormatedError(400 , "Only /samson/state/queue/key paths are valid");
       else
         streamManager->process( command );             // Get this from the stream manager
     }
     else if( main_command == "data_test" )
     {
-      command->appendFormatedElement("data_size", au::str("%lu" , command->data_size));
+      command->AppendFormatedElement("data_size", au::str("%lu" , command->data_size));
       
       if( command->data_size == 0 )
-        command->appendFormatedElement("Data", "No data provided in the REST request");
+        command->AppendFormatedElement("Data", "No data provided in the REST request");
       else
       {
         // Return with provided data
         std::string data;
         data.append( command->data , command->data_size );
-        command->appendFormatedElement("data", data );
+        command->AppendFormatedElement("data", data );
       }
     }
 #endif
     else
     {
-      command->appendFormatedError(404, au::str("Bad VERB or PATH"));
+      command->AppendFormatedError(404, au::str("Bad VERB or PATH"));
     }
   }
   
   
   
-  void SamsonWorker::process_node(  au::network::RESTServiceCommand* command  )
+  void SamsonWorker::process_node( au::SharedPointer<au::network::RESTServiceCommand> command  )
   {
     
-    if( command->format != "json" )
+    if( command->format() != "json" )
     {
-      command->appendFormatedError(400, "Only json format is supported in samson/node/*");
+      command->AppendFormatedError(400, "Only json format is supported in samson/node/*");
       return;
     }
     
-    if( command->path_components.size() <= 2 )
+    if( command->path_components().size() <= 2 )
     {
-      command->appendFormatedError(400, "Bad path. Supported: samson/node/general.json");
+      command->AppendFormatedError(400, "Bad path. Supported: samson/node/general.json");
       return;
     }
     
     //  /samson/status/
-    std::string sub_command = command->path_components[2];
+    std::string sub_command = command->path_components()[2];
     
     if( sub_command == "general" )
     {
-      command->append( samson_worker_samples.getJson() );
+      command->Append( samson_worker_samples.getJson() );
       return;
     }
     else
     {
-      command->appendFormatedError(400, "Bad path. Supported: samson/node/general.json");
+      command->AppendFormatedError(400, "Bad path. Supported: samson/node/general.json");
       return;
     }
     

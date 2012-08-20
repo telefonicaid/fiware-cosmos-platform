@@ -71,9 +71,9 @@ namespace stream_connector {
     }
     
     // More information for this connection ( during first step )
-    std::string InputInterChannelConnection::getHostAndPort()
+    std::string InputInterChannelConnection::host_and_port()
     {
-        return link_->getHostAndPort();
+        return link_->host_and_port();
     }
     
     void InputInterChannelConnection::process_packet( InterChannelPacket* packet )
@@ -304,7 +304,7 @@ namespace stream_connector {
             return; // Already connected
         
         au::SocketConnection* socket_connection;
-        au::Status s = au::SocketConnection::newSocketConnection( host_
+        au::Status s = au::SocketConnection::Create( host_
                                                                  , SAMSON_CONNECTOR_INTERCHANNEL_PORT
                                                                  , &socket_connection);                                  
         

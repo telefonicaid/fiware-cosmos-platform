@@ -15,7 +15,9 @@
 #include "logMsg/logMsg.h"				        // 
 
 #include "au/console/Console.h"
+#include "au/containers/SharedPointer.h"
 #include "au/network/RESTService.h"
+#include "au/network/RESTServiceCommand.h"
 
 #include "engine/EngineElement.h"               // samson::EngineElement
 
@@ -150,19 +152,17 @@ namespace samson {
     gpb::Collection* getWorkerCollection( const Visualization& visualization );
     
     // RESTServiceInterface
-    void process( au::network::RESTServiceCommand* command );
-    void process_intern( au::network::RESTServiceCommand* command );
-    void process_clusterNodeAdd( au::network::RESTServiceCommand* command );
-    void process_clusterNodeDelete( au::network::RESTServiceCommand* command );
-    void process_delilah_command( std::string delilah_command , au::network::RESTServiceCommand* command );
-    void process_node( au::network::RESTServiceCommand* command );
-    void process_ilogging( au::network::RESTServiceCommand* command );
-    void process_logging( au::network::RESTServiceCommand* command );
+    void process( au::SharedPointer< au::network::RESTServiceCommand> command );
+    void process_intern( au::SharedPointer< au::network::RESTServiceCommand> command );
+    void process_delilah_command( std::string delilah_command , au::SharedPointer<au::network::RESTServiceCommand> command );
+    void process_node( au::SharedPointer<au::network::RESTServiceCommand> command );
+    void process_ilogging( au::SharedPointer<au::network::RESTServiceCommand> command );
+    void process_logging( au::SharedPointer<au::network::RESTServiceCommand> command );
         
     void stop()
     {
       // Stop the rest waiting for all connections to finish ( even the thread for the listener )
-      rest_service->stop( true );
+      rest_service->StopService();
     }
     
     WorkerNetwork *network()

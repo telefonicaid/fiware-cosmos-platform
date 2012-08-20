@@ -2,7 +2,6 @@
 #ifndef _H_SAMSON_CONNECTOR_INTERCHANNEL_ITEM
 #define _H_SAMSON_CONNECTOR_INTERCHANNEL_ITEM
 
-#include "au/network/PacketReaderWriter.h"
 #include "au/network/SocketConnection.h"
 
 #include "engine/ProcessItem.h"
@@ -14,6 +13,7 @@
 #include "common.h"
 #include "InterChannelPacket.h"
 #include "InterChannelLink.h"
+#include "PacketReaderWriter.h"
 
 namespace stream_connector {
     
@@ -58,7 +58,7 @@ namespace stream_connector {
         virtual void stop_connection();
         
         // More information for this connection ( during first step )
-        std::string getHostAndPort();
+        std::string host_and_port();
     };
     
     

@@ -197,7 +197,7 @@ namespace samson {
     
     // Init connection
     au::SocketConnection* socket_connection;
-    au::Status s = au::SocketConnection::newSocketConnection( host , port , &socket_connection );
+    au::Status s = au::SocketConnection::Create( host , port , &socket_connection );
 
     // If there is an error, just return the error
     if( s != au::OK )

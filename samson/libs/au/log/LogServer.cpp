@@ -9,7 +9,7 @@ namespace au
     LogServer::LogServer() : au::network::ConsoleService( AU_LOG_SERVER_QUERY_PORT ) 
     {
         // Init service to receive queries
-        Status s = initService();
+        Status s = InitService();
         if( s != OK )
             LM_X(1, ( "Not possible to open query channel on port %d\n" , AU_LOG_SERVER_QUERY_PORT ));
         

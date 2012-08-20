@@ -140,7 +140,7 @@ namespace stream_connector {
     void setPasswordForUser( std::string user , std::string password );
     
     // au::network::RESTServiceInterface
-    void process( au::network::RESTServiceCommand* command );
+    void process( au::SharedPointer<au::network::RESTServiceCommand> command );
     
     // au::network::NetworkListenerInterface
     virtual void newSocketConnection( au::NetworkListener* listener 

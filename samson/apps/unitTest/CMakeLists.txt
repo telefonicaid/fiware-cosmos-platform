@@ -1,12 +1,17 @@
 SET (SOURCES
     main_UnitTest.cpp
 
-	# AU LIBRARY
+	# AU CONTAINERS LIBRARY
 	lib/au/containers/SharedPointerTest.cpp
 	lib/au/containers/DictionaryTest.cpp
 	lib/au/containers/QueueTest.cpp
 	lib/au/containers/BoxTest.cpp
 	lib/au/containers/StringVectorTest.cpp
+
+	# AU NETWORK LIBRARY
+	lib/au/network/FileDescriptorTest.cpp
+	lib/au/network/NetworkListenerTest.cpp
+	lib/au/network/RESTServiceTest.cpp
 
 	#Common files
 	common_engine_test.h

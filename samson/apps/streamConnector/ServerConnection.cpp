@@ -18,7 +18,7 @@ namespace stream_connector {
     au::FileDescriptor * ConnectionConnection::getFileDescriptor()
     {
         au::SocketConnection* socket_connection;
-        au::Status s = au::SocketConnection::newSocketConnection( host_
+        au::Status s = au::SocketConnection::Create( host_
                                                                  , port_
                                                                  , &socket_connection);                                  
         if( s == au::OK )

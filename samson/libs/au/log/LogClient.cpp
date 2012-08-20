@@ -25,14 +25,14 @@ namespace au
         
         if( socket_connection )
         {
-            error->set( au::str("Already connected with logServer at %s" , socket_connection->getHostAndPort().c_str() ) );
+            error->set( au::str("Already connected with logServer at %s" , socket_connection->host_and_port().c_str() ) );
             return;
         }
         
         host = _host;
         port = _port;
         
-        au::Status s = au::SocketConnection::newSocketConnection(host, port, &socket_connection );
+        au::Status s = au::SocketConnection::Create(host, port, &socket_connection );
         if (s != au::OK )
             error->set( au::str("No possible to connect with log server at %s:%d (%s)" , host.c_str() ,  port , au::status(s)  ) );
         
@@ -57,7 +57,7 @@ namespace au
     std::string LogClient::getPrompt()
     {
         if( socket_connection )
-            return au::str("logClient [%s]> " , socket_connection->getHostAndPort().c_str() );
+            return au::str("logClient [%s]> " , socket_connection->host_and_port().c_str() );
         else
             return "logClient [ Disconnected ]> ";
     }
@@ -254,7 +254,7 @@ namespace au
         if( main_command == "status" )
         {
             if( socket_connection )
-                writeWarningOnConsole( au::str("Connected to %s" , socket_connection->getHostAndPort().c_str() ) );
+                writeWarningOnConsole( au::str("Connected to %s" , socket_connection->host_and_port().c_str() ) );
             else
                 writeWarningOnConsole("Not connected to any logServer" );
             return;
@@ -275,7 +275,7 @@ namespace au
                 if( error.IsActivated() )
                     console->writeErrorOnConsole( error.GetMessage() );
                 else
-                    console->writeWarningOnConsole( str("Connected to %s" , socket_connection->getHostAndPort().c_str() ));
+                    console->writeWarningOnConsole( str("Connected to %s" , socket_connection->host_and_port().c_str() ));
                 
             }
             

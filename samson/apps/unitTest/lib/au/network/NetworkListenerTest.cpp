@@ -49,7 +49,7 @@ TEST(au_network_NetworkListener, basic) {
   "Error starting au::NetworkListener";
   EXPECT_EQ(0, NetworkListenerInterfaceImpl::num_connections());
   EXPECT_EQ(14567, network_listener.port());
-  EXPECT_EQ(true, network_listener.IsNetworkListenerRunning());
+  EXPECT_TRUE(network_listener.IsNetworkListenerRunning());
 
   // Create a socket connection to test reception
   au::SocketConnection *socket_connection;
@@ -67,7 +67,7 @@ TEST(au_network_NetworkListener, basic) {
 
   // Close network listener
   network_listener.StopNetworkListener();
-  EXPECT_EQ(false, network_listener.IsNetworkListenerRunning());
+  EXPECT_FALSE(network_listener.IsNetworkListenerRunning());
 
   // Expect one connection after all
   EXPECT_EQ(1, NetworkListenerInterfaceImpl::num_connections());

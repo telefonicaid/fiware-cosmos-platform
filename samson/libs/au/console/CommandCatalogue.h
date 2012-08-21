@@ -32,16 +32,16 @@ namespace au { namespace console {
 
                class CommandItem {
                  std::string name_;   // Name of the option -l , -name
-                 options::Type type_; // Type of value accepting this element
+                 options::Type type_;  // Type of value accepting this element
                  bool optional_;      // Flag to indicate that this parameter is optional
                  std::string help_;   // Help for this parameter
 
-                 std::string min_value_; // Min value ( if any )
-                 std::string max_value_; // Max value ( if any )
-                 std::string default_value_; // Default parameter
+                 std::string min_value_;  // Min value ( if any )
+                 std::string max_value_;  // Max value ( if any )
+                 std::string default_value_;  // Default parameter
 
-                 std::string options_group_; // Options group to get possible values ( autocomplete )
-                 std::vector<std::string> options_group_values; // Possible values ( from options_group_ )
+                 std::string options_group_;  // Options group to get possible values ( autocomplete )
+                 std::vector<std::string> options_group_values;  // Possible values ( from options_group_ )
 
 public:
 
@@ -94,11 +94,11 @@ public:
                  std::string name_;              // Command itself ( first word in the line )
                  std::string category_;          // Category for this command
 
-                 std::string short_description_; // One line description of the command
+                 std::string short_description_;  // One line description of the command
                  std::string help_;              // Full help for this command
 
-                 std::vector<CommandItem *> options_; // List of options for this command
-                 std::vector<CommandItem *> arguments_; // List of arguments for this command
+                 std::vector<CommandItem *> options_;  // List of options for this command
+                 std::vector<CommandItem *> arguments_;  // List of arguments for this command
 
 public:
 
@@ -135,18 +135,18 @@ public:
                // CommandInstance
 
                class CommandInstance {
-                 au::ErrorManager error_; // Error during parse operation
+                 au::ErrorManager error_;  // Error during parse operation
 
-                 Command *command_; // Duplicate command definition
-                 std::string command_line_; // Copy of the original command line
+                 Command *command_;  // Duplicate command definition
+                 std::string command_line_;  // Copy of the original command line
 
-                 au::simple_map<std::string, std::string> values_; // Values assigned to each item
+                 au::simple_map<std::string, std::string> values_;  // Values assigned to each item
 
 public:
 
                  CommandInstance(Command *command, const std::string& command_line) {
-                   command_ = new Command(*command); // duplicate command information
-                   command_line_ = command_line; // Copy of the origina command line
+                   command_ = new Command(*command);  // duplicate command information
+                   command_line_ = command_line;  // Copy of the origina command line
                  }
 
                  const std::string& main_command() {
@@ -164,6 +164,7 @@ public:
                      return get_bool_option("-" + name);
                    }
 
+
                    CommandItem *item = command_->get_option(name);
 
                    if (!item) {
@@ -178,7 +179,7 @@ public:
                      return false;
                    }
 
-                   if (values_.isInMap(name)) { // If it is present, it is true
+                   if (values_.isInMap(name)) {  // If it is present, it is true
                      return true;
                    } else {
                      return false;
@@ -190,6 +191,7 @@ public:
                    if (( name.length() > 0 ) && ( name[0] != '-' )) {
                      return get_int_option("-" + name);
                    }
+
 
                    CommandItem *item = command_->get_option(name);
 
@@ -207,7 +209,7 @@ public:
 
                    // Get default value or the provided value
                    std::string value = item->default_value();
-                   if (values_.isInMap(name)) { // If it is present, it is true
+                   if (values_.isInMap(name)) {  // If it is present, it is true
                      value = values_.findInMap(name);
                    }
 
@@ -220,6 +222,7 @@ public:
                    if (( name.length() > 0 ) && ( name[0] != '-' )) {
                      return get_uint64_option("-" + name);
                    }
+
 
                    CommandItem *item = command_->get_option(name);
 
@@ -237,7 +240,7 @@ public:
 
                    // Get default value or the provided value
                    std::string value = item->default_value();
-                   if (values_.isInMap(name)) { // If it is present, it is true
+                   if (values_.isInMap(name)) {  // If it is present, it is true
                      value = values_.findInMap(name);
                    }
 
@@ -250,6 +253,7 @@ public:
                    if (( name.length() > 0 ) && ( name[0] != '-' )) {
                      return get_double_option("-" + name);
                    }
+
 
                    CommandItem *item = command_->get_option(name);
 
@@ -267,7 +271,7 @@ public:
 
                    // Get default value or the provided value
                    std::string value = item->default_value();
-                   if (values_.isInMap(name)) { // If it is present, it is true
+                   if (values_.isInMap(name)) {  // If it is present, it is true
                      value = values_.findInMap(name);
                    }
 
@@ -280,6 +284,7 @@ public:
                    if (( name.length() > 0 ) && ( name[0] != '-' )) {
                      return get_string_option("-" + name);
                    }
+
 
                    CommandItem *item = command_->get_option(name);
 
@@ -297,7 +302,7 @@ public:
 
                    // Get default value or the provided value
                    std::string value = item->default_value();
-                   if (values_.isInMap(name)) { // If it is present, it is true
+                   if (values_.isInMap(name)) {  // If it is present, it is true
                      value = values_.findInMap(name);
                    }
 
@@ -312,8 +317,10 @@ public:
                      return false;
                    }
 
+
                    if (item->type() != options::option_string)
                      return false;
+
 
                    return true;
                  }
@@ -335,7 +342,7 @@ public:
 
                    // Get default value or the provided value
                    std::string value = item->default_value();
-                   if (values_.isInMap(name)) { // If it is present, it is true
+                   if (values_.isInMap(name)) {  // If it is present, it is true
                      value = values_.findInMap(name);
                    }
 
@@ -461,6 +468,6 @@ private:
                  // Get a particular command ( supouselly added beforehand )
                  Command *get_command(const std::string& name);
                };
-               } } // End of namespace au::console
+               } }  // End of namespace au::console
 
-#endif // ifndef _H_AU_COMMAND_CATALOGUE
+#endif  // ifndef _H_AU_COMMAND_CATALOGUE

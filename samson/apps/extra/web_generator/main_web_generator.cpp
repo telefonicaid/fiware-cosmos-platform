@@ -26,7 +26,7 @@ int rate;
 
 PaArgument paArgs[] =
 {
-  { "-rate", &rate,        "",              PaInt,  PaOpt,     10000,     1, 100000000,  "Rate in events per second"         },
+  { "-rate", &rate, "", PaInt,        PaOpt,              10000,  1,     100000000,     "Rate in events per second"          },
   PA_END_OF_ARGS
 };
 
@@ -78,12 +78,10 @@ int main(int argC, const char *argV[]) {
     const char *protocol;
     if (rand() % 10 > 5)
       protocol = "HTTP/1.0"; else
-      protocol = "HTTP/1.1";
-    const char *operation;
+      protocol = "HTTP/1.1"; const char *operation;
     if (rand() % 10 > 5)
       operation = "GET"; else
-      operation = "HEAD";
-    getIp(ip_to);
+      operation = "HEAD"; getIp(ip_to);
     getIp(ip_from);
 
     printf("%lu  %s -> %s HTTP %s /path_to_page_%d  %s\n"

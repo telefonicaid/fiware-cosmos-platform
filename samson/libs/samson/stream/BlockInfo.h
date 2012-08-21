@@ -55,4 +55,4 @@ struct BlockInfo {
 };
 }
 
-#endif // ifndef _H_BLOCK_INFO
+#endif  // ifndef _H_BLOCK_INFO

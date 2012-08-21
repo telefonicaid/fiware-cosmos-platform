@@ -86,9 +86,9 @@ void ConsoleCommandHistory::move_down() {
 
 void ConsoleCommandHistory::new_command() {
   // Copy to the new one if we are editing a previous entry
-  if (pos != (commands.size() - 1))
-    commands[commands.size() - 1]->setCommand(commands[pos]->getCommand());
-  // If we are repeting previous command, do not add again
+  if (pos != (commands.size() - 1)) {
+    commands[commands.size() - 1]->setCommand(commands[pos]->getCommand());  // If we are repeting previous command, do not add again
+  }
   if (commands.size() > 1)
     if (commands[pos]->getCommand() == commands[commands.size() - 2]->getCommand()) {
       commands[commands.size() - 1]->setCommand("");
@@ -97,7 +97,6 @@ void ConsoleCommandHistory::new_command() {
     }
   if (commands[commands.size() - 1]->getCommand() != "")
     // Add a new line for the new command
-    commands.push_back(new ConsoleCommand());
-  pos = commands.size() - 1;
+    commands.push_back(new ConsoleCommand()); pos = commands.size() - 1;
 }
 }

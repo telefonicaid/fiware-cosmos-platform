@@ -63,4 +63,4 @@ public:
 };
 }
 
-#endif // ifndef AU_CRONOMETER_H
+#endif  // ifndef AU_CRONOMETER_H

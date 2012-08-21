@@ -207,4 +207,4 @@ private:
   std::string getFileNameForLogFile(int counter);
 };
 }
-#endif // ifndef _H_LOG_SERVER_CHANNEL
+#endif  // ifndef _H_LOG_SERVER_CHANNEL

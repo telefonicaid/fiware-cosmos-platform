@@ -68,4 +68,4 @@ extern const char *status(Status s);
 }
 
 
-#endif // ifndef SAMSON_STATUS_H
+#endif  // ifndef SAMSON_STATUS_H

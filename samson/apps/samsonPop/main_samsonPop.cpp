@@ -22,7 +22,7 @@
 
 #include "au/string.h"                  // au::str()
 
-#include "samson/client/SamsonClient.h" // samson::SamsonClient
+#include "samson/client/SamsonClient.h"  // samson::SamsonClient
 
 
 size_t buffer_size;
@@ -43,26 +43,40 @@ int max_size;  // Max size downloading in bytes ( just for testing )
 
 PaArgument paArgs[] =
 {
-  { "-node",      host,                "",                PaString,                PaOpt,                _i "localhost",             PaNL,
+  { "-node",      host,                "",                PaString,                PaOpt,
+    _i "localhost",
+    PaNL,
     PaNL,
     "SAMSON Worker node"                                },
-  { "-port_node", &port_node,          "",                PaInt,             PaOpt,     SAMSON_WORKER_PORT,     1,                  99999,
+  { "-port_node", &port_node,          "",                PaInt,                   PaOpt,
+    SAMSON_WORKER_PORT,            1,                 99999,
     "SAMSON server port"                                },
-  { "-user",      user,                "",                PaString,          PaOpt,     _i "anonymous",         PaNL,               PaNL,
+  { "-user",      user,                "",                PaString,                PaOpt,
+    _i "anonymous",
+    PaNL,              PaNL,
     "User to connect to SAMSON cluster"           },
-  { "-password",  password,            "",          PaString,  PaOpt,     _i "anonymous",     PaNL,      PaNL,
+  { "-password",  password,            "",                PaString,                PaOpt,
+    _i "anonymous",
+    PaNL,              PaNL,
     "Password to connect to SAMSON cluster"       },
-  { "-header",    &show_header,        "",          PaBool,    PaOpt,     false,              false,     true,
+  { "-header",    &show_header,        "",                PaBool,                  PaOpt,                  false,
+    false,             true,
     "Show only header of blocks"                  },
-  { "-remove",    &flag_remove,        "",          PaBool,    PaOpt,     false,              false,     true,
+  { "-remove",    &flag_remove,        "",                PaBool,                  PaOpt,                  false,
+    false,             true,
     "Remove downloaded stuff"                     },
-  { "-new",       &flag_new,           "",          PaBool,    PaOpt,     false,              false,     true,       "Get only new data"                           },
-  { "-limit",     &limit,              "",          PaInt,     PaOpt,     0,                  0,         10000,
+  { "-new",       &flag_new,           "",                PaBool,                  PaOpt,                  false,
+    false,             true,               "Get only new data"                             },
+  { "-limit",     &limit,              "",                PaInt,                   PaOpt,                  0,
+    0,                 10000,
     "number of kvs to be shown for each block"    },
-  { "-format",    format,              "",          PaString,  PaOpt,     _i "plain",         PaNL,      PaNL,
+  { "-format",    format,              "",                PaString,                PaOpt,                  _i "plain",
+    PaNL,              PaNL,
     "type of output format: [plain|json|xml]"     },
-  { "-max_size",  &max_size,           "",          PaInt,     PaOpt,     0,                  0,         100000000,  "Max size to download"                        },
-  { " ",          queue_name,          "",          PaString,  PaReq,     (long)"null",       PaNL,      PaNL,
+  { "-max_size",  &max_size,           "",                PaInt,                   PaOpt,                  0,
+    0,                 100000000,          "Max size to download"                          },
+  { " ",          queue_name,          "",                PaString,                PaReq,                  (long)"null",
+    PaNL,              PaNL,
     "name of the queue to pop data from"          },
   PA_END_OF_ARGS
 };
@@ -98,8 +112,7 @@ size_t full_read(int fd, char *data, size_t size) {
     ssize_t t = read(fd, data + read_size, size - read_size);
 
     if (t == -1)
-      LM_X(1, ("Error reading input data"));
-    if (t == 0)
+      LM_X(1, ("Error reading input data")); if (t == 0)
       break; else
       read_size += t;
   }
@@ -139,9 +152,9 @@ int main(int argC, const char *argV[]) {
   // Instance of the client to connect to SAMSON system
   samson::SamsonClient client("pop");
 
-  if (!client.connect(host))
-    LM_X(1, ("Not possible to connect with %s", host ));
-  // Init connection
+  if (!client.connect(host)) {
+    LM_X(1, ("Not possible to connect with %s", host ));  // Init connection
+  }
   au::ErrorManager error;
   if (error.IsActivated()) {
     fprintf(stderr, "Error connecting with samson cluster: %s\n", error.GetMessage().c_str());
@@ -177,7 +190,6 @@ int main(int argC, const char *argV[]) {
           LM_V(("Exit infinite loop because downloaded_content(%d) >= max_size(%d)", downloaded_content, max_size));
           break;
         }
-
     } else {
       usleep(100000);
     }

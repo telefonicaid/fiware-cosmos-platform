@@ -48,11 +48,16 @@ namespace samson { namespace stream {
                      size = block->header.info.kvs;
 
                      if (head == NULL)
-                       LM_X(1, ("Error allocating lookupList.head of %d bytes", block->header.info.kvs * sizeof(BlockLookupRecord)));
-                     hashInfo = (BlockHashLookupRecord *)calloc(KVFILE_NUM_HASHGROUPS, sizeof(BlockHashLookupRecord));
+                       LM_X(1,
+                            ("Error allocating lookupList.head of %d bytes", block->header.info.kvs *
+                             sizeof(BlockLookupRecord))); hashInfo = (BlockHashLookupRecord *)calloc(
+                       KVFILE_NUM_HASHGROUPS, sizeof(BlockHashLookupRecord));
                      if (hashInfo == NULL)
-                       LM_X(1, ("Error allocating lookupList.hashInfo of %d bytes", KVFILE_NUM_HASHGROUPS * sizeof(BlockHashLookupRecord)));
-                     LM_T(LmtRest, ("Created a lookup list for %d records", block->header.info.kvs));
+                       LM_X(1,
+                            ("Error allocating lookupList.hashInfo of %d bytes", KVFILE_NUM_HASHGROUPS *
+                             sizeof(BlockHashLookupRecord))); LM_T(LmtRest,
+                                                                   ("Created a lookup list for %d records",
+                                                                    block->header.info.kvs));
 
                      unsigned int hashIx;
                      unsigned int kvIx;
@@ -76,7 +81,8 @@ namespace samson { namespace stream {
                          }
 
                          LM_T(LmtRest,
-                              ("setting hashInfo[%d]: %d-%d (%d entries in hashgroup - max entries is %d)", hashIx, noOfKvs, noOfKvs +
+                              ("setting hashInfo[%d]: %d-%d (%d entries in hashgroup - max entries is %d)", hashIx,
+                               noOfKvs, noOfKvs +
                                kvInfoV[hashIx].kvs,
                                entries, maxEntries));
                        }
@@ -153,7 +159,8 @@ namespace samson { namespace stream {
                      keySize      = keyDataInstance->serialize(keyName);
                      hashGroup    = keyDataInstance->hash(KVFILE_NUM_HASHGROUPS);
                      LM_T(LmtRest,
-                          ("looking up key '%s'(keyDataInstance:name:%s, val:%s) in hashgroup:%d", key, keyDataInstance->getName().c_str(),
+                          ("looking up key '%s'(keyDataInstance:name:%s, val:%s) in hashgroup:%d", key,
+                           keyDataInstance->getName().c_str(),
                            keyDataInstance->str().c_str(), hashGroup));
 
                      int startIx  = hashInfo[hashGroup].startIx;
@@ -161,7 +168,9 @@ namespace samson { namespace stream {
                      int testIx   = (endIx - startIx) / 2 + startIx;
 
                      while (true) {
-                       LM_T(LmtRest, ("looking up key '%s' - comparing with ix %d (from ix %d to %d)", key, testIx, startIx, endIx));
+                       LM_T(LmtRest,
+                            ("looking up key '%s' - comparing with ix %d (from ix %d to %d)", key, testIx, startIx,
+                             endIx));
                        // Andreu: We compare key and values only looking at the binary representation
                        // compare = keyDataInstance->serial_compare(keyName, head[testIx].keyP);
                        compare = compare_binary_keys(keyName, keySize, head[testIx].keyP, head[testIx].keyS);

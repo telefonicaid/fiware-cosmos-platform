@@ -153,8 +153,7 @@ Status createFullDirectory(std::string path) {
 
   std::string accumulated_path;
   if (path[0] == '/')
-    accumulated_path += "/";
-  for (size_t i = 0; i < components.size(); i++) {
+    accumulated_path += "/"; for (size_t i = 0; i < components.size(); i++) {
     accumulated_path += components[i];
     Status s = createDirectory(accumulated_path);
     if (s != OK) {

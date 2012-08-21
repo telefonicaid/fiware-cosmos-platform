@@ -96,11 +96,8 @@ void DataBase::autoComplete(au::ConsoleAutoComplete *info) {
     autoCompleteTables(info); if (info->completingSecondWord("print_table"))
     autoCompleteTables(info); if (info->completingSecondWord("print_tree"))
     autoCompleteTrees(info); if (info->completingSecondWord("table_from_tree"))
-    autoCompleteTrees(info);
-
-  if (info->completingSecondWord("print_collection"))
-    autoCompleteCollections(info);
-  if (info->completingWord() > 1) {
+    autoCompleteTrees(info); if (info->completingSecondWord("print_collection"))
+    autoCompleteCollections(info); if (info->completingWord() > 1) {
     if (info->firstWord() == "print_table") {
       std::string table_name = info->secondWord();
       autoCompleteFieldsOfTable(table_name, info);
@@ -215,17 +212,19 @@ std::string DataBase::runCommand(std::string command) {
       return au::str("Unknown table %s", table_name.c_str());
 
     SelectTableInformation select;
-    if (cmdLine.get_num_arguments() < 3)
-      select.addColumns(table->getColumnNames()); else
+    if (cmdLine.get_num_arguments() < 3) {
+      select.addColumns(table->getColumnNames());
+    } else {
       for (int i = 2; i < cmdLine.get_num_arguments(); i++) {
         select.columns.push_back(cmdLine.get_argument(i));
-      }
-    // Set the limit of rows to display...
+      }  // Set the limit of rows to display...
+    }
     select.limit = limit;
 
     if (title != "")
       select.title = title; else
-      select.title = au::str("Table %s", table_name.c_str()); select.group_columns = StringVector::ParseFromString(group, ',');
+      select.title = au::str("Table %s", table_name.c_str()); select.group_columns = StringVector::ParseFromString(
+      group, ',');
     select.sort_columns = StringVector::ParseFromString(sort, ',');
     select.divide_columns = StringVector::ParseFromString(divide, ',');
 
@@ -389,7 +388,8 @@ std::string DataBase::runCommand(std::string command) {
 
   if (mainCommand == "select_collection") {
     if (cmdLine.get_num_arguments() < 4)
-      return au::string_in_color("Usage: select_collection <collection> <new_collection> field=value field=value", "red");
+      return au::string_in_color("Usage: select_collection <collection> <new_collection> field=value field=value",
+                                 "red");
 
     std::string collection_name = cmdLine.get_argument(1);
     std::string new_collection_name = cmdLine.get_argument(2);
@@ -418,7 +418,8 @@ std::string DataBase::runCommand(std::string command) {
   return au::str("Unknown command %s", mainCommand.c_str());
 }
 
-StringVector DataBase::getValuesFromColumn(std::string table_name, std::string column_name, TableSelectCondition *condition) {
+StringVector DataBase::getValuesFromColumn(std::string table_name, std::string column_name,
+                                           TableSelectCondition *condition) {
   Table *table = tables.findInMap(table_name);
 
   if (!table)

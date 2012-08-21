@@ -35,7 +35,8 @@ Token::Token(const char *_name) {
   int r_init = pthread_mutex_init(&_lock, 0);
 
   if (r_init != 0)
-    LM_X(1, ("pthread_mutex_init for '%s' returned %d", name, r_init )); int t_init_cond = pthread_cond_init(&_block, NULL);
+    LM_X(1, ("pthread_mutex_init for '%s' returned %d", name, r_init )); int t_init_cond = pthread_cond_init(&_block,
+                                                                                                             NULL);
 
   if (t_init_cond != 0)
     LM_X(1, ("pthread_cond_init for '%s' returned %d", name, r_init )); locked = false;
@@ -76,7 +77,8 @@ void Token::Retain() {
 
   if (locked)
     LM_X(1,
-         ("Internal error: Thread [%s] has retained au::Token (%s) previously locked by thread [%s]", get_thread_id(pthread_self()).c_str(),
+         ("Internal error: Thread [%s] has retained au::Token (%s) previously locked by thread [%s]",
+          get_thread_id(pthread_self()).c_str(),
           name, get_thread_id(t).c_str())); t = pthread_self();
   counter = 1;
   locked = true;
@@ -125,8 +127,7 @@ void Token::Stop() {
   // This unlock the mutex and froze the process in the condition
   if (pthread_cond_wait(&_block, &_lock) != 0)
     LM_X(1, ("Internal error at au::TokenTaker"));  // LM_LM(("Thread [%s] is back from stopeed at token %s..." , get_thread_id( pthread_self() ).c_str() ,  name ));
-
-  // Now you are retaining again
+   // Now you are retaining again
   locked = true;
   t = pthread_self();
   counter = tmp_counter;

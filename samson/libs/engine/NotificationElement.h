@@ -41,4 +41,4 @@ private:
 };
 }
 
-#endif // ifndef _H_ENGINE_NOTIFICATION_ELEMENT
+#endif  // ifndef _H_ENGINE_NOTIFICATION_ELEMENT

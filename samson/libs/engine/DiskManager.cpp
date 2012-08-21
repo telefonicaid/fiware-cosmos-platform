@@ -139,9 +139,11 @@ void DiskManager::finishDiskOperation(const au::SharedPointer< ::engine::DiskOpe
   if (operation->getType() == DiskOperation::read)
     rate_in.push(operation->getSize()); if (operation->getType() == DiskOperation::write)
     rate_out.push(operation->getSize()); if (operation->getType() == DiskOperation::append)
-    rate_out.push(operation->getSize()); LM_T(LmtDisk, ("DiskManager::finishDiskOperation erased and ready to send notification on file:%s",
-                                                        operation->fileName.c_str()
-                                                        ));
+    rate_out.push(operation->getSize()); LM_T(LmtDisk,
+                                              (
+                                                "DiskManager::finishDiskOperation erased and ready to send notification on file:%s",
+                                                operation->fileName.c_str()
+                                              ));
 
   // Add a notification for this operation to the required target listener
   Notification *notification = new Notification(notification_disk_operation_request_response);

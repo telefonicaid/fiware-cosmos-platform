@@ -17,8 +17,7 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
       return NULL;
 
     if (!token_vector->popNextTokenIfItIs(")"))
-      error->set("Parentheses not closed");
-    return source;
+      error->set("Parentheses not closed"); return source;
   }
 
   // ----------------------------------------------------------------
@@ -188,12 +187,12 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
   Source *main = NULL;
 
   if (token->is("key"))
-    main =  new SourceKey(); if (token->is("value"))
-    main =  new SourceValue();
-  // ---------------------------------------------------------
+    main =  new SourceKey(); if (token->is("value")) {
+    main =  new SourceValue();  // ---------------------------------------------------------
+  }
   // key or value
   // ---------------------------------------------------------
-  if (main)
+  if (main) {
     while (true) {
       if (token_vector->popNextTokenIfItIs("[")) {
         Source *index = getSource(token_vector, error);
@@ -224,9 +223,8 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
       } else {
         return main;
       }
-    }
-  // Negative numbers
-
+    }  // Negative numbers
+  }
   if (token->is("-")) {
     // Get next token that has to be a number
     au::token::Token *next_token = token_vector->popToken();

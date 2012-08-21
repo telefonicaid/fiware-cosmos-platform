@@ -69,4 +69,4 @@ inline int staticVarIntSerialize(char *data, size_t value) {
 }
 }
 
-#endif // ifndef _H_VAR_INT
+#endif  // ifndef _H_VAR_INT

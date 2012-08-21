@@ -5,23 +5,23 @@
 #include <map>
 #include <string>
 
-#include <samson/module/Data.h>             /* Data                                     */
-#include <samson/module/Operation.h>        /* Operation                                */
+#include <samson/module/Data.h>                   /* Data                                     */
+#include <samson/module/Operation.h>              /* Operation                                */
 
 #include "logMsg/logMsg.h"
-#include "logMsg/traceLevels.h"             // LmtModuleManager
+#include "logMsg/traceLevels.h"                   // LmtModuleManager
 
 
 namespace samson {
 class Module {
 public:
 
-  std::string name;                         // Name of this container
-  std::string version;                  // Version of this module
-  std::string author;                       // Author of this module (mail included to report bugs)
+  std::string name;                               // Name of this container
+  std::string version;                            // Version of this module
+  std::string author;                             // Author of this module (mail included to report bugs)
 
-  std::map<std::string, Operation *>  operations;               // Vector containing operations (map, generate, reduce)
-  std::map<std::string, Data *>      datas; // Vector containing data
+  std::map<std::string, Operation *>  operations;  // Vector containing operations (map, generate, reduce)
+  std::map<std::string, Data *>      datas;  // Vector containing data
 
   friend class ModulesManager;
 
@@ -84,6 +84,7 @@ public:
     if (!o) {
       return Operation::unknown;
     }
+
     return o->getType();
   }
 
@@ -186,4 +187,4 @@ public:
 };
 }
 
-#endif // ifndef SAMSON_MODULE_H
+#endif  // ifndef SAMSON_MODULE_H

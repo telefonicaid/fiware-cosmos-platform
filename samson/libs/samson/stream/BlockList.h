@@ -26,10 +26,10 @@
 
 #include "samson/common/KVFile.h"
 #include "samson/common/coding.h"    // FullKVInfo
-#include "samson/common/samson.pb.h" // network::
+#include "samson/common/samson.pb.h"  // network::
 
 #include "samson/stream/Block.h"
-#include "samson/stream/BlockInfo.h" // BlockInfo
+#include "samson/stream/BlockInfo.h"  // BlockInfo
 
 /**
  *
@@ -82,32 +82,32 @@ public:
 
 private:
 
-  BlockPointer block_;        // Pointer to the block
+  BlockPointer block_;         // Pointer to the block
   KVRange range_;       // Range associated with this block
-  KVInfo info_;         // Size and # of kvs to be processed
+  KVInfo info_;                // Size and # of kvs to be processed
 
   // Extra information anout hg organitzation
   au::SharedPointer<KVFile> file_;
 };
 
 class BlockList {
-  std::string name_;                          // Name of this block list ( for debugging )
-  size_t task_id_;                            // Order of the task if really a task
-  bool lock_in_memory_;                       // Lock in memory
-  int priority_;                              // Priority level for blocks that are not involved in tasks
+  std::string name_;           // Name of this block list ( for debugging )
+  size_t task_id_;             // Order of the task if really a task
+  bool lock_in_memory_;        // Lock in memory
+  int priority_;               // Priority level for blocks that are not involved in tasks
 
 public:
 
-  au::list< BlockRef > blocks;                // List of blocks references
+  au::list< BlockRef > blocks;  // List of blocks references
 
 public:
 
 
   BlockList(std::string name = "no_name", size_t task_id = ( size_t)-1) {
     name = name;
-    task_id_  = task_id;           // Task is the order of priority
+    task_id_  = task_id;       // Task is the order of priority
     lock_in_memory_ = false;       // By default no lock in memory
-    priority_ = 0;                 // Default priority level
+    priority_ = 0;             // Default priority level
   }
 
   ~BlockList();
@@ -137,4 +137,4 @@ public:
 }
 }
 
-#endif // ifndef _H_BLOCK_LIST
+#endif  // ifndef _H_BLOCK_LIST

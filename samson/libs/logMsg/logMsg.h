@@ -101,7 +101,8 @@ typedef void (*LmWriteFp)(char *);
  *
  * LmOutHook - type for function pointer for lmOut hook
  */
-typedef void (*LmOutHook)(void *vP, char *text, char type, time_t secondsNow, int timezone, int dst, const char *file, int lineNo,
+typedef void (*LmOutHook)(void *vP, char *text, char type, time_t secondsNow, int timezone, int dst, const char *file,
+                          int lineNo,
                           const char *fName, int tLev, const char *stre);
 
 
@@ -313,7 +314,7 @@ typedef struct LogMsg {
 #define LM_VVV   LM_V3
 #define LM_VVVV  LM_V4
 #define LM_VVVVV LM_V5
-#endif // ifdef LM_NO_V
+#endif  // ifdef LM_NO_V
 
 /* ****************************************************************************
  *
@@ -480,7 +481,7 @@ typedef struct LogMsg {
     }                                                                       \
   } while (0)
 
-#endif // ifdef LM_NO_E
+#endif  // ifdef LM_NO_E
 
 
 #ifdef LM_NO_P
@@ -728,7 +729,7 @@ typedef struct LogMsg {
     }                                                                       \
   } while (0)
 
-#endif // ifdef LM_NO_X
+#endif  // ifdef LM_NO_X
 
 
 
@@ -996,7 +997,7 @@ typedef struct LogMsg {
 #define LM_WRITES(_to, _desc, _buf, _sz, _form)  \
   lmBufferPresent((char *)_to, (char *)_desc, (char *)_buf, _sz, _form, 'w')
 
-#endif // ifndef LM_ON
+#endif  // ifndef LM_ON
 
 
 
@@ -1586,7 +1587,8 @@ extern int lmFirstDiskFileDescriptor(void);
  *
  * lmLogLineGet -
  */
-extern long lmLogLineGet(char *typeP, char *dateP, int *msP, char *progNameP, char *fileNameP, int *lineNoP, int *pidP, int *tidP,
+extern long lmLogLineGet(char *typeP, char *dateP, int *msP, char *progNameP, char *fileNameP, int *lineNoP, int *pidP,
+                         int *tidP,
                          char *funcNameP, char *messageP, long offset,
                          char **lineP);
 
@@ -1597,4 +1599,4 @@ extern long lmLogLineGet(char *typeP, char *dateP, int *msP, char *progNameP, ch
  */
 extern void lmCleanProgName(void);
 
-#endif // ifndef LOG_MSG_H
+#endif  // ifndef LOG_MSG_H

@@ -61,4 +61,4 @@ private:
 };
 }
 
-#endif // ifndef _H_SAMSON_ZOO_DATA_MODEL
+#endif  // ifndef _H_SAMSON_ZOO_DATA_MODEL

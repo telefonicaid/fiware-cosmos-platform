@@ -52,8 +52,7 @@ public:
 
     if (_compareKeyFunction  == "")
       compareKeyFunction = "compare"; else
-      compareKeyFunction = _compareKeyFunction;
-    if (_compareValueFunction  == "")
+      compareKeyFunction = _compareKeyFunction; if (_compareValueFunction  == "")
       compareValueFunction = "compare"; else
       compareValueFunction = _compareValueFunction;
   }
@@ -117,13 +116,15 @@ public:
     if (type != "script") {
       size_t found = input_dataset.key_values.keyFormat.find('.');
       if (found == std::string::npos) {
-        std::cerr << "samsonModuleParser: Error in operation " << name << ": Input key without module specification(" <<
+        std::cerr << "samsonModuleParser: Error in operation " << name <<
+        ": Input key without module specification(" <<
         input_dataset.key_values.keyFormat << ")\n";
         exit(1);
       }
       found = input_dataset.key_values.valueFormat.find('.');
       if (found == std::string::npos) {
-        std::cerr << "samsonModuleParser: Error in operation " << name << ": Input value without module specification(" <<
+        std::cerr << "samsonModuleParser: Error in operation " << name <<
+        ": Input value without module specification(" <<
         input_dataset.key_values.valueFormat << ")\n";
         exit(1);
       }
@@ -149,17 +150,30 @@ public:
 
     // Checking the use of reserved words in the name
     std::string arr_reserved_words[] =
-    { "auto",        "const",                                         "double",          "float",               "int",             "short",
-      "struct",              "unsigned",      "break",            "continue",     "else",
-      "for",    "long",   "signed",  "switch",       "void",      "case",             "default", "enum",
-      "goto",       "register", "sizeof",   "typedef", "volatile",    "char",   "do",      "extern",
-      "if",       "return",   "static",   "union",  "while",  "asm",     "dynamic_cast", "namespace", "reinterpret_cast",
-      "try",        "bool",     "explicit", "new",     "static_cast", "typeid", "catch",   "false",
-      "operator", "template", "typename", "class",  "friend", "private", "this",         "using",
-      "const_cast", "inline",   "public",   "throw",   "virtual",     "delete", "mutable", "protected",
-      "true",     "wchar_t",  "and",      "bitand", "compl",  "not_eq",  "or_eq",        "xor_eq",
-      "and_eq",     "bitor",    "not",      "or",      "xor",         "cin",    "endl",    "INT_MIN",
-      "iomanip",  "main",     "npos",     "std",    "cout",   "include", "INT_MAX",      "iostream",  "MAX_RAND",         "NULL",
+    { "auto",              "const",           "double",                        "float",
+      "int",               "short",
+      "struct",            "unsigned",        "break",                         "continue",
+      "else",
+      "for",               "long",            "signed",                        "switch",
+      "void",              "case",            "default",                       "enum",
+      "goto",              "register",        "sizeof",                        "typedef",
+      "volatile",          "char",            "do",                            "extern",
+      "if",                "return",          "static",                        "union",
+      "while",             "asm",             "dynamic_cast",                  "namespace",
+      "reinterpret_cast",
+      "try",         "bool",                 "explicit",                  "new",
+      "static_cast", "typeid",               "catch",                     "false",
+      "operator",    "template",             "typename",                  "class",
+      "friend",      "private",              "this",                      "using",
+      "const_cast",  "inline",               "public",                    "throw",
+      "virtual",     "delete",               "mutable",                   "protected",
+      "true",        "wchar_t",              "and",                       "bitand",
+      "compl",       "not_eq",               "or_eq",                     "xor_eq",
+      "and_eq",      "bitor",                "not",                       "or",
+      "xor",         "cin",                  "endl",                      "INT_MIN",
+      "iomanip",     "main",                 "npos",                      "std",
+      "cout",        "include",              "INT_MAX",                   "iostream",
+      "MAX_RAND",     "NULL",
       "string" };
 
     std::set<std::string>   reserved_words;
@@ -169,7 +183,8 @@ public:
     }
 
     if (reserved_words.find(name) != reserved_words.end()) {
-      std::cerr << "samsonModuleParser: Error in operation: '" << name << "'. It is a c++ reserved word. Please chose a different name\n";
+      std::cerr << "samsonModuleParser: Error in operation: '" << name <<
+      "'. It is a c++ reserved word. Please chose a different name\n";
       return false;
     }
 
@@ -204,8 +219,10 @@ public:
 
       for (size_t i = 1; i < inputs.size(); i++) {
         if (prevKeyFormat != inputs[i].key_values.keyFormat) {
-          fprintf(stderr, "samsonModuleParser: Error in operation '%s' ('%s' type). keyFormat must agree for all inputs ('%s' != '%s')\n",
-                  name.c_str(), type.c_str(), prevKeyFormat.c_str(), inputs[i].key_values.keyFormat.c_str());
+          fprintf(
+            stderr,
+            "samsonModuleParser: Error in operation '%s' ('%s' type). keyFormat must agree for all inputs ('%s' != '%s')\n",
+            name.c_str(), type.c_str(), prevKeyFormat.c_str(), inputs[i].key_values.keyFormat.c_str());
           return false;
         }
       }
@@ -214,9 +231,10 @@ public:
 
       for (size_t i = 1; i < inputs.size(); i++) {
         if (prevKeyCompareFunction != inputs[i].compareKeyFunction) {
-          fprintf(stderr,
-                  "samsonModuleParser: Error in operation '%s' ('%s' type). compareKeyFunction must agree for all inputs ('%s' != '%s')\n",
-                  name.c_str(), type.c_str(), prevKeyCompareFunction.c_str(), inputs[i].compareKeyFunction.c_str());
+          fprintf(
+            stderr,
+            "samsonModuleParser: Error in operation '%s' ('%s' type). compareKeyFunction must agree for all inputs ('%s' != '%s')\n",
+            name.c_str(), type.c_str(), prevKeyCompareFunction.c_str(), inputs[i].compareKeyFunction.c_str());
           return false;
         }
       }
@@ -271,7 +289,8 @@ public:
     std::ifstream _file(fileName.str().c_str());
     if (_file.is_open()) {
       if (checkOperationFile(_file, info) == false) {
-        std::cerr << "Error, " << fileName.str() << ": module declaration does not agree with header comment in implementation." <<
+        std::cerr << "Error, " << fileName.str() <<
+        ": module declaration does not agree with header comment in implementation." <<
         std::endl;
         std::cerr << "\t\tPlease check and update the wrong declaration (module or implementation)." << std::endl;
         exit(-1);
@@ -313,8 +332,6 @@ public:
     }
     if (type == "simpleParser")
       file << "#include <samson/modules/system/SimpleParser.h>" << std::endl;
-
-
     file << "\n";
     file << "\n";
 
@@ -345,7 +362,8 @@ public:
     file <<
     "// If interface changes and you do not recreate this file, you will have to update this information (and of course, the module file)"
          << std::endl;
-    file << "// Please, do not remove this comments, as it will be used to check consistency on module declaration" << std::endl;
+    file << "// Please, do not remove this comments, as it will be used to check consistency on module declaration" <<
+    std::endl;
     file << "//\n";
 
     size_t found_prev = 0;
@@ -395,7 +413,6 @@ public:
       if (type == "splitter")
         file <<
         "\t\tint split( char * inData, size_t inLength , bool finished , char ** nextData , SplitterEmitter* emitter )\n\t\t{\n\t\t\treturn 0;\n\t\t}\n\n";
-
     }
 
     file << "\n\n";
@@ -441,7 +458,8 @@ public:
     output << "\t{" << std::endl;
 
     output << "\t\tint res_key = " <<
-    getCompareFunctionForData(inputs[0].key_values.keyFormat, inputs[0].compareKeyFunction) << "(kv1->key , kv2->key);\n";
+    getCompareFunctionForData(inputs[0].key_values.keyFormat,
+                              inputs[0].compareKeyFunction) << "(kv1->key , kv2->key);\n";
 
     output << "\t\tif(res_key!=0)\n";
     output << "\t\t\treturn (res_key<0);\n";
@@ -480,7 +498,8 @@ public:
     output << "\tint " << getCompareByKeyFunctionName() << "(KV* kv1 , KV* kv2)" << std::endl;
     output << "\t{" << std::endl;
     output << "\t\treturn " <<
-    getCompareFunctionForData(inputs[0].key_values.keyFormat, inputs[0].compareKeyFunction) << "(kv1->key , kv2->key);\n";
+    getCompareFunctionForData(inputs[0].key_values.keyFormat,
+                              inputs[0].compareKeyFunction) << "(kv1->key , kv2->key);\n";
     output << "\t}" << std::endl;
 
     return output.str();
@@ -499,8 +518,7 @@ public:
     bool errorDetected = false;
 
     if (infoFile != infoFile)
-      LM_E(("avoiding a strict warning ..."));
-    if (_inputs.size() != inputs_impl.size()) {
+      LM_E(("avoiding a strict warning ...")); if (_inputs.size() != inputs_impl.size()) {
       cerr << ">>> Error in number of inputs to the operation: "  << name << std::endl;
       cerr << ">>>       module declaration: " << _inputs.size() << std::endl;
       cerr << ">>>       .h implementation: " << inputs_impl.size() << std::endl;
@@ -573,13 +591,16 @@ public:
       cerr << ">>> " << "In .h:" << std::endl;
 
       for (unsigned int i = 0; (i < inputs_impl.size()); i++) {
-        cerr << ">>>     //  " << "input: " << inputs_impl[i].key_values.keyFormat << " " << inputs_impl[i].key_values.valueFormat <<
-        " compareKeyFunction=" << inputs_impl[i].compareKeyFunction << " compareValueFunction=" << inputs_impl[i].compareValueFunction <<
+        cerr << ">>>     //  " << "input: " << inputs_impl[i].key_values.keyFormat << " " <<
+        inputs_impl[i].key_values.valueFormat <<
+        " compareKeyFunction=" << inputs_impl[i].compareKeyFunction << " compareValueFunction=" <<
+        inputs_impl[i].compareValueFunction <<
         std::endl;
       }
 
       for (unsigned int i = 0; (i < outputs_impl.size()); i++) {
-        cerr << ">>>     //  " << "output: " << outputs_impl[i].key_values.keyFormat << " " << outputs_impl[i].key_values.valueFormat <<
+        cerr << ">>>     //  " << "output: " << outputs_impl[i].key_values.keyFormat << " " <<
+        outputs_impl[i].key_values.valueFormat <<
         std::endl;
       }
 
@@ -591,8 +612,7 @@ public:
       while (found != string::npos) {
         line = info.substr(found_prev, found - found_prev);
         if ((line.find("input:") != string::npos) || (line.find("output:") != string::npos))
-          cerr << ">>>     //  " << line << std::endl;
-        found_prev = found + 1;
+          cerr << ">>>     //  " << line << std::endl; found_prev = found + 1;
         found = info.find_first_of("\n", found + 1);
       }
       cerr << ">>> " << std::endl;
@@ -624,8 +644,7 @@ public:
       if ((strstr(buffer, INFO_MODULE) != NULL) || (strstr(buffer, INFO_COMMENT) != NULL)) {
         // cout << "Detected header" << std::endl;
         if (strstr(buffer, INFO_COMMENT) != NULL)
-          info_comment = true;
-        header_info = true;
+          info_comment = true; header_info = true;
       } else if (header_info) {
         if ((strstr(buffer, END_INFO_MODULE)) || (strstr(buffer, END_INFO_COMMENT) != NULL))
           // cout << "Detected end of header" << std::endl;
@@ -633,22 +652,18 @@ public:
 
           return checkOperationHeaderItems(inputs, outputs, info, inputs_impl, outputs_impl, infoFile);
 
-
         // We create a mini tokenize
         std::vector<AUToken> total_items = AUTockenizer::tockenize(buffer);
 
         std::vector<AUToken> items_impl = AUTockenizer::removeSpacesAndCommentsAndReturns(total_items);
 
         if (items_impl.size() < 3)
-          continue;
-
-        unsigned int pos = 0;
+          continue; unsigned int pos = 0;
         std::string option = items_impl[pos++].str;
 
         if (info_comment == false) {
           if (option != "//")
-            continue;
-          else
+            continue; else
             option = items_impl[pos++].str;
         }
 

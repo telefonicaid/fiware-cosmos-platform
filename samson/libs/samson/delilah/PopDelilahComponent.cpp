@@ -59,7 +59,8 @@ void PopDelilahComponent::run() {
     }
 
     if (mkdir(file_name_.c_str(), 0755)) {
-      setComponentFinishedWithError(au::str("Not possible to create directory %s (%s).", file_name_.c_str(), strerror(errno)));
+      setComponentFinishedWithError(au::str("Not possible to create directory %s (%s).", file_name_.c_str(),
+                                            strerror(errno)));
       return;
     }
   }
@@ -250,7 +251,8 @@ void PopDelilahComponent::check() {
                                       , file_name_.c_str()
                                       , item->pop_id());
 
-      au::SharedPointer< engine::DiskOperation> operation(engine::DiskOperation::newWriteOperation(buffer, file_name, getEngineId()));
+      au::SharedPointer< engine::DiskOperation> operation(engine::DiskOperation::newWriteOperation(buffer, file_name,
+                                                                                                   getEngineId()));
       engine::DiskManager::shared()->Add(operation);
       num_pending_write_operations_++;
     } else {

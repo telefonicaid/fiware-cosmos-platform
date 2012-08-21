@@ -121,7 +121,7 @@ void LogServerChannel::add(Log *log) {
       fd->Close();
       delete fd;
       fd = NULL;
-    } // Open if necessary
+    }  // Open if necessary
   if (!fd) {
     current_size = 0;
 
@@ -135,8 +135,7 @@ void LogServerChannel::add(Log *log) {
 
   // Write to file
   if (fd)
-    log->write(fd);
-  current_size += log->getTotalSerialitzationSize();
+    log->write(fd); current_size += log->getTotalSerialitzationSize();
 }
 
 void LogServerChannel::addNewSession() {

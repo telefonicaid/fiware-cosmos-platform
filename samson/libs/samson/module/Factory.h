@@ -54,7 +54,6 @@ public:
       creationFunctions.insert(std::pair<std::string, factoryFunction>(name, function));
     else
       fprintf(stderr, "Warning: Previous definition of an element with the same name %s\n", name.c_str());
-
   }
 
   /* Create a new object of this type */
@@ -129,6 +128,7 @@ public:
       return NULL;
     }
 
+
     return iter->second.create(name);
   }
 
@@ -159,6 +159,7 @@ public:
       return false;
     }
 
+
     return factory->check(name);
   }
 
@@ -184,4 +185,4 @@ public:
 };
 }
 
-#endif // ifndef SAMSON_FACTORY_H
+#endif  // ifndef SAMSON_FACTORY_H

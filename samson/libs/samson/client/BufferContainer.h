@@ -29,4 +29,4 @@ private:
 };
 }
 
-#endif // ifndef _H_Buffercontainer_SamsonClient
+#endif  // ifndef _H_Buffercontainer_SamsonClient

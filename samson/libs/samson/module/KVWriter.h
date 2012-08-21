@@ -30,4 +30,4 @@ public:
 };
 }
 
-#endif // ifndef KV_WRITER_H
+#endif  // ifndef KV_WRITER_H

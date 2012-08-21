@@ -82,6 +82,7 @@ public:
     if (type != escape_sequence) {
       return false;
     }
+
     return ( seq == "[A" );
   }
 
@@ -89,6 +90,7 @@ public:
     if (type != escape_sequence) {
       return false;
     }
+
     return ( seq == "[B" );
   }
 
@@ -96,6 +98,7 @@ public:
     if (type != escape_sequence) {
       return false;
     }
+
     return ( seq == "[D" );
   }
 
@@ -103,9 +106,10 @@ public:
     if (type != escape_sequence) {
       return false;
     }
+
     return ( seq == "[C" );
   }
 };
 }
 
-#endif // ifndef _AU_CONSOLE_ENTRY
+#endif  // ifndef _AU_CONSOLE_ENTRY

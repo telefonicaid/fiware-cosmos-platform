@@ -232,8 +232,7 @@ std::string str(double value, char letter) {
   if (value < 10)
     sprintf(line, "%4.2f%c", value, letter); else if (value < 100)
     sprintf(line, "%4.1f%c", value, letter); else
-    sprintf(line, "%4.0f%c", value, letter);
-  return std::string(line);
+    sprintf(line, "%4.0f%c", value, letter); return std::string(line);
 }
 
 std::string str(const char *format, ...) {
@@ -332,6 +331,7 @@ std::string str(double value) {
     return au::str_double(value / 1000000.0, 'M');
 
 
+
 #ifdef __LP64__
   else if (value < 1000000000000)
     return au::str_double(value / 1000000000.0, 'G');
@@ -339,6 +339,7 @@ std::string str(double value) {
     return au::str_double(value / 1000000000000.0, 'T');
   else if (value < 1000000000000000000)
     return au::str_double(value / 1000000000000000.0, 'P');
+
 
 
 #endif
@@ -421,8 +422,7 @@ std::vector<std::string> simpleTockenize(std::string txt) {
   }
 
   if (txt.size() > pos)
-    items.push_back(txt.substr(pos, txt.size() - pos));
-  return items;
+    items.push_back(txt.substr(pos, txt.size() - pos)); return items;
 }
 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
@@ -454,6 +454,7 @@ int get_term_size(int fd, int *x, int *y) {
   if (ioctl(fd, TIOCGSIZE, &win))
     return 0;
 
+
   if (y)
     *y = win.ts_lines;
   if (x)
@@ -462,6 +463,7 @@ int get_term_size(int fd, int *x, int *y) {
 #elif defined TIOCGWINSZ
   if (ioctl(fd, TIOCGWINSZ, &win))
     return 0;
+
 
   if (y)
     *y = win.ws_row;

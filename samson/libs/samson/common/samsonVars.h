@@ -46,4 +46,4 @@
   { "-working",  samsonWorking,  "SAMSON_WORKING", PaString,  PaOpt, SWD,     PaNL,   PaNL,  "working directory"       },  \
   { "-home",     samsonHome,     "SAMSON_HOME",    PaString,  PaOpt, SHD,     PaNL,   PaNL,  "home directory"          }
 
-#endif // ifndef SAMSON_VARS_H
+#endif  // ifndef SAMSON_VARS_H

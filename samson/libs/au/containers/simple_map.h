@@ -109,4 +109,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_SIMPLE_MAP
+#endif  // ifndef _H_AU_SIMPLE_MAP

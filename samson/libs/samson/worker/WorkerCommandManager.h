@@ -59,4 +59,4 @@ public:
 }
 
 
-#endif // ifndef _H_STREAM_WORKER_COMMAND_MANAGER
+#endif  // ifndef _H_STREAM_WORKER_COMMAND_MANAGER

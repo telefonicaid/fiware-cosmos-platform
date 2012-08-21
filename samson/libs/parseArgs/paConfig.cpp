@@ -302,28 +302,26 @@ static void paConfigInit(void) {
     paManAuthor           = strdup(paManAuthor); if (paManReportingBugs)
     paManReportingBugs    = strdup(paManReportingBugs); if (paManCopyright)
     paManCopyright        = strdup(paManCopyright); if (paManVersion)
-    paManVersion          = strdup(paManVersion);
-  if (paTraceInfoAtEol)
+    paManVersion          = strdup(paManVersion); if (paTraceInfoAtEol)
     paTraceInfoAtEol      = strdup(paTraceInfoAtEol); else
     paTraceInfoAtEol      = strdup("#"); if (paLogFilePath)
-    paLogFilePath         = strdup(paLogFilePath); else
+    paLogFilePath         = strdup(paLogFilePath);
+  else
     paLogFilePath         = strdup("/var/log/samson/");  //
-                                                        // This must be changed, cannot have Samson dependencies in this library ...
-                                                        //
+   // This must be changed, cannot have Samson dependencies in this library ...
+  //
   if (paLogDir[0] == 0)
-    strcpy(paLogDir, "/var/log/samson/");
-
-  if (paLogFileLineFormat)
+    strcpy(paLogDir, "/var/log/samson/"); if (paLogFileLineFormat)
     paLogFileLineFormat   = strdup(paLogFileLineFormat); else
     paLogFileLineFormat   = strdup("DEF"); if (paLogFileTimeFormat)
     paLogFileTimeFormat   = strdup(paLogFileTimeFormat); else
     paLogFileTimeFormat   = strdup("DEF"); if (paLogScreenLineFormat)
     paLogScreenLineFormat = strdup(paLogScreenLineFormat); else
     paLogScreenLineFormat = strdup("DEF"); if (paLogScreenTimeFormat)
-    paLogScreenTimeFormat = strdup(paLogScreenTimeFormat); else
+    paLogScreenTimeFormat = strdup(paLogScreenTimeFormat);
+  else
     paLogScreenTimeFormat = strdup("DEF");  /* Should all these be freed after paParse finishes? */
-
-  /* YES ! */
+   /* YES ! */
 }
 
 /* ****************************************************************************
@@ -546,8 +544,7 @@ int paConfigActions(bool preTreat) {
     if (paNoClear == true)
       lmDontClear(); if ((paClearAt != -1) || (paKeepLines != -1) || (paLastLines != -1))
       /* logMsg must be changed to not change -1 values */
-      lmClearAt(paClearAt, paKeepLines, paLastLines);
-    LM_T(LmtPaConfigAction, ("setting trace levels to '%s'", paTraceV));
+      lmClearAt(paClearAt, paKeepLines, paLastLines); LM_T(LmtPaConfigAction, ("setting trace levels to '%s'", paTraceV));
     LM_EXIT();
   }
 

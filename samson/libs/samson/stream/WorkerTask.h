@@ -15,7 +15,7 @@
 #include "samson/stream/Block.h"          // samson::Stream::Block
 #include "samson/stream/BlockInfo.h"      // struct BlockInfo
 #include "samson/stream/BlockList.h"      // stream::BlockList
-#include "samson/stream/WorkerTaskBase.h" // parent class samson::stream::WorkerTaskBase
+#include "samson/stream/WorkerTaskBase.h"  // parent class samson::stream::WorkerTaskBase
 
 namespace samson {
 class SamsonWorker;
@@ -122,10 +122,11 @@ public:
 
   void trace_block(size_t block_size) {
     LM_T(LmtIsolatedOperations,
-         ("%s running a block of %s. Time since start %s", name.c_str(), au::str(block_size, "B").c_str(), au::S(cronometer).str().c_str()));
+         ("%s running a block of %s. Time since start %s", name.c_str(),
+          au::str(block_size, "B").c_str(), au::S(cronometer).str().c_str()));
   }
 };
 }
 }
 
-#endif // ifndef _H_SAMSON_QUEUE_TASK
+#endif  // ifndef _H_SAMSON_QUEUE_TASK

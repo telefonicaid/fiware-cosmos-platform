@@ -74,4 +74,4 @@ typedef enum TraceLevels {
  */
 extern char *traceLevelName(TraceLevels level);
 
-#endif // ifndef TRACE_LEVELS_H
+#endif  // ifndef TRACE_LEVELS_H

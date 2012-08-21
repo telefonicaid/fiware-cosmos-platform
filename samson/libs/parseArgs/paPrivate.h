@@ -85,4 +85,4 @@ extern PaiArgument paBuiltin[];
  */
 extern int stoi(char *string);
 
-#endif // ifndef PA_PRIVATE_H
+#endif  // ifndef PA_PRIVATE_H

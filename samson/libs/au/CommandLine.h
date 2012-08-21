@@ -145,4 +145,4 @@ private:
 };
 }
 
-#endif // ifndef COMMAND_LINE_H
+#endif  // ifndef COMMAND_LINE_H

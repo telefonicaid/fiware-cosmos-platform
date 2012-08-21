@@ -6,6 +6,8 @@
 #include <time.h>
 #include <vector>
 
+#include "logMsg/logMsg.h"
+
 /* ****************************************************************************
  *
  * File -
@@ -43,7 +45,8 @@ class LogsDataSet {
   bool finished_;
 
 public:
-  LogsDataSet(const char *dir_path, const char *extension, int num_fields, int timestamp_position, int timestamp_position_alt,
+  LogsDataSet(const char *dir_path, const char *extension, int num_fields, int timestamp_position,
+              int timestamp_position_alt,
               int timestamp_type,
               const char *queue_name);
   ~LogsDataSet();
@@ -69,4 +72,4 @@ public:
   };
 };
 
-#endif // ifndef _H_LOGSDATASET
+#endif  // ifndef _H_LOGSDATASET

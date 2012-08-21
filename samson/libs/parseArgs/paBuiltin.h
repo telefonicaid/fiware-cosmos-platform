@@ -75,4 +75,4 @@ extern PaiArgument *paBuiltinLookup(char *option);
  */
 extern int paBuiltinRemove(char *name);
 
-#endif // ifndef PA_BUILTIN_H
+#endif  // ifndef PA_BUILTIN_H

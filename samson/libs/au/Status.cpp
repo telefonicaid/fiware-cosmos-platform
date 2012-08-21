@@ -47,7 +47,8 @@ const char *status(Status code) {
 
     case GPB_ReadErrorParsing:      return "GPB Error: pasing google protocol message";
 
-    case GPB_NotInitializedMessage: return "GPB Error: Not initialized google procool message ( required fields maybe )";
+    case GPB_NotInitializedMessage: return
+        "GPB Error: Not initialized google procool message ( required fields maybe )";
 
     case GPB_WriteErrorSerializing: return "GPB Error: serializing google procool message";
 

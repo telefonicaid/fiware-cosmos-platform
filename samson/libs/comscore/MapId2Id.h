@@ -36,6 +36,7 @@ public:
       return (uint) - 1;
     }
 
+
     uint mid_point = (begin + end) / 2;
 
     int c = key - v[mid_point].first;
@@ -43,6 +44,7 @@ public:
     if (c == 0) {
       return mid_point;
     }
+
 
     if (c < 0) {
       return find_one(key, begin, mid_point);
@@ -58,9 +60,11 @@ public:
     if (v[begin].first == key) {
       return begin;
     }
+
     if (v[end].first == key) {
       return end;
     }
+
 
     return find_one(key, begin, end);
   }
@@ -71,6 +75,7 @@ public:
     if (pos == (uint) - 1) {
       return false;
     }
+
 
     *begin = pos;
     *end = pos;
@@ -104,4 +109,4 @@ public:
 }
 }
 
-#endif // ifndef _H_SAMSON_COMSCORE_MapId2Id
+#endif  // ifndef _H_SAMSON_COMSCORE_MapId2Id

@@ -89,12 +89,14 @@ public:
       return NULL;
     }
 
+
     // Take the first ( only one considered )
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
     if (!source_value) {
       return NULL;
     }
+
 
     if (source_value->isVector()) {
       // Create a vector transforming individual component
@@ -150,6 +152,7 @@ public:
       return NULL;
     }
 
+
     // Get the line to transform
     line = input->get_string();
 
@@ -183,11 +186,13 @@ public:
       return NULL;
     }
 
+
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
     if (!source_value) {
       return NULL;
     }
+
 
     // Serialize in buffer
     source_value->serialize(buffer);
@@ -219,11 +224,13 @@ public:
       return NULL;
     }
 
+
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
     if (!source_value) {
       return NULL;
     }
+
 
     // Serialize in buffer
     int l = source_value->serialize(buffer);
@@ -247,11 +254,13 @@ public:
       return NULL;
     }
 
+
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
     if (!source_value) {
       return NULL;
     }
+
 
     // Get the string describing the type
     value_containter.value->set_string(source_value->strType());
@@ -273,14 +282,17 @@ public:
       return NULL;
     }
 
+
     samson::system::Value *source_value = input_sources[0]->get(kv);
     if (!source_value) {
       return NULL;
     }
 
+
     if (!source_value->isString()) {
       return NULL;
     }
+
 
     std::string line = source_value->get_string();
 
@@ -317,6 +329,7 @@ public:
       return NULL;
     }
 
+
     std::string str;
 
     for (size_t i = 0; i < input_sources.size(); i++) {
@@ -324,6 +337,7 @@ public:
       if (!source_value) {
         return NULL;
       }
+
       str.append(source_value->get_string());
     }
     value_container.value->set_string(str);
@@ -351,16 +365,19 @@ public:
       return NULL;
     }
 
+
     // Use only the first component
     samson::system::Value *source_value = input_sources[0]->get(kv);
     if (!source_value) {
       return NULL;
     }
 
+
     samson::system::Value *pos_value    = input_sources[1]->get(kv);
     if (!pos_value) {
       return NULL;
     }
+
 
     samson::system::Value *length_value = NULL;
     if (input_sources.size() > 2) {
@@ -373,14 +390,17 @@ public:
     if (!source_value->isString()) {
       return NULL;
     }
+
     if (!pos_value->isNumber()) {
       return NULL;
     }
+
     if (length_value) {
       if (!length_value->isNumber()) {
         return NULL;
       }
     }
+
 
 
     std::string input  = source_value->get_string();
@@ -418,6 +438,7 @@ public:
     }
 
 
+
     std::string main = main_value->get_string();
     std::string sub = sub_value->get_string();
 
@@ -452,12 +473,14 @@ public:
       return NULL;
     }
 
+
     // Use only the first component
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
     if (!source_value) {
       return NULL;
     }
+
 
     value_container.value->set_double(source_value->get_double());
     return value_container.value;
@@ -486,6 +509,7 @@ public:
       return NULL;
     }
 
+
     value_container.value->set_string(source_value->strJSON());
     return value_container.value;
   }
@@ -512,6 +536,7 @@ public:
     if (!source_value) {
       return NULL;
     }
+
 
     value_container.value->set_string(source_value->str());
     return value_container.value;
@@ -584,6 +609,7 @@ public:
     if (( !source_value ) || !source_value->isString()) {
       return NULL;
     }
+
 
     // Recover the input string
     std::string _input_line = source_value->get_string();
@@ -668,6 +694,7 @@ public:
       return NULL;
     }
 
+
     // Get the first value
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
@@ -675,6 +702,7 @@ public:
     if (( !source_value ) || !source_value->isString()) {
       return NULL;
     }
+
 
     // Exec regular expression
     int c = regexec(&preg, source_value->get_string().c_str(), 0, NULL, 0);
@@ -719,6 +747,7 @@ public:
     if (( !source_value ) || !source_value->isString()) {
       return NULL;
     }
+
 
     // Recover the input string
     std::string _input_line = source_value->get_string();
@@ -843,5 +872,5 @@ public:
 }
 }
 
-#endif // ifndef _H_SAMSON_SYSTEM_SOURCE_FUNCTION
+#endif  // ifndef _H_SAMSON_SYSTEM_SOURCE_FUNCTION
 

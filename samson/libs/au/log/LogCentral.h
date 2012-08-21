@@ -37,7 +37,7 @@ class LogCentral {
 
   SocketConnection *socket_connection;              // Socket connection with the logServer
   au::Cronometer time_since_last_connection;        // Cronometer with the time since last connection
-  size_t time_reconnect;                               // time for the next reconnection
+  size_t time_reconnect;                            // time for the next reconnection
 
   // Local file descriptor to write the log if not possible to connect
   FileDescriptor *local_file_descriptor;
@@ -101,6 +101,6 @@ private:
 };
 }
 
-#endif // ifndef _H_AU_LOG_CENTRAL
+#endif  // ifndef _H_AU_LOG_CENTRAL
 
 

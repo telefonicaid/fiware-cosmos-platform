@@ -12,7 +12,9 @@
 #include <unistd.h>         // exit(.)
 
 namespace samson {
-DataType::DataType(std::string _full_type, std::string _name, DataTypeContainer _container, bool _optional, size_t _valMask,  int nline) {
+DataType::DataType(std::string _full_type, std::string _name, DataTypeContainer _container, bool _optional,
+                   size_t _valMask,
+                   int nline) {
   container = _container;
   optional = _optional;
   valMask = _valMask;
@@ -21,7 +23,8 @@ DataType::DataType(std::string _full_type, std::string _name, DataTypeContainer 
   type = getNameFromFullName(_full_type);
 
   if (tockenizeWithDots(fullType).size() <= 1) {
-    fprintf(stderr, "samsonModuleParser: Error: Please specify a full data-type name (ex sna.Link). Input:'%s' at line:%d\n",
+    fprintf(stderr,
+            "samsonModuleParser: Error: Please specify a full data-type name (ex sna.Link). Input:'%s' at line:%d\n",
             fullType.c_str(), nline);
     exit(1);
   }
@@ -210,7 +213,7 @@ string DataType::getInitialization(string pre_line, string initial_value) {
 string DataType::getInitialization(string pre_line) {
   ostringstream o;
 
-  if (valMask == 0) { // artificially inserted NAME_FILLEDOPTIONALFIELDS field
+  if (valMask == 0) {  // artificially inserted NAME_FILLEDOPTIONALFIELDS field
     o << pre_line << name << " = 0;\n";
     return o.str();
   }
@@ -250,7 +253,7 @@ string DataType::getDestruction(string pre_line) {
 string DataType::getUnassignedOptionals(string pre_line) {
   ostringstream o;
 
-  if (valMask == 0) { // artificially inserted NAME_FILLEDOPTIONALFIELDS field
+  if (valMask == 0) {  // artificially inserted NAME_FILLEDOPTIONALFIELDS field
     o << pre_line << name << " = 0;\n";
     return o.str();
   }
@@ -270,7 +273,8 @@ string DataType::getParseCommandIndividual(string pre_line, string _name) {
 string DataType::getParseCommandForCompare(string _name, string indice) {
   ostringstream o;
 
-  o << "(*_offsetInternal" << indice << ") += " << _name << ".parse(_dataInternal" << indice << "+" << "*_offsetInternal" << indice << ");";
+  o << "(*_offsetInternal" << indice << ") += " << _name << ".parse(_dataInternal" << indice << "+" <<
+  "*_offsetInternal" << indice << ");";
   return o.str();
 }
 
@@ -293,19 +297,16 @@ string DataType::getParseCommandVector(string pre_line, string _name) {
 string DataType::getParseCommand(string pre_line) {
   ostringstream o;
 
-  if (valMask == 0) { // artificially inserted NAME_FILLEDOPTIONALFIELDS field
+  if (valMask == 0) {  // artificially inserted NAME_FILLEDOPTIONALFIELDS field
     o << getParseCommandIndividual(pre_line, name) << "\n";
     return o.str();
   }
 
   if (optional)
     o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-
   if (isVector())
     o << getParseCommandVector(pre_line, name) << "\n"; else
-    o << getParseCommandIndividual(pre_line, name) << "\n";
-
-  return o.str();
+    o << getParseCommandIndividual(pre_line, name) << "\n"; return o.str();
 }
 
 string DataType::getSerializationCommandIndividual(string pre_line, string _name) {
@@ -324,7 +325,8 @@ string DataType::getSerializationCommandVector(string pre_line, string _name) {
   _name  = "not used";
 
   o << pre_line << "{ //Serialization vector " << name << "\n";
-  o << pre_line << "\t_offsetInternal += samson::staticVarIntSerialize( _dataInternal+_offsetInternal , " << name << "_length );\n";
+  o << pre_line << "\t_offsetInternal += samson::staticVarIntSerialize( _dataInternal+_offsetInternal , " << name <<
+  "_length );\n";
   o << pre_line << "\tfor (int i = 0 ; i < (int)" << name << "_length ; i++)\n";
   pre_line_local = pre_line + "\t";
   o << getSerializationCommandIndividual(pre_line_local, name + "[i]") << "\n";
@@ -336,18 +338,16 @@ string DataType::getSerializeCommand(string pre_line) {
   ostringstream o;
 
 
-  if (valMask == 0) { // artificially inserted NAME_FILLEDOPTIONALFIELDS field
+  if (valMask == 0) {  // artificially inserted NAME_FILLEDOPTIONALFIELDS field
     o << getSerializationCommandIndividual(pre_line, name) << "\n";
     return o.str();
   }
 
   if (optional)
     o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-
   if (isVector())
     o << getSerializationCommandVector(pre_line, name) << "\n"; else
-    o << getSerializationCommandIndividual(pre_line, name) << "\n";
-  return o.str();
+    o << getSerializationCommandIndividual(pre_line, name) << "\n"; return o.str();
 }
 
 string DataType::getSizeCommandIndividual(string pre_line, string _name) {
@@ -367,7 +367,8 @@ string DataType::getSizeCommandList(string pre_line, string _name) {
   _name  = "not used";
 
   o << pre_line << "{ //Sizing " << name << "\n";
-  o << pre_line << "\t_offsetInternal += ::samson::List< " << classNameForType() << " >::size(_dataInternal+_offsetInternal);\n";
+  o << pre_line << "\t_offsetInternal += ::samson::List< " << classNameForType() <<
+  " >::size(_dataInternal+_offsetInternal);\n";
   o << pre_line << "}\n";
   return o.str();
 }
@@ -393,22 +394,17 @@ string DataType::getSizeCommandVector(string pre_line, string _name) {
 string DataType::getSizeCommand(string pre_line) {
   ostringstream o;
 
-  if (valMask == 0) { // artificially inserted NAME_FILLEDOPTIONALFIELDS field
+  if (valMask == 0) {  // artificially inserted NAME_FILLEDOPTIONALFIELDS field
     o << getSizeCommandIndividual(pre_line, name) << "\n";
     return o.str();
   }
 
   if (optional)
     o << pre_line << "if (local" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-
   if (isVector())
-    o << getSizeCommandVector(pre_line, name) << "\n";
-  else if (isList())
-    o << getSizeCommandList(pre_line, name) << "\n";
-  else
-    o << getSizeCommandIndividual(pre_line, name) << "\n";
-
-  return o.str();
+    o << getSizeCommandVector(pre_line, name) << "\n"; else if (isList())
+    o << getSizeCommandList(pre_line, name) << "\n"; else
+    o << getSizeCommandIndividual(pre_line, name) << "\n"; return o.str();
 }
 
 string DataType::getPartitionCommandIndividual(string pre_line, string _name) {
@@ -442,11 +438,8 @@ string DataType::getPartitionCommand(string pre_line) {
   }
 
   if (isVector())
-    o << getPartitionCommandVector(pre_line, name) << "\n";
-  else
-    o << getPartitionCommandIndividual(pre_line, name) << "\n";
-
-  return o.str();
+    o << getPartitionCommandVector(pre_line, name) << "\n"; else
+    o << getPartitionCommandIndividual(pre_line, name) << "\n"; return o.str();
 }
 
 string DataType::getCompareCommandIndividual(string pre_line,  string _name) {
@@ -456,7 +449,8 @@ string DataType::getCompareCommandIndividual(string pre_line,  string _name) {
   o << pre_line << "{ // comparing " << _name << "\n";
 
   if (optional) {
-    o << pre_line << "\tif (((local" << NAME_FILLEDOPTIONALFIELDS << "1.value & " << hex << showbase << valMask << ") != 0) && ((local" <<
+    o << pre_line << "\tif (((local" << NAME_FILLEDOPTIONALFIELDS << "1.value & " << hex << showbase << valMask <<
+    ") != 0) && ((local" <<
     NAME_FILLEDOPTIONALFIELDS << "2.value & " << hex << showbase << valMask << ") == 0))\n";
     o << pre_line << "\t{\n";
     o << pre_line << "\t\treturn 1;\n";
@@ -466,7 +460,8 @@ string DataType::getCompareCommandIndividual(string pre_line,  string _name) {
     o << pre_line << "\t{\n";
     o << pre_line << "\t\treturn -1;\n";
     o << pre_line << "\t}\n";
-    o << pre_line << "\telse if ((local" << NAME_FILLEDOPTIONALFIELDS << "1.value & " << hex << showbase << valMask << ") && (local" <<
+    o << pre_line << "\telse if ((local" << NAME_FILLEDOPTIONALFIELDS << "1.value & " << hex << showbase << valMask <<
+    ") && (local" <<
     NAME_FILLEDOPTIONALFIELDS << "2.value & " << hex << showbase << valMask << "))\n";
     o << pre_line << "\t{\n";
     o << pre_line << "\t\tint tmp = " << classNameForType() <<
@@ -492,7 +487,8 @@ string DataType::getCompareCommandVector(string pre_line,  string _name) {
   o << pre_line << "{ // Comparing vector " << name << "\n";
 
   if (optional) {
-    o << pre_line << "\tif (((local" << NAME_FILLEDOPTIONALFIELDS << "1.value & " << hex << showbase << valMask << ") != 0) && ((local" <<
+    o << pre_line << "\tif (((local" << NAME_FILLEDOPTIONALFIELDS << "1.value & " << hex << showbase << valMask <<
+    ") != 0) && ((local" <<
     NAME_FILLEDOPTIONALFIELDS << "2.value & " << hex << showbase << valMask << ") == 0))\n";
     o << pre_line << "\t{\n";
     o << pre_line << "\t\treturn 1;\n";
@@ -502,14 +498,17 @@ string DataType::getCompareCommandVector(string pre_line,  string _name) {
     o << pre_line << "\t{\n";
     o << pre_line << "\t\treturn -1;\n";
     o << pre_line << "\t}\n";
-    o << pre_line << "\telse if ((local" << NAME_FILLEDOPTIONALFIELDS << "1.value & " << hex << showbase << valMask << ") && (local" <<
+    o << pre_line << "\telse if ((local" << NAME_FILLEDOPTIONALFIELDS << "1.value & " << hex << showbase << valMask <<
+    ") && (local" <<
     NAME_FILLEDOPTIONALFIELDS << "2.value & " << hex << showbase << valMask << "))\n";
     o << pre_line << "\t{\n";
 
 
     o << pre_line << "\t\tsize_t _length1,_length2;\n";
-    o << pre_line << "\t\t*_offsetInternal1 += samson::staticVarIntParse( _dataInternal1+(*_offsetInternal1) , &_length1 );\n";
-    o << pre_line << "\t\t*_offsetInternal2 += samson::staticVarIntParse( _dataInternal2+(*_offsetInternal2) , &_length2 );\n";
+    o << pre_line <<
+    "\t\t*_offsetInternal1 += samson::staticVarIntParse( _dataInternal1+(*_offsetInternal1) , &_length1 );\n";
+    o << pre_line <<
+    "\t\t*_offsetInternal2 += samson::staticVarIntParse( _dataInternal2+(*_offsetInternal2) , &_length2 );\n";
 
     o << pre_line << "\t\tif( _length1 < _length2 ) return -1;\n";
     o << pre_line << "\t\tif( _length1 > _length2 ) return 1;\n";
@@ -522,8 +521,10 @@ string DataType::getCompareCommandVector(string pre_line,  string _name) {
     o << pre_line << "\t}\n";
   } else {
     o << pre_line << "\tsize_t _length1,_length2;\n";
-    o << pre_line << "\t*_offsetInternal1 += samson::staticVarIntParse( _dataInternal1+(*_offsetInternal1) , &_length1 );\n";
-    o << pre_line << "\t*_offsetInternal2 += samson::staticVarIntParse( _dataInternal2+(*_offsetInternal2) , &_length2 );\n";
+    o << pre_line <<
+    "\t*_offsetInternal1 += samson::staticVarIntParse( _dataInternal1+(*_offsetInternal1) , &_length1 );\n";
+    o << pre_line <<
+    "\t*_offsetInternal2 += samson::staticVarIntParse( _dataInternal2+(*_offsetInternal2) , &_length2 );\n";
 
     o << pre_line << "\tif( _length1 < _length2 ) return -1;\n";
     o << pre_line << "\tif( _length1 > _length2 ) return 1;\n";
@@ -543,10 +544,8 @@ string DataType::getCompareCommand(string pre_line) {
 
 
   if (isVector())
-    o << getCompareCommandVector(pre_line, name);
-  else
-    o << getCompareCommandIndividual(pre_line, name);
-  return o.str();
+    o << getCompareCommandVector(pre_line, name); else
+    o << getCompareCommandIndividual(pre_line, name); return o.str();
 }
 
 string DataType::getToStringCommandIndividual(string pre_line, string _name) {
@@ -589,11 +588,8 @@ string DataType::getToStringCommand(string pre_line) {
 
 
   if (isVector())
-    o << getToStringCommandVector(pre_line, name);
-  else
-    o << pre_line << getToStringCommandIndividual(pre_line, name);
-
-  return o.str();
+    o << getToStringCommandVector(pre_line, name); else
+    o << pre_line << getToStringCommandIndividual(pre_line, name); return o.str();
 }
 
 string DataType::getToStringJSONCommand(string pre_line) {
@@ -658,10 +654,10 @@ string DataType::getToStringHTMLCommand(string pre_line) {
 
   if (optional)
     o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-
   if (isVector()) {
     o << pre_line << "{ // toStringHTML of vector " << name << "\n";
-    o << pre_line << "\to << \"<h\" << level_html_heading << \">\" <<" << "\"" << name << "</h\" << level_html_heading << \">\\n\";\n";
+    o << pre_line << "\to << \"<h\" << level_html_heading << \">\" <<" << "\"" << name <<
+    "</h\" << level_html_heading << \">\\n\";\n";
     o << pre_line << "\tlevel_html_heading++;\n";
     o << pre_line << "\tfor (int i = 0 ; i < " << name << "_length ; i++)\n";
     o << pre_line << "\t{\n";
@@ -677,7 +673,8 @@ string DataType::getToStringHTMLCommand(string pre_line) {
     o << pre_line << "\to << \"\\n\";\n";
   } else {
     o << pre_line << "{ // toStringHTML " << name << "\n";
-    o << pre_line << "\to << \"<h\" <<level_html_heading << \">\" <<" << "\"" << name << "</h\" << level_html_heading << \">\\n\";\n";
+    o << pre_line << "\to << \"<h\" <<level_html_heading << \">\" <<" << "\"" << name <<
+    "</h\" << level_html_heading << \">\\n\";\n";
     o << pre_line << "\to << " << name << ".strHTML(level_html_heading+1);\n";
     o << pre_line << "\to << \"\\n\";\n";
     o << pre_line << "}\n";
@@ -883,7 +880,8 @@ string DataType::getSetFromStringCommandVector(string pre_line, string _name) {
   _name  = "not used";
 
   o << pre_line << "\tconst char *p_item = p_item_vector;" << "\n";
-  o << pre_line << "\tif ((p_item_vector=strchr(p_item_vector, '[')) != NULL){p_item_vector++;}else{p_item_vector=p_item;}" << "\n";
+  o << pre_line <<
+  "\tif ((p_item_vector=strchr(p_item_vector, '[')) != NULL){p_item_vector++;}else{p_item_vector=p_item;}" << "\n";
   o << pre_line << "\tconst char *p_item_prev = p_item_vector;" << "\n";
   o << pre_line << "\tint n_items = 0;" << "\n";
   o << pre_line << "\twhile ((*p_item_prev != ']') && (*p_item_prev != '\\0'))" << "\n";
@@ -914,20 +912,22 @@ string DataType::getSetFromStringCommand(string pre_line) {
   if (strcmp(name.c_str(), NAME_FILLEDOPTIONALFIELDS) == 0)
     return "";
 
-
   if (isVector()) {
     o << pre_line << "{ //Setting vector " << name << "\n";
 
     o << pre_line << "\t" << "const char *p_item_vector;" << "\n";
-    o << pre_line << "\t" << "if ((p_item_vector=strstr(p_value_data, \"" << name << ":[\")) != NULL) { p_item_vector += strlen(\"" <<
-    name << ":[\");} else if (oneFieldNamed == true) { p_item_vector = \"\";} else {p_item_vector = p_value_data;}" << "\n";
+    o << pre_line << "\t" << "if ((p_item_vector=strstr(p_value_data, \"" << name <<
+    ":[\")) != NULL) { p_item_vector += strlen(\"" <<
+    name << ":[\");} else if (oneFieldNamed == true) { p_item_vector = \"\";} else {p_item_vector = p_value_data;}" <<
+    "\n";
 
     o << getSetFromStringCommandVector(pre_line, name) << "\n";
     o << pre_line << "}\n";
   } else {
     o << pre_line << "{ //Setting " << name << "\n";
     o << pre_line << "\t" << "const char *p_item;" << "\n";
-    o << pre_line << "\t" << "if ((p_item=strstr(p_value_data, \"" << name << ":\")) != NULL) { p_item += strlen(\"" << name <<
+    o << pre_line << "\t" << "if ((p_item=strstr(p_value_data, \"" << name << ":\")) != NULL) { p_item += strlen(\"" <<
+    name <<
     ":\");} else if (oneFieldNamed == true) { p_item = \"\";} else {p_item = p_value_data;}" << "\n";
 
     o << getSetFromStringCommandIndividual(pre_line, name) << "\n";
@@ -943,8 +943,8 @@ string DataType::checkSetFromStringNamed(string pre_line) {
   if (strcmp(name.c_str(), NAME_FILLEDOPTIONALFIELDS) == 0)
     return "";
 
-
-  o << pre_line << "\t" << "if ((p_item=strstr(p_value_data, \"" << name << ":\")) != NULL) { oneFieldNamed = true;}" << "\n";
+  o << pre_line << "\t" << "if ((p_item=strstr(p_value_data, \"" << name <<
+  ":\")) != NULL) { oneFieldNamed = true;}" << "\n";
 
   return o.str();
 }
@@ -984,7 +984,8 @@ string DataType::getGetTypeFromStr(string pre_line, int index) {
   o << pre_line << "\t}\n";
   o << pre_line << "\tif (strncmp(dataPathCharP, \"" << name << ".\", strlen(\"" << name << ".\")) == 0)\n";
   o << pre_line << "\t{\n";
-  o << pre_line << "\treturn(" << module << "::" << type << "::getTypeFromPathStatic(dataPathCharP+strlen(\"" << name << ".\")));\n";
+  o << pre_line << "\treturn(" << module << "::" << type << "::getTypeFromPathStatic(dataPathCharP+strlen(\"" <<
+  name << ".\")));\n";
   o << pre_line << "\t}\n";
   o << pre_line << "}\n";
   return o.str();
@@ -1009,15 +1010,13 @@ string DataType::getGetInstance(string pre_line, int index) {
   if (optional) {
     o << pre_line << "\tif (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
     if (isVector())
-      o << pre_line << "\t\treturn((*" << name << ").getDataInstanceFromPath(dataPathIntP+1));\n";
-    else
+      o << pre_line << "\t\treturn((*" << name << ").getDataInstanceFromPath(dataPathIntP+1));\n"; else
       o << pre_line << "\t\treturn(" << name << ".getDataInstanceFromPath(dataPathIntP+1));\n";
     o << pre_line << "\telse\n";
     o << pre_line << "\t\treturn (NULL);\n";
   } else {
     if (isVector())
-      o << pre_line << "\treturn((*" << name << ").getDataInstanceFromPath(dataPathIntP+1));\n";
-    else
+      o << pre_line << "\treturn((*" << name << ").getDataInstanceFromPath(dataPathIntP+1));\n"; else
       o << pre_line << "\treturn(" << name << ".getDataInstanceFromPath(dataPathIntP+1));\n";
   }
   o << pre_line << "\tbreak;\n";
@@ -1058,13 +1057,9 @@ string DataType::getCopyFromCommand(string pre_line) {
 
   if (optional)
     o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-
   if (isVector())
-    o << getCopyFromCommandVector(pre_line, name) << "\n";
-  else
-    o << getCopyFromCommandIndividual(pre_line, name) << "\n";
-
-  return o.str();
+    o << getCopyFromCommandVector(pre_line, name) << "\n"; else
+    o << getCopyFromCommandIndividual(pre_line, name) << "\n"; return o.str();
 }
 
 #pragma mark -----

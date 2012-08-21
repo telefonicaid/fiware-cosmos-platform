@@ -86,6 +86,7 @@ public:
     if (elements.size() == 0) {
       return NULL;
     }
+
     return *elements.front();
   }
 
@@ -93,6 +94,7 @@ public:
     if (elements.size() == 0) {
       return NULL;
     }
+
     return *elements.back();
   }
 
@@ -100,6 +102,7 @@ public:
     if (elements.size() == 0) {
       return NULL;
     }
+
     T *t =  elements.front();
     elements.pop_front();
     return t;
@@ -109,6 +112,7 @@ public:
     if (elements.size() == 0) {
       return NULL;
     }
+
     T *t =  elements.back();
     elements.pop_back();
     return t;
@@ -327,6 +331,7 @@ public:
       return 0;
     }
 
+
     return elements.front()->hash(max_num);
   }
 
@@ -338,7 +343,7 @@ public:
     offset += samson::staticVarIntParse(data + offset, &_length);
 
     T _tmp;
-    for (int i = 0; i < (int)_length; i++) { // Sizing v
+    for (int i = 0; i < (int)_length; i++) {  // Sizing v
       offset += _tmp.parse(data + offset);
     }
 
@@ -355,6 +360,7 @@ public:
       return new T();
     }
 
+
     T *t = reuse_elements.front();
     reuse_elements.pop_front();
 
@@ -368,4 +374,4 @@ public:
 };
 }
 
-#endif // ifndef SAMSON_LIST_H
+#endif  // ifndef SAMSON_LIST_H

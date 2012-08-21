@@ -15,7 +15,8 @@ namespace samson { namespace system {
 
                    void emit_feedback(Value *key, Value *state, samson::KVWriter *writer) {
                      // Debug
-                     emit_log("debug", au::str("Emit feedback %s - %s", key->str().c_str(), state->str().c_str()), writer);
+                     emit_log("debug", au::str("Emit feedback %s - %s", key->str().c_str(),
+                                               state->str().c_str()), writer);
 
                      // Emit using 1- channel
                      writer->emit(1, key, state);

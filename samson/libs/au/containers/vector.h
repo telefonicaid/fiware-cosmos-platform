@@ -27,7 +27,7 @@
 #include <set>             // std::set
 #include <vector>       // std::vector
 
-#include "logMsg/logMsg.h" // LM_M()
+#include "logMsg/logMsg.h"  // LM_M()
 
 
 
@@ -79,4 +79,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_VECTOR
+#endif  // ifndef _H_AU_VECTOR

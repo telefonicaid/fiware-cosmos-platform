@@ -45,7 +45,8 @@ namespace samson { namespace system {
                      }
 
                      // Update state ( if possible )
-                     update(keyContainer.value, stateContainer.value, value_vector.values_, value_vector.num_values_, writer);
+                     update(keyContainer.value, stateContainer.value, value_vector.values_, value_vector.num_values_,
+                            writer);
                    }
 
                    void ProcessComponentsManager::update(Value *key, Value *state, Value **values, size_t num_values,
@@ -56,13 +57,16 @@ namespace samson { namespace system {
                               au::str("Processing state %s - %s with %lu values", key->str().c_str(),
                                       state->str().c_str(), num_values), writer);
                      for (size_t i = 0; i < num_values; i++) {
-                       emit_log("debug", au::str("Input value %lu/%lu: %s ", i, num_values, values[i]->str().c_str()), writer);
+                       emit_log("debug", au::str("Input value %lu/%lu: %s ", i, num_values,
+                                                 values[i]->str().c_str()), writer);
                      }
 
                      // Look into components
                      for (size_t i = 0, l = components_.size(); i < l; i++) {
                        if (components_[i]->update(key, state, values, num_values, writer)) {
-                         emit_log("debug", au::str("Processed this state with component %s", components_[i]->name_.c_str()), writer);
+                         emit_log("debug",
+                                  au::str("Processed this state with component %s",
+                                          components_[i]->name_.c_str()), writer);
                          components_[i]->use_counter_++;
 
                          // Check to swap positions in the vector

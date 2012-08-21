@@ -31,7 +31,8 @@ TEST(engineTest, instantiationTest) {
   // Init test
   init_engine_test();
 
-  EXPECT_TRUE(engine::Engine::shared() != static_cast<engine::Engine *>(NULL)) << "engine instance should not be null after instantiation";
+  EXPECT_TRUE(engine::Engine::shared() !=
+              static_cast<engine::Engine *>(NULL)) << "engine instance should not be null after instantiation";
 
   close_engine_test();
 }

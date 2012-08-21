@@ -22,7 +22,7 @@ class Adaptor {
   au::Token token;
 
   // Name describing this item
-  std::string name_;                         // Assigned when added to a channel
+  std::string name_;                    // Assigned when added to a channel
   std::string description_;             // Description of this element
 
   // Collection of connections
@@ -107,4 +107,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_CONNECTOR_ITEM
+#endif  // ifndef _H_SAMSON_CONNECTOR_ITEM

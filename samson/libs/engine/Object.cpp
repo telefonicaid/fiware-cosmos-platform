@@ -39,7 +39,8 @@ Object::~Object() {
 }
 
 void Object::notify(Notification *notification) {
-  LM_W(("Notification %s not handled since it has not been overwritted method notify", notification->getDescription().c_str()));
+  LM_W(("Notification %s not handled since it has not been overwritted method notify",
+        notification->getDescription().c_str()));
 }
 
 void Object::listen(const char *notification_name) {

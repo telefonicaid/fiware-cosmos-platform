@@ -136,4 +136,4 @@ private:
 typedef au::SharedPointer<Buffer>   BufferPointer;
 }
 
-#endif // ifndef _ENGINE_BUFFER_H_
+#endif  // ifndef _ENGINE_BUFFER_H_

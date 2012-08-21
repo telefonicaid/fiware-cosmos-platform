@@ -12,7 +12,8 @@ namespace samson {
 //
 // ----------------------------------------------------
 
-PushItem::PushItem(Delilah *delilah, size_t push_id, engine::BufferPointer buffer, const std::vector<std::string>& queues) {
+PushItem::PushItem(Delilah *delilah, size_t push_id, engine::BufferPointer buffer,
+                   const std::vector<std::string>& queues) {
   // Keep a pointer to delilah
   delilah_ = delilah;
 
@@ -159,7 +160,8 @@ void PushManager::receive(Message::MessageCode msgCode, size_t worker_id, size_t
   PushItem *item = items_.findInMap(push_id);
 
   if (item)
-    item->receive(msgCode, worker_id); else
+    item->receive(msgCode, worker_id);
+  else
     LM_W(("PushBlock response associated with an item (%lu) not found.", push_id ));  // Comit ready push operations and remove old connections
   review();
 }

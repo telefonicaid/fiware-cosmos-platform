@@ -39,9 +39,11 @@ struct IdRange {
       return true;
     }
 
+
     if (id > id_range.id) {
       return false;
     }
+
 
     return ( range.hg_begin < id_range.range.hg_begin );
   }
@@ -119,4 +121,4 @@ public:
 }
 }
 
-#endif // ifndef _H_SAMSON_QUEUE_TASK_MANAGER
+#endif  // ifndef _H_SAMSON_QUEUE_TASK_MANAGER

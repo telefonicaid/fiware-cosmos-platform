@@ -58,5 +58,5 @@ private:
 };
 }
 
-#endif // ifndef _H_INTER_CHANNEL_PACKET
+#endif  // ifndef _H_INTER_CHANNEL_PACKET
 

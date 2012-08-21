@@ -84,8 +84,7 @@ public:
 
     nb = fread(data, filestatus.st_size, 1, file);
     if (nb == 0)
-      LM_W(("No data read from file:'%s'", fileName.c_str()));
-    fclose(file);
+      LM_W(("No data read from file:'%s'", fileName.c_str())); fclose(file);
   }
 
   SimpleBuffer(size_t size) {

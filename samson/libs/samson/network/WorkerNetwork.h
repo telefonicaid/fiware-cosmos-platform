@@ -37,4 +37,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_WORKER_NETWORK
+#endif  // ifndef _H_SAMSON_WORKER_NETWORK

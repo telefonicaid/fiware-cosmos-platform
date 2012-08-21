@@ -70,4 +70,4 @@ inline int staticVarIntSerialize(char *data, size_t value) {
   return offset;
 }
 
-#endif // ifdef AU_VAR_INT_H_
+#endif  // ifdef AU_VAR_INT_H_

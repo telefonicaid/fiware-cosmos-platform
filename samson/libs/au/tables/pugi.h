@@ -43,4 +43,4 @@ namespace pugi {
 au::tables::TreeItem *treeItemFromDocument(const xml_document& xml_doc);
 au::tables::TreeItem *treeItemFromNode(const xml_node& xml_node);
 }
-#endif // ifndef _H_xml_Pugi
+#endif  // ifndef _H_xml_Pugi

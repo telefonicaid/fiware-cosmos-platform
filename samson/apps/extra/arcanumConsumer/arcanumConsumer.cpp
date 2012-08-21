@@ -48,9 +48,12 @@ int bufSize;
  */
 PaArgument paArgs[] =
 {
-  { "-host", host,      "HOST",     PaStr,         PaOpt,     _i HOST,  PaNL,  PaNL,         "host name of server"                    },
-  { "-port", &port,     "PORT",     PaShortU,      PaOpt,     1099,     1,     65000,        "port for server where to connect"       },
-  { "-size", &bufSize,  "BUF_SIZE", PaInt,         PaOpt,     1024,     10,    16 * 1024,    "size of read buffer"                    },
+  { "-host", host,     "HOST",     PaStr,         PaOpt,         _i HOST,        PaNL,         PaNL,
+    "host name of server"                            },
+  { "-port", &port,    "PORT",     PaShortU,      PaOpt,         1099,           1,            65000,
+    "port for server where to connect"               },
+  { "-size", &bufSize, "BUF_SIZE", PaInt,         PaOpt,         1024,           10,           16 * 1024,
+    "size of read buffer"                            },
 
   PA_END_OF_ARGS
 };
@@ -68,12 +71,9 @@ int connectToServer(const char *host, unsigned short port) {
 
   if (host == NULL)
     LM_RE(-1, ("no hostname given")); if (port == 0)
-    LM_RE(-1, ("Cannot connect to '%s' - port is ZERO", host));
-  if ((hp = gethostbyname(host)) == NULL)
-    LM_RE(-1, ("gethostbyname(%s): %s", host, strerror(errno)));
-  if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    LM_RE(-1, ("socket: %s", strerror(errno)));
-  memset((char *)&peer, 0, sizeof(peer));
+    LM_RE(-1, ("Cannot connect to '%s' - port is ZERO", host)); if ((hp = gethostbyname(host)) == NULL)
+    LM_RE(-1, ("gethostbyname(%s): %s", host, strerror(errno))); if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    LM_RE(-1, ("socket: %s", strerror(errno))); memset((char *)&peer, 0, sizeof(peer));
 
   peer.sin_family      = AF_INET;
   peer.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
@@ -153,8 +153,7 @@ int main(int argC, char *argV[]) {
   int fd = connectToServer(host, port);
 
   if (fd == -1)
-    LM_X(1, ("error connecting to host '%s', port %d", host, port));
-  readFromServer(fd);
+    LM_X(1, ("error connecting to host '%s', port %d", host, port)); readFromServer(fd);
 
   return 0;
 }

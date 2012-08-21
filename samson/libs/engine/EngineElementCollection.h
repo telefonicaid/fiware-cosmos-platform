@@ -82,5 +82,5 @@ private:
 };
 }
 
-#endif // ifndef _H_SAMSON_ENGINE_ELEMENT_COLLECTION
+#endif  // ifndef _H_SAMSON_ENGINE_ELEMENT_COLLECTION
 

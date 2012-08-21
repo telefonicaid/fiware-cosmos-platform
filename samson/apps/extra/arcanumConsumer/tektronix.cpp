@@ -171,12 +171,9 @@ int connectToServer(void) {
 
   if (host == NULL)
     R(-1, ("no hostname given")); if (port == 0)
-    R(-1, ("Cannot connect to '%s' - port is ZERO", host));
-  if ((hp = gethostbyname(host)) == NULL)
-    R(-1, ("gethostbyname(%s): %s", host, strerror(errno)));
-  if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    R(-1, ("socket: %s", strerror(errno)));
-  memset((char *)&peer, 0, sizeof(peer));
+    R(-1, ("Cannot connect to '%s' - port is ZERO", host)); if ((hp = gethostbyname(host)) == NULL)
+    R(-1, ("gethostbyname(%s): %s", host, strerror(errno))); if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    R(-1, ("socket: %s", strerror(errno))); memset((char *)&peer, 0, sizeof(peer));
 
   peer.sin_family      = AF_INET;
   peer.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
@@ -246,8 +243,7 @@ void writeToServer(int fd, char *path) {
       nb = read(dataFd, buf, dataSize);
       if (nb == -1)
         X(1, ("error reading from input file '%s': %s", path, strerror(errno))); if (nb == 0)
-        X(1, ("read ZERO bytes from input file '%s'", path));
-      dataSize  = nb;
+        X(1, ("read ZERO bytes from input file '%s'", path)); dataSize  = nb;
       totalSize = dataSize;
     }
 
@@ -282,7 +278,6 @@ void writeToServer(int fd, char *path) {
         V1(("sleeping %d micros each %d loops", sleepTime, sleepEach));
         usleep(sleepTime);
       }
-
     ++loopNo;
 
     if ((loopNo % 101) == 0)
@@ -357,8 +352,7 @@ int main(int argC, char *argV[]) {
   int fd = connectToServer();
 
   if (fd == -1)
-    X(1, ("error connecting to host '%s', port %d", host, port));
-  signal(SIGPIPE, ignore);
+    X(1, ("error connecting to host '%s', port %d", host, port)); signal(SIGPIPE, ignore);
   sigignore(SIGPIPE);
 
   writeToServer(fd, path);

@@ -34,4 +34,4 @@ public:
 }
 }
 
-#endif // ifndef _H_SAMSON_SYSTEM_KEYVALUE
+#endif  // ifndef _H_SAMSON_SYSTEM_KEYVALUE

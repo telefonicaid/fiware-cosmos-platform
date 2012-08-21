@@ -40,7 +40,7 @@
 #include "engine/Object.h"          // engine::Object
 
 #include "samson/common/coding.h"
-#include "samson/delilah/Delilah.h" // samson::Delilah
+#include "samson/delilah/Delilah.h"  // samson::Delilah
 #include "samson/delilah/DelilahComponent.h"    // samson::DelilahComponent
 #include "samson/network/DelilahNetwork.h"
 
@@ -109,4 +109,4 @@ private:
   void init(std::string connection_type, const std::vector<std::string>& hosts);
 };
 }
-#endif // ifndef _H_Samson_SamsonClient
+#endif  // ifndef _H_Samson_SamsonClient

@@ -23,7 +23,7 @@
 
 #include "au/string.h"                  // au::str()
 
-#include "samson/client/SamsonClient.h" // samson::SamsonClient
+#include "samson/client/SamsonClient.h"  // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"
 
 #include "samson/common/coding.h"       // KVHeader
@@ -59,35 +59,50 @@ int default_buffer_size = 64 * 1024 * 1024 - sizeof(samson::KVHeader);
 
 PaArgument paArgs[] =
 {
-  { "-node",             controller,                                      "",                                             PaString,
+  { "-node",             controller,                                      "",
+    PaString,
     PaOpt,
     _i "localhost",            PaNL,      PaNL,                  "SAMSON node to connect with "                                                                                                       },
-  { "-port_node",        &port_node,                                       "",                  PaInt,                       PaOpt,
+  { "-port_node",        &port_node,                                      "",
+    PaInt,                                               PaOpt,
     SAMSON_WORKER_PORT,        1,         99999,                 "SAMSON server port"                                                                                                                 },
-  { "-user",             user,                                             "",                  PaString,                    PaOpt,
+  { "-user",             user,                                            "",
+    PaString,                                            PaOpt,
     _i "anonymous",            PaNL,      PaNL,                  "User to connect to SAMSON cluster"                                                                                                  },
-  { "-password",         password,                                         "",                  PaString,                    PaOpt,
+  { "-password",         password,                                        "",
+    PaString,                                            PaOpt,
     _i "anonymous",            PaNL,      PaNL,                  "Password to connect to SAMSON cluster"                                                                                              },
-  { "-buffer_size",      &buffer_size,                                     "",                  PaInt,                       PaOpt,
+  { "-buffer_size",      &buffer_size,                                    "",
+    PaInt,                                               PaOpt,
     default_buffer_size,       1,         default_buffer_size,   "Buffer size in bytes"                                                                                                               },
-  { "-mr",               &max_rate,                                        "",                  PaInt,                       PaOpt,
+  { "-mr",               &max_rate,                                       "",
+    PaInt,                                               PaOpt,
     10000000,                  100,       100000000,             "Max rate in bytes/s"                                                                                                                },
-  { "-nr",               &ntimes_real_time,                                "",                  PaFloat,                     PaOpt,     1.0,
+  { "-nr",               &ntimes_real_time,                               "",
+    PaFloat,                                             PaOpt,                       1.0,
     0.01,      10000.0,               "Number of time real time"                                                                                                           },
-  { "-ti",               initial_timestamp_commandline_str,                "",                  PaSList,                     PaOpt,
-    PaND,                      PaNL,      PaNL,                  "Initial timestamp (by default, first timestamp in input data"                                                                       },
-  { "-breaker_sequence", breaker_sequence,                                 "",                  PaString,                    PaOpt,
+  { "-ti",               initial_timestamp_commandline_str,               "",
+    PaSList,                                             PaOpt,
+    PaND,                      PaNL,      PaNL,
+    "Initial timestamp (by default, first timestamp in input data"                                                                       },
+  { "-breaker_sequence", breaker_sequence,                                "",
+    PaString,                                            PaOpt,
     _i "\n",                   PaNL,      PaNL,                  "Breaker sequence ( by default \\n )"                                                                                                },
-  { "-lines",            &lines,                                           "",                  PaBool,                      PaOpt,
+  { "-lines",            &lines,                                          "",
+    PaBool,                                              PaOpt,
     false,                     false,     true,                  "Read std-in line by line"                                                                                                           },
-  { "-memory",           &push_memory,                                     "",                  PaInt,                       PaOpt,
+  { "-memory",           &push_memory,                                    "",
+    PaInt,                                               PaOpt,
     1000,                      1,         1000000,               "Memory in Mb used to push data ( default 1000)"                                                                                     },
-  { "-port",             &port,                                            "",                  PaInt,                       PaOpt,     0,
+  { "-port",             &port,                                           "",
+    PaInt,                                               PaOpt,                       0,
     0,         99999,                 "Port to listen from"                                                                                                                },
-  { "-dl",               dir_list,                                         "",                  PaSList,                     PaOpt,
+  { "-dl",               dir_list,                                        "",
+    PaSList,                                             PaOpt,
     PaND,                      PaNL,      PaNL,
     "string list with all the datasets directories to be pushed, format: dir,extension,nfileds,time_pos,time_type,queue_name"            },
-  { "-fl",               file_list,                                        "",                  PaSList,                     PaOpt,
+  { "-fl",               file_list,                                       "",
+    PaSList,                                             PaOpt,
     PaND,                      PaNL,      PaNL,
     "string list with all the datasets files to be pushed, format: file,nfields,time_pos,time_type,queue_name"                           },
   PA_END_OF_ARGS
@@ -122,12 +137,12 @@ int main(int argC, const char *argV[]) {
 
 
 
-  if (buffer_size == 0)
-    LM_X(1, ("Wrong buffer size %lu", buffer_size ));
-  // Check queue is specified
-  if (dir_list[0] == NULL)
-    LM_X(1, ("Please, specify at least a dataset and a queue to push data to"));
-  // Create samson client
+  if (buffer_size == 0) {
+    LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Check queue is specified
+  }
+  if (dir_list[0] == NULL) {
+    LM_X(1, ("Please, specify at least a dataset and a queue to push data to"));  // Create samson client
+  }
   size_t total_memory = push_memory * 1024 * 1024;
   LM_V(("Setting memory for samson client %s", au::str(total_memory, "B").c_str()));
   samson::SamsonClient::general_init(total_memory);
@@ -136,8 +151,7 @@ int main(int argC, const char *argV[]) {
 
   samson_client = new samson::SamsonClient("push");
   if (!samson_client->connect(controller))
-    LM_X(1, ("Not possible to connect with %s", controller ));
-  SamsonPushLogsConnectionsManager manager;
+    LM_X(1, ("Not possible to connect with %s", controller )); SamsonPushLogsConnectionsManager manager;
 
 
   std::vector<LogsDataSet *>datasets_vector;
@@ -176,8 +190,9 @@ int main(int argC, const char *argV[]) {
       }
       int timestamp_type = atoi(fields[4]);
 
-      LogsDataSet *dataset = new LogsDataSet(fields[0], fields[1], num_fields, timestamp_position, timestamp_position_alt, timestamp_type,
-                                             fields[5]);
+      LogsDataSet *dataset =
+        new LogsDataSet(fields[0], fields[1], num_fields, timestamp_position, timestamp_position_alt, timestamp_type,
+                        fields[5]);
       if (dataset->InitDir() == true)
         datasets_vector.push_back(dataset);
     }
@@ -197,7 +212,8 @@ int main(int argC, const char *argV[]) {
       strcat(initial_timestamp_str, " ");
     }
     first_timestamp = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(initial_timestamp_str);
-    LM_M(("From command line, initial_time_stamp:%s, %lu = '%s'", initial_timestamp_str, first_timestamp, ctimeUTC(&first_timestamp)));
+    LM_M(("From command line, initial_time_stamp:%s, %lu = '%s'", initial_timestamp_str, first_timestamp,
+          ctimeUTC(&first_timestamp)));
   } else {
     LM_M(("Reading first_timestamp from datasets"));
     first_timestamp = time(NULL);
@@ -229,7 +245,8 @@ int main(int argC, const char *argV[]) {
     char *dataset_first_timestamp_str = strdup(ctimeUTC(&dataset_first_timestamp));
     dataset_first_timestamp_str[strlen(dataset_first_timestamp_str) - 1] = '\0';
 
-    LM_M(("Checking %s with first_timestamp:%s, read %s", datasets_vector[ix]->GetQueueName(), time_init_str, dataset_first_timestamp_str));
+    LM_M(("Checking %s with first_timestamp:%s, read %s", datasets_vector[ix]->GetQueueName(), time_init_str,
+          dataset_first_timestamp_str));
     free(dataset_first_timestamp_str);
 
     datasets_vector[ix]->Synchronize(first_timestamp);
@@ -237,7 +254,8 @@ int main(int argC, const char *argV[]) {
 
   for (unsigned int ix = 0; (ix < datasets_vector.size()); ix++) {
     SamsonPushLogsConnection *connection = new SamsonPushLogsConnection(datasets_vector[ix],
-                                                                        datasets_vector[ix]->GetQueueName(), ntimes_real_time,
+                                                                        datasets_vector[ix]->GetQueueName(),
+                                                                        ntimes_real_time,
                                                                         samson_client);
     manager.NewLogDataset(connection);
   }

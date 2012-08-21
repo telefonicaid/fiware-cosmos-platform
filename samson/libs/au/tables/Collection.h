@@ -2,6 +2,8 @@
 #ifndef _H_AU_TABLE_COLLECTION
 #define _H_AU_TABLE_COLLECTION
 
+#include <vector>
+
 #include "au/containers/simple_map.h"
 
 
@@ -58,4 +60,4 @@ public:
 }
 }
 
-#endif // ifndef _H_AU_TABLE_COLLECTION
+#endif  // ifndef _H_AU_TABLE_COLLECTION

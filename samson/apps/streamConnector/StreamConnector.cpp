@@ -184,17 +184,16 @@ void StreamConnector::process(au::SharedPointer<au::network::RESTServiceCommand>
     std::string splitter_name;
 
     if (command->path_components().size() > 2)
-      splitter_name = command->path_components()[2];
-
-    au::ErrorManager error;
+      splitter_name = command->path_components()[2]; au::ErrorManager error;
     process_command(au::str("add_channel %s %s", channel_name.c_str(), splitter_name.c_str()), &error);
     if (error.IsActivated())
       command->AppendFormatedError(error.GetMessage()); else
-      command->AppendFormatedElement("Result", "OK");
-    return;
+      command->AppendFormatedElement("Result", "OK"); return;
   }
 
-  if (( command->path_components()[0] == "add_input_adaptor" ) || ( command->path_components()[0] == "add_output_adaptor" )) {
+  if (( command->path_components()[0] == "add_input_adaptor" ) ||
+      ( command->path_components()[0] == "add_output_adaptor" ))
+  {
     if (command->path_components().size() < 3) {
       command->AppendFormatedError("Wrong format. /add_[ input or output ]_adaptor/channel.adaptor_name/format");
       return;
@@ -208,8 +207,7 @@ void StreamConnector::process(au::SharedPointer<au::network::RESTServiceCommand>
     process_command(au::str("%s %s %s", operation.c_str(), name.c_str(), format.c_str()), &error);
     if (error.IsActivated())
       command->AppendFormatedError(error.GetMessage()); else
-      command->AppendFormatedElement("Result", "OK");
-    return;
+      command->AppendFormatedElement("Result", "OK"); return;
   }
 }
 
@@ -326,19 +324,13 @@ void StreamConnector::autoComplete(au::ConsoleAutoComplete *info) {
       || ( info->completingSecondWord("remove_channel")))
     // Autocomplete with channel names
     autoCompleteWithChannelNames(info);
-
   if (info->completingSecondWord("show_channels"))
-    info->add("-data");
-  if (info->completingSecondWord("show_adaptors"))
-    info->add("-data");
-  if (info->completingSecondWord("show_connections"))
-    info->add("-data");
-
-  if (info->completingSecondWord("remove_adapter"))
+    info->add("-data"); if (info->completingSecondWord("show_adaptors"))
+    info->add("-data"); if (info->completingSecondWord("show_connections"))
+    info->add("-data"); if (info->completingSecondWord("remove_adapter"))
     // Autocomplete with channel names
-    autoCompleteWithAdaptorsNames(info);
-
-  if (( info->firstWord() == "add_input_to_channel" ) && info->completingThirdWord()) {
+    autoCompleteWithAdaptorsNames(info); if (( info->firstWord() == "add_input_to_channel" ) &&
+                                             info->completingThirdWord()) {
     info->setHelpMessage("add_input_to_channel channel [port:8888] [connection:host:port] [samson:host:queue]");
     info->add("connection:", "connection:", false);
     info->add("port:", "port:", false);
@@ -385,8 +377,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     size_t limits = 0;
 
     if (cmdLine.get_num_arguments() > 1)
-      limits = atoi(cmdLine.get_argument(1).c_str());
-    LogManager *log_manager = au::Singleton<LogManager>::shared();
+      limits = atoi(cmdLine.get_argument(1).c_str()); LogManager *log_manager = au::Singleton<LogManager>::shared();
     au::tables::Table *table = log_manager->getLogsTable(limits);
 
     error->AddMessage(table->str());
@@ -404,8 +395,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
 
       if (service)
         values.push_back(service->GetStringStatus()); else
-        values.push_back("NOT ACTIVATED");
-      table.addRow(values);
+        values.push_back("NOT ACTIVATED"); table.addRow(values);
     }
 
     {
@@ -414,8 +404,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
 
       if (rest_service)
         values.push_back(rest_service->GetStringStatus()); else
-        values.push_back("NOT ACTIVATED");
-      table.addRow(values);
+        values.push_back("NOT ACTIVATED"); table.addRow(values);
     }
 
 
@@ -472,8 +461,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     std::string table_type = "default";
 
     if (cmdLine.isDataFlag())
-      table_type = "data";
-    au::tables::Table *table = getChannelsTable(table_type);
+      table_type = "data"; au::tables::Table *table = getChannelsTable(table_type);
     error->AddMessage(table->str());
     delete table;
     return;
@@ -483,9 +471,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     std::string table_type = "default";
 
     if (cmdLine.isDataFlag())
-      table_type = "data";
-
-    au::tables::Table *table = getItemsTable(table_type);
+      table_type = "data"; au::tables::Table *table = getItemsTable(table_type);
     error->AddMessage(table->str());
     delete table;
 
@@ -497,8 +483,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     std::string select_channel = "";
 
     if (cmdLine.isDataFlag())
-      table_type = "data";
-    au::tables::Table *table = getConnectionsTable(table_type, select_channel);
+      table_type = "data"; au::tables::Table *table = getConnectionsTable(table_type, select_channel);
     error->AddMessage(table->str());
     delete table;
     return;
@@ -523,8 +508,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     std::string name = cmdLine.get_argument(1);
     std::string splitter = "";
     if (cmdLine.get_num_arguments() > 2)
-      splitter = cmdLine.get_argument(2);
-    if (channels_.findInMap(name) != NULL) {
+      splitter = cmdLine.get_argument(2); if (channels_.findInMap(name) != NULL) {
       error->set(au::str("Channel %s already exist", name.c_str()));
       return;
     }
@@ -628,8 +612,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     delete channel;
 
     if (!error->IsActivated())
-      error->AddMessage(au::str("Channel %s removed correclty", channel_name.c_str()));
-    return;
+      error->AddMessage(au::str("Channel %s removed correclty", channel_name.c_str())); return;
   }
 
   if (main_command == "remove_adapter") {
@@ -688,8 +671,7 @@ au::tables::Table *StreamConnector::getChannelsTable(std::string type) {
 
   if (type == "data")
     fields = "Channel,left|#adaptors|#connections|In Bytes|In Bytes/s|Out Bytes|Out Bytes/s"; else
-    fields = "Channel,left|Inputs|splitter,left|Outputs,left";
-  au::tables::Table *table = new au::tables::Table(fields);
+    fields = "Channel,left|Inputs|splitter,left|Outputs,left"; au::tables::Table *table = new au::tables::Table(fields);
   table->setTitle("Channels");
 
   // Review all channels
@@ -746,7 +728,6 @@ au::tables::Table *StreamConnector::getConnectionsTable(std::string type, std::s
   if (type == "data")
     fields = "Name,left|Type,left|Description,left|Buffer|Buffer (mem)|In Bytes|In Bytes/s|Out Bytes|Out Bytes/s"; else
     fields = "Name,left|Type,left|Description,left|Finish|Status,left|Info,left";
-
   au::tables::Table *table = new au::tables::Table(fields);
   table->setTitle("Connections");
 
@@ -796,8 +777,7 @@ au::tables::Table *StreamConnector::getConnectionsTable(std::string type, std::s
         } else {
           if (connection->is_finished())
             values.push_back("F"); else
-            values.push_back("");
-          values.push_back(connection->getConnectionStatus());
+            values.push_back(""); values.push_back(connection->getConnectionStatus());
           values.push_back(connection->getStatus());
         }
 
@@ -835,8 +815,8 @@ au::tables::Table *StreamConnector::getItemsTable(std::string type) {
 
   if (type == "data")
     fields = "Name,left|Type,left|Description,left|#connections|In Bytes|In Bytes/s|Out Bytes|Out Bytes/s"; else
-    fields = "Name,left|Type,left|Description,left|Finish|Status";
-  au::tables::Table *table = new au::tables::Table(fields);
+    fields = "Name,left|Type,left|Description,left|Finish|Status"; au::tables::Table *table = new au::tables::Table(
+    fields);
   table->setTitle("Adaptors");
 
   au::map<std::string, Channel>::iterator it_channels;
@@ -865,8 +845,7 @@ au::tables::Table *StreamConnector::getItemsTable(std::string type) {
       } else {
         if (item->is_finished())
           values.push_back("F"); else
-          values.push_back("");
-        values.push_back(item->getStatus());
+          values.push_back(""); values.push_back(item->getStatus());
       }
 
 
@@ -896,8 +875,7 @@ void StreamConnector::log(Log *log) {
   if (type == "Warning")
     error.AddWarning(log->getNameAndMessage()); else if (type == "Error")
     error.AddError(log->getNameAndMessage()); else
-    error.AddMessage(log->getNameAndMessage());
-  if (interactive) {
+    error.AddMessage(log->getNameAndMessage()); if (interactive) {
     au::Console::write(&error);
   } else if (run_as_daemon) {
     // Nothing here
@@ -916,7 +894,9 @@ void StreamConnector::log(Log *log) {
 void StreamConnector::newSocketConnection(au::NetworkListener *listener
                                           , au::SocketConnection *socket_connetion) {
   // Create a new connection
-  InputInterChannelConnection *connection = new InputInterChannelConnection(this, socket_connetion->host_and_port(), socket_connetion);
+  InputInterChannelConnection *connection = new InputInterChannelConnection(this,
+                                                                            socket_connetion->host_and_port(),
+                                                                            socket_connetion);
 
   // We start connection here
   connection->init_connecton();
@@ -925,7 +905,8 @@ void StreamConnector::newSocketConnection(au::NetworkListener *listener
   input_inter_channel_connections.push_back(connection);
 }
 
-void StreamConnector::select_channel(InputInterChannelConnection *connection, std::string target_channel, au::ErrorManager *error) {
+void StreamConnector::select_channel(InputInterChannelConnection *connection, std::string target_channel,
+                                     au::ErrorManager *error) {
   au::TokenTaker tt(&token);
 
   Channel *channel = channels_.findInMap(target_channel);

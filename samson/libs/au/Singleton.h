@@ -31,4 +31,4 @@ template <class C> C * Singleton<C>::instance_;
 template <class C> au::Token Singleton<C>::token_("singleton");
 }  // end of au namesapce
 
-#endif // ifndef _H_AU_SINGLETON
+#endif  // ifndef _H_AU_SINGLETON

@@ -97,4 +97,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_CONNECTOR_BUFFER_LIST
+#endif  // ifndef _H_SAMSON_CONNECTOR_BUFFER_LIST

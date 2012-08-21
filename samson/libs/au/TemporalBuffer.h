@@ -43,4 +43,4 @@ private:
 };
 }
 
-#endif // ifndef AU_TEMPORAL_BUFFER_H_
+#endif  // ifndef AU_TEMPORAL_BUFFER_H_

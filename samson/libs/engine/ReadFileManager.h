@@ -39,4 +39,4 @@ public:
 };
 }
 
-#endif // ifndef _H_ENGINE_READ_FILE_MANAGER
+#endif  // ifndef _H_ENGINE_READ_FILE_MANAGER

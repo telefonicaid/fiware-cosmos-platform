@@ -61,4 +61,4 @@ private:
 };
 }
 
-#endif // ifndef _H_SAMSON_KVFILE
+#endif  // ifndef _H_SAMSON_KVFILE

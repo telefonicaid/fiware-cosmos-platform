@@ -123,7 +123,8 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
 
   if (packet->msgCode == Message::WorkerCommandResponse) {
     if (workers.find(worker_id) == workers.end()) {
-      setComponentFinishedWithError(au::str("WorkerCommandResponse received from worker %lu not involved in this operation"));
+      setComponentFinishedWithError(au::str(
+                                      "WorkerCommandResponse received from worker %lu not involved in this operation"));
       return;
     }
 

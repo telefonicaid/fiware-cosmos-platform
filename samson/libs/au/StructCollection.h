@@ -83,4 +83,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_STRUCT_COLLECTION
+#endif  // ifndef _H_AU_STRUCT_COLLECTION

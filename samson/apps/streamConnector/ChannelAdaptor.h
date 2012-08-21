@@ -175,4 +175,4 @@ public:
 }
 
 
-#endif // ifndef _H_SAMSON_CONNECTOR_INTERCHANNEL_ITEM
+#endif  // ifndef _H_SAMSON_CONNECTOR_INTERCHANNEL_ITEM

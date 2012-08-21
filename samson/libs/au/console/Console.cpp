@@ -444,8 +444,7 @@ void Console::write(au::ErrorManager *error) {
 /* Methods to write things on screen */
 void Console::writeWarningOnConsole(std::string message) {
   if (message.substr(message.length() - 1) != "\n")
-    message.append("\n");
-  std::ostringstream output;
+    message.append("\n"); std::ostringstream output;
   output << "\033[1;35m" << message << "\033[0m";
   write(output.str());
 }

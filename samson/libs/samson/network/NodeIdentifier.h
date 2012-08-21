@@ -8,7 +8,7 @@
 #include "au/network/FileDescriptor.h"
 #include "au/utils.h"
 
-#include "samson/common/EnvironmentOperations.h" // str( gpb::Message* )
+#include "samson/common/EnvironmentOperations.h"  // str( gpb::Message* )
 #include "samson/common/samson.pb.h"     // google protocol buffers
 
 #include "Message.h"                             // samson::MessageType
@@ -43,4 +43,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_NodeIdentifier
+#endif  // ifndef _H_SAMSON_NodeIdentifier

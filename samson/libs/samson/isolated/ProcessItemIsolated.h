@@ -5,7 +5,7 @@
 #include "engine/ProcessItem.h"
 #include "engine/ProcessItem.h"                // samson::ProcessItem
 #include "samson/common/samson.pb.h"           // samson::network
-#include "samson/module/OperationController.h" // samson::Tracer
+#include "samson/module/OperationController.h"  // samson::Tracer
 #include "samson/module/Tracer.h"              // samson::Tracer
 
 
@@ -70,4 +70,4 @@ private:
 };
 };
 
-#endif // ifndef _H_PROCESS_ITEM_ISOLATED
+#endif  // ifndef _H_PROCESS_ITEM_ISOLATED

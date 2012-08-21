@@ -117,4 +117,4 @@ private:
   ErrorManager& error_manager_;
 };
 }
-#endif // ifndef AU_ERROR_MANAGER_H_
+#endif  // ifndef AU_ERROR_MANAGER_H_

@@ -52,4 +52,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_STRING_COMPONENT
+#endif  // ifndef _H_AU_STRING_COMPONENT

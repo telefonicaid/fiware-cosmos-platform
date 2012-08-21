@@ -89,7 +89,8 @@ void set_log_server(std::string log_host, int log_port) {
  * logToLogServer -
  */
 
-void logToLogServer(void *vP, char *text, char type, time_t secondsNow, int timezone, int dst, const char *file, int lineNo,
+void logToLogServer(void *vP, char *text, char type, time_t secondsNow, int timezone, int dst, const char *file,
+                    int lineNo,
                     const char *fName, int tLev,
                     const char *stre) {
   if (!log_central) {
@@ -106,8 +107,7 @@ void logToLogServer(void *vP, char *text, char type, time_t secondsNow, int time
     log->add_field("text", text); if (file)
     log->add_field("file", file); if (fName)
     log->add_field("fName", fName); if (stre)
-    log->add_field("stre", stre);
-  log->log_data.lineNo      = lineNo;
+    log->add_field("stre", stre); log->log_data.lineNo      = lineNo;
   log->log_data.traceLevel  = tLev;
   log->log_data.type        = type;
   log->log_data.timezone    = timezone;

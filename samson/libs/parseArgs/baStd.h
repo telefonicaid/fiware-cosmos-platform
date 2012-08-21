@@ -111,4 +111,4 @@ extern bool baWsOnly(char *str);
  */
 extern int baCharCount(char *line, char c);
 
-#endif // ifndef BA_STD_H
+#endif  // ifndef BA_STD_H

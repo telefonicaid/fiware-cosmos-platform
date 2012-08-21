@@ -59,4 +59,4 @@ private:
 };
 }
 
-#endif // ifndef SAMSON_LOCK_DEBUGGER_H
+#endif  // ifndef SAMSON_LOCK_DEBUGGER_H

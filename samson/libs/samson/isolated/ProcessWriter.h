@@ -9,7 +9,7 @@
 #include "engine/MemoryManager.h"
 
 #include "samson/common/coding.h"       // High level definition of KV_*
-#include "samson/module/DataInstance.h" // samson::DataInstance
+#include "samson/module/DataInstance.h"  // samson::DataInstance
 #include "samson/module/KVWriter.h"     // samson::KVWriter
 #include "samson/module/Operation.h"    // samson::Operation
 
@@ -26,7 +26,7 @@ class ProcessIsolated;
  */
 
 class ProcessWriter : public KVWriter {
-  ProcessIsolated *processIsolated;                   // Pointer to the processIsolated to emit codes through the pipe
+  ProcessIsolated *processIsolated;     // Pointer to the processIsolated to emit codes through the pipe
 
   engine::SharedMemoryItem *item;       // Shared memory item used at this side ( fork in the middle )
 
@@ -111,4 +111,4 @@ public:
 };
 }
 
-#endif // ifndef _H_PROCESS_WRITER
+#endif  // ifndef _H_PROCESS_WRITER

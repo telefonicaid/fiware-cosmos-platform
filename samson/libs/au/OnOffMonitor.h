@@ -54,4 +54,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_ONOFFMONITOR
+#endif  // ifndef _H_AU_ONOFFMONITOR

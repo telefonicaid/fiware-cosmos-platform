@@ -101,11 +101,11 @@ private:
   int port_;
   int port_web_;
 
-  std::string node_worker_;                  // zk node name /samson/workers/wXXXXXXXXXX
+  std::string node_worker_;                // zk node name /samson/workers/wXXXXXXXXXX
   samson::gpb::WorkerInfo worker_info_;      // Information about this worker ( cpu, memory, ...)
 
   samson::gpb::ClusterInfo cluster_info_;    // Information about cluster setup
-  int64_t verion_node_cluster_info_;         // Last version we got about cluster setup
+  int64_t verion_node_cluster_info_;       // Last version we got about cluster setup
 
   // Identifier of this woker in the cluster ( unique in cluster history )
   size_t worker_id_;
@@ -118,4 +118,4 @@ private:
 };
 }
 
-#endif // ifndef _H_SAMSON_ZOO_SAMSON_WORKER_CONTROLLER
+#endif  // ifndef _H_SAMSON_ZOO_SAMSON_WORKER_CONTROLLER

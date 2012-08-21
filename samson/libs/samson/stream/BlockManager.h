@@ -90,4 +90,4 @@ private:
 }
 }
 
-#endif // ifndef _H_BLOCK_MANAGER
+#endif  // ifndef _H_BLOCK_MANAGER

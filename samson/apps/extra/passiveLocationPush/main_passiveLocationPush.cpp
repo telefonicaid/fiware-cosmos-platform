@@ -91,30 +91,53 @@ PaArgument paArgs[] =
 {
   SAMSON_ARGS,
 
-  { "-dir",   directory,     "SS_PLP_DIRECTORY",                   PaString,                              PaOpt,
-    _i "nodir",         PaNL,            PaNL,
+  { "-dir",        directory,         "SS_PLP_DIRECTORY",                      PaString,
+    PaOpt,
+    _i "nodir",    PaNL,              PaNL,
     "directory"                              },
-  { "-tektronix",&tektronix,        "SS_PLP_TEKTRONIX",              PaBool,                        PaOpt,     false,           false,    true,
+  { "-tektronix",  &tektronix,        "SS_PLP_TEKTRONIX",                      PaBool,
+    PaOpt,
+    false,         false,             true,
     "act as tektronix consumer"              },
-  { "-fake",  &fake,             "SS_PLP_FAKE",                   PaBool,                        PaOpt,     false,           false,    true,
+  { "-fake",       &fake,             "SS_PLP_FAKE",                           PaBool,
+    PaOpt,
+    false,         false,                true,
     "fake data"                              },
-  { "-host",  host,              "SS_PLP_TEKTRONIX_HOST",         PaString,                      PaOpt,     PaND,            PaNL,     PaNL,
+  { "-host",       host,                 "SS_PLP_TEKTRONIX_HOST",          PaString,
+    PaOpt,
+    PaND,          PaNL,                 PaNL,
     "tektronix tunnel host"                  },
-  { "-port",  &port,             "SS_PLP_TEKTRONIX_PORT",         PaShortU,                      PaOpt,     1099,            1024,
-    65535,  "tektronix tunnel port"                  },
-  { "-queue", queueName,         "SS_PLP_QUEUE_NAME",             PaString,                      PaOpt,     PaND,            PaNL,     PaNL,
+  { "-port",       &port,                "SS_PLP_TEKTRONIX_PORT",          PaShortU,
+    PaOpt,
+    1099,          1024,
+    65535,         "tektronix tunnel port"                  },
+  { "-queue",      queueName,            "SS_PLP_QUEUE_NAME",              PaString,
+    PaOpt,
+    PaND,          PaNL,                 PaNL,
     "name of the queue"                      },
-  { "-timeout",&timeout,          "SS_PLP_TIMEOUT",                PaInt,                         PaOpt,     0,               0,        3600,
+  { "-timeout",    &timeout,             "SS_PLP_TIMEOUT",                 PaInt,
+    PaOpt,
+    0,             0,                    3600,
     "timeout"                                },
-  { "-rate",  &rate,             "SS_PLP_RATE",                   PaDouble,                      PaOpt,     _i 1.0,          PaNL,     PaNL,
+  { "-rate",       &rate,                "SS_PLP_RATE",                    PaDouble,
+    PaOpt,
+    _i 1.0,        PaNL,                 PaNL,
     "rate"                                   },
-  { "-node",  controller,        "",                              PaString,                      PaOpt,     _i "localhost",  PaNL,     PaNL,
+  { "-node",       controller,           "",                               PaString,
+    PaOpt,
+    _i "localhost",PaNL,                 PaNL,
     "SAMSON node"                            },
-  { "-user",  user,              "",                              PaString,                      PaOpt,     _i "anonymous",  PaNL,     PaNL,
+  { "-user",       user,                 "",                               PaString,
+    PaOpt,
+    _i "anonymous",PaNL,                 PaNL,
     "User to connect to SAMSON cluster"      },
-  { "-password",password,          "",                              PaString,                      PaOpt,     _i "anonymous",  PaNL,     PaNL,
+  { "-password",   password,             "",                               PaString,
+    PaOpt,
+    _i "anonymous",PaNL,                 PaNL,
     "Password to connect to SAMSON cluster"  },
-  { "-file",  file,              "SS_PLP_FILE",                   PaString,                      PaOpt,     _i "generator",  PaNL,     PaNL,
+  { "-file",       file,                 "SS_PLP_FILE",                    PaString,
+    PaOpt,
+    _i "generator",PaNL,                 PaNL,
     "file"                                   },
 
   PA_END_OF_ARGS
@@ -183,8 +206,7 @@ void toFileF(const char *buf, int bufLen) {
     nb = write(fd, &buf[tot], bufLen - tot);
     if (nb == -1)
       LM_X(1, ("Error writing to 'plp.bin': %s", strerror(errno))); else if (nb == 0)
-      LM_RVE(("written ZERO bytes to 'plp.bin'"));
-    tot += nb;
+      LM_RVE(("written ZERO bytes to 'plp.bin'")); tot += nb;
   }
 
   totalFileSize += bufLen;
@@ -214,12 +236,9 @@ int connectToServer(void) {
 
   if (host == NULL)
     LM_RE(-1, ("no hostname given")); if (port == 0)
-    LM_RE(-1, ("Cannot connect to '%s' - port is ZERO", host));
-  if ((hp = gethostbyname(host)) == NULL)
-    LM_RE(-1, ("gethostbyname(%s): %s", host, strerror(errno)));
-  if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    LM_RE(-1, ("socket: %s", strerror(errno)));
-  memset((char *)&peer, 0, sizeof(peer));
+    LM_RE(-1, ("Cannot connect to '%s' - port is ZERO", host)); if ((hp = gethostbyname(host)) == NULL)
+    LM_RE(-1, ("gethostbyname(%s): %s", host, strerror(errno))); if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+    LM_RE(-1, ("socket: %s", strerror(errno))); memset((char *)&peer, 0, sizeof(peer));
 
   peer.sin_family      = AF_INET;
   peer.sin_addr.s_addr = ((struct in_addr *)(hp->h_addr))->s_addr;
@@ -295,13 +314,15 @@ int bufPush(char *buf, unsigned int size, samson::SamsonPushBuffer *pushBuffer) 
 
     // NOT Enough bytes for an entire packet?
     if ((size < 4) || size < dataLen) {
-      if (size >= 4)
+      if (size >= 4) {
         // LM_W(("bytes read: %d, packetLen == %d (totalLen == %d)", size, packetLen, totalLen));
         if (packetLen > 50000) {
           bufPresent("bad packetLen", buf, size, 1);
-          LM_X(1, ("Bad packetLen in packet %d: %d (original: 0x%x, htohl: 0x%x)", packets, packetLen, *((int *)buf), ntohl(*((int *)buf))));
-        }
-             // else
+          LM_X(1,
+               ("Bad packetLen in packet %d: %d (original: 0x%x, htohl: 0x%x)", packets, packetLen, *((int *)buf),
+                ntohl(*((int *)buf))));
+        }  // else
+      }
       //    LM_W(("bytes read: %d (totalLen == %d)", size, totalLen));
 
       if (totalLen != 0) {
@@ -320,7 +341,9 @@ int bufPush(char *buf, unsigned int size, samson::SamsonPushBuffer *pushBuffer) 
 
     if (packetLen > 50000) {
       bufPresent("Bad Packet Len (>50000)", buf, size, 1);
-      LM_X(1, ("Bad packetLen in packet %d: %d (original: 0x%x, htohl: 0x%x)", packets + 1, packetLen, *((int *)buf), ntohl(*((int *)buf))));
+      LM_X(1,
+           ("Bad packetLen in packet %d: %d (original: 0x%x, htohl: 0x%x)", packets + 1, packetLen, *((int *)buf),
+            ntohl(*((int *)buf))));
     }
 
     ++packets;
@@ -329,7 +352,8 @@ int bufPush(char *buf, unsigned int size, samson::SamsonPushBuffer *pushBuffer) 
     size     -= dataLen;
     totalLen += dataLen;
 
-    LM_V2(("Got packet %d.%d (%d) of %d bytes (%d bytes read). %d bytes left", calls, relPacket, packets, packetLen + 4, totalLen, size));
+    LM_V2(("Got packet %d.%d (%d) of %d bytes (%d bytes read). %d bytes left", calls, relPacket, packets, packetLen + 4,
+           totalLen, size));
     bufPresent("packet", buf, packetLen + 4, 1);
 
     buf       = &buf[dataLen];
@@ -373,26 +397,21 @@ int dirScan(const char *dirPath, const char *suffix) {
   LM_V(("Opening directory '%s'", dirPath));
 
   if (chdir(dirPath) == -1)
-    LM_X(1, ("Error changing to directory '%s': %s", dirPath, strerror(errno)));
-  dir  = opendir(".");
+    LM_X(1, ("Error changing to directory '%s': %s", dirPath, strerror(errno))); dir  = opendir(".");
   if (dir == NULL)
-    LM_X(1, ("opendir(%s): %s", dirPath, strerror(errno)));
-
-  //
-  // Count number of files in the directory
-  //
+    LM_X(1, ("opendir(%s): %s", dirPath, strerror(errno)));  //
+                                                            // Count number of files in the directory
+                                                            //
   files = 0;
   while ((entry = readdir(dir)) != NULL) {
     char *suff;
 
     if (entry->d_name[0] == '.')
-      continue;
-    suff = strrchr(entry->d_name, '.');
+      continue; suff = strrchr(entry->d_name, '.');
     if (suff == NULL)
       continue; ++suff;
     if (strcmp(suff, suffix) != 0)
-      continue;
-    ++files;
+      continue; ++files;
   }
   LM_V(("Initially found %d files in '%s'", files, dirPath));
 
@@ -401,11 +420,9 @@ int dirScan(const char *dirPath, const char *suffix) {
   //
   fileV = (File *)calloc(files, sizeof(File));
   if (fileV == NULL)
-    LM_X(1, ("error allocating vector for %d Files: %s", files, strerror(errno)));
-
-  //
-  // Gather info on the files and fill the vector
-  //
+    LM_X(1, ("error allocating vector for %d Files: %s", files, strerror(errno)));  //
+                                                                                   // Gather info on the files and fill the vector
+                                                                                   //
   rewinddir(dir);
   int ix = 0;
   while ((entry = readdir(dir)) != NULL) {
@@ -413,20 +430,17 @@ int dirScan(const char *dirPath, const char *suffix) {
     struct stat statBuf;
 
     if (entry->d_name[0] == '.')
-      continue;
-    suff = strrchr(entry->d_name, '.');
+      continue; suff = strrchr(entry->d_name, '.');
     if (suff == NULL)
       continue; ++suff;
     if (strcmp(suff, suffix) != 0)
-      continue;
-    if (stat(entry->d_name, &statBuf) == -1) {
+      continue; if (stat(entry->d_name, &statBuf) == -1) {
       LM_E(("stat(%s): %s", entry->d_name, strerror(errno)));
       continue;
     }
 
     if (!S_ISREG(statBuf.st_mode))
-      continue;
-    if (newest != 0) {   // newest == 0 only the first time ...
+      continue; if (newest != 0) {   // newest == 0 only the first time ...
       LM_D(("comparing newest=%lu to %s:%lu", newest, entry->d_name, (unsigned long)statBuf.st_mtime));
       if (statBuf.st_mtime <= newest) {
         LM_D(("skipping '%s' as it is old", entry->d_name));
@@ -514,10 +528,8 @@ void injectFromFile(File *fileP, samson::SamsonPushBuffer *pushBuffer, char *buf
     nb = read(fileP->fd, buffer, bufLen);
     if (nb == -1)
       LM_X(1, ("read(%s): %s", fileP->name, strerror(errno))); else if (nb == 0)
-      LM_X(1, ("read ZERO bytes from %s (fd %d)", fileP->name, fileP->fd));
-    if (fake == false)
-      pushBuffer->push(buffer, nb, false);
-    bytesPushed += nb;
+      LM_X(1, ("read ZERO bytes from %s (fd %d)", fileP->name, fileP->fd)); if (fake == false)
+      pushBuffer->push(buffer, nb, false); bytesPushed += nb;
     total       += nb;
     pushes      += 1;
 
@@ -559,8 +571,7 @@ void injectFromDirectory(const char *dirPath, samson::SamsonPushBuffer *pushBuff
 
   buffer = (char *)malloc(bufSize);
   if (buffer == NULL)
-    LM_X(1, ("error allocating buffer of %d bytes", bufSize));
-  LM_V(("Reading from directory '%s'", dirPath));
+    LM_X(1, ("error allocating buffer of %d bytes", bufSize)); LM_V(("Reading from directory '%s'", dirPath));
 
   files = dirScan(dirPath, "blob");
 
@@ -607,8 +618,7 @@ void injectFromServer(int fd, samson::SamsonPushBuffer *pushBuffer) {
     } else {
       if (nb == -1)
         LM_E(("Error reading from the Tunnel: %s", strerror(errno))); else
-        LM_E(("The Tunnel closed the connection?"));
-      close(fd);
+        LM_E(("The Tunnel closed the connection?")); close(fd);
       fd        = connectToServer();
       nextIndex = 0;
     }
@@ -646,8 +656,7 @@ void readFromServer(int fd, samson::SamsonPushBuffer *pushBuffer) {
     } else {
       if (nb == -1)
         LM_E(("Error reading from the Tunnel: %s", strerror(errno))); else
-        LM_E(("The Tunnel closed the connection?"));
-      close(fd);
+        LM_E(("The Tunnel closed the connection?")); close(fd);
       fd       = connectToServer();
       savedLen = 0;
     }
@@ -665,8 +674,7 @@ void tektronixData(samson::SamsonPushBuffer *pushBuffer) {
   LM_V(("connecting to %s:%d", host, port));
   fd = connectToServer();
   if (fd == -1)
-    LM_X(1, ("Error connecting to server '%s', port %d", host, port));
-  LM_V(("calling readFromServer"));
+    LM_X(1, ("Error connecting to server '%s', port %d", host, port)); LM_V(("calling readFromServer"));
   readFromServer(fd, pushBuffer);
 }
 
@@ -688,8 +696,7 @@ void fakeData(samson::SamsonPushBuffer *pushBuffer) {
 
   if (strcmp(file, "generator") != 0)
     if ((fp = fopen(file, "r")) == NULL)
-      LM_X(1, ("Error opening file '%s' (errno:%d): %s", file, errno, strerror(errno)));
-  while (true) {
+      LM_X(1, ("Error opening file '%s' (errno:%d): %s", file, errno, strerror(errno))); while (true) {
     char *pTime;
     char *p_sep;
 
@@ -706,8 +713,7 @@ void fakeData(samson::SamsonPushBuffer *pushBuffer) {
       if (fgets(line, sizeof(line), fp) == NULL) {
         rewind(fp);
         if (firstTimeStamp != 0)
-          offset_secs += (timeStamp - firstTimeStamp);
-        continue;
+          offset_secs += (timeStamp - firstTimeStamp); continue;
       }
 #define STR_TIMESTAMP_BEGIN "<Timestamp>"
       if ((pTime = strstr(line, STR_TIMESTAMP_BEGIN)) != NULL) {
@@ -771,15 +777,14 @@ int main(int argC, const char *argV[]) {
 
   // Check queue is specified
   if (strcmp(queueName, "null") == 0)
-    LM_X(1, ("Please, specify a queue to push data to"));
-  samson::SamsonClient::general_init();
+    LM_X(1, ("Please, specify a queue to push data to")); samson::SamsonClient::general_init();
 
   // Instance of the client to connect to SAMSON system
   LM_V(("Connecting to '%s'", controller));
   samson::SamsonClient client("push");
-  if (!client.connect(controller))
-    LM_X(1, ("Not possible to connect with %s", controller ));
-  // Set 1G RAM for uploading content
+  if (!client.connect(controller)) {
+    LM_X(1, ("Not possible to connect with %s", controller ));  // Set 1G RAM for uploading content
+  }
   uint64_t mem = 1024 * 1024 * 1024;
   mem *= 4;
 
@@ -790,12 +795,9 @@ int main(int argC, const char *argV[]) {
   samson::SamsonPushBuffer *pushBuffer;
   if (((tektronix == true) || (strcmp(directory, "nodir") != 0)) && (fake == true))
     pushBuffer = NULL; else
-    pushBuffer = new samson::SamsonPushBuffer(&client, queueName);
-
-  LM_V(("rate: %f MBs", rate));
+    pushBuffer = new samson::SamsonPushBuffer(&client, queueName); LM_V(("rate: %f MBs", rate));
   if (timeout > 0)
-    LM_V(("timeout: %ds", timeout));
-  if (tektronix == true) {
+    LM_V(("timeout: %ds", timeout)); if (tektronix == true) {
     tektronixData(pushBuffer);
   } else if (strcmp(directory, "nodir") != 0) {
     directoryData(pushBuffer, directory);

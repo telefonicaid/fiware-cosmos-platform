@@ -5,6 +5,7 @@
 #include "engine/Notification.h"
 #include "engine/Object.h"
 #include "samson/common/KVHeader.h"
+#include "samson/common/Visualitzation.h"
 #include <string>
 
 namespace samson {
@@ -48,11 +49,11 @@ public:
 
 private:
 
-                     ::samson::SamsonWorker * samson_worker_; // Pointer to samson worker
+                     ::samson::SamsonWorker * samson_worker_;  // Pointer to samson worker
 
-                     size_t block_id_; // Identifier of the block created ( given by BLockManager )
+                     size_t block_id_;  // Identifier of the block created ( given by BLockManager )
 
-                     size_t delilah_id_; // Identifier of deliah node that should be notfied when finish
+                     size_t delilah_id_;  // Identifier of deliah node that should be notfied when finish
                      size_t push_id_;  // Identifier of the concrete push in this delilah
 
                      // Buffer information ( for table visualization )
@@ -61,8 +62,8 @@ private:
                      // Vector of queues to add this block
                      std::vector<std::string> queues_;
 
-                     bool distributed; // Flag to indicate that this block has been correctly distributed
-                     bool commited; // Falg to indicate that this block gas been correctly commited
+                     bool distributed;  // Flag to indicate that this block has been correctly distributed
+                     bool commited;  // Falg to indicate that this block gas been correctly commited
                    };
 
                    // Manager of the push operations at worker side
@@ -92,6 +93,6 @@ private:
                      // Vector of current operations
                      au::vector<PushOperation> push_operations_;
                    };
-                   } } // End of namespae samson
+                   } }  // End of namespae samson
 
-#endif // ifndef _H_SAMSON_PUSH_OPERATION
+#endif  // ifndef _H_SAMSON_PUSH_OPERATION

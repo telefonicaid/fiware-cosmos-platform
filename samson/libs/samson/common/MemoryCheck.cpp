@@ -81,9 +81,11 @@ bool MemoryCheck() {
   // Check to see if we can allocate all the memory needed
   if (samson_required_mem > max_memory_size) {
     needed_shmall = samson_required_mem / page_size;
-    LM_E(("Unable to allocate the needed memory for SAMSON. The system has %ld allocated and we need %ld.", max_memory_size,
+    LM_E(("Unable to allocate the needed memory for SAMSON. The system has %ld allocated and we need %ld.",
+          max_memory_size,
           samson_required_mem));
-    LM_E(("Set kernel.shmall to %ld using the command 'sudo sysctl -w %s=%ld'.", needed_shmall, SYSCTL_SHMALL, needed_shmall));
+    LM_E(("Set kernel.shmall to %ld using the command 'sudo sysctl -w %s=%ld'.", needed_shmall, SYSCTL_SHMALL,
+          needed_shmall));
     return false;
   }
 
@@ -92,7 +94,8 @@ bool MemoryCheck() {
     LM_E((
            "The system shared memory segment size (kernel.shmmax) is too small for SAMSON. The system allows for a maximum size of %ld and we need %ld",
            kernel_shmmax, shared_memory_size_per_buffer ));
-    LM_E(("Set kernel.shmmax to %ld using the command 'sudo sysctl -w %s=%ld'.", shared_memory_size_per_buffer, SYSCTL_SHMMAX,
+    LM_E(("Set kernel.shmmax to %ld using the command 'sudo sysctl -w %s=%ld'.", shared_memory_size_per_buffer,
+          SYSCTL_SHMMAX,
           shared_memory_size_per_buffer ));
     return false;
   }

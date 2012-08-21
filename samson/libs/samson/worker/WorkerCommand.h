@@ -124,4 +124,4 @@ private:
 };
 }
 
-#endif // ifndef _H_STREAM_WORKER_COMMAND
+#endif  // ifndef _H_STREAM_WORKER_COMMAND

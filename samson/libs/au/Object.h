@@ -69,6 +69,7 @@ public:
       return;
     }
 
+
     // If previous buffer, just release
     if (object_) {
       object_->Release();
@@ -78,6 +79,7 @@ public:
     if (!object) {
       return;
     }
+
 
     // Keep a retained copy of this
     object_ = object;
@@ -139,6 +141,7 @@ public:
       return;
     }
 
+
     container.set_object(c);     // Now it is retained by this element
     c->Release();
   }
@@ -150,6 +153,7 @@ public:
       return;
     }
 
+
     container.set_object(c);     // Now it is retained by this element
     c->Release();
   }
@@ -160,4 +164,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_OBJECT
+#endif  // ifndef _H_AU_OBJECT

@@ -57,7 +57,7 @@ private:
 
   friend std::ostream& operator<<(std::ostream& o, const ThreadInfo& thread_info);
 
-  au::Cronometer cronometer_;        // Cronometer for thsi thread
+  au::Cronometer cronometer_;      // Cronometer for thsi thread
   std::string name_;               // Name of this thread
   pthread_t t_;                    // Id of this thread
 
@@ -157,7 +157,7 @@ public:
     au::ThreadManager::shared()->addThread(name_, &t_, NULL, run_Thread, this);
   }
 
-  virtual void run() = 0; // Main function of the thread to be overloaded
+  virtual void run() = 0;  // Main function of the thread to be overloaded
   virtual void cancel_thread() {
   };                                // Paralel cancel function ( to wake up the thread for instance )
 
@@ -166,6 +166,7 @@ public:
     if (!pthread_running_) {
       return;
     }
+
 
     if (pthread_self() == t_) {
       LM_W(("Not possible to stop a thread from itself"));
@@ -184,6 +185,7 @@ public:
       if (!pthread_running_) {
         return;
       }
+
 
       if (c.seconds() > 2) {
         LM_W(("Too mush time waiting for thread %s", name_.c_str()));
@@ -240,4 +242,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_THREAD_CONTROLLER
+#endif  // ifndef _H_AU_THREAD_CONTROLLER

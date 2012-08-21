@@ -129,4 +129,4 @@ private:
 }
 }
 
-#endif // ifndef _H_SAMSON_COMSCORE
+#endif  // ifndef _H_SAMSON_COMSCORE

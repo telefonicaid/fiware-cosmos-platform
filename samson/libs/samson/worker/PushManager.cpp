@@ -88,9 +88,9 @@ namespace samson { namespace worker {
 
                      samson_worker_->data_model->Commit(caller, command, &error);
 
-                     if (error.IsActivated())
-                       LM_W(("Error commiting to data model in push operation: %s", error.GetMessage().c_str()));
-                     // Send a commit response message to delilah
+                     if (error.IsActivated()) {
+                       LM_W(("Error commiting to data model in push operation: %s", error.GetMessage().c_str()));  // Send a commit response message to delilah
+                     }
                      PacketPointer packet(new Packet(Message::PushBlockCommitResponse));
                      packet->to = NodeIdentifier(DelilahNode, delilah_id_);
                      packet->message->set_push_id(push_id_);
@@ -156,7 +156,9 @@ namespace samson { namespace worker {
                      }
 
                      // Create PushOpertion object and insert in the vector of pending push operations
-                     PushOperation *push_operation = new PushOperation(samson_worker_, block_id, delilah_id, push_id, buffer, queues);
+                     PushOperation *push_operation =
+                       new PushOperation(samson_worker_, block_id, delilah_id, push_id, buffer,
+                                         queues);
                      push_operations_.push_back(push_operation);
 
                      LM_TODO(("If the push is ready to confirm distirbution, answer here"));

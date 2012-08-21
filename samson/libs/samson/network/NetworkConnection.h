@@ -99,4 +99,4 @@ private:
 };
 }
 
-#endif // ifndef _H_SAMSON_NETWORK_CONNECTION
+#endif  // ifndef _H_SAMSON_NETWORK_CONNECTION

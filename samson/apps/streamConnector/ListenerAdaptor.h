@@ -34,4 +34,4 @@ public:
 }
 
 
-#endif // ifndef _H_SAMSON_CONNECTOR_LISTENER
+#endif  // ifndef _H_SAMSON_CONNECTOR_LISTENER

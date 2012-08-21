@@ -13,7 +13,7 @@
 #include "au/network/Service.h"
 #include "au/string.h"                  // au::str()
 
-#include "samson/client/SamsonClient.h" // samson::SamsonClient
+#include "samson/client/SamsonClient.h"  // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"
 
 #include "samson/common/coding.h"       // KVHeader
@@ -34,11 +34,17 @@ int sc_console_port;
 
 PaArgument paArgs[] =
 {
-  { "",      host,             "",             PaString,               PaOpt,        _i "localhost",      PaNL,              PaNL,
+  { "",      host,             "",             PaString,             PaOpt,                _i "localhost",
+    PaNL,
+    PaNL,
     "Host to connect"                                         },
-  { "-port", &sc_console_port, "",               PaInt,        PaOpt,     SC_CONSOLE_PORT,     1,                 9999,
+  { "-port", &sc_console_port, "",             PaInt,                PaOpt,                SC_CONSOLE_PORT,
+    1,
+    9999,
     "Port for console connections in samsonConnector"    },
-  { "-c",    command,            "",     PaString,  PaOpt,     _i "",              PaNL,  PaNL,      "Single command to execute"                          },
+  { "-c",    command,          "",             PaString,             PaOpt,                _i "",
+    PaNL,
+    PaNL,                "Single command to execute" },
   PA_END_OF_ARGS
 };
 

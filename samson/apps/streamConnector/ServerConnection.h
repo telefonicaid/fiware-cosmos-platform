@@ -83,4 +83,4 @@ public:
 }
 
 
-#endif // ifndef _H_SAMSON_CONNECTOR_SERVER_CONNECTION
+#endif  // ifndef _H_SAMSON_CONNECTOR_SERVER_CONNECTION

@@ -45,4 +45,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SamsonPushBuffer_SamsonClient
+#endif  // ifndef _H_SamsonPushBuffer_SamsonClient

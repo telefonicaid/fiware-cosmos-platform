@@ -45,8 +45,7 @@ Status createFullDirectory(std::string path) {
 
   std::string accumulated_path;
   if (path[0] == '/')
-    accumulated_path += "/";
-  for (size_t i = 0; i < components.size(); i++) {
+    accumulated_path += "/"; for (size_t i = 0; i < components.size(); i++) {
     accumulated_path += components[i];
     Status s = createDirectory(accumulated_path);
     if (s != OK) {
@@ -67,7 +66,8 @@ std::string cannonical_path(std::string path) {
   return path;
 }
 
-SetupItem::SetupItem(std::string _name, std::string _default_value, std::string _description, SamsonAdaptorType _type) {
+SetupItem::SetupItem(std::string _name, std::string _default_value, std::string _description,
+                     SamsonAdaptorType _type) {
   name = _name;
   default_value = _default_value;
   value = _default_value;
@@ -137,7 +137,8 @@ SetupItemCollection::~SetupItemCollection() {
   items.clearMap();
 }
 
-void SetupItemCollection::add(std::string _name, std::string _default_value, std::string _description, SamsonAdaptorType type) {
+void SetupItemCollection::add(std::string _name, std::string _default_value, std::string _description,
+                              SamsonAdaptorType type) {
   if (items.findInMap(_name) != NULL) {
     LM_W(("Item %s already added to setup... ignoring", _name.c_str()));
     return;
@@ -285,30 +286,37 @@ SamsonSetup::SamsonSetup(std::string samson_home, std::string samson_working) {
 
   add("general.shared_memory_size_per_buffer", "268435456", "Size of the shared memory segments", SetupItem_uint64);
 
-  add("general.update_status_period", "2", "Period for the automatic update from workers to all delilah", SetupItem_uint64);
+  add("general.update_status_period", "2", "Period for the automatic update from workers to all delilah",
+      SetupItem_uint64);
 
   // Isolation Process
   add("isolated.timeout", "300", "Timeout for all 3rd partty operations", SetupItem_uint64);
 
   // Worker
-  add("worker.period_check_finish_tasks", "5", "Period to review finished tasks in samsonWorker, to be clean from memory", SetupItem_uint64);
+  add("worker.period_check_finish_tasks", "5",
+      "Period to review finished tasks in samsonWorker, to be clean from memory",
+      SetupItem_uint64);
 
   // Upload & Download operations
   add("load.buffer_size", "67108864", "Size of the data block for load operations", SetupItem_uint64);
 
   // Stream processing
-  add("stream.max_scheduled_write_size", "120000000", "Maximum size scheduled for writing in the BlockManager", SetupItem_uint64);
-  add("stream.max_scheduled_read_size", "120000000", "Maximum size scheduled for writing in the BlockManager", SetupItem_uint64);
+  add("stream.max_scheduled_write_size", "120000000", "Maximum size scheduled for writing in the BlockManager",
+      SetupItem_uint64);
+  add("stream.max_scheduled_read_size", "120000000", "Maximum size scheduled for writing in the BlockManager",
+      SetupItem_uint64);
 
 
-  add("stream.max_operation_input_size", "400000000", "Maximum input data ( in bytes ) to run an automatic stream processing task",
+  add("stream.max_operation_input_size", "400000000",
+      "Maximum input data ( in bytes ) to run an automatic stream processing task",
       SetupItem_uint64);
 
   // load setup file
   load(setupFileName());
 }
 
-void SamsonSetup::addItem(std::string _name, std::string _default_value, std::string _description, SamsonAdaptorType type) {
+void SamsonSetup::addItem(std::string _name, std::string _default_value, std::string _description,
+                          SamsonAdaptorType type) {
   add(_name,  _default_value, _description, type);
 }
 
@@ -387,9 +395,12 @@ int SamsonSetup::getInt(std::string name) {
 
 void SamsonSetup::createWorkingDirectories() {
   if (createFullDirectory(_samson_working) != OK)
-    LM_X(1, ("Error creating directory %s", _samson_working.c_str())); if (createFullDirectory(_samson_working + "/log") != OK)
-    LM_X(1, ("Error creating directory at %s", _samson_working.c_str())); if (createFullDirectory(_samson_working + "/blocks") != OK)
-    LM_X(1, ("Error creating directory at %s", _samson_working.c_str())); if (createFullDirectory(_samson_working + "/etc") != OK)
+    LM_X(1, ("Error creating directory %s", _samson_working.c_str()));
+  if (createFullDirectory(_samson_working + "/log") != OK)
+    LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));
+  if (createFullDirectory(_samson_working + "/blocks") != OK)
+    LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));
+  if (createFullDirectory(_samson_working + "/etc") != OK)
     LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));  // Create modules directory
   if (createFullDirectory(_samson_home + "/modules"))
     LM_X(1, ("Error creating directory at %s", _samson_home.c_str()));
@@ -429,7 +440,8 @@ int SamsonSetup::save() {
       concept = tmp_concept;
     }
 
-    fprintf(file, "%-40s\t%-20s # %s\n", i->first.c_str(), i->second->getValue().c_str(), i->second->getDescription().c_str());
+    fprintf(file, "%-40s\t%-20s # %s\n", i->first.c_str(), i->second->getValue().c_str(),
+            i->second->getDescription().c_str());
   }
 
   fclose(file);

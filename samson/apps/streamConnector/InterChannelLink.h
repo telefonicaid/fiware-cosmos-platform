@@ -56,4 +56,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_CONNECTOR_INTERCHANNEL_LINK
+#endif  // ifndef _H_SAMSON_CONNECTOR_INTERCHANNEL_LINK

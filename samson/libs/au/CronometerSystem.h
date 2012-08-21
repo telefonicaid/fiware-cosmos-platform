@@ -41,4 +41,4 @@ private:
 };
 }
 
-#endif // ifndef AU_CRONOMETER_SYSTEM_H_
+#endif  // ifndef AU_CRONOMETER_SYSTEM_H_

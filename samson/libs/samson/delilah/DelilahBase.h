@@ -10,20 +10,20 @@
  */
 
 
-#include <string>                       // std::string
-#include <vector>                       // std::vector
+#include <string>                      // std::string
+#include <vector>                      // std::vector
 
-#include "au/Cronometer.h"              // au::Cronometer
+#include "au/Cronometer.h"             // au::Cronometer
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/containers/map.h"
-#include "au/mutex/Token.h"             // au::Token
+#include "au/mutex/Token.h"            // au::Token
 
 #include "au/tables/DataBase.h"
 
 #include "samson/network/NetworkInterface.h"
 
 
-#include "au/tables/pugi.h"             // pugi::... node_to_string_function
+#include "au/tables/pugi.h"            // pugi::... node_to_string_function
 
 namespace samson {
 /*
@@ -102,5 +102,5 @@ public:
 }
 
 
-#endif // ifndef _H_DELILAH_BASE
+#endif  // ifndef _H_DELILAH_BASE
 

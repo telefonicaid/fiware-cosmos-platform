@@ -66,4 +66,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_COUNTER_COLLECTION
+#endif  // ifndef _H_AU_COUNTER_COLLECTION

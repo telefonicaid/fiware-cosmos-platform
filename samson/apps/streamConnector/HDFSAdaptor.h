@@ -59,5 +59,5 @@ public:
 };
 }
 
-#endif // ifndef _H_STREAM_CONNECTOR_HDFS_ADAPTOR
+#endif  // ifndef _H_STREAM_CONNECTOR_HDFS_ADAPTOR
 

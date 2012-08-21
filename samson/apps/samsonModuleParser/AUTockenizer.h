@@ -106,4 +106,4 @@ public:
 };
 }
 
-#endif // ifndef AU_TOKENIZER_H
+#endif  // ifndef AU_TOKENIZER_H

@@ -55,8 +55,7 @@ int paLogSetup(void) {
       // printf("Using paLogDir '%s'", paLogDir);
       s = lmPathRegister(paLogDir, paLogFileLineFormat, paLogFileTimeFormat, &lmFd); else
       // printf("Using paLogFilePath: '%s'\n", paLogFilePath);
-      s = lmPathRegister(paLogFilePath, paLogFileLineFormat, paLogFileTimeFormat, &lmFd);
-    if (s != LmsOk) {
+      s = lmPathRegister(paLogFilePath, paLogFileLineFormat, paLogFileTimeFormat, &lmFd); if (s != LmsOk) {
       sprintf(w, "lmPathRegister: %s", lmStrerror(s));
       PA_WARNING(PasLogFile, w);
       return -2;

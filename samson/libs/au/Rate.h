@@ -67,19 +67,19 @@ private:
                  double _getRate();
                  double _getHitRate();
 
-                 au::Token token_; // Mutex protection
+                 au::Token token_;  // Mutex protection
 
-                 int num_samples_; // Number of samples in hits_ and size_ vectors
+                 int num_samples_;  // Number of samples in hits_ and size_ vectors
 
-                 size_t total_size_; // Total number of bytes
-                 size_t total_num_; // Total number of hits
+                 size_t total_size_;  // Total number of bytes
+                 size_t total_num_;  // Total number of hits
 
-                 int *hits_; // Number of hits accumulated in the last "N" seconds
-                 double *size_; // Total size accumulated in the last "N" seconds
+                 int *hits_;  // Number of hits accumulated in the last "N" seconds
+                 double *size_;  // Total size accumulated in the last "N" seconds
 
                  au::Cronometer c;
                  size_t last_time_correction;
                };
-               } } // end of namespace au::rate
+               } }  // end of namespace au::rate
 
-#endif // ifndef _H_AU_RATE
+#endif  // ifndef _H_AU_RATE

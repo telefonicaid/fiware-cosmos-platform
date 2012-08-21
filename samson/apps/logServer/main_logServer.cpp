@@ -18,14 +18,20 @@ char log_directory[1024];
 
 PaArgument paArgs[] =
 {
-  { "-fg",         &fg,                  "",                  PaBool,                  PaOpt,                  false,              false,
+  { "-fg",         &fg,                  "",                  PaBool,                    PaOpt,
+    false,
+    false,
     true,
     "don't start as daemon"                  },
-  { "-port",       &target_port,         "",                  PaInt,              PaOpt,    LS_PORT,          1,             99999,
+  { "-port",       &target_port,         "",                  PaInt,                     PaOpt,
+    LS_PORT,
+    1,                 99999,
     "Port for default log channel"        },
-  { "-query_port", &query_port,          "",           PaInt,    PaOpt,    LS_QUERY_PORT, 1,          99999,
+  { "-query_port", &query_port,          "",                  PaInt,                     PaOpt,
+    LS_QUERY_PORT,          1,                 99999,
     "Port for logClient connections"      },
-  { "-dir",        log_directory,        "",           PaString, PaOpt,    _i LS_LOG_DIR, PaNL,       PaNL,
+  { "-dir",        log_directory,        "",                  PaString,                  PaOpt,
+    _i LS_LOG_DIR,          PaNL,              PaNL,
     "Directory for default channel logs"  },
   PA_END_OF_ARGS
 };

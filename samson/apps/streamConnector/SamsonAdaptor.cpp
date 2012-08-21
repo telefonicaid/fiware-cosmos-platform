@@ -100,9 +100,7 @@ void SamsonConnection::receive_buffer_from_queue(std::string queue, engine::Buff
 
   if (header->isTxt())
     // Push the new buffer
-    pushInputBuffer(buffer);
-
-  else
+    pushInputBuffer(buffer); else
     LM_W(("Received a binary buffer %s from %s. Still not implemented how to process this"
           , au::str(buffer->getSize(), "B").c_str(), getFullName().c_str()));
 }

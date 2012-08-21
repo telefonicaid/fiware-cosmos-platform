@@ -70,4 +70,4 @@ public:
   }
 };
 
-#endif // ifndef _H_SAMSONPUSH_CONNECTIONS_MANAGER
+#endif  // ifndef _H_SAMSONPUSH_CONNECTIONS_MANAGER

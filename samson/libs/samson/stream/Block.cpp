@@ -161,8 +161,7 @@ void Block::update(BlockInfo &block_info) {
                                                    * if( isLockedInMemory() )
                                                    * block_info.size_locked += size;
                                                    */
-
-  // Key-Value information
+   // Key-Value information
   block_info.info.append(header.info);
 
   block_info.push(getKVFormat());
@@ -185,7 +184,8 @@ std::string Block::str() {
   std::ostringstream output;
 
   output << "[ ";
-  output << " id=" << block_id_ << " size=" << header.info.size << " " <<  header.range.str() << "(" << str_state() << ")";
+  output << " id=" << block_id_ << " size=" << header.info.size << " " <<  header.range.str() << "(" << str_state() <<
+  ")";
   output << " ]";
   return output.str();
 }
@@ -266,7 +266,8 @@ void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& vis
 
   // Next task
   if (min_task_id_ == (size_t)(-1))
-    samson::add(record, "next task", "none", "left,different"); else
+    samson::add(record, "next task", "none", "left,different");
+  else
     samson::add(record, "next task", min_task_id_, "left,different");  // Priority level
   samson::add(record, "priority", max_priority_, "left,different");
 
@@ -305,9 +306,12 @@ std::string Block::str_state() {
 
   // Memory status
   if (is_content_locked_in_memory())
-    output << "L"; else if (is_content_in_memory())
-    output << "M"; else if (state_ == reading)
-    output << "R"; else
+    output << "L";
+  else if (is_content_in_memory())
+    output << "M";
+  else if (state_ == reading)
+    output << "R";
+  else
     output << " ";  // Disk status
   if (is_content_in_disk())
     output << "D"; else if (state_ == writing)

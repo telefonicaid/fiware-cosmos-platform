@@ -170,8 +170,7 @@ static int paArgInit(PaArgument *paList) {
 
     if ((aP->option != NULL) && (aP->option[0] == 0))
       aP->option = NULL; if ((aP->envName != NULL) && (aP->envName[0] == 0))
-      aP->envName = NULL;
-    if ((aP->envName != NULL) && ((aP->envName[0] == ' ') || (aP->envName[0] == '\t'))) {
+      aP->envName = NULL; if ((aP->envName != NULL) && ((aP->envName[0] == ' ') || (aP->envName[0] == '\t'))) {
       char w[512];
 
       strcpy(w, "found an item with var name starting with whitespace - forbidden");
@@ -370,8 +369,7 @@ int paParse
     RETURN_ERROR("paOptionsParse"); if (paLogSetup() == -1)
     RETURN_ERROR("paLogSetup error"); if ((s != -2) && ((s = paLimitCheck(paiList)) == -1))
     RETURN_ERROR("paLimitCheck"); if ((s != -2) && ((s = paConfigActions(false)) == -1))
-    RETURN_ERROR("paConfigActions");
-  fP = NULL;
+    RETURN_ERROR("paConfigActions"); fP = NULL;
   if (paMsgsToStdout)
     fP = stdout; if (paMsgsToStderr)
     fP = stderr; if (paResultString[0] != 0) {

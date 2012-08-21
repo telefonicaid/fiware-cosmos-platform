@@ -25,9 +25,11 @@ Status iomMsgAwait(int fd, int secs) {
   } while ((fds == -1) && (errno == EINTR));
 
   if (fds == -1)
-    LM_RP(SelectError, ("iomMsgAwait: select returns -1 with errno:%d for fd:%d in %d seconds", errno, fd, secs)); else if (fds == 0)
+    LM_RP(SelectError, ("iomMsgAwait: select returns -1 with errno:%d for fd:%d in %d seconds", errno, fd, secs));
+  else if (fds == 0)
     LM_RE(Timeout,
-          ("iomMsgAwait: timeout in select returns 0 for fd:%d in %d seconds", fd, secs)); else if ((fds > 0) && (!FD_ISSET(fd, &rFds)))
+          ("iomMsgAwait: timeout in select returns 0 for fd:%d in %d seconds", fd,
+           secs)); else if ((fds > 0) && (!FD_ISSET(fd, &rFds)))
     LM_X(1,
          ("iomMsgAwait: some other fd has a read pending - this is impossible ! (select for fd:%d)",
           fd)); else if ((fds > 0) && (FD_ISSET(fd, &rFds)))

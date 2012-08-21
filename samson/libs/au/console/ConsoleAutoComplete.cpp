@@ -117,8 +117,7 @@ void ConsoleAutoComplete::auto_complete_files(std::string file_selector) {
 
   if (( base.length() > 0 ) && ( base != "/" ))
     base.append("/");  // printf("Last word '%s' dir='%s' base='%s'\n", last_word.c_str() , directory.c_str() , base.c_str() );
-
-  // Try to open directory
+   // Try to open directory
   DIR *dp;
   struct dirent *dirp;
   if ((dp  = opendir(directory.c_str())) == NULL)
@@ -130,9 +129,7 @@ void ConsoleAutoComplete::auto_complete_files(std::string file_selector) {
     // Skip ".files"
     if (fileName.length() > 0)
       if (fileName[0] == '.')
-        continue;
-
-    // Full path of the file
+        continue;  // Full path of the file
     std::string path = path_from_directory(directory, dirp->d_name);
 
     struct ::stat info;
@@ -184,7 +181,8 @@ std::string ConsoleAutoComplete::stringToAppend() {
   int last_word_length = last_word.length();
   int common_chars = common_chars_in_last_word_alternative();
 
-  std::string complete_text = last_word_alternatives[0].command.substr(last_word_length, common_chars - last_word_length);
+  std::string complete_text = last_word_alternatives[0].command.substr(last_word_length,
+                                                                       common_chars - last_word_length);
 
   // printf("Complete %s", complete_text.c_str());
   if (last_word_alternatives.size() == 1) {

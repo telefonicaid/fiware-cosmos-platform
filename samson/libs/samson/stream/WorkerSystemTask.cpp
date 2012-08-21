@@ -38,7 +38,8 @@ namespace samson { namespace stream {
                      return concept_;
                    }
 
-                   void WorkerSystemTask::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
+                   void WorkerSystemTask::fill(samson::gpb::CollectionRecord *record,
+                                               const Visualization& visualization) {
                      if (visualization.get_flag("data")) {
                        add(record, "id", get_id(), "left,different");
 
@@ -73,8 +74,11 @@ namespace samson { namespace stream {
                    //
                    // ------------------------------------------------------------------------
 
-                   BlockRequestTask::BlockRequestTask(SamsonWorker *samson_worker, size_t id, size_t block_id, size_t worker_id)
-                     : WorkerSystemTask(id, au::str("block request task for block %lu to worker %lu", block_id, worker_id)) {
+                   BlockRequestTask::BlockRequestTask(SamsonWorker *samson_worker, size_t id, size_t block_id,
+                                                      size_t worker_id)
+                     : WorkerSystemTask(id,
+                                        au::str("block request task for block %lu to worker %lu", block_id,
+                                                worker_id)) {
                      samson_worker_ = samson_worker;
                      block_id_ = block_id;
                      worker_id_ = worker_id;
@@ -110,7 +114,9 @@ namespace samson { namespace stream {
                                                             , size_t delilah_id
                                                             , size_t delilah_component_id
                                                             , size_t pop_id)
-                     : WorkerSystemTask(id, au::str("block pop request task for block %lu ( delilah %lu )", block_id, delilah_id)) {
+                     : WorkerSystemTask(id,
+                                        au::str("block pop request task for block %lu ( delilah %lu )", block_id,
+                                                delilah_id)) {
                      samson_worker_ = samson_worker;
 
                      block_id_ = block_id;

@@ -31,18 +31,18 @@
 #include <vector>       // std::vector
 
 #include "au/containers/SharedPointer.h"
-#include "logMsg/logMsg.h" // LM_M()
+#include "logMsg/logMsg.h"  // LM_M()
 
 // Usefull define for full iteration over a map structure
 
 namespace au {
 /* ------------------------------------------------------------------------
-*
-*  class au::map
-*
-*  map of SharedPointer's
-*
-*  ------------------------------------------------------------------------ */
+ *
+ *  class au::map
+ *
+ *  map of SharedPointer's
+ *
+ *  ------------------------------------------------------------------------ */
 
 template <typename K, typename V, typename _Compare = std::less<K> >
 class Dictionary : public std::map< K, SharedPointer<V>, _Compare >{
@@ -81,11 +81,13 @@ public:
   }
 
   SharedPointer<V> Get(const K& key) const {
-    typename std::map<K, SharedPointer<V>, _Compare >::const_iterator iter = std::map<K, SharedPointer<V>, _Compare >::find(key);
+    typename std::map<K, SharedPointer<V>,
+                      _Compare >::const_iterator iter = std::map<K, SharedPointer<V>, _Compare >::find(key);
 
     if (iter == std::map<K, SharedPointer<V>, _Compare>::end()) {
       return SharedPointer<V>(NULL);
     }
+
     return iter->second;
   }
 
@@ -94,6 +96,7 @@ public:
     if (tmp != NULL) {
       return tmp;
     }
+
 
     // Create a new object
     tmp = new V();
@@ -107,6 +110,7 @@ public:
     if (tmp != NULL) {
       return tmp;
     }
+
 
     tmp = new V(a);
     Set(key, tmp);
@@ -128,6 +132,7 @@ public:
       return SharedPointer<V>(NULL);
     }
 
+
     SharedPointer<V> tmp = iter->second;
     std::map<K, SharedPointer<V>, _Compare>::erase(iter);
     return tmp;
@@ -135,7 +140,9 @@ public:
 
   void getKeys(std::set<K>& childrens) {
     typename std::map<K, V *, _Compare >::iterator iter;
-    for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end(); iter++) {
+    for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end();
+         iter++)
+    {
       childrens.insert(iter->first);
     }
   }
@@ -144,7 +151,9 @@ public:
     std::vector<K> v;
 
     typename std::map<K, SharedPointer<V>, _Compare >::iterator iter;
-    for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end(); iter++) {
+    for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end();
+         iter++)
+    {
       v.push_back(iter->first);
     }
     return v;
@@ -153,7 +162,9 @@ public:
   std::vector< SharedPointer<V> > items() {
     std::vector< SharedPointer<V> > vector;
     typename std::map<K, SharedPointer<V>, _Compare >::iterator iter;
-    for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end(); iter++) {
+    for (iter = std::map<K, SharedPointer<V>, _Compare>::begin(); iter != std::map<K, SharedPointer<V>, _Compare>::end();
+         iter++)
+    {
       vector.push_back(iter->second);
     }
     return vector;
@@ -165,4 +176,4 @@ class Vector : public std::vector< SharedPointer<V> >{
 };
 }
 
-#endif // ifndef AU_CONTAINERS_DICTIONARY_H_
+#endif  // ifndef AU_CONTAINERS_DICTIONARY_H_

@@ -181,4 +181,4 @@ private:
 };
 }
 
-#endif // ifndef SAMSON_WORKER_H
+#endif  // ifndef SAMSON_WORKER_H

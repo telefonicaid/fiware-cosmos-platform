@@ -35,7 +35,7 @@
 
 #include "samson/network/DelilahNetwork.h"
 #include "samson/network/Message.h"          // Message::MessageCode
-#include "samson/network/NetworkInterface.h" // NetworkInterface
+#include "samson/network/NetworkInterface.h"  // NetworkInterface
 
 #include "DelilahBase.h"                     // Monitorization information for delilah
 #include "DelilahBaseConnection.h"
@@ -245,4 +245,4 @@ protected:
 };
 }
 
-#endif // ifndef DELILAH_H
+#endif  // ifndef DELILAH_H

@@ -52,7 +52,8 @@ public:
   bool optional;
   size_t valMask;
 
-  DataType(std::string _full_type, std::string _name, DataTypeContainer container, bool _optional, size_t _valMask, int nline);
+  DataType(std::string _full_type, std::string _name, DataTypeContainer container, bool _optional, size_t _valMask,
+           int nline);
 
   /* Get the include file that is necessary to use this data type */
   std::string getInclude();
@@ -160,4 +161,4 @@ public:
 };
 }
 
-#endif // ifndef DATATYPE_H
+#endif  // ifndef DATATYPE_H

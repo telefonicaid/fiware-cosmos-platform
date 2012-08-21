@@ -23,6 +23,6 @@ namespace samson { namespace zoo {
                    void sort_vector(struct String_vector *vector);
                    void free_vector(struct String_vector *v);
                    void init_vector(struct String_vector *v);
-                   } } // End of namespace samson::zoo
+                   } }  // End of namespace samson::zoo
 
-#endif // ifndef _H_ZOOKEEPER_COMMON
+#endif  // ifndef _H_ZOOKEEPER_COMMON

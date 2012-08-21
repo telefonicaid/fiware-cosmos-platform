@@ -57,4 +57,4 @@ public:
 };
 }
 
-#endif // ifndef MODULE_CONTAINER_H
+#endif  // ifndef MODULE_CONTAINER_H

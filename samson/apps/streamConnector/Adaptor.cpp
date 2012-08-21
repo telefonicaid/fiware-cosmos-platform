@@ -81,9 +81,9 @@ void Adaptor::review() {
   if (canceled) {
     return;         // Not call review
   }
-  if (!finished)
-    review_item();
-  // Review all connections
+  if (!finished) {
+    review_item();  // Review all connections
+  }
   {
     au::TokenTaker tt(&token);
     au::map<int, Connection>::iterator it_connections;

@@ -57,4 +57,4 @@ protected:
 };
 }
 
-#endif // ifndef _H_ENGINE_OBJECT
+#endif  // ifndef _H_ENGINE_OBJECT

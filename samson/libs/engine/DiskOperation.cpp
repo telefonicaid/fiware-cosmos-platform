@@ -14,7 +14,8 @@ DiskOperation::DiskOperation() {
 DiskOperation::~DiskOperation() {
 }
 
-DiskOperation *DiskOperation::newReadOperation(char *data, std::string fileName, size_t offset, size_t size, size_t _listenerId) {
+DiskOperation *DiskOperation::newReadOperation(char *data, std::string fileName, size_t offset, size_t size,
+                                               size_t _listenerId) {
   DiskOperation *o = new DiskOperation();
 
   o->fileName = fileName;
@@ -29,7 +30,8 @@ DiskOperation *DiskOperation::newReadOperation(char *data, std::string fileName,
   return o;
 }
 
-DiskOperation *DiskOperation::newReadOperation(std::string fileName, size_t offset, size_t size,  SimpleBuffer simpleBuffer,
+DiskOperation *DiskOperation::newReadOperation(std::string fileName, size_t offset, size_t size,
+                                               SimpleBuffer simpleBuffer,
                                                size_t _listenerId) {
   DiskOperation *o = new DiskOperation();
 

@@ -33,4 +33,4 @@ enum PaTraceLevels {
   LmtHelp
 };
 
-#endif // ifndef PA_TRACE_LEVELS_H
+#endif  // ifndef PA_TRACE_LEVELS_H

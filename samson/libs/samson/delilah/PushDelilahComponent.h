@@ -17,7 +17,7 @@
 #include "engine/Engine.h"           // engine::Object
 #include "engine/Object.h"           // engine::Object
 
-#include "samson/common/samson.pb.h" // samson::network
+#include "samson/common/samson.pb.h"  // samson::network
 
 #include "DelilahComponent.h"        // samson::DelilahComponent
 #include "samson/delilah/Delilah.h"  // samson::Delilah
@@ -80,4 +80,4 @@ private:
 };
 }
 
-#endif // ifndef _H_PUSH_DELILAH_COMPONENT
+#endif  // ifndef _H_PUSH_DELILAH_COMPONENT

@@ -82,4 +82,4 @@ private:
 };
 }
 
-#endif // ifndef _H_ENGINE_NOTIFICATION
+#endif  // ifndef _H_ENGINE_NOTIFICATION

@@ -118,4 +118,4 @@ struct KeyValueHash {
 };
 }
 
-#endif // ifndef _H_CODING
+#endif  // ifndef _H_CODING

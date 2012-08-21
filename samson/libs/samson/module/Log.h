@@ -65,4 +65,4 @@ typedef enum {
 #define OLM_E(s)        OLM_G('E', 0, s)
 
 
-#endif // ifndef _H_SAMSON_LOG
+#endif  // ifndef _H_SAMSON_LOG

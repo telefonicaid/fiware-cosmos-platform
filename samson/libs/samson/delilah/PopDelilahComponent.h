@@ -151,14 +151,14 @@ private:
   }
 
   // Initial information of this pop operation
-  std::string queue_;               // Name of the queue we are recovering
-  std::string file_name_;           // Name of the file to create
-  bool force_flag_;                 // Flag to remove previos directory
+  std::string queue_;     // Name of the queue we are recovering
+  std::string file_name_;  // Name of the file to create
+  bool force_flag_;       // Flag to remove previos directory
   bool show_flag_;
 
   // Main request information
   size_t worker_id_;     // worker selected to request information about my queue
-  int commit_id_;        // last commit observed
+  int commit_id_;         // last commit observed
   au::Cronometer cronometer_;
 
   // Number of pop_responses
@@ -181,4 +181,4 @@ private:
 };
 }
 
-#endif // ifndef _H_POP_DELILAH_COMPONENT
+#endif  // ifndef _H_POP_DELILAH_COMPONENT

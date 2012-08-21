@@ -41,7 +41,7 @@ void daemonize(void) {
   sid = setsid();
   if (sid == -1)
     LM_X(1, ("setsid: %s", strerror(errno)));  // Change current working directory.
-                                              // This prevents the current directory from being locked; hence not being able to remove it.
+   // This prevents the current directory from being locked; hence not being able to remove it.
   if (chdir("/") == -1)
     LM_X(1, ("chdir: %s", strerror(errno)));
 }

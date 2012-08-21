@@ -107,4 +107,4 @@ private:
 }
 
 
-#endif // ifndef _H_ENGINE_OBJECTS_MANAGER
+#endif  // ifndef _H_ENGINE_OBJECTS_MANAGER

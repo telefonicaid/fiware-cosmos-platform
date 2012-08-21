@@ -47,15 +47,14 @@ DiskConnection::DiskConnection(Adaptor *_item
 
     if (S_ISDIR(s.st_mode)) {
       // Add all plain files in this directory
-      DIR *pdir = opendir(file_name.c_str());            // "." will refer to the current directory
+      DIR *pdir = opendir(file_name.c_str());  // "." will refer to the current directory
       struct dirent *pent = NULL;
-      if (pdir != NULL) {         // if pdir wasn't initialised correctly
-        while ((pent = readdir(pdir))) {            // while there is still something in the directory to list
+      if (pdir != NULL) {                     // if pdir wasn't initialised correctly
+        while ((pent = readdir(pdir))) {      // while there is still something in the directory to list
           if (pent != NULL) {
             if (strcmp(".", pent->d_name) == 0)
               continue; if (strcmp("..", pent->d_name) == 0)
-              continue;
-            std::ostringstream localFileName;
+              continue; std::ostringstream localFileName;
             localFileName << file_name << "/" << pent->d_name;
 
             // Add to the list of files
@@ -73,7 +72,6 @@ DiskConnection::DiskConnection(Adaptor *_item
     int s = mkdir(file_name.c_str(), 0755);
     if (( s != 0 ) && ( errno != EEXIST))
       error.set(au::str("Problems creating directory %s (%s)", file_name.c_str(), strerror(errno)));
-
   }
 
   // No file descriptor by default
@@ -170,7 +168,8 @@ void DiskConnection::run_as_output() {
     }
 
     // Write to disk
-    au::Status s = file_descriptor->partWrite(current_buffer->getData(), current_buffer->getSize(), "samsonConnectorConnection");
+    au::Status s = file_descriptor->partWrite(current_buffer->getData(),
+                                              current_buffer->getSize(), "samsonConnectorConnection");
 
     if (s != au::OK) {
       error.set(au::str("Not possible to write buffer with %s to file %s"
@@ -258,13 +257,9 @@ std::string DiskConnection::getStatus() {
 
   if (thread_running)
     output << "Running"; else
-    output << "Stoped";
-  if (error.IsActivated())
-    output << au::str(" [Error:%s]", error.GetMessage().c_str());
-
-  if (getType() == connection_input)
-    output << au::str(" [Buffer:%s]", au::str(input_buffer_size).c_str());
-  return output.str();
+    output << "Stoped"; if (error.IsActivated())
+    output << au::str(" [Error:%s]", error.GetMessage().c_str()); if (getType() == connection_input)
+    output << au::str(" [Buffer:%s]", au::str(input_buffer_size).c_str()); return output.str();
 }
 
 void DiskConnection::review_connection() {

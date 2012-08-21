@@ -39,4 +39,4 @@ private:
 };
 }
 
-#endif // ifndef _H_SAMSON_DATA_SET
+#endif  // ifndef _H_SAMSON_DATA_SET

@@ -65,4 +65,4 @@ void logToLogServer(void *vP,
                     const char *stre);
 }
 
-#endif // ifndef _H_AU_LOG_TO_SERVER
+#endif  // ifndef _H_AU_LOG_TO_SERVER

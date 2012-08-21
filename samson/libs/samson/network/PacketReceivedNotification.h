@@ -49,4 +49,4 @@ public:
 };
 }
 
-#endif // ifndef _H_PACKET_RECEIVER_NOTIFICATION
+#endif  // ifndef _H_PACKET_RECEIVER_NOTIFICATION

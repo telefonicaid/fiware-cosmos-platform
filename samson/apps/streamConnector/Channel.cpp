@@ -73,7 +73,8 @@ void Channel::add_output(std::string name, std::string output_string, au::ErrorM
   Adaptor *previous_item = items.findInMap(name);
 
   if (previous_item) {
-    error->set(au::str("Item %s already exist (%s)", previous_item->getFullName().c_str(), previous_item->getDescription().c_str()));
+    error->set(au::str("Item %s already exist (%s)", previous_item->getFullName().c_str(),
+                       previous_item->getDescription().c_str()));
     return;
   }
 
@@ -81,8 +82,7 @@ void Channel::add_output(std::string name, std::string output_string, au::ErrorM
 
   if (components[0] == "stdout") {
     if (!interactive && !run_as_daemon)
-      add(name,  new StdoutItem(this));
-    else
+      add(name,  new StdoutItem(this)); else
       // Non using stdout in interactive mode
       return;
   } else if (components[0] == "port") {
@@ -99,7 +99,8 @@ void Channel::add_output(std::string name, std::string output_string, au::ErrorM
 
     // Add a listen item
     add(name, new ListenerAdaptor(this, connection_output, port));
-    error->AddMessage(au::str("Added an output item to channel %s listening plain socket connection on port %d ", name_.c_str(), port));
+    error->AddMessage(au::str("Added an output item to channel %s listening plain socket connection on port %d ",
+                              name_.c_str(), port));
     return;
   } else if (components[0] == "disk") {
     if (components.size() < 2) {
@@ -199,7 +200,8 @@ void Channel::add_input(std::string name, std::string input_string, au::ErrorMan
 
     // Add a listen item
     add(name, new ListenerAdaptor(this, connection_input, port));
-    error->AddMessage(au::str("Added an input item to channel %s listening plain socket connection on port %d ", name_.c_str(), port));
+    error->AddMessage(au::str("Added an input item to channel %s listening plain socket connection on port %d ",
+                              name_.c_str(), port));
     return;
   } else if (components[0] == "disk") {
     if (components.size() < 2) {

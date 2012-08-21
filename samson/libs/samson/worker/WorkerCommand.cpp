@@ -217,7 +217,8 @@ void WorkerCommand::runCommand(std::string command, au::ErrorManager *error) {
 
   if (main_command == "init_stream") {
     if (cmd.get_num_arguments() < 2) {
-      error->set(au::str("Not enough parameters for command 'init_stream' ( only %d argument provided )", cmd.get_num_arguments()));
+      error->set(au::str("Not enough parameters for command 'init_stream' ( only %d argument provided )",
+                         cmd.get_num_arguments()));
       return;
     }
 
@@ -275,7 +276,6 @@ void WorkerCommand::runCommand(std::string command, au::ErrorManager *error) {
 
         if (prefix.length() > 0)
           full_command.append(au::str(" -prefix %s", prefix.c_str()));  // LM_M(("Full Command %s (original %s)" , full_command.c_str(),  sub_command.c_str() ));
-
         runCommand(full_command, &sub_error);
       }
 
@@ -707,7 +707,9 @@ void WorkerCommand::run() {
 
     while (1) {  // Until lmLogLineGet returns EOF (-2)
       if (all != NULL) // strdup and free - a little slow ... I might replace this mechanism with a char[] ...
-        free(all); lmPos = lmLogLineGet(&type, date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos, &all);
+        free(all);
+      lmPos = lmLogLineGet(&type, date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos,
+                           &all);
       if (lmPos < 0) {
         if (all != NULL)
           free(all); break;
@@ -735,7 +737,8 @@ void WorkerCommand::run() {
     }
 
     // Close fP for log file peeking ...
-    lmPos = lmLogLineGet(NULL, (char *)date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos, NULL);
+    lmPos = lmLogLineGet(NULL, (char *)date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos,
+                         NULL);
 
     samson::gpb::Collection *collection = new samson::gpb::Collection();
     collection->set_name("Log File Lines");
@@ -767,8 +770,8 @@ void WorkerCommand::run() {
 
   if (main_command == "wlog") {
     int vLevel;
-    if (lmVerbose5 == true) vLevel = 5; else if (lmVerbose4 == true) vLevel = 4; else if (lmVerbose3 == true) vLevel = 3;
-    else if (lmVerbose2 == true) vLevel = 2; else if (lmVerbose  == true) vLevel = 1; else vLevel = 0;
+    if (lmVerbose5 == true) vLevel = 5; else if (lmVerbose4 == true) vLevel = 4; else if (lmVerbose3 == true) vLevel =
+        3; else if (lmVerbose2 == true) vLevel = 2; else if (lmVerbose  == true) vLevel = 1; else vLevel = 0;
     samson::gpb::Collection *collection = new  samson::gpb::Collection();
     collection->set_title("Logs");
     collection->set_name("logs");
@@ -804,7 +807,9 @@ void WorkerCommand::run() {
       lmVerbose3 = false;
       lmVerbose4 = false;
       lmVerbose5 = false;
-    } else if ((subcommand == "1") || (subcommand == "2") || (subcommand == "3") || (subcommand == "4") || (subcommand == "5")) {
+    } else if ((subcommand == "1") || (subcommand == "2") || (subcommand == "3") || (subcommand == "4") ||
+               (subcommand == "5"))
+    {
       int level = subcommand.c_str()[0] - '0';
 
       lmVerbose  = false;
@@ -829,7 +834,9 @@ void WorkerCommand::run() {
     } else if (subcommand == "get") {
       int vLevel;
 
-      if (lmVerbose5 == true) vLevel = 5; else if (lmVerbose4 == true) vLevel = 4; else if (lmVerbose3 == true) vLevel = 3;
+      if (lmVerbose5 == true) vLevel = 5; else if (lmVerbose4 == true) vLevel = 4; else if (lmVerbose3 ==
+                                                                                            true)
+        vLevel = 3;
       else if (lmVerbose2 == true) vLevel = 2; else if (lmVerbose  == true) vLevel = 1; else vLevel = 0;
       samson::gpb::Collection *collection = new  samson::gpb::Collection();
       collection->set_title("Verbose");
@@ -998,8 +1005,7 @@ void WorkerCommand::run() {
     if (error)
       samsonWorker->sendTrace("error", "delilah", full_message); else if (warning)
       samsonWorker->sendTrace("warning", "delilah", full_message); else
-      samsonWorker->sendTrace("message", "delilah", full_message);
-    finishWorkerTask();
+      samsonWorker->sendTrace("message", "delilah", full_message); finishWorkerTask();
     return;
   }
 
@@ -1153,10 +1159,10 @@ void WorkerCommand::finishWorkerTask() {
     c->mutable_worker_command()->CopyFrom(*originalWorkerCommand);
 
     // Put the error if any
-    if (error.IsActivated())
+    if (error.IsActivated()) {
       // LM_M(("Sending error message %s" , error.GetMessage().c_str() ));
-      c->mutable_error()->set_message(error.GetMessage());
-    // Set delilah id
+      c->mutable_error()->set_message(error.GetMessage());  // Set delilah id
+    }
     p->message->set_delilah_component_id(delilah_component_id);
 
     // Direction of this packets
@@ -1232,8 +1238,7 @@ void WorkerCommand::notify(engine::Notification *notification) {
     if (notification->environment().isSet("error"))
       error.set(notification->environment().get("error", "no_error"));  // In case of push module, just reload modules
     if (notification->environment().get("push_module", "no") == "yes")
-      ModulesManager::shared()->reloadModules();
-    checkFinish();
+      ModulesManager::shared()->reloadModules(); checkFinish();
     return;
   }
 

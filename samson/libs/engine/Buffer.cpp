@@ -48,7 +48,8 @@ Buffer::Buffer(const std::string& name, const std::string& type,  size_t max_siz
 
 au::SharedPointer<Buffer> Buffer::create(const std::string& name, const std::string& type, size_t max_size) {
   if (max_size > 1024 * 1024 * 1024)
-    LM_X(1, ("Excesive size for buffer %s", au::str(max_size).c_str())); return au::SharedPointer<Buffer>(new Buffer(name, type, max_size));
+    LM_X(1, ("Excesive size for buffer %s", au::str(max_size).c_str()));
+  return au::SharedPointer<Buffer>(new Buffer(name, type, max_size));
 }
 
 Buffer::~Buffer() {

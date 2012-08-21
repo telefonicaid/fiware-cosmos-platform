@@ -41,7 +41,7 @@ int port;
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-show",  &show,  "",       PaBool,     PaOpt,    false,  false,  true,   "Show current options"  },
+  { "-show",  &show, "", PaBool, PaOpt,  false,       false,     true,    "Show current options"      },
   PA_END_OF_ARGS
 };
 
@@ -122,8 +122,7 @@ public:
 
     if (main_command == "set") {
       if (cmd.get_num_arguments() < 3)
-        writeOnConsole("Usage: set property value");
-      std::string property = cmd.get_argument(1);
+        writeOnConsole("Usage: set property value"); std::string property = cmd.get_argument(1);
       std::string value = cmd.get_argument(2);
 
       if (!samson::SamsonSetup::shared()->isParameterDefined(property)) {
@@ -156,8 +155,10 @@ public:
       samson::SamsonSetup::shared()->resetToDefaultValues();
       samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::str("%lld", physical_ram));
       samson::SamsonSetup::shared()->setValueForParameter("general.num_processess", au::str("%d", no_cpus));
-      samson::SamsonSetup::shared()->setValueForParameter("general.shared_memory_size_per_buffer", au::str("%ld", kernel_shmmax));
-      samson::SamsonSetup::shared()->setValueForParameter("stream.max_operation_input_size", au::str("%ld", kernel_shmmax));
+      samson::SamsonSetup::shared()->setValueForParameter("general.shared_memory_size_per_buffer",
+                                                          au::str("%ld", kernel_shmmax));
+      samson::SamsonSetup::shared()->setValueForParameter("stream.max_operation_input_size",
+                                                          au::str("%ld", kernel_shmmax));
 
       writeWarningOnConsole(au::str("Properties general.memory                        = %lld", physical_ram));
       writeWarningOnConsole(au::str("Properties general.num_processess                = %d", no_cpus));
@@ -217,8 +218,7 @@ public:
         std::cout << "Setup file modified.... save (y/n)? ";
         char line[1024];
         if (fgets(line, 1024, stdin) == NULL)
-          writeWarningOnConsole("Read nothing");
-        if (strcmp(line, "y") || strcmp(line, "Y")) {
+          writeWarningOnConsole("Read nothing"); if (strcmp(line, "y") || strcmp(line, "Y")) {
           samson::SamsonSetup::shared()->save();            // Save a new file with the current setup
           std::string fileName = samson::SamsonSetup::shared()->setupFileName();
           writeWarningOnConsole(au::str("Saved file at %s", fileName.c_str()));
@@ -236,10 +236,8 @@ public:
 
     if (main_command == "shared_memory_check") {
       if (samson::MemoryCheck() == false)
-        std::cout << "Insufficient shared memory configured. Revise your kernel configuration.\n";
-      else
-        std::cout << "Kernel shared memory config OK.\n";
-      return;
+        std::cout << "Insufficient shared memory configured. Revise your kernel configuration.\n"; else
+        std::cout << "Kernel shared memory config OK.\n"; return;
     }
 
 

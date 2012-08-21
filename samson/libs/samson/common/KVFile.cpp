@@ -119,7 +119,8 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   // Check correct formatted block
 
   if (( total_info.size != kv_file->header_.info.size ) || ( total_info.kvs != kv_file->header_.info.kvs )) {
-    error.set(au::str("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(), kv_file->header_.info.str().c_str()));
+    error.set(au::str("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(),
+                      kv_file->header_.info.str().c_str()));
     return au::SharedPointer<KVFile>(NULL);
   }
 
@@ -199,7 +200,8 @@ size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
     value_->parse(kvs[i].value);
 
     if (show_hg)
-      output << "[ hg " << key_->hash(KVFILE_NUM_HASHGROUPS) << " ] "; output << key_->str() << " " << value_->str() << std::endl;
+      output << "[ hg " << key_->hash(KVFILE_NUM_HASHGROUPS) << " ] ";
+    output << key_->str() << " " << value_->str() << std::endl;
 
     if (limit > 0)
       if (i >= limit)

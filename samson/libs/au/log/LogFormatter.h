@@ -3,6 +3,7 @@
 #ifndef _H_AU_LOG_FORMATTER
 #define _H_AU_LOG_FORMATTER
 
+#include "au/log/Log.h"
 
 #define DEFAULT_FORMAT "TYPE : date : time : EXEC : FILE[LINE] : FUNC : TEXT"
 

@@ -20,7 +20,7 @@
 #include <sys/shm.h>
 #include <sys/types.h>
 
-#include "samson/common/samsonDirectories.h" // SAMSON_SETUP_FILE
+#include "samson/common/samsonDirectories.h"  // SAMSON_SETUP_FILE
 
 #include "engine/Buffer.h"                   // samson::Buffer
 #include "engine/Engine.h"                   // samson::Engine
@@ -87,4 +87,4 @@ private:
 };
 };
 
-#endif // ifndef _H_SHARED_MEMORY_MANAGER
+#endif  // ifndef _H_SHARED_MEMORY_MANAGER

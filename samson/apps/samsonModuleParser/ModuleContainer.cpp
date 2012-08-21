@@ -79,7 +79,8 @@ void ModuleContainer::parse(AUTockenizer *module_creator,  int begin, int end) {
 
   while (pos < end) {
     if (module_creator->isSpecial(pos)) {
-      fprintf(stderr, "samsonModuleParser: Error parsing module definition at line:%d\n", module_creator->items[pos].line);
+      fprintf(stderr, "samsonModuleParser: Error parsing module definition at line:%d\n",
+              module_creator->items[pos].line);
       exit(1);
     }
 
@@ -113,8 +114,10 @@ void ModuleContainer::parse(AUTockenizer *module_creator,  int begin, int end) {
   }
 
   if (pos != (end + 1)) {
-    fprintf(stderr, "samsonModuleParser: Error parsing module definition. Invalid number of items in the definition at line:%d\n",
-            module_creator->items[pos].line);
+    fprintf(
+      stderr,
+      "samsonModuleParser: Error parsing module definition. Invalid number of items in the definition at line:%d\n",
+      module_creator->items[pos].line);
     exit(1);
   }
 }

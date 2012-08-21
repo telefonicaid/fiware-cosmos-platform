@@ -30,5 +30,5 @@ public:
 }
 
 
-#endif // ifndef _H_SAMSON_RATE
+#endif  // ifndef _H_SAMSON_RATE
 

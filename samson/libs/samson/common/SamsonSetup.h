@@ -11,7 +11,7 @@
 
 #include "au/Environment.h"  // au::Environment
 #include "au/containers/StringVector.h"
-#include "au/containers/map.h" // au::map
+#include "au/containers/map.h"  // au::map
 
 #include "samson/common/status.h"
 
@@ -135,4 +135,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_SETUP
+#endif  // ifndef _H_SAMSON_SETUP

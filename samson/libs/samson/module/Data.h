@@ -83,4 +83,4 @@ public:
 };
 }  // ss namespace
 
-#endif // ifndef SAMSON_DATA_H
+#endif  // ifndef SAMSON_DATA_H

@@ -39,7 +39,8 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
   outputValueDataInstance = (DataInstance **)malloc(sizeof(DataInstance *) * num_outputs);
 
   if (num_outputs != (int)processIsolated->outputFormats.size()) {
-    LM_E(("Not possible to get the hash-code of the data instances used at the output since output formats are not defined"));
+    LM_E((
+           "Not possible to get the hash-code of the data instances used at the output since output formats are not defined"));
     processIsolated->setUserError(
       "Not possible to get the hash-code of the data instances used at the output since output formats are not defined");
     return;
@@ -90,7 +91,7 @@ ProcessWriter::~ProcessWriter() {
   if (miniBuffer)
     free(miniBuffer); if (item)
     delete item;  // Delete key-value hash vector
-                 // Note: If there was an error in the constructor, it may be NULL
+   // Note: If there was an error in the constructor, it may be NULL
   if (keyValueHash)
     delete[] keyValueHash; if (outputKeyDataInstance) {
     for (int i = 0; i < num_outputs; i++) {
@@ -136,7 +137,7 @@ void ProcessWriter::internal_emit(int output, int hg, char *data, size_t data_si
   NodeBuffer *_node;
   if (_hgOutput->last_node == KV_NODE_UNASIGNED) {
     if (new_node >= num_nodes)
-      LM_X(1, ("Internal error")); node[new_node].init(); // Init the new node
+      LM_X(1, ("Internal error")); node[new_node].init();  // Init the new node
     _hgOutput->first_node = new_node;   // Update the HasgGroup structure to point here
     _hgOutput->last_node = new_node;    // Update the HasgGroup structure to point here
     _node = &node[new_node];                              // Point to this one to write
@@ -156,7 +157,7 @@ void ProcessWriter::internal_emit(int output, int hg, char *data, size_t data_si
       node[new_node].init();                                  // Init the new node
       _hgOutput->last_node = new_node;                        // Update the HasgGroup structure to point here
       if (new_node > num_nodes)
-        LM_X(1, ("Internal error")); _node = &node[new_node]; // Point to this one to write
+        LM_X(1, ("Internal error")); _node = &node[new_node];  // Point to this one to write
       new_node++;
     }
   }
@@ -171,7 +172,8 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
   // output = num_outputs-1 is the trace queue
   if (output > num_outputs) {
     std::ostringstream error_message;
-    error_message << "Output queue index (" << output << ") is larger than the number of defined outputs(" << num_outputs <<
+    error_message << "Output queue index (" << output << ") is larger than the number of defined outputs(" <<
+    num_outputs <<
     ")  (last one is trace channel)";
     LM_E(("Error: %s", error_message.str().c_str()));
 
@@ -241,7 +243,8 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
 void ProcessWriter::flushBuffer(bool finish) {
   // Send code to be understoo
   if (finish)
-    processIsolated->sendCode(WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH); else
+    processIsolated->sendCode(WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH);
+  else
     processIsolated->sendCode(WORKER_TASK_ITEM_CODE_FLUSH_BUFFER);  // Clear the buffer
   clear();
 }
@@ -282,19 +285,18 @@ ProcessTXTWriter::~ProcessTXTWriter() {
 
 void ProcessTXTWriter::flushBuffer(bool finish) {
   // Send code to be understoo
-  if (finish)
-    workerTaskItem->sendCode(WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH); else
-    workerTaskItem->sendCode(WORKER_TASK_ITEM_CODE_FLUSH_BUFFER);
-  // Note: It is not necessary to delete item since it has been done inside "freeSharedMemory"
-
+  if (finish) {
+    workerTaskItem->sendCode(WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH);
+  } else {
+    workerTaskItem->sendCode(WORKER_TASK_ITEM_CODE_FLUSH_BUFFER);  // Note: It is not necessary to delete item since it has been done inside "freeSharedMemory"
+  }
   // Clear the buffer
   *size = 0;
 }
 
 void ProcessTXTWriter::emit(const char *_data, size_t _size) {
   if (*size + _size  > max_size)
-    flushBuffer(false);
-  memcpy(data + (*size), _data, _size);
+    flushBuffer(false); memcpy(data + (*size), _data, _size);
   *size += _size;
 }
 }

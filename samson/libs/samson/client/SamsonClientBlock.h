@@ -1,8 +1,8 @@
 #ifndef _H_SamsonClientBlock_SamsonClient
 #define _H_SamsonClientBlock_SamsonClient
 
+#include "samson/client/SamsonClientBlockInterface.h"
 #include "samson/common/KVFile.h"
-
 
 namespace  samson {
 /*
@@ -97,6 +97,7 @@ public:
     if (error.IsActivated()) {
       return au::str("ERROR: %s\n", error.GetMessage().c_str());
     }
+
     return header->str() + "\n";
   }
 
@@ -111,4 +112,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SamsonClientBlock_SamsonClient
+#endif  // ifndef _H_SamsonClientBlock_SamsonClient

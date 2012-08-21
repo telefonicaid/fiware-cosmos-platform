@@ -23,7 +23,8 @@ class SamsonPushLogsConnection {
 
 public:
 
-  SamsonPushLogsConnection(LogsDataSet *dataset, const char *queue_name, float ntimes_real_time, samson::SamsonClient *samson_client);
+  SamsonPushLogsConnection(LogsDataSet *dataset, const char *queue_name, float ntimes_real_time,
+                           samson::SamsonClient *samson_client);
   ~SamsonPushLogsConnection();
 
   void Run();
@@ -79,4 +80,4 @@ public:
   }
 };
 
-#endif // ifndef _H_SAMSONPUSHLOGS_CONNECTIONS_MANAGER
+#endif  // ifndef _H_SAMSONPUSHLOGS_CONNECTIONS_MANAGER

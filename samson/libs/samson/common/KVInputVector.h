@@ -60,4 +60,4 @@ public:
 };
 }
 
-#endif // ifndef _H_KV_INPUT_VECTOR
+#endif  // ifndef _H_KV_INPUT_VECTOR

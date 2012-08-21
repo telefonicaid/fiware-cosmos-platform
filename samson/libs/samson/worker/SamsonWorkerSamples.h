@@ -165,7 +165,8 @@ public:
     output << "\"data\":";
     output << "[";
     for (int i = 0; i < n; i++) {
-      output << "[" << (i - n + 1) << "," << std::setiosflags(std::ios::fixed) << std::setprecision(2) << values[i] << "]";
+      output << "[" <<
+      (i - n + 1) << "," << std::setiosflags(std::ios::fixed) << std::setprecision(2) << values[i] << "]";
       if (i != (n - 1)) {
         output << ",";
       }
@@ -219,5 +220,5 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_WORKER_SAMPLES
+#endif  // ifndef _H_SAMSON_WORKER_SAMPLES
 

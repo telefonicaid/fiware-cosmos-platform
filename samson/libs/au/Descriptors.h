@@ -57,4 +57,4 @@ private:
 };
 }
 
-#endif // ifndef AU_DESCRIPTORS_H_
+#endif  // ifndef AU_DESCRIPTORS_H_

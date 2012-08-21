@@ -10,15 +10,15 @@
 
 namespace au {
 /* ------------------------------------------------------------------------
-*
-*  class au::S
-*
-*  Fancy class to create strings on the fly
-*  It allows to run something like:
-*
-*  std::string s = au::S() << "int " << 4 << " double " << 0.6;
-*
-*  ------------------------------------------------------------------------ */
+ *
+ *  class au::S
+ *
+ *  Fancy class to create strings on the fly
+ *  It allows to run something like:
+ *
+ *  std::string s = au::S() << "int " << 4 << " double " << 0.6;
+ *
+ *  ------------------------------------------------------------------------ */
 
 class S {
 public:
@@ -65,4 +65,4 @@ private:
 };
 }
 
-#endif // ifndef _AU_S_H_
+#endif  // ifndef _AU_S_H_

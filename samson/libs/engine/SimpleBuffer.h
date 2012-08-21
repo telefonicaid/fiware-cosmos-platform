@@ -55,4 +55,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SIMPLE_BUFFER
+#endif  // ifndef _H_SIMPLE_BUFFER

@@ -22,7 +22,8 @@ namespace samson { namespace gpb {
                    // Operation over gpb::Environemnt
                    std::string str(const Environment& environment);
                    void setProperty(Environment *environment, const std::string& property, const std::string& value);
-                   std::string getProperty(Environment *environment, const std::string& property, const std::string& default_value);
+                   std::string getProperty(Environment *environment, const std::string& property,
+                                           const std::string& default_value);
                    void unsetProperty(Environment *environment, const std::string& property);
                    void setPropertyInt(Environment *environment, const std::string& property, int value);
                    int getPropertyInt(Environment *environment, const std::string& property, int default_value);
@@ -33,8 +34,10 @@ namespace samson { namespace gpb {
                    // Operations over DataModel
                    void reset_data(Data *data);
                    Queue *get_queue(Data *data, const std::string& queue_name);
-                   Queue *get_queue(Data *data, const std::string& queue_name,  KVFormat format, au::ErrorManager *error);
-                   Queue *get_or_create_queue(Data *data, const std::string& name, KVFormat format, au::ErrorManager *error);
+                   Queue *get_queue(Data *data, const std::string& queue_name,  KVFormat format,
+                                    au::ErrorManager *error);
+                   Queue *get_or_create_queue(Data *data, const std::string& name, KVFormat format,
+                                              au::ErrorManager *error);
 
                    void removeQueue(Data *data, const std::string& name);
 
@@ -65,13 +68,16 @@ namespace samson { namespace gpb {
                    void erase_block(Queue *queue, Block *block);
 
                    // Queue connections
-                   bool data_exist_queue_connection(gpb::Data *data, const std::string& queue_source, const std::string& queue_target);
-                   void data_create_queue_connection(gpb::Data *data, const std::string& queue_source, const std::string& queue_target);
+                   bool data_exist_queue_connection(gpb::Data *data, const std::string& queue_source,
+                                                    const std::string& queue_target);
+                   void data_create_queue_connection(gpb::Data *data, const std::string& queue_source,
+                                                     const std::string& queue_target);
                    au::StringVector data_get_queues_connected(gpb::Data *data, const std::string& queue_source);
-                   void data_remove_queue_connection(gpb::Data *data, const std::string& queue_source, const std::string& target_source);
+                   void data_remove_queue_connection(gpb::Data *data, const std::string& queue_source,
+                                                     const std::string& target_source);
 
                    // Batch operation
                    bool bath_operation_is_finished(gpb::Data *data, const gpb::BatchOperation& batch_operation);
-                   } } // End of namespace samson::gpb
+                   } }  // End of namespace samson::gpb
 
-#endif // ifndef _H_SAMOSN_GPB_OPERATIONS
+#endif  // ifndef _H_SAMOSN_GPB_OPERATIONS

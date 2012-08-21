@@ -39,4 +39,4 @@ extern void paWarningInit(void);
  */
 extern void paWarningAdd(PaSeverity severity, char *txt);
 
-#endif // ifndef PA_WARNINGS_H
+#endif  // ifndef PA_WARNINGS_H

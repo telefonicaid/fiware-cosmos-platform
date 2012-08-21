@@ -26,7 +26,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   // ------------------------------------------------------------------
 
   add("connect", "delilah", "Connect to a SAMSON system");
-  add_string_option("connect", "-host", "localhost", "host or hosts of SAMSON nodes to connect (host:port host:port ...)");
+  add_string_option("connect", "-host", "localhost",
+                    "host or hosts of SAMSON nodes to connect (host:port host:port ...)");
   add_string_option("connect", "-digest", "", "Username and password used to connect to this SAMSON cluster");
 
   add("disconnect", "delilah", "Disconnect from a SAMSON system");
@@ -82,7 +83,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
       );
 
   add("wtrace", "delilah", "Activate or disactivate trace levels for workers.");
-  add_string_options_argument("wtrace", "action", "Options::off:set:add:remove", "Acction to be performced over trace levels");
+  add_string_options_argument("wtrace", "action", "Options::off:set:add:remove",
+                              "Acction to be performced over trace levels");
   add_string_argument("wtrace", "levels", "", "Levels selection. Example '1-5,7,76-99'");
 
   add("send_alert", "delilah", "Send an alert to all connected delilahs using a random worker as sender");
@@ -201,7 +203,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
       "They consist in aplying a particular operation ( defined in a module ) to process data from\n"
       "one or multiple input queues and send result to one or multiple output queues\n"
       "Please, add new stream operations with add_stream_operations command");
-  add_bool_option("ls_stream_operations", "-a", "Show hiden stream operations as well ( used internally by the platform )");
+  add_bool_option("ls_stream_operations", "-a",
+                  "Show hiden stream operations as well ( used internally by the platform )");
 
   add("ps_stream_operations", "stream", "Show a list of stream operations with information about processes",
       "Stream operations are operations that are automatically executed in a SAMSON cluster\n"
@@ -320,7 +323,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("connect_to_queue", "push&pop", "Connect to a queue to receive live data from a SAMSON cluster");
   add_mandatory_string_argument("connect_to_queue", "queue", "Source queue ( see ls command )");
 
-  add("disconnect_from_queue", "push&pop", "Disconnects from a particular queue to not receive live data from a SAMSON cluster");
+  add("disconnect_from_queue", "push&pop",
+      "Disconnects from a particular queue to not receive live data from a SAMSON cluster");
   add_mandatory_string_argument("disconnect_from_queue", "queue", "Source queue ( see ls command )");
 
   add("ls_pop_connections", "push&pop"

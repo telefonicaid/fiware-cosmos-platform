@@ -17,7 +17,7 @@ namespace samson {
 
 struct KVInfo {
   uint32 size;                  // Total size
-  uint32 kvs;                           // Total number of kvs
+  uint32 kvs;                   // Total number of kvs
 
 
   KVInfo(uint32 _size, uint32 _kvs);
@@ -42,4 +42,4 @@ KVInfo *createKVInfoVector(char *data, au::ErrorManager *error);
 KVInfo selectRange(KVInfo *info, KVRange range);
 }
 
-#endif // ifndef _H_SAMSON_KVINFO
+#endif  // ifndef _H_SAMSON_KVINFO

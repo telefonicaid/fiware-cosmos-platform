@@ -6,7 +6,7 @@
 #include "au/ErrorManager.h"   // au::ErrorManager
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/containers/StringVector.h"
-#include "au/containers/map.h" // au::map
+#include "au/containers/map.h"  // au::map
 #include "au/containers/simple_map.h"
 #include "au/string.h"         // au::str(...)
 #include "logMsg/logMsg.h"     // LM_W
@@ -49,7 +49,7 @@ public:
 public:
 
                  std::string name;                // Name of the node we are looking for
-                 std::vector<SelectCondition> conditions; // Conditions to meet by each item
+                 std::vector<SelectCondition> conditions;  // Conditions to meet by each item
                  bool recursevely;                // Search recursevely
                  bool valid;
 
@@ -109,6 +109,6 @@ public:
                    return au::str("SELECT TREE %s (%c)", name.c_str(), recursevely ? 'R' : ' ');
                  }
                };
-               } } // end of namespace au::Tables
+               } }  // end of namespace au::Tables
 
-#endif // ifndef _H_AU_TABLE_SELECT
+#endif  // ifndef _H_AU_TABLE_SELECT

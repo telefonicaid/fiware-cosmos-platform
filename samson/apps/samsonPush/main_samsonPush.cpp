@@ -23,7 +23,7 @@
 
 #include "au/string.h"                  // au::str()
 
-#include "samson/client/SamsonClient.h" // samson::SamsonClient
+#include "samson/client/SamsonClient.h"  // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"
 
 #include "samson/common/coding.h"       // KVHeader
@@ -59,23 +59,32 @@ PaArgument paArgs[] =
     _i "localhost",
     PaNL,
     PaNL,                  "SAMSON worker node"                              },
-  { "-user",             user,                       "",                  PaString,       PaOpt,     _i "anonymous",            PaNL,
+  { "-user",             user,                       "",                       PaString,                       PaOpt,
+    _i "anonymous",           PaNL,
     PaNL,                  "User to connect to SAMSON cluster"               },
-  { "-password",         password,                   "",                  PaString,       PaOpt,     _i "anonymous",            PaNL,
+  { "-password",         password,                   "",                       PaString,                       PaOpt,
+    _i "anonymous",           PaNL,
     PaNL,                  "Password to connect to SAMSON cluster"           },
-  { "-buffer_size",      &buffer_size,               "",                  PaInt,          PaOpt,     default_buffer_size,       1,
+  { "-buffer_size",      &buffer_size,               "",                       PaInt,                          PaOpt,
+    default_buffer_size,      1,
     default_buffer_size,   "Buffer size in bytes"                            },
-  { "-mr",               &max_rate,                  "",                  PaInt,          PaOpt,     10000000,                  100,
+  { "-mr",               &max_rate,                  "",                       PaInt,                          PaOpt,
+    10000000,                 100,
     100000000,             "Max rate in bytes/s"                             },
-  { "-breaker_sequence", breaker_sequence,           "",                  PaString,       PaOpt,     _i "\n",                   PaNL,
+  { "-breaker_sequence", breaker_sequence,           "",                       PaString,                       PaOpt,
+    _i "\n",                  PaNL,
     PaNL,                  "Breaker sequence ( by default \\n )"             },
-  { "-lines",            &lines,                     "",                  PaBool,         PaOpt,     false,                     false,
+  { "-lines",            &lines,                     "",                       PaBool,                         PaOpt,
+    false,                    false,
     true,                  "Read std-in line by line"                        },
-  { "-memory",           &push_memory,               "",                  PaInt,          PaOpt,     1000,                      1,
+  { "-memory",           &push_memory,               "",                       PaInt,                          PaOpt,
+    1000,                     1,
     1000000,               "Memory in Mb used to push data ( default 1000)"  },
-  { "-port",             &port,                      "",                  PaInt,          PaOpt,     0,                         0,
+  { "-port",             &port,                      "",                       PaInt,                          PaOpt,
+    0,                        0,
     99999,                 "Port to listen from"                             },
-  { " ",                 queue_name,                 "",                  PaString,       PaReq,     _i "null",                 PaNL,
+  { " ",                 queue_name,                 "",                       PaString,                       PaReq,
+    _i "null",                PaNL,
     PaNL,                  "name of the queue to push data"                  },
   PA_END_OF_ARGS
 };
@@ -104,8 +113,7 @@ size_t full_read(int fd, char *data, size_t size) {
     ssize_t t = read(fd, data + read_size, size - read_size);
 
     if (t == -1)
-      LM_X(1, ("Error reading input data"));
-    if (t == 0)
+      LM_X(1, ("Error reading input data")); if (t == 0)
       break; else
       read_size += t;
   }
@@ -151,20 +159,19 @@ int main(int argC, const char *argV[]) {
   srand(rand_seq);
 
 
-  if (buffer_size == 0)
-    LM_X(1, ("Wrong buffer size %lu", buffer_size ));
-  // Check queue is specified
-  if (strcmp(queue_name, "null") == 0)
-    LM_X(1, ("Please, specify a queue to push data to"));
-  // Create samson client
+  if (buffer_size == 0) {
+    LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Check queue is specified
+  }
+  if (strcmp(queue_name, "null") == 0) {
+    LM_X(1, ("Please, specify a queue to push data to"));  // Create samson client
+  }
   size_t total_memory = push_memory * 1024 * 1024;
   LM_V(("Setting memory for samson client %s", au::str(total_memory, "B").c_str()));
   samson::SamsonClient::general_init(total_memory);
   samson_client = new samson::SamsonClient("push");
 
   if (!samson_client->connect(host))
-    LM_X(1, ("Not possible to connect with %s", host ));
-  LM_V(("Waiting connection to %s", host ));
+    LM_X(1, ("Not possible to connect with %s", host )); LM_V(("Waiting connection to %s", host ));
   while (true) {
     if (samson_client->connection_ready())
       break; else
@@ -188,8 +195,7 @@ int main(int argC, const char *argV[]) {
 
   char *data = (char *)malloc(buffer_size);
   if (!data)
-    LM_X(1, ("Error allocating %lu bytes", buffer_size ));
-  size_t size = 0;                  // Bytes currently contained in the buffer
+    LM_X(1, ("Error allocating %lu bytes", buffer_size )); size_t size = 0;                  // Bytes currently contained in the buffer
 
   std::string tmp_separator = breaker_sequence;
   literal_string(tmp_separator);
@@ -226,8 +232,7 @@ int main(int argC, const char *argV[]) {
     double memory_usage = engine::MemoryManager::shared()->memory_usage();
 
     if (read_bytes == 0)
-      break;
-    LM_V(("Stdin info: %s", rate_stdin.str().c_str()));
+      break; LM_V(("Stdin info: %s", rate_stdin.str().c_str()));
 
     if (memory_usage > 0.8)
       LM_V(("Memory used %s / %s ( %s )",
@@ -235,8 +240,6 @@ int main(int argC, const char *argV[]) {
             au::str(memory, "B").c_str(),
             au::str_percentage(memory_usage).c_str()
             ));
-
-
     // Increase the size of data contained in the buffer
     size += read_bytes;
 

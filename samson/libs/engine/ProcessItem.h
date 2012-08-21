@@ -124,4 +124,4 @@ private:
 };
 }
 
-#endif // ifndef _H_PROCESS_ITEM
+#endif  // ifndef _H_PROCESS_ITEM

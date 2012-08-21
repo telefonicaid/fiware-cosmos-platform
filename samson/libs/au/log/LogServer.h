@@ -35,4 +35,4 @@ public:
   std::string getPrompt(au::Environment *environment);
 };
 }
-#endif // ifndef _H_LOG_SERVER
+#endif  // ifndef _H_LOG_SERVER

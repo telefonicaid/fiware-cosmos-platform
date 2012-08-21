@@ -4,7 +4,8 @@
 
 namespace au {
 const char *log_reseved_words[] =
-{ "HOST", "TYPE",      "PID",      "TID",      "DATE",      "date",      "TIME",      "time",      "timestamp",     "LINE", "TLEV", "EXEC",
+{ "HOST", "TYPE",      "PID",      "TID",      "DATE",      "date",      "TIME",      "time",      "timestamp",
+  "LINE", "TLEV",      "EXEC",
   "AUX",
   "FILE",
   "TEXT",

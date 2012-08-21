@@ -79,24 +79,46 @@ bool thread_mode;
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-zk",    zoo_host, "",            PaString,          PaOpt,    _i "localhost:2181",       PaNL,                   PaNL,
+  { "-zk",    zoo_host, "",           PaString,           PaOpt,               _i "localhost:2181",
+    PaNL,
+    PaNL,
     "Zookeeper server"                   },
-  { "-log_classic",&log_classic,   "",          PaBool,   PaOpt,    false,                  false,                  true,
+  { "-log_classic",&log_classic,  "",           PaBool,              PaOpt,               false,
+    false,
+    true,
     "Classical log file"                 },
-  { "-log_host",log_host,       "",          PaString, PaOpt,    _i "localhost",         PaNL,                   PaNL,      "log server host"                    },
-  { "-log_port",&log_port,      "",          PaInt,    PaOpt,    LOG_PORT,               0,                      10000,     "log server port"                    },
-  { "-log_file",log_file,       "",          PaString, PaOpt,    _i "",                  PaNL,                   PaNL,      "Local log file"                     },
-  { "-fg",    &fg,            "",          PaBool,   PaOpt,    false,                  false,                  true,
+  { "-log_host",log_host,      "",           PaString,            PaOpt,               _i "localhost",
+    PaNL,
+    PaNL,     "log server host"                          },
+  { "-log_port",&log_port,     "",           PaInt,               PaOpt,               LOG_PORT,
+    0,
+    10000,    "log server port"                          },
+  { "-log_file",log_file,      "",           PaString,            PaOpt,               _i "",
+    PaNL,
+    PaNL,     "Local log file"                           },
+  { "-fg",    &fg,           "",           PaBool,              PaOpt,               false,
+    false,
+    true,
     "don't start as daemon"              },
-  { "-monit", &monit,         "",          PaBool,   PaOpt,    false,                  false,                  true,
+  { "-monit", &monit,        "",           PaBool,              PaOpt,               false,
+    false,
+    true,
     "to use with monit"                  },
-  { "-port",  &port,          "",          PaInt,    PaOpt,    SAMSON_WORKER_PORT,     1,                      9999,
+  { "-port",  &port,         "",           PaInt,               PaOpt,               SAMSON_WORKER_PORT,
+    1,
+    9999,
     "Port to receive new connections"    },
-  { "-web_port",&web_port,      "",          PaInt,    PaOpt,    SAMSON_WORKER_WEB_PORT, 1,                      9999,
+  { "-web_port",&web_port,     "",           PaInt,               PaOpt,               SAMSON_WORKER_WEB_PORT,
+    1,
+    9999,
     "Port to receive web connections"    },
-  { "-valgrind",&valgrind,      "",          PaInt,    PaOpt,    0,                      0,                      20,
+  { "-valgrind",&valgrind,     "",           PaInt,               PaOpt,               0,
+    0,
+    20,
     "help valgrind debug process"        },
-  { "-thread_mode",&thread_mode,   "",          PaBool,   PaOpt,    false,                  false,                  true,      "thread_mode"                        },
+  { "-thread_mode",&thread_mode,  "",           PaBool,              PaOpt,               false,
+    false,
+    true,     "thread_mode"                              },
   PA_END_OF_ARGS
 };
 
@@ -152,8 +174,7 @@ void captureSIGTERM(int s) {
   LM_LM(("Cleaning up"));
   std::string pid_file_name = au::str("%s/samsond.pid", paLogDir);
   if (remove(pid_file_name.c_str()) != 0)
-    LM_LW(("Error deleting the pid file %s", pid_file_name.c_str()));
-  _exit(1);
+    LM_LW(("Error deleting the pid file %s", pid_file_name.c_str())); _exit(1);
 }
 
 static void valgrindExit(int v) {
@@ -188,8 +209,9 @@ int main(int argC, const char *argV[]) {
 
   if (flag_fg)
     paConfig("log to screen",                 (void *)true); else
-    paConfig("log to screen",                 (void *)"only errors");
-  paConfig("log file line format",              (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
+    paConfig("log to screen",
+             (void *)"only errors"); paConfig("log file line format",
+                                              (void *)"TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT");
   paConfig("screen line format",                (void *)"TYPE@TIME  EXEC: TEXT");
   paConfig("default value", "-logDir",          (void *)"/var/log/samson");
 
@@ -230,8 +252,9 @@ int main(int argC, const char *argV[]) {
     std::string local_log_file;
     if (strlen(log_file) > 0)
       local_log_file = log_file; else
-      local_log_file = au::str("%s/samsonWorkerLog_%d", paLogDir, (int)getpid()); au::start_log_to_server(log_host, log_port,
-                                                                                                          local_log_file);
+      local_log_file = au::str("%s/samsonWorkerLog_%d", paLogDir, (int)getpid()); au::start_log_to_server(
+      log_host, log_port,
+      local_log_file);
   }
 
   lmAux((char *)"father");
@@ -245,12 +268,10 @@ int main(int argC, const char *argV[]) {
 
   // Capturing SIGPIPE
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR)
-    LM_W(("SIGPIPE cannot be handled"));
-  if (signal(SIGINT, captureSIGINT) == SIG_ERR)
-    LM_W(("SIGINT cannot be handled"));
-  if (signal(SIGTERM, captureSIGTERM) == SIG_ERR)
-    LM_W(("SIGTERM cannot be handled"));
-  // Init basic setup stuff (necessary for memory check)
+    LM_W(("SIGPIPE cannot be handled")); if (signal(SIGINT, captureSIGINT) == SIG_ERR)
+    LM_W(("SIGINT cannot be handled")); if (signal(SIGTERM, captureSIGTERM) == SIG_ERR) {
+    LM_W(("SIGTERM cannot be handled"));  // Init basic setup stuff (necessary for memory check)
+  }
   lockDebugger = au::LockDebugger::shared();                 // VALGRIND complains ...
   samson::SamsonSetup::init(samsonHome, samsonWorking);      // Load setup and create default directories
 
@@ -260,9 +281,7 @@ int main(int argC, const char *argV[]) {
   if (samson::MemoryCheck() == false)
     LM_X(1, ("Insufficient memory configured. Check %s/samsonWorkerLog for more information.", paLogDir));
   if ((fg == false) && (monit == false))
-    daemonize();
-
-  valgrindExit(3);
+    daemonize(); valgrindExit(3);
 
   // ------------------------------------------------------
   // Write pid in /var/log/samson/samsond.pid
@@ -355,9 +374,9 @@ int main(int argC, const char *argV[]) {
   engine::ProcessManager::stop();
 
   // Stop the worker
-  if (worker)
-    worker->stop();
-  // Wait all threads to finish
+  if (worker) {
+    worker->stop();  // Wait all threads to finish
+  }
   au::ThreadManager::shared()->wait("samsonWorker");
 
   // Shutdown all GPB stuff

@@ -37,4 +37,4 @@ bool compareOriginalDictionaryEntry(const OriginalDictionaryEntry &a, const Orig
 }
 }
 
-#endif // ifndef _H_SAMSON_COMSCORE_COMMON
+#endif  // ifndef _H_SAMSON_COMSCORE_COMMON

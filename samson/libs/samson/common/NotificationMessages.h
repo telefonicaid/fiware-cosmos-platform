@@ -30,4 +30,4 @@
 // Notification to review repeat commands in delilha
 #define notification_delilah_review_repeat_tasks      "notification_delilah_review_repeat_tasks"
 
-#endif // ifndef _H_NotificationMessages
+#endif  // ifndef _H_NotificationMessages

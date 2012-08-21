@@ -230,7 +230,7 @@ void TableLogFormatter::add(Log *log) {
     if (log->is_new_session()) {
       flag_new_session_found = true;
       return;
-    } // Add the counter of logs
+    }  // Add the counter of logs
   num_logs++;
 
   if (is_table) {

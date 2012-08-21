@@ -54,4 +54,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SS_TRACER
+#endif  // ifndef _H_SS_TRACER

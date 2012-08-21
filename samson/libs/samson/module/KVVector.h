@@ -11,9 +11,9 @@
  *   from outside this class
  */
 #include <errno.h>               /* errno                                    */
-#include <string.h>              /* strerror                                 */
-
 #include <samson/module/KV.h>    /* KV                                       */
+#include <stdlib.h>
+#include <string.h>              /* strerror                                 */
 
 namespace samson {
 class KVVector {
@@ -32,4 +32,4 @@ public:
 };
 }
 
-#endif // ifndef SAMSON_KV_VECTOR_H
+#endif  // ifndef SAMSON_KV_VECTOR_H

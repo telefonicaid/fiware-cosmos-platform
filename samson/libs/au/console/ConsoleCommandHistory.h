@@ -51,4 +51,4 @@ public:
 };
 }
 
-#endif // ifndef _AU_CONSOLE_COMMAND_HISTORY
+#endif  // ifndef _AU_CONSOLE_COMMAND_HISTORY

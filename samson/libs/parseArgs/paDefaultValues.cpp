@@ -42,7 +42,8 @@ int paDefaultValues(PaiArgument *paList) {
       continue; aP->from = PafDefault;
     if (aP->type != PaString)
       LM_T(LmtPaDefVal, ("setting default value for '%s' (0x%x)", aP->name, (int)aP->def)); else
-      LM_T(LmtPaDefVal, ("setting default value for '%s' (%s)", aP->name, (char *)aP->def)); defP = (long long *)&aP->def;
+      LM_T(LmtPaDefVal, ("setting default value for '%s' (%s)", aP->name, (char *)aP->def));
+    defP = (long long *)&aP->def;
 
     switch (aP->type) {
       case PaInt:     *((int *)aP->varP) = *defP;                    break;

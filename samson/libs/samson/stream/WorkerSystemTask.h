@@ -116,4 +116,4 @@ private:
 }
 }
 
-#endif // ifndef _H_STREAM_SYSTEM_QUEUE_TASK
+#endif  // ifndef _H_STREAM_SYSTEM_QUEUE_TASK

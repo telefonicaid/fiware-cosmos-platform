@@ -159,7 +159,8 @@ void ProcessItemIsolated::run() {
   LM_T(LmtIsolated, ("Isolated process %s: start ******************************************* ", getStatus().c_str()));
 
   if (isolated_process_as_tread)
-    LM_T(LmtIsolated, ("Isolated process %s start in thread mode", getStatus().c_str())); else
+    LM_T(LmtIsolated, ("Isolated process %s start in thread mode", getStatus().c_str()));
+  else
     LM_T(LmtIsolated, ("Isolated process %s start in fork mode", getStatus().c_str()));  // Create a couple of pipes to communicate both process
   if (pipe(pipeFdPair1) != 0) {
     LM_E(("System error: not possible to create pipes when running this process"));
@@ -169,16 +170,18 @@ void ProcessItemIsolated::run() {
   if (pipe(pipeFdPair2) != 0) {
     LM_E(("System error: not possible to create pipes when running this process"));
     error_.set("System error: not possible to create pipes when running this process");
-    LM_T(LmtFileDescriptors, ("Isolated process %s: pipes closed: pipeFdPair1[0]:%d, pipeFdPair1[1]:%d\n", pipeFdPair1[0], pipeFdPair1[1]));
+    LM_T(LmtFileDescriptors,
+         ("Isolated process %s: pipes closed: pipeFdPair1[0]:%d, pipeFdPair1[1]:%d\n", pipeFdPair1[0], pipeFdPair1[1]));
     close(pipeFdPair1[0]);
     close(pipeFdPair1[1]);
     return;
   }
 
   LM_T(LmtFileDescriptors,
-       ("Isolated process %s: pipes created. pipeFdPair1[0]:%d, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, pipeFdPair2[1]:%d\n",
-        getStatus().c_str(),
-        pipeFdPair1[0], pipeFdPair1[1], pipeFdPair2[0], pipeFdPair2[1]));
+       (
+         "Isolated process %s: pipes created. pipeFdPair1[0]:%d, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, pipeFdPair2[1]:%d\n",
+         getStatus().c_str(),
+         pipeFdPair1[0], pipeFdPair1[1], pipeFdPair2[0], pipeFdPair2[1]));
   LM_T(LmtIsolated, ("Isolated process %s: pipes created ", getStatus().c_str()));
 
 
@@ -206,8 +209,9 @@ void ProcessItemIsolated::run() {
       LM_X(1, ("Fork return an error")); if (pid == 0) {     // Children running the background process
       runBackgroundProcessRun();
       LM_T(LmtIsolated,
-           ("Child in Background process finished, calling _exit that will close its side pipes: pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n",
-            pipeFdPair1[1], pipeFdPair2[0]));
+           (
+             "Child in Background process finished, calling _exit that will close its side pipes: pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n",
+             pipeFdPair1[1], pipeFdPair2[0]));
       _exit(1000);
     }
   }
@@ -223,14 +227,16 @@ void ProcessItemIsolated::run() {
   if (isolated_process_as_tread) {
     sleep(1);
     LM_T(LmtFileDescriptors,
-         ("Isolated process %s: Closing unused side of the pipe (thread mode) pipeFdPair1[1]:%d, pipeFdPair2[0]:%d ", getStatus().c_str(),
+         ("Isolated process %s: Closing unused side of the pipe (thread mode) pipeFdPair1[1]:%d, pipeFdPair2[0]:%d ",
+          getStatus().c_str(),
           pipeFdPair1[1], pipeFdPair2[0]));
     close(pipeFdPair1[1]);
     close(pipeFdPair2[0]);
   }
 
   LM_T(LmtFileDescriptors,
-       ("Isolated process %s: Closing the rest of fds of the pipe pipeFdPair1[0]:%d, pipeFdPair2[1]:%d ", getStatus().c_str(),
+       ("Isolated process %s: Closing the rest of fds of the pipe pipeFdPair1[0]:%d, pipeFdPair2[1]:%d ",
+        getStatus().c_str(),
         pipeFdPair1[0],
         pipeFdPair2[1]));
   close(pipeFdPair1[0]);
@@ -245,8 +251,9 @@ void ProcessItemIsolated::run() {
   }
 
   LM_T(LmtIsolated,
-       ("Isolated process %s: Finish ******************************************************************************************* ",
-        getStatus().c_str()));
+       (
+         "Isolated process %s: Finish ******************************************************************************************* ",
+         getStatus().c_str()));
 
   // Finish process item
   finishProcessItemIsolated();
@@ -287,17 +294,20 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
       runCode(operation);
 
       LM_T(LmtIsolated,
-           ("Isolated process %s: runCode() returned from operation %d, preparing to send continue to pipeFdPair2[1]:%d", getStatus().c_str(),
-            operation, pipeFdPair2[1] ));
+           (
+             "Isolated process %s: runCode() returned from operation %d, preparing to send continue to pipeFdPair2[1]:%d",
+             getStatus().c_str(),
+             operation, pipeFdPair2[1] ));
 
       // Send the continue
       samson::gpb::MessagePlatformProcess *response = new samson::gpb::MessagePlatformProcess();
       LM_T(LmtIsolated, ("Isolated process %s: response created ", getStatus().c_str()));
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
-      LM_T(LmtIsolated, ("Isolated process %s: send the continue on pipeFdPair2[1]:%d ", getStatus().c_str(), pipeFdPair2[1] ));
+      LM_T(LmtIsolated,
+           ("Isolated process %s: send the continue on pipeFdPair2[1]:%d ", getStatus().c_str(), pipeFdPair2[1] ));
       if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
-        LM_E(("Error sending message to run operation(%d), code(%d),  (pipeFdPair2[1]:%d) ",  operation, response->code(), pipeFdPair2[1]));
-      delete response;
+        LM_E(("Error sending message to run operation(%d), code(%d),  (pipeFdPair2[1]:%d) ",  operation, response->code(),
+              pipeFdPair2[1])); delete response;
 
       // Not finish the process
       return false;
@@ -319,7 +329,8 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
       LM_T(LmtIsolated, ("Writing reporting message on pipeFdPair2[1]:%d", pipeFdPair2[1]));
       if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
-        LM_E(("Error sending progress report, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1])); delete response;
+        LM_E(("Error sending progress report, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
+      delete response;
 
       // Not finish the process
       return false;
@@ -330,17 +341,20 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
     case samson::gpb::MessageProcessPlatform_Code_code_user_error:
     {
       LM_T(LmtIsolated, ("Isolated process %s: Message reporting user error  ", getStatus().c_str()));
-      LM_E(("User generated error at operation %s received %s", process_item_description().c_str(), message->error().c_str()));
+      LM_E(("User generated error at operation %s received %s", process_item_description().c_str(),
+            message->error().c_str()));
 
       // Set the error
       if (message->has_error())
-        error_.set(message->error()); else
+        error_.set(message->error());
+      else
         error_.set("Undefined user-defined error");  // Send an ok back, and return
       samson::gpb::MessagePlatformProcess *response = new samson::gpb::MessagePlatformProcess();
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
       LM_T(LmtIsolated, ("Writing user error on pipeFdPair2[1]:%d", pipeFdPair2[1]));
       if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
-        LM_E(("Error sending user error, code(%d),  (pipeFdPair2[1]:%d), error message:%s ",  response->code(), pipeFdPair2[1],
+        LM_E(("Error sending user error, code(%d),  (pipeFdPair2[1]:%d), error message:%s ",  response->code(),
+              pipeFdPair2[1],
               error_.GetMessage().c_str())); delete response;
 
       // It has to finish since the background process has notified the error
@@ -365,7 +379,8 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
       LM_T(LmtIsolated, ("Writing finish message on pipeFdPair2[1]:%d", pipeFdPair2[1]));
       if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
-        LM_E(("Error sending finish process, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1])); delete response;
+        LM_E(("Error sending finish process, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
+      delete response;
 
       // It has to finish since it has received the last message from the background process
       return true;
@@ -386,14 +401,16 @@ void ProcessItemIsolated::runExchangeMessages() {
     au::Status c = au::readGPB(pipeFdPair1[0], &message, -1);
 
     if (c != au::OK) {
-      LM_E(("Isolated process %s: Problems reading the 'begin' message [error code '%s'] ", getStatus().c_str(), au::status(c)));
+      LM_E(("Isolated process %s: Problems reading the 'begin' message [error code '%s'] ", getStatus().c_str(),
+            au::status(c)));
       error_.set(au::str("Problems starting background process '%s'", au::status(c)));
       return;       // Problem with this read
     }
 
     if (!message)
       LM_X(1, ("Internal error")); if (message->code() != samson::gpb::MessageProcessPlatform_Code_code_begin) {
-      error_.set(au::str("Problems starting background process since received code is not the expected 'protocol begin'"));
+      error_.set(au::str(
+                   "Problems starting background process since received code is not the expected 'protocol begin'"));
       return;
     }
 
@@ -402,7 +419,8 @@ void ProcessItemIsolated::runExchangeMessages() {
     // Close the unnecessary pipes
     if (!isolated_process_as_tread) {
       LM_T(LmtFileDescriptors,
-           ("Isolated process %s: Closing secondary fds of pipes, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d ", getStatus().c_str(),
+           ("Isolated process %s: Closing secondary fds of pipes, pipeFdPair1[1]:%d, pipeFdPair2[0]:%d ",
+            getStatus().c_str(),
             pipeFdPair1[1],
             pipeFdPair2[0]));
       close(pipeFdPair1[1]);
@@ -440,10 +458,12 @@ void ProcessItemIsolated::runExchangeMessages() {
 
     if (c != au::OK) {
       // Not possible to read the message for any reason
-      LM_E(("Isolated process op:'%s', %s: Not possible to read a message from pipeFdPair1[0]:%d with error_code' %s' (time_out:%d)",
-            processItemIsolated_description.c_str(), getStatus().c_str(), pipeFdPair1[0], au::status(c), timeout_setup ));
+      LM_E((
+             "Isolated process op:'%s', %s: Not possible to read a message from pipeFdPair1[0]:%d with error_code' %s' (time_out:%d)",
+             processItemIsolated_description.c_str(), getStatus().c_str(), pipeFdPair1[0], au::status(c), timeout_setup ));
 
-      error_.set(au::str("Third party operation '%s' has crashed - [ Error code %s ]", processItemIsolated_description.c_str(),
+      error_.set(au::str("Third party operation '%s' has crashed - [ Error code %s ]",
+                         processItemIsolated_description.c_str(),
                          au::status(c)));
       return;
     }
@@ -461,14 +481,16 @@ void ProcessItemIsolated::runExchangeMessages() {
 
 // Generic function to send messages from process to platform
 void ProcessItemIsolated::sendMessageProcessPlatform(samson::gpb::MessageProcessPlatform *message) {
-  LM_T(LmtIsolated, ("Background process: Sending a message from process to platform on pipeFdPair1[1]:%d", pipeFdPair1[1]));
+  LM_T(LmtIsolated,
+       ("Background process: Sending a message from process to platform on pipeFdPair1[1]:%d", pipeFdPair1[1]));
 
   // Write the message
   au::Status write_ans = au::writeGPB(pipeFdPair1[1], message);
 
   // If problems during write, abort
   if (write_ans != au::OK) {
-    LM_E(("Error sending message from process to platform (pipeFdPair1[1]:%d) write-error %s",  pipeFdPair1[1], au::status(write_ans)));
+    LM_E(("Error sending message from process to platform (pipeFdPair1[1]:%d) write-error %s",  pipeFdPair1[1],
+          au::status(write_ans)));
 
     LM_T(LmtIsolated, ("Error sending message from process to platform write-error %s",  au::status(write_ans)));
     if (isolated_process_as_tread)
@@ -511,8 +533,10 @@ void ProcessItemIsolated::sendMessageProcessPlatform(samson::gpb::MessageProcess
 // Function used inside runIsolated to send a code to the main process
 void ProcessItemIsolated::sendCode(int c) {
   LM_T(LmtIsolated,
-       ("Background process: Sending code %d (WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:%d, WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH:%d)", c,
-        WORKER_TASK_ITEM_CODE_FLUSH_BUFFER, WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH));
+       (
+         "Background process: Sending code %d (WORKER_TASK_ITEM_CODE_FLUSH_BUFFER:%d, WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH:%d)",
+         c,
+         WORKER_TASK_ITEM_CODE_FLUSH_BUFFER, WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH));
 
   samson::gpb::MessageProcessPlatform *message = new samson::gpb::MessageProcessPlatform();
   message->set_code(samson::gpb::MessageProcessPlatform_Code_code_operation);
@@ -611,9 +635,11 @@ void ProcessItemIsolated::runBackgroundProcessRun() {
 
     // Trazas Goyo
     LM_T(LmtFileDescriptors,
-         ("Child closing pipe descriptors not used. Child closes pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n", pipeFdPair1[0], pipeFdPair2[1]));
+         ("Child closing pipe descriptors not used. Child closes pipeFdPair1[0]:%d, pipeFdPair2[1]:%d\n",
+          pipeFdPair1[0], pipeFdPair2[1]));
     LM_T(LmtFileDescriptors,
-         ("Child closing pipe descriptors not used. Child uses pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
+         ("Child closing pipe descriptors not used. Child uses pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1],
+          pipeFdPair2[0]));
 
     // Valgrind
     // Warning: Invalid file descriptor 1014 in syscal close()
@@ -623,7 +649,8 @@ void ProcessItemIsolated::runBackgroundProcessRun() {
       if (( i != pipeFdPair1[1] ) && ( i != pipeFdPair2[0] ) && ( i != logFd ) && ( i != au::get_log_fd())) {
         // Trazas Goyo
         LM_T(LmtFileDescriptors,
-             ("Child closing descriptors but pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, logFd:%d. fd:%d\n", pipeFdPair1[1], pipeFdPair2[0],
+             ("Child closing descriptors but pipeFdPair1[1]:%d, pipeFdPair2[0]:%d, logFd:%d. fd:%d\n", pipeFdPair1[1],
+              pipeFdPair2[0],
               logFd, i));
 
         close(i);
@@ -663,7 +690,8 @@ void ProcessItemIsolated::runBackgroundProcessRun() {
 
     // Trazas Goyo
     LM_T(LmtFileDescriptors,
-         ("Child closing used pipe descriptors because finished. pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n", pipeFdPair1[1], pipeFdPair2[0]));
+         ("Child closing used pipe descriptors because finished. pipeFdPair1[1]:%d, pipeFdPair2[0]:%d\n",
+          pipeFdPair1[1], pipeFdPair2[0]));
   }
 
   LM_T(LmtIsolated, ("Finishing runBackgroundProcessRun..."));

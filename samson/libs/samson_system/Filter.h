@@ -100,9 +100,11 @@ public:
       return;
     }
 
+
     if (!kv.key->isString()) {
       return;
     }
+
 
     // Set the new key reading json string
     new_key.value->setFromJSONString(kv.key->c_str());
@@ -159,6 +161,7 @@ public:
     if (!kv.key) {
       return;
     }
+
 
     // document to parse xml
     pugi::xml_document xml_doc;
@@ -247,7 +250,7 @@ public:
         break;
       }
 
-      case pugi::node_element:                  // Element tag, i.e. '<node/>'
+      case pugi::node_element:             // Element tag, i.e. '<node/>'
       {
         if (xml_node.name() == element_name) {
           add(xml_node);
@@ -312,6 +315,7 @@ public:
       if (error->IsActivated()) {
         return;
       }
+
 
       fields.push_back(source);
     }
@@ -443,6 +447,7 @@ public:
       return;
     }
 
+
     std::string line = kv.key->get_string();
 
     au::StringComponents string_components;
@@ -497,6 +502,7 @@ public:
     if (!kv.key->isString()) {
       return;
     }
+
 
     // Next key-value ready to be emitted
     KeyValue next_kv(keyContainer.value, kv.value);
@@ -559,6 +565,7 @@ public:
       return;
     }
 
+
     // Next key-value ready to be emitted
     KeyValue next_kv(keyContainer.value, kv.value);
 
@@ -603,6 +610,7 @@ public:
     if (!v) {
       return false;
     }
+
 
     return ( v->get_double() != 0 );
   }
@@ -660,9 +668,11 @@ public:
     }
 
 
+
     if (!value_for_value) {
       return;
     }
+
 
     keyContainer.value->copyFrom(value_for_key);
     valueContainer.value->copyFrom(value_for_value);
@@ -722,4 +732,4 @@ private:
 }
 }
 
-#endif // ifndef _H_SAMSON_SYSTEM_FILTER
+#endif  // ifndef _H_SAMSON_SYSTEM_FILTER

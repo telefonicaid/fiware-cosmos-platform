@@ -48,6 +48,7 @@ public:
       return NULL;
     }
 
+
     C *c = objects[ s - 1 ];
     objects.pop_back();
     return c;
@@ -63,5 +64,5 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_POOL
+#endif  // ifndef _H_AU_POOL
 

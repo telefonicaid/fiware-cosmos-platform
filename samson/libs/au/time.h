@@ -28,7 +28,7 @@
 #include <sys/time.h>          // struct timeval
 
 #include "au/ErrorManager.h"   // au::ErrorManager
-#include "au/containers/map.h" // au::map
+#include "au/containers/map.h"  // au::map
 
 
 
@@ -48,4 +48,4 @@ size_t seconds_to_microseconds(double time);
 size_t seconds_to_nanoseconds(double time);
 }
 
-#endif // ifndef _H_AU_TIME
+#endif  // ifndef _H_AU_TIME

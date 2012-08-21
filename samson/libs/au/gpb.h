@@ -29,7 +29,7 @@
 #include <unistd.h>
 
 #include "logMsg/logMsg.h"      // LM_*
-#include "logMsg/traceLevels.h" // Trace Levels
+#include "logMsg/traceLevels.h"  // Trace Levels
 
 #include <assert.h>
 
@@ -101,7 +101,8 @@ au::Status readGPB(int fd, T **t, int time_out) {
   // If not received the rigth size, return NULL
   if (nb != sizeof(header)) {
     // Trazas Goyo
-    LM_E(("readGPB(): Error corrupted header from fd:%d, nb(%d) != sizeof_header(%d) bytes read\n", fd, nb, sizeof(header)));
+    LM_E(("readGPB(): Error corrupted header from fd:%d, nb(%d) != sizeof_header(%d) bytes read\n", fd, nb,
+          sizeof(header)));
     return GPB_WrongReadSize;     // Error reading the size
   }
 
@@ -109,7 +110,7 @@ au::Status readGPB(int fd, T **t, int time_out) {
 
   if (header.size > 1000000)
     LM_W(("Large size %l for a background process message", header.size));
-    // return 3;    // Too much bytes to read
+   // return 3;    // Too much bytes to read
 
   void *data  = (void *)malloc(header.size);
 
@@ -144,12 +145,13 @@ Status writeGPB(int fd, T *t) {
     return GPB_NotInitializedMessage;
   }
 
+
   GPBHeader header;
   header.init(t->ByteSize());
 
   if (header.size > 100000)
     LM_W(("Large size %l for a background process message", header.size));
-    // return 3;
+   // return 3;
 
   void *data = (void *)malloc(header.size);
 
@@ -183,4 +185,4 @@ Status writeGPB(int fd, T *t) {
 }
 }
 
-#endif // ifndef _H_AU_GPB
+#endif  // ifndef _H_AU_GPB

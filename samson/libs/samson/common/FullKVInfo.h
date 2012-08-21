@@ -11,7 +11,7 @@ namespace samson {
 
 struct FullKVInfo {
   uint64 size;                  // Total size
-  uint64 kvs;                           // Total number of kvs
+  uint64 kvs;                   // Total number of kvs
 
 
   FullKVInfo(uint32 _size, uint32 _kvs);
@@ -46,4 +46,4 @@ struct FullKVInfo {
 };
 }
 
-#endif // ifndef _H_SAMSON_FULLKVINFO
+#endif  // ifndef _H_SAMSON_FULLKVINFO

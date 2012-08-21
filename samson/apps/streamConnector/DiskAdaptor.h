@@ -75,4 +75,4 @@ public:
 }
 
 
-#endif // ifndef _H_SAMSON_CONNECTOR_DISK_CONNECTION
+#endif  // ifndef _H_SAMSON_CONNECTOR_DISK_CONNECTION

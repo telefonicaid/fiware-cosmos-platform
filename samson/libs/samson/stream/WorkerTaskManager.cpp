@@ -165,10 +165,11 @@ bool WorkerTaskManager::runNextWorkerTasksIfNecessary() {
       au::SharedPointer<WorkerSystemTask> system_task = base_task.dynamic_pointer_cast<WorkerSystemTask>();
 
       if (task != NULL)
-        engine::ProcessManager::shared()->Add(task.static_pointer_cast<engine::ProcessItem>(), getEngineId()); else if (system_task != NULL)
-        engine::ProcessManager::shared()->Add(system_task.static_pointer_cast<engine::ProcessItem>(), getEngineId()); else
-        LM_X(1, ("WorkerTaskBase cannot be converted to WorkerTask or WorkerSystemTask"));
-      return true;
+        engine::ProcessManager::shared()->Add(task.static_pointer_cast<engine::ProcessItem>(), getEngineId());
+      else if (system_task != NULL)
+        engine::ProcessManager::shared()->Add(system_task.static_pointer_cast<engine::ProcessItem>(), getEngineId());
+      else
+        LM_X(1, ("WorkerTaskBase cannot be converted to WorkerTask or WorkerSystemTask")); return true;
     }
   }
 
@@ -294,7 +295,8 @@ void WorkerTaskManager::review_stream_operations() {
   }
 }
 
-gpb::Collection *WorkerTaskManager::getCollectionForStreamOperationsInfo(const ::samson::Visualization& visualization) {
+gpb::Collection *WorkerTaskManager::getCollectionForStreamOperationsInfo(const ::samson::Visualization& visualization)
+{
   // Template-based creation of collection based on map
   return getCollectionForMap("stream operations"
                              , stream_operations_info_

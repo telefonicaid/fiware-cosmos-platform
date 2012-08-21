@@ -72,4 +72,4 @@ public:
 }
 
 
-#endif // ifndef _H_SAMSON_CONNECTOR_CONNECTION_FileDescriptorConnection
+#endif  // ifndef _H_SAMSON_CONNECTOR_CONNECTION_FileDescriptorConnection

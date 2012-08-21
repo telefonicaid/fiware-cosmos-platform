@@ -55,9 +55,7 @@ public:
     items.push_back(item);
 
     if (item.optional)
-      any_optional = true;
-
-    includes.insert(item.getInclude());
+      any_optional = true; includes.insert(item.getInclude());
   }
 
   bool parse(AUTockenizer *module_creator, int begin, int end);
@@ -67,17 +65,30 @@ public:
 
     // Checking the use of reserved words in the name
     std::string arr_reserved_words[] =
-    { "auto",        "const",                                         "double",          "float",               "int",             "short",
-      "struct",              "unsigned",      "break",            "continue",     "else",
-      "for",    "long",   "signed",  "switch",       "void",      "case",             "default", "enum",
-      "goto",       "register", "sizeof",   "typedef", "volatile",    "char",   "do",      "extern",
-      "if",       "return",   "static",   "union",  "while",  "asm",     "dynamic_cast", "namespace", "reinterpret_cast",
-      "try",        "bool",     "explicit", "new",     "static_cast", "typeid", "catch",   "false",
-      "operator", "template", "typename", "class",  "friend", "private", "this",         "using",
-      "const_cast", "inline",   "public",   "throw",   "virtual",     "delete", "mutable", "protected",
-      "true",     "wchar_t",  "and",      "bitand", "compl",  "not_eq",  "or_eq",        "xor_eq",
-      "and_eq",     "bitor",    "not",      "or",      "xor",         "cin",    "endl",    "INT_MIN",
-      "iomanip",  "main",     "npos",     "std",    "cout",   "include", "INT_MAX",      "iostream",  "MAX_RAND",         "NULL",
+    { "auto",              "const",           "double",                        "float",
+      "int",               "short",
+      "struct",            "unsigned",        "break",                         "continue",
+      "else",
+      "for",               "long",            "signed",                        "switch",
+      "void",              "case",            "default",                       "enum",
+      "goto",              "register",        "sizeof",                        "typedef",
+      "volatile",          "char",            "do",                            "extern",
+      "if",                "return",          "static",                        "union",
+      "while",             "asm",             "dynamic_cast",                  "namespace",
+      "reinterpret_cast",
+      "try",         "bool",                 "explicit",                  "new",
+      "static_cast", "typeid",               "catch",                     "false",
+      "operator",    "template",             "typename",                  "class",
+      "friend",      "private",              "this",                      "using",
+      "const_cast",  "inline",               "public",                    "throw",
+      "virtual",     "delete",               "mutable",                   "protected",
+      "true",        "wchar_t",              "and",                       "bitand",
+      "compl",       "not_eq",               "or_eq",                     "xor_eq",
+      "and_eq",      "bitor",                "not",                       "or",
+      "xor",         "cin",                  "endl",                      "INT_MIN",
+      "iomanip",     "main",                 "npos",                      "std",
+      "cout",        "include",              "INT_MAX",                   "iostream",
+      "MAX_RAND",     "NULL",
       "string" };
 
     std::set<std::string>   reserved_words;
@@ -87,7 +98,8 @@ public:
     }
 
     if (reserved_words.find(name) != reserved_words.end()) {
-      std::cerr << "samsonModuleParser: Error in data-type: '" << name << "'. It is a c++ reserved word. Please chose a different name\n";
+      std::cerr << "samsonModuleParser: Error in data-type: '" << name <<
+      "'. It is a c++ reserved word. Please chose a different name\n";
       std::cerr << "Detected error checks for " << name << std::endl;
       return false;
     }
@@ -118,7 +130,6 @@ public:
        */
       return;
 
-
     /*
      *          if( verbose )
      *  std::cout << "Creating file " << name << "_base.h\n";
@@ -141,10 +152,8 @@ public:
     std::string acumItems = "";
     for (vector <DataType>::iterator field = items.begin(); field != items.end(); field++) {
       if ((*field).optional)
-        acumItems += "opt";
-      if ((*field).isVector())
-        acumItems += "vect";
-      acumItems += (*field).fullType;
+        acumItems += "opt"; if ((*field).isVector())
+        acumItems += "vect"; acumItems += (*field).fullType;
     }
     hashTypeItems = functHashTypeItems(acumItems);
 
@@ -177,9 +186,11 @@ public:
         includes.insert(optFilledField.getInclude());
       } else {
 #ifdef __LP64__
-        fprintf(stderr, "Optional fields (nOptFields:%d) for more than %lu fields, not yet supported\n", nOptFields, 8 * sizeof(size_t));
+        fprintf(stderr, "Optional fields (nOptFields:%d) for more than %lu fields, not yet supported\n", nOptFields,
+                8 * sizeof(size_t));
 #else
-        fprintf(stderr, "Optional fields (nOptFields:%d) for more than %d fields, not yet supported\n", nOptFields, 8 * sizeof(size_t));
+        fprintf(stderr, "Optional fields (nOptFields:%d) for more than %d fields, not yet supported\n", nOptFields,
+                8 * sizeof(size_t));
 #endif
         exit(1);
       }
@@ -295,8 +306,7 @@ public:
       // Only get partition with the first field
       vector <DataType>::iterator field = items.begin();
       if (any_optional)
-        field++;
-      file << (*field).getPartitionCommand("\t\t");
+        field++; file << (*field).getPartitionCommand("\t\t");
       file << "\t}\n\n";
     }
 
@@ -308,10 +318,12 @@ public:
       if ((any_optional) && ((*field).valMask == 0)) {
         file << "\t\t" << (*field).classNameForType() << " local" << NAME_FILLEDOPTIONALFIELDS << "1;\n";
         file << "\t\t" <<
-        (*field).getParseCommandForCompare(string("local") + string(NAME_FILLEDOPTIONALFIELDS) + string("1"), "1") << "\n";
+        (*field).getParseCommandForCompare(string("local") + string(NAME_FILLEDOPTIONALFIELDS) + string("1"),
+                                           "1") << "\n";
         file << "\t\t" << (*field).classNameForType() << " local" << NAME_FILLEDOPTIONALFIELDS << "2;\n";
         file << "\t\t" <<
-        (*field).getParseCommandForCompare(string("local") + string(NAME_FILLEDOPTIONALFIELDS) + string("2"), "2") << "\n";
+        (*field).getParseCommandForCompare(string("local") + string(NAME_FILLEDOPTIONALFIELDS) + string("2"),
+                                           "2") << "\n";
       } else {
         file << (*field).getCompareCommand("\t\t");
       }
@@ -585,8 +597,7 @@ public:
     file << "\t\to << \"{\";\n";
     for (vector <DataType>::iterator field = items.begin(); field != items.end(); field++) {
       if (field != items.begin())
-        file << "\t\to << \",\";\n";
-      file << (*field).getToStringJSONCommand("\t\t");
+        file << "\t\to << \",\";\n"; file << (*field).getToStringJSONCommand("\t\t");
     }
     file << "\t\to << \"}\";\n";
     file << "\t\treturn o.str();\n";
@@ -832,7 +843,7 @@ public:
     size_t hash = InitialFNV;
 
     for (size_t i = 0; i < acumItems.length(); i++) {
-      hash = hash ^ (acumItems[i]);                 /* xor  the low 8 bits */
+      hash = hash ^ (acumItems[i]);             /* xor  the low 8 bits */
       hash = hash * FNVMultiple;                /* multiply by the magic number */
     }
     return hash;

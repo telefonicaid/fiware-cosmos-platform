@@ -111,4 +111,4 @@ private:
 };
 }
 
-#endif // ifndef _H_SAMSON_DISTRIBUTION_BLOCKS
+#endif  // ifndef _H_SAMSON_DISTRIBUTION_BLOCKS

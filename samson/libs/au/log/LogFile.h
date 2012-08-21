@@ -3,6 +3,7 @@
 #ifndef _H_AU_LOG_FILE
 #define _H_AU_LOG_FILE
 
+#include "au/Status.h"
 #include "au/containers/vector.h"
 
 namespace au {

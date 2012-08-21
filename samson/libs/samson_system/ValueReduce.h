@@ -532,8 +532,8 @@ public:
 class TopList {
 public:
 
-  size_t num_elements;                        // Maximum number of elements
-  au::list<system::Value> values;             // List of values
+  size_t num_elements;              // Maximum number of elements
+  au::list<system::Value> values;   // List of values
 
   TopList() {
     num_elements = 100;             // Default number of elements
@@ -647,9 +647,11 @@ public:
     if (key.get_value_from_map("category") == NULL) {
       return;
     }
+
     if (key.get_value_from_map("concept") == NULL) {
       return;
     }
+
 
     // Recover state if any
     // ------------------------------------
@@ -720,7 +722,7 @@ class ValueReduce_accumulate_top : public ValueReduce {
 
   double factor;           // Forgetting factor
 
-  TopList top_list;           // List to keep top elements
+  TopList top_list;        // List to keep top elements
 
   size_t current_time;
 
@@ -813,8 +815,8 @@ public:
       add<ValueReduce_unique>("unique");
       add<ValueReduce_unique_counter>("unique_counter");
 
-      add<ValueReduce_top>("top");                                  // Expect key - value
-      add<ValueReduce_top_concept>("top_concept");                  // Expect key - [ value counter ]
+      add<ValueReduce_top>("top");                               // Expect key - value
+      add<ValueReduce_top_concept>("top_concept");               // Expect key - [ value counter ]
 
       add<ValueReduce_sum>("sum");
       add<ValueReduce_average>("average");
@@ -851,6 +853,7 @@ public:
       return NULL;
     }
 
+
     // Main command
     std::string name = cmdLine.get_argument(0);
 
@@ -879,4 +882,4 @@ public:
 }
 }
 
-#endif // ifndef _H_SAMSON_system_reduce_VALUE_REDUCE
+#endif  // ifndef _H_SAMSON_system_reduce_VALUE_REDUCE

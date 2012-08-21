@@ -64,4 +64,4 @@ public:
 };
 }
 
-#endif // ifndef SAMSON_LOCK_H
+#endif  // ifndef SAMSON_LOCK_H

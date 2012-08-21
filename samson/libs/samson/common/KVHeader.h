@@ -63,4 +63,4 @@ struct KVHeader {
 };
 }
 
-#endif // ifndef _H_SAMSON_KVHEADER
+#endif  // ifndef _H_SAMSON_KVHEADER

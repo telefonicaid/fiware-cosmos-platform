@@ -25,6 +25,7 @@ typedef struct KVSetStruct {
       return 0;
     }
 
+
     for (size_t i = pos + 1; i < num_kvs; i++) {
       if (!kvs[i]->equal_value(kvs[pos])) {
         return i - pos;
@@ -36,4 +37,4 @@ typedef struct KVSetStruct {
 } KVSetStruct;
 }
 
-#endif // ifndef SAMSON_KV_SET_STRUCT_H
+#endif  // ifndef SAMSON_KV_SET_STRUCT_H

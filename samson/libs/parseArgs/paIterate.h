@@ -42,4 +42,4 @@ extern int paNoOfOptions(PaArgument *paList);
  */
 extern PaArgument *paOptionLookupByIx(PaArgument *paList, int ix);
 
-#endif // ifndef PA_ITERATE_H
+#endif  // ifndef PA_ITERATE_H

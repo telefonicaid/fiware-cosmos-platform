@@ -10,7 +10,7 @@
  */
 #include "baStd.h"               /* bool, ...                            */
 
-#include "parseArgs/parseArgs.h" /* Where we have the ext decl of paConfig    */
+#include "parseArgs/parseArgs.h"  /* Where we have the ext decl of paConfig    */
 
 
 
@@ -102,4 +102,4 @@ extern int paConfigActions(bool preTreat);
  */
 extern void paConfigCleanup(void);
 
-#endif // ifndef PA_CONFIG_H
+#endif  // ifndef PA_CONFIG_H

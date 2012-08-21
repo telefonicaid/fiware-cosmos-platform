@@ -13,7 +13,7 @@
 #include "engine/ProcessItem.h"      // engine::ProcessItem
 
 #include "samson/stream/Block.h"     // samson::Stream::Block
-#include "samson/stream/BlockList.h" // stream::BlockList
+#include "samson/stream/BlockList.h"  // stream::BlockList
 #include "samson/stream/BlockListContainer.h"
 
 
@@ -81,5 +81,5 @@ public:
 }
 }
 
-#endif // ifndef _H_SAMSON_QUEUE_TASK_BASE
+#endif  // ifndef _H_SAMSON_QUEUE_TASK_BASE
 

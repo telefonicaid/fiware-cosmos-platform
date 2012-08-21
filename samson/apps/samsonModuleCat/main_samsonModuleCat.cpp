@@ -26,7 +26,7 @@
 #include "samson/common/samsonVars.h"     // SAMSON_ARG_VARS
 
 #include "samson/module/KVFormat.h"       // samson::KVFormat
-#include "samson/module/ModulesManager.h" // samson::ModulesManager
+#include "samson/module/ModulesManager.h"  // samson::ModulesManager
 
 #include "samson/common/SamsonDataSet.h"  // samson::SamsonDataSet
 #include "samson/common/SamsonFile.h"     // samson::SamsonFile
@@ -46,7 +46,8 @@ char file_name[1024];
 
 PaArgument paArgs[] =
 {
-  { " ", file_name,            "",         PaString,     PaReq,  (long)"null",    PaNL,   PaNL,  "name of the file or directory to scan"    },
+  { " ", file_name, "", PaString, PaReq,            (long)"null",         PaNL,     PaNL,
+    "name of the file or directory to scan"     },
   PA_END_OF_ARGS
 };
 
@@ -94,10 +95,11 @@ void consider_directory(std::string directory, au::tables::Table *table) {
     std::string fileName = dirp->d_name;
 
     // Skip ".files"
-    if (fileName.length() > 0)
-      if (fileName[0] == '.')
-        continue;
-    // Full path of the file
+    if (fileName.length() > 0) {
+      if (fileName[0] == '.') {
+        continue;  // Full path of the file
+      }
+    }
     std::string path = au::path_from_directory(directory, dirp->d_name);
 
     consider_file(path, table);
@@ -133,8 +135,7 @@ int main(int argC, const char *argV[]) {
 
   if (S_ISREG(info.st_mode))
     consider_file(file_name, &table); else if (S_ISDIR(info.st_mode))
-    consider_directory(file_name, &table);
-  table.setTitle("Module files");
+    consider_directory(file_name, &table); table.setTitle("Module files");
   std::cout << table.str();
   std::cout << "\n";
 }

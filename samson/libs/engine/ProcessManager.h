@@ -91,4 +91,4 @@ private:
 };
 }
 
-#endif // ifndef _H_SAMSON_PROCESS_MANAGER
+#endif  // ifndef _H_SAMSON_PROCESS_MANAGER

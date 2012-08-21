@@ -61,7 +61,9 @@ void ModulesManager::closeHandlers() {
 
 void ModulesManager::destroy(std::string calling_module) {
   if (!modulesManager)
-    LM_RVE(("Attempt to destroy a non-initialized Modules Manager")); if (calling_module != modulesManager->get_owner()) {
+    LM_RVE(("Attempt to destroy a non-initialized Modules Manager")); if (calling_module !=
+                                                                          modulesManager->get_owner())
+  {
     LM_T(LmtModuleManager,
          ("Trying to destroy ModulesManager from a different owner(%s) than created(%s)", calling_module.c_str(),
           modulesManager->get_owner().c_str()));
@@ -76,7 +78,8 @@ void ModulesManager::destroy(std::string calling_module) {
 void ModulesManager::init(std::string calling_module) {
   LM_T(LmtModuleManager, ("ModulesManager::init() called"));
   if (modulesManager) {
-    LM_W(("Error initializing ModulesManager twice (already from:%s), ignoring calling_module:%s", modulesManager->get_owner().c_str(),
+    LM_W(("Error initializing ModulesManager twice (already from:%s), ignoring calling_module:%s",
+          modulesManager->get_owner().c_str(),
           calling_module.c_str()));
     return;
   }
@@ -212,7 +215,8 @@ void ModulesManager::addModule(std::string path) {
     // Keep handler in a vector to close latter
     handlers.push_back(hndl);
   } else {
-    LM_W(("Not loading file %s since its using a different API version %s vs %s", path.c_str(), platform_version.c_str(), SAMSON_VERSION ));
+    LM_W(("Not loading file %s since its using a different API version %s vs %s", path.c_str(), platform_version.c_str(),
+          SAMSON_VERSION ));
     delete module;
 
     // Close dynamic link

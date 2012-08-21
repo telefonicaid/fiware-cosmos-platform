@@ -85,7 +85,8 @@ void WorkerTask::fill(samson::gpb::CollectionRecord *record, const Visualization
 
   if (ProcessItem::running())
     add(record, "state", "running", "left,different"); else
-    add(record, "state", task_state(), "left,different"); add(record, "operation", stream_operation_->operation(), "left,different");
+    add(record, "state", task_state(), "left,different"); add(record, "operation",
+                                                              stream_operation_->operation(), "left,different");
 
 
   /*
@@ -457,8 +458,8 @@ public:
 
     if (error.IsActivated())
       // Still not supported how to handle this error nicely
-      LM_X(1, ("Error crearing a block reader: %s", error.GetMessage().c_str()));
-    input_block_readers_.push_back(block_reader);
+      LM_X(1, ("Error crearing a block reader: %s", error.GetMessage().c_str())); input_block_readers_.push_back(
+      block_reader);
   }
 
   void AddStateBlocks(BlockRef *block_ref, int channel) {
@@ -468,8 +469,8 @@ public:
 
     if (error.IsActivated())
       // Still not supported how to handle this error nicely
-      LM_X(1, ("Error crearing a block reader: %s", error.GetMessage().c_str()));
-    state_block_readers_.push_back(block_reader);
+      LM_X(1, ("Error crearing a block reader: %s", error.GetMessage().c_str())); state_block_readers_.push_back(
+      block_reader);
   }
 
   size_t prepare(int hg) {
@@ -492,14 +493,14 @@ public:
     kvVector_.prepareInput(total_kvs);
 
     // Add key values for all the inputs
-    if (input_num_kvs_ > 0)
+    if (input_num_kvs_ > 0) {
       for (size_t i = 0; i < input_block_readers_.size(); i++) {
         kvVector_.addKVs(input_block_readers_[i]->channel()
                          , input_block_readers_[i]->kv_file()->info[hg]
                          , input_block_readers_[i]->kv_file()->kvs_for_hg(hg)
                          );
-      }
-    // Add key values for the state
+      }  // Add key values for the state
+    }
     if (state_num_kvs_ > 0)
       for (size_t i = 0; i < state_block_readers_.size(); i++) {
         kvVector_.addKVs(state_block_readers_[i]->channel()
@@ -516,8 +517,7 @@ public:
       // LM_M(("Sorting %lu key-values" , input_num_kvs));
       kvVector_.sort(); else if (input_num_kvs_ > 0)
       // LM_M(("Merge-Sorting %lu / %lu key-values" , input_num_kvs , state_num_kvs));
-      kvVector_.sortAndMerge(input_num_kvs_);
-    kvVector_.init();
+      kvVector_.sortAndMerge(input_num_kvs_); kvVector_.init();
   }
 
   KVSetStruct *getNext() {
@@ -553,12 +553,14 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   bool reduce_forward = stream_operation_->has_reduce_forward() && stream_operation_->reduce_forward();
 
   if (update_only)
-    LM_T(LmtReduceOperation, ("Reduce %lu - %s begin.... (update_only)", get_id(), process_item_description().c_str())); else
+    LM_T(LmtReduceOperation, ("Reduce %lu - %s begin.... (update_only)", get_id(), process_item_description().c_str()));
+  else
     LM_T(LmtReduceOperation,
          ("Reduce %lu - %s begin", get_id(),
           process_item_description().c_str())); LM_T(LmtReduceOperation,
-                                                     ("Reduce %lu - %s KVRange %s", get_id(), process_item_description().c_str(),
-                                                    range_.str().c_str()));
+                                                     ("Reduce %lu - %s KVRange %s", get_id(),
+                                                      process_item_description().c_str(),
+                                                      range_.str().c_str()));
 
   // Handy class to emit traces
   // OperationTraces operation_traces( au::str( "[%lu] reduce %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
@@ -602,7 +604,8 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   int transfered_states = 0;
   int processed_states = 0;
 
-  LM_T(LmtReduceOperation, ("Reduce %lu - %s Data ready! Running hash-groups", get_id(), process_item_description().c_str()));
+  LM_T(LmtReduceOperation,
+       ("Reduce %lu - %s Data ready! Running hash-groups", get_id(), process_item_description().c_str()));
 
   for (int hg = 0; hg < KVFILE_NUM_HASHGROUPS; hg++) {
     // Check if this is inside the range we are interested in processing

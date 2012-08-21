@@ -62,8 +62,7 @@ void BufferProcessor::emit(char *data, size_t length) {
 
   // Write in the buffer
   if (!output_buffer_->write(data, length))
-    LM_X(1, ("Internal error"));
-  if (output_buffer_->getSize() == output_buffer_->getMaxSize())
+    LM_X(1, ("Internal error")); if (output_buffer_->getSize() == output_buffer_->getMaxSize())
     flushOutputBuffer();
 }
 
@@ -95,7 +94,8 @@ void BufferProcessor::process_intenal_buffer(bool finish) {
     // Data to be skip after process
     if (nextData) {
       if (( nextData < buffer ) || (nextData > ( buffer + size))) {
-        LM_W(("Splitter %s has returned a wrong nextData pointer when processing a buffer of %s. Skipping this buffer", splitter_name.c_str(),
+        LM_W(("Splitter %s has returned a wrong nextData pointer when processing a buffer of %s. Skipping this buffer",
+              splitter_name.c_str(),
               au::str(max_size).c_str()));
         size = 0;
       } else {
@@ -110,7 +110,8 @@ void BufferProcessor::process_intenal_buffer(bool finish) {
     }
   } else {
     if (size >= max_size) {
-      LM_W(("Splitter %s is not able to split a full buffer %s. Skipping this buffer", splitter_name.c_str(), au::str(max_size).c_str()));
+      LM_W(("Splitter %s is not able to split a full buffer %s. Skipping this buffer", splitter_name.c_str(),
+            au::str(max_size).c_str()));
       size = 0;
     } else {
       return;   // Not enoutght data for splitter... this is OK if the buffer is not full

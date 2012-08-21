@@ -76,4 +76,4 @@ private:
 };
 }
 
-#endif // ifndef AU_ENVIRONMENT_H_
+#endif  // ifndef AU_ENVIRONMENT_H_

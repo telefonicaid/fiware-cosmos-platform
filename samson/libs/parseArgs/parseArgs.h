@@ -264,4 +264,4 @@ extern int paLmSdGet(void);
  */
 extern int paLmFdGet(void);
 
-#endif // ifndef PARSE_ARGS_H
+#endif  // ifndef PARSE_ARGS_H

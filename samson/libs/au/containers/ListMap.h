@@ -26,7 +26,7 @@
 #include <set>             // std::set
 #include <vector>       // std::vector
 
-#include "logMsg/logMsg.h" // LM_M()
+#include "logMsg/logMsg.h"  // LM_M()
 
 namespace au {
 /**
@@ -41,7 +41,7 @@ template <typename K, class V>
 class ListMap {
 public:
 
-  std::map<K, V *> map; // Real associate map of elements
+  std::map<K, V *> map;  // Real associate map of elements
   std::list<K> keys;    // List of the keys to access front and back elements
 
 
@@ -80,6 +80,7 @@ public:
       return NULL;
     }
 
+
     // Get the key from the back position
     K key = keys.back();
 
@@ -97,6 +98,7 @@ public:
     if (keys.size() == 0) {
       return NULL;
     }
+
 
 
     // Get the key from the back position
@@ -119,6 +121,7 @@ public:
       return NULL;
     }
 
+
     // Get the key from the back position
     K key = keys.back();
     keys.pop_back();
@@ -139,6 +142,7 @@ public:
     if (keys.size() == 0) {
       return NULL;
     }
+
 
 
     // Get the key from the back position
@@ -168,6 +172,7 @@ public:
     if (iter == map.end()) {
       return NULL;
     }
+
     return iter->second;
   }
 
@@ -206,4 +211,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_LIST_MAP
+#endif  // ifndef _H_AU_LIST_MAP

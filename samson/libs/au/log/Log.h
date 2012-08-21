@@ -117,4 +117,4 @@ private:
 };
 }
 
-#endif // ifndef _H_AU_LOG
+#endif  // ifndef _H_AU_LOG

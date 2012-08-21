@@ -33,4 +33,4 @@ typedef enum PaGetVal {
  */
 extern void *paGetVal(char *string, int *error);
 
-#endif // ifndef PA_GET_VAL_H
+#endif  // ifndef PA_GET_VAL_H

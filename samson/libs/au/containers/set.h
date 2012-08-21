@@ -22,7 +22,7 @@
 #ifndef _H_AU_SET
 #define _H_AU_SET
 
-#include "logMsg/logMsg.h" // LM_M()
+#include "logMsg/logMsg.h"  // LM_M()
 #include <list>            // std::list
 #include <map>             // std::map
 #include <set>             // std::set
@@ -73,4 +73,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_SET
+#endif  // ifndef _H_AU_SET

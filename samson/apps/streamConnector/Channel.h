@@ -87,4 +87,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_CHANNEL
+#endif  // ifndef _H_SAMSON_CHANNEL

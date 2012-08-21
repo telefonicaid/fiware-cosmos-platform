@@ -11,7 +11,7 @@
 #include "samson/common/coding.h"
 #include "samson/common/samson.pb.h"             // samson::network::...
 
-#include "samson/isolated/ProcessItemIsolated.h" // samson:ProcessItemIsolated
+#include "samson/isolated/ProcessItemIsolated.h"  // samson:ProcessItemIsolated
 #include "samson/module/Environment.h"           // samson::Enviroment
 
 #define WORKER_TASK_ITEM_CODE_FLUSH_BUFFER        1
@@ -36,7 +36,7 @@ class ProcessIsolated : public ProcessItemIsolated {
 public:
 
   typedef enum {
-    key_value,                          // Emit key-values to multiple outputs / multiple workers
+    key_value,                      // Emit key-values to multiple outputs / multiple workers
     txt                             // Emit txt content using the entire buffer
   } ProcessBaseType;
 
@@ -127,4 +127,4 @@ public:
 }
 
 
-#endif // ifndef _H_SAMSON_PROCESS_ISOLATED
+#endif  // ifndef _H_SAMSON_PROCESS_ISOLATED

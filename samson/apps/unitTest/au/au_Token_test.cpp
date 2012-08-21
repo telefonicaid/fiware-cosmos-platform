@@ -50,7 +50,8 @@ TEST(auTokenTest, simple) {
 
   EXPECT_EQ(
     vector_tokens.str(),
-    "( 7 tokens ) Test string to tokenizer:literals:  \"true\"  and  <next> : \"false\"  , digits: 2.1, ops: + ") << "Error in Tokenizer";
+    "( 7 tokens ) Test string to tokenizer:literals:  \"true\"  and  <next> : \"false\"  , digits: 2.1, ops: + ") <<
+  "Error in Tokenizer";
 
 
   EXPECT_EQ(token_vector.getNextTokenContent(), "<empty>") << "Error in getNextTokenContent non empty";

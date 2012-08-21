@@ -50,17 +50,14 @@ void LockDebugger::add_lock(void *new_lock) {
 
   // Make sure there are no errors with lock
   if (ans != 0)
-    LM_X(1, ("pthread_mutex_lock error"));
-  std::set<void *> *locksVector = _getLocksVector();
+    LM_X(1, ("pthread_mutex_lock error")); std::set<void *> *locksVector = _getLocksVector();
 
 
   // Make some checks here...
 
   // We do not autoblock
   if (locksVector->find(new_lock) !=  locksVector->end())
-    LM_X(1, ("Autolock detected"));
-
-  // We are not blocked
+    LM_X(1, ("Autolock detected"));  // We are not blocked
   if (_cross_blocking(new_lock)) {
     assert(false);
     LM_X(1, ("Cross lock detected"));
@@ -81,20 +78,21 @@ void LockDebugger::remove_lock(void *new_lock) {
   int ans = pthread_mutex_lock(&_lock);         // Block until the mutex is free
 
   if (ans != 0)
-    LM_X(1, ("pthread_mutex_lock error"));
-  std::set<void *> *locksVector = _getLocksVector();
+    LM_X(1, ("pthread_mutex_lock error")); std::set<void *> *locksVector = _getLocksVector();
 
   // LM_M(("Removing lock %p from lockVector %p" , new_lock , locksVector ));
 
 #ifdef FULL_DEBUG_AU_THREADS
   std::ostringstream o;
-  o << "Removing thread \"" << getTitle() << "\" [LOCKS: " << locksVector->size() << "] to lock \"" << new_lock->description << "\"" <<
+  o << "Removing thread \"" << getTitle() << "\" [LOCKS: " << locksVector->size() << "] to lock \"" <<
+  new_lock->description << "\"" <<
   std::endl;
   std::cout << o.str();
 #endif
   // Make sure it was there
   if (locksVector->find(new_lock) == locksVector->end())
-    LM_X(1, ("Error debugging locks. Removing a lock that was not previously defined. List of %d locks", locksVector->size()));
+    LM_X(1,
+         ("Error debugging locks. Removing a lock that was not previously defined. List of %d locks", locksVector->size()));
   locksVector->erase(new_lock);
 
 
@@ -156,8 +154,10 @@ void LockDebugger::setThreadTitle(std::string title) {
   void *data = pthread_getspecific(LockDebugger::shared()->key_title);
 
   if (!data)
-    LM_X(1, ("pthread_getspecific returned NULL during lock debugging"));
-  pthread_setspecific(lockDebugger->key_title, new std::string(title));
+    LM_X(1,
+         ("pthread_getspecific returned NULL during lock debugging")); pthread_setspecific(lockDebugger->key_title,
+                                                                                           new std::string(
+                                                                                             title));
 }
 }
 

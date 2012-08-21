@@ -110,5 +110,5 @@ private:
 };
 }
 
-#endif // ifndef _AU_CONSOLE
+#endif  // ifndef _AU_CONSOLE
 

@@ -64,6 +64,6 @@ extern bool paLogOn;
 #  define PA_M(s)
 #  define PA_E(s)
 #  define PA_P(s)
-#endif // ifdef PA_DEBUG
+#endif  // ifdef PA_DEBUG
 
-#endif // ifndef PA_LOG_H
+#endif  // ifndef PA_LOG_H

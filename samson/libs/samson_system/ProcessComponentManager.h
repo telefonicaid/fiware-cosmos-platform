@@ -36,7 +36,7 @@ private:
 
                      void update(Value *key, Value *state, Value **values, size_t num_values, samson::KVWriter *writer);
                    };
-                   } } // End of namespace samson.system
+                   } }  // End of namespace samson.system
 
-#endif // ifndef _H_SAMSON_system_PROCESS_COMPOENT_MANAGER
+#endif  // ifndef _H_SAMSON_system_PROCESS_COMPOENT_MANAGER
 

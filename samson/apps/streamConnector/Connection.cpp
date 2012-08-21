@@ -31,8 +31,7 @@ Connection::Connection(Adaptor *_item, ConnectionType _type, std::string _name) 
 
 Connection::~Connection() {
   if (buffer_processor)
-    delete buffer_processor;
-  if (input_buffer_list)
+    delete buffer_processor; if (input_buffer_list)
     delete input_buffer_list; if (output_buffer_list)
     delete input_buffer_list;
 }
@@ -56,8 +55,7 @@ engine::BufferPointer Connection::getNextBufferToSent() {
   engine::BufferPointer buffer = output_buffer_list->pop();
 
   if (buffer != NULL)
-    report_output_size(buffer->getSize());
-  return buffer;
+    report_output_size(buffer->getSize()); return buffer;
 }
 
 void Connection::pushInputBuffer(engine::BufferPointer buffer) {
@@ -76,9 +74,9 @@ void Connection::pushInputBuffer(engine::BufferPointer buffer) {
     // An option in the future could be to inject input data in input_buffer_process and use engine to process stuff
 
     // Create buffer processor to process all input buffers
-    if (!buffer_processor)
-      buffer_processor = new BufferProcessor(item->channel);
-    // push the block processor
+    if (!buffer_processor) {
+      buffer_processor = new BufferProcessor(item->channel);  // push the block processor
+    }
     buffer_processor->push(buffer);
   }
 }
@@ -187,12 +185,11 @@ void Connection::review() {
   if (canceled) {
     return;   // Not call review
   }
-  if (!finished)
-    review_connection();
-  // Review persistancy in input/output buffer lists
+  if (!finished) {
+    review_connection();  // Review persistancy in input/output buffer lists
+  }
   if (input_buffer_list)
-    input_buffer_list->review_persistence();
-  if (output_buffer_list)
+    input_buffer_list->review_persistence(); if (output_buffer_list)
     output_buffer_list->review_persistence();
 }
 

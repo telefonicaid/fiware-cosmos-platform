@@ -134,7 +134,8 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
       return s;
     }
     if (size)
-      *size += header.gbufLen; LM_T(LmtSocketConnection, ("Read %d bytes of GOOGLE DATA from '%s'", header.gbufLen, fd->name().c_str()));
+      *size += header.gbufLen; LM_T(LmtSocketConnection,
+                                    ("Read %d bytes of GOOGLE DATA from '%s'", header.gbufLen, fd->name().c_str()));
 
     // Decode the google protocol buffer message
     message->ParseFromArray(dataP, header.gbufLen);
@@ -197,12 +198,17 @@ std::string Packet::str() {
 
   // Extra information for worker command
   if (msgCode == Message::WorkerCommand)
-    output << "(W-Command: " << message->worker_command().command() << ")"; if (msgCode == Message::WorkerCommandResponse)
-    output << "(W-CommandResponse: " << message->worker_command_response().worker_command().command() << ")"; if (msgCode ==
-                                                                                                                  Message::
-                                                                                                                  ClusterInfoUpdate)
-    output << "(ClusterInfoUpdate version " << message->cluster_info_version() << " )"; if (buffer_ != NULL)
-    output << " [ Buffer " << au::str(buffer_->getSize()) << "/" << au::str(buffer_->getMaxSize()) << " ]"; return output.str();
+    output << "(W-Command: " << message->worker_command().command() << ")"; if (msgCode ==
+                                                                                Message::WorkerCommandResponse)
+    output << "(W-CommandResponse: " << message->worker_command_response().worker_command().command() << ")";
+  if (msgCode ==
+      Message
+      ::
+      ClusterInfoUpdate)
+    output << "(ClusterInfoUpdate version " << message->cluster_info_version() << " )";
+  if (buffer_ != NULL)
+    output << " [ Buffer " << au::str(buffer_->getSize()) << "/" << au::str(buffer_->getMaxSize()) << " ]";
+  return output.str();
 }
 
 size_t Packet::getSize() {

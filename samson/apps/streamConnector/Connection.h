@@ -32,7 +32,7 @@ class ConnectionBase {
 public:
 
   ConnectionBase() {
-    connected = false;         // By default it is not connected
+    connected = false;  // By default it is not connected
     time_connected = 0;
     time_disconnected = 0;
   }
@@ -72,6 +72,7 @@ public:
       return 0;
     }
 
+
     return c / (c + nc);
   }
 
@@ -106,30 +107,30 @@ class Connection : public ConnectionBase {
   friend class StreamConnector;
   friend class Adaptor;
 
-  au::Token token;                             // Mutex protection for this connection
+  au::Token token;                      // Mutex protection for this connection
 
-  std::string description_;                    // Description name
-  ConnectionType type;                         // Type of item ( input or output )
-  Adaptor *item;                               // My adaptor
+  std::string description_;             // Description name
+  ConnectionType type;                  // Type of item ( input or output )
+  Adaptor *item;                        // My adaptor
 
-  BufferProcessor *buffer_processor;           // Processor for input buffers ( only in input )
+  BufferProcessor *buffer_processor;    // Processor for input buffers ( only in input )
 
-  BufferList *input_buffer_list;               // List of buffers at the input
-  BufferList *output_buffer_list;              // List of buffers at the output to be sent ( in output connections )
+  BufferList *input_buffer_list;        // List of buffers at the input
+  BufferList *output_buffer_list;       // List of buffers at the output to be sent ( in output connections )
 
-  bool initialized;        // Falg to indicate init_connection has been called
-  bool canceled;           // Flag to indicate this is canceled ( not call review again )
-  bool finished;           // Falg to indicate this is finished ( no more data )
+  bool initialized;                     // Falg to indicate init_connection has been called
+  bool canceled;                        // Flag to indicate this is canceled ( not call review again )
+  bool finished;                        // Falg to indicate this is finished ( no more data )
 
 
-  size_t id;           // Assigned when added to a item
+  size_t id;                            // Assigned when added to a item
 
   // Information about this connection
-  au::Cronometer cronometer;                   // Global cronometer
+  au::Cronometer cronometer;            // Global cronometer
 
 public:
 
-  TrafficStatistics traffic_statistics;        // Information about input & output
+  TrafficStatistics traffic_statistics;  // Information about input & output
 
 protected:
 
@@ -156,8 +157,8 @@ public:
     description_ = description;
   }
 
-  virtual size_t bufferedSize();                     // Get currect size accumulated here
-  virtual size_t bufferedSizeOnMemory();             // Get current size accumulated in memory
+  virtual size_t bufferedSize();                // Get currect size accumulated here
+  virtual size_t bufferedSizeOnMemory();        // Get current size accumulated in memory
 
   // Method to push data from channel ( only output )
   virtual void push(engine::BufferPointer buffer);
@@ -190,4 +191,4 @@ public:
 }
 
 
-#endif // ifndef _H_SAMSON_CONNECTOR_CONNECTION_BASE
+#endif  // ifndef _H_SAMSON_CONNECTOR_CONNECTION_BASE

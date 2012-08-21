@@ -25,7 +25,7 @@
 #include "au/containers/SharedPointer.h"
 #include <list>            // std::map
 
-#include "logMsg/logMsg.h" // LM_M()
+#include "logMsg/logMsg.h"  // LM_M()
 
 namespace au {
 template <class V>
@@ -109,4 +109,4 @@ private:
 };
 }
 
-#endif // ifndef AU_CONTAINERS_QUEUE_H_
+#endif  // ifndef AU_CONTAINERS_QUEUE_H_

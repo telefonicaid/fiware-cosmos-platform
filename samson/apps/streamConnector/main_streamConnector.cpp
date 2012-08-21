@@ -14,7 +14,7 @@
 #include "au/daemonize.h"
 #include "au/string.h"                  // au::str()
 
-#include "samson/client/SamsonClient.h" // samson::SamsonClient
+#include "samson/client/SamsonClient.h"  // samson::SamsonClient
 #include "samson/client/SamsonPushBuffer.h"
 
 #include "samson/common/coding.h"       // KVHeader
@@ -83,28 +83,37 @@ int default_buffer_size = 64 * 1024 * 1024 - sizeof(samson::KVHeader);
 
 PaArgument paArgs[] =
 {
-  { "-input",        input,                   "",                      PaString,                      PaOpt,
+  { "-input",        input,                   "",                   PaString,                      PaOpt,
     _i "stdin",
     PaNL,
     PaNL,
     "Input sources "                                                          },
-  { "-output",       output,                      "",               PaString,  PaOpt,     _i "stdout",         PaNL,      PaNL,
+  { "-output",       output,                  "",                   PaString,                      PaOpt,
+    _i "stdout",              PaNL,                PaNL,
     "Output sources "                                                         },
-  { "-buffer_size",  &buffer_size,                "",               PaInt,     PaOpt,     default_buffer_size, 1,
+  { "-buffer_size",  &buffer_size,            "",                   PaInt,                         PaOpt,
+    default_buffer_size,      1,
     default_buffer_size, "Buffer size in bytes"                                                    },
-  { "-splitter",     input_splitter_name,         "",               PaString,  PaOpt,     _i "",               PaNL,      PaNL,
+  { "-splitter",     input_splitter_name,     "",                   PaString,                      PaOpt,
+    _i "",                    PaNL,                PaNL,
     "Splitter to be used ( only valid for the default channel )"              },
-  { "-i",            &interactive,                "",               PaBool,    PaOpt,     false,               false,     true,
+  { "-i",            &interactive,            "",                   PaBool,                        PaOpt,
+    false,                    false,               true,
     "Interactive console"                                                     },
-  { "-daemon",       &run_as_daemon,              "",               PaBool,    PaOpt,     false,               false,     true,
+  { "-daemon",       &run_as_daemon,          "",                   PaBool,                        PaOpt,
+    false,                    false,               true,
     "Run in background. Remove connection & REST interface activated"         },
-  { "-console_port", &sc_console_port,            "",               PaInt,     PaOpt,     SC_CONSOLE_PORT,     1,         9999,
+  { "-console_port", &sc_console_port,        "",                   PaInt,                         PaOpt,
+    SC_CONSOLE_PORT,          1,                   9999,
     "Port to receive new console connections"                                 },
-  { "-web_port",     &sc_web_port,                "",               PaInt,     PaOpt,     SC_WEB_PORT,         1,         9999,
+  { "-web_port",     &sc_web_port,            "",                   PaInt,                         PaOpt,
+    SC_WEB_PORT,              1,                   9999,
     "Port to receive REST connections"                                        },
-  { "-f",            file_name,                   "",               PaString,  PaOpt,     _i "",               PaNL,      PaNL,
+  { "-f",            file_name,               "",                   PaString,                      PaOpt,
+    _i "",                    PaNL,                PaNL,
     "Input file with commands to setup channels and adapters"                 },
-  { "-working",      working_directory,           "",               PaString,  PaOpt,     _i ".",              PaNL,      PaNL,
+  { "-working",      working_directory,       "",                   PaString,                      PaOpt,
+    _i ".",                   PaNL,                PaNL,
     "Directory to store persistance data if necessary"                        },
   PA_END_OF_ARGS
 };
@@ -145,10 +154,9 @@ int main(int argC, const char *argV[]) {
 
   // Capturing SIGPIPE
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR)
-    LM_W(("SIGPIPE cannot be handled"));
-  if (buffer_size == 0)
-    LM_X(1, ("Wrong buffer size %lu", buffer_size ));
-  // Run in background if required
+    LM_W(("SIGPIPE cannot be handled")); if (buffer_size == 0) {
+    LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Run in background if required
+  }
   if (run_as_daemon) {
     daemonize();
     deamonize_close_all();
@@ -166,10 +174,9 @@ int main(int argC, const char *argV[]) {
   samson::ModulesManager::init("samsonConnector");               // Init the modules manager
 
   // Ignore verbose mode if interactive is activated
-  if (interactive)
-    lmVerbose = false;
-  // Init samsonConnector
-
+  if (interactive) {
+    lmVerbose = false;  // Init samsonConnector
+  }
   main_stream_connector = new stream_connector::StreamConnector();
 
   if (strcmp(file_name, "") != 0) {
@@ -305,10 +312,9 @@ int main(int argC, const char *argV[]) {
       }
 
       // Verify if can exit....
-      if (num_input_items == 0)        // Verify no input source is connected
-        if (pending_size == 0)         // Check no pending data to be send....
-          LM_X(0, ("Finish correctly. No more inputs data"));
-      usleep(100000);
+      if (num_input_items == 0) // Verify no input source is connected
+        if (pending_size == 0)  // Check no pending data to be send....
+          LM_X(0, ("Finish correctly. No more inputs data")); usleep(100000);
     }
   }
 

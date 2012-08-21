@@ -10,7 +10,8 @@
 #include "CommonNetwork.h"  // Own interface
 
 namespace samson {
-void CommonNetwork::set_cluster_information(size_t cluster_information_version, gpb::ClusterInfo *cluster_information) {
+void CommonNetwork::set_cluster_information(size_t cluster_information_version,
+                                            gpb::ClusterInfo *cluster_information) {
   au::TokenTaker tt(&token_);
 
   // Not update if we have a newer version of this cluster info
@@ -77,11 +78,13 @@ void CommonNetwork::review_connections() {
     // Discard for lower id or me ( if I am a worker )
     if (node_identifier_.node_type == WorkerNode) {
       if (node_identifier_.id < worker_id) {
-        LM_T(LmtNetworkConnection, ("Not adding connection with worker %lu (%s:%d) since my id is lower", worker_id, host.c_str(), port));
+        LM_T(LmtNetworkConnection,
+             ("Not adding connection with worker %lu (%s:%d) since my id is lower", worker_id, host.c_str(), port));
         continue;
       }
       if (node_identifier_.id == worker_id) {
-        LM_T(LmtNetworkConnection, ("Not adding connection with worker %lu (%s:%d) since this is me", worker_id, host.c_str(), port));
+        LM_T(LmtNetworkConnection,
+             ("Not adding connection with worker %lu (%s:%d) since this is me", worker_id, host.c_str(), port));
         continue;
       }
     }
@@ -232,15 +235,14 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
     return;   // Ignore hello message here
   }
 
-  if (packet->msgCode == Message::ClusterInfoUpdate)
+  if (packet->msgCode == Message::ClusterInfoUpdate) {
     if (node_identifier_.node_type == WorkerNode) {
       LM_W(("ClusterInfoUpdate packet received at a worker node from connection %s. Closing connection"
             , connection->node_identifier().str().c_str()));
       connection->Close();
       return;
-    }
-  // This is managed as a normal message in delilah
-
+    }  // This is managed as a normal message in delilah
+  }
   // Check we do now receive messages from unidenfitied node elements
   if (connection->node_identifier().node_type == UnknownNode) {
     LM_W(("Packet %s received from a non-identified node %s. Closing connection"

@@ -16,8 +16,10 @@ void  check_serialization(samson::system::Value *value, char *line, size_t max_s
   samson::system::Value *value2 = samson::system::Value::getInstance();
   size_t s2 = value2->parse(line);
 
-  EXPECT_TRUE(s == s2) << au::str("Different serialization size for value %s (write %lu read %lu)", value->str().c_str(), s, s2).c_str();
-  EXPECT_TRUE(*value == *value2) << au::str("Different write and read value %s != %s", value->str().c_str(), value2->str().c_str()).c_str();
+  EXPECT_TRUE(s == s2) << au::str("Different serialization size for value %s (write %lu read %lu)",
+                                  value->str().c_str(), s, s2).c_str();
+  EXPECT_TRUE(*value == *value2) << au::str("Different write and read value %s != %s",
+                                            value->str().c_str(), value2->str().c_str()).c_str();
 
   samson::system::Value::reuseInstance(value2);
 }

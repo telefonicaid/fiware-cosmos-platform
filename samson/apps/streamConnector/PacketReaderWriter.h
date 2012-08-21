@@ -25,13 +25,13 @@ namespace au { namespace network {
                 */
 
                // Interface to read
-               template <class P> // Class for the packet
+               template <class P>  // Class for the packet
                class PacketReaderInteface {
 public:
                  virtual void process_packet(P *packet) = 0;
                };
 
-               template <class P> // Class for the packet
+               template <class P>  // Class for the packet
                class PacketReader : public au::Thread {
                  au::FileDescriptor *fd_;
                  PacketReaderInteface<P> *interface_;
@@ -56,8 +56,9 @@ public:
                        return;
                      }
 
+
                      if (fd_->IsClosed()) {
-                       return; // End of thread since socket is disconnected
+                       return;  // End of thread since socket is disconnected
                      }
                      P *packet = new P();
                      au::Status s = packet->read(fd_);
@@ -66,7 +67,7 @@ public:
                        // Close connection
                        fd_->Close();
 
-                       return; // End of the tread
+                       return;  // End of the tread
                      }
 
                      // Execute this receive method in the interface
@@ -78,11 +79,11 @@ public:
                  }
                };
 
-               template <class P> // Class for the packet
+               template <class P>  // Class for the packet
                class PacketWriter : public au::Thread {
                  au::FileDescriptor *fd_;
 
-                 au::Token token; // Token to protect the list
+                 au::Token token;  // Token to protect the list
                  ObjectList<P> packets_;
 
                  // Size accumulated to be sent
@@ -108,13 +109,14 @@ public:
                        return;
                      }
 
+
                      if (fd_->IsClosed()) {
-                       return; // End of thread since socket is disconnected
+                       return;  // End of thread since socket is disconnected
                      }
                      // Recover next packet if any
                      P *packet = NULL;
                      {
-                       au::TokenTaker tt(&token); // Mutex protection
+                       au::TokenTaker tt(&token);  // Mutex protection
                        if (packets_.size() > 0) {
                          packet = packets_.front();
                        }
@@ -126,11 +128,11 @@ public:
                        au::Status s = packet->write(fd_);
 
                        if (s != au::OK) {
-                         return; // End of thread since packet could not be sent
+                         return;  // End of thread since packet could not be sent
                        }
                        // Release the packet from the list
                        {
-                         au::TokenTaker tt(&token); // Mutex protection
+                         au::TokenTaker tt(&token);  // Mutex protection
                          packets_.pop_front();
                          buffered_size -= packet->getSize();
                        }
@@ -152,6 +154,7 @@ public:
                        return;
                      }
 
+
                      // Push to the provided list
                      packets->push_back(p);
                    }
@@ -162,7 +165,7 @@ public:
                  }
 
                  void push(P *packet) {
-                   au::TokenTaker tt(&token); // Mutex protection
+                   au::TokenTaker tt(&token);  // Mutex protection
 
                    packets_.push_back(packet);
 
@@ -175,7 +178,7 @@ public:
                };
 
 
-               template <class P> // Class for the packet
+               template <class P>  // Class for the packet
                class PacketReaderWriter {
                  // Keep a pointer to fg to delete at the end
                  au::FileDescriptor *fd_;
@@ -217,9 +220,11 @@ public:
                    if (packet_reader_->isRunning()) {
                      return true;
                    }
+
                    if (packet_writer_->isRunning()) {
                      return true;
                    }
+
 
                    return false;
                  }
@@ -236,6 +241,6 @@ public:
                    packet_writer_->extract_pending_packets(packets);
                  }
                };
-               } } // End of namespace
+               } }  // End of namespace
 
-#endif // ifndef _H_AU_NETWORK_PACKET_READER_WRITER
+#endif  // ifndef _H_AU_NETWORK_PACKET_READER_WRITER

@@ -82,42 +82,60 @@ char host[1024];
  */
 PaArgument paArgs[] =
 {
-  { "-cluster",          cluster_id,                     "",                           PaString,                           PaOpt,
+  { "-cluster",          cluster_id,                     "",                           PaString,
+    PaOpt,
     _i "default",      PaNL,
     PaNL,    "Name of the cluster"                      },
-  { "-log_classic",      &log_classic,                   "",                  PaBool,                    PaOpt,    false,          false,
+  { "-log_classic",      &log_classic,                   "",                           PaBool,
+    PaOpt,                          false,              false,
     true,    "Use only the classical log system"        },
-  { "-log_host",         log_host,                       "",                  PaString,                  PaOpt,    _i "localhost", PaNL,
+  { "-log_host",         log_host,                       "",                           PaString,
+    PaOpt,                          _i "localhost",     PaNL,
     PaNL,    "log server host"                          },
-  { "-log_port",         &log_port,                      "",                  PaShortU,                  PaOpt,    LOG_PORT,       0,
+  { "-log_port",         &log_port,                      "",                           PaShortU,
+    PaOpt,                          LOG_PORT,           0,
     10000,   "log server port"                          },
-  { "-log_file",         log_file,                       "",                  PaString,                  PaOpt,    _i "",          PaNL,
+  { "-log_file",         log_file,                       "",                           PaString,
+    PaOpt,                          _i "",              PaNL,
     PaNL,    "Local log file"                           },
-  { "-user",             user,                           "",                  PaString,                  PaOpt,    _i "anonymous", PaNL,
+  { "-user",             user,                           "",                           PaString,
+    PaOpt,                          _i "anonymous",     PaNL,
     PaNL,    "User to connect to SAMSON cluster"        },
-  { "-password",         password,                       "",                  PaString,                  PaOpt,    _i "anonymous", PaNL,
+  { "-password",         password,                       "",                           PaString,
+    PaOpt,                          _i "anonymous",     PaNL,
     PaNL,    "Password to connect to SAMSON cluster"    },
-  { "-memory",           &memory_gb,                     "MEMORY",            PaInt,                     PaOpt,    1,              1,
+  { "-memory",           &memory_gb,                     "MEMORY",                     PaInt,
+    PaOpt,                          1,                  1,
     100,     "memory in GBytes"                         },
-  { "-load_buffer_size", &load_buffer_size_mb,           "LOAD_BUFFER_SIZE",  PaInt,                     PaOpt,    64,             64,
+  { "-load_buffer_size", &load_buffer_size_mb,           "LOAD_BUFFER_SIZE",           PaInt,
+    PaOpt,                          64,                 64,
     2048,    "load buffer size in MBytes"               },
-  { "-f",                commandFileName,                "FILE_NAME",         PaString,                  PaOpt,    _i "",          PaNL,
+  { "-f",                commandFileName,                "FILE_NAME",                  PaString,
+    PaOpt,                          _i "",              PaNL,
     PaNL,    "File with commands to run"                },
-  { "-command",          command,                        "",                  PaString,                  PaOpt,    _i "",          PaNL,
+  { "-command",          command,                        "",                           PaString,
+    PaOpt,                          _i "",              PaNL,
     PaNL,    "Single command to be executed"            },
-  { "-user",             user,                           "",                  PaString,                  PaOpt,    _i "anonymous", PaNL,
+  { "-user",             user,                           "",                           PaString,
+    PaOpt,                          _i "anonymous",     PaNL,
     PaNL,    "User to connect to SAMSON cluster"        },
-  { "-password",         password,                       "",                  PaString,                  PaOpt,    _i "anonymous", PaNL,
+  { "-password",         password,                       "",                           PaString,
+    PaOpt,                          _i "anonymous",     PaNL,
     PaNL,    "Password to connect to SAMSON cluster"    },
-  { "-memory",           &memory_gb,                     "MEMORY",            PaInt,                     PaOpt,    1,              1,
+  { "-memory",           &memory_gb,                     "MEMORY",                     PaInt,
+    PaOpt,                          1,                  1,
     100,     "memory in GBytes"                         },
-  { "-load_buffer_size", &load_buffer_size_mb,           "LOAD_BUFFER_SIZE",  PaInt,                     PaOpt,    64,             64,
+  { "-load_buffer_size", &load_buffer_size_mb,           "LOAD_BUFFER_SIZE",           PaInt,
+    PaOpt,                          64,                 64,
     2048,    "load buffer size in MBytes"               },
-  { "-f",                commandFileName,                "FILE_NAME",         PaString,                  PaOpt,    _i "",          PaNL,
+  { "-f",                commandFileName,                "FILE_NAME",                  PaString,
+    PaOpt,                          _i "",              PaNL,
     PaNL,    "File with commands to run"                },
-  { "-command",          command,                        "",                  PaString,                  PaOpt,    _i "",          PaNL,
+  { "-command",          command,                        "",                           PaString,
+    PaOpt,                          _i "",              PaNL,
     PaNL,    "Single command to be executed"            },
-  { "",                  host,                           "",                  PaString,                  PaOpt,    _i "localhost", PaNL,
+  { "",                  host,                           "",                           PaString,
+    PaOpt,                          _i "localhost",     PaNL,
     PaNL,    "host to be connected"                     },
 
   PA_END_OF_ARGS
@@ -280,10 +298,11 @@ int main(int argC, const char *argV[]) {
   if (!flag_log_classic) {
     std::string local_log_file;
     if (strlen(log_file) > 0)
-      local_log_file = log_file;
-    else
-      local_log_file = au::str("%s/delilahLog_%s_%d", paLogDir, au::code64_str(delilah_random_code).c_str(), (int)getpid());
-    au::start_log_to_server(log_host, log_port, local_log_file);
+      local_log_file = log_file; else
+      local_log_file = au::str("%s/delilahLog_%s_%d", paLogDir, au::code64_str(
+                                 delilah_random_code).c_str(),
+                               (int)getpid()); au::start_log_to_server(log_host, log_port,
+                                                                       local_log_file);
   }
 
   lmAux((char *)"father");
@@ -322,13 +341,14 @@ int main(int argC, const char *argV[]) {
       delilahConsole->writeWarningOnConsole(au::str("Connected to %s", hosts[i].c_str()));
       break;
     } else {
-      delilahConsole->writeWarningOnConsole(au::str("Not possible to connect with %s: %s", hosts[i].c_str(), error.GetMessage().c_str()));
+      delilahConsole->writeWarningOnConsole(au::str("Not possible to connect with %s: %s", hosts[i].c_str(),
+                                                    error.GetMessage().c_str()));
     }
   }
 
-  if (!delilahConsole->isConnected())
-    delilahConsole->writeWarningOnConsole("Delilah client not connected to any SAMSON cluster. ( see help connect )");
-  // ----------------------------------------------------------------
+  if (!delilahConsole->isConnected()) {
+    delilahConsole->writeWarningOnConsole("Delilah client not connected to any SAMSON cluster. ( see help connect )");  // ----------------------------------------------------------------
+  }
   // Special mode with one command line command
   // ----------------------------------------------------------------
 

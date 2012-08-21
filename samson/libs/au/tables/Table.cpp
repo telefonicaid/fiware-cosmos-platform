@@ -844,7 +844,8 @@ Table *Table::selectTable(SelectTableInformation *select) {
 
   // Change title if necessary
   if (select->title != "")
-    table->title = select->title; else
+    table->title = select->title;
+  else
     table->title = title;  // Add all filtered rows
   size_t counter = 0;
   for (size_t r = 0; r < rows.size(); r++) {
@@ -946,8 +947,7 @@ std::string Table::strSortedGroupedAndfiltered(std::string title
   }
 
   if (sort_field != "")
-    select.sort_columns.push_back(sort_field);
-  if (conditions != "")
+    select.sort_columns.push_back(sort_field); if (conditions != "")
     select.add_conditions(conditions); select.limit = limit;
 
   return str(&select);
@@ -971,8 +971,7 @@ Table *Table::selectTable(std::string title
   }
 
   if (sort_field != "")
-    select.sort_columns.push_back(sort_field);
-  if (conditions != "")
+    select.sort_columns.push_back(sort_field); if (conditions != "")
     select.add_conditions(conditions); select.limit = limit;
 
   return selectTable(&select);

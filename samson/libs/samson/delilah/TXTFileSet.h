@@ -107,4 +107,4 @@ public:
 };
 }
 
-#endif // ifndef _H_TXT_FILE_SET
+#endif  // ifndef _H_TXT_FILE_SET

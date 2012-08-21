@@ -36,9 +36,9 @@ public:
 
                        // Serialitzation of numbers
                        // ------------------------------------------------------------
-                       ser_int_positive, // Variable length possitive numbers
-                       ser_int_negative, // Variable length negative numbers
-                       ser_int_value_0, // Concrete values
+                       ser_int_positive,  // Variable length possitive numbers
+                       ser_int_negative,  // Variable length negative numbers
+                       ser_int_value_0,  // Concrete values
                        ser_int_value_1,
                        ser_int_value_2,
                        ser_int_value_3,
@@ -51,7 +51,7 @@ public:
                        ser_int_value_10,
                        ser_int_value_minus_1,
 
-                       ser_double_positive_1_decimal, // Double possitve or negative with a fixed number of decimals
+                       ser_double_positive_1_decimal,  // Double possitve or negative with a fixed number of decimals
                        ser_double_positive_2_decimal,
                        ser_double_positive_3_decimal,
                        ser_double_positive_4_decimal,
@@ -63,18 +63,18 @@ public:
                        ser_double_negative_4_decimal,
                        ser_double_negative_5_decimal,
 
-                       ser_double, // Generic double otherwise
+                       ser_double,  // Generic double otherwise
 
                        // Serialitzation of string
                        // ------------------------------------------------------------
                        ser_string,
-                       ser_string_constant, // Constant words frequently used ( user, log, url, ...)
-                       ser_string_smaz, // Compressed using smaz
+                       ser_string_constant,  // Constant words frequently used ( user, log, url, ...)
+                       ser_string_smaz,  // Compressed using smaz
 
                        // Serialitzation of vector
                        // ------------------------------------------------------------
                        ser_vector,
-                       ser_vector_len_0, // Vector with a particular length
+                       ser_vector_len_0,  // Vector with a particular length
                        ser_vector_len_1,
                        ser_vector_len_2,
                        ser_vector_len_3,
@@ -84,7 +84,7 @@ public:
                        // Serialitzation of map
                        // ------------------------------------------------------------
                        ser_map,
-                       ser_map_len_0, // Map with a particular number of elements inside
+                       ser_map_len_0,  // Map with a particular number of elements inside
                        ser_map_len_1,
                        ser_map_len_2,
                        ser_map_len_3,
@@ -96,11 +96,11 @@ private:
 
                      // Value types ( on memory )
                      typedef enum {
-                       value_void, // No content
+                       value_void,  // No content
 
-                       value_number, // Generic number content  ( using _value_double )
-                       value_string, // Generic string content  ( using _value_string )
-                       value_vector, // A vector of values      ( using _value_vector )
+                       value_number,  // Generic number content  ( using _value_double )
+                       value_string,  // Generic string content  ( using _value_string )
+                       value_vector,  // A vector of values      ( using _value_vector )
                        value_map,  // A map of values         ( using _value_map    )
                      } ValueType;
 
@@ -143,6 +143,7 @@ public:
                        if (v) {
                          return v;
                        }
+
                        return new Value();
                      }
 
@@ -231,7 +232,7 @@ public:
                      bool operator>=(const Value &other) const;
                      bool operator<(const Value &other) const;
                      bool operator>(const Value &other) const;
-                     const Value operator+(Value &other); // const
+                     const Value operator+(Value &other);  // const
                      const Value operator-(const Value &other) const;
                      const Value operator*(const Value &other) const;
                      const Value operator/(const Value &other) const;
@@ -459,6 +460,6 @@ public:
 
                      const char *strType();
                    };
-                   } } // end of namespace samson.system
+                   } }  // end of namespace samson.system
 
-#endif // ifndef _H_SAMSON_SYSTEM_VALUE_Value
+#endif  // ifndef _H_SAMSON_SYSTEM_VALUE_Value

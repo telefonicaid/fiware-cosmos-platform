@@ -96,14 +96,14 @@ private:
                      size_t pending_size_;             // Pending size to be processed
                      size_t priority_rank_;            // Priority number to discover the most urgent stream operation to be executed
 
-                     au::SharedPointer<gpb::StreamOperation> stream_operation_; // Copy of the stream operation definition
+                     au::SharedPointer<gpb::StreamOperation> stream_operation_;  // Copy of the stream operation definition
                      gpb::Data *data_;                 // Pointer to data model in the last review
 
-                     au::Cronometer last_task_cronometer_; // Last execution cronometer
+                     au::Cronometer last_task_cronometer_;  // Last execution cronometer
 
                      // Error management
                      au::ErrorManager error_;          // Contains the last error of an operation
-                     au::Cronometer cronometer_error_; // Time since the last error
+                     au::Cronometer cronometer_error_;  // Time since the last error
 
                      // Pointer to the worker task we have scheduled ( if any )
                      au::SharedPointer<WorkerTask> worker_task_;
@@ -403,6 +403,6 @@ private:
                     * };
                     *
                     */
-                   } } // end of namespace samson::stream
+                   } }  // end of namespace samson::stream
 
-#endif // ifndef _H_STREAM_OPERATION
+#endif  // ifndef _H_STREAM_OPERATION

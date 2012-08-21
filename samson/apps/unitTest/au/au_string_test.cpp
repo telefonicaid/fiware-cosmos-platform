@@ -16,7 +16,8 @@ TEST(auStringTest, simple) {
 
   EXPECT_EQ(au::str_progress_bar(0.7125, 10), " [ *******... ] ") << "Error in str_progress_bar()";
   EXPECT_EQ(au::str_progress_bar(0.7125, 10, '=', '?'), " [ =======??? ] ") << "Error in str_progress_bar()";
-  EXPECT_EQ(au::str_double_progress_bar(0.7125, 0.9, '*', '=', '?', 10), " [ *******==? ] ") << "Error in str_progress_bar()";
+  EXPECT_EQ(au::str_double_progress_bar(0.7125, 0.9, '*', '=', '?',
+                                        10), " [ *******==? ] ") << "Error in str_progress_bar()";
 
   std::string path = "/tmp/path.txt";
   std::string wrong_path = "/tmp/path_txt";

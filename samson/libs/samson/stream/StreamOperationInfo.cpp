@@ -46,7 +46,7 @@ namespace samson { namespace stream {
                      data_ = data;
 
                      // If we are running a task, let see if it is finished
-                     if (worker_task_ != NULL)
+                     if (worker_task_ != NULL) {
                        if (worker_task_->is_finished()) {
                          // If there is an error, reset
                          const au::ErrorManager& worker_task_error = worker_task_->error();
@@ -77,8 +77,8 @@ namespace samson { namespace stream {
 
                          // We have to update data and review in the next iteration
                          return;
-                       }
-                     // Compute aproximate pending size ( always independently of the state to display information in the list )
+                       }  // Compute aproximate pending size ( always independently of the state to display information in the list )
+                     }
                      std::string input_queue = stream_operation_->inputs(0);
                      gpb::Queue *queue = ::samson::gpb::get_queue(data, input_queue);
                      if (!queue) {
@@ -226,7 +226,8 @@ namespace samson { namespace stream {
                      return output.str();
                    }
 
-                   void StreamOperationInfo::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
+                   void StreamOperationInfo::fill(samson::gpb::CollectionRecord *record,
+                                                  const Visualization& visualization) {
                      // Common columns
                      ::samson::add(record, "name", stream_operation_->name(), "different");
                      ::samson::add(record, "id", stream_operation_id_, "different");
@@ -251,7 +252,8 @@ namespace samson { namespace stream {
 
                      if (worker_task_ != NULL)
                        ::samson::add(record, "tasks", worker_task_->get_id(), "different"); else
-                       ::samson::add(record, "tasks", "none", "different"); ::samson::add(record, "state", state_, "different");
+                       ::samson::add(record, "tasks", "none", "different"); ::samson::add(record, "state", state_,
+                                                                                          "different");
                    }
 
                    bool StreamOperationInfo::isValid(au::ErrorManager *error) {
@@ -260,7 +262,8 @@ namespace samson { namespace stream {
                          error_.Reset();  // Remove errors
                        } else {
                          // Transfer the error
-                         error->set(au::str("Error ( time %s ) %s", au::S(cronometer_error_).str().c_str(), error_.GetMessage().c_str()));
+                         error->set(au::str("Error ( time %s ) %s", au::S(cronometer_error_).str().c_str(),
+                                            error_.GetMessage().c_str()));
                          return false;
                        }
                      }

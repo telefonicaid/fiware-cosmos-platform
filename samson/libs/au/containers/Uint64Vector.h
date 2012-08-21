@@ -10,7 +10,7 @@
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"   // au::ErrorManager
 #include "au/console/ConsoleAutoComplete.h"
-#include "au/containers/map.h" // au::map
+#include "au/containers/map.h"  // au::map
 #include "au/containers/simple_map.h"
 #include "au/string.h"         // au::str(...)
 
@@ -92,4 +92,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_STRING_UINT64_VECTOR
+#endif  // ifndef _H_AU_STRING_UINT64_VECTOR

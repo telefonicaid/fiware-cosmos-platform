@@ -44,4 +44,4 @@ public:
 };
 }  // End of namespace stream_connector
 
-#endif // ifndef _H_SAMSON_CONNECTOR_LOG_MANAGER
+#endif  // ifndef _H_SAMSON_CONNECTOR_LOG_MANAGER

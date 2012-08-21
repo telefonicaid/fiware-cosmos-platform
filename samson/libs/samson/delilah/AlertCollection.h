@@ -20,7 +20,7 @@
 #include "au/tables/Table.h"
 
 
-#include "samson/delilah/Delilah.h" // samson::Delilah
+#include "samson/delilah/Delilah.h"  // samson::Delilah
 
 namespace samson {
 // Class used to store traces received from SAMSON
@@ -61,4 +61,4 @@ public:
 };
 }
 
-#endif // ifndef _H_DELILAH_TRACE_COLLECTION
+#endif  // ifndef _H_DELILAH_TRACE_COLLECTION

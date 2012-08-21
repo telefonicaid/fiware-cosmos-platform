@@ -96,4 +96,4 @@ private:
 };
 }
 
-#endif // ifndef _H_WORKER_COMMAND_DELILAH_COMPONENT
+#endif  // ifndef _H_WORKER_COMMAND_DELILAH_COMPONENT

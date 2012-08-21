@@ -22,7 +22,8 @@ public:
                        forgetting_factor = ((double)(time_span - 1)) / ((double)time_span);
                      }
 
-                     static void emit_top_element(const char *concept, const char *category, double counter, samson::KVWriter *writer) {
+                     static void emit_top_element(const char *concept, const char *category, double counter,
+                                                  samson::KVWriter *writer) {
                        ValueContainer keyContainer;
                        ValueContainer valueContainer;
 
@@ -35,7 +36,8 @@ public:
                      }
 
                      // Update this state based on input values
-                     bool update(Value *key, Value *state, Value **values, size_t num_values, samson::KVWriter *writer) {
+                     bool update(Value *key, Value *state, Value **values, size_t num_values,
+                                 samson::KVWriter *writer) {
                        if (key->checkMapValue("app", "top")) {
                          update_accumulator(key, state, values, num_values, writer);
                          return true;
@@ -48,7 +50,8 @@ public:
                        return false;
                      }
 
-                     void update_accumulator(Value *key, Value *state, Value **values, size_t num_values, samson::KVWriter *writer) {
+                     void update_accumulator(Value *key, Value *state, Value **values, size_t num_values,
+                                             samson::KVWriter *writer) {
                        emit_log("debug",
                                 au::str("Processing top.accumulateion state %s - %s with %lu values", key->str().c_str(),
                                         state->str().c_str(), num_values), writer);
@@ -63,7 +66,7 @@ public:
                        const char *concept  = key->get_string_from_map("concept");
 
                        if (!category || !concept) {
-                         return; // Incorrect key for this process component
+                         return;  // Incorrect key for this process component
                        }
                        double state_total = state->get_double_from_map("total", 0);
                        size_t state_time = state->get_uint64_from_map("time");
@@ -78,7 +81,7 @@ public:
 
                        // Add new samples
                        for (size_t i = 0; i < num_values; i++) {
-                         double tmp_value = values[i]->get_double(0); // Get double value ( 0 as default if this is not a number )
+                         double tmp_value = values[i]->get_double(0);  // Get double value ( 0 as default if this is not a number )
                          state_total += tmp_value;
                        }
 
@@ -103,7 +106,7 @@ public:
                        const char *new_value_concept = new_value->get_string_from_map("concept");
 
                        if (!new_value_concept) {
-                         return; // Skip incorrect value
+                         return;  // Skip incorrect value
                        }
                        // Search for the same concept in the top list....
 
@@ -119,7 +122,8 @@ public:
                            while ((p > 0) &&
                                   ( state->get_value_from_vector(p)->get_double_from_map("total",
                                                                                          0) >
-                                    state->get_value_from_vector(p - 1)->get_double_from_map("total", 0))) {
+                                    state->get_value_from_vector(p - 1)->get_double_from_map("total", 0)))
+                           {
                              // Swap p and p-1 elements
                              state->swap_vector_components(p, p - 1);
                              p--;
@@ -128,7 +132,8 @@ public:
                            while ((p < (state->get_vector_size() - 1)) &&
                                   ( state->get_value_from_vector(p)->get_double_from_map("total",
                                                                                          0) <
-                                    state->get_value_from_vector(p + 1)->get_double_from_map("total", 0))) {
+                                    state->get_value_from_vector(p + 1)->get_double_from_map("total", 0)))
+                           {
                              // Swap p and p-1 elements
                              state->swap_vector_components(p, p + 1);
                              p++;
@@ -147,7 +152,7 @@ public:
 
                          if (new_value_total > vector_value_total) {
                            // Insert here
-                           state->add_value_to_vector(p)->copyFrom(new_value); // Insert this value at this position
+                           state->add_value_to_vector(p)->copyFrom(new_value);  // Insert this value at this position
 
                            // Check length of the vector
                            while (state->get_vector_size() > 100) {
@@ -164,9 +169,11 @@ public:
                        }
                      }
 
-                     void update_category(Value *key, Value *state, Value **values, size_t num_values, samson::KVWriter *writer) {
+                     void update_category(Value *key, Value *state, Value **values, size_t num_values,
+                                          samson::KVWriter *writer) {
                        emit_log("debug",
-                                au::str("Processing top.category state %s - %s with %lu values", key->str().c_str(), state->str().c_str(),
+                                au::str("Processing top.category state %s - %s with %lu values", key->str().c_str(),
+                                        state->str().c_str(),
                                         num_values), writer);
 
                        if (num_values == 0) {
@@ -178,7 +185,7 @@ public:
                        const char *category = key->get_string_from_map("category");
 
                        if (!category) {
-                         return; // Incorrect key for this process component
+                         return;  // Incorrect key for this process component
                        }
                        // Process new elements
                        for (size_t i = 0; i < num_values; i++) {
@@ -192,6 +199,6 @@ public:
                        emit_state(key, state, writer);
                      }
                    };
-                   } } // End of namespace
+                   } }  // End of namespace
 
-#endif // ifndef _H_SAMSON_system_TOP_PROCESS_COMPONENT
+#endif  // ifndef _H_SAMSON_system_TOP_PROCESS_COMPONENT

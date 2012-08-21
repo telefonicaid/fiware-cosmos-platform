@@ -44,7 +44,8 @@ void OperationContainer::parse(AUTockenizer *module_creator,  int begin, int end
 
   while (pos < end) {
     if (module_creator->isSpecial(pos)) {
-      fprintf(stderr, "samsonModuleParser: Error parsing an operation definition at line:%d\n", module_creator->items[pos].line);
+      fprintf(stderr, "samsonModuleParser: Error parsing an operation definition at line:%d\n",
+              module_creator->items[pos].line);
       exit(1);
     }
 
@@ -149,22 +150,27 @@ void OperationContainer::parse(AUTockenizer *module_creator,  int begin, int end
         compareValueFunction = "";
       }
 
-      info += "input: " + keyFormat + " " + valueFormat + " " + optional_compareKeyFunction + " " + optional_compareValueFunction + "\n";
+      info += "input: " + keyFormat + " " + valueFormat + " " + optional_compareKeyFunction + " " +
+              optional_compareValueFunction + "\n";
 
       DataSet dataset(KVFormat::format(keyFormat, valueFormat), compareKeyFunction, compareValueFunction);
       addInput(dataset);
     } else if (mainCommand == "out") {
       if (module_creator->isSpecial(pos)) {
-        fprintf(stderr, "samsonModuleParser: Error parsing an operation definition type:'%s', name:'%s'. Wrong format at line:%d\n",
-                type.c_str(), name.c_str(),  module_creator->items[pos].line);
+        fprintf(
+          stderr,
+          "samsonModuleParser: Error parsing an operation definition type:'%s', name:'%s'. Wrong format at line:%d\n",
+          type.c_str(), name.c_str(),  module_creator->items[pos].line);
         exit(1);
       }
 
       std::string keyFormat = module_creator->itemAtPos(pos++).str;
 
       if (module_creator->isSpecial(pos)) {
-        fprintf(stderr, "samsonModuleParser: Error parsing an operation definition type:'%s', name:'%s'. Wrong format at line:%d\n",
-                type.c_str(), name.c_str(),  module_creator->items[pos].line);
+        fprintf(
+          stderr,
+          "samsonModuleParser: Error parsing an operation definition type:'%s', name:'%s'. Wrong format at line:%d\n",
+          type.c_str(), name.c_str(),  module_creator->items[pos].line);
         exit(1);
       }
 
@@ -174,8 +180,10 @@ void OperationContainer::parse(AUTockenizer *module_creator,  int begin, int end
       DataSet dataset(KVFormat::format(keyFormat, valueFormat));
       addOutput(dataset);
     } else {
-      fprintf(stderr, "samsonModuleParser: Error: Unknown command inside  operation section (%s), type:'%s', name:'%s', at line:%d\n",
-              mainCommand.c_str(), type.c_str(), name.c_str(), module_creator->items[pos].line);
+      fprintf(
+        stderr,
+        "samsonModuleParser: Error: Unknown command inside  operation section (%s), type:'%s', name:'%s', at line:%d\n",
+        mainCommand.c_str(), type.c_str(), name.c_str(), module_creator->items[pos].line);
       exit(1);
     }
   }

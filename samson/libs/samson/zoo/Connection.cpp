@@ -195,7 +195,8 @@ namespace samson { namespace zoo {
                      return zoo_exists(handler_, path.c_str(), 0, stat);
                    }
 
-                   int Connection::Exists(const std::string& path, ConnectionWatcherInterface *watcher, struct Stat *stat) {
+                   int Connection::Exists(const std::string& path, ConnectionWatcherInterface *watcher,
+                                          struct Stat *stat) {
                      au::TokenTaker tt(&token_);
 
                      RegisterWatcher(watcher);
@@ -264,7 +265,8 @@ namespace samson { namespace zoo {
                          || (type == ZOO_CHILD_EVENT ))
                      {
                        // ConnectionWatcherInterfaceCaller* caller = (ConnectionWatcherInterfaceCaller*)watcherCtx;
-                       ConnectionWatcherInterfaceCaller *caller = static_cast<ConnectionWatcherInterfaceCaller *>( watcherCtx );
+                       ConnectionWatcherInterfaceCaller *caller =
+                         static_cast<ConnectionWatcherInterfaceCaller *>( watcherCtx );
 
                        // Check if this watcher is in the list of active watchers
                        if (caller->connection->IsWatcherRegistered(caller->connection_wacher))
@@ -339,13 +341,15 @@ namespace samson { namespace zoo {
                      struct ACL_vector ACL_VECTOR = { 1, ALL_ACL };
 
                      // Create a node
-                     rc = zoo_create(handler_, path.c_str(), value, value_len, &ACL_VECTOR, flags, buffer, buffer_length - 1);
+                     rc = zoo_create(handler_,
+                                     path.c_str(), value, value_len, &ACL_VECTOR, flags, buffer, buffer_length - 1);
                      if (!rc)
                        path = buffer;  // Get the new name ( it is different when flag ZOO_SEQUETIAL is used )
                      return rc;
                    }
 
-                   int Connection::Connect(const std::string& host, const std::string& user, const std::string& password) {
+                   int Connection::Connect(const std::string& host, const std::string& user,
+                                           const std::string& password) {
                      au::TokenTaker tt(&token_);
 
                      int rc = Connect(host);
@@ -424,7 +428,8 @@ namespace samson { namespace zoo {
                      return au::str("Unknown (%d)", rc);
                    }
 
-                   Connection::ConnectionWatcherInterfaceCaller *Connection::get_new_watcher_caller(ConnectionWatcherInterface *watcher) {
+                   Connection::ConnectionWatcherInterfaceCaller *Connection::get_new_watcher_caller(
+                     ConnectionWatcherInterface *watcher) {
                      Connection::ConnectionWatcherInterfaceCaller *caller = \
                        (ConnectionWatcherInterfaceCaller *)malloc(sizeof(ConnectionWatcherInterfaceCaller));
 

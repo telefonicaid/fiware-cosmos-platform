@@ -52,4 +52,4 @@ public:
 };
 }
 
-#endif // ifndef _H_MEMORY_REQUEST
+#endif  // ifndef _H_MEMORY_REQUEST

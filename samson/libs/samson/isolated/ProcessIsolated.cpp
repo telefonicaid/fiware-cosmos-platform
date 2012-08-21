@@ -75,7 +75,8 @@ void ProcessIsolated::runCode(int c) {
 void ProcessIsolated::flushBuffer(bool finish) {
   au::Cronometer cronometer;
 
-  LM_T(LmtIsolatedOutputs, ("Flush buffer starts ( shared memory id %d ) for operation %s ", shm_id,  process_item_description().c_str()));
+  LM_T(LmtIsolatedOutputs,
+       ("Flush buffer starts ( shared memory id %d ) for operation %s ", shm_id,  process_item_description().c_str()));
 
   switch (type) {
     case key_value:
@@ -99,9 +100,9 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
 
   // Make sure everything is correct
   if (!buffer)
-    LM_X(1, ("Internal error: Missing buffer in ProcessBase")); if (size == 0)
-    LM_X(1, ("Internal error: Wrong size for ProcessBase"));
-  // Outputs structures placed at the begining of the buffer
+    LM_X(1, ("Internal error: Missing buffer in ProcessBase")); if (size == 0) {
+    LM_X(1, ("Internal error: Wrong size for ProcessBase"));  // Outputs structures placed at the begining of the buffer
+  }
   OutputChannel *channel = (OutputChannel *)buffer;
 
   // NodeBuffers ( inodes in the shared memory buffer )
@@ -129,7 +130,8 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
 
         // KVFormat format = KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() );
         if (outputFormats.size() > (size_t)o)
-          header->init(outputFormats[o], _channel->info); else
+          header->init(outputFormats[o], _channel->info);
+        else
           header->init(KVFormat("no-used", "no-used"), _channel->info);  // This buffer is not not sended with the buffer
         KVInfo *info = (KVInfo *)malloc(sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS);
 

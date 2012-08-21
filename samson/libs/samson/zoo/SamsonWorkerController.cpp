@@ -118,10 +118,10 @@ void SamsonWorkerController::watcher(samson::zoo::Connection *connection, int ty
 
   LM_T(LmtClusterSetup, ("SamsonWorkerController watch %s", path ));
 
-  if (strcmp(path, "/samson/cluster") == 0)
+  if (strcmp(path, "/samson/cluster") == 0) {
     // Update of the cluster information
-    recover_cluster_info();
-  // Rest of watchers are related with workers up or down
+    recover_cluster_info();  // Rest of watchers are related with workers up or down
+  }
   int rc = check();
   if (rc)
     LM_W(("Error checkin samson worker controller %s", zoo::str_error(rc).c_str()));
@@ -237,7 +237,8 @@ int SamsonWorkerController::check() {
   int rc = get_all_workers_from_zk(worker_ids);
 
   if (rc) {
-    LM_W(("Not possible check SamsonWorkerController since there was an error getting worker list %s", zoo::str_error(rc).c_str()));
+    LM_W(("Not possible check SamsonWorkerController since there was an error getting worker list %s",
+          zoo::str_error(rc).c_str()));
     cluster_leader_ = false;   // For consistency
     return rc;   // TODO: Define this error
   }
@@ -434,7 +435,8 @@ int SamsonWorkerController::create_cluster_info(samson::gpb::ClusterInfo *cluste
   int replica_factor = 3;
 
   if (worker_ids.size() == 1)
-    replica_factor = 1; else if (worker_ids.size() == 2)
+    replica_factor = 1;
+  else if (worker_ids.size() == 2)
     replica_factor = 2;  // Decide number of process units
   int num_units = 16 * worker_ids.size();  // Number of divisions
 

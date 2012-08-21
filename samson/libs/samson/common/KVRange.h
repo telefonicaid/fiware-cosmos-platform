@@ -63,9 +63,11 @@ struct KVRange {
       return KVRange(0, 0);
     }
 
+
     if (range.hg_begin >= hg_end) {
       return KVRange(0, 0);
     }
+
 
 
     return KVRange(std::max(hg_begin, range.hg_begin)
@@ -191,10 +193,12 @@ public:
       if (rc) {
         return rc;
       }
+
       int rc2 = remain_ranges_to_remove.SetFromDifference(range, intersection);
       if (rc2) {
         return rc2;
       }
+
 
       // Add remainings
       ranges_.erase(ranges_.begin() + i);
@@ -269,6 +273,7 @@ public:
       return 0;
     }
 
+
     return ((double)range_in / (double)range_total );
   }
 
@@ -287,4 +292,4 @@ private:
 };
 }
 
-#endif // ifndef _H_SAMSON_KVRANGE
+#endif  // ifndef _H_SAMSON_KVRANGE

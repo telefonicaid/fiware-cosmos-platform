@@ -87,10 +87,18 @@ void SamsonComscoreDictionary::write(const char *file_name) {
     LM_X(1, ("Error writin to file %s to create a SamsonComscoreDictionary", file_name ));
   LM_M(("Writing file %s with ( String %s ) ( Dictionary %s ) ( Pattern2Category %s ) ( Category2Description %s )"
         , file_name
-        , au::str(header.size_string_collection).c_str()
-        , au::str(header.size_struct_collection_dictionary_entries).c_str()
-        , au::str(header.size_struct_collection_pattern_to_category).c_str()
-        , au::str(header.size_struct_collection_categories).c_str()
+        , au::str(header.
+                  size_string_collection)
+        .c_str()
+        , au::str(header.
+                  size_struct_collection_dictionary_entries)
+        .c_str()
+        , au::str(header.
+                  size_struct_collection_pattern_to_category)
+        .c_str()
+        , au::str(header.
+                  size_struct_collection_categories)
+        .c_str()
         ));
 
 
@@ -147,7 +155,9 @@ bool SamsonComscoreDictionary::find_pattern_range(const char *core_domain, uint 
     *end = pos;
 
     // Move limits while same core domain
-    while ((*begin > 1) && (strcmp(core_domain, string_collection.get(dictionary_entries.v[*begin - 1].domain)) == 0)) {
+    while ((*begin > 1) &&
+           (strcmp(core_domain, string_collection.get(dictionary_entries.v[*begin - 1].domain)) == 0))
+    {
       *begin = *begin - 1;
     }
     while (

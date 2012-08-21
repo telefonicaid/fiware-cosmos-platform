@@ -61,4 +61,4 @@ public:
 }
 }
 
-#endif // ifndef _H_BLOCK_LIST_CONTAINER
+#endif  // ifndef _H_BLOCK_LIST_CONTAINER

@@ -30,4 +30,4 @@ namespace samson {
 void sysctl_value(char *param_name, long int *param_value);
 bool MemoryCheck();
 }
-#endif // ifndef MEMORY_CHECK_H
+#endif  // ifndef MEMORY_CHECK_H

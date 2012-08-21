@@ -163,4 +163,4 @@ public:
   au::tables::Table *getInputInterChannelConnections();
 };
 }
-#endif // ifndef _H_SAMSON_CONNECTOR
+#endif  // ifndef _H_SAMSON_CONNECTOR

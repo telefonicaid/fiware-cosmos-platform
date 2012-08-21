@@ -21,4 +21,4 @@ private:
 };
 }
 
-#endif // ifndef AU_ExecesiveTimeAlarm_H_
+#endif  // ifndef AU_ExecesiveTimeAlarm_H_

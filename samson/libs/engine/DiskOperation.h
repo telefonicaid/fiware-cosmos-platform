@@ -37,7 +37,7 @@
 #include <time.h>            // clock(.)
 
 #include "au/Environment.h"     // au::Environment
-#include "au/ErrorManager.h" // samson::Error
+#include "au/ErrorManager.h"  // samson::Error
 #include "au/string.h"       // au::Format
 
 
@@ -68,42 +68,44 @@ public:
 
 private:
 
-  DiskOperationType type;               // Type of operation ( read, write , remove , etc.. )
-  std::string fileName;                 // FileName to open
+  DiskOperationType type;            // Type of operation ( read, write , remove , etc.. )
+  std::string fileName;              // FileName to open
 
   engine::BufferPointer buffer;      // Auto-retained pointer to a buffer
 
-  char *read_buffer;                    // Buffer used when reading from disk
-  size_t size;                          // Size to read/write
-  size_t offset;                        // Offset inside the file ( only for read operations )
+  char *read_buffer;                 // Buffer used when reading from disk
+  size_t size;                       // Size to read/write
+  size_t offset;                     // Offset inside the file ( only for read operations )
 
   std::set<size_t> listeners;        // Collection of Ids of the listener to notify when operation is completed
 
   friend class DiskManagerNotification;
   friend class DiskManager;
 
-  pthread_t t;                          // Background thread to run the operation
+  pthread_t t;                       // Background thread to run the operation
 
   DiskOperation();
 
 public:
 
-  DiskManager *diskManager;             // Pointer to the disk manager to notify
+  DiskManager *diskManager;          // Pointer to the disk manager to notify
 
   ~DiskOperation();
 
   // int tag;                          // General tag to identify the operation
 
-  au::ErrorManager error;               // Management of the error during this operation
+  au::ErrorManager error;            // Management of the error during this operation
 
   // Constructors used to create Disk Operations ( to be submitted to Engine )
 
-  static DiskOperation *newReadOperation(char *data, std::string fileName, size_t offset, size_t size, size_t _listenerId);
+  static DiskOperation *newReadOperation(char *data, std::string fileName, size_t offset, size_t size,
+                                         size_t _listenerId);
   static DiskOperation *newWriteOperation(BufferPointer buffer,  std::string fileName, size_t _listenerId);
   static DiskOperation *newAppendOperation(BufferPointer buffer,  std::string fileName, size_t _listenerId);
   static DiskOperation *newRemoveOperation(std::string fileName, size_t _listenerId);
 
-  static DiskOperation *newReadOperation(std::string _fileName, size_t _offset, size_t _size,  SimpleBuffer simpleBuffer,
+  static DiskOperation *newReadOperation(std::string _fileName, size_t _offset, size_t _size,
+                                         SimpleBuffer simpleBuffer,
                                          size_t _listenerId);
 
 
@@ -150,4 +152,4 @@ public:
 };
 }
 
-#endif // ifndef _H_DISK_OPERATION
+#endif  // ifndef _H_DISK_OPERATION

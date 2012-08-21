@@ -153,7 +153,8 @@ void SamsonClient::waitFinishPushingData() {
   while (true) {
     if (isFinishedPushingData())
       return; else
-      usleep(200000); LM_V(("Waiting delilah to finish push process. Still pending %lu push items", delilah_->get_num_push_items()));
+      usleep(200000);
+    LM_V(("Waiting delilah to finish push process. Still pending %lu push items", delilah_->get_num_push_items()));
   }
 }
 

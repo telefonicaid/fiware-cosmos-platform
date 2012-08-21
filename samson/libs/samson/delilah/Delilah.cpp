@@ -46,7 +46,8 @@ namespace samson {
 Delilah::Delilah(std::string connection_type, size_t delilah_id) : token("Delilah_token") {
   // Random identifier for this delilah
   if (delilah_id == (size_t)-1)
-    delilah_id_ = au::code64_rand(); else
+    delilah_id_ = au::code64_rand();
+  else
     delilah_id_ = delilah_id;  // Network interface for all the workers ( included in the cluster selected )
   network = new DelilahNetwork(connection_type, delilah_id_, this);
 
@@ -582,7 +583,7 @@ int Delilah::_receive(const PacketPointer& packet) {
 void Delilah::getInfo(std::ostringstream& output) {
   if (output != output)
     LM_E(("sorry, just wanted to avoid a 'strict' warning ..."));  // Engine
-                                                                  // engine::Engine::shared()->getInfo( output );
+   // engine::Engine::shared()->getInfo( output );
 
   // Engine system
   // samson::getInfoEngineSystem(output, network);
@@ -639,8 +640,7 @@ std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {
 
   if (only_queues)
     table.setTitle(au::str("Local queues ( %s )", pattern.c_str())); else
-    table.setTitle(au::str("Local files ( %s )", pattern.c_str()));
-  return table.str();
+    table.setTitle(au::str("Local files ( %s )", pattern.c_str())); return table.str();
 }
 
 DelilahComponent *Delilah::getComponent(size_t id) {

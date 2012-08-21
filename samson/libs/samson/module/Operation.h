@@ -68,27 +68,27 @@ public:
     parserOut,
     parserOutReduce,
     script,
-    system,             // Special operation of the system
-    splitter,           // Operation to split input data blocks pushed to the platform, before been sent to the parser
+    system,                            // Special operation of the system
+    splitter,                          // Operation to split input data blocks pushed to the platform, before been sent to the parser
     unknown
   } Type;
 
 
   // Basic stuff
-  std::string _name;                            // !< Name of the operation
-  Type _type;                                   // !< Identifier of the operation
+  std::string _name;                   // !< Name of the operation
+  Type _type;                          // !< Identifier of the operation
 
 
-  std::vector<KVFormat> inputFormats;           // !< Formats of the key-value at the inputs
-  std::vector<KVFormat> outputFormats;          // !< Format of the key-value at the outputs
+  std::vector<KVFormat> inputFormats;  // !< Formats of the key-value at the inputs
+  std::vector<KVFormat> outputFormats;  // !< Format of the key-value at the outputs
 
 
   // Code in lines (scripts)
-  std::vector<std::string> code;                // !< Code for scripts
+  std::vector<std::string> code;       // !< Code for scripts
 
   // Auxiliar stuff
-  std::string _helpMessage;                     // !< Help message shown on screen
-  std::string _helpLine;                        // !< Help in a line
+  std::string _helpMessage;            // !< Help message shown on screen
+  std::string _helpLine;               // !< Help in a line
 
 
   Operation(std::string name, Type type) {
@@ -102,7 +102,8 @@ public:
 
   virtual ~Operation() {
     LM_T(LmtModuleManager,
-         ("Operation destructor for op:%s with helpLine:%s and helpMessage:%s", _name.c_str(), _helpLine.c_str(), _helpMessage.c_str()));
+         ("Operation destructor for op:%s with helpLine:%s and helpMessage:%s", _name.c_str(), _helpLine.c_str(),
+          _helpMessage.c_str()));
   }
 
   // Get instance of this operation
@@ -336,7 +337,7 @@ public:
     if (writer == NULL) {
       return;
     }
-  };                                                                               // Called once after all operations are executed
+  };                                                                              // Called once after all operations are executed
 };
 
 
@@ -360,7 +361,7 @@ public:
     if (writer == NULL) {
       return;
     }
-  };                                                                               // Called once before running any operation
+  };                                                                              // Called once before running any operation
 
   virtual void run(KVSetStruct *inputs, TXTWriter *writer) = 0;
 
@@ -507,4 +508,4 @@ public:
 };
 }
 
-#endif // ifndef SAMSON_OPERATION_H
+#endif  // ifndef SAMSON_OPERATION_H

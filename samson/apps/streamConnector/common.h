@@ -29,4 +29,4 @@ typedef enum {
 const char *str_ConnectionType(ConnectionType type);
 }
 
-#endif // ifndef _H_SAMSON_CONNECTOR_COMMON
+#endif  // ifndef _H_SAMSON_CONNECTOR_COMMON

@@ -303,7 +303,9 @@ void paExtendedUsage(void) {
       sprintf(vals, "%s <= %s", name, escape(out, maxVal)); else if (aP->hasMaxLimit == false)
       sprintf(vals, "%s >= %s", name, escape(out, minVal)); else
       sprintf(vals, "%s <= %s <= %s", escape(out, minVal), name, escape(out2, maxVal)); valsMaxLen = MAX(strlen(
-                                                                                                           vals), (unsigned int)valsMaxLen);
+                                                                                                           vals),
+                                                                                                         (unsigned int)
+                                                                                                         valsMaxLen);
   }
 
   sprintf(format, "%%-%ds %%-%ds %%-%ds %%-%ds %%s\n",
@@ -331,17 +333,22 @@ void paExtendedUsage(void) {
     }
 
     /* 1. Option Name */
-    if (PA_IS_OPTION(aP) && (aP->sort == PaOpt))
-      sprintf(optName, "[%s]", paFullName(string, aP)); else if (PA_IS_OPTION(aP) && (aP->sort == PaReq))
-      sprintf(optName, "%s", paFullName(string, aP)); else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt))
-      sprintf(optName, "(%s)", aP->description); else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq))
-      sprintf(optName, "[%s]", aP->description); else
-      strcpy(optName, " ");
-    /* 2. variable name */
-    if (PA_IS_VARIABLE(aP))
-      paEnvName(aP, varName); else
-      strcpy(varName, " ");
-    /* 3. Limits */
+    if (PA_IS_OPTION(aP) && (aP->sort == PaOpt)) {
+      sprintf(optName, "[%s]", paFullName(string, aP));
+    } else if (PA_IS_OPTION(aP) && (aP->sort == PaReq)) {
+      sprintf(optName, "%s", paFullName(string, aP));
+    } else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt)) {
+      sprintf(optName, "(%s)", aP->description);
+    } else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq)) {
+      sprintf(optName, "[%s]", aP->description);
+    } else {
+      strcpy(optName, " ");  /* 2. variable name */
+    }
+    if (PA_IS_VARIABLE(aP)) {
+      paEnvName(aP, varName);
+    } else {
+      strcpy(varName, " ");  /* 3. Limits */
+    }
     if ((aP->type != PaSList) && (aP->type != PaIList)) {
       char valWithDef[128];
       char fromN[64];
@@ -389,23 +396,23 @@ static char usageString[800 * 200];
  */
 HelpVar helpVar[] =
 {
-  { "$PROGNAME", progNameV                      },
-  { "$USER",     paUserName                     },
-  { "$PWD",      paPwd                          },
-  { "$USAGE",    usageString                    },
-  { "$COLUMNS",  paColumns                      },
-  { "$ROWS",     paRows                         },
-  { "$DISPLAY",  paDisplay                      },
-  { "$EDITOR",   paEditor                       },
-  { "$LANG",     paLang                         },
-  { "$PAGER",    paPager                        },
-  { "$PPID",     paPpid                         },
-  { "$PID",      paPid                          },
-  { "$PRINTER",  paPrinter                      },
-  { "$SHELL",    paShell                        },
-  { "$TERM",     paTerm                         },
-  { "$SYSTEM",   paSystem                       },
-  { "$VISUAL",   paVisual                       }
+  { "$PROGNAME", progNameV                                          },
+  { "$USER",     paUserName                                         },
+  { "$PWD",      paPwd                                              },
+  { "$USAGE",    usageString                                        },
+  { "$COLUMNS",  paColumns                                          },
+  { "$ROWS",     paRows                                             },
+  { "$DISPLAY",  paDisplay                                          },
+  { "$EDITOR",   paEditor                                           },
+  { "$LANG",     paLang                                             },
+  { "$PAGER",    paPager                                            },
+  { "$PPID",     paPpid                                             },
+  { "$PID",      paPid                                              },
+  { "$PRINTER",  paPrinter                                          },
+  { "$SHELL",    paShell                                            },
+  { "$TERM",     paTerm                                             },
+  { "$SYSTEM",   paSystem                                           },
+  { "$VISUAL",   paVisual                                           }
 };
 
 

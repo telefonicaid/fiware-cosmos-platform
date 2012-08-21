@@ -15,12 +15,14 @@ namespace samson { namespace gpb {
                    }
 
                    void reset_stream_operations(gpb::Data *data) {
-                     ::google::protobuf::RepeatedPtrField< ::samson::gpb::StreamOperation > *operations = data->mutable_operations();
+                     ::google::protobuf::RepeatedPtrField< ::samson::gpb::StreamOperation > *operations =
+                       data->mutable_operations();
                      while (operations->size() > 0) {
                        operations->RemoveLast();
                      }
 
-                     ::google::protobuf::RepeatedPtrField< ::samson::gpb::QueueConnection > *connections = data->mutable_queue_connections();
+                     ::google::protobuf::RepeatedPtrField< ::samson::gpb::QueueConnection > *connections =
+                       data->mutable_queue_connections();
                      while (connections->size() > 0) {
                        connections->RemoveLast();
                      }
@@ -33,7 +35,8 @@ namespace samson { namespace gpb {
                    }
 
                    void removeStreamOperation(gpb::Data *data, const std::string& name) {
-                     ::google::protobuf::RepeatedPtrField< ::samson::gpb::StreamOperation > *operations = data->mutable_operations();
+                     ::google::protobuf::RepeatedPtrField< ::samson::gpb::StreamOperation > *operations =
+                       data->mutable_operations();
 
                      for (int i = 0; i < operations->size(); i++) {
                        if (name ==  operations->Get(i).name()) {
@@ -61,7 +64,8 @@ namespace samson { namespace gpb {
                      ev->set_value(value);
                    }
 
-                   std::string getProperty(Environment *environment, const std::string& name, const std::string& default_value) {
+                   std::string getProperty(Environment *environment, const std::string& name,
+                                           const std::string& default_value) {
                      // Search for an existing variable
                      for (int i = 0; i < environment->variable_size(); i++) {
                        if (environment->variable(i).name() == name)
@@ -71,7 +75,8 @@ namespace samson { namespace gpb {
                    }
 
                    void unsetProperty(Environment *environment, const std::string& name) {
-                     ::google::protobuf::RepeatedPtrField< ::samson::gpb::EnvironmentVariable > *e = environment->mutable_variable();
+                     ::google::protobuf::RepeatedPtrField< ::samson::gpb::EnvironmentVariable > *e =
+                       environment->mutable_variable();
 
                      for (int i = 0; i < e->size(); i++) {
                        if (e->Get(i).name() == name) {
@@ -118,7 +123,8 @@ namespace samson { namespace gpb {
                      }
                    }
 
-                   Queue *get_or_create_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager *error) {
+                   Queue *get_or_create_queue(Data *data, const std::string& queue_name, KVFormat format,
+                                              au::ErrorManager *error) {
                      Queue *queue = get_queue(data, queue_name, format, error);
 
                      if (error->IsActivated())
@@ -136,7 +142,8 @@ namespace samson { namespace gpb {
                      return queue;
                    }
 
-                   Queue *get_queue(Data *data, const std::string& queue_name, KVFormat format, au::ErrorManager *error) {
+                   Queue *get_queue(Data *data, const std::string& queue_name, KVFormat format,
+                                    au::ErrorManager *error) {
                      for (int i = 0; i < data->queue_size(); i++) {
                        if (data->queue(i).name() == queue_name) {
                          // Check formatblo
@@ -330,7 +337,8 @@ namespace samson { namespace gpb {
                        return 0;
                    }
 
-                   bool data_exist_queue_connection(gpb::Data *data, const std::string& queue_source, const std::string& queue_target) {
+                   bool data_exist_queue_connection(gpb::Data *data, const std::string& queue_source,
+                                                    const std::string& queue_target) {
                      for (int i = 0; i < data->queue_connections_size(); i++) {
                        if (data->queue_connections(i).queue_source() == queue_source)
                          if (data->queue_connections(i).queue_target() == queue_target)
@@ -340,15 +348,18 @@ namespace samson { namespace gpb {
                      return false;
                    }
 
-                   void data_create_queue_connection(gpb::Data *data, const std::string& queue_source, const std::string& queue_target) {
+                   void data_create_queue_connection(gpb::Data *data, const std::string& queue_source,
+                                                     const std::string& queue_target) {
                      gpb::QueueConnection *queue_connection = data->add_queue_connections();
 
                      queue_connection->set_queue_source(queue_source);
                      queue_connection->set_queue_target(queue_target);
                    }
 
-                   void data_remove_queue_connection(gpb::Data *data, const std::string& queue_source, const std::string& target_source) {
-                     ::google::protobuf::RepeatedPtrField< gpb::QueueConnection > *queue_connections = data->mutable_queue_connections();
+                   void data_remove_queue_connection(gpb::Data *data, const std::string& queue_source,
+                                                     const std::string& target_source) {
+                     ::google::protobuf::RepeatedPtrField< gpb::QueueConnection > *queue_connections =
+                       data->mutable_queue_connections();
 
                      for (int i = 0; i < queue_connections->size(); i++) {
                        if (queue_connections->Get(i).queue_source() == queue_source)
@@ -376,7 +387,8 @@ namespace samson { namespace gpb {
                      size_t delilah_component_id = batch_operation.delilah_component_id();
 
                      for (int i = 0; i < batch_operation.inputs_size(); i++) {
-                       std::string prefix = au::str(".%s_%lu_", au::code64_str(delilah_id).c_str(), delilah_component_id);
+                       std::string prefix = au::str(".%s_%lu_", au::code64_str(
+                                                      delilah_id).c_str(), delilah_component_id);
                        std::string queue_name = prefix + batch_operation.inputs(i);
 
                        Queue *queue = get_queue(data, queue_name);

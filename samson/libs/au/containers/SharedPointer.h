@@ -183,4 +183,4 @@ private:
 };
 }
 
-#endif // ifndef _H_AU_SHARED_POINTER
+#endif  // ifndef _H_AU_SHARED_POINTER

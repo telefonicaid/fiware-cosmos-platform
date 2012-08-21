@@ -101,4 +101,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_COMMIT_COMMAND
+#endif  // ifndef _H_SAMSON_COMMIT_COMMAND

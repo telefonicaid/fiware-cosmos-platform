@@ -46,15 +46,15 @@ class Block {
 public:
 
   typedef enum {
-    on_memory,          // It is only in memory
-    writing,                                 // A write order has been given
-    ready,                                   // On disk and memory
-    on_disk,                                 // Just on disk ( memory has been freed )
-    reading                                  // Reading from disk to recover at memory
+    on_memory,                                          // It is only in memory
+    writing,                                            // A write order has been given
+    ready,                                              // On disk and memory
+    on_disk,                                            // Just on disk ( memory has been freed )
+    reading                                             // Reading from disk to recover at memory
   } BlockState;
 
-  Block(size_t block_id, engine::BufferPointer buffer);        // When block is in memory
-  Block(size_t block_id, KVHeader *_header); // When block is readed from disk
+  Block(size_t block_id, engine::BufferPointer buffer);  // When block is in memory
+  Block(size_t block_id, KVHeader *_header);  // When block is readed from disk
   ~Block();
 
   // Get Accessorrs
@@ -159,4 +159,4 @@ typedef au::SharedPointer<Block>   BlockPointer;
 }
 }
 
-#endif // ifndef _H_BLOCK
+#endif  // ifndef _H_BLOCK

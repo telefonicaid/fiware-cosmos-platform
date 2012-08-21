@@ -12,7 +12,7 @@
 #include "au/string.h"               // au::xml_...
 
 #include "samson/common/coding.h"    // ss:KVInfo
-#include "samson/common/samson.pb.h" // samson::network::...
+#include "samson/common/samson.pb.h"  // samson::network::...
 #include "samson/common/status.h"
 
 #include "samson/module/Factory.h"      // au::Factory
@@ -86,4 +86,4 @@ private:
 };
 }
 
-#endif // ifndef SAMSON_MODULES_MANAGER_H
+#endif  // ifndef SAMSON_MODULES_MANAGER_H

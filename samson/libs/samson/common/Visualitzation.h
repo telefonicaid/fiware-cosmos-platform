@@ -54,4 +54,4 @@ bool match(std::string pattern, std::string name);
 }
 
 
-#endif // ifndef SAMSON_VISUALITZATION_H
+#endif  // ifndef SAMSON_VISUALITZATION_H

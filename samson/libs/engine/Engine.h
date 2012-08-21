@@ -160,4 +160,4 @@ private:
 };
 }
 
-#endif // ifndef _H_SAMSON_ENGINE
+#endif  // ifndef _H_SAMSON_ENGINE

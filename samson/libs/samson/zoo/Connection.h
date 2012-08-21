@@ -155,6 +155,6 @@ private:
                      // Auxiliar function to create ConnectionWatcherInterfaceCaller*
                      ConnectionWatcherInterfaceCaller *get_new_watcher_caller(ConnectionWatcherInterface *watcher);
                    };
-                   } } // End of namespace samson::zoo
+                   } }  // End of namespace samson::zoo
 
 #endif  // SAMSON_LIBS_SAMSON_ZOO_ZOOKEEPERCONNECTION_H_

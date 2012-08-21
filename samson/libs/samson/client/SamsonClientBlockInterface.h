@@ -30,4 +30,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SamsonClientBlockInterface_SamsonClient
+#endif  // ifndef _H_SamsonClientBlockInterface_SamsonClient

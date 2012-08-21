@@ -278,7 +278,6 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     // LM_M(("Recieved status report message from %s" , packet->from.str().c_str() ));
     return;
 
-
   // --------------------------------------------------------------------
   // BlockRequest
   // --------------------------------------------------------------------
@@ -488,7 +487,8 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     if (commit_id == static_cast<size_t>(-1)) {
       // Duplicate queue and link
       au::ErrorManager error;
-      data_model->Commit("pop", au::str("add_queue_connection %s %s", original_queue.c_str(), pop_queue.c_str()), &error);
+      data_model->Commit("pop", au::str("add_queue_connection %s %s", original_queue.c_str(),
+                                        pop_queue.c_str()), &error);
 
       if (error.IsActivated()) {
         LM_W(("Internal error with add_queue_connection command in pop request: %s", error.GetMessage().c_str()));
@@ -660,7 +660,8 @@ std::string getFormatedError(std::string message, std::string& format) {
   return getFormatedElement("error", message, format);
 }
 
-void SamsonWorker::process_delilah_command(std::string delilah_command, au::SharedPointer<au::network::RESTServiceCommand> command) {
+void SamsonWorker::process_delilah_command(std::string delilah_command,
+                                           au::SharedPointer<au::network::RESTServiceCommand> command) {
   // Create client if not created
   if (!delilah)
     LM_X(1, ("Internal error"));  // Send the command
@@ -725,37 +726,46 @@ void SamsonWorker::process_logging(au::SharedPointer<au::network::RESTServiceCom
     logCommand = command->path_components()[2]; if (command->path_components().size() > 3)
     sub = command->path_components()[3]; if (command->path_components().size() > 4)
     arg = command->path_components()[4];  //
-                                         // Treat all possible errors
-                                         //
+   // Treat all possible errors
+  //
 
   if (logCommand == "") {
     command->set_http_state(400);
     command->AppendFormatedElement("message", au::str("no logging subcommand"));
-  } else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "traces") && (logCommand != "verbose") &&
+  } else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "traces") &&
+             (logCommand != "verbose") &&
              (logCommand != "debug"))
   {
     command->set_http_state(400);
     command->AppendFormatedElement("message", au::str("bad logging command: '%s'", logCommand.c_str()));
-  } else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off")) {
+  } else if (((logCommand == "reads") || (logCommand == "writes") ||
+              (logCommand == "debug")) && (sub != "on") && (sub != "off"))
+  {
     command->set_http_state(400);
-    command->AppendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+    command->AppendFormatedElement("message",
+                                   au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
   } else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off")) {
     command->set_http_state(400);
-    command->AppendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-  } else if ((logCommand == "verbose") && (sub == "set") && (arg != "0") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") &&
+    command->AppendFormatedElement("message",
+                                   au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+  } else if ((logCommand == "verbose") && (sub == "set") && (arg != "0") && (arg != "1") && (arg != "2") &&
+             (arg != "3") && (arg != "4") &&
              (arg != "5"))
   {
     command->set_http_state(400);
     command->AppendFormatedElement("message", au::str("bad logging argument for 'verbose': %s", arg.c_str()));
-  } else if ((logCommand == "traces") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off") &&
+  } else if ((logCommand == "traces") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") &&
+             (sub != "off") &&
              (sub != ""))
   {
     command->set_http_state(400);
-    command->AppendFormatedElement("message", au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+    command->AppendFormatedElement("message",
+                                   au::str("bad logging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
   } else if ((logCommand == "traces") && ((sub != "set") || (sub != "add") || (sub != "remove"))) {
     if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str())) {
       command->set_http_state(400);
-      command->AppendFormatedElement("message", au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
+      command->AppendFormatedElement("message",
+                                     au::str("bad logging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
     }
   }
 
@@ -913,6 +923,7 @@ static bool restTraceCheck(au::network::RESTServiceCommand *command) {
   if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str()))
     return false;
 
+
   return true;
 }
 
@@ -921,6 +932,7 @@ static bool restVerboseCheck(au::network::RESTServiceCommand *command) {
 
   if ((arg == "0") || (arg == "1") || (arg == "2") || (arg == "3") || (arg == "4") || (arg == "5"))
     return true;
+
 
 
   return false;
@@ -936,20 +948,20 @@ typedef struct RestCheck {
 
 RestCheck restCheck[] =
 {
-  { "POST",   "debug/on",      2,        NULL                                   },
-  { "POST",   "debug/off",     2,        NULL                                   },
-  { "POST",   "reads/on",      2,        NULL                                   },
-  { "POST",   "reads/off",     2,        NULL                                   },
-  { "POST",   "writes/on",     2,        NULL                                   },
-  { "POST",   "writes/off",    2,        NULL                                   },
-  { "GET",    "traces",        1,        NULL                                   },
-  { "POST",   "traces/off",    2,        NULL                                   },
-  { "POST",   "traces/set",    3,        restTraceCheck                         },
-  { "POST",   "traces/add",    3,        restTraceCheck                         },
-  { "DELETE", "traces/remove", 3,        restTraceCheck                         },
-  { "GET",    "verbose",       1,        NULL                                   },
-  { "POST",   "verbose/off",   2,        NULL                                   },
-  { "POST",   "verbose/set",   3,        restVerboseCheck                       },
+  { "POST",   "debug/on",      2,        NULL                                                                      },
+  { "POST",   "debug/off",     2,        NULL                                                                      },
+  { "POST",   "reads/on",      2,        NULL                                                                      },
+  { "POST",   "reads/off",     2,        NULL                                                                      },
+  { "POST",   "writes/on",     2,        NULL                                                                      },
+  { "POST",   "writes/off",    2,        NULL                                                                      },
+  { "GET",    "traces",        1,        NULL                                                                      },
+  { "POST",   "traces/off",    2,        NULL                                                                      },
+  { "POST",   "traces/set",    3,        restTraceCheck                                                            },
+  { "POST",   "traces/add",    3,        restTraceCheck                                                            },
+  { "DELETE", "traces/remove", 3,        restTraceCheck                                                            },
+  { "GET",    "verbose",       1,        NULL                                                                      },
+  { "POST",   "verbose/off",   2,        NULL                                                                      },
+  { "POST",   "verbose/set",   3,        restVerboseCheck                                                          },
 };
 
 static bool process_logging_check(au::network::RESTServiceCommand *command) {
@@ -967,6 +979,7 @@ static bool process_logging_check(au::network::RESTServiceCommand *command) {
       // A match - now just lets see if the argument is OK also ...
       if (restCheck[ix].check != NULL)
         return restCheck[ix].check(command);
+
 
       return true;
     }
@@ -989,37 +1002,46 @@ void SamsonWorker::process_ilogging(au::SharedPointer<au::network::RESTServiceCo
     logCommand = command->path_components()[2]; if (command->path_components().size() > 3)
     sub = command->path_components()[3]; if (command->path_components().size() > 4)
     arg = command->path_components()[4];  //
-                                         // Treat all possible errors
-                                         //
+   // Treat all possible errors
+  //
 
   if (logCommand == "") {
     command->set_http_state(400);
     command->AppendFormatedElement("message", au::str("no ilogging subcommand"));
-  } else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "traces") && (logCommand != "verbose") &&
+  } else if ((logCommand != "reads") && (logCommand != "writes") && (logCommand != "traces") &&
+             (logCommand != "verbose") &&
              (logCommand != "debug"))
   {
     command->set_http_state(400);
     command->AppendFormatedElement("message", au::str("bad ilogging command: '%s'", logCommand.c_str()));
-  } else if (((logCommand == "reads") || (logCommand == "writes") || (logCommand == "debug")) && (sub != "on") && (sub != "off")) {
+  } else if (((logCommand == "reads") || (logCommand == "writes") ||
+              (logCommand == "debug")) && (sub != "on") && (sub != "off"))
+  {
     command->set_http_state(400);
-    command->AppendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+    command->AppendFormatedElement("message",
+                                   au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
   } else if ((logCommand == "verbose") && (sub != "get") && (sub != "set") && (sub != "off") && (sub != "")) {
     command->set_http_state(400);
-    command->AppendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
-  } else if ((logCommand == "verbose") && (sub == "set") && (arg != "0") && (arg != "1") && (arg != "2") && (arg != "3") && (arg != "4") &&
+    command->AppendFormatedElement("message",
+                                   au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+  } else if ((logCommand == "verbose") && (sub == "set") && (arg != "0") && (arg != "1") && (arg != "2") &&
+             (arg != "3") && (arg != "4") &&
              (arg != "5"))
   {
     command->set_http_state(400);
     command->AppendFormatedElement("message", au::str("bad ilogging argument for 'verbose': %s", arg.c_str()));
-  } else if ((logCommand == "traces") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") && (sub != "off") &&
+  } else if ((logCommand == "traces") && (sub != "get") && (sub != "set") && (sub != "add") && (sub != "remove") &&
+             (sub != "off") &&
              (sub != ""))
   {
     command->set_http_state(400);
-    command->AppendFormatedElement("message", au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
+    command->AppendFormatedElement("message",
+                                   au::str("bad ilogging subcommand for '%s': %s", logCommand.c_str(), sub.c_str()));
   } else if ((logCommand == "traces") && ((sub != "set") || (sub != "add") || (sub != "remove"))) {
     if (strspn(arg.c_str(), "0123456789-,") != strlen(arg.c_str())) {
       command->set_http_state(400);
-      command->AppendFormatedElement("message", au::str("bad ilogging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
+      command->AppendFormatedElement("message",
+                                     au::str("bad ilogging parameter '%s' for 'trace/%s'", arg.c_str(), sub.c_str()));
     }
   }
 
@@ -1110,8 +1132,11 @@ void SamsonWorker::process_ilogging(au::SharedPointer<au::network::RESTServiceCo
       sub = "off"; if (sub == "get") {
       int vLevel;
 
-      if (lmVerbose5 == true) vLevel = 5; else if (lmVerbose4 == true) vLevel = 4; else if (lmVerbose3 == true) vLevel = 3;
-      else if (lmVerbose2 == true) vLevel = 2; else if (lmVerbose  == true) vLevel = 1; else vLevel = 0; command->AppendFormatedElement(
+      if (lmVerbose5 == true) vLevel = 5; else if (lmVerbose4 == true) vLevel = 4; else if (lmVerbose3 ==
+                                                                                            true)
+        vLevel = 3;
+      else if (lmVerbose2 == true) vLevel = 2; else if (lmVerbose  == true) vLevel = 1; else vLevel = 0;
+      command->AppendFormatedElement(
         "verbose", au::str("verbosity level: %d", vLevel));
     } else {
       // Turn all verbose levels OFF
@@ -1165,9 +1190,9 @@ void SamsonWorker::process_ilogging(au::SharedPointer<au::network::RESTServiceCo
 
 void SamsonWorker::process(au::SharedPointer<au::network::RESTServiceCommand> command) {
   // Default format
-  if (command->format() == "")
-    command->set_format("xml");
-  // Begin data for each format
+  if (command->format() == "") {
+    command->set_format("xml");  // Begin data for each format
+  }
   // ---------------------------------------------------
   if (command->format() == "xml") {
     command->Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
@@ -1337,7 +1362,8 @@ void SamsonWorker::process_intern(au::SharedPointer<au::network::RESTServiceComm
       snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations -group name");
       process_delilah_command(delilahCommand, command);
     } else if ((command->command() == "GET") && (components == 3)) {
-      snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations %s -group name", command->path_components()[2].c_str());
+      snprintf(delilahCommand, sizeof(delilahCommand), "ls_operations %s -group name",
+               command->path_components()[2].c_str());
       process_delilah_command(delilahCommand, command);
     } else if ((command->command() == "PUT") && (components == 3)) {
       // Need to parse the XML here ...

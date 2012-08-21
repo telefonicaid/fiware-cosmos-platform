@@ -18,7 +18,8 @@
 
 
 static const char *manShortDescription =  "Simple command line tool to generate fake data for simple_mobility demo\n";
-static const char *manSynopsis = "simple_mobility_generator [-commands] [-rate X] [-users X] [-period X] [-progressive] [-fix_position]\n";
+static const char *manSynopsis =
+  "simple_mobility_generator [-commands] [-rate X] [-users X] [-period X] [-progressive] [-fix_position]\n";
 
 int users;
 int rate;
@@ -29,14 +30,24 @@ bool fix_position;
 
 PaArgument paArgs[] =
 {
-  { "-users",        &users,        "",         PaInt,            PaOpt,   100000,     100,          100000000,    "Number of users"                                                              },
-  { "-rate",         &rate,         "",         PaInt,            PaOpt,   10000,      100,          1000000,      "CDRs per second"                                                              },
-  { "-period",       &period,       "",         PaInt,            PaOpt,   100,        10,           86400,        "Period in seconds"                                                            },
-  { "-progressive",  &progresive,   "",         PaBool,           PaOpt,   false,      false,        true,
+  { "-users",        &users,        "",         PaInt,          PaOpt,          100000,            100,
+    100000000,
+    "Number of users"                                                                     },
+  { "-rate",         &rate,         "",         PaInt,          PaOpt,          10000,             100,
+    1000000,
+    "CDRs per second"                                                                     },
+  { "-period",       &period,       "",         PaInt,          PaOpt,            100,               10,
+    86400,
+    "Period in seconds"                                                                   },
+  { "-progressive",  &progresive,   "",         PaBool,         PaOpt,            false,             false,
+    true,
     "Generate cdrs in sequential order for all the users"                    },
-  { "-commands",     &commands,     "",           PaBool,  PaOpt,     false,        false,  true,
+  { "-commands",     &commands,     "",         PaBool,         PaOpt,            false,             false,
+    true,
     "Generate commands to create user-areas (instead of cdrs)"               },
-  { "-fix_position", &fix_position, "",           PaBool,  PaOpt,     false,        false,  true,       "Use fix positions for all users"                                        },
+  { "-fix_position", &fix_position, "",         PaBool,         PaOpt,            false,             false,
+    true,
+    "Use fix positions for all users"                                                     },
   PA_END_OF_ARGS
 };
 
@@ -186,7 +197,6 @@ int main(int argC, const char *argV[]) {
             , au::str((double)total_num / (double)total_seconds, "Lines/s").c_str()
             , au::str((double)total_size / (double)total_seconds, "Bps").c_str()
             ));
-
   }
 }
 

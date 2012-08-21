@@ -58,4 +58,4 @@ typedef enum Status {
 const char *status(Status code);
 }
 
-#endif // ifndef _H_AU_STATUS
+#endif  // ifndef _H_AU_STATUS

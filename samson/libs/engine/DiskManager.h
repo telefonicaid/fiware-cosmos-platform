@@ -35,7 +35,7 @@
 #include "engine/MemoryManager.h"   // engine::MemoryManager
 #include "engine/Object.h"     // engine::EngineNotification
 
-#include "engine/ReadFileManager.h" // engine::ReadFileManager
+#include "engine/ReadFileManager.h"  // engine::ReadFileManager
 
 #define notification_disk_operation_request_response "notification_disk_operation_request_response"
 
@@ -120,4 +120,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_DISK_MANAGER
+#endif  // ifndef _H_SAMSON_DISK_MANAGER

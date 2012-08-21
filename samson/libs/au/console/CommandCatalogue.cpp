@@ -78,9 +78,9 @@ namespace au { namespace console {
                  std::ostringstream output;
 
                  // Add help
-                 if (help_ != "")
-                   output << help_ << "\n";
-                 // Spetial case in group options
+                 if (help_ != "") {
+                   output << help_ << "\n";  // Spetial case in group options
+                 }
                  if (options_group_values.size() > 0) {
                    std::ostringstream str_options;
                    for (size_t i = 0; i < options_group_values.size(); i++) {
@@ -99,11 +99,9 @@ namespace au { namespace console {
                  }
 
                  if (optional_)
-                   output << "Default value: " << default_value_ << " \n";
-                 if (min_value_ != "")
+                   output << "Default value: " << default_value_ << " \n"; if (min_value_ != "")
                    output << "Min value: " << min_value_ << "\n"; if (max_value_ != "")
-                   output << "Max value: " << max_value_ << "\n";
-                 return output.str();
+                   output << "Max value: " << max_value_ << "\n"; return output.str();
                }
 
                std::string CommandItem::str_usage_option() {
@@ -179,7 +177,7 @@ namespace au { namespace console {
                  if (options_group_values.size() > 0)
                    for (size_t i = 0; i < options_group_values.size(); i++) {
                      info->add(options_group_values[i]);
-                   } // Auto complete for files
+                   }  // Auto complete for files
                  if (options_group_ == "#file")
                    info->auto_complete_files("");
                }
@@ -548,7 +546,8 @@ namespace au { namespace console {
                  Command *c = get_command(info->firstWord());
                  if (c)
                    c->autoComplete(info); else
-                   info->setHelpMessage(au::str("Command %s is not a valid command in this catalogue", info->firstWord().c_str()));
+                   info->setHelpMessage(au::str("Command %s is not a valid command in this catalogue",
+                                                info->firstWord().c_str()));
                }
 
                std::string CommandCatalogue::getCommandsTable(const std::string& category) {
@@ -557,7 +556,8 @@ namespace au { namespace console {
 
                  for (size_t i = 0; i < commands_.size(); i++) {
                    if (category == "" || (commands_[i]->category() == category ))
-                     table.addRow(au::StringVector(commands_[i]->name(), commands_[i]->category(),  commands_[i]->short_description()));
+                     table.addRow(au::StringVector(commands_[i]->name(), commands_[i]->category(),
+                                                   commands_[i]->short_description()));
                  }
 
                  // Print the table
@@ -714,7 +714,8 @@ namespace au { namespace console {
                        // Find option in the command
                        CommandItem *item = command->get_option(option_name);
                        if (!item) {
-                         error->set(au::str("Option %s is not defined for command %s", option_name.c_str(), main_command.c_str()));
+                         error->set(au::str("Option %s is not defined for command %s", option_name.c_str(),
+                                            main_command.c_str()));
                          error->AddWarning(au::str("Usage: %s", command->usage().c_str()));
                          error->AddMessage(au::str("Type 'help %s' for more info.", command->name().c_str()));
                          delete command_instance;
@@ -749,7 +750,7 @@ namespace au { namespace console {
                            }
                          }
                        }
-                     } // A new argument is obtained
+                     }  // A new argument is obtained
                    if (command->arguments().size() <= (size_t)pos_argument) {
                      error->set(au::str("Extra non-defined argument (%s) provided for Command %s"
                                         , components[i].c_str()

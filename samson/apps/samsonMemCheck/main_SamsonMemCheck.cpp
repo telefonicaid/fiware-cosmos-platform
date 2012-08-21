@@ -123,11 +123,13 @@ int main(int argC, const char *argV[]) {
   // Check to see if we can allocate all the memory needed
   if (samson_required_mem > max_memory_size) {
     needed_shmall = samson_required_mem / PAGE_SIZE;
-    printf("Unable to allocate the needed memory for SAMSON. The system has %ld allocated and we need %ld.\n", max_memory_size,
+    printf("Unable to allocate the needed memory for SAMSON. The system has %ld allocated and we need %ld.\n",
+           max_memory_size,
            samson_required_mem);
     printf("Set kernel.shmall to %ld using the command 'sysctl -w kernel.shmall=%ld'.\n", needed_shmall, needed_shmall);
   } else {
-    printf("Found enough shared memory for SAMSON, samson_required_mem(%ld) <= max_memory_size(%ld)\n", samson_required_mem,
+    printf("Found enough shared memory for SAMSON, samson_required_mem(%ld) <= max_memory_size(%ld)\n",
+           samson_required_mem,
            max_memory_size);
   }
 
@@ -139,9 +141,10 @@ int main(int argC, const char *argV[]) {
     printf("Set kernel.shmmax to %ld using the command 'sysctl -w kernel.shmmax=%ld'.\n", shared_memory_size_per_buffer,
            shared_memory_size_per_buffer);
   } else {
-    printf("The maximum shared memory segment size is sufficent for SAMSON. shared_memory_size_per_buffer(%ld) <=  kernel_shmmax(%ld)\n",
-           shared_memory_size_per_buffer,
-           kernel_shmmax);
+    printf(
+      "The maximum shared memory segment size is sufficent for SAMSON. shared_memory_size_per_buffer(%ld) <=  kernel_shmmax(%ld)\n",
+      shared_memory_size_per_buffer,
+      kernel_shmmax);
   }
 }
 

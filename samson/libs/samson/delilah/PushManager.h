@@ -21,7 +21,7 @@ class PushItem {
   } PushItemState;
 
   size_t push_id_;                  // Identifier of this push
-  engine::BufferPointer buffer_;                // Buffer considered in this push
+  engine::BufferPointer buffer_;    // Buffer considered in this push
 
   // Queues to send data
   std::vector<std::string> queues_;
@@ -129,4 +129,4 @@ public:
 };
 }  // end of namespace samson
 
-#endif // ifndef _H_SAMSON_PUSH_MANAGER
+#endif  // ifndef _H_SAMSON_PUSH_MANAGER

@@ -24,7 +24,8 @@ bool DataContainer::parse(AUTockenizer *module_creator,  int begin, int end) {
 
   while (pos < end) {
     if (module_creator->isSpecial(pos)) {
-      fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+      fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d",
+              module_creator->items[pos].line);
       exit(1);
     }
 
@@ -33,7 +34,8 @@ bool DataContainer::parse(AUTockenizer *module_creator,  int begin, int end) {
     optionalData = false;
     if (mainCommand == "optional") {
       if (firstFieldInData) {
-        fprintf(stderr, "samsonModuleParser: Error, no optional field allowed if first in data structure (line:%d).\a\a\a\n",
+        fprintf(stderr,
+                "samsonModuleParser: Error, no optional field allowed if first in data structure (line:%d).\a\a\a\n",
                 module_creator->items[pos].line);
         exit(1);
       } else {
@@ -47,62 +49,71 @@ bool DataContainer::parse(AUTockenizer *module_creator,  int begin, int end) {
 
 
       if (module_creator->isSpecial(pos)) {
-        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d",
+                module_creator->items[pos].line);
         exit(1);
       }
 
       std::string _full_type = module_creator->itemAtPos(pos++).str;
 
       if (module_creator->isSpecial(pos)) {
-        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d",
+                module_creator->items[pos].line);
         exit(1);
       }
 
       std::string _name = module_creator->itemAtPos(pos++).str;
 
       if (!module_creator->isSemiColom(pos)) {
-        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d",
+                module_creator->items[pos].line);
         exit(1);
       }
 
       pos++;
 
 
-      DataType data_type(_full_type, _name, DataType::container_vector, optionalData, valMask, module_creator->items[pos].line);
+      DataType data_type(_full_type, _name, DataType::container_vector, optionalData, valMask,
+                         module_creator->items[pos].line);
       addItem(data_type);
     } else if (mainCommand == "list") {
       // list fields
 
       if (module_creator->isSpecial(pos)) {
-        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d",
+                module_creator->items[pos].line);
         exit(1);
       }
 
       std::string _full_type = module_creator->itemAtPos(pos++).str;
 
       if (module_creator->isSpecial(pos)) {
-        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d",
+                module_creator->items[pos].line);
         exit(1);
       }
 
       std::string _name = module_creator->itemAtPos(pos++).str;
 
       if (!module_creator->isSemiColom(pos)) {
-        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d",
+                module_creator->items[pos].line);
         exit(1);
       }
 
       pos++;
 
 
-      DataType data_type(_full_type, _name, DataType::container_list, optionalData, valMask, module_creator->items[pos].line);
+      DataType data_type(_full_type, _name, DataType::container_list, optionalData, valMask,
+                         module_creator->items[pos].line);
       addItem(data_type);
     } else {
       // Normal fields
       std::string _full_type = mainCommand;
 
       if (module_creator->isSpecial(pos)) {
-        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d", module_creator->items[pos].line);
+        fprintf(stderr, "samsonModuleParser: Error parsing data-type definition at line:%d",
+                module_creator->items[pos].line);
         exit(1);
       }
 
@@ -115,7 +126,8 @@ bool DataContainer::parse(AUTockenizer *module_creator,  int begin, int end) {
       }
       pos++;
 
-      DataType data_type(_full_type, _name, DataType::container_none, optionalData, valMask, module_creator->items[pos].line);
+      DataType data_type(_full_type, _name, DataType::container_none, optionalData, valMask,
+                         module_creator->items[pos].line);
       addItem(data_type);
     }
     firstFieldInData = false;
@@ -124,15 +136,17 @@ bool DataContainer::parse(AUTockenizer *module_creator,  int begin, int end) {
   }
 
   if (pos != (end + 1)) {
-    fprintf(stderr,
-            "samsonModuleParser: Error parsing data-type definition. Number of items is not correct at the end of parsing, ends at line:%d",
-            module_creator->items[pos].line);
+    fprintf(
+      stderr,
+      "samsonModuleParser: Error parsing data-type definition. Number of items is not correct at the end of parsing, ends at line:%d",
+      module_creator->items[pos].line);
     exit(1);
   }
 
   // Check everything is correct
   if (check() == false) {
-    fprintf(stderr, "samsonModuleParser: Error checking an data-type definition, close to line:%d\n", module_creator->items[pos].line);
+    fprintf(stderr, "samsonModuleParser: Error checking an data-type definition, close to line:%d\n",
+            module_creator->items[pos].line);
     exit(1);
   }
 

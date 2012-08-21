@@ -17,7 +17,7 @@
 #include "au/network/FileDescriptor.h"
 #include "au/utils.h"
 
-#include "samson/common/EnvironmentOperations.h" // str( gpb::Message* )
+#include "samson/common/EnvironmentOperations.h"  // str( gpb::Message* )
 #include "samson/common/samson.pb.h"     // google protocol buffers
 
 #include "engine/Buffer.h"                       // engine::Buffer
@@ -45,7 +45,7 @@ public:
   NodeIdentifier from;               // Identifier of the sender
   NodeIdentifier to;                 // Identifier of the receiver
 
-  Message::MessageCode msgCode;                  // Message code (sent in the header of the network interface)
+  Message::MessageCode msgCode;      // Message code (sent in the header of the network interface)
 
   gpb::Message *message;             // Message with necessary fields (codified using Google Protocol Buffers)
 
@@ -79,4 +79,4 @@ public:
 typedef  au::SharedPointer<Packet>   PacketPointer;
 }
 
-#endif // ifndef PACKET_H
+#endif  // ifndef PACKET_H

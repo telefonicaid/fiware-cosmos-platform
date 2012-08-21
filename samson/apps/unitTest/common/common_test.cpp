@@ -35,8 +35,10 @@ TEST(commonTest, MessagesOperations) {
 
   EXPECT_EQ(samson::filterName("OTTstream.parse_logs", "OTTstream", ""), true) << "Error in filterName positive test";
   EXPECT_EQ(samson::filterName("OTTstream.parse_logs", "system", ""), false) << "Error in filterName negative test";
-  EXPECT_EQ(samson::filterName("samson.OTTstream.parse_logs", "samson", "logs"), true) << "Error in filterName positive test";
-  EXPECT_EQ(samson::filterName("samson.OTTstream.parse_logs", "samson", "log"), false) << "Error in filterName negative test";
+  EXPECT_EQ(samson::filterName("samson.OTTstream.parse_logs", "samson",
+                               "logs"), true) << "Error in filterName positive test";
+  EXPECT_EQ(samson::filterName("samson.OTTstream.parse_logs", "samson",
+                               "log"), false) << "Error in filterName negative test";
 
   samson::SamsonSetup::destroy();
 }
@@ -45,8 +47,10 @@ TEST(commonTest, MessagesOperations) {
 // Test void SamsonSetup();
 TEST(commonTest, SamsonSetup) {
   EXPECT_EQ(samson::createDirectory("/tmp/testSamsonSetup"), samson::OK) << "Error in createDirectory test";
-  EXPECT_EQ(samson::createFullDirectory("/tmp/level1/level2/level3/testSamsonSetup"), samson::OK) << "Error in createFullDirectory test";
-  EXPECT_EQ(samson::cannonical_path("/tmp/level1/level2/level3/"), "/tmp/level1/level2/level3") << "Error in cannonical_path test";
+  EXPECT_EQ(samson::createFullDirectory("/tmp/level1/level2/level3/testSamsonSetup"),
+            samson::OK) << "Error in createFullDirectory test";
+  EXPECT_EQ(samson::cannonical_path("/tmp/level1/level2/level3/"),
+            "/tmp/level1/level2/level3") << "Error in cannonical_path test";
 
   // Better not to set /opt/samson and /var/samson, so init() can get environment variables
   // samson::SamsonSetup::init("/opt/samson", "/var/samson");
@@ -55,7 +59,8 @@ TEST(commonTest, SamsonSetup) {
   EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("isolated.timeout"),
             "300") << "Error in getValueForParameter for isolated.timeout";
 
-  samson::SamsonSetup::shared()->addItem("unit_test.samsonSetupTest", "initial", "dummy for testing", samson::SetupItem_string);
+  samson::SamsonSetup::shared()->addItem("unit_test.samsonSetupTest", "initial", "dummy for testing",
+                                         samson::SetupItem_string);
 
   EXPECT_EQ(samson::SamsonSetup::shared()->isParameterDefined("unit_test.samsonSetupTest"),
             true) << "Error in isParameterDefined positive test";
@@ -70,7 +75,8 @@ TEST(commonTest, SamsonSetup) {
             "successful") << "Error in getValueForParameter for unit_test.samsonSetupTest";
 
   EXPECT_EQ(samson::SamsonSetup::shared()->setValueForParameter("isolated.timeout",
-                                                                "1000"), true) << "Error in setValueForParameter for isolated.timeout";
+                                                                "1000"),
+            true) << "Error in setValueForParameter for isolated.timeout";
   EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("isolated.timeout"),
             "1000") << "Error in getValueForParameter for isolated.timeout";
 
@@ -114,7 +120,8 @@ TEST(commonTest, Rate) {
 // Test  status;
 TEST(commonTest, status) {
   EXPECT_EQ(strcmp(samson::status(samson::OK), "OK") == 0, true) << "Error in status OK";
-  EXPECT_EQ(strcmp(samson::status(samson::NotImplemented), "Not Implemented") == 0, true) << "Error in status NotImplemented";
+  EXPECT_EQ(strcmp(samson::status(samson::NotImplemented),
+                   "Not Implemented") == 0, true) << "Error in status NotImplemented";
   EXPECT_EQ(strcmp(samson::status(samson::BadMsgType), "BadMsgType") == 0, true) << "Error in status BadMsgType";
   EXPECT_EQ(strcmp(samson::status(samson::NullHost), "Null Host") == 0, true) << "Error in status NullHost";
   EXPECT_EQ(strcmp(samson::status(samson::BadHost), "Bad Host") == 0, true) << "Error in status BadHost";
@@ -137,16 +144,20 @@ TEST(commonTest, status) {
   EXPECT_EQ(strcmp(samson::status(samson::ReadError), "Read Error") == 0, true) << "Error in status ReadError";
   EXPECT_EQ(strcmp(samson::status(samson::WriteError), "Write Error") == 0, true) << "Error in status WriteError";
   EXPECT_EQ(strcmp(samson::status(samson::Timeout), "Timeout") == 0, true) << "Error in status Timeout";
-  EXPECT_EQ(strcmp(samson::status(samson::ConnectionClosed), "Connection Closed") == 0, true) << "Error in status ConnectionClosed";
+  EXPECT_EQ(strcmp(samson::status(samson::ConnectionClosed),
+                   "Connection Closed") == 0, true) << "Error in status ConnectionClosed";
   EXPECT_EQ(strcmp(samson::status(samson::PThreadError), "Thread Error") == 0, true) << "Error in status PThreadError";
-  EXPECT_EQ(strcmp(samson::status(samson::WrongPacketHeader), "Wrong Packet Header") == 0, true) << "Error in status WrongPacketHeader";
+  EXPECT_EQ(strcmp(samson::status(samson::WrongPacketHeader),
+                   "Wrong Packet Header") == 0, true) << "Error in status WrongPacketHeader";
   EXPECT_EQ(strcmp(samson::status(samson::ErrorParsingGoogleProtocolBuffers),
-                   "Error parsing Google Protocol Buffer message") == 0, true) << "Error in status ErrorParsingGoogleProtocolBuffers";
+                   "Error parsing Google Protocol Buffer message") == 0,
+            true) << "Error in status ErrorParsingGoogleProtocolBuffers";
 
   EXPECT_EQ(samson::au_status(au::OK), samson::OK) << "Error in au_status OK";
   EXPECT_EQ(samson::au_status(au::Error), samson::Error) << "Error in au_status Error";
   EXPECT_EQ(samson::au_status(au::NotImplemented), samson::NotImplemented) << "Error in au_status NotImplemented";
-  EXPECT_EQ(samson::au_status(au::GetHostByNameError), samson::GetHostByNameError) << "Error in au_status GetHostByNameError";
+  EXPECT_EQ(samson::au_status(au::GetHostByNameError),
+            samson::GetHostByNameError) << "Error in au_status GetHostByNameError";
   EXPECT_EQ(samson::au_status(au::SelectError), samson::Timeout) << "Error in au_status SelectError";
   EXPECT_EQ(samson::au_status(au::Timeout), samson::Timeout) << "Error in au_status Timeout";
   EXPECT_EQ(samson::au_status(au::ConnectError), samson::ConnectError) << "Error in au_status ConnectError";
@@ -164,8 +175,10 @@ TEST(commonTest, status) {
   EXPECT_EQ(samson::au_status(au::GPB_CorruptedHeader), samson::Error) << "Error in au_status GPB_CorruptedHeader";
   EXPECT_EQ(samson::au_status(au::GPB_WrongReadSize), samson::Error) << "Error in au_status GPB_WrongReadSize";
   EXPECT_EQ(samson::au_status(au::GPB_ReadErrorParsing), samson::Error) << "Error in au_status GPB_ReadErrorParsing";
-  EXPECT_EQ(samson::au_status(au::GPB_NotInitializedMessage), samson::Error) << "Error in au_status GPB_NotInitializedMessage";
-  EXPECT_EQ(samson::au_status(au::GPB_WriteErrorSerializing), samson::Error) << "Error in au_status GPB_WriteErrorSerializing";
+  EXPECT_EQ(samson::au_status(au::GPB_NotInitializedMessage),
+            samson::Error) << "Error in au_status GPB_NotInitializedMessage";
+  EXPECT_EQ(samson::au_status(au::GPB_WriteErrorSerializing),
+            samson::Error) << "Error in au_status GPB_WriteErrorSerializing";
   EXPECT_EQ(samson::au_status(au::GPB_WriteError), samson::Error) << "Error in au_status GPB_WriteError";
 }
 
@@ -199,7 +212,8 @@ TEST(commonTest, testKVRange) {
   std::ostringstream output;
   range_2.getInfo(output);
   EXPECT_EQ(output.str(),
-            "<kv_range><hg_begin><![CDATA[1]]></hg_begin><hg_end><![CDATA[10]]></hg_end></kv_range>") << "Error in KVRange getInfo";
+            "<kv_range><hg_begin><![CDATA[1]]></hg_begin><hg_end><![CDATA[10]]></hg_end></kv_range>") <<
+  "Error in KVRange getInfo";
 
   EXPECT_EQ(range_2.str(), "[1 10]") << "Error in KVRange str";
   EXPECT_EQ(range_2.getNumHashGroups(), 9) << "Error in KVRange getNumHashGroups";
@@ -247,7 +261,8 @@ TEST(commonTest, testKVInfo) {
 
   std::ostringstream output;
   info_1.getInfo(output);
-  EXPECT_EQ(output.str(), "<kv_info><kvs><![CDATA[10]]></kvs><size><![CDATA[100]]></size></kv_info>") << "Error in KVInfo getInfo";
+  EXPECT_EQ(output.str(),
+            "<kv_info><kvs><![CDATA[10]]></kvs><size><![CDATA[100]]></size></kv_info>") << "Error in KVInfo getInfo";
 
 
   info_1.append(1, 1);
@@ -278,7 +293,9 @@ TEST(commonTest, testFullKVInfo) {
 
   std::ostringstream output;
   info_1.getInfo(output);
-  EXPECT_EQ(output.str(), "<kv_info><kvs><![CDATA[10]]></kvs><size><![CDATA[100]]></size></kv_info>") << "Error in FullKVInfo getInfo";
+  EXPECT_EQ(output.str(),
+            "<kv_info><kvs><![CDATA[10]]></kvs><size><![CDATA[100]]></size></kv_info>") <<
+  "Error in FullKVInfo getInfo";
 
 
   info_1.append(static_cast<samson::uint32>(1), static_cast<samson::uint32>(1));

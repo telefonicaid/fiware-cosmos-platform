@@ -29,6 +29,7 @@ typedef struct KV {
       return false;
     }
 
+
     for (int i = 0; i < value_size; i++) {
       if (value[i] != kv->value[i]) {
         return false;
@@ -40,4 +41,4 @@ typedef struct KV {
 } KV;
 }
 
-#endif // ifndef SAMSON_KV_H
+#endif  // ifndef SAMSON_KV_H

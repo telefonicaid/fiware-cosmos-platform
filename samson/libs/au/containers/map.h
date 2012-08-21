@@ -29,7 +29,7 @@
 #include <string.h>
 #include <vector>       // std::vector
 
-#include "logMsg/logMsg.h" // LM_M()
+#include "logMsg/logMsg.h"  // LM_M()
 
 
 
@@ -76,6 +76,7 @@ public:
     if (iter == std::map<K, V *, _Compare>::end()) {
       return NULL;
     }
+
     return iter->second;
   }
 
@@ -193,4 +194,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_MAP
+#endif  // ifndef _H_AU_MAP

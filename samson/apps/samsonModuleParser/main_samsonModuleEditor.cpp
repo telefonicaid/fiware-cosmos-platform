@@ -14,7 +14,7 @@
 #include "logMsg/logMsg.h"       // LM_*
 #include "logMsg/traceLevels.h"  // Trace Levels
 #include "parseArgs/paUsage.h"   // paUsage
-#include "parseArgs/parseArgs.h" // parseArgs
+#include "parseArgs/parseArgs.h"  // parseArgs
 
 #include "au/console/Console.h"
 #include "au/console/ConsoleAutoComplete.h"
@@ -40,7 +40,7 @@ char working_directory[1024];
 
 PaArgument paArgs[] =
 {
-  { "", working_directory,  "",  PaString,  PaOpt,  _i DEFAULT_WORKING_DIRECTORY,   PaNL,   PaNL,   "Working directory"   },
+  { "", working_directory, "", PaString,  PaOpt,  _i DEFAULT_WORKING_DIRECTORY,  PaNL,  PaNL,   "Working directory"       },
   PA_END_OF_ARGS
 };
 
@@ -74,8 +74,7 @@ public:
       // Skip ".files"
       if (fileName.length() > 0)
         if (fileName[0] == '.')
-          continue;
-      std::string path = working_directory + fileName;
+          continue; std::string path = working_directory + fileName;
 
       struct ::stat info;
       stat(path.c_str(), &info);
@@ -167,9 +166,7 @@ public:
       // TODO: Check everything is saved....
 
       // Quit console to finish
-      quitConsole();
-
-    if (main_command == "ls_modules") {
+      quitConsole(); if (main_command == "ls_modules") {
       // Show information about modules
       au::tables::Table *table =  getTableOfModules();
 
@@ -205,8 +202,6 @@ public:
                         i
                         )
                 );
-
-
             if (!check_data(key_values.valueFormat))
               writeWarningOnConsole(
                 au::str("Operation %s: Unknown datatype %s at input %d"
@@ -215,8 +210,6 @@ public:
                         i
                         )
                 );
-
-
           }
 
           // Checking outputs
@@ -231,8 +224,6 @@ public:
                         i
                         )
                 );
-
-
             if (!check_data(key_values.valueFormat))
               writeWarningOnConsole(
                 au::str("Operation %s: Unknown datatype %s at output %d"
@@ -241,8 +232,6 @@ public:
                         i
                         )
                 );
-
-
           }
         }
       }

@@ -112,8 +112,7 @@ au::Status InterChannelPacket::write(au::FileDescriptor *fd) {
     if (outputVec == NULL)
       LM_XP(1, ("malloc(%d)", header_.message_size ));
     if (message->SerializeToArray(outputVec, header_.message_size) == false)
-      LM_X(1, ("SerializeToArray failed"));
-    s = fd->partWrite(outputVec, header_.message_size, "Google Protocol Buffer");
+      LM_X(1, ("SerializeToArray failed")); s = fd->partWrite(outputVec, header_.message_size, "Google Protocol Buffer");
     free(outputVec);
 
     if (s != au::OK)
@@ -162,16 +161,13 @@ std::string InterChannelPacket::str() {
   output << "[ ";
 
   if (message->has_target_channel())
-    output << "target_channel=" << message->target_channel() << " ";
-  if (message->has_ack())
-    output << "ack=" << message->ack() << " ";
-  output << " ]";
+    output << "target_channel=" << message->target_channel() << " "; if (message->has_ack())
+    output << "ack=" << message->ack() << " "; output << " ]";
 
   // Buffer at the end of the message
 
   if (buffer_ != NULL)
     output << "[ Buffer " << au::str(buffer_->getSize(), "B") << " ]"; else
-    output << "[ No buffer ]";
-  return output.str();
+    output << "[ No buffer ]"; return output.str();
 }
 }

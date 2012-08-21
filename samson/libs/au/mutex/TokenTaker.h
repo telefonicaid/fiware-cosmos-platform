@@ -48,4 +48,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_TOCKEN_TAKER
+#endif  // ifndef _H_AU_TOCKEN_TAKER

@@ -23,7 +23,7 @@
 #include "samson/common/samsonVars.h"     // SAMSON_ARG_VARS
 
 #include "samson/module/KVFormat.h"       // samson::KVFormat
-#include "samson/module/ModulesManager.h" // samson::ModulesManager
+#include "samson/module/ModulesManager.h"  // samson::ModulesManager
 
 #include "samson/common/SamsonDataSet.h"  // samson::SamsonDataSet
 #include "samson/common/SamsonFile.h"     // samson::SamsonFile
@@ -49,14 +49,24 @@ SAMSON_ARG_VARS;
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-limit", &show_limit,     "",              PaInt,               PaOpt,        0,                0,               100000,
+  { "-limit", &show_limit,     "",          PaInt,             PaOpt,                 0,
+    0,
+    100000,
     "Limit in the number of records"           },
-  { "-header",&show_header,          "",            PaBool,       PaOpt,     false,           false,  true,      "Show only header"                         },
-  { "-hg",    &show_hg,              "",            PaBool,       PaOpt,     false,           false,  true,
+  { "-header",&show_header,      "",          PaBool,                PaOpt,                 false,
+    false,
+    true,     "Show only header"      },
+  { "-hg",    &show_hg,          "",          PaBool,                PaOpt,                 false,
+    false,
+    true,
     "Show only hash-group information"         },
-  { "-show_hg",&show_hg_per_kvs,      "",            PaBool,       PaOpt,     false,           false,  true,
+  { "-show_hg",&show_hg_per_kvs,  "",          PaBool,                PaOpt,                 false,
+    false,
+    true,
     "Show hash-group for each key-value"       },
-  { " ",      file_name,             "",            PaString,     PaReq,     (long)"null",    PaNL,   PaNL,
+  { " ",      file_name,         "",          PaString,              PaReq,                 (long)"null",
+    PaNL,
+    PaNL,
     "name of the file or directory to scan"    },
   PA_END_OF_ARGS
 };
@@ -102,9 +112,9 @@ int main(int argC, const char *argV[]) {
     au::ErrorManager error;
     au::SharedPointer<samson::SamsonFile> samson_file = samson::SamsonFile::create(file_name, error);
 
-    if (error.IsActivated())
-      LM_X(1, ("%s", error.GetMessage().c_str()));
-    // Show header only
+    if (error.IsActivated()) {
+      LM_X(1, ("%s", error.GetMessage().c_str()));  // Show header only
+    }
     if (show_header) {
       samson_file->printHeader(std::cout);
       exit(0);
@@ -124,8 +134,7 @@ int main(int argC, const char *argV[]) {
     au::SharedPointer<samson::SamsonDataSet> samson_data_set = samson::SamsonDataSet::create(file_name, error);
 
     if (error.IsActivated())
-      LM_X(1, ( error.GetMessage().c_str()));
-    if (show_header) {
+      LM_X(1, ( error.GetMessage().c_str())); if (show_header) {
       std::cout << "Total: " << samson_data_set->info().strDetailed() << "\n";
       samson_data_set->printHeaders(std::cout);
       exit(0);

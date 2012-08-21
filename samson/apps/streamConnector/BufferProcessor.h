@@ -60,4 +60,4 @@ private:
 }
 
 
-#endif // ifndef _H_SAMSON_CONNECTOR_BLOCK_PROCESSOR
+#endif  // ifndef _H_SAMSON_CONNECTOR_BLOCK_PROCESSOR

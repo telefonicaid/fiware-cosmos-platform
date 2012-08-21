@@ -98,8 +98,7 @@ void read_original_categories_file(const char *file_name) {
   FILE *file = fopen(file_name, "r");
 
   if (!file)
-    LM_X(1, ("Error reading file %s to load original categories file", file_name));
-  char line[10000];
+    LM_X(1, ("Error reading file %s to load original categories file", file_name)); char line[10000];
   char *fields[10];
   size_t num = 0;
 
@@ -136,8 +135,7 @@ void read_original_pattern_to_category_file(const char *file_name) {
   FILE *file = fopen(file_name, "r");
 
   if (!file)
-    LM_X(1, ("Error reading file %s to load original pattern to category file", file_name));
-  char line[10000];
+    LM_X(1, ("Error reading file %s to load original pattern to category file", file_name)); char line[10000];
   char *fields[10];
   size_t num = 0;
 
@@ -160,8 +158,7 @@ void read_original_pattern_to_category_file(const char *file_name) {
       LM_M(("Readed %lu records", num)); if (( max_num_entries > 0 ) && ( max_num_entries < 1000 ))
       if (!isPatternIdUsed(entry.first))
         // LM_M(("Pattern %lu not used...", entry.first));
-        continue;
-    original_pattern_to_category.push_back(entry);
+        continue; original_pattern_to_category.push_back(entry);
   }
 
   // Sorting original records
@@ -177,8 +174,7 @@ void read_original_dictionary_file(const char *file_name, size_t max_num_records
     LM_M(("Max number records %d", max_num_records )); FILE *file = fopen(file_name, "r");
 
   if (!file)
-    LM_X(1, ("Error reading file %s to load original dictionary file", file_name));
-  char line[10000];
+    LM_X(1, ("Error reading file %s to load original dictionary file", file_name)); char line[10000];
   char *fields[11];
   size_t num = 0;
 
@@ -253,7 +249,8 @@ void read_original_dictionary_file(const char *file_name, size_t max_num_records
 
   // Sorting original records
   LM_M(("Sorting entries"));
-  std::sort(original_dictionary_entries.begin(), original_dictionary_entries.end(), samson::comscore::compareOriginalDictionaryEntry);
+  std::sort(original_dictionary_entries.begin(),
+            original_dictionary_entries.end(), samson::comscore::compareOriginalDictionaryEntry);
 }
 
 int main(int argC, const char *argV[]) {
@@ -288,7 +285,8 @@ int main(int argC, const char *argV[]) {
   LM_M(("Adding pattern to dictionary mapping entries"));
   for (size_t i = 0; i < original_pattern_to_category.size(); i++) {
     if ((i % 100000) == 0)
-      LM_M(("Progress %lu records", i)); samson_comscore_dictionary.push_pattern_to_category(original_pattern_to_category[i]);
+      LM_M(("Progress %lu records", i)); samson_comscore_dictionary.push_pattern_to_category(
+      original_pattern_to_category[i]);
   }
 
   LM_M(("Adding category description"));

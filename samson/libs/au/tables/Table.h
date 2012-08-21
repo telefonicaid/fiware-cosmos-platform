@@ -12,7 +12,7 @@
 #include "au/ErrorManager.h"   // au::ErrorManager
 #include "au/console/ConsoleAutoComplete.h"
 #include "au/containers/StringVector.h"
-#include "au/containers/map.h" // au::map
+#include "au/containers/map.h"  // au::map
 #include "au/containers/simple_map.h"
 #include "au/containers/vector.h"
 #include "au/string.h"         // au::str(...)
@@ -337,4 +337,4 @@ private:
 }
 }
 
-#endif // ifndef _H_AU_TABLE_TABLE
+#endif  // ifndef _H_AU_TABLE_TABLE

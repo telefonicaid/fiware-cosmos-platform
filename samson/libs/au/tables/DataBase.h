@@ -10,7 +10,7 @@
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"   // au::ErrorManager
 #include "au/console/ConsoleAutoComplete.h"
-#include "au/containers/map.h" // au::map
+#include "au/containers/map.h"  // au::map
 #include "au/mutex/Token.h"
 #include "au/string.h"         // au::str(...)
 
@@ -91,4 +91,4 @@ private:
 }
 }
 
-#endif // ifndef _H_AU_TABLE_DATABASE
+#endif  // ifndef _H_AU_TABLE_DATABASE

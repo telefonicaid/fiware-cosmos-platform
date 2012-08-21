@@ -57,4 +57,4 @@ namespace au {
  *  };
  */
 }
-#endif // ifndef _H_LOG_CLIENT
+#endif  // ifndef _H_LOG_CLIENT

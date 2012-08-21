@@ -2,6 +2,8 @@
 #ifndef _H_SAMSON_CONNECTOR_COMMAND
 #define _H_SAMSON_CONNECTOR_COMMAND
 
+#include "au/CommandLine.h"
+
 namespace stream_connector {
 /*
  *
@@ -26,4 +28,4 @@ public:
 };
 }
 
-#endif
+#endif // ifndef _H_SAMSON_CONNECTOR_COMMAND

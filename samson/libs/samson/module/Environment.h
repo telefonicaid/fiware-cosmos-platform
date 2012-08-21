@@ -108,6 +108,7 @@ public:
     if (!isSet(name)) {
       return defaultValue;
     }
+
     return atoi(get(name, "0").c_str());
   }
 
@@ -115,6 +116,7 @@ public:
     if (!isSet(name)) {
       return defaultValue;
     }
+
     return atoll(get(name, "0").c_str());
   }
 
@@ -122,6 +124,7 @@ public:
     if (!isSet(name)) {
       return defaultValue;
     }
+
     return atof(get(name, "0").c_str());
   }
 
@@ -145,4 +148,4 @@ public:
   }
 };
 }
-#endif // ifndef _H_ENVIRONMENT
+#endif  // ifndef _H_ENVIRONMENT

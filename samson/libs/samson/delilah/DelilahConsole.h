@@ -217,4 +217,4 @@ public:
 }
 
 
-#endif // ifndef _H_DelilahConsole
+#endif  // ifndef _H_DelilahConsole

@@ -24,4 +24,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_DELILAH_NETWORK
+#endif  // ifndef _H_SAMSON_DELILAH_NETWORK

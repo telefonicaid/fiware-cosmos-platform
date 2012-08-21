@@ -126,11 +126,12 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
       free(info);
       info = NULL;
       error->set(
-        au::str("Error getting KVInfo vector pargins %lu key-value. Current (%s) belongs to hg=%d and previous hg is %d"
-                , i
-                , key->str().c_str()
-                , hg
-                , previous_hg));
+        au::str(
+          "Error getting KVInfo vector pargins %lu key-value. Current (%s) belongs to hg=%d and previous hg is %d"
+          , i
+          , key->str().c_str()
+          , hg
+          , previous_hg));
       return NULL;
     }
 
@@ -146,6 +147,7 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
   }
 
   if (( total_info.size != header->info.size ) || ( total_info.kvs != header->info.kvs ))
-    LM_X(1, ("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(), header->info.str().c_str())); return info;
+    LM_X(1, ("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(), header->info.str().c_str()));
+  return info;
 }
 }

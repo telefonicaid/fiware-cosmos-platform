@@ -29,4 +29,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_CONNECTOR_TRAFFIC_STATISTICS
+#endif  // ifndef _H_SAMSON_CONNECTOR_TRAFFIC_STATISTICS

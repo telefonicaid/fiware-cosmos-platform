@@ -28,7 +28,7 @@
 #include <sys/shm.h>
 #include <sys/types.h>
 
-#include "au/containers/list.h" // au::list
+#include "au/containers/list.h"  // au::list
 #include "au/containers/map.h"  // au::map
 #include "au/mutex/Token.h"     // au::Token
 #include "au/string.h"          // au::Format
@@ -95,4 +95,4 @@ private:
 };
 }
 
-#endif // ifndef _H_MEMORY_MANAGER
+#endif  // ifndef _H_MEMORY_MANAGER

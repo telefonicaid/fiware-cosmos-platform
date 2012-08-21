@@ -121,4 +121,4 @@ void xml_iterate_map(std::ostringstream& output, std::string name, au::map< K, V
 }
 }
 
-#endif // ifndef _H_AU_XML
+#endif  // ifndef _H_AU_XML

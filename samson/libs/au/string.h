@@ -28,7 +28,7 @@
 
 #include "au/CommandLine.h"
 #include "au/ErrorManager.h"   // au::ErrorManager
-#include "au/containers/map.h" // au::map
+#include "au/containers/map.h"  // au::map
 
 
 
@@ -139,4 +139,4 @@ std::string reverse_lines(std::string& txt);
 }
 
 
-#endif // ifndef _H_AU_STRING
+#endif  // ifndef _H_AU_STRING

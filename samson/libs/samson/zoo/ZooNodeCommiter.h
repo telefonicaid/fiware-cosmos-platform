@@ -66,7 +66,8 @@ public:
   }
 
   // Virtual function to update internal state with a provided commit
-  virtual void PerformCommit(au::SharedPointer<C> c, std::string commit_command, int version, au::ErrorManager *error) = 0;
+  virtual void PerformCommit(au::SharedPointer<C> c, std::string commit_command, int version,
+                             au::ErrorManager *error) = 0;
 
   // Virtual method to be nofitied when and update comes up
   virtual void NotificationNewModel(int version, au::SharedPointer<C> c) {
@@ -224,4 +225,4 @@ private:
 };
 };
 
-#endif // ifndef _H_SAMSON_ZOO_NODE_COMITTER
+#endif  // ifndef _H_SAMSON_ZOO_NODE_COMITTER

@@ -210,7 +210,8 @@ void NetworkConnection::fill(gpb::CollectionRecord *record, const Visualization&
   if (socket_connection_->IsClosed())
     ::samson::add(record, "status", "disconnected", "different,left"); else
     ::samson::add(record, "status", "connected", "different,left"); ::samson::add(record, "host",
-                                                                                  socket_connection_->host_and_port(), "different");
+                                                                                  socket_connection_->host_and_port(),
+                                                                                  "different");
 
   ::samson::add(record, "In (B)", rate_in.getTotalSize(), "f=uint64,sum");
   ::samson::add(record, "Out (B)", rate_out.getTotalSize(), "f=uint64,sum");

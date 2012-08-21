@@ -33,7 +33,8 @@ TEST(samson_common_SamsonFile, basic) {
     au::SharedPointer<samson::SamsonFile> samon_file = samson::SamsonFile::create("/tmp/non_existing_file", error);
     EXPECT_EQ(error.IsActivated(), true) << "Non detected missing file in SamsonFile";
     EXPECT_EQ(error.GetMessage(),
-              "Error reading file /tmp/non_existing_file (No such file or directory)") << "Wrong error message for /tmp/non_existing_file";
+              "Error reading file /tmp/non_existing_file (No such file or directory)") <<
+    "Wrong error message for /tmp/non_existing_file";
   }
 
   // Check error is detected in wrong files

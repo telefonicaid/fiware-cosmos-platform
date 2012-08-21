@@ -65,4 +65,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_PACKET_QUEUE
+#endif  // ifndef _H_SAMSON_PACKET_QUEUE

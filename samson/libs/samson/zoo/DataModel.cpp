@@ -12,7 +12,8 @@ DataModel::DataModel(zoo::Connection *zoo_connection)
 DataModel::~DataModel() {
 }
 
-void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string command, int version, au::ErrorManager *error) {
+void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string command, int version,
+                              au::ErrorManager *error) {
   au::CommandLine cmd;
 
   // Input output definition of queues
@@ -126,7 +127,8 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
 
     // Push content to paralel queues
     for (size_t i = 0; i < input_queues.size(); i++) {
-      std::string new_command = au::str("push_queue %s %s%s", input_queues[i].c_str(), prefix.c_str(), input_queues[i].c_str());
+      std::string new_command = au::str("push_queue %s %s%s", input_queues[i].c_str(),
+                                        prefix.c_str(), input_queues[i].c_str());
       PerformCommit(data, new_command, version, error);
       if (error->IsActivated())
         return;
@@ -188,7 +190,8 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
 
   if (main_command == "add_stream_operation") {
     if (cmd.get_num_arguments() < 3) {
-      error->set("Usage: add_stream_operation name operation -input \"input1 input2\" -output \"outputs1 outputs2 output3\"");
+      error->set(
+        "Usage: add_stream_operation name operation -input \"input1 input2\" -output \"outputs1 outputs2 output3\"");
       return;
     }
 
@@ -366,7 +369,8 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
     std::string key_format = cmd.get_argument(2);
     std::string value_format;
     if (cmd.get_num_arguments() == 3)
-      value_format = key_format; else
+      value_format = key_format;
+    else
       value_format = cmd.get_argument(3);  // Get or create this queue
     samson::gpb::get_or_create_queue(data.shared_object(), name, KVFormat(key_format, value_format), error);
     if (!error->IsActivated())

@@ -17,9 +17,9 @@ InputInterChannelConnection::InputInterChannelConnection(StreamConnector *stream
                                                          std::string host_name
                                                          , au::SocketConnection *socket_connection)
   : Connection(NULL, connection_output, getName(host_name, "???")) {       // No item until we identify target channel
-  if (!socket_connection)
-    LM_X(1, ("Internal error"));
-  // Keep a pointer to SamsonConnector
+  if (!socket_connection) {
+    LM_X(1, ("Internal error"));  // Keep a pointer to SamsonConnector
+  }
   stream_connector_ = stream_connector;
 
   // Keep a pointer to the socket connection
@@ -171,7 +171,6 @@ std::string OutputInterChannelConnection::getStatus() {
                    , au::S(connection_cronometer).str().c_str()
                    , last_error.c_str());
 
-
   if (link_->isConnected())
     return "Connected"; else
     return "Non Connected";
@@ -183,8 +182,7 @@ size_t OutputInterChannelConnection::bufferedSize() {
   size_t total = Connection::bufferedSize();
 
   if (link_)
-    total += link_->bufferedSize();
-  return total;
+    total += link_->bufferedSize(); return total;
 }
 
 void OutputInterChannelConnection::start_connection() {
@@ -201,9 +199,9 @@ void OutputInterChannelConnection::stop_connection() {
 }
 
 void OutputInterChannelConnection::review_connection() {
-  if (!link_)
-    set_as_connected(false);
-  // If link_ is not valid any more, just remove it...
+  if (!link_) {
+    set_as_connected(false);  // If link_ is not valid any more, just remove it...
+  }
   if (link_ && !link_->isConnected()) {
     // Close connection
     link_->close_and_stop();
@@ -240,9 +238,9 @@ void OutputInterChannelConnection::review_connection() {
     // Encapsulate generated buffers in packets
     while (true) {
       // Check generated packed included size in link_ is not too large ( always in memory )
-      if (link_->bufferedSize() > 256 * 1024 * 1024)
-        break;
-      // Recover next generated buffer
+      if (link_->bufferedSize() > 256 * 1024 * 1024) {
+        break;  // Recover next generated buffer
+      }
       engine::BufferPointer buffer = getNextBufferToSent();
 
       if (buffer != NULL) {

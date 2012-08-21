@@ -44,8 +44,7 @@ void FileDescriptorConnection::stop_connection() {
 
   // Stop thread in the background
   if (file_descriptor_)
-    file_descriptor_->Close();
-  while (thread_running_) {
+    file_descriptor_->Close(); while (thread_running_) {
     usleep(100000);
   }
 }
@@ -91,7 +90,7 @@ void FileDescriptorConnection::review_connection() {
   // If we are disconnected, wait until thread finish and delte it to reconnect
   if (file_descriptor_->IsClosed()) {
     set_as_connected(false);
-    if (thread_running_)          // Still waiting for the threads to finish
+    if (thread_running_) // Still waiting for the threads to finish
       return; delete file_descriptor_;
     file_descriptor_ = NULL;
     return;
@@ -103,9 +102,9 @@ void FileDescriptorConnection::review_connection() {
 
 void FileDescriptorConnection::run_as_output() {
   while (true) {
-    if (!file_descriptor_)
-      LM_X(1, ("Internal error"));
-    // Container to keep a retained version of buffer
+    if (!file_descriptor_) {
+      LM_X(1, ("Internal error"));  // Container to keep a retained version of buffer
+    }
     engine::BufferPointer buffer = getNextBufferToSent();
 
     if (buffer != NULL) {
@@ -124,9 +123,9 @@ void FileDescriptorConnection::run_as_output() {
 void FileDescriptorConnection::run_as_input() {
   // Read from stdin and push blocks to the samson_connector
   while (true) {
-    if (!file_descriptor_)
-      LM_X(1, ("Internal error"));
-    // Get a buffer
+    if (!file_descriptor_) {
+      LM_X(1, ("Internal error"));  // Get a buffer
+    }
     engine::BufferPointer buffer = engine::Buffer::create("stdin"
                                                           , "connector"
                                                           , input_buffer_size);
@@ -171,10 +170,11 @@ void FileDescriptorConnection::run_as_input() {
 }
 
 void FileDescriptorConnection::run() {
-  if (getType() == connection_input)
-    run_as_input(); else
-    run_as_output();
-  // Mark as non thread_running
+  if (getType() == connection_input) {
+    run_as_input();
+  } else {
+    run_as_output();  // Mark as non thread_running
+  }
   thread_running_ = false;
 }
 
@@ -186,13 +186,11 @@ std::string FileDescriptorConnection::getStatus() {
   } else {
     if (file_descriptor_->IsClosed())
       output << "Closing connection"; else
-      output << "Connected";
-    output << au::str(" [fd:%d]", file_descriptor_->fd());
+      output << "Connected"; output << au::str(" [fd:%d]", file_descriptor_->fd());
   }
 
   if (getType() == connection_input)
-    output << au::str(" [buffer:%s]", au::str(input_buffer_size).c_str());
-  return output.str();
+    output << au::str(" [buffer:%s]", au::str(input_buffer_size).c_str()); return output.str();
 }
 
 SimpleFileDescriptorConnection::SimpleFileDescriptorConnection(Adaptor *_item

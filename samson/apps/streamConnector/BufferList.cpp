@@ -97,7 +97,8 @@ void BufferListItem::flush_to_disk() {
       // squedule_write
       if (buffer_ == NULL)
         LM_X(1, ("Internal error"));
-      engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer_, file_name_, getEngineId());
+      engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer_, file_name_,
+                                                                          getEngineId());
       au::SharedPointer<engine::DiskOperation> operation(o);
       engine::DiskManager::shared()->Add(operation);
 
@@ -161,9 +162,7 @@ void BufferList::review_persistence() {
     if (total < max_size_on_memory_)
       item->load_from_disk(); else
       // Flushing to disk
-      item->flush_to_disk();
-
-    total += item->getSize();
+      item->flush_to_disk(); total += item->getSize();
   }
 }
 

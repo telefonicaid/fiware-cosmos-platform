@@ -75,6 +75,7 @@ public:
       return NULL;
     }
 
+
     if (value_condition->get_double() != 0) {
       return value1->get(kv);
     } else {
@@ -171,6 +172,7 @@ public:
     if (!v1 || !v2) {
       return false;
     }
+
 
     switch (comparisson) {
       case equal:                 return ( *v1 == *v2 );
@@ -282,6 +284,7 @@ public:
       return NULL;
     }
 
+
     switch (operation) {
       case sum:       *value_container.value = *v1 + *v2;
         break;
@@ -389,6 +392,7 @@ public:
       return NULL;
     }
 
+
     return base_value->get_value_from_vector(index_value->get_double());
   }
 
@@ -415,6 +419,7 @@ public:
     if (!index_value || !base_value) {
       return NULL;
     }
+
 
     std::string key = index_value->get_string();
     return base_value->get_value_from_map(key);
@@ -468,12 +473,12 @@ class SourceMap : public Source {
   au::vector<Source> source_keys;
   au::vector<Source> source_values;
 
-  samson::system::ValueContainer value_container;           // To generate output
+  samson::system::ValueContainer value_container;  // To generate output
 public:
 
   SourceMap(au::vector<Source> _source_keys, au::vector<Source> _source_values) {
     if (_source_keys.size() != _source_values.size()) {
-      return;               // Error
+      return;                                     // Error
     }
     for (size_t i = 0; i < _source_keys.size(); i++) {
       source_keys.push_back(_source_keys[i]);
@@ -490,6 +495,7 @@ public:
       if (!tmp_key || !tmp_value) {
         return NULL;
       }
+
 
       // Prepare the value
       value_container.value->add_value_to_map(tmp_key->get_string())->copyFrom(tmp_value);
@@ -516,5 +522,5 @@ Source *getSource(au::token::TokenVector *token_vector, au::ErrorManager *error)
 }
 }
 
-#endif // ifndef _H_SAMSON_SYSTEM_SOURCE
+#endif  // ifndef _H_SAMSON_SYSTEM_SOURCE
 

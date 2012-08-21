@@ -28,7 +28,7 @@
 #include "engine/Buffer.h"                   // samson::Buffer
 
 #include "samson/common/samson.pb.h"         // network::..
-#include "samson/common/samsonDirectories.h" // SAMSON_SETUP_FILE
+#include "samson/common/samsonDirectories.h"  // SAMSON_SETUP_FILE
 
 
 namespace engine {
@@ -57,8 +57,10 @@ public:
     // Attach to local-space memory
     data = (char *)shmat(shmid, 0, 0);
     if (data == (char *)-1) {
-      LM_X(1, ("Error with shared memory while attaching to local memory ( %s )( shared memory id %d shmid %d size %lu )\n"
-               , strerror(errno),  id, shmid, size ));
+      LM_X(1,
+           (
+             "Error with shared memory while attaching to local memory ( %s )( shared memory id %d shmid %d size %lu )\n"
+             , strerror(errno),  id, shmid, size ));
     }
   }
 
@@ -91,4 +93,4 @@ public:
 };
 };
 
-#endif // ifndef _H_SHARED_MEMORY_ITEM
+#endif  // ifndef _H_SHARED_MEMORY_ITEM

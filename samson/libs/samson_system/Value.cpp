@@ -290,7 +290,7 @@ inline int Value::parse_string(char *data) {
   switch (code) {
     case ser_string:
       _value_string = &data[1];
-      return 1 + _value_string.length() + 1; // serializtion code, string, '\0'
+      return 1 + _value_string.length() + 1;  // serializtion code, string, '\0'
 
     case ser_string_constant:
       _value_string = get_constant_word(((unsigned char)data[1]));
@@ -668,7 +668,7 @@ int Value::serialize_string(char *data) {
   // Default serialization of string
   data[0] = (char)ser_string;
   strcpy(data + 1, _value_string.c_str());
-  int total  = 1 + ( _value_string.length() + 1 ); // Serialization code - strin - '\0'
+  int total  = 1 + ( _value_string.length() + 1 );  // Serialization code - strin - '\0'
   return total;
 }
 
@@ -932,7 +932,7 @@ bool Value::operator>(const Value &other) const {
   return compare(other) > 0;
 }
 
-const Value Value::operator+(Value &other) { // const
+const Value Value::operator+(Value &other) {  // const
   Value result = *this;                      // Make a copy of myself.
 
 
@@ -1265,7 +1265,8 @@ std::string Value::strHTML(int level_html_heading) {
   output << "<style>";
   output <<
   "#table-5{font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;background:#fff;border-collapse:collapse;text-align:left;margin:20px;}";
-  output << "#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}";
+  output <<
+  "#table-5 th{font-size:14px;font-weight:normal;color:#039;border-bottom:2px solid #6678b1;padding:10px 8px;}";
   output <<
   "#table-5 tr{font-size:14px;font-weight:normal;color:#039;border-top:1px solid #6678b1;border-bottom:1px solid #6678b1;padding:10px 8px;}";
   output <<
@@ -1370,7 +1371,7 @@ void Value::vectorize() {
   clear();                        // Clear all elements used here
   set_as_vector();
 
-  _value_vector.push_back(value); // Put the copy of me
+  _value_vector.push_back(value);  // Put the copy of me
 }
 
 void Value::swap_vector_components(size_t pos, size_t pos2) {

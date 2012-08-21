@@ -119,6 +119,7 @@ public:
       return -1;
     }
 
+
     // Get list of connected workers
     std::vector<size_t> connected_worker_ids;
     for (int i = 0; i < cluster_information_->workers_size(); i++) {
@@ -132,6 +133,7 @@ public:
     if (connected_worker_ids.size() == 0) {
       return -1;
     }
+
 
     if (previous_worker == (size_t)-1) {
       return connected_worker_ids[rand() % connected_worker_ids.size()];
@@ -167,4 +169,4 @@ private:
 };
 }
 
-#endif // ifndef _H_SAMSON_COMMON_NETWORK
+#endif  // ifndef _H_SAMSON_COMMON_NETWORK

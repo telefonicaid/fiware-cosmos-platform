@@ -21,7 +21,7 @@
 #define AU_CONTAINERS_BOX_H_
 
 #include "au/containers/SharedPointer.h"
-#include "logMsg/logMsg.h" // LM_M()
+#include "logMsg/logMsg.h"  // LM_M()
 #include <list>            // std::list
 
 namespace au {
@@ -82,4 +82,4 @@ private:
 };
 }
 
-#endif // ifndef AU_CONTAINERS_BOX_H_
+#endif  // ifndef AU_CONTAINERS_BOX_H_

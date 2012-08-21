@@ -7,8 +7,8 @@
 
 namespace samson { namespace system {
                    class ProcessComponent {
-                     std::string name_; // Debug name
-                     int use_counter_; // Internal use-counter to reorder ProcessComponent's inside a ProcessComponentsManager
+                     std::string name_;  // Debug name
+                     int use_counter_;  // Internal use-counter to reorder ProcessComponent's inside a ProcessComponentsManager
 
                      friend class ProcessComponentsManager;
 
@@ -16,7 +16,7 @@ public:
 
                      ProcessComponent(std::string name) {
                        name_ = name;
-                       use_counter_ = 0; // Init counter
+                       use_counter_ = 0;  // Init counter
                      }
 
                      // Update this state based on input values ( return true if this state has been updated with this component )
@@ -33,6 +33,6 @@ public:
                    void emit_feedback(Value *key, Value *state, samson::KVWriter *writer);
                    void emit_state(Value *key, Value *state, samson::KVWriter *writer);
                    void emit_log(const std::string& key, const std::string& message, samson::KVWriter *writer);
-                   } } // End of namespace
+                   } }  // End of namespace
 
-#endif // ifndef _H_SAMSON_system_PROCESS_COMPONENT
+#endif  // ifndef _H_SAMSON_system_PROCESS_COMPONENT

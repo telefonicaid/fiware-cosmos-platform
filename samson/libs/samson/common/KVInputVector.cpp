@@ -123,8 +123,9 @@ void KVInputVector::addKVs(int input, KVInfo info, char *data) {
   // Make sure the parsing is OK!
   if (offset != info.size)
     LM_X(1,
-         ("Error adding key-values to a KVInputVector for input %d (%s). (Offset %lu != info.size %lu) KVS num_kvs:%lu / max_num_kvs:%lu "
-          , input, info.str().c_str(), offset, info.size, num_kvs, max_num_kvs  ));
+         (
+           "Error adding key-values to a KVInputVector for input %d (%s). (Offset %lu != info.size %lu) KVS num_kvs:%lu / max_num_kvs:%lu "
+           , input, info.str().c_str(), offset, info.size, num_kvs, max_num_kvs  ));
 }
 
 std::string str_kv(KV *kv) {

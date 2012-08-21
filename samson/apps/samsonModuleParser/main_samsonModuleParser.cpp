@@ -10,7 +10,7 @@
 #include "DataCreator.h"
 #include "au/CommandLine.h"      /* AUCommandLine                              */
 #include "parseArgs/paUsage.h"   // paUsage
-#include "parseArgs/parseArgs.h" // parseArgs
+#include "parseArgs/parseArgs.h"  // parseArgs
 #include <samson/module/Data.h>  /* DataInstance                               */
 #include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                             */
 #include <sys/stat.h>            // stat()
@@ -20,10 +20,10 @@
 #ifdef __gnu_linux__
 int tsCompare(time_t time1, time_t time2) {
   if (time1 < time2) {
-    return -1;                                /* Less than     */
+    return -1;                   /* Less than     */
   } else if (time1 > time2) {
-    return 1;                                 /* Greater than  */
-  } else { return 0;                          /* Equal         */
+    return 1;                    /* Greater than  */
+  } else { return 0;             /* Equal         */
   }
 }
 
@@ -31,19 +31,19 @@ int tsCompare(time_t time1, time_t time2) {
 
 int  tsCompare(struct  timespec time1, struct  timespec time2) {
   if (time1.tv_sec < time2.tv_sec) {
-    return (-1);                                /* Less than. */
+    return (-1);                 /* Less than. */
   } else if (time1.tv_sec > time2.tv_sec) {
-    return (1);                                 /* Greater than. */
+    return (1);                  /* Greater than. */
   } else if (time1.tv_nsec < time2.tv_nsec) {
-    return (-1);                                /* Less than. */
+    return (-1);                 /* Less than. */
   } else if (time1.tv_nsec > time2.tv_nsec) {
-    return (1);                                 /* Greater than. */
+    return (1);                  /* Greater than. */
   } else {
-    return (0);                                 /* Equal. */
+    return (0);                  /* Equal. */
   }
 }
 
-#endif // ifdef __gnu_linux__
+#endif  // ifdef __gnu_linux__
 
 bool verbose;
 
@@ -63,7 +63,8 @@ int main(int argC, const char *argV[]) {
     fprintf(
       stderr,
       "samsonModuleParser: This tool is used to generate/update a .h & .cpp files with the definition of a new module for the samson platform.\n");
-    fprintf(stderr, "A samson-module can contain new data types for your keys and values, maps, reducers and generators.");
+    fprintf(stderr,
+            "A samson-module can contain new data types for your keys and values, maps, reducers and generators.");
     fprintf(stderr, "Syntax of this txt-file is really simple.\n");
     fprintf(stderr, "\n\nMore help coming soon (andreu@tid.es)\n");
     return 0;

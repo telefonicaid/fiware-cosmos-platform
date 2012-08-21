@@ -44,4 +44,4 @@ void paExtendedUsage(void);
  */
 void paHelp(void);
 
-#endif // ifndef PA_USAGE_H
+#endif  // ifndef PA_USAGE_H

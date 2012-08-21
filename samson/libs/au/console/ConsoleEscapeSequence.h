@@ -62,10 +62,10 @@ public:
       SequenceDetectionCode code = checkSequence(*it_sequences);
 
       if (code == sequence_finished) {
-        return sequence_finished;         // Return directly...
+        return sequence_finished;          // Return directly...
       }
       if (code == sequence_unfinished) {
-        return_code = sequence_unfinished;         // Change the global return value
+        return_code = sequence_unfinished;  // Change the global return value
       }
     }
 
@@ -79,6 +79,7 @@ private:
       return sequence_non_compatible;
     }
 
+
     for (size_t i = 0; i < current_sequence.length(); i++) {
       if (sequence[i] != current_sequence[i]) {
         return sequence_non_compatible;
@@ -89,9 +90,10 @@ private:
       return sequence_unfinished;
     }
 
+
     return sequence_finished;
   }
 };
 }
 
-#endif // ifndef _AU_CONSOLE_ESCAPE_SEQUENCE
+#endif  // ifndef _AU_CONSOLE_ESCAPE_SEQUENCE

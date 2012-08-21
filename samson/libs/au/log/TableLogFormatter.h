@@ -117,10 +117,12 @@ public:
       return true;
     }
 
+
     // Check by the limit of recors
     if (limit == 0) {
       return false;
     }
+
     return (num_logs >= limit );
   }
 
@@ -129,4 +131,4 @@ public:
 };
 }
 
-#endif // ifndef _H_AU_TABLE_LOG_FORATTER
+#endif  // ifndef _H_AU_TABLE_LOG_FORATTER

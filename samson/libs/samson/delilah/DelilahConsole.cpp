@@ -85,7 +85,8 @@ const char *auths = "Andreu Urruela, Grant Croker, J.Gregorio Escalada & Ken Zan
 
 
 
-DelilahConsole::DelilahConsole(size_t delilah_id) : Delilah("console", delilah_id), log_client(AU_LOG_SERVER_QUERY_PORT) {
+DelilahConsole::DelilahConsole(size_t delilah_id) : Delilah("console",
+                                                            delilah_id), log_client(AU_LOG_SERVER_QUERY_PORT) {
   // Default values
   show_local_logs = false;
   show_server_logs = false;
@@ -143,8 +144,7 @@ void DelilahConsole::evalCommand(std::string command) {
                           , strClock(cronometer).c_str()
                           , _delilah_id
                           , command.c_str()
-                          );
-      int s = waitWithMessage(message, 0.2, &entry);
+                          ); int s = waitWithMessage(message, 0.2, &entry);
 
       if (!isActive(_delilah_id)) {
         // Print output
@@ -215,7 +215,8 @@ void DelilahConsole::autoCompleteQueueWithFormat(
   delete table;
 }
 
-void DelilahConsole::autoCompleteQueueForOperation(au::ConsoleAutoComplete *info, std::string operation_name, int argument_pos) {
+void DelilahConsole::autoCompleteQueueForOperation(au::ConsoleAutoComplete *info, std::string operation_name,
+                                                   int argument_pos) {
   // Search in the operations
   Operation *operation = ModulesManager::shared()->getOperation(operation_name);
 
@@ -402,9 +403,14 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     std::vector<std::string> hosts = au::split(host, ' ');
 
     if (hosts.size() == 0)
-      writeErrorOnConsole(command_instance->ErrorMessage(au::str("No host provided (%s)", host.c_str()))); for (int i = 0;
-                                                                                                                i < (int)hosts.size();
-                                                                                                                i++) {
+      writeErrorOnConsole(command_instance->ErrorMessage(au::str("No host provided (%s)", host.c_str()))); for (int i =
+                                                                                                                  0;
+                                                                                                                i <
+                                                                                                                (int)
+                                                                                                                hosts.
+                                                                                                                size();
+                                                                                                                i++)
+    {
       writeOnConsole(au::str("Connecting to %s...\n", hosts[i].c_str()));
 
       au::ErrorManager error;
@@ -550,8 +556,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     if (action == "on") {
       if (!show_local_logs)
         // Connect plugin
-        add_log_plugin(this);
-      show_local_logs = true;
+        add_log_plugin(this); show_local_logs = true;
       writeOnConsole("Local logs are now activated\n");
       return 0;
     }
@@ -559,8 +564,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     if (action == "off") {
       if (show_local_logs)
         // Disconnec plugin
-        remove_log_plugin(this);
-      show_local_logs = false;
+        remove_log_plugin(this); show_local_logs = false;
       writeOnConsole("Local logs are now NOT activated\n");
       return 0;
     }
@@ -648,7 +652,8 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     }
 
     fclose(trace_file);
-    writeOnConsole("Stop saving alerts to file '%s'.\nRemeber you can open a new alerts file with command 'open_alerts_file\n'");
+    writeOnConsole(
+      "Stop saving alerts to file '%s'.\nRemeber you can open a new alerts file with command 'open_alerts_file\n'");
     return 0;
   }
 
@@ -972,7 +977,8 @@ void DelilahConsole::delilahComponentStartNotification(DelilahComponent *compone
   if (verbose) {
     std::ostringstream o;
 
-    o << "Process started: " << au::code64_str(get_delilah_id()) << "_" <<  component->getId() << " " << component->getConcept() << "\n";
+    o << "Process started: " << au::code64_str(get_delilah_id()) << "_" <<  component->getId() << " " <<
+    component->getConcept() << "\n";
     if (component->error.IsActivated())
       showErrorMessage(o.str()); else
       showWarningMessage(o.str());
@@ -1008,7 +1014,8 @@ void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::Buffer
   std::string directory_name = au::str("stream_out_%s", queue.c_str());
 
   if (( mkdir(directory_name.c_str(), 0755) != 0 ) && ( errno != EEXIST )) {
-    showErrorMessage(au::str("It was not possible to create directory %s to store data from queue %s", directory_name.c_str(), queue.c_str()));
+    showErrorMessage(au::str("It was not possible to create directory %s to store data from queue %s",
+                             directory_name.c_str(), queue.c_str()));
     showErrorMessage(au::str("Rejecting a %s data from queue %s"
                              , au::str(packet_size, "B").c_str()
                              , queue.c_str()));

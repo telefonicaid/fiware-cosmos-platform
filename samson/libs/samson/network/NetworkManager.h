@@ -107,4 +107,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_NETWORK_MANAGER
+#endif  // ifndef _H_SAMSON_NETWORK_MANAGER

@@ -49,7 +49,8 @@ bool name_match(const char *pattern, C _value) {
 
 // Get a collection from a map
 template <typename K, typename V>
-gpb::Collection *getCollectionForMap(const std::string& title, std::map<K, V *>& m, const Visualization& visualization) {
+gpb::Collection *getCollectionForMap(const std::string& title,
+                                     std::map<K, V *>& m, const Visualization& visualization) {
   gpb::Collection *collection = new gpb::Collection();
 
   collection->set_name(title);
@@ -71,4 +72,4 @@ gpb::Collection *getCollectionForMap(const std::string& title, std::map<K, V *>&
 }
 }
 
-#endif // ifndef _H_MESSAGES_OPERATIONS
+#endif  // ifndef _H_MESSAGES_OPERATIONS

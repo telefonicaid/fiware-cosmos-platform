@@ -23,25 +23,34 @@ char str_date[1024];
 
 PaArgument paArgs[] =
 {
-  { "-format",        format,                   "",                      PaString,                      PaOpt,
+  { "-format",        format,                   "",                     PaString,                      PaOpt,
     _i DEF_FORMAT,    PaNL,
     PaNL,
     "Log file to scan"                         },
-  { "-pattern",       pattern,                  "",                      PaString, PaOpt,    _i "",            PaNL,          PaNL,
+  { "-pattern",       pattern,                  "",                     PaString,                      PaOpt,
+    _i "",     PaNL,            PaNL,
     "Pattern to be found in logs"         },
-  { "-limit",         &limit,                    "", PaInt,    PaOpt,    10000,         0,            100000000,
+  { "-limit",         &limit,                   "",                     PaInt,                         PaOpt,
+    10000,     0,               100000000,
     "Max number of logs to be displayed"  },
-  { "-table",         &is_table,                 "", PaBool,   PaOpt,    false,         false,        true,      "Show in table format"                },
-  { "-reverse",       &is_reverse,               "", PaBool,   PaOpt,    false,         false,        true,
+  { "-table",         &is_table,                "",                     PaBool,                        PaOpt,
+    false,     false,           true,                "Show in table format"                      },
+  { "-reverse",       &is_reverse,              "",                     PaBool,                        PaOpt,
+    false,     false,           true,
     "Show in reverse temporal order"      },
-  { "-multi_session", &is_reverse,               "", PaBool,   PaOpt,    false,         false,        true,      "Skip new_session marks"              },
-  { "-time",          &str_time,                 "", PaString, PaOpt,    _i "",         PaNL,         PaNL,
+  { "-multi_session", &is_reverse,              "",                     PaBool,                        PaOpt,
+    false,     false,           true,                "Skip new_session marks"                    },
+  { "-time",          &str_time,                "",                     PaString,                      PaOpt,
+    _i "",     PaNL,            PaNL,
     "Show only logs older that this time" },
-  { "-date",          &str_date,                 "", PaString, PaOpt,    _i "",         PaNL,         PaNL,
+  { "-date",          &str_date,                "",                     PaString,                      PaOpt,
+    _i "",     PaNL,            PaNL,
     "Show only logs older that this date" },
-  { "-type",          type,                      "", PaString, PaOpt,    _i "",         PaNL,         PaNL,
+  { "-type",          type,                     "",                     PaString,                      PaOpt,
+    _i "",     PaNL,            PaNL,
     "Filter a particular type of logs"    },
-  { " ",              target_file,               "", PaString, PaReq,    _i "",         PaNL,         PaNL,      "Log file to scan"                    },
+  { " ",              target_file,              "",                     PaString,                      PaReq,
+    _i "",     PaNL,            PaNL,                "Log file to scan"                          },
   PA_END_OF_ARGS
 };
 
@@ -109,8 +118,7 @@ int main(int argC, const char *argV[]) {
     table_log_formater.init(&error);
 
     if (error.IsActivated())
-      LM_X(1, ("Error: %s", error.GetMessage().c_str()));
-    size_t num_logs = logFile->logs.size();
+      LM_X(1, ("Error: %s", error.GetMessage().c_str())); size_t num_logs = logFile->logs.size();
     for (size_t i = 0; i <  num_logs; i++) {
       au::Log *log = logFile->logs[ num_logs - i - 1 ];
 

@@ -95,8 +95,7 @@ std::vector<AUToken> AUTockenizer::removeSpacesAndCommentsAndReturns(std::vector
   for (iter = items.begin(); iter < items.end(); iter++) {
     if (literal) {
       if ((*iter).str == "\"")
-        literal = false;
-      if ((*iter).str == "\n")
+        literal = false; if ((*iter).str == "\n")
         fprintf(stdout, "samsonModuleParser: Warning, line break inside literal at line:%d\n", (*iter).line);
       new_items.push_back(*iter);
     } else if (removing) {
@@ -150,9 +149,7 @@ std::vector<AUToken> AUTockenizer::tockenize(std::string txt) {
       // fprintf(stdout, "item:'%s', line:%d, pos:%lu\n", item.str.c_str(), item.line, i);
 
       if (txt[i] == '\n')
-        nline++;
-
-      pos = i + 1;
+        nline++; pos = i + 1;
     }
   }
 
@@ -248,8 +245,7 @@ int AUTockenizer::searchSetFinishStartingAt(int pos) {
   while (number_intern_sets > 0) {
     if (isCloseSet(pos))
       number_intern_sets--; else if (isOpenSet(pos))
-      number_intern_sets++;
-    pos++;
+      number_intern_sets++; pos++;
   }
 
   return (pos - 1);
@@ -284,23 +280,23 @@ std::string AUTockenizer::getLiteralInternalwithBlanks(int pos, int pos2) {
   for (int i = pos; i <= pos2; i++) {
     if ((i != pos) && (itemAtPos(i).line != prevLine))
       if (sepFound == false) {
-        fprintf(stderr,
-                "samsonModuleParser: Error, expected ';' in the lines of a block. Reference line:%d, between item:'%s', and item:'%s'\n",
-                items[i - 1].line, itemAtPos(
-                  i - 1).str.c_str(), itemAtPos(i).str.c_str());
+        fprintf(
+          stderr,
+          "samsonModuleParser: Error, expected ';' in the lines of a block. Reference line:%d, between item:'%s', and item:'%s'\n",
+          items[i - 1].line, itemAtPos(
+            i - 1).str.c_str(), itemAtPos(i).str.c_str());
         fprintf(stderr, "Error at AUTockenizer\n");
         exit(-1);
       }
-
     if (itemAtPos(i).str == ";") {
       o << "\n";
       sepFound = true;
       // fprintf(stdout, "Find sepFound with '%s'(pos:%d)\n", itemAtPos(i).str.c_str(), i);
     } else {
       o << itemAtPos(i).str << " ";
-      if ((itemAtPos(i).str != " ") && (itemAtPos(i).str != "\t") && (itemAtPos(i).str != "\n"))
-        sepFound = false;
-        // fprintf(stdout, "Deleting sepFound with '%s'(pos:%d)\n", itemAtPos(i).str.c_str(), i);
+      if ((itemAtPos(i).str != " ") && (itemAtPos(i).str != "\t") && (itemAtPos(i).str != "\n")) {
+        sepFound = false;  // fprintf(stdout, "Deleting sepFound with '%s'(pos:%d)\n", itemAtPos(i).str.c_str(), i);
+      }
     }
 
     prevLine = itemAtPos(i).line;
@@ -349,9 +345,10 @@ std::string AUTockenizer::getBlockwithBlanks(int *pos) {
 void AUTockenizer::getScopeLimits(int *pos, int *begin, int *end) {
   reference_pos = *pos;
   if (!isOpenSet(*pos)) {
-    fprintf(stderr,
-            "samsonModuleParser: Error getting the limits in scope of a {  } while parsing the document, from reference:'%s' line:%d\n",
-            items[reference_pos].str.c_str(), items[reference_pos].line);
+    fprintf(
+      stderr,
+      "samsonModuleParser: Error getting the limits in scope of a {  } while parsing the document, from reference:'%s' line:%d\n",
+      items[reference_pos].str.c_str(), items[reference_pos].line);
     fprintf(stderr, "\t\tgetScopeLimits called from non OpenSet position:'%s'\n", itemAtPos(*pos).str.c_str());
     fprintf(stderr, "Error at AUTockenizer\n");
     exit(-1);

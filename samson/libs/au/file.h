@@ -21,7 +21,7 @@
 #define _H_AU_FILE
 
 #include "au/ErrorManager.h"   // au::ErrorManager
-#include "au/containers/map.h" // au::map
+#include "au/containers/map.h"  // au::map
 #include "logMsg/logMsg.h"     // LM_W
 #include <sstream>             // std::ostringstream
 #include <stdio.h>             /* sprintf */
@@ -56,4 +56,4 @@ Status createDirectory(std::string path);
 Status createFullDirectory(std::string path);
 }
 
-#endif // ifndef _H_AU_FILE
+#endif  // ifndef _H_AU_FILE

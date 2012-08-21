@@ -16,7 +16,8 @@ TEST(auTableTest, simple) {
   EXPECT_EQ(cell3.str(), "[ str_val1 str_val2 ]") << "Error in TableCell.str()";
 
   EXPECT_EQ(cell1.compare("str1", "str1", au::tables::format_string), 0) << "Error in TableCell::compare() string true";
-  EXPECT_NE(cell1.compare("str1", "str2", au::tables::format_string), 0) << "Error in TableCell::compare() string false";
+  EXPECT_NE(cell1.compare("str1", "str2",
+                          au::tables::format_string), 0) << "Error in TableCell::compare() string false";
   EXPECT_EQ(cell1.compare("1.0", "1.00", au::tables::format_double), 0) << "Error in TableCell::compare() double true";
   EXPECT_NE(cell1.compare("1.0", "2.00", au::tables::format_double), 0) << "Error in TableCell::compare() double false";
 

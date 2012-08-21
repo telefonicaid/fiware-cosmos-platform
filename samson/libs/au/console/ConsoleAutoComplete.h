@@ -106,4 +106,4 @@ public:
 };
 }
 
-#endif // ifndef _AU_CONSOLE_AUTO_COMPLETE
+#endif  // ifndef _AU_CONSOLE_AUTO_COMPLETE

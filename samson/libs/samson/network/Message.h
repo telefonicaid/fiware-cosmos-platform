@@ -27,17 +27,17 @@ namespace samson { namespace Message {
                      WorkerCommandResponse,
 
                      PushBlock,         // Push a block from delilah
-                     PushBlockResponse, // Confirmation from worker that block has been distributed
+                     PushBlockResponse,  // Confirmation from worker that block has been distributed
 
                      PushBlockCommit,   // Commit uploaded block
-                     PushBlockCommitResponse, // Confirmation from worker that block has been commited
+                     PushBlockCommitResponse,  // Confirmation from worker that block has been commited
 
                      PopQueue,          // Request for information
                      PopQueueResponse,
 
                      PopBlockRequest,   // Request for a block and range
-                     PopBlockRequestConfirmation, // Confirmation this block can be served
-                     PopBlockRequestResponse, // Block response
+                     PopBlockRequestConfirmation,  // Confirmation this block can be served
+                     PopBlockRequestResponse,  // Block response
 
                      StreamOutQueue,
 
@@ -47,7 +47,7 @@ namespace samson { namespace Message {
                      DuplicateBlockResponse,
 
                      BlockRequest,         // requesting a blocl
-                     BlockRequestResponse, // Return content of a block
+                     BlockRequestResponse,  // Return content of a block
 
                      Unknown,
                    } MessageCode;
@@ -70,13 +70,16 @@ namespace samson { namespace Message {
                          return false;
                        }
 
+
                        if (gbufLen > 10000000) {
                          return false;
                        }
 
+
                        if (kvDataLen > ( 200 * 1024 * 1024 )) {
                          return false;
                        }
+
 
                        return true;
                      }
@@ -93,6 +96,6 @@ namespace samson { namespace Message {
                     */
 
                    const char *messageCode(MessageCode code);
-                   } } // end of namespace samson::Message
+                   } }  // end of namespace samson::Message
 
-#endif // ifndef SAMSON_MESSAGE_H
+#endif  // ifndef SAMSON_MESSAGE_H

@@ -43,4 +43,4 @@ public:
 };
 }
 
-#endif // ifndef _H_NETWORK_INTERFACE
+#endif  // ifndef _H_NETWORK_INTERFACE

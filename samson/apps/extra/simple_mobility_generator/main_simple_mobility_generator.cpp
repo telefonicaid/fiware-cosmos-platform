@@ -30,22 +30,22 @@ bool fix_position;
 
 PaArgument paArgs[] =
 {
-  { "-users",        &users,        "",         PaInt,          PaOpt,          100000,            100,
+  { "-users",        &users,        "",         PaInt,          PaOpt,          100000,          100,
     100000000,
     "Number of users"                                                                     },
-  { "-rate",         &rate,         "",         PaInt,          PaOpt,          10000,             100,
+  { "-rate",         &rate,         "",         PaInt,          PaOpt,          10000,           100,
     1000000,
     "CDRs per second"                                                                     },
-  { "-period",       &period,       "",         PaInt,          PaOpt,            100,               10,
+  { "-period",       &period,       "",         PaInt,          PaOpt,          100,             10,
     86400,
     "Period in seconds"                                                                   },
-  { "-progressive",  &progresive,   "",         PaBool,         PaOpt,            false,             false,
+  { "-progressive",  &progresive,   "",         PaBool,         PaOpt,          false,           false,
     true,
     "Generate cdrs in sequential order for all the users"                    },
-  { "-commands",     &commands,     "",         PaBool,         PaOpt,            false,             false,
+  { "-commands",     &commands,     "",         PaBool,         PaOpt,          false,           false,
     true,
     "Generate commands to create user-areas (instead of cdrs)"               },
-  { "-fix_position", &fix_position, "",         PaBool,         PaOpt,            false,             false,
+  { "-fix_position", &fix_position, "",         PaBool,         PaOpt,          false,           false,
     true,
     "Use fix positions for all users"                                                     },
   PA_END_OF_ARGS

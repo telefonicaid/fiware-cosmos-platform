@@ -165,6 +165,7 @@ public:
                    }
 
 
+
                    CommandItem *item = command_->get_option(name);
 
                    if (!item) {
@@ -191,6 +192,7 @@ public:
                    if (( name.length() > 0 ) && ( name[0] != '-' )) {
                      return get_int_option("-" + name);
                    }
+
 
 
                    CommandItem *item = command_->get_option(name);
@@ -224,6 +226,7 @@ public:
                    }
 
 
+
                    CommandItem *item = command_->get_option(name);
 
                    if (!item) {
@@ -255,6 +258,7 @@ public:
                    }
 
 
+
                    CommandItem *item = command_->get_option(name);
 
                    if (!item) {
@@ -284,6 +288,7 @@ public:
                    if (( name.length() > 0 ) && ( name[0] != '-' )) {
                      return get_string_option("-" + name);
                    }
+
 
 
                    CommandItem *item = command_->get_option(name);
@@ -318,8 +323,10 @@ public:
                    }
 
 
+
                    if (item->type() != options::option_string)
                      return false;
+
 
 
                    return true;

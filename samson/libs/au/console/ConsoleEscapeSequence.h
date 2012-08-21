@@ -80,6 +80,7 @@ private:
     }
 
 
+
     for (size_t i = 0; i < current_sequence.length(); i++) {
       if (sequence[i] != current_sequence[i]) {
         return sequence_non_compatible;
@@ -89,6 +90,7 @@ private:
     if (sequence.length() > current_sequence.length()) {
       return sequence_unfinished;
     }
+
 
 
     return sequence_finished;

@@ -22,17 +22,17 @@ int target_port;
 
 PaArgument paArgs[] =
 {
-  { "-command", command,              "",               PaString,               PaOpt,                    _i "",
+  { "-command", command,              "",               PaString,               PaOpt,                  _i "",
     PaNL,
     PaNL,
     "Command to be executed"         },
-  { "-format",  format,               "",               PaString,               PaOpt,                    _i "",
+  { "-format",  format,               "",               PaString,               PaOpt,                  _i "",
     PaNL,      PaNL,
     "Log file to scan"               },
-  { "",         target_host,          "",               PaString,                 PaOpt,                 _i LOC,
+  { "",         target_host,          "",               PaString,               PaOpt,                  _i LOC,
     PaNL,      PaNL,
     "Log server hostname"            },
-  { "",         &target_port,         "",               PaInt,                    PaOpt,                 LS_PORT,
+  { "",         &target_port,         "",               PaInt,                  PaOpt,                  LS_PORT,
     1,         99999,
     "Log server port"                },
 

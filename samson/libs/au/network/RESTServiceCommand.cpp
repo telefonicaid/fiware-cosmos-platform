@@ -275,7 +275,7 @@ void RESTServiceCommand::WaitUntilFinished() {
     au::TokenTaker tt(&token_);
     if (finished_)
       return; else
-      tt.stop();
+      tt.Stop();
   }
 }
 
@@ -283,7 +283,7 @@ void RESTServiceCommand::NotifyFinish() {
   au::TokenTaker tt(&token_);
 
   finished_ = true;
-  tt.wakeUp();
+  tt.WakeUp();
 }
 
 const StringVector& RESTServiceCommand::path_components() {

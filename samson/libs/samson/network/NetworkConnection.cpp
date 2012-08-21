@@ -79,7 +79,7 @@ void NetworkConnection::WakeUpWriter() {
   // Wake up writing thread if necessary
   au::TokenTaker tt(&token_);
 
-  tt.wakeUpAll();
+  tt.WakeUpAll();
 }
 
 bool NetworkConnection::isDisconnectd() {
@@ -98,7 +98,7 @@ void NetworkConnection::CloseAndStopBackgroundThreads() {
   // Wake up writing thread if necessary
   {
     au::TokenTaker tt(&token_);
-    tt.wakeUpAll();
+    tt.WakeUpAll();
   }
 
   // Wait until both thread are gone
@@ -121,7 +121,7 @@ void NetworkConnection::readerThread() {
     if (socket_connection_->IsClosed()) {
       // Wake up writing thread if necessary
       au::TokenTaker tt(&token_);
-      tt.wakeUpAll();
+      tt.WakeUpAll();
       return;
     }
 
@@ -168,7 +168,7 @@ void NetworkConnection::writerThread() {
     } else {
       // Block this thread until new packets are pushed or connection is restablish...
       au::TokenTaker tt(&token_);
-      tt.stop();   // block
+      tt.Stop();   // block
     }
   }
 

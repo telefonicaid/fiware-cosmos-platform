@@ -87,6 +87,7 @@ public:
       return NULL;
     }
 
+
     return *elements.front();
   }
 
@@ -95,6 +96,7 @@ public:
       return NULL;
     }
 
+
     return *elements.back();
   }
 
@@ -102,6 +104,7 @@ public:
     if (elements.size() == 0) {
       return NULL;
     }
+
 
     T *t =  elements.front();
     elements.pop_front();
@@ -112,6 +115,7 @@ public:
     if (elements.size() == 0) {
       return NULL;
     }
+
 
     T *t =  elements.back();
     elements.pop_back();
@@ -332,6 +336,7 @@ public:
     }
 
 
+
     return elements.front()->hash(max_num);
   }
 
@@ -359,6 +364,7 @@ public:
     if (reuse_elements.size() == 0) {
       return new T();
     }
+
 
 
     T *t = reuse_elements.front();

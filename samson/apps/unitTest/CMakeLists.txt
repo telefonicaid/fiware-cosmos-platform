@@ -16,6 +16,9 @@ SET (SOURCES
 	# AU STATISTICS LIBRARY
     lib/au/statistics/ActivityMonitorTest.cpp
 
+	# AU MUTEX LIBRARY
+    lib/au/mutex/TokenTest.cpp
+
 	#Common files
 	common_engine_test.h
 	common_engine_test.cpp

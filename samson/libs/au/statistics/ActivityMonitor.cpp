@@ -70,18 +70,21 @@ double ActivityStatistics::GetStdDeviation() const {
 
   double average = GetAverage();
   double tmp = ( total_square_ / (double)counter_ ) - average * average;
-  if (tmp < 0)
-    return 0; return sqrt(tmp);
+  if (tmp < 0) {
+    LM_W(("Error computing std deviation in ActivityStatistics"));
+    return 0;
+  }
+  return sqrt(tmp);
 }
 
-ActivityMonitor::ActivityMonitor(std::string first_activity_name) : token(
-                                                                      "EngineStatistics") {
+ActivityMonitor::ActivityMonitor(const std::string& first_activity_name)
+  : token_("EngineStatistics") {
   current_activty_ = first_activity_name;
   current_activirty_start_time_ = 0;
 }
 
-void ActivityMonitor::StartActivity(std::string activity_name) {
-  au::TokenTaker tt(&token);
+void ActivityMonitor::StartActivity(const std::string& activity_name) {
+  au::TokenTaker tt(&token_);
   double stop_time = cronometer_.seconds();
   double time = stop_time - current_activirty_start_time_;
 
@@ -114,7 +117,7 @@ void ActivityMonitor::StopActivity() {
 }
 
 std::string ActivityMonitor::GetLastItemsTable() const {
-  au::TokenTaker tt(&token);
+  au::TokenTaker tt(&token_);
 
   au::tables::Table table("Item|Time,left,f=double");
 
@@ -127,7 +130,7 @@ std::string ActivityMonitor::GetLastItemsTable() const {
 }
 
 std::string ActivityMonitor::GetElementsTable() const {
-  au::TokenTaker tt(&token);
+  au::TokenTaker tt(&token_);
 
   au::tables::Table table(
     "Element|Num,f=uint64|Total time,f=double|Average,f=double|std dev,f=double|Min,f=double|Max,f=double");
@@ -157,7 +160,7 @@ std::string ActivityMonitor::GetElementsTable() const {
 }
 
 std::string ActivityMonitor::GetCurrentActivity() const {
-  au::TokenTaker tt(&token);
+  au::TokenTaker tt(&token_);
 
   return current_activty_;
 }

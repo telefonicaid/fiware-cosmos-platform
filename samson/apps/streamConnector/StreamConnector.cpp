@@ -330,7 +330,8 @@ void StreamConnector::autoComplete(au::ConsoleAutoComplete *info) {
     info->add("-data"); if (info->completingSecondWord("remove_adapter"))
     // Autocomplete with channel names
     autoCompleteWithAdaptorsNames(info); if (( info->firstWord() == "add_input_to_channel" ) &&
-                                             info->completingThirdWord()) {
+                                             info->completingThirdWord())
+  {
     info->setHelpMessage("add_input_to_channel channel [port:8888] [connection:host:port] [samson:host:queue]");
     info->add("connection:", "connection:", false);
     info->add("port:", "port:", false);

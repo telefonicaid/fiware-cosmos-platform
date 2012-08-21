@@ -73,6 +73,7 @@ public:
     }
 
 
+
     return c / (c + nc);
   }
 

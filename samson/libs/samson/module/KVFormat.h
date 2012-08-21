@@ -56,9 +56,11 @@ public:
       return true;
     }
 
+
     if (format_2 == "*") {
       return true;
     }
+
 
     return ( format_1 == format_2 );
   }
@@ -68,9 +70,11 @@ public:
       return false;
     }
 
+
     if (!compare_format(valueFormat, otherFormat.valueFormat)) {
       return false;
     }
+
 
 
     return true;
@@ -80,6 +84,7 @@ public:
     if (!compare_format(keyFormat, otherFormat.keyFormat)) {
       return false;
     }
+
 
     return true;
   }
@@ -120,9 +125,11 @@ public:
       return false;
     }
 
+
     if (valueFormat != "*") {
       return false;
     }
+
 
     return true;
   }

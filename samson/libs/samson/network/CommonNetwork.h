@@ -120,6 +120,7 @@ public:
     }
 
 
+
     // Get list of connected workers
     std::vector<size_t> connected_worker_ids;
     for (int i = 0; i < cluster_information_->workers_size(); i++) {
@@ -133,6 +134,7 @@ public:
     if (connected_worker_ids.size() == 0) {
       return -1;
     }
+
 
 
     if (previous_worker == (size_t)-1) {

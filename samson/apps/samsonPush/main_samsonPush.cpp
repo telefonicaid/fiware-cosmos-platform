@@ -234,13 +234,13 @@ int main(int argC, const char *argV[]) {
     if (read_bytes == 0)
       break; LM_V(("Stdin info: %s", rate_stdin.str().c_str()));
 
-    if (memory_usage > 0.8)
+    if (memory_usage > 0.8) {
       LM_V(("Memory used %s / %s ( %s )",
             au::str(used_memory, "B").c_str(),
             au::str(memory, "B").c_str(),
             au::str_percentage(memory_usage).c_str()
-            ));
-    // Increase the size of data contained in the buffer
+            ));  // Increase the size of data contained in the buffer
+    }
     size += read_bytes;
 
     // Processing data contained in "data" with size "size"

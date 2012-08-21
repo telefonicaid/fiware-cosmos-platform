@@ -332,6 +332,7 @@ std::string str(double value) {
 
 
 
+
 #ifdef __LP64__
   else if (value < 1000000000000)
     return au::str_double(value / 1000000000.0, 'G');
@@ -339,6 +340,7 @@ std::string str(double value) {
     return au::str_double(value / 1000000000000.0, 'T');
   else if (value < 1000000000000000000)
     return au::str_double(value / 1000000000000000.0, 'P');
+
 
 
 
@@ -455,6 +457,7 @@ int get_term_size(int fd, int *x, int *y) {
     return 0;
 
 
+
   if (y)
     *y = win.ts_lines;
   if (x)
@@ -463,6 +466,7 @@ int get_term_size(int fd, int *x, int *y) {
 #elif defined TIOCGWINSZ
   if (ioctl(fd, TIOCGWINSZ, &win))
     return 0;
+
 
 
   if (y)

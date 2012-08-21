@@ -146,6 +146,7 @@ Status writeGPB(int fd, T *t) {
   }
 
 
+
   GPBHeader header;
   header.init(t->ByteSize());
 

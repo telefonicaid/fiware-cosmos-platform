@@ -100,7 +100,7 @@ void ProcessManager::Add(au::SharedPointer<ProcessItem> item, size_t listenerId)
   }
 
   // Wake up all background threads if necessary
-  tt.wakeUpAll();
+  tt.WakeUpAll();
 }
 
 void ProcessManager::Cancel(au::SharedPointer<ProcessItem> item) {
@@ -157,7 +157,7 @@ void ProcessManager::run_worker() {
       if (item != NULL) {
         running_items_.Insert(item);
       } else {
-        tt.stop();   // Block until main thread wake me up
+        tt.Stop();   // Block until main thread wake me up
         continue;
       }
     }

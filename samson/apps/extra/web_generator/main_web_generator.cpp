@@ -26,7 +26,7 @@ int rate;
 
 PaArgument paArgs[] =
 {
-  { "-rate", &rate, "", PaInt,        PaOpt,              10000,  1,     100000000,     "Rate in events per second"          },
+  { "-rate", &rate, "", PaInt, PaOpt, 10000,        1,              100000000,  "Rate in events per second"                  },
   PA_END_OF_ARGS
 };
 

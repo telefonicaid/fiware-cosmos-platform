@@ -648,9 +648,11 @@ public:
       return;
     }
 
+
     if (key.get_value_from_map("concept") == NULL) {
       return;
     }
+
 
 
     // Recover state if any
@@ -852,6 +854,7 @@ public:
     if (cmdLine.get_num_arguments() == 0) {
       return NULL;
     }
+
 
 
     // Main command

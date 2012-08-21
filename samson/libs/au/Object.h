@@ -70,6 +70,7 @@ public:
     }
 
 
+
     // If previous buffer, just release
     if (object_) {
       object_->Release();
@@ -79,6 +80,7 @@ public:
     if (!object) {
       return;
     }
+
 
 
     // Keep a retained copy of this
@@ -142,6 +144,7 @@ public:
     }
 
 
+
     container.set_object(c);     // Now it is retained by this element
     c->Release();
   }
@@ -152,6 +155,7 @@ public:
     if (!c) {
       return;
     }
+
 
 
     container.set_object(c);     // Now it is retained by this element

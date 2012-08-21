@@ -168,6 +168,7 @@ public:
     }
 
 
+
     if (pthread_self() == t_) {
       LM_W(("Not possible to stop a thread from itself"));
       return;
@@ -185,6 +186,7 @@ public:
       if (!pthread_running_) {
         return;
       }
+
 
 
       if (c.seconds() > 2) {

@@ -49,6 +49,7 @@ public:
     }
 
 
+
     C *c = objects[ s - 1 ];
     objects.pop_back();
     return c;

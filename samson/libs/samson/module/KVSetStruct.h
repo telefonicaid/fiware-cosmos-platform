@@ -26,6 +26,7 @@ typedef struct KVSetStruct {
     }
 
 
+
     for (size_t i = pos + 1; i < num_kvs; i++) {
       if (!kvs[i]->equal_value(kvs[pos])) {
         return i - pos;

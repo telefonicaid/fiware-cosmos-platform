@@ -23,33 +23,33 @@ char str_date[1024];
 
 PaArgument paArgs[] =
 {
-  { "-format",        format,                   "",                     PaString,                      PaOpt,
+  { "-format",        format,                   "",                     PaString,                     PaOpt,
     _i DEF_FORMAT,    PaNL,
     PaNL,
     "Log file to scan"                         },
-  { "-pattern",       pattern,                  "",                     PaString,                      PaOpt,
+  { "-pattern",       pattern,                  "",                     PaString,                     PaOpt,
     _i "",     PaNL,            PaNL,
     "Pattern to be found in logs"         },
-  { "-limit",         &limit,                   "",                     PaInt,                         PaOpt,
+  { "-limit",         &limit,                   "",                     PaInt,                        PaOpt,
     10000,     0,               100000000,
     "Max number of logs to be displayed"  },
-  { "-table",         &is_table,                "",                     PaBool,                        PaOpt,
+  { "-table",         &is_table,                "",                     PaBool,                       PaOpt,
     false,     false,           true,                "Show in table format"                      },
-  { "-reverse",       &is_reverse,              "",                     PaBool,                        PaOpt,
+  { "-reverse",       &is_reverse,              "",                     PaBool,                       PaOpt,
     false,     false,           true,
     "Show in reverse temporal order"      },
-  { "-multi_session", &is_reverse,              "",                     PaBool,                        PaOpt,
+  { "-multi_session", &is_reverse,              "",                     PaBool,                       PaOpt,
     false,     false,           true,                "Skip new_session marks"                    },
-  { "-time",          &str_time,                "",                     PaString,                      PaOpt,
+  { "-time",          &str_time,                "",                     PaString,                     PaOpt,
     _i "",     PaNL,            PaNL,
     "Show only logs older that this time" },
-  { "-date",          &str_date,                "",                     PaString,                      PaOpt,
+  { "-date",          &str_date,                "",                     PaString,                     PaOpt,
     _i "",     PaNL,            PaNL,
     "Show only logs older that this date" },
-  { "-type",          type,                     "",                     PaString,                      PaOpt,
+  { "-type",          type,                     "",                     PaString,                     PaOpt,
     _i "",     PaNL,            PaNL,
     "Filter a particular type of logs"    },
-  { " ",              target_file,              "",                     PaString,                      PaReq,
+  { " ",              target_file,              "",                     PaString,                     PaReq,
     _i "",     PaNL,            PaNL,                "Log file to scan"                          },
   PA_END_OF_ARGS
 };
@@ -136,3 +136,4 @@ int main(int argC, const char *argV[]) {
     LM_X(1, ("Unable to open file %s (%s)", target_file, au::status(s)));
   }
 }
+

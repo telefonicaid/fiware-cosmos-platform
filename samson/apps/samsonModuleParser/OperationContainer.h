@@ -150,30 +150,30 @@ public:
 
     // Checking the use of reserved words in the name
     std::string arr_reserved_words[] =
-    { "auto",              "const",           "double",                        "float",
-      "int",               "short",
-      "struct",            "unsigned",        "break",                         "continue",
+    { "auto",             "const",                "double",                         "float",
+      "int",              "short",
+      "struct",           "unsigned",             "break",                          "continue",
       "else",
-      "for",               "long",            "signed",                        "switch",
-      "void",              "case",            "default",                       "enum",
-      "goto",              "register",        "sizeof",                        "typedef",
-      "volatile",          "char",            "do",                            "extern",
-      "if",                "return",          "static",                        "union",
-      "while",             "asm",             "dynamic_cast",                  "namespace",
+      "for",              "long",                 "signed",                         "switch",
+      "void",             "case",                 "default",                        "enum",
+      "goto",             "register",             "sizeof",                         "typedef",
+      "volatile",         "char",                 "do",                             "extern",
+      "if",               "return",               "static",                         "union",
+      "while",            "asm",                  "dynamic_cast",                   "namespace",
       "reinterpret_cast",
-      "try",         "bool",                 "explicit",                  "new",
-      "static_cast", "typeid",               "catch",                     "false",
-      "operator",    "template",             "typename",                  "class",
-      "friend",      "private",              "this",                      "using",
-      "const_cast",  "inline",               "public",                    "throw",
-      "virtual",     "delete",               "mutable",                   "protected",
-      "true",        "wchar_t",              "and",                       "bitand",
-      "compl",       "not_eq",               "or_eq",                     "xor_eq",
-      "and_eq",      "bitor",                "not",                       "or",
-      "xor",         "cin",                  "endl",                      "INT_MIN",
-      "iomanip",     "main",                 "npos",                      "std",
-      "cout",        "include",              "INT_MAX",                   "iostream",
-      "MAX_RAND",     "NULL",
+      "try",              "bool",                 "explicit",                       "new",
+      "static_cast",      "typeid",               "catch",                          "false",
+      "operator",         "template",             "typename",                       "class",
+      "friend",           "private",              "this",                           "using",
+      "const_cast",       "inline",               "public",                         "throw",
+      "virtual",          "delete",               "mutable",                        "protected",
+      "true",             "wchar_t",              "and",                            "bitand",
+      "compl",            "not_eq",               "or_eq",                          "xor_eq",
+      "and_eq",           "bitor",                "not",                            "or",
+      "xor",              "cin",                  "endl",                           "INT_MIN",
+      "iomanip",          "main",                 "npos",                           "std",
+      "cout",             "include",              "INT_MAX",                        "iostream",
+      "MAX_RAND",         "NULL",
       "string" };
 
     std::set<std::string>   reserved_words;
@@ -331,8 +331,7 @@ public:
       }
     }
     if (type == "simpleParser")
-      file << "#include <samson/modules/system/SimpleParser.h>" << std::endl;
-    file << "\n";
+      file << "#include <samson/modules/system/SimpleParser.h>" << std::endl; file << "\n";
     file << "\n";
 
     // Name space

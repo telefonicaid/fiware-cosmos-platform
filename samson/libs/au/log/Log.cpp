@@ -4,14 +4,14 @@
 
 namespace au {
 const char *log_reseved_words[] =
-{ "HOST", "TYPE",      "PID",      "TID",      "DATE",      "date",      "TIME",      "time",      "timestamp",
+{ "HOST", "TYPE",      "PID",       "TID",       "DATE",      "date",      "TIME",      "time",      "timestamp",
   "LINE", "TLEV",      "EXEC",
   "AUX",
   "FILE",
   "TEXT",
   "text",
   "FUNC",
-  "STRE", "time_unix", "channel",  NULL };
+  "STRE", "time_unix", "channel",   NULL };
 
 
 void Log::add_field(std::string field_name, std::string field_value) {

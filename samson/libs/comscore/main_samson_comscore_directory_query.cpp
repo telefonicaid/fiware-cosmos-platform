@@ -41,7 +41,7 @@ char dictionary_file_name[1024];
 
 PaArgument paArgs[] =
 {
-  { "-dictionary", dictionary_file_name, "", PaString, PaOpt, _i DEFAULT_DICTIONARY_LOCATION,   PaNL,   PaNL,
+  { "-dictionary", dictionary_file_name, "", PaString, PaOpt, _i DEFAULT_DICTIONARY_LOCATION, PaNL, PaNL,
     "Binary Comscore dictionary"    },
   PA_END_OF_ARGS
 };

@@ -40,7 +40,7 @@ char working_directory[1024];
 
 PaArgument paArgs[] =
 {
-  { "", working_directory, "", PaString,  PaOpt,  _i DEFAULT_WORKING_DIRECTORY,  PaNL,  PaNL,   "Working directory"       },
+  { "", working_directory, "", PaString, PaOpt, _i DEFAULT_WORKING_DIRECTORY,  PaNL,  PaNL,  "Working directory"          },
   PA_END_OF_ARGS
 };
 
@@ -201,8 +201,7 @@ public:
                         , key_values.keyFormat.c_str(),
                         i
                         )
-                );
-            if (!check_data(key_values.valueFormat))
+                ); if (!check_data(key_values.valueFormat))
               writeWarningOnConsole(
                 au::str("Operation %s: Unknown datatype %s at input %d"
                         , operation.c_str()
@@ -223,8 +222,7 @@ public:
                         , key_values.keyFormat.c_str(),
                         i
                         )
-                );
-            if (!check_data(key_values.valueFormat))
+                ); if (!check_data(key_values.valueFormat))
               writeWarningOnConsole(
                 au::str("Operation %s: Unknown datatype %s at output %d"
                         , operation.c_str()

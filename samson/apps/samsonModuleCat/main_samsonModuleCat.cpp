@@ -46,7 +46,7 @@ char file_name[1024];
 
 PaArgument paArgs[] =
 {
-  { " ", file_name, "", PaString, PaReq,            (long)"null",         PaNL,     PaNL,
+  { " ", file_name, "", PaString, PaReq, (long)"null", PaNL,            PaNL,
     "name of the file or directory to scan"     },
   PA_END_OF_ARGS
 };

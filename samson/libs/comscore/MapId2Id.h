@@ -37,6 +37,7 @@ public:
     }
 
 
+
     uint mid_point = (begin + end) / 2;
 
     int c = key - v[mid_point].first;
@@ -44,6 +45,7 @@ public:
     if (c == 0) {
       return mid_point;
     }
+
 
 
     if (c < 0) {
@@ -61,9 +63,11 @@ public:
       return begin;
     }
 
+
     if (v[end].first == key) {
       return end;
     }
+
 
 
     return find_one(key, begin, end);
@@ -75,6 +79,7 @@ public:
     if (pos == (uint) - 1) {
       return false;
     }
+
 
 
     *begin = pos;

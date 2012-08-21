@@ -91,53 +91,53 @@ PaArgument paArgs[] =
 {
   SAMSON_ARGS,
 
-  { "-dir",        directory,         "SS_PLP_DIRECTORY",                      PaString,
+  { "-dir",        directory,         "SS_PLP_DIRECTORY",                   PaString,
     PaOpt,
     _i "nodir",    PaNL,              PaNL,
     "directory"                              },
-  { "-tektronix",  &tektronix,        "SS_PLP_TEKTRONIX",                      PaBool,
+  { "-tektronix",  &tektronix,        "SS_PLP_TEKTRONIX",                   PaBool,
     PaOpt,
     false,         false,             true,
     "act as tektronix consumer"              },
-  { "-fake",       &fake,             "SS_PLP_FAKE",                           PaBool,
+  { "-fake",       &fake,             "SS_PLP_FAKE",                        PaBool,
     PaOpt,
-    false,         false,                true,
+    false,         false,             true,
     "fake data"                              },
-  { "-host",       host,                 "SS_PLP_TEKTRONIX_HOST",          PaString,
+  { "-host",       host,              "SS_PLP_TEKTRONIX_HOST",              PaString,
     PaOpt,
-    PaND,          PaNL,                 PaNL,
+    PaND,          PaNL,              PaNL,
     "tektronix tunnel host"                  },
-  { "-port",       &port,                "SS_PLP_TEKTRONIX_PORT",          PaShortU,
+  { "-port",       &port,             "SS_PLP_TEKTRONIX_PORT",              PaShortU,
     PaOpt,
     1099,          1024,
     65535,         "tektronix tunnel port"                  },
-  { "-queue",      queueName,            "SS_PLP_QUEUE_NAME",              PaString,
+  { "-queue",      queueName,         "SS_PLP_QUEUE_NAME",                  PaString,
     PaOpt,
-    PaND,          PaNL,                 PaNL,
+    PaND,          PaNL,              PaNL,
     "name of the queue"                      },
-  { "-timeout",    &timeout,             "SS_PLP_TIMEOUT",                 PaInt,
+  { "-timeout",    &timeout,          "SS_PLP_TIMEOUT",                     PaInt,
     PaOpt,
-    0,             0,                    3600,
+    0,             0,                 3600,
     "timeout"                                },
-  { "-rate",       &rate,                "SS_PLP_RATE",                    PaDouble,
+  { "-rate",       &rate,             "SS_PLP_RATE",                        PaDouble,
     PaOpt,
-    _i 1.0,        PaNL,                 PaNL,
+    _i 1.0,        PaNL,              PaNL,
     "rate"                                   },
-  { "-node",       controller,           "",                               PaString,
+  { "-node",       controller,        "",                                   PaString,
     PaOpt,
-    _i "localhost",PaNL,                 PaNL,
+    _i "localhost",PaNL,              PaNL,
     "SAMSON node"                            },
-  { "-user",       user,                 "",                               PaString,
+  { "-user",       user,              "",                                   PaString,
     PaOpt,
-    _i "anonymous",PaNL,                 PaNL,
+    _i "anonymous",PaNL,              PaNL,
     "User to connect to SAMSON cluster"      },
-  { "-password",   password,             "",                               PaString,
+  { "-password",   password,          "",                                   PaString,
     PaOpt,
-    _i "anonymous",PaNL,                 PaNL,
+    _i "anonymous",PaNL,              PaNL,
     "Password to connect to SAMSON cluster"  },
-  { "-file",       file,                 "SS_PLP_FILE",                    PaString,
+  { "-file",       file,              "SS_PLP_FILE",                        PaString,
     PaOpt,
-    _i "generator",PaNL,                 PaNL,
+    _i "generator",PaNL,              PaNL,
     "file"                                   },
 
   PA_END_OF_ARGS
@@ -400,8 +400,8 @@ int dirScan(const char *dirPath, const char *suffix) {
     LM_X(1, ("Error changing to directory '%s': %s", dirPath, strerror(errno))); dir  = opendir(".");
   if (dir == NULL)
     LM_X(1, ("opendir(%s): %s", dirPath, strerror(errno)));  //
-                                                            // Count number of files in the directory
-                                                            //
+   // Count number of files in the directory
+  //
   files = 0;
   while ((entry = readdir(dir)) != NULL) {
     char *suff;
@@ -421,8 +421,8 @@ int dirScan(const char *dirPath, const char *suffix) {
   fileV = (File *)calloc(files, sizeof(File));
   if (fileV == NULL)
     LM_X(1, ("error allocating vector for %d Files: %s", files, strerror(errno)));  //
-                                                                                   // Gather info on the files and fill the vector
-                                                                                   //
+   // Gather info on the files and fill the vector
+  //
   rewinddir(dir);
   int ix = 0;
   while ((entry = readdir(dir)) != NULL) {

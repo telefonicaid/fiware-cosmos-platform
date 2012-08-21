@@ -924,6 +924,7 @@ static bool restTraceCheck(au::network::RESTServiceCommand *command) {
     return false;
 
 
+
   return true;
 }
 
@@ -932,6 +933,7 @@ static bool restVerboseCheck(au::network::RESTServiceCommand *command) {
 
   if ((arg == "0") || (arg == "1") || (arg == "2") || (arg == "3") || (arg == "4") || (arg == "5"))
     return true;
+
 
 
 
@@ -948,20 +950,20 @@ typedef struct RestCheck {
 
 RestCheck restCheck[] =
 {
-  { "POST",   "debug/on",      2,        NULL                                                                      },
-  { "POST",   "debug/off",     2,        NULL                                                                      },
-  { "POST",   "reads/on",      2,        NULL                                                                      },
-  { "POST",   "reads/off",     2,        NULL                                                                      },
-  { "POST",   "writes/on",     2,        NULL                                                                      },
-  { "POST",   "writes/off",    2,        NULL                                                                      },
-  { "GET",    "traces",        1,        NULL                                                                      },
-  { "POST",   "traces/off",    2,        NULL                                                                      },
-  { "POST",   "traces/set",    3,        restTraceCheck                                                            },
-  { "POST",   "traces/add",    3,        restTraceCheck                                                            },
-  { "DELETE", "traces/remove", 3,        restTraceCheck                                                            },
-  { "GET",    "verbose",       1,        NULL                                                                      },
-  { "POST",   "verbose/off",   2,        NULL                                                                      },
-  { "POST",   "verbose/set",   3,        restVerboseCheck                                                          },
+  { "POST",   "debug/on",      2,        NULL                                                                                                  },
+  { "POST",   "debug/off",     2,        NULL                                                                                                  },
+  { "POST",   "reads/on",      2,        NULL                                                                                                  },
+  { "POST",   "reads/off",     2,        NULL                                                                                                  },
+  { "POST",   "writes/on",     2,        NULL                                                                                                  },
+  { "POST",   "writes/off",    2,        NULL                                                                                                  },
+  { "GET",    "traces",        1,        NULL                                                                                                  },
+  { "POST",   "traces/off",    2,        NULL                                                                                                  },
+  { "POST",   "traces/set",    3,        restTraceCheck                                                                                        },
+  { "POST",   "traces/add",    3,        restTraceCheck                                                                                        },
+  { "DELETE", "traces/remove", 3,        restTraceCheck                                                                                        },
+  { "GET",    "verbose",       1,        NULL                                                                                                  },
+  { "POST",   "verbose/off",   2,        NULL                                                                                                  },
+  { "POST",   "verbose/set",   3,        restVerboseCheck                                                                                      },
 };
 
 static bool process_logging_check(au::network::RESTServiceCommand *command) {
@@ -979,6 +981,7 @@ static bool process_logging_check(au::network::RESTServiceCommand *command) {
       // A match - now just lets see if the argument is OK also ...
       if (restCheck[ix].check != NULL)
         return restCheck[ix].check(command);
+
 
 
       return true;

@@ -28,4 +28,4 @@ public:
 };
 }
 
-#endif // ifndef _H_SAMSON_CONNECTOR_COMMAND
+#endif  // ifndef _H_SAMSON_CONNECTOR_COMMAND

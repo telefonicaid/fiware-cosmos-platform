@@ -32,30 +32,31 @@ namespace au {
 class Lock;
 
 class LockDebugger {
-  pthread_mutex_t _lock;
-
-  std::map< pthread_t, std::set< void * > * > locks;
-
   LockDebugger();
   ~LockDebugger();
 
 public:
 
-  pthread_key_t key_title;      // A title for each thread
-
-  static void setThreadTitle(std::string);
-
-  void add_lock(void *new_lock);
-  void remove_lock(void *new_lock);
-
+  // Singleton implementation
   static LockDebugger *shared();
-  static void           destroy();
+  static void destroy();
+
+  // Methods to assign name to threads
+  static void SetThreadTitle(const std::string&);
+  static std::string GetThreadTitle();
+
+  // Methods to notify when retain and release a mutex
+  void AddMutexLock(void *new_lock);
+  void RemoveMutexLock(void *new_lock);
 
 private:
 
-  std::string _getTitle();
-  std::set<void *> *_getLocksVector();
-  bool _cross_blocking(void *new_lock);
+  std::set<void *> *GetLocksVector();
+  bool IsCrossBlocking(void *new_lock);
+
+  pthread_mutex_t lock_;
+  std::map< pthread_t, std::set< void * > * > locks_;
+  pthread_key_t key_title_;      // Key to set or recover name of the thread
 };
 }
 

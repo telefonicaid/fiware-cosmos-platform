@@ -96,7 +96,12 @@ void SamsonPushLogsConnection::Run() {
               time_read_str,
               ntimes_real_time_ * cronometer.seconds(), int(100 * ntimes_real_time_), time_init_str));
       if ((count_sleeps % 10000 == 0) &&
-          (timestamp > (first_timestamp + ntimes_real_time_ * cronometer.seconds() + 900))) {
+          (timestamp >
+           (
+             first_timestamp
+             +
+             ntimes_real_time_ * cronometer.seconds() + 900)))
+      {
         LM_M(("An inactivity long gap for %s with timestamp:%s, elapsed_time:%lf(%d%% realtime) since %s",
               dataset_->GetQueueName(),
               time_read_str, ntimes_real_time_ * cronometer.seconds(), int(100 * ntimes_real_time_), time_init_str));  // sleeps for 10 milliseconds

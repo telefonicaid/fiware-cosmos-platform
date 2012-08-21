@@ -71,14 +71,17 @@ namespace samson { namespace Message {
                        }
 
 
+
                        if (gbufLen > 10000000) {
                          return false;
                        }
 
 
+
                        if (kvDataLen > ( 200 * 1024 * 1024 )) {
                          return false;
                        }
+
 
 
                        return true;

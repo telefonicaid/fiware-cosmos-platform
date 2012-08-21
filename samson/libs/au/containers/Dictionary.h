@@ -88,6 +88,7 @@ public:
       return SharedPointer<V>(NULL);
     }
 
+
     return iter->second;
   }
 
@@ -96,6 +97,7 @@ public:
     if (tmp != NULL) {
       return tmp;
     }
+
 
 
     // Create a new object
@@ -110,6 +112,7 @@ public:
     if (tmp != NULL) {
       return tmp;
     }
+
 
 
     tmp = new V(a);
@@ -131,6 +134,7 @@ public:
     if (iter == std::map<K, SharedPointer<V>, _Compare>::end()) {
       return SharedPointer<V>(NULL);
     }
+
 
 
     SharedPointer<V> tmp = iter->second;

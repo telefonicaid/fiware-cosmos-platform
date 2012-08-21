@@ -101,9 +101,11 @@ public:
     }
 
 
+
     if (!kv.key->isString()) {
       return;
     }
+
 
 
     // Set the new key reading json string
@@ -161,6 +163,7 @@ public:
     if (!kv.key) {
       return;
     }
+
 
 
     // document to parse xml
@@ -317,6 +320,7 @@ public:
       }
 
 
+
       fields.push_back(source);
     }
 
@@ -448,6 +452,7 @@ public:
     }
 
 
+
     std::string line = kv.key->get_string();
 
     au::StringComponents string_components;
@@ -502,6 +507,7 @@ public:
     if (!kv.key->isString()) {
       return;
     }
+
 
 
     // Next key-value ready to be emitted
@@ -566,6 +572,7 @@ public:
     }
 
 
+
     // Next key-value ready to be emitted
     KeyValue next_kv(keyContainer.value, kv.value);
 
@@ -610,6 +617,7 @@ public:
     if (!v) {
       return false;
     }
+
 
 
     return ( v->get_double() != 0 );
@@ -669,9 +677,11 @@ public:
 
 
 
+
     if (!value_for_value) {
       return;
     }
+
 
 
     keyContainer.value->copyFrom(value_for_key);

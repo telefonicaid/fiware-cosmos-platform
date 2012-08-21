@@ -207,15 +207,17 @@ int main(int argC, const char *argV[]) {
                      "Lines/s").c_str(), au::str((double)total_size / (double)total_seconds, "Bps").c_str()));
     }
 
-    if (total_seconds > 0)
-      if (max_num_lines > 100)
-        if ((num_lines % ( max_num_lines / 100)) == 0)
+    if (total_seconds > 0) {
+      if (max_num_lines > 100) {
+        if ((num_lines % ( max_num_lines / 100)) == 0) {
           LM_V(( "Generated %s - %s lines ( %s bytes ) in %s. Rate: %s / %s",
                  au::str_percentage(num_lines,  max_num_lines).c_str(),
                  au::str(num_lines).c_str(), au::str(total_size).c_str(), au::str_time(total_seconds).c_str(),
                  au::str((double)num_lines / (double)total_seconds,
-                         "Lines/s").c_str(), au::str((double)total_size / (double)total_seconds, "Bps").c_str()));
-    // Sleep if necessary
+                         "Lines/s").c_str(), au::str((double)total_size / (double)total_seconds, "Bps").c_str()));  // Sleep if necessary
+        }
+      }
+    }
     if (max_rate > 0) {
       size_t theoretical_seconds = num_lines / max_rate;
 

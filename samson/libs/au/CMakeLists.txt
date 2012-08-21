@@ -4,12 +4,9 @@
 # ---------------------------------------------------
 
 SET( MUTEX_FILES
-mutex/Lock.h
-mutex/StopLock.h
 mutex/LockDebugger.h
 mutex/Token.h
 mutex/TokenTaker.h
-mutex/Lock.cpp
 mutex/LockDebugger.cpp
 mutex/Token.cpp
 mutex/TokenTaker.cpp

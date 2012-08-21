@@ -118,10 +118,12 @@ public:
     }
 
 
+
     // Check by the limit of recors
     if (limit == 0) {
       return false;
     }
+
 
     return (num_logs >= limit );
   }

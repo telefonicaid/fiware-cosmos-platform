@@ -57,6 +57,7 @@ public:
                      }
 
 
+
                      if (fd_->IsClosed()) {
                        return;  // End of thread since socket is disconnected
                      }
@@ -110,6 +111,7 @@ public:
                      }
 
 
+
                      if (fd_->IsClosed()) {
                        return;  // End of thread since socket is disconnected
                      }
@@ -153,6 +155,7 @@ public:
                      if (!p) {
                        return;
                      }
+
 
 
                      // Push to the provided list
@@ -221,9 +224,11 @@ public:
                      return true;
                    }
 
+
                    if (packet_writer_->isRunning()) {
                      return true;
                    }
+
 
 
                    return false;

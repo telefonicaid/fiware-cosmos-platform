@@ -109,6 +109,7 @@ public:
       return defaultValue;
     }
 
+
     return atoi(get(name, "0").c_str());
   }
 
@@ -117,6 +118,7 @@ public:
       return defaultValue;
     }
 
+
     return atoll(get(name, "0").c_str());
   }
 
@@ -124,6 +126,7 @@ public:
     if (!isSet(name)) {
       return defaultValue;
     }
+
 
     return atof(get(name, "0").c_str());
   }

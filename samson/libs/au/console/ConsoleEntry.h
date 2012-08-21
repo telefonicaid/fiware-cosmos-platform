@@ -83,6 +83,7 @@ public:
       return false;
     }
 
+
     return ( seq == "[A" );
   }
 
@@ -90,6 +91,7 @@ public:
     if (type != escape_sequence) {
       return false;
     }
+
 
     return ( seq == "[B" );
   }
@@ -99,6 +101,7 @@ public:
       return false;
     }
 
+
     return ( seq == "[D" );
   }
 
@@ -106,6 +109,7 @@ public:
     if (type != escape_sequence) {
       return false;
     }
+
 
     return ( seq == "[C" );
   }

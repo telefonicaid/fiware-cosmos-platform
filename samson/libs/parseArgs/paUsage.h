@@ -2,12 +2,12 @@
 #define PA_USAGE_H
 
 /* ****************************************************************************
-*
-* FILE                  paUsage.h
-*
-* AUTHOR                Ken Zangelin
-*
-*/
+ *
+ * FILE                  paUsage.h
+ *
+ * AUTHOR                Ken Zangelin
+ *
+ */
 #include <stdio.h>                        /* FILE                            */
 
 #include "parseArgs/parseArgs.h"          /* PaArgument                      */
@@ -15,33 +15,33 @@
 
 
 /* ****************************************************************************
-*
-* paUsage - print synopsis
-*/
+ *
+ * paUsage - print synopsis
+ */
 void paUsage(void);
 
 
 
 /* ****************************************************************************
-*
-* paVersionPrint - print synopsis
-*/
+ *
+ * paVersionPrint - print synopsis
+ */
 void paVersionPrint(void);
 
 
 
 /* ****************************************************************************
-*
-* paExtendedUsage - print extended synopsis
-*/
+ *
+ * paExtendedUsage - print extended synopsis
+ */
 void paExtendedUsage(void);
 
 
 
 /* ****************************************************************************
-*
-* paHelp - print help text
-*/
+ *
+ * paHelp - print help text
+ */
 void paHelp(void);
 
-#endif
+#endif  // ifndef PA_USAGE_H

@@ -2,19 +2,19 @@
 #define PA_RC_FILE_H
 
 /* ****************************************************************************
-*
-* FILE                  
-*
-* AUTHOR                Ken Zangelin
-*
-*/
+ *
+ * FILE
+ *
+ * AUTHOR                Ken Zangelin
+ *
+ */
 
 
 
 /* ****************************************************************************
-*
-* paRcFileParse - parse startup file
-*/
+ *
+ * paRcFileParse - parse startup file
+ */
 extern int paRcFileParse(void);
 
 #endif

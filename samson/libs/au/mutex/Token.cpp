@@ -60,7 +60,7 @@ void Token::Retain() {
     
   pid_t my_own_pid_t = syscall(SYS_gettid);
   if (locked_ && (token_owner_thread_id_ == my_own_pid_t)) {
-    counter_++;
+    ++counter_;
     //LM_LM(("token %s was retained by me ( thread [%s] ) . Just updating counter to %d " , name_ , GetThreadId( pthread_self() ).c_str() ,  counter_ ));
       return;
     }
@@ -102,7 +102,7 @@ void Token::Release() {
   if (token_owner_thread_id_ != my_own_pid_t)
     LM_LE(("Internal error: Releasing an au::Token '%s' not locked by me, owner:%d, me:%d", name_, token_owner_thread_id_, my_own_pid_t));
     
-  counter_--;
+  --counter_;
   if (counter_ > 0) {
     //LM_LM(("Token %s is still locked by thread [%s] with counter %d" , name , GetThreadId( pthread_self() ).c_str() , counter_ ));
       return;
@@ -157,5 +157,4 @@ void Token::Stop() {
   counter_ = tmp_counter;
     
   }
-  
 }

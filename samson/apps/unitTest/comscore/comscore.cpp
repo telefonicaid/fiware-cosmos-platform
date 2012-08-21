@@ -5,7 +5,7 @@
 #include "comscore/SamsonComscoreDictionary.h"
 
 
-//Test ReadFile( std::string _fileName );
+// Test ReadFile( std::string _fileName );
 TEST( comscore , test1 ) 
 {
     samson::comscore::SamsonComscoreDictionary samson_comscore_dictionary;

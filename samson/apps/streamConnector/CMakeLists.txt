@@ -22,6 +22,7 @@ SET (HEADERS
 	StreamConnectorService.h
 	ServerConnection.h
 	TrafficStatistics.h
+	PacketReaderWriter.h
 )
 
 SET (SOURCES
@@ -47,6 +48,7 @@ SET (SOURCES
 	StreamConnectorService.cpp
 	ServerConnection.cpp
 	TrafficStatistics.cpp
+	PacketReaderWriter.cpp
 )
 
 SET( STATIC_LIBS

@@ -8,10 +8,10 @@
 
 #include "engine/MemoryManager.h"
 
-#include "samson/common/KVHeader.h"
-#include "samson/common/KVFile.h"
-#include "samson/common/KVInfo.h"
 #include "samson/common/FullKVInfo.h"
+#include "samson/common/KVFile.h"
+#include "samson/common/KVHeader.h"
+#include "samson/common/KVInfo.h"
 #include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"
 
@@ -27,41 +27,34 @@
 #include <set>
 
 namespace samson { namespace stream {
-  
-  class BlockList;
-  
-  typedef struct BlockLookupRecord
-  {
-    char* keyP;
-    size_t keyS;
-  } BlockLookupRecord;
-  
-  typedef struct BlockHashLookupRecord
-  {
-    size_t  startIx;
-    size_t  endIx;
-  } BlockHashLookupRecord;
-  
-  class Block;
-  class BlockLookupList
-  {
-    
-    BlockLookupRecord*      head;
-    size_t                  size;
-    BlockHashLookupRecord*  hashInfo;
-    KVFormat                kvFormat;
-    
-  public:
-    
-    au::ErrorManager error;
-    
-    BlockLookupList( Block* _block );
-    ~BlockLookupList();
-    
-    std::string lookup(const char* key, std::string outputFormat);
-    
-  };
-  
-} }
+                   class BlockList;
 
-#endif
+                   typedef struct BlockLookupRecord {
+                     char *keyP;
+                     size_t keyS;
+                   } BlockLookupRecord;
+
+                   typedef struct BlockHashLookupRecord {
+                     size_t startIx;
+                     size_t endIx;
+                   } BlockHashLookupRecord;
+
+                   class Block;
+                   class BlockLookupList {
+                     BlockLookupRecord *head;
+                     size_t size;
+                     BlockHashLookupRecord *hashInfo;
+                     KVFormat kvFormat;
+
+public:
+
+                     au::ErrorManager error;
+
+                     BlockLookupList(Block *_block);
+                     ~BlockLookupList();
+
+                     std::string lookup(const char *key, std::string outputFormat);
+                   };
+                   } }
+
+#endif  // ifndef _H_BLOCK_LOOKUPLIST

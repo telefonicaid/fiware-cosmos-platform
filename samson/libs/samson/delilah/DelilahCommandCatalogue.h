@@ -3,20 +3,13 @@
 
 #include "au/console/CommandCatalogue.h"
 
-namespace samson 
-{
-  
-  
-  class DelilahCommandCatalogue : public au::console::CommandCatalogue
-  {
-    
-  public:
-    
-    // Constructor with commands definitions
-    DelilahCommandCatalogue();
-    
-  };
-  
+namespace samson {
+class DelilahCommandCatalogue : public au::console::CommandCatalogue {
+public:
+
+  // Constructor with commands definitions
+  DelilahCommandCatalogue();
+};
 }
 
 #endif

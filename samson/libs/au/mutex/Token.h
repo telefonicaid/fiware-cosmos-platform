@@ -24,7 +24,6 @@
 #include <pthread.h>             /* pthread_mutex_t                          */
 
 namespace au {
-  
 class Token {
     
   public:
@@ -52,7 +51,6 @@ class Token {
     volatile bool locked_;
     volatile int counter_; // Number of times this token is taken
   };
-  
 }
 
-#endif
+#endif  // ifndef _H_AU_TOCKEN

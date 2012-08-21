@@ -7,7 +7,7 @@
  *
  * PROJECT         au library
  *
- * DATE            Septembre 2011
+ * DATE            September 2011
  *
  * DESCRIPTION
  *
@@ -25,17 +25,7 @@
 
 namespace au {
   
-  class Token
-  {
-    const char * name;              // Name of the token
-    
-    pthread_mutex_t _lock;			// Mutex to protect this tocken
-    pthread_cond_t _block;          // Condition to block threads that call stop
-    
-    // Mechanism to discover if you have locked this mutex
-    pthread_t t;
-    bool locked;
-    int counter; // Number of times this token is taken
+class Token {
     
   public:
     
@@ -43,15 +33,24 @@ namespace au {
     ~Token();
     
   private:
+    // It is only possible to retain the token with the class TokenTaker
+    friend class TokenTaker;
+
+    const char* name_; // Name of the token
     
     void Retain();
     void Release();
     void Stop();
+    bool IsValidName() const;
 
-    // It is only possible to retain teh token with the class TokenTaker
-    friend class TokenTaker;
+    pthread_mutex_t lock_; // Mutex to protect this token
+    pthread_cond_t block_; // Condition to block threads that call stop
     
     
+    // Mechanism to discover if you have locked this mutex
+    pid_t token_owner_thread_id_;
+    volatile bool locked_;
+    volatile int counter_; // Number of times this token is taken
   };
   
 }

@@ -18,7 +18,7 @@ TEST( comscore , test1 )
     
     //printf("Categoried %lu\n" , categories.size() );
     
-    EXPECT_TRUE( categories.size() == 2 );
+    ASSERT_TRUE( categories.size() == 2 );
     
     const char* cat1 = samson_comscore_dictionary.getCategoryName( categories[0] );
     const char* cat2 = samson_comscore_dictionary.getCategoryName( categories[1] );

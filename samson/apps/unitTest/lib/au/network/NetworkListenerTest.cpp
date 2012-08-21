@@ -67,7 +67,8 @@ TEST(au_network_NetworkListener, basic) {
 
   // Close network listener
   network_listener.StopNetworkListener();
-  EXPECT_EQ(false, network_listener.IsNetworkListenerRunning());
+  // Compiler complains about EXPECT_EQ(false,), but not for EXPECT_EQ(true,)
+  EXPECT_FALSE(network_listener.IsNetworkListenerRunning());
 
   // Expect one connection after all
   EXPECT_EQ(1, NetworkListenerInterfaceImpl::num_connections());

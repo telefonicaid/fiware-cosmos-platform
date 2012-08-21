@@ -2,6 +2,7 @@
 #ifndef _H_AU_TABLE_COLLECTION
 #define _H_AU_TABLE_COLLECTION
 
+#include <string>
 #include <vector>
 
 #include "au/containers/simple_map.h"

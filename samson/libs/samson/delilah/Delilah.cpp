@@ -122,81 +122,6 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
     if (socket_connection)
       delete socket_connection; return false;
   }
-<<<<<<< HEAD
-  
-  bool Delilah::connect( std::string host , au::ErrorManager *error )
-  {
-    // Remove all internal state in this delilah....
-    if( isConnected() )
-      disconnect();
-    
-    LM_V(("Connecting to %s" , host.c_str() ));
-    
-    // Get host and port
-    std::vector<std::string> components = au::split( host , ':' );
-    
-    LM_V(("Trying to connect to to %s" , host.c_str() ));
-    
-    std::string host_name;
-    int port = -1;
-    if (components.size() == 2) {
-      host_name = components[0];
-      port = atoi( components[1].c_str() );
-    }
-    else if (components.size() == 1) {
-      host_name = host;
-      port = SAMSON_WORKER_PORT; // Default port for worker
-    }
-    
-    // Open a socket connection
-    au::SocketConnection * socket_connection = NULL;
-    au::Status s = au::SocketConnection::newSocketConnection(host_name, port, &socket_connection);
-    
-    if( s != au::OK )
-    {
-      error->set(au::str("Error creating socket %s" , au::status( s ) ));
-      if( socket_connection )
-        delete socket_connection;
-      return false;
-    }
-    
-    // Special node just to retrieve cluster information
-    NodeIdentifier node_identifier( DelilahNode  , au::code64_rand() ); 
-    
-    // Send Hello message
-    PacketPointer hello_packet( new Packet( Message::Hello ) );
-    gpb::Hello * hello_hello = hello_packet->message->mutable_hello();
-    node_identifier.fill(  hello_hello->mutable_node_identifier() );
-    size_t size;
-    s = hello_packet->write( socket_connection , &size );
-    
-    if( s != au::OK )
-    {
-      error->set(au::str("Error sending hello packet %s" , au::status( s ) ));
-      if( socket_connection )
-        delete socket_connection;
-      return false;
-    }
-    
-    PacketPointer packet( new Packet() );
-    size_t total_read = 0;
-    s = packet->read( socket_connection , &total_read );
-    
-    if( s != au::OK )
-    {
-      error->set(au::str("Error receiving cluster information %s" , au::status( s ) ));
-      if( socket_connection )
-        delete socket_connection;
-      return false;
-    }
-    
-    if( packet->msgCode != Message::ClusterInfoUpdate )
-    {
-      error->set(au::str("Error receiving cluster information. Received %s instead" , Message::messageCode(packet->msgCode) ));
-      if( socket_connection )
-        delete socket_connection;
-      return false;
-=======
 
   PacketPointer packet(new Packet());
   size_t total_read = 0;
@@ -248,7 +173,6 @@ void Delilah::notify(engine::Notification *notification) {
     for (iter = components_.begin(); iter != components_.end(); iter++) {
       DelilahComponent *component = iter->second;
       component->review();
->>>>>>> b4523332c94bd72a87b57a5cee6add6b6e8fae8b
     }
 
     return;

@@ -88,7 +88,7 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   LM_V(("Trying to connect to to %s", host.c_str()));
 
   std::string host_name;
-  int port;
+  int port = -1;
   if (components.size() == 2) {
     host_name = components[0];
     port = atoi(components[1].c_str());

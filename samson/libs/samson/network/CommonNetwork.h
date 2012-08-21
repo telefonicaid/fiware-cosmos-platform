@@ -7,7 +7,6 @@
 #include "engine/Object.h"
 
 #include "au/network/NetworkListener.h"
-#include "au/network/PacketReaderWriter.h"
 
 #include "samson/common/status.h"
 #include "samson/common/ports.h"

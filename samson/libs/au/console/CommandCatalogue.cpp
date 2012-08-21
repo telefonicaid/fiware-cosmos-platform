@@ -736,7 +736,7 @@ namespace au { namespace console {
     for ( size_t i = 0 ; i < commands_.size() ; i++ )
       categories.push_back( commands_[i]->category() );
     
-    categories.unique();
+    categories.RemoveDuplicated();
     return categories;
   }
   

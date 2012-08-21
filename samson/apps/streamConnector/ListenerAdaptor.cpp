@@ -52,7 +52,7 @@ namespace stream_connector {
                                             , au::SocketConnection * socket_connetion )
   {
     
-    std::string name  = au::str("Socket %s" , socket_connetion->getHostAndPort().c_str() );
+    std::string name  = au::str("Socket %s" , socket_connetion->host_and_port().c_str() );
     
     FileDescriptorConnection* new_connection = new SimpleFileDescriptorConnection( this
                                                                                   , getType()

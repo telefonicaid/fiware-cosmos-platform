@@ -71,7 +71,7 @@ namespace stream_connector {
                       header_.message_size ));
                 // Close connection ( We close here since it is not a io error, is a protocol error )
                 free(dataP);
-                fd->close();
+                fd->Close();
                 return au::Error; // Generic error
             }
             

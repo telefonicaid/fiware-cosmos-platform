@@ -54,7 +54,7 @@ namespace samson {
     size_t get_rate_in();
     size_t get_rate_out();
     NodeIdentifier node_identifier();
-    std::string getHostAndPort();
+    std::string host_and_port();
 
 
     // Function to generate lists of items in delilah console

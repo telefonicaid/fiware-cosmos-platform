@@ -116,12 +116,10 @@ network/ConsoleService.h
 network/ConsoleService.cpp
 network/RESTService.h
 network/RESTService.cpp
+network/RESTServiceCommand.h
+network/RESTServiceCommand.cpp
 network/SocketConnection.cpp
 network/SocketConnection.h
-network/misc.cpp
-network/misc.h
-network/PacketReaderWriter.h
-network/PacketReaderWriter.cpp
 )
 
 # ---------------------------------------------------

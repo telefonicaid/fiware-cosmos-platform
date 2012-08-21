@@ -1,109 +1,118 @@
 
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
 #ifndef _H_AU_NETWORK_SERVICE
 #define _H_AU_NETWORK_SERVICE
 
 #include "au/Status.h"
+#include "au/containers/set.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
-#include "au/containers/set.h"
-
 #include "au/tables/Table.h"
-
 #include "au/Environment.h"
 #include "au/au.pb.h"
 #include "au/gpb.h"
-
 #include "au/string.h"
 #include "au/utils.h"
-
 #include "au/console/Console.h"
-
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
 
-namespace au
-{
-    namespace network
-    {
-        
-        class Service;
-        
-        class ServiceItem
-        {
-            Service * service;
-            SocketConnection * socket_connection;
 
-            bool quit; // Falg to inform that it is necessary to quit
-            
-            friend void* run_service_item( void*p );
-            friend class Service;
-            
-        public:
-            
-            ServiceItem( Service * _service , SocketConnection * _socket_connection );
-            virtual ~ServiceItem();
-            
-            // Stop this connection
-            void stop();
-            
-            void runInBackground();
-            
-        };
-        
-        // Service opening a paricular port and accepting connections
-        
-        class Service : public NetworkListenerInterface
-        {
-            
-            int port;                      // Port to offer this service
-            bool init;                     // Flag to avoid multiple inits 
-            NetworkListener listener;      // Listener to receive connections
-            au::set< ServiceItem > items;  // Connected items 
+/*****************************************************************************
+*
+*  Service
+*
+*  Multiple connection support over an open port
+*  -> Multiple connections are accepted over a port
+*  -> Connections are managed automatically by this class
+*  -> A simple method is called to implement the service
+*
+*  virtual void run( SocketConnection * soket_connection , bool *quit )=0;
+*
+*****************************************************************************/
 
-            au::Token token;               // Mutex protection ( list of items )
-            
-            friend class ServiceItem;
-            friend void* run_service_item( void*p );
-            
-        public:
-            
-            // Constructor with the port to open
-            Service( int _port );            
-            
-            // DEbug informatation
-            std::string getStatus()
-            {
-                if( listener.IsNetworkListenerRunning() )
-                    return "listening";
-                else
-                    return "not listening";
-            }
-            
-            // Init the service to recover the error code if not possible to open port
-            Status initService( );
+namespace au {
+namespace network {
+class Service;
 
-            // NetworkListenerInterface
-            void newSocketConnection( NetworkListener* _listener , SocketConnection * socket_connetion );            
+class ServiceItem {
+public:
 
-            // Debug information
-            std::string str();            
-            au::tables::Table* getConnectionsTable();            
-            int getPort();
+  ServiceItem(Service *_service,
+              SocketConnection *_socket_connection);
+  virtual ~ServiceItem();
 
-            // Stop all threads for connections and thread for listener
-            void stop( bool wait );            
-            
-            // Overload this method to define service action
-            virtual void run( SocketConnection * soket_connection , bool *quit )=0;
-            
-        private:
-            
-            // Method called by thread running item in background
-            void finish( ServiceItem * item );
-            
-        };
-                
-    }
+  // Stop this connection
+  void RunInBackground();
+  void Stop();
+
+private:
+
+  pthread_t t_;              // Background thread
+  bool quit_;                // Flag to indicate that this item should exit background thread
+
+  Service *service_;
+  SocketConnection *socket_connection_;
+
+  friend void *run_service_item(void *p);
+  friend class Service;
+};
+
+// Service opening a paricular port and accepting connections
+
+class Service : public NetworkListenerInterface {
+public:
+
+  // Constructor with the port to open
+  Service(int _port);
+  ~Service();
+
+  Status InitService();              // Init the service
+  void StopService();                // Stop all threads for connections and thread for listener
+
+  // Main method to define the service itself
+  virtual void run(SocketConnection *soket_connection,
+                   bool *quit) = 0;
+
+  // virtual methods of NetworkListenerInterface
+  virtual void newSocketConnection(
+    NetworkListener *_listener,
+    SocketConnection *socket_connetion);
+
+  // Accessorts
+  int port() const;
+
+  // Debug information
+  std::string str()  const;
+  std::string GetStringStatus() const;
+  au::tables::Table *getConnectionsTable() const;
+
+private:
+
+  // Method called by thread running item in background
+  void finish(ServiceItem *item);
+
+  au::Token token_;                 // Mutex protection ( list of items )
+
+  int port_;                        // Port to offer this service
+  bool init_;                       // Flag to avoid multiple inits
+  NetworkListener listener_;        // Listener to receive connections
+  au::set< ServiceItem > items_;    // Connected items
+
+  friend class ServiceItem;
+  friend void *run_service_item(void *p);
+};
+}
 }
 
-#endif
+#endif  // ifndef _H_AU_NETWORK_SERVICE

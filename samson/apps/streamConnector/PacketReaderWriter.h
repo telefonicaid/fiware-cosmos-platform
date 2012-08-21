@@ -63,7 +63,7 @@ namespace au { namespace network {
                 if( thread_should_quit() )
                     return;
                 
-                if( fd_->isDisconnected() )
+                if( fd_->IsClosed() )
                     return; // End of thread since socket is disconnected
                 
                 P* packet = new P();
@@ -72,7 +72,7 @@ namespace au { namespace network {
                 if( s != au::OK )
                 {
                     // Close connection
-                    fd_->close();
+                    fd_->Close();
                     
                     return; // End of the tread
                 }
@@ -123,7 +123,7 @@ namespace au { namespace network {
                 if( thread_should_quit() )
                     return;
                 
-                if( fd_->isDisconnected() )
+                if( fd_->IsClosed() )
                     return; // End of thread since socket is disconnected
                 
                 
@@ -231,7 +231,7 @@ namespace au { namespace network {
         
         void close()
         {
-            fd_->close();
+            fd_->Close();
         }
         
         void push( P* packet )
@@ -257,7 +257,7 @@ namespace au { namespace network {
         
         bool isConnected()
         {
-            return !fd_->isDisconnected();
+            return !fd_->IsClosed();
         }
         
         size_t getOutputBufferedSize()

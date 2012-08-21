@@ -1,6 +1,5 @@
 
 #include "au/ThreadManager.h"
-#include "au/network/misc.h"
 
 #include "samson/common/MessagesOperations.h"
 #include "NetworkManager.h"
@@ -56,7 +55,7 @@ namespace samson {
     if( !running_t_read )
     {
       std::string name = au::str("NetworkConnection::initReadWriteThreads::read (%s)"
-                                 , socket_connection->getHostAndPort().c_str() );
+                                 , socket_connection->host_and_port().c_str() );
       
       running_t_read = true;
       au::ThreadManager::shared()->addThread(name, &t_read, NULL, NetworkConnection_readerThread, this);
@@ -65,7 +64,7 @@ namespace samson {
     if( !running_t_write )
     {
       std::string name = au::str("NetworkConnection::initReadWriteThreads::write (%s)"
-                                 , socket_connection->getHostAndPort().c_str() );
+                                 , socket_connection->host_and_port().c_str() );
       
       running_t_write = true;
       au::ThreadManager::shared()->addThread(name, &t_write, NULL, NetworkConnection_writerThread, this);
@@ -97,19 +96,19 @@ namespace samson {
   
   bool NetworkConnection::isDisconnectd()
   {
-    return socket_connection_->isDisconnected();
+    return socket_connection_->IsClosed();
   }
   
   void NetworkConnection::Close()
   {
     // Make sure connection is close
-    socket_connection_->close();
+    socket_connection_->Close();
   }
   
   void NetworkConnection::CloseAndStopBackgroundThreads()
   {
     // Make sure connection is close
-    socket_connection_->close();
+    socket_connection_->Close();
     
     // Wake up writing thread if necessary
     {
@@ -139,7 +138,7 @@ namespace samson {
   {
     while( 1 )
     {
-      if( socket_connection_->isDisconnected() )
+      if( socket_connection_->IsClosed() )
       {
         // Wake up writing thread if necessary
         au::TokenTaker tt(&token_);
@@ -164,7 +163,7 @@ namespace samson {
         network_manager_->receive( this , packet );
       }
       else
-        socket_connection_->close(); // Close connection since a packet has not been received correctly
+        socket_connection_->Close(); // Close connection since a packet has not been received correctly
       
     }
     
@@ -174,7 +173,7 @@ namespace samson {
     while (1)
     {
       // Quit if this connection is closed
-      if( socket_connection_->isDisconnected() )
+      if( socket_connection_->IsClosed() )
         return;
       
       // Get the next packet to be sent by me
@@ -212,7 +211,7 @@ namespace samson {
     
     output << "[" << (running_t_read?"R":" ") << (running_t_write?"W":" ") << "]";
     
-    if ( socket_connection_->isDisconnected() )
+    if ( socket_connection_->IsClosed() )
       output << " Disconnected ";
     else
       output << " Connected    ";
@@ -237,9 +236,9 @@ namespace samson {
     return node_identifier_;
   }
   
-  std::string NetworkConnection::getHostAndPort()
+  std::string NetworkConnection::host_and_port()
   {
-    return socket_connection_->getHostAndPort();
+    return socket_connection_->host_and_port();
   }
   
   
@@ -250,12 +249,12 @@ namespace samson {
     ::samson::add( record , "user"    , user , "different,left" );
     ::samson::add( record , "connection"    , connection_type , "different,left" );
     
-    if( socket_connection_->isDisconnected() )
+    if( socket_connection_->IsClosed() )
       ::samson::add( record , "status" , "disconnected" , "different,left" );
     else
       ::samson::add( record , "status" , "connected" , "different,left" );
     
-    ::samson::add( record , "host"    , socket_connection_->getHostAndPort() , "different" );
+    ::samson::add( record , "host"    , socket_connection_->host_and_port() , "different" );
     
     ::samson::add( record , "In (B)"    , rate_in.getTotalSize() , "f=uint64,sum" );
     ::samson::add( record , "Out (B)"    , rate_out.getTotalSize() , "f=uint64,sum" );
@@ -272,12 +271,12 @@ namespace samson {
   
   std::string NetworkConnection::getHost()
   {
-    return socket_connection_->getHost();
+    return socket_connection_->host();
   }
   
   int NetworkConnection::getPort()
   {
-    return socket_connection_->getPort();
+    return socket_connection_->port();
   }
   
 }

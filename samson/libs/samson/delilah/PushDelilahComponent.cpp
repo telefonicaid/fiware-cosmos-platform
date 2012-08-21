@@ -205,14 +205,14 @@ namespace samson
     {
       au::StringVector values;
       values.push_back("Pending push operations");
-      values.push( push_ids_.size() );
+      values.Push( push_ids_.size() );
       table.addRow(values);
     }
 
     {
       au::StringVector values;
       values.push_back("Finish input data");
-      values.push( finish_process?"yes":"no" );
+      values.Push( finish_process?"yes":"no" );
       table.addRow(values);
     }
     

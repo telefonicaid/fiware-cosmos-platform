@@ -119,36 +119,36 @@ namespace au
             // Number of logs
             {
                 au::StringVector values;
-                values.push( "Number of logs" );
-                values.push( au::str(num) + " / " + au::str(max_num) );
+                values.Push( "Number of logs" );
+                values.Push( au::str(num) + " / " + au::str(max_num) );
                 table.addRow( values );
             }
             
             // Size of logs
             {
                 au::StringVector values;
-                values.push( "Size" );
-                values.push( au::str(size,"B") + " / " + au::str(max_size,"B") );
+                values.Push( "Size" );
+                values.Push( au::str(size,"B") + " / " + au::str(max_size,"B") );
                 table.addRow( values );
             }
             
             // Type of logs
             {
                 au::StringVector values;
-                values.push( "Types" );
-                values.push( types.str() );
+                values.Push( "Types" );
+                values.Push( types.str() );
                 table.addRow( values );
             }
 
             // Channels
             {
                 au::StringVector values;
-                values.push( "Channels" );
+                values.Push( "Channels" );
                 size_t num_channels = channels.size();
                 if( num_channels < 5 )
-                    values.push( channels.str() );
+                    values.Push( channels.str() );
                 else
-                    values.push( au::str("%lu channels", num_channels ) );
+                    values.Push( au::str("%lu channels", num_channels ) );
                 table.addRow( values );
             }
             

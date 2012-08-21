@@ -65,7 +65,7 @@ namespace samson
     if( size )
       *size =0;
     
-    LM_T(LmtSocketConnection, ("Sending Packet '%s' to %s " , str().c_str() , fd->getName().c_str() ));
+    LM_T(LmtSocketConnection, ("Sending Packet '%s' to %s " , str().c_str() , fd->name().c_str() ));
     
     //
     // Preparing header
@@ -147,8 +147,8 @@ namespace samson
     // Check header
     if ( !header.check() )
     {
-      fd->close(); // Close connection ( We close here since it is not a io error, is a protocol error )
-      LM_E(("Error checking received header from %s" , fd->getName().c_str() ));
+      fd->Close(); // Close connection ( We close here since it is not a io error, is a protocol error )
+      LM_E(("Error checking received header from %s" , fd->name().c_str() ));
       return au::Error; // Generic error
     }
     
@@ -168,7 +168,7 @@ namespace samson
       if( size )
         *size += header.gbufLen;
       
-      LM_T(LmtSocketConnection, ("Read %d bytes of GOOGLE DATA from '%s'", header.gbufLen, fd->getName().c_str() ));
+      LM_T(LmtSocketConnection, ("Read %d bytes of GOOGLE DATA from '%s'", header.gbufLen, fd->name().c_str() ));
       
       // Decode the google protocol buffer message
       message->ParseFromArray(dataP, header.gbufLen);
@@ -180,7 +180,7 @@ namespace samson
               header.gbufLen, samson::Message::messageCode(header.code)));
         // Close connection ( We close here since it is not a io error, is a protocol error )
         free(dataP);
-        fd->close();
+        fd->Close();
         return au::Error; // Generic error
       }
       
@@ -190,7 +190,7 @@ namespace samson
     if (header.kvDataLen != 0)
     {
       // Alloc a buffer to read buffer of data
-      std::string buffer_name = au::str("Network Buffer from %s" , fd->getName().c_str() );
+      std::string buffer_name = au::str("Network Buffer from %s" , fd->name().c_str() );
       
       au::Cronometer cronometer;
       while( true )
@@ -217,7 +217,7 @@ namespace samson
       if (s != au::OK)
         return s;
       
-      LM_T(LmtSocketConnection, ("Read %d bytes of KV DATA from '%s'", header.kvDataLen, fd->getName().c_str()));
+      LM_T(LmtSocketConnection, ("Read %d bytes of KV DATA from '%s'", header.kvDataLen, fd->name().c_str()));
       if( size )
         *size += header.kvDataLen;
       

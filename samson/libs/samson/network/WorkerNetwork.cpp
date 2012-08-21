@@ -60,7 +60,7 @@ namespace samson {
     if( listener != worker_listener )
     {
       LM_X(1, ("New connections from an unknown listener"));
-      socket_connection->close();
+      socket_connection->Close();
       delete socket_connection;
     }
     
@@ -71,7 +71,7 @@ namespace samson {
     if( s != au::OK )
     {
       LM_W(("Error receiving hello message form income connection (%s)" , au::status(s) ));
-      socket_connection->close();
+      socket_connection->Close();
       delete socket_connection;
       return;
     }
@@ -80,7 +80,7 @@ namespace samson {
     {
       LM_W(("Received message %s instead of the required hello message. Closing connection"
             , messageCode(packet.msgCode) ));
-      socket_connection->close();
+      socket_connection->Close();
       delete socket_connection;
       return;
     }
@@ -89,7 +89,7 @@ namespace samson {
     if( !packet.message->has_hello() )
     {
       LM_W(("Missing Hello information in a hello packet"));
-      socket_connection->close();
+      socket_connection->Close();
       delete socket_connection;
       return;
     }
@@ -100,7 +100,7 @@ namespace samson {
     if( new_node_identifier.node_type == UnknownNode )
     {
       LM_W(("Hello message received with nodetype unknown. Closing connection" ));
-      socket_connection->close();
+      socket_connection->Close();
       delete socket_connection;
       return;
     }
@@ -112,7 +112,7 @@ namespace samson {
       if( !au::code64_is_valid( new_delilah_id ) )
       {
         LM_W(("No valid delilah_id (%lu). Closing conneciton..."  , new_delilah_id ));
-        socket_connection->close();
+        socket_connection->Close();
         delete socket_connection;
         return;
       }        
@@ -130,7 +130,7 @@ namespace samson {
       if( s != au::OK )
       {
         LM_W(("Not possible to write cluster information a new delilah connection (%s) " , au::status(s) ));
-        socket_connection->close();
+        socket_connection->Close();
         delete socket_connection;
         return;
       }

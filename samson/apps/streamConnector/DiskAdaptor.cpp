@@ -156,7 +156,7 @@ namespace stream_connector {
             
             if( ( accumulated_size + current_size ) > max_size )
             {
-                file_descriptor->close();
+                file_descriptor->Close();
                 delete file_descriptor;
                 file_descriptor = NULL;
             }
@@ -322,7 +322,7 @@ namespace stream_connector {
     void DiskConnection::review_connection()
     {
         if( file_descriptor )
-            set_as_connected( !file_descriptor->isDisconnected() );
+            set_as_connected( !file_descriptor->IsClosed() );
         else
             set_as_connected(true);
     }

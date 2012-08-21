@@ -264,11 +264,11 @@ namespace samson
       PushItem* item = it->second;
       
       au::StringVector values;
-      values.push( item->get_push_id() );
-      values.push( item->str_buffer_info() );
-      values.push( item->worker_id_ );
-      values.push( au::str_time( item->get_time() ) );
-      values.push( item->str() );
+      values.Push( item->get_push_id() );
+      values.Push( item->str_buffer_info() );
+      values.Push( item->worker_id_ );
+      values.Push( au::str_time( item->get_time() ) );
+      values.Push( item->str() );
       
       table->addRow(values);
     }

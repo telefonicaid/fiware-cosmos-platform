@@ -46,7 +46,7 @@ void SamsonPushConnection::run()
 {
     while( true )
     {
-        if( socket_connetion->isDisconnected() )
+        if( socket_connetion->IsClosed() )
         {
             thread_running = false;
             return;
@@ -62,7 +62,7 @@ void SamsonPushConnection::run()
         if( s != au::OK )
         {
             // Just to make sure we close 
-            socket_connetion->close();
+            socket_connetion->Close();
             thread_running = false;
             return;
         }

@@ -197,7 +197,7 @@ namespace samson {
     
     // Init connection
     au::SocketConnection* socket_connection;
-    au::Status s = au::SocketConnection::newSocketConnection( host , port , &socket_connection );
+    au::Status s = au::SocketConnection::Create( host , port , &socket_connection );
 
     // If there is an error, just return the error
     if( s != au::OK )
@@ -404,7 +404,7 @@ namespace samson {
       size_t worker_id= cluster_information_->workers(i).worker_id();
       
       au::StringVector values;
-      values.push( worker_id );
+      values.Push( worker_id );
       
       std::string host = au::str("%s:%d"
                                  , cluster_information_->workers(i).worker_info().host().c_str()
@@ -435,14 +435,14 @@ namespace samson {
       
       au::StringVector values;
       values.push_back( au::str("%d-%d" , hg_begin , hg_end ) );
-      values.push( worker_id );
+      values.Push( worker_id );
       
       std::ostringstream replicas;
       
       for ( int r = 0 ; r < cluster_information_->process_units(i).replica_worker_id_size() ; r++ )
         replicas << cluster_information_->process_units(i).replica_worker_id(r) << " ";
       
-      values.push( replicas.str() );
+      values.Push( replicas.str() );
       
       table.addRow(values);
     }

@@ -110,24 +110,24 @@ namespace samson
       
       au::StringVector values;
       
-      values.push( item->pop_id() );
-      values.push( item->block_id() );
-      values.push( KVRanges( item->ranges() ).str() );
+      values.Push( item->pop_id() );
+      values.Push( item->block_id() );
+      values.Push( KVRanges( item->ranges() ).str() );
 
       
-      values.push( item->worker_id() );
+      values.Push( item->worker_id() );
 
       if( item->worker_confirmation() )
-        values.push( "yes" );
+        values.Push( "yes" );
       else
-        values.push( "no" );
+        values.Push( "no" );
 
-      values.push( au::str_time( item->cronometer().seconds() ) );
+      values.Push( au::str_time( item->cronometer().seconds() ) );
 
       if( item->buffer() == NULL )
-        values.push("-");
+        values.Push("-");
       else
-        values.push( au::str( item->buffer()->getSize() ) );
+        values.Push( au::str( item->buffer()->getSize() ) );
       
       table.addRow(values);
     }

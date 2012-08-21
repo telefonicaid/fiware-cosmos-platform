@@ -1,7 +1,6 @@
 #ifndef _H_SAMSON_CONNECTOR_INTERCHANNEL_LINK
 #define _H_SAMSON_CONNECTOR_INTERCHANNEL_LINK
 
-#include "au/network/PacketReaderWriter.h"
 #include "au/network/SocketConnection.h"
 
 #include "engine/ProcessItem.h"
@@ -12,6 +11,7 @@
 #include "Connection.h"
 #include "common.h"
 #include "InterChannelPacket.h"
+#include "PacketReaderWriter.h"
 
 namespace stream_connector {
     
@@ -51,7 +51,7 @@ namespace stream_connector {
         bool isRunning();
         bool isConnected();
 
-        std::string getHostAndPort();
+        std::string host_and_port();
         size_t bufferedSize();
 
         void extract_pending_packets( au::ObjectList<InterChannelPacket>* packets );

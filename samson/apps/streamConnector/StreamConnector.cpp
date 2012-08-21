@@ -41,33 +41,33 @@ StreamConnector::StreamConnector() : token("SamsonConnector::token_channels") {
 }
 
 void StreamConnector::init_remove_connections_service() {
-  if (service) {
+  if (service)
     return;   // Already created
-  }
+
   service = new StreamConnectorService(this);
   au::Status s = service->InitService();
   if (s != au::OK) {
-    log(new Log("SamsonConnector"
+    log( au::SharedPointer<Log> ( new Log("SamsonConnector"
                 , "Warning"
-                , "Not possible to start service to receive connections from samsonConnectorClient"));
+                , "Not possible to start service to receive connections from samsonConnectorClient")));
     delete service;
     service = NULL;
   } else {
-    log(new Log("SamsonConnector"
+    log( au::SharedPointer<Log> ( new Log("SamsonConnector"
                 , "Message"
-                , "Console Service started"));
+                , "Console Service started")));
   }
 }
 
 void StreamConnector::init_reset_service() {
-  if (rest_service) {
+  if (rest_service)
     return;   // Already init
-  }
-  // Create the rest service
+
+   // Create the rest service
   rest_service = new au::network::RESTService(sc_web_port, this);
   au::Status s = rest_service->InitService();
   if (s != au::OK) {
-    log(new Log("REST", "error", au::str("Error opening REST interface on port %d", sc_web_port)));
+    log( au::SharedPointer<Log> ( new Log("REST", "error", au::str("Error opening REST interface on port %d", sc_web_port))));
     delete rest_service;
     rest_service = NULL;
   }
@@ -83,17 +83,17 @@ void StreamConnector::init_inter_channel_connections_service() {
   au::Status s = inter_channel_listener->InitNetworkListener(p);
 
   if (s != au::OK) {
-    log(new Log("SamsonConnector"
+    log(au::SharedPointer<Log> (new Log("SamsonConnector"
                 , "Warning"
-                , au::str("Not possible to init inter-channel listener at port %d. This could be a major issue", p)));
+                , au::str("Not possible to init inter-channel listener at port %d. This could be a major issue", p))));
 
     // Delete instance
     delete inter_channel_listener;
     inter_channel_listener = NULL;
   } else {
-    log(new Log("SamsonConnector"
+    log( au::SharedPointer<Log> ( new Log("SamsonConnector"
                 , "Message"
-                , "Interchannel service started"));
+                , "Interchannel service started")));
   }
 }
 
@@ -498,7 +498,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
   }
 
   // Log activity ( command that modify state )
-  log(new Log("SamsonConnector", "Message", command));
+  log( au::SharedPointer<Log> (new Log("SamsonConnector", "Message", command)));
 
   if (main_command == "add_channel") {
     if (cmdLine.get_num_arguments() < 2) {
@@ -864,8 +864,15 @@ au::tables::Table *StreamConnector::getItemsTable(std::string type) {
 
   return table;
 }
+  
+  void StreamConnector::log( const std::string& name, const std::string& type, const std::string& message)
+  {
+    au::SharedPointer<stream_connector::Log> my_log (new stream_connector::Log(name,type,message));
+    log(my_log);
+  }
 
-void StreamConnector::log(Log *log) {
+
+void StreamConnector::log(au::SharedPointer<Log> log ) {
   au::TokenTaker tt(&token);
 
   // Create au::ErrorManager element

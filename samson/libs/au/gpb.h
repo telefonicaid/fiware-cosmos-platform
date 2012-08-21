@@ -108,9 +108,10 @@ au::Status readGPB(int fd, T **t, int time_out) {
 
   // LM_M(("Reading a GPB message from fd:%d (size:%d)", fd , (int) size ));
 
-  if (header.size > 1000000)
+  if (header.size > 1000000) {
     LM_W(("Large size %l for a background process message", header.size));
-   // return 3;    // Too much bytes to read
+  }
+  // return 3;    // Too much bytes to read
 
   void *data  = (void *)malloc(header.size);
 
@@ -141,18 +142,19 @@ template <class T>
 Status writeGPB(int fd, T *t) {
   LM_T(LmtIsolated, ("Writing a GPB message to fd:%d ( Size:%d )", fd, (int)t->ByteSize()));
 
-  if (!t->IsInitialized()) {
+  if (!t->IsInitialized())
     return GPB_NotInitializedMessage;
-  }
+
 
 
 
   GPBHeader header;
   header.init(t->ByteSize());
 
-  if (header.size > 100000)
+  if (header.size > 100000) {
     LM_W(("Large size %l for a background process message", header.size));
-   // return 3;
+  }
+  // return 3;
 
   void *data = (void *)malloc(header.size);
 

@@ -44,8 +44,9 @@ void ObjectsManager::remove(Object *o) {
   objects.extractFromMap(o->engine_id);
 
   // Remove from the vector of objects by name
-  if (o->engine_name)
+  if (o->engine_name) {
     objects_by_name.extractFromMap(o->engine_name);  // Remove from all constants listeners
+  }
   au::map< const char *, IdsCollection, au::strCompare >::iterator c;
   for (c = channels.begin(); c != channels.end(); c++) {
     c->second->remove(o->engine_id);
@@ -72,9 +73,9 @@ void ObjectsManager::objectIdsForChannel(const char *name, std::set<size_t>& ids
 
   IdsCollection *delivery = channels.findInMap(name);
 
-  if (!delivery)
+  if (!delivery) {
     return;     // No ids to be added
-
+  }
   delivery->addTo(ids);
 }
 

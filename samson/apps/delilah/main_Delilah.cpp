@@ -346,10 +346,9 @@ int main(int argC, const char *argV[]) {
     }
   }
 
-  if (!delilahConsole->isConnected()) {
+  if (!delilahConsole->isConnected())
     delilahConsole->writeWarningOnConsole("Delilah client not connected to any SAMSON cluster. ( see help connect )");  // ----------------------------------------------------------------
-  }
-  // Special mode with one command line command
+   // Special mode with one command line command
   // ----------------------------------------------------------------
 
   if (strcmp(command, "") != 0) {

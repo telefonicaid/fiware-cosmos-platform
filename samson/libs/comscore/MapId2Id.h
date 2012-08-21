@@ -32,9 +32,9 @@ public:
 
   uint find_one(uint key, uint begin, uint end) {
     // Last interval
-    if (end == begin + 1) {
+    if (end == begin + 1)
       return (uint) - 1;
-    }
+
 
 
 
@@ -42,31 +42,30 @@ public:
 
     int c = key - v[mid_point].first;
 
-    if (c == 0) {
+    if (c == 0)
       return mid_point;
-    }
 
 
 
-    if (c < 0) {
+
+    if (c < 0)
       return find_one(key, begin, mid_point);
-    } else {
+    else
       return find_one(key, mid_point, end);
-    }
   }
 
   uint find_one(uint key) {
     uint begin = 0;
     uint end = size;
 
-    if (v[begin].first == key) {
+    if (v[begin].first == key)
       return begin;
-    }
 
 
-    if (v[end].first == key) {
+
+    if (v[end].first == key)
       return end;
-    }
+
 
 
 
@@ -76,9 +75,9 @@ public:
   bool find_range(uint key, uint *begin, uint *end) {
     uint pos = find_one(key);
 
-    if (pos == (uint) - 1) {
+    if (pos == (uint) - 1)
       return false;
-    }
+
 
 
 
@@ -102,11 +101,10 @@ public:
     std::vector<uint> values;
 
     // Find pattern range to evaluate
-    if (find_range(key, &begin, &end)) {
+    if (find_range(key, &begin, &end))
       for (uint i = begin; i <= end; i++) {
         values.push_back(v[i].second);
       }
-    }
 
     return values;
   }

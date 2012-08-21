@@ -1,6 +1,9 @@
 SET (SOURCES
     main_UnitTest.cpp
 
+	# AU library
+	lib/au/SingletonTest.cpp
+
 	# AU CONTAINERS LIBRARY
 	lib/au/containers/SharedPointerTest.cpp
 	lib/au/containers/DictionaryTest.cpp

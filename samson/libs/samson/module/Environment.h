@@ -20,39 +20,35 @@ public:
   std::string get(std::string name, std::string default_value) {
     std::map<std::string, std::string>::iterator iter = environment.find(name);
 
-    if (iter == environment.end()) {
+    if (iter == environment.end())
       return default_value;
-    } else {
+    else
       return iter->second;
-    }
   }
 
   void set(std::string name, std::string value) {
     std::map<std::string, std::string>::iterator iter = environment.find(name);
 
-    if (iter == environment.end()) {
+    if (iter == environment.end())
       environment.insert(std::pair<std::string, std::string>(name, value));
-    } else {
+    else
       iter->second = value;
-    }
   }
 
   void unset(std::string name) {
     std::map<std::string, std::string>::iterator iter = environment.find(name);
 
-    if (iter != environment.end()) {
+    if (iter != environment.end())
       environment.erase(iter);
-    }
   }
 
   bool isSet(std::string name) {
     std::map<std::string, std::string>::iterator iter = environment.find(name);
 
-    if (iter == environment.end()) {
+    if (iter == environment.end())
       return false;
-    } else {
+    else
       return true;
-    }
   }
 
   void copyFrom(Environment *other) {
@@ -105,27 +101,27 @@ public:
   }
 
   int getInt(std::string name, int defaultValue) {
-    if (!isSet(name)) {
+    if (!isSet(name))
       return defaultValue;
-    }
+
 
 
     return atoi(get(name, "0").c_str());
   }
 
   size_t get(std::string name, size_t defaultValue) {
-    if (!isSet(name)) {
+    if (!isSet(name))
       return defaultValue;
-    }
+
 
 
     return atoll(get(name, "0").c_str());
   }
 
   double getDouble(std::string name, double defaultValue) {
-    if (!isSet(name)) {
+    if (!isSet(name))
       return defaultValue;
-    }
+
 
 
     return atof(get(name, "0").c_str());

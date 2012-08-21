@@ -104,15 +104,15 @@ public:
     while (true) {
       Token *token = popToken();
 
-      if (!token) {
+      if (!token)
         return result_tokens;
-      }
 
 
 
-      if (token->content == limiter) {
+
+      if (token->content == limiter)
         return result_tokens;
-      }
+
 
 
 

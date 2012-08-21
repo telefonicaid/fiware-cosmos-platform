@@ -192,8 +192,9 @@ void ProcessManager::run_worker() {
     notification->environment().Add(item->environment());
 
     // Extra error environment if necessary
-    if (item->error().IsActivated())
+    if (item->error().IsActivated()) {
       notification->environment().set("error", item->error().GetMessage());  // Add the notification to the main engine
+    }
     Engine::shared()->notify(notification);
   }
 }

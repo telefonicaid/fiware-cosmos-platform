@@ -46,9 +46,8 @@ public:
   }
 
   ~ObjectContainer() {
-    if (object_) {
+    if (object_)
       object_->Release();
-    }
   }
 
   void operator=(ObjectContainer<C>& other) {
@@ -65,21 +64,20 @@ public:
 
   void set_object(C *object) {
     // If we have internally the same buffer, do nothing
-    if (object == object_) {
+    if (object == object_)
       return;
-    }
+
 
 
 
     // If previous buffer, just release
-    if (object_) {
+    if (object_)
       object_->Release();
-    }
 
     // If no input buffer, do nothing
-    if (!object) {
+    if (!object)
       return;
-    }
+
 
 
 
@@ -139,9 +137,9 @@ public:
   void extract_front(ObjectContainer<C>& container) {
     C *c = list.extractFront();
 
-    if (!c) {
+    if (!c)
       return;
-    }
+
 
 
 
@@ -152,9 +150,9 @@ public:
   void extract_back(ObjectContainer<C>& container) {
     C *c = list.extractBack();
 
-    if (!c) {
+    if (!c)
       return;
-    }
+
 
 
 

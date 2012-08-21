@@ -22,9 +22,9 @@ int StringCollection::add(const char *string) {
   std::string _string = string;
 
   std::map<std::string, int>::iterator it = previous_strings.find(_string);
-  if (it != previous_strings.end()) {
+  if (it != previous_strings.end())
     return it->second;  // --------------------------------------------------------
-  }
+
   size_t len = strlen(string);
   size_t required_size = size + len + 1;
 

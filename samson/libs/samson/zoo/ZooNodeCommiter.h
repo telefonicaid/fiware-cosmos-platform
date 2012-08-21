@@ -93,11 +93,10 @@ public:
     InternCommit(commit_command, error);
 
     // Log activity for debugging
-    if (error->IsActivated()) {
+    if (error->IsActivated())
       last_commits_.push_back(CommitRecord(caller, commit_command, error->GetMessage()));
-    } else {
+    else
       last_commits_.push_back(CommitRecord(caller, commit_command, "OK"));
-    }
 
     while (last_commits_.size() > 100) {
       last_commits_.pop_front();
@@ -165,8 +164,9 @@ private:
         c_ = c;
 
         // We have received information correctly
-        if (stat_.version > previous_version)
+        if (stat_.version > previous_version) {
           NotificationNewModel(stat_.version, c_);
+        }
         break;
       }
     }

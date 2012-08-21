@@ -20,7 +20,6 @@
 
 #include "engine/DiskManager.h"    // enigne::DiskManager
 #include "engine/Engine.h"         // engine::Engine
-#include "engine/MemoryRequest.h"  // engine::MemoryRequest
 #include "engine/Notification.h"   // engine::Notification
 #include "engine/ProcessManager.h"  // engine::ProcessManager
 

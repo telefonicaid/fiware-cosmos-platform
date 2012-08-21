@@ -70,15 +70,15 @@ bool Token::isNumber() {
 
     // Signs
     if (( c == '-' ) || ( c == '+' )) {
-      if (found_dot)
+      if (found_dot) {
         return false;                 // sign after dot
-
-      if (found_sign)
+      }
+      if (found_sign) {
         return false;                 // Double sign
-
-      if (found_digit)
+      }
+      if (found_digit) {
         return false;                 // Sign after digits
-
+      }
       found_sign = true;
       continue;
     }
@@ -315,8 +315,9 @@ TokenVector Tokenizer::parse(std::string txt) {
 
     if (separator_found) {
       // Push previous token if any
-      if (pos < i)
+      if (pos < i) {
         token_vector.push_back(Token(txt.substr(pos, i - pos), Token::normal, pos));  // Push separator
+      }
       if (separator != " ")
         token_vector.push_back(Token(separator, Token::separator, i)); i += separator.length();
       pos = i;

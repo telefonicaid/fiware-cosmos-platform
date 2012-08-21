@@ -86,9 +86,8 @@ void ConsoleCommandHistory::move_down() {
 
 void ConsoleCommandHistory::new_command() {
   // Copy to the new one if we are editing a previous entry
-  if (pos != (commands.size() - 1)) {
+  if (pos != (commands.size() - 1))
     commands[commands.size() - 1]->setCommand(commands[pos]->getCommand());  // If we are repeting previous command, do not add again
-  }
   if (commands.size() > 1)
     if (commands[pos]->getCommand() == commands[commands.size() - 2]->getCommand()) {
       commands[commands.size() - 1]->setCommand("");

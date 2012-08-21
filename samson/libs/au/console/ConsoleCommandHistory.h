@@ -36,11 +36,9 @@ public:
 
     size_t pos = 0;
 
-    if (limit > 0) {
-      if (commands.size() > limit) {
+    if (limit > 0)
+      if (commands.size() > limit)
         pos = commands.size() - limit;
-      }
-    }
 
     for (; pos < commands.size(); pos++) {
       output << commands[pos]->getCommand() << "\n";

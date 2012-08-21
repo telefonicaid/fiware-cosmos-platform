@@ -65,9 +65,9 @@ public:
                        const char *category = key->get_string_from_map("category");
                        const char *concept  = key->get_string_from_map("concept");
 
-                       if (!category || !concept) {
+                       if (!category || !concept)
                          return;  // Incorrect key for this process component
-                       }
+
                        double state_total = state->get_double_from_map("total", 0);
                        size_t state_time = state->get_uint64_from_map("time");
 
@@ -105,10 +105,10 @@ public:
                        double new_value_total = new_value->get_double_from_map("total", 0);
                        const char *new_value_concept = new_value->get_string_from_map("concept");
 
-                       if (!new_value_concept) {
+                       if (!new_value_concept)
                          return;  // Skip incorrect value
-                       }
-                       // Search for the same concept in the top list....
+
+                        // Search for the same concept in the top list....
 
                        for (size_t p = 0; p < state->get_vector_size(); p++) {
                          Value *vector_value = state->get_value_from_vector(p);
@@ -164,9 +164,8 @@ public:
                        }
 
                        // Push at the end of the vector if possible
-                       if (state->get_vector_size() < 100) {
+                       if (state->get_vector_size() < 100)
                          state->add_value_to_vector()->copyFrom(new_value);
-                       }
                      }
 
                      void update_category(Value *key, Value *state, Value **values, size_t num_values,
@@ -184,10 +183,10 @@ public:
 
                        const char *category = key->get_string_from_map("category");
 
-                       if (!category) {
+                       if (!category)
                          return;  // Incorrect key for this process component
-                       }
-                       // Process new elements
+
+                        // Process new elements
                        for (size_t i = 0; i < num_values; i++) {
                          emit_log("debug", au::str("Updating state %s with new value %s", state->str().c_str(),
                                                    values[i]->str().c_str()), writer);

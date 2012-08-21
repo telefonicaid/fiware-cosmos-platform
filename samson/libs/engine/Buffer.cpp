@@ -92,8 +92,9 @@ bool Buffer::skipWrite(size_t size) {
 }
 
 size_t Buffer::skipRead(size_t size) {
-  if (offset_ + size > max_size_)
+  if (offset_ + size > max_size_) {
     size = (max_size_ - offset_);       // Max offset
+  }
   offset_ += size;
   return size;
 }
@@ -119,9 +120,9 @@ int Buffer::removeLastUnfinishedLine(char *& buffer, size_t& buffer_size) {
     last_line_size++;
   }
 
-  if (last_line_size == getSize())
+  if (last_line_size == getSize()) {
     return 1;     // Error... not final line found in the buffer
-
+  }
   buffer = (char *)malloc(last_line_size);
   memcpy(buffer, data_ + size_ - last_line_size, last_line_size);
 

@@ -192,9 +192,10 @@ void Engine::run() {
     size_t num_engine_elements = engine_element_collection.getNumEngineElements();
     LM_T(LmtEngine, ("Number of elements in the engine stack %lu", num_engine_elements ));
 
-    if (num_engine_elements > 10000)
+    if (num_engine_elements > 10000) {
       LM_W(("Execesive number of elements in the engine stack %lu", num_engine_elements ));  // ------------------------------------------------------------------------------------
-     // Try to get the next element in the repeat_elements list
+    }
+    // Try to get the next element in the repeat_elements list
     // if not there , try normal elements...
     // if not, run extra elements and loop again...
     // ------------------------------------------------------------------------------------

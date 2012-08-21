@@ -121,8 +121,9 @@ void WorkerTaskManager::reviewPendingWorkerTasks() {
 
     bool runReturn = runNextWorkerTasksIfNecessary();
 
-    if (!runReturn)
+    if (!runReturn) {
       return;     // Nothing more to schedule
+    }
   }
 }
 
@@ -139,9 +140,9 @@ size_t WorkerTaskManager::get_num_tasks() {
 }
 
 bool WorkerTaskManager::runNextWorkerTasksIfNecessary() {
-  if (pending_tasks_.size() == 0)
+  if (pending_tasks_.size() == 0) {
     return false;     // No more pending task to be executed
-
+  }
   std::vector< au::SharedPointer< WorkerTaskBase > > tasks = pending_tasks_.items();
 
   for (size_t i = 0; i < tasks.size(); i++) {
@@ -229,8 +230,9 @@ void WorkerTaskManager::review_stream_operations() {
   while (true) {
     // Check if enougth tasks have been scheduled
     size_t num_tasks = get_num_tasks();
-    if (num_tasks > ( 1.5 * num_processors))
+    if (num_tasks > ( 1.5 * num_processors)) {
       break;  // Check memory status. New tasks are not scheduled if memory usage is too high
+    }
     double memory_usage = engine::MemoryManager::shared()->memory_usage();
     if (memory_usage >= 1.0) {
       LM_W(("Not schedulling new stream-tasks since memory usage is %s >= 100%"

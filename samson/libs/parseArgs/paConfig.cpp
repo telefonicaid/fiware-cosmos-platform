@@ -304,11 +304,12 @@ static void paConfigInit(void) {
     paManCopyright        = strdup(paManCopyright); if (paManVersion)
     paManVersion          = strdup(paManVersion); if (paTraceInfoAtEol)
     paTraceInfoAtEol      = strdup(paTraceInfoAtEol); else
-    paTraceInfoAtEol      = strdup("#"); if (paLogFilePath)
+    paTraceInfoAtEol      = strdup("#"); if (paLogFilePath) {
     paLogFilePath         = strdup(paLogFilePath);
-  else
+  } else {
     paLogFilePath         = strdup("/var/log/samson/");  //
-   // This must be changed, cannot have Samson dependencies in this library ...
+  }
+  // This must be changed, cannot have Samson dependencies in this library ...
   //
   if (paLogDir[0] == 0)
     strcpy(paLogDir, "/var/log/samson/"); if (paLogFileLineFormat)
@@ -317,11 +318,12 @@ static void paConfigInit(void) {
     paLogFileTimeFormat   = strdup(paLogFileTimeFormat); else
     paLogFileTimeFormat   = strdup("DEF"); if (paLogScreenLineFormat)
     paLogScreenLineFormat = strdup(paLogScreenLineFormat); else
-    paLogScreenLineFormat = strdup("DEF"); if (paLogScreenTimeFormat)
+    paLogScreenLineFormat = strdup("DEF"); if (paLogScreenTimeFormat) {
     paLogScreenTimeFormat = strdup(paLogScreenTimeFormat);
-  else
+  } else {
     paLogScreenTimeFormat = strdup("DEF");  /* Should all these be freed after paParse finishes? */
-   /* YES ! */
+  }
+  /* YES ! */
 }
 
 /* ****************************************************************************

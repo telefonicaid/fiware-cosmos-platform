@@ -54,9 +54,8 @@ public:
       data = buffer->getData() + sizeof(samson::KVHeader);
     }
 
-    if (expected_size != buffer->getSize()) {
+    if (expected_size != buffer->getSize())
       error.set("Wrong file format");
-    }
 
     // Check if we have data types installed here
     samson::ModulesManager *modulesManager = samson::ModulesManager::shared();
@@ -64,13 +63,11 @@ public:
     samson::Data *valueData = modulesManager->getData(format.valueFormat);
 
     if (!format.isTxt()) {
-      if (!keyData) {
+      if (!keyData)
         error.set(au::str("Unknown data type %s", format.keyFormat.c_str()));
-      }
 
-      if (!valueData) {
+      if (!valueData)
         error.set(au::str("Unknown data type %s", format.valueFormat.c_str()));
-      }
     }
   }
 
@@ -94,9 +91,9 @@ public:
   }
 
   std::string get_header_content() {
-    if (error.IsActivated()) {
+    if (error.IsActivated())
       return au::str("ERROR: %s\n", error.GetMessage().c_str());
-    }
+
 
 
     return header->str() + "\n";
@@ -105,9 +102,8 @@ public:
   std::string get_content(int max_kvs, const char *outputFormat = "plain") {
     std::ostringstream output;
 
-    if (kv_file != NULL) {
+    if (kv_file != NULL)
       kv_file->printContent(max_kvs, false, output);
-    }
     return output.str();
   }
 };

@@ -44,9 +44,9 @@ void PushItem::review() {
   if (state == init) {
     // Get a random worker id to push content
     worker_id_ = delilah_->network->getRandomWorkerId();
-    if (worker_id_ == (size_t)-1)
+    if (worker_id_ == (size_t)-1) {
       return;   // no worker available...
-
+    }
     cronometer_.Reset();
 
     // Packet to send buffer to worker
@@ -159,10 +159,11 @@ void PushManager::receive(Message::MessageCode msgCode, size_t worker_id, size_t
   // Review push_items to deliver this message correctly...
   PushItem *item = items_.findInMap(push_id);
 
-  if (item)
+  if (item) {
     item->receive(msgCode, worker_id);
-  else
+  } else {
     LM_W(("PushBlock response associated with an item (%lu) not found.", push_id ));  // Comit ready push operations and remove old connections
+  }
   review();
 }
 

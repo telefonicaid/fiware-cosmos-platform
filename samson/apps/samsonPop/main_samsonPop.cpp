@@ -152,9 +152,8 @@ int main(int argC, const char *argV[]) {
   // Instance of the client to connect to SAMSON system
   samson::SamsonClient client("pop");
 
-  if (!client.connect(host)) {
+  if (!client.connect(host))
     LM_X(1, ("Not possible to connect with %s", host ));  // Init connection
-  }
   au::ErrorManager error;
   if (error.IsActivated()) {
     fprintf(stderr, "Error connecting with samson cluster: %s\n", error.GetMessage().c_str());

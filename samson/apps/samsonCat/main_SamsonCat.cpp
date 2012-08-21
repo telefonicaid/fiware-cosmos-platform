@@ -112,9 +112,8 @@ int main(int argC, const char *argV[]) {
     au::ErrorManager error;
     au::SharedPointer<samson::SamsonFile> samson_file = samson::SamsonFile::create(file_name, error);
 
-    if (error.IsActivated()) {
+    if (error.IsActivated())
       LM_X(1, ("%s", error.GetMessage().c_str()));  // Show header only
-    }
     if (show_header) {
       samson_file->printHeader(std::cout);
       exit(0);

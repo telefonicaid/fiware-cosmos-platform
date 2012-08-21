@@ -140,11 +140,10 @@ int main(int argC, const char *argV[]) {
   logFd = lmFirstDiskFileDescriptor();
 
   // Init progressive
-  if (progresive) {
+  if (progresive)
     for (int i = 0; i < word_length; i++) {
       progressive_word_slots[i] = 0;
     }  // End of line for all the words...
-  }
   word[word_length] = '\n';
   word[word_length + 1] = '\0';
 
@@ -152,11 +151,10 @@ int main(int argC, const char *argV[]) {
   size_t total_size = 0;
 
   // Init random numbers if random specified
-  if (rand_flag) {
+  if (rand_flag)
     srand(time(NULL));
-  } else {
+  else
     srand(0);  // Time to show a message on screen in verbose mode
-  }
   size_t last_message_time = 0;
 
   // Buffer to flsh data to screen in batches
@@ -167,11 +165,9 @@ int main(int argC, const char *argV[]) {
   // Generate continuously...
   while (true) {
     // Check the limit of generated words
-    if (max_num_lines > 0) {
-      if (num_lines >= (size_t)max_num_lines) {
+    if (max_num_lines > 0)
+      if (num_lines >= (size_t)max_num_lines)
         break;  // Get new word
-      }
-    }
     getNewWord();
 
     // Length of this word
@@ -207,17 +203,14 @@ int main(int argC, const char *argV[]) {
                      "Lines/s").c_str(), au::str((double)total_size / (double)total_seconds, "Bps").c_str()));
     }
 
-    if (total_seconds > 0) {
-      if (max_num_lines > 100) {
-        if ((num_lines % ( max_num_lines / 100)) == 0) {
+    if (total_seconds > 0)
+      if (max_num_lines > 100)
+        if ((num_lines % ( max_num_lines / 100)) == 0)
           LM_V(( "Generated %s - %s lines ( %s bytes ) in %s. Rate: %s / %s",
                  au::str_percentage(num_lines,  max_num_lines).c_str(),
                  au::str(num_lines).c_str(), au::str(total_size).c_str(), au::str_time(total_seconds).c_str(),
                  au::str((double)num_lines / (double)total_seconds,
                          "Lines/s").c_str(), au::str((double)total_size / (double)total_seconds, "Bps").c_str()));  // Sleep if necessary
-        }
-      }
-    }
     if (max_rate > 0) {
       size_t theoretical_seconds = num_lines / max_rate;
 

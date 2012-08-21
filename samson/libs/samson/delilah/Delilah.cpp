@@ -45,10 +45,11 @@ namespace samson {
  */
 Delilah::Delilah(std::string connection_type, size_t delilah_id) : token("Delilah_token") {
   // Random identifier for this delilah
-  if (delilah_id == (size_t)-1)
+  if (delilah_id == (size_t)-1) {
     delilah_id_ = au::code64_rand();
-  else
+  } else {
     delilah_id_ = delilah_id;  // Network interface for all the workers ( included in the cluster selected )
+  }
   network = new DelilahNetwork(connection_type, delilah_id_, this);
 
   // we start with process 2 because 0 is no process & 1 is global_update messages
@@ -581,9 +582,10 @@ int Delilah::_receive(const PacketPointer& packet) {
 
 // Get information for monitorization
 void Delilah::getInfo(std::ostringstream& output) {
-  if (output != output)
+  if (output != output) {
     LM_E(("sorry, just wanted to avoid a 'strict' warning ..."));  // Engine
-   // engine::Engine::shared()->getInfo( output );
+  }
+  // engine::Engine::shared()->getInfo( output );
 
   // Engine system
   // samson::getInfoEngineSystem(output, network);

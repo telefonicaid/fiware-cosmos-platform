@@ -493,14 +493,13 @@ public:
     kvVector_.prepareInput(total_kvs);
 
     // Add key values for all the inputs
-    if (input_num_kvs_ > 0) {
+    if (input_num_kvs_ > 0)
       for (size_t i = 0; i < input_block_readers_.size(); i++) {
         kvVector_.addKVs(input_block_readers_[i]->channel()
                          , input_block_readers_[i]->kv_file()->info[hg]
                          , input_block_readers_[i]->kv_file()->kvs_for_hg(hg)
                          );
       }  // Add key values for the state
-    }
     if (state_num_kvs_ > 0)
       for (size_t i = 0; i < state_block_readers_.size(); i++) {
         kvVector_.addKVs(state_block_readers_[i]->channel()

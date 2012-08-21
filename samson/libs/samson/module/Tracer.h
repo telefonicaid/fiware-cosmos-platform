@@ -41,9 +41,8 @@ public:
     vmsg[1023] = 0;
     va_end(args);
 
-    if ((nl = strchr(vmsg, '\n')) != NULL) {
+    if ((nl = strchr(vmsg, '\n')) != NULL)
       *nl = 0;
-    }
 
     allocedString = (char *)strdup(vmsg);
     return allocedString;

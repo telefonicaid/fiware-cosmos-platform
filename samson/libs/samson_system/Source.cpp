@@ -152,9 +152,10 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
           return NULL;
         }
 
-        if (token->is(","))
+        if (token->is(",")) {
           token_vector->popToken();                   // Skip ","
-         // Another component
+        }
+        // Another component
         Source *tmp = getSource(token_vector, error);
         if (error->IsActivated()) {
           source_components.clearVector();
@@ -187,12 +188,11 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
   Source *main = NULL;
 
   if (token->is("key"))
-    main =  new SourceKey(); if (token->is("value")) {
+    main =  new SourceKey(); if (token->is("value"))
     main =  new SourceValue();  // ---------------------------------------------------------
-  }
-  // key or value
+   // key or value
   // ---------------------------------------------------------
-  if (main) {
+  if (main)
     while (true) {
       if (token_vector->popNextTokenIfItIs("[")) {
         Source *index = getSource(token_vector, error);
@@ -224,7 +224,6 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
         return main;
       }
     }  // Negative numbers
-  }
   if (token->is("-")) {
     // Get next token that has to be a number
     au::token::Token *next_token = token_vector->popToken();
@@ -263,9 +262,9 @@ Source *getSource(au::token::TokenVector *token_vector, au::ErrorManager *error)
 
     // Check if there is something to continue "< > <= >= != + - * /
     au::token::Token *token = token_vector->getNextToken();
-    if (!token)
+    if (!token) {
       return source;               // No more tokens
-
+    }
     if (token->isComparator()) {
       // Skip the comparator
       std::string comparator = token->content;

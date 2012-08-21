@@ -32,24 +32,24 @@ log/log_server_common.h
 log/LogCentral.h
 log/LogPlugin.h
 log/Log.h
-log/LogClient.h
 log/LogServer.h
 log/LogServerChannel.h
 log/LogToServer.h
 log/LogFile.h
 log/LogFormatter.h
 log/TableLogFormatter.h
+log/LogContainer.h
 
 log/LogCentral.cpp
 log/LogPlugin.cpp
 log/Log.cpp
-log/LogClient.cpp
 log/LogServer.cpp
 log/LogServerChannel.cpp
 log/LogToServer.cpp
 log/LogFile.cpp
 log/LogFormatter.cpp
 log/TableLogFormatter.cpp
+log/LogContainer.cpp
 )
 
 # ---------------------------------------------------

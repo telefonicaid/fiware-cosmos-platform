@@ -83,27 +83,27 @@ public:
   }
 
   T *get_front() {
-    if (elements.size() == 0) {
+    if (elements.size() == 0)
       return NULL;
-    }
+
 
 
     return *elements.front();
   }
 
   T *get_back() {
-    if (elements.size() == 0) {
+    if (elements.size() == 0)
       return NULL;
-    }
+
 
 
     return *elements.back();
   }
 
   T *extract_front() {
-    if (elements.size() == 0) {
+    if (elements.size() == 0)
       return NULL;
-    }
+
 
 
     T *t =  elements.front();
@@ -112,9 +112,9 @@ public:
   }
 
   T *extract_back() {
-    if (elements.size() == 0) {
+    if (elements.size() == 0)
       return NULL;
-    }
+
 
 
     T *t =  elements.back();
@@ -125,17 +125,15 @@ public:
   void remove_front() {
     T *t = extract_front();
 
-    if (t) {
+    if (t)
       push_to_reuse(t);
-    }
   }
 
   void remove_back() {
     T *t = extract_back();
 
-    if (t) {
+    if (t)
       push_to_reuse(t);
-    }
   }
 
   size_t count() {
@@ -316,8 +314,9 @@ public:
     typename std::list<T *>::iterator it_elements;
     for (it_elements = elements.begin(); it_elements != elements.end(); it_elements++) {
       int depth = (*it_elements)->max_depth();
-      if (depth > m_depth)
+      if (depth > m_depth) {
         m_depth = depth;
+      }
     }
     return m_depth + 1;
   }
@@ -331,9 +330,9 @@ public:
   }
 
   int hash(int max_num) {
-    if (elements.size() == 0) {
+    if (elements.size() == 0)
       return 0;
-    }
+
 
 
 
@@ -361,9 +360,9 @@ public:
 
   // Get a new element ( or a reused one if possible )
   T *get_new_element() {
-    if (reuse_elements.size() == 0) {
+    if (reuse_elements.size() == 0)
       return new T();
-    }
+
 
 
 

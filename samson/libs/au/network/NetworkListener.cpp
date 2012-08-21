@@ -42,10 +42,10 @@ NetworkListener::~NetworkListener() {
 }
 
 void NetworkListener::StopNetworkListener() {
-  if (!background_thread_running_) {
+  if (!background_thread_running_)
     return;   // Nothing to do
-  }
-  // Close the open file descriptor
+
+   // Close the open file descriptor
   int rc = ::close(rFd_);
   if (rc)
     LM_W(("Error closing fd %d in network listener over port %d ( rc %d )", rFd_, port_, rc )); rFd_ = -1;
@@ -128,9 +128,9 @@ void *NetworkListener_run(void *p) {
 }
 
 void NetworkListener::runNetworkListener() {
-  if (rFd_ == -1) {
+  if (rFd_ == -1)
     return;   // It was closed before running
-  }
+
   fd_set rFds;
   int max;
   struct timeval tv;
@@ -158,14 +158,13 @@ void NetworkListener::runNetworkListener() {
     fds = select(max + 1,  &rFds, NULL, NULL, &tv);
 
     if ((fds == -1) && (errno == EINTR))
-      continue; if (fds == -1) {
+      continue; if (fds == -1)
       return;   // Finish thread since this is an error
-    }
+
     if (fds == 0)
       // timeout();
-      continue; if (!FD_ISSET(rFd, &rFds)) {
+      continue; if (!FD_ISSET(rFd, &rFds))
       LM_X(1, ("Error in main loop to accept connections"));  // Accept a new connection
-    }
     SocketConnection *socket_connection = acceptNewNetworkConnection();
 
     // Notify this new connection

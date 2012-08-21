@@ -5,7 +5,6 @@
 #include "au/S.h"
 
 #include "engine/MemoryManager.h"      // samson::MemoryManager
-#include "engine/MemoryRequest.h"
 #include "engine/Notification.h"       // engine::Notification
 
 #include "engine/Buffer.h"             // engine::Buffer

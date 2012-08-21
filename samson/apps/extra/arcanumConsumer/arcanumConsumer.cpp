@@ -48,11 +48,11 @@ int bufSize;
  */
 PaArgument paArgs[] =
 {
-  { "-host", host,     "HOST",     PaStr,        PaOpt,        _i HOST,         PaNL,          PaNL,
+  { "-host", host,     "HOST",     PaStr,        PaOpt,        _i HOST,        PaNL,          PaNL,
     "host name of server"                            },
-  { "-port", &port,    "PORT",     PaShortU,     PaOpt,        1099,            1,             65000,
+  { "-port", &port,    "PORT",     PaShortU,     PaOpt,        1099,           1,             65000,
     "port for server where to connect"               },
-  { "-size", &bufSize, "BUF_SIZE", PaInt,        PaOpt,        1024,            10,            16 * 1024,
+  { "-size", &bufSize, "BUF_SIZE", PaInt,        PaOpt,        1024,           10,            16 * 1024,
     "size of read buffer"                            },
 
   PA_END_OF_ARGS

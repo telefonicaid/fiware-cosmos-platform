@@ -154,9 +154,8 @@ int main(int argC, const char *argV[]) {
 
   // Capturing SIGPIPE
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR)
-    LM_W(("SIGPIPE cannot be handled")); if (buffer_size == 0) {
+    LM_W(("SIGPIPE cannot be handled")); if (buffer_size == 0)
     LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Run in background if required
-  }
   if (run_as_daemon) {
     daemonize();
     deamonize_close_all();
@@ -174,9 +173,8 @@ int main(int argC, const char *argV[]) {
   samson::ModulesManager::init("samsonConnector");               // Init the modules manager
 
   // Ignore verbose mode if interactive is activated
-  if (interactive) {
+  if (interactive)
     lmVerbose = false;  // Init samsonConnector
-  }
   main_stream_connector = new stream_connector::StreamConnector();
 
   if (strcmp(file_name, "") != 0) {
@@ -193,7 +191,7 @@ int main(int argC, const char *argV[]) {
     char line[1024];
 
     std::string message = au::str("Setup file %s. Opening...", file_name);
-    main_stream_connector->log(new stream_connector::Log("SamsonConnector", "Message", message));
+    main_stream_connector->log("SamsonConnector", "Message", message);
 
     while (fgets(line, sizeof(line), f)) {
       // Remove the last return of a string
@@ -206,7 +204,7 @@ int main(int argC, const char *argV[]) {
 
       if (( line[0] != '#' ) && ( strlen(line) > 0)) {
         message = au::str("%s ( File %s )", line, file_name);
-        main_stream_connector->log(new stream_connector::Log("SamsonConnector", "Message", message));
+        main_stream_connector->log("SamsonConnector", "Message", message);
 
         au::ErrorManager error;
         main_stream_connector->process_command(line, &error);
@@ -219,7 +217,7 @@ int main(int argC, const char *argV[]) {
 
     // Print the error on screen
     message = au::str("Setup file %s. Finished", file_name);
-    main_stream_connector->log(new stream_connector::Log("SamsonConnector", "Message", message));
+    main_stream_connector->log("SamsonConnector", "Message", message);
 
 
     fclose(f);
@@ -229,7 +227,7 @@ int main(int argC, const char *argV[]) {
       au::ErrorManager error;
       main_stream_connector->process_command(au::str("add_channel default %s", input_splitter_name), &error);
       if (error.IsActivated())
-        main_stream_connector->log(new stream_connector::Log("Init", "Error", error.GetMessage().c_str()));
+        main_stream_connector->log("Init", "Error", error.GetMessage().c_str());
     }
 
     size_t adapter_id = 1;
@@ -243,7 +241,7 @@ int main(int argC, const char *argV[]) {
       au::ErrorManager error;
       main_stream_connector->process_command(command, &error);
       if (error.IsActivated())
-        main_stream_connector->log(new stream_connector::Log("Init", "Error", error.GetMessage().c_str()));
+        main_stream_connector->log("Init", "Error", error.GetMessage().c_str());
     }
 
     // Add inputs
@@ -255,7 +253,7 @@ int main(int argC, const char *argV[]) {
       au::ErrorManager error;
       main_stream_connector->process_command(command, &error);
       if (error.IsActivated())
-        main_stream_connector->log(new stream_connector::Log("Init", "Error", error.GetMessage().c_str()));
+        main_stream_connector->log("Init", "Error", error.GetMessage().c_str());
     }
   }
 

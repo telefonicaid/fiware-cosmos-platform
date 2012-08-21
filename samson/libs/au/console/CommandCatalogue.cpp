@@ -78,9 +78,8 @@ namespace au { namespace console {
                  std::ostringstream output;
 
                  // Add help
-                 if (help_ != "") {
+                 if (help_ != "")
                    output << help_ << "\n";  // Spetial case in group options
-                 }
                  if (options_group_values.size() > 0) {
                    std::ostringstream str_options;
                    for (size_t i = 0; i < options_group_values.size(); i++) {
@@ -174,10 +173,11 @@ namespace au { namespace console {
                   */
 
                  // If options are available
-                 if (options_group_values.size() > 0)
+                 if (options_group_values.size() > 0) {
                    for (size_t i = 0; i < options_group_values.size(); i++) {
                      info->add(options_group_values[i]);
                    }  // Auto complete for files
+                 }
                  if (options_group_ == "#file")
                    info->auto_complete_files("");
                }
@@ -314,21 +314,22 @@ namespace au { namespace console {
                  for (size_t i = 1; i < previous_words.size(); i++) {
                    if (( previous_words[i].length() > 0 ) && ( previous_words[i][0] == '-' )) {
                      CommandItem *item = get_option(previous_words[i]);
-                     if (!item)
+                     if (!item) {
                        return;  // Not possible to autocomplete since this error is wrong.
-
-                     if (item->type() == options::option_bool)
+                     }
+                     if (item->type() == options::option_bool) {
                        continue;
-                     else
+                     } else {
                        i++;  // skip the value
+                     }
                    } else {
                      argument_pos++;
                    }
                  }
 
-                 if (arguments_.size() <= (size_t)argument_pos)
+                 if (arguments_.size() <= (size_t)argument_pos) {
                    return;  // Not possible to autocomplete
-
+                 }
                  arguments_[argument_pos]->autoComplete(info);
 
                  // Set help based on usage
@@ -707,7 +708,7 @@ namespace au { namespace console {
 
                  for (size_t i = 1; i < components.size(); i++) {
                    // Check if we are at the begining of a -option element
-                   if (components[i].length() > 0)
+                   if (components[i].length() > 0) {
                      if (components[i][0] == '-') {
                        std::string option_name = components[i];
 
@@ -751,6 +752,7 @@ namespace au { namespace console {
                          }
                        }
                      }  // A new argument is obtained
+                   }
                    if (command->arguments().size() <= (size_t)pos_argument) {
                      error->set(au::str("Extra non-defined argument (%s) provided for Command %s"
                                         , components[i].c_str()

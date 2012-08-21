@@ -410,10 +410,10 @@ size_t Channel::getOutputConnectionsBufferedSize() {
 }
 
 void Channel::log(std::string type, std::string message) {
-  log(new Log(getName(), type, message));
+  log( au::SharedPointer<Log> (new Log(getName(), type, message)));
 }
 
-void Channel::log(Log *log) {
+void Channel::log(au::SharedPointer<Log> log ) {
   connector_->log(log);
 }
 

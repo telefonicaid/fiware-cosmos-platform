@@ -17,9 +17,8 @@ InputInterChannelConnection::InputInterChannelConnection(StreamConnector *stream
                                                          std::string host_name
                                                          , au::SocketConnection *socket_connection)
   : Connection(NULL, connection_output, getName(host_name, "???")) {       // No item until we identify target channel
-  if (!socket_connection) {
+  if (!socket_connection)
     LM_X(1, ("Internal error"));  // Keep a pointer to SamsonConnector
-  }
   stream_connector_ = stream_connector;
 
   // Keep a pointer to the socket connection
@@ -199,9 +198,8 @@ void OutputInterChannelConnection::stop_connection() {
 }
 
 void OutputInterChannelConnection::review_connection() {
-  if (!link_) {
+  if (!link_)
     set_as_connected(false);  // If link_ is not valid any more, just remove it...
-  }
   if (link_ && !link_->isConnected()) {
     // Close connection
     link_->close_and_stop();
@@ -217,9 +215,9 @@ void OutputInterChannelConnection::review_connection() {
   }
 
   if (!link_) {
-    if (connection_cronometer.seconds() < 3) {
+    if (connection_cronometer.seconds() < 3)
       return;           // No retray at the moment
-    }
+
     try_connect();
 
     connection_cronometer.Reset();
@@ -238,9 +236,8 @@ void OutputInterChannelConnection::review_connection() {
     // Encapsulate generated buffers in packets
     while (true) {
       // Check generated packed included size in link_ is not too large ( always in memory )
-      if (link_->bufferedSize() > 256 * 1024 * 1024) {
+      if (link_->bufferedSize() > 256 * 1024 * 1024)
         break;  // Recover next generated buffer
-      }
       engine::BufferPointer buffer = getNextBufferToSent();
 
       if (buffer != NULL) {
@@ -258,9 +255,9 @@ void OutputInterChannelConnection::review_connection() {
 // Type to establish this connection with remote server
 
 void OutputInterChannelConnection::try_connect() {
-  if (link_) {
+  if (link_)
     return;         // Already connected
-  }
+
   au::SocketConnection *socket_connection;
   au::Status s = au::SocketConnection::Create(host_
                                               , SAMSON_CONNECTOR_INTERCHANNEL_PORT

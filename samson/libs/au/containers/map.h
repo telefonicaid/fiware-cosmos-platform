@@ -52,9 +52,8 @@ public:
   void insertInMap(const K& key, V *value) {
     V *tmp =  extractFromMap(key);
 
-    if (tmp) {
+    if (tmp)
       delete tmp;
-    }
 
     std::map<K, V *, _Compare >::insert(std::pair<K, V *>(key, value));
   }
@@ -73,9 +72,9 @@ public:
   V *findInMap(const K& key) {
     typename std::map<K, V *, _Compare >::iterator iter = std::map<K, V *, _Compare >::find(key);
 
-    if (iter == std::map<K, V *, _Compare>::end()) {
+    if (iter == std::map<K, V *, _Compare>::end())
       return NULL;
-    }
+
 
 
     return iter->second;
@@ -139,9 +138,8 @@ public:
     std::set<K> keys_to_remove;
 
     for (iter = std::map<K, V *, _Compare >::begin(); iter != std::map<K, V *, _Compare >::end(); iter++) {
-      if (iter->second->isFinished()) {
+      if (iter->second->isFinished())
         keys_to_remove.insert(iter->first);
-      }
     }
 
     typename std::set<K>::iterator k;

@@ -212,13 +212,12 @@ std::string DataBase::runCommand(std::string command) {
       return au::str("Unknown table %s", table_name.c_str());
 
     SelectTableInformation select;
-    if (cmdLine.get_num_arguments() < 3) {
+    if (cmdLine.get_num_arguments() < 3)
       select.addColumns(table->getColumnNames());
-    } else {
+    else
       for (int i = 2; i < cmdLine.get_num_arguments(); i++) {
         select.columns.push_back(cmdLine.get_argument(i));
       }  // Set the limit of rows to display...
-    }
     select.limit = limit;
 
     if (title != "")
@@ -422,18 +421,18 @@ StringVector DataBase::getValuesFromColumn(std::string table_name, std::string c
                                            TableSelectCondition *condition) {
   Table *table = tables.findInMap(table_name);
 
-  if (!table)
+  if (!table) {
     return StringVector();     // empty list since table does not exist
-
+  }
   return table->getValuesFromColumn(column_name, condition);
 }
 
 StringVector DataBase::getValuesFromColumn(std::string table_name, std::string column_name) {
   Table *table = tables.findInMap(table_name);
 
-  if (!table)
+  if (!table) {
     return StringVector();     // empty list since table does not exist
-
+  }
   return table->getValuesFromColumn(column_name);
 }
 

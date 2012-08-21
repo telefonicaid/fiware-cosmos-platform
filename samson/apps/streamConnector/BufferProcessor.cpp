@@ -75,9 +75,9 @@ void BufferProcessor::flushOutputBuffer() {
 
 void BufferProcessor::process_intenal_buffer(bool finish) {
   // If no splitter, no process
-  if (!splitter) {
+  if (!splitter)
     return;   // If no splitter, we never create an outputBuffer
-  }
+
   if (size == 0)
     return;
 

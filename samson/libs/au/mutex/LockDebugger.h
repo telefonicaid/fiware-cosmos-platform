@@ -27,7 +27,6 @@
 #include <string>                /* std::string                              */
 
 
-
 namespace au {
 class Lock;
 

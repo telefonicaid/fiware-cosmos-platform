@@ -78,12 +78,11 @@ void Adaptor::push(engine::BufferPointer buffer) {
 }
 
 void Adaptor::review() {
-  if (canceled) {
+  if (canceled)
     return;         // Not call review
-  }
-  if (!finished) {
+
+  if (!finished)
     review_item();  // Review all connections
-  }
   {
     au::TokenTaker tt(&token);
     au::map<int, Connection>::iterator it_connections;
@@ -179,10 +178,10 @@ void Adaptor::remove_finished_connections(au::ErrorManager *error) {
 
 // Log system
 void Adaptor::log(std::string type, std::string message) {
-  log(new Log(getFullName(), type, message));
+  log( au::SharedPointer<Log> ( new Log(getFullName(), type, message)));
 }
 
-void Adaptor::log(Log *log) {
+  void Adaptor::log(au::SharedPointer<Log> log) {
   LogManager *log_manager = au::Singleton<LogManager>::shared();
 
   log_manager->log(log);

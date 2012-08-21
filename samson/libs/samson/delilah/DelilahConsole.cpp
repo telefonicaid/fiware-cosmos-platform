@@ -971,9 +971,9 @@ int DelilahConsole::_receive(const PacketPointer& packet) {
 }
 
 void DelilahConsole::delilahComponentStartNotification(DelilahComponent *component) {
-  if (component->hidden)
+  if (component->hidden) {
     return;   // No notification for hidden processes
-
+  }
   if (verbose) {
     std::ostringstream o;
 
@@ -986,9 +986,9 @@ void DelilahConsole::delilahComponentStartNotification(DelilahComponent *compone
 }
 
 void DelilahConsole::delilahComponentFinishNotification(DelilahComponent *component) {
-  if (component->hidden)
+  if (component->hidden) {
     return;   // No notification for hidden processes
-
+  }
   if (verbose) {
     if (!component->error.IsActivated())
       showWarningMessage(au::str("Process finished: %s_%lu %s\n"
@@ -1051,9 +1051,9 @@ void DelilahConsole::runAsyncCommandAndWait(std::string command) {
   LM_M(("runAsyncCommandAndWait command:%s", command.c_str()));
   size_t tmp_id = runAsyncCommand(command);
 
-  if (tmp_id == 0)
+  if (tmp_id == 0) {
     return;   // Sync command
-
+  }
   while (true) {
     if (!isActive(tmp_id))
       return; usleep(10000);

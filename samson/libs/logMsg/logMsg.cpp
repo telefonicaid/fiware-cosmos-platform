@@ -517,23 +517,23 @@ const unsigned short int __mon_yday[2][13] =
 #define SPY(y, l, s) (SPD * (365 * y + l) + s)
 
 time_t year_seconds[MAX_YEAR_SECONDS] = {
-/*1970*/ SPY(0,  0,  0),  SPY(1,   0,   0),   SPY(2,    0,    0),    SPY(3,    1,    0),
-/*1974*/ SPY(4,  1,  0),  SPY(5,   1,   0),   SPY(6,    1,    0),    SPY(7,    2,    0),
-/*1978*/ SPY(8,  2,  0),  SPY(9,   2,   0),   SPY(10,   2,    0),    SPY(11,   3,    0),
-/*1982*/ SPY(12, 3,  0),  SPY(13,  3,   0),   SPY(14,   3,    0),    SPY(15,   4,    0),
-/*1986*/ SPY(16, 4,  0),  SPY(17,  4,   0),   SPY(18,   4,    0),    SPY(19,   5,    0),
-/*1990*/ SPY(20, 5,  0),  SPY(21,  5,   0),   SPY(22,   5,    0),    SPY(23,   6,    0),
-/*1994*/ SPY(24, 6,  0),  SPY(25,  6,   0),   SPY(26,   6,    0),    SPY(27,   7,    0),
-/*1998*/ SPY(28, 7,  0),  SPY(29,  7,   0),   SPY(30,   7,    0),    SPY(31,   8,    0),
-/*2002*/ SPY(32, 8,  0),  SPY(33,  8,   0),   SPY(34,   8,    0),    SPY(35,   9,    0),
-/*2006*/ SPY(36, 9,  0),  SPY(37,  9,   0),   SPY(38,   9,    0),    SPY(39,   10,   0),
-/*2010*/ SPY(40, 10, 0),  SPY(41,  10,  0),   SPY(42,   10,   0),    SPY(43,   11,   0),
-/*2014*/ SPY(44, 11, 0),  SPY(45,  11,  0),   SPY(46,   11,   0),    SPY(47,   12,   0),
-/*2018*/ SPY(48, 12, 0),  SPY(49,  12,  0),   SPY(50,   12,   0),    SPY(51,   13,   0),
-/*2022*/ SPY(52, 13, 0),  SPY(53,  13,  0),   SPY(54,   13,   0),    SPY(55,   14,   0),
-/*2026*/ SPY(56, 14, 0),  SPY(57,  14,  0),   SPY(58,   14,   0),    SPY(59,   15,   0),
-/*2030*/ SPY(60, 15, 0),  SPY(61,  15,  0),   SPY(62,   15,   0),    SPY(63,   16,   0),
-/*2034*/ SPY(64, 16, 0),  SPY(65,  16,  0),   SPY(66,   16,   0),    SPY(67,   17,   0),
+/*1970*/ SPY(0,  0,  0),  SPY(1,   0,   0),   SPY(2,    0,    0),    SPY(3,     1,    0),
+/*1974*/ SPY(4,  1,  0),  SPY(5,   1,   0),   SPY(6,    1,    0),    SPY(7,     2,    0),
+/*1978*/ SPY(8,  2,  0),  SPY(9,   2,   0),   SPY(10,   2,    0),    SPY(11,    3,    0),
+/*1982*/ SPY(12, 3,  0),  SPY(13,  3,   0),   SPY(14,   3,    0),    SPY(15,    4,    0),
+/*1986*/ SPY(16, 4,  0),  SPY(17,  4,   0),   SPY(18,   4,    0),    SPY(19,    5,    0),
+/*1990*/ SPY(20, 5,  0),  SPY(21,  5,   0),   SPY(22,   5,    0),    SPY(23,    6,    0),
+/*1994*/ SPY(24, 6,  0),  SPY(25,  6,   0),   SPY(26,   6,    0),    SPY(27,    7,    0),
+/*1998*/ SPY(28, 7,  0),  SPY(29,  7,   0),   SPY(30,   7,    0),    SPY(31,    8,    0),
+/*2002*/ SPY(32, 8,  0),  SPY(33,  8,   0),   SPY(34,   8,    0),    SPY(35,    9,    0),
+/*2006*/ SPY(36, 9,  0),  SPY(37,  9,   0),   SPY(38,   9,    0),    SPY(39,    10,   0),
+/*2010*/ SPY(40, 10, 0),  SPY(41,  10,  0),   SPY(42,   10,   0),    SPY(43,    11,   0),
+/*2014*/ SPY(44, 11, 0),  SPY(45,  11,  0),   SPY(46,   11,   0),    SPY(47,    12,   0),
+/*2018*/ SPY(48, 12, 0),  SPY(49,  12,  0),   SPY(50,   12,   0),    SPY(51,    13,   0),
+/*2022*/ SPY(52, 13, 0),  SPY(53,  13,  0),   SPY(54,   13,   0),    SPY(55,    14,   0),
+/*2026*/ SPY(56, 14, 0),  SPY(57,  14,  0),   SPY(58,   14,   0),    SPY(59,    15,   0),
+/*2030*/ SPY(60, 15, 0),  SPY(61,  15,  0),   SPY(62,   15,   0),    SPY(63,    16,   0),
+/*2034*/ SPY(64, 16, 0),  SPY(65,  16,  0),   SPY(66,   16,   0),    SPY(67,    17,   0),
 /*2038*/ SPY(68, 17, 0)
 };
 
@@ -564,8 +564,9 @@ struct tm *gmtime_r_samson(time_t *t, tm *tp) {
   tp->tm_sec = rem % 60;
   /* January 1, 1970 was a Thursday.  */
   tp->tm_wday = (4 + days) % 7;
-  if (tp->tm_wday < 0)
+  if (tp->tm_wday < 0) {
     tp->tm_wday += 7;
+  }
   y = 1970;
 
 #define DIV(a, b)            ((a) / (b) - ((a) % (b) < 0))
@@ -582,11 +583,11 @@ struct tm *gmtime_r_samson(time_t *t, tm *tp) {
     y = yg;
   }
   tp->tm_year = y - 1900;
-  if (tp->tm_year != y - 1900) {
+  if (tp->tm_year != y - 1900)
     /* The year cannot be represented due to overflow.  */
     // __set_errno (EOVERFLOW);
     return NULL;
-  }
+
 
 
 
@@ -793,19 +794,22 @@ static char *lmLineFix
       CHAR_ADD(format[fi], 1);
   }
 
-  if ((type == 'T') && (fdP->traceShow == true))
+  if ((type == 'T') && (fdP->traceShow == true)) {
     snprintf(xin, sizeof(xin), "%s%d%s\n",
              fdP->tMarkStart, tLev, fdP->tMarkEnd);
+  }
 
 #if 0
-  else if (type == 'P')  /* type 'P' => tLev == errno */
+  else if (type == 'P') {  /* type 'P' => tLev == errno */
     snprintf(xin, sizeof(xin), ": %s\n", strerror(tLev));
+  }
 
 #endif
-  else if (type == 'x')  /* type 'x' => */
+  else if (type == 'x') {  /* type 'x' => */
     snprintf(xin, sizeof(xin), ": %s\n", strerror(errno));
-  else
+  } else {
     strncpy(xin, "\n", sizeof(xin));
+  }
 
   strncat(line, xin, lineLen - 1);
 
@@ -1635,8 +1639,9 @@ LmStatus lmOut(char *text, char type, const char *file, int lineNo, const char *
       errorFunction(errorInput, text, (char *)stre);
   } else if ((type == 'X') || (type == 'x')) {
     if (exitFunction != NULL)
-      exitFunction(tLev, exitInput, text, (char *)stre); if (lmAssertAtExit == true)
+      exitFunction(tLev, exitInput, text, (char *)stre); if (lmAssertAtExit == true) {
       assert(false);  /* exit here, just in case */
+    }
     exit(tLev);
   }
 
@@ -1988,9 +1993,10 @@ long lmLogLineGet(char *typeP, char *dateP, int *msP, char *progNameP, char *fil
   }
 
   if (line[strlen(line) - 1] == '\n')
-    line[strlen(line) - 1] = 0; if (allP != NULL)
+    line[strlen(line) - 1] = 0; if (allP != NULL) {
     *allP = strdup(line);  // printf("Got line '%s'\n", line);
-   // M:Thursday 08 Mar 13:40:45 2012(373):samsonWorker-father/WorkerCommand.cpp[784](p.3409)(t.3410) run: Adding RECORD of type M
+  }
+  // M:Thursday 08 Mar 13:40:45 2012(373):samsonWorker-father/WorkerCommand.cpp[784](p.3409)(t.3410) run: Adding RECORD of type M
 
   *typeP = *lineP;
 

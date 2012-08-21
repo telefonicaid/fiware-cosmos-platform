@@ -167,8 +167,9 @@ struct buffer_holder {
   }
 
   ~buffer_holder() {
-    if (data)
+    if (data) {
       deleter(data);
+    }
   }
 
   void *release() {
@@ -194,9 +195,9 @@ struct xml_allocator;
 
 struct xml_memory_page {
   static xml_memory_page *construct(void *memory) {
-    if (!memory)
+    if (!memory) {
       return 0;                                // $ redundant, left for performance
-
+    }
     xml_memory_page *result = static_cast<xml_memory_page *>(memory);
 
     result->allocator = 0;
@@ -563,11 +564,11 @@ struct utf8_counter {
 
   static value_type low(value_type result, uint32_t ch) {
     // U+0000..U+007F
-    if (ch < 0x80) {
+    if (ch < 0x80)
       return result + 1;                     // U+0080..U+07FF
-    } else if (ch < 0x800) {
+    else if (ch < 0x800)
       return result + 2;                     // U+0800..U+FFFF
-    } else { return result + 3; }
+    else return result + 3;
   }
 
   static value_type high(value_type result, uint32_t) {
@@ -844,44 +845,44 @@ enum chartype_t {
   ct_space = 8,   // \r, \n, space, tab
   ct_parse_cdata = 16,   // \0, ], >, \r
   ct_parse_comment = 32,  // \0, -, >, \r
-  ct_symbol = 64, // Any symbol > 127, a-z, A-Z, 0-9, _, :, -, .
+  ct_symbol = 64,  // Any symbol > 127, a-z, A-Z, 0-9, _, :, -, .
   ct_start_symbol = 128  // Any symbol > 127, a-z, A-Z, _, :
 };
 
 const unsigned char chartype_table[256] =
 {
-  55,  0,     0,     0,      0,      0,      0,     0,     0,     12,     12,      0,       0,       63,       0,
-  0,              // 0-15
-  0,   0,     0,     0,      0,      0,      0,     0,     0,     0,      0,       0,       0,       0,        0,
-  0,              // 16-31
-  8,   0,     6,     0,      0,      0,      7,     6,     0,     0,      0,       0,       0,       96,       64,
-  0,              // 32-47
-  64,  64,    64,    64,     64,     64,     64,    64,    64,    64,     192,     0,       1,       0,        48,
-  0,              // 48-63
-  0,   192,   192,   192,    192,    192,    192,   192,   192,   192,    192,     192,     192,     192,      192,
-  192,            // 64-79
-  192, 192,   192,   192,    192,    192,    192,   192,   192,   192,    192,     0,       0,       16,       0,
-  192,            // 80-95
-  0,   192,   192,   192,    192,    192,    192,   192,   192,   192,    192,     192,     192,     192,      192,
-  192,            // 96-111
-  192, 192,   192,   192,    192,    192,    192,   192,   192,   192,    192,     0,       0,       0,        0,
-  0,              // 112-127
+  55,  0,     0,     0,     0,     0,      0,      0,      0,     12,     12,      0,       0,       63,       0,
+  0,   // 0-15
+  0,   0,     0,     0,     0,     0,      0,      0,      0,     0,      0,       0,       0,       0,        0,
+  0,   // 16-31
+  8,   0,     6,     0,     0,     0,      7,      6,      0,     0,      0,       0,       0,       96,       64,
+  0,   // 32-47
+  64,  64,    64,    64,    64,    64,     64,     64,     64,    64,     192,     0,       1,       0,        48,
+  0,   // 48-63
+  0,   192,   192,   192,   192,   192,    192,    192,    192,   192,    192,     192,     192,     192,      192,
+  192, // 64-79
+  192, 192,   192,   192,   192,   192,    192,    192,    192,   192,    192,     0,       0,       16,       0,
+  192, // 80-95
+  0,   192,   192,   192,   192,   192,    192,    192,    192,   192,    192,     192,     192,     192,      192,
+  192, // 96-111
+  192, 192,   192,   192,   192,   192,    192,    192,    192,   192,    192,     0,       0,       0,        0,
+  0,   // 112-127
 
-  192, 192,   192,   192,    192,    192,    192,   192,   192,   192,    192,     192,     192,     192,      192,
-  192,            // 128+
-  192, 192,   192,   192,    192,    192,    192,   192,   192,   192,    192,     192,     192,     192,      192,
+  192, 192,   192,   192,   192,   192,    192,    192,    192,   192,    192,     192,     192,     192,      192,
+  192, // 128+
+  192, 192,   192,   192,   192,   192,    192,    192,    192,   192,    192,     192,     192,     192,      192,
   192,
-  192, 192,   192,   192,    192,    192,    192,   192,   192,   192,    192,     192,     192,     192,      192,
+  192, 192,   192,   192,   192,   192,    192,    192,    192,   192,    192,     192,     192,     192,      192,
   192,
-  192, 192,   192,   192,    192,    192,    192,   192,   192,   192,    192,     192,     192,     192,      192,
+  192, 192,   192,   192,   192,   192,    192,    192,    192,   192,    192,     192,     192,     192,      192,
   192,
-  192, 192,   192,   192,    192,    192,    192,   192,   192,   192,    192,     192,     192,     192,      192,
+  192, 192,   192,   192,   192,   192,    192,    192,    192,   192,    192,     192,     192,     192,      192,
   192,
-  192, 192,   192,   192,    192,    192,    192,   192,   192,   192,    192,     192,     192,     192,      192,
+  192, 192,   192,   192,   192,   192,    192,    192,    192,   192,    192,     192,     192,     192,      192,
   192,
-  192, 192,   192,   192,    192,    192,    192,   192,   192,   192,    192,     192,     192,     192,      192,
+  192, 192,   192,   192,   192,   192,    192,    192,    192,   192,    192,     192,     192,     192,      192,
   192,
-  192, 192,   192,   192,    192,    192,    192,   192,   192,   192,    192,     192,     192,     192,      192,
+  192, 192,   192,   192,   192,   192,    192,    192,    192,   192,    192,     192,     192,     192,      192,
   192
 };
 
@@ -1042,8 +1043,9 @@ bool convert_buffer_endian_swap(char_t *& out_buffer, size_t& out_length, const 
     out_buffer = const_cast<char_t *>(data);
   } else {
     out_buffer = static_cast<char_t *>(global_allocate(size > 0 ? size : 1));
-    if (!out_buffer)
+    if (!out_buffer) {
       return false;
+    }
   }
 
   out_length = size / sizeof(char_t);
@@ -1061,8 +1063,9 @@ bool convert_buffer_utf8(char_t *& out_buffer, size_t& out_length, const void *c
 
   // allocate buffer of suitable length
   out_buffer = static_cast<char_t *>(global_allocate((out_length > 0 ? out_length : 1) * sizeof(char_t)));
-  if (!out_buffer)
+  if (!out_buffer) {
     return false;
+  }
 
 
 
@@ -1088,8 +1091,9 @@ template <typename opt_swap> bool convert_buffer_utf16(char_t *& out_buffer, siz
 
   // allocate buffer of suitable length
   out_buffer = static_cast<char_t *>(global_allocate((out_length > 0 ? out_length : 1) * sizeof(char_t)));
-  if (!out_buffer)
+  if (!out_buffer) {
     return false;
+  }
 
 
 
@@ -1115,8 +1119,9 @@ template <typename opt_swap> bool convert_buffer_utf32(char_t *& out_buffer, siz
 
   // allocate buffer of suitable length
   out_buffer = static_cast<char_t *>(global_allocate((out_length > 0 ? out_length : 1) * sizeof(char_t)));
-  if (!out_buffer)
+  if (!out_buffer) {
     return false;
+  }
 
 
 
@@ -1137,22 +1142,25 @@ bool convert_buffer(char_t *& out_buffer, size_t& out_length, xml_encoding encod
   xml_encoding wchar_encoding = get_wchar_encoding();
 
   // fast path: no conversion required
-  if (encoding == wchar_encoding)
+  if (encoding == wchar_encoding) {
     return get_mutable_buffer(out_buffer, out_length, contents, size, is_mutable);
+  }
 
 
 
 
   // only endian-swapping is required
-  if (need_endian_swap_utf(encoding, wchar_encoding))
+  if (need_endian_swap_utf(encoding, wchar_encoding)) {
     return convert_buffer_endian_swap(out_buffer, out_length, contents, size, is_mutable);
+  }
 
 
 
 
   // source encoding is utf8
-  if (encoding == encoding_utf8)
+  if (encoding == encoding_utf8) {
     return convert_buffer_utf8(out_buffer, out_length, contents, size);
+  }
 
 
 
@@ -1191,8 +1199,9 @@ template <typename opt_swap> bool convert_buffer_utf16(char_t *& out_buffer, siz
 
   // allocate buffer of suitable length
   out_buffer = static_cast<char_t *>(global_allocate((out_length > 0 ? out_length : 1) * sizeof(char_t)));
-  if (!out_buffer)
+  if (!out_buffer) {
     return false;
+  }
 
 
 
@@ -1218,8 +1227,9 @@ template <typename opt_swap> bool convert_buffer_utf32(char_t *& out_buffer, siz
 
   // allocate buffer of suitable length
   out_buffer = static_cast<char_t *>(global_allocate((out_length > 0 ? out_length : 1) * sizeof(char_t)));
-  if (!out_buffer)
+  if (!out_buffer) {
     return false;
+  }
 
 
 
@@ -1237,8 +1247,9 @@ template <typename opt_swap> bool convert_buffer_utf32(char_t *& out_buffer, siz
 bool convert_buffer(char_t *& out_buffer, size_t& out_length, xml_encoding encoding, const void *contents, size_t size,
                     bool is_mutable) {
   // fast path: no conversion required
-  if (encoding == encoding_utf8)
+  if (encoding == encoding_utf8) {
     return get_mutable_buffer(out_buffer, out_length, contents, size, is_mutable);
+  }
 
 
 
@@ -1303,8 +1314,9 @@ std::string as_utf8_impl(const wchar_t *str, size_t length) {
   result.resize(size);
 
   // second pass: convert to utf8
-  if (size > 0)
+  if (size > 0) {
     as_utf8_end(&result[0], size, str, length);
+  }
 
   return result;
 }
@@ -1354,8 +1366,9 @@ bool strcpy_insitu(char_t *& dest, uintptr_t& header, uintptr_t header_mask, con
     // empty string and null pointer are equivalent, so just deallocate old memory
     xml_allocator *alloc = reinterpret_cast<xml_memory_page *>(header & xml_memory_page_pointer_mask)->allocator;
 
-    if (header & header_mask)
+    if (header & header_mask) {
       alloc->deallocate_string(dest);                          // mark the string as not allocated
+    }
     dest = 0;
     header &= ~header_mask;
 
@@ -1376,8 +1389,9 @@ bool strcpy_insitu(char_t *& dest, uintptr_t& header, uintptr_t header_mask, con
     memcpy(buf, source, (source_length + 1) * sizeof(char_t));
 
     // deallocate old buffer (*after* the above to protect against overlapping memory and/or allocation failures)
-    if (header & header_mask)
+    if (header & header_mask) {
       alloc->deallocate_string(dest);                          // the string is now allocated, so set the flag
+    }
     dest = buf;
     header |= header_mask;
 
@@ -1910,8 +1924,9 @@ struct xml_parser {
           SCANFOR(s[0] == '-' && s[1] == '-' && ENDSWITH(s[2], '>'));
           CHECK_ERROR(status_bad_comment, s);
 
-          if (OPTSET(parse_comments))
+          if (OPTSET(parse_comments)) {
             *s = 0;                                             // Zero-terminate this segment at the first terminating '-'.
+          }
           s += (s[2] == '>' ? 3 : 2);                           // Step over the '\0->'.
         }
       } else { THROW_ERROR(status_bad_comment, s); }
@@ -2108,9 +2123,10 @@ struct xml_parser {
 
                     s = strconv_attribute(s, ch);
 
-                    if (!s)
+                    if (!s) {
                       THROW_ERROR(status_bad_attribute, a->value);            // After this line the loop continues from the start;
-                     // Whitespaces, / and > are ok, symbols and EOF are wrong,
+                    }
+                    // Whitespaces, / and > are ok, symbols and EOF are wrong,
                     // everything else will be detected
                     if (IS_CHARTYPE(*s, ct_start_symbol)) THROW_ERROR(status_bad_attribute, s);
                   } else { THROW_ERROR(status_bad_attribute, s); }
@@ -2316,8 +2332,9 @@ size_t convert_buffer(char *result, const char_t *data, size_t length, xml_encod
     // swap if necessary
     xml_encoding native_encoding = is_little_endian() ? encoding_utf16_le : encoding_utf16_be;
 
-    if (native_encoding != encoding)
+    if (native_encoding != encoding) {
       convert_utf_endian_swap(dest, dest, static_cast<size_t>(end - dest));
+    }
 
     return static_cast<size_t>(end - dest) * sizeof(uint16_t);
   }
@@ -2333,8 +2350,9 @@ size_t convert_buffer(char *result, const char_t *data, size_t length, xml_encod
     // swap if necessary
     xml_encoding native_encoding = is_little_endian() ? encoding_utf32_le : encoding_utf32_be;
 
-    if (native_encoding != encoding)
+    if (native_encoding != encoding) {
       convert_utf_endian_swap(dest, dest, static_cast<size_t>(end - dest));
+    }
 
     return static_cast<size_t>(end - dest) * sizeof(uint32_t);
   }
@@ -2351,8 +2369,9 @@ size_t get_valid_length(const char_t *data, size_t length) {
     uint8_t ch = static_cast<uint8_t>(data[length - i]);
 
     // either a standalone character or a leading one
-    if ((ch & 0xc0) != 0x80)
+    if ((ch & 0xc0) != 0x80) {
       return length - i;
+    }
   }
 
   // there are four non-leading characters at the end, sequence tail is broken so might as well process the whole chunk
@@ -2369,8 +2388,9 @@ size_t convert_buffer(char *result, const char_t *data, size_t length, xml_encod
     // swap if necessary
     xml_encoding native_encoding = is_little_endian() ? encoding_utf16_le : encoding_utf16_be;
 
-    if (native_encoding != encoding)
+    if (native_encoding != encoding) {
       convert_utf_endian_swap(dest, dest, static_cast<size_t>(end - dest));
+    }
 
     return static_cast<size_t>(end - dest) * sizeof(uint16_t);
   }
@@ -2384,8 +2404,9 @@ size_t convert_buffer(char *result, const char_t *data, size_t length, xml_encod
     // swap if necessary
     xml_encoding native_encoding = is_little_endian() ? encoding_utf32_le : encoding_utf32_be;
 
-    if (native_encoding != encoding)
+    if (native_encoding != encoding) {
       convert_utf_endian_swap(dest, dest, static_cast<size_t>(end - dest));
+    }
 
     return static_cast<size_t>(end - dest) * sizeof(uint32_t);
   }
@@ -2904,8 +2925,9 @@ template <typename T> xml_parse_result load_stream_impl(xml_document& doc, std::
   std::streamoff length = stream.tellg() - pos;
   stream.seekg(pos);
 
-  if (stream.fail() || pos < 0)
+  if (stream.fail() || pos < 0) {
     return make_parse_result(status_io_error);
+  }
 
 
 
@@ -2913,16 +2935,18 @@ template <typename T> xml_parse_result load_stream_impl(xml_document& doc, std::
   // guard against huge files
   size_t read_length = static_cast<size_t>(length);
 
-  if (static_cast<std::streamsize>(read_length) != length || length < 0)
+  if (static_cast<std::streamsize>(read_length) != length || length < 0) {
     return make_parse_result(status_out_of_memory);
+  }
 
 
 
 
   // read stream data into memory (guard against stream exceptions with buffer holder)
   buffer_holder buffer(global_allocate((read_length > 0 ? read_length : 1) * sizeof(T)), global_deallocate);
-  if (!buffer.data)
+  if (!buffer.data) {
     return make_parse_result(status_out_of_memory);
+  }
 
 
 
@@ -2930,8 +2954,9 @@ template <typename T> xml_parse_result load_stream_impl(xml_document& doc, std::
   stream.read(static_cast<T *>(buffer.data), static_cast<std::streamsize>(read_length));
 
   // read may set failbit | eofbit in case gcount() is less than read_length (i.e. line ending conversion), so check for other I/O errors
-  if (stream.bad())
+  if (stream.bad()) {
     return make_parse_result(status_io_error);
+  }
 
 
 
@@ -2960,8 +2985,9 @@ char *convert_path_heap(const wchar_t *str) {
 
   // allocate resulting string
   char *result = static_cast<char *>(global_allocate(size + 1));
-  if (!result)
+  if (!result) {
     return 0;
+  }
 
 
 
@@ -2976,8 +3002,9 @@ FILE *open_file_wide(const wchar_t *path, const wchar_t *mode) {
   // there is no standard function to open wide paths, so our best bet is to try utf8 path
   char *path_utf8 = convert_path_heap(path);
 
-  if (!path_utf8)
+  if (!path_utf8) {
     return 0;
+  }
 
 
 
@@ -4265,8 +4292,9 @@ xml_parse_result xml_document::load_buffer_impl(void *contents, size_t size, uns
              status_out_of_memory);
 
   // delete original buffer if we performed a conversion
-  if (own && buffer != contents && contents)
+  if (own && buffer != contents && contents) {
     global_deallocate(contents);                                           // parse
+  }
   xml_parse_result res = xml_parser::parse(buffer, length, _root, options);
 
   // remember encoding
@@ -4459,8 +4487,9 @@ template <typename I, typename Pred> I min_element(I begin, I end, const Pred& p
   I result = begin;
 
   for (I it = begin + 1; it != end; ++it) {
-    if (pred(*it, *result))
+    if (pred(*it, *result)) {
       result = it;
+    }
   }
 
   return result;
@@ -4478,8 +4507,9 @@ template <typename I> I unique(I begin, I end) {
     begin++;
   }
 
-  if (begin == end)
+  if (begin == end) {
     return begin;
+  }
 
 
 
@@ -4489,10 +4519,11 @@ template <typename I> I unique(I begin, I end) {
 
   // merge unique elements
   while (begin != end) {
-    if (*begin != *write)
+    if (*begin != *write) {
       *++write = *begin++;
-    else
+    } else {
       begin++;
+    }
   }
 
   // past-the-end (write points to live element)
@@ -4550,18 +4581,18 @@ template <typename I, typename Pred> void partition(I begin, I middle, I end, co
     // find the element from the right side that belongs to the left one
     for (; gtbeg != end; ++gtbeg) {
       if (!pred(*eqbeg, *gtbeg)) {
-        if (*gtbeg == *eqbeg)
+        if (*gtbeg == *eqbeg) {
           swap(*gtbeg, *eqend++);
-        else                                                break;
+        } else {                                                     break; }
       }
     }
 
     // find the element from the left side that belongs to the right one
     for (; ltend != begin; --ltend) {
       if (!pred(*(ltend - 1), *eqbeg)) {
-        if (*eqbeg == *(ltend - 1))
+        if (*eqbeg == *(ltend - 1)) {
           swap(*(ltend - 1), *--eqbeg);
-        else                                                break;
+        } else {                                                     break; }
       }
     }
 
@@ -4574,12 +4605,14 @@ template <typename I, typename Pred> void partition(I begin, I middle, I end, co
 
     // make room for elements by moving equal area
     if (gtbeg == end) {
-      if (--ltend != --eqbeg)
+      if (--ltend != --eqbeg) {
         swap(*ltend, *eqbeg);
+      }
       swap(*eqbeg, *--eqend);
     } else if (ltend == begin) {
-      if (eqend != gtbeg)
+      if (eqend != gtbeg) {
         swap(*eqbeg, *eqend);
+      }
       ++eqend;
       swap(*gtbeg++, *eqbeg++);
     } else { swap(*gtbeg++, *--ltend); }
@@ -4587,12 +4620,15 @@ template <typename I, typename Pred> void partition(I begin, I middle, I end, co
 }
 
 template <typename I, typename Pred> void median3(I first, I middle, I last, const Pred& pred) {
-  if (pred(*middle, *first))
+  if (pred(*middle, *first)) {
     swap(*middle, *first);
-  if (pred(*last, *middle))
+  }
+  if (pred(*last, *middle)) {
     swap(*last, *middle);
-  if (pred(*middle, *first))
+  }
+  if (pred(*middle, *first)) {
     swap(*middle, *first);
+  }
 }
 
 template <typename I, typename Pred> void median(I first, I middle, I last, const Pred& pred) {
@@ -4632,8 +4668,9 @@ template <typename I, typename Pred> void sort(I begin, I end, const Pred& pred)
   }
 
   // insertion sort small chunk
-  if (begin != end)
+  if (begin != end) {
     insertion_sort(begin, end, pred, &*begin);
+  }
 }
 }
 
@@ -4675,8 +4712,9 @@ public:
       size_t block_size = block_data_size + offsetof(xpath_memory_block, data);
 
       xpath_memory_block *block = static_cast<xpath_memory_block *>(global_allocate(block_size));
-      if (!block)
+      if (!block) {
         return 0;
+      }
 
 
 
@@ -4716,8 +4754,9 @@ public:
     // adjust root size so that we have not allocated the object at all
     bool only_object = (_root_size == old_size);
 
-    if (ptr)
+    if (ptr) {
       _root_size -= old_size;
+    }
 
     // allocate a new version (this will obviously reuse the memory if possible)
     void *result = allocate(new_size);
@@ -4870,8 +4909,9 @@ public:
 
   void append(const xpath_string& o, xpath_allocator *alloc) {
     // skip empty sources
-    if (!*o._buffer)
+    if (!*o._buffer) {
       return;
+    }
 
 
 
@@ -4893,8 +4933,9 @@ public:
       assert(result);
 
       // append first string to the new buffer in case there was no reallocation
-      if (!_uses_heap)
+      if (!_uses_heap) {
         memcpy(result, _buffer, target_length * sizeof(char_t));
+      }
 
       // append second string to the new buffer
       memcpy(result + target_length, o._buffer, source_length * sizeof(char_t));
@@ -5003,8 +5044,9 @@ xpath_string string_value(const xpath_node& na, xpath_allocator *alloc) {
         xml_node cur = n.first_child();
 
         while (cur && cur != n) {
-          if (cur.type() == node_pcdata || cur.type() == node_cdata)
+          if (cur.type() == node_pcdata || cur.type() == node_cdata) {
             result.append(xpath_string_const(cur.value()), alloc);
+          }
 
           if (cur.first_child()) {
             cur = cur.first_child();
@@ -5015,8 +5057,9 @@ xpath_string string_value(const xpath_node& na, xpath_allocator *alloc) {
               cur = cur.parent();
             }
 
-            if (cur != n)
+            if (cur != n) {
               cur = cur.next_sibling();
+            }
           }
         }
 
@@ -5050,8 +5093,9 @@ bool node_is_before(xml_node ln, unsigned int lh, xml_node rn, unsigned int rh) 
   }
 
   // one node is the ancestor of the other
-  if (ln == rn)
+  if (ln == rn) {
     return lh < rh;
+  }
 
 
 
@@ -5063,16 +5107,18 @@ bool node_is_before(xml_node ln, unsigned int lh, xml_node rn, unsigned int rh) 
   }
 
   // there is no common ancestor (the shared parent is null), nodes are from different documents
-  if (!ln.parent())
+  if (!ln.parent()) {
     return ln < rn;
+  }
 
 
 
 
   // determine sibling order
   for (; ln; ln = ln.next_sibling()) {
-    if (ln == rn)
+    if (ln == rn) {
       return true;
+    }
   }
 
   return false;
@@ -5090,13 +5136,15 @@ const void *document_order(const xpath_node& xnode) {
   xml_node_struct *node = xnode.node().internal_object();
 
   if (node) {
-    if (node->name && (node->header & xml_memory_page_name_allocated_mask) == 0)
+    if (node->name && (node->header & xml_memory_page_name_allocated_mask) == 0) {
       return node->name;
+    }
 
 
 
-    if (node->value && (node->header & xml_memory_page_value_allocated_mask) == 0)
+    if (node->value && (node->header & xml_memory_page_value_allocated_mask) == 0) {
       return node->value;
+    }
 
 
 
@@ -5106,13 +5154,15 @@ const void *document_order(const xpath_node& xnode) {
   xml_attribute_struct *attr = xnode.attribute().internal_object();
 
   if (attr) {
-    if ((attr->header & xml_memory_page_name_allocated_mask) == 0)
+    if ((attr->header & xml_memory_page_name_allocated_mask) == 0) {
       return attr->name;
+    }
 
 
 
-    if ((attr->header & xml_memory_page_value_allocated_mask) == 0)
+    if ((attr->header & xml_memory_page_value_allocated_mask) == 0) {
       return attr->value;
+    }
 
 
 
@@ -5128,8 +5178,9 @@ struct document_order_comparator {
     const void *lo = document_order(lhs);
     const void *ro = document_order(rhs);
 
-    if (lo && ro)
+    if (lo && ro) {
       return lo < ro;
+    }
 
 
 
@@ -5143,8 +5194,9 @@ struct document_order_comparator {
       if (lhs.parent() == rhs.parent()) {
         // determine sibling order
         for (xml_attribute a = lhs.attribute(); a; a = a.next_attribute()) {
-          if (a == rhs.attribute())
+          if (a == rhs.attribute()) {
             return true;
+          }
         }
 
         return false;
@@ -5155,8 +5207,9 @@ struct document_order_comparator {
       rn = rhs.parent();
     } else if (lhs.attribute()) {
       // attributes go after the parent element
-      if (lhs.parent() == rhs.node())
+      if (lhs.parent() == rhs.node()) {
         return false;
+      }
 
 
 
@@ -5164,8 +5217,9 @@ struct document_order_comparator {
       ln = lhs.parent();
     } else if (rhs.attribute()) {
       // attributes go after the parent element
-      if (rhs.parent() == lhs.node())
+      if (rhs.parent() == lhs.node()) {
         return true;
+      }
 
 
 
@@ -5173,8 +5227,9 @@ struct document_order_comparator {
       rn = rhs.parent();
     }
 
-    if (ln == rn)
+    if (ln == rn) {
       return false;
+    }
 
 
 
@@ -5188,9 +5243,9 @@ struct document_order_comparator {
 
 struct duplicate_comparator {
   bool operator()(const xpath_node& lhs, const xpath_node& rhs) const {
-    if (lhs.attribute())
+    if (lhs.attribute()) {
       return rhs.attribute() ? lhs.attribute() < rhs.attribute() : true;
-    else                        return rhs.attribute() ? false : lhs.node() < rhs.node();
+    } else {                         return rhs.attribute() ? false : lhs.node() < rhs.node(); }
   }
 };
 
@@ -5225,13 +5280,15 @@ bool is_nan(double value) {
 
 const char_t *convert_number_to_string_special(double value) {
         #if defined(_MSC_VER) || defined(__BORLANDC__)
-  if (_finite(value))
+  if (_finite(value)) {
     return (value == 0) ? PUGIXML_TEXT("0") : 0;
+  }
 
 
 
-  if (_isnan(value))
+  if (_isnan(value)) {
     return PUGIXML_TEXT("NaN");
+  }
 
 
 
@@ -5255,18 +5312,21 @@ const char_t *convert_number_to_string_special(double value) {
   // fallback
   const volatile double v = value;
 
-  if (v == 0)
+  if (v == 0) {
     return PUGIXML_TEXT("0");
+  }
 
 
 
-  if (v != v)
+  if (v != v) {
     return PUGIXML_TEXT("NaN");
+  }
 
 
 
-  if (v * 2 == v)
+  if (v * 2 == v) {
     return PUGIXML_TEXT("-Infinity") + (value > 0);
+  }
 
 
 
@@ -5341,8 +5401,9 @@ xpath_string convert_number_to_string(double value, xpath_allocator *alloc) {
   // try special number conversion
   const char_t *special = convert_number_to_string_special(value);
 
-  if (special)
+  if (special) {
     return xpath_string_const(special);
+  }
 
 
 
@@ -5359,19 +5420,19 @@ xpath_string convert_number_to_string(double value, xpath_allocator *alloc) {
   char_t *s = result;
 
   // sign
-  if (value < 0)
+  if (value < 0) {
     *s++ = '-';
+  }
 
   // integer part
-  if (exponent <= 0) {
+  if (exponent <= 0)
     *s++ = '0';
-  } else {
+  else
     while (exponent > 0) {
       assert(*mantissa == 0 || (unsigned)(*mantissa - '0') <= 9);
       *s++ = *mantissa ? *mantissa++ : '0';
       exponent--;
     }
-  }
 
   // fractional part
   if (*mantissa) {
@@ -5405,18 +5466,21 @@ bool check_string_to_number_format(const char_t *string) {
   }
 
   // parse sign
-  if (*string == '-')
+  if (*string == '-') {
     ++string;
+  }
 
-  if (!*string)
+  if (!*string) {
     return false;
+  }
 
 
 
 
   // if there is no integer part, there should be a decimal part with at least one digit
-  if (!IS_CHARTYPEX(string[0], ctx_digit) && (string[0] != '.' || !IS_CHARTYPEX(string[1], ctx_digit)))
+  if (!IS_CHARTYPEX(string[0], ctx_digit) && (string[0] != '.' || !IS_CHARTYPEX(string[1], ctx_digit))) {
     return false;
+  }
 
 
 
@@ -5445,8 +5509,9 @@ bool check_string_to_number_format(const char_t *string) {
 
 double convert_string_to_number(const char_t *string) {
   // check string format
-  if (!check_string_to_number_format(string))
+  if (!check_string_to_number_format(string)) {
     return gen_nan();
+  }
 
 
 
@@ -5470,8 +5535,9 @@ bool convert_string_to_number(const char_t *begin, const char_t *end, double *ou
   if (length >= sizeof(buffer) / sizeof(buffer[0])) {
     // need to make dummy on-heap copy
     scratch = static_cast<char_t *>(global_allocate((length + 1) * sizeof(char_t)));
-    if (!scratch)
+    if (!scratch) {
       return false;
+    }
   }
 
   // copy string to zero-terminated buffer and perform conversion
@@ -5481,8 +5547,9 @@ bool convert_string_to_number(const char_t *begin, const char_t *end, double *ou
   *out_result = convert_string_to_number(scratch);
 
   // free dummy buffer
-  if (scratch != buffer)
+  if (scratch != buffer) {
     global_deallocate(scratch);
+  }
 
   return true;
 }
@@ -5522,8 +5589,9 @@ struct namespace_uri_predicate {
   bool operator()(const xml_attribute& a) const {
     const char_t *name = a.name();
 
-    if (!starts_with(name, PUGIXML_TEXT("xmlns")))
+    if (!starts_with(name, PUGIXML_TEXT("xmlns"))) {
       return false;
+    }
 
 
 
@@ -5540,8 +5608,9 @@ const char_t *namespace_uri(const xml_node& node) {
   while (p) {
     xml_attribute a = p.find_attribute(pred);
 
-    if (a)
+    if (a) {
       return a.value();
+    }
 
 
 
@@ -5556,8 +5625,9 @@ const char_t *namespace_uri(const xml_attribute& attr, const xml_node& parent) {
   namespace_uri_predicate pred = attr.name();
 
   // Default namespace does not apply to attributes
-  if (!pred.prefix)
+  if (!pred.prefix) {
     return PUGIXML_TEXT("");
+  }
 
 
 
@@ -5567,8 +5637,9 @@ const char_t *namespace_uri(const xml_attribute& attr, const xml_node& parent) {
   while (p) {
     xml_attribute a = p.find_attribute(pred);
 
-    if (a)
+    if (a) {
       return a.value();
+    }
 
 
 
@@ -5596,14 +5667,16 @@ void normalize_space(char_t *buffer) {
       }
 
       // avoid leading spaces
-      if (write != buffer)
+      if (write != buffer) {
         *write++ = ' ';
+      }
     } else { *write++ = ch; }
   }
 
   // remove trailing space
-  if (write != buffer && IS_CHARTYPE(write[-1], ct_space))
+  if (write != buffer && IS_CHARTYPE(write[-1], ct_space)) {
     write--;
+  }
 
   // zero-terminate
   *write = 0;
@@ -5619,10 +5692,11 @@ void translate(char_t *buffer, const char_t *from, const char_t *to) {
 
     const char_t *pos = find_char(from, ch);
 
-    if (!pos)
+    if (!pos) {
       *write++ = ch;                           // do not process
-    else if (static_cast<size_t>(pos - from) < to_length)
+    } else if (static_cast<size_t>(pos - from) < to_length) {
       *write++ = to[pos - from];               // replace
+    }
   }
 
   // zero-terminate
@@ -5650,8 +5724,9 @@ struct xpath_variable_string : xpath_variable {
   }
 
   ~xpath_variable_string() {
-    if (value)
+    if (value) {
       global_deallocate(value);
+    }
   }
 
   char_t *value;
@@ -5685,13 +5760,14 @@ unsigned int hash_string(const char_t *str) {
 template <typename T> T *new_xpath_variable(const char_t *name) {
   size_t length = strlength(name);
 
-  if (length == 0)
+  if (length == 0) {
     return 0;                              // empty variable names are invalid
-
-   // $$ we can't use offsetof(T, name) because T is non-POD, so we just allocate additional length characters
+  }
+  // $$ we can't use offsetof(T, name) because T is non-POD, so we just allocate additional length characters
   void *memory = global_allocate(sizeof(T) + length * sizeof(char_t));
-  if (!memory)
+  if (!memory) {
     return 0;
+  }
 
 
 
@@ -5759,8 +5835,9 @@ xpath_variable *get_variable(xpath_variable_set *set, const char_t *begin, const
   if (length >= sizeof(buffer) / sizeof(buffer[0])) {
     // need to make dummy on-heap copy
     scratch = static_cast<char_t *>(global_allocate((length + 1) * sizeof(char_t)));
-    if (!scratch)
+    if (!scratch) {
       return 0;
+    }
   }
 
   // copy string to zero-terminated buffer and perform lookup
@@ -5770,8 +5847,9 @@ xpath_variable *get_variable(xpath_variable_set *set, const char_t *begin, const
   xpath_variable *result = set->get(scratch);
 
   // free dummy buffer
-  if (scratch != buffer)
+  if (scratch != buffer) {
     global_deallocate(scratch);
+  }
 
   return result;
 }
@@ -5788,15 +5866,17 @@ xpath_node_set::type_t xpath_sort(xpath_node *begin, xpath_node *end, xpath_node
     type = xpath_node_set::type_sorted;
   }
 
-  if (type != order)
+  if (type != order) {
     reverse(begin, end);
+  }
 
   return order;
 }
 
 xpath_node xpath_first(const xpath_node *begin, const xpath_node *end, xpath_node_set::type_t type) {
-  if (begin == end)
+  if (begin == end) {
     return xpath_node();
+  }
 
 
 
@@ -5903,8 +5983,9 @@ public:
   }
 
   void remove_duplicates() {
-    if (_type == xpath_node_set::type_unsorted)
+    if (_type == xpath_node_set::type_unsorted) {
       sort(_begin, _end, duplicate_comparator());
+    }
 
     _end = unique(_begin, _end);
   }
@@ -6407,8 +6488,9 @@ private:
         for (const xpath_node *ri = rs.begin(); ri != rs.end(); ++ri) {
           xpath_allocator_capture cri(stack.result);
 
-          if (comp(string_value(*li, stack.result), string_value(*ri, stack.result)))
+          if (comp(string_value(*li, stack.result), string_value(*ri, stack.result))) {
             return true;
+          }
         }
       }
 
@@ -6430,8 +6512,9 @@ private:
         for (const xpath_node *ri = rs.begin(); ri != rs.end(); ++ri) {
           xpath_allocator_capture cri(stack.result);
 
-          if (comp(l, convert_string_to_number(string_value(*ri, stack.result).c_str())))
+          if (comp(l, convert_string_to_number(string_value(*ri, stack.result).c_str()))) {
             return true;
+          }
         }
 
         return false;
@@ -6444,8 +6527,9 @@ private:
         for (const xpath_node *ri = rs.begin(); ri != rs.end(); ++ri) {
           xpath_allocator_capture cri(stack.result);
 
-          if (comp(l, string_value(*ri, stack.result)))
+          if (comp(l, string_value(*ri, stack.result))) {
             return true;
+          }
         }
 
         return false;
@@ -6477,8 +6561,9 @@ private:
         for (const xpath_node *ri = rs.begin(); ri != rs.end(); ++ri) {
           xpath_allocator_capture crii(stack.result);
 
-          if (comp(l, convert_string_to_number(string_value(*ri, stack.result).c_str())))
+          if (comp(l, convert_string_to_number(string_value(*ri, stack.result).c_str()))) {
             return true;
+          }
         }
       }
 
@@ -6492,8 +6577,9 @@ private:
       for (const xpath_node *ri = rs.begin(); ri != rs.end(); ++ri) {
         xpath_allocator_capture cri(stack.result);
 
-        if (comp(l, convert_string_to_number(string_value(*ri, stack.result).c_str())))
+        if (comp(l, convert_string_to_number(string_value(*ri, stack.result).c_str()))) {
           return true;
+        }
       }
 
       return false;
@@ -6506,8 +6592,9 @@ private:
       for (const xpath_node *li = ls.begin(); li != ls.end(); ++li) {
         xpath_allocator_capture cri(stack.result);
 
-        if (comp(convert_string_to_number(string_value(*li, stack.result).c_str()), r))
+        if (comp(convert_string_to_number(string_value(*li, stack.result).c_str()), r)) {
           return true;
+        }
       }
 
       return false;
@@ -6530,8 +6617,9 @@ private:
       xpath_context c(*it, i, size);
 
       if (expr->rettype() == xpath_type_number) {
-        if (expr->eval_number(c, stack) == i)
+        if (expr->eval_number(c, stack) == i) {
           *last++ = *it;
+        }
       } else if (expr->eval_boolean(c, stack)) {
         *last++ = *it;
       }
@@ -6541,8 +6629,9 @@ private:
   }
 
   void apply_predicates(xpath_node_set_raw& ns, size_t first, const xpath_stack& stack) {
-    if (ns.size() == first)
+    if (ns.size() == first) {
       return;
+    }
 
 
 
@@ -6553,8 +6642,9 @@ private:
   }
 
   void step_push(xpath_node_set_raw& ns, const xml_attribute& a, const xml_node& parent, xpath_allocator *alloc) {
-    if (!a)
+    if (!a) {
       return;
+    }
 
 
 
@@ -6563,16 +6653,18 @@ private:
 
     // There are no attribute nodes corresponding to attributes that declare namespaces
     // That is, "xmlns:..." or "xmlns"
-    if (starts_with(name, PUGIXML_TEXT("xmlns")) && (name[5] == 0 || name[5] == ':'))
+    if (starts_with(name, PUGIXML_TEXT("xmlns")) && (name[5] == 0 || name[5] == ':')) {
       return;
+    }
 
 
 
 
     switch (_test) {
       case nodetest_name:
-        if (strequal(name, _data.nodetest))
+        if (strequal(name, _data.nodetest)) {
           ns.push_back(xpath_node(a, parent), alloc);
+        }
         break;
 
       case nodetest_type_node:
@@ -6581,8 +6673,9 @@ private:
         break;
 
       case nodetest_all_in_namespace:
-        if (starts_with(name, _data.nodetest))
+        if (starts_with(name, _data.nodetest)) {
           ns.push_back(xpath_node(a, parent), alloc);
+        }
         break;
 
       default:
@@ -6591,16 +6684,18 @@ private:
   }
 
   void step_push(xpath_node_set_raw& ns, const xml_node& n, xpath_allocator *alloc) {
-    if (!n)
+    if (!n) {
       return;
+    }
 
 
 
 
     switch (_test) {
       case nodetest_name:
-        if (n.type() == node_element && strequal(n.name(), _data.nodetest))
+        if (n.type() == node_element && strequal(n.name(), _data.nodetest)) {
           ns.push_back(n, alloc);
+        }
         break;
 
       case nodetest_type_node:
@@ -6608,33 +6703,39 @@ private:
         break;
 
       case nodetest_type_comment:
-        if (n.type() == node_comment)
+        if (n.type() == node_comment) {
           ns.push_back(n, alloc);
+        }
         break;
 
       case nodetest_type_text:
-        if (n.type() == node_pcdata || n.type() == node_cdata)
+        if (n.type() == node_pcdata || n.type() == node_cdata) {
           ns.push_back(n, alloc);
+        }
         break;
 
       case nodetest_type_pi:
-        if (n.type() == node_pi)
+        if (n.type() == node_pi) {
           ns.push_back(n, alloc);
+        }
         break;
 
       case nodetest_pi:
-        if (n.type() == node_pi && strequal(n.name(), _data.nodetest))
+        if (n.type() == node_pi && strequal(n.name(), _data.nodetest)) {
           ns.push_back(n, alloc);
+        }
         break;
 
       case nodetest_all:
-        if (n.type() == node_element)
+        if (n.type() == node_element) {
           ns.push_back(n, alloc);
+        }
         break;
 
       case nodetest_all_in_namespace:
-        if (n.type() == node_element && starts_with(n.name(), _data.nodetest))
+        if (n.type() == node_element && starts_with(n.name(), _data.nodetest)) {
           ns.push_back(n, alloc);
+        }
         break;
 
       default:
@@ -6667,8 +6768,9 @@ private:
       case axis_descendant:
       case axis_descendant_or_self:
       {
-        if (axis == axis_descendant_or_self)
+        if (axis == axis_descendant_or_self) {
           step_push(ns, n, alloc);
+        }
 
         xml_node cur = n.first_child();
 
@@ -6684,8 +6786,9 @@ private:
               cur = cur.parent();
             }
 
-            if (cur != n)
+            if (cur != n) {
               cur = cur.next_sibling();
+            }
           }
         }
 
@@ -6733,8 +6836,9 @@ private:
             }
             cur = cur.next_sibling();
 
-            if (!cur)
+            if (!cur) {
               break;
+            }
           }
         }
 
@@ -6762,17 +6866,20 @@ private:
             } else {
               do {
                 cur = cur.parent();
-                if (!cur)
+                if (!cur) {
                   break;
+                }
 
-                if (!node_is_ancestor(cur, n))
+                if (!node_is_ancestor(cur, n)) {
                   step_push(ns, cur, alloc);
+                }
               } while (!cur.previous_sibling());
 
               cur = cur.previous_sibling();
 
-              if (!cur)
+              if (!cur) {
                 break;
+              }
             }
           }
         }
@@ -6783,8 +6890,9 @@ private:
       case axis_ancestor:
       case axis_ancestor_or_self:
       {
-        if (axis == axis_ancestor_or_self)
+        if (axis == axis_ancestor_or_self) {
           step_push(ns, n, alloc);
+        }
 
         xml_node cur = n.parent();
 
@@ -6806,8 +6914,9 @@ private:
 
       case axis_parent:
       {
-        if (n.parent())
+        if (n.parent()) {
           step_push(ns, n.parent(), alloc);
+        }
 
         break;
       }
@@ -6826,8 +6935,9 @@ private:
       case axis_ancestor:
       case axis_ancestor_or_self:
       {
-        if (axis == axis_ancestor_or_self && _test == nodetest_type_node)                   // reject attributes based on principal node type test
+        if (axis == axis_ancestor_or_self && _test == nodetest_type_node) {                 // reject attributes based on principal node type test
           step_push(ns, a, p, alloc);
+        }
 
         xml_node cur = p;
 
@@ -6843,8 +6953,9 @@ private:
       case axis_descendant_or_self:
       case axis_self:
       {
-        if (_test == nodetest_type_node)                   // reject attributes based on principal node type test
+        if (_test == nodetest_type_node) {                 // reject attributes based on principal node type test
           step_push(ns, a, p, alloc);
+        }
 
         break;
       }
@@ -6864,8 +6975,9 @@ private:
             }
             cur = cur.next_sibling();
 
-            if (!cur)
+            if (!cur) {
               break;
+            }
           }
 
           step_push(ns, cur, alloc);
@@ -6910,28 +7022,32 @@ private:
       xpath_node_set_raw s = _left->eval_node_set(c, stack);
 
       // self axis preserves the original order
-      if (axis == axis_self)
+      if (axis == axis_self) {
         ns.set_type(s.type());
+      }
 
       for (const xpath_node *it = s.begin(); it != s.end(); ++it) {
         size_t size = ns.size();
 
         // in general, all axes generate elements in a particular order, but there is no order guarantee if axis is applied to two nodes
-        if (axis != axis_self && size != 0)
+        if (axis != axis_self && size != 0) {
           ns.set_type(xpath_node_set::type_unsorted);
+        }
 
-        if (it->node())
+        if (it->node()) {
           step_fill(ns, it->node(), stack.result, v);
-        else if (attributes)
+        } else if (attributes) {
           step_fill(ns, it->attribute(), it->parent(), stack.result, v);
+        }
 
         apply_predicates(ns, size, stack);
       }
     } else {
-      if (c.n.node())
+      if (c.n.node()) {
         step_fill(ns, c.n.node(), stack.result, v);
-      else if (attributes)
+      } else if (attributes) {
         step_fill(ns, c.n.attribute(), c.n.parent(), stack.result, v);
+      }
 
       apply_predicates(ns, 0, stack);
     }
@@ -6940,7 +7056,9 @@ private:
     // for other axis, if the set stayed sorted, it stayed unique because the traversal algorithms do not visit the same node twice
     if (axis != axis_child && axis != axis_attribute && axis != axis_self && ns.type() ==
         xpath_node_set::type_unsorted)
+    {
       ns.remove_duplicates();
+    }
 
     return ns;
   }
@@ -7042,8 +7160,9 @@ public:
 
       case ast_func_lang:
       {
-        if (c.n.attribute())
+        if (c.n.attribute()) {
           return false;
+        }
 
 
 
@@ -7060,8 +7179,9 @@ public:
 
             // strnicmp / strncasecmp is not portable
             for (const char_t *lit = lang.c_str(); *lit; ++lit) {
-              if (tolower_ascii(*lit) != tolower_ascii(*value))
+              if (tolower_ascii(*lit) != tolower_ascii(*value)) {
                 return false;
+              }
 
 
 
@@ -7079,8 +7199,9 @@ public:
       {
         assert(_rettype == _data.variable->type());
 
-        if (_rettype == xpath_type_boolean)
+        if (_rettype == xpath_type_boolean) {
           return _data.variable->get_boolean();
+        }
 
         // fallthrough to type conversion
       }
@@ -7211,8 +7332,9 @@ public:
       {
         assert(_rettype == _data.variable->type());
 
-        if (_rettype == xpath_type_number)
+        if (_rettype == xpath_type_number) {
           return _data.variable->get_number();
+        }
 
         // fallthrough to type conversion
       }
@@ -7389,8 +7511,9 @@ public:
         xpath_string p = _right->eval_string(c, swapped_stack);
 
         const char_t *pos = find_substring(s.c_str(), p.c_str());
-        if (!pos)
+        if (!pos) {
           return xpath_string();
+        }
 
 
 
@@ -7411,10 +7534,11 @@ public:
 
         double first = round_nearest(_right->eval_number(c, stack));
 
-        if (is_nan(first))
+        if (is_nan(first)) {
           return xpath_string();                                          // NaN
-        else if (first >= s_length + 1)
+        } else if (first >= s_length + 1) {
           return xpath_string();
+        }
 
 
 
@@ -7439,14 +7563,15 @@ public:
         double first = round_nearest(_right->eval_number(c, stack));
         double last = first + round_nearest(_right->_next->eval_number(c, stack));
 
-        if (is_nan(first) || is_nan(last))
+        if (is_nan(first) || is_nan(last)) {
           return xpath_string();
-        else if (first >= s_length + 1)
+        } else if (first >= s_length + 1) {
           return xpath_string();
-        else if (first >= last)
+        } else if (first >= last) {
           return xpath_string();
-        else if (last < 1)
+        } else if (last < 1) {
           return xpath_string();
+        }
 
 
 
@@ -7499,8 +7624,9 @@ public:
       {
         assert(_rettype == _data.variable->type());
 
-        if (_rettype == xpath_type_string)
+        if (_rettype == xpath_type_string) {
           return xpath_string_const(_data.variable->get_string());
+        }
 
         // fallthrough to type conversion
       }
@@ -7558,8 +7684,9 @@ public:
         xpath_node_set_raw set = _left->eval_node_set(c, stack);
 
         // either expression is a number or it contains position() call; sort by document order
-        if (_type == ast_filter)
+        if (_type == ast_filter) {
           set.sort_do();
+        }
 
         apply_predicate(set, 0, _right, stack);
 
@@ -7622,10 +7749,11 @@ public:
 
         ns.set_type(xpath_node_set::type_sorted);
 
-        if (c.n.node())
+        if (c.n.node()) {
           ns.push_back(c.n.node().root(), stack.result);
-        else if (c.n.attribute())
+        } else if (c.n.attribute()) {
           ns.push_back(c.n.parent().root(), stack.result);
+        }
 
         return ns;
       }
@@ -7674,15 +7802,17 @@ public:
         return true;
 
       default:
-        if (_left && !_left->is_posinv())
+        if (_left && !_left->is_posinv()) {
           return false;
+        }
 
 
 
 
         for (xpath_ast_node *n = _right; n; n = n->_next) {
-          if (!n->is_posinv())
+          if (!n->is_posinv()) {
             return false;
+          }
         }
 
         return true;
@@ -7729,8 +7859,9 @@ struct xpath_parser {
   void *alloc_node() {
     void *result = _alloc->allocate_nothrow(sizeof(xpath_ast_node));
 
-    if (!result)
+    if (!result) {
       throw_error_oom();
+    }
 
     return result;
   }
@@ -7740,8 +7871,9 @@ struct xpath_parser {
       size_t length = static_cast<size_t>(value.end - value.begin);
 
       char_t *c = static_cast<char_t *>(_alloc->allocate_nothrow((length + 1) * sizeof(char_t)));
-      if (!c)
+      if (!c) {
         throw_error_oom();
+      }
 
       memcpy(c, value.begin, length * sizeof(char_t));
       c[length] = 0;
@@ -7753,8 +7885,9 @@ struct xpath_parser {
   xpath_ast_node *parse_function_helper(ast_type_t type0, ast_type_t type1, size_t argc, xpath_ast_node *args[2]) {
     assert(argc <= 1);
 
-    if (argc == 1 && args[0]->rettype() != xpath_type_node_set)
+    if (argc == 1 && args[0]->rettype() != xpath_type_node_set) {
       throw_error("Function has to be applied to node set");
+    }
 
     return new (alloc_node())xpath_ast_node(argc == 0 ? type0 : type1, xpath_type_string, args[0]);
   }
@@ -7762,8 +7895,9 @@ struct xpath_parser {
   xpath_ast_node *parse_function(const xpath_lexer_string& name, size_t argc, xpath_ast_node *args[2]) {
     switch (name.begin[0]) {
       case 'b':
-        if (name == PUGIXML_TEXT("boolean") && argc == 1)
+        if (name == PUGIXML_TEXT("boolean") && argc == 1) {
           return new (alloc_node())xpath_ast_node(ast_func_boolean, xpath_type_boolean, args[0]);
+        }
 
 
 
@@ -7772,8 +7906,9 @@ struct xpath_parser {
 
       case 'c':
         if (name == PUGIXML_TEXT("count") && argc == 1) {
-          if (args[0]->rettype() != xpath_type_node_set)
+          if (args[0]->rettype() != xpath_type_node_set) {
             throw_error("Function has to be applied to node set");
+          }
           return new (alloc_node())xpath_ast_node(ast_func_count, xpath_type_number, args[0]);
         } else if (name == PUGIXML_TEXT("contains") && argc == 2) {
           return new (alloc_node())xpath_ast_node(ast_func_contains, xpath_type_string, args[0], args[1]);
@@ -7786,10 +7921,11 @@ struct xpath_parser {
         break;
 
       case 'f':
-        if (name == PUGIXML_TEXT("false") && argc == 0)
+        if (name == PUGIXML_TEXT("false") && argc == 0) {
           return new (alloc_node())xpath_ast_node(ast_func_false, xpath_type_boolean);
-        else if (name == PUGIXML_TEXT("floor") && argc == 1)
+        } else if (name == PUGIXML_TEXT("floor") && argc == 1) {
           return new (alloc_node())xpath_ast_node(ast_func_floor, xpath_type_number, args[0]);
+        }
 
 
 
@@ -7797,8 +7933,9 @@ struct xpath_parser {
         break;
 
       case 'i':
-        if (name == PUGIXML_TEXT("id") && argc == 1)
+        if (name == PUGIXML_TEXT("id") && argc == 1) {
           return new (alloc_node())xpath_ast_node(ast_func_id, xpath_type_node_set, args[0]);
+        }
 
 
 
@@ -7806,12 +7943,13 @@ struct xpath_parser {
         break;
 
       case 'l':
-        if (name == PUGIXML_TEXT("last") && argc == 0)
+        if (name == PUGIXML_TEXT("last") && argc == 0) {
           return new (alloc_node())xpath_ast_node(ast_func_last, xpath_type_number);
-        else if (name == PUGIXML_TEXT("lang") && argc == 1)
+        } else if (name == PUGIXML_TEXT("lang") && argc == 1) {
           return new (alloc_node())xpath_ast_node(ast_func_lang, xpath_type_boolean, args[0]);
-        else if (name == PUGIXML_TEXT("local-name") && argc <= 1)
+        } else if (name == PUGIXML_TEXT("local-name") && argc <= 1) {
           return parse_function_helper(ast_func_local_name_0, ast_func_local_name_1, argc, args);
+        }
 
 
 
@@ -7819,20 +7957,21 @@ struct xpath_parser {
         break;
 
       case 'n':
-        if (name == PUGIXML_TEXT("name") && argc <= 1)
+        if (name == PUGIXML_TEXT("name") && argc <= 1) {
           return parse_function_helper(ast_func_name_0, ast_func_name_1, argc, args);
-        else if (name == PUGIXML_TEXT("namespace-uri") && argc <= 1)
+        } else if (name == PUGIXML_TEXT("namespace-uri") && argc <= 1) {
           return parse_function_helper(ast_func_namespace_uri_0, ast_func_namespace_uri_1, argc, args);
-        else if (name == PUGIXML_TEXT("normalize-space") && argc <= 1)
+        } else if (name == PUGIXML_TEXT("normalize-space") && argc <= 1) {
           return new (alloc_node())xpath_ast_node(argc == 0 ? ast_func_normalize_space_0 : ast_func_normalize_space_1,
                                                   xpath_type_string,
                                                   args[0],
                                                   args[1]);
-        else if (name == PUGIXML_TEXT("not") && argc == 1)
+        } else if (name == PUGIXML_TEXT("not") && argc == 1) {
           return new (alloc_node())xpath_ast_node(ast_func_not, xpath_type_boolean, args[0]);
-        else if (name == PUGIXML_TEXT("number") && argc <= 1)
+        } else if (name == PUGIXML_TEXT("number") && argc <= 1) {
           return new (alloc_node())xpath_ast_node(argc == 0 ? ast_func_number_0 : ast_func_number_1, xpath_type_number,
                                                   args[0]);
+        }
 
 
 
@@ -7840,8 +7979,9 @@ struct xpath_parser {
         break;
 
       case 'p':
-        if (name == PUGIXML_TEXT("position") && argc == 0)
+        if (name == PUGIXML_TEXT("position") && argc == 0) {
           return new (alloc_node())xpath_ast_node(ast_func_position, xpath_type_number);
+        }
 
 
 
@@ -7849,8 +7989,9 @@ struct xpath_parser {
         break;
 
       case 'r':
-        if (name == PUGIXML_TEXT("round") && argc == 1)
+        if (name == PUGIXML_TEXT("round") && argc == 1) {
           return new (alloc_node())xpath_ast_node(ast_func_round, xpath_type_number, args[0]);
+        }
 
 
 
@@ -7876,18 +8017,20 @@ struct xpath_parser {
                                                   xpath_type_string, args[0],
                                                   args[1]);
         } else if (name == PUGIXML_TEXT("sum") && argc == 1) {
-          if (args[0]->rettype() != xpath_type_node_set)
+          if (args[0]->rettype() != xpath_type_node_set) {
             throw_error("Function has to be applied to node set");
+          }
           return new (alloc_node())xpath_ast_node(ast_func_sum, xpath_type_number, args[0]);
         }
 
         break;
 
       case 't':
-        if (name == PUGIXML_TEXT("translate") && argc == 3)
+        if (name == PUGIXML_TEXT("translate") && argc == 3) {
           return new (alloc_node())xpath_ast_node(ast_func_translate, xpath_type_string, args[0], args[1]);
-        else if (name == PUGIXML_TEXT("true") && argc == 0)
+        } else if (name == PUGIXML_TEXT("true") && argc == 0) {
           return new (alloc_node())xpath_ast_node(ast_func_true, xpath_type_boolean);
+        }
 
 
 
@@ -7905,12 +8048,13 @@ struct xpath_parser {
 
     switch (name.begin[0]) {
       case 'a':
-        if (name == PUGIXML_TEXT("ancestor"))
+        if (name == PUGIXML_TEXT("ancestor")) {
           return axis_ancestor;
-        else if (name == PUGIXML_TEXT("ancestor-or-self"))
+        } else if (name == PUGIXML_TEXT("ancestor-or-self")) {
           return axis_ancestor_or_self;
-        else if (name == PUGIXML_TEXT("attribute"))
+        } else if (name == PUGIXML_TEXT("attribute")) {
           return axis_attribute;
+        }
 
 
 
@@ -7918,8 +8062,9 @@ struct xpath_parser {
         break;
 
       case 'c':
-        if (name == PUGIXML_TEXT("child"))
+        if (name == PUGIXML_TEXT("child")) {
           return axis_child;
+        }
 
 
 
@@ -7927,10 +8072,11 @@ struct xpath_parser {
         break;
 
       case 'd':
-        if (name == PUGIXML_TEXT("descendant"))
+        if (name == PUGIXML_TEXT("descendant")) {
           return axis_descendant;
-        else if (name == PUGIXML_TEXT("descendant-or-self"))
+        } else if (name == PUGIXML_TEXT("descendant-or-self")) {
           return axis_descendant_or_self;
+        }
 
 
 
@@ -7938,10 +8084,11 @@ struct xpath_parser {
         break;
 
       case 'f':
-        if (name == PUGIXML_TEXT("following"))
+        if (name == PUGIXML_TEXT("following")) {
           return axis_following;
-        else if (name == PUGIXML_TEXT("following-sibling"))
+        } else if (name == PUGIXML_TEXT("following-sibling")) {
           return axis_following_sibling;
+        }
 
 
 
@@ -7949,8 +8096,9 @@ struct xpath_parser {
         break;
 
       case 'n':
-        if (name == PUGIXML_TEXT("namespace"))
+        if (name == PUGIXML_TEXT("namespace")) {
           return axis_namespace;
+        }
 
 
 
@@ -7958,12 +8106,13 @@ struct xpath_parser {
         break;
 
       case 'p':
-        if (name == PUGIXML_TEXT("parent"))
+        if (name == PUGIXML_TEXT("parent")) {
           return axis_parent;
-        else if (name == PUGIXML_TEXT("preceding"))
+        } else if (name == PUGIXML_TEXT("preceding")) {
           return axis_preceding;
-        else if (name == PUGIXML_TEXT("preceding-sibling"))
+        } else if (name == PUGIXML_TEXT("preceding-sibling")) {
           return axis_preceding_sibling;
+        }
 
 
 
@@ -7971,8 +8120,9 @@ struct xpath_parser {
         break;
 
       case 's':
-        if (name == PUGIXML_TEXT("self"))
+        if (name == PUGIXML_TEXT("self")) {
           return axis_self;
+        }
 
 
 
@@ -7987,8 +8137,9 @@ struct xpath_parser {
   nodetest_t parse_node_test_type(const xpath_lexer_string& name) {
     switch (name.begin[0]) {
       case 'c':
-        if (name == PUGIXML_TEXT("comment"))
+        if (name == PUGIXML_TEXT("comment")) {
           return nodetest_type_comment;
+        }
 
 
 
@@ -7996,8 +8147,9 @@ struct xpath_parser {
         break;
 
       case 'n':
-        if (name == PUGIXML_TEXT("node"))
+        if (name == PUGIXML_TEXT("node")) {
           return nodetest_type_node;
+        }
 
 
 
@@ -8005,8 +8157,9 @@ struct xpath_parser {
         break;
 
       case 'p':
-        if (name == PUGIXML_TEXT("processing-instruction"))
+        if (name == PUGIXML_TEXT("processing-instruction")) {
           return nodetest_type_pi;
+        }
 
 
 
@@ -8014,8 +8167,9 @@ struct xpath_parser {
         break;
 
       case 't':
-        if (name == PUGIXML_TEXT("text"))
+        if (name == PUGIXML_TEXT("text")) {
           return nodetest_type_text;
+        }
 
 
 
@@ -8033,13 +8187,15 @@ struct xpath_parser {
       {
         xpath_lexer_string name = _lexer.contents();
 
-        if (!_variables)
+        if (!_variables) {
           throw_error("Unknown variable: variable set is not provided");
+        }
 
         xpath_variable *var = get_variable(_variables, name.begin, name.end);
 
-        if (!var)
+        if (!var) {
           throw_error("Unknown variable: variable set does not contain the given name");
+        }
 
         _lexer.next();
 
@@ -8052,8 +8208,9 @@ struct xpath_parser {
 
         xpath_ast_node *n = parse_expression();
 
-        if (_lexer.current() != lex_close_brace)
+        if (_lexer.current() != lex_close_brace) {
           throw_error("Unmatched braces");
+        }
 
         _lexer.next();
 
@@ -8074,8 +8231,9 @@ struct xpath_parser {
       {
         double value = 0;
 
-        if (!convert_string_to_number(_lexer.contents().begin, _lexer.contents().end, &value))
+        if (!convert_string_to_number(_lexer.contents().begin, _lexer.contents().end, &value)) {
           throw_error_oom();
+        }
 
         xpath_ast_node *n = new (alloc_node())xpath_ast_node(ast_number_constant, xpath_type_number, value);
         _lexer.next();
@@ -8093,23 +8251,26 @@ struct xpath_parser {
 
         xpath_ast_node *last_arg = 0;
 
-        if (_lexer.current() != lex_open_brace)
+        if (_lexer.current() != lex_open_brace) {
           throw_error("Unrecognized function call");
+        }
         _lexer.next();
 
-        if (_lexer.current() != lex_close_brace)
+        if (_lexer.current() != lex_close_brace) {
           args[argc++] = parse_expression();
+        }
 
         while (_lexer.current() != lex_close_brace) {
-          if (_lexer.current() != lex_comma)
+          if (_lexer.current() != lex_comma) {
             throw_error("No comma between function arguments");
+          }
           _lexer.next();
 
           xpath_ast_node *n = parse_expression();
 
-          if (argc < 2)
+          if (argc < 2) {
             args[argc] = n;
-          else                                                    last_arg->set_next(n); argc++;
+          } else {                                                           last_arg->set_next(n); } argc++;
           last_arg = n;
         }
 
@@ -8136,15 +8297,17 @@ struct xpath_parser {
 
       xpath_ast_node *expr = parse_expression();
 
-      if (n->rettype() != xpath_type_node_set)
+      if (n->rettype() != xpath_type_node_set) {
         throw_error("Predicate has to be applied to node set");
+      }
 
       bool posinv = expr->rettype() != xpath_type_number && expr->is_posinv();
 
       n = new (alloc_node())xpath_ast_node(posinv ? ast_filter_posinv : ast_filter, xpath_type_node_set, n, expr);
 
-      if (_lexer.current() != lex_close_square_brace)
+      if (_lexer.current() != lex_close_square_brace) {
         throw_error("Unmatched square brace");
+      }
 
       _lexer.next();
     }
@@ -8158,8 +8321,9 @@ struct xpath_parser {
   // NameTest ::= '*' | NCName ':' '*' | QName
   // AbbreviatedStep ::= '.' | '..'
   xpath_ast_node *parse_step(xpath_ast_node *set) {
-    if (set && set->rettype() != xpath_type_node_set)
+    if (set && set->rettype() != xpath_type_node_set) {
       throw_error("Step has to be applied to node set");
+    }
 
     bool axis_specified = false;
     axis_t axis = axis_child;                     // implied child axis
@@ -8190,13 +8354,15 @@ struct xpath_parser {
       // was it an axis name?
       if (_lexer.current() == lex_double_colon) {
         // parse axis name
-        if (axis_specified)
+        if (axis_specified) {
           throw_error("Two axis specifiers in one step");
+        }
 
         axis = parse_axis_name(nt_name, axis_specified);
 
-        if (!axis_specified)
+        if (!axis_specified) {
           throw_error("Unknown axis");
+        }
 
         // read actual node test
         _lexer.next();
@@ -8221,20 +8387,23 @@ struct xpath_parser {
 
             nt_type = parse_node_test_type(nt_name);
 
-            if (nt_type == nodetest_none)
+            if (nt_type == nodetest_none) {
               throw_error("Unrecognized node type");
+            }
 
             nt_name = xpath_lexer_string();
           } else if (nt_name == PUGIXML_TEXT("processing-instruction")) {
-            if (_lexer.current() != lex_quoted_string)
+            if (_lexer.current() != lex_quoted_string) {
               throw_error("Only literals are allowed as arguments to processing-instruction()");
+            }
 
             nt_type = nodetest_pi;
             nt_name = _lexer.contents();
             _lexer.next();
 
-            if (_lexer.current() != lex_close_brace)
+            if (_lexer.current() != lex_close_brace) {
               throw_error("Unmatched brace near processing-instruction()");
+            }
             _lexer.next();
           } else {
             throw_error("Unmatched brace near node type test");
@@ -8265,13 +8434,14 @@ struct xpath_parser {
 
       xpath_ast_node *pred = new (alloc_node())xpath_ast_node(ast_predicate, xpath_type_node_set, expr);
 
-      if (_lexer.current() != lex_close_square_brace)
+      if (_lexer.current() != lex_close_square_brace) {
         throw_error("Unmatched square brace");
+      }
       _lexer.next();
 
-      if (last)
+      if (last) {
         last->set_next(pred);
-      else                                    n->set_right(pred); last = pred;
+      } else {                                       n->set_right(pred); } last = pred;
     }
 
     return n;
@@ -8285,8 +8455,9 @@ struct xpath_parser {
       lexeme_t l = _lexer.current();
       _lexer.next();
 
-      if (l == lex_double_slash)
+      if (l == lex_double_slash) {
         n = new (alloc_node())xpath_ast_node(ast_step, n, axis_descendant_or_self, nodetest_type_node, 0);
+      }
 
       n = parse_step(n);
     }
@@ -8305,10 +8476,11 @@ struct xpath_parser {
       // relative location path can start from axis_attribute, dot, double_dot, multiply and string lexemes; any other lexeme means standalone root path
       lexeme_t l = _lexer.current();
 
-      if (l == lex_string || l == lex_axis_attribute || l == lex_dot || l == lex_double_dot || l == lex_multiply)
+      if (l == lex_string || l == lex_axis_attribute || l == lex_dot || l == lex_double_dot || l == lex_multiply) {
         return parse_relative_location_path(n);
-      else
+      } else {
         return n;
+      }
     } else if (_lexer.current() == lex_double_slash) {
       _lexer.next();
 
@@ -8346,15 +8518,17 @@ struct xpath_parser {
           ++state;
         }
 
-        if (*state != '(')
+        if (*state != '(') {
           return parse_location_path();
+        }
 
 
 
 
         // This looks like a function call; however this still can be a node-test. Check it.
-        if (parse_node_test_type(_lexer.contents()) != nodetest_none)
+        if (parse_node_test_type(_lexer.contents()) != nodetest_none) {
           return parse_location_path();
+        }
       }
 
       xpath_ast_node *n = parse_filter_expression();
@@ -8364,8 +8538,9 @@ struct xpath_parser {
         _lexer.next();
 
         if (l == lex_double_slash) {
-          if (n->rettype() != xpath_type_node_set)
+          if (n->rettype() != xpath_type_node_set) {
             throw_error("Step has to be applied to node set");
+          }
 
           n = new (alloc_node())xpath_ast_node(ast_step, n, axis_descendant_or_self, nodetest_type_node, 0);
         }
@@ -8387,8 +8562,9 @@ struct xpath_parser {
 
       xpath_ast_node *expr = parse_union_expression();
 
-      if (n->rettype() != xpath_type_node_set || expr->rettype() != xpath_type_node_set)
+      if (n->rettype() != xpath_type_node_set || expr->rettype() != xpath_type_node_set) {
         throw_error("Union operator has to be applied to node sets");
+      }
 
       n = new (alloc_node())xpath_ast_node(ast_op_union, xpath_type_node_set, n, expr);
     }
@@ -8537,10 +8713,9 @@ struct xpath_parser {
   xpath_ast_node *parse() {
     xpath_ast_node *result = parse_expression();
 
-    if (_lexer.current() != lex_eof) {
+    if (_lexer.current() != lex_eof)
       // there are still unparsed tokens left, error
       throw_error("Incorrect query");
-    }
 
     return result;
   }
@@ -8569,8 +8744,9 @@ struct xpath_query_impl {
   }
 
   static void destroy(void *ptr) {
-    if (!ptr)
+    if (!ptr) {
       return;
+    }
 
 
 
@@ -8592,15 +8768,17 @@ struct xpath_query_impl {
 };
 
 xpath_string evaluate_string_impl(xpath_query_impl *impl, const xpath_node& n, xpath_stack_data& sd) {
-  if (!impl)
+  if (!impl) {
     return xpath_string();
+  }
 
 
 
 
         #ifdef PUGIXML_NO_EXCEPTIONS
-  if (setjmp(sd.error_handler))
+  if (setjmp(sd.error_handler)) {
     return xpath_string();
+  }
 
 
 
@@ -8686,12 +8864,14 @@ void xpath_node_set::_assign(const_iterator begin, const_iterator end) {
 
   if (size <= 1) {
     // deallocate old buffer
-    if (_begin != &_storage)
+    if (_begin != &_storage) {
       global_deallocate(_begin);
+    }
 
     // use internal buffer
-    if (begin != end)
+    if (begin != end) {
       _storage = *begin;
+    }
 
     _begin = &_storage;
     _end = &_storage + size;
@@ -8711,8 +8891,9 @@ void xpath_node_set::_assign(const_iterator begin, const_iterator end) {
     memcpy(storage, begin, size * sizeof(xpath_node));
 
     // deallocate old buffer
-    if (_begin != &_storage)
+    if (_begin != &_storage) {
       global_deallocate(_begin);
+    }
 
     // finalize
     _begin = storage;
@@ -8729,8 +8910,9 @@ xpath_node_set::xpath_node_set(const_iterator begin, const_iterator end,
 }
 
 xpath_node_set::~xpath_node_set() {
-  if (_begin != &_storage)
+  if (_begin != &_storage) {
     global_deallocate(_begin);
+  }
 }
 
 xpath_node_set::xpath_node_set(const xpath_node_set& ns) : _type(ns._type), _begin(&_storage), _end(&_storage) {
@@ -8738,8 +8920,9 @@ xpath_node_set::xpath_node_set(const xpath_node_set& ns) : _type(ns._type), _beg
 }
 
 xpath_node_set& xpath_node_set::operator=(const xpath_node_set& ns) {
-  if (this == &ns)
+  if (this == &ns) {
     return *this;
+  }
 
 
 
@@ -8840,8 +9023,9 @@ const xpath_node_set& xpath_variable::get_node_set() const {
 }
 
 bool xpath_variable::set(bool value) {
-  if (_type != xpath_type_boolean)
+  if (_type != xpath_type_boolean) {
     return false;
+  }
 
 
 
@@ -8851,8 +9035,9 @@ bool xpath_variable::set(bool value) {
 }
 
 bool xpath_variable::set(double value) {
-  if (_type != xpath_type_number)
+  if (_type != xpath_type_number) {
     return false;
+  }
 
 
 
@@ -8862,8 +9047,9 @@ bool xpath_variable::set(double value) {
 }
 
 bool xpath_variable::set(const char_t *value) {
-  if (_type != xpath_type_string)
+  if (_type != xpath_type_string) {
     return false;
+  }
 
 
 
@@ -8874,8 +9060,9 @@ bool xpath_variable::set(const char_t *value) {
   size_t size = (strlength(value) + 1) * sizeof(char_t);
 
   char_t *copy = static_cast<char_t *>(global_allocate(size));
-  if (!copy)
+  if (!copy) {
     return false;
+  }
 
 
 
@@ -8883,16 +9070,18 @@ bool xpath_variable::set(const char_t *value) {
   memcpy(copy, value, size);
 
   // replace old string
-  if (var->value)
+  if (var->value) {
     global_deallocate(var->value);
+  }
   var->value = copy;
 
   return true;
 }
 
 bool xpath_variable::set(const xpath_node_set& value) {
-  if (_type != xpath_type_node_set)
+  if (_type != xpath_type_node_set) {
     return false;
+  }
 
 
 
@@ -8927,8 +9116,9 @@ xpath_variable *xpath_variable_set::find(const char_t *name) const {
 
   // look for existing variable
   for (xpath_variable *var = _data[hash]; var; var = var->_next) {
-    if (strequal(var->name(), name))
+    if (strequal(var->name(), name)) {
       return var;
+    }
   }
 
   return 0;
@@ -8940,8 +9130,9 @@ xpath_variable *xpath_variable_set::add(const char_t *name, xpath_value_type typ
 
   // look for existing variable
   for (xpath_variable *var = _data[hash]; var; var = var->_next) {
-    if (strequal(var->name(), name))
+    if (strequal(var->name(), name)) {
       return var->type() == type ? var : 0;
+    }
   }
 
   // add new variable
@@ -9015,8 +9206,9 @@ xpath_query::~xpath_query() {
 }
 
 xpath_value_type xpath_query::return_type() const {
-  if (!_impl)
+  if (!_impl) {
     return xpath_type_none;
+  }
 
 
 
@@ -9025,8 +9217,9 @@ xpath_value_type xpath_query::return_type() const {
 }
 
 bool xpath_query::evaluate_boolean(const xpath_node& n) const {
-  if (!_impl)
+  if (!_impl) {
     return false;
+  }
 
 
 
@@ -9035,8 +9228,9 @@ bool xpath_query::evaluate_boolean(const xpath_node& n) const {
   xpath_stack_data sd;
 
         #ifdef PUGIXML_NO_EXCEPTIONS
-  if (setjmp(sd.error_handler))
+  if (setjmp(sd.error_handler)) {
     return false;
+  }
 
 
 
@@ -9047,8 +9241,9 @@ bool xpath_query::evaluate_boolean(const xpath_node& n) const {
 }
 
 double xpath_query::evaluate_number(const xpath_node& n) const {
-  if (!_impl)
+  if (!_impl) {
     return gen_nan();
+  }
 
 
 
@@ -9057,8 +9252,9 @@ double xpath_query::evaluate_number(const xpath_node& n) const {
   xpath_stack_data sd;
 
         #ifdef PUGIXML_NO_EXCEPTIONS
-  if (setjmp(sd.error_handler))
+  if (setjmp(sd.error_handler)) {
     return gen_nan();
+  }
 
 
 
@@ -9096,8 +9292,9 @@ size_t xpath_query::evaluate_string(char_t *buffer, size_t capacity, const xpath
 }
 
 xpath_node_set xpath_query::evaluate_node_set(const xpath_node& n) const {
-  if (!_impl)
+  if (!_impl) {
     return xpath_node_set();
+  }
 
 
 
@@ -9120,8 +9317,9 @@ xpath_node_set xpath_query::evaluate_node_set(const xpath_node& n) const {
   xpath_stack_data sd;
 
         #ifdef PUGIXML_NO_EXCEPTIONS
-  if (setjmp(sd.error_handler))
+  if (setjmp(sd.error_handler)) {
     return xpath_node_set();
+  }
 
 
 

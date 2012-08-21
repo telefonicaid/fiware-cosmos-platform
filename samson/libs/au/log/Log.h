@@ -56,57 +56,46 @@ namespace au {
 extern const char *log_reseved_words[];
 
 // Entry in the log
-class Log : public au::Object {
+class Log {
+  
 public:
 
-  LogData log_data;
+  Log() {}
+  ~Log() {}
 
-  std::map<std::string, std::string> fields;
-
-  Log() {
-  }
-
-  ~Log() {
-  }
-
-  // Set and get methods for string-kind fields
-  void add_field(std::string field_name, std::string field_value);
-  std::string getField(std::string name, std::string default_value);
+  // Main log data
+  LogData& log_data();
+  
+  // Set and get methods
+  void Set(const std::string& field_name, const std::string& field_value);
+  std::string Get(const std::string& name, const std::string& default_value);
+  std::string Get(std::string name);
 
   // Read and Write over a file descriptor ( network or disk )
-  bool read(au::FileDescriptor *fd);
-  bool write(au::FileDescriptor *fd);
+  bool Read(au::FileDescriptor *fd);
+  bool Write(au::FileDescriptor *fd);
 
   // Debug string
   std::string str();
 
-  // Get information about a particular field
-  std::string get(std::string name);
-
   // Get total number og bytes when serialized
-  size_t getTotalSerialitzationSize();
+  size_t SerialitzationSize();
 
   // Match agains a particuar regular expression
   bool match(const regex_t *preg) {
     std::map<std::string, std::string>::iterator it_fields;
-    for (it_fields = fields.begin(); it_fields != fields.end(); it_fields++) {
+    for (it_fields = fields_.begin(); it_fields != fields_.end(); it_fields++) {
       std::string value = it_fields->second;
       int c = regexec(preg, value.c_str(), 0, NULL, 0);
-      if (c == 0) {
+      if (c == 0)
         return true;
-      }
     }
-
     return false;
   }
 
-  bool check_time(time_t t) {
-    return ( log_data.tv.tv_sec <= t );
-  }
-
   // Spetial log to define mark of new session
-  void set_new_session();
-  bool is_new_session();
+  void SetNewSession();
+  bool IsNewSession();
 
 private:
 
@@ -114,6 +103,10 @@ private:
   size_t getStringsSize();
   void copyStrings(char *data);
   void addStrings(char *strings, size_t len);
+  
+  LogData log_data_;
+  std::map<std::string, std::string> fields_;
+
 };
 }
 

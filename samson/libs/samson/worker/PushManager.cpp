@@ -42,10 +42,10 @@ namespace samson { namespace worker {
                    }
 
                    void PushOperation::notify(engine::Notification *notification) {
-                     if (distributed)
+                     if (distributed) {
                        return;  // If the block has already been distributed, ignore notifications
-
-                      // Get block_id that has been distributed
+                     }
+                     // Get block_id that has been distributed
                      size_t block_id = notification->environment().get("block_id", (size_t)-1);
 
                      // If this is me
@@ -88,9 +88,8 @@ namespace samson { namespace worker {
 
                      samson_worker_->data_model->Commit(caller, command, &error);
 
-                     if (error.IsActivated()) {
+                     if (error.IsActivated())
                        LM_W(("Error commiting to data model in push operation: %s", error.GetMessage().c_str()));  // Send a commit response message to delilah
-                     }
                      PacketPointer packet(new Packet(Message::PushBlockCommitResponse));
                      packet->to = NodeIdentifier(DelilahNode, delilah_id_);
                      packet->message->set_push_id(push_id_);

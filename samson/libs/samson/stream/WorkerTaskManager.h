@@ -35,15 +35,15 @@ struct IdRange {
   }
 
   inline bool operator <(const IdRange &id_range) const {
-    if (id < id_range.id) {
+    if (id < id_range.id)
       return true;
-    }
 
 
 
-    if (id > id_range.id) {
+
+    if (id > id_range.id)
       return false;
-    }
+
 
 
 

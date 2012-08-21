@@ -98,10 +98,10 @@ void ConsoleAutoComplete::add(const std::string& label, const std::string& comma
 }
 
 void ConsoleAutoComplete::add(ConsoleAutoCompleteAlternative alternative) {
-  if (alternative.command.length() < last_word.length())
+  if (alternative.command.length() < last_word.length()) {
     return;   // Not valid candidate
-
-   // Check if it was previously included...
+  }
+  // Check if it was previously included...
   for (size_t i = 0; i < last_word_alternatives.size(); i++) {
     if (last_word_alternatives[i].command == alternative.command)
       return;
@@ -115,21 +115,24 @@ void ConsoleAutoComplete::auto_complete_files(std::string file_selector) {
   std::string directory = get_directory_from_path(last_word);      // By default, take the last work as the directory to go
   std::string base = path_remove_last_component(last_word);
 
-  if (( base.length() > 0 ) && ( base != "/" ))
+  if (( base.length() > 0 ) && ( base != "/" )) {
     base.append("/");  // printf("Last word '%s' dir='%s' base='%s'\n", last_word.c_str() , directory.c_str() , base.c_str() );
-   // Try to open directory
+  }
+  // Try to open directory
   DIR *dp;
   struct dirent *dirp;
-  if ((dp  = opendir(directory.c_str())) == NULL)
+  if ((dp  = opendir(directory.c_str())) == NULL) {
     return;   // Nothing else to do...
-
+  }
   while ((dirp = readdir(dp)) != NULL) {
     std::string fileName = dirp->d_name;
 
     // Skip ".files"
-    if (fileName.length() > 0)
-      if (fileName[0] == '.')
+    if (fileName.length() > 0) {
+      if (fileName[0] == '.') {
         continue;  // Full path of the file
+      }
+    }
     std::string path = path_from_directory(directory, dirp->d_name);
 
     struct ::stat info;

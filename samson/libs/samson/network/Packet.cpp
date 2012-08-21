@@ -114,8 +114,9 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
   if (s != au::OK)
     return s;
 
-  if (size)
+  if (size) {
     *size += sizeof(Message::Header);  // Check header
+  }
   if (!header.check()) {
     fd->Close();   // Close connection ( We close here since it is not a io error, is a protocol error )
     LM_E(("Error checking received header from %s", fd->name().c_str()));

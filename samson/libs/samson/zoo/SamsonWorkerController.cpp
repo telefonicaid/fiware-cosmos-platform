@@ -118,10 +118,9 @@ void SamsonWorkerController::watcher(samson::zoo::Connection *connection, int ty
 
   LM_T(LmtClusterSetup, ("SamsonWorkerController watch %s", path ));
 
-  if (strcmp(path, "/samson/cluster") == 0) {
+  if (strcmp(path, "/samson/cluster") == 0)
     // Update of the cluster information
     recover_cluster_info();  // Rest of watchers are related with workers up or down
-  }
   int rc = check();
   if (rc)
     LM_W(("Error checkin samson worker controller %s", zoo::str_error(rc).c_str()));
@@ -434,10 +433,11 @@ int SamsonWorkerController::create_cluster_info(samson::gpb::ClusterInfo *cluste
   // Decide how to organize process units
   int replica_factor = 3;
 
-  if (worker_ids.size() == 1)
+  if (worker_ids.size() == 1) {
     replica_factor = 1;
-  else if (worker_ids.size() == 2)
+  } else if (worker_ids.size() == 2) {
     replica_factor = 2;  // Decide number of process units
+  }
   int num_units = 16 * worker_ids.size();  // Number of divisions
 
   // Number of workers
@@ -564,8 +564,9 @@ au::Uint64Set SamsonWorkerController::GetWorkerIdsForRange(KVRange range) {
     if (process_unit_range.IsOverlapped(range)) {
       // Add the main worker id
       size_t tmp_worker_id = process_unit.worker_id();
-      if (tmp_worker_id != worker_id_)
+      if (tmp_worker_id != worker_id_) {
         worker_ids.insert(tmp_worker_id);  // Add replicas
+      }
       for (int r = 0; r < process_unit.replica_worker_id_size(); r++) {
         size_t tmp_worker_id = process_unit.replica_worker_id(r);
         if (tmp_worker_id != worker_id_)

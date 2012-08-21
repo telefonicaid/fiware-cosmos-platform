@@ -85,9 +85,8 @@ public:
 
                    for (size_t i = 0; i < conditions_descriptions.size(); i++) {
                      StringVector parts = StringVector::ParseFromString(conditions_descriptions[i], '=');
-                     if (parts.size() == 2) {
+                     if (parts.size() == 2)
                        addCondition(parts[0], parts[1]);
-                     }
                    }
                  }
 
@@ -98,9 +97,8 @@ public:
                  bool check(TreeItem *tree) {
                    for (size_t i = 0; i < conditions.size(); i++) {
                      LM_M(("Cheking condition %s=%s", conditions[i].name.c_str(), conditions[i].value.c_str()));
-                     if (!conditions[i].check(tree)) {
+                     if (!conditions[i].check(tree))
                        return false;
-                     }
                    }
                    return true;
                  }

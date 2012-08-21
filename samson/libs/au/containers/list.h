@@ -73,9 +73,8 @@ public:
     typename std::list<V *>::iterator iter;
 
     for (iter = std::list<V *>::begin(); iter != std::list<V *>::end(); iter++) {
-      if (*iter == v) {
+      if (*iter == v)
         break;
-      }
     }
 
     if (iter == std::list<V *>::end()) {

@@ -52,28 +52,28 @@ public:
   }
 
   static bool compare_format(std::string &format_1, std::string &format_2) {
-    if (format_1 == "*") {
+    if (format_1 == "*")
       return true;
-    }
 
 
-    if (format_2 == "*") {
+
+    if (format_2 == "*")
       return true;
-    }
+
 
 
     return ( format_1 == format_2 );
   }
 
   bool isEqual(KVFormat otherFormat) {
-    if (!compare_format(keyFormat, otherFormat.keyFormat)) {
+    if (!compare_format(keyFormat, otherFormat.keyFormat))
       return false;
-    }
 
 
-    if (!compare_format(valueFormat, otherFormat.valueFormat)) {
+
+    if (!compare_format(valueFormat, otherFormat.valueFormat))
       return false;
-    }
+
 
 
 
@@ -81,9 +81,9 @@ public:
   }
 
   bool isEqualKey(KVFormat otherFormat) {
-    if (!compare_format(keyFormat, otherFormat.keyFormat)) {
+    if (!compare_format(keyFormat, otherFormat.keyFormat))
       return false;
-    }
+
 
 
     return true;
@@ -121,14 +121,14 @@ public:
   }
 
   bool isGenericKVFormat() {
-    if (keyFormat != "*") {
+    if (keyFormat != "*")
       return false;
-    }
 
 
-    if (valueFormat != "*") {
+
+    if (valueFormat != "*")
       return false;
-    }
+
 
 
     return true;

@@ -223,10 +223,10 @@ void DiskConnection::run_as_input() {
         file_descriptor = NULL;
       }
     } else {
-      if (files.size() == 0) {
+      if (files.size() == 0)
         return;              // Nothing else to be read
-      }
-      // Open the next file...
+
+       // Open the next file...
       std::string current_file_name = files.front();
       files.pop_front();
 

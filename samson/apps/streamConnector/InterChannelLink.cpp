@@ -34,11 +34,10 @@ void InterChannelLink::push(au::ObjectList<InterChannelPacket> *packets) {
     packets->extract_front(packet_container);
 
     InterChannelPacket *packet = packet_container.object();
-    if (packet) {
+    if (packet)
       push(packet);
-    } else {
+    else
       return;           // No more packets to be push
-    }
   }
 }
 

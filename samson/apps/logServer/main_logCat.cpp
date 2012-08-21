@@ -98,10 +98,12 @@ int main(int argC, const char *argV[]) {
   LM_V(("Using format %s", format));
 
   // Open teh log file
-  au::LogFile *logFile = NULL;
-  au::Status s = au::LogFile::read(target_file, &logFile);
+  au::ErrorManager error;
+  std::vector<au::SharedPointer<au::Log> > logs = au::readLogFile(target_file, error);
 
-  if (s == au::OK) {
+  if( error.IsActivated() )
+    LM_X(1, ("ERROR: %s",error.GetMessage().c_str()) );
+  
     // Formatter to create table
     au::TableLogFormatter table_log_formater(format);
 
@@ -114,16 +116,16 @@ int main(int argC, const char *argV[]) {
     table_log_formater.set_as_multi_session(is_multi_session);
     table_log_formater.set_limit(limit);
 
-    au::ErrorManager error;
     table_log_formater.init(&error);
 
     if (error.IsActivated())
-      LM_X(1, ("Error: %s", error.GetMessage().c_str())); size_t num_logs = logFile->logs.size();
-    for (size_t i = 0; i <  num_logs; i++) {
-      au::Log *log = logFile->logs[ num_logs - i - 1 ];
+      LM_X(1, ("Error: %s", error.GetMessage().c_str()));
+  
+  size_t num_logs = logs.size();
+  for (size_t i = 0; i <  num_logs; i++) {
 
       // Add log to the table formatter
-      table_log_formater.add(log);
+      table_log_formater.add(logs[ num_logs - i - 1 ]);
 
       // Check if we have enougth
       if (table_log_formater.enougthRecords())
@@ -132,8 +134,5 @@ int main(int argC, const char *argV[]) {
 
     // Emit output to the stdout
     std::cout << table_log_formater.str();
-  } else {
-    LM_X(1, ("Unable to open file %s (%s)", target_file, au::status(s)));
-  }
 }
 

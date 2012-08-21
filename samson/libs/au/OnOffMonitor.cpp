@@ -24,10 +24,11 @@ double OnOffMonitor::get_off_time() {
 void OnOffMonitor::set_on(bool _on) {
   double t = cronometer.seconds();
 
-  if (on)
+  if (on) {
     on_time += t;
-  else
+  } else {
     off_time += t;  // Forgetting factor
+  }
   off_time *= ::pow(f, t);
   on_time *= ::pow(f, t);
 

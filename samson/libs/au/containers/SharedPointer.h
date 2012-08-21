@@ -61,9 +61,8 @@ public:
   }
 
   SharedPointer(const SharedPointer<C>& shared_pointer) {
-    if (!shared_pointer.shared_reference_counter_) {
+    if (!shared_pointer.shared_reference_counter_)
       LM_X(1, ("Internal error un au::SharedPoint"));
-    }
 
     shared_reference_counter_ = shared_pointer.shared_reference_counter_;
     shared_reference_counter_->Retain();
@@ -148,9 +147,9 @@ public:
   SharedPointer<T> dynamic_pointer_cast() const {
     T *t = dynamic_cast<T *>( c_ );
 
-    if (t == NULL) {
+    if (t == NULL)
       return SharedPointer<T> (NULL);   // Different unrelated shared pointer to NULL
-    }
+
     return SharedPointer<T>(shared_reference_counter_, t);
   }
 
@@ -160,9 +159,8 @@ private:
   void Release() {
     // Release in the reference counter & remove object if necessary
     if (shared_reference_counter_->Release()  == 0) {
-      if (c_) {
+      if (c_)
         delete c_;
-      }
       delete shared_reference_counter_;
     }
   }

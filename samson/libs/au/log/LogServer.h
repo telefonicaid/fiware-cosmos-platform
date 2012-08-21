@@ -16,23 +16,28 @@
 #include "au/network/Service.h"
 #include "au/string/split.h"
 #include "au/tables/Table.h"
+#include "au/log/LogServerChannel.h"
 
 namespace au {
 class LogServerChannel;
 
 class LogServer : au::network::ConsoleService {
-  // Channel to accept connection with binary logs
-  LogServerChannel *channel;
 
 public:
 
   // Constructor
   LogServer();
-
+  ~LogServer(){};
+  
   // au::network::ConsoleService
   void runCommand(std::string command, au::Environment *environment, au::ErrorManager *error);
   void autoComplete(ConsoleAutoComplete *info, au::Environment *environment);
   std::string getPrompt(au::Environment *environment);
+  
+private:
+  
+  LogServerChannel channel;   // Channel to accept connection with binary logs
+  
 };
 }
 #endif  // ifndef _H_LOG_SERVER

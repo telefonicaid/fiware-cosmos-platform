@@ -71,19 +71,18 @@ public:
   Operation *getOperation(std::string name) {
     std::map<std::string, Operation *>::iterator i;
     i = operations.find(name);
-    if (i == operations.end()) {
+    if (i == operations.end())
       return NULL;
-    } else {
+    else
       return i->second;
-    }
   }
 
   Operation::Type getOperationType(std::string name) {
     Operation *o =  getOperation(name);
 
-    if (!o) {
+    if (!o)
       return Operation::unknown;
-    }
+
 
 
     return o->getType();
@@ -95,23 +94,21 @@ public:
 
   Data *getData(std::string name) {
     std::map<std::string, Data *>::iterator i = datas.find(name);
-    if (i == datas.end()) {
+    if (i == datas.end())
       return NULL;
-    } else {
+    else
       return i->second;
-    }
   }
 
   bool checkData(std::string name) {
-    if (name == "txt") {
+    if (name == "txt")
       return true;                              // Spetial case
-    }
+
     std::map<std::string, Data *>::iterator i = datas.find(name);
-    if (i == datas.end()) {
+    if (i == datas.end())
       return false;
-    } else {
+    else
       return true;
-    }
   }
 
 public:
@@ -123,9 +120,8 @@ public:
   void add(Operation *operation) {
     Operation *previous_operation  = extractOperation(operation->getName());
 
-    if (previous_operation) {
+    if (previous_operation)
       delete previous_operation;
-    }
 
     operations.insert(std::pair<std::string, Operation *>(operation->getName(), operation));
     LM_T(LmtModuleManager, ("Module operation inserted: '%s' at operation:%p", operation->getName().c_str(), operation));
@@ -134,9 +130,8 @@ public:
   void add(Data *data) {
     Data *previous_data = extractData(data->getName());
 
-    if (previous_data) {
+    if (previous_data)
       delete previous_data;
-    }
 
     datas.insert(std::pair<std::string, Data *> (data->getName(), data));
     LM_T(LmtModuleManager, ("Module data inserted: '%s' at data:%p", data->getName().c_str(), data));

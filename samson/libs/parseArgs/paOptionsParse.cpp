@@ -239,10 +239,12 @@ static int sListFix(char **sV, char *s, int *error) {
 #if 0
   while ((unsigned long)tmP < (unsigned long)endP) {
     tmP = strchr(s, ' ');
-    if (tmP == NULL)
+    if (tmP == NULL) {
       tmP = strchr(s, '\t');
-    if (tmP >= endP)
+    }
+    if (tmP >= endP) {
       break;
+    }
 
     if (tmP == NULL) {           /* last argument */
       sV[ix + 1] = s;
@@ -259,8 +261,9 @@ static int sListFix(char **sV, char *s, int *error) {
     //   break;
 
     *tmP = 0;
-    if (s[0] == 0)
+    if (s[0] == 0) {
       continue;
+    }
 
     sV[ix + 1] = s;
     s = &tmP[1];

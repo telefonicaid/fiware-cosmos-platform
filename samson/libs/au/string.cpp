@@ -141,8 +141,9 @@ std::string str_double_progress_bar(double p1, double p2, char c1, char c2, char
     p1 = 0; if (p1 > 1)
     p1 = 1; if (p2 < 0)
     p2 = 0; if (p2 > 1)
-    p2 = 1; if (p2 < p1)
+    p2 = 1; if (p2 < p1) {
     p2 = p1;      // no sense
+  }
   int pos1 = (double)len * p1;
   int pos2 = (double)len * p2;
 
@@ -311,42 +312,45 @@ std::string str(double value) {
     return tmp;
   }
 
-  if (value < 0.000000000000001)
+  if (value < 0.000000000000001) {
     return "  EPS ";
-  else if (value < 0.000000000001)
+  } else if (value < 0.000000000001) {
     return au::str_double(value * 1000000000000000.0, 'f');
-  else if (value < 0.000000001)
+  } else if (value < 0.000000001) {
     return au::str_double(value * 1000000000000.0, 'p');
-  else if (value < 0.000001)
+  } else if (value < 0.000001) {
     return au::str_double(value * 1000000000.0, 'n');
-  else if (value < 0.001)
+  } else if (value < 0.001) {
     return au::str_double(value * 1000000.0, 'u');
-  else if (value < 1)
+  } else if (value < 1) {
     return au::str_double(value * 1000.0, 'm');
-  else if (value < 1000)
+  } else if (value < 1000) {
     return au::str_double(value, ' ');
-  else if (value < 1000000)
+  } else if (value < 1000000) {
     return au::str_double(value / 1000.0, 'K');
-  else if (value < 1000000000)
+  } else if (value < 1000000000) {
     return au::str_double(value / 1000000.0, 'M');
+  }
 
 
 
 
 #ifdef __LP64__
-  else if (value < 1000000000000)
+  else if (value < 1000000000000) {
     return au::str_double(value / 1000000000.0, 'G');
-  else if (value < 1000000000000000)
+  } else if (value < 1000000000000000) {
     return au::str_double(value / 1000000000000.0, 'T');
-  else if (value < 1000000000000000000)
+  } else if (value < 1000000000000000000) {
     return au::str_double(value / 1000000000000000.0, 'P');
+  }
 
 
 
 
 #endif
-  else
+  else {
     return "  INF ";
+  }
 }
 
 /*
@@ -411,14 +415,13 @@ std::vector<std::string> simpleTockenize(std::string txt) {
   size_t pos = 0;
   for (size_t i = 0; i < txt.size(); i++) {
     if (isOneOf(txt[i], tockens)) {
-      if (i > pos) {
+      if (i > pos)
         items.push_back(txt.substr(pos, i - pos));  /*
                                                      * //Emit the literal with one letter if that is the case
                                                      * std::ostringstream o;
                                                      * o << txt[i];
                                                      * items.push_back( o.str() );
                                                      */
-      }
       pos = i + 1;
     }
   }
@@ -453,40 +456,48 @@ int get_term_size(int fd, int *x, int *y) {
 #endif
 
 #ifdef TIOCGSIZE
-  if (ioctl(fd, TIOCGSIZE, &win))
+  if (ioctl(fd, TIOCGSIZE, &win)) {
     return 0;
+  }
 
 
 
-  if (y)
+  if (y) {
     *y = win.ts_lines;
-  if (x)
+  }
+  if (x) {
     *x = win.ts_cols;
+  }
 
 #elif defined TIOCGWINSZ
-  if (ioctl(fd, TIOCGWINSZ, &win))
+  if (ioctl(fd, TIOCGWINSZ, &win)) {
     return 0;
+  }
 
 
 
-  if (y)
+  if (y) {
     *y = win.ws_row;
-  if (x)
+  }
+  if (x) {
     *x = win.ws_col;
+  }
 
 #else
   {
     const char *s;
     s = getenv("LINES");
-    if (s)
+    if (s) {
       *y = strtol(s, NULL, 10);
-    else
+    } else {
       *y = 25;
+    }
     s = getenv("COLUMNS");
-    if (s)
+    if (s) {
       *x = strtol(s, NULL, 10);
-    else
+    } else {
       *x = 80;
+    }
   }
 #endif  // ifdef TIOCGSIZE
 

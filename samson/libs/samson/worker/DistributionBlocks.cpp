@@ -182,8 +182,9 @@ void DistributionBlockManager::RequestBlocks(const std::set<size_t>& pending_blo
     size_t block_id = *it;
 
     // If we have schedules this request skip
-    if (block_requests_.findInMap(block_id))
+    if (block_requests_.findInMap(block_id)) {
       continue;  // Get the list of workers
+    }
     std::vector<size_t> worker_ids = get_workers_for_block_id(blocks_map, block_id);
 
     // Select a random worker

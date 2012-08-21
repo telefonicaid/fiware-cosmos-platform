@@ -21,8 +21,9 @@ void CommonNetwork::set_cluster_information(size_t cluster_information_version,
         return;
 
   // Remove previous cluster information ( if any )
-  if (cluster_information_)
+  if (cluster_information_) {
     delete cluster_information_;  // keep the new cluster information
+  }
   cluster_information_ = cluster_information;
 
   // Update the version we have of the cluster info
@@ -199,8 +200,9 @@ void CommonNetwork::Send(const PacketPointer& packet) {
 
   // Add more info to buffer name for debuggin
   engine::BufferPointer buffer = packet->buffer();
-  if (buffer != NULL)
+  if (buffer != NULL) {
     buffer->addToName(au::str(" [in packet to %s]", packet->to.str().c_str()));  // Set me as from identifier
+  }
   packet->from = node_identifier_;
 
   if (packet->to == node_identifier_) {
@@ -235,15 +237,14 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
     return;   // Ignore hello message here
   }
 
-  if (packet->msgCode == Message::ClusterInfoUpdate) {
+  if (packet->msgCode == Message::ClusterInfoUpdate)
     if (node_identifier_.node_type == WorkerNode) {
       LM_W(("ClusterInfoUpdate packet received at a worker node from connection %s. Closing connection"
             , connection->node_identifier().str().c_str()));
       connection->Close();
       return;
     }  // This is managed as a normal message in delilah
-  }
-  // Check we do now receive messages from unidenfitied node elements
+   // Check we do now receive messages from unidenfitied node elements
   if (connection->node_identifier().node_type == UnknownNode) {
     LM_W(("Packet %s received from a non-identified node %s. Closing connection"
           , packet->str().c_str()
@@ -253,8 +254,9 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
     return;
   }
 
-  if (packet->from.id == 0)
+  if (packet->from.id == 0) {
     LM_W(("Strange node identifier 0 in received packet"));  // Schedule the new packet
+  }
   schedule_receive(packet);
 }
 

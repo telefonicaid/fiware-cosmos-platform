@@ -2,10 +2,11 @@
 #define _H_AU_TABLE_LOG_FORATTER
 
 #include <string>
-
-#include "au/tables/Table.h"
 #include <regex.h>
 #include <vector>
+
+#include "au/tables/Table.h"
+#include "au/containers/SharedPointer.h"
 
 namespace au {
 class LogFormatter;
@@ -94,7 +95,7 @@ public:
   void init(ErrorManager *error);
 
   // Filter if this log should be added to the current table
-  bool filter(Log *log);
+  bool filter( au::SharedPointer<Log> log);
 
   // Flags to mofidy behavious
   void set_as_table(bool _is_table);
@@ -108,23 +109,18 @@ public:
   void set_channel(std::string channel);
 
   // Push a new log into the table to be print
-  void add(Log *log);
+  void add(au::SharedPointer<Log>);
 
   // Function to check if have enougth records ( not add anymore if return true )
   bool enougthRecords() {
     // In no-multi-session, this flags means that the new-session-mark was found
-    if (flag_new_session_found) {
+    if (flag_new_session_found)
       return true;
-    }
-
-
 
     // Check by the limit of recors
-    if (limit == 0) {
+    if (limit == 0)
       return false;
-    }
-
-
+    
     return (num_logs >= limit );
   }
 

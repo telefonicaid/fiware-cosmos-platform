@@ -158,8 +158,9 @@ void SetupItemCollection::load(std::string fileName) {
       au::CommandLine c;
       c.parse(line);
 
-      if (c.get_num_arguments() == 0)
+      if (c.get_num_arguments() == 0) {
         continue;  // Skip comments
+      }
       std::string mainCommand = c.get_argument(0);
       if (mainCommand[0] == '#')
         continue; if (c.get_num_arguments() >= 2) {
@@ -400,8 +401,9 @@ void SamsonSetup::createWorkingDirectories() {
     LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));
   if (createFullDirectory(_samson_working + "/blocks") != OK)
     LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));
-  if (createFullDirectory(_samson_working + "/etc") != OK)
+  if (createFullDirectory(_samson_working + "/etc") != OK) {
     LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));  // Create modules directory
+  }
   if (createFullDirectory(_samson_home + "/modules"))
     LM_X(1, ("Error creating directory at %s", _samson_home.c_str()));
 }

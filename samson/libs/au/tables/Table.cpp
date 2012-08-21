@@ -656,8 +656,9 @@ std::string Table::str_xml() {
 
 
   // Main title...
-  if (title != "")
+  if (title != "") {
     au::xml_simple(output, "title",  title);  // For each record at the input, create an output
+  }
   for (size_t r = 0; r < rows.size(); r++) {
     // Skip separators
     if (rows[r]->getType() == TableRow::separator)
@@ -691,8 +692,9 @@ std::string Table::str_json() {
   output << "{";
 
   // Main title...
-  if (title != "")
+  if (title != "") {
     output << "\"title\":\"" <<  title << "\",";  // For each record at the input, create an output
+  }
   output << "\"items\":[";
   for (size_t r = 0; r < rows.size(); r++) {
     // Skip separators
@@ -843,16 +845,18 @@ Table *Table::selectTable(SelectTableInformation *select) {
   }
 
   // Change title if necessary
-  if (select->title != "")
+  if (select->title != "") {
     table->title = select->title;
-  else
+  } else {
     table->title = title;  // Add all filtered rows
+  }
   size_t counter = 0;
   for (size_t r = 0; r < rows.size(); r++) {
     if (select->check(rows[r])) {
-      if (rows[r]->getType() != TableRow::normal)
+      if (rows[r]->getType() != TableRow::normal) {
         continue;     // Skip separators and so...
-       // Duplicate row for the new table
+      }
+      // Duplicate row for the new table
       table->rows.push_back(new TableRow(rows[r]));
 
       counter++;

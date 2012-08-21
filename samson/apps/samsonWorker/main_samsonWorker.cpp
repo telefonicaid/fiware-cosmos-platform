@@ -269,9 +269,8 @@ int main(int argC, const char *argV[]) {
   // Capturing SIGPIPE
   if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR)
     LM_W(("SIGPIPE cannot be handled")); if (signal(SIGINT, captureSIGINT) == SIG_ERR)
-    LM_W(("SIGINT cannot be handled")); if (signal(SIGTERM, captureSIGTERM) == SIG_ERR) {
+    LM_W(("SIGINT cannot be handled")); if (signal(SIGTERM, captureSIGTERM) == SIG_ERR)
     LM_W(("SIGTERM cannot be handled"));  // Init basic setup stuff (necessary for memory check)
-  }
   lockDebugger = au::LockDebugger::shared();                 // VALGRIND complains ...
   samson::SamsonSetup::init(samsonHome, samsonWorking);      // Load setup and create default directories
 
@@ -374,9 +373,8 @@ int main(int argC, const char *argV[]) {
   engine::ProcessManager::stop();
 
   // Stop the worker
-  if (worker) {
+  if (worker)
     worker->stop();  // Wait all threads to finish
-  }
   au::ThreadManager::shared()->wait("samsonWorker");
 
   // Shutdown all GPB stuff

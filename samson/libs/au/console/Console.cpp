@@ -113,8 +113,9 @@ void Console::process_auto_complete(ConsoleAutoComplete *info) {
   }
 
   if (info->necessary_print_last_words_alternatives())
-    info->print_last_words_alternatives(); if (help_message.length() > 0)
+    info->print_last_words_alternatives(); if (help_message.length() > 0) {
     printf("Help: %s\n", help_message.c_str());  // Add necessary stuff...
+  }
   command_history->current()->add(info->stringToAppend());
   print_command();
 }
@@ -324,8 +325,9 @@ void Console::getEntry(ConsoleEntry *entry) {
     escape_sequence.init();
 
     while (true) {
-      if (read(0, &c, 1) != 1)
+      if (read(0, &c, 1) != 1) {
         LM_X(1, ("reading from stdin failed"));  // Add the new character
+      }
       escape_sequence.add(c);
 
       // Detect if it is a valid sequence code
@@ -651,10 +653,10 @@ void handle_tstp(int sig) {
   }
 }
 
-void Console::process_log(Log *log) {
+void Console::process_log(au::SharedPointer<Log>log) {
   // Print a warning on screen
 
-  std::string type = log->get("type");
+  std::string type = log->Get("type");
 
   if (( type == "E" ) || ( type == "X" ))
     writeErrorOnConsole("TRACE: " + log_formatter.get(log) + "\n"); else if (type == "W")

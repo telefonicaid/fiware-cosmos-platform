@@ -14,14 +14,14 @@ int ReadFile::seek(size_t _offset) {
   if (!file)
     return 1;
 
-  if (offset == _offset)
+  if (offset == _offset) {
     return 0;       // Correct... just do not move
-
-
+  }
 #if 0
   // Get a warning to be aware of this seeks if it is too large
-  if (llabs(_offset - offset) > 100000)
+  if (llabs(_offset - offset) > 100000) {
     LM_W(("Seeking file %s from %lu to %lu", fileName.c_str(), offset, _offset));
+  }
 
 #endif
 

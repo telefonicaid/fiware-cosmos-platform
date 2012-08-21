@@ -158,10 +158,11 @@ ProcessItemIsolated::~ProcessItemIsolated() {
 void ProcessItemIsolated::run() {
   LM_T(LmtIsolated, ("Isolated process %s: start ******************************************* ", getStatus().c_str()));
 
-  if (isolated_process_as_tread)
+  if (isolated_process_as_tread) {
     LM_T(LmtIsolated, ("Isolated process %s start in thread mode", getStatus().c_str()));
-  else
+  } else {
     LM_T(LmtIsolated, ("Isolated process %s start in fork mode", getStatus().c_str()));  // Create a couple of pipes to communicate both process
+  }
   if (pipe(pipeFdPair1) != 0) {
     LM_E(("System error: not possible to create pipes when running this process"));
     error_.set("System error: not possible to create pipes when running this process");
@@ -345,10 +346,11 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
             message->error().c_str()));
 
       // Set the error
-      if (message->has_error())
+      if (message->has_error()) {
         error_.set(message->error());
-      else
+      } else {
         error_.set("Undefined user-defined error");  // Send an ok back, and return
+      }
       samson::gpb::MessagePlatformProcess *response = new samson::gpb::MessagePlatformProcess();
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
       LM_T(LmtIsolated, ("Writing user error on pipeFdPair2[1]:%d", pipeFdPair2[1]));
@@ -589,10 +591,9 @@ void ProcessItemIsolated::trace(LogLineData *logData) {
 
   delete message;
 #else
-  if (logData == NULL)
+  if (logData == NULL) {
     return;                      // 'strict' ...
-
-
+  }
 #endif  // if 0
 }
 

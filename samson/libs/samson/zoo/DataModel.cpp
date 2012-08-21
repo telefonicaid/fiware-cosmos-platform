@@ -368,10 +368,11 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
     std::string name = cmd.get_argument(1);
     std::string key_format = cmd.get_argument(2);
     std::string value_format;
-    if (cmd.get_num_arguments() == 3)
+    if (cmd.get_num_arguments() == 3) {
       value_format = key_format;
-    else
+    } else {
       value_format = cmd.get_argument(3);  // Get or create this queue
+    }
     samson::gpb::get_or_create_queue(data.shared_object(), name, KVFormat(key_format, value_format), error);
     if (!error->IsActivated())
       error->AddMessage(au::str("Queue %s added correctly", name.c_str())); return;
@@ -400,9 +401,9 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
     }
 
     samson::gpb::Queue *queue = get_queue(data.shared_object(), cmd.get_argument(1));
-    if (!queue)
+    if (!queue) {
       return;   // nothing to do
-
+    }
     KVFormat format(queue->key_format(), queue->value_format());
     samson::gpb::Queue *target_queue = get_or_create_queue(data.shared_object(), cmd.get_argument(2), format, error);
 

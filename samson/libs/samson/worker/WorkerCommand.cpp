@@ -58,8 +58,9 @@ public:
     int hg_end = 0;
 
     while (true) {
-      if (hg_begin >= KVFILE_NUM_HASHGROUPS)
+      if (hg_begin >= KVFILE_NUM_HASHGROUPS) {
         break;   // No more ranges
+      }
       while (
         (hg_end < KVFILE_NUM_HASHGROUPS)
         &&
@@ -171,8 +172,9 @@ WorkerCommand::WorkerCommand(std::string _worker_command_id
 }
 
 WorkerCommand::~WorkerCommand() {
-  if (originalWorkerCommand)
+  if (originalWorkerCommand) {
     delete originalWorkerCommand;  // Remove collections created for this command
+  }
   collections.clearVector();
 }
 
@@ -274,8 +276,9 @@ void WorkerCommand::runCommand(std::string command, au::ErrorManager *error) {
       } else {
         std::string full_command = alias_manager.transform(sub_command);
 
-        if (prefix.length() > 0)
+        if (prefix.length() > 0) {
           full_command.append(au::str(" -prefix %s", prefix.c_str()));  // LM_M(("Full Command %s (original %s)" , full_command.c_str(),  sub_command.c_str() ));
+        }
         runCommand(full_command, &sub_error);
       }
 
@@ -427,10 +430,10 @@ void WorkerCommand::run() {
   // Parse a delilah command
   DelilahCommandCatalogue delilah_command_catalogue;
   au::console::CommandInstance *command_instance = delilah_command_catalogue.parse(command, &error);
-  if (error.IsActivated())
+  if (error.IsActivated()) {
     return;   // Finish with this error
-
-   // General visualization options
+  }
+  // General visualization options
   Visualization visualization;
 
   // Add all bool falgs like -v -state automatically
@@ -443,8 +446,9 @@ void WorkerCommand::run() {
   }
 
   // Add argument pattern if exist
-  if (command_instance->has_string_argument("pattern"))
+  if (command_instance->has_string_argument("pattern")) {
     visualization.set_pattern(command_instance->get_string_argument("pattern"));  // Get main command
+  }
   std::string main_command = command_instance->main_command();
 
   /*
@@ -1159,10 +1163,9 @@ void WorkerCommand::finishWorkerTask() {
     c->mutable_worker_command()->CopyFrom(*originalWorkerCommand);
 
     // Put the error if any
-    if (error.IsActivated()) {
+    if (error.IsActivated())
       // LM_M(("Sending error message %s" , error.GetMessage().c_str() ));
       c->mutable_error()->set_message(error.GetMessage());  // Set delilah id
-    }
     p->message->set_delilah_component_id(delilah_component_id);
 
     // Direction of this packets
@@ -1235,8 +1238,9 @@ void WorkerCommand::notify(engine::Notification *notification) {
 
   if (notification->isName(notification_disk_operation_request_response)) {
     num_pending_disk_operations--;
-    if (notification->environment().isSet("error"))
+    if (notification->environment().isSet("error")) {
       error.set(notification->environment().get("error", "no_error"));  // In case of push module, just reload modules
+    }
     if (notification->environment().get("push_module", "no") == "yes")
       ModulesManager::shared()->reloadModules(); checkFinish();
     return;

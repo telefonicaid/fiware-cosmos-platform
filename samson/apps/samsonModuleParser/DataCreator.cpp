@@ -315,18 +315,17 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
 
     output << "\t\t{\n";
 
-    if ((op.type == "simpleParser")) {
+    if ((op.type == "simpleParser"))
       output << "\t\t\tsamson::Operation * operation = new samson::OperationImpl<" << op.name << ">( \"" <<
       op.module << "." << op.name <<
       "\" , samson::Operation::parser);" << std::endl;
-    } else if (op.type == "script") {
+    else if (op.type == "script")
       output << "\t\t\tsamson::Operation * operation = new samson::Operation( \"" << op.module << "." << op.name <<
       "\" , samson::Operation::" << op.type << ");" << std::endl;
-    } else {
+    else
       output << "\t\t\tsamson::Operation * operation = new samson::OperationImpl<" << op.name << ">( \"" <<
       op.module << "." << op.name <<
       "\" , samson::Operation::" << op.type << ");" << std::endl;  // Adding input and output of the parser and parserOut
-    }
     if (( op.type == "parser") || (op.type == "simpleParser"))
       output << "\t\t\toperation->inputFormats.push_back( samson::KVFormat::format(\"txt\" ,\"txt\") );" << std::endl;
     if (op.type == "parserOut")

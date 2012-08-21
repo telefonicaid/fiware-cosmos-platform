@@ -167,14 +167,12 @@ public:
 
   // Notification form a delilah component
   virtual void delilahComponentStartNotification(DelilahComponent *component) {
-    if (component == NULL) {
+    if (component == NULL)
       return;
-    }
   };
   virtual void delilahComponentFinishNotification(DelilahComponent *component) {
-    if (component == NULL) {
+    if (component == NULL)
       return;
-    }
   };
 
   // Write something on screen
@@ -198,11 +196,10 @@ public:
   }
 
   void PublishBufferFromQueue(std::string queue, engine::BufferPointer buffer) {
-    if (data_receiver_interface) {
+    if (data_receiver_interface)
       data_receiver_interface->receive_buffer_from_queue(queue, buffer);
-    } else {
+    else
       receive_buffer_from_queue(queue, buffer);
-    }
   }
 
   virtual void receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer) {

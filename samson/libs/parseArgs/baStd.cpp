@@ -41,18 +41,20 @@ long baStoi(char *string, int *baseP, char *errorText) {
   }
 
   last = string[strlen(string) - 1];
-  if (last == 'k')
+  if (last == 'k') {
     multiplicator = 1024;
-  else if (last == 'M')
+  } else if (last == 'M') {
     multiplicator = 1024 * 1024;
-  else if (last == 'G')
+  } else if (last == 'G') {
     multiplicator = 1024 * 1024 * 1024;
+  }
 
 #ifdef __LP64__
-  else if (last == 'T')
+  else if (last == 'T') {
     multiplicator = (long)1024 * 1024 * 1024 * 1024;
-  else if (last == 'P')
+  } else if (last == 'P') {
     multiplicator = (long)1024 * 1024 * 1024 * 1024 * 1024;
+  }
 
 #endif
 

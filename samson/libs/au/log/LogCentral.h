@@ -17,7 +17,7 @@
 #include "parseArgs/paIsSet.h"
 #include "parseArgs/parseArgs.h"
 
-#include "au/containers/list.h"
+#include "au/containers/SharedPointer.h"
 #include "au/containers/set.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
@@ -29,75 +29,71 @@
 #include "log_server_common.h"
 
 namespace au {
+  
 class LogCentral {
-  // Connection information
-  std::string host;
-  int port;
-  std::string local_file;       // Name of the local file ( if not possible to connect with server )
-
-  SocketConnection *socket_connection;              // Socket connection with the logServer
-  au::Cronometer time_since_last_connection;        // Cronometer with the time since last connection
-  size_t time_reconnect;                            // time for the next reconnection
-
-  // Local file descriptor to write the log if not possible to connect
-  FileDescriptor *local_file_descriptor;
-
-  // Mutex to protect socket connection
-  au::Token token;
-
-  // List of plugins
-  au::Token token_plugins;
-  au::set<LogPlugin> plugins;
-
-  // Current thread loging
-  au::Token token_current_thread;
-  pthread_t current_thread;
-  bool current_thread_activated;
-
-  // Bool direct mode is a non-blocking no-multi-thread no-reconnection way to send traces
-  bool direct_mode;
-
-  // Current fd we are using
-  int fd;
 
 public:
 
-  LogCentral(std::string _host, int _port, std::string _local_file);
+  LogCentral( std::string _host, int _port, std::string _local_file );
   ~LogCentral();
 
   // In direct mode, we just try to send traces ( not reconnection, no blocking )
-  void set_direct_mode(bool flag);
+  void SetDirectMode(bool flag);
 
   // Change the host and port
-  void set_host_and_port(std::string log_host, int log_port = AU_LOG_SERVER_PORT);
+  void SetLogServer(std::string log_host, int log_port = AU_LOG_SERVER_PORT);
 
   // Write log
-  void write(Log *log);
+  void Write(au::SharedPointer<Log> log);
 
   // Plugins
-  void addPlugin(LogPlugin *p);
-  void removePlugin(LogPlugin *p);
+  void AddPlugin(LogPlugin *p);
+  void RemovePlugin(LogPlugin *p);
 
-  // Get host
-  std::string getHost() {
-    return host;
-  }
-
-  int getPort() {
-    return port;
-  }
-
-  int getFd() {
-    return fd;
-  }
-
+  // Accesors
+  std::string host() const;
+  int port() const;
+  std::string local_file() const;
+  int getFd() const;
+  
 private:
 
-  void write_to_server_or_file(Log *log);
-  void write_to_plugins(Log *log);
+  void write_to_server_or_file( au::SharedPointer<Log> log );
+  void write_to_plugins( au::SharedPointer<Log> log );
 
   void close_socket_connection();
   void close_local_file();
+
+  // Mutex to protect socket connection
+  au::Token token_;
+
+  // Connection information
+  std::string host_;
+  int port_;
+  std::string local_file_;
+  
+  SocketConnection *socket_connection_;              // Socket connection with the logServer ( if any )
+  au::Cronometer time_since_last_connection_;        // Cronometer with the time since last connection
+  size_t time_reconnect_;                            // time for the next reconnection
+  
+  // Local file descriptor to write the log if not possible to connect
+  FileDescriptor *local_file_descriptor_;
+  
+  // List of plugins
+  au::Token token_plugins_;
+  au::set<LogPlugin> plugins_;
+  
+  // Current thread loging
+  au::Token token_current_thread_;
+  pthread_t current_thread_;
+  bool current_thread_activated_;
+  
+  // Bool direct mode is a non-blocking no-multi-thread no-reconnection way to send logs
+  bool direct_mode_;
+  
+  // Current fd we are using
+  int fd_;
+  
 };
 }
 

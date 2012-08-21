@@ -65,8 +65,9 @@ void BlockRef::append(BlockInfo& block_info) {
   block_info.size += size;
   if (block_->is_content_in_memory())
     block_info.size_on_memory += size; if (block_->is_content_in_disk())
-    block_info.size_on_disk += size; if (block_->is_content_locked_in_memory())
+    block_info.size_on_disk += size; if (block_->is_content_locked_in_memory()) {
     block_info.size_locked += size;  // Key-Value information
+  }
   block_info.info.append(info_);       // Only the key-values considered in this refernce
 
   block_info.push(block_->getKVFormat());

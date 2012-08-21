@@ -10,7 +10,7 @@
 #include "au/string.h"
 #include "logMsg/logMsg.h"      // LM_M()
 
-#define DEBUG_AU_TOKEN
+//#define DEBUG_AU_TOKEN
 
 namespace au {
 std::string GetThreadId(pthread_t t) {
@@ -123,9 +123,9 @@ void Token::Stop() {
   locked_ = false;  // We are temporally releasing this token
 
   // This unlock the mutex and froze the process in the condition
-  if (pthread_cond_wait(&block_, &lock_) != 0)
+  if (pthread_cond_wait(&block_, &lock_) != 0) {
     LM_X(1, ("Internal error at au::TokenTaker"));  // LM_LM(("Thread [%s] is back from stopped at token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_ ));
-
+  }
   // Now you are retaining again
   locked_ = true;
   token_owner_thread_id_ = my_own_pid_t;

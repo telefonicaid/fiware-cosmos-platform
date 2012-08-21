@@ -46,7 +46,7 @@ char file_name[1024];
 
 PaArgument paArgs[] =
 {
-  { " ", file_name, "", PaString, PaReq, (long)"null", PaNL,            PaNL,
+  { " ", file_name, "", PaString, PaReq, (long)"null", PaNL, PaNL,
     "name of the file or directory to scan"     },
   PA_END_OF_ARGS
 };
@@ -95,11 +95,9 @@ void consider_directory(std::string directory, au::tables::Table *table) {
     std::string fileName = dirp->d_name;
 
     // Skip ".files"
-    if (fileName.length() > 0) {
-      if (fileName[0] == '.') {
+    if (fileName.length() > 0)
+      if (fileName[0] == '.')
         continue;  // Full path of the file
-      }
-    }
     std::string path = au::path_from_directory(directory, dirp->d_name);
 
     consider_file(path, table);

@@ -40,7 +40,7 @@ char working_directory[1024];
 
 PaArgument paArgs[] =
 {
-  { "", working_directory, "", PaString, PaOpt, _i DEFAULT_WORKING_DIRECTORY,  PaNL,  PaNL,  "Working directory"          },
+  { "", working_directory, "", PaString, PaOpt, _i DEFAULT_WORKING_DIRECTORY, PaNL,  PaNL,  "Working directory"           },
   PA_END_OF_ARGS
 };
 
@@ -65,9 +65,9 @@ public:
     DIR *dp;
     struct dirent *dirp;
 
-    if ((dp  = opendir(working_directory)) == NULL) {
+    if ((dp  = opendir(working_directory)) == NULL)
       return;       // Nothing else to do...
-    }
+
     while ((dirp = readdir(dp)) != NULL) {
       std::string fileName = dirp->d_name;
 
@@ -237,9 +237,9 @@ public:
   }
 
   bool check_data(std::string data) {
-    if (data == "txt") {
+    if (data == "txt")
       return true;       // Only valid for some operations...
-    }
+
     std::vector<std::string> components = au::split(data, '.');
     if (components.size() != 2)
       return false;

@@ -437,10 +437,9 @@ void BlockManager::schedule_read_operation(BlockPointer block) {
   // Only make sense if block is only on disk
   if (block->state() != Block::on_disk)
     LM_W(("Called schedule_read_operation for a block (%lu) that is in another state %s"
-          , block->get_block_id(), block->str_state().c_str())); if (block->buffer() != NULL) {
+          , block->get_block_id(), block->str_state().c_str())); if (block->buffer() != NULL)
     // No problem since previous buffer is auytomatically released in buffer_container
     LM_W(("There is an unused buffer of data in a block with state = on_disk"));  // Allocate a buffer ( it is retained since we are the creators )
-  }
   std::string buffer_title = au::str("read block %lu", block->get_block_id());
   size_t block_id = block->get_block_id();
   size_t size = block->getSize();
@@ -472,10 +471,9 @@ void BlockManager::schedule_read_operation(BlockPointer block) {
 
 void BlockManager::schedule_write_operation(BlockPointer block) {
   // Only make sense if block is only on memory
-  if (block->state() != Block::on_memory) {
+  if (block->state() != Block::on_memory)
     LM_W(("Called schedule_read_operation for a block (%lu) that is in another state %s"
           , block->get_block_id(), block->str_state().c_str()));  // Operation for writing
-  }
   engine::BufferPointer buffer = block->buffer();
   size_t block_id = block->get_block_id();
   size_t size = block->getSize();

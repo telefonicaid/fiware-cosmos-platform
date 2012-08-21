@@ -20,7 +20,6 @@
 #include "SharedMemoryItem.h"   // samson::SharedMemoryItem
 #include "engine/Buffer.h"                       // samson::Buffer
 #include "engine/Engine.h"                       // samson::Engine
-#include "engine/MemoryRequest.h"                // samson::MemoryRequest
 
 
 #include "samson/isolated/SharedMemoryManager.h"  // Own interface
@@ -61,8 +60,9 @@ SharedMemoryManager::SharedMemoryManager(int _shared_memory_num_buffers, size_t 
   // Name of the log file to store how to clean up memory
   sharedMemoryIdsFileName = samson::SamsonSetup::shared()->sharedMemoryLogFileName();
 
-  if (shared_memory_size_per_buffer == 0)
+  if (shared_memory_size_per_buffer == 0) {
     LM_X(1, ("Error in setup, invalid value for shared memory size %u", shared_memory_size_per_buffer ));  // Boolean vector showing if a buffer is used
+  }
   shared_memory_used_buffers = (bool *)malloc(shared_memory_num_buffers * sizeof(bool));
 
   for (int i = 0; i < shared_memory_num_buffers; i++) {

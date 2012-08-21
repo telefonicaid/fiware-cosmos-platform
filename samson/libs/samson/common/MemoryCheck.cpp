@@ -28,9 +28,8 @@ void sysctl_value(char *param_name, long int *param_value) {
 void sysctl_value(char *param_name, long int *param_value) {
   size_t len = sizeof(&(param_value));
 
-  if (sysctlbyname(param_name, param_value, &len, 0, 0)) {
+  if (sysctlbyname(param_name, param_value, &len, 0, 0))
     perror("sysctlbyname");
-  }
 }
 
 #endif

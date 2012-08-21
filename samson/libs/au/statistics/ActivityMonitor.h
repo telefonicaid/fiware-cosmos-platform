@@ -4,7 +4,6 @@
 #define _H_AU_ACTIVITY_MONITOR
 
 #include "au/Cronometer.h"
-#include "au/Object.h"
 
 #include "au/containers/map.h"
 #include "au/mutex/Token.h"
@@ -21,7 +20,7 @@ namespace statistics {
  */
 
 
-class ActivityItem : public au::Object {
+class ActivityItem {
 public:
 
   ActivityItem(std::string name, double time) {

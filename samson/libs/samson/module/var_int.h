@@ -59,10 +59,9 @@ inline int staticVarIntSerialize(char *data, size_t value) {
     tmp  = __value - (__value / 128) * 128;
     __value = __value / 128;
 
-    if (__value > 0) {
+    if (__value > 0)
       tmp |= 128;                               // Add flag
-    }
-    // Push to the buffer
+     // Push to the buffer
     p[offset++] = tmp;
   }
   return offset;

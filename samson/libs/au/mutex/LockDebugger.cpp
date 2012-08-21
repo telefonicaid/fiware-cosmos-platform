@@ -48,13 +48,15 @@ void LockDebugger::AddMutexLock(void *new_lock) {
   int ans = pthread_mutex_lock(&lock_);
 
   // Make sure there are no errors with lock
-  if (ans != 0)
+  if (ans != 0) {
     LM_X(1, ("pthread_mutex_lock error"));  // Recover list of mutexs...
+  }
   std::set<void *> *locksVector = GetLocksVector();
 
   // We do not autoblock
-  if (locksVector->find(new_lock) !=  locksVector->end())
+  if (locksVector->find(new_lock) !=  locksVector->end()) {
     LM_X(1, ("Autolock detected"));  // We are not blocked
+  }
   if (IsCrossBlocking(new_lock)) {
     assert(false);
     LM_X(1, ("Cross lock detected"));
@@ -74,8 +76,9 @@ void LockDebugger::RemoveMutexLock(void *new_lock) {
   // Lock private data
   int ans = pthread_mutex_lock(&lock_);         // Block until the mutex is free
 
-  if (ans != 0)
+  if (ans != 0) {
     LM_X(1, ("pthread_mutex_lock error"));  // Recover list of mutexs...
+  }
   std::set<void *> *locksVector = GetLocksVector();
 
   // Make sure it was there
@@ -138,9 +141,10 @@ std::string LockDebugger::GetThreadTitle() {
 void LockDebugger::SetThreadTitle(const std::string& title) {
   void *data = pthread_getspecific(LockDebugger::shared()->key_title_);
 
-  if (!data)
+  if (!data) {
     LM_X(1,
          ("pthread_getspecific returned NULL during lock debugging"));  // Set specific data
+  }
   pthread_setspecific(lockDebugger->key_title_, new std::string(title));
 }
 }

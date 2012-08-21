@@ -90,9 +90,9 @@ Filter *FilterCollection::getFilter(au::token::TokenVector *token_vector
     return FilterParser::getFilter(token_vector, error);
   } else if (token->content == "emit") {
     if (writer) {
-      if (token_vector->eof())
+      if (token_vector->eof()) {
         return new FilterEmit(0, writer);                    // Default channel "0"
-
+      }
       au::token::Token *number = token_vector->popToken();
       if (!number->isNumber()) {
         error->set(au::str("Channel '%s' not valid in emit command. It should be a number"

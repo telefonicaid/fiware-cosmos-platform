@@ -106,11 +106,13 @@ void CommandLine::parse(std::string _command) {
     // skip the delimeters
     pos = command.find_first_not_of(delimiters, pos);
 
-    if (pos == std::string::npos)
+    if (pos == std::string::npos) {
       break;            // No more tockens in this string
+    }
     if (command[pos] == '\"') {
-      if (command.length() <= pos)
+      if (command.length() <= pos) {
         break;          // No more characters to finish the literal
+      }
       pos++;
       size_t last = command.find_first_of("\"", pos);
       if (last == std::string::npos) {
@@ -122,8 +124,9 @@ void CommandLine::parse(std::string _command) {
         pos = last + 1;
       }
     } else if (command[pos] == '\'') {
-      if (command.length() <= pos)
+      if (command.length() <= pos) {
         break;          // No more characters to finish the literal
+      }
       pos++;
       size_t last = command.find_first_of("'", pos);
       if (last == std::string::npos) {

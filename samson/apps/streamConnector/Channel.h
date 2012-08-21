@@ -76,7 +76,7 @@ public:
 
   // Log system
   void log(std::string type, std::string message);
-  void log(Log *log);
+  void log(au::SharedPointer<Log> log );
 
   // Data report system
   void report_output_size(size_t size);

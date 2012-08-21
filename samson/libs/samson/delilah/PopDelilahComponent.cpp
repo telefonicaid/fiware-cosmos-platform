@@ -2,7 +2,6 @@
 #include <sys/stat.h>  // mkdir
 
 #include "engine/MemoryManager.h"  // samson::MemoryManager
-#include "engine/MemoryRequest.h"
 #include "engine/Notification.h"                // engine::Notification
 
 #include "engine/Buffer.h"  // engine::Buffer
@@ -70,10 +69,11 @@ void PopDelilahComponent::run() {
 }
 
 void PopDelilahComponent::review() {
-  if (file_name_ == "")
+  if (file_name_ == "") {
     send_main_request();       // If continuous, ask for more data
-  else if (( commit_id_ = -1) && ( num_pop_queue_responses_ == 0 ) && ( cronometer_.seconds() > 5 ))
+  } else if (( commit_id_ = -1) && ( num_pop_queue_responses_ == 0 ) && ( cronometer_.seconds() > 5 )) {
     send_main_request();
+  }
 }
 
 // Function to get the status

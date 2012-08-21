@@ -59,15 +59,15 @@ struct KVRange {
 
   KVRange Intersection(KVRange range) {
     // Disjoint ranges
-    if (range.hg_end <= hg_begin) {
+    if (range.hg_end <= hg_begin)
       return KVRange(0, 0);
-    }
 
 
 
-    if (range.hg_begin >= hg_end) {
+
+    if (range.hg_begin >= hg_end)
       return KVRange(0, 0);
-    }
+
 
 
 
@@ -110,9 +110,8 @@ public:
 
   bool IsFullRange() {
     for (int i = 0; i < KVFILE_NUM_HASHGROUPS; i++) {
-      if (!Contains(i)) {
+      if (!Contains(i))
         return false;
-      }
     }
     return true;
   }
@@ -121,11 +120,10 @@ public:
     int pos = random() % size();
 
     for (size_t i = 0; i < ranges_.size(); i++) {
-      if (pos < ranges_[i].size()) {
+      if (pos < ranges_[i].size())
         return ranges_[i].hg_begin + pos;
-      } else {
+      else
         pos -= ranges_[i].size();
-      }
     }
     LM_X(1, ("Internal error"));
     return -1;
@@ -145,21 +143,19 @@ public:
 
   // Function to remove a range from a range ( it is suppoused to be an intersection )
   int SetFromDifference(const KVRange& target, const KVRange& range) {
-    if (range.hg_begin < target.hg_begin) {
+    if (range.hg_begin < target.hg_begin)
       return 1;   // Error ( we only remove intersections )
-    }
-    if (range.hg_end > target.hg_end) {
+
+    if (range.hg_end > target.hg_end)
       return 1;   // Error ( we only remove intersections )
-    }
-    // First part
-    if (range.hg_begin > target.hg_begin) {
+
+     // First part
+    if (range.hg_begin > target.hg_begin)
       Add(KVRange(target.hg_begin, range.hg_begin));
-    }
 
     // Last part
-    if (range.hg_end < target.hg_end) {
+    if (range.hg_end < target.hg_end)
       Add(KVRange(range.hg_end, target.hg_end));
-    }
 
     return 0;
   }
@@ -175,32 +171,31 @@ public:
   }
 
   int Remove(const KVRange& range) {
-    if (range.hg_begin == range.hg_end) {
+    if (range.hg_begin == range.hg_end)
       return 0;   // No real range to be removed
-    }
-    // Loop internal ranges to
+
+     // Loop internal ranges to
     for (size_t i = 0; i < ranges_.size(); i++) {
       // Compute intersection
       KVRange intersection = ranges_[i].Intersection(range);
 
       // If no intersection, continue to the next range
-      if (intersection.size() == 0) {
+      if (intersection.size() == 0)
         continue;
-      }
 
       // Remove intersection to both
       KVRanges remain_ranges;
       KVRanges remain_ranges_to_remove;
       int rc  = remain_ranges.SetFromDifference(ranges_[i], intersection);
-      if (rc) {
+      if (rc)
         return rc;
-      }
+
 
 
       int rc2 = remain_ranges_to_remove.SetFromDifference(range, intersection);
-      if (rc2) {
+      if (rc2)
         return rc2;
-      }
+
 
 
 
@@ -211,9 +206,8 @@ public:
       // Remove the rest of the range ( if any )
       for (size_t j = 0; j < remain_ranges_to_remove.ranges_.size(); j++) {
         int rc = Remove(remain_ranges_to_remove.ranges_[j]);
-        if (rc) {
+        if (rc)
           return rc;
-        }
       }
 
       // Everything removed correctly
@@ -237,27 +231,24 @@ public:
   // Check if it overladps with this range
   bool IsOverlapped(const KVRange& range) const {
     for (size_t i = 0; i < ranges_.size(); i++) {
-      if (ranges_[i].IsOverlapped(range)) {
+      if (ranges_[i].IsOverlapped(range))
         return true;
-      }
     }
     return false;
   }
 
   bool IsOverlapped(const KVRanges& ranges) const {
     for (size_t i = 0; i < ranges.ranges_.size(); i++) {
-      if (IsOverlapped(ranges.ranges_[i])) {
+      if (IsOverlapped(ranges.ranges_[i]))
         return true;
-      }
     }
     return false;
   }
 
   bool Contains(int hg) const {
     for (size_t i = 0; i < ranges_.size(); i++) {
-      if (ranges_[i].contains(hg)) {
+      if (ranges_[i].contains(hg))
         return true;
-      }
     }
     return false;
   }
@@ -273,9 +264,9 @@ public:
       range_in += intersection.size();
     }
 
-    if (range_total == 0) {
+    if (range_total == 0)
       return 0;
-    }
+
 
 
 

@@ -134,24 +134,22 @@ public:
                      }
 
                      static Value *getInstance() {
-                       if (!pool_values) {
+                       if (!pool_values)
                          pool_values = new au::Pool<Value>();
-                       }
                        ;
 
                        Value *v = pool_values->pop();
-                       if (v) {
+                       if (v)
                          return v;
-                       }
+
 
 
                        return new Value();
                      }
 
                      static void reuseInstance(Value *value) {
-                       if (!pool_values) {
+                       if (!pool_values)
                          pool_values = new au::Pool<Value>();
-                       }
                        ;
 
                        value->clear();

@@ -30,15 +30,15 @@ bool is_double(const char *data) {
 
     // Signs
     if (( c == '-' ) || ( c == '+' )) {
-      if (found_dot)
+      if (found_dot) {
         return false;                 // sign after dot
-
-      if (found_sign)
+      }
+      if (found_sign) {
         return false;                 // Double sign
-
-      if (found_digit)
+      }
+      if (found_digit) {
         return false;                 // Sign after digits
-
+      }
       found_sign = true;
       continue;
     }
@@ -1403,8 +1403,9 @@ void Value::pop_back_from_vector() {
 
 Value *Value::add_value_to_vector() {
   // Just make sure we are in vector mode
-  if (value_type != value_vector)
+  if (value_type != value_vector) {
     set_as_vector();  // Get a new instance of Value and push it to the vector
+  }
   Value *value = getInstance();
   _value_vector.push_back(value);
 
@@ -1415,8 +1416,9 @@ Value *Value::add_value_to_vector() {
 
 Value *Value::add_value_to_vector(size_t pos) {
   // Just make sure we are in vector mode
-  if (value_type != value_vector)
+  if (value_type != value_vector) {
     set_as_vector();  // Get a new instance of Value and push it to the vector
+  }
   Value *value = getInstance();
   _value_vector.insert(_value_vector.begin() + pos, value);
 
@@ -1472,8 +1474,9 @@ size_t Value::get_num_map_values() {
 
 Value *Value::add_value_to_map(std::string key) {
   // Just make sure we are in vector mode
-  if (value_type != value_map)
+  if (value_type != value_map) {
     set_as_map();  // Get a new instance of Value and push it to the vector
+  }
   Value *value = getInstance();
   _value_map.insertInMap(key, value);
 
@@ -1580,10 +1583,10 @@ void Value::convert_to_string() {
 }
 
 void Value::change_value_type(ValueType new_value_type) {
-  if (value_type == new_value_type)
+  if (value_type == new_value_type) {
     return;             // Nothing to do
-
-   // Rehuse all elements
+  }
+  // Rehuse all elements
   clear();
 
   // Assign the new value_type

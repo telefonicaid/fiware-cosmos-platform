@@ -359,8 +359,9 @@ int paParse
     RETURN_ERROR("paDefaultValues");
 #if 0
   // Samson doesn't use paRcFileParse ...
-  if ((s != -2) && ((s = paRcFileParse()) == -1))
+  if ((s != -2) && ((s = paRcFileParse()) == -1)) {
     RETURN_ERROR("paRcFileParse");
+  }
 
 #endif
 

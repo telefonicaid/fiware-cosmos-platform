@@ -78,10 +78,10 @@ void FileDescriptorConnection::review_connection() {
   if (!file_descriptor_) {
     set_as_connected(false);
 
-    if (cronometer_reconnection_.seconds() < 3) {
+    if (cronometer_reconnection_.seconds() < 3)
       return;            // Wait a little bit
-    }
-    // Reconnect if possible
+
+     // Reconnect if possible
     connect();
 
     return;
@@ -102,17 +102,15 @@ void FileDescriptorConnection::review_connection() {
 
 void FileDescriptorConnection::run_as_output() {
   while (true) {
-    if (!file_descriptor_) {
+    if (!file_descriptor_)
       LM_X(1, ("Internal error"));  // Container to keep a retained version of buffer
-    }
     engine::BufferPointer buffer = getNextBufferToSent();
 
     if (buffer != NULL) {
       au::Status s = file_descriptor_->partWrite(buffer->getData(), buffer->getSize(), "samsonConnectorConnection");
 
-      if (s != au::OK) {
+      if (s != au::OK)
         return;             // Just quit
-      }
     } else {
       // Sleep a little bit before checking again
       usleep(100000);
@@ -123,9 +121,8 @@ void FileDescriptorConnection::run_as_output() {
 void FileDescriptorConnection::run_as_input() {
   // Read from stdin and push blocks to the samson_connector
   while (true) {
-    if (!file_descriptor_) {
+    if (!file_descriptor_)
       LM_X(1, ("Internal error"));  // Get a buffer
-    }
     engine::BufferPointer buffer = engine::Buffer::create("stdin"
                                                           , "connector"
                                                           , input_buffer_size);
@@ -170,11 +167,10 @@ void FileDescriptorConnection::run_as_input() {
 }
 
 void FileDescriptorConnection::run() {
-  if (getType() == connection_input) {
+  if (getType() == connection_input)
     run_as_input();
-  } else {
+  else
     run_as_output();  // Mark as non thread_running
-  }
   thread_running_ = false;
 }
 

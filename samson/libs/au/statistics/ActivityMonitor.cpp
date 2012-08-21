@@ -92,13 +92,12 @@ void ActivityMonitor::StartActivity(const std::string& activity_name) {
   ActivityItem *activity_item = new ActivityItem(current_activty_, time);
 
   // Inset in the list of last items
-  activity_item->Retain();
   items_.push_back(activity_item);
 
   // Only keep the list of last 100 elements
   while (items_.size() > 100) {
     ActivityItem *tmp_item = items_.extractFront();
-    tmp_item->Release();
+    delete tmp_item;
   }
 
   // Update the associated element statustics

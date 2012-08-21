@@ -52,9 +52,8 @@ void SplitInWords(char *line, std::vector<char *>& words, char separator) {
 
   while (!finish) {
     if (( line[pos] == separator ) || ( line[pos] == '\0' )) {
-      if (( line[pos] == '\0' ) || (line[pos] == '\n')) {
+      if (( line[pos] == '\0' ) || (line[pos] == '\n'))
         finish = true;  // Artificial termination of string
-      }
       line[pos] = '\0';
 
       // Add the found word
@@ -175,22 +174,18 @@ time_t GetTimeUTCFromCalendar(struct tm *tm) {
 
   if (((_timezone > 0) && (TIME_MAX - _timezone < seconds))
       || ((_timezone < 0) && (seconds < -_timezone)))
-  {
     overflow++;
-  }
   seconds += _timezone;
 
-  if (tm->tm_isdst < 0) {
+  if (tm->tm_isdst < 0)
     dst = _dstget(tm);
-  } else if (tm->tm_isdst) {
+  else if (tm->tm_isdst)
     dst = _dst_off;
-  } else {
+  else
     dst = 0;
-  }
 
-  if (dst > seconds) {
+  if (dst > seconds)
     overflow++;     // dst is always non-negative
-  }
   seconds -= dst;
 
   if (overflow) {

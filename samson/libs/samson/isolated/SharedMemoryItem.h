@@ -56,20 +56,19 @@ public:
 
     // Attach to local-space memory
     data = (char *)shmat(shmid, 0, 0);
-    if (data == (char *)-1) {
+    if (data == (char *)-1)
       LM_X(1,
            (
              "Error with shared memory while attaching to local memory ( %s )( shared memory id %d shmid %d size %lu )\n"
              , strerror(errno),  id, shmid, size ));
-    }
   }
 
   ~SharedMemoryItem() {
     // Detach data if it was previously attached
-    if (data)
-      if (shmdt(data) == -1) {
+    if (data) {
+      if (shmdt(data) == -1)
         LM_X(1, ("Error calling shmdt"));
-      }
+    }
   }
 
   // --------------------------------------------------------------------------------
@@ -85,9 +84,8 @@ public:
   }
 
   SimpleBuffer getSimpleBufferAtOffsetWithMaxSize(size_t offset, size_t _size) {
-    if (_size > ( size - offset )) {
+    if (_size > ( size - offset ))
       LM_X(1, ("Error cheking size of a simple Buffer"));
-    }
     return SimpleBuffer(data + offset, _size);
   }
 };

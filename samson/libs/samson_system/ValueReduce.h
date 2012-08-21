@@ -215,9 +215,8 @@ public:
   }
 
   ~ValueReduce_top() {
-    if (list) {
+    if (list)
       delete list;
-    }
   }
 
   void init(std::string command) {
@@ -226,12 +225,10 @@ public:
     cmdLine.parse(command);
 
     int num = 1;
-    if (cmdLine.get_num_arguments() > 1) {
+    if (cmdLine.get_num_arguments() > 1)
       num = atoi(cmdLine.get_argument(1).c_str());
-    }
-    if (num <= 0) {
+    if (num <= 0)
       num = 1;
-    }
 
     list = new ValueList(num);
   }
@@ -284,9 +281,8 @@ public:
   }
 
   ~ValueReduce_top_concept() {
-    if (list) {
+    if (list)
       delete list;
-    }
   }
 
   void init(std::string command) {
@@ -295,12 +291,10 @@ public:
     cmdLine.parse(command);
 
     int num = 1;
-    if (cmdLine.get_num_arguments() > 1) {
+    if (cmdLine.get_num_arguments() > 1)
       num = atoi(cmdLine.get_argument(1).c_str());
-    }
-    if (num == 0) {
+    if (num == 0)
       num = 1;
-    }
 
     list = new ValueList(num);
   }
@@ -317,12 +311,10 @@ public:
       // Parse the value
       value.parse(inputs[0].kvs[i]->value);
 
-      if (!value.isVector()) {
+      if (!value.isVector())
         continue;
-      }
-      if (value.get_vector_size() != 2) {
+      if (value.get_vector_size() != 2)
         continue;
-      }
 
       int counter = value.get_value_from_vector(1)->get_double();
 
@@ -433,20 +425,18 @@ public:
     time_span = cmdLine.get_flag_int("time");
     emit = cmdLine.get_flag_bool("emit");
 
-    if (time_span == 0) {
+    if (time_span == 0)
       factor = 1;
-    } else {
+    else
       factor = ((double)time_span - 1 ) / (double)time_span;
-    }
   }
 
   void run(samson::KVSetStruct *inputs, samson::KVWriter *writer) {
     // Parse common key
-    if (inputs[0].num_kvs > 0) {
+    if (inputs[0].num_kvs > 0)
       key.parse(inputs[0].kvs[0]->key);
-    } else {
+    else
       key.parse(inputs[1].kvs[0]->key);
-    }
 
     // Recover state if any
 
@@ -485,9 +475,8 @@ public:
     writer->emit(1, &key, &value);
 
     // Emit to output if necessary
-    if (emit) {
+    if (emit)
       writer->emit(0, &key, &value);
-    }
 
     return;
   }
@@ -557,9 +546,8 @@ public:
       }
     }
 
-    if (num_elements > values.size()) {
+    if (num_elements > values.size())
       values.push_back(copy(value));
-    }
   }
 
   void get(system::Value *output_value) {
@@ -614,11 +602,10 @@ public:
 
     time_span = cmdLine.get_flag_int("time");
 
-    if (time_span == 0) {
+    if (time_span == 0)
       factor = 1;
-    } else {
+    else
       factor = ((double)time_span - 1.0 ) / (double)time_span;
-    }
 
     current_time = time(NULL);
   }
@@ -637,21 +624,20 @@ public:
     // Parse common key
     // ------------------------------------
 
-    if (inputs[0].num_kvs > 0) {
+    if (inputs[0].num_kvs > 0)
       key.parse(inputs[0].kvs[0]->key);
-    } else {
+    else
       key.parse(inputs[1].kvs[0]->key);
-    }
 
     // Check valid key
-    if (key.get_value_from_map("category") == NULL) {
+    if (key.get_value_from_map("category") == NULL)
       return;
-    }
 
 
-    if (key.get_value_from_map("concept") == NULL) {
+
+    if (key.get_value_from_map("concept") == NULL)
       return;
-    }
+
 
 
 
@@ -738,11 +724,10 @@ public:
 
     time_span = cmdLine.get_flag_int("time");
 
-    if (time_span == 0) {
+    if (time_span == 0)
       factor = 1;
-    } else {
+    else
       factor = ((double)time_span - 1 ) / (double)time_span;
-    }
 
     current_time = time(NULL);
   }
@@ -757,11 +742,10 @@ public:
 
   void run(samson::KVSetStruct *inputs, samson::KVWriter *writer) {
     // Parse common key
-    if (inputs[0].num_kvs > 0) {
+    if (inputs[0].num_kvs > 0)
       key.parse(inputs[0].kvs[0]->key);
-    } else {
+    else
       key.parse(inputs[1].kvs[0]->key);
-    }
 
     // Recover elements in the state
     if (inputs[1].num_kvs > 0) {
@@ -851,9 +835,9 @@ public:
 
     cmdLine.parse(command);
 
-    if (cmdLine.get_num_arguments() == 0) {
+    if (cmdLine.get_num_arguments() == 0)
       return NULL;
-    }
+
 
 
 

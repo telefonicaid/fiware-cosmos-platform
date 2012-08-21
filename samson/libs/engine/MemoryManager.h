@@ -10,7 +10,6 @@
 *
 * MemoryManager is the controller of the "big" blocks of memory used by the app
 * Buffers can be allocated directly using newBuffer.
-* Buffers can be allocated with add( MemoryRequest* ) to be served when memory is available
 * A Notification ( using engine mechanism ) is sent when memory is available
 *
 * ****************************************************************************/
@@ -41,8 +40,6 @@
 #define notification_memory_request_response "notification_memory_request_response"
 
 namespace engine {
-class MemoryRequest;
-
 /**
  *
  * Memory manager is a singleton implementation to manager the memory used by any component of SAMSON
@@ -82,8 +79,7 @@ private:
 
   static MemoryManager *memoryManager;         // Singleton Instance pointer
 
-  au::Token token_;                            // Token to protect this instance and memoryRequests
-                                               // It is necessary to protect since network thread can access directly here
+  au::Token token_;                            // Mutex protection
 
   size_t used_memory_;                         // Total memory used
   size_t memory_;                              // Total available memory

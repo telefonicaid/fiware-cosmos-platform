@@ -147,10 +147,10 @@ public:
   }
 
   void start_thread() {
-    if (pthread_running_) {
+    if (pthread_running_)
       return;   // Already running
-    }
-    // Mark as running
+
+     // Mark as running
     pthread_running_ = true;
 
     // Run the thread in background
@@ -163,9 +163,9 @@ public:
 
   void stop_thread() {
     stoping_ = true;
-    if (!pthread_running_) {
+    if (!pthread_running_)
       return;
-    }
+
 
 
 
@@ -183,9 +183,9 @@ public:
     // Wait until thread is finished
     au::Cronometer c;
     while (true) {
-      if (!pthread_running_) {
+      if (!pthread_running_)
         return;
-      }
+
 
 
 
@@ -235,9 +235,9 @@ public:
 
   virtual void run() {
     while (true) {
-      if (thread_should_quit()) {
+      if (thread_should_quit())
         return;   // Quit this thread when necessary
-      }
+
       object_->f();
     }
   }

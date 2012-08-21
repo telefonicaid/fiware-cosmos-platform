@@ -106,9 +106,9 @@ Status FileDescriptor::okToSend(int tries, int tv_sec, int tv_usec) {
     if ((fds == 1) && (FD_ISSET(fd_, &wFds)))
       return OK;
 
-    if (fds == -1)
+    if (fds == -1) {
       return SelectError;  // LM_RE(Error, ("Select over fd %d: %s", fd , strerror(errno)));
-
+    }
     if (tryh > 3)
       if (tryh % 10 == 0)
         // Traces canceled since it is used to send traces to a server
@@ -171,17 +171,17 @@ Status FileDescriptor::msgAwait(int secs, int usecs, const char *what) {
     fds = select(fd_ + 1, &rFds, NULL, NULL, tvP);
   } while ((fds == -1) && (errno == EINTR));
 
-  if (fds == -1) {
+  if (fds == -1)
     // LM_RP(SelectError, ("select error awaiting '%s' from '%s", what, name.c_str()));
     return SelectError;
-  } else if (fds == 0) {
+  else if (fds == 0)
     // LM_RE(Timeout, ("timeout awaiting '%s' from '%s' (%d.%06d seconds)", what, host.c_str(), secs, usecs));
     return Timeout;
-  } else if ((fds > 0) && (!FD_ISSET(fd_, &rFds))) {
+  else if ((fds > 0) && (!FD_ISSET(fd_, &rFds)))
     return Error;  // LM_RE(Error, ("some other fd has a read pending - this is impossible ! (awaiting '%s' from '%s')", what, name.c_str()));
-  } else if ((fds > 0) && (FD_ISSET(fd_, &rFds))) {
+  else if ((fds > 0) && (FD_ISSET(fd_, &rFds)))
     return OK;
-  }
+
 
 
 

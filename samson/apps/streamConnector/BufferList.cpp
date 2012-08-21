@@ -150,10 +150,10 @@ BufferList::BufferList(std::string persistence_directory, size_t max_size_on_mem
 }
 
 void BufferList::review_persistence() {
-  if (max_size_on_memory_ == 0) {
+  if (max_size_on_memory_ == 0)
     return;   // Nothing to do here
-  }
-  // Schedule read or write tasks
+
+   // Schedule read or write tasks
   au::list<BufferListItem>::iterator it;
   size_t total = 0;
   for (it = items.begin(); it != items.end(); it++) {

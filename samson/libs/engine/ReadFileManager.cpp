@@ -23,8 +23,9 @@ ReadFile *ReadFileManager::getReadFile(std::string fileName) {
     f = NULL;
   }
 
-  if (!f)
+  if (!f) {
     f = new ReadFile(fileName);  // Insert at front ( remove the last used at the  back )
+  }
   read_files.insertAtFront(fileName, f);
 
   // Remove old File descriptors if necessary

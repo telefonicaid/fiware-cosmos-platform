@@ -62,10 +62,10 @@ void SamsonConnection::review_connection() {
   // Nothing to do here
   if (!client_) {
     set_as_connected(false);
-    if (cronometer_reconnection.seconds() < 3) {
+    if (cronometer_reconnection.seconds() < 3)
       return;           // Do not try to connect again...
-    }
-    // Try to reconnect here...
+
+     // Try to reconnect here...
     try_connect();
     return;
   }
@@ -83,10 +83,10 @@ size_t SamsonConnection::bufferedSize() {
 
 // Overload method to push blocks using samsonClient
 void SamsonConnection::push(engine::BufferPointer buffer) {
-  if (getType() == connection_input) {
+  if (getType() == connection_input)
     return;         // Nothing to do if we are input
-  }
-  // Report manually size ( not we are overloading Connection class )
+
+   // Report manually size ( not we are overloading Connection class )
   report_output_size(buffer->getSize());
 
   // Push this block directly to the SAMSON client

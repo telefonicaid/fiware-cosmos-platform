@@ -247,12 +247,12 @@ bool operator==(const KVRange & left, const KVRange & right) {
 }
 
 KVRange rangeForIntersection(const KVRange & left, const KVRange & right) {
-  if (left.hg_end >= right.hg_begin)
+  if (left.hg_end >= right.hg_begin) {
     return KVRange(0, 0);  // No intersection
-
-  if (right.hg_end >= left.hg_begin)
+  }
+  if (right.hg_end >= left.hg_begin) {
     return KVRange(0, 0);  // No intersection
-
+  }
   return KVRange(std::max(left.hg_begin, right.hg_begin), std::min(left.hg_end, left.hg_end));
 }
 }

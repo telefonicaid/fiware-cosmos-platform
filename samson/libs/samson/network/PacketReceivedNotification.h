@@ -26,9 +26,8 @@ public:
   PacketReceivedNotification(NetworkInterfaceReceiver *receiver, const PacketPointer& packet)
     : engine::EngineElement("packet_received")
       , packet_(packet) {
-    if (packet_ == NULL) {
+    if (packet_ == NULL)
       LM_X(1, ("Internal error"));
-    }
 
     receiver_ = receiver;
 
@@ -40,11 +39,10 @@ public:
   }
 
   void run() {
-    if (!receiver_) {
+    if (!receiver_)
       LM_W(("Packet %s lost since network interface is still not activated.", packet_->str().c_str()));
-    } else {
+    else
       receiver_->receive(packet_);
-    }
   }
 };
 }

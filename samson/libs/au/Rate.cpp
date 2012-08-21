@@ -11,8 +11,9 @@ namespace au { namespace rate {
                    , total_size_(0)
                    , total_num_(0) {
                  // Check valid num_samples
-                 if (num_samples_ <= 0)
+                 if (num_samples_ <= 0) {
                    num_samples_ = 1;  // Init vectors
+                 }
                  hits_ = (int *)malloc(num_samples_ * sizeof(int));
                  size_ = (double *)malloc(num_samples_ * sizeof(double));
 
@@ -99,9 +100,9 @@ namespace au { namespace rate {
                  }
                  double tmp = total / (double)(num_samples_ - 1);
 
-                 if (tmp < hits_[0])
+                 if (tmp < hits_[0]) {
                    return hits_[0];  // hits in the last second
-
+                 }
                  return tmp;
                }
 
@@ -113,9 +114,9 @@ namespace au { namespace rate {
                  }
                  double tmp = total / (double)(num_samples_ - 1);
 
-                 if (tmp < size_[0])
+                 if (tmp < size_[0]) {
                    return size_[0];  // Size in the last second
-
+                 }
                  return tmp;
                }
 

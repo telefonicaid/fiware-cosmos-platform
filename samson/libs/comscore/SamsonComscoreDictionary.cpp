@@ -76,8 +76,9 @@ void SamsonComscoreDictionary::push_category(uint id, std::string category) {
 void SamsonComscoreDictionary::write(const char *file_name) {
   FILE *file = fopen(file_name, "w");
 
-  if (!file)
+  if (!file) {
     LM_X(1, ("Not possible to open file %s to write a SamsonComscoreDictionary", file_name ));  // Prepare & write header
+  }
   header.size_string_collection = string_collection.getSize();
   header.size_struct_collection_dictionary_entries = dictionary_entries.getSize();
   header.size_struct_collection_pattern_to_category = pattern_to_category.getSize();
@@ -120,8 +121,9 @@ void SamsonComscoreDictionary::read(const char *file_name) {
 
   if (!file)
     LM_X(1, ("Not possible to open file %s to recover SamsonComscoreDictionary", file_name ));
-  if (fread(&header, sizeof( Header ), 1, file) != 1)
+  if (fread(&header, sizeof( Header ), 1, file) != 1) {
     LM_X(1, ("Error reading %s while recovering SamsonComscoreDictionary", file_name));  // Recover string collection
+  }
   string_collection.read(file, header.size_string_collection);
 
   // Recover dictionary_entries
@@ -250,10 +252,11 @@ bool SamsonComscoreDictionary::findURLPattern(const char *_url, uint *pattern) {
 std::vector<uint> SamsonComscoreDictionary::getCategories(const char *url) {
   uint pattern;
 
-  if (findURLPattern(url, &pattern))
+  if (findURLPattern(url, &pattern)) {
     return pattern_to_category.find(pattern);
-  else
+  } else {
     return std::vector<uint>();             // Empty vector
+  }
 }
 
 const char *SamsonComscoreDictionary::getCategoryName(uint id) {

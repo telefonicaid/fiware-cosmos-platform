@@ -314,7 +314,7 @@ int bufPush(char *buf, unsigned int size, samson::SamsonPushBuffer *pushBuffer) 
 
     // NOT Enough bytes for an entire packet?
     if ((size < 4) || size < dataLen) {
-      if (size >= 4) {
+      if (size >= 4)
         // LM_W(("bytes read: %d, packetLen == %d (totalLen == %d)", size, packetLen, totalLen));
         if (packetLen > 50000) {
           bufPresent("bad packetLen", buf, size, 1);
@@ -322,8 +322,7 @@ int bufPush(char *buf, unsigned int size, samson::SamsonPushBuffer *pushBuffer) 
                ("Bad packetLen in packet %d: %d (original: 0x%x, htohl: 0x%x)", packets, packetLen, *((int *)buf),
                 ntohl(*((int *)buf))));
         }  // else
-      }
-      //    LM_W(("bytes read: %d (totalLen == %d)", size, totalLen));
+       //    LM_W(("bytes read: %d (totalLen == %d)", size, totalLen));
 
       if (totalLen != 0) {
         if (fake == false) {
@@ -398,9 +397,10 @@ int dirScan(const char *dirPath, const char *suffix) {
 
   if (chdir(dirPath) == -1)
     LM_X(1, ("Error changing to directory '%s': %s", dirPath, strerror(errno))); dir  = opendir(".");
-  if (dir == NULL)
+  if (dir == NULL) {
     LM_X(1, ("opendir(%s): %s", dirPath, strerror(errno)));  //
-   // Count number of files in the directory
+  }
+  // Count number of files in the directory
   //
   files = 0;
   while ((entry = readdir(dir)) != NULL) {
@@ -419,9 +419,10 @@ int dirScan(const char *dirPath, const char *suffix) {
   // Create a vector to hold the files
   //
   fileV = (File *)calloc(files, sizeof(File));
-  if (fileV == NULL)
+  if (fileV == NULL) {
     LM_X(1, ("error allocating vector for %d Files: %s", files, strerror(errno)));  //
-   // Gather info on the files and fill the vector
+  }
+  // Gather info on the files and fill the vector
   //
   rewinddir(dir);
   int ix = 0;
@@ -782,9 +783,8 @@ int main(int argC, const char *argV[]) {
   // Instance of the client to connect to SAMSON system
   LM_V(("Connecting to '%s'", controller));
   samson::SamsonClient client("push");
-  if (!client.connect(controller)) {
+  if (!client.connect(controller))
     LM_X(1, ("Not possible to connect with %s", controller ));  // Set 1G RAM for uploading content
-  }
   uint64_t mem = 1024 * 1024 * 1024;
   mem *= 4;
 

@@ -294,9 +294,8 @@ std::string AUTockenizer::getLiteralInternalwithBlanks(int pos, int pos2) {
       // fprintf(stdout, "Find sepFound with '%s'(pos:%d)\n", itemAtPos(i).str.c_str(), i);
     } else {
       o << itemAtPos(i).str << " ";
-      if ((itemAtPos(i).str != " ") && (itemAtPos(i).str != "\t") && (itemAtPos(i).str != "\n")) {
+      if ((itemAtPos(i).str != " ") && (itemAtPos(i).str != "\t") && (itemAtPos(i).str != "\n"))
         sepFound = false;  // fprintf(stdout, "Deleting sepFound with '%s'(pos:%d)\n", itemAtPos(i).str.c_str(), i);
-      }
     }
 
     prevLine = itemAtPos(i).line;

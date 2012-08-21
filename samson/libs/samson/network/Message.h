@@ -66,21 +66,21 @@ namespace samson { namespace Message {
                      size_t kvDataLen;
 
                      bool check() {
-                       if (magic != 4050769273219470657) {
+                       if (magic != 4050769273219470657)
                          return false;
-                       }
 
 
 
-                       if (gbufLen > 10000000) {
+
+                       if (gbufLen > 10000000)
                          return false;
-                       }
 
 
 
-                       if (kvDataLen > ( 200 * 1024 * 1024 )) {
+
+                       if (kvDataLen > ( 200 * 1024 * 1024 ))
                          return false;
-                       }
+
 
 
 

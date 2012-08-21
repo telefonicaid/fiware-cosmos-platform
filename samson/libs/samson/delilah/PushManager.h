@@ -83,19 +83,17 @@ public:
   }
 
   std::string str_buffer_info() {
-    if (buffer_ != NULL) {
+    if (buffer_ != NULL)
       return au::str(buffer_->getSize(), "B");
-    } else {
+    else
       return "No buffer";
-    }
   }
 
   size_t size() {
-    if (buffer_ != NULL) {
+    if (buffer_ != NULL)
       return buffer_->getSize();
-    } else {
+    else
       return 0;
-    }
   }
 };
 

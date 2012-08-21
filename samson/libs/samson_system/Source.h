@@ -71,17 +71,16 @@ public:
   samson::system::Value *get(KeyValue kv) {
     Value *value_condition = condition->get(kv);
 
-    if (!value_condition) {
+    if (!value_condition)
       return NULL;
-    }
 
 
 
-    if (value_condition->get_double() != 0) {
+
+    if (value_condition->get_double() != 0)
       return value1->get(kv);
-    } else {
+    else
       return value2->get(kv);
-    }
   }
 
   std::string str() {
@@ -120,19 +119,18 @@ public:
   static Comparisson comparition_from_string(std::string s) {
     Comparisson c = unknown;
 
-    if (s == "==") {
+    if (s == "==")
       c = equal;
-    } else if (s == "<") {
+    else if (s == "<")
       c = less_than;
-    } else if (s == ">") {
+    else if (s == ">")
       c = greater_than;
-    } else if (s == ">=") {
+    else if (s == ">=")
       c = greater_or_equal_than;
-    } else if (s == "<=") {
+    else if (s == "<=")
       c = less_or_equal_than;
-    } else if (s == "!=") {
+    else if (s == "!=")
       c = different_than;
-    }
 
     return c;
   }
@@ -170,9 +168,9 @@ public:
     system::Value *v2 = rigth->get(kv);
 
     // If not possible to get one of them
-    if (!v1 || !v2) {
+    if (!v1 || !v2)
       return false;
-    }
+
 
 
 
@@ -198,11 +196,10 @@ public:
 
   samson::system::Value *get(KeyValue kv) {
     // Eval an assign 1 for true, 0 for false
-    if (eval(kv)) {
+    if (eval(kv))
       value_container.value->set_double(1);
-    } else {
+    else
       value_container.value->set_double(0);
-    }
 
     return value_container.value;
   }
@@ -240,15 +237,14 @@ public:
   static Operation operation_from_string(std::string s) {
     Operation c = unknown;
 
-    if (s == "+") {
+    if (s == "+")
       c = sum;
-    } else if (s == "-") {
+    else if (s == "-")
       c = minus;
-    } else if (s == "*") {
+    else if (s == "*")
       c = multiply;
-    } else if (s == "/") {
+    else if (s == "/")
       c = divide;
-    }
 
     return c;
   }
@@ -282,9 +278,9 @@ public:
     system::Value *v2 = rigth->get(kv);
 
     // If not possible to get one of them
-    if (!v1 || !v2) {
+    if (!v1 || !v2)
       return NULL;
-    }
+
 
 
 
@@ -391,9 +387,9 @@ public:
     Value *base_value = base->get(kv);
     Value *index_value = index->get(kv);
 
-    if (!index_value || !base_value) {
+    if (!index_value || !base_value)
       return NULL;
-    }
+
 
 
 
@@ -420,9 +416,9 @@ public:
     Value *base_value = base->get(kv);
     Value *index_value = index->get(kv);
 
-    if (!index_value || !base_value) {
+    if (!index_value || !base_value)
       return NULL;
-    }
+
 
 
 
@@ -453,11 +449,10 @@ public:
     value_container.value->set_as_vector();
     for (size_t i = 0; i < source_components.size(); i++) {
       samson::system::Value *tmp_value = source_components[i]->get(kv);
-      if (!tmp_value) {
+      if (!tmp_value)
         value_container.value->add_value_to_vector()->set_as_void();
-      } else {
+      else
         value_container.value->add_value_to_vector()->copyFrom(tmp_value);
-      }
     }
     return value_container.value;
   }
@@ -482,9 +477,9 @@ class SourceMap : public Source {
 public:
 
   SourceMap(au::vector<Source> _source_keys, au::vector<Source> _source_values) {
-    if (_source_keys.size() != _source_values.size()) {
+    if (_source_keys.size() != _source_values.size())
       return;                                     // Error
-    }
+
     for (size_t i = 0; i < _source_keys.size(); i++) {
       source_keys.push_back(_source_keys[i]);
       source_values.push_back(_source_values[i]);
@@ -497,9 +492,9 @@ public:
       samson::system::Value *tmp_key   = source_keys[i]->get(kv);
       samson::system::Value *tmp_value = source_values[i]->get(kv);
 
-      if (!tmp_key || !tmp_value) {
+      if (!tmp_key || !tmp_value)
         return NULL;
-      }
+
 
 
 

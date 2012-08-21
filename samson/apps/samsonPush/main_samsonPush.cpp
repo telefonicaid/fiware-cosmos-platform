@@ -159,12 +159,10 @@ int main(int argC, const char *argV[]) {
   srand(rand_seq);
 
 
-  if (buffer_size == 0) {
+  if (buffer_size == 0)
     LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Check queue is specified
-  }
-  if (strcmp(queue_name, "null") == 0) {
+  if (strcmp(queue_name, "null") == 0)
     LM_X(1, ("Please, specify a queue to push data to"));  // Create samson client
-  }
   size_t total_memory = push_memory * 1024 * 1024;
   LM_V(("Setting memory for samson client %s", au::str(total_memory, "B").c_str()));
   samson::SamsonClient::general_init(total_memory);
@@ -234,13 +232,12 @@ int main(int argC, const char *argV[]) {
     if (read_bytes == 0)
       break; LM_V(("Stdin info: %s", rate_stdin.str().c_str()));
 
-    if (memory_usage > 0.8) {
+    if (memory_usage > 0.8)
       LM_V(("Memory used %s / %s ( %s )",
             au::str(used_memory, "B").c_str(),
             au::str(memory, "B").c_str(),
             au::str_percentage(memory_usage).c_str()
             ));  // Increase the size of data contained in the buffer
-    }
     size += read_bytes;
 
     // Processing data contained in "data" with size "size"

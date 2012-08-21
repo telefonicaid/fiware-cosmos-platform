@@ -46,7 +46,7 @@ namespace samson { namespace stream {
                      data_ = data;
 
                      // If we are running a task, let see if it is finished
-                     if (worker_task_ != NULL) {
+                     if (worker_task_ != NULL)
                        if (worker_task_->is_finished()) {
                          // If there is an error, reset
                          const au::ErrorManager& worker_task_error = worker_task_->error();
@@ -78,7 +78,6 @@ namespace samson { namespace stream {
                          // We have to update data and review in the next iteration
                          return;
                        }  // Compute aproximate pending size ( always independently of the state to display information in the list )
-                     }
                      std::string input_queue = stream_operation_->inputs(0);
                      gpb::Queue *queue = ::samson::gpb::get_queue(data, input_queue);
                      if (!queue) {
@@ -143,17 +142,19 @@ namespace samson { namespace stream {
                        LM_X(1, ("Internal error")); Operation *operation = ModulesManager::shared()->getOperation(
                        stream_operation_->operation());
 
-                     if (!operation)
+                     if (!operation) {
                        LM_X(1, ("Internal error: Operation not found"));  // Create a new task
+                     }
                      worker_task_ = new WorkerTask(samson_worker_, task_id, *stream_operation_, operation, range_);
 
                      // Recover main input queue
                      std::string input_queue = stream_operation_->inputs(0);
                      gpb::Queue *queue = ::samson::gpb::get_queue(data_, input_queue);
 
-                     if (!queue)
+                     if (!queue) {
                        LM_X(1, ("Internal error: Queue not found"));  // This cannot happen since I would never be called
-                      // Compute the limit block to start packaging blocks in the task
+                     }
+                     // Compute the limit block to start packaging blocks in the task
                      size_t accumulated_size = 0;
                      au::Uint64Set block_ids;
 
@@ -185,8 +186,9 @@ namespace samson { namespace stream {
                        }
 
                        // Stop if we need to much memory for this task
-                       if (accumulated_size > 120000000)
+                       if (accumulated_size > 120000000) {
                          break;  // No more accumulation for this operation
+                       }
                      }
 
                      // Reset cronometer

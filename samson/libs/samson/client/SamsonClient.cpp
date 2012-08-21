@@ -87,8 +87,9 @@ void SamsonClient::general_init(size_t memory, size_t load_buffer_size) {
   char *env_samson_home = getenv("SAMSON_HOME");
 
   if (env_samson_working)
-    samson_working = env_samson_working; if (env_samson_home)
+    samson_working = env_samson_working; if (env_samson_home) {
     samson_home = env_samson_home;  // Init setup
+  }
   samson::SamsonSetup::init(samson_home, samson_working);
 
   // Change the values for this parameters
@@ -162,8 +163,9 @@ void SamsonClient::connect_to_queue(std::string queue, bool flag_new, bool flag_
   std::string command = au::str("connect_to_queue %s", queue.c_str());
 
   if (flag_new)
-    command.append(" -new "); if (flag_remove)
+    command.append(" -new "); if (flag_remove) {
     command.append(" -remove ");  // LM_M(("Command to connect to queue '%s'", command.c_str() ));
+  }
   delilah_->sendWorkerCommand(command);
 }
 

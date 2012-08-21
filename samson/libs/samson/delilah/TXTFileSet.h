@@ -49,11 +49,10 @@ public:
   }
 
   virtual std::string get_name() {
-    if (fileNames.size() == 1) {
+    if (fileNames.size() == 1)
       return au::str("FILE/DIR %s", fileNames[0].c_str());
-    } else {
+    else
       return au::str("%s FILEs/DIRs", fileNames.size());
-    }
   }
 
   void openNextFile() {
@@ -64,9 +63,8 @@ public:
       }
 
       inputStream.open(fileNames[file].c_str());
-      if (!inputStream.is_open()) {
+      if (!inputStream.is_open())
         failedFiles.push_back(fileNames[file]);                                         // Add to the list of failed files
-      }
       file++;
     }
   }
@@ -86,11 +84,10 @@ public:
     std::ostringstream output;
 
     output << "TXTFile: ";
-    if (finish) {
+    if (finish)
       output << " finished";
-    } else {
+    else
       output << " running: " << fileNames.size() << " pending files and " << failedFiles.size() << " failed files";
-    }
     return output.str();
   }
 

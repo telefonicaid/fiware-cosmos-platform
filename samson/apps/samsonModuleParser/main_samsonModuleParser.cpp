@@ -13,34 +13,32 @@
 #include "parseArgs/parseArgs.h"  // parseArgs
 #include <samson/module/Data.h>  /* DataInstance                               */
 #include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                             */
-#include <sys/stat.h>        // stat()
+#include <sys/stat.h>    // stat()
 
 
 
 #ifdef __gnu_linux__
 int tsCompare(time_t time1, time_t time2) {
-  if (time1 < time2) {
-    return -1;               /* Less than     */
-  } else if (time1 > time2) {
-    return 1;                /* Greater than  */
-  } else { return 0;         /* Equal         */
-  }
+  if (time1 < time2)
+    return -1;           /* Less than     */
+  else if (time1 > time2)
+    return 1;            /* Greater than  */
+  else return 0;         /* Equal         */
 }
 
 #else
 
 int  tsCompare(struct  timespec time1, struct  timespec time2) {
-  if (time1.tv_sec < time2.tv_sec) {
-    return (-1);             /* Less than. */
-  } else if (time1.tv_sec > time2.tv_sec) {
-    return (1);              /* Greater than. */
-  } else if (time1.tv_nsec < time2.tv_nsec) {
-    return (-1);             /* Less than. */
-  } else if (time1.tv_nsec > time2.tv_nsec) {
-    return (1);              /* Greater than. */
-  } else {
-    return (0);              /* Equal. */
-  }
+  if (time1.tv_sec < time2.tv_sec)
+    return (-1);         /* Less than. */
+  else if (time1.tv_sec > time2.tv_sec)
+    return (1);          /* Greater than. */
+  else if (time1.tv_nsec < time2.tv_nsec)
+    return (-1);         /* Less than. */
+  else if (time1.tv_nsec > time2.tv_nsec)
+    return (1);          /* Greater than. */
+  else
+    return (0);          /* Equal. */
 }
 
 #endif  // ifdef __gnu_linux__

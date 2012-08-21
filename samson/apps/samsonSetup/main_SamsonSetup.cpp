@@ -41,7 +41,7 @@ int port;
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-show",  &show, "", PaBool, PaOpt, false, false,  true,       "Show current options"             },
+  { "-show",  &show, "", PaBool, PaOpt, false, false, true,  "Show current options"                   },
   PA_END_OF_ARGS
 };
 

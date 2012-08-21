@@ -100,9 +100,8 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
 
   // Make sure everything is correct
   if (!buffer)
-    LM_X(1, ("Internal error: Missing buffer in ProcessBase")); if (size == 0) {
+    LM_X(1, ("Internal error: Missing buffer in ProcessBase")); if (size == 0)
     LM_X(1, ("Internal error: Wrong size for ProcessBase"));  // Outputs structures placed at the begining of the buffer
-  }
   OutputChannel *channel = (OutputChannel *)buffer;
 
   // NodeBuffers ( inodes in the shared memory buffer )
@@ -121,18 +120,20 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
                                                               , "ProcessIsolated"
                                                               , sizeof(KVHeader) + _channel->info.size);
 
-        if (buffer == NULL)
+        if (buffer == NULL) {
           LM_X(1, ("Internal error: Missing buffer in ProcessBase"));  // Pointer to the header
+        }
         KVHeader *header = (KVHeader *)buffer->getData();
 
         // Initial offset for the buffer to write data
         buffer->skipWrite(sizeof(KVHeader));
 
         // KVFormat format = KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() );
-        if (outputFormats.size() > (size_t)o)
+        if (outputFormats.size() > (size_t)o) {
           header->init(outputFormats[o], _channel->info);
-        else
+        } else {
           header->init(KVFormat("no-used", "no-used"), _channel->info);  // This buffer is not not sended with the buffer
+        }
         KVInfo *info = (KVInfo *)malloc(sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS);
 
         for (int i = 0; i < KVFILE_NUM_HASHGROUPS; i++) {
@@ -146,14 +147,16 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
           uint32 node_id = _hgOutput->first_node;
           while (node_id != KV_NODE_UNASIGNED) {
             bool ans = buffer->write((char *)node[node_id].data, node[node_id].size);
-            if (!ans)
+            if (!ans) {
               LM_X(1, ("Error writing key-values into a temporal Buffer ( size %lu ) ", node[node_id].size ));  // Go to the next node
+            }
             node_id = node[node_id].next;
           }
         }
 
-        if (buffer->getSize() != buffer->getMaxSize())
+        if (buffer->getSize() != buffer->getMaxSize()) {
           LM_X(1, ("Internal error"));                                                                          // Set the hash-group limits of the header
+        }
         header->range.setFrom(info);
 
         // Free buffer of KVInfo ( not not sended with the buffer )

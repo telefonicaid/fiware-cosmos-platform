@@ -98,9 +98,8 @@ public:
   }
 
   ConsoleAutoCompleteAlternative getAlternative(size_t i) {
-    if (i >= last_word_alternatives.size()) {
+    if (i >= last_word_alternatives.size())
       LM_X(1, ("Major error"));
-    }
     return last_word_alternatives[i];
   }
 };

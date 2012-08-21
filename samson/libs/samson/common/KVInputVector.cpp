@@ -10,8 +10,9 @@ namespace samson {
 void KVInputVectorBase::prepareInput(size_t _max_num_kvs) {
   if (_max_num_kvs > max_num_kvs) {
     if (_kv)
-      free(_kv); if (kv)
+      free(_kv); if (kv) {
       free(kv);  // Set a new maximum number of kvs
+    }
     max_num_kvs = _max_num_kvs;
 
     _kv = (KV **)malloc(sizeof(KV *) * _max_num_kvs);
@@ -48,8 +49,9 @@ KVInputVector::KVInputVector(Operation *operation) {
   Data *keyData       = ModulesManager::shared()->getData(inputFormats[0].keyFormat);
   if (!keyData)
     LM_X(1, ("Internal error:")); keyDataInstance = (DataInstance *)keyData->getInstance();
-  if (!keyDataInstance)
+  if (!keyDataInstance) {
     LM_X(1, ("Internal error:"));  // Get the rigth functions to process input key-values
+  }
   for (int i = 0; i < (int)inputFormats.size(); i++) {
     Data *valueData = ModulesManager::shared()->getData(inputFormats[i].valueFormat);
     if (!valueData)
@@ -195,8 +197,9 @@ void KVInputVector::sort() {
 }
 
 void KVInputVector::sortAndMerge(size_t middle_pos) {
-  if (middle_pos > num_kvs)
+  if (middle_pos > num_kvs) {
     LM_X(1, ("Internal error"));  // Sort the first part of the vector
+  }
   std::sort(_kv, _kv + middle_pos, compareKV);
 
   // Merge with the second part of the vector( supposed to be sorted )

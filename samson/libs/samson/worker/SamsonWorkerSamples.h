@@ -53,9 +53,9 @@ public:
   }
 
   int getVector(double *v, int max_v_length) {
-    if (max_v_length < max_num_values_) {
+    if (max_v_length < max_num_values_)
       return 0;           // Not possible to fit here
-    }
+
     for (int i = 0; i < max_num_values_; i++) {
       v[i] = values_[i];
     }
@@ -167,9 +167,8 @@ public:
     for (int i = 0; i < n; i++) {
       output << "[" <<
       (i - n + 1) << "," << std::setiosflags(std::ios::fixed) << std::setprecision(2) << values[i] << "]";
-      if (i != (n - 1)) {
+      if (i != (n - 1))
         output << ",";
-      }
     }
     output << "]";
     output << "}";

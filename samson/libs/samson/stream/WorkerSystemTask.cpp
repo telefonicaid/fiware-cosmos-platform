@@ -91,8 +91,9 @@ namespace samson { namespace stream {
 
                    // Virtual method from engine::ProcessItem
                    void BlockRequestTask::run() {
-                     if (!block_->is_content_in_memory())
+                     if (!block_->is_content_in_memory()) {
                        LM_X(1, ("Internal error"));  // Send a packet to worker that request this buffer
+                     }
                      PacketPointer packet(new Packet(Message::BlockRequestResponse));
                      packet->set_buffer(block_->buffer());
                      packet->message->set_block_id(block_id_);
@@ -135,8 +136,9 @@ namespace samson { namespace stream {
 
                    // Virtual method from engine::ProcessItem
                    void PopBlockRequestTask::run() {
-                     if (!block_->is_content_in_memory())
+                     if (!block_->is_content_in_memory()) {
                        LM_X(1, ("Internal error"));  // Get kv file for this block
+                     }
                      au::SharedPointer<KVFile> kv_file = block_->getKVFile(error_);
                      if (error_.IsActivated())
                        return;

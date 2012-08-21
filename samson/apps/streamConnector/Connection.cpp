@@ -74,9 +74,8 @@ void Connection::pushInputBuffer(engine::BufferPointer buffer) {
     // An option in the future could be to inject input data in input_buffer_process and use engine to process stuff
 
     // Create buffer processor to process all input buffers
-    if (!buffer_processor) {
+    if (!buffer_processor)
       buffer_processor = new BufferProcessor(item->channel);  // push the block processor
-    }
     buffer_processor->push(buffer);
   }
 }
@@ -161,10 +160,10 @@ bool Connection::is_finished() {
 
 // Log system
 void Connection::log(std::string type, std::string message) {
-  log(new Log(getFullName(), type, message));
+  log(au::SharedPointer<Log>( new Log( getFullName(), type, message)));
 }
 
-void Connection::log(Log *log) {
+  void Connection::log(au::SharedPointer<Log> log) {
   LogManager *log_manager = au::Singleton<LogManager>::shared();
 
   log_manager->log(log);
@@ -182,12 +181,11 @@ void Connection::cancel_connecton() {
 }
 
 void Connection::review() {
-  if (canceled) {
+  if (canceled)
     return;   // Not call review
-  }
-  if (!finished) {
+
+  if (!finished)
     review_connection();  // Review persistancy in input/output buffer lists
-  }
   if (input_buffer_list)
     input_buffer_list->review_persistence(); if (output_buffer_list)
     output_buffer_list->review_persistence();

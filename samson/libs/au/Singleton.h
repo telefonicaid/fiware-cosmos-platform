@@ -14,9 +14,8 @@ public:
   static C *shared() {
     au::TokenTaker tt(&token_);
 
-    if (!instance_) {
+    if (!instance_)
       instance_ = new C();
-    }
     return instance_;
   }
 

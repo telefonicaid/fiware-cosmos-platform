@@ -53,28 +53,30 @@ public:
   }
 
   SharedPointer<V> Front() {
-    if (list_.size() == 0) {
+    if (list_.size() == 0)
       return SharedPointer<V>(NULL);
-    } else {
+    else
       return list_.front();
-    }
   }
 
   SharedPointer<V> Back() {
-    if (list_.size() == 0) {
+    if (list_.size() == 0)
       return NULL;
-    } else {
+    else
       return list_.back();
-    }
   }
 
+  void Clear()
+  {
+    list_.clear();
+  }
+  
   // Extract an element from the queue
   bool Contains(const SharedPointer<V>& v) {
     typename std::list< SharedPointer<V> >::iterator iter;
     for (iter = list_.begin(); iter != list_.end(); iter++) {
-      if (*iter == v) {
+      if (*iter == v)
         return true;
-      }
     }
     return false;
   }
@@ -82,21 +84,27 @@ public:
   void ExtractAll(const SharedPointer<V>& v) {
     typename std::list< SharedPointer<V> >::iterator iter;
     for (iter = list_.begin(); iter != list_.end(); ) {
-      if (*iter == v) {
+      if (*iter == v)
         list_.erase(iter++);
-      } else {
+      else
         ++iter;
-      }
     }
   }
 
-  size_t size() {
+  void LimitToLastItems( size_t num )
+  {
+    while ( list_.size() > num ) {
+      list_.pop_front();
+    }
+  }
+  
+  size_t size() const {
     return list_.size();
   }
 
-  std::vector< SharedPointer<V> > items() {
+  std::vector< SharedPointer<V> > items() const {
     std::vector< SharedPointer<V> > vector;
-    typename std::list< SharedPointer<V> >::iterator iter;
+    typename std::list< SharedPointer<V> >::const_iterator iter;
     for (iter = list_.begin(); iter != list_.end(); iter++) {
       vector.push_back(*iter);
     }

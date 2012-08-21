@@ -31,6 +31,7 @@
 #include "au/log/log_server_common.h"
 
 namespace au {
+  
 // start and stop connection with log server
 void start_log_to_server(std::string log_host, int log_port, std::string local_log_file);
 void stop_log_to_server();

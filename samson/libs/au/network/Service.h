@@ -17,18 +17,13 @@
 #include "au/containers/set.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
-
 #include "au/tables/Table.h"
-
 #include "au/Environment.h"
 #include "au/au.pb.h"
 #include "au/gpb.h"
-
 #include "au/string.h"
 #include "au/utils.h"
-
 #include "au/console/Console.h"
-
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
 
@@ -95,12 +90,12 @@ public:
     SocketConnection *socket_connetion);
 
   // Accessorts
-  int port();
+  int port() const;
 
   // Debug information
-  std::string str();
-  std::string GetStringStatus();
-  au::tables::Table *getConnectionsTable();
+  std::string str()  const;
+  std::string GetStringStatus() const;
+  au::tables::Table *getConnectionsTable() const;
 
 private:
 

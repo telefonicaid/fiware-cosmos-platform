@@ -46,7 +46,9 @@ void NetworkListener::StopNetworkListener() {
     return;   // Nothing to do
   }
   // Close the open file descriptor
-  ::close(rFd_);
+  int rc = ::close(rFd_);
+  if( rc )
+    LM_W(("Error closing fd %d in network listener over port %d ( rc %d )" , rFd_ , port_ , rc ));
   rFd_ = -1;
 
   // Joint the background thread
@@ -79,8 +81,8 @@ Status NetworkListener::InitNetworkListener(int port) {
   if ((rFd_ = socket(AF_INET, SOCK_STREAM, 0)) == -1)
     LM_RP(SocketError, ("socket")); fcntl(rFd_, F_SETFD, 1);
 
-  memset((char *)&sock, 0, sizeof(sock));
-  memset((char *)&peer, 0, sizeof(peer));
+  memset(&sock, 0, sizeof(sock));
+  memset(&peer, 0, sizeof(peer));
 
   sock.sin_family      = AF_INET;
   sock.sin_addr.s_addr = INADDR_ANY;
@@ -204,11 +206,11 @@ SocketConnection *NetworkListener::acceptNewNetworkConnection(void) {
 }
 
 // Check running status
-bool NetworkListener::IsNetworkListenerRunning() {
+bool NetworkListener::IsNetworkListenerRunning() const {
   return background_thread_running_;
 }
 
-int NetworkListener::port() {
+int NetworkListener::port() const {
   return port_;
 }
 }

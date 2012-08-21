@@ -90,7 +90,7 @@ StringVector::StringVector(const std::string& value1,
 
 StringVector::StringVector(const std::set<std::string>& values) {
   std::set<std::string>::iterator it_values;
-  for (it_values = values.begin(); it_values != values.end(); it_values++) {
+  for (it_values = values.begin(); it_values != values.end(); ++it_values) {
     push_back(*it_values);
   }
 }
@@ -133,14 +133,14 @@ std::string StringVector::Get(size_t pos) const {
 
 void StringVector::RemoveDuplicated() {
   std::set<std::string> unique_values;
-  for (size_t i = 0; i < size(); i++) {
+  for (size_t i = 0; i < size(); ++i) {
     unique_values.insert((*this)[i]);
   }
 
   clear();
   std::set<std::string>::iterator it_unique_values;
   for (it_unique_values = unique_values.begin();
-       it_unique_values != unique_values.end(); it_unique_values++)
+       it_unique_values != unique_values.end(); ++it_unique_values)
   {
     push_back(*it_unique_values);
   }
@@ -149,7 +149,7 @@ void StringVector::RemoveDuplicated() {
 std::string StringVector::str() {
   std::ostringstream output;
 
-  for (size_t i = 0; i < size(); i++) {
+  for (size_t i = 0; i < size(); ++i) {
     output << (*this)[i];
     if (i != ( size() - 1 ))
       output << " ";

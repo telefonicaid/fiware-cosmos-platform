@@ -6,7 +6,6 @@
 #include "au/containers/SharedPointer.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
-
 #include "au/Environment.h"
 #include "au/Object.h"
 #include "au/au.pb.h"
@@ -15,7 +14,6 @@
 #include "au/string.h"
 #include "au/tables/Table.h"
 #include "au/utils.h"
-
 #include "au/network/NetworkListener.h"
 #include "au/network/Service.h"
 #include "au/network/SocketConnection.h"

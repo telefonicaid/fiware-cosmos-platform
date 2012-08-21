@@ -45,10 +45,10 @@ public:
   // Init and close this listener
   Status InitNetworkListener(int port);
   void StopNetworkListener();
-  bool IsNetworkListenerRunning();
+  bool IsNetworkListenerRunning() const;
 
   // Accesorts
-  int port();
+  int port() const;
 
 private:
 

@@ -3,52 +3,52 @@
 
 namespace au {
 namespace network {
-ConsoleServiceClientBase::ConsoleServiceClientBase(int _port) {
-  port = _port;
-  socket_connection = NULL;
-
-  current_prompt = ">>";
+ConsoleServiceClientBase::ConsoleServiceClientBase(int port)
+  : port_( port)
+  {
+  socket_connection_ = NULL;
+  current_prompt_ = ">>";
 }
 
-bool ConsoleServiceClientBase::write(
+bool ConsoleServiceClientBase::Write(
   au::gpb::ConsolePacket *packet, au::ErrorManager *error) {
-  if (!socket_connection) {
+  if (!socket_connection_) {
     error->AddError("Not connected to any host");
     return false;
   }
 
   // Write on the socket
-  au::Status s = writeGPB(socket_connection->fd(), packet);
+  au::Status s = writeGPB(socket_connection_->fd(), packet);
 
   if (s != OK) {
     error->AddError(au::str(
                       "Not possible to sent message (%s). Disconnecting...",
                       status(s)));
-    disconnect(error);
+    Disconnect(error);
     return false;
   }
   return true;
 }
 
-bool ConsoleServiceClientBase::read(
+bool ConsoleServiceClientBase::Read(
   au::gpb::ConsolePacket **packet, au::ErrorManager *error) {
-  if (!socket_connection) {
+  if (!socket_connection_) {
     error->AddError("Not connected to any host");
     return false;
   }
 
-  Status s = readGPB(socket_connection->fd(), packet, -1);
+  Status s = readGPB(socket_connection_->fd(), packet, -1);
   if (s != OK) {
     error->AddError(au::str(
                       "Not possible to receive answer (%s). Disconnecting...",
                       status(s)));
-    disconnect(error);
+    Disconnect(error);
     return false;
   }
   return true;
 }
 
-void ConsoleServiceClientBase::fill_message(
+void ConsoleServiceClientBase::FillMessage(
   au::gpb::ConsolePacket *message, au::ErrorManager *error) {
   for (int i = 0; i < message->message_size(); i++) {
     std::string txt = message->message(i).txt();
@@ -67,32 +67,32 @@ void ConsoleServiceClientBase::fill_message(
   }
 }
 
-void ConsoleServiceClientBase::disconnect(
+void ConsoleServiceClientBase::Disconnect(
   au::ErrorManager *error) {
-  if (socket_connection) {
+  if (socket_connection_) {
     error->AddWarning(au::str("Closing connection with %s\n"
-                              , socket_connection->host_and_port()
+                              , socket_connection_->host_and_port()
                               .c_str()));
 
-    socket_connection->Close();
-    delete socket_connection;
-    socket_connection = NULL;
+    socket_connection_->Close();
+    delete socket_connection_;
+    socket_connection_ = NULL;
   }
 }
 
-void ConsoleServiceClientBase::connect(std::string host,
+void ConsoleServiceClientBase::Connect(std::string host,
                                        au::ErrorManager *error) {
   // Disconnect from previos one if any...
-  disconnect(error);
+  Disconnect(error);
 
   if (error->IsActivated())
     return;
 
   // Try connection
-  au::Status s = SocketConnection::Create(host, port,
-                                          &socket_connection);
+  au::Status s = SocketConnection::Create(host, port_,
+                                          &socket_connection_);
   if (s != OK) {
-    disconnect(error);
+    Disconnect(error);
     error->AddError(au::str(
                       "Not possible to connect with %s (%s)\n",
                       host.c_str(), status(s)));
@@ -103,8 +103,8 @@ void ConsoleServiceClientBase::connect(std::string host,
 }
 
 std::string ConsoleServiceClientBase::getPrompt() {
-  if (cronometer_prompt_request.seconds() < 2)
-    return current_prompt;
+  if (cronometer_prompt_request_.seconds() < 2)
+    return current_prompt_;
 
   // Prepare message to be send to server
   au::gpb::ConsolePacket m;
@@ -113,19 +113,19 @@ std::string ConsoleServiceClientBase::getPrompt() {
   // Send request to server
   au::ErrorManager error;
   // Send to server
-  if (!write(&m, &error))
-    return current_prompt;
+  if (!Write(&m, &error))
+    return current_prompt_;
 
   // Recover answer from server
   // Read answer from server
   au::gpb::ConsolePacket *answer;
-  if (!read(&answer, &error))
-    return current_prompt;
+  if (!Read(&answer, &error))
+    return current_prompt_;
 
-  current_prompt = answer->prompt();
+  current_prompt_ = answer->prompt();
   delete answer;
 
-  return current_prompt;
+  return current_prompt_;
 }
 
 void ConsoleServiceClientBase::evalCommand(
@@ -141,7 +141,7 @@ void ConsoleServiceClientBase::evalCommand(
   std::string main_command = cmdLine.get_argument(0);
 
   if (main_command == "disconnect") {
-    disconnect(error);
+    Disconnect(error);
     return;
   }
 
@@ -150,11 +150,11 @@ void ConsoleServiceClientBase::evalCommand(
       error->AddError("Usage: connect host");
       return;
     }
-    connect(cmdLine.get_argument(1), error);
+    Connect(cmdLine.get_argument(1), error);
     return;
   }
 
-  if (!socket_connection) {
+  if (!socket_connection_) {
     error->AddError(
       "Not connected to any host. Type connect 'host'");
     return;
@@ -162,17 +162,17 @@ void ConsoleServiceClientBase::evalCommand(
     // Write command to the server
     au::gpb::ConsolePacket m;
     m.set_command(command);
-    if (!write(&m, error))
+    if (!Write(&m, error))
       return;
 
     // Read answer
     au::gpb::ConsolePacket *answer;
 
-    if (!read(&answer, error))
+    if (!Read(&answer, error))
       return;
 
     // Transform into a au::ErrorManager
-    fill_message(answer, error);
+    FillMessage(answer, error);
     delete answer;
   }
 }
@@ -192,12 +192,12 @@ void ConsoleServiceClientBase::autoComplete(
   au::ErrorManager error;                 // Not used error
 
   // Send to server
-  if (!write(&m, &error))
+  if (!Write(&m, &error))
     return;
 
   // Read answer from server
   au::gpb::ConsolePacket *answer;
-  if (!read(&answer, &error))
+  if (!Read(&answer, &error))
     return;
 
   // Fill info structure with received information

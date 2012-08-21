@@ -32,21 +32,22 @@
 #include "FileDescriptor.h"  // Own interface
 
 namespace au {
-FileDescriptor::FileDescriptor(std::string name,
-                               int fd) : token_("FileDescriptor") {
-  name_ = name;
-  fd_ = fd;
+FileDescriptor::FileDescriptor(const std::string& name, int fd)
+  : token_("FileDescriptor")
+  , name_(name)
+  , fd_(fd)
+{
 }
 
 FileDescriptor::~FileDescriptor() {
   Close();   // Close if still open
 }
 
-int FileDescriptor::fd() {
+int FileDescriptor::fd()  const {
   return fd_;
 }
 
-std::string FileDescriptor::name() {
+std::string FileDescriptor::name() const {
   return name_;
 }
 
@@ -58,7 +59,7 @@ au::rate::Rate& FileDescriptor::rate_out() {
   return rate_out_;
 }
 
-void FileDescriptor::set_name(std::string name) {
+void FileDescriptor::set_name(const std::string& name) {
   name_ = name;
 }
 
@@ -68,12 +69,14 @@ void FileDescriptor::Close() {
 
   if (fd_ != -1) {
     LM_LT(LmtFileDescriptors, ("Closing FileDescriptor fd:%d", fd_));
-    ::close(fd_);
+    int r = ::close(fd_);
+    if( r != 0 )
+      LM_W(("Error closing fd %d in au::FileDescriptor %s" , fd_ , name_.c_str()));
     fd_ = -1;
   }
 }
 
-bool FileDescriptor::IsClosed() {
+bool FileDescriptor::IsClosed() const {
   return ( fd_ == -1 );
 }
 

@@ -35,19 +35,19 @@ namespace au {
 class FileDescriptor {
 public:
 
-  FileDescriptor(std::string name, int fd);
+  FileDescriptor(const std::string& name, int fd);
   ~FileDescriptor();
 
   // Accessors
-  int fd();
-  std::string name();
-  void set_name(std::string name);
+  int fd() const;
+  std::string name() const;
+  void set_name(const std::string& name);
   au::rate::Rate& rate_in();
   au::rate::Rate& rate_out();
 
   // Connection management
-  void Close();        // Close this file descriptor
-  bool IsClosed();     // Check if it is closed
+  void Close();               // Close this file descriptor
+  bool IsClosed()  const;     // Check if it is closed
 
   // Read & Write line
   Status ReadLine(char *line, size_t max_size, int max_seconds = 1);
@@ -73,9 +73,9 @@ public:
 
 private:
 
-  int fd_;                 // If id is -1 it means it was closed for some reason
-  std::string name_;       // name for debuging
   au::Token token_;        // Token to protect multiple closes agains the same fd
+  std::string name_;       // name for debuging
+  int fd_;                 // If id is -1 it means it was closed for some reason
 
   // Statistics about input output rate
   au::rate::Rate rate_in_;

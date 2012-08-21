@@ -70,7 +70,7 @@ Status Service::InitService() {
   return s;
 }
 
-std::string Service::str() {
+std::string Service::str() const {
   return au::str("Server on port %d", port_);
 }
 
@@ -138,7 +138,7 @@ void Service::newSocketConnection(NetworkListener *listener,
   item->RunInBackground();
 }
 
-au::tables::Table *Service::getConnectionsTable() {
+au::tables::Table *Service::getConnectionsTable() const {
   std::string format =
     "Host|time,f=time|In (B),f=uint64|Out (B),f=uint64|In (B/s),f=uint64|Out (B/s),f=uint64";
   au::tables::Table *table = new au::tables::Table(format);
@@ -171,7 +171,7 @@ au::tables::Table *Service::getConnectionsTable() {
   return table;
 }
 
-int Service::port() {
+int Service::port() const {
   return port_;
 }
 
@@ -183,7 +183,7 @@ void Service::finish(ServiceItem *item) {
   items_.erase(item);
 }
 
-std::string Service::GetStringStatus() {
+std::string Service::GetStringStatus() const {
   if (listener_.IsNetworkListenerRunning())
     return au::str("listening on port %d", listener_.port()); else
     return "not listening";

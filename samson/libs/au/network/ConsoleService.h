@@ -11,9 +11,7 @@
 #include "au/Environment.h"
 #include "au/au.pb.h"
 #include "au/gpb.h"
-
 #include "au/console/Console.h"
-
 #include "au/network/Service.h"
 
 namespace au {
@@ -21,38 +19,39 @@ namespace network {
 class Service;
 
 class ConsoleServiceClientBase {
-  int port;
-  SocketConnection *socket_connection;
-
-  // Prompt request delayed
-  au::Cronometer cronometer_prompt_request;
-  std::string current_prompt;
 
 public:
 
-  ConsoleServiceClientBase(int _port);
+  ConsoleServiceClientBase(int port);
 
-  void connect(std::string host, au::ErrorManager *error);
-  void disconnect(au::ErrorManager *error);
+  void Connect(std::string host, au::ErrorManager *error);
+  void Disconnect(au::ErrorManager *error);
 
-  bool write(au::gpb::ConsolePacket *packet,
+  bool Write(au::gpb::ConsolePacket *packet,
              au::ErrorManager *error);
-  bool read(au::gpb::ConsolePacket **packet,
+  bool Read(au::gpb::ConsolePacket **packet,
             au::ErrorManager *error);
 
-  void fill_message(au::gpb::ConsolePacket *message,
-                    au::ErrorManager *error);
-
+  // Methods related with au::Console
   std::string getPrompt();
-
   void evalCommand(std::string command, au::ErrorManager *error);
-
   virtual void autoComplete(ConsoleAutoComplete *info);
-
   void addEspaceSequence(std::string sequence);
+  virtual void process_escape_sequence(std::string sequence) {};
+  
+private:
 
-  virtual void process_escape_sequence(std::string sequence) {
-  };
+  // Full a message to be sent
+  void FillMessage(au::gpb::ConsolePacket *message,
+                   au::ErrorManager *error);
+
+  int port_;
+  SocketConnection *socket_connection_;
+  
+  // Prompt request delayed
+  au::Cronometer cronometer_prompt_request_;
+  std::string current_prompt_;
+
 };
 
 // Simple console to interact with the client

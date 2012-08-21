@@ -5,20 +5,14 @@
 
 #include "au/log/Log.h"
 
-namespace au
-{
-    
-    class LogPlugin
-    {
-        
-        // Pending filter setup...
-        
-    public:
-        
-        void virtual process_log( Log* log )=0;
-        
-    };
-    
+namespace au {
+class LogPlugin {
+  // Pending filter setup...
+
+public:
+
+  void virtual process_log(Log *log) = 0;
+};
 }
 
 #endif

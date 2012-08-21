@@ -5,24 +5,18 @@
 
 #include "au/containers/vector.h"
 
-namespace au 
-{
+namespace au {
+class Log;
 
-    class Log;
-    
-    class LogFile
-    {        
-        
-    public:
-        
-        // Collections of logs from this file
-        au::vector<Log> logs;
-        
-        // Read a file
-        static au::Status read( std::string file_name , LogFile** logFile );
-        
-    };
-    
+class LogFile {
+public:
+
+  // Collections of logs from this file
+  au::vector<Log> logs;
+
+  // Read a file
+  static au::Status read(std::string file_name, LogFile **logFile);
+};
 }
 
 #endif

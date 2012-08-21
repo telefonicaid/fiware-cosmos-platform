@@ -1,7 +1,5 @@
 
-#include "Pool.h" // Own interface
+#include "Pool.h"  // Own interface
 
 namespace au {
-
-    
 }

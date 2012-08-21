@@ -2,28 +2,28 @@
 #define SAMSON_DIRECTORIES_H
 
 /* ****************************************************************************
-*
-* FILE                samsonDirectories.h - key directories in file system
-*
-*
-*
-*/
+ *
+ * FILE                samsonDirectories.h - key directories in file system
+ *
+ *
+ *
+ */
 
 
 
 /* ****************************************************************************
-*
-* Directories
-*/
-#define SAMSON_WORKING_DEFAULT  "/var/samson"
-#define SAMSON_HOME_DEFAULT     "/opt/samson"
+ *
+ * Directories
+ */
+#define SAMSON_WORKING_DEFAULT             "/var/samson"
+#define SAMSON_HOME_DEFAULT                "/opt/samson"
 
 
 
 /* ****************************************************************************
-*
-* Files
-*/
-#define SAMSON_PLATFORM_PROCESSES_FILENAME  "samsonPlatformProcesses"
+ *
+ * Files
+ */
+#define SAMSON_PLATFORM_PROCESSES_FILENAME "samsonPlatformProcesses"
 
 #endif

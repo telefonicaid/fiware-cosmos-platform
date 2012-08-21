@@ -3,9 +3,9 @@
 #ifndef _H_SAMSON_CONNECTOR_COMMON
 #define _H_SAMSON_CONNECTOR_COMMON
 
-#include "au/tables/Table.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
+#include "au/tables/Table.h"
 
 
 
@@ -17,19 +17,16 @@
 // ----------------------------------------------------------------
 
 namespace stream_connector {
+// ConnectionType
+// ------------------------------------------
 
-    // ConnectionType
-    // ------------------------------------------
-    
-    typedef enum
-    {
-        connection_input,
-        connection_output
-    } ConnectionType;
+typedef enum {
+  connection_input,
+  connection_output
+} ConnectionType;
 
-    // Get string for each connection type
-    const char * str_ConnectionType( ConnectionType type );
-    
+// Get string for each connection type
+const char *str_ConnectionType(ConnectionType type);
 }
 
-#endif
+#endif // ifndef _H_SAMSON_CONNECTOR_COMMON

@@ -13,19 +13,19 @@
 #ifndef _H_AU_NETWORK_SERVICE
 #define _H_AU_NETWORK_SERVICE
 
+#include "au/Environment.h"
 #include "au/Status.h"
+#include "au/au.pb.h"
+#include "au/console/Console.h"
 #include "au/containers/set.h"
+#include "au/gpb.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
-#include "au/tables/Table.h"
-#include "au/Environment.h"
-#include "au/au.pb.h"
-#include "au/gpb.h"
-#include "au/string.h"
-#include "au/utils.h"
-#include "au/console/Console.h"
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
+#include "au/string.h"
+#include "au/tables/Table.h"
+#include "au/utils.h"
 
 
 /*****************************************************************************

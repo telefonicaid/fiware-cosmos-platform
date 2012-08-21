@@ -47,9 +47,8 @@ void NetworkListener::StopNetworkListener() {
   }
   // Close the open file descriptor
   int rc = ::close(rFd_);
-  if( rc )
-    LM_W(("Error closing fd %d in network listener over port %d ( rc %d )" , rFd_ , port_ , rc ));
-  rFd_ = -1;
+  if (rc)
+    LM_W(("Error closing fd %d in network listener over port %d ( rc %d )", rFd_, port_, rc )); rFd_ = -1;
 
   // Joint the background thread
   void *r;

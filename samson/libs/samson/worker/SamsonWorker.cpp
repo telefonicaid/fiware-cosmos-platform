@@ -1741,13 +1741,13 @@ namespace samson {
     
     if( main_command == "show_engine_statistics" )
     {
-      writeOnConsole( engine::Engine::shared()->get_activity_monitor()->str_elements() + "\n" );
+      writeOnConsole( engine::Engine::shared()->get_activity_monitor()->GetElementsTable() + "\n" );
       return;
     }
     
     if( main_command == "show_engine_last_items" )
     {
-      writeOnConsole( engine::Engine::shared()->get_activity_monitor()->str_last_items() + "\n" );
+      writeOnConsole( engine::Engine::shared()->get_activity_monitor()->GetLastItemsTable() + "\n" );
       return;
     }
     

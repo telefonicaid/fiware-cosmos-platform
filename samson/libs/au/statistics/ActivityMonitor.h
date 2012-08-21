@@ -29,11 +29,11 @@ public:
     time_ = time;
   }
 
-  std::string name() {
+  std::string name() const {
     return name_;
   }
 
-  double time() {
+  double time() const {
     return time_;
   }
 
@@ -52,11 +52,11 @@ public:
   double GetAverage() const;
   double GetStdDeviation() const;
 
-  double total();
-  double last();
-  double min();
-  double max();
-  size_t counter();
+  double total()const ;
+  double last()const ;
+  double min()const ;
+  double max()const ;
+  size_t counter()const ;
 
 private:
 
@@ -78,11 +78,11 @@ public:
   // Start and Stop activities
   void StartActivity(std::string activity_name);
   void StopActivity();
-  std::string GetCurrentActivity();
+  std::string GetCurrentActivity()const ;
 
   // Information for activities
-  std::string str_last_items();
-  std::string str_elements();
+  std::string GetLastItemsTable()const ;
+  std::string GetElementsTable()const ;
 
 private:
 
@@ -93,7 +93,7 @@ private:
   au::list<ActivityItem> items_;     // Last items
   au::map<std::string, ActivityStatistics > elements_;
 
-  au::Token token;
+  mutable au::Token token;
 };
 }
 }

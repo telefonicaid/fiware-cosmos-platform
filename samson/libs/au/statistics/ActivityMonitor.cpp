@@ -23,7 +23,7 @@ void ActivityStatistics::Push(ActivityItem *item) {
     return;
   }
 
-  counter_++;     // Update the counter ( # of times executed )
+  ++counter_;     // Update the counter ( # of times executed )
   total_ += t;
   total_square_ += t * t;
   last_ = t;
@@ -39,23 +39,23 @@ void ActivityStatistics::Push(ActivityItem *item) {
   }
 }
 
-double ActivityStatistics::total() {
+double ActivityStatistics::total()const  {
   return total_;
 }
 
-double ActivityStatistics::last() {
+double ActivityStatistics::last()const  {
   return last_;
 }
 
-double ActivityStatistics::min() {
+double ActivityStatistics::min()const  {
   return min_;
 }
 
-double ActivityStatistics::max() {
+double ActivityStatistics::max()const  {
   return max_;
 }
 
-size_t ActivityStatistics::counter() {
+size_t ActivityStatistics::counter()const  {
   return counter_;
 }
 
@@ -114,12 +114,12 @@ void ActivityMonitor::StopActivity() {
   StartActivity("no_activity");
 }
 
-std::string ActivityMonitor::str_last_items() {
+std::string ActivityMonitor::GetLastItemsTable() const  {
   au::TokenTaker tt(&token);
 
   au::tables::Table table("Item|Time,left,f=double");
 
-  au::list<ActivityItem>::iterator it;
+  au::list<ActivityItem>::const_iterator it;
   for (it = items_.begin(); it != items_.end(); it++) {
     table.addRow(au::StringVector((*it)->name(),
                                   au::str("%.12f", (*it)->time()).c_str()));
@@ -127,13 +127,13 @@ std::string ActivityMonitor::str_last_items() {
   return table.str();
 }
 
-std::string ActivityMonitor::str_elements() {
+std::string ActivityMonitor::GetElementsTable()const  {
   au::TokenTaker tt(&token);
 
   au::tables::Table table(
     "Element|Num,f=uint64|Total time,f=double|Average,f=double|std dev,f=double|Min,f=double|Max,f=double");
 
-  au::map<std::string, ActivityStatistics >::iterator it;
+  au::map<std::string, ActivityStatistics >::const_iterator it;
   for (it = elements_.begin(); it != elements_.end(); it++) {
     au::StringVector values;
 
@@ -157,7 +157,7 @@ std::string ActivityMonitor::str_elements() {
   return table.str();
 }
 
-std::string ActivityMonitor::GetCurrentActivity() {
+std::string ActivityMonitor::GetCurrentActivity()const  {
   au::TokenTaker tt(&token);
 
   return current_activty_;

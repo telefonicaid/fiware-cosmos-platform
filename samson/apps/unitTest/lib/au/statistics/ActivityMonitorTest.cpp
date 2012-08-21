@@ -12,6 +12,6 @@ TEST(au_statistics_ActivityMonitor, basic) {
   activity_monitor.StartActivity("do_something");
   EXPECT_EQ("do_something", activity_monitor.GetCurrentActivity());
 
-  EXPECT_EQ(true, activity_monitor.str_last_items().length() > 0);
-  EXPECT_EQ(true, activity_monitor.str_elements().length() > 0);
+  EXPECT_EQ(true, activity_monitor.GetElementsTable().length() > 0);
+  EXPECT_EQ(true, activity_monitor.GetLastItemsTable().length() > 0);
 }

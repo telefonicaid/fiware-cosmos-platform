@@ -17,8 +17,7 @@ public:
     num_connections_++;
 
     if (socket_connetion->ReadLine(line, sizeof(line)) == au::OK)
-      socket_connetion->WriteLine(line, strlen(line));
-    socket_connetion->Close();
+      socket_connetion->WriteLine(line, strlen(line)); socket_connetion->Close();
   }
 
   static int num_connections() {

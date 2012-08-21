@@ -34,9 +34,8 @@
 namespace au {
 FileDescriptor::FileDescriptor(const std::string& name, int fd)
   : token_("FileDescriptor")
-  , name_(name)
-  , fd_(fd)
-{
+    , name_(name)
+    , fd_(fd) {
 }
 
 FileDescriptor::~FileDescriptor() {
@@ -70,9 +69,8 @@ void FileDescriptor::Close() {
   if (fd_ != -1) {
     LM_LT(LmtFileDescriptors, ("Closing FileDescriptor fd:%d", fd_));
     int r = ::close(fd_);
-    if( r != 0 )
-      LM_W(("Error closing fd %d in au::FileDescriptor %s" , fd_ , name_.c_str()));
-    fd_ = -1;
+    if (r != 0)
+      LM_W(("Error closing fd %d in au::FileDescriptor %s", fd_, name_.c_str())); fd_ = -1;
   }
 }
 
@@ -184,6 +182,7 @@ Status FileDescriptor::msgAwait(int secs, int usecs, const char *what) {
   } else if ((fds > 0) && (FD_ISSET(fd_, &rFds))) {
     return OK;
   }
+
 
 
   LM_LX(1, ("Very strange error awaiting '%s' from '%s'", what, name_.c_str()));

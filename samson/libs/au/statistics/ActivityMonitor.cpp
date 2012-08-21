@@ -39,23 +39,23 @@ void ActivityStatistics::Push(ActivityItem *item) {
   }
 }
 
-double ActivityStatistics::total()const  {
+double ActivityStatistics::total() const {
   return total_;
 }
 
-double ActivityStatistics::last()const  {
+double ActivityStatistics::last() const {
   return last_;
 }
 
-double ActivityStatistics::min()const  {
+double ActivityStatistics::min() const {
   return min_;
 }
 
-double ActivityStatistics::max()const  {
+double ActivityStatistics::max() const {
   return max_;
 }
 
-size_t ActivityStatistics::counter()const  {
+size_t ActivityStatistics::counter() const {
   return counter_;
 }
 
@@ -75,8 +75,7 @@ double ActivityStatistics::GetStdDeviation() const {
 }
 
 ActivityMonitor::ActivityMonitor(std::string first_activity_name) : token(
-                                                                      "EngineStatistics")
-{
+                                                                      "EngineStatistics") {
   current_activty_ = first_activity_name;
   current_activirty_start_time_ = 0;
 }
@@ -114,7 +113,7 @@ void ActivityMonitor::StopActivity() {
   StartActivity("no_activity");
 }
 
-std::string ActivityMonitor::GetLastItemsTable() const  {
+std::string ActivityMonitor::GetLastItemsTable() const {
   au::TokenTaker tt(&token);
 
   au::tables::Table table("Item|Time,left,f=double");
@@ -127,7 +126,7 @@ std::string ActivityMonitor::GetLastItemsTable() const  {
   return table.str();
 }
 
-std::string ActivityMonitor::GetElementsTable()const  {
+std::string ActivityMonitor::GetElementsTable() const {
   au::TokenTaker tt(&token);
 
   au::tables::Table table(
@@ -157,7 +156,7 @@ std::string ActivityMonitor::GetElementsTable()const  {
   return table.str();
 }
 
-std::string ActivityMonitor::GetCurrentActivity()const  {
+std::string ActivityMonitor::GetCurrentActivity() const {
   au::TokenTaker tt(&token);
 
   return current_activty_;

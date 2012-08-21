@@ -10,8 +10,8 @@
 
 #include "au/Environment.h"
 #include "au/au.pb.h"
-#include "au/gpb.h"
 #include "au/console/Console.h"
+#include "au/gpb.h"
 #include "au/network/Service.h"
 
 namespace au {
@@ -19,7 +19,6 @@ namespace network {
 class Service;
 
 class ConsoleServiceClientBase {
-
 public:
 
   ConsoleServiceClientBase(int port);
@@ -37,8 +36,9 @@ public:
   void evalCommand(std::string command, au::ErrorManager *error);
   virtual void autoComplete(ConsoleAutoComplete *info);
   void addEspaceSequence(std::string sequence);
-  virtual void process_escape_sequence(std::string sequence) {};
-  
+  virtual void process_escape_sequence(std::string sequence) {
+  };
+
 private:
 
   // Full a message to be sent
@@ -47,11 +47,10 @@ private:
 
   int port_;
   SocketConnection *socket_connection_;
-  
+
   // Prompt request delayed
   au::Cronometer cronometer_prompt_request_;
   std::string current_prompt_;
-
 };
 
 // Simple console to interact with the client
@@ -130,9 +129,8 @@ public:
                "ConsoleService: Could not read message from client correctly (%s).Closing connection",
                status(s)));
         socket_connection->Close();
-        if (message) {
+        if (message)
           delete message;
-        }
         return;
       }
 

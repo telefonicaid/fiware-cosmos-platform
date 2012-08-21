@@ -204,8 +204,7 @@ au::Status RESTServiceCommand::Write(
     header << "Content-Type: application/xml\n"; else if (format_ == "html")
     header << "Content-Type: application/html\n"; else if (format_ == "thtml")
     header << "Content-Type: application/thtml\n"; else
-    LM_W(("no format (does this mean its XML?"));
-  header << "Content-Length: " << data.length() << "\n";
+    LM_W(("no format (does this mean its XML?")); header << "Content-Length: " << data.length() << "\n";
   header << "Connection: close\n";
   header << "\n";
 

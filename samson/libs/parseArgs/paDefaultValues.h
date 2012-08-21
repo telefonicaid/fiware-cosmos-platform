@@ -2,21 +2,21 @@
 #define PA_DEFAULT_VALUES_H
 
 /* ****************************************************************************
-*
-* FILE                  paDefaultValues.h
-*
-* AUTHOR                Ken Zangelin
-*
-*/
+ *
+ * FILE                  paDefaultValues.h
+ *
+ * AUTHOR                Ken Zangelin
+ *
+ */
 #include "parseArgs/parseArgs.h"          /* PaArgument                      */
 
 
 
 /* ****************************************************************************
-*
-* paDefaultValues - set default values, initially
-*/
-extern int paDefaultValues(PaiArgument* paiList);
+ *
+ * paDefaultValues - set default values, initially
+ */
+extern int paDefaultValues(PaiArgument *paiList);
 
 #endif
 

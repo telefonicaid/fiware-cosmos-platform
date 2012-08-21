@@ -2,19 +2,19 @@
 #define PA_LOG_SETUP_H
 
 /* ****************************************************************************
-*
-* FILE                  paLogSetup.h
-*
-* AUTHOR                Ken Zangelin
-*
-*/
+ *
+ * FILE                  paLogSetup.h
+ *
+ * AUTHOR                Ken Zangelin
+ *
+ */
 
 
 
 /* ****************************************************************************
-*
-* paLogSetup - 
-*/
+ *
+ * paLogSetup -
+ */
 extern int paLogSetup(void);
 
 #endif

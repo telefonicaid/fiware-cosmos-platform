@@ -521,8 +521,8 @@ code_lint:
 
 # Uncrusfity all files in libs and apps directory
 uncrustify:
-	uncrustify -c scripts/uncrustify.cfg  $$(find libs -name *.cpp)
-	uncrustify -c scripts/uncrustify.cfg  $$(find libs -name *.h)
-	uncrustify -c scripts/uncrustify.cfg  $$(find apps -name *.cpp)
-	uncrustify -c scripts/uncrustify.cfg  $$(find apps -name *.h)
+	uncrustify -c scripts/uncrustify.cfg --replace --no-backup $$(find libs -name *.cpp)
+	uncrustify -c scripts/uncrustify.cfg --replace --no-backup $$(find libs -name *.h)
+	uncrustify -c scripts/uncrustify.cfg --replace --no-backup $$(find apps -name *.cpp)
+	uncrustify -c scripts/uncrustify.cfg --replace --no-backup $$(find apps -name *.h)
 	rm -f $$(find . -name *.uncrustify)

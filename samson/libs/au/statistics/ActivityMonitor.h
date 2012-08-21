@@ -52,11 +52,11 @@ public:
   double GetAverage() const;
   double GetStdDeviation() const;
 
-  double total()const ;
-  double last()const ;
-  double min()const ;
-  double max()const ;
-  size_t counter()const ;
+  double total() const;
+  double last() const;
+  double min() const;
+  double max() const;
+  size_t counter() const;
 
 private:
 
@@ -78,11 +78,11 @@ public:
   // Start and Stop activities
   void StartActivity(std::string activity_name);
   void StopActivity();
-  std::string GetCurrentActivity()const ;
+  std::string GetCurrentActivity() const;
 
   // Information for activities
-  std::string GetLastItemsTable()const ;
-  std::string GetElementsTable()const ;
+  std::string GetLastItemsTable() const;
+  std::string GetElementsTable() const;
 
 private:
 
@@ -98,4 +98,4 @@ private:
 }
 }
 
-#endif // ifndef _H_AU_ACTIVITY_MONITOR
+#endif  // ifndef _H_AU_ACTIVITY_MONITOR

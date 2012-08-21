@@ -2,8 +2,8 @@
 #ifndef _H_ZOOKEEPER_COMMON
 #define _H_ZOOKEEPER_COMMON
 
-#include <string>
 #include "zookeeper/zookeeper.h"
+#include <string>
 
 // Additional errors of the C++ zookeeper wrapper
 
@@ -13,18 +13,16 @@
 #define ZC_ERROR_CONNECTION_TIMEOUT -2003    // No connection is established
 
 namespace samson { namespace zoo {
-  
-  class Connection;
-  
-  // Function to get the error message in zk library
-  std::string str_error( int rc );
-  
-  // Auxiliar functions to work with 
-  int vstrcmp(const void* str1, const void* str2);    
-  void sort_vector(struct String_vector *vector);
-  void free_vector(struct String_vector *v);
-  void init_vector(struct String_vector *v);
+                   class Connection;
 
-} } // End of namespace samson::zoo
+                   // Function to get the error message in zk library
+                   std::string str_error(int rc);
 
-#endif
+                   // Auxiliar functions to work with
+                   int vstrcmp(const void *str1, const void *str2);
+                   void sort_vector(struct String_vector *vector);
+                   void free_vector(struct String_vector *v);
+                   void init_vector(struct String_vector *v);
+                   } } // End of namespace samson::zoo
+
+#endif // ifndef _H_ZOOKEEPER_COMMON

@@ -2,44 +2,44 @@
 #define PA_ITERATE_H
 
 /* ****************************************************************************
-*
-* FILE                  paIterate.h
-*
-* AUTHOR                Ken Zangelin
-*
-*/
+ *
+ * FILE                  paIterate.h
+ *
+ * AUTHOR                Ken Zangelin
+ *
+ */
 #include "parseArgs/parseArgs.h"          /* PaArgument                                */
 
 
 
 /* ****************************************************************************
-*
-* paIterateInit - 
-*/
+ *
+ * paIterateInit -
+ */
 extern void paIterateInit(void);
 
 
 
 /* ****************************************************************************
-*
-* paIterateNext - 
-*/
-extern PaiArgument* paIterateNext(PaiArgument* paList);
+ *
+ * paIterateNext -
+ */
+extern PaiArgument *paIterateNext(PaiArgument *paList);
 
 
 
 /* ****************************************************************************
-*
-* paNoOfOptions - 
-*/
-extern int paNoOfOptions(PaArgument* paList);
+ *
+ * paNoOfOptions -
+ */
+extern int paNoOfOptions(PaArgument *paList);
 
 
 
 /* ****************************************************************************
-*
-* paOptionLookupByIx - 
-*/
-extern PaArgument* paOptionLookupByIx(PaArgument* paList, int ix);
+ *
+ * paOptionLookupByIx -
+ */
+extern PaArgument *paOptionLookupByIx(PaArgument *paList, int ix);
 
-#endif
+#endif // ifndef PA_ITERATE_H

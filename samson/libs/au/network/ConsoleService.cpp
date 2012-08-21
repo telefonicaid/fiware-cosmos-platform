@@ -4,8 +4,7 @@
 namespace au {
 namespace network {
 ConsoleServiceClientBase::ConsoleServiceClientBase(int port)
-  : port_( port)
-  {
+  : port_(port) {
   socket_connection_ = NULL;
   current_prompt_ = ">>";
 }

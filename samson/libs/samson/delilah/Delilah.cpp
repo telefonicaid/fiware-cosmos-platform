@@ -99,13 +99,12 @@ namespace samson {
     LM_V(("Trying to connect to to %s" , host.c_str() ));
     
     std::string host_name;
-    int port;
-    if( components.size() == 2 )
-    {
+    int port = -1;
+    if (components.size() == 2) {
       host_name = components[0];
       port = atoi( components[1].c_str() );
-    } else if ( components.size() == 1 )
-    {
+    }
+    else if (components.size() == 1) {
       host_name = host;
       port = SAMSON_WORKER_PORT; // Default port for worker
     }
@@ -122,7 +121,7 @@ namespace samson {
       return false;
     }
     
-    // Special node just to retreive cluster information
+    // Special node just to retrieve cluster information
     NodeIdentifier node_identifier( DelilahNode  , au::code64_rand() ); 
     
     // Send Hello message

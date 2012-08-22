@@ -33,25 +33,29 @@ BufferProcessor::BufferProcessor(Channel *_channel) {
     } else {
       // Get instace of the operation
       splitter = (samson::Splitter *)operation->getInstance();
-      if (!splitter)
+      if (!splitter) {
         LM_W(("Error getting instance of the splitter %s. Not using any splitter", splitter_name.c_str()));
+      }
     }
   }
 }
 
 BufferProcessor::~BufferProcessor() {
   // Free allocted buffer
-  if (buffer)
+  if (buffer) {
     free(buffer);
+  }
 }
 
 // SplitterEmitter interface
 void BufferProcessor::emit(char *data, size_t length) {
   // If not possible to write in the current buffer, just flush content
   {
-    if (output_buffer_ != NULL)
-      if (output_buffer_->getSize() + length > output_buffer_->getMaxSize())
+    if (output_buffer_ != NULL) {
+      if (output_buffer_->getSize() + length > output_buffer_->getMaxSize()) {
         flushOutputBuffer();
+      }
+    }
   }
 
   // Recover buffer to write output
@@ -61,9 +65,12 @@ void BufferProcessor::emit(char *data, size_t length) {
   }
 
   // Write in the buffer
-  if (!output_buffer_->write(data, length))
-    LM_X(1, ("Internal error")); if (output_buffer_->getSize() == output_buffer_->getMaxSize())
+  if (!output_buffer_->write(data, length)) {
+    LM_X(1, ("Internal error"));
+  }
+  if (output_buffer_->getSize() == output_buffer_->getMaxSize()) {
     flushOutputBuffer();
+  }
 }
 
 void BufferProcessor::flushOutputBuffer() {
@@ -75,11 +82,12 @@ void BufferProcessor::flushOutputBuffer() {
 
 void BufferProcessor::process_intenal_buffer(bool finish) {
   // If no splitter, no process
-  if (!splitter)
+  if (!splitter) {
     return;   // If no splitter, we never create an outputBuffer
-
-  if (size == 0)
+  }
+  if (size == 0) {
     return;
+  }
 
   // Pointer to data that has not been used in splitter
   char *nextData;

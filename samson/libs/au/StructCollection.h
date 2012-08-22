@@ -19,17 +19,19 @@ public:
   }
 
   ~StructCollection() {
-    if (v)
+    if (v) {
       free(v);
+    }
   }
 
   void add(C c) {
     if (size == max_size) {
       // Alloc new space
-      if (max_size == 0)
+      if (max_size == 0) {
         max_size = 2;
-      else
+      } else {
         max_size *= 2;
+      }
 
       C *vv = (C *)malloc(max_size * sizeof(C));
       if (size > 0) {
@@ -50,29 +52,33 @@ public:
   size_t write(FILE *file) {
     size_t t = fwrite(v, size * sizeof( C ), 1, file);
 
-    if (t == 1)
+    if (t == 1) {
       return size * sizeof( C );
-    else
+    } else {
       return 0;
+    }
   }
 
   void read(FILE *file, size_t _size) {
     // Free preivous buffer if any
-    if (v)
+    if (v) {
       free(v);
+    }
 
     size = _size / sizeof(C);
 
-    if (size * sizeof(C) != _size)
+    if (size * sizeof(C) != _size) {
       LM_X(1, ("Problem reading %lu bytes for structs of size %lu", _size, sizeof(C)));
+    }
 
     v = (C *)malloc(_size * sizeof(C));
     max_size = _size;
 
     // Read content from file
     size_t s = fread(v, _size, 1, file);
-    if (s != 1)
+    if (s != 1) {
       LM_W(("Error reading StructColleciton"));
+    }
   }
 };
 }

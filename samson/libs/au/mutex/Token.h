@@ -37,10 +37,8 @@ public:
 
 private:
 
-  // It is only possible to retain the token with the class TokenTaker
+  // To avoid missin releases, we use helper class TokenTaker
   friend class TokenTaker;
-
-  std::string name_;
 
   void Retain();
   void Release();
@@ -51,8 +49,10 @@ private:
   pthread_mutex_t lock_;   // Mutex to protect this token
   pthread_cond_t block_;   // Condition to block threads that call stop
 
+  std::string name_;  // Name of the token for debuggin
 
   // Mechanism to discover if you have locked this mutex
+  // Allowing multiple Retains from the same thread
   pid_t token_owner_thread_id_;
   volatile bool locked_;
   volatile int counter_;   // Number of times this token is taken

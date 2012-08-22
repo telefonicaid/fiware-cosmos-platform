@@ -47,17 +47,21 @@ namespace samson { namespace stream {
                      head = (BlockLookupRecord *)calloc(block->header.info.kvs, sizeof(BlockLookupRecord));
                      size = block->header.info.kvs;
 
-                     if (head == NULL)
+                     if (head == NULL) {
                        LM_X(1,
                             ("Error allocating lookupList.head of %d bytes", block->header.info.kvs *
-                             sizeof(BlockLookupRecord))); hashInfo = (BlockHashLookupRecord *)calloc(
+                             sizeof(BlockLookupRecord)));
+                     }
+                     hashInfo = (BlockHashLookupRecord *)calloc(
                        KVFILE_NUM_HASHGROUPS, sizeof(BlockHashLookupRecord));
-                     if (hashInfo == NULL)
+                     if (hashInfo == NULL) {
                        LM_X(1,
                             ("Error allocating lookupList.hashInfo of %d bytes", KVFILE_NUM_HASHGROUPS *
-                             sizeof(BlockHashLookupRecord))); LM_T(LmtRest,
-                                                                   ("Created a lookup list for %d records",
-                                                                    block->header.info.kvs));
+                             sizeof(BlockHashLookupRecord)));
+                     }
+                     LM_T(LmtRest,
+                          ("Created a lookup list for %d records",
+                           block->header.info.kvs));
 
                      unsigned int hashIx;
                      unsigned int kvIx;
@@ -117,29 +121,37 @@ namespace samson { namespace stream {
                      // semGive();
 
 
-                     if (kvInfoV)
+                     if (kvInfoV) {
                        free(kvInfoV);
+                     }
                    }
 
                    BlockLookupList::~BlockLookupList() {
-                     if (head != NULL)
-                       free(head); if (hashInfo != NULL)
+                     if (head != NULL) {
+                       free(head);
+                     }
+                     if (hashInfo != NULL) {
                        free(hashInfo);
+                     }
                    }
 
                    int compare_binary_keys(char *key, size_t key_size, char *key2, size_t key_size2) {
-                     if (key_size < key_size2)
+                     if (key_size < key_size2) {
                        return -1;
+                     }
 
-                     if (key_size > key_size2)
+                     if (key_size > key_size2) {
                        return 1;
+                     }
 
                      for (size_t i = 0; i < key_size; i++) {
-                       if (key[i] < key2[i])
+                       if (key[i] < key2[i]) {
                          return -1;
+                       }
 
-                       if (key[i] > key2[i])
+                       if (key[i] > key2[i]) {
                          return 1;
+                       }
                      }
                      return 0;
                    }
@@ -226,14 +238,18 @@ namespace samson { namespace stream {
                          }
                        }
 
-                       if (compare < 0) // keyName < testKey => Go to the left - to 'smaller' key names
-                         endIx = testIx - 1; else
-                         startIx = testIx + 1; testIx = (endIx - startIx) / 2 + startIx;
+                       if (compare < 0) {  // keyName < testKey => Go to the left - to 'smaller' key names
+                         endIx = testIx - 1;
+                       } else {
+                         startIx = testIx + 1;
+                       } testIx = (endIx - startIx) / 2 + startIx;
 
                        if (startIx > endIx) {  // Not found
-                         if (outputFormat == "xml")
-                           return au::xml_simple("error", au::str("Key %s not found", key)); else
+                         if (outputFormat == "xml") {
+                           return au::xml_simple("error", au::str("Key %s not found", key));
+                         } else {
                            return std::string("  \"error\" : \"") + au::str("Key %s not found\"\r\n", key);
+                         }
                        }
                      }
                    }

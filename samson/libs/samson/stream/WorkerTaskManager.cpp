@@ -59,7 +59,7 @@ void WorkerTaskManager::add_block_request_task(size_t block_id, size_t worker_id
 void WorkerTaskManager::notify(engine::Notification *notification) {
   if (notification->isName(notification_process_request_response)) {
     // Get the identifier of this tasks that has finished
-    size_t id = notification->environment().get("system.task_id", 0);
+    size_t id = notification->environment().Get("system.task_id", 0);
 
     // Extract this task
     au::SharedPointer<WorkerTaskBase> task_base = running_tasks_.Extract(id);
@@ -71,8 +71,8 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
     }
 
     // Common log for tasks
-    if (notification->environment().isSet("error")) {
-      std::string error = notification->environment().get("error", "???");
+    if (notification->environment().IsSet("error")) {
+      std::string error = notification->environment().Get("error", "???");
       last_tasks_.push_back(WorkerTaskLog(task_base->str(), error));
     } else {
       last_tasks_.push_back(WorkerTaskLog(task_base->str(), "OK"));
@@ -94,8 +94,8 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
       // Nothing spetial to do with system tasks
     } else {
       // Mark the task as finished
-      if (notification->environment().isSet("error")) {
-        std::string error = notification->environment().get("error", "???");
+      if (notification->environment().IsSet("error")) {
+        std::string error = notification->environment().Get("error", "???");
         task->set_finished_with_error(error);
       } else {
         task->set_finished();
@@ -103,8 +103,9 @@ void WorkerTaskManager::notify(engine::Notification *notification) {
     }
   }
 
-  if (notification->isName(notification_run_stream_tasks_if_necessary))
+  if (notification->isName(notification_run_stream_tasks_if_necessary)) {
     reviewPendingWorkerTasks();
+  }
 }
 
 void WorkerTaskManager::reviewPendingWorkerTasks() {
@@ -165,12 +166,13 @@ bool WorkerTaskManager::runNextWorkerTasksIfNecessary() {
       au::SharedPointer<WorkerTask> task = base_task.dynamic_pointer_cast<WorkerTask>();
       au::SharedPointer<WorkerSystemTask> system_task = base_task.dynamic_pointer_cast<WorkerSystemTask>();
 
-      if (task != NULL)
+      if (task != NULL) {
         engine::ProcessManager::shared()->Add(task.static_pointer_cast<engine::ProcessItem>(), getEngineId());
-      else if (system_task != NULL)
+      } else if (system_task != NULL) {
         engine::ProcessManager::shared()->Add(system_task.static_pointer_cast<engine::ProcessItem>(), getEngineId());
-      else
-        LM_X(1, ("WorkerTaskBase cannot be converted to WorkerTask or WorkerSystemTask")); return true;
+      } else {
+        LM_X(1, ("WorkerTaskBase cannot be converted to WorkerTask or WorkerSystemTask"));
+      } return true;
     }
   }
 
@@ -207,14 +209,16 @@ samson::gpb::Collection *WorkerTaskManager::getCollection(const ::samson::Visual
 
   for (size_t i = 0; i < running_tasks.size(); i++) {
     au::SharedPointer<WorkerTaskBase> task = running_tasks[i];
-    if (name_match(visualization.pattern().c_str(), task->get_id()))
+    if (name_match(visualization.pattern().c_str(), task->get_id())) {
       task->fill(collection->add_record(), visualization);
+    }
   }
 
   for (size_t i = 0; i < pending_tasks.size(); i++) {
     au::SharedPointer<WorkerTaskBase> task = pending_tasks[i];
-    if (name_match(visualization.pattern().c_str(), task->get_id()))
+    if (name_match(visualization.pattern().c_str(), task->get_id())) {
       task->fill(collection->add_record(), visualization);
+    }
   }
 
   return collection;
@@ -291,8 +295,10 @@ void WorkerTaskManager::review_stream_operations() {
     // Schedule next task
     if (max_priority_stream_operation_info) {
       au::SharedPointer<WorkerTask>  queue_task =  max_priority_stream_operation_info->schedule_new_task(id_++);
-      if (queue_task == NULL)
-        LM_X(1, ("Internal error")); Add(queue_task.static_pointer_cast<WorkerTaskBase>());
+      if (queue_task == NULL) {
+        LM_X(1, ("Internal error"));
+      }
+      Add(queue_task.static_pointer_cast<WorkerTaskBase>());
     }
   }
 }

@@ -96,14 +96,18 @@ public:
 
   virtual void run(KeyValue kv) {
     // Input key expected to be a string
-    if (!kv.key)
+    if (!kv.key) {
       return;
+    }
 
 
 
 
-    if (!kv.key->isString())
+
+    if (!kv.key->isString()) {
       return;
+    }
+
 
 
 
@@ -112,8 +116,9 @@ public:
     new_key.value->setFromJSONString(kv.key->c_str());
 
     // Emit the output key-value to the next element in the chain
-    if (next)
+    if (next) {
       next->run(output_kv);
+    }
   }
 
   std::string _str() {
@@ -159,8 +164,10 @@ public:
     _kv.key = new_key.value;
     _kv.value = kv.value;
 
-    if (!kv.key)
+    if (!kv.key) {
       return;
+    }
+
 
 
 
@@ -172,10 +179,10 @@ public:
     pugi::xml_parse_result result = xml_doc.load(kv.key->c_str());
 
     // Check errors in the parsing
-    if (result.status != pugi::status_ok)
+    if (result.status != pugi::status_ok) {
       return;               // Do nothing
-
-     // Process all elements
+    }
+    // Process all elements
     process(xml_doc);
   }
 
@@ -196,8 +203,9 @@ public:
       case pugi::node_pcdata:                               // Plain character data, i.e. 'text'
       case pugi::node_cdata:                                // Character data, i.e. '<![CDATA[text]]>'
       {
-        if (prefix == "")
+        if (prefix == "") {
           prefix = "content";
+        }
         new_key.value->add_value_to_map(prefix)->set_string(xml_node.value());
         return;
       }
@@ -227,8 +235,9 @@ public:
       add(*n, "");
     }
 
-    if (next)
+    if (next) {
       next->run(_kv);
+    }
   }
 
   void process(pugi::xml_node & xml_node) {
@@ -244,21 +253,23 @@ public:
       {
         // Main document... just skip to main element
         pugi::xml_node_iterator n = xml_node.begin();
-        if (n != xml_node.end())
+        if (n != xml_node.end()) {
           process(*n);                     // Process all elements inside
+        }
         break;
       }
 
       case pugi::node_element:             // Element tag, i.e. '<node/>'
       {
-        if (xml_node.name() == element_name)
+        if (xml_node.name() == element_name) {
           add(xml_node);
-        else
+        } else {
           for (pugi::xml_node_iterator n = xml_node.begin(); n != xml_node.end(); n++) {
             // For each node
             pugi::xml_node node = *n;
             process(node);
           }
+        }
       }
       break;
 
@@ -305,12 +316,15 @@ public:
     separator = "|";
 
     while (!token_vector->eof()) {
-      if (token_vector->getNextTokenContent() == "|")
+      if (token_vector->getNextTokenContent() == "|") {
         break;
+      }
 
       Source *source = getSource(token_vector, error);
-      if (error->IsActivated())
+      if (error->IsActivated()) {
         return;
+      }
+
 
 
 
@@ -318,8 +332,9 @@ public:
       fields.push_back(source);
     }
 
-    if (fields.size() == 0)
+    if (fields.size() == 0) {
       error->set("No fields specified in emit command");
+    }
   }
 
   virtual void run(KeyValue kv) {
@@ -327,11 +342,13 @@ public:
 
     for (size_t i = 0; i < fields.size(); i++) {
       samson::system::Value *value = fields[i]->get(kv);
-      if (value)
+      if (value) {
         output << value->get_string();
+      }
 
-      if (i != ( fields.size() - 1 ))
+      if (i != ( fields.size() - 1 )) {
         output << separator;
+      }
     }
 
     output << "\n";
@@ -438,8 +455,10 @@ public:
 
   virtual void run(KeyValue kv) {
     // Key should be string for this operation
-    if (!kv.key->isString())
+    if (!kv.key->isString()) {
       return;
+    }
+
 
 
 
@@ -447,7 +466,7 @@ public:
     std::string line = kv.key->get_string();
 
     au::StringComponents string_components;
-    string_components.process_line(line.c_str(), line.length(), separator);
+    string_components.ProcessLine(line.c_str(), line.length(), separator);
 
     keyContainer.value->set_as_vector();
 
@@ -496,8 +515,10 @@ public:
 
   virtual void run(KeyValue kv) {
     // Key should be string for this operation
-    if (!kv.key->isString())
+    if (!kv.key->isString()) {
       return;
+    }
+
 
 
 
@@ -519,8 +540,9 @@ public:
           keyContainer.value->set_string(word);
 
           // Run next filter
-          if (next)
+          if (next) {
             next->run(next_kv);
+          }
         }
 
         // Go to the next
@@ -534,8 +556,9 @@ public:
       keyContainer.value->set_string(word);
 
       // Run next filter
-      if (next)
+      if (next) {
         next->run(next_kv);
+      }
     }
   }
 
@@ -557,8 +580,10 @@ public:
 
   virtual void run(KeyValue kv) {
     // Key should be string for this operation
-    if (!kv.key->isString())
+    if (!kv.key->isString()) {
       return;
+    }
+
 
 
 
@@ -576,8 +601,9 @@ public:
       keyContainer.value->set_string(letter);
 
       // Run next filter
-      if (next)
+      if (next) {
         next->run(next_kv);
+      }
     }
   }
 
@@ -603,8 +629,10 @@ public:
   bool test(KeyValue kv) {
     samson::system::Value *v = eval_source->get(kv);
 
-    if (!v)
+    if (!v) {
       return false;
+    }
+
 
 
 
@@ -613,9 +641,11 @@ public:
   }
 
   void run(KeyValue kv) {
-    if (test(kv))
-      if (next)
+    if (test(kv)) {
+      if (next) {
         next->run(kv);
+      }
+    }
   }
 
   std::string _str() {
@@ -658,15 +688,19 @@ public:
     samson::system::Value *value_for_key   = source_for_key->get(kv);
     samson::system::Value *value_for_value = source_for_value->get(kv);
 
-    if (!value_for_key)
+    if (!value_for_key) {
       return;
+    }
 
 
 
 
 
-    if (!value_for_value)
+
+    if (!value_for_value) {
       return;
+    }
+
 
 
 
@@ -675,8 +709,9 @@ public:
     valueContainer.value->copyFrom(value_for_value);
 
     // Run next element
-    if (next)
+    if (next) {
       next->run(KeyValue(keyContainer.value, valueContainer.value));
+    }
   }
 };
 

@@ -9,8 +9,10 @@ namespace samson {
 
 void KVInputVectorBase::prepareInput(size_t _max_num_kvs) {
   if (_max_num_kvs > max_num_kvs) {
-    if (_kv)
-      free(_kv); if (kv) {
+    if (_kv) {
+      free(_kv);
+    }
+    if (kv) {
       free(kv);  // Set a new maximum number of kvs
     }
     max_num_kvs = _max_num_kvs;
@@ -47,17 +49,23 @@ KVInputVector::KVInputVector(Operation *operation) {
   }
 
   Data *keyData       = ModulesManager::shared()->getData(inputFormats[0].keyFormat);
-  if (!keyData)
-    LM_X(1, ("Internal error:")); keyDataInstance = (DataInstance *)keyData->getInstance();
+  if (!keyData) {
+    LM_X(1, ("Internal error:"));
+  }
+  keyDataInstance = (DataInstance *)keyData->getInstance();
   if (!keyDataInstance) {
     LM_X(1, ("Internal error:"));  // Get the rigth functions to process input key-values
   }
   for (int i = 0; i < (int)inputFormats.size(); i++) {
     Data *valueData = ModulesManager::shared()->getData(inputFormats[i].valueFormat);
-    if (!valueData)
-      LM_X(1, ("Internal error:")); DataInstance *valueDataInstance = (DataInstance *)valueData->getInstance();
-    if (!valueDataInstance)
-      LM_X(1, ("Internal error:")); valueDataInstances.push_back(valueDataInstance);
+    if (!valueData) {
+      LM_X(1, ("Internal error:"));
+    }
+    DataInstance *valueDataInstance = (DataInstance *)valueData->getInstance();
+    if (!valueDataInstance) {
+      LM_X(1, ("Internal error:"));
+    }
+    valueDataInstances.push_back(valueDataInstance);
   }
 
   // Alloc necessary space for KVSetStruct ( used in 3rd party interface )
@@ -77,10 +85,15 @@ KVInputVector::KVInputVector(int _num_inputs) {
 }
 
 KVInputVector::~KVInputVector() {
-  if (_kv)
-    free(_kv); if (kv)
-    free(kv); if (inputStructs)
+  if (_kv) {
+    free(_kv);
+  }
+  if (kv) {
+    free(kv);
+  }
+  if (inputStructs) {
     free(inputStructs);
+  }
 }
 
 void KVInputVector::addKVs(int input, KVInfo info, KV *kvs) {
@@ -123,11 +136,12 @@ void KVInputVector::addKVs(int input, KVInfo info, char *data) {
   }
 
   // Make sure the parsing is OK!
-  if (offset != info.size)
+  if (offset != info.size) {
     LM_X(1,
          (
            "Error adding key-values to a KVInputVector for input %d (%s). (Offset %lu != info.size %lu) KVS num_kvs:%lu / max_num_kvs:%lu "
            , input, info.str().c_str(), offset, info.size, num_kvs, max_num_kvs  ));
+  }
 }
 
 std::string str_kv(KV *kv) {
@@ -138,48 +152,60 @@ std::string str_kv(KV *kv) {
 }
 
 bool equalKV(KV *kv1, KV *kv2) {
-  if (kv1->key_size != kv2->key_size)
-    return false; for (int i = 0; i < kv1->key_size; i++) {
-    if (kv1->key[i] != kv2->key[i])
+  if (kv1->key_size != kv2->key_size) {
+    return false;
+  }
+  for (int i = 0; i < kv1->key_size; i++) {
+    if (kv1->key[i] != kv2->key[i]) {
       return false;
+    }
   }
 
   return true;
 }
 
 bool compareKV(KV *kv1, KV *kv2) {
-  if (kv1->key_size < kv2->key_size)
+  if (kv1->key_size < kv2->key_size) {
     return true;
+  }
 
-  if (kv1->key_size > kv2->key_size)
+  if (kv1->key_size > kv2->key_size) {
     return false;
+  }
 
   for (int i = 0; i < kv1->key_size; i++) {
-    if (kv1->key[i] < kv2->key[i])
+    if (kv1->key[i] < kv2->key[i]) {
       return true;
+    }
 
-    if (kv1->key[i] > kv2->key[i])
+    if (kv1->key[i] > kv2->key[i]) {
       return false;
+    }
   }
 
   // Compare by input
-  if (kv1->input != kv2->input)
+  if (kv1->input != kv2->input) {
     return kv1->input < kv2->input;
+  }
 
   // Same key!
 
-  if (kv1->value_size < kv2->value_size)
+  if (kv1->value_size < kv2->value_size) {
     return true;
+  }
 
-  if (kv1->value_size > kv2->value_size)
+  if (kv1->value_size > kv2->value_size) {
     return false;
+  }
 
   for (int i = 0; i < kv1->value_size; i++) {
-    if (kv1->value[i] < kv2->value[i])
+    if (kv1->value[i] < kv2->value[i]) {
       return true;
+    }
 
-    if (kv1->value[i] > kv2->value[i])
+    if (kv1->value[i] > kv2->value[i]) {
       return false;
+    }
   }
 
 
@@ -192,8 +218,9 @@ bool compareKV(KV *kv1, KV *kv2) {
 // global sort function key - input - value used in reduce operations
 
 void KVInputVector::sort() {
-  if (num_kvs > 0)
+  if (num_kvs > 0) {
     std::sort(_kv, _kv + num_kvs, compareKV);
+  }
 }
 
 void KVInputVector::sortAndMerge(size_t middle_pos) {
@@ -213,8 +240,9 @@ void KVInputVector::init() {
 }
 
 KVSetStruct *KVInputVector::getNext() {
-  if (pos_begin >= num_kvs)
+  if (pos_begin >= num_kvs) {
     return NULL;
+  }
 
   // Identify the number of key-values with the same key
   while (( pos_end < num_kvs ) && equalKV(_kv[pos_begin], _kv[pos_end])) {

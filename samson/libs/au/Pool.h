@@ -44,8 +44,10 @@ public:
   C *pop() {
     size_t s = objects.size();
 
-    if (s == 0)
+    if (s == 0) {
       return NULL;
+    }
+
 
 
 

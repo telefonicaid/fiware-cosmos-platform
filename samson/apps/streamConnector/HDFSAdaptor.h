@@ -38,10 +38,11 @@ public:
     while (true) {
       engine::BufferPointer buffer = getNextBufferToSent();
 
-      if (buffer != NULL)
+      if (buffer != NULL) {
         LM_W(("Sending buffer of %s", au::str(buffer->getSize(), "B").c_str()));
-      else
+      } else {
         break;
+      }
     }
   }
 

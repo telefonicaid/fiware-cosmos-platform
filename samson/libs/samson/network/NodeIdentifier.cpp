@@ -65,16 +65,20 @@ void NodeIdentifier::fill(gpb::NodeIdentifier *pb_node_identifier) {
 }
 
 bool NodeIdentifier::operator==(const NodeIdentifier&  other) {
-  if (node_type != other.node_type)
-    return false; if (id != other.id)
+  if (node_type != other.node_type) {
     return false;
+  }
+  if (id != other.id) {
+    return false;
+  }
 
   return true;
 }
 
 std::string NodeIdentifier::str() {
-  if (id == (size_t)-1)
+  if (id == (size_t)-1) {
     return au::str("%s:Unknown", ClusterNodeType2str(node_type));
+  }
 
   return au::str("%s:%lu", ClusterNodeType2str(node_type), id);
 }

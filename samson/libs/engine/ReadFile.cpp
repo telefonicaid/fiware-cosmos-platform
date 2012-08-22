@@ -11,8 +11,9 @@ ReadFile::ReadFile(std::string _fileName) {
 }
 
 int ReadFile::seek(size_t _offset) {
-  if (!file)
+  if (!file) {
     return 1;
+  }
 
   if (offset == _offset) {
     return 0;       // Correct... just do not move
@@ -38,8 +39,9 @@ int ReadFile::seek(size_t _offset) {
 }
 
 int ReadFile::read(char *read_buffer, size_t size) {
-  if (size == 0)
+  if (size == 0) {
     return 0;
+  }
 
   if (fread(read_buffer, size, 1, file) == 1) {
     offset += size;     // Move the offser according to the read bytes

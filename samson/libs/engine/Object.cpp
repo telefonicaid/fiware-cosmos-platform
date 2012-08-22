@@ -18,8 +18,9 @@ Object::Object() {
   // Add myself as an engine_objects receiving my id
   Engine::shared()->register_object(this);
 
-  if (engine_id == 0)
+  if (engine_id == 0) {
     LM_X(1, ("Wrong notification listener id"));
+  }
 }
 
 Object::Object(const char *_engine_name) {
@@ -29,8 +30,9 @@ Object::Object(const char *_engine_name) {
   // Add myself as an engine_objects receiving my id and assigning to a name
   Engine::shared()->register_object(this);
 
-  if (engine_id == 0)
+  if (engine_id == 0) {
     LM_X(1, ("Wrong notification listener id"));
+  }
 }
 
 Object::~Object() {

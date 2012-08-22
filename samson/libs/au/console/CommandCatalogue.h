@@ -75,8 +75,9 @@ public:
                    // If we have a set of possible values, check on them
                    if (options_group_values.size() > 0) {
                      for (size_t i = 0; i < options_group_values.size(); i++) {
-                       if (options_group_values[i] == value)
+                       if (options_group_values[i] == value) {
                          return true;
+                       }
                      }
                      return false;
                    }
@@ -159,8 +160,10 @@ public:
                  // Handy function to check content
                  bool get_bool_option(const std::string& name) {
                    // Robust for asking without "-"
-                   if (( name.length() > 0 ) && ( name[0] != '-' ))
+                   if (( name.length() > 0 ) && ( name[0] != '-' )) {
                      return get_bool_option("-" + name);
+                   }
+
 
 
 
@@ -179,16 +182,19 @@ public:
                      return false;
                    }
 
-                   if (values_.isInMap(name))  // If it is present, it is true
+                   if (values_.isInMap(name)) {  // If it is present, it is true
                      return true;
-                   else
+                   } else {
                      return false;
+                   }
                  }
 
                  int get_int_option(const std::string& name) {
                    // Robust for asking without "-"
-                   if (( name.length() > 0 ) && ( name[0] != '-' ))
+                   if (( name.length() > 0 ) && ( name[0] != '-' )) {
                      return get_int_option("-" + name);
+                   }
+
 
 
 
@@ -209,8 +215,9 @@ public:
 
                    // Get default value or the provided value
                    std::string value = item->default_value();
-                   if (values_.isInMap(name))  // If it is present, it is true
+                   if (values_.isInMap(name)) {  // If it is present, it is true
                      value = values_.findInMap(name);
+                   }
 
                    // Transform string to int
                    return atoi(value.c_str());
@@ -218,8 +225,10 @@ public:
 
                  size_t get_uint64_option(const std::string& name) {
                    // Robust for asking without "-"
-                   if (( name.length() > 0 ) && ( name[0] != '-' ))
+                   if (( name.length() > 0 ) && ( name[0] != '-' )) {
                      return get_uint64_option("-" + name);
+                   }
+
 
 
 
@@ -240,8 +249,9 @@ public:
 
                    // Get default value or the provided value
                    std::string value = item->default_value();
-                   if (values_.isInMap(name))  // If it is present, it is true
+                   if (values_.isInMap(name)) {  // If it is present, it is true
                      value = values_.findInMap(name);
+                   }
 
                    // Transform string to uint64
                    return atoll(value.c_str());
@@ -249,8 +259,10 @@ public:
 
                  double get_double_option(const std::string& name) {
                    // Robust for asking without "-"
-                   if (( name.length() > 0 ) && ( name[0] != '-' ))
+                   if (( name.length() > 0 ) && ( name[0] != '-' )) {
                      return get_double_option("-" + name);
+                   }
+
 
 
 
@@ -271,8 +283,9 @@ public:
 
                    // Get default value or the provided value
                    std::string value = item->default_value();
-                   if (values_.isInMap(name))  // If it is present, it is true
+                   if (values_.isInMap(name)) {  // If it is present, it is true
                      value = values_.findInMap(name);
+                   }
 
                    // Transform string to uint64
                    return atof(value.c_str());
@@ -280,8 +293,10 @@ public:
 
                  std::string get_string_option(const std::string& name) {
                    // Robust for asking without "-"
-                   if (( name.length() > 0 ) && ( name[0] != '-' ))
+                   if (( name.length() > 0 ) && ( name[0] != '-' )) {
                      return get_string_option("-" + name);
+                   }
+
 
 
 
@@ -302,8 +317,9 @@ public:
 
                    // Get default value or the provided value
                    std::string value = item->default_value();
-                   if (values_.isInMap(name))  // If it is present, it is true
+                   if (values_.isInMap(name)) {  // If it is present, it is true
                      value = values_.findInMap(name);
+                   }
 
                    // Transform string to uint64
                    return value;
@@ -312,8 +328,10 @@ public:
                  bool has_string_argument(const std::string& name) {
                    CommandItem *item = command_->get_argument(name);
 
-                   if (!item)
+                   if (!item) {
                      return false;
+                   }
+
 
 
 
@@ -321,6 +339,8 @@ public:
                    if (item->type() != options::option_string) {
                      return false;
                    }
+
+
 
 
 
@@ -344,8 +364,9 @@ public:
 
                    // Get default value or the provided value
                    std::string value = item->default_value();
-                   if (values_.isInMap(name))  // If it is present, it is true
+                   if (values_.isInMap(name)) {  // If it is present, it is true
                      value = values_.findInMap(name);
+                   }
 
                    // Transform string to uint64
                    return value;

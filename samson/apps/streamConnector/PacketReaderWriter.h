@@ -6,7 +6,7 @@
 #define _H_AU_NETWORK_PACKET_READER_WRITER
 
 #include "au/Cronometer.h"
-#include "au/Object.h"
+
 #include "au/Status.h"
 #include "au/mutex/Token.h"
 #include "au/network/FileDescriptor.h"
@@ -19,7 +19,6 @@ namespace network {
  *
  * All clases and interfaces here assume "P"...
  *
- * is a class that derives from au::Object ( to be retained and released )
  * implemented methods au::Status read( FileDescriptor* fd )
  * implemented methods au::Status write( FileDescriptor* fd )
  *
@@ -29,7 +28,7 @@ namespace network {
 template <class P>                 // Class for the packet
 class PacketReaderInteface {
 public:
-  virtual void process_packet(P *packet) = 0;
+  virtual void process_packet(au::SharedPointer<P> packet) = 0;
 };
 
 template <class P>                 // Class for the packet
@@ -53,16 +52,18 @@ public:
 
   virtual void run() {
     while (true) {
-      if (thread_should_quit())
+      if (thread_should_quit()) {
         return;
+      }
 
 
 
 
-      if (fd_->IsClosed())
+
+      if (fd_->IsClosed()) {
         return;                 // End of thread since socket is disconnected
-
-      P *packet = new P();
+      }
+      au::SharedPointer<P> packet(new P());
       au::Status s = packet->read(fd_);
 
       if (s != au::OK) {
@@ -74,9 +75,6 @@ public:
 
       // Execute this receive method in the interface
       interface_->process_packet(packet);
-
-      // Release this object
-      packet->Release();
     }
   }
 };
@@ -86,7 +84,7 @@ class PacketWriter : public au::Thread {
   au::FileDescriptor *fd_;
 
   au::Token token;                 // Token to protect the list
-  ObjectList<P> packets_;
+  Queue<P> packets_;
 
   // Size accumulated to be sent
   size_t buffered_size;
@@ -107,35 +105,34 @@ public:
 
   virtual void run() {
     while (true) {
-      if (thread_should_quit())
+      if (thread_should_quit()) {
         return;
-
-
-
-
-      if (fd_->IsClosed())
-        return;                 // End of thread since socket is disconnected
-
-                      // Recover next packet if any
-      P *packet = NULL;
-      {
-        au::TokenTaker tt(&token);                 // Mutex protection
-        if (packets_.size() > 0)
-          packet = packets_.front();
       }
 
 
-      if (packet) {
+      if (fd_->IsClosed()) {
+        return;                    // End of thread since socket is disconnected
+      }
+      // Recover next packet if any
+      au::SharedPointer<P> packet;
+      {
+        au::TokenTaker tt(&token);  // Mutex protection
+        if (packets_.size() > 0) {
+          packet = packets_.Front();
+        }
+      }
+
+      if (packet != NULL) {
         // Recover the packet to be send ( do not remove from list )
         au::Status s = packet->write(fd_);
 
-        if (s != au::OK)
-          return;                 // End of thread since packet could not be sent
-
-                        // Release the packet from the list
+        if (s != au::OK) {
+          return;  // End of thread since packet could not be sent
+        }
+        // Release the packet from the list
         {
           au::TokenTaker tt(&token);                 // Mutex protection
-          packets_.pop_front();
+          packets_.Pop();
           buffered_size -= packet->getSize();
         }
       } else {
@@ -145,34 +142,29 @@ public:
     }
   }
 
-  void extract_pending_packets(ObjectList<P> *packets) {
-    while (true) {
-      ObjectContainer<P> container;
-      packets_.extract_front(container);
-
-      P *p = container.object();
-
-      if (!p)
-        return;
-
-
-
-
-      // Push to the provided list
-      packets->push_back(p);
-    }
+  void extract_pending_packets(Queue<P>& queue) {
+    queue.Push(packets_);
   }
 
   virtual void cancel_thread() {
     // TODO: This will wake up thread when implemented correctly using a blocking mechanism
   }
 
-  void push(P *packet) {
+  void push(au::SharedPointer<P> packet) {
     au::TokenTaker tt(&token);                 // Mutex protection
 
-    packets_.push_back(packet);
-
+    packets_.Push(packet);
     buffered_size += packet->getSize();
+  }
+
+  void push(au::Queue<P> packets) {
+    au::TokenTaker tt(&token);                 // Mutex protection
+
+    std::vector< au::SharedPointer<P> > items = packets.items();
+    for (size_t i = 0; i < items.size(); i++) {
+      packets_.Push(items[i]);
+      buffered_size += items[i]->getSize();
+    }
   }
 
   size_t bufferedSize() {
@@ -210,8 +202,12 @@ public:
     fd_->Close();
   }
 
-  void push(P *packet) {
+  void push(au::SharedPointer<P> packet) {
     packet_writer_->push(packet);
+  }
+
+  void push(au::Queue<P> packets) {
+    packet_writer_->push(packets);
   }
 
   void stop_threads() {
@@ -220,15 +216,14 @@ public:
   }
 
   bool isRunning() {
-    if (packet_reader_->isRunning())
+    if (packet_reader_->isRunning()) {
       return true;
+    }
 
 
-
-    if (packet_writer_->isRunning())
+    if (packet_writer_->isRunning()) {
       return true;
-
-
+    }
 
 
     return false;
@@ -242,8 +237,8 @@ public:
     return packet_writer_->bufferedSize();
   }
 
-  void extract_pending_packets(ObjectList<P> *packets) {
-    packet_writer_->extract_pending_packets(packets);
+  void extract_pending_packets(Queue<P>& queue) {
+    packet_writer_->extract_pending_packets(queue);
   }
 };
 }

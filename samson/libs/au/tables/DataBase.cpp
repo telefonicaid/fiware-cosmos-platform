@@ -35,36 +35,44 @@ Table *DataBase::getTable(std::string name) {
   au::TokenTaker tt(&token);   // Mutex protection for public methods
   Table *table = tables.findInMap(name);
 
-  if (!table)
-    return NULL; else
+  if (!table) {
+    return NULL;
+  } else {
     return new Table(table);
+  }
 }
 
 Table *DataBase::getTable(std::string name, SelectTableInformation *select) {
   au::TokenTaker tt(&token);   // Mutex protection for public methods
   Table *table = tables.findInMap(name);
 
-  if (!table)
-    return NULL; else
+  if (!table) {
+    return NULL;
+  } else {
     return table->selectTable(select);
+  }
 }
 
 TreeItem *DataBase::getTree(std::string name) {
   au::TokenTaker tt(&token);   // Mutex protection for public methods
   TreeItem *tree = trees.findInMap(name);
 
-  if (!tree)
-    return NULL; else
+  if (!tree) {
+    return NULL;
+  } else {
     return new TreeItem(tree);
+  }
 }
 
 Collection *DataBase::getCollection(std::string name) {
   au::TokenTaker tt(&token);   // Mutex protection for public methods
   Collection *collection = collections.findInMap(name);
 
-  if (!collection)
-    return NULL; else
+  if (!collection) {
+    return NULL;
+  } else {
     return new Collection(collection);
+  }
 }
 
 void DataBase::autoComplete(au::ConsoleAutoComplete *info) {
@@ -92,19 +100,30 @@ void DataBase::autoComplete(au::ConsoleAutoComplete *info) {
     return;
   }
 
-  if (info->completingSecondWord("info"))
-    autoCompleteTables(info); if (info->completingSecondWord("print_table"))
-    autoCompleteTables(info); if (info->completingSecondWord("print_tree"))
-    autoCompleteTrees(info); if (info->completingSecondWord("table_from_tree"))
-    autoCompleteTrees(info); if (info->completingSecondWord("print_collection"))
-    autoCompleteCollections(info); if (info->completingWord() > 1) {
+  if (info->completingSecondWord("info")) {
+    autoCompleteTables(info);
+  }
+  if (info->completingSecondWord("print_table")) {
+    autoCompleteTables(info);
+  }
+  if (info->completingSecondWord("print_tree")) {
+    autoCompleteTrees(info);
+  }
+  if (info->completingSecondWord("table_from_tree")) {
+    autoCompleteTrees(info);
+  }
+  if (info->completingSecondWord("print_collection")) {
+    autoCompleteCollections(info);
+  }
+  if (info->completingWord() > 1) {
     if (info->firstWord() == "print_table") {
       std::string table_name = info->secondWord();
       autoCompleteFieldsOfTable(table_name, info);
     }
 
-    if (info->firstWord() == "select_collection")
+    if (info->firstWord() == "select_collection") {
       info->setHelpMessage("Usage: select_collection <collection> <new_collection> field=value field2=value2 ... ");
+    }
   }
 }
 
@@ -115,27 +134,28 @@ std::string DataBase::runCommand(std::string command) {
 
   au::CommandLine cmdLine;
 
-  cmdLine.set_flag_int("limit", 0);
-  cmdLine.set_flag_string("save", "no_save");
-  cmdLine.set_flag_string("group", "");
-  cmdLine.set_flag_string("divide", "");
-  cmdLine.set_flag_string("sort", "");
-  cmdLine.set_flag_string("where", "");
-  cmdLine.set_flag_string("title", "");
-  cmdLine.set_flag_boolean("first");
-  cmdLine.parse(command);
+  cmdLine.SetFlagInt("limit", 0);
+  cmdLine.SetFlagString("save", "no_save");
+  cmdLine.SetFlagString("group", "");
+  cmdLine.SetFlagString("divide", "");
+  cmdLine.SetFlagString("sort", "");
+  cmdLine.SetFlagString("where", "");
+  cmdLine.SetFlagString("title", "");
+  cmdLine.SetFlagBoolean("first");
+  cmdLine.Parse(command);
 
-  int limit = cmdLine.get_flag_int("limit");
-  std::string save = cmdLine.get_flag_string("save");
-  std::string group = cmdLine.get_flag_string("group");
-  std::string divide = cmdLine.get_flag_string("divide");
-  std::string sort = cmdLine.get_flag_string("sort");
-  std::string where = cmdLine.get_flag_string("where");
-  std::string title = cmdLine.get_flag_string("title");
-  bool first = cmdLine.get_flag_bool("first");
+  int limit = cmdLine.GetFlagInt("limit");
+  std::string save = cmdLine.GetFlagString("save");
+  std::string group = cmdLine.GetFlagString("group");
+  std::string divide = cmdLine.GetFlagString("divide");
+  std::string sort = cmdLine.GetFlagString("sort");
+  std::string where = cmdLine.GetFlagString("where");
+  std::string title = cmdLine.GetFlagString("title");
+  bool first = cmdLine.GetFlagBool("first");
 
-  if (cmdLine.get_num_arguments() == 0)
+  if (cmdLine.get_num_arguments() == 0) {
     return "No command";
+  }
 
   std::string mainCommand = cmdLine.get_argument(0);
 
@@ -178,16 +198,18 @@ std::string DataBase::runCommand(std::string command) {
   }
 
   if (mainCommand == "info") {
-    if (cmdLine.get_num_arguments() < 2)
+    if (cmdLine.get_num_arguments() < 2) {
       return au::string_in_color(
                "Usage: info <table> ( run show_tables to get a list of tables )"
                , "red"
                );
+    }
 
     std::string table_name = cmdLine.get_argument(1);
     Table *table = tables.findInMap(table_name);
-    if (!table)
+    if (!table) {
       return au::str("Unknown table %s", table_name.c_str());
+    }
 
     Table *result = table->getColumnDescriptionTable();
     if (save != "no_save") {
@@ -200,29 +222,34 @@ std::string DataBase::runCommand(std::string command) {
   }
 
   if (mainCommand == "print_table") {
-    if (cmdLine.get_num_arguments() < 2)
+    if (cmdLine.get_num_arguments() < 2) {
       return au::string_in_color(
                "Usage: print_table table <fields> [-group fields] [-divide fields] [-sort fields] [-limit X] ( run show_tables to get a list of tables )"
                , "red"
                );
+    }
 
     std::string table_name = cmdLine.get_argument(1);
     Table *table = tables.findInMap(table_name);
-    if (!table)
+    if (!table) {
       return au::str("Unknown table %s", table_name.c_str());
+    }
 
     SelectTableInformation select;
-    if (cmdLine.get_num_arguments() < 3)
+    if (cmdLine.get_num_arguments() < 3) {
       select.addColumns(table->getColumnNames());
-    else
+    } else {
       for (int i = 2; i < cmdLine.get_num_arguments(); i++) {
         select.columns.push_back(cmdLine.get_argument(i));
       }  // Set the limit of rows to display...
+    }
     select.limit = limit;
 
-    if (title != "")
-      select.title = title; else
-      select.title = au::str("Table %s", table_name.c_str()); select.group_columns = StringVector::ParseFromString(
+    if (title != "") {
+      select.title = title;
+    } else {
+      select.title = au::str("Table %s", table_name.c_str());
+    } select.group_columns = StringVector::ParseFromString(
       group, ',');
     select.sort_columns = StringVector::ParseFromString(sort, ',');
     select.divide_columns = StringVector::ParseFromString(divide, ',');
@@ -242,8 +269,9 @@ std::string DataBase::runCommand(std::string command) {
       Table *_table = table->selectTable(&select);
 
       // Print first record if any ....
-      if (_table->getNumRows() == 0)
+      if (_table->getNumRows() == 0) {
         return au::str(au::red, "No records to print");
+      }
 
       Table *record_table = _table->rows[0]->getTable();
       std::string output = record_table->str();
@@ -258,13 +286,15 @@ std::string DataBase::runCommand(std::string command) {
   }
 
   if (mainCommand == "table_from_table") {
-    if (cmdLine.get_num_arguments() < 3)
+    if (cmdLine.get_num_arguments() < 3) {
       return au::str(au::red, "Usage: table_from_table table <fields> [-save new_table]");
+    }
 
     std::string table_name = cmdLine.get_argument(1);
     Table *table = tables.findInMap(table_name);
-    if (!table)
+    if (!table) {
       return au::str(au::red, "Unknown table %s", table_name.c_str());
+    }
 
     SelectTableInformation select;
 
@@ -286,16 +316,18 @@ std::string DataBase::runCommand(std::string command) {
   }
 
   if (mainCommand == "print_tree") {
-    if (cmdLine.get_num_arguments() < 2)
+    if (cmdLine.get_num_arguments() < 2) {
       return au::string_in_color(
                "Usage: print_tree <tree> ( run show_trees to get a list of trees )"
                , "red"
                );
+    }
 
     std::string tree_name = cmdLine.get_argument(1);
     TreeItem *tree = trees.findInMap(tree_name);
-    if (!tree)
+    if (!tree) {
       return au::string_in_color(au::str("Unknown tree %s", tree_name.c_str()), "red");
+    }
 
     if (cmdLine.get_num_arguments() > 2) {
       std::string path = cmdLine.get_argument(2);
@@ -311,42 +343,48 @@ std::string DataBase::runCommand(std::string command) {
   }
 
   if (mainCommand == "print_collection") {
-    if (cmdLine.get_num_arguments() < 2)
+    if (cmdLine.get_num_arguments() < 2) {
       return au::string_in_color(
                "Usage: print_collection <collection> ( run show_collections to get a list of collections )"
                , "red"
                );
+    }
 
     std::string collection_name = cmdLine.get_argument(1);
     Collection *collection = collections.findInMap(collection_name);
-    if (!collection)
+    if (!collection) {
       return au::string_in_color(au::str("Unknown collection %s", collection_name.c_str()), "red");
+    }
 
     return collection->str(collection_name);
   }
 
   if (mainCommand == "save") {
-    if (cmdLine.get_num_arguments() < 2)
+    if (cmdLine.get_num_arguments() < 2) {
       return au::string_in_color("Usage: save <new_table_name>", "red");
+    }
 
     std::string table_name = "result";
     Table *table = tables.findInMap(table_name);
-    if (!table)
+    if (!table) {
       return au::string_in_color("No table result to save", "red");
+    }
 
     _addTable(cmdLine.get_argument(1),  new Table(table));
     return "Ok";
   }
 
   if (mainCommand == "table_from_tree") {
-    if (cmdLine.get_num_arguments() < 3)
+    if (cmdLine.get_num_arguments() < 3) {
       return au::string_in_color("Usage: table_from_tree tree <path>", "red");
+    }
 
     std::string tree_name = cmdLine.get_argument(1);
 
     TreeItem *tree = trees.findInMap(tree_name);
-    if (!tree)
+    if (!tree) {
       return au::string_in_color(au::str("Unknown tree %s", tree_name.c_str()), "red");
+    }
 
     std::string path = cmdLine.get_argument(2);
     Table *result = tree->getTableFromPath(path);
@@ -361,16 +399,18 @@ std::string DataBase::runCommand(std::string command) {
   }
 
   if (mainCommand == "select_tree") {
-    if (cmdLine.get_num_arguments() < 3)
+    if (cmdLine.get_num_arguments() < 3) {
       return au::string_in_color("Usage: select_tree <tree> path", "red");
+    }
 
     std::string tree_name = cmdLine.get_argument(1);
     std::string path = cmdLine.get_argument(2);
 
 
     TreeItem *tree = trees.findInMap(tree_name);
-    if (!tree)
+    if (!tree) {
       return au::string_in_color(au::str("Unknown tree %s", tree_name.c_str()), "red");
+    }
 
     TreeCollection *result = tree->getTreesFromPath(path);
 
@@ -386,24 +426,27 @@ std::string DataBase::runCommand(std::string command) {
   }
 
   if (mainCommand == "select_collection") {
-    if (cmdLine.get_num_arguments() < 4)
+    if (cmdLine.get_num_arguments() < 4) {
       return au::string_in_color("Usage: select_collection <collection> <new_collection> field=value field=value",
                                  "red");
+    }
 
     std::string collection_name = cmdLine.get_argument(1);
     std::string new_collection_name = cmdLine.get_argument(2);
 
     Collection *collection = collections.findInMap(collection_name);
-    if (!collection)
+    if (!collection) {
       return au::string_in_color(au::str("Unknown collection %s", collection_name.c_str()), "red");
+    }
 
     CollectionItem filter;
 
     for (int i = 3; i < cmdLine.get_num_arguments(); i++) {
       std::string condition = cmdLine.get_argument(i);
       std::vector<std::string> condition_parts = au::split(condition, '=');
-      if (condition_parts.size() != 2)
+      if (condition_parts.size() != 2) {
         return au::string_in_color(au::str("Wrong condition %s", condition.c_str()), "red");
+      }
 
       filter.add(condition_parts[0], condition_parts[1]);
     }
@@ -543,10 +586,11 @@ void DataBase::autoCompleteCollections(au::ConsoleAutoComplete *info) {
 void DataBase::autoCompleteFieldsOfTable(std::string table_name, au::ConsoleAutoComplete *info) {
   Table *table = tables.findInMap(table_name);
 
-  if (table)
+  if (table) {
     for (size_t c = 0; c < table->getNumColumns(); c++) {
       info->add(table->getColumn(c));
     }
+  }
 }
 
 void DataBase::replaceNodeInTree(std::string tree_name, TreeItem *node) {

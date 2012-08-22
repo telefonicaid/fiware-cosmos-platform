@@ -208,8 +208,9 @@ public:
 
 
   virtual void showTrace(std::string message) {
-    if (show_alerts)
+    if (show_alerts) {
       writeWarningOnConsole(message);
+    }
   }
 
   void add_alias(std::string key, std::string value);

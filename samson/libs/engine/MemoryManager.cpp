@@ -34,20 +34,26 @@ MemoryManager *MemoryManager::memoryManager = NULL;
 void MemoryManager::destroy() {
   LM_V(("MemoryManager destroy"));
 
-  if (!memoryManager)
-    LM_E(("Please, init Memory manager first")); delete memoryManager;
+  if (!memoryManager) {
+    LM_E(("Please, init Memory manager first"));
+  }
+  delete memoryManager;
   memoryManager = NULL;
 }
 
 void MemoryManager::init(size_t _memory) {
   LM_VV(("MemoryManager init with %s", au::str(_memory).c_str()));
-  if (memoryManager)
-    LM_E(("Please, init Memory manager only once")); memoryManager =  new MemoryManager(_memory);
+  if (memoryManager) {
+    LM_E(("Please, init Memory manager only once"));
+  }
+  memoryManager =  new MemoryManager(_memory);
 }
 
 MemoryManager *MemoryManager::shared() {
-  if (!memoryManager)
-    LM_E(("Please, init Memory manager before using it, calling memoryManager::init()")); return memoryManager;
+  if (!memoryManager) {
+    LM_E(("Please, init Memory manager before using it, calling memoryManager::init()"));
+  }
+  return memoryManager;
 }
 
 #pragma mark ------------------------------------------------------------------------
@@ -63,8 +69,9 @@ MemoryManager::~MemoryManager() {
 void MemoryManager::Add(Buffer *buffer) {
   buffers_.insert(buffer);
   used_memory_ += buffer->getMaxSize();      // Increse the internal counter of memory
-  if (used_memory_ > 3 * memory_)
+  if (used_memory_ > 3 * memory_) {
     LM_X(1, ("Too much memory allocated"));
+  }
 }
 
 void MemoryManager::Remove(Buffer *buffer) {

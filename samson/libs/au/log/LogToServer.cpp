@@ -1,8 +1,8 @@
 
 
+#include "LogToServer.h"  // Own interface
 #include "au/containers/SharedPointer.h"
 #include "au/log/LogCentral.h"
-#include "LogToServer.h"  // Own interface
 
 namespace au {
 // Common log connection
@@ -60,13 +60,16 @@ void restart_log_to_server(std::string local_log_file) {
 }
 
 void set_log_direct_mode(bool flag) {
-  if (log_central)
+  if (log_central) {
     log_central->SetDirectMode(flag);
+  }
 }
 
 int get_log_fd() {
-  if (log_central)
-    return log_central->getFd(); return -1;
+  if (log_central) {
+    return log_central->getFd();
+  }
+  return -1;
 }
 
 void stop_log_to_server() {
@@ -100,16 +103,24 @@ void logToLogServer(void *vP, char *text, char type, time_t secondsNow, int time
   }
 
   // Create the log to be sent
-  au::SharedPointer<Log> log( new Log() );
+  au::SharedPointer<Log> log(new Log());
 
   // Add "string" fields
-  if (progName)
-    log->Set("progName", progName); if (text)
-    log->Set("text", text); if (file)
-    log->Set("file", file); if (fName)
-    log->Set("fName", fName); if (stre)
+  if (progName) {
+    log->Set("progName", progName);
+  }
+  if (text) {
+    log->Set("text", text);
+  }
+  if (file) {
+    log->Set("file", file);
+  }
+  if (fName) {
+    log->Set("fName", fName);
+  }
+  if (stre) {
     log->Set("stre", stre);
-  
+  }
   log->log_data().lineNo      = lineNo;
   log->log_data().traceLevel  = tLev;
   log->log_data().type        = type;
@@ -124,6 +135,5 @@ void logToLogServer(void *vP, char *text, char type, time_t secondsNow, int time
 
   // Write over the log_server_connection
   log_central->Write(log);
-
 }
 }

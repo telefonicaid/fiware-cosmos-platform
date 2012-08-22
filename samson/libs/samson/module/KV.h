@@ -25,15 +25,18 @@ typedef struct KV {
   int pos;              // Debuggin sort algorithm
 
   bool equal_value(KV *kv) {
-    if (kv->value_size != value_size)
+    if (kv->value_size != value_size) {
       return false;
+    }
+
 
 
 
 
     for (int i = 0; i < value_size; i++) {
-      if (value[i] != kv->value[i])
+      if (value[i] != kv->value[i]) {
         return false;
+      }
     }
 
     return true;

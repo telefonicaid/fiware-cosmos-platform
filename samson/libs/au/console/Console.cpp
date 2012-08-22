@@ -65,7 +65,7 @@ void Console::print_command() {
   std::string _command = command_history->current()->getCommand();
   int _pos = command_history->current()->getPos();
 
-  clear_line();
+  clearTerminalLine();
   // printf("[%d]",counter); // debuggin
 
   printf("%s %s", getPrompt().c_str(), _command.c_str());
@@ -112,8 +112,10 @@ void Console::process_auto_complete(ConsoleAutoComplete *info) {
     printf("\n");
   }
 
-  if (info->necessary_print_last_words_alternatives())
-    info->print_last_words_alternatives(); if (help_message.length() > 0) {
+  if (info->necessary_print_last_words_alternatives()) {
+    info->print_last_words_alternatives();
+  }
+  if (help_message.length() > 0) {
     printf("Help: %s\n", help_message.c_str());  // Add necessary stuff...
   }
   command_history->current()->add(info->stringToAppend());
@@ -193,14 +195,17 @@ void Console::addEspaceSequence(std::string sequence) {
 void Console::internal_process_escape_sequence(std::string sequence) {
   if (sequence == au::str("b")) {
     // It is theoretically impossible, but just in case
-    if (pthread_self() != t_running)
+    if (pthread_self() != t_running) {
       return;
+    }
 
     block_background_messages = !block_background_messages;
 
-    if (block_background_messages)
-      writeWarningOnConsole("Background messages blocked ( press esc b to show again )\n"); else
-      writeWarningOnConsole("Background messages are shown again\n"); clear_line();
+    if (block_background_messages) {
+      writeWarningOnConsole("Background messages blocked ( press esc b to show again )\n");
+    } else {
+      writeWarningOnConsole("Background messages are shown again\n");
+    } clearTerminalLine();
     flush();
     print_command();
 
@@ -246,7 +251,7 @@ void Console::internal_process_escape_sequence(std::string sequence) {
   }
 
   if (sequence == "h") {
-    clear_line();
+    clearTerminalLine();
 
     // Print history
     printf("---------------------------------------------\n");
@@ -264,13 +269,14 @@ void Console::internal_process_escape_sequence(std::string sequence) {
 }
 
 void Console::process_background() {
-  if (block_background_messages)
+  if (block_background_messages) {
     return;
+  }
 
   if (pending_messages.size() != 0) {
     au::TokenTaker tt(&token_pending_messages);
 
-    clear_line();
+    clearTerminalLine();
 
     while (pending_messages.size() != 0) {
       std::string txt = pending_messages.front();
@@ -288,8 +294,10 @@ void Console::flush() {
 }
 
 bool Console::isNormalChar(char c) {
-  if (( c >= 32) && ( c <= 126))
-    return true; return false;
+  if (( c >= 32) && ( c <= 126)) {
+    return true;
+  }
+  return false;
 }
 
 std::string getSequenceDescription(std::string sequece) {
@@ -319,8 +327,10 @@ void Console::runConsoleInBackground() {
 void Console::getEntry(ConsoleEntry *entry) {
   char c;
 
-  if (read(0, &c, 1) != 1)
-    LM_X(1, ("reading from stdin failed")); if (c == 27) {
+  if (read(0, &c, 1) != 1) {
+    LM_X(1, ("reading from stdin failed"));
+  }
+  if (c == 27) {
     // Escape sequence
     escape_sequence.init();
 
@@ -381,19 +391,31 @@ void Console::runConsole() {
     if (entry.isChar()) {
       char c = entry.getChar();
 
-      if (isNormalChar(c))
-        process_char(c); else if (c == '\n')
-        internal_command("return"); else if (c == '\t')
-        internal_command("tab"); else if (c == 127)
-        internal_command("del"); else if (c == 11)
-        internal_command("del_rest_line"); else if (c == 4)
-        Console::quitConsole(); else if (c == 1)
-        internal_command("move_home"); else if (c == 5)
-        internal_command("move_end"); else if (c == 23)    // CTRL-W
-        internal_command("delete_word"); else if (c == 20) // CTRL-W
-        internal_command("toogle"); else if (c == 7)       // bell
-        printf("%c", c); else
+      if (isNormalChar(c)) {
+        process_char(c);
+      } else if (c == '\n') {
+        internal_command("return");
+      } else if (c == '\t') {
+        internal_command("tab");
+      } else if (c == 127) {
+        internal_command("del");
+      } else if (c == 11) {
+        internal_command("del_rest_line");
+      } else if (c == 4) {
+        Console::quitConsole();
+      } else if (c == 1) {
+        internal_command("move_home");
+      } else if (c == 5) {
+        internal_command("move_end");
+      } else if (c == 23) {                                // CTRL-W
+        internal_command("delete_word");
+      } else if (c == 20) {                                // CTRL-W
+        internal_command("toogle");
+      } else if (c == 7) {                                 // bell
+        printf("%c", c);
+      } else {
         writeWarningOnConsole(au::str("Ignoring unkown char (%d)", c));
+      }
     } else if (entry.isEscapeSequence()) {
       std::string seq =  entry.getEscapeSequece();
       internal_process_escape_sequence(escape_sequence.getCurrentSequence());
@@ -405,7 +427,7 @@ void Console::runConsole() {
 
 
   // Clear line to quit nicely...
-  clear_line();
+  clearTerminalLine();
 
   // Remove the signal handler...
   signal(SIGWINCH, SIG_IGN);
@@ -445,15 +467,19 @@ void Console::write(au::ErrorManager *error) {
 
 /* Methods to write things on screen */
 void Console::writeWarningOnConsole(std::string message) {
-  if (message.substr(message.length() - 1) != "\n")
-    message.append("\n"); std::ostringstream output;
+  if (message.substr(message.length() - 1) != "\n") {
+    message.append("\n");
+  }
+  std::ostringstream output;
   output << "\033[1;35m" << message << "\033[0m";
   write(output.str());
 }
 
 void Console::writeErrorOnConsole(std::string message) {
-  if (message.substr(message.length() - 1) != "\n")
-    message.append("\n"); std::ostringstream output;
+  if (message.substr(message.length() - 1) != "\n") {
+    message.append("\n");
+  }
+  std::ostringstream output;
   output << "\033[1;31m" << message << "\033[0m";
   std::string txt = output.str();
   write(txt);
@@ -461,7 +487,7 @@ void Console::writeErrorOnConsole(std::string message) {
 
 int Console::waitWithMessage(std::string message, double sleep_time, ConsoleEntry *entry) {
   // Clear line
-  clear_line();
+  clearTerminalLine();
 
   // Print message
   printf("%s", message.c_str());
@@ -493,7 +519,7 @@ void Console::writeOnConsole(std::string message) {
   // --------------------------------------------------------------------------------------------
 
   if (pthread_self() == t_running) {
-    clear_line();
+    clearTerminalLine();
 
     // Divide input message in lines
     std::istringstream input(message);
@@ -501,8 +527,10 @@ void Console::writeOnConsole(std::string message) {
     input.getline(line, 1024);
     std::vector<std::string> lines;
     while (!input.eof()) {
-      if (strlen(line) > 0)
-        lines.push_back(line); input.getline(line, 1024);
+      if (strlen(line) > 0) {
+        lines.push_back(line);
+      }
+      input.getline(line, 1024);
     }
 
     // Get terminal size
@@ -515,17 +543,20 @@ void Console::writeOnConsole(std::string message) {
 
     while (true) {
       // Print all of them and return
-      clear_line();
+      clearTerminalLine();
       size_t max_pos = pos + num_lines_on_screen;
       for (size_t i = pos; i < std::min(lines.size(), max_pos); i++) {
         std::string line_to_print;
-        if (lines[i].length() <= (size_t)x)
-          line_to_print = lines[i]; else
-          line_to_print = lines[i].substr(0, x - 3) + "..."; printf("%s\n", line_to_print.c_str());
+        if (lines[i].length() <= (size_t)x) {
+          line_to_print = lines[i];
+        } else {
+          line_to_print = lines[i].substr(0, x - 3) + "...";
+        } printf("%s\n", line_to_print.c_str());
       }
 
-      if (pos + num_lines_on_screen >= lines.size())
+      if (pos + num_lines_on_screen >= lines.size()) {
         return;
+      }
 
       if (!continue_flag) {
         double p1 = (double)(pos) / ( double )lines.size();
@@ -552,8 +583,9 @@ void Console::writeOnConsole(std::string message) {
           pos++;
         } else if (entry.isCursorUp()) {
           pos--;
-          if (pos < 0)
+          if (pos < 0) {
             pos = 0;
+          }
         } else {
           // If continue, just skip to the next block of lines
           pos += num_lines_on_screen;
@@ -582,7 +614,7 @@ void Console::write(std::string message) {
     return;
   }
 
-  clear_line();
+  clearTerminalLine();
   printf("%s", message.c_str());
 
   print_command();
@@ -597,8 +629,9 @@ void Console::evalCommand(std::string command) {
   writeWarningOnConsole("Console::evalCommand not implemented");
 
   // Simple quit function...
-  if (command == "quit")
+  if (command == "quit") {
     quit_console = true;
+  }
 }
 
 void Console::autoComplete(ConsoleAutoComplete *info) {
@@ -619,8 +652,9 @@ std::string Console::str_history(int limit) {
 }
 
 void handle_winch(int sig) {
-  if (!current_console || sig == 0x12345678)
+  if (!current_console || sig == 0x12345678) {
     return;
+  }
 
   // Rewrite current command
   current_console->refresh();
@@ -658,9 +692,12 @@ void Console::process_log(au::SharedPointer<Log>log) {
 
   std::string type = log->Get("type");
 
-  if (( type == "E" ) || ( type == "X" ))
-    writeErrorOnConsole("TRACE: " + log_formatter.get(log) + "\n"); else if (type == "W")
-    writeWarningOnConsole("TRACE: " + log_formatter.get(log) + "\n"); else
+  if (( type == "E" ) || ( type == "X" )) {
+    writeErrorOnConsole("TRACE: " + log_formatter.get(log) + "\n");
+  } else if (type == "W") {
+    writeWarningOnConsole("TRACE: " + log_formatter.get(log) + "\n");
+  } else {
     writeOnConsole("TRACE: " + log_formatter.get(log) + "\n");
+  }
 }
 }

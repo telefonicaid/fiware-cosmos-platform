@@ -29,8 +29,9 @@ LogFormatter::LogFormatter(const std::string& definition) {
 }
 
 std::string LogFormatter::get(au::SharedPointer<Log> log) const {
-  if (definition_ == "all")
+  if (definition_ == "all") {
     return log->str();
+  }
 
   std::string output;
   for (size_t i = 0; i < fields_.size(); i++) {

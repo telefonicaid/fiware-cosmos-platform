@@ -6,9 +6,9 @@ LogCentral::LogCentral(std::string host, int port, std::string local_file)
   : token_("PermanentSocketConnection")
     , token_plugins_("token_plugins")
     , token_current_thread_("token_current_thread") {
-      host_ = host;
-      port_ = port;
-      local_file_=local_file;
+  host_ = host;
+  port_ = port;
+  local_file_ = local_file;
 
   // By default both connections are NULL
   socket_connection_ = NULL;
@@ -32,25 +32,22 @@ LogCentral::~LogCentral() {
   close_local_file();
 }
 
-  std::string LogCentral::host() const {
-    return host_;
-  }
-  
-  int LogCentral::port() const{
-    return port_;
-  }
-  
-  std::string LogCentral::local_file() const
-  {
-    return local_file_;
-  }
-  
-  int LogCentral::getFd() const
-  {
-    return fd_;
-  }
+std::string LogCentral::host() const {
+  return host_;
+}
 
-  
+int LogCentral::port() const {
+  return port_;
+}
+
+std::string LogCentral::local_file() const {
+  return local_file_;
+}
+
+int LogCentral::getFd() const {
+  return fd_;
+}
+
 void LogCentral::close_socket_connection() {
   if (socket_connection_) {
     socket_connection_->Close();
@@ -88,13 +85,14 @@ void LogCentral::SetLogServer(std::string host, int port) {
   time_reconnect_ = 0;
 }
 
-void LogCentral::Write(au::SharedPointer<Log> log ) {
+void LogCentral::Write(au::SharedPointer<Log> log) {
   // In direct mode, we just try to send traces ( not reconnection, no blocking )
   if (direct_mode_) {
-    if (socket_connection_)
+    if (socket_connection_) {
       log->Write(socket_connection_);
-    else if (local_file_descriptor_)
+    } else if (local_file_descriptor_) {
       log->Write(local_file_descriptor_);
+    }
     return;
   }
 
@@ -110,7 +108,7 @@ void LogCentral::Write(au::SharedPointer<Log> log ) {
 
       // Check if I am blocking this log
       if (current_thread_activated_) {
-        if ( pthread_equal(current_thread_ , my_thread_id ) ) {
+        if (pthread_equal(current_thread_, my_thread_id)) {
           return;               // Secondary log...
         }
       } else {
@@ -137,17 +135,19 @@ void LogCentral::Write(au::SharedPointer<Log> log ) {
   }
 }
 
-  void LogCentral::AddPlugin(LogPlugin *p) {
+void LogCentral::AddPlugin(LogPlugin *p) {
   au::TokenTaker tt(&token_plugins_);
+
   plugins_.insert(p);
 }
 
 void LogCentral::RemovePlugin(LogPlugin *p) {
   au::TokenTaker tt(&token_plugins_);
+
   plugins_.erase(p);
 }
 
-  void LogCentral::write_to_plugins(au::SharedPointer<Log> log) {
+void LogCentral::write_to_plugins(au::SharedPointer<Log> log) {
   au::TokenTaker tt(&token_plugins_);
 
   au::set<LogPlugin>::iterator it;
@@ -175,9 +175,13 @@ void LogCentral::write_to_server_or_file(SharedPointer<Log> log) {
 
     if (s != au::OK) {
       // Set the next time_reconnect
-      if (time == 0)
-        time_reconnect_ = 120; if (time_reconnect_ < time)
-        time_reconnect_ = time; time_reconnect_ *= 2;           // Increase time to reconnect
+      if (time == 0) {
+        time_reconnect_ = 120;
+      }
+      if (time_reconnect_ < time) {
+        time_reconnect_ = time;
+      }
+      time_reconnect_ *= 2;                                     // Increase time to reconnect
 
       size_t next_try_time = time_reconnect_ - time;
 
@@ -187,16 +191,18 @@ void LogCentral::write_to_server_or_file(SharedPointer<Log> log) {
       // Set the used fd
       fd_ = socket_connection_->fd();
 
-      if (time  > 10)
+      if (time  > 10) {
         LM_LW(("Connected to log server after %s disconnected", au::str_time(time).c_str()));
+      }
     }
   }
 
 
   // Try socket first...
   if (socket_connection_) {
-    if (log->Write(socket_connection_))
+    if (log->Write(socket_connection_)) {
       return;
+    }
 
     // It was not possible to sent to server, close and remove socket connection
     close_socket_connection();

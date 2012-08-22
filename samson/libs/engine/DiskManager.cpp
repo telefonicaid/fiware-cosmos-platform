@@ -37,8 +37,9 @@ void DiskManager::init(int _num_disk_operations) {
 }
 
 void DiskManager::stop() {
-  if (diskManager)
+  if (diskManager) {
     diskManager->quitting = true;
+  }
 }
 
 void DiskManager::destroy() {
@@ -53,8 +54,10 @@ void DiskManager::destroy() {
 }
 
 DiskManager *DiskManager::shared() {
-  if (!diskManager)
-    LM_E(("Please init DiskManager before using it, calling DiskManager::init()")); return diskManager;
+  if (!diskManager) {
+    LM_E(("Please init DiskManager before using it, calling DiskManager::init()"));
+  }
+  return diskManager;
 }
 
 #pragma mark DiskManager
@@ -136,14 +139,20 @@ void DiskManager::finishDiskOperation(const au::SharedPointer< ::engine::DiskOpe
   // remove from the box of running operations
   running_operations.Erase(operation);
 
-  if (operation->getType() == DiskOperation::read)
-    rate_in.push(operation->getSize()); if (operation->getType() == DiskOperation::write)
-    rate_out.push(operation->getSize()); if (operation->getType() == DiskOperation::append)
-    rate_out.push(operation->getSize()); LM_T(LmtDisk,
-                                              (
-                                                "DiskManager::finishDiskOperation erased and ready to send notification on file:%s",
-                                                operation->fileName.c_str()
-                                              ));
+  if (operation->getType() == DiskOperation::read) {
+    rate_in.Push(operation->getSize());
+  }
+  if (operation->getType() == DiskOperation::write) {
+    rate_out.Push(operation->getSize());
+  }
+  if (operation->getType() == DiskOperation::append) {
+    rate_out.Push(operation->getSize());
+  }
+  LM_T(LmtDisk,
+       (
+         "DiskManager::finishDiskOperation erased and ready to send notification on file:%s",
+         operation->fileName.c_str()
+       ));
 
   // Add a notification for this operation to the required target listener
   Notification *notification = new Notification(notification_disk_operation_request_response);
@@ -166,7 +175,7 @@ au::SharedPointer< ::engine::DiskOperation > DiskManager::getNextDiskOperation()
   au::TokenTaker tt(&token);
 
   if (pending_operations.size() == 0) {
-    on_off_monitor.set_on(!(running_operations.size() == 0));
+    on_off_monitor.Set(!(running_operations.size() == 0));
     return au::SharedPointer< ::engine::DiskOperation >(NULL);
   }
 
@@ -177,7 +186,7 @@ au::SharedPointer< ::engine::DiskOperation > DiskManager::getNextDiskOperation()
   running_operations.Insert(operation);
 
   // We are runnin one, so it is on
-  on_off_monitor.set_on(true);
+  on_off_monitor.Set(true);
 
   return operation;
 }
@@ -200,8 +209,9 @@ void DiskManager::add_worker() {
 void DiskManager::run_worker() {
   while (true) {
     // Check if I should quit
-    if (check_quit_worker())
+    if (check_quit_worker()) {
       return;
+    }
 
     au::SharedPointer< ::engine::DiskOperation > operation = getNextDiskOperation();
     if (operation != NULL) {
@@ -255,34 +265,34 @@ size_t DiskManager::get_rate_in() {
   // Mutex protection
   au::TokenTaker tt(&token);
 
-  return rate_in.getRate();
+  return rate_in.rate();
 }
 
 size_t DiskManager::get_rate_out() {
   // Mutex protection
   au::TokenTaker tt(&token);
 
-  return rate_out.getRate();
+  return rate_out.rate();
 }
 
 double DiskManager::get_rate_operations_in() {
   // Mutex protection
   au::TokenTaker tt(&token);
 
-  return rate_in.getHitRate();
+  return rate_in.hit_rate();
 }
 
 double DiskManager::get_rate_operations_out() {
   // Mutex protection
   au::TokenTaker tt(&token);
 
-  return rate_out.getHitRate();
+  return rate_out.hit_rate();
 }
 
 double DiskManager::get_on_off_activity() {
   // Mutex protection
   au::TokenTaker tt(&token);
 
-  return on_off_monitor.getActivity();
+  return on_off_monitor.activity_percentadge();
 }
 }

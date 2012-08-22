@@ -30,10 +30,15 @@ Connection::Connection(Adaptor *_item, ConnectionType _type, std::string _name) 
 }
 
 Connection::~Connection() {
-  if (buffer_processor)
-    delete buffer_processor; if (input_buffer_list)
-    delete input_buffer_list; if (output_buffer_list)
+  if (buffer_processor) {
+    delete buffer_processor;
+  }
+  if (input_buffer_list) {
     delete input_buffer_list;
+  }
+  if (output_buffer_list) {
+    delete input_buffer_list;
+  }
 }
 
 void Connection::report_output_size(size_t size) {
@@ -48,19 +53,23 @@ void Connection::report_input_size(size_t size) {
 
 engine::BufferPointer Connection::getNextBufferToSent() {
   // If output list is not created, there are no output buffers
-  if (!output_buffer_list)
+  if (!output_buffer_list) {
     return engine::BufferPointer(NULL);
+  }
 
   // Extract buffer from the list
   engine::BufferPointer buffer = output_buffer_list->pop();
 
-  if (buffer != NULL)
-    report_output_size(buffer->getSize()); return buffer;
+  if (buffer != NULL) {
+    report_output_size(buffer->getSize());
+  }
+  return buffer;
 }
 
 void Connection::pushInputBuffer(engine::BufferPointer buffer) {
-  if (buffer == NULL)
+  if (buffer == NULL) {
     return;
+  }
 
   // Report input block
   report_input_size(buffer->getSize());
@@ -74,15 +83,17 @@ void Connection::pushInputBuffer(engine::BufferPointer buffer) {
     // An option in the future could be to inject input data in input_buffer_process and use engine to process stuff
 
     // Create buffer processor to process all input buffers
-    if (!buffer_processor)
+    if (!buffer_processor) {
       buffer_processor = new BufferProcessor(item->channel);  // push the block processor
+    }
     buffer_processor->push(buffer);
   }
 }
 
 void Connection::flushInputBuffers() {
-  if (buffer_processor)
+  if (buffer_processor) {
     buffer_processor->flush();
+  }
 }
 
 void Connection::push(engine::BufferPointer buffer) {
@@ -99,21 +110,29 @@ void Connection::push(engine::BufferPointer buffer) {
 
 size_t Connection::bufferedSize() {
   if (type == connection_output) {
-    if (!output_buffer_list)
-      return 0; return output_buffer_list->getSize();
+    if (!output_buffer_list) {
+      return 0;
+    }
+    return output_buffer_list->getSize();
   } else {
-    if (!input_buffer_list)
-      return 0; return input_buffer_list->getSize();
+    if (!input_buffer_list) {
+      return 0;
+    }
+    return input_buffer_list->getSize();
   }
 }
 
 size_t Connection::bufferedSizeOnMemory() {
   if (type == connection_output) {
-    if (!output_buffer_list)
-      return 0; return output_buffer_list->getSizeOnMemory();
+    if (!output_buffer_list) {
+      return 0;
+    }
+    return output_buffer_list->getSizeOnMemory();
   } else {
-    if (!input_buffer_list)
-      return 0; return input_buffer_list->getSizeOnMemory();
+    if (!input_buffer_list) {
+      return 0;
+    }
+    return input_buffer_list->getSizeOnMemory();
   }
 }
 
@@ -135,8 +154,9 @@ size_t Connection::getId() {
 }
 
 std::string Connection::getFullName() {
-  if (!item)
+  if (!item) {
     return "[Unassigned connection]";
+  }
 
   return au::str("%s.%lu"
                  , item->getFullName().c_str()
@@ -145,8 +165,9 @@ std::string Connection::getFullName() {
 }
 
 void Connection::set_as_finished() {
-  if (finished)
+  if (finished) {
     return;
+  }
 
   // Log activity
   log("Message", "Set as finished");
@@ -160,18 +181,20 @@ bool Connection::is_finished() {
 
 // Log system
 void Connection::log(std::string type, std::string message) {
-  log(au::SharedPointer<Log>( new Log( getFullName(), type, message)));
+  log(au::SharedPointer<Log>(new Log(getFullName(), type, message)));
 }
 
-  void Connection::log(au::SharedPointer<Log> log) {
+void Connection::log(au::SharedPointer<Log> log) {
   LogManager *log_manager = au::Singleton<LogManager>::shared();
 
   log_manager->log(log);
 }
 
 void Connection::init_connecton() {
-  if (initialized)
-    return; initialized = true;
+  if (initialized) {
+    return;
+  }
+  initialized = true;
   start_connection();
 }
 
@@ -181,14 +204,18 @@ void Connection::cancel_connecton() {
 }
 
 void Connection::review() {
-  if (canceled)
+  if (canceled) {
     return;   // Not call review
-
-  if (!finished)
+  }
+  if (!finished) {
     review_connection();  // Review persistancy in input/output buffer lists
-  if (input_buffer_list)
-    input_buffer_list->review_persistence(); if (output_buffer_list)
+  }
+  if (input_buffer_list) {
+    input_buffer_list->review_persistence();
+  }
+  if (output_buffer_list) {
     output_buffer_list->review_persistence();
+  }
 }
 
 std::string Connection::str() {

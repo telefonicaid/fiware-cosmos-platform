@@ -17,37 +17,37 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
   au::CommandLine cmd;
 
   // Input output definition of queues
-  cmd.set_flag_string("input", "");
-  cmd.set_flag_string("output", "");
+  cmd.SetFlagString("input", "");
+  cmd.SetFlagString("output", "");
 
   // Forward flag to indicate that this is a reduce forward operation ( no update if state )
-  cmd.set_flag_boolean("forward");
+  cmd.SetFlagBoolean("forward");
 
   // Number of divisions in state operations
-  cmd.set_flag_int("divisions", SamsonSetup::shared()->getInt("general.num_processess"));
+  cmd.SetFlagInt("divisions", SamsonSetup::shared()->getInt("general.num_processess"));
 
   // Use third party software only for state with new input
-  cmd.set_flag_boolean("update_only");
+  cmd.SetFlagBoolean("update_only");
 
   // Prefix used to change names of queues and operations
-  cmd.set_flag_string("prefix", "");
+  cmd.SetFlagString("prefix", "");
 
-  cmd.set_flag_uint64("delilah_id", (size_t)-1);
-  cmd.set_flag_uint64("delilah_component_id", (size_t)-1);
+  cmd.SetFlagUint64("delilah_id", (size_t)-1);
+  cmd.SetFlagUint64("delilah_component_id", (size_t)-1);
 
-  cmd.parse(command);
+  cmd.Parse(command);
 
   // Recover prefix
-  std::string prefix = cmd.get_flag_string("prefix");
-  bool forward       = cmd.get_flag_bool("forward");
-  bool update_only   = cmd.get_flag_bool("update_only");
+  std::string prefix = cmd.GetFlagString("prefix");
+  bool forward       = cmd.GetFlagBool("forward");
+  bool update_only   = cmd.GetFlagBool("update_only");
 
   if (cmd.get_num_arguments() == 0) {
     error->set("No command specified");
     return;
   }
 
-  cmd.parse(command);
+  cmd.Parse(command);
 
   if (cmd.get_num_arguments() == 0) {
     error->set("No command provided");
@@ -82,9 +82,11 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
     std::vector<std::string> target_queues = au::split(cmd.get_argument(2), ' ');
     for (size_t i = 0; i < target_queues.size(); i++) {
       // Check if the connection exist
-      if (data_exist_queue_connection(data.shared_object(),  queue_source, target_queues[i]))
-        continue; else
+      if (data_exist_queue_connection(data.shared_object(),  queue_source, target_queues[i])) {
+        continue;
+      } else {
         data_create_queue_connection(data.shared_object(), queue_source, target_queues[i]);
+      }
     }
     return;
   }
@@ -114,11 +116,11 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
     }
 
     std::string operation       = cmd.get_argument(1);
-    std::string inputs          = cmd.get_flag_string("input");
-    std::string outputs         = cmd.get_flag_string("output");
+    std::string inputs          = cmd.GetFlagString("input");
+    std::string outputs         = cmd.GetFlagString("output");
 
-    size_t delilah_id = cmd.get_flag_uint64("delilah_id");
-    size_t delilah_component_id = cmd.get_flag_uint64("delilah_component_id");
+    size_t delilah_id = cmd.GetFlagUint64("delilah_id");
+    size_t delilah_component_id = cmd.GetFlagUint64("delilah_component_id");
 
     std::vector<std::string> input_queues = au::split(inputs, ' ');
     std::vector<std::string> output_queues = au::split(outputs, ' ');
@@ -130,8 +132,9 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
       std::string new_command = au::str("push_queue %s %s%s", input_queues[i].c_str(),
                                         prefix.c_str(), input_queues[i].c_str());
       PerformCommit(data, new_command, version, error);
-      if (error->IsActivated())
+      if (error->IsActivated()) {
         return;
+      }
     }
 
     // Schedule stream operations
@@ -151,8 +154,9 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
     new_command << "\"";
 
     PerformCommit(data, new_command.str(), version, error);
-    if (error->IsActivated())
+    if (error->IsActivated()) {
       return;
+    }
 
     // Add the operation itself in the list
     gpb::BatchOperation *batch_operation = data->add_batch_operations();
@@ -197,8 +201,8 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
 
     std::string name            = prefix + cmd.get_argument(1);
     std::string operation       = cmd.get_argument(2);
-    std::string inputs          = cmd.get_flag_string("input");
-    std::string outputs         = cmd.get_flag_string("output");
+    std::string inputs          = cmd.GetFlagString("input");
+    std::string outputs         = cmd.GetFlagString("output");
 
     // Get a new stream operation and increse the global counter
     size_t stream_operation_id = data->next_stream_operation_id();
@@ -301,8 +305,9 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
 
     CommitCommand commit_command;
     commit_command.ParseCommitCommand(command, error);
-    if (error->IsActivated())
+    if (error->IsActivated()) {
       return;
+    }
 
     // Perform all changes
     const au::vector<CommitCommandItem>& items = commit_command.items();
@@ -319,8 +324,9 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
                   , version
                   , error);
 
-        if (error->IsActivated())
+        if (error->IsActivated()) {
           return;
+        }
 
         // add also to the connected queues
         au::StringVector connected_queues = data_get_queues_connected(data.shared_object(), item->queue());
@@ -345,15 +351,17 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
                  , item->info()
                  , error);
 
-        if (error->IsActivated())
+        if (error->IsActivated()) {
           return;
+        }
       }
     }
 
     // Blocks have been added or removed... review batch operation
     ReviewBatchOperations(data, version, error);
-    if (error->IsActivated())
+    if (error->IsActivated()) {
       return;
+    }
   } else if (main_command == "add") {
     if (cmd.get_num_arguments() < 3) {
       error->set("Usage: add queue_name key_format value_format");
@@ -374,8 +382,10 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
       value_format = cmd.get_argument(3);  // Get or create this queue
     }
     samson::gpb::get_or_create_queue(data.shared_object(), name, KVFormat(key_format, value_format), error);
-    if (!error->IsActivated())
-      error->AddMessage(au::str("Queue %s added correctly", name.c_str())); return;
+    if (!error->IsActivated()) {
+      error->AddMessage(au::str("Queue %s added correctly", name.c_str()));
+    }
+    return;
   } else if (main_command == "rm") {
     if (cmd.get_num_arguments() < 2) {
       error->set("Usage: rm queue_name queue_name2 ....");
@@ -407,8 +417,9 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
     KVFormat format(queue->key_format(), queue->value_format());
     samson::gpb::Queue *target_queue = get_or_create_queue(data.shared_object(), cmd.get_argument(2), format, error);
 
-    if (error->IsActivated())
+    if (error->IsActivated()) {
       return;
+    }
 
     // Copy all the conten
     for (int i  = 0; i  < queue->blocks_size(); i++) {
@@ -428,24 +439,47 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
 }
 
 bool DataModel::isValidCommand(const std::string& main_command) {
-  if (main_command == "add")
-    return true; if (main_command == "rm")
-    return true; if (main_command == "push_queue")
-    return true; if (main_command == "remove_all_data")
-    return true; if (main_command == "remove_all")
+  if (main_command == "add") {
     return true;
+  }
+  if (main_command == "rm") {
+    return true;
+  }
+  if (main_command == "push_queue") {
+    return true;
+  }
+  if (main_command == "remove_all_data") {
+    return true;
+  }
+  if (main_command == "remove_all") {
+    return true;
+  }
 
-  if (main_command == "add_stream_operation")
-    return true; if (main_command == "rm_stream_operation")
-    return true; if (main_command == "set_stream_operation_property")
-    return true; if (main_command == "unset_stream_operation_property")
-    return true; if (main_command == "remove_all_stream_operations")
-    return true; if (main_command == "add_queue_connection")
-    return true; if (main_command == "rm_queue_connection")
+  if (main_command == "add_stream_operation") {
     return true;
+  }
+  if (main_command == "rm_stream_operation") {
+    return true;
+  }
+  if (main_command == "set_stream_operation_property") {
+    return true;
+  }
+  if (main_command == "unset_stream_operation_property") {
+    return true;
+  }
+  if (main_command == "remove_all_stream_operations") {
+    return true;
+  }
+  if (main_command == "add_queue_connection") {
+    return true;
+  }
+  if (main_command == "rm_queue_connection") {
+    return true;
+  }
 
-  if (main_command == "batch")
+  if (main_command == "batch") {
     return true;
+  }
 
   return false;
 }
@@ -465,9 +499,13 @@ gpb::Collection *DataModel::getCollectionForStreamOperations(const Visualization
 
     std::string name = stream_operation.name();
 
-    if (name.length() == 0)
-      continue; if (!all_flag && name[0] == '.')
-      continue; gpb::CollectionRecord *record = collection->add_record();
+    if (name.length() == 0) {
+      continue;
+    }
+    if (!all_flag && name[0] == '.') {
+      continue;
+    }
+    gpb::CollectionRecord *record = collection->add_record();
 
     ::samson::add(record, "id", stream_operation.stream_operation_id(), "different");
     ::samson::add(record, "name", stream_operation.name(), "different");
@@ -516,9 +554,11 @@ gpb::Collection *DataModel::getCollectionForBatchOperations(const Visualization&
     ::samson::add(record, "delilah", name, "different");
     ::samson::add(record, "operation", batch_operation.operation(), "different");
 
-    if (batch_operation.finished())
-      ::samson::add(record, "finish", "YES", "different"); else
-      ::samson::add(record, "finish", "NO", "different"); std::ostringstream inputs;
+    if (batch_operation.finished()) {
+      ::samson::add(record, "finish", "YES", "different");
+    } else {
+      ::samson::add(record, "finish", "NO", "different");
+    } std::ostringstream inputs;
     std::ostringstream inputs_data;
     for (int j = 0; j < batch_operation.inputs_size(); j++) {
       inputs << batch_operation.inputs(j) << " ";
@@ -574,9 +614,13 @@ gpb::Collection *DataModel::getCollectionForQueuesWithBlocks(const Visualization
     for (int b = 0; b < queue.blocks_size(); b++) {
       const gpb::Block& block = queue.blocks(b);
 
-      if (queue.name().length() == 0)
-        continue; if (!all_flag && queue.name()[0] == '.')
-        continue; gpb::CollectionRecord *record = collection->add_record();
+      if (queue.name().length() == 0) {
+        continue;
+      }
+      if (!all_flag && queue.name()[0] == '.') {
+        continue;
+      }
+      gpb::CollectionRecord *record = collection->add_record();
 
       ::samson::add(record, "queue", queue.name(), "different");
       ::samson::add(record, "block", block.block_id(), "different");
@@ -606,9 +650,13 @@ gpb::Collection *DataModel::getCollectionForQueueConnections(const Visualization
   for (size_t i = 0; i < (size_t)data->queue_connections_size(); i++) {
     std::string queue_name = data->queue_connections(i).queue_source();
 
-    if (queue_name.length() == 0)
-      continue; if (!all_flag && queue_name[0] == '.')
-      continue; source_queues.insert(queue_name);
+    if (queue_name.length() == 0) {
+      continue;
+    }
+    if (!all_flag && queue_name[0] == '.') {
+      continue;
+    }
+    source_queues.insert(queue_name);
   }
 
   gpb::Collection *collection = new gpb::Collection();
@@ -640,9 +688,13 @@ gpb::Collection *DataModel::getCollectionForQueues(const Visualization& visualiz
 
     std::string name = queue.name();
 
-    if (name.length() == 0)
-      continue; if (!all_flag && name[0] == '.')
-      continue; size_t kvs;
+    if (name.length() == 0) {
+      continue;
+    }
+    if (!all_flag && name[0] == '.') {
+      continue;
+    }
+    size_t kvs;
     size_t size;
     size_t num_blocks;
 
@@ -699,8 +751,9 @@ std::set<size_t> DataModel::get_my_block_ids(const KVRanges& hg_ranges) {
       // Implicit convesion to C++ type
       KVRanges ranges = block.ranges();
 
-      if (ranges.IsOverlapped(hg_ranges))
+      if (ranges.IsOverlapped(hg_ranges)) {
         block_ids.insert(block.block_id());
+      }
     }
   }
 
@@ -724,8 +777,9 @@ void DataModel::ReviewBatchOperations(au::SharedPointer<gpb::Data> data, int ver
         std::string final_queue_name = prefix + queue_name;
         std::string command = au::str("push_queue %s %s", final_queue_name.c_str(), queue_name.c_str());
         PerformCommit(data, command, version, error);
-        if (error->IsActivated())
+        if (error->IsActivated()) {
           return;
+        }
       }
     }
   }

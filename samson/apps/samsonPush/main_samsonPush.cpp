@@ -112,10 +112,14 @@ size_t full_read(int fd, char *data, size_t size) {
   while (read_size < size) {
     ssize_t t = read(fd, data + read_size, size - read_size);
 
-    if (t == -1)
-      LM_X(1, ("Error reading input data")); if (t == 0)
-      break; else
+    if (t == -1) {
+      LM_X(1, ("Error reading input data"));
+    }
+    if (t == 0) {
+      break;
+    } else {
       read_size += t;
+    }
   }
 
   return read_size;
@@ -159,21 +163,27 @@ int main(int argC, const char *argV[]) {
   srand(rand_seq);
 
 
-  if (buffer_size == 0)
+  if (buffer_size == 0) {
     LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Check queue is specified
-  if (strcmp(queue_name, "null") == 0)
+  }
+  if (strcmp(queue_name, "null") == 0) {
     LM_X(1, ("Please, specify a queue to push data to"));  // Create samson client
+  }
   size_t total_memory = push_memory * 1024 * 1024;
   LM_V(("Setting memory for samson client %s", au::str(total_memory, "B").c_str()));
   samson::SamsonClient::general_init(total_memory);
   samson_client = new samson::SamsonClient("push");
 
-  if (!samson_client->connect(host))
-    LM_X(1, ("Not possible to connect with %s", host )); LM_V(("Waiting connection to %s", host ));
+  if (!samson_client->connect(host)) {
+    LM_X(1, ("Not possible to connect with %s", host ));
+  }
+  LM_V(("Waiting connection to %s", host ));
   while (true) {
-    if (samson_client->connection_ready())
-      break; else
+    if (samson_client->connection_ready()) {
+      break;
+    } else {
       usleep(100000);
+    }
   }
   LM_V(("Connected to %s", host ));
 
@@ -192,8 +202,10 @@ int main(int argC, const char *argV[]) {
   // --------------------------------------------------------------------------------
 
   char *data = (char *)malloc(buffer_size);
-  if (!data)
-    LM_X(1, ("Error allocating %lu bytes", buffer_size )); size_t size = 0;                  // Bytes currently contained in the buffer
+  if (!data) {
+    LM_X(1, ("Error allocating %lu bytes", buffer_size ));
+  }
+  size_t size = 0;                                                                           // Bytes currently contained in the buffer
 
   std::string tmp_separator = breaker_sequence;
   literal_string(tmp_separator);
@@ -214,30 +226,35 @@ int main(int argC, const char *argV[]) {
     if (lines) {
       char *string = fgets(data, buffer_size, stdin);
 
-      if (string)
-        read_bytes = strlen(string); else
+      if (string) {
+        read_bytes = strlen(string);
+      } else {
         read_bytes = 0;
+      }
     } else {
       read_bytes = full_read(0, data + size, buffer_size - size);
     }
 
     // Statistics about input size
-    rate_stdin.push(read_bytes);
+    rate_stdin.Push(read_bytes);
 
     // Information about current status....
     size_t memory = engine::MemoryManager::shared()->memory();
     size_t used_memory = engine::MemoryManager::shared()->used_memory();
     double memory_usage = engine::MemoryManager::shared()->memory_usage();
 
-    if (read_bytes == 0)
-      break; LM_V(("Stdin info: %s", rate_stdin.str().c_str()));
+    if (read_bytes == 0) {
+      break;
+    }
+    LM_V(("Stdin info: %s", rate_stdin.str().c_str()));
 
-    if (memory_usage > 0.8)
+    if (memory_usage > 0.8) {
       LM_V(("Memory used %s / %s ( %s )",
             au::str(used_memory, "B").c_str(),
             au::str(memory, "B").c_str(),
             au::str_percentage(memory_usage).c_str()
             ));  // Increase the size of data contained in the buffer
+    }
     size += read_bytes;
 
     // Processing data contained in "data" with size "size"
@@ -246,8 +263,9 @@ int main(int argC, const char *argV[]) {
     // Find backward a particular string...
     const char *last_pos = au::laststrstr(data, size, breaker_sequence);
 
-    if (!last_pos)
+    if (!last_pos) {
       LM_X(1, ("Not found breaker sequecny '%s' in a buffer of %lu bytes", breaker_sequence, size ));
+    }
     size_t output_size = last_pos - data + strlen(breaker_sequence);
 
     // LM_M(("Processing buffer with %s --> %s block push to queue" , au::str(size).c_str() , au::str(output_size).c_str() ));
@@ -259,7 +277,7 @@ int main(int argC, const char *argV[]) {
     // -----------------------------------------------------------------
 
     // Sleep if necessary
-    if (rate_stdin.getRate() > (double)max_rate) {
+    if (rate_stdin.rate() > (double)max_rate) {
       LM_V(("Stdin info: %s", rate_stdin.str().c_str()));
       LM_V(("Sleeping respect max rate %s", au::str(max_rate).c_str()));
       sleep(1);

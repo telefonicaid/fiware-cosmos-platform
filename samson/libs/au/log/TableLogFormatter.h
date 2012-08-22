@@ -1,12 +1,12 @@
 #ifndef _H_AU_TABLE_LOG_FORATTER
 #define _H_AU_TABLE_LOG_FORATTER
 
-#include <string>
 #include <regex.h>
+#include <string>
 #include <vector>
 
-#include "au/tables/Table.h"
 #include "au/containers/SharedPointer.h"
+#include "au/tables/Table.h"
 
 namespace au {
 class LogFormatter;
@@ -95,7 +95,7 @@ public:
   void init(ErrorManager *error);
 
   // Filter if this log should be added to the current table
-  bool filter( au::SharedPointer<Log> log);
+  bool filter(au::SharedPointer<Log> log);
 
   // Flags to mofidy behavious
   void set_as_table(bool _is_table);
@@ -114,13 +114,17 @@ public:
   // Function to check if have enougth records ( not add anymore if return true )
   bool enougthRecords() {
     // In no-multi-session, this flags means that the new-session-mark was found
-    if (flag_new_session_found)
+    if (flag_new_session_found) {
       return true;
+    }
+
 
     // Check by the limit of recors
-    if (limit == 0)
+    if (limit == 0) {
       return false;
-    
+    }
+
+
     return (num_logs >= limit );
   }
 

@@ -78,8 +78,9 @@ void PopDelilahComponent::review() {
 
 // Function to get the status
 std::string PopDelilahComponent::getStatus() {
-  if (num_pop_queue_responses_ == 0)
+  if (num_pop_queue_responses_ == 0) {
     return au::str("Waiting for queue info from worker %lu", worker_id_);
+  }
 
   return au::str("Downloading data form queue %s ( %lu pending blokcs ) "
                  , queue_.c_str(), items_.size());
@@ -103,21 +104,29 @@ std::string PopDelilahComponent::getExtraStatus() {
 
     values.Push(item->worker_id());
 
-    if (item->worker_confirmation())
-      values.Push("yes"); else
-      values.Push("no"); values.Push(au::str_time(item->cronometer().seconds()));
+    if (item->worker_confirmation()) {
+      values.Push("yes");
+    } else {
+      values.Push("no");
+    } values.Push(au::str_time(item->cronometer().seconds()));
 
-    if (item->buffer() == NULL)
-      values.Push("-"); else
-      values.Push(au::str(item->buffer()->getSize())); table.addRow(values);
+    if (item->buffer() == NULL) {
+      values.Push("-");
+    } else {
+      values.Push(au::str(item->buffer()->getSize()));
+    } table.addRow(values);
   }
 
   std::ostringstream output;
   output << "\n\n";
 
-  if (num_pending_write_operations_ > 0)
-    output << "Waiting for " << num_pending_write_operations_ << " disk operations\n\n"; if (num_blocks_downloaded_ > 0)
-    output << "Total blocks downlaoded " << num_blocks_downloaded_ << "\n\n"; output << table.str();
+  if (num_pending_write_operations_ > 0) {
+    output << "Waiting for " << num_pending_write_operations_ << " disk operations\n\n";
+  }
+  if (num_blocks_downloaded_ > 0) {
+    output << "Total blocks downlaoded " << num_blocks_downloaded_ << "\n\n";
+  }
+  output << table.str();
   output << "\n\n";
   return output.str();
 }
@@ -154,8 +163,10 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
     const gpb::Queue& queue = packet->message->pop_queue_response().queue();
     for (int i = 0; i < queue.blocks_size(); i++) {
       int commit_id = queue.blocks(i).commit_id();
-      if (commit_id > commit_id_)
-        commit_id_ = commit_id; size_t block_id = queue.blocks(i).block_id();
+      if (commit_id > commit_id_) {
+        commit_id_ = commit_id;
+      }
+      size_t block_id = queue.blocks(i).block_id();
       const gpb::KVRanges& ranges = queue.blocks(i).ranges();   // Implicit conversion
 
       size_t item_id = item_id_++;
@@ -181,8 +192,9 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
 
     // Search for this item
     PopDelilahComponentItem *item = items_.findInMap(pop_id);
-    if (!item)
+    if (!item) {
       return;
+    }
 
     if (packet->message->has_error()) {
       // Error in confirmation, send the next one
@@ -205,8 +217,9 @@ void PopDelilahComponent::receive(const PacketPointer& packet) {
 
     // Search for this item
     PopDelilahComponentItem *item = items_.findInMap(pop_id);
-    if (!item)
+    if (!item) {
       return;
+    }
 
     item->SetContent(packet->buffer());
     check();
@@ -230,9 +243,12 @@ void PopDelilahComponent::check() {
     PopDelilahComponentItem *item = it->second;
     if (item->buffer() == NULL) {
       int time_limit = 30;
-      if (item->worker_confirmation())
-        time_limit = 300; if (item->cronometer().seconds() > time_limit)
+      if (item->worker_confirmation()) {
+        time_limit = 300;
+      }
+      if (item->cronometer().seconds() > time_limit) {
         send_request(item);
+      }
     }
   }
 
@@ -242,8 +258,9 @@ void PopDelilahComponent::check() {
 
     // Get buffer for this item ( if available )
     engine::BufferPointer buffer = item->buffer();
-    if (buffer == NULL)
+    if (buffer == NULL) {
       return;
+    }
 
     if (file_name_ != "") {
       // Write to disc
@@ -265,8 +282,10 @@ void PopDelilahComponent::check() {
   }
 
   // Set component as finish if everything is done
-  if (file_name_ != "")
-    if (( num_pending_write_operations_ == 0 ) && ( items_.size() == 0))
+  if (file_name_ != "") {
+    if (( num_pending_write_operations_ == 0 ) && ( items_.size() == 0)) {
       setComponentFinished();
+    }
+  }
 }
 }

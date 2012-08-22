@@ -56,8 +56,9 @@ Filter *FilterCollection::getFilter(au::token::TokenVector *token_vector
 
   if (token->content == "select") {
     Source *key_source = getSource(token_vector, error);
-    if (error->IsActivated())
+    if (error->IsActivated()) {
       return NULL;
+    }
 
     // Expect a ","
     if (!token_vector->popNextTokenIfItIs(",")) {
@@ -69,8 +70,9 @@ Filter *FilterCollection::getFilter(au::token::TokenVector *token_vector
     Source *value_source = NULL;
     if (!token_vector->eof()) {
       value_source = getSource(token_vector, error);
-      if (error->IsActivated())
+      if (error->IsActivated()) {
         return NULL;
+      }
     } else {
       value_source = new SourceVoid();
     }
@@ -112,8 +114,10 @@ Filter *FilterCollection::getFilter(au::token::TokenVector *token_vector
     }
   } else if (token->content == "filter") {
     Source *eval_source = getSource(token_vector, error);
-    if (error->IsActivated())
-      return NULL; if (!eval_source) {
+    if (error->IsActivated()) {
+      return NULL;
+    }
+    if (!eval_source) {
       error->set("Not valid condition statment in filter command");
       return NULL;
     }
@@ -150,8 +154,9 @@ Filter *FilterCollection::getFilterChain(au::token::TokenVector *token_vector
   }
 
 
-  if (tmp_filters.size() == 0)
+  if (tmp_filters.size() == 0) {
     return NULL;
+  }
 
   // Link the filters
   for (size_t i = 0; i < (tmp_filters.size() - 1); i++) {

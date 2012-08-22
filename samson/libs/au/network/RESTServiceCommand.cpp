@@ -52,7 +52,7 @@ au::Status RESTServiceCommand::Read(
 
     // Process incomming line with cmdLine
     au::CommandLine cmdLine;
-    cmdLine.parse(request_line_);
+    cmdLine.Parse(request_line_);
 
     if (cmdLine.get_num_arguments() < 2) {
       error.set(au::str("Unexpected format. Incomming line %s",
@@ -88,9 +88,11 @@ au::Status RESTServiceCommand::Read(
 
         if ((format_ == "json") || (format_ == "xml") ||
             (format_ == "html") || (format_ == "thtml"))
+        {
           path_components_[path_components_.size() - 1]
             = path_components_[path_components_.size() -
                                1].substr(0, pos);
+        }
       }
     }
 
@@ -118,7 +120,7 @@ au::Status RESTServiceCommand::Read(
 
         std::string concept = header_line.substr(0, pos);
         std::string value = header_line.substr(pos + 2);
-        header_.set(concept, value);
+        header_.Set(concept, value);
 
         LM_T(LmtRest,
              ("REST Head line: '%s' [%s=%s]", line,
@@ -130,13 +132,15 @@ au::Status RESTServiceCommand::Read(
     }
 
     // Read data if any....
-    if (header_.isSet("Content-Length")) {
-      size_t size = header_.get("Content-Length", 0);
+    if (header_.IsSet("Content-Length")) {
+      size_t size = header_.Get("Content-Length", 0);
       if (size > 0) {
         LM_T(LmtRest, ("REST Reading body of %lu bytes", size ));
 
-        if (data_)
-          free(data_); data_ = (char *)malloc(size);
+        if (data_) {
+          free(data_);
+        }
+        data_ = (char *)malloc(size);
         data_size_ = size;
 
         s = socket_connection->readBuffer(data_, size, 10);
@@ -199,12 +203,17 @@ au::Status RESTServiceCommand::Write(
       break;
   }
 
-  if (format_ == "json")
-    header << "Content-Type: application/json\n"; else if (format_ == "xml")
-    header << "Content-Type: application/xml\n"; else if (format_ == "html")
-    header << "Content-Type: application/html\n"; else if (format_ == "thtml")
-    header << "Content-Type: application/thtml\n"; else
-    LM_W(("no format (does this mean its XML?")); header << "Content-Length: " << data.length() << "\n";
+  if (format_ == "json") {
+    header << "Content-Type: application/json\n";
+  } else if (format_ == "xml") {
+    header << "Content-Type: application/xml\n";
+  } else if (format_ == "html") {
+    header << "Content-Type: application/html\n";
+  } else if (format_ == "thtml") {
+    header << "Content-Type: application/thtml\n";
+  } else {
+    LM_W(("no format (does this mean its XML?"));
+  } header << "Content-Length: " << data.length() << "\n";
   header << "Connection: close\n";
   header << "\n";
 
@@ -245,13 +254,17 @@ void RESTServiceCommand::AppendFormatedElement(
   const std::string& name, const std::string& value) {
   std::ostringstream output;
 
-  if (format_ == "xml")
+  if (format_ == "xml") {
     au::xml_simple(output, name,
-                   value); else if (format_ == "json")
+                   value);
+  } else if (format_ == "json") {
     au::json_simple(output, name,
-                    value); else if (format_ == "html")
-    output << "<h1>" << name << "</h1>" << value; else
-    output << name << ":\n" << value; Append(output.str());
+                    value);
+  } else if (format_ == "html") {
+    output << "<h1>" << name << "</h1>" << value;
+  } else {
+    output << name << ":\n" << value;
+  } Append(output.str());
 }
 
 void RESTServiceCommand::AppendFormatedError(
@@ -273,9 +286,11 @@ void RESTServiceCommand::SetRedirect(
 void RESTServiceCommand::WaitUntilFinished() {
   while (true) {
     au::TokenTaker tt(&token_);
-    if (finished_)
-      return; else
+    if (finished_) {
+      return;
+    } else {
       tt.Stop();
+    }
   }
 }
 

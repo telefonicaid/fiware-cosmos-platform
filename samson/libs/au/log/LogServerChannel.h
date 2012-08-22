@@ -9,16 +9,16 @@
 #include "logMsg/logMsg.h"
 
 #include "au/Descriptors.h"
-#include "au/containers/SharedPointer.h"
 #include "au/containers/Queue.h"
+#include "au/containers/SharedPointer.h"
 #include "au/network/FileDescriptor.h"
 #include "au/network/Service.h"
 #include "au/string/split.h"
 #include "au/tables/Table.h"
 
 #include "au/log/Log.h"
-#include "au/log/LogFile.h"
 #include "au/log/LogContainer.h"
+#include "au/log/LogFile.h"
 #include "au/log/TableLogFormatter.h"
 
 namespace au {
@@ -26,7 +26,6 @@ class LogServer;
 
 
 class LogServerChannel : public network::Service {
-
 public:
 
   // Constructor & destructor
@@ -61,19 +60,17 @@ private:
 
   // Get name for the counter-th log file
   std::string getFileNameForLogFile(int counter);
-  
-  au::Token token;                  // Mutex protection ( multithread since we receive multiple connections )
-  std::string directory;            // Directory to save data in
-  int file_counter;                 // Used to write over a file
-  size_t current_size;              // Current written size
-  au::FileDescriptor *fd;           // Current file descriptor to save data
+
+  au::Token token;               // Mutex protection ( multithread since we receive multiple connections )
+  std::string directory;         // Directory to save data in
+  int file_counter;              // Used to write over a file
+  size_t current_size;           // Current written size
+  au::FileDescriptor *fd;        // Current file descriptor to save data
   LogContainer log_container;       // Container of logs in memory ( fast query )
-  
+
   au::rate::Rate rate;           // Estimated data rate for this channel
 
   friend class LogServer;
-
-  
 };
 }
 #endif  // ifndef _H_LOG_SERVER_CHANNEL

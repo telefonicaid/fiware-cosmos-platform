@@ -61,11 +61,12 @@ public:
     for (it_sequences = sequences.begin(); it_sequences != sequences.end(); it_sequences++) {
       SequenceDetectionCode code = checkSequence(*it_sequences);
 
-      if (code == sequence_finished)
+      if (code == sequence_finished) {
         return sequence_finished;          // Return directly...
-
-      if (code == sequence_unfinished)
+      }
+      if (code == sequence_unfinished) {
         return_code = sequence_unfinished;  // Change the global return value
+      }
     }
 
     return return_code;
@@ -74,19 +75,24 @@ public:
 private:
 
   SequenceDetectionCode checkSequence(std::string sequence) {
-    if (sequence.length() < current_sequence.length())
+    if (sequence.length() < current_sequence.length()) {
       return sequence_non_compatible;
+    }
+
 
 
 
 
     for (size_t i = 0; i < current_sequence.length(); i++) {
-      if (sequence[i] != current_sequence[i])
+      if (sequence[i] != current_sequence[i]) {
         return sequence_non_compatible;
+      }
     }
 
-    if (sequence.length() > current_sequence.length())
+    if (sequence.length() > current_sequence.length()) {
       return sequence_unfinished;
+    }
+
 
 
 

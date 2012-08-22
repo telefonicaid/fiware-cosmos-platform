@@ -51,11 +51,13 @@ int paLogSetup(void) {
 
   if (paLogToFile == true) {
     // printf("paLogDir == '%s'\n", paLogDir);
-    if (paLogDir[0] != 0)
+    if (paLogDir[0] != 0) {
       // printf("Using paLogDir '%s'", paLogDir);
-      s = lmPathRegister(paLogDir, paLogFileLineFormat, paLogFileTimeFormat, &lmFd); else
+      s = lmPathRegister(paLogDir, paLogFileLineFormat, paLogFileTimeFormat, &lmFd);
+    } else {
       // printf("Using paLogFilePath: '%s'\n", paLogFilePath);
-      s = lmPathRegister(paLogFilePath, paLogFileLineFormat, paLogFileTimeFormat, &lmFd); if (s != LmsOk) {
+      s = lmPathRegister(paLogFilePath, paLogFileLineFormat, paLogFileTimeFormat, &lmFd);
+    } if (s != LmsOk) {
       sprintf(w, "lmPathRegister: %s", lmStrerror(s));
       PA_WARNING(PasLogFile, w);
       return -2;
@@ -65,8 +67,10 @@ int paLogSetup(void) {
   if (paLogToScreen) {
     int fd = 1;
 
-    if (paLogScreenToStderr)
-      fd = 2; s = lmFdRegister(fd, paLogScreenLineFormat, paLogScreenTimeFormat, "stdout", &lmSd);
+    if (paLogScreenToStderr) {
+      fd = 2;
+    }
+    s = lmFdRegister(fd, paLogScreenLineFormat, paLogScreenTimeFormat, "stdout", &lmSd);
     if (s != LmsOk) {
       sprintf(w, "lmFdRegister: %s", lmStrerror(s));
       PA_WARNING(PasLogFile, w);
@@ -94,8 +98,9 @@ int paLogSetup(void) {
 
     lmTraceSet((char *)"");
 
-    if (paLogToScreen && paLogScreenOnlyErrors)
+    if (paLogToScreen && paLogScreenOnlyErrors) {
       lmOnlyErrors(lmSd);
+    }
   }
 
   return 0;

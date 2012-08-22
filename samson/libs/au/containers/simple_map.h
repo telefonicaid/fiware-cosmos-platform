@@ -61,8 +61,9 @@ public:
     typename std::map<K, V >::iterator iter = std::map<K, V >::find(key);
     typename std::map<K, V >::iterator iter_end = std::map<K, V >::end();
 
-    if (iter == iter_end)
+    if (iter == iter_end) {
       LM_X(1, ("Error using findInMap. Please check first with isInMap"));
+    }
 
     return iter->second;
   }

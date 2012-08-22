@@ -137,10 +137,12 @@ int main(int argC, const char *argV[]) {
 
 
 
-  if (buffer_size == 0)
+  if (buffer_size == 0) {
     LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Check queue is specified
-  if (dir_list[0] == NULL)
+  }
+  if (dir_list[0] == NULL) {
     LM_X(1, ("Please, specify at least a dataset and a queue to push data to"));  // Create samson client
+  }
   size_t total_memory = push_memory * 1024 * 1024;
   LM_V(("Setting memory for samson client %s", au::str(total_memory, "B").c_str()));
   samson::SamsonClient::general_init(total_memory);
@@ -148,8 +150,10 @@ int main(int argC, const char *argV[]) {
   LM_V(("Connecting to %s ...", controller));
 
   samson_client = new samson::SamsonClient("push");
-  if (!samson_client->connect(controller))
-    LM_X(1, ("Not possible to connect with %s", controller )); SamsonPushLogsConnectionsManager manager;
+  if (!samson_client->connect(controller)) {
+    LM_X(1, ("Not possible to connect with %s", controller ));
+  }
+  SamsonPushLogsConnectionsManager manager;
 
 
   std::vector<LogsDataSet *>datasets_vector;
@@ -191,8 +195,9 @@ int main(int argC, const char *argV[]) {
       LogsDataSet *dataset =
         new LogsDataSet(fields[0], fields[1], num_fields, timestamp_position, timestamp_position_alt, timestamp_type,
                         fields[5]);
-      if (dataset->InitDir() == true)
+      if (dataset->InitDir() == true) {
         datasets_vector.push_back(dataset);
+      }
     }
   }
 

@@ -220,8 +220,9 @@ public:
 
   bool containsInputFormat(KVFormat f) {
     for (size_t i = 0; i < inputFormats.size(); i++) {
-      if (inputFormats[i].isEqual(f))
+      if (inputFormats[i].isEqual(f)) {
         return true;
+      }
     }
 
     return false;
@@ -229,8 +230,9 @@ public:
 
   bool containsOutputFormat(KVFormat f) {
     for (size_t i = 0; i < outputFormats.size(); i++) {
-      if (outputFormats[i].isEqual(f))
+      if (outputFormats[i].isEqual(f)) {
         return true;
+      }
     }
 
     return false;
@@ -286,21 +288,24 @@ public:
    */
 
   virtual void init(KVWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };                                                                             // Called once before running any operation
 
   // Called once to inform the generator about how many different generators will run in paralel in the cluster
   virtual void setup(int worker, int num_workers, int process, int num_processes) {
-    if (worker == -1 || num_workers == -1 || process == -1 || num_processes == -1)
+    if (worker == -1 || num_workers == -1 || process == -1 || num_processes == -1) {
       return;
+    }
   };
 
   virtual void run(KVWriter *writer) = 0;
 
   virtual void finish(KVWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };                                                                               // Called once after all operations are executed
 };
 
@@ -321,15 +326,17 @@ public:
    */
 
   virtual void init(KVWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };                                                                              // Called once before running any operation
 
   virtual void run(KVSetStruct *inputs, KVWriter *writer) = 0;
 
   virtual void finish(KVWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };                                                                              // Called once after all operations are executed
 };
 
@@ -351,15 +358,17 @@ public:
    */
 
   virtual void init(TXTWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };                                                                              // Called once before running any operation
 
   virtual void run(KVSetStruct *inputs, TXTWriter *writer) = 0;
 
   virtual void finish(TXTWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };                                                                              // Called once after all operations are executed
 };
 
@@ -380,15 +389,17 @@ public:
    */
 
   virtual void init(TXTWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };                                                                              // Called once before running any operation
 
   virtual void run(KVSetStruct *inputs, TXTWriter *writer) = 0;
 
   virtual void finish(TXTWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };                                                                              // Called once after all operations are executed
 };
 
@@ -412,15 +423,17 @@ public:
    */
 
   virtual void init(KVWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };                                                                              // Called once before running any operation
 
   virtual void run(KVSetStruct *inputs, samson::KVWriter *writer) = 0;
 
   virtual void finish(KVWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };                                                                              // Called once after all operations are executed
 };
 
@@ -451,15 +464,17 @@ class Parser : public OperationInstance {
 public:
 
   virtual void init(KVWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };                                                                              // Called once before running any operation
 
   virtual void run(char *data, size_t length, samson::KVWriter *writer) = 0;
 
   virtual void finish(KVWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };                                                                              // Called once after all operations are executed
 };
 

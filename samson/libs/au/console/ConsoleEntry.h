@@ -48,15 +48,17 @@ public:
   }
 
   bool isChar(char _c) {
-    if (type == normal_char)
+    if (type == normal_char) {
       return (c == _c );
-    else
+    } else {
       return false;
+    }
   }
 
   char getChar() {
-    if (type != normal_char)
+    if (type != normal_char) {
       LM_X(1, ("Getting a char from a non char Console Entry"));
+    }
     return c;
   }
 
@@ -69,15 +71,18 @@ public:
   }
 
   std::string getEscapeSequece() {
-    if (type == normal_char)
+    if (type == normal_char) {
       LM_X(1, ("Getting a escape sequence from a wrong Console Entry"));
+    }
 
     return seq;
   }
 
   bool isCursorUp() {
-    if (type != escape_sequence)
+    if (type != escape_sequence) {
       return false;
+    }
+
 
 
 
@@ -85,8 +90,10 @@ public:
   }
 
   bool isCursorDown() {
-    if (type != escape_sequence)
+    if (type != escape_sequence) {
       return false;
+    }
+
 
 
 
@@ -94,8 +101,10 @@ public:
   }
 
   bool isCursorLeft() {
-    if (type != escape_sequence)
+    if (type != escape_sequence) {
       return false;
+    }
+
 
 
 
@@ -103,8 +112,10 @@ public:
   }
 
   bool isCursorRigth() {
-    if (type != escape_sequence)
+    if (type != escape_sequence) {
       return false;
+    }
+
 
 
 

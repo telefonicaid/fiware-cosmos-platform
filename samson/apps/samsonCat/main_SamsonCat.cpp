@@ -112,8 +112,9 @@ int main(int argC, const char *argV[]) {
     au::ErrorManager error;
     au::SharedPointer<samson::SamsonFile> samson_file = samson::SamsonFile::create(file_name, error);
 
-    if (error.IsActivated())
+    if (error.IsActivated()) {
       LM_X(1, ("%s", error.GetMessage().c_str()));  // Show header only
+    }
     if (show_header) {
       samson_file->printHeader(std::cout);
       exit(0);
@@ -132,8 +133,10 @@ int main(int argC, const char *argV[]) {
     au::ErrorManager error;
     au::SharedPointer<samson::SamsonDataSet> samson_data_set = samson::SamsonDataSet::create(file_name, error);
 
-    if (error.IsActivated())
-      LM_X(1, ( error.GetMessage().c_str())); if (show_header) {
+    if (error.IsActivated()) {
+      LM_X(1, ( error.GetMessage().c_str()));
+    }
+    if (show_header) {
       std::cout << "Total: " << samson_data_set->info().strDetailed() << "\n";
       samson_data_set->printHeaders(std::cout);
       exit(0);

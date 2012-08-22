@@ -25,8 +25,9 @@ SamsonConnection::SamsonConnection(Adaptor *_item
 }
 
 void SamsonConnection::try_connect() {
-  if (( client_ ) && (client_->connection_ready()))
+  if (( client_ ) && (client_->connection_ready())) {
     return;
+  }
 
   if (!client_) {
     client_ = new samson::SamsonClient("connector");
@@ -38,15 +39,18 @@ void SamsonConnection::try_connect() {
   cronometer_reconnection.Reset();
 
   // Try to reconnect
-  if (client_->connect(au::str("%s:%d", host_.c_str(), port_)))
+  if (client_->connect(au::str("%s:%d", host_.c_str(), port_))) {
     // Note: At the moment, it is not possible to specify flags new of clear here
-    if (getType() == connection_input)
+    if (getType() == connection_input) {
       client_->connect_to_queue(queue_, false, false);
+    }
+  }
 }
 
 SamsonConnection::~SamsonConnection() {
-  if (client_)
+  if (client_) {
     delete client_;
+  }
 }
 
 void SamsonConnection::start_connection() {
@@ -62,10 +66,10 @@ void SamsonConnection::review_connection() {
   // Nothing to do here
   if (!client_) {
     set_as_connected(false);
-    if (cronometer_reconnection.seconds() < 3)
+    if (cronometer_reconnection.seconds() < 3) {
       return;           // Do not try to connect again...
-
-     // Try to reconnect here...
+    }
+    // Try to reconnect here...
     try_connect();
     return;
   }
@@ -76,17 +80,19 @@ void SamsonConnection::review_connection() {
 size_t SamsonConnection::bufferedSize() {
   // It is not the size in bytes but at least is >0 if not all data is emitted
 
-  if (getType() == connection_output)
-    return Connection::bufferedSize() + client_->getNumPendingPushItems(); else
+  if (getType() == connection_output) {
+    return Connection::bufferedSize() + client_->getNumPendingPushItems();
+  } else {
     return 0;
+  }
 }
 
 // Overload method to push blocks using samsonClient
 void SamsonConnection::push(engine::BufferPointer buffer) {
-  if (getType() == connection_input)
+  if (getType() == connection_input) {
     return;         // Nothing to do if we are input
-
-   // Report manually size ( not we are overloading Connection class )
+  }
+  // Report manually size ( not we are overloading Connection class )
   report_output_size(buffer->getSize());
 
   // Push this block directly to the SAMSON client
@@ -98,20 +104,25 @@ void SamsonConnection::receive_buffer_from_queue(std::string queue, engine::Buff
   // Transformation of buffer
   samson::KVHeader *header = (samson::KVHeader *)buffer->getData();
 
-  if (header->isTxt())
+  if (header->isTxt()) {
     // Push the new buffer
-    pushInputBuffer(buffer); else
+    pushInputBuffer(buffer);
+  } else {
     LM_W(("Received a binary buffer %s from %s. Still not implemented how to process this"
           , au::str(buffer->getSize(), "B").c_str(), getFullName().c_str()));
+  }
 }
 
 std::string SamsonConnection::getStatus() {
-  if (!client_)
+  if (!client_) {
     return "Not connected";
+  }
 
-  if (client_->connection_ready())
-    return "Connected"; else
+  if (client_->connection_ready()) {
+    return "Connected";
+  } else {
     return "Trying to connect...";
+  }
 }
 
 SamsonAdaptor::SamsonAdaptor(

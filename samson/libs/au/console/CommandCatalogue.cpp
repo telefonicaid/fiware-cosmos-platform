@@ -63,7 +63,7 @@ namespace au { namespace console {
                void CommandItem::review_options_group() {
                  if (options_group_ != "") {
                    std::vector<std::string> components = au::split(options_group_, ':');
-                   if (components.size() > 0)
+                   if (components.size() > 0) {
                      if (components[0] == "Options") {
                        options_group_values.clear();
 
@@ -71,6 +71,7 @@ namespace au { namespace console {
                          options_group_values.push_back(components[i]);
                        }
                      }
+                   }
                  }
                }
 
@@ -78,36 +79,48 @@ namespace au { namespace console {
                  std::ostringstream output;
 
                  // Add help
-                 if (help_ != "")
+                 if (help_ != "") {
                    output << help_ << "\n";  // Spetial case in group options
+                 }
                  if (options_group_values.size() > 0) {
                    std::ostringstream str_options;
                    for (size_t i = 0; i < options_group_values.size(); i++) {
                      str_options << options_group_values[i];
-                     if (i != (options_group_values.size() - 1 ))
+                     if (i != (options_group_values.size() - 1 )) {
                        str_options << ",";
+                     }
                    }
 
                    std::string str_str_options = str_options.str();
 
-                   if (str_str_options.length() < 15)
-                     output << "Values: " << str_str_options << "\n"; else
+                   if (str_str_options.length() < 15) {
+                     output << "Values: " << str_str_options << "\n";
+                   } else {
                      output << au::str("Values: %lu options\n", options_group_values.size());
+                   }
                  } else {
                    output << "Type: " << str_type() << "\n";
                  }
 
-                 if (optional_)
-                   output << "Default value: " << default_value_ << " \n"; if (min_value_ != "")
-                   output << "Min value: " << min_value_ << "\n"; if (max_value_ != "")
-                   output << "Max value: " << max_value_ << "\n"; return output.str();
+                 if (optional_) {
+                   output << "Default value: " << default_value_ << " \n";
+                 }
+                 if (min_value_ != "") {
+                   output << "Min value: " << min_value_ << "\n";
+                 }
+                 if (max_value_ != "") {
+                   output << "Max value: " << max_value_ << "\n";
+                 }
+                 return output.str();
                }
 
                std::string CommandItem::str_usage_option() {
                  std::ostringstream output;
 
-                 if (optional_)
-                   output << "["; switch (type_) {
+                 if (optional_) {
+                   output << "[";
+                 }
+                 switch (type_) {
                    case options::option_bool:
                      output << name_;
                      break;
@@ -134,36 +147,44 @@ namespace au { namespace console {
                    output << "(";
                    for (size_t i = 0; i < options_group_values.size(); i++) {
                      output << options_group_values[i];
-                     if (i != ( options_group_values.size() - 1 ))
+                     if (i != ( options_group_values.size() - 1 )) {
                        output << "/";
+                     }
                    }
                    output << ")";
                  }
 
 
-                 if (optional_)
-                   output << "]"; return output.str();
+                 if (optional_) {
+                   output << "]";
+                 }
+                 return output.str();
                }
 
                std::string CommandItem::str_usage_argument() {
                  std::ostringstream output;
 
-                 if (optional_)
-                   output << "["; output << name_;
+                 if (optional_) {
+                   output << "[";
+                 }
+                 output << name_;
 
                  // Set of possible values
                  if (( options_group_values.size() > 0 ) && ( options_group_values.size() < 5 )) {
                    output << "(";
                    for (size_t i = 0; i < options_group_values.size(); i++) {
                      output << options_group_values[i];
-                     if (i != ( options_group_values.size() - 1 ))
+                     if (i != ( options_group_values.size() - 1 )) {
                        output << "/";
+                     }
                    }
                    output << ")";
                  }
 
-                 if (optional_)
-                   output << "]"; return output.str();
+                 if (optional_) {
+                   output << "]";
+                 }
+                 return output.str();
                }
 
                void CommandItem::autoComplete(au::ConsoleAutoComplete *info) {
@@ -178,8 +199,9 @@ namespace au { namespace console {
                      info->add(options_group_values[i]);
                    }  // Auto complete for files
                  }
-                 if (options_group_ == "#file")
+                 if (options_group_ == "#file") {
                    info->auto_complete_files("");
+                 }
                }
 
                const char *CommandItem::str_type() {
@@ -346,20 +368,23 @@ namespace au { namespace console {
 
                CommandItem *Command::get_option(const std::string& name) {
                  // Robust for asking without "-"
-                 if (( name.length() > 0 ) && ( name[0] != '-' ))
+                 if (( name.length() > 0 ) && ( name[0] != '-' )) {
                    return get_option("-" + name);
+                 }
 
                  for (size_t i = 0; i < options_.size(); i++) {
-                   if (options_[i]->name() == name)
+                   if (options_[i]->name() == name) {
                      return options_[i];
+                   }
                  }
                  return NULL;
                }
 
                CommandItem *Command::get_argument(const std::string& name) {
                  for (size_t i = 0; i < arguments_.size(); i++) {
-                   if (arguments_[i]->name() == name)
+                   if (arguments_[i]->name() == name) {
                      return arguments_[i];
+                   }
                  }
                  return NULL;
                }
@@ -545,10 +570,12 @@ namespace au { namespace console {
 
                  // Autocompleting with options and arguments if this is a valid command
                  Command *c = get_command(info->firstWord());
-                 if (c)
-                   c->autoComplete(info); else
+                 if (c) {
+                   c->autoComplete(info);
+                 } else {
                    info->setHelpMessage(au::str("Command %s is not a valid command in this catalogue",
                                                 info->firstWord().c_str()));
+                 }
                }
 
                std::string CommandCatalogue::getCommandsTable(const std::string& category) {
@@ -556,16 +583,19 @@ namespace au { namespace console {
                  au::tables::Table table(columns);
 
                  for (size_t i = 0; i < commands_.size(); i++) {
-                   if (category == "" || (commands_[i]->category() == category ))
+                   if (category == "" || (commands_[i]->category() == category )) {
                      table.addRow(au::StringVector(commands_[i]->name(), commands_[i]->category(),
                                                    commands_[i]->short_description()));
+                   }
                  }
 
                  // Print the table
 
-                 if (category == "")
-                   table.setTitle("All commands"); else
-                   table.setTitle(au::str("Commands of category %s", category.c_str())); return table.str();
+                 if (category == "") {
+                   table.setTitle("All commands");
+                 } else {
+                   table.setTitle(au::str("Commands of category %s", category.c_str()));
+                 } return table.str();
                }
 
                std::string CommandCatalogue::getHelpForConcept(const std::string& name) {
@@ -618,8 +648,9 @@ namespace au { namespace console {
 
 
                  // Check if it is a category...
-                 if (isValidCategory(name))
+                 if (isValidCategory(name)) {
                    return getCommandsTable(name);
+                 }
 
                  // Show list of categories
                  if (name == "categories") {
@@ -632,8 +663,9 @@ namespace au { namespace console {
                    return output.str();
                  }
 
-                 if (name == "all")
+                 if (name == "all") {
                    return getCommandsTable();
+                 }
 
                  return au::str("Unknown command or categories %s\n", name.c_str());
                }
@@ -651,24 +683,27 @@ namespace au { namespace console {
 
                bool CommandCatalogue::isValidCommand(const std::string& command) {
                  for (size_t i = 0; i < commands_.size(); i++) {
-                   if (commands_[i]->name() == command)
+                   if (commands_[i]->name() == command) {
                      return true;
+                   }
                  }
                  return false;
                }
 
                bool CommandCatalogue::isValidCategory(const std::string& category) {
                  for (size_t i = 0; i < commands_.size(); i++) {
-                   if (commands_[i]->category() == category)
+                   if (commands_[i]->category() == category) {
                      return true;
+                   }
                  }
                  return false;
                }
 
                Command *CommandCatalogue::get_command(const std::string& name) {
                  for (size_t i = 0; i < commands_.size(); i++) {
-                   if (commands_[i]->name() == name)
+                   if (commands_[i]->name() == name) {
                      return commands_[i];
+                   }
                  }
                  return NULL;
                }
@@ -684,8 +719,9 @@ namespace au { namespace console {
                  std::vector<std::string> components;
                  while (!token_vector.eof()) {
                    token::Token *token = token_vector.popToken();
-                   if (!token->isSeparator())
+                   if (!token->isSeparator()) {
                      components.push_back(token->content);
+                   }
                  }
 
                  // Analyse the line
@@ -781,7 +817,7 @@ namespace au { namespace console {
 
                  // Verify it is correct
                  for (size_t i = 0; i < command->options().size(); i++) {
-                   if (!command->options()[i]->optional())
+                   if (!command->options()[i]->optional()) {
                      if (!command_instance->hasValueFor(command->options()[i]->name())) {
                        error->set(au::str("Missing mandatory option %s in command %s",
                                           command->options()[i]->name().c_str(), main_command.c_str()));
@@ -790,10 +826,11 @@ namespace au { namespace console {
                        delete command_instance;
                        return NULL;
                      }
+                   }
                  }
 
                  for (size_t i = 0; i < command->arguments().size(); i++) {
-                   if (!command->arguments()[i]->optional())
+                   if (!command->arguments()[i]->optional()) {
                      if (!command_instance->hasValueFor(command->arguments()[i]->name())) {
                        error->set(au::str("Missing mandatory argument %s in command %s",
                                           command->arguments()[i]->name().c_str(), main_command.c_str()));
@@ -802,6 +839,7 @@ namespace au { namespace console {
                        delete command_instance;
                        return NULL;
                      }
+                   }
                  }
 
 

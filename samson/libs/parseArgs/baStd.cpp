@@ -32,8 +32,9 @@ long baStoi(char *string, int *baseP, char *errorText) {
   int base;
   char *validchars = (char *)"Q";
 
-  if ((string == NULL) || (string[0] == 0))
+  if ((string == NULL) || (string[0] == 0)) {
     return 0;
+  }
 
   if (*string == '-') {
     ++string;
@@ -58,8 +59,10 @@ long baStoi(char *string, int *baseP, char *errorText) {
 
 #endif
 
-  if (multiplicator != 1)
-    string[strlen(string) - 1] = 0; if (strncmp(string, "0x", 2) == 0) {
+  if (multiplicator != 1) {
+    string[strlen(string) - 1] = 0;
+  }
+  if (strncmp(string, "0x", 2) == 0) {
     type        = Hex;
     base        = 16;
     string      = &string[2];
@@ -90,10 +93,14 @@ long baStoi(char *string, int *baseP, char *errorText) {
     validchars  = (char *)"0123456789";
   }
 
-  if (baseP)
-    *baseP = base; if (strspn(string, validchars) != strlen(string)) {
-    if (errorText)
-      sprintf(errorText, "bad string in integer conversion: '%s'", string); return -1;
+  if (baseP) {
+    *baseP = base;
+  }
+  if (strspn(string, validchars) != strlen(string)) {
+    if (errorText) {
+      sprintf(errorText, "bad string in integer conversion: '%s'", string);
+    }
+    return -1;
   }
 
   value = strtoull(string, NULL, base);
@@ -152,8 +159,10 @@ int baWsNoOf(char *string) {
   int no = 0;
 
   while (*string != 0) {
-    if (baWs(*string) == true)
-      ++no; ++string;
+    if (baWs(*string) == true) {
+      ++no;
+    }
+    ++string;
   }
   return no;
 }
@@ -167,8 +176,9 @@ char *baWsStrip(char *s) {
   char *tmP;
   char *toFree;
 
-  if ((s == NULL) || (s[0] == 0))
+  if ((s == NULL) || (s[0] == 0)) {
     return s;
+  }
 
   str = strdup(s);
   if (str == NULL) {
@@ -189,9 +199,11 @@ char *baWsStrip(char *s) {
   ++tmP;
   *tmP = 0;
 
-  if (str[0] != 0)
-    strcpy(s, str); else
-    s[0] = 0; free(toFree);
+  if (str[0] != 0) {
+    strcpy(s, str);
+  } else {
+    s[0] = 0;
+  } free(toFree);
 
   return s;
 }
@@ -202,8 +214,10 @@ char *baWsStrip(char *s) {
  */
 bool baWsOnly(char *str) {
   while (*str != 0) {
-    if (baWs(*str) == false)
-      return false; ++str;
+    if (baWs(*str) == false) {
+      return false;
+    }
+    ++str;
   }
 
   return true;
@@ -217,8 +231,10 @@ int baCharCount(char *line, char c) {
   int noOf = 0;
 
   while (*line != 0) {
-    if (*line == c)
-      ++noOf; ++line;
+    if (*line == c) {
+      ++noOf;
+    }
+    ++line;
   }
 
   return noOf;

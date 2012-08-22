@@ -43,15 +43,18 @@ void FileDescriptorConnection::stop_connection() {
   log("Message", "Connection stoped");
 
   // Stop thread in the background
-  if (file_descriptor_)
-    file_descriptor_->Close(); while (thread_running_) {
+  if (file_descriptor_) {
+    file_descriptor_->Close();
+  }
+  while (thread_running_) {
     usleep(100000);
   }
 }
 
 void FileDescriptorConnection::connect() {
-  if (thread_running_ || file_descriptor_)
+  if (thread_running_ || file_descriptor_) {
     return;
+  }
 
   // Update the counter of connections
   num_connections_++;
@@ -78,10 +81,10 @@ void FileDescriptorConnection::review_connection() {
   if (!file_descriptor_) {
     set_as_connected(false);
 
-    if (cronometer_reconnection_.seconds() < 3)
+    if (cronometer_reconnection_.seconds() < 3) {
       return;            // Wait a little bit
-
-     // Reconnect if possible
+    }
+    // Reconnect if possible
     connect();
 
     return;
@@ -90,8 +93,10 @@ void FileDescriptorConnection::review_connection() {
   // If we are disconnected, wait until thread finish and delte it to reconnect
   if (file_descriptor_->IsClosed()) {
     set_as_connected(false);
-    if (thread_running_) // Still waiting for the threads to finish
-      return; delete file_descriptor_;
+    if (thread_running_) {  // Still waiting for the threads to finish
+      return;
+    }
+    delete file_descriptor_;
     file_descriptor_ = NULL;
     return;
   }
@@ -102,15 +107,17 @@ void FileDescriptorConnection::review_connection() {
 
 void FileDescriptorConnection::run_as_output() {
   while (true) {
-    if (!file_descriptor_)
+    if (!file_descriptor_) {
       LM_X(1, ("Internal error"));  // Container to keep a retained version of buffer
+    }
     engine::BufferPointer buffer = getNextBufferToSent();
 
     if (buffer != NULL) {
       au::Status s = file_descriptor_->partWrite(buffer->getData(), buffer->getSize(), "samsonConnectorConnection");
 
-      if (s != au::OK)
+      if (s != au::OK) {
         return;             // Just quit
+      }
     } else {
       // Sleep a little bit before checking again
       usleep(100000);
@@ -121,8 +128,9 @@ void FileDescriptorConnection::run_as_output() {
 void FileDescriptorConnection::run_as_input() {
   // Read from stdin and push blocks to the samson_connector
   while (true) {
-    if (!file_descriptor_)
+    if (!file_descriptor_) {
       LM_X(1, ("Internal error"));  // Get a buffer
+    }
     engine::BufferPointer buffer = engine::Buffer::create("stdin"
                                                           , "connector"
                                                           , input_buffer_size);
@@ -137,9 +145,11 @@ void FileDescriptorConnection::run_as_input() {
                                      , "read connector connections"
                                      , 300
                                      , &read_size);
-      if (c.seconds() < 0.1)
-        input_buffer_size *= 2; else if (c.seconds() > 3)
+      if (c.seconds() < 0.1) {
+        input_buffer_size *= 2;
+      } else if (c.seconds() > 3) {
         input_buffer_size /= 2;
+      }
     }
 
     // If we have read something...
@@ -167,10 +177,11 @@ void FileDescriptorConnection::run_as_input() {
 }
 
 void FileDescriptorConnection::run() {
-  if (getType() == connection_input)
+  if (getType() == connection_input) {
     run_as_input();
-  else
+  } else {
     run_as_output();  // Mark as non thread_running
+  }
   thread_running_ = false;
 }
 
@@ -180,13 +191,17 @@ std::string FileDescriptorConnection::getStatus() {
   if (!file_descriptor_) {
     output <<  "Not connected";
   } else {
-    if (file_descriptor_->IsClosed())
-      output << "Closing connection"; else
-      output << "Connected"; output << au::str(" [fd:%d]", file_descriptor_->fd());
+    if (file_descriptor_->IsClosed()) {
+      output << "Closing connection";
+    } else {
+      output << "Connected";
+    } output << au::str(" [fd:%d]", file_descriptor_->fd());
   }
 
-  if (getType() == connection_input)
-    output << au::str(" [buffer:%s]", au::str(input_buffer_size).c_str()); return output.str();
+  if (getType() == connection_input) {
+    output << au::str(" [buffer:%s]", au::str(input_buffer_size).c_str());
+  }
+  return output.str();
 }
 
 SimpleFileDescriptorConnection::SimpleFileDescriptorConnection(Adaptor *_item

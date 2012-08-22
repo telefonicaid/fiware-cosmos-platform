@@ -83,8 +83,10 @@ public:
   }
 
   T *get_front() {
-    if (elements.size() == 0)
+    if (elements.size() == 0) {
       return NULL;
+    }
+
 
 
 
@@ -92,8 +94,10 @@ public:
   }
 
   T *get_back() {
-    if (elements.size() == 0)
+    if (elements.size() == 0) {
       return NULL;
+    }
+
 
 
 
@@ -101,8 +105,10 @@ public:
   }
 
   T *extract_front() {
-    if (elements.size() == 0)
+    if (elements.size() == 0) {
       return NULL;
+    }
+
 
 
 
@@ -112,8 +118,10 @@ public:
   }
 
   T *extract_back() {
-    if (elements.size() == 0)
+    if (elements.size() == 0) {
       return NULL;
+    }
+
 
 
 
@@ -125,15 +133,17 @@ public:
   void remove_front() {
     T *t = extract_front();
 
-    if (t)
+    if (t) {
       push_to_reuse(t);
+    }
   }
 
   void remove_back() {
     T *t = extract_back();
 
-    if (t)
+    if (t) {
       push_to_reuse(t);
+    }
   }
 
   size_t count() {
@@ -330,8 +340,10 @@ public:
   }
 
   int hash(int max_num) {
-    if (elements.size() == 0)
+    if (elements.size() == 0) {
       return 0;
+    }
+
 
 
 
@@ -360,8 +372,10 @@ public:
 
   // Get a new element ( or a reused one if possible )
   T *get_new_element() {
-    if (reuse_elements.size() == 0)
+    if (reuse_elements.size() == 0) {
       return new T();
+    }
+
 
 
 

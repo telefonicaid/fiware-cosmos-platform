@@ -60,9 +60,11 @@ void ModulesManager::closeHandlers() {
 }
 
 void ModulesManager::destroy(std::string calling_module) {
-  if (!modulesManager)
-    LM_RVE(("Attempt to destroy a non-initialized Modules Manager")); if (calling_module !=
-                                                                          modulesManager->get_owner())
+  if (!modulesManager) {
+    LM_RVE(("Attempt to destroy a non-initialized Modules Manager"));
+  }
+  if (calling_module !=
+      modulesManager->get_owner())
   {
     LM_T(LmtModuleManager,
          ("Trying to destroy ModulesManager from a different owner(%s) than created(%s)", calling_module.c_str(),
@@ -90,16 +92,19 @@ void ModulesManager::init(std::string calling_module) {
 }
 
 ModulesManager *ModulesManager::shared() {
-  if (!modulesManager)
-    LM_X(1, ("ModulesManager not initialized")); return modulesManager;
+  if (!modulesManager) {
+    LM_X(1, ("ModulesManager not initialized"));
+  }
+  return modulesManager;
 }
 
 std::string ModulesManager::getModuleFileName(std::string module_name) {
   au::TokenTaker tt(&token_modules, "ModulesManager::reloadModules");
   Module *module = modules.findInMap(module_name);
 
-  if (!module)
+  if (!module) {
     return "";
+  }
 
   return module->file_name;
 }
@@ -138,8 +143,9 @@ void ModulesManager::addModulesFromDirectory(std::string dir_name) {
       continue;
     }
 
-    if (S_ISREG(info.st_mode))
+    if (S_ISREG(info.st_mode)) {
       addModule(path);
+    }
   }
   closedir(dp);
 }
@@ -359,8 +365,9 @@ Data *ModulesManager::getData(std::string name) {
   au::map< std::string, Module >::iterator it_modules;
   for (it_modules = modules.begin(); it_modules != modules.end(); it_modules++) {
     Data *data = it_modules->second->getData(name);
-    if (data)
+    if (data) {
       return data;
+    }
   }
   return NULL;
 }
@@ -372,8 +379,9 @@ Operation *ModulesManager::getOperation(std::string name) {
   au::map< std::string, Module >::iterator it_modules;
   for (it_modules = modules.begin(); it_modules != modules.end(); it_modules++) {
     Operation *operation = it_modules->second->getOperation(name);
-    if (operation)
+    if (operation) {
       return operation;
+    }
   }
   return NULL;
 }

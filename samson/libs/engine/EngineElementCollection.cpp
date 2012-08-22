@@ -24,19 +24,27 @@ void EngineElementCollection::add(EngineElement *element) {
   // Insert an element in the rigth queue
   LM_T(LmtEngine, ("Adding Engineelement: %s", element->str().c_str()));
 
-  if (element->isRepeated())
-    repeated_elements.insert(_find_pos_in_repeated_elements(element),  element); else if (element->isExtra())
-    extra_elements.push_back(element); else
+  if (element->isRepeated()) {
+    repeated_elements.insert(_find_pos_in_repeated_elements(element),  element);
+  } else if (element->isExtra()) {
+    extra_elements.push_back(element);
+  } else {
     normal_elements.push_back(element);
+  }
 }
 
 bool EngineElementCollection::isEmpty() {
   au::TokenTaker tt(&token);
 
-  if (repeated_elements.size() > 0)
-    return false; if (normal_elements.size() > 0)
-    return false; if (extra_elements.size() > 0)
+  if (repeated_elements.size() > 0) {
     return false;
+  }
+  if (normal_elements.size() > 0) {
+    return false;
+  }
+  if (extra_elements.size() > 0) {
+    return false;
+  }
 
   return true;
 }
@@ -45,8 +53,9 @@ EngineElement *EngineElementCollection::getNextRepeatedEngineElement() {
   au::TokenTaker tt(&token);
 
   // Check first repeated elements
-  if (repeated_elements.size() == 0)
+  if (repeated_elements.size() == 0) {
     return NULL;
+  }
 
   double t_sleep = repeated_elements.front()->getTimeToTrigger();
 
@@ -63,8 +72,9 @@ EngineElement *EngineElementCollection::getNextRepeatedEngineElement() {
 EngineElement *EngineElementCollection::getNextNormalEngineElement() {
   au::TokenTaker tt(&token);
 
-  if (normal_elements.size() == 0)
+  if (normal_elements.size() == 0) {
     return NULL;
+  }
 
   EngineElement *element = normal_elements.front();
   normal_elements.pop_front();
@@ -76,14 +86,16 @@ double EngineElementCollection::getTimeForNextRepeatedEngineElement() {
   au::TokenTaker tt(&token);
 
   // Check first repeated elements
-  if (repeated_elements.size() == 0)
+  if (repeated_elements.size() == 0) {
     return 0;
+  }
 
   double t_sleep = repeated_elements.front()->getTimeToTrigger();
 
   // If ready to be executed....
-  if (t_sleep < 0)
+  if (t_sleep < 0) {
     return 0;
+  }
 
   return t_sleep;
 }
@@ -183,8 +195,9 @@ std::vector<EngineElement *> EngineElementCollection::getExtraElements() {
 size_t EngineElementCollection::getMaxWaitingTimeInEngineStack() {
   au::TokenTaker tt(&token);
 
-  if (normal_elements.size() == 0)
+  if (normal_elements.size() == 0) {
     return 0;
+  }
 
   EngineElement *last_element =  normal_elements.back();
   return last_element->getWaitingTime();

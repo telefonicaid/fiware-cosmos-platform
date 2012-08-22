@@ -199,9 +199,6 @@ void cleanup(void) {
     delilahConsole = NULL;
   }
 
-  LM_T(LmtCleanup, ("Shutting down LockDebugger"));
-  au::LockDebugger::destroy();
-
   LM_T(LmtCleanup, ("destroying ModulesManager"));
   samson::ModulesManager::destroy("delilah");
 
@@ -233,8 +230,9 @@ void cleanup(void) {
 // Handy function to find a flag in command line without starting paParse
 bool find_flag(int argc, const char *argV[], const char *flag) {
   for (int i = 0; i < argc; i++) {
-    if (strcmp(argV[i], flag) == 0)
+    if (strcmp(argV[i], flag) == 0) {
       return true;
+    }
   }
   return false;
 }
@@ -297,20 +295,18 @@ int main(int argC, const char *argV[]) {
   // Start connection with log server....
   if (!flag_log_classic) {
     std::string local_log_file;
-    if (strlen(log_file) > 0)
-      local_log_file = log_file; else
+    if (strlen(log_file) > 0) {
+      local_log_file = log_file;
+    } else {
       local_log_file = au::str("%s/delilahLog_%s_%d", paLogDir, au::code64_str(
                                  delilah_random_code).c_str(),
-                               (int)getpid()); au::start_log_to_server(log_host, log_port,
-                                                                       local_log_file);
+                               (int)getpid());
+    } au::start_log_to_server(log_host, log_port,
+                              local_log_file);
   }
 
   lmAux((char *)"father");
   logFd = lmFirstDiskFileDescriptor();
-
-
-  // Make sure this singleton is created just once
-  au::LockDebugger::shared();
 
   // Init samson setup with default values
   samson::SamsonSetup::init("", "");
@@ -346,9 +342,10 @@ int main(int argC, const char *argV[]) {
     }
   }
 
-  if (!delilahConsole->isConnected())
+  if (!delilahConsole->isConnected()) {
     delilahConsole->writeWarningOnConsole("Delilah client not connected to any SAMSON cluster. ( see help connect )");  // ----------------------------------------------------------------
-   // Special mode with one command line command
+  }
+  // Special mode with one command line command
   // ----------------------------------------------------------------
 
   if (strcmp(command, "") != 0) {

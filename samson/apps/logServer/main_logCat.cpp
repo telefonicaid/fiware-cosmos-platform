@@ -101,38 +101,37 @@ int main(int argC, const char *argV[]) {
   au::ErrorManager error;
   std::vector<au::SharedPointer<au::Log> > logs = au::readLogFile(target_file, error);
 
-  if( error.IsActivated() )
-    LM_X(1, ("ERROR: %s",error.GetMessage().c_str()) );
-  
-    // Formatter to create table
-    au::TableLogFormatter table_log_formater(format);
+  if (error.IsActivated()) {
+    LM_X(1, ("ERROR: %s", error.GetMessage().c_str()));  // Formatter to create table
+  }
+  au::TableLogFormatter table_log_formater(format);
 
-    // Setup of the table log formatter
-    table_log_formater.set_pattern(pattern);
-    table_log_formater.set_time(str_time);
-    table_log_formater.set_date(str_date);
-    table_log_formater.set_as_table(is_table);
-    table_log_formater.set_reverse(is_reverse);
-    table_log_formater.set_as_multi_session(is_multi_session);
-    table_log_formater.set_limit(limit);
+  // Setup of the table log formatter
+  table_log_formater.set_pattern(pattern);
+  table_log_formater.set_time(str_time);
+  table_log_formater.set_date(str_date);
+  table_log_formater.set_as_table(is_table);
+  table_log_formater.set_reverse(is_reverse);
+  table_log_formater.set_as_multi_session(is_multi_session);
+  table_log_formater.set_limit(limit);
 
-    table_log_formater.init(&error);
+  table_log_formater.init(&error);
 
-    if (error.IsActivated())
-      LM_X(1, ("Error: %s", error.GetMessage().c_str()));
-  
+  if (error.IsActivated()) {
+    LM_X(1, ("Error: %s", error.GetMessage().c_str()));
+  }
   size_t num_logs = logs.size();
   for (size_t i = 0; i <  num_logs; i++) {
+    // Add log to the table formatter
+    table_log_formater.add(logs[ num_logs - i - 1 ]);
 
-      // Add log to the table formatter
-      table_log_formater.add(logs[ num_logs - i - 1 ]);
-
-      // Check if we have enougth
-      if (table_log_formater.enougthRecords())
-        break;
+    // Check if we have enougth
+    if (table_log_formater.enougthRecords()) {
+      break;
     }
+  }
 
-    // Emit output to the stdout
-    std::cout << table_log_formater.str();
+  // Emit output to the stdout
+  std::cout << table_log_formater.str();
 }
 

@@ -8,7 +8,6 @@
 #include <fcntl.h>
 #include <regex.h>
 
-#include "au/Object.h"
 #include "au/Status.h"
 #include "au/TemporalBuffer.h"
 #include "au/Tokenizer.h"
@@ -57,15 +56,17 @@ extern const char *log_reseved_words[];
 
 // Entry in the log
 class Log {
-  
 public:
 
-  Log() {}
-  ~Log() {}
+  Log() {
+  }
+
+  ~Log() {
+  }
 
   // Main log data
   LogData& log_data();
-  
+
   // Set and get methods
   void Set(const std::string& field_name, const std::string& field_value);
   std::string Get(const std::string& name, const std::string& default_value);
@@ -87,8 +88,9 @@ public:
     for (it_fields = fields_.begin(); it_fields != fields_.end(); it_fields++) {
       std::string value = it_fields->second;
       int c = regexec(preg, value.c_str(), 0, NULL, 0);
-      if (c == 0)
+      if (c == 0) {
         return true;
+      }
     }
     return false;
   }
@@ -103,10 +105,9 @@ private:
   size_t getStringsSize();
   void copyStrings(char *data);
   void addStrings(char *strings, size_t len);
-  
+
   LogData log_data_;
   std::map<std::string, std::string> fields_;
-
 };
 }
 

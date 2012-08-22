@@ -22,13 +22,14 @@ extern "C" void exit(int);
  *
  * daemonize -
  */
-void daemonize(void) {
+void Daemonize(void) {
   pid_t pid;
   pid_t sid;
 
   // already daemon
-  if (getppid() == 1)
+  if (getppid() == 1) {
     return;
+  }
 
   pid = fork();
   if (pid == -1) {
@@ -45,11 +46,12 @@ void daemonize(void) {
     LM_X(1, ("setsid: %s", strerror(errno)));  // Change current working directory.
   }
   // This prevents the current directory from being locked; hence not being able to remove it.
-  if (chdir("/") == -1)
+  if (chdir("/") == -1) {
     LM_X(1, ("chdir: %s", strerror(errno)));
+  }
 }
 
-void deamonize_close_all(void) {
+void Deamonize_close_all(void) {
   FILE *s;
 
   // Redirect standard files to /dev/null

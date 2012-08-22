@@ -4,39 +4,38 @@
 #include "au/CommandLine.h"             // Own interface
 
 namespace au {
-CommandLine::CommandLine(std::string _command) {
-  parse(_command);
+CommandLine::CommandLine(std::string command) {
+  Parse(command);
 }
 
 CommandLine::CommandLine(int argc, const char *argv[]) {
-  parse(argc, argv);
+  Parse(argc, argv);
 }
 
-void CommandLine::parse(int args, const char *argv[]) {
+void CommandLine::Parse(int args, const char *argv[]) {
   std::ostringstream o;
 
   for (int i = 0; i < args; i++) {
     o << argv[i] << " ";
   }
-
-  parse(o.str());
+  Parse(o.str());
 }
 
-void CommandLine::reset_flags() {
-  flags.clear();
-  arguments.clear();
+void CommandLine::ResetFlags() {
+  flags_.clear();
+  arguments_.clear();
 }
 
-void CommandLine::set_flag_boolean(std::string name) {
+void CommandLine::SetFlagBoolean(std::string name) {
   CommandLineFlag flag;
 
   flag.type = "bool";
   flag.default_value = "false";
 
-  flags.insert(std::pair<std::string, CommandLineFlag>(name, flag));
+  flags_.insert(std::pair<std::string, CommandLineFlag>(name, flag));
 }
 
-void CommandLine::set_flag_int(std::string name, int default_value) {
+void CommandLine::SetFlagInt(std::string name, int default_value) {
   CommandLineFlag flag;
 
   flag.type = "int";
@@ -45,10 +44,10 @@ void CommandLine::set_flag_int(std::string name, int default_value) {
   o << default_value;
   flag.default_value = o.str();
 
-  flags.insert(std::pair<std::string, CommandLineFlag>(name, flag));
+  flags_.insert(std::pair<std::string, CommandLineFlag>(name, flag));
 }
 
-void CommandLine::set_flag_double(std::string name, double default_value) {
+void CommandLine::SetFlagDouble(std::string name, double default_value) {
   CommandLineFlag flag;
 
   flag.type = "double";
@@ -57,28 +56,28 @@ void CommandLine::set_flag_double(std::string name, double default_value) {
   o << default_value;
   flag.default_value = o.str();
 
-  flags.insert(std::pair<std::string, CommandLineFlag>(name, flag));
+  flags_.insert(std::pair<std::string, CommandLineFlag>(name, flag));
 }
 
-void CommandLine::set_flag_string(std::string name, std::string default_value) {
+void CommandLine::SetFlagString(std::string name, std::string default_value) {
   CommandLineFlag flag;
 
   flag.type = "string";
   flag.default_value = default_value;
 
-  flags.insert(std::pair<std::string, CommandLineFlag>(name, flag));
+  flags_.insert(std::pair<std::string, CommandLineFlag>(name, flag));
 }
 
-void CommandLine::set_flag_uint64(std::string name, std::string default_value) {
+void CommandLine::SetFlagUint64(std::string name, std::string default_value) {
   CommandLineFlag flag;
 
   flag.type = "uint64";
   flag.default_value = default_value;
 
-  flags.insert(std::pair<std::string, CommandLineFlag>(name, flag));
+  flags_.insert(std::pair<std::string, CommandLineFlag>(name, flag));
 }
 
-void CommandLine::set_flag_uint64(std::string name, size_t default_value) {
+void CommandLine::SetFlagUint64(std::string name, size_t default_value) {
   CommandLineFlag flag;
 
   flag.type = "uint64";
@@ -87,16 +86,16 @@ void CommandLine::set_flag_uint64(std::string name, size_t default_value) {
   o << default_value;
   flag.default_value = o.str();
 
-  flags.insert(std::pair<std::string, CommandLineFlag>(name, flag));
+  flags_.insert(std::pair<std::string, CommandLineFlag>(name, flag));
 }
 
-void CommandLine::parse(std::string _command) {
-  clear_values();
+void CommandLine::Parse(std::string command) {
+  ClearValues();
 
   std::vector<std::string> tockens;
 
   // Copy the original command
-  command = _command;
+  command_ = command;
 
   std::string delimiters = " \t\n";                                     // All possible delimiters
   std::string delimiters_and_literal = " \t\n";
@@ -152,21 +151,20 @@ void CommandLine::parse(std::string _command) {
     }
   }
 
-
-  parse_tockens(tockens);
+  ParseTockens(tockens);
 }
 
-void CommandLine::clear_values() {
+void CommandLine::ClearValues() {
   // Remove the "value" field in all "flags"
   std::map< std::string, CommandLineFlag >::iterator iter;
-  for (iter = flags.begin(); iter != flags.end(); iter++) {
+  for (iter = flags_.begin(); iter != flags_.end(); iter++) {
     iter->second.value = "unknown";     // Default value when no assigned
   }
   // Remove the arguments vector
-  arguments.clear();
+  arguments_.clear();
 }
 
-void CommandLine::parse_tockens(std::vector<std::string> &tockens) {
+void CommandLine::ParseTockens(std::vector<std::string> &tockens) {
   // Parse tockens to distinghuish between arguments and flags parameters
 
   std::vector<std::string>::iterator iter;
@@ -185,20 +183,21 @@ void CommandLine::parse_tockens(std::vector<std::string> &tockens) {
     if (tocken[0] == '-') {
       std::string flag_name = tocken.substr(1, tocken.size() - 1);
 
-      flag_iterator = flags.find(flag_name);
-      if (flag_iterator != flags.end()) {
+      flag_iterator = flags_.find(flag_name);
+      if (flag_iterator != flags_.end()) {
         if (flag_iterator->second.type == "bool") {
           flag_iterator->second.value = "true";
         } else {
           // This is a unitary parameter
           iter++;
-          if (iter != tockens.end())
+          if (iter != tockens.end()) {
             flag_iterator->second.value = *iter;
+          }
         }
       }
     } else {
       // Normal argument
-      arguments.push_back(tocken);
+      arguments_.push_back(tocken);
     }
   }
 }
@@ -208,92 +207,89 @@ void CommandLine::parse_tockens(std::vector<std::string> &tockens) {
  */
 
 int CommandLine::get_num_arguments() {
-  return arguments.size();
+  return arguments_.size();
 }
 
 std::string CommandLine::get_argument(int index) {
-  if ((index < 0) || ( index >= (int)arguments.size()))
+  if ((index < 0) || ( index >= (int)arguments_.size())) {
     return "no-argument";
+  }
 
-  return arguments[index];
-}
-
-bool CommandLine::isArgumentValue(int index, std::string value, std::string value2) {
-  if ((index < 0) || ( index >= (int)arguments.size()))
-    return false;
-
-  if (arguments[index] == value)
-    return true;
-
-  if (arguments[index] == value2)
-    return true;
-
-  return false;
+  return arguments_[index];
 }
 
 /**
  * Access to flags
  */
 
-std::string CommandLine::getFlagValue(std::string flag_name) {
+std::string CommandLine::GetFlagValue(std::string flag_name) {
   std::map<std::string, CommandLineFlag>::iterator flag_iterator;
 
-  flag_iterator = flags.find(flag_name);
-  if (flag_iterator != flags.end()) {
-    if (flag_iterator->second.value != "unknown")
-      return flag_iterator->second.value; else
+  flag_iterator = flags_.find(flag_name);
+  if (flag_iterator != flags_.end()) {
+    if (flag_iterator->second.value != "unknown") {
+      return flag_iterator->second.value;
+    } else {
       return flag_iterator->second.default_value;
+    }
   } else {
     return "unknown_flag";
   }
 }
 
-std::string CommandLine::getFlagType(std::string flag_name) {
+std::string CommandLine::GetFlagType(std::string flag_name) {
   std::map<std::string, CommandLineFlag>::iterator flag_iterator;
 
-  flag_iterator = flags.find(flag_name);
-  if (flag_iterator != flags.end())
-    return flag_iterator->second.type; else
+  flag_iterator = flags_.find(flag_name);
+  if (flag_iterator != flags_.end()) {
+    return flag_iterator->second.type;
+  } else {
     return "unknown_type";
+  }
 }
 
 /**
  * Specialed access to parametes
  */
 
-bool CommandLine::get_flag_bool(std::string flag_name) {
-  if (getFlagType(flag_name) != "bool")
+bool CommandLine::GetFlagBool(std::string flag_name) {
+  if (GetFlagType(flag_name) != "bool") {
     return false;
+  }
 
-  return getBoolValue(getFlagValue(flag_name));
+  return getBoolValue(GetFlagValue(flag_name));
 }
 
-int CommandLine::get_flag_int(std::string flag_name) {
-  if (getFlagType(flag_name) != "int")
+int CommandLine::GetFlagInt(std::string flag_name) {
+  if (GetFlagType(flag_name) != "int") {
     return 0;
+  }
 
-  return getIntValue(getFlagValue(flag_name));
+  return getIntValue(GetFlagValue(flag_name));
 }
 
-double CommandLine::get_flag_double(std::string flag_name) {
-  if (getFlagType(flag_name) != "double")
+double CommandLine::GetFlagDouble(std::string flag_name) {
+  if (GetFlagType(flag_name) != "double") {
     return 0;
+  }
 
-  return getDoubleValue(getFlagValue(flag_name));
+  return getDoubleValue(GetFlagValue(flag_name));
 }
 
-std::string CommandLine::get_flag_string(std::string flag_name) {
-  if (getFlagType(flag_name) != "string")
+std::string CommandLine::GetFlagString(std::string flag_name) {
+  if (GetFlagType(flag_name) != "string") {
     return 0;
+  }
 
-  return ( getFlagValue(flag_name));
+  return ( GetFlagValue(flag_name));
 }
 
-size_t CommandLine::get_flag_uint64(std::string flag_name) {
-  if (getFlagType(flag_name) != "uint64")
+size_t CommandLine::GetFlagUint64(std::string flag_name) {
+  if (GetFlagType(flag_name) != "uint64") {
     return 0;
+  }
 
-  return getUint64Value(getFlagValue(flag_name));
+  return getUint64Value(GetFlagValue(flag_name));
 }
 
 /**
@@ -324,5 +320,9 @@ double CommandLine::getDoubleValue(std::string value) {
 
 bool CommandLine::getBoolValue(std::string value) {
   return ( value == "true" );
+}
+
+std::string CommandLine::command() {
+  return command_;
 }
 }

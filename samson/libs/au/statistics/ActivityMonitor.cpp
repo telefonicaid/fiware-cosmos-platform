@@ -33,9 +33,12 @@ void ActivityStatistics::Push(ActivityItem *item) {
     max_ = t;
   } else {
     // Update min & max
-    if (t < min_)
-      min_ = t; if (t > max_)
+    if (t < min_) {
+      min_ = t;
+    }
+    if (t > max_) {
       max_ = t;
+    }
   }
 }
 
@@ -60,13 +63,16 @@ size_t ActivityStatistics::counter() const {
 }
 
 double ActivityStatistics::GetAverage() const {
-  if (counter_ == 0)
-    return 0; return total_ / (double)counter_;
+  if (counter_ == 0) {
+    return 0;
+  }
+  return total_ / (double)counter_;
 }
 
 double ActivityStatistics::GetStdDeviation() const {
-  if (counter_ == 0)
+  if (counter_ == 0) {
     return 0;
+  }
 
   double average = GetAverage();
   double tmp = ( total_square_ / (double)counter_ ) - average * average;

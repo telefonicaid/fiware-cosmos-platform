@@ -10,17 +10,15 @@
 
 namespace au {
 class LogFormatter {
-
 public:
 
   LogFormatter(const std::string& _definition = DEFAULT_FORMAT);
   std::string get(au::SharedPointer<Log> log) const;
-  
+
 private:
   std::string definition_;
   std::vector<std::string> fields_;
-
 };
 }
 
-#endif
+#endif  // ifndef _H_AU_LOG_FORMATTER

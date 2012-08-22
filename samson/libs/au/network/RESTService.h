@@ -3,7 +3,7 @@
 #define _H_AU_NETWORK_REST_SERVICE
 
 #include "au/Environment.h"
-#include "au/Object.h"
+
 #include "au/Status.h"
 #include "au/au.pb.h"
 #include "au/console/Console.h"

@@ -4,50 +4,54 @@
 #include "OnOffMonitor.h"  // Own interface
 
 namespace au {
-OnOffMonitor::OnOffMonitor() {
-  on = false;       // By default it is initially false
-  on_time = 0;
-  off_time = 0;
+OnOffMonitor::OnOffMonitor(double time_span) {
+  on_ = false;       // By default it is initially false
+  on_time_ = 0;
+  off_time_ = 0;
 
-  double time_span = 30;       // Last 30 secs
-  f = ( time_span - 1 ) / time_span;
+  factor_ = ( time_span - 1 ) / time_span;
 }
 
-double OnOffMonitor::get_on_time() {
-  return on_time;
+double OnOffMonitor::on_time() const {
+  return on_time_;
 }
 
-double OnOffMonitor::get_off_time() {
-  return off_time;
+double OnOffMonitor::off_time() const {
+  return off_time_;
 }
 
-void OnOffMonitor::set_on(bool _on) {
+void OnOffMonitor::Set(bool on) {
   double t = cronometer.seconds();
 
-  if (on) {
-    on_time += t;
+  if (on_) {
+    on_time_ += t;
   } else {
-    off_time += t;  // Forgetting factor
+    off_time_ += t;  // Forgetting factor
   }
-  off_time *= ::pow(f, t);
-  on_time *= ::pow(f, t);
+  off_time_ *= ::pow(factor_, t);
+  on_time_ *= ::pow(factor_, t);
 
   // Reset cronometer
   cronometer.Reset();
 
   // Change state if any
-  on = _on;
+  on_ = on;
 }
 
-double OnOffMonitor::getActivity() {
+double OnOffMonitor::activity_percentadge() const {
   double t = cronometer.seconds();
-  double _on_time = on_time;
-  double _off_time = off_time;
+  double on_time = on_time_;
+  double off_time = off_time_;
 
-  if (on)
-    _on_time += t; else
-    _off_time += t; if (( on_time + off_time ) == 0)
-    return 0; else
+  if (on_) {
+    on_time += t;
+  } else {
+    off_time += t;
+  }
+  if (( on_time + off_time ) == 0) {
+    return 0;
+  } else {
     return on_time / ( on_time + off_time );
+  }
 }
 }

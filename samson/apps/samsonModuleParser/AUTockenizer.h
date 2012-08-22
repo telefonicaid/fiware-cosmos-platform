@@ -92,15 +92,16 @@ public:
   // Error message formated correctly
 
   std::string error_message(std::string message, int pos) {
-    if (( pos == -1 ) || ( pos < 0 ) || ( pos >= (int)items.size()))
+    if (( pos == -1 ) || ( pos < 0 ) || ( pos >= (int)items.size())) {
       return au::str("%s: %s", fileName.c_str(), message.c_str());
-    else
+    } else {
       return au::str("%s[%d]: %s ( error at %s )"
                      , fileName.c_str()
                      , items[pos].line
                      , message.c_str()
                      , items[pos].str.c_str()
                      );
+    }
   }
 };
 }

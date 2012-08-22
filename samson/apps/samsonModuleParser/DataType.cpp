@@ -302,11 +302,14 @@ string DataType::getParseCommand(string pre_line) {
     return o.str();
   }
 
-  if (optional)
+  if (optional) {
     o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-  if (isVector())
-    o << getParseCommandVector(pre_line, name) << "\n"; else
-    o << getParseCommandIndividual(pre_line, name) << "\n"; return o.str();
+  }
+  if (isVector()) {
+    o << getParseCommandVector(pre_line, name) << "\n";
+  } else {
+    o << getParseCommandIndividual(pre_line, name) << "\n";
+  } return o.str();
 }
 
 string DataType::getSerializationCommandIndividual(string pre_line, string _name) {
@@ -343,11 +346,14 @@ string DataType::getSerializeCommand(string pre_line) {
     return o.str();
   }
 
-  if (optional)
+  if (optional) {
     o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-  if (isVector())
-    o << getSerializationCommandVector(pre_line, name) << "\n"; else
-    o << getSerializationCommandIndividual(pre_line, name) << "\n"; return o.str();
+  }
+  if (isVector()) {
+    o << getSerializationCommandVector(pre_line, name) << "\n";
+  } else {
+    o << getSerializationCommandIndividual(pre_line, name) << "\n";
+  } return o.str();
 }
 
 string DataType::getSizeCommandIndividual(string pre_line, string _name) {
@@ -399,12 +405,16 @@ string DataType::getSizeCommand(string pre_line) {
     return o.str();
   }
 
-  if (optional)
+  if (optional) {
     o << pre_line << "if (local" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-  if (isVector())
-    o << getSizeCommandVector(pre_line, name) << "\n"; else if (isList())
-    o << getSizeCommandList(pre_line, name) << "\n"; else
-    o << getSizeCommandIndividual(pre_line, name) << "\n"; return o.str();
+  }
+  if (isVector()) {
+    o << getSizeCommandVector(pre_line, name) << "\n";
+  } else if (isList()) {
+    o << getSizeCommandList(pre_line, name) << "\n";
+  } else {
+    o << getSizeCommandIndividual(pre_line, name) << "\n";
+  } return o.str();
 }
 
 string DataType::getPartitionCommandIndividual(string pre_line, string _name) {
@@ -437,9 +447,11 @@ string DataType::getPartitionCommand(string pre_line) {
     return o.str();
   }
 
-  if (isVector())
-    o << getPartitionCommandVector(pre_line, name) << "\n"; else
-    o << getPartitionCommandIndividual(pre_line, name) << "\n"; return o.str();
+  if (isVector()) {
+    o << getPartitionCommandVector(pre_line, name) << "\n";
+  } else {
+    o << getPartitionCommandIndividual(pre_line, name) << "\n";
+  } return o.str();
 }
 
 string DataType::getCompareCommandIndividual(string pre_line,  string _name) {
@@ -543,9 +555,11 @@ string DataType::getCompareCommand(string pre_line) {
   ostringstream o;
 
 
-  if (isVector())
-    o << getCompareCommandVector(pre_line, name); else
-    o << getCompareCommandIndividual(pre_line, name); return o.str();
+  if (isVector()) {
+    o << getCompareCommandVector(pre_line, name);
+  } else {
+    o << getCompareCommandIndividual(pre_line, name);
+  } return o.str();
 }
 
 string DataType::getToStringCommandIndividual(string pre_line, string _name) {
@@ -587,9 +601,11 @@ string DataType::getToStringCommand(string pre_line) {
   }
 
 
-  if (isVector())
-    o << getToStringCommandVector(pre_line, name); else
-    o << pre_line << getToStringCommandIndividual(pre_line, name); return o.str();
+  if (isVector()) {
+    o << getToStringCommandVector(pre_line, name);
+  } else {
+    o << pre_line << getToStringCommandIndividual(pre_line, name);
+  } return o.str();
 }
 
 string DataType::getToStringJSONCommand(string pre_line) {
@@ -652,8 +668,9 @@ string DataType::getToStringXMLCommand(string pre_line) {
 string DataType::getToStringHTMLCommand(string pre_line) {
   ostringstream o;
 
-  if (optional)
+  if (optional) {
     o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
+  }
   if (isVector()) {
     o << pre_line << "{ // toStringHTML of vector " << name << "\n";
     o << pre_line << "\to << \"<h\" << level_html_heading << \">\" <<" << "\"" << name <<
@@ -909,8 +926,9 @@ string DataType::getSetFromStringCommandVector(string pre_line, string _name) {
 string DataType::getSetFromStringCommand(string pre_line) {
   ostringstream o;
 
-  if (strcmp(name.c_str(), NAME_FILLEDOPTIONALFIELDS) == 0)
+  if (strcmp(name.c_str(), NAME_FILLEDOPTIONALFIELDS) == 0) {
     return "";
+  }
 
   if (isVector()) {
     o << pre_line << "{ //Setting vector " << name << "\n";
@@ -940,8 +958,9 @@ string DataType::getSetFromStringCommand(string pre_line) {
 string DataType::checkSetFromStringNamed(string pre_line) {
   ostringstream o;
 
-  if (strcmp(name.c_str(), NAME_FILLEDOPTIONALFIELDS) == 0)
+  if (strcmp(name.c_str(), NAME_FILLEDOPTIONALFIELDS) == 0) {
     return "";
+  }
 
   o << pre_line << "\t" << "if ((p_item=strstr(p_value_data, \"" << name <<
   ":\")) != NULL) { oneFieldNamed = true;}" << "\n";
@@ -1009,15 +1028,19 @@ string DataType::getGetInstance(string pre_line, int index) {
   o << pre_line << "case " << index << ":\n";
   if (optional) {
     o << pre_line << "\tif (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-    if (isVector())
-      o << pre_line << "\t\treturn((*" << name << ").getDataInstanceFromPath(dataPathIntP+1));\n"; else
+    if (isVector()) {
+      o << pre_line << "\t\treturn((*" << name << ").getDataInstanceFromPath(dataPathIntP+1));\n";
+    } else {
       o << pre_line << "\t\treturn(" << name << ".getDataInstanceFromPath(dataPathIntP+1));\n";
+    }
     o << pre_line << "\telse\n";
     o << pre_line << "\t\treturn (NULL);\n";
   } else {
-    if (isVector())
-      o << pre_line << "\treturn((*" << name << ").getDataInstanceFromPath(dataPathIntP+1));\n"; else
+    if (isVector()) {
+      o << pre_line << "\treturn((*" << name << ").getDataInstanceFromPath(dataPathIntP+1));\n";
+    } else {
       o << pre_line << "\treturn(" << name << ".getDataInstanceFromPath(dataPathIntP+1));\n";
+    }
   }
   o << pre_line << "\tbreak;\n";
 
@@ -1055,11 +1078,14 @@ string DataType::getCopyFromCommandVector(string pre_line, string _name) {
 string DataType::getCopyFromCommand(string pre_line) {
   ostringstream o;
 
-  if (optional)
+  if (optional) {
     o << pre_line << "if (" << NAME_FILLEDOPTIONALFIELDS << ".value & " << hex << showbase << valMask << ")\n";
-  if (isVector())
-    o << getCopyFromCommandVector(pre_line, name) << "\n"; else
-    o << getCopyFromCommandIndividual(pre_line, name) << "\n"; return o.str();
+  }
+  if (isVector()) {
+    o << getCopyFromCommandVector(pre_line, name) << "\n";
+  } else {
+    o << getCopyFromCommandIndividual(pre_line, name) << "\n";
+  } return o.str();
 }
 
 #pragma mark -----
@@ -1090,8 +1116,9 @@ std::string getModuleFromFullName(std::string fullName) {
 
   for (size_t i = 0; i < (tokens.size() - 1); i++) {
     output << tokens[i];
-    if (i < (tokens.size() - 2))
+    if (i < (tokens.size() - 2)) {
       output << ".";
+    }
   }
 
   return output.str();

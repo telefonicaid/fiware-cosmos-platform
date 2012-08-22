@@ -26,9 +26,11 @@ void ObjectsManager::add(Object *o) {
 
   // Try to register with the provided name if possible
   if (o->engine_name) {
-    if (objects_by_name.extractFromMap(o->engine_name) == NULL)
-      objects_by_name.insertInMap(o->engine_name, o); else
+    if (objects_by_name.extractFromMap(o->engine_name) == NULL) {
+      objects_by_name.insertInMap(o->engine_name, o);
+    } else {
       LM_W(("Not possible to register object with name %s. It was previously used...", o->engine_name));
+    }
   }
 
   // Adding object to the general map by id
@@ -121,8 +123,9 @@ void ObjectsManager::send(Notification *notification, size_t target) {
     o = objects.findInMap(target);
   }
 
-  if (o)
+  if (o) {
     o->notify(notification);
+  }
 }
 
 // Get the object registered with this name

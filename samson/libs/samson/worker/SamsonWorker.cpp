@@ -241,12 +241,21 @@ SamsonWorker::~SamsonWorker() {
   LM_T(LmtCleanup, ("Deleting workerCommandManager: %p", workerCommandManager));
   delete workerCommandManager;
 
-  if (worker_controller)
-    delete worker_controller; if (data_model)
-    delete data_model; if (network_)
-    delete network_; if (rest_service)
-    delete rest_service; if (task_manager)
+  if (worker_controller) {
+    delete worker_controller;
+  }
+  if (data_model) {
+    delete data_model;
+  }
+  if (network_) {
+    delete network_;
+  }
+  if (rest_service) {
+    delete rest_service;
+  }
+  if (task_manager) {
     delete task_manager;
+  }
 }
 
 void SamsonWorker::review() {
@@ -254,8 +263,9 @@ void SamsonWorker::review() {
   distribution_blocks_manager->Review();
 
   // Review task_manager if we are ready to process data
-  if (status_ready_to_process_)
+  if (status_ready_to_process_) {
     task_manager->review_stream_operations();
+  }
 }
 
 /* ****************************************************************************
@@ -274,9 +284,10 @@ void SamsonWorker::receive(const PacketPointer& packet) {
   // StatusReport
   // --------------------------------------------------------------------
 
-  if (msgCode == Message::StatusReport)
+  if (msgCode == Message::StatusReport) {
     // LM_M(("Recieved status report message from %s" , packet->from.str().c_str() ));
     return;
+  }
 
   // --------------------------------------------------------------------
   // BlockRequest
@@ -497,16 +508,19 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 
       // If the queue really exist, return all its content to be popped
       gpb::Queue *queue = get_queue(data.shared_object(), original_queue);
-      if (queue)
+      if (queue) {
         gpb_queue->CopyFrom(*queue);
+      }
     } else {
       // Copy blocks newer than commit_id
       gpb::Queue *queue = get_queue(data.shared_object(), pop_queue);
-      if (queue)
+      if (queue) {
         for (int i = 0; i < queue->blocks_size(); i++) {
-          if (queue->blocks(i).commit_id() > commit_id)
+          if (queue->blocks(i).commit_id() > commit_id) {
             gpb_queue->add_blocks()->CopyFrom(queue->blocks(i));
+          }
         }
+      }
     }
 
     // Send packet with information
@@ -633,9 +647,9 @@ void SamsonWorker::notify(engine::Notification *notification) {
           , au::str(network_write_rate, "Bs").c_str()
           ));
   } else if (notification->isName(notification_samson_worker_send_trace)) {
-    std::string message = notification->environment().get("message", "No message coming with trace-notification");
-    std::string context = notification->environment().get("context", "?");
-    std::string type    = notification->environment().get("type", "message");
+    std::string message = notification->environment().Get("message", "No message coming with trace-notification");
+    std::string context = notification->environment().Get("context", "?");
+    std::string type    = notification->environment().Get("type", "message");
 
     sendTrace(type, context, message);
   } else if (notification->isName(notification_samson_worker_take_sample)) {
@@ -649,11 +663,15 @@ void SamsonWorker::notify(engine::Notification *notification) {
 std::string getFormatedElement(std::string name, std::string value, std::string& format) {
   std::ostringstream output;
 
-  if (format == "xml")
-    au::xml_simple(output, name, value); else if (format == "json")
-    au::json_simple(output, name, value); else if (format == "html")
-    output << "<h1>" << name << "</h1>" << value; else
-    output << name << ":\n" << value; return output.str();
+  if (format == "xml") {
+    au::xml_simple(output, name, value);
+  } else if (format == "json") {
+    au::json_simple(output, name, value);
+  } else if (format == "html") {
+    output << "<h1>" << name << "</h1>" << value;
+  } else {
+    output << name << ":\n" << value;
+  } return output.str();
 }
 
 std::string getFormatedError(std::string message, std::string& format) {
@@ -724,9 +742,13 @@ void SamsonWorker::process_logging(au::SharedPointer<au::network::RESTServiceCom
 
   command->set_http_state(200);
 
-  if (command->path_components().size() > 2)
-    logCommand = command->path_components()[2]; if (command->path_components().size() > 3)
-    sub = command->path_components()[3]; if (command->path_components().size() > 4) {
+  if (command->path_components().size() > 2) {
+    logCommand = command->path_components()[2];
+  }
+  if (command->path_components().size() > 3) {
+    sub = command->path_components()[3];
+  }
+  if (command->path_components().size() > 4) {
     arg = command->path_components()[4];  //
   }
   // Treat all possible errors
@@ -780,7 +802,10 @@ void SamsonWorker::process_logging(au::SharedPointer<au::network::RESTServiceCom
   std::string verb = command->command();
   std::string path = logCommand;
 
-  if (sub != "") path += '/' + sub; if ((path == "debug/on")      && (verb == "POST")) {
+  if (sub != "") {
+    path += '/' + sub;
+  }
+  if ((path == "debug/on")      && (verb == "POST")) {
     ;
   } else if ((path == "debug/off")     && (verb == "POST")) {
     ;
@@ -816,8 +841,9 @@ void SamsonWorker::process_logging(au::SharedPointer<au::network::RESTServiceCom
     return;
   }
 
-  if (command->http_state() != 200)
+  if (command->http_state() != 200) {
     return;
+  }
 
   //
   // Treat the request
@@ -855,9 +881,13 @@ void SamsonWorker::process_logging(au::SharedPointer<au::network::RESTServiceCom
       LM_D(("Debug should be OFF"));
     }
   } else if (logCommand == "verbose") {  // /samson/logging/verbose
-    if (sub == "")
-      sub = "get"; if ((sub == "set") && (arg == "0"))
-      sub = "off"; if (sub == "get") {
+    if (sub == "") {
+      sub = "get";
+    }
+    if ((sub == "set") && (arg == "0")) {
+      sub = "off";
+    }
+    if (sub == "get") {
       process_delilah_command("wverbose get", command);
     } else if ((sub == "off") || (sub == "0")) {
       process_delilah_command("wverbose off", command);
@@ -878,8 +908,10 @@ void SamsonWorker::process_logging(au::SharedPointer<au::network::RESTServiceCom
       LM_V5(("VERBOSE level 5"));
     }
   } else if (logCommand == "traces") {
-    if (sub == "")
-      sub = "get"; if (sub == "set") {
+    if (sub == "") {
+      sub = "get";
+    }
+    if (sub == "set") {
       char delilahCommand[64];
 
       snprintf(delilahCommand, sizeof(delilahCommand), "wtrace set %s",  arg.c_str());
@@ -929,6 +961,8 @@ static bool restTraceCheck(au::network::RESTServiceCommand *command) {
 
 
 
+
+
   return true;
 }
 
@@ -938,6 +972,8 @@ static bool restVerboseCheck(au::network::RESTServiceCommand *command) {
   if ((arg == "0") || (arg == "1") || (arg == "2") || (arg == "3") || (arg == "4") || (arg == "5")) {
     return true;
   }
+
+
 
 
 
@@ -955,20 +991,20 @@ typedef struct RestCheck {
 
 RestCheck restCheck[] =
 {
-  { "POST",   "debug/on",      2,        NULL                                                                                                                },
-  { "POST",   "debug/off",     2,        NULL                                                                                                                },
-  { "POST",   "reads/on",      2,        NULL                                                                                                                },
-  { "POST",   "reads/off",     2,        NULL                                                                                                                },
-  { "POST",   "writes/on",     2,        NULL                                                                                                                },
-  { "POST",   "writes/off",    2,        NULL                                                                                                                },
-  { "GET",    "traces",        1,        NULL                                                                                                                },
-  { "POST",   "traces/off",    2,        NULL                                                                                                                },
-  { "POST",   "traces/set",    3,        restTraceCheck                                                                                                      },
-  { "POST",   "traces/add",    3,        restTraceCheck                                                                                                      },
-  { "DELETE", "traces/remove", 3,        restTraceCheck                                                                                                      },
-  { "GET",    "verbose",       1,        NULL                                                                                                                },
-  { "POST",   "verbose/off",   2,        NULL                                                                                                                },
-  { "POST",   "verbose/set",   3,        restVerboseCheck                                                                                                    },
+  { "POST",   "debug/on",      2,        NULL                                                                                                                                                                 },
+  { "POST",   "debug/off",     2,        NULL                                                                                                                                                                 },
+  { "POST",   "reads/on",      2,        NULL                                                                                                                                                                 },
+  { "POST",   "reads/off",     2,        NULL                                                                                                                                                                 },
+  { "POST",   "writes/on",     2,        NULL                                                                                                                                                                 },
+  { "POST",   "writes/off",    2,        NULL                                                                                                                                                                 },
+  { "GET",    "traces",        1,        NULL                                                                                                                                                                 },
+  { "POST",   "traces/off",    2,        NULL                                                                                                                                                                 },
+  { "POST",   "traces/set",    3,        restTraceCheck                                                                                                                                                       },
+  { "POST",   "traces/add",    3,        restTraceCheck                                                                                                                                                       },
+  { "DELETE", "traces/remove", 3,        restTraceCheck                                                                                                                                                       },
+  { "GET",    "verbose",       1,        NULL                                                                                                                                                                 },
+  { "POST",   "verbose/off",   2,        NULL                                                                                                                                                                 },
+  { "POST",   "verbose/set",   3,        restVerboseCheck                                                                                                                                                     },
 };
 
 static bool process_logging_check(au::network::RESTServiceCommand *command) {
@@ -991,6 +1027,8 @@ static bool process_logging_check(au::network::RESTServiceCommand *command) {
 
 
 
+
+
       return true;
     }
   }
@@ -1008,9 +1046,13 @@ void SamsonWorker::process_ilogging(au::SharedPointer<au::network::RESTServiceCo
 
   command->set_http_state(200);
 
-  if (command->path_components().size() > 2)
-    logCommand = command->path_components()[2]; if (command->path_components().size() > 3)
-    sub = command->path_components()[3]; if (command->path_components().size() > 4) {
+  if (command->path_components().size() > 2) {
+    logCommand = command->path_components()[2];
+  }
+  if (command->path_components().size() > 3) {
+    sub = command->path_components()[3];
+  }
+  if (command->path_components().size() > 4) {
     arg = command->path_components()[4];  //
   }
   // Treat all possible errors
@@ -1063,7 +1105,10 @@ void SamsonWorker::process_ilogging(au::SharedPointer<au::network::RESTServiceCo
   std::string verb = command->command();
   std::string path = logCommand;
 
-  if (sub != "") path += '/' + sub; if ((path == "debug/on")      && (verb == "POST")) {
+  if (sub != "") {
+    path += '/' + sub;
+  }
+  if ((path == "debug/on")      && (verb == "POST")) {
     ;
   } else if ((path == "debug/off")     && (verb == "POST")) {
     ;
@@ -1099,8 +1144,9 @@ void SamsonWorker::process_ilogging(au::SharedPointer<au::network::RESTServiceCo
     return;
   }
 
-  if (command->http_state() != 200)
+  if (command->http_state() != 200) {
     return;
+  }
 
   //
   // Treat the request
@@ -1138,15 +1184,28 @@ void SamsonWorker::process_ilogging(au::SharedPointer<au::network::RESTServiceCo
       LM_D(("This line should not be seen ..."));
     }
   } else if (logCommand == "verbose") {  // /samson/ilogging/verbose
-    if (sub == "")
-      sub = "get"; if ((sub == "set") && (arg == "0"))
-      sub = "off"; if (sub == "get") {
+    if (sub == "") {
+      sub = "get";
+    }
+    if ((sub == "set") && (arg == "0")) {
+      sub = "off";
+    }
+    if (sub == "get") {
       int vLevel;
 
-      if (lmVerbose5 == true) vLevel = 5; else if (lmVerbose4 == true) vLevel = 4; else if (lmVerbose3 ==
-                                                                                            true)
+      if (lmVerbose5 == true) {
+        vLevel = 5;
+      } else if (lmVerbose4 == true) {
+        vLevel = 4;
+      } else if (lmVerbose3 ==
+                 true)
+      {
         vLevel = 3;
-      else if (lmVerbose2 == true) vLevel = 2; else if (lmVerbose  == true) vLevel = 1; else vLevel = 0;
+      } else if (lmVerbose2 == true) {
+        vLevel = 2;
+      } else if (lmVerbose  == true) {
+        vLevel = 1;
+      } else { vLevel = 0; }
       command->AppendFormatedElement(
         "verbose", au::str("verbosity level: %d", vLevel));
     } else {
@@ -1157,8 +1216,10 @@ void SamsonWorker::process_ilogging(au::SharedPointer<au::network::RESTServiceCo
       lmVerbose4 = false;
       lmVerbose5 = false;
 
-      if (sub == "off")
-        arg = "0"; int verboseLevel = arg[0] - '0';
+      if (sub == "off") {
+        arg = "0";
+      }
+      int verboseLevel = arg[0] - '0';
 
       // Turn on the desired verbose levels
       switch (verboseLevel) {
@@ -1173,8 +1234,10 @@ void SamsonWorker::process_ilogging(au::SharedPointer<au::network::RESTServiceCo
       LM_F(("New verbose level for this node only: %d", verboseLevel));
     }
   } else if (logCommand == "traces") {
-    if (sub == "")
-      sub = "get"; if (sub == "set") {
+    if (sub == "") {
+      sub = "get";
+    }
+    if (sub == "set") {
       lmTraceSet((char *)arg.c_str());
       command->AppendFormatedElement("trace", au::str("trace level: %s", arg.c_str()));
       LM_F(("Set trace levels to '%s' for this node only", arg.c_str()));
@@ -1201,9 +1264,10 @@ void SamsonWorker::process_ilogging(au::SharedPointer<au::network::RESTServiceCo
 
 void SamsonWorker::process(au::SharedPointer<au::network::RESTServiceCommand> command) {
   // Default format
-  if (command->format() == "")
+  if (command->format() == "") {
     command->set_format("xml");  // Begin data for each format
-   // ---------------------------------------------------
+  }
+  // ---------------------------------------------------
   if (command->format() == "xml") {
     command->Append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
     command->Append("<!-- SAMSON Rest interface -->\n");
@@ -1223,13 +1287,14 @@ void SamsonWorker::process(au::SharedPointer<au::network::RESTServiceCommand> co
 
   // Close data content
   // ---------------------------------------------------
-  if (command->format() == "xml")
+  if (command->format() == "xml") {
     command->Append("\n</samson>\n");
-  else if (command->format() == "html")
+  } else if (command->format() == "html") {
     command->Append("</body></html>");  /*
                                          * else if( command->format == "json" )
                                          * command->Append("}");
                                          */
+  }
 }
 
 /* ****************************************************************************
@@ -1328,9 +1393,11 @@ void SamsonWorker::process_intern(au::SharedPointer<au::network::RESTServiceComm
       delilah_command = command->path_components()[2];
     }
 
-    if (delilah_command != "")
-      process_delilah_command(delilah_command, command); else
+    if (delilah_command != "") {
+      process_delilah_command(delilah_command, command);
+    } else {
       command->AppendFormatedError(404, au::str("bad path for command"));
+    }
   } else if ((path == "/samson/modules") && (verb == "GET")) {
     process_delilah_command("ls_modules -group name", command);
   } else if ((main_command == "modules") && (components == 3) && (verb == "GET")) {
@@ -1344,9 +1411,11 @@ void SamsonWorker::process_intern(au::SharedPointer<au::network::RESTServiceComm
       return;
     }
     std::string filter;
-    if (components == 3)
-      filter = command->path_components()[2]; process_delilah_command(au::str("ls_stream_operations %s -group name",
-                                                                              filter.c_str()), command);
+    if (components == 3) {
+      filter = command->path_components()[2];
+    }
+    process_delilah_command(au::str("ls_stream_operations %s -group name",
+                                    filter.c_str()), command);
   } else if (main_command == "workers") {
     if (command->command() != "GET") {
       command->AppendFormatedError(404, au::str("bad VERB for command"));
@@ -1478,16 +1547,21 @@ void SamsonWorker::autoComplete(au::ConsoleAutoComplete *info) {
 void SamsonWorker::evalCommand(std::string command) {
   au::CommandLine cmdLine;
 
-  cmdLine.parse(command);
+  cmdLine.Parse(command);
 
-  if (cmdLine.get_num_arguments() == 0)
+  if (cmdLine.get_num_arguments() == 0) {
     return;
+  }
 
   std::string main_command = cmdLine.get_argument(0);
 
-  if (main_command == "quit")
-    quitConsole(); if (main_command == "exit")
-    quitConsole(); if (main_command == "threads") {
+  if (main_command == "quit") {
+    quitConsole();
+  }
+  if (main_command == "exit") {
+    quitConsole();
+  }
+  if (main_command == "threads") {
     const au::ThreadManager& r = *au::ThreadManager::shared();
     writeOnConsole(au::S(r));
   }
@@ -1579,8 +1653,8 @@ gpb::Collection *SamsonWorker::getWorkerCollection(const Visualization& visualiz
     ::samson::add(record, "Disk out Ops/s", op_out, "f=double,sum");
 
 
-    double on_time = engine::DiskManager::shared()->on_off_monitor.get_on_time();
-    double off_time = engine::DiskManager::shared()->on_off_monitor.get_off_time();
+    double on_time = engine::DiskManager::shared()->on_off_monitor.on_time();
+    double off_time = engine::DiskManager::shared()->on_off_monitor.off_time();
     ::samson::add(record, "On time", on_time, "f=double,differet");
     ::samson::add(record, "Off time", off_time, "f=double,differet");
 

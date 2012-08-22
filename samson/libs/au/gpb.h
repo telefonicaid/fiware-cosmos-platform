@@ -142,8 +142,10 @@ template <class T>
 Status writeGPB(int fd, T *t) {
   LM_T(LmtIsolated, ("Writing a GPB message to fd:%d ( Size:%d )", fd, (int)t->ByteSize()));
 
-  if (!t->IsInitialized())
+  if (!t->IsInitialized()) {
     return GPB_NotInitializedMessage;
+  }
+
 
 
 

@@ -37,8 +37,9 @@ char *escape(char out[], char *value) {
   int outIx = 0;
 
   // printf("In escape\n");
-  if (value == NULL)
+  if (value == NULL) {
     return (char *)"(null)";
+  }
 
   while (value[ix] != 0) {
     // printf("value[%d]: %d\n", ix, value[ix]);
@@ -79,10 +80,16 @@ static void getApVals
 
   LM_T(LmtPaApVals, ("Fixing def, min, max, real values for %s", aP->name));
 
-  if (aP->def == PaNoDef)
-    aP->hasDefault = false; if (aP->min == PaNoLim)
-    aP->hasMinLimit = false; if (aP->max == PaNoLim)
-    aP->hasMaxLimit = false; defP = (PaTypeUnion *)&aP->def;
+  if (aP->def == PaNoDef) {
+    aP->hasDefault = false;
+  }
+  if (aP->min == PaNoLim) {
+    aP->hasMinLimit = false;
+  }
+  if (aP->max == PaNoLim) {
+    aP->hasMaxLimit = false;
+  }
+  defP = (PaTypeUnion *)&aP->def;
   minP = (PaTypeUnion *)&aP->min;
   maxP = (PaTypeUnion *)&aP->max;
 
@@ -199,9 +206,11 @@ void paUsage(void) {
   spacePad = (char *)strdup(progName);
   memset(spacePad, 0x20202020, strlen(spacePad));        /* replace progName */
 
-  if (paUsageProgName != NULL)
-    sprintf(s, "Usage: %s ", paUsageProgName); else
-    sprintf(s, "Usage: %s ", progName); strncat(paResultString, s, sizeof(paResultString) - 1);
+  if (paUsageProgName != NULL) {
+    sprintf(s, "Usage: %s ", paUsageProgName);
+  } else {
+    sprintf(s, "Usage: %s ", progName);
+  } strncat(paResultString, s, sizeof(paResultString) - 1);
 
   // paLogOn = true;
   paIterateInit();
@@ -213,21 +222,30 @@ void paUsage(void) {
 
     ++ix;
 
-    if (aP->sort == PaHid)
-      continue; if ((aP->isBuiltin == true) && (aP->includeInUsage == false))
-      continue; if ((aP->isBuiltin == false) && (firstUserOptionFound == false)) {
+    if (aP->sort == PaHid) {
+      continue;
+    }
+    if ((aP->isBuiltin == true) && (aP->includeInUsage == false)) {
+      continue;
+    }
+    if ((aP->isBuiltin == false) && (firstUserOptionFound == false)) {
       firstUserOptionFound = true;
       strncat(paResultString, "\n",       sizeof(paResultString) - 1);
       strncat(paResultString, spacePad,   sizeof(paResultString) - 1);
       strncat(paResultString, "        ", sizeof(paResultString) - 1);
     }
 
-    if (PA_IS_OPTION(aP) && (aP->sort == PaOpt))
-      sprintf(xName, "[%s]", paFullName(string, aP)); else if (PA_IS_OPTION(aP) && (aP->sort == PaReq))
-      sprintf(xName, "%s", paFullName(string, aP)); else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt))
-      sprintf(xName, "[parameter: %s]", aP->description); else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq))
-      sprintf(xName, "parameter: %s", aP->description); else
-      strcpy(xName, "                    "); sprintf(s, " %s\n", xName);
+    if (PA_IS_OPTION(aP) && (aP->sort == PaOpt)) {
+      sprintf(xName, "[%s]", paFullName(string, aP));
+    } else if (PA_IS_OPTION(aP) && (aP->sort == PaReq)) {
+      sprintf(xName, "%s", paFullName(string, aP));
+    } else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt)) {
+      sprintf(xName, "[parameter: %s]", aP->description);
+    } else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq)) {
+      sprintf(xName, "parameter: %s", aP->description);
+    } else {
+      strcpy(xName, "                    ");
+    } sprintf(s, " %s\n", xName);
     strncat(paResultString, s, sizeof(paResultString) - 1);
     sprintf(s, "%s        ", spacePad);             /* 8 spaces for "Usage:  " */
     strncat(paResultString, s, sizeof(paResultString) - 1);
@@ -278,11 +296,16 @@ void paExtendedUsage(void) {
 
     /* 1. Option Name */
     memset(name, 0, sizeof(name));
-    if (PA_IS_OPTION(aP) && (aP->sort == PaOpt))
-      sprintf(name, "[%s]", paFullName(string, aP)); else if (PA_IS_OPTION(aP) && (aP->sort == PaReq))
-      sprintf(name, "%s", paFullName(string, aP)); else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt))
-      sprintf(name, "(%s)", aP->description); else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq))
-      sprintf(name, "[%s]", aP->description); optNameMaxLen = MAX(strlen(name), (unsigned int)optNameMaxLen);
+    if (PA_IS_OPTION(aP) && (aP->sort == PaOpt)) {
+      sprintf(name, "[%s]", paFullName(string, aP));
+    } else if (PA_IS_OPTION(aP) && (aP->sort == PaReq)) {
+      sprintf(name, "%s", paFullName(string, aP));
+    } else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt)) {
+      sprintf(name, "(%s)", aP->description);
+    } else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq)) {
+      sprintf(name, "[%s]", aP->description);
+    }
+    optNameMaxLen = MAX(strlen(name), (unsigned int)optNameMaxLen);
 
 
     /* 2. Variable Name */
@@ -296,16 +319,22 @@ void paExtendedUsage(void) {
     /* 3. Values */
     getApVals(aP, defVal, minVal, maxVal, realVal);
 
-    if (aP->hasDefault == false)
-      sprintf(name, "%s", realVal); else
-      sprintf(name, "%s /%s/", realVal, defVal); if ((aP->hasMinLimit == false) && (aP->hasMaxLimit == false))
-      sprintf(vals, "%s", name); else if (aP->hasMinLimit == false)
-      sprintf(vals, "%s <= %s", name, escape(out, maxVal)); else if (aP->hasMaxLimit == false)
-      sprintf(vals, "%s >= %s", name, escape(out, minVal)); else
-      sprintf(vals, "%s <= %s <= %s", escape(out, minVal), name, escape(out2, maxVal)); valsMaxLen = MAX(strlen(
-                                                                                                           vals),
-                                                                                                         (unsigned int)
-                                                                                                         valsMaxLen);
+    if (aP->hasDefault == false) {
+      sprintf(name, "%s", realVal);
+    } else {
+      sprintf(name, "%s /%s/", realVal, defVal);
+    } if ((aP->hasMinLimit == false) && (aP->hasMaxLimit == false)) {
+      sprintf(vals, "%s", name);
+    } else if (aP->hasMinLimit == false) {
+      sprintf(vals, "%s <= %s", name, escape(out, maxVal));
+    } else if (aP->hasMaxLimit == false) {
+      sprintf(vals, "%s >= %s", name, escape(out, minVal));
+    } else {
+      sprintf(vals, "%s <= %s <= %s", escape(out, minVal), name, escape(out2, maxVal));
+    } valsMaxLen = MAX(strlen(
+                         vals),
+                       (unsigned int)
+                       valsMaxLen);
   }
 
   sprintf(format, "%%-%ds %%-%ds %%-%ds %%-%ds %%s\n",
@@ -333,34 +362,42 @@ void paExtendedUsage(void) {
     }
 
     /* 1. Option Name */
-    if (PA_IS_OPTION(aP) && (aP->sort == PaOpt))
+    if (PA_IS_OPTION(aP) && (aP->sort == PaOpt)) {
       sprintf(optName, "[%s]", paFullName(string, aP));
-    else if (PA_IS_OPTION(aP) && (aP->sort == PaReq))
+    } else if (PA_IS_OPTION(aP) && (aP->sort == PaReq)) {
       sprintf(optName, "%s", paFullName(string, aP));
-    else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt))
+    } else if (PA_IS_PARAMETER(aP) && (aP->sort == PaOpt)) {
       sprintf(optName, "(%s)", aP->description);
-    else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq))
+    } else if (PA_IS_PARAMETER(aP) && (aP->sort == PaReq)) {
       sprintf(optName, "[%s]", aP->description);
-    else
+    } else {
       strcpy(optName, " ");  /* 2. variable name */
-    if (PA_IS_VARIABLE(aP))
+    }
+    if (PA_IS_VARIABLE(aP)) {
       paEnvName(aP, varName);
-    else
+    } else {
       strcpy(varName, " ");  /* 3. Limits */
+    }
     if ((aP->type != PaSList) && (aP->type != PaIList)) {
       char valWithDef[128];
       char fromN[64];
 
       getApVals(aP, defVal, minVal, maxVal, realVal);
 
-      if (aP->hasDefault == false)
-        sprintf(valWithDef, "%s", realVal); else
-        sprintf(valWithDef, "%s /%s/", realVal, defVal); if ((aP->hasMinLimit == false) && (aP->hasMaxLimit == false))
-        sprintf(vals, "%s", valWithDef); else if (aP->hasMinLimit == false)
-        sprintf(vals, "%s <= %s", valWithDef, maxVal); else if (aP->hasMaxLimit == false)
-        sprintf(vals, "%s >= %s", valWithDef, minVal); else
+      if (aP->hasDefault == false) {
+        sprintf(valWithDef, "%s", realVal);
+      } else {
+        sprintf(valWithDef, "%s /%s/", realVal, defVal);
+      } if ((aP->hasMinLimit == false) && (aP->hasMaxLimit == false)) {
+        sprintf(vals, "%s", valWithDef);
+      } else if (aP->hasMinLimit == false) {
+        sprintf(vals, "%s <= %s", valWithDef, maxVal);
+      } else if (aP->hasMaxLimit == false) {
+        sprintf(vals, "%s >= %s", valWithDef, minVal);
+      } else {
         sprintf(vals, "%s <= %s <= %s",
-                minVal, valWithDef, maxVal); sprintf(from, "  (%s)", paFromName(aP, fromN));
+                minVal, valWithDef, maxVal);
+      } sprintf(from, "  (%s)", paFromName(aP, fromN));
     } else {
       sprintf(vals, " ");
       sprintf(from, " ");
@@ -394,23 +431,23 @@ static char usageString[800 * 200];
  */
 HelpVar helpVar[] =
 {
-  { "$PROGNAME", progNameV                                                         },
-  { "$USER",     paUserName                                                        },
-  { "$PWD",      paPwd                                                             },
-  { "$USAGE",    usageString                                                       },
-  { "$COLUMNS",  paColumns                                                         },
-  { "$ROWS",     paRows                                                            },
-  { "$DISPLAY",  paDisplay                                                         },
-  { "$EDITOR",   paEditor                                                          },
-  { "$LANG",     paLang                                                            },
-  { "$PAGER",    paPager                                                           },
-  { "$PPID",     paPpid                                                            },
-  { "$PID",      paPid                                                             },
-  { "$PRINTER",  paPrinter                                                         },
-  { "$SHELL",    paShell                                                           },
-  { "$TERM",     paTerm                                                            },
-  { "$SYSTEM",   paSystem                                                          },
-  { "$VISUAL",   paVisual                                                          }
+  { "$PROGNAME", progNameV                                                                             },
+  { "$USER",     paUserName                                                                            },
+  { "$PWD",      paPwd                                                                                 },
+  { "$USAGE",    usageString                                                                           },
+  { "$COLUMNS",  paColumns                                                                             },
+  { "$ROWS",     paRows                                                                                },
+  { "$DISPLAY",  paDisplay                                                                             },
+  { "$EDITOR",   paEditor                                                                              },
+  { "$LANG",     paLang                                                                                },
+  { "$PAGER",    paPager                                                                               },
+  { "$PPID",     paPpid                                                                                },
+  { "$PID",      paPid                                                                                 },
+  { "$PRINTER",  paPrinter                                                                             },
+  { "$SHELL",    paShell                                                                               },
+  { "$TERM",     paTerm                                                                                },
+  { "$SYSTEM",   paSystem                                                                              },
+  { "$VISUAL",   paVisual                                                                              }
 };
 
 
@@ -420,13 +457,19 @@ HelpVar helpVar[] =
  * paVersionPrint -
  */
 void paVersionPrint(void) {
-  if (paManVersion)
-    printf("%s\n", paManVersion); else
-    printf("No MAN version\n"); if (paManCopyright)
-    printf("%s\n\n", paManCopyright); else
-    printf("No MAN Copyright\n"); if (paManAuthor)
-    printf("%s\n", paManAuthor); else
+  if (paManVersion) {
+    printf("%s\n", paManVersion);
+  } else {
+    printf("No MAN version\n");
+  } if (paManCopyright) {
+    printf("%s\n\n", paManCopyright);
+  } else {
+    printf("No MAN Copyright\n");
+  } if (paManAuthor) {
+    printf("%s\n", paManAuthor);
+  } else {
     printf("No MAN Author\n");
+  }
 }
 
 /* ****************************************************************************
@@ -439,8 +482,10 @@ static void paManUsage(void) {
   paIterateInit();
 
   while ((aP = paIterateNext(paiList)) != NULL) {
-    if (aP->sort == PaHid)
-      continue; if ((aP->what & PawOption) == 0) {
+    if (aP->sort == PaHid) {
+      continue;
+    }
+    if ((aP->what & PawOption) == 0) {
       printf("Skipping '%s' (what == %d)\n", aP->option, aP->what);
       continue;
     }
@@ -456,18 +501,28 @@ static void paManUsage(void) {
 static void paManHelp(void) {
   paExitOnUsage = false;
 
-  if (paManSynopsis)
-    printf("Usage: %s %s\n", paProgName, paManSynopsis); else
-    printf("Usage: %s <no synopsis available>\n", paProgName); if (paManShortDescription)
-    printf("%s\n", paManShortDescription); else
-    printf("%s (short description) ...\n", paProgName); paManUsage();
+  if (paManSynopsis) {
+    printf("Usage: %s %s\n", paProgName, paManSynopsis);
+  } else {
+    printf("Usage: %s <no synopsis available>\n", paProgName);
+  } if (paManShortDescription) {
+    printf("%s\n", paManShortDescription);
+  } else {
+    printf("%s (short description) ...\n", paProgName);
+  } paManUsage();
 
-  if (paManDescription)
-    printf("%s\n", paManDescription); else
-    printf("<No man description available>\n"); if (paManExitStatus)
-    printf("Exit status:\n %s\n", paManExitStatus); else
-    printf("Exit status:\n <no exit status available>\n"); if (paManReportingBugs)
-    printf("Report %s %s\n", paProgName, paManReportingBugs); fflush(stdout);
+  if (paManDescription) {
+    printf("%s\n", paManDescription);
+  } else {
+    printf("<No man description available>\n");
+  } if (paManExitStatus) {
+    printf("Exit status:\n %s\n", paManExitStatus);
+  } else {
+    printf("Exit status:\n <no exit status available>\n");
+  } if (paManReportingBugs) {
+    printf("Report %s %s\n", paProgName, paManReportingBugs);
+  }
+  fflush(stdout);
 }
 
 /* ****************************************************************************

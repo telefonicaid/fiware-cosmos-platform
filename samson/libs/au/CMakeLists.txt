@@ -159,7 +159,6 @@ string/split.cpp
 
 SET (HEADERS
 S.h
-Object.h
 Status.h
 Singleton.h
 au.pb.h
@@ -201,13 +200,12 @@ daemonize.h
 )
 
 SET (SOURCES
-Object.cpp
 Status.cpp
 au.pb.cc
 TemporalBuffer.cpp
 #charset.cpp
 utils.cpp
-
+Singleton.cpp
 Descriptors.cpp
 gpb.cpp
 CommandLine.cpp

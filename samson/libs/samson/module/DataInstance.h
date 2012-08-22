@@ -40,9 +40,10 @@ public:
   virtual bool checkType(const char *type) = 0;
   virtual int serial_compare(char *data1, char *data2) = 0;
   virtual void setFromString(const char *str) {
-    if (str == NULL)
+    if (str == NULL) {
       return;
-     // Set value from a char* ( used to lookup by key )
+    }
+    // Set value from a char* ( used to lookup by key )
   }
 
   // Hash type check to avoid errors
@@ -93,10 +94,12 @@ public:
   }
 
   void destroy() {
-    if (key)
+    if (key) {
       delete key;
-    if (value)
+    }
+    if (value) {
       delete value;
+    }
   }
 };
 }  // ss namespace

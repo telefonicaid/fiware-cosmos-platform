@@ -41,41 +41,43 @@ StreamConnector::StreamConnector() : token("SamsonConnector::token_channels") {
 }
 
 void StreamConnector::init_remove_connections_service() {
-  if (service)
+  if (service) {
     return;   // Already created
-
+  }
   service = new StreamConnectorService(this);
   au::Status s = service->InitService();
   if (s != au::OK) {
-    log( au::SharedPointer<Log> ( new Log("SamsonConnector"
-                , "Warning"
-                , "Not possible to start service to receive connections from samsonConnectorClient")));
+    log(au::SharedPointer<Log> (new Log("SamsonConnector"
+                                        , "Warning"
+                                        ,
+                                        "Not possible to start service to receive connections from samsonConnectorClient")));
     delete service;
     service = NULL;
   } else {
-    log( au::SharedPointer<Log> ( new Log("SamsonConnector"
-                , "Message"
-                , "Console Service started")));
+    log(au::SharedPointer<Log> (new Log("SamsonConnector"
+                                        , "Message"
+                                        , "Console Service started")));
   }
 }
 
 void StreamConnector::init_reset_service() {
-  if (rest_service)
+  if (rest_service) {
     return;   // Already init
-
-   // Create the rest service
+  }
+  // Create the rest service
   rest_service = new au::network::RESTService(sc_web_port, this);
   au::Status s = rest_service->InitService();
   if (s != au::OK) {
-    log( au::SharedPointer<Log> ( new Log("REST", "error", au::str("Error opening REST interface on port %d", sc_web_port))));
+    log(au::SharedPointer<Log> (new Log("REST", "error", au::str("Error opening REST interface on port %d", sc_web_port))));
     delete rest_service;
     rest_service = NULL;
   }
 }
 
 void StreamConnector::init_inter_channel_connections_service() {
-  if (inter_channel_listener)
+  if (inter_channel_listener) {
     return;
+  }
 
   // Create a listener over port SAMSON_CONNECTOR_INTERCHANNEL_PORT to receive inter channel connections
   int p = SAMSON_CONNECTOR_INTERCHANNEL_PORT;
@@ -84,16 +86,18 @@ void StreamConnector::init_inter_channel_connections_service() {
 
   if (s != au::OK) {
     log(au::SharedPointer<Log> (new Log("SamsonConnector"
-                , "Warning"
-                , au::str("Not possible to init inter-channel listener at port %d. This could be a major issue", p))));
+                                        , "Warning"
+                                        , au::str(
+                                          "Not possible to init inter-channel listener at port %d. This could be a major issue",
+                                          p))));
 
     // Delete instance
     delete inter_channel_listener;
     inter_channel_listener = NULL;
   } else {
-    log( au::SharedPointer<Log> ( new Log("SamsonConnector"
-                , "Message"
-                , "Interchannel service started")));
+    log(au::SharedPointer<Log> (new Log("SamsonConnector"
+                                        , "Message"
+                                        , "Interchannel service started")));
   }
 }
 
@@ -183,12 +187,16 @@ void StreamConnector::process(au::SharedPointer<au::network::RESTServiceCommand>
     std::string channel_name = command->path_components()[1];
     std::string splitter_name;
 
-    if (command->path_components().size() > 2)
-      splitter_name = command->path_components()[2]; au::ErrorManager error;
+    if (command->path_components().size() > 2) {
+      splitter_name = command->path_components()[2];
+    }
+    au::ErrorManager error;
     process_command(au::str("add_channel %s %s", channel_name.c_str(), splitter_name.c_str()), &error);
-    if (error.IsActivated())
-      command->AppendFormatedError(error.GetMessage()); else
-      command->AppendFormatedElement("Result", "OK"); return;
+    if (error.IsActivated()) {
+      command->AppendFormatedError(error.GetMessage());
+    } else {
+      command->AppendFormatedElement("Result", "OK");
+    } return;
   }
 
   if (( command->path_components()[0] == "add_input_adaptor" ) ||
@@ -205,9 +213,11 @@ void StreamConnector::process(au::SharedPointer<au::network::RESTServiceCommand>
 
     au::ErrorManager error;
     process_command(au::str("%s %s %s", operation.c_str(), name.c_str(), format.c_str()), &error);
-    if (error.IsActivated())
-      command->AppendFormatedError(error.GetMessage()); else
-      command->AppendFormatedElement("Result", "OK"); return;
+    if (error.IsActivated()) {
+      command->AppendFormatedError(error.GetMessage());
+    } else {
+      command->AppendFormatedElement("Result", "OK");
+    } return;
   }
 }
 
@@ -322,15 +332,25 @@ void StreamConnector::autoComplete(au::ConsoleAutoComplete *info) {
   if (( info->completingSecondWord("add_input_adaptor"))
       || ( info->completingSecondWord("add_output_adaptor"))
       || ( info->completingSecondWord("remove_channel")))
+  {
     // Autocomplete with channel names
     autoCompleteWithChannelNames(info);
-  if (info->completingSecondWord("show_channels"))
-    info->add("-data"); if (info->completingSecondWord("show_adaptors"))
-    info->add("-data"); if (info->completingSecondWord("show_connections"))
-    info->add("-data"); if (info->completingSecondWord("remove_adapter"))
+  }
+  if (info->completingSecondWord("show_channels")) {
+    info->add("-data");
+  }
+  if (info->completingSecondWord("show_adaptors")) {
+    info->add("-data");
+  }
+  if (info->completingSecondWord("show_connections")) {
+    info->add("-data");
+  }
+  if (info->completingSecondWord("remove_adapter")) {
     // Autocomplete with channel names
-    autoCompleteWithAdaptorsNames(info); if (( info->firstWord() == "add_input_to_channel" ) &&
-                                             info->completingThirdWord())
+    autoCompleteWithAdaptorsNames(info);
+  }
+  if (( info->firstWord() == "add_input_to_channel" ) &&
+      info->completingThirdWord())
   {
     info->setHelpMessage("add_input_to_channel channel [port:8888] [connection:host:port] [samson:host:queue]");
     info->add("connection:", "connection:", false);
@@ -354,8 +374,9 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
   // Command line to be processed
   CommandLine cmdLine(command);
 
-  if (cmdLine.get_num_arguments() == 0)
+  if (cmdLine.get_num_arguments() == 0) {
     return;
+  }
 
   // My commands
   std::string main_command = cmdLine.get_argument(0);
@@ -377,8 +398,10 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
   if (main_command == "logs") {
     size_t limits = 0;
 
-    if (cmdLine.get_num_arguments() > 1)
-      limits = atoi(cmdLine.get_argument(1).c_str()); LogManager *log_manager = au::Singleton<LogManager>::shared();
+    if (cmdLine.get_num_arguments() > 1) {
+      limits = atoi(cmdLine.get_argument(1).c_str());
+    }
+    LogManager *log_manager = au::Singleton<LogManager>::shared();
     au::tables::Table *table = log_manager->getLogsTable(limits);
 
     error->AddMessage(table->str());
@@ -394,18 +417,22 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
       au::StringVector values("Remove console");
       values.Push(sc_console_port);
 
-      if (service)
-        values.push_back(service->GetStringStatus()); else
-        values.push_back("NOT ACTIVATED"); table.addRow(values);
+      if (service) {
+        values.push_back(service->GetStringStatus());
+      } else {
+        values.push_back("NOT ACTIVATED");
+      } table.addRow(values);
     }
 
     {
       au::StringVector values("REST");
       values.Push(sc_web_port);
 
-      if (rest_service)
-        values.push_back(rest_service->GetStringStatus()); else
-        values.push_back("NOT ACTIVATED"); table.addRow(values);
+      if (rest_service) {
+        values.push_back(rest_service->GetStringStatus());
+      } else {
+        values.push_back("NOT ACTIVATED");
+      } table.addRow(values);
     }
 
 
@@ -414,9 +441,11 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
       values.Push(SAMSON_CONNECTOR_INTERCHANNEL_PORT);
 
       if (inter_channel_listener) {
-        if (inter_channel_listener->IsNetworkListenerRunning())
-          values.push_back("Listening"); else
+        if (inter_channel_listener->IsNetworkListenerRunning()) {
+          values.push_back("Listening");
+        } else {
           values.push_back("Not Listening");
+        }
       } else {
         values.push_back("NOT ACTIVATED");
       }
@@ -461,8 +490,10 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
   if (main_command == "show_channels") {
     std::string table_type = "default";
 
-    if (cmdLine.isDataFlag())
-      table_type = "data"; au::tables::Table *table = getChannelsTable(table_type);
+    if (cmdLine.isDataFlag()) {
+      table_type = "data";
+    }
+    au::tables::Table *table = getChannelsTable(table_type);
     error->AddMessage(table->str());
     delete table;
     return;
@@ -471,8 +502,10 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
   if (main_command == "show_adaptors") {
     std::string table_type = "default";
 
-    if (cmdLine.isDataFlag())
-      table_type = "data"; au::tables::Table *table = getItemsTable(table_type);
+    if (cmdLine.isDataFlag()) {
+      table_type = "data";
+    }
+    au::tables::Table *table = getItemsTable(table_type);
     error->AddMessage(table->str());
     delete table;
 
@@ -483,8 +516,10 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     std::string table_type = "default";
     std::string select_channel = "";
 
-    if (cmdLine.isDataFlag())
-      table_type = "data"; au::tables::Table *table = getConnectionsTable(table_type, select_channel);
+    if (cmdLine.isDataFlag()) {
+      table_type = "data";
+    }
+    au::tables::Table *table = getConnectionsTable(table_type, select_channel);
     error->AddMessage(table->str());
     delete table;
     return;
@@ -498,7 +533,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
   }
 
   // Log activity ( command that modify state )
-  log( au::SharedPointer<Log> (new Log("SamsonConnector", "Message", command)));
+  log(au::SharedPointer<Log> (new Log("SamsonConnector", "Message", command)));
 
   if (main_command == "add_channel") {
     if (cmdLine.get_num_arguments() < 2) {
@@ -508,8 +543,10 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
 
     std::string name = cmdLine.get_argument(1);
     std::string splitter = "";
-    if (cmdLine.get_num_arguments() > 2)
-      splitter = cmdLine.get_argument(2); if (channels_.findInMap(name) != NULL) {
+    if (cmdLine.get_num_arguments() > 2) {
+      splitter = cmdLine.get_argument(2);
+    }
+    if (channels_.findInMap(name) != NULL) {
       error->set(au::str("Channel %s already exist", name.c_str()));
       return;
     }
@@ -551,11 +588,13 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
 
     channel->add_input(name, adapter_definition, error);
 
-    if (!error->IsActivated())
+    if (!error->IsActivated()) {
       error->AddMessage(au::str("Input adapter %s.%s (%s) added correctly"
                                 , channel_name.c_str()
                                 , name.c_str()
-                                , adapter_definition.c_str())); return;
+                                , adapter_definition.c_str()));
+    }
+    return;
   }
 
   if (main_command == "add_output_adaptor") {
@@ -586,11 +625,13 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     }
 
     channel->add_output(name, adapter_definition, error);
-    if (!error->IsActivated())
+    if (!error->IsActivated()) {
       error->AddMessage(au::str("Output adapter %s.%s (%s) added correctly"
                                 , channel_name.c_str()
                                 , name.c_str()
-                                , adapter_definition.c_str())); return;
+                                , adapter_definition.c_str()));
+    }
+    return;
   }
 
   if (main_command == "remove_channel") {
@@ -612,8 +653,10 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
     channel->cancel_channel();
     delete channel;
 
-    if (!error->IsActivated())
-      error->AddMessage(au::str("Channel %s removed correclty", channel_name.c_str())); return;
+    if (!error->IsActivated()) {
+      error->AddMessage(au::str("Channel %s removed correclty", channel_name.c_str()));
+    }
+    return;
   }
 
   if (main_command == "remove_adapter") {
@@ -641,8 +684,10 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
 
     channel->remove_item(full_path_components[1], error);
 
-    if (!error->IsActivated())
-      error->AddMessage(au::str("Adaptor %s removed correclty", full_name.c_str())); return;
+    if (!error->IsActivated()) {
+      error->AddMessage(au::str("Adaptor %s removed correclty", full_name.c_str()));
+    }
+    return;
   }
 
   if (main_command == "remove_finished_adaptors_and_connections") {
@@ -670,9 +715,11 @@ void StreamConnector::remove_finished_items_and_connections(au::ErrorManager *er
 au::tables::Table *StreamConnector::getChannelsTable(std::string type) {
   std::string fields;
 
-  if (type == "data")
-    fields = "Channel,left|#adaptors|#connections|In Bytes|In Bytes/s|Out Bytes|Out Bytes/s"; else
-    fields = "Channel,left|Inputs|splitter,left|Outputs,left"; au::tables::Table *table = new au::tables::Table(fields);
+  if (type == "data") {
+    fields = "Channel,left|#adaptors|#connections|In Bytes|In Bytes/s|Out Bytes|Out Bytes/s";
+  } else {
+    fields = "Channel,left|Inputs|splitter,left|Outputs,left";
+  } au::tables::Table *table = new au::tables::Table(fields);
   table->setTitle("Channels");
 
   // Review all channels
@@ -726,9 +773,11 @@ au::tables::Table *StreamConnector::getConnectionsTable(std::string type, std::s
 
   std::string fields;
 
-  if (type == "data")
-    fields = "Name,left|Type,left|Description,left|Buffer|Buffer (mem)|In Bytes|In Bytes/s|Out Bytes|Out Bytes/s"; else
+  if (type == "data") {
+    fields = "Name,left|Type,left|Description,left|Buffer|Buffer (mem)|In Bytes|In Bytes/s|Out Bytes|Out Bytes/s";
+  } else {
     fields = "Name,left|Type,left|Description,left|Finish|Status,left|Info,left";
+  }
   au::tables::Table *table = new au::tables::Table(fields);
   table->setTitle("Connections");
 
@@ -754,8 +803,10 @@ au::tables::Table *StreamConnector::getConnectionsTable(std::string type, std::s
         Connection *connection = it_connections->second;
 
         // Draw separation line if necessary
-        if (( previous_channel ) && ( previous_channel != channel ))
-          table->addSeparator(); previous_channel = channel;
+        if (( previous_channel ) && ( previous_channel != channel )) {
+          table->addSeparator();
+        }
+        previous_channel = channel;
 
         // Get the values for the connections
         au::StringVector values;
@@ -776,9 +827,11 @@ au::tables::Table *StreamConnector::getConnectionsTable(std::string type, std::s
           values.push_back(au::str(connection->traffic_statistics.get_output_total()));
           values.push_back(au::str(connection->traffic_statistics.get_output_rate()));
         } else {
-          if (connection->is_finished())
-            values.push_back("F"); else
-            values.push_back(""); values.push_back(connection->getConnectionStatus());
+          if (connection->is_finished()) {
+            values.push_back("F");
+          } else {
+            values.push_back("");
+          } values.push_back(connection->getConnectionStatus());
           values.push_back(connection->getStatus());
         }
 
@@ -814,9 +867,11 @@ au::tables::Table *StreamConnector::getItemsTable(std::string type) {
 
   std::string fields;
 
-  if (type == "data")
-    fields = "Name,left|Type,left|Description,left|#connections|In Bytes|In Bytes/s|Out Bytes|Out Bytes/s"; else
-    fields = "Name,left|Type,left|Description,left|Finish|Status"; au::tables::Table *table = new au::tables::Table(
+  if (type == "data") {
+    fields = "Name,left|Type,left|Description,left|#connections|In Bytes|In Bytes/s|Out Bytes|Out Bytes/s";
+  } else {
+    fields = "Name,left|Type,left|Description,left|Finish|Status";
+  } au::tables::Table *table = new au::tables::Table(
     fields);
   table->setTitle("Adaptors");
 
@@ -844,9 +899,11 @@ au::tables::Table *StreamConnector::getItemsTable(std::string type) {
         values.push_back(au::str(item->traffic_statistics.get_output_total()));
         values.push_back(au::str(item->traffic_statistics.get_output_rate()));
       } else {
-        if (item->is_finished())
-          values.push_back("F"); else
-          values.push_back(""); values.push_back(item->getStatus());
+        if (item->is_finished()) {
+          values.push_back("F");
+        } else {
+          values.push_back("");
+        } values.push_back(item->getStatus());
       }
 
 
@@ -857,22 +914,22 @@ au::tables::Table *StreamConnector::getItemsTable(std::string type) {
     it_channels++;
 
     // Write a separator in the table if this is not the last line of the table
-    if (it_channels !=  channels_.end())
-      if (channel->items.size() > 0)
+    if (it_channels !=  channels_.end()) {
+      if (channel->items.size() > 0) {
         table->addSeparator();
+      }
+    }
   }
 
   return table;
 }
-  
-  void StreamConnector::log( const std::string& name, const std::string& type, const std::string& message)
-  {
-    au::SharedPointer<stream_connector::Log> my_log (new stream_connector::Log(name,type,message));
-    log(my_log);
-  }
 
+void StreamConnector::log(const std::string& name, const std::string& type, const std::string& message) {
+  au::SharedPointer<stream_connector::Log> my_log(new stream_connector::Log(name, type, message));
+  log(my_log);
+}
 
-void StreamConnector::log(au::SharedPointer<Log> log ) {
+void StreamConnector::log(au::SharedPointer<Log> log) {
   au::TokenTaker tt(&token);
 
   // Create au::ErrorManager element
@@ -880,17 +937,21 @@ void StreamConnector::log(au::SharedPointer<Log> log ) {
 
   std::string type = log->getType();
 
-  if (type == "Warning")
-    error.AddWarning(log->getNameAndMessage()); else if (type == "Error")
-    error.AddError(log->getNameAndMessage()); else
-    error.AddMessage(log->getNameAndMessage()); if (interactive) {
+  if (type == "Warning") {
+    error.AddWarning(log->getNameAndMessage());
+  } else if (type == "Error") {
+    error.AddError(log->getNameAndMessage());
+  } else {
+    error.AddMessage(log->getNameAndMessage());
+  } if (interactive) {
     au::Console::write(&error);
   } else if (run_as_daemon) {
     // Nothing here
   } else {
     // Print on screen
-    if (paVerbose)
+    if (paVerbose) {
       std::cerr << error.str();
+    }
   }
 
 
@@ -952,13 +1013,13 @@ void StreamConnector::select_channel(InputInterChannelConnection *connection, st
 std::string StreamConnector::getPasswordForUser(std::string user) {
   au::TokenTaker tt(&token);
 
-  return environment.get(au::str("user_%s", user.c_str()), "");
+  return environment.Get(au::str("user_%s", user.c_str()), "");
 }
 
 void StreamConnector::setPasswordForUser(std::string user, std::string password) {
   au::TokenTaker tt(&token);
 
-  environment.set(au::str("user_%s", user.c_str()), password);
+  environment.Set(au::str("user_%s", user.c_str()), password);
 }
 
 void StreamConnector::report_output_size(size_t size) {

@@ -36,6 +36,20 @@ public:
     list_.push_back(v);
   }
 
+  void Push(const Queue<V>& queue) {
+    std::vector<SharedPointer<V> > items = queue.items();
+    for (size_t i = 0; i < items.size(); i++) {
+      list_.push_back(items[i]);
+    }
+  }
+
+  void PushFront(const Queue<V>& queue) {
+    std::vector<SharedPointer<V> > items = queue.items();
+    for (int i = (int)items.size() - 1; i >= 0; i--) {
+      list_.push_front(items[i]);
+    }
+  }
+
   // Handy function to push newly allocated objects
   void Push(V *v) {
     SharedPointer<V> tmp_v(v);
@@ -53,30 +67,32 @@ public:
   }
 
   SharedPointer<V> Front() {
-    if (list_.size() == 0)
+    if (list_.size() == 0) {
       return SharedPointer<V>(NULL);
-    else
+    } else {
       return list_.front();
+    }
   }
 
   SharedPointer<V> Back() {
-    if (list_.size() == 0)
+    if (list_.size() == 0) {
       return NULL;
-    else
+    } else {
       return list_.back();
+    }
   }
 
-  void Clear()
-  {
+  void Clear() {
     list_.clear();
   }
-  
+
   // Extract an element from the queue
   bool Contains(const SharedPointer<V>& v) {
     typename std::list< SharedPointer<V> >::iterator iter;
     for (iter = list_.begin(); iter != list_.end(); iter++) {
-      if (*iter == v)
+      if (*iter == v) {
         return true;
+      }
     }
     return false;
   }
@@ -84,20 +100,20 @@ public:
   void ExtractAll(const SharedPointer<V>& v) {
     typename std::list< SharedPointer<V> >::iterator iter;
     for (iter = list_.begin(); iter != list_.end(); ) {
-      if (*iter == v)
+      if (*iter == v) {
         list_.erase(iter++);
-      else
+      } else {
         ++iter;
+      }
     }
   }
 
-  void LimitToLastItems( size_t num )
-  {
-    while ( list_.size() > num ) {
+  void LimitToLastItems(size_t num) {
+    while (list_.size() > num) {
       list_.pop_front();
     }
   }
-  
+
   size_t size() const {
     return list_.size();
   }

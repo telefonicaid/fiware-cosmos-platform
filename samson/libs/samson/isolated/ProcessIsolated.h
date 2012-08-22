@@ -91,12 +91,14 @@ public:
   // Not pure virtual
   // --------------------------------------------------------------------------
   virtual void generateKeyValues(ProcessWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };
   virtual void generateTXT(TXTWriter *writer) {
-    if (writer == NULL)
+    if (writer == NULL) {
       return;
+    }
   };
 
   // --------------------------------------------------------------------------

@@ -46,8 +46,9 @@ public:
     Uint64Set intersection_set;
 
     for (iterator i = begin(); i != end(); i++) {
-      if (set.contains(*i))
+      if (set.contains(*i)) {
         intersection_set.insert(*i);
+      }
     }
     return intersection_set;
   }
@@ -56,8 +57,9 @@ public:
     Uint64Set intersection_set;
 
     for (iterator i = begin(); i != end(); i++) {
-      if (!set.contains(*i))
+      if (!set.contains(*i)) {
         intersection_set.insert(*i);
+      }
     }
     return intersection_set;
   }
@@ -73,8 +75,9 @@ public:
 
   void remove_non_included_in(const Uint64Set& set) {
     for (iterator i = begin(); i != end(); i++) {
-      if (!set.contains(*i))
+      if (!set.contains(*i)) {
         erase(i);
+      }
     }
   }
 

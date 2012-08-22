@@ -143,10 +143,11 @@ public:
 
   // to be printed as it is...
   std::string str() {
-    if (values.size() == 1)
+    if (values.size() == 1) {
       return values[0];
-    else
+    } else {
       return "[ " + values.str() + " ]";
+    }
   }
 };
 

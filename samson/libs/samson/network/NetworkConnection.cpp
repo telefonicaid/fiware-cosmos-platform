@@ -69,9 +69,13 @@ NetworkConnection::~NetworkConnection() {
   // Make sure everything in this class is gone
   CloseAndStopBackgroundThreads();
 
-  if (running_t_read)
-    LM_X(1, ("Deleting Network connection with a running read thread")); if (running_t_write)
-    LM_X(1, ("Deleting Network connection with a running write thread")); delete socket_connection_;
+  if (running_t_read) {
+    LM_X(1, ("Deleting Network connection with a running read thread"));
+  }
+  if (running_t_write) {
+    LM_X(1, ("Deleting Network connection with a running write thread"));
+  }
+  delete socket_connection_;
 }
 
 // Wake up writer thread
@@ -104,9 +108,11 @@ void NetworkConnection::CloseAndStopBackgroundThreads() {
   // Wait until both thread are gone
   au::Cronometer cronometer;
   while (true) {
-    if (!running_t_read || ( pthread_equal(pthread_self(), t_read)))
-      if (!running_t_write || ( pthread_equal(pthread_self(), t_write)))
+    if (!running_t_read || ( pthread_equal(pthread_self(), t_read))) {
+      if (!running_t_write || ( pthread_equal(pthread_self(), t_write))) {
         return;
+      }
+    }
 
     usleep(100000);
     if (cronometer.seconds() > 1) {
@@ -134,7 +140,7 @@ void NetworkConnection::readerThread() {
     au::Status s = packet->read(socket_connection_, &total_read);
 
     // Monitor rate
-    rate_in.push(total_read);
+    rate_in.Push(total_read);
 
     if (s == au::OK) {
       packet->from = node_identifier_;   // Set from "node identifier"
@@ -148,8 +154,9 @@ void NetworkConnection::readerThread() {
 void NetworkConnection::writerThread() {
   while (1) {
     // Quit if this connection is closed
-    if (socket_connection_->IsClosed())
+    if (socket_connection_->IsClosed()) {
       return;
+    }
 
     // Get the next packet to be sent by me
     PacketPointer packet = network_manager_->multi_packet_queue.Front(node_identifier_);
@@ -161,10 +168,11 @@ void NetworkConnection::writerThread() {
       au::Status s = packet->write(socket_connection_, &total_write);
 
       // Monitor rate
-      rate_out.push(total_write);
+      rate_out.Push(total_write);
 
-      if (s == au::OK)
+      if (s == au::OK) {
         network_manager_->multi_packet_queue.Pop(node_identifier_);
+      }
     } else {
       // Block this thread until new packets are pushed or connection is restablish...
       au::TokenTaker tt(&token_);
@@ -180,18 +188,20 @@ std::string NetworkConnection::str() {
 
   output << "[" << (running_t_read ? "R" : " ") << (running_t_write ? "W" : " ") << "]";
 
-  if (socket_connection_->IsClosed())
-    output << " Disconnected "; else
-    output << " Connected    "; output << "[ " << node_identifier_.str() << " ] ";
+  if (socket_connection_->IsClosed()) {
+    output << " Disconnected ";
+  } else {
+    output << " Connected    ";
+  } output << "[ " << node_identifier_.str() << " ] ";
   return output.str();
 }
 
 size_t NetworkConnection::get_rate_in() {
-  return rate_in.getRate();
+  return rate_in.rate();
 }
 
 size_t NetworkConnection::get_rate_out() {
-  return rate_out.getRate();
+  return rate_out.rate();
 }
 
 NodeIdentifier NetworkConnection::node_identifier() {
@@ -207,17 +217,19 @@ void NetworkConnection::fill(gpb::CollectionRecord *record, const Visualization&
   ::samson::add(record, "user", user, "different,left");
   ::samson::add(record, "connection", connection_type, "different,left");
 
-  if (socket_connection_->IsClosed())
-    ::samson::add(record, "status", "disconnected", "different,left"); else
-    ::samson::add(record, "status", "connected", "different,left"); ::samson::add(record, "host",
-                                                                                  socket_connection_->host_and_port(),
-                                                                                  "different");
+  if (socket_connection_->IsClosed()) {
+    ::samson::add(record, "status", "disconnected", "different,left");
+  } else {
+    ::samson::add(record, "status", "connected", "different,left");
+  } ::samson::add(record, "host",
+                  socket_connection_->host_and_port(),
+                  "different");
 
-  ::samson::add(record, "In (B)", rate_in.getTotalSize(), "f=uint64,sum");
-  ::samson::add(record, "Out (B)", rate_out.getTotalSize(), "f=uint64,sum");
+  ::samson::add(record, "In (B)", rate_in.size(), "f=uint64,sum");
+  ::samson::add(record, "Out (B)", rate_out.size(), "f=uint64,sum");
 
-  ::samson::add(record, "In (B/s)", (size_t)rate_in.getRate(), "f=uint64,sum");
-  ::samson::add(record, "Out (B/s)", (size_t)rate_out.getRate(), "f=uint64,sum");
+  ::samson::add(record, "In (B/s)", (size_t)rate_in.rate(), "f=uint64,sum");
+  ::samson::add(record, "Out (B/s)", (size_t)rate_out.rate(), "f=uint64,sum");
 }
 
 std::string NetworkConnection::getName() {

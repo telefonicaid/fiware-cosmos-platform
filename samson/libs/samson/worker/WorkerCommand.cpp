@@ -95,22 +95,26 @@ public:
     size_t total = 0;
 
     for (size_t i = 0; i < items.size(); i++) {
-      if (items[i].range.IsOverlapped(range))
+      if (items[i].range.IsOverlapped(range)) {
         total += items[i].size;
+      }
     }
     return total;
   }
 };
 
 bool ignoreCommand(std::string command) {
-  if (command.length() == 0)
+  if (command.length() == 0) {
     return true;
+  }
 
   for (size_t i = 0; i < command.length(); i++) {
     if (command[i] != ' ') {
-      if (command[i] == '#')
-        return true; else
+      if (command[i] == '#') {
+        return true;
+      } else {
         return false;
+      }
     }
   }
 
@@ -189,25 +193,26 @@ bool WorkerCommand::isFinished() {
 void WorkerCommand::runCommand(std::string command, au::ErrorManager *error) {
   // LM_M(("WC Running command '%s'" , command.c_str() ));
 
-  if (ignoreCommand(command))
+  if (ignoreCommand(command)) {
     return;
+  }
 
   // Parse command
   au::CommandLine cmd;
-  cmd.set_flag_boolean("clear_inputs");
-  cmd.set_flag_boolean("f");
+  cmd.SetFlagBoolean("clear_inputs");
+  cmd.SetFlagBoolean("f");
 
-  cmd.set_flag_boolean("v");
-  cmd.set_flag_boolean("vv");
-  cmd.set_flag_boolean("vvv");
+  cmd.SetFlagBoolean("v");
+  cmd.SetFlagBoolean("vv");
+  cmd.SetFlagBoolean("vvv");
 
-  cmd.set_flag_boolean("new");
-  cmd.set_flag_boolean("remove");
-  cmd.set_flag_string("prefix", "");
-  cmd.parse(command);
+  cmd.SetFlagBoolean("new");
+  cmd.SetFlagBoolean("remove");
+  cmd.SetFlagString("prefix", "");
+  cmd.Parse(command);
 
 
-  std::string prefix = cmd.get_flag_string("prefix");
+  std::string prefix = cmd.GetFlagString("prefix");
 
   if (cmd.get_num_arguments() == 0) {
     error->set("No command provided");
@@ -259,7 +264,7 @@ void WorkerCommand::runCommand(std::string command, au::ErrorManager *error) {
 
 
       au::CommandLine intern_cmdLine;
-      intern_cmdLine.parse(sub_command);
+      intern_cmdLine.Parse(sub_command);
 
       if (intern_cmdLine.get_argument(0) == "alias") {
         if (intern_cmdLine.get_num_arguments() < 3) {
@@ -346,14 +351,19 @@ bool compare_blocks_defrag(stream::Block *b, stream::Block *b2) {
   KVHeader h1 = b->getHeader();
   KVHeader h2 = b2->getHeader();
 
-  if (h1.range.hg_begin < h2.range.hg_begin)
-    return true; if (h1.range.hg_begin > h2.range.hg_begin)
+  if (h1.range.hg_begin < h2.range.hg_begin) {
+    return true;
+  }
+  if (h1.range.hg_begin > h2.range.hg_begin) {
     return false;
+  }
 
   // If the same
-  if (h1.range.hg_end > h2.range.hg_end)
-    return true; else
+  if (h1.range.hg_end > h2.range.hg_end) {
+    return true;
+  } else {
     return false;
+  }
 }
 
 static bool logFilter
@@ -383,23 +393,28 @@ static bool logFilter
 
   // No item - grep in all
   if (item == "XXXXX_NO_ITEM") {
-    if (strstr(all, value) != NULL)
-      return true; return false;
+    if (strstr(all, value) != NULL) {
+      return true;
+    }
+    return false;
   }
 
   if (item == "Type") {
-    if (strlen(value) != 1)
+    if (strlen(value) != 1) {
       return false;
+    }
 
-    if (value[0] != type)
+    if (value[0] != type) {
       return false;
+    }
 
     return true;
   }
 
   if (item == "FileName") {
-    if (strncmp(value, fileName, strlen(value)) == 0)
+    if (strncmp(value, fileName, strlen(value)) == 0) {
       return true;
+    }
 
     return false;
   }
@@ -422,8 +437,9 @@ typedef struct LogLineInfo {
 
 void WorkerCommand::run() {
   // Nothing to to if this is waiting for another thing
-  if (!pending_to_be_executed)
+  if (!pending_to_be_executed) {
     return;
+  }
 
   pending_to_be_executed = false;   // Not pending any more, except if something happen...
 
@@ -710,18 +726,24 @@ void WorkerCommand::run() {
     char *all        = NULL;
 
     while (1) {  // Until lmLogLineGet returns EOF (-2)
-      if (all != NULL) // strdup and free - a little slow ... I might replace this mechanism with a char[] ...
+      if (all != NULL) {  // strdup and free - a little slow ... I might replace this mechanism with a char[] ...
         free(all);
+      }
       lmPos = lmLogLineGet(&type, date, &ms, progName, fileName, &lineNo, &pid, &tid, funcName, message, lmPos,
                            &all);
       if (lmPos < 0) {
-        if (all != NULL)
-          free(all); break;
+        if (all != NULL) {
+          free(all);
+        }
+        break;
       }
 
-      if (filter != "no-argument")
-        if (logFilter(filter.c_str(), all, type, fileName) == false)
-          continue; logLine.type          = type;
+      if (filter != "no-argument") {
+        if (logFilter(filter.c_str(), all, type, fileName) == false) {
+          continue;
+        }
+      }
+      logLine.type          = type;
       logLine.date          = date;
       logLine.ms            = ms;
       logLine.progName      = progName;
@@ -735,9 +757,11 @@ void WorkerCommand::run() {
       lines.push_front(logLine);
 
       ++hits;
-      if (maxLines != 0)
-        if ((int)lines.size() > maxLines)
+      if (maxLines != 0) {
+        if ((int)lines.size() > maxLines) {
           lines.pop_back();
+        }
+      }
     }
 
     // Close fP for log file peeking ...
@@ -774,8 +798,18 @@ void WorkerCommand::run() {
 
   if (main_command == "wlog") {
     int vLevel;
-    if (lmVerbose5 == true) vLevel = 5; else if (lmVerbose4 == true) vLevel = 4; else if (lmVerbose3 == true) vLevel =
-        3; else if (lmVerbose2 == true) vLevel = 2; else if (lmVerbose  == true) vLevel = 1; else vLevel = 0;
+    if (lmVerbose5 == true) {
+      vLevel = 5;
+    } else if (lmVerbose4 == true) {
+      vLevel = 4;
+    } else if (lmVerbose3 == true) {
+      vLevel =
+        3;
+    } else if (lmVerbose2 == true) {
+      vLevel = 2;
+    } else if (lmVerbose  == true) {
+      vLevel = 1;
+    } else {  vLevel = 0; }
     samson::gpb::Collection *collection = new  samson::gpb::Collection();
     collection->set_title("Logs");
     collection->set_name("logs");
@@ -783,13 +817,19 @@ void WorkerCommand::run() {
     ::samson::add(record, "Verbose Level", vLevel, "left,different");
     collections.push_back(collection);
 
-    if (lmDebug)
-      ::samson::add(record, "Debug", "on", "left,different"); else
-      ::samson::add(record, "Debug", "off", "left,different"); if (lmReads)
-      ::samson::add(record, "Reads", "on", "left,different"); else
-      ::samson::add(record, "Reads", "off", "left,different"); if (lmWrites)
-      ::samson::add(record, "Writes", "on", "left,different"); else
-      ::samson::add(record, "Writes", "off", "left,different"); char levels[1024];
+    if (lmDebug) {
+      ::samson::add(record, "Debug", "on", "left,different");
+    } else {
+      ::samson::add(record, "Debug", "off", "left,different");
+    } if (lmReads) {
+      ::samson::add(record, "Reads", "on", "left,different");
+    } else {
+      ::samson::add(record, "Reads", "off", "left,different");
+    } if (lmWrites) {
+      ::samson::add(record, "Writes", "on", "left,different");
+    } else {
+      ::samson::add(record, "Writes", "off", "left,different");
+    } char levels[1024];
     lmTraceGet(levels);
 
     ::samson::add(record, "Trace levels", levels, "left,different");
@@ -838,10 +878,19 @@ void WorkerCommand::run() {
     } else if (subcommand == "get") {
       int vLevel;
 
-      if (lmVerbose5 == true) vLevel = 5; else if (lmVerbose4 == true) vLevel = 4; else if (lmVerbose3 ==
-                                                                                            true)
+      if (lmVerbose5 == true) {
+        vLevel = 5;
+      } else if (lmVerbose4 == true) {
+        vLevel = 4;
+      } else if (lmVerbose3 ==
+                 true)
+      {
         vLevel = 3;
-      else if (lmVerbose2 == true) vLevel = 2; else if (lmVerbose  == true) vLevel = 1; else vLevel = 0;
+      } else if (lmVerbose2 == true) {
+        vLevel = 2;
+      } else if (lmVerbose  == true) {
+        vLevel = 1;
+      } else { vLevel = 0; }
       samson::gpb::Collection *collection = new  samson::gpb::Collection();
       collection->set_title("Verbose");
       collection->set_name("verbose");
@@ -874,9 +923,11 @@ void WorkerCommand::run() {
       collection->set_name("debug_levels");
       samson::gpb::CollectionRecord *record = collection->add_record();
 
-      if (lmDebug)
-        ::samson::add(record, "Debug", "on", "left,different"); else
-        ::samson::add(record, "Debug", "off", "left,different"); collections.push_back(collection);
+      if (lmDebug) {
+        ::samson::add(record, "Debug", "on", "left,different");
+      } else {
+        ::samson::add(record, "Debug", "off", "left,different");
+      } collections.push_back(collection);
     } else {
       finishWorkerTaskWithError("Usage: wdebug [ off | on ]");
       return;
@@ -901,9 +952,11 @@ void WorkerCommand::run() {
       collection->set_name("reads_levels");
       samson::gpb::CollectionRecord *record = collection->add_record();
 
-      if (lmReads)
-        ::samson::add(record, "Reads", "on", "left,different"); else
-        ::samson::add(record, "Reads", "off", "left,different"); collections.push_back(collection);
+      if (lmReads) {
+        ::samson::add(record, "Reads", "on", "left,different");
+      } else {
+        ::samson::add(record, "Reads", "off", "left,different");
+      } collections.push_back(collection);
     } else {
       finishWorkerTaskWithError("Usage: wreads [ off | on ]");
       return;
@@ -928,9 +981,11 @@ void WorkerCommand::run() {
       collection->set_name("writes_levels");
       samson::gpb::CollectionRecord *record = collection->add_record();
 
-      if (lmWrites)
-        ::samson::add(record, "Writes", "on", "left,different"); else
-        ::samson::add(record, "Writes", "off", "left,different"); collections.push_back(collection);
+      if (lmWrites) {
+        ::samson::add(record, "Writes", "on", "left,different");
+      } else {
+        ::samson::add(record, "Writes", "off", "left,different");
+      } collections.push_back(collection);
     } else {
       finishWorkerTaskWithError("Usage: wwrites [ off | on ]");
       return;
@@ -1006,10 +1061,13 @@ void WorkerCommand::run() {
 
 
     // Send a trace to all delilahs
-    if (error)
-      samsonWorker->sendTrace("error", "delilah", full_message); else if (warning)
-      samsonWorker->sendTrace("warning", "delilah", full_message); else
-      samsonWorker->sendTrace("message", "delilah", full_message); finishWorkerTask();
+    if (error) {
+      samsonWorker->sendTrace("error", "delilah", full_message);
+    } else if (warning) {
+      samsonWorker->sendTrace("warning", "delilah", full_message);
+    } else {
+      samsonWorker->sendTrace("message", "delilah", full_message);
+    } finishWorkerTask();
     return;
   }
 
@@ -1128,17 +1186,21 @@ void WorkerCommand::run() {
     std::string caller = au::str("run_deliah_%s_%lu", au::code64_str(delilah_id).c_str(), delilah_component_id);
     samsonWorker->data_model->Commit(caller, command, &error);
 
-    if (error.IsActivated())
-      finishWorkerTaskWithError(error.GetMessage()); else
-      finishWorkerTask(); return;
+    if (error.IsActivated()) {
+      finishWorkerTaskWithError(error.GetMessage());
+    } else {
+      finishWorkerTask();
+    } return;
   }
 
   // Simple commands
   au::ErrorManager error;
   runCommand(command, &error);
-  if (error.IsActivated())
-    finishWorkerTaskWithError(error.GetMessage()); else
+  if (error.IsActivated()) {
+    finishWorkerTaskWithError(error.GetMessage());
+  } else {
     finishWorkerTask();
+  }
 }
 
 void WorkerCommand::finishWorkerTaskWithError(std::string error_message) {
@@ -1148,14 +1210,15 @@ void WorkerCommand::finishWorkerTaskWithError(std::string error_message) {
 
   // Notify everything so it is automatically canceled
   engine::Notification *notification = new engine::Notification("cancel");
-  notification->environment().set("id", worker_command_id);
+  notification->environment().Set("id", worker_command_id);
   engine::Engine::shared()->notify(notification);
 }
 
 void WorkerCommand::finishWorkerTask() {
-  if (finished)
+  if (finished) {
     // If this worker command is finished, not do anything else again.
     return;
+  }
 
   if (notify_finish) {
     PacketPointer p(new Packet(Message::WorkerCommandResponse));
@@ -1163,9 +1226,10 @@ void WorkerCommand::finishWorkerTask() {
     c->mutable_worker_command()->CopyFrom(*originalWorkerCommand);
 
     // Put the error if any
-    if (error.IsActivated())
+    if (error.IsActivated()) {
       // LM_M(("Sending error message %s" , error.GetMessage().c_str() ));
       c->mutable_error()->set_message(error.GetMessage());  // Set delilah id
+    }
     p->message->set_delilah_component_id(delilah_component_id);
 
     // Direction of this packets
@@ -1190,7 +1254,7 @@ stream::StreamOperationBase *WorkerCommand::getStreamOperation(Operation *op) {
   // Parsing the global command
   au::CommandLine cmd;
 
-  cmd.parse(command);
+  cmd.Parse(command);
 
   int pos_argument = 1;     // We skip the "run" parameter
 
@@ -1231,18 +1295,22 @@ void WorkerCommand::notify(engine::Notification *notification) {
   if (notification->isName(notification_process_request_response)) {
     num_pending_processes--;
 
-    if (notification->environment().isSet("error"))
-      error.set(notification->environment().get("error", "no_error")); checkFinish();
+    if (notification->environment().IsSet("error")) {
+      error.set(notification->environment().Get("error", "no_error"));
+    }
+    checkFinish();
     return;
   }
 
   if (notification->isName(notification_disk_operation_request_response)) {
     num_pending_disk_operations--;
-    if (notification->environment().isSet("error")) {
-      error.set(notification->environment().get("error", "no_error"));  // In case of push module, just reload modules
+    if (notification->environment().IsSet("error")) {
+      error.set(notification->environment().Get("error", "no_error"));  // In case of push module, just reload modules
     }
-    if (notification->environment().get("push_module", "no") == "yes")
-      ModulesManager::shared()->reloadModules(); checkFinish();
+    if (notification->environment().Get("push_module", "no") == "yes") {
+      ModulesManager::shared()->reloadModules();
+    }
+    checkFinish();
     return;
   }
 
@@ -1250,9 +1318,11 @@ void WorkerCommand::notify(engine::Notification *notification) {
 }
 
 void WorkerCommand::checkFinish() {
-  if (error.IsActivated())
-    finishWorkerTask(); else if (( num_pending_processes <= 0 ) && (num_pending_disk_operations <= 0 ))
+  if (error.IsActivated()) {
     finishWorkerTask();
+  } else if (( num_pending_processes <= 0 ) && (num_pending_disk_operations <= 0 )) {
+    finishWorkerTask();
+  }
 }
 
 void WorkerCommand::getInfo(std::ostringstream& output) {
@@ -1268,9 +1338,11 @@ void WorkerCommand::fill(samson::gpb::CollectionRecord *record, const Visualizat
 
   add(record, "id",  worker_command_id, "left,different");
 
-  if (finished)
-    add(record, "status", "finished", "left,different"); else
-    add(record, "status", "running", "left,different"); add(record, "command", command, "left,different");
+  if (finished) {
+    add(record, "status", "finished", "left,different");
+  } else {
+    add(record, "status", "running", "left,different");
+  } add(record, "command", command, "left,different");
   add(record, "#operations", num_pending_processes, "left,uint64,sum");
   add(record, "#disk_operations", num_pending_disk_operations, "left,uint64,sum");
   add(record, "error", error.GetMessage(), "left,different");

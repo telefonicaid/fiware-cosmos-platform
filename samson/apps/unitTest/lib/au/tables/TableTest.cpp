@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 
 
-TEST(auTableTest, simple) {
+TEST(au_Table, simple) {
   au::tables::TableCell cell1("val1");
 
   EXPECT_EQ(cell1.str(), "val1") << "Error in TableCell.str()";

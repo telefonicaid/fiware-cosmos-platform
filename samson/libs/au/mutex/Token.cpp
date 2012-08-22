@@ -10,7 +10,7 @@
 #include "au/string.h"
 #include "logMsg/logMsg.h"      // LM_M()
 
-//#define DEBUG_AU_TOKEN
+// #define DEBUG_AU_TOKEN
 
 namespace au {
 std::string GetThreadId(pthread_t t) {
@@ -30,12 +30,15 @@ Token::Token(const std::string& name) :
 
   int r_init = pthread_mutex_init(&lock_, 0);
 
-  if (r_init != 0)
-    LM_X(1, ("pthread_mutex_init for '%s' returned %d", name_.c_str(), r_init )); int t_init_cond = pthread_cond_init(
+  if (r_init != 0) {
+    LM_X(1, ("pthread_mutex_init for '%s' returned %d", name_.c_str(), r_init ));
+  }
+  int t_init_cond = pthread_cond_init(
     &block_, NULL);
 
-  if (t_init_cond != 0)
+  if (t_init_cond != 0) {
     LM_X(1, ("pthread_cond_init for '%s' returned %d", name_.c_str(), r_init ));
+  }
 }
 
 Token::~Token() {
@@ -57,13 +60,16 @@ void Token::Retain() {
 #endif
   // LOCK the mutex
   int ans = pthread_mutex_lock(&lock_);
-  if (ans)
+  if (ans) {
     LM_LE(("Error %d getting mutex  (EINVAL:%d, EFAULT:%d, EDEADLK:%d", ans, EINVAL, EFAULT, EDEADLK));
+  }
   pid_t my_own_pid_t = syscall(SYS_gettid);
 
-  if (locked_)
+  if (locked_) {
     LM_X(1, ("Internal error: Thread [%d] has retained au::Token (%s) previously locked by thread [%d]",
-             my_own_pid_t, name_.c_str(), token_owner_thread_id_ )); token_owner_thread_id_ = my_own_pid_t;
+             my_own_pid_t, name_.c_str(), token_owner_thread_id_ ));
+  }
+  token_owner_thread_id_ = my_own_pid_t;
   counter_ = 1;
   locked_ = true;
 
@@ -73,15 +79,20 @@ void Token::Retain() {
 void Token::Release() {
   // LM_LM(("Thread [%s] trying to releases token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_ ));
 
-  if (!locked_)
-    LM_LE(("Internal error: Releasing a non-locked au::Token:'%s'", name_.c_str())); pid_t my_own_pid_t = syscall(
+  if (!locked_) {
+    LM_LE(("Internal error: Releasing a non-locked au::Token:'%s'", name_.c_str()));
+  }
+  pid_t my_own_pid_t = syscall(
     SYS_gettid);
-  if (token_owner_thread_id_ != my_own_pid_t)
+  if (token_owner_thread_id_ != my_own_pid_t) {
     LM_LE(("Internal error: Releasing an au::Token '%s' not locked by me, owner:%d, me:%d", name_.c_str(),
-           token_owner_thread_id_, my_own_pid_t)); --counter_;
-  if (counter_ > 0)
+           token_owner_thread_id_, my_own_pid_t));
+  }
+  --counter_;
+  if (counter_ > 0) {
     // LM_LM(("Token %s is still locked by thread [%s] with counter %d" , name , GetThreadId( pthread_self() ).c_str() , counter_ ));
     return;
+  }
 
   // Flag this as unlocked
   locked_ = false;
@@ -101,25 +112,31 @@ void Token::Release() {
 }
 
 void Token::WakeUpAll() {
-  if (pthread_cond_broadcast(&block_) != 0)
+  if (pthread_cond_broadcast(&block_) != 0) {
     LM_X(1, ("Internal error at au::Token"));
+  }
 }
 
 void Token::WakeUp() {
-  if (pthread_cond_signal(&block_) != 0)
+  if (pthread_cond_signal(&block_) != 0) {
     LM_X(1, ("Internal error at au::Token"));
+  }
 }
 
 void Token::Stop() {
   // LM_LM(("Thread [%s] is being stopped at token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_ ));
 
   // You are supposed to be retaining this lock
-  if (!locked_)
-    LM_LE(("Internal error: Releasing a non-locked au::Token:'%s'", name_.c_str())); pid_t my_own_pid_t = syscall(
+  if (!locked_) {
+    LM_LE(("Internal error: Releasing a non-locked au::Token:'%s'", name_.c_str()));
+  }
+  pid_t my_own_pid_t = syscall(
     SYS_gettid);
-  if (token_owner_thread_id_ != my_own_pid_t)
+  if (token_owner_thread_id_ != my_own_pid_t) {
     LM_LE(("Internal error: Stopping an au::Token '%s' not locked by me, owner:%d, me:%d", name_.c_str(),
-           token_owner_thread_id_, my_own_pid_t)); int tmp_counter = counter_;  // Keep counter of retains
+           token_owner_thread_id_, my_own_pid_t));
+  }
+  int tmp_counter = counter_;                                                   // Keep counter of retains
   locked_ = false;  // We are temporally releasing this token
 
   // This unlock the mutex and froze the process in the condition
@@ -135,8 +152,10 @@ void Token::Stop() {
 bool Token::IsRetainedByMe() const {
   pid_t my_own_pid_t = syscall(SYS_gettid);
 
-  if (locked_ && (token_owner_thread_id_ == my_own_pid_t))
-    return true; else
+  if (locked_ && (token_owner_thread_id_ == my_own_pid_t)) {
+    return true;
+  } else {
     return false;
+  }
 }
 }

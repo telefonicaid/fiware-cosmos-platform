@@ -88,16 +88,19 @@ void consider_directory(std::string directory, au::tables::Table *table) {
   DIR *dp;
   struct dirent *dirp;
 
-  if ((dp  = opendir(directory.c_str())) == NULL)
+  if ((dp  = opendir(directory.c_str())) == NULL) {
     return;
+  }
 
   while ((dirp = readdir(dp)) != NULL) {
     std::string fileName = dirp->d_name;
 
     // Skip ".files"
-    if (fileName.length() > 0)
-      if (fileName[0] == '.')
+    if (fileName.length() > 0) {
+      if (fileName[0] == '.') {
         continue;  // Full path of the file
+      }
+    }
     std::string path = au::path_from_directory(directory, dirp->d_name);
 
     consider_file(path, table);
@@ -131,9 +134,12 @@ int main(int argC, const char *argV[]) {
     exit(-1);
   }
 
-  if (S_ISREG(info.st_mode))
-    consider_file(file_name, &table); else if (S_ISDIR(info.st_mode))
-    consider_directory(file_name, &table); table.setTitle("Module files");
+  if (S_ISREG(info.st_mode)) {
+    consider_file(file_name, &table);
+  } else if (S_ISDIR(info.st_mode)) {
+    consider_directory(file_name, &table);
+  }
+  table.setTitle("Module files");
   std::cout << table.str();
   std::cout << "\n";
 }

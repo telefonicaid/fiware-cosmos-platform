@@ -167,7 +167,7 @@ static const char *Smaz_cb[241] = {
 
 /* Reverse compression codebook, used for decompression */
 static const char *Smaz_rcb[254] = {
-  " ",      "the",      "e",             "t",                "a",                          "of",
+  " ",      "the",      "e",             "t",                "a",                 "of",
   "o",
   "and",
   "i",
@@ -175,94 +175,94 @@ static const char *Smaz_rcb[254] = {
   "s",
   "e ",     "r",
   " th",
-  " t",     "in",       "he",            "th",               "h",                          "he ",
+  " t",     "in",       "he",            "th",               "h",                 "he ",
   "to",
   "\r\n",   "l",
   "s ",
   "d",      " a",       "an",
-  "er",     "c",        " o",            "d ",               "on",                         " of",
+  "er",     "c",        " o",            "d ",               "on",                " of",
   "re",
   "of ",    "t ",       ", ",
   "is",     "u",        "at",
-  "   ",    "n ",       "or",            "which",            "f",                          "m",
+  "   ",    "n ",       "or",            "which",            "f",                 "m",
   "as",
   "it",
   "that",   "\n",
   "was",    "en",
-  "  ",     " w",       "es",            " an",              " i",                         "\r",
+  "  ",     " w",       "es",            " an",              " i",                "\r",
   "f ",
   "g",
   "p",      "nd",
   " s",     "nd ",      "ed ",
-  "w",      "ed",       "http://",       "for",              "te",                         "ing",
+  "w",      "ed",       "http://",       "for",              "te",                "ing",
   "y ",
   "The",    " c",       "ti",
   "r ",     "his",
-  "st",     " in",      "ar",            "nt",               ",",                          " to",
+  "st",     " in",      "ar",            "nt",               ",",                 " to",
   "y",
   "ng",
   " h",     "with",
   "le",     "al",       "to ",
-  "b",      "ou",       "be",            "were",             " b",                         "se",
+  "b",      "ou",       "be",            "were",             " b",                "se",
   "o ",
   "ent",    "ha",       "ng ",
   "their",  "\"",
-  "hi",     "from",     " f",            "in ",              "de",                         "ion",
+  "hi",     "from",     " f",            "in ",              "de",                "ion",
   "me",
   "v",
   ".",      "ve",
   "all",    "re ",
-  "ri",     "ro",       "is ",           "co",               "f t",                        "are",
+  "ri",     "ro",       "is ",           "co",               "f t",               "are",
   "ea",
   ". ",
   "her",    " m",
   "er ",    " p",
-  "es ",    "by",       "they",          "di",               "ra",                         "ic",
+  "es ",    "by",       "they",          "di",               "ra",                "ic",
   "not",
   "s, ",    "d t",      "at ",
   "ce",     "la",
-  "h ",     "ne",       "as ",           "tio",              "on ",                        "n t",
+  "h ",     "ne",       "as ",           "tio",              "on ",               "n t",
   "io",
   "we",
   " a ",    "om",
   ", a",    "s o",
-  "ur",     "li",       "ll",            "ch",               "had",                        "this",
+  "ur",     "li",       "ll",            "ch",               "had",               "this",
   "e t",
   "g ",
   "e\r\n",  " wh",
   "ere",
-  " co",    "e o",      "a ",            "us",               " d",                         "ss",
+  " co",    "e o",      "a ",            "us",               " d",                "ss",
   "\n\r\n",
   "\r\n\r", "=\"",      " be",
   " e",
-  "s a",    "ma",       "one",           "t t",              "or ",                        "but",
+  "s a",    "ma",       "one",           "t t",              "or ",               "but",
   "el",
   "so",
   "l ",     "e s",
   "s,",     "no",
-  "ter",    " wa",      "iv",            "ho",               "e a",                        " r",
+  "ter",    " wa",      "iv",            "ho",               "e a",               " r",
   "hat",
   "s t",    "ns",       "ch ",
   "wh",     "tr",
-  "ut",     "/",        "have",          "ly ",              "ta",                         " ha",
+  "ut",     "/",        "have",          "ly ",              "ta",                " ha",
   " on",
   "tha",    "-",        " l",
   "ati",    "en ",
-  "pe",     " re",      "there",         "ass",              "si",                         " fo",
+  "pe",     " re",      "there",         "ass",              "si",                " fo",
   "wa",
   "ec",
   "our",    "who",
   "its",    "z",
-  "fo",     "rs",       ">",             "ot",               "un",                         "<",
+  "fo",     "rs",       ">",             "ot",               "un",                "<",
   "im",
   "th ",    "nc",       "ate",
   "><",     "ver",      "ad",
-  " we",    "ly",       "ee",            " n",               "id",                         " cl",
+  " we",    "ly",       "ee",            " n",               "id",                " cl",
   "ac",
   "il",
   "</",     "rt",
   " wi",    "div",
-  "e, ",    " it",      "whi",           " ma",              "ge",                         "x",
+  "e, ",    " it",      "whi",           " ma",              "ge",                "x",
   "e c",
   "men",    ".com"
 };
@@ -278,7 +278,13 @@ int smaz_compress(char *in, int inlen, char *out, int outlen) {
     const char *slot;
 
     h1 = h2 = in[0] << 3;
-    if (inlen > 1) h2 += in[1]; if (inlen > 2) h3 = h2 ^ in[2]; if (j > inlen) {
+    if (inlen > 1) {
+      h2 += in[1];
+    }
+    if (inlen > 2) {
+      h3 = h2 ^ in[2];
+    }
+    if (j > inlen) {
       j = inlen;                                                                           /* Try to lookup substrings into the hash table, starting from the
                                                                                             * longer to the shorter substrings */
     }
@@ -299,7 +305,10 @@ int smaz_compress(char *in, int inlen, char *out, int outlen) {
             outlen -= needed;
           }
           /* Emit the byte */
-          if (outlen <= 0) return _outlen + 1; out[0] = slot[slot[0] + 1];
+          if (outlen <= 0) {
+            return _outlen + 1;
+          }
+          out[0] = slot[slot[0] + 1];
           out++;
           outlen--;
           inlen -= j;
@@ -323,7 +332,9 @@ int smaz_compress(char *in, int inlen, char *out, int outlen) {
       flush = out;
       out += needed;
       outlen -= needed;
-      if (outlen < 0) return _outlen + 1;
+      if (outlen < 0) {
+        return _outlen + 1;
+      }
     }
     /* Perform a verbatim flush if needed */
     if (flush) {
@@ -350,7 +361,10 @@ int smaz_decompress(char *in, int inlen, char *out, int outlen) {
   while (inlen) {
     if (*c == 254) {
       /* Verbatim byte */
-      if (outlen < 1) return _outlen + 1; *out = *(c + 1);
+      if (outlen < 1) {
+        return _outlen + 1;
+      }
+      *out = *(c + 1);
       out++;
       outlen--;
       c += 2;
@@ -358,7 +372,10 @@ int smaz_decompress(char *in, int inlen, char *out, int outlen) {
     } else if (*c == 255) {
       /* Verbatim string */
       int len = (*(c + 1)) + 1;
-      if (outlen < len) return _outlen + 1; memcpy(out, c + 2, len);
+      if (outlen < len) {
+        return _outlen + 1;
+      }
+      memcpy(out, c + 2, len);
       out += len;
       outlen -= len;
       c += 2 + len;
@@ -368,7 +385,10 @@ int smaz_decompress(char *in, int inlen, char *out, int outlen) {
       const char *s = Smaz_rcb[*c];
       int len = strlen(s);
 
-      if (outlen < len) return _outlen + 1; memcpy(out, s, len);
+      if (outlen < len) {
+        return _outlen + 1;
+      }
+      memcpy(out, s, len);
       out += len;
       outlen -= len;
       c++;

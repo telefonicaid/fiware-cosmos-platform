@@ -56,8 +56,9 @@ public:
     std::set<SamsonPushConnection *>::iterator it_connections;
     for (it_connections = connections.begin(); it_connections != connections.end(); it_connections++) {
       SamsonPushConnection *connection = *it_connections;
-      if (connection->isFinished())
+      if (connection->isFinished()) {
         connections.erase(it_connections);
+      }
     }
   }
 

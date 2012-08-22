@@ -46,7 +46,7 @@ namespace samson { namespace stream {
                      data_ = data;
 
                      // If we are running a task, let see if it is finished
-                     if (worker_task_ != NULL)
+                     if (worker_task_ != NULL) {
                        if (worker_task_->is_finished()) {
                          // If there is an error, reset
                          const au::ErrorManager& worker_task_error = worker_task_->error();
@@ -78,6 +78,7 @@ namespace samson { namespace stream {
                          // We have to update data and review in the next iteration
                          return;
                        }  // Compute aproximate pending size ( always independently of the state to display information in the list )
+                     }
                      std::string input_queue = stream_operation_->inputs(0);
                      gpb::Queue *queue = ::samson::gpb::get_queue(data, input_queue);
                      if (!queue) {
@@ -91,8 +92,10 @@ namespace samson { namespace stream {
                        KVRanges ranges = block.ranges();  // Implicit conversion
 
                        double overlap_factor = ranges.GetOverlapFactor(range_);
-                       if (overlap_factor > 1)
-                         LM_X(1, ("Internal error")); pending_size_ += ( overlap_factor * block.size());
+                       if (overlap_factor > 1) {
+                         LM_X(1, ("Internal error"));
+                       }
+                       pending_size_ += ( overlap_factor * block.size());
                      }
 
                      // Check if are already running a tasks ( no more than one task per range )
@@ -138,8 +141,10 @@ namespace samson { namespace stream {
                    }
 
                    au::SharedPointer<WorkerTask> StreamOperationInfo::schedule_new_task(size_t task_id) {
-                     if (worker_task_ != NULL)
-                       LM_X(1, ("Internal error")); Operation *operation = ModulesManager::shared()->getOperation(
+                     if (worker_task_ != NULL) {
+                       LM_X(1, ("Internal error"));
+                     }
+                     Operation *operation = ModulesManager::shared()->getOperation(
                        stream_operation_->operation());
 
                      if (!operation) {
@@ -171,11 +176,13 @@ namespace samson { namespace stream {
                          if (intersection.size() > 0) {
                            // This block should be considered
                            BlockPointer real_block = BlockManager::shared()->getBlock(block.block_id());
-                           if (real_block == NULL)
+                           if (real_block == NULL) {
                              LM_X(1,
                                   ("Internal error: Block %lu not found.",
-                                   block.block_id())); worker_task_->add_input(0, real_block, intersection, KVInfo(0,
-                                                                                                                   0));
+                                   block.block_id()));
+                           }
+                           worker_task_->add_input(0, real_block, intersection, KVInfo(0,
+                                                                                       0));
 
                            // Accumulate size if the block was not considered before
                            if (!block_ids.contains(block_id)) {
@@ -195,7 +202,7 @@ namespace samson { namespace stream {
                      last_task_cronometer_.Reset();
 
                      // Add environment varialble to identify this stream_operation_id
-                     worker_task_->environment().set("system.stream_operation_id", stream_operation_id_);
+                     worker_task_->environment().Set("system.stream_operation_id", stream_operation_id_);
 
                      LM_W(("Scheduling a new task %lu for range %s", task_id, range_.str().c_str()));
 
@@ -241,10 +248,12 @@ namespace samson { namespace stream {
                      }
 
                      if (visualization.get_flag("tasks")) {
-                       if (worker_task_ != NULL)
+                       if (worker_task_ != NULL) {
                          ::samson::add(record, "tasks", au::str("%lu: %s", worker_task_->get_id(),
-                                                                worker_task_->task_state().c_str()), "different"); else
-                         ::samson::add(record, "tasks", "none", "different"); return;
+                                                                worker_task_->task_state().c_str()), "different");
+                       } else {
+                         ::samson::add(record, "tasks", "none", "different");
+                       } return;
                      }
 
                      // Default view
@@ -252,10 +261,12 @@ namespace samson { namespace stream {
                      ::samson::add(record, "pending_size", pending_size_, "sum,f=uint64");
                      ::samson::add(record, "priority rank", priority_rank(), "different");
 
-                     if (worker_task_ != NULL)
-                       ::samson::add(record, "tasks", worker_task_->get_id(), "different"); else
-                       ::samson::add(record, "tasks", "none", "different"); ::samson::add(record, "state", state_,
-                                                                                          "different");
+                     if (worker_task_ != NULL) {
+                       ::samson::add(record, "tasks", worker_task_->get_id(), "different");
+                     } else {
+                       ::samson::add(record, "tasks", "none", "different");
+                     } ::samson::add(record, "state", state_,
+                                     "different");
                    }
 
                    bool StreamOperationInfo::isValid(au::ErrorManager *error) {
@@ -458,19 +469,19 @@ namespace samson { namespace stream {
                     * au::CommandLine cmd;
                     *
                     * // Forward flag to indicate that this is a reduce forward operation ( no update if state )
-                    * cmd.set_flag_boolean("forward");
+                    * cmd.SetFlagBoolean("forward");
                     *
                     * // Number of divisions in state operations
-                    * cmd.set_flag_int("divisions", SamsonSetup::shared()->getInt("general.num_processess") );
+                    * cmd.SetFlagInt("divisions", SamsonSetup::shared()->getInt("general.num_processess") );
                     *
                     * // Use third party software only for state with new input
-                    * cmd.set_flag_boolean("update_only");
+                    * cmd.SetFlagBoolean("update_only");
                     *
                     * // Prefix used to change names of queues and operations
-                    * cmd.set_flag_string("prefix", "");
-                    * cmd.parse( command );
+                    * cmd.SetFlagString("prefix", "");
+                    * cmd.Parse( command );
                     *
-                    * std::string prefix = cmd.get_flag_string("prefix");
+                    * std::string prefix = cmd.GetFlagString("prefix");
                     *
                     * if( cmd.get_num_arguments() < 3 )
                     * {
@@ -538,11 +549,11 @@ namespace samson { namespace stream {
                     * return NULL;
                     * }
                     *
-                    * if( cmd.get_flag_bool("forward") )
+                    * if( cmd.GetFlagBool("forward") )
                     * stream_operation = new StreamOperationForwardReduce();
                     * else
-                    * stream_operation = new StreamOperationUpdateState( cmd.get_flag_int("divisions")
-                    * , cmd.get_flag_bool("update_only")  );
+                    * stream_operation = new StreamOperationUpdateState( cmd.GetFlagInt("divisions")
+                    * , cmd.GetFlagBool("update_only")  );
                     *
                     * }
                     * break;
@@ -669,7 +680,7 @@ namespace samson { namespace stream {
                     * void StreamOperation::add( WorkerTask* task )
                     * {
                     * // Take some statistics about this operation
-                    * input_rate.push( task->getBlockList("input_0")->getBlockInfo().info );
+                    * input_rate.Push( task->getBlockList("input_0")->getBlockInfo().info );
                     * in_num_operations++;
                     *
                     * // Set the environment property to make sure, it is removed when finished

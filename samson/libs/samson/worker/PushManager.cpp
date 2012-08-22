@@ -46,10 +46,10 @@ namespace samson { namespace worker {
                        return;  // If the block has already been distributed, ignore notifications
                      }
                      // Get block_id that has been distributed
-                     size_t block_id = notification->environment().get("block_id", (size_t)-1);
+                     size_t block_id = notification->environment().Get("block_id", (size_t)-1);
 
                      // If this is me
-                     if (block_id != (size_t)-1)
+                     if (block_id != (size_t)-1) {
                        if (block_id == block_id_) {
                          // Send a message to delilah
                          PacketPointer packet(new Packet(Message::PushBlockResponse));
@@ -60,6 +60,7 @@ namespace samson { namespace worker {
                          // Set as distributed
                          distributed = true;
                        }
+                     }
                    }
 
                    void PushOperation::commit() {
@@ -88,8 +89,9 @@ namespace samson { namespace worker {
 
                      samson_worker_->data_model->Commit(caller, command, &error);
 
-                     if (error.IsActivated())
+                     if (error.IsActivated()) {
                        LM_W(("Error commiting to data model in push operation: %s", error.GetMessage().c_str()));  // Send a commit response message to delilah
+                     }
                      PacketPointer packet(new Packet(Message::PushBlockCommitResponse));
                      packet->to = NodeIdentifier(DelilahNode, delilah_id_);
                      packet->message->set_push_id(push_id_);
@@ -110,9 +112,12 @@ namespace samson { namespace worker {
                    }
 
                    std::string PushOperation::getStatus() {
-                     if (!distributed)
-                       return "Distributing..."; if (commited)
+                     if (!distributed) {
+                       return "Distributing...";
+                     }
+                     if (commited) {
                        return "Comitted";
+                     }
 
                      return "Distributed. Pending commit...";
                    }
@@ -168,11 +173,12 @@ namespace samson { namespace worker {
                    void PushManager::receive_push_block_commit(size_t delilah_id, size_t push_id) {
                      for (size_t i = 0; i < push_operations_.size(); i++) {
                        // Check if thi is the one
-                       if (push_operations_[i]->get_delilah_id() == delilah_id)
+                       if (push_operations_[i]->get_delilah_id() == delilah_id) {
                          if (push_operations_[i]->get_push_id() == push_id) {
                            push_operations_[i]->commit();
                            return;
                          }
+                       }
                      }
 
                      LM_W(("Unused commit message for a push operation"));

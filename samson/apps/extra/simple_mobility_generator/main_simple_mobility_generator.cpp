@@ -85,22 +85,27 @@ public:
 private:
 
   void set_in_limits(double *var) {
-    if (*var <  0)
-      *var = 0; if (*var > 1000)
+    if (*var <  0) {
+      *var = 0;
+    }
+    if (*var > 1000) {
       *var = 1000;
+    }
   }
 };
 
 Position getHome(size_t user) {
-  if (fix_position)
+  if (fix_position) {
     return Position(10, 10);
+  }
 
   return Position(10 * ( user % 100 ), 1000 - 10 * ( user % 100 ));
 }
 
 Position getWork(size_t user) {
-  if (fix_position)
+  if (fix_position) {
     return Position(900, 900);
+  }
 
   return Position(1000 - 10 * ( user % 100 ), 10 * ( user % 100 ));
 }
@@ -108,9 +113,11 @@ Position getWork(size_t user) {
 Position getPosition(size_t user) {
   int p = time(NULL) % period;
 
-  if (p < (period / 2))
-    return getHome(user); else
+  if (p < (period / 2)) {
+    return getHome(user);
+  } else {
     return getWork(user);
+  }
 
   return Position(rand() % 1000, rand() % 1000);
 }
@@ -118,8 +125,10 @@ Position getPosition(size_t user) {
 size_t getUser() {
   if (progresive) {
     current_user++;
-    if (current_user >= users)
-      current_user = 0; return current_user;
+    if (current_user >= users) {
+      current_user = 0;
+    }
+    return current_user;
   }
 
   return rand() % users;
@@ -189,7 +198,7 @@ int main(int argC, const char *argV[]) {
       sleep(seconds_to_sleep);
     }
 
-    if ((theoretical_seconds % 10) == 0)
+    if ((theoretical_seconds % 10) == 0) {
       LM_V(("Generated %s lines ( %s bytes ) in %s. Rate: %s / %s."
             , au::str(total_num).c_str()
             , au::str(total_size).c_str()
@@ -197,6 +206,7 @@ int main(int argC, const char *argV[]) {
             , au::str((double)total_num / (double)total_seconds, "Lines/s").c_str()
             , au::str((double)total_size / (double)total_seconds, "Bps").c_str()
             ));
+    }
   }
 }
 

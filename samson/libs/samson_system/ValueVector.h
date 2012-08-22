@@ -29,20 +29,22 @@ public:
 
                      ~ValueVector() {
                        clear();  // Clear the vector rehusing all component
-                       if (values_)
+                       if (values_) {
                          free(values_);  // Free allocated memory for the vector
+                       }
                      }
 
                      void reserve(size_t size) {
-                       if (max_num_values_ >= size)
+                       if (max_num_values_ >= size) {
                          return;  // Nothing to do
-
+                       }
                        size_t previous_max_num_values = max_num_values_;
                        while (max_num_values_ < size) {
-                         if (max_num_values_ == 0)
+                         if (max_num_values_ == 0) {
                            max_num_values_ = 1;
-                         else
+                         } else {
                            max_num_values_ *= 2;
+                         }
                        }
 
                        // Alloc new vector

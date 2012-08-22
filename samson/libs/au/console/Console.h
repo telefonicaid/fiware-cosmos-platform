@@ -6,14 +6,14 @@
 #include <string>
 #include <termios.h>                // termios
 
-#include "au/console/ConsoleCode.h"
-#include "au/mutex/Token.h"
-#include "au/console/ConsoleCode.h"
-#include "au/console/ConsoleEscapeSequence.h"
 #include "au/ErrorManager.h"
+#include "au/console/ConsoleCode.h"
+#include "au/console/ConsoleCode.h"
 #include "au/console/ConsoleEntry.h"
+#include "au/console/ConsoleEscapeSequence.h"
 #include "au/log/LogFormatter.h"
 #include "au/log/LogPlugin.h"
+#include "au/mutex/Token.h"
 
 namespace au {
 class Console;

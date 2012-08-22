@@ -32,9 +32,9 @@ public:
   void Insert(const SharedPointer<V>& shared_pointer_v) {
     V *v = shared_pointer_v.shared_object();
 
-    if (Contains(shared_pointer_v))
+    if (Contains(shared_pointer_v)) {
       return;   // Already included in the box
-
+    }
     items_.insert(std::pair<V *, au::SharedPointer<V> >(v, shared_pointer_v));
   }
 
@@ -49,10 +49,11 @@ public:
 
     typename std::map<V *, au::SharedPointer<V> >::iterator iter = items_.find(v);
 
-    if (iter == items_.end())
+    if (iter == items_.end()) {
       return;   // Not really included in the box
-    else
+    } else {
       items_.erase(iter);     // Remove entry
+    }
   }
 
   bool Contains(const SharedPointer<V>& shared_pointer_v) {

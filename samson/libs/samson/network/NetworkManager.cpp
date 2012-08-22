@@ -128,14 +128,16 @@ std::vector<size_t> NetworkManager::getDelilahIds() {
     if (_node_identifier.node_type  == DelilahNode) {
       size_t id = _node_identifier.id;
 
-      if (it_connections->first == _node_identifier.getCodeName())
+      if (it_connections->first == _node_identifier.getCodeName()) {
         // Add this id to the list
-        ids.push_back(id); else
+        ids.push_back(id);
+      } else {
         LM_W(("Delilah %lu (%s) connected using wrong connection name %s",
               _node_identifier.id,
               _node_identifier.getCodeName().c_str(),
               it_connections->first.c_str()
               ));
+      }
     }
   }
 
@@ -172,8 +174,9 @@ void NetworkManager::Send(const PacketPointer& packet) {
   // Wakeup writer in the connection if necessary
   std::string name = packet->to.getCodeName();
   NetworkConnection *connection = connections.findInMap(name);
-  if (connection)
+  if (connection) {
     connection->WakeUpWriter();
+  }
 }
 
 void NetworkManager::SendToAllDelilahs(const PacketPointer& packet) {
@@ -259,12 +262,15 @@ std::string NetworkManager::getStatusForConnection(std::string connection_name) 
   // Find this connection...
   NetworkConnection *connection = connections.findInMap(connection_name);
 
-  if (!connection)
-    return "Unknown connection"; else if (connection->isDisconnectd())
-    return "Disconnected"; else
+  if (!connection) {
+    return "Unknown connection";
+  } else if (connection->isDisconnectd()) {
+    return "Disconnected";
+  } else {
     return au::str("Connected In: %s Out: %s "
                    , au::str(connection->get_rate_in(), "B/s").c_str()
                    , au::str(connection->get_rate_out(), "B/s").c_str());
+  }
 }
 
 au::tables::Table *NetworkManager::getPendingPacketsTable() {

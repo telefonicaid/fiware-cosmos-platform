@@ -93,10 +93,11 @@ public:
     InternCommit(commit_command, error);
 
     // Log activity for debugging
-    if (error->IsActivated())
+    if (error->IsActivated()) {
       last_commits_.push_back(CommitRecord(caller, commit_command, error->GetMessage()));
-    else
+    } else {
       last_commits_.push_back(CommitRecord(caller, commit_command, "OK"));
+    }
 
     while (last_commits_.size() > 100) {
       last_commits_.pop_front();

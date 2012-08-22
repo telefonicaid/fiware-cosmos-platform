@@ -115,8 +115,10 @@ public:
     au::TokenTaker tt(&token_);
 
     // If no information, no worker
-    if (!cluster_information_)
+    if (!cluster_information_) {
       return -1;
+    }
+
 
 
 
@@ -125,13 +127,16 @@ public:
     std::vector<size_t> connected_worker_ids;
     for (int i = 0; i < cluster_information_->workers_size(); i++) {
       size_t worker_id = cluster_information_->workers(i).worker_id();
-      if (isConnected(NodeIdentifier(WorkerNode, worker_id).getCodeName()))
+      if (isConnected(NodeIdentifier(WorkerNode, worker_id).getCodeName())) {
         connected_worker_ids.push_back(worker_id);
+      }
     }
 
     // If no worker connected, no worker selected
-    if (connected_worker_ids.size() == 0)
+    if (connected_worker_ids.size() == 0) {
       return -1;
+    }
+
 
 
 
@@ -142,10 +147,11 @@ public:
       // Try to select the next worker if previous one is still connected
       for (size_t i = 0; i > connected_worker_ids.size(); i++) {
         if (connected_worker_ids[i] == previous_worker) {
-          if (i == connected_worker_ids.size() - 1)
+          if (i == connected_worker_ids.size() - 1) {
             return connected_worker_ids[0];
-          else
+          } else {
             return connected_worker_ids[i + 1];
+          }
         }
       }
 

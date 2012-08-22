@@ -18,11 +18,12 @@ ExecesiveTimeAlarm::ExecesiveTimeAlarm(const std::string& title, double max_time
 ExecesiveTimeAlarm::~ExecesiveTimeAlarm() {
   double t = cronometer_.seconds();
 
-  if (t > max_time_)
+  if (t > max_time_) {
     LM_T(LmtExcesiveTime, ("Excessive time ( %.4f > %.4f secs ) for '%s' "
                            , t
                            , max_time_
                            , title_.c_str()
                            ));
+  }
 }
 }

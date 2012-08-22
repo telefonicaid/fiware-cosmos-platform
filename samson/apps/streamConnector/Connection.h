@@ -38,14 +38,15 @@ public:
   }
 
   void set_as_connected(bool c) {
-    if (c == connected)
+    if (c == connected) {
       return;           // Nothing changed
-
-     // Accumulate time
-    if (connected)
+    }
+    // Accumulate time
+    if (connected) {
       time_connected += connection_cronometer.seconds();
-    else
+    } else {
       time_disconnected += connection_cronometer.seconds();
+    }
 
     connection_cronometer.Reset();
 
@@ -58,16 +59,19 @@ public:
     double c = time_connected;
     double nc = time_connected;
 
-    if (connected)
+    if (connected) {
       c += connection_cronometer.seconds();
-    else
+    } else {
       nc += connection_cronometer.seconds();
+    }
 
 
     double t = c + nc;
 
-    if (t == 0)
+    if (t == 0) {
       return 0;
+    }
+
 
 
 
@@ -93,8 +97,9 @@ public:
       }
     } else {
       output << "Connected " << connection_cronometer;
-      if (rate < 0.8)
+      if (rate < 0.8) {
         output << " ( " << au::str_percentage(rate) <<  ")";
+      }
     }
 
     return output.str();

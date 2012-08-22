@@ -54,8 +54,10 @@ public:
   void addItem(DataType item) {
     items.push_back(item);
 
-    if (item.optional)
-      any_optional = true; includes.insert(item.getInclude());
+    if (item.optional) {
+      any_optional = true;
+    }
+    includes.insert(item.getInclude());
   }
 
   bool parse(AUTockenizer *module_creator, int begin, int end);
@@ -123,12 +125,13 @@ public:
   void printBaseFile(std::string directory) {
     size_t valMask;
 
-    if (items.size() == 0)
+    if (items.size() == 0) {
       /*
        * if( verbose )
        *  std::cout << "File " << name << "_base.h not created since there are no internal fields.\n";
        */
       return;
+    }
 
     /*
      *          if( verbose )
@@ -151,9 +154,13 @@ public:
     // Computing hashTypeItems
     std::string acumItems = "";
     for (vector <DataType>::iterator field = items.begin(); field != items.end(); field++) {
-      if ((*field).optional)
-        acumItems += "opt"; if ((*field).isVector())
-        acumItems += "vect"; acumItems += (*field).fullType;
+      if ((*field).optional) {
+        acumItems += "opt";
+      }
+      if ((*field).isVector()) {
+        acumItems += "vect";
+      }
+      acumItems += (*field).fullType;
     }
     hashTypeItems = functHashTypeItems(acumItems);
 
@@ -162,8 +169,9 @@ public:
     if (any_optional) {
       int nOptFields = 0;
       for (vector <DataType>::iterator field = items.begin(); field != items.end(); field++) {
-        if ((*field).optional)
+        if ((*field).optional) {
           nOptFields++;
+        }
       }
 
       valMask = 0;
@@ -305,8 +313,10 @@ public:
       file << "\tint hash(int max_num_partitions){\n";
       // Only get partition with the first field
       vector <DataType>::iterator field = items.begin();
-      if (any_optional)
-        field++; file << (*field).getPartitionCommand("\t\t");
+      if (any_optional) {
+        field++;
+      }
+      file << (*field).getPartitionCommand("\t\t");
       file << "\t}\n\n";
     }
 
@@ -596,8 +606,10 @@ public:
     file << "\t\tstd::ostringstream o;\n";
     file << "\t\to << \"{\";\n";
     for (vector <DataType>::iterator field = items.begin(); field != items.end(); field++) {
-      if (field != items.begin())
-        file << "\t\to << \",\";\n"; file << (*field).getToStringJSONCommand("\t\t");
+      if (field != items.begin()) {
+        file << "\t\to << \",\";\n";
+      }
+      file << (*field).getToStringJSONCommand("\t\t");
     }
     file << "\t\to << \"}\";\n";
     file << "\t\treturn o.str();\n";

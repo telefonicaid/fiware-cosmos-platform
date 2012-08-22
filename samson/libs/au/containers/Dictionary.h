@@ -84,8 +84,10 @@ public:
     typename std::map<K, SharedPointer<V>,
                       _Compare >::const_iterator iter = std::map<K, SharedPointer<V>, _Compare >::find(key);
 
-    if (iter == std::map<K, SharedPointer<V>, _Compare>::end())
+    if (iter == std::map<K, SharedPointer<V>, _Compare>::end()) {
       return SharedPointer<V>(NULL);
+    }
+
 
 
 
@@ -94,8 +96,10 @@ public:
 
   SharedPointer<V> GetOrCreate(const K& key) {
     SharedPointer<V> tmp = Get(key);
-    if (tmp != NULL)
+    if (tmp != NULL) {
       return tmp;
+    }
+
 
 
 
@@ -109,8 +113,10 @@ public:
   template <typename T>
   SharedPointer<V> GetOrCreate(const K& key, T a) {
     SharedPointer<V> tmp = Get(key);
-    if (tmp != NULL)
+    if (tmp != NULL) {
       return tmp;
+    }
+
 
 
 
@@ -131,8 +137,10 @@ public:
     typename std::map<K, SharedPointer<V>, _Compare >::iterator iter
       = std::map<K, SharedPointer<V>, _Compare>::find(key);
 
-    if (iter == std::map<K, SharedPointer<V>, _Compare>::end())
+    if (iter == std::map<K, SharedPointer<V>, _Compare>::end()) {
       return SharedPointer<V>(NULL);
+    }
+
 
 
 

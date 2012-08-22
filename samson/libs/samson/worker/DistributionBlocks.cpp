@@ -25,9 +25,11 @@ DistributionBlock::DistributionBlock(SamsonWorker *samsonWorker, size_t block_id
 }
 
 void DistributionBlock::confirm_worker(size_t worker_id) {
-  if (worker_ids_.contains(worker_id))
-    confirmed_worker_ids_.insert(worker_id); else
+  if (worker_ids_.contains(worker_id)) {
+    confirmed_worker_ids_.insert(worker_id);
+  } else {
     LM_W(("Worker %lu confirmed on block %lu. It was not a selected worker...", worker_id, block_id_ ));
+  }
 }
 
 void DistributionBlock::review() {
@@ -95,8 +97,9 @@ void DistributionBlockManager::Review() {
   // Review distribution blocks
   au::map<size_t, DistributionBlock>::iterator it;
   for (it = distribution_blocks_.begin(); it != distribution_blocks_.end(); it++) {
-    if (it->second->isReady())
+    if (it->second->isReady()) {
       remove_block_ids.push_back(it->first);
+    }
   }
 
   for (size_t i = 0; i < remove_block_ids.size(); i++) {
@@ -104,13 +107,14 @@ void DistributionBlockManager::Review() {
 
     // Notify to alert that this block is completelly distributed
     engine::Notification *notification = new engine::Notification("notification_block_correctly_distributed");
-    notification->environment().set("block_id", block_id);
+    notification->environment().Set("block_id", block_id);
     engine::Engine::shared()->notify(notification);
 
     // Remove from the map
     DistributionBlock *distribution_block = distribution_blocks_.extractFromMap(block_id);
-    if (distribution_block)
+    if (distribution_block) {
       delete distribution_block;
+    }
   }
 }
 

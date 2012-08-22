@@ -29,8 +29,10 @@ au::tables::TreeItem *treeItemFromDocument(const xml_document& xml_doc) {
 au::tables::TreeItem *treeItemFromNode(const xml_node& xml_node) {
   std::string name = xml_node.name();
 
-  if (name.length() == 0)
-    name = xml_node.value(); au::tables::TreeItem *treeItem = new au::tables::TreeItem(name);
+  if (name.length() == 0) {
+    name = xml_node.value();
+  }
+  au::tables::TreeItem *treeItem = new au::tables::TreeItem(name);
 
   for (pugi::xml_node_iterator n = xml_node.begin(); n != xml_node.end(); n++) {
     pugi::xml_node node = *n;

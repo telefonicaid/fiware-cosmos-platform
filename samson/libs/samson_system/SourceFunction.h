@@ -85,8 +85,10 @@ public:
 
   samson::system::Value *get(KeyValue kv) {
     // If no provided input, nothing can be done
-    if (input_sources.size() == 0)
+    if (input_sources.size() == 0) {
       return NULL;
+    }
+
 
 
 
@@ -94,8 +96,10 @@ public:
     // Take the first ( only one considered )
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
-    if (!source_value)
+    if (!source_value) {
       return NULL;
+    }
+
 
 
 
@@ -108,9 +112,9 @@ public:
         samson::system::Value *input_component_value = source_value->get_value_from_vector(i);
         samson::system::Value *output_component_value = individual_get(input_component_value);
 
-        if (!output_component_value)
+        if (!output_component_value) {
           return NULL;                    // If one of the components can not be transformed, not return anything
-
+        }
         value_container.value->add_value_to_vector()->copyFrom(output_component_value);
       }
       return value_container.value;
@@ -124,9 +128,9 @@ public:
         samson::system::Value *input_component_value = source_value->get_value_from_map(keys[i]);
         samson::system::Value *output_component_value = individual_get(input_component_value);
 
-        if (!output_component_value)
+        if (!output_component_value) {
           return NULL;                    // If one of the components can not be transformed, not return anything
-
+        }
         value_container.value->add_value_to_map(keys[i])->copyFrom(output_component_value);
       }
       return value_container.value;
@@ -150,8 +154,10 @@ public:
   }
 
   samson::system::Value *individual_get(samson::system::Value *input) {
-    if (!input->isString())
+    if (!input->isString()) {
       return NULL;
+    }
+
 
 
 
@@ -185,16 +191,20 @@ public:
   }
 
   samson::system::Value *get(KeyValue kv) {
-    if (input_sources.size() == 0)
+    if (input_sources.size() == 0) {
       return NULL;
+    }
+
 
 
 
 
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
-    if (!source_value)
+    if (!source_value) {
       return NULL;
+    }
+
 
 
 
@@ -225,16 +235,20 @@ public:
   }
 
   samson::system::Value *get(KeyValue kv) {
-    if (input_sources.size() == 0)
+    if (input_sources.size() == 0) {
       return NULL;
+    }
+
 
 
 
 
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
-    if (!source_value)
+    if (!source_value) {
       return NULL;
+    }
+
 
 
 
@@ -257,16 +271,20 @@ public:
   }
 
   samson::system::Value *get(KeyValue kv) {
-    if (input_sources.size() == 0)
+    if (input_sources.size() == 0) {
       return NULL;
+    }
+
 
 
 
 
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
-    if (!source_value)
+    if (!source_value) {
       return NULL;
+    }
+
 
 
 
@@ -287,21 +305,27 @@ public:
   }
 
   samson::system::Value *get(KeyValue kv) {
-    if (input_sources.size() == 0)
+    if (input_sources.size() == 0) {
       return NULL;
+    }
+
 
 
 
 
     samson::system::Value *source_value = input_sources[0]->get(kv);
-    if (!source_value)
+    if (!source_value) {
       return NULL;
+    }
 
 
 
 
-    if (!source_value->isString())
+
+    if (!source_value->isString()) {
       return NULL;
+    }
+
 
 
 
@@ -337,8 +361,10 @@ public:
   }
 
   samson::system::Value *get(KeyValue kv) {
-    if (input_sources.size() == 0)
+    if (input_sources.size() == 0) {
       return NULL;
+    }
+
 
 
 
@@ -347,8 +373,10 @@ public:
 
     for (size_t i = 0; i < input_sources.size(); i++) {
       samson::system::Value *source_value = input_sources[i]->get(kv);
-      if (!source_value)
+      if (!source_value) {
         return NULL;
+      }
+
 
 
 
@@ -375,23 +403,29 @@ public:
   }
 
   samson::system::Value *get(KeyValue kv) {
-    if (input_sources.size() == 0)
+    if (input_sources.size() == 0) {
       return NULL;
+    }
+
 
 
 
 
     // Use only the first component
     samson::system::Value *source_value = input_sources[0]->get(kv);
-    if (!source_value)
+    if (!source_value) {
       return NULL;
+    }
+
 
 
 
 
     samson::system::Value *pos_value    = input_sources[1]->get(kv);
-    if (!pos_value)
+    if (!pos_value) {
       return NULL;
+    }
+
 
 
 
@@ -399,23 +433,31 @@ public:
     samson::system::Value *length_value = NULL;
     if (input_sources.size() > 2) {
       length_value = input_sources[2]->get(kv);
-      if (!length_value)
+      if (!length_value) {
         return NULL;
+      }
     }
 
-    if (!source_value->isString())
+    if (!source_value->isString()) {
       return NULL;
+    }
 
 
 
-    if (!pos_value->isNumber())
+
+    if (!pos_value->isNumber()) {
       return NULL;
+    }
 
 
 
-    if (length_value)
-      if (!length_value->isNumber())
+
+    if (length_value) {
+      if (!length_value->isNumber()) {
         return NULL;
+      }
+    }
+
 
 
 
@@ -451,8 +493,10 @@ public:
     samson::system::Value *main_value = input_sources[0]->get(kv);
     samson::system::Value *sub_value = input_sources[1]->get(kv);
 
-    if (!main_value || !sub_value)
+    if (!main_value || !sub_value) {
       return NULL;
+    }
+
 
 
 
@@ -488,8 +532,10 @@ public:
   }
 
   samson::system::Value *get(KeyValue kv) {
-    if (input_sources.size() == 0)
+    if (input_sources.size() == 0) {
       return NULL;
+    }
+
 
 
 
@@ -497,8 +543,10 @@ public:
     // Use only the first component
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
-    if (!source_value)
+    if (!source_value) {
       return NULL;
+    }
+
 
 
 
@@ -526,8 +574,10 @@ public:
     // Use only the first component
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
-    if (!source_value)
+    if (!source_value) {
       return NULL;
+    }
+
 
 
 
@@ -555,8 +605,10 @@ public:
     // Use only the first component
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
-    if (!source_value)
+    if (!source_value) {
       return NULL;
+    }
+
 
 
 
@@ -621,15 +673,18 @@ public:
   }
 
   ~SourceFunction_to_lower() {
-    if (line)
+    if (line) {
       free(line);
+    }
   }
 
   samson::system::Value *get(KeyValue kv) {
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
-    if (( !source_value ) || !source_value->isString())
+    if (( !source_value ) || !source_value->isString()) {
       return NULL;
+    }
+
 
 
 
@@ -641,12 +696,14 @@ public:
     int input_line_size = _input_line.length();
 
     if (max_line_size < (input_line_size + 1)) {
-      if (line)
+      if (line) {
         free(line);
+      }
 
       // Init value
-      if (max_line_size == 0)
+      if (max_line_size == 0) {
         max_line_size = 1;
+      }
 
       while (max_line_size < (input_line_size + 1)) {
         max_line_size *= 2;
@@ -688,8 +745,9 @@ public:
   }
 
   ~SourceFunction_match() {
-    if (compiled)
+    if (compiled) {
       regfree(&preg);
+    }
   }
 
   samson::system::Value *get(KeyValue kv) {
@@ -710,8 +768,10 @@ public:
       compiled = true;
     }
 
-    if (error)
+    if (error) {
       return NULL;
+    }
+
 
 
 
@@ -720,8 +780,10 @@ public:
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
     // Only accept string values
-    if (( !source_value ) || !source_value->isString())
+    if (( !source_value ) || !source_value->isString()) {
       return NULL;
+    }
+
 
 
 
@@ -730,10 +792,11 @@ public:
     int c = regexec(&preg, source_value->get_string().c_str(), 0, NULL, 0);
 
 
-    if (c == 0)
+    if (c == 0) {
       value_container.value->set_double(1);
-    else
+    } else {
       value_container.value->set_double(0);
+    }
 
     return value_container.value;
   }
@@ -757,15 +820,18 @@ public:
   }
 
   ~SourceFunction_to_upper() {
-    if (line)
+    if (line) {
       free(line);
+    }
   }
 
   samson::system::Value *get(KeyValue kv) {
     samson::system::Value *source_value = input_sources[0]->get(kv);
 
-    if (( !source_value ) || !source_value->isString())
+    if (( !source_value ) || !source_value->isString()) {
       return NULL;
+    }
+
 
 
 
@@ -776,12 +842,14 @@ public:
     int input_line_size = _input_line.length();
 
     if (max_line_size < (input_line_size + 1)) {
-      if (line)
+      if (line) {
         free(line);
+      }
 
       // Init value
-      if (max_line_size == 0)
+      if (max_line_size == 0) {
         max_line_size = 1;
+      }
 
       while (max_line_size < (input_line_size + 1)) {
         max_line_size *= 2;

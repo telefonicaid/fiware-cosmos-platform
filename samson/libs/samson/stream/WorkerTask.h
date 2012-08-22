@@ -108,8 +108,9 @@ public:
     size_t time = cronometer.seconds();
     double rate = 0;
 
-    if (time > 0)
+    if (time > 0) {
       rate = input_size / time;
+    }
 
     LM_T(LmtIsolatedOperations, ("%s ( input size %s ) finish atfer %s. Aprox rate %s"
                                  , name.c_str()

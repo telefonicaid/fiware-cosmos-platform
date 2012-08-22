@@ -19,26 +19,28 @@
 
 #ifdef __gnu_linux__
 int tsCompare(time_t time1, time_t time2) {
-  if (time1 < time2)
+  if (time1 < time2) {
     return -1;           /* Less than     */
-  else if (time1 > time2)
+  } else if (time1 > time2) {
     return 1;            /* Greater than  */
-  else return 0;         /* Equal         */
+  } else { return 0;  /* Equal         */
+  }
 }
 
 #else
 
 int  tsCompare(struct  timespec time1, struct  timespec time2) {
-  if (time1.tv_sec < time2.tv_sec)
+  if (time1.tv_sec < time2.tv_sec) {
     return (-1);         /* Less than. */
-  else if (time1.tv_sec > time2.tv_sec)
+  } else if (time1.tv_sec > time2.tv_sec) {
     return (1);          /* Greater than. */
-  else if (time1.tv_nsec < time2.tv_nsec)
+  } else if (time1.tv_nsec < time2.tv_nsec) {
     return (-1);         /* Less than. */
-  else if (time1.tv_nsec > time2.tv_nsec)
+  } else if (time1.tv_nsec > time2.tv_nsec) {
     return (1);          /* Greater than. */
-  else
+  } else {
     return (0);          /* Equal. */
+  }
 }
 
 #endif  // ifdef __gnu_linux__
@@ -53,11 +55,11 @@ int main(int argC, const char *argV[]) {
   // Help parameter in the command line
   au::CommandLine cmdLine;
 
-  cmdLine.set_flag_boolean("help");             // Get this help
-  cmdLine.set_flag_boolean("v");                // verbose mode
-  cmdLine.parse(argC, argV);
+  cmdLine.SetFlagBoolean("help");             // Get this help
+  cmdLine.SetFlagBoolean("v");                // verbose mode
+  cmdLine.Parse(argC, argV);
 
-  if (cmdLine.get_flag_bool("help")) {
+  if (cmdLine.GetFlagBool("help")) {
     fprintf(
       stderr,
       "samsonModuleParser: This tool is used to generate/update a .h & .cpp files with the definition of a new module for the samson platform.\n");
@@ -93,7 +95,7 @@ int main(int argC, const char *argV[]) {
   int res_stat1 = stat(output1_filename.c_str(), &stat_output1);
   int res_stat2 = stat(output2_filename.c_str(), &stat_output2);
 
-  verbose = cmdLine.get_flag_bool("v");
+  verbose = cmdLine.GetFlagBool("v");
 
   if (( res_stat1 == 0) && ( res_stat2 == 0)) {
 /* Disabling timestamp checking, since makefile is more clever and if it has called samsonModuleParser,
@@ -116,9 +118,10 @@ int main(int argC, const char *argV[]) {
  * #endif
  */
   } else {
-    if (verbose)
+    if (verbose) {
       std::cerr << "samsonModuleParser: Not possible to open " << output1_filename << " or " << output2_filename <<
       " so, outputs will be generated again\n";
+    }
   }
 
   if (verbose) {

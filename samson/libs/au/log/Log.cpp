@@ -4,7 +4,7 @@
 
 namespace au {
 const char *log_reseved_words[] =
-{ "HOST", "TYPE",      "PID",       "TID",       "DATE",       "date",      "TIME",      "time",      "timestamp",
+{ "HOST", "TYPE",      "PID",       "TID",       "DATE",       "date",       "TIME",       "time",       "timestamp",
   "LINE", "TLEV",      "EXEC",
   "AUX",
   "FILE",
@@ -15,8 +15,9 @@ const char *log_reseved_words[] =
 
 
 void Log::Set(const std::string& field_name, const std::string& field_value) {
-  if (fields_.find(field_name) == fields_.end())
+  if (fields_.find(field_name) == fields_.end()) {
     fields_.insert(std::pair<std::string, std::string>(field_name, field_value));
+  }
 }
 
 bool Log::Read(au::FileDescriptor *fd) {
@@ -106,11 +107,19 @@ std::string Log::str() {
 std::string Log::Get(std::string name) {
   LM_V(("Getting %s from log %s", name.c_str(), str().c_str()));
 
-  if (name == "HOST")
-    return Get("host", ""); if (name == "TYPE")
-    return au::str("%c", log_data_.type); if (name == "PID")
-    return au::str("%d", log_data_.pid); if (name == "TID")
-    return au::str("%d", log_data_.tid); if (name == "DATE") {
+  if (name == "HOST") {
+    return Get("host", "");
+  }
+  if (name == "TYPE") {
+    return au::str("%c", log_data_.type);
+  }
+  if (name == "PID") {
+    return au::str("%d", log_data_.pid);
+  }
+  if (name == "TID") {
+    return au::str("%d", log_data_.tid);
+  }
+  if (name == "DATE") {
     char line_tmp[80];
     struct tm tmP;
     gmtime_r(&log_data_.tv.tv_sec, &tmP);
@@ -132,11 +141,13 @@ std::string Log::Get(std::string name) {
     return std::string(buffer_time);
   }
 
-  if (name == "timestamp")
+  if (name == "timestamp") {
     return Get("date") + " " + Get("time");
+  }
 
-  if (name == "time_unix")
+  if (name == "time_unix") {
     return au::str("%lu", log_data_.tv.tv_sec);
+  }
 
   if (name == "TIME") {
     struct tm timeinfo;
@@ -145,26 +156,44 @@ std::string Log::Get(std::string name) {
     strftime(buffer_time, 1024, "%X", &timeinfo);
     return std::string(buffer_time) + au::str("(%d)", log_data_.tv.tv_usec);
   }
-  if (name == "LINE")
-    return au::str("%d", log_data_.lineNo); if (name == "TLEV")
-    return au::str("%d", log_data_.traceLevel); if (name == "EXEC")
-    return Get("progName", ""); if (name == "AUX")
-    return Get("aux", ""); if (name == "FILE")
-    return Get("file", ""); if (name == "TEXT")
-    return Get("text", ""); if (name == "text") {
-    std::string t = Get("text", "");
-    if (t.length() > 80)
-      return t.substr(0, 80); else
-      return t;
+  if (name == "LINE") {
+    return au::str("%d", log_data_.lineNo);
   }
-  if (name == "FUNC")
-    return Get("fname", ""); if (name == "STRE")
+  if (name == "TLEV") {
+    return au::str("%d", log_data_.traceLevel);
+  }
+  if (name == "EXEC") {
+    return Get("progName", "");
+  }
+  if (name == "AUX") {
+    return Get("aux", "");
+  }
+  if (name == "FILE") {
+    return Get("file", "");
+  }
+  if (name == "TEXT") {
+    return Get("text", "");
+  }
+  if (name == "text") {
+    std::string t = Get("text", "");
+    if (t.length() > 80) {
+      return t.substr(0, 80);
+    } else {
+      return t;
+    }
+  }
+  if (name == "FUNC") {
+    return Get("fname", "");
+  }
+  if (name == "STRE") {
     return Get("stre", "");
+  }
 
   // Generl look up in the strings...
   std::map<std::string, std::string>::iterator it_fields = fields_.find(name);
-  if (it_fields != fields_.end())
+  if (it_fields != fields_.end()) {
     return it_fields->second;
+  }
 
   // If not recognized as a field, just return the name
   return name;
@@ -172,9 +201,11 @@ std::string Log::Get(std::string name) {
 
 std::string Log::Get(const std::string& name, const std::string& default_value) {
   std::map<std::string, std::string>::iterator it_fields = fields_.find(name);
-  if (it_fields == fields_.end())
-    return default_value; else
+  if (it_fields == fields_.end()) {
+    return default_value;
+  } else {
     return it_fields->second;
+  }
 }
 
 size_t Log::SerialitzationSize() {
@@ -236,12 +267,10 @@ void Log::addStrings(char *strings, size_t len) {
   }
 }
 
-  LogData& Log::log_data()
-  {
-    return log_data_;
-  }
+LogData& Log::log_data() {
+  return log_data_;
+}
 
-  
 void Log::SetNewSession() {
   log_data_.lineNo = 0;
   log_data_.traceLevel = 0;

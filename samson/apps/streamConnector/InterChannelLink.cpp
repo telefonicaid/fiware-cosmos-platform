@@ -24,21 +24,12 @@ InterChannelLink::~InterChannelLink() {
 }
 
 // Push a packet
-void InterChannelLink::push(InterChannelPacket *packet) {
+void InterChannelLink::push(au::SharedPointer<InterChannelPacket> packet) {
   packet_reader_writer->push(packet);
 }
 
-void InterChannelLink::push(au::ObjectList<InterChannelPacket> *packets) {
-  while (true) {
-    au::ObjectContainer<InterChannelPacket> packet_container;
-    packets->extract_front(packet_container);
-
-    InterChannelPacket *packet = packet_container.object();
-    if (packet)
-      push(packet);
-    else
-      return;           // No more packets to be push
-  }
+void InterChannelLink::push(const au::Queue<InterChannelPacket>& packets) {
+  packet_reader_writer->push(packets);
 }
 
 // Return If this can be removed looking at threads
@@ -69,7 +60,7 @@ size_t InterChannelLink::bufferedSize() {
   return packet_reader_writer->getOutputBufferedSize();
 }
 
-void InterChannelLink::extract_pending_packets(au::ObjectList<InterChannelPacket> *packets) {
+void InterChannelLink::extract_pending_packets(au::Queue<InterChannelPacket>& packets) {
   packet_reader_writer->extract_pending_packets(packets);
 }
 }

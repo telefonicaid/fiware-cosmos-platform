@@ -13,15 +13,17 @@ namespace samson {
 int TXTFileSet::fill(engine::BufferPointer b) {
   // First the header
 
-  if (finish)
+  if (finish) {
     return 0;                           // Just in case
-
-  if (previousBuffer)
+  }
+  if (previousBuffer) {
     if (previousBufferSize > 0) {
       bool ans = b->write(previousBuffer, previousBufferSize);
-      if (!ans)
+      if (!ans) {
         LM_X(1, ("Error writing in a TXTFileSet"));
+      }
     }
+  }
   while (b->getAvailableWrite() > 0) {                  // While there is space to fill
     b->write(inputStream);
 
@@ -29,9 +31,10 @@ int TXTFileSet::fill(engine::BufferPointer b) {
     if (inputStream.eof()) {
       inputStream.close();
       openNextFile();
-      if (finish)
+      if (finish) {
         // Information in the header
         return 0;
+      }
     }
   }
 

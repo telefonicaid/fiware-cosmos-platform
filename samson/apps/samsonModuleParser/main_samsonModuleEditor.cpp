@@ -40,7 +40,7 @@ char working_directory[1024];
 
 PaArgument paArgs[] =
 {
-  { "", working_directory, "", PaString, PaOpt, _i DEFAULT_WORKING_DIRECTORY, PaNL,  PaNL,  "Working directory"           },
+  { "", working_directory, "", PaString, PaOpt, _i DEFAULT_WORKING_DIRECTORY, PaNL, PaNL, "Working directory"             },
   PA_END_OF_ARGS
 };
 
@@ -65,16 +65,19 @@ public:
     DIR *dp;
     struct dirent *dirp;
 
-    if ((dp  = opendir(working_directory)) == NULL)
+    if ((dp  = opendir(working_directory)) == NULL) {
       return;       // Nothing else to do...
-
+    }
     while ((dirp = readdir(dp)) != NULL) {
       std::string fileName = dirp->d_name;
 
       // Skip ".files"
-      if (fileName.length() > 0)
-        if (fileName[0] == '.')
-          continue; std::string path = working_directory + fileName;
+      if (fileName.length() > 0) {
+        if (fileName[0] == '.') {
+          continue;
+        }
+      }
+      std::string path = working_directory + fileName;
 
       struct ::stat info;
       stat(path.c_str(), &info);
@@ -154,19 +157,21 @@ public:
   void evalCommand(std::string command) {
     au::CommandLine cmdLine;
 
-    cmdLine.parse(command);
+    cmdLine.Parse(command);
 
-    if (cmdLine.get_num_arguments() == 0)
+    if (cmdLine.get_num_arguments() == 0) {
       return;
+    }
 
     std::string main_command = cmdLine.get_argument(0);
 
-    if (main_command == "quit")
-
+    if (main_command == "quit") {
       // TODO: Check everything is saved....
 
       // Quit console to finish
-      quitConsole(); if (main_command == "ls_modules") {
+      quitConsole();
+    }
+    if (main_command == "ls_modules") {
       // Show information about modules
       au::tables::Table *table =  getTableOfModules();
 
@@ -194,14 +199,16 @@ public:
           for (size_t i = 0; i < module_information->operations[o].inputs.size(); i++) {
             samson::KVFormat key_values = module_information->operations[o].inputs[i].key_values;
 
-            if (!check_data(key_values.keyFormat))
+            if (!check_data(key_values.keyFormat)) {
               writeWarningOnConsole(
                 au::str("Operation %s: Unknown datatype %s at input %d"
                         , operation.c_str()
                         , key_values.keyFormat.c_str(),
                         i
                         )
-                ); if (!check_data(key_values.valueFormat))
+                );
+            }
+            if (!check_data(key_values.valueFormat)) {
               writeWarningOnConsole(
                 au::str("Operation %s: Unknown datatype %s at input %d"
                         , operation.c_str()
@@ -209,20 +216,23 @@ public:
                         i
                         )
                 );
+            }
           }
 
           // Checking outputs
           for (size_t i = 0; i < module_information->operations[o].outputs.size(); i++) {
             samson::KVFormat key_values = module_information->operations[o].outputs[i].key_values;
 
-            if (!check_data(key_values.keyFormat))
+            if (!check_data(key_values.keyFormat)) {
               writeWarningOnConsole(
                 au::str("Operation %s: Unknown datatype %s at output %d"
                         , operation.c_str()
                         , key_values.keyFormat.c_str(),
                         i
                         )
-                ); if (!check_data(key_values.valueFormat))
+                );
+            }
+            if (!check_data(key_values.valueFormat)) {
               writeWarningOnConsole(
                 au::str("Operation %s: Unknown datatype %s at output %d"
                         , operation.c_str()
@@ -230,6 +240,7 @@ public:
                         i
                         )
                 );
+            }
           }
         }
       }
@@ -237,21 +248,24 @@ public:
   }
 
   bool check_data(std::string data) {
-    if (data == "txt")
+    if (data == "txt") {
       return true;       // Only valid for some operations...
-
+    }
     std::vector<std::string> components = au::split(data, '.');
-    if (components.size() != 2)
+    if (components.size() != 2) {
       return false;
+    }
 
     samson::ModuleInformation *module_information = modules.findInMap(components[0]);
 
-    if (!module_information)
+    if (!module_information) {
       return false;
+    }
 
     for (size_t i = 0; i < module_information->datas.size(); i++) {
-      if (module_information->datas[i].name == components[1])
+      if (module_information->datas[i].name == components[1]) {
         return true;
+      }
     }
 
     return false;

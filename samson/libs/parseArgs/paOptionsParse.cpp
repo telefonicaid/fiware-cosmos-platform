@@ -105,12 +105,16 @@ static PaiArgument *argFind
       int len;
 
       PA_M(("Got option '%s' from itrration", aP->option));
-      if ((aP->option == NULL) || (aP->option[0] == 0))
-        continue; PA_M(("comparing '%s' to '%s'", string, aP->option));
+      if ((aP->option == NULL) || (aP->option[0] == 0)) {
+        continue;
+      }
+      PA_M(("comparing '%s' to '%s'", string, aP->option));
 
       len = strlen(aP->option);
-      if (strict == STRICT)
-        len = MAX(strlen(string), (unsigned int)len); if (len == 0) {
+      if (strict == STRICT) {
+        len = MAX(strlen(string), (unsigned int)len);
+      }
+      if (len == 0) {
         LM_EXIT();
         return NULL;
       }
@@ -160,9 +164,13 @@ static int iListFix(int *iV, char *s, int *error) {
 
   while ((unsigned long)tmP < (unsigned long)endP) {
     tmP = strchr(s, ' ');
-    if (tmP == NULL)
-      tmP = strchr(s, '\t'); if (tmP >= endP)
-      break; if (tmP == NULL) {           /* last argument */
+    if (tmP == NULL) {
+      tmP = strchr(s, '\t');
+    }
+    if (tmP >= endP) {
+      break;
+    }
+    if (tmP == NULL) {                    /* last argument */
       /* Check 's' for valid integer - reflect in *error parameter */
       iV[ix + 1] = baStoi(s);
       PA_M(("item %d in int-list: %d", ix + 1, iV[ix + 1]));
@@ -208,8 +216,10 @@ static int sListFix(char **sV, char *s, int *error) {
     while ((*tmP == ' ') || (*tmP == '\t')) {
       ++tmP;
     }
-    if (*tmP == 0)
-      break; s = tmP;
+    if (*tmP == 0) {
+      break;
+    }
+    s = tmP;
 
 
     // 2. Now we're at the start of the string - find WS after it and NULL it (if needed)
@@ -285,9 +295,11 @@ static int sListFix(char **sV, char *s, int *error) {
  * optOrPar -
  */
 char *optOrPar(char *opt) {
-  if ((*opt == '-') || (*opt == '+'))
-    return (char *)"option"; else
+  if ((*opt == '-') || (*opt == '+')) {
+    return (char *)"option";
+  } else {
     return (char *)"parameter";
+  }
 }
 
 /* ****************************************************************************
@@ -318,8 +330,9 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
     PA_M(("Looking up '%s'", argV[argNo]));
     if ((aP = argFind(paList, argV[argNo], STRICT, NULL)) != NULL) {
       valueP = argV[++argNo];
-      if (aP->type == PaBoolean)
+      if (aP->type == PaBoolean) {
         --argNo;
+      }
     } else if ((aP = argFind(paList, argV[argNo], UNSTRICT, NULL)) != NULL) {
       valueP = &argV[argNo][strlen(aP->option)];
     } else if ((aP = argFind(paList, (char *)"", UNSTRICT, &param)) != NULL) {
@@ -355,12 +368,13 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
       return -2;
     }
 
-    if (aP->used > 0)
+    if (aP->used > 0) {
       if ((aP->type != PaSList) && (aP->type != PaIList) && (aP->what != PawParameter)) {
         sprintf(w, "multiple use of %s", aP->name);
         PA_WARNING(PasMultipleOptionUse, w);
         continue;
       }
+    }
     aP->from = PafArgument;
 
 
@@ -394,8 +408,9 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
       case PaInt:
       case PaIntU:
         *((int *)aP->varP) = (int)(long long)paGetVal(valueP, eP);
-        if (*eP != PaOk)
+        if (*eP != PaOk) {
           return -1;
+        }
 
         LM_T(LmtPaApVals, ("got value %d for %s", *((int *)aP->varP), aP->name));
         break;
@@ -403,8 +418,9 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
       case PaInt64:
       case PaIntU64:
         *((long long *)aP->varP) = (long long)paGetVal(valueP, eP);
-        if (*eP != PaOk)
+        if (*eP != PaOk) {
           return -1;
+        }
 
         LM_T(LmtPaApVals, ("got value %ul for %s", *((long long *)aP->varP), aP->name));
         break;
@@ -412,8 +428,9 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
       case PaChar:
       case PaCharU:
         *((char *)aP->varP) = (char)(long long)paGetVal(valueP, eP);
-        if (*eP != PaOk)
+        if (*eP != PaOk) {
           return -1;
+        }
 
         LM_T(LmtPaApVals, ("got value %d for %s", *((char *)aP->varP), aP->name));
         break;
@@ -421,8 +438,9 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
       case PaShort:
       case PaShortU:
         *((short *)aP->varP) = (short)(long long)paGetVal(valueP, eP);
-        if (*eP != PaOk)
+        if (*eP != PaOk) {
           return -1;
+        }
 
         LM_T(LmtPaApVals, ("got value %d for %s", *((short *)aP->varP), aP->name));
         break;
@@ -465,8 +483,10 @@ int paOptionsParse(PaiArgument *paList, char *argV[], int argC) {
         LM_W(("bad type for option '%s'", aP->name));
     }
 
-    if (*eP != PaOk)
-      REQUIRE(aP); aP->used++;
+    if (*eP != PaOk) {
+      REQUIRE(aP);
+    }
+    aP->used++;
     LM_V(("%s used %d times", aP->name, aP->used));
   }
 

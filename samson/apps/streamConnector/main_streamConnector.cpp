@@ -153,12 +153,15 @@ int main(int argC, const char *argV[]) {
   srand(time(NULL));
 
   // Capturing SIGPIPE
-  if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR)
-    LM_W(("SIGPIPE cannot be handled")); if (buffer_size == 0)
+  if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {
+    LM_W(("SIGPIPE cannot be handled"));
+  }
+  if (buffer_size == 0) {
     LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Run in background if required
+  }
   if (run_as_daemon) {
-    daemonize();
-    deamonize_close_all();
+    Daemonize();
+    Deamonize_close_all();
   }
 
   // Init samson setup with default values
@@ -173,8 +176,9 @@ int main(int argC, const char *argV[]) {
   samson::ModulesManager::init("samsonConnector");               // Init the modules manager
 
   // Ignore verbose mode if interactive is activated
-  if (interactive)
+  if (interactive) {
     lmVerbose = false;  // Init samsonConnector
+  }
   main_stream_connector = new stream_connector::StreamConnector();
 
   if (strcmp(file_name, "") != 0) {
@@ -210,8 +214,9 @@ int main(int argC, const char *argV[]) {
         main_stream_connector->process_command(line, &error);
 
         // Show only if an error happen there
-        if (error.IsActivated())
+        if (error.IsActivated()) {
           std::cerr << error.str();
+        }
       }
     }
 
@@ -226,8 +231,9 @@ int main(int argC, const char *argV[]) {
     {
       au::ErrorManager error;
       main_stream_connector->process_command(au::str("add_channel default %s", input_splitter_name), &error);
-      if (error.IsActivated())
+      if (error.IsActivated()) {
         main_stream_connector->log("Init", "Error", error.GetMessage().c_str());
+      }
     }
 
     size_t adapter_id = 1;
@@ -240,8 +246,9 @@ int main(int argC, const char *argV[]) {
 
       au::ErrorManager error;
       main_stream_connector->process_command(command, &error);
-      if (error.IsActivated())
+      if (error.IsActivated()) {
         main_stream_connector->log("Init", "Error", error.GetMessage().c_str());
+      }
     }
 
     // Add inputs
@@ -252,8 +259,9 @@ int main(int argC, const char *argV[]) {
 
       au::ErrorManager error;
       main_stream_connector->process_command(command, &error);
-      if (error.IsActivated())
+      if (error.IsActivated()) {
         main_stream_connector->log("Init", "Error", error.GetMessage().c_str());
+      }
     }
   }
 
@@ -310,9 +318,12 @@ int main(int argC, const char *argV[]) {
       }
 
       // Verify if can exit....
-      if (num_input_items == 0) // Verify no input source is connected
-        if (pending_size == 0)  // Check no pending data to be send....
-          LM_X(0, ("Finish correctly. No more inputs data")); usleep(100000);
+      if (num_input_items == 0) {  // Verify no input source is connected
+        if (pending_size == 0) {  // Check no pending data to be send....
+          LM_X(0, ("Finish correctly. No more inputs data"));
+        }
+      }
+      usleep(100000);
     }
   }
 

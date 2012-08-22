@@ -33,15 +33,17 @@ void TokenTaker::WakeUp() {
   // Wake up a thread that has been "stop"
   // LM_M(("Wake up for token %s", token->name_ ));
 
-  if (pthread_cond_signal(&token_->block_) != 0)
+  if (pthread_cond_signal(&token_->block_) != 0) {
     LM_X(1, ("Internal error at au::TokenTaker"));
+  }
 }
 
 void TokenTaker::WakeUpAll() {
   // Wake up all stopped threads
   // LM_M(("Wake up all for token %s", token->name_ ));
 
-  if (pthread_cond_broadcast(&token_->block_) != 0)
+  if (pthread_cond_broadcast(&token_->block_) != 0) {
     LM_X(1, ("Internal error at au::TokenTaker"));
+  }
 }
 }

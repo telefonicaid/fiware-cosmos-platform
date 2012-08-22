@@ -144,10 +144,10 @@ public:
                                    , au::SocketConnection *socket_connetion);
 
   // Write errors depending on setup ( interactive, deamon, normal )
-  void log(au::SharedPointer<Log> log );
-  void log( const std::string& name, const std::string& type, const std::string& message);
+  void log(au::SharedPointer<Log> log);
+  void log(const std::string& name, const std::string& type, const std::string& message);
 
-                        
+
   // Select channel for an interchannel connection
   void select_channel(InputInterChannelConnection *connection, std::string target_channel, au::ErrorManager *error);
 

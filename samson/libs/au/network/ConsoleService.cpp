@@ -84,8 +84,9 @@ void ConsoleServiceClientBase::Connect(std::string host,
   // Disconnect from previos one if any...
   Disconnect(error);
 
-  if (error->IsActivated())
+  if (error->IsActivated()) {
     return;
+  }
 
   // Try connection
   au::Status s = SocketConnection::Create(host, port_,
@@ -102,8 +103,9 @@ void ConsoleServiceClientBase::Connect(std::string host,
 }
 
 std::string ConsoleServiceClientBase::getPrompt() {
-  if (cronometer_prompt_request_.seconds() < 2)
+  if (cronometer_prompt_request_.seconds() < 2) {
     return current_prompt_;
+  }
 
   // Prepare message to be send to server
   au::gpb::ConsolePacket m;
@@ -112,14 +114,16 @@ std::string ConsoleServiceClientBase::getPrompt() {
   // Send request to server
   au::ErrorManager error;
   // Send to server
-  if (!Write(&m, &error))
+  if (!Write(&m, &error)) {
     return current_prompt_;
+  }
 
   // Recover answer from server
   // Read answer from server
   au::gpb::ConsolePacket *answer;
-  if (!Read(&answer, &error))
+  if (!Read(&answer, &error)) {
     return current_prompt_;
+  }
 
   current_prompt_ = answer->prompt();
   delete answer;
@@ -132,10 +136,11 @@ void ConsoleServiceClientBase::evalCommand(
   // Establish connection
   au::CommandLine cmdLine;
 
-  cmdLine.parse(command);
+  cmdLine.Parse(command);
 
-  if (cmdLine.get_num_arguments() == 0)
+  if (cmdLine.get_num_arguments() == 0) {
     return;
+  }
 
   std::string main_command = cmdLine.get_argument(0);
 
@@ -161,14 +166,16 @@ void ConsoleServiceClientBase::evalCommand(
     // Write command to the server
     au::gpb::ConsolePacket m;
     m.set_command(command);
-    if (!Write(&m, error))
+    if (!Write(&m, error)) {
       return;
+    }
 
     // Read answer
     au::gpb::ConsolePacket *answer;
 
-    if (!Read(&answer, error))
+    if (!Read(&answer, error)) {
       return;
+    }
 
     // Transform into a au::ErrorManager
     FillMessage(answer, error);
@@ -191,13 +198,15 @@ void ConsoleServiceClientBase::autoComplete(
   au::ErrorManager error;                 // Not used error
 
   // Send to server
-  if (!Write(&m, &error))
+  if (!Write(&m, &error)) {
     return;
+  }
 
   // Read answer from server
   au::gpb::ConsolePacket *answer;
-  if (!Read(&answer, &error))
+  if (!Read(&answer, &error)) {
     return;
+  }
 
   // Fill info structure with received information
   for (int i = 0; i < answer->auto_completion_alternatives_size();

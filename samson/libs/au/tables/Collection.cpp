@@ -28,14 +28,17 @@ void CollectionItem::add(CollectionItem *collection_item) {
 }
 
 std::string CollectionItem::get(std::string name) {
-  if (values.isInMap(name))
-    return values.findInMap(name); else
+  if (values.isInMap(name)) {
+    return values.findInMap(name);
+  } else {
     return "";
+  }
 }
 
 bool CollectionItem::match(std::string name, std::string value) {
-  if (get(name) != value)
+  if (get(name) != value) {
     return false;
+  }
 
   return true;
 }
@@ -46,8 +49,9 @@ bool CollectionItem::match(CollectionItem *filter) {
     std::string name = it_values->first;
     std::string value = it_values->second;
 
-    if (!match(name, value))
+    if (!match(name, value)) {
       return false;
+    }
   }
   return true;
 }
@@ -128,8 +132,9 @@ Collection *Collection::getCollection(CollectionItem *filter) {
   for (size_t i = 0; i < items.size(); i++) {
     CollectionItem *item = items[i];
 
-    if (item->match(filter))
+    if (item->match(filter)) {
       collection->add(new CollectionItem(item));
+    }
   }
 
   return collection;
@@ -151,9 +156,11 @@ void Collection::remove(std::string name, std::string value) {
   for (size_t i = 0; i < items.size(); i++) {
     CollectionItem *item = items[i];
 
-    if (item->match(name, value))
-      delete item; else
+    if (item->match(name, value)) {
+      delete item;
+    } else {
       _items.push_back(item);
+    }
   }
 
   items.clear();

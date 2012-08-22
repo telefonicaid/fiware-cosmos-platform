@@ -76,8 +76,10 @@ public:
   // Get reference to the limit elements
 
   V *getFromBack() {
-    if (keys.size() == 0)
+    if (keys.size() == 0) {
       return NULL;
+    }
+
 
 
 
@@ -96,8 +98,10 @@ public:
   }
 
   V *getFromFront() {
-    if (keys.size() == 0)
+    if (keys.size() == 0) {
       return NULL;
+    }
+
 
 
 
@@ -119,8 +123,10 @@ public:
   // Extract elements
 
   V *extractFromBack() {
-    if (keys.size() == 0)
+    if (keys.size() == 0) {
       return NULL;
+    }
+
 
 
 
@@ -142,8 +148,10 @@ public:
   }
 
   V *extractFromFront() {
-    if (keys.size() == 0)
+    if (keys.size() == 0) {
       return NULL;
+    }
+
 
 
 
@@ -173,8 +181,10 @@ public:
   V *findInMap(K& key) {
     typename std::map<K, V * >::iterator iter = map.find(key);
 
-    if (iter == map.end())
+    if (iter == map.end()) {
       return NULL;
+    }
+
 
 
 

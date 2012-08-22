@@ -28,10 +28,14 @@ std::string ProcessItem::getStatus() {
   int p = progress_ * 100.0;
   std::ostringstream o;
 
-  if (p > 0)
-    o << "[" << au::str_percentage(p) << "]"; if (running_)
-    o << "Running (" << cronometer_ << ")"; else
-    o << "Queued"; o << " : " << priority_;
+  if (p > 0) {
+    o << "[" << au::str_percentage(p) << "]";
+  }
+  if (running_) {
+    o << "Running (" << cronometer_ << ")";
+  } else {
+    o << "Queued";
+  } o << " : " << priority_;
 
   o << std::string(" : ") << process_item_current_task_description_;
 

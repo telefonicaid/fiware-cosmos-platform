@@ -24,9 +24,11 @@ size_t BufferListItem::getSize() {
 }
 
 size_t BufferListItem::getSizeOnMemory() {
-  if (is_on_memory())
-    return buffer_size; else
+  if (is_on_memory()) {
+    return buffer_size;
+  } else {
     return 0;
+  }
 }
 
 bool BufferListItem::is_on_memory() {
@@ -54,7 +56,7 @@ void BufferListItem::notify(engine::Notification *notification) {
   au::TokenTaker tt(&token);
 
   if (notification->isName(notification_disk_operation_request_response)) {
-    std::string type      = notification->environment().get("type", "-");
+    std::string type      = notification->environment().Get("type", "-");
 
     if (type == "write") {
       if (state != writing) {
@@ -95,8 +97,9 @@ void BufferListItem::flush_to_disk() {
     case on_memory:
     {
       // squedule_write
-      if (buffer_ == NULL)
+      if (buffer_ == NULL) {
         LM_X(1, ("Internal error"));
+      }
       engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer_, file_name_,
                                                                           getEngineId());
       au::SharedPointer<engine::DiskOperation> operation(o);
@@ -150,19 +153,21 @@ BufferList::BufferList(std::string persistence_directory, size_t max_size_on_mem
 }
 
 void BufferList::review_persistence() {
-  if (max_size_on_memory_ == 0)
+  if (max_size_on_memory_ == 0) {
     return;   // Nothing to do here
-
-   // Schedule read or write tasks
+  }
+  // Schedule read or write tasks
   au::list<BufferListItem>::iterator it;
   size_t total = 0;
   for (it = items.begin(); it != items.end(); it++) {
     BufferListItem *item = *it;
 
-    if (total < max_size_on_memory_)
-      item->load_from_disk(); else
+    if (total < max_size_on_memory_) {
+      item->load_from_disk();
+    } else {
       // Flushing to disk
-      item->flush_to_disk(); total += item->getSize();
+      item->flush_to_disk();
+    } total += item->getSize();
   }
 }
 
@@ -178,8 +183,9 @@ void BufferList::push(engine::BufferPointer buffer) {
 engine::BufferPointer BufferList::pop() {
   au::TokenTaker tt(&token);
 
-  if (items.size() == 0)
+  if (items.size() == 0) {
     return engine::BufferPointer(NULL);
+  }
 
   BufferListItem *item = items.front();
   engine::BufferPointer buffer = item->buffer();
@@ -192,9 +198,11 @@ engine::BufferPointer BufferList::pop() {
 void BufferList::extract_buffer_from(BufferList *buffer_list) {
   while (true) {
     engine::BufferPointer buffer = buffer_list->pop();
-    if (buffer != NULL)
-      push(buffer); else
+    if (buffer != NULL) {
+      push(buffer);
+    } else {
       break;
+    }
   }
 }
 

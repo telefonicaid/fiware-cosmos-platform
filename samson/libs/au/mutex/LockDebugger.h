@@ -26,19 +26,13 @@
 #include <set>                   /* set                                      */
 #include <string>                /* std::string                              */
 
+#include "au/Singleton.h"
 
 namespace au {
 class Lock;
 
 class LockDebugger {
-  LockDebugger();
-  ~LockDebugger();
-
 public:
-
-  // Singleton implementation
-  static LockDebugger *shared();
-  static void destroy();
 
   // Methods to assign name to threads
   static void SetThreadTitle(const std::string&);
@@ -49,6 +43,12 @@ public:
   void RemoveMutexLock(void *new_lock);
 
 private:
+
+  LockDebugger();
+  ~LockDebugger();
+
+  // We use au::Singleton to implement a singleton over this class
+  friend class au::Singleton<LockDebugger>;
 
   std::set<void *> *GetLocksVector();
   bool IsCrossBlocking(void *new_lock);

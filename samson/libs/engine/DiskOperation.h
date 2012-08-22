@@ -44,7 +44,6 @@
 #include "engine/Buffer.h"   // engine::Buffer
 #include "engine/MemoryManager.h"       // engine::BufferContainer
 
-#include "au/Object.h"
 #include "engine/Notification.h"
 
 

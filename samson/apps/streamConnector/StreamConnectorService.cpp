@@ -14,8 +14,8 @@ void StreamConnectorService::runCommand(std::string command, au::Environment *en
   // Parse login and password commands....
   au::CommandLine cmdLine;
 
-  cmdLine.set_flag_string("p", "");
-  cmdLine.parse(command);
+  cmdLine.SetFlagString("p", "");
+  cmdLine.Parse(command);
 
   if (cmdLine.get_num_arguments() > 0) {
     if (cmdLine.get_argument(0) == "login") {
@@ -25,7 +25,7 @@ void StreamConnectorService::runCommand(std::string command, au::Environment *en
       }
 
       std::string user = cmdLine.get_argument(1);
-      std::string password = cmdLine.get_flag_string("p");
+      std::string password = cmdLine.GetFlagString("p");
 
       if (user != "root") {
         error->set("Only root user supported in this release");
@@ -34,7 +34,7 @@ void StreamConnectorService::runCommand(std::string command, au::Environment *en
 
       if (password == samson_connector->getPasswordForUser(user)) {
         error->AddWarning(au::str("Login correct as %s", user.c_str()));
-        environment->set("user", user);
+        environment->Set("user", user);
       } else {
         error->AddError(au::str("Wrong password for user %s", user.c_str()));
       }
@@ -47,12 +47,12 @@ void StreamConnectorService::runCommand(std::string command, au::Environment *en
         return;
       }
 
-      if (!environment->isSet("user")) {
+      if (!environment->IsSet("user")) {
         error->set("Not logged! Please log using command 'login user-name -p password'");
         return;
       }
 
-      std::string user = environment->get("user", "no-user");
+      std::string user = environment->Get("user", "no-user");
       std::string new_password = cmdLine.get_argument(1);
       samson_connector->setPasswordForUser(user, new_password);
       error->AddWarning(au::str("Set new password for user %s correctly", user.c_str()));
@@ -61,7 +61,7 @@ void StreamConnectorService::runCommand(std::string command, au::Environment *en
   }
 
   // Protect against non authorized users
-  if (!environment->isSet("user")) {
+  if (!environment->IsSet("user")) {
     error->set("Not logged! Please log using command 'login user-name -p password'");
     return;
   }
@@ -90,8 +90,8 @@ std::string StreamConnectorService::getPrompt(au::Environment *environment) {
   host[1023] = '\0';
   gethostname(host, 1023);
 
-  if (environment->isSet("user")) {
-    std::string user = environment->get("user", "?");
+  if (environment->IsSet("user")) {
+    std::string user = environment->Get("user", "?");
     return "stc://" + user + "@" + host + " >>";
   } else {
     return std::string("stc://") + host + " >>";

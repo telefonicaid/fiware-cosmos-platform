@@ -5,19 +5,23 @@
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
 #include "gtest/gtest.h"
-#include "unitTest/test_common.h"
+#include "unitTest/TestClasses.h"
 
 class NetworkListenerInterfaceImpl : public au::NetworkListenerInterface {
 public:
 
   virtual void newSocketConnection(au::NetworkListener *listener,
                                    au::SocketConnection *socket_connetion) {
-    if (socket_connetion == NULL)
-      LM_X(1, ("Null socket connection")); char line[1024];
+    if (socket_connetion == NULL) {
+      LM_X(1, ("Null socket connection"));
+    }
+    char line[1024];
     num_connections_++;
 
-    if (socket_connetion->ReadLine(line, sizeof(line)) == au::OK)
-      socket_connetion->WriteLine(line, strlen(line)); socket_connetion->Close();
+    if (socket_connetion->ReadLine(line, sizeof(line)) == au::OK) {
+      socket_connetion->WriteLine(line, strlen(line));
+    }
+    socket_connetion->Close();
   }
 
   static int num_connections() {

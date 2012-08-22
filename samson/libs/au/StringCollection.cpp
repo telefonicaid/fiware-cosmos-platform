@@ -11,8 +11,9 @@ StringCollection::StringCollection() {
 }
 
 StringCollection::~StringCollection() {
-  if (v)
+  if (v) {
     free(v);
+  }
 }
 
 int StringCollection::add(const char *string) {
@@ -22,9 +23,9 @@ int StringCollection::add(const char *string) {
   std::string _string = string;
 
   std::map<std::string, int>::iterator it = previous_strings.find(_string);
-  if (it != previous_strings.end())
+  if (it != previous_strings.end()) {
     return it->second;  // --------------------------------------------------------
-
+  }
   size_t len = strlen(string);
   size_t required_size = size + len + 1;
 
@@ -58,22 +59,27 @@ int StringCollection::add(const char *string) {
 size_t StringCollection::write(FILE *file) {
   size_t t = fwrite(v, size, 1, file);
 
-  if (t == 1)
-    return size; else
+  if (t == 1) {
+    return size;
+  } else {
     return 0;
+  }
 }
 
 void StringCollection::read(FILE *file, size_t _size) {
   // Free preivous buffer if any
-  if (v)
-    free(v); v = (char *)malloc(_size);
+  if (v) {
+    free(v);
+  }
+  v = (char *)malloc(_size);
   size = _size;
   max_size = _size;
 
   // Read content from file
   size_t r = fread(v, _size, 1, file);
-  if (r != 1)
+  if (r != 1) {
     LM_W(("Error reading StringCollection"));
+  }
 }
 
 size_t StringCollection::getSize() {

@@ -47,21 +47,26 @@ void ProcessManager::stop() {
   LM_V(("ProcessManager stop"));
 
   // Set the maximum number of process to 0 makes all background threads to quit
-  if (processManager)
+  if (processManager) {
     processManager->max_num_procesors_ = 0;
+  }
 }
 
 void ProcessManager::destroy() {
   LM_V(("ProcessManager destroy"));
 
-  if (!processManager)
-    LM_RVE(("attempt to destroy uninitialized process manager")); delete processManager;
+  if (!processManager) {
+    LM_RVE(("attempt to destroy uninitialized process manager"));
+  }
+  delete processManager;
   processManager = NULL;
 }
 
 ProcessManager *ProcessManager::shared() {
-  if (!processManager)
-    LM_X(1, ("ProcessManager not initialiazed")); return processManager;
+  if (!processManager) {
+    LM_X(1, ("ProcessManager not initialiazed"));
+  }
+  return processManager;
 }
 
 ProcessManager::ProcessManager(int max_num_procesors) : token_("engine::ProcessManager") {
@@ -122,7 +127,7 @@ void ProcessManager::Cancel(au::SharedPointer<ProcessItem> item) {
     notification->dictionary().Set("process_item", notification_object);
 
     notification->environment().Add(item->environment());
-    notification->environment().set("error", "Canceled");
+    notification->environment().Set("error", "Canceled");
 
     Engine::shared()->notify(notification);
   }
@@ -193,7 +198,7 @@ void ProcessManager::run_worker() {
 
     // Extra error environment if necessary
     if (item->error().IsActivated()) {
-      notification->environment().set("error", item->error().GetMessage());  // Add the notification to the main engine
+      notification->environment().Set("error", item->error().GetMessage());  // Add the notification to the main engine
     }
     Engine::shared()->notify(notification);
   }

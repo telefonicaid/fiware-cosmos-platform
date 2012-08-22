@@ -18,10 +18,6 @@ namespace au {
 class LockDebugger;
 LockDebugger *lockDebugger;
 
-LockDebugger *LockDebugger::shared() {
-  if (!lockDebugger)
-    lockDebugger = new LockDebugger(); return lockDebugger;
-}
 
 LockDebugger::LockDebugger() {
   pthread_mutex_init(&lock_, 0);
@@ -31,14 +27,6 @@ LockDebugger::LockDebugger() {
 LockDebugger::~LockDebugger() {
   pthread_mutex_destroy(&lock_);
   pthread_key_delete(key_title_);
-}
-
-void LockDebugger::destroy() {
-  if (!lockDebugger)
-    LM_RVE(("Attempt to destroy a non-initialized Lock Debugger")); LM_V(("Destroying ModulesManager"));
-  delete lockDebugger;
-
-  lockDebugger = NULL;
 }
 
 void LockDebugger::AddMutexLock(void *new_lock) {
@@ -82,9 +70,10 @@ void LockDebugger::RemoveMutexLock(void *new_lock) {
   std::set<void *> *locksVector = GetLocksVector();
 
   // Make sure it was there
-  if (locksVector->find(new_lock) == locksVector->end())
+  if (locksVector->find(new_lock) == locksVector->end()) {
     LM_X(1,
          ("Error debugging locks. Removing a lock that was not previously defined. List of %d locks", locksVector->size()));
+  }
   locksVector->erase(new_lock);
 
 
@@ -113,17 +102,19 @@ bool LockDebugger::IsCrossBlocking(void *new_lock) {
 
   std::map< pthread_t, std::set<void *> * >::iterator i;
   for (i = locks_.begin(); i != locks_.end(); i++) {
-    if (i->first != pthread_self())
+    if (i->first != pthread_self()) {
       // Check if it have my new lock
       if (i->second->find(new_lock) != i->second->end()) {
         // It contains the lock I am traying to get
         // Let see if they have any of my previous locks
         std::set<void *>::iterator j;
         for (j = myLocks->begin(); j != myLocks->end(); j++) {
-          if (i->second->find(*j) != i->second->end())
+          if (i->second->find(*j) != i->second->end()) {
             return true;
+          }
         }
       }
+    }
   }
 
 
@@ -133,13 +124,15 @@ bool LockDebugger::IsCrossBlocking(void *new_lock) {
 std::string LockDebugger::GetThreadTitle() {
   void *data = pthread_getspecific(lockDebugger->key_title_);
 
-  if (data)
-    return *((std::string *)data); else
+  if (data) {
+    return *((std::string *)data);
+  } else {
     return "Unknown";
+  }
 }
 
 void LockDebugger::SetThreadTitle(const std::string& title) {
-  void *data = pthread_getspecific(LockDebugger::shared()->key_title_);
+  void *data = pthread_getspecific(au::Singleton<LockDebugger>::shared()->key_title_);
 
   if (!data) {
     LM_X(1,

@@ -26,6 +26,8 @@
 #include <sstream>         // std::ostringstream
 #include <stdlib.h>
 
+#include "au/S.h"
+
 namespace au {
 class Environment {
 public:
@@ -40,38 +42,41 @@ public:
   void Add(const Environment& environment);
 
   // Clear environment previously defined
-  void clearEnvironment();
+  void ClearEnvironment();
 
   // Get methods
-  std::string get(const std::string& name, const std::string& default_value) const;
-  int get(const std::string& name, int defaultValue) const;
-  size_t get(const std::string& name, size_t defaultValue) const;
-  double get(const std::string& name, double value) const;
+  std::string Get(const std::string& name, const std::string& default_value) const;
+  int Get(const std::string& name, int defaultValue) const;
+  size_t Get(const std::string& name, size_t defaultValue) const;
+  double Get(const std::string& name, double value) const;
 
   // Set methods
-  void set(const std::string&, const std::string& value);
-  void unset(const std::string& name);
-  bool isSet(const std::string& name) const;
+  void Set(const std::string&, const std::string& value);
+  void Unset(const std::string& name);
+  bool IsSet(const std::string& name) const;
 
   // Templarized assignation
   template<typename T>
-  void set(std::string name, T value) {
+  void Set(std::string name, T value) {
     std::ostringstream v;
 
     v << value;
-    set(name, v.str());
+    Set(name, v.str());
   }
 
   // Asignation operator
   Environment& operator=(Environment& environment);
 
   // Save and restore from string
-  std::string saveToString();
-  void recoverFromString(const std::string& input);
+  std::string SaveToString() const;
+  void RecoverFromString(const std::string& input);
+
+  // Debug string
+  std::string str() const;
 
 private:
 
-  friend std::ostream& operator<<(std::ostream& o, Environment& enviroment);
+  friend std::ostream& operator<<(std::ostream& o, const Environment& enviroment);
   std::map<std::string, std::string> items_;
 };
 }

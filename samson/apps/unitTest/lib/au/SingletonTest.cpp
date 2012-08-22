@@ -2,41 +2,30 @@
 
 #include "au/Singleton.h"
 #include "gtest/gtest.h"
-#include "unitTest/test_common.h"
+#include "unitTest/TestClasses.h"
 
-class Example
-{
-
-public:
-
-   Example()
-   {
-	  value_=0;
-   }
-
-   int value()
-   {
-	  return value_;
-   }
-
-   void set_value( int value )
-   {
-	  value_ = value;
-   }
-
-private:
-
-   int value_;
-
-};
 
 TEST(au_Singleton, basic) {
+  TestBase *example = au::Singleton<TestBase>::shared();
 
-  Example* example = au::Singleton<Example>::shared();
-  example->set_value(1);
+  example->set_value(10);
 
-  Example* example2 = au::Singleton<Example>::shared();
+  // Hopefully pointing to the same variable
+  TestBase *example2 = au::Singleton<TestBase>::shared();
+  EXPECT_EQ(10, example2->value());
 
-  EXPECT_EQ( 1 , example2->value() );
+  // Only one instance of the singleton
+  EXPECT_EQ(1, TestBase::num_instances());
 
+  // Check number of singleton in manager
+  EXPECT_EQ(1, au::singleton_manager.size());
+
+  // Unique call to remove all singletons
+  au::singleton_manager.DestroySingletons();
+
+  // Expected no instances of this class
+  EXPECT_EQ(0, TestBase::num_instances());
+
+  // Check number of singleton in manager
+  EXPECT_EQ(0, au::singleton_manager.size());
 }

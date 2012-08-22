@@ -76,8 +76,10 @@ void PushItem::review() {
 }
 
 void PushItem::reset() {
-  if (state == completed)
-    return; state = init;
+  if (state == completed) {
+    return;
+  }
+  state = init;
 }
 
 // A Push response has been received from worker
@@ -130,8 +132,9 @@ void PushItem::receive(Message::MessageCode msgCode, size_t worker_id) {
 }
 
 void PushItem::send_commit() {
-  if (state != ready_for_commit)
+  if (state != ready_for_commit) {
     return;
+  }
 
   // Send the commit message
   PacketPointer packet(new Packet(Message::PushBlockCommit));
@@ -170,9 +173,11 @@ void PushManager::receive(Message::MessageCode msgCode, size_t worker_id, size_t
 void PushManager::reset(size_t push_id) {
   PushItem *item = items_.findInMap(push_id);
 
-  if (item)
-    item->reset(); else
+  if (item) {
+    item->reset();
+  } else {
     LM_W(("Canceling non-existing push operation with push_id = %lu", push_id ));
+  }
 }
 
 size_t PushManager::push(engine::BufferPointer buffer, const std::vector<std::string>& queues) {
@@ -203,8 +208,8 @@ void PushManager::review() {
     if (item->isFinished()) {
       // Notification to inform that this push_id has finished
       engine::Notification *notification  = new engine::Notification("push_operation_finished");
-      notification->environment().set("push_id", it->first);
-      notification->environment().set("size",  item->size());
+      notification->environment().Set("push_id", it->first);
+      notification->environment().Set("size",  item->size());
       engine::Engine::shared()->notify(notification);
 
       items_.erase(it);
@@ -215,9 +220,11 @@ void PushManager::review() {
   for (it = items_.begin(); it != items_.end(); it++) {
     PushItem *item = it->second;
 
-    if (item->isReadyForCommit())
-      item->send_commit(); else
+    if (item->isReadyForCommit()) {
+      item->send_commit();
+    } else {
       break;
+    }
   }
 }
 

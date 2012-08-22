@@ -74,24 +74,39 @@ static bool optionNameDuplicated(char *name, int start) {
   int opts    = paOptionsNoOf(paiList);
   int matches = 0;
 
-  if (name == NULL)
-    return false; if (name[0] == 0)
+  if (name == NULL) {
     return false;
+  }
+  if (name[0] == 0) {
+    return false;
+  }
 
   for (ix = start; ix < opts; ix++) {
     PaiArgument *aP;
 
-    if ((aP = paIxLookup(paiList, ix)) == NULL)
-      break; if (aP->option == NULL)
-      continue; if (aP->removed == true)
-      continue; if (aP->option[0] == 0)
-      continue; if (strcmp(aP->option, " ") == 0)
-      continue; if (strcmp(name, aP->option) == 0)
+    if ((aP = paIxLookup(paiList, ix)) == NULL) {
+      break;
+    }
+    if (aP->option == NULL) {
+      continue;
+    }
+    if (aP->removed == true) {
+      continue;
+    }
+    if (aP->option[0] == 0) {
+      continue;
+    }
+    if (strcmp(aP->option, " ") == 0) {
+      continue;
+    }
+    if (strcmp(name, aP->option) == 0) {
       ++matches;
+    }
   }
 
-  if (matches <= 1)
+  if (matches <= 1) {
     return false;
+  }
 
   return true;
 }
@@ -105,25 +120,37 @@ static bool envNameDuplicated(char *name, int start) {
   int opts    = paOptionsNoOf(paiList);
   int matches = 0;
 
-  if (name == NULL)
-    return false; if (name[0] == 0)
+  if (name == NULL) {
     return false;
+  }
+  if (name[0] == 0) {
+    return false;
+  }
 
   for (ix = start; ix < opts; ix++) {
     PaiArgument *aP;
     char envVarName[128];
 
-    if ((aP = paIxLookup(paiList, ix)) == NULL)
-      break; if (aP->removed == true)
-      continue; if (aP->envName == NULL)
-      continue; paEnvName(aP, envVarName);
+    if ((aP = paIxLookup(paiList, ix)) == NULL) {
+      break;
+    }
+    if (aP->removed == true) {
+      continue;
+    }
+    if (aP->envName == NULL) {
+      continue;
+    }
+    paEnvName(aP, envVarName);
 
-    if (strcmp(name, envVarName) == 0)
+    if (strcmp(name, envVarName) == 0) {
       ++matches;
+    }
   }
 
-  if (matches <= 1)
-    return false; return true;
+  if (matches <= 1) {
+    return false;
+  }
+  return true;
 }
 
 /* ****************************************************************************
@@ -168,9 +195,13 @@ static int paArgInit(PaArgument *paList) {
     /* Set the value to come from nowhere */
     aP->from = PafUnchanged;
 
-    if ((aP->option != NULL) && (aP->option[0] == 0))
-      aP->option = NULL; if ((aP->envName != NULL) && (aP->envName[0] == 0))
-      aP->envName = NULL; if ((aP->envName != NULL) && ((aP->envName[0] == ' ') || (aP->envName[0] == '\t'))) {
+    if ((aP->option != NULL) && (aP->option[0] == 0)) {
+      aP->option = NULL;
+    }
+    if ((aP->envName != NULL) && (aP->envName[0] == 0)) {
+      aP->envName = NULL;
+    }
+    if ((aP->envName != NULL) && ((aP->envName[0] == ' ') || (aP->envName[0] == '\t'))) {
       char w[512];
 
       strcpy(w, "found an item with var name starting with whitespace - forbidden");
@@ -243,30 +274,43 @@ static char *paProgNameSet(char *pn, int levels, bool pid, const char *extra = N
   char *start;
   static char pName[128];
 
-  if (pn == NULL)
+  if (pn == NULL) {
     return NULL;
-
-  if (levels < 1)
-    levels = 1; start = &pn[strlen(pn) - 1];
-  while (start > pn) {
-    if (*start == '/')
-      levels--; if (levels == 0)
-      break; --start;
   }
 
-  if (*start == '/')
-    ++start; strncpy(pName, start, sizeof(pName));
+  if (levels < 1) {
+    levels = 1;
+  }
+  start = &pn[strlen(pn) - 1];
+  while (start > pn) {
+    if (*start == '/') {
+      levels--;
+    }
+    if (levels == 0) {
+      break;
+    }
+    --start;
+  }
 
-  if (paUsageProgName == NULL)
-    paUsageProgName = strdup(pName); if (pid == true) {
+  if (*start == '/') {
+    ++start;
+  }
+  strncpy(pName, start, sizeof(pName));
+
+  if (paUsageProgName == NULL) {
+    paUsageProgName = strdup(pName);
+  }
+  if (pid == true) {
     char pid[8];
     strncat(pName, "_", sizeof(pName) - 1);
     sprintf(pid, "%d", (int)getpid());
     strncat(pName, pid, sizeof(pName) - 1);
   }
 
-  if (extra != NULL)
-    strncat(pName, extra, sizeof(pName) - 1); return pName;
+  if (extra != NULL) {
+    strncat(pName, extra, sizeof(pName) - 1);
+  }
+  return pName;
 }
 
 /* ****************************************************************************
@@ -301,8 +345,10 @@ int paParse
   int s;
   FILE *fP;
 
-  if (extra != NULL)
-    paExtraLogSuffix = strdup(extra); memset(paResultString, 0, sizeof(paResultString));
+  if (extra != NULL) {
+    paExtraLogSuffix = strdup(extra);
+  }
+  memset(paResultString, 0, sizeof(paResultString));
 
   /* **************************************************** */
   /* Creating flat command line string paCommandLine      */
@@ -353,10 +399,15 @@ int paParse
   /* ****************************************************** */
   /* Initializing all subsystems                            */
   /*                                                        */
-  if ((s = paArgInit(paList)) == -1)
-    RETURN_ERROR("paArgInit error"); if ((s != -2) && ((s = paConfigActions(true)) == -1))
-    RETURN_ERROR("paConfigActions"); if ((s != -2) && ((s = paDefaultValues(paiList)) == -1))
+  if ((s = paArgInit(paList)) == -1) {
+    RETURN_ERROR("paArgInit error");
+  }
+  if ((s != -2) && ((s = paConfigActions(true)) == -1)) {
+    RETURN_ERROR("paConfigActions");
+  }
+  if ((s != -2) && ((s = paDefaultValues(paiList)) == -1)) {
     RETURN_ERROR("paDefaultValues");
+  }
 #if 0
   // Samson doesn't use paRcFileParse ...
   if ((s != -2) && ((s = paRcFileParse()) == -1)) {
@@ -365,17 +416,32 @@ int paParse
 
 #endif
 
-  if ((s != -2) && ((s = paEnvVals(paiList)) == -1))
-    RETURN_ERROR("paEnvVals"); if ((s != -2) && ((s = paOptionsParse(paiList, argV, argC)) == -1))
-    RETURN_ERROR("paOptionsParse"); if (paLogSetup() == -1)
-    RETURN_ERROR("paLogSetup error"); if ((s != -2) && ((s = paLimitCheck(paiList)) == -1))
-    RETURN_ERROR("paLimitCheck"); if ((s != -2) && ((s = paConfigActions(false)) == -1))
-    RETURN_ERROR("paConfigActions"); fP = NULL;
-  if (paMsgsToStdout)
-    fP = stdout; if (paMsgsToStderr)
-    fP = stderr; if (paResultString[0] != 0) {
-    if (fP != NULL)
+  if ((s != -2) && ((s = paEnvVals(paiList)) == -1)) {
+    RETURN_ERROR("paEnvVals");
+  }
+  if ((s != -2) && ((s = paOptionsParse(paiList, argV, argC)) == -1)) {
+    RETURN_ERROR("paOptionsParse");
+  }
+  if (paLogSetup() == -1) {
+    RETURN_ERROR("paLogSetup error");
+  }
+  if ((s != -2) && ((s = paLimitCheck(paiList)) == -1)) {
+    RETURN_ERROR("paLimitCheck");
+  }
+  if ((s != -2) && ((s = paConfigActions(false)) == -1)) {
+    RETURN_ERROR("paConfigActions");
+  }
+  fP = NULL;
+  if (paMsgsToStdout) {
+    fP = stdout;
+  }
+  if (paMsgsToStderr) {
+    fP = stderr;
+  }
+  if (paResultString[0] != 0) {
+    if (fP != NULL) {
       fprintf(fP, "%s\n", paResultString);
+    }
   } else if (paWarnings > 0) {
     int ix;
 
@@ -388,9 +454,13 @@ int paParse
         fprintf(fP, "%s\n\n", paWarning[ix].string);
       }
 
-      if (paUsageOnAnyWarning)
-        paUsage(); if (paResultString[0] != 0)
-        fprintf(fP, "%s\n", paResultString); exit(1);
+      if (paUsageOnAnyWarning) {
+        paUsage();
+      }
+      if (paResultString[0] != 0) {
+        fprintf(fP, "%s\n", paResultString);
+      }
+      exit(1);
     } else {
       char s[64000];
 

@@ -13,11 +13,14 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
 
   if (token_vector->popNextTokenIfItIs("(")) {
     Source *source = getSource(token_vector, error);
-    if (!source || error->IsActivated())
+    if (!source || error->IsActivated()) {
       return NULL;
+    }
 
-    if (!token_vector->popNextTokenIfItIs(")"))
-      error->set("Parentheses not closed"); return source;
+    if (!token_vector->popNextTokenIfItIs(")")) {
+      error->set("Parentheses not closed");
+    }
+    return source;
   }
 
   // ----------------------------------------------------------------
@@ -49,12 +52,13 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
       }
 
       // Read the mandatory "," if it is not the end of the vector
-      if (!token_vector->checkNextTokenIs("]"))
+      if (!token_vector->checkNextTokenIs("]")) {
         if (!token_vector->popNextTokenIfItIs(",")) {
           error->set(au::str("Wrong map format (expected ',' instead of %s)", token_vector->getNextTokenContent().c_str()));
           source_components.clearVector();
           return NULL;
         }
+      }
     }
   }
 
@@ -106,13 +110,14 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
       source_values.push_back(tmp_value);
 
       // Read the mandatory "," if it is not the end of the map
-      if (!token_vector->checkNextTokenIs("}"))
+      if (!token_vector->checkNextTokenIs("}")) {
         if (!token_vector->popNextTokenIfItIs(",")) {
           error->set(au::str("Wrong map format (expected ',' instead of %s)", token_vector->getNextTokenContent().c_str()));
           source_keys.clearVector();
           source_values.clearVector();
           return NULL;
         }
+      }
     }
   }
 
@@ -181,18 +186,22 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
   }
 
   // Literal Constant
-  if (token->isLiteral())
+  if (token->isLiteral()) {
     return new SourceStringConstant(token->content);
+  }
 
   // Key-word
   Source *main = NULL;
 
-  if (token->is("key"))
-    main =  new SourceKey(); if (token->is("value"))
+  if (token->is("key")) {
+    main =  new SourceKey();
+  }
+  if (token->is("value")) {
     main =  new SourceValue();  // ---------------------------------------------------------
-   // key or value
+  }
+  // key or value
   // ---------------------------------------------------------
-  if (main)
+  if (main) {
     while (true) {
       if (token_vector->popNextTokenIfItIs("[")) {
         Source *index = getSource(token_vector, error);
@@ -224,6 +233,7 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
         return main;
       }
     }  // Negative numbers
+  }
   if (token->is("-")) {
     // Get next token that has to be a number
     au::token::Token *next_token = token_vector->popToken();
@@ -245,9 +255,11 @@ Source *getSingleSource(au::token::TokenVector *token_vector, au::ErrorManager *
   // ---------------------------------------------------------
   // Constant
   // ---------------------------------------------------------
-  if (token->isNumber())
-    return new SourceNumberConstant(atof(token->content.c_str())); else
+  if (token->isNumber()) {
+    return new SourceNumberConstant(atof(token->content.c_str()));
+  } else {
     return new SourceStringConstant(token->content);
+  }
 }
 
 Source *getSource(au::token::TokenVector *token_vector, au::ErrorManager *error) {
@@ -256,8 +268,9 @@ Source *getSource(au::token::TokenVector *token_vector, au::ErrorManager *error)
   while (true) {
     if (!source) {
       source = getSingleSource(token_vector, error);
-      if (!source || error->IsActivated())
+      if (!source || error->IsActivated()) {
         return NULL;
+      }
     }
 
     // Check if there is something to continue "< > <= >= != + - * /

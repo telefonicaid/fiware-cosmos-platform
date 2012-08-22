@@ -63,9 +63,13 @@ void BlockRef::append(BlockInfo& block_info) {
   // Information about sizes
   size_t size = block_->getSize();
   block_info.size += size;
-  if (block_->is_content_in_memory())
-    block_info.size_on_memory += size; if (block_->is_content_in_disk())
-    block_info.size_on_disk += size; if (block_->is_content_locked_in_memory()) {
+  if (block_->is_content_in_memory()) {
+    block_info.size_on_memory += size;
+  }
+  if (block_->is_content_in_disk()) {
+    block_info.size_on_disk += size;
+  }
+  if (block_->is_content_locked_in_memory()) {
     block_info.size_locked += size;  // Key-Value information
   }
   block_info.info.append(info_);       // Only the key-values considered in this refernce
@@ -94,8 +98,9 @@ void BlockRef::review(au::ErrorManager& error) {
   // Get complete information about how key-values are organized in this block
   file_ = block_->getKVFile(error);
 
-  if (error.IsActivated())
+  if (error.IsActivated()) {
     return;
+  }
 
   if (file_ == NULL) {
     error.set(au::str("Not possible to parse block %lu", block_id()));
@@ -158,8 +163,10 @@ void BlockList::lock_content_in_memory() {
   for (it_blocks = blocks.begin(); it_blocks != blocks.end(); it_blocks++) {
     BlockRef *block_ref = *it_blocks;
     BlockPointer block = block_ref->block();
-    if (!block->is_content_in_memory())
-      LM_X(1, ("Internal error")); block->lock_content_in_memory(this);
+    if (!block->is_content_in_memory()) {
+      LM_X(1, ("Internal error"));
+    }
+    block->lock_content_in_memory(this);
   }
 }
 
@@ -191,8 +198,9 @@ void BlockList::ReviewBlockReferences(au::ErrorManager& error) {
   au::list< BlockRef >::iterator it;
   for (it = blocks.begin(); it != blocks.end(); it++) {
     (*it)->review(error);
-    if (error.IsActivated())
+    if (error.IsActivated()) {
       return;
+    }
   }
 }
 }

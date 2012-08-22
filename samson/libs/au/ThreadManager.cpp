@@ -16,8 +16,10 @@ std::ostream& operator<<(std::ostream& o, const ThreadInfo& thread_info) {
 ThreadManager *thread_manager;
 
 ThreadManager *ThreadManager::shared() {
-  if (!thread_manager)
-    thread_manager = new ThreadManager(); return thread_manager;
+  if (!thread_manager) {
+    thread_manager = new ThreadManager();
+  }
+  return thread_manager;
 }
 
 void ThreadManager::wait_all_threads(std::string title) {
@@ -86,8 +88,9 @@ void ThreadManager::notify_finish_thread(ThreadInfo *thread_info) {
 
   LM_T(LmtThreadManager, ("Thread '%s' extracted from map", thread_info->name_.c_str()));
 
-  if (threads_.extractFromMap(thread_info->t_) == NULL)
+  if (threads_.extractFromMap(thread_info->t_) == NULL) {
     LM_X(1, ("Error in ThreadManager"));
+  }
 }
 
 int ThreadManager::getNumThreads() {
@@ -137,14 +140,17 @@ void ThreadManager::wait(std::string title) {
     {
       au::TokenTaker tt(&token_);
 
-      if (threads_.size() == 0)
+      if (threads_.size() == 0) {
         // std::cerr << "All threads finished\n";
         return;
+      }
 
-      if (threads_.size() == 1)
-        if (threads_.begin()->second->t_ == pthread_self())
+      if (threads_.size() == 1) {
+        if (threads_.begin()->second->t_ == pthread_self()) {
           // std::cerr << "All threads finished\n";
           return;
+        }
+      }
 
       if (cronometer.seconds() > 5) {
         LM_W(("%s: Waiting all threads to finish", title.c_str()));

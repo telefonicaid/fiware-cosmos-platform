@@ -83,36 +83,36 @@ int default_buffer_size = 64 * 1024 * 1024 - sizeof(samson::KVHeader);
 
 PaArgument paArgs[] =
 {
-  { "-input",        input,                   "",                   PaString,                      PaOpt,
+  { "-input",        input,                   "",                   PaString,                   PaOpt,
     _i "stdin",
     PaNL,
     PaNL,
     "Input sources "                                                          },
-  { "-output",       output,                  "",                   PaString,                      PaOpt,
+  { "-output",       output,                  "",                   PaString,                   PaOpt,
     _i "stdout",              PaNL,                PaNL,
     "Output sources "                                                         },
-  { "-buffer_size",  &buffer_size,            "",                   PaInt,                         PaOpt,
+  { "-buffer_size",  &buffer_size,            "",                   PaInt,                      PaOpt,
     default_buffer_size,      1,
     default_buffer_size, "Buffer size in bytes"                                                    },
-  { "-splitter",     input_splitter_name,     "",                   PaString,                      PaOpt,
+  { "-splitter",     input_splitter_name,     "",                   PaString,                   PaOpt,
     _i "",                    PaNL,                PaNL,
     "Splitter to be used ( only valid for the default channel )"              },
-  { "-i",            &interactive,            "",                   PaBool,                        PaOpt,
+  { "-i",            &interactive,            "",                   PaBool,                     PaOpt,
     false,                    false,               true,
     "Interactive console"                                                     },
-  { "-daemon",       &run_as_daemon,          "",                   PaBool,                        PaOpt,
+  { "-daemon",       &run_as_daemon,          "",                   PaBool,                     PaOpt,
     false,                    false,               true,
     "Run in background. Remove connection & REST interface activated"         },
-  { "-console_port", &sc_console_port,        "",                   PaInt,                         PaOpt,
+  { "-console_port", &sc_console_port,        "",                   PaInt,                      PaOpt,
     SC_CONSOLE_PORT,          1,                   9999,
     "Port to receive new console connections"                                 },
-  { "-web_port",     &sc_web_port,            "",                   PaInt,                         PaOpt,
+  { "-web_port",     &sc_web_port,            "",                   PaInt,                      PaOpt,
     SC_WEB_PORT,              1,                   9999,
     "Port to receive REST connections"                                        },
-  { "-f",            file_name,               "",                   PaString,                      PaOpt,
+  { "-f",            file_name,               "",                   PaString,                   PaOpt,
     _i "",                    PaNL,                PaNL,
     "Input file with commands to setup channels and adapters"                 },
-  { "-working",      working_directory,       "",                   PaString,                      PaOpt,
+  { "-working",      working_directory,       "",                   PaString,                   PaOpt,
     _i ".",                   PaNL,                PaNL,
     "Directory to store persistance data if necessary"                        },
   PA_END_OF_ARGS
@@ -153,13 +153,15 @@ int main(int argC, const char *argV[]) {
   srand(time(NULL));
 
   // Capturing SIGPIPE
-  if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR)
-    LM_W(("SIGPIPE cannot be handled")); if (buffer_size == 0) {
+  if (signal(SIGPIPE, captureSIGPIPE) == SIG_ERR) {
+    LM_W(("SIGPIPE cannot be handled"));
+  }
+  if (buffer_size == 0) {
     LM_X(1, ("Wrong buffer size %lu", buffer_size ));  // Run in background if required
   }
   if (run_as_daemon) {
-    daemonize();
-    deamonize_close_all();
+    Daemonize();
+    Deamonize_close_all();
   }
 
   // Init samson setup with default values
@@ -193,7 +195,7 @@ int main(int argC, const char *argV[]) {
     char line[1024];
 
     std::string message = au::str("Setup file %s. Opening...", file_name);
-    main_stream_connector->log(new stream_connector::Log("SamsonConnector", "Message", message));
+    main_stream_connector->log("SamsonConnector", "Message", message);
 
     while (fgets(line, sizeof(line), f)) {
       // Remove the last return of a string
@@ -206,20 +208,21 @@ int main(int argC, const char *argV[]) {
 
       if (( line[0] != '#' ) && ( strlen(line) > 0)) {
         message = au::str("%s ( File %s )", line, file_name);
-        main_stream_connector->log(new stream_connector::Log("SamsonConnector", "Message", message));
+        main_stream_connector->log("SamsonConnector", "Message", message);
 
         au::ErrorManager error;
         main_stream_connector->process_command(line, &error);
 
         // Show only if an error happen there
-        if (error.IsActivated())
+        if (error.IsActivated()) {
           std::cerr << error.str();
+        }
       }
     }
 
     // Print the error on screen
     message = au::str("Setup file %s. Finished", file_name);
-    main_stream_connector->log(new stream_connector::Log("SamsonConnector", "Message", message));
+    main_stream_connector->log("SamsonConnector", "Message", message);
 
 
     fclose(f);
@@ -228,8 +231,9 @@ int main(int argC, const char *argV[]) {
     {
       au::ErrorManager error;
       main_stream_connector->process_command(au::str("add_channel default %s", input_splitter_name), &error);
-      if (error.IsActivated())
-        main_stream_connector->log(new stream_connector::Log("Init", "Error", error.GetMessage().c_str()));
+      if (error.IsActivated()) {
+        main_stream_connector->log("Init", "Error", error.GetMessage().c_str());
+      }
     }
 
     size_t adapter_id = 1;
@@ -242,8 +246,9 @@ int main(int argC, const char *argV[]) {
 
       au::ErrorManager error;
       main_stream_connector->process_command(command, &error);
-      if (error.IsActivated())
-        main_stream_connector->log(new stream_connector::Log("Init", "Error", error.GetMessage().c_str()));
+      if (error.IsActivated()) {
+        main_stream_connector->log("Init", "Error", error.GetMessage().c_str());
+      }
     }
 
     // Add inputs
@@ -254,8 +259,9 @@ int main(int argC, const char *argV[]) {
 
       au::ErrorManager error;
       main_stream_connector->process_command(command, &error);
-      if (error.IsActivated())
-        main_stream_connector->log(new stream_connector::Log("Init", "Error", error.GetMessage().c_str()));
+      if (error.IsActivated()) {
+        main_stream_connector->log("Init", "Error", error.GetMessage().c_str());
+      }
     }
   }
 
@@ -312,9 +318,12 @@ int main(int argC, const char *argV[]) {
       }
 
       // Verify if can exit....
-      if (num_input_items == 0) // Verify no input source is connected
-        if (pending_size == 0)  // Check no pending data to be send....
-          LM_X(0, ("Finish correctly. No more inputs data")); usleep(100000);
+      if (num_input_items == 0) {  // Verify no input source is connected
+        if (pending_size == 0) {  // Check no pending data to be send....
+          LM_X(0, ("Finish correctly. No more inputs data"));
+        }
+      }
+      usleep(100000);
     }
   }
 

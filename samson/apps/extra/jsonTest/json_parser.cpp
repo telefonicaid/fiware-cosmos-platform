@@ -82,8 +82,9 @@ void json_parse_array(json_object *jobj, char *key) {
   enum json_type type;
   json_object *jarray = jobj;      /*Simply get the array*/
 
-  if (key)
+  if (key) {
     jarray = json_object_object_get(jobj, key);     /*Getting the array if it is a key value pair*/
+  }
   int arraylen = json_object_array_length(jarray);   /*Getting the length of the array*/
   printf("Array Length: %d\n", arraylen);
   int i;

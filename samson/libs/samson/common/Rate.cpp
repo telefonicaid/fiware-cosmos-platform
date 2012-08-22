@@ -6,8 +6,8 @@ Rate::Rate() {
 }
 
 void Rate::push(size_t kvs, size_t size) {
-  rate_kvs.push(kvs);
-  rate_size.push(size);
+  rate_kvs.Push(kvs);
+  rate_size.Push(size);
 }
 
 void Rate::push(FullKVInfo info) {
@@ -15,18 +15,18 @@ void Rate::push(FullKVInfo info) {
 }
 
 size_t Rate::get_total_size() {
-  return rate_size.getTotalSize();
+  return rate_size.size();
 }
 
 size_t Rate::get_total_kvs() {
-  return rate_kvs.getTotalSize();
+  return rate_kvs.size();
 }
 
 double Rate::get_rate_size() {
-  return rate_size.getRate();
+  return rate_size.rate();
 }
 
 double Rate::get_rate_kvs() {
-  return rate_kvs.getRate();
+  return rate_kvs.rate();
 }
 }

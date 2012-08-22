@@ -81,6 +81,9 @@ public:
     }
 
 
+
+
+
     // Get the key from the back position
     K key = keys.back();
 
@@ -98,6 +101,9 @@ public:
     if (keys.size() == 0) {
       return NULL;
     }
+
+
+
 
 
 
@@ -122,6 +128,9 @@ public:
     }
 
 
+
+
+
     // Get the key from the back position
     K key = keys.back();
     keys.pop_back();
@@ -142,6 +151,9 @@ public:
     if (keys.size() == 0) {
       return NULL;
     }
+
+
+
 
 
 
@@ -172,6 +184,9 @@ public:
     if (iter == map.end()) {
       return NULL;
     }
+
+
+
 
     return iter->second;
   }

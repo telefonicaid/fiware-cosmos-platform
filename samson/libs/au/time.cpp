@@ -29,8 +29,10 @@ double timeval_to_secs(timeval t) {
 
 timeval secs_to_timeval(double s) {
   // Check negative numbers ( just in case )
-  if (s <= 0)
-    s = 0; timeval tv;
+  if (s <= 0) {
+    s = 0;
+  }
+  timeval tv;
 
   tv.tv_sec  = (long)fabs(s);
   s -= tv.tv_sec;

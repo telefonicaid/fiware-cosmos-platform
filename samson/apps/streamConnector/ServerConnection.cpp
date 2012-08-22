@@ -18,9 +18,11 @@ au::FileDescriptor *ConnectionConnection::getFileDescriptor() {
                                               , port_
                                               , &socket_connection);
 
-  if (s == au::OK)
-    return socket_connection; else
+  if (s == au::OK) {
+    return socket_connection;
+  } else {
     return NULL;
+  }
 }
 
 // ---------------------------------
@@ -63,8 +65,10 @@ StdinItem::StdinItem(Channel *_channel) : Adaptor(_channel, connection_input, "S
 
 // Information about status
 std::string StdinItem::getStatus() {
-  if (getNumConnections() > 0)
-    return "connected"; return "closed";
+  if (getNumConnections() > 0) {
+    return "connected";
+  }
+  return "closed";
 }
 
 void StdinItem::review_item() {
@@ -96,8 +100,10 @@ StdoutItem::StdoutItem(Channel *_channel) : Adaptor(_channel, connection_output,
 
 // Information about status
 std::string StdoutItem::getStatus() {
-  if (getNumConnections() > 0)
-    return "connected"; return "closed";
+  if (getNumConnections() > 0) {
+    return "connected";
+  }
+  return "closed";
 }
 
 void StdoutItem::start_item() {

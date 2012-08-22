@@ -49,8 +49,9 @@ namespace samson { namespace zoo {
                      // Just make sure we are connected
                      int rc = WaitUntilConnected(1000);
 
-                     if (rc)
+                     if (rc) {
                        return rc;
+                     }
 
                      return zoo_delete(handler_, path.c_str(), version);
                    }
@@ -61,8 +62,9 @@ namespace samson { namespace zoo {
                      // Just make sure we are connected
                      int rc = WaitUntilConnected(1000);
 
-                     if (rc)
+                     if (rc) {
                        return rc;
+                     }
 
                      // Create a node
                      return zoo_set(handler_, path.c_str(), value, value_len,  version);
@@ -74,8 +76,9 @@ namespace samson { namespace zoo {
                      // Temporal buffer to get data
                      au::TemporalBuffer buffer(size);
 
-                     if (!value->SerializeToArray(buffer.data(), size))
+                     if (!value->SerializeToArray(buffer.data(), size)) {
                        return ZC_ERROR_GPB;
+                     }
 
                      int rc = Set(path, buffer.data(), size, version);
                      return rc;
@@ -89,8 +92,9 @@ namespace samson { namespace zoo {
                      au::TokenTaker tt(&token_);
 
                      // Get without the buffer is just an exists call
-                     if (buffer == NULL)
+                     if (buffer == NULL) {
                        return Exists(path, watcher, stat);
+                     }
 
                      // Make sure this watcher is registered as active
                      RegisterWatcher(watcher);
@@ -113,8 +117,9 @@ namespace samson { namespace zoo {
                      int length = sizeof(line) / sizeof(char) - 1;
                      int rc = Get(path, watcher, line, &length, stat);
 
-                     if (rc)
+                     if (rc) {
                        return rc;
+                     }
 
                      line[length] = '\0';
                      value = line;
@@ -129,15 +134,17 @@ namespace samson { namespace zoo {
                      au::TemporalBuffer buffer(buffer_size);
                      int rc = Get(path, watcher, buffer.data(), &buffer_size, stat);
 
-                     if (rc)
+                     if (rc) {
                        return rc;
+                     }
 
                      bool r = value->ParseFromArray(buffer.data(), buffer_size);
 
-                     if (r)
+                     if (r) {
                        return 0;  // OK
-                     else
+                     } else {
                        return ZC_ERROR_GPB;
+                     }
                    }
 
                    int Connection::Get(const std::string& path, std::string& value) {
@@ -145,8 +152,9 @@ namespace samson { namespace zoo {
                      int length = sizeof(line) / sizeof(char) - 1;
                      int rc = Get(path, line, &length);
 
-                     if (rc)
+                     if (rc) {
                        return rc;
+                     }
 
                      line[length] = '\0';
                      value = line;
@@ -164,13 +172,15 @@ namespace samson { namespace zoo {
                      // Just make sure we are connected
                      int rc = WaitUntilConnected(1000);
 
-                     if (rc)
+                     if (rc) {
                        return rc;
+                     }
 
                      int buffer_len = buffer->getMaxSize();
                      rc = Get(path, buffer->getData(), &buffer_len, NULL);
-                     if (!rc)
+                     if (!rc) {
                        buffer->setSize(buffer_len);  // Set the real size
+                     }
                      return rc;
                    }
 
@@ -178,14 +188,16 @@ namespace samson { namespace zoo {
                      au::TemporalBuffer buffer(buffer_size);
                      int rc = Get(path, buffer.data(), &buffer_size);
 
-                     if (rc)
+                     if (rc) {
                        return rc;
+                     }
 
                      bool r = value->ParseFromArray(buffer.data(), buffer_size);
-                     if (r)
+                     if (r) {
                        return 0;  // OK
-                     else
+                     } else {
                        return ZC_ERROR_GPB;
+                     }
                    }
 
                    int Connection::Exists(const std::string& path, struct Stat *stat) {
@@ -210,17 +222,18 @@ namespace samson { namespace zoo {
                    }
 
                    int Connection::WaitUntilConnected(int milliseconds) {
-                     if (!handler_)
+                     if (!handler_) {
                        return ZC_ERROR_NO_CONNECTION;  // It will never became connected if no connection has been stablished
-
+                     }
                      au::Cronometer cronomter;
                      while (true) {
-                       if (cronomter.seconds() > ((double)milliseconds / 1000.0))
+                       if (cronomter.seconds() > ((double)milliseconds / 1000.0)) {
                          return ZC_ERROR_CONNECTION_TIMEOUT;
+                       }
 
-                       if (IsConnected())
+                       if (IsConnected()) {
                          return 0;  // Already connected
-
+                       }
                        usleep(100000);
                      }
                    }
@@ -229,8 +242,10 @@ namespace samson { namespace zoo {
                      au::TokenTaker tt(&token_);
                      int rc = WaitUntilConnected(1000);
 
-                     if (rc)
-                       return rc; return zoo_get_children(handler_, path.c_str(), 0, vector);
+                     if (rc) {
+                       return rc;
+                     }
+                     return zoo_get_children(handler_, path.c_str(), 0, vector);
                    }
 
                    int Connection::GetChildrens(const std::string& path, au::StringVector& childrens) {
@@ -269,8 +284,10 @@ namespace samson { namespace zoo {
                          static_cast<ConnectionWatcherInterfaceCaller *>( watcherCtx );
 
                        // Check if this watcher is in the list of active watchers
-                       if (caller->connection->IsWatcherRegistered(caller->connection_wacher))
-                         caller->connection_wacher->watcher(caller->connection, type, state, path); free(caller);
+                       if (caller->connection->IsWatcherRegistered(caller->connection_wacher)) {
+                         caller->connection_wacher->watcher(caller->connection, type, state, path);
+                       }
+                       free(caller);
                        return;
                      }
 
@@ -294,19 +311,23 @@ namespace samson { namespace zoo {
                    }
 
                    int Connection::Create(std::string& path, int flags, engine::BufferPointer buffer) {
-                     if (buffer != NULL || (buffer->getSize() == 0))
-                       return Create(path, flags, NULL, 0); else
+                     if (buffer != NULL || (buffer->getSize() == 0)) {
+                       return Create(path, flags, NULL, 0);
+                     } else {
                        return Create(path, flags, buffer->getData(), buffer->getSize());
+                     }
                    }
 
                    int Connection::Create(std::string& path, int flags, ::google::protobuf::Message *value) {
-                     if (!value->IsInitialized())
+                     if (!value->IsInitialized()) {
                        return ZC_ERROR_GPB_NO_INITIALIZED;
+                     }
 
                      int size = value->ByteSize();
                      au::TemporalBuffer buffer(size);
-                     if (!value->SerializeToArray(buffer.data(), size))
+                     if (!value->SerializeToArray(buffer.data(), size)) {
                        return ZC_ERROR_GPB;
+                     }
 
                      int rc = Create(path, flags, buffer.data(), size);
                      return rc;
@@ -316,8 +337,9 @@ namespace samson { namespace zoo {
                      int size = value->ByteSize();
                      au::TemporalBuffer buffer(size);
 
-                     if (!value->SerializeToArray(buffer.data(), size))
+                     if (!value->SerializeToArray(buffer.data(), size)) {
                        return ZC_ERROR_GPB;
+                     }
 
                      return Create(path, flags, buffer.data(), size);
                    }
@@ -332,8 +354,9 @@ namespace samson { namespace zoo {
                      // Just make sure we are connected
                      int rc = WaitUntilConnected(1000);
 
-                     if (rc)
+                     if (rc) {
                        return rc;
+                     }
 
                      char buffer[512];
                      size_t buffer_length = sizeof(buffer) / sizeof(char);
@@ -343,8 +366,9 @@ namespace samson { namespace zoo {
                      // Create a node
                      rc = zoo_create(handler_,
                                      path.c_str(), value, value_len, &ACL_VECTOR, flags, buffer, buffer_length - 1);
-                     if (!rc)
+                     if (!rc) {
                        path = buffer;  // Get the new name ( it is different when flag ZOO_SEQUETIAL is used )
+                     }
                      return rc;
                    }
 
@@ -354,8 +378,9 @@ namespace samson { namespace zoo {
 
                      int rc = Connect(host);
 
-                     if (rc)
+                     if (rc) {
                        return rc;
+                     }
 
                      return AddAuth(user, password);
                    }
@@ -368,10 +393,11 @@ namespace samson { namespace zoo {
 
                      // Init zookeerp
                      handler_ = zookeeper_init(host.c_str(), NULL, 5000, 0, NULL, 0);
-                     if (handler_)
+                     if (handler_) {
                        return WaitUntilConnected(1000);
-                     else
+                     } else {
                        return ZC_ERROR_CONNECTION_TIMEOUT;  // Error, not possible to create handler
+                     }
                    }
 
                    int Connection::AddAuth(const std::string& user, const std::string& password) {
@@ -380,15 +406,18 @@ namespace samson { namespace zoo {
                      // Just make sure we are connected
                      int rc = WaitUntilConnected(1000);
 
-                     if (rc)
+                     if (rc) {
                        return rc;
+                     }
 
                      std::string user_password = user + ":" + password;
                      rc = zoo_add_auth(handler_, "digest", user_password.c_str(), user_password.length(), 0, 0);
 
                      // If corect, just wait until connected
-                     if (rc == 0)
-                       rc = WaitUntilConnected(1000); return rc;
+                     if (rc == 0) {
+                       rc = WaitUntilConnected(1000);
+                     }
+                     return rc;
                    }
 
                    void Connection::Close() {
@@ -403,8 +432,10 @@ namespace samson { namespace zoo {
                    bool Connection::IsConnected() {
                      au::TokenTaker tt(&token_);
 
-                     if (!handler_)
-                       return false; return( zoo_state(handler_) == ZOO_CONNECTED_STATE );
+                     if (!handler_) {
+                       return false;
+                     }
+                     return( zoo_state(handler_) == ZOO_CONNECTED_STATE );
                    }
 
                    std::string Connection::GetStatusString() {
@@ -413,17 +444,27 @@ namespace samson { namespace zoo {
                      // Just make sure we are connected
                      int rc = WaitUntilConnected(1000);
 
-                     if (rc)
+                     if (rc) {
                        return "Unconnected";
+                     }
 
                      rc = zoo_state(handler_);
 
-                     if (rc == ZOO_EXPIRED_SESSION_STATE)
-                       return au::str("ZOO_EXPIRED_SESSION_STATE (%d)", rc); if (rc == ZOO_AUTH_FAILED_STATE)
-                       return au::str("ZOO_AUTH_FAILED_STATE (%d)", rc); if (rc == ZOO_CONNECTING_STATE)
-                       return au::str("ZOO_CONNECTING_STATE (%d)", rc); if (rc == ZOO_ASSOCIATING_STATE)
-                       return au::str("ZOO_ASSOCIATING_STATE (%d)", rc); if (rc == ZOO_CONNECTED_STATE)
+                     if (rc == ZOO_EXPIRED_SESSION_STATE) {
+                       return au::str("ZOO_EXPIRED_SESSION_STATE (%d)", rc);
+                     }
+                     if (rc == ZOO_AUTH_FAILED_STATE) {
+                       return au::str("ZOO_AUTH_FAILED_STATE (%d)", rc);
+                     }
+                     if (rc == ZOO_CONNECTING_STATE) {
+                       return au::str("ZOO_CONNECTING_STATE (%d)", rc);
+                     }
+                     if (rc == ZOO_ASSOCIATING_STATE) {
+                       return au::str("ZOO_ASSOCIATING_STATE (%d)", rc);
+                     }
+                     if (rc == ZOO_CONNECTED_STATE) {
                        return "Connected";
+                     }
 
                      return au::str("Unknown (%d)", rc);
                    }

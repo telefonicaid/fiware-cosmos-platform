@@ -96,7 +96,7 @@ public:
 
   // Log system
   void log(std::string type, std::string message);
-  void log(Log *log);
+  void log(au::SharedPointer<Log> log);
 
   // Report size of data managed by this adaptor
   void report_output_size(size_t size);

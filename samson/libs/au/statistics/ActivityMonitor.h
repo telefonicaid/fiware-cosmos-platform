@@ -4,7 +4,6 @@
 #define _H_AU_ACTIVITY_MONITOR
 
 #include "au/Cronometer.h"
-#include "au/Object.h"
 
 #include "au/containers/map.h"
 #include "au/mutex/Token.h"
@@ -21,7 +20,7 @@ namespace statistics {
  */
 
 
-class ActivityItem : public au::Object {
+class ActivityItem {
 public:
 
   ActivityItem(std::string name, double time) {
@@ -71,12 +70,12 @@ private:
 class ActivityMonitor {
 public:
 
-  ActivityMonitor(std::string first_activity_name = "init_activity");
+  ActivityMonitor(const std::string& first_activity_name = "init_activity");
   ~ActivityMonitor() {
   };
 
   // Start and Stop activities
-  void StartActivity(std::string activity_name);
+  void StartActivity(const std::string& activity_name);
   void StopActivity();
   std::string GetCurrentActivity() const;
 
@@ -93,7 +92,7 @@ private:
   au::list<ActivityItem> items_;     // Last items
   au::map<std::string, ActivityStatistics > elements_;
 
-  mutable au::Token token;
+  mutable au::Token token_;
 };
 }
 }

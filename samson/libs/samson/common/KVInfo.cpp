@@ -40,9 +40,12 @@ void KVInfo::append(KVInfo other) {
 }
 
 bool KVInfo::canAppend(KVInfo other) {
-  if (((uint64)size + (uint64)other.size ) >= MAX_UINT_32)
-    return false; if (((uint64)kvs + (uint64)other.kvs ) >= MAX_UINT_32)
+  if (((uint64)size + (uint64)other.size ) >= MAX_UINT_32) {
     return false;
+  }
+  if (((uint64)kvs + (uint64)other.kvs ) >= MAX_UINT_32) {
+    return false;
+  }
 
   return true;
 }
@@ -146,8 +149,9 @@ KVInfo *createKVInfoVector(char *_data, au::ErrorManager *error) {
     total_info.append(info[hg]);
   }
 
-  if (( total_info.size != header->info.size ) || ( total_info.kvs != header->info.kvs ))
+  if (( total_info.size != header->info.size ) || ( total_info.kvs != header->info.kvs )) {
     LM_X(1, ("Error creating KVInfo vector. %s != %s\n", total_info.str().c_str(), header->info.str().c_str()));
+  }
   return info;
 }
 }

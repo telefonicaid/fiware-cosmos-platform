@@ -55,8 +55,9 @@ static int limits(PaiArgument *paList, PaiArgument *aP) {
   unsigned short usVal;
   unsigned char ucVal;
 
-  if ((aP->type == PaSList) || (aP->type == PaIList) || (aP->type == PaBoolean))
+  if ((aP->type == PaSList) || (aP->type == PaIList) || (aP->type == PaBoolean)) {
     return 0;
+  }
 
   if (aP->min == aP->max) {
     LM_T(LmtPaLimits, ("'%s': limits equal - no limit check", aP->name));
@@ -70,8 +71,9 @@ static int limits(PaiArgument *paList, PaiArgument *aP) {
     upper = false;
   }
 
-  if ((upper == false) && (lower == false))
+  if ((upper == false) && (lower == false)) {
     return 0;
+  }
 
   LM_T(LmtPaLimits, ("limit check for %s", aP->name));
 

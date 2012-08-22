@@ -279,19 +279,28 @@ char *lmProgName(char *pn, int levels, bool pid, const char *extra) {
   char *start;
   static char pName[512];
 
-  if (pn == NULL)
+  if (pn == NULL) {
     return NULL;
-
-  if (levels < 1)
-    levels = 1; start = &pn[strlen(pn) - 1];
-  while (start > pn) {
-    if (*start == '/')
-      levels--; if (levels == 0)
-      break; --start;
   }
 
-  if (*start == '/')
-    ++start; strncpy(pName, start, sizeof(pName));
+  if (levels < 1) {
+    levels = 1;
+  }
+  start = &pn[strlen(pn) - 1];
+  while (start > pn) {
+    if (*start == '/') {
+      levels--;
+    }
+    if (levels == 0) {
+      break;
+    }
+    --start;
+  }
+
+  if (*start == '/') {
+    ++start;
+  }
+  strncpy(pName, start, sizeof(pName));
   if (pid == true) {
     char pid[8];
     strncat(pName, "_", sizeof(pName) - 1);
@@ -299,8 +308,10 @@ char *lmProgName(char *pn, int levels, bool pid, const char *extra) {
     strncat(pName, pid, sizeof(pName) - 1);
   }
 
-  if (extra != NULL)
-    strncat(pName, extra, sizeof(pName) - 1); printf("pName: %s\n", pName);
+  if (extra != NULL) {
+    strncat(pName, extra, sizeof(pName) - 1);
+  }
+  printf("pName: %s\n", pName);
 
   return pName;
 }
@@ -352,8 +363,9 @@ static void subLevels(bool *tLevelP, unsigned char from, unsigned char to) {
  * zeroDelimiter -
  */
 static char *zeroDelimiter(char *string, char delimiter) {
-  if (string == NULL)
+  if (string == NULL) {
     return NULL;
+  }
 
   while (*string != 0) {
     if (*string == delimiter) {
@@ -395,8 +407,10 @@ static int wsNoOf(char *string) {
   int no = 0;
 
   while (*string != 0) {
-    if (ws(*string) == true)
-      ++no; ++string;
+    if (ws(*string) == true) {
+      ++no;
+    }
+    ++string;
   }
   return no;
 }
@@ -433,8 +447,9 @@ static void traceFix(char *levelFormat, unsigned int way) {
 
 
   /* No whitespace allowed + ADD or SUB */
-  if ((wsNoOf(levelFormat) != 0) || (way > 1))
+  if ((wsNoOf(levelFormat) != 0) || (way > 1)) {
     return;
+  }
 
   levelFormatP = strdup(levelFormat);
 
@@ -450,9 +465,11 @@ static void traceFix(char *levelFormat, unsigned int way) {
         max  = atoi(&currP[1]);
       } else {
         max  = atoi(currP);
-        if (max == 0)
-          min = 1; else
+        if (max == 0) {
+          min = 1;
+        } else {
           --max;
+        }
       }
     } else if (*currP == '>') {
       ++currP;
@@ -461,24 +478,30 @@ static void traceFix(char *levelFormat, unsigned int way) {
         min  = atoi(&currP[1]);
       } else {
         min  = atoi(currP);
-        if (min == 255)
-          max = 254; else
+        if (min == 255) {
+          max = 254;
+        } else {
           ++min;
+        }
       }
     } else if ((*currP >= '0') && (*currP <= '9')) {
       minusP       = zeroDelimiter(currP, '-');
       min          = atoi(currP);
       max          = min;
 
-      if (minusP != NULL)
+      if (minusP != NULL) {
         max = atoi(minusP);
+      }
     } else {
       break;
     }
 
-    if (way == ADD)
-      addLevels(tLevel, min, max); else if (way == SUB)
-      subLevels(tLevel, min, max); currP = nextP;
+    if (way == ADD) {
+      addLevels(tLevel, min, max);
+    } else if (way == SUB) {
+      subLevels(tLevel, min, max);
+    }
+    currP = nextP;
   }
 
   ::free(levelFormatP);
@@ -517,23 +540,23 @@ const unsigned short int __mon_yday[2][13] =
 #define SPY(y, l, s) (SPD * (365 * y + l) + s)
 
 time_t year_seconds[MAX_YEAR_SECONDS] = {
-/*1970*/ SPY(0,  0,  0),  SPY(1,   0,   0),   SPY(2,    0,   0),   SPY(3,    1,   0),
-/*1974*/ SPY(4,  1,  0),  SPY(5,   1,   0),   SPY(6,    1,   0),   SPY(7,    2,   0),
-/*1978*/ SPY(8,  2,  0),  SPY(9,   2,   0),   SPY(10,   2,   0),   SPY(11,   3,   0),
-/*1982*/ SPY(12, 3,  0),  SPY(13,  3,   0),   SPY(14,   3,   0),   SPY(15,   4,   0),
-/*1986*/ SPY(16, 4,  0),  SPY(17,  4,   0),   SPY(18,   4,   0),   SPY(19,   5,   0),
-/*1990*/ SPY(20, 5,  0),  SPY(21,  5,   0),   SPY(22,   5,   0),   SPY(23,   6,   0),
-/*1994*/ SPY(24, 6,  0),  SPY(25,  6,   0),   SPY(26,   6,   0),   SPY(27,   7,   0),
-/*1998*/ SPY(28, 7,  0),  SPY(29,  7,   0),   SPY(30,   7,   0),   SPY(31,   8,   0),
-/*2002*/ SPY(32, 8,  0),  SPY(33,  8,   0),   SPY(34,   8,   0),   SPY(35,   9,   0),
-/*2006*/ SPY(36, 9,  0),  SPY(37,  9,   0),   SPY(38,   9,   0),   SPY(39,   10,  0),
-/*2010*/ SPY(40, 10, 0),  SPY(41,  10,  0),   SPY(42,   10,  0),   SPY(43,   11,  0),
-/*2014*/ SPY(44, 11, 0),  SPY(45,  11,  0),   SPY(46,   11,  0),   SPY(47,   12,  0),
-/*2018*/ SPY(48, 12, 0),  SPY(49,  12,  0),   SPY(50,   12,  0),   SPY(51,   13,  0),
-/*2022*/ SPY(52, 13, 0),  SPY(53,  13,  0),   SPY(54,   13,  0),   SPY(55,   14,  0),
-/*2026*/ SPY(56, 14, 0),  SPY(57,  14,  0),   SPY(58,   14,  0),   SPY(59,   15,  0),
-/*2030*/ SPY(60, 15, 0),  SPY(61,  15,  0),   SPY(62,   15,  0),   SPY(63,   16,  0),
-/*2034*/ SPY(64, 16, 0),  SPY(65,  16,  0),   SPY(66,   16,  0),   SPY(67,   17,  0),
+/*1970*/ SPY(0,  0,  0),  SPY(1,   0,   0),   SPY(2,    0,    0),    SPY(3,     1,     0),
+/*1974*/ SPY(4,  1,  0),  SPY(5,   1,   0),   SPY(6,    1,    0),    SPY(7,     2,     0),
+/*1978*/ SPY(8,  2,  0),  SPY(9,   2,   0),   SPY(10,   2,    0),    SPY(11,    3,     0),
+/*1982*/ SPY(12, 3,  0),  SPY(13,  3,   0),   SPY(14,   3,    0),    SPY(15,    4,     0),
+/*1986*/ SPY(16, 4,  0),  SPY(17,  4,   0),   SPY(18,   4,    0),    SPY(19,    5,     0),
+/*1990*/ SPY(20, 5,  0),  SPY(21,  5,   0),   SPY(22,   5,    0),    SPY(23,    6,     0),
+/*1994*/ SPY(24, 6,  0),  SPY(25,  6,   0),   SPY(26,   6,    0),    SPY(27,    7,     0),
+/*1998*/ SPY(28, 7,  0),  SPY(29,  7,   0),   SPY(30,   7,    0),    SPY(31,    8,     0),
+/*2002*/ SPY(32, 8,  0),  SPY(33,  8,   0),   SPY(34,   8,    0),    SPY(35,    9,     0),
+/*2006*/ SPY(36, 9,  0),  SPY(37,  9,   0),   SPY(38,   9,    0),    SPY(39,    10,    0),
+/*2010*/ SPY(40, 10, 0),  SPY(41,  10,  0),   SPY(42,   10,   0),    SPY(43,    11,    0),
+/*2014*/ SPY(44, 11, 0),  SPY(45,  11,  0),   SPY(46,   11,   0),    SPY(47,    12,    0),
+/*2018*/ SPY(48, 12, 0),  SPY(49,  12,  0),   SPY(50,   12,   0),    SPY(51,    13,    0),
+/*2022*/ SPY(52, 13, 0),  SPY(53,  13,  0),   SPY(54,   13,   0),    SPY(55,    14,    0),
+/*2026*/ SPY(56, 14, 0),  SPY(57,  14,  0),   SPY(58,   14,   0),    SPY(59,    15,    0),
+/*2030*/ SPY(60, 15, 0),  SPY(61,  15,  0),   SPY(62,   15,   0),    SPY(63,    16,    0),
+/*2034*/ SPY(64, 16, 0),  SPY(65,  16,  0),   SPY(66,   16,   0),    SPY(67,    17,    0),
 /*2038*/ SPY(68, 17, 0)
 };
 
@@ -564,8 +587,9 @@ struct tm *gmtime_r_samson(time_t *t, tm *tp) {
   tp->tm_sec = rem % 60;
   /* January 1, 1970 was a Thursday.  */
   tp->tm_wday = (4 + days) % 7;
-  if (tp->tm_wday < 0)
+  if (tp->tm_wday < 0) {
     tp->tm_wday += 7;
+  }
   y = 1970;
 
 #define DIV(a, b)            ((a) / (b) - ((a) % (b) < 0))
@@ -587,6 +611,9 @@ struct tm *gmtime_r_samson(time_t *t, tm *tp) {
     // __set_errno (EOVERFLOW);
     return NULL;
   }
+
+
+
 
 
   tp->tm_yday = days;
@@ -633,10 +660,12 @@ static char *dateGet(int index, char *line, int lineSize) {
     tm    = tm / 24;
     days  = tm;
 
-    if (days != 0)
+    if (days != 0) {
       snprintf(line, lineSize, "%d days %02d:%02d:%02d",
-               days, hours, mins, secs); else
+               days, hours, mins, secs);
+    } else {
       snprintf(line, lineSize, "%02d:%02d:%02d", hours, mins, secs);
+    }
   } else {
     ftime(&timebuffer);
     lm::gmtime_r(&secondsNow, &tmP);
@@ -666,9 +695,11 @@ static char *timeGet(int index, char *line, int lineSize) {
     int mins;
     int secs;
 
-    if (strcmp(fds[index].timeFormat, "DIFF") == 0)
-      tm = (int)secondsNow - (int)secondsAtStart; else
-      tm = (int)secondsNow; secs  = tm % 60;
+    if (strcmp(fds[index].timeFormat, "DIFF") == 0) {
+      tm = (int)secondsNow - (int)secondsAtStart;
+    } else {
+      tm = (int)secondsNow;
+    } secs  = tm % 60;
     tm    = tm / 60;
     mins  = tm % 60;
     tm    = tm / 60;
@@ -677,10 +708,12 @@ static char *timeGet(int index, char *line, int lineSize) {
     days  = tm;
 
     if (strcmp(fds[index].timeFormat, "DIFF") == 0) {
-      if (days != 0)
+      if (days != 0) {
         snprintf(line, lineSize, "%d days %02d:%02d:%02d",
-                 days, hours, mins, secs); else
+                 days, hours, mins, secs);
+      } else {
         snprintf(line, lineSize, "%02d:%02d:%02d", hours, mins, secs);
+      }
     } else {
       snprintf(line, lineSize, "%02d:%02d:%02d", hours, mins, secs);
     }
@@ -776,35 +809,51 @@ static char *lmLineFix
     pid_t tid;
 
     tid = syscall(SYS_gettid);
-    if (strncmp(&format[fi], "TYPE", 4) == 0)
-      CHAR_ADD((type == 'P') ? 'E' : type, 4); else if (strncmp(&format[fi], "PID", 3) == 0)
-      INT_ADD((int)getpid(), 3); else if (strncmp(&format[fi], "DATE", 4) == 0)
-      STRING_ADD(dateGet(index, xin, sizeof(xin)), 4); else if (strncmp(&format[fi], "TIME", 4) == 0)
-      STRING_ADD(timeGet(index, xin, sizeof(xin)), 4); else if (strncmp(&format[fi], "TID", 3) == 0)
-      INT_ADD((int)tid, 3); else if (strncmp(&format[fi], "EXEC", 4) == 0)
-      STRING_ADD(progName, 4); else if (strncmp(&format[fi], "AUX", 3) == 0)
-      STRING_ADD(aux, 3); else if (strncmp(&format[fi], "FILE", 4) == 0)
-      STRING_ADD(file, 4); else if (strncmp(&format[fi], "LINE", 4) == 0)
-      INT_ADD(lineNo, 4); else if (strncmp(&format[fi], "TLEV", 4) == 0)
-      TLEV_ADD(type, tLev); else if (strncmp(&format[fi], "TEXT", 4) == 0)
-      STRING_ADD("%s", 4); else if (strncmp(&format[fi], "FUNC", 4) == 0)
-      STRING_ADD(fName, 4); else /* just a normal character */
+    if (strncmp(&format[fi], "TYPE", 4) == 0) {
+      CHAR_ADD((type == 'P') ? 'E' : type, 4);
+    } else if (strncmp(&format[fi], "PID", 3) == 0) {
+      INT_ADD((int)getpid(), 3);
+    } else if (strncmp(&format[fi], "DATE", 4) == 0) {
+      STRING_ADD(dateGet(index, xin, sizeof(xin)), 4);
+    } else if (strncmp(&format[fi], "TIME", 4) == 0) {
+      STRING_ADD(timeGet(index, xin, sizeof(xin)), 4);
+    } else if (strncmp(&format[fi], "TID", 3) == 0) {
+      INT_ADD((int)tid, 3);
+    } else if (strncmp(&format[fi], "EXEC", 4) == 0) {
+      STRING_ADD(progName, 4);
+    } else if (strncmp(&format[fi], "AUX", 3) == 0) {
+      STRING_ADD(aux, 3);
+    } else if (strncmp(&format[fi], "FILE", 4) == 0) {
+      STRING_ADD(file, 4);
+    } else if (strncmp(&format[fi], "LINE", 4) == 0) {
+      INT_ADD(lineNo, 4);
+    } else if (strncmp(&format[fi], "TLEV", 4) == 0) {
+      TLEV_ADD(type, tLev);
+    } else if (strncmp(&format[fi], "TEXT", 4) == 0) {
+      STRING_ADD("%s", 4);
+    } else if (strncmp(&format[fi], "FUNC", 4) == 0) {
+      STRING_ADD(fName, 4);
+    } else {                     /* just a normal character */
       CHAR_ADD(format[fi], 1);
+    }
   }
 
-  if ((type == 'T') && (fdP->traceShow == true))
+  if ((type == 'T') && (fdP->traceShow == true)) {
     snprintf(xin, sizeof(xin), "%s%d%s\n",
              fdP->tMarkStart, tLev, fdP->tMarkEnd);
+  }
 
 #if 0
-  else if (type == 'P')  /* type 'P' => tLev == errno */
+  else if (type == 'P') {  /* type 'P' => tLev == errno */
     snprintf(xin, sizeof(xin), ": %s\n", strerror(tLev));
+  }
 
 #endif
-  else if (type == 'x')  /* type 'x' => */
+  else if (type == 'x') {  /* type 'x' => */
     snprintf(xin, sizeof(xin), ": %s\n", strerror(errno));
-  else
+  } else {
     strncpy(xin, "\n", sizeof(xin));
+  }
 
   strncat(line, xin, lineLen - 1);
 
@@ -819,8 +868,10 @@ static int fdsFreeGet(void) {
   int i = 0;
 
   while (i < FDS_MAX) {
-    if (fds[i].state != Occupied)
-      return i; i++;
+    if (fds[i].state != Occupied) {
+      return i;
+    }
+    i++;
   }
 
   return -1;
@@ -833,9 +884,11 @@ static int fdsFreeGet(void) {
 static bool isdir(char *path) {
   struct stat xStat;
 
-  if (stat(path, &xStat) == -1)
-    return false; else if ((xStat.st_mode & S_IFDIR) == S_IFDIR)
+  if (stat(path, &xStat) == -1) {
+    return false;
+  } else if ((xStat.st_mode & S_IFDIR) == S_IFDIR) {
     return true;
+  }
 
   return false;
 }
@@ -869,18 +922,23 @@ static void asciiToLeft
   }
 
   for (i = 0; i < size; i++) {
-    if (buffer[i] == 0x25)
-      strncpy(tmp, ".", sizeof(tmp)); else if (isprint((int)buffer[i]))
-      snprintf(tmp, sizeof(tmp), "%c", buffer[i]); else
-      strncpy(tmp, ".", sizeof(tmp)); strncat(line, tmp, lineLen - 1);
+    if (buffer[i] == 0x25) {
+      strncpy(tmp, ".", sizeof(tmp));
+    } else if (isprint((int)buffer[i])) {
+      snprintf(tmp, sizeof(tmp), "%c", buffer[i]);
+    } else {
+      strncpy(tmp, ".", sizeof(tmp));
+    } strncat(line, tmp, lineLen - 1);
   }
 }
 
 // Andreu: Clean up function to remove progname
 
 void lmCleanProgName(void) {
-  if (progName)
-    free(progName); progName = NULL;
+  if (progName) {
+    free(progName);
+  }
+  progName = NULL;
 }
 
 /* ************************************************************************* */
@@ -894,11 +952,13 @@ void lmCleanProgName(void) {
  * lmInit -
  */
 LmStatus lmInit(void) {
-  if (fdNoOf == 0)
+  if (fdNoOf == 0) {
     return LmsNoFiles;
+  }
 
-  if (initDone == true)
+  if (initDone == true) {
     return LmsInitAlreadyDone;
+  }
 
   PROGNAME_CHECK();
 
@@ -920,20 +980,25 @@ LmStatus lmInit(void) {
 LmStatus lmInitX(char *pName, char *tLevel, int *i1P, int *i2P) {
   LmStatus s;
 
-  if ((progName = lmProgName(pName, 1, false)) == NULL)
+  if ((progName = lmProgName(pName, 1, false)) == NULL) {
     return LmsPrognameError;
+  }
 
-  if ((s = lmFdRegister(1, DEF1, "DEF", "stdout", i1P)) != LmsOk)
+  if ((s = lmFdRegister(1, DEF1, "DEF", "stdout", i1P)) != LmsOk) {
     return s;
+  }
 
-  if ((s = lmPathRegister("/tmp", "DEF", "DEF", i2P)) != LmsOk)
+  if ((s = lmPathRegister("/tmp", "DEF", "DEF", i2P)) != LmsOk) {
     return s;
+  }
 
-  if ((s = lmInit()) != LmsOk)
+  if ((s = lmInit()) != LmsOk) {
     return s;
+  }
 
-  if ((s = lmTraceSet(tLevel)) != LmsOk)
+  if ((s = lmTraceSet(tLevel)) != LmsOk) {
     return s;
+  }
 
   return LmsOk;
 }
@@ -1008,8 +1073,10 @@ LmStatus lmTraceSet(const char *levelFormat) {
 
   subLevels(tLevel, 0, TRACE_LEVELS - 1);
 
-  if (levelFormat != NULL)
-    traceFix((char *)levelFormat, ADD); return LmsOk;
+  if (levelFormat != NULL) {
+    traceFix((char *)levelFormat, ADD);
+  }
+  return LmsOk;
 }
 
 /* ***************************************************************************
@@ -1032,8 +1099,9 @@ LmStatus lmTraceAdd(const char *levelFormat) {
  * lmTraceLevelSet -
  */
 void lmTraceLevelSet(unsigned int level, bool onOff) {
-  if (level >= TRACE_LEVELS)
+  if (level >= TRACE_LEVELS) {
     return;
+  }
 
   tLevel[level] = onOff;
 }
@@ -1092,8 +1160,10 @@ char *lmTraceGet(char *levelString) {
     bool before = (diss == prev + 1);
     bool after  = (diss == next - 1);
 
-    if (i == 255)
-      after = false; if (before && after) {
+    if (i == 255) {
+      after = false;
+    }
+    if (before && after) {
       ;
     } else if (before && !after) {
       char str[12];
@@ -1153,8 +1223,10 @@ char *lmTraceGet(char *levelString, int levelStringSize, char *traceV) {
     bool before = (diss == prev + 1);
     bool after  = (diss == next - 1);
 
-    if (i == 255)
-      after = false; if (before && after) {
+    if (i == 255) {
+      after = false;
+    }
+    if (before && after) {
       ;
     } else if (before && !after) {
       char str[12];
@@ -1219,8 +1291,18 @@ LmStatus lmClearAt(int atL, int keepL, int lastL) {
 
   INIT_CHECK();
 
-  if (atL   != -1) a = atL; if (keepL != -1) k = keepL; if (lastL != -1) l = lastL; if (a < (k + 4 + l))
+  if (atL   != -1) {
+    a = atL;
+  }
+  if (keepL != -1) {
+    k = keepL;
+  }
+  if (lastL != -1) {
+    l = lastL;
+  }
+  if (a < (k + 4 + l)) {
     return LmsBadParams;
+  }
 
   atLines   = a;
   keepLines = k;
@@ -1241,12 +1323,21 @@ void lmClearGet
   int *lastP,
   int *logFileBytesP
 ) {
-  if (clearOn != NULL)
-    *clearOn = doClear; if (atP != NULL)
-    *atP = atLines; if (keepP != NULL)
-    *keepP = keepLines; if (lastP != NULL)
-    *lastP = lastLines; if (logFileBytesP != NULL)
+  if (clearOn != NULL) {
+    *clearOn = doClear;
+  }
+  if (atP != NULL) {
+    *atP = atLines;
+  }
+  if (keepP != NULL) {
+    *keepP = keepLines;
+  }
+  if (lastP != NULL) {
+    *lastP = lastLines;
+  }
+  if (logFileBytesP != NULL) {
     *logFileBytesP = logLines;
+  }
 }
 
 /* ****************************************************************************
@@ -1258,9 +1349,11 @@ LmStatus lmFormat(int index, char *f) {
   INDEX_CHECK(index);
   STRING_CHECK(f, F_LEN);
 
-  if (strcmp(f, "DEF") == 0)
-    strncpy(fds[index].format, FORMAT_DEF, sizeof(fds[index].format)); else
-    strncpy(fds[index].format, f, sizeof(fds[index].format)); return LmsOk;
+  if (strcmp(f, "DEF") == 0) {
+    strncpy(fds[index].format, FORMAT_DEF, sizeof(fds[index].format));
+  } else {
+    strncpy(fds[index].format, f, sizeof(fds[index].format));
+  } return LmsOk;
 }
 
 /* ****************************************************************************
@@ -1272,9 +1365,11 @@ LmStatus lmTimeFormat(int index, char *f) {
   INDEX_CHECK(index);
   STRING_CHECK(f, TF_LEN);
 
-  if (strcmp(f, "DEF") == 0)
-    strncpy(fds[index].timeFormat, TIME_FORMAT_DEF, sizeof(fds[index].timeFormat)); else
-    strncpy(fds[index].timeFormat, f, sizeof(fds[index].timeFormat)); return LmsOk;
+  if (strcmp(f, "DEF") == 0) {
+    strncpy(fds[index].timeFormat, TIME_FORMAT_DEF, sizeof(fds[index].timeFormat));
+  } else {
+    strncpy(fds[index].timeFormat, f, sizeof(fds[index].timeFormat));
+  } return LmsOk;
 }
 
 /* ****************************************************************************
@@ -1321,13 +1416,17 @@ LmStatus lmTraceAtEnd(int index, char *start, char *end) {
   if ((start == NULL) || (end == NULL)) {
     fds[index].traceShow = false;
   } else {
-    if (strcmp(start, "DEF") == 0)
+    if (strcmp(start, "DEF") == 0) {
       strncpy(fds[index].tMarkStart, TMS_DEF,
-              sizeof(fds[index].tMarkStart)); else
+              sizeof(fds[index].tMarkStart));
+    } else {
       strncpy(fds[index].tMarkStart, start,
-              sizeof(fds[index].tMarkStart)); if (strcmp(end, "DEF") == 0)
-      strncpy(fds[index].tMarkEnd, TME_DEF, sizeof(fds[index].tMarkEnd)); else
-      strncpy(fds[index].tMarkEnd, end, sizeof(fds[index].tMarkEnd)); fds[index].traceShow  = true;
+              sizeof(fds[index].tMarkStart));
+    } if (strcmp(end, "DEF") == 0) {
+      strncpy(fds[index].tMarkEnd, TME_DEF, sizeof(fds[index].tMarkEnd));
+    } else {
+      strncpy(fds[index].tMarkEnd, end, sizeof(fds[index].tMarkEnd));
+    } fds[index].traceShow  = true;
   }
 
   return LmsOk;
@@ -1381,22 +1480,51 @@ char *lmTextGet(const char *format, ...) {
  * lmOk -
  */
 LmStatus lmOk(char type, int tLev) {
-  if ((type == 'T') && (tLevel[tLev] == false))
-    return LmsNull; if ((type == 'D') && (lmDebug == false))
-    return LmsNull; if ((type == 'H') && (lmHidden == false))
-    return LmsNull; if ((type == 'V') && (lmVerbose == false))
-    return LmsNull; if ((type == '2') && (lmVerbose2 == false))
-    return LmsNull; if ((type == '3') && (lmVerbose3 == false))
-    return LmsNull; if ((type == '4') && (lmVerbose4 == false))
-    return LmsNull; if ((type == '5') && (lmVerbose5 == false))
-    return LmsNull; if ((type == 't') && (lmToDo == false))
-    return LmsNull; if ((type == 'w') && (lmWrites == false))
-    return LmsNull; if ((type == 'r') && (lmReads == false))
-    return LmsNull; if ((type == 'b') && (lmBuf == false))
-    return LmsNull; if ((type == 'B') && (lmBug == false))
-    return LmsNull; if ((type == 'F') && (lmFix == false))
-    return LmsNull; if ((type == 'd') && (lmDoubt == false))
+  if ((type == 'T') && (tLevel[tLev] == false)) {
     return LmsNull;
+  }
+  if ((type == 'D') && (lmDebug == false)) {
+    return LmsNull;
+  }
+  if ((type == 'H') && (lmHidden == false)) {
+    return LmsNull;
+  }
+  if ((type == 'V') && (lmVerbose == false)) {
+    return LmsNull;
+  }
+  if ((type == '2') && (lmVerbose2 == false)) {
+    return LmsNull;
+  }
+  if ((type == '3') && (lmVerbose3 == false)) {
+    return LmsNull;
+  }
+  if ((type == '4') && (lmVerbose4 == false)) {
+    return LmsNull;
+  }
+  if ((type == '5') && (lmVerbose5 == false)) {
+    return LmsNull;
+  }
+  if ((type == 't') && (lmToDo == false)) {
+    return LmsNull;
+  }
+  if ((type == 'w') && (lmWrites == false)) {
+    return LmsNull;
+  }
+  if ((type == 'r') && (lmReads == false)) {
+    return LmsNull;
+  }
+  if ((type == 'b') && (lmBuf == false)) {
+    return LmsNull;
+  }
+  if ((type == 'B') && (lmBug == false)) {
+    return LmsNull;
+  }
+  if ((type == 'F') && (lmFix == false)) {
+    return LmsNull;
+  }
+  if ((type == 'd') && (lmDoubt == false)) {
+    return LmsNull;
+  }
 
   return LmsOk;
 }
@@ -1429,11 +1557,13 @@ LmStatus lmFdRegister(int fd, const char *format, const char *timeFormat, const 
   STRING_CHECK(format, F_LEN);
   STRING_CHECK(timeFormat, TF_LEN);
 
-  if (fd < 0)
+  if (fd < 0) {
     return LmsFdInvalid;
+  }
 
-  if ((index = fdsFreeGet()) == -1)
+  if ((index = fdsFreeGet()) == -1) {
     return LmsFdOccupied;
+  }
 
   secsNow = time(NULL);
   lm::gmtime_r(&secsNow, &tmP);
@@ -1446,27 +1576,37 @@ LmStatus lmFdRegister(int fd, const char *format, const char *timeFormat, const 
 
     sz = strlen(startMsg);
 
-    if (write(fd, startMsg, sz) != sz)
+    if (write(fd, startMsg, sz) != sz) {
       return LmsWrite;
+    }
   }
 
   fds[index].fd    = fd;
   fds[index].state = Occupied;
-  if (strcmp(format, "DEF") == 0)
-    strncpy(fds[index].format, FORMAT_DEF, sizeof(fds[index].format)); else
-    strncpy(fds[index].format, format, sizeof(fds[index].format)); if (strcmp(timeFormat, "DEF") == 0)
+  if (strcmp(format, "DEF") == 0) {
+    strncpy(fds[index].format, FORMAT_DEF, sizeof(fds[index].format));
+  } else {
+    strncpy(fds[index].format, format, sizeof(fds[index].format));
+  } if (strcmp(timeFormat, "DEF") == 0) {
     strncpy(fds[index].timeFormat, TIME_FORMAT_DEF,
-            sizeof(fds[index].timeFormat)); else
+            sizeof(fds[index].timeFormat));
+  } else {
     strncpy(fds[index].timeFormat, timeFormat,
-            sizeof(fds[index].timeFormat)); strncpy(fds[index].info, info, sizeof(fds[index].info));
+            sizeof(fds[index].timeFormat));
+  } strncpy(fds[index].info, info, sizeof(fds[index].info));
 
-  if (indexP)
-    *indexP = index; fdNoOf++;
+  if (indexP) {
+    *indexP = index;
+  }
+  fdNoOf++;
   fds[index].type = Stdout;
 
-  if ((strcmp(info, "stdout") == 0) ||  (strcmp(info, "stderr") == 0))
-    if (indexP)
-      lmSd = *indexP; return LmsOk;
+  if ((strcmp(info, "stdout") == 0) ||  (strcmp(info, "stderr") == 0)) {
+    if (indexP) {
+      lmSd = *indexP;
+    }
+  }
+  return LmsOk;
 }
 
 /* ****************************************************************************
@@ -1477,8 +1617,10 @@ void lmFdUnregister(int fd) {
   int index;
 
   for (index = 0; index < FDS_MAX; index++) {
-    if (fds[index].fd != fd)
-      continue; fds[index].fd    = -1;
+    if (fds[index].fd != fd) {
+      continue;
+    }
+    fds[index].fd    = -1;
     fds[index].state = Free;
   }
 }
@@ -1495,16 +1637,19 @@ LmStatus lmPathRegister(const char *path, const char *format, const char *timeFo
 
   PROGNAME_CHECK();
 
-  if (initDone == true)
+  if (initDone == true) {
     return LmsInitAlreadyDone;
+  }
 
   STRING_CHECK(format, F_LEN);
 
   if (isdir((char *)path) == true) {
     // Goyo. If progName (argv[0] is a complete (or relative, but with directories) path, perhaps we don't want all of it
     char *leaf_path = strrchr(progName, '/');
-    if (leaf_path == NULL)
-      leaf_path = progName; snprintf(fileName, sizeof(fileName), "%s/%sLog", path, leaf_path);
+    if (leaf_path == NULL) {
+      leaf_path = progName;
+    }
+    snprintf(fileName, sizeof(fileName), "%s/%sLog", path, leaf_path);
   } else {
     if (access(fileName, X_OK) == -1) {
       printf("Sorry, directory '%s' doesn't exist (errno == %d)\n", path, errno);
@@ -1543,8 +1688,10 @@ LmStatus lmPathRegister(const char *path, const char *format, const char *timeFo
 
   fds[index].type = Fichero;
 
-  if (indexP)
-    *indexP = index; return LmsOk;
+  if (indexP) {
+    *indexP = index;
+  }
+  return LmsOk;
 }
 
 /* ****************************************************************************
@@ -1560,8 +1707,10 @@ LmStatus lmOut(char *text, char type, const char *file, int lineNo, const char *
   char *tmP;
 
   tmP = strrchr((char *)file, '/');
-  if (tmP != NULL)
-    file = &tmP[1]; if (inSigHandler && (type != 'X' || type != 'x')) {
+  if (tmP != NULL) {
+    file = &tmP[1];
+  }
+  if (inSigHandler && (type != 'X' || type != 'x')) {
     lmAddMsgBuf(text, type, file, lineNo, fName, tLev, (char *)stre);
     return LmsOk;
   }
@@ -1577,36 +1726,50 @@ LmStatus lmOut(char *text, char type, const char *file, int lineNo, const char *
 
   if ((type != 'H') && lmOutHook && lmOutHookActive == true) {
     time_t secondsNow = time(NULL);
-    if (use_hook)
+    if (use_hook) {
       lmOutHook(lmOutHookParam, text, type, secondsNow, 0, 0, file, lineNo, fName, tLev, stre);
+    }
   }
 
   for (i = 0; i < FDS_MAX; i++) {
-    if (fds[i].state != Occupied)
-      continue; if ((fds[i].type == Stdout) && (fds[i].onlyErrorAndVerbose == true))
+    if (fds[i].state != Occupied) {
+      continue;
+    }
+    if ((fds[i].type == Stdout) && (fds[i].onlyErrorAndVerbose == true)) {
       if ((type == 'T')
           ||  (type == 'D')
           ||  (type == 'H')
           ||  (type == 'M')
           ||  (type == 't'))
+      {
         continue;
+      }
+    }
     if (type == 'R') {
-      if (text[1] != ':')
-        snprintf(line, sizeof(line), "R: %s\n%c", text, 0); else
+      if (text[1] != ':') {
+        snprintf(line, sizeof(line), "R: %s\n%c", text, 0);
+      } else {
         snprintf(line, sizeof(line), "%s\n%c", text, 0);
+      }
     } else if (type == 'S') {
       char stampStr[LINE_MAX];
       snprintf(line, sizeof(line), "%s:%s", text, timeStampGet(stampStr));
     } else {
       /* Danger: 'format' might be too short ... */
-      if (lmLineFix(i, format, sizeof(format), type, file, lineNo, fName, tLev) == NULL)
-        continue; if ((strlen(format) + strlen(text) + strlen(line)) > LINE_MAX)
+      if (lmLineFix(i, format, sizeof(format), type, file, lineNo, fName, tLev) == NULL) {
+        continue;
+      }
+      if ((strlen(format) + strlen(text) + strlen(line)) > LINE_MAX) {
         snprintf(line, sizeof(line), "%s\n%c",
-                 "LM ERROR: LINE TOO LONG", 0); else
+                 "LM ERROR: LINE TOO LONG", 0);
+      } else {
         snprintf(line, sizeof(line), format, text);
+      }
     }
-    if (stre != NULL)
-      strncat(line, stre, sizeof(line) - 1); sz = strlen(line);
+    if (stre != NULL) {
+      strncat(line, stre, sizeof(line) - 1);
+    }
+    sz = strlen(line);
 
     if (fds[i].write != NULL) {
       fds[i].write(line);
@@ -1630,12 +1793,16 @@ LmStatus lmOut(char *text, char type, const char *file, int lineNo, const char *
       fprintf(stderr, "warningFunction done\n");
     }
   } else if ((type == 'E') || (type == 'P')) {
-    if (errorFunction != NULL)
+    if (errorFunction != NULL) {
       errorFunction(errorInput, text, (char *)stre);
+    }
   } else if ((type == 'X') || (type == 'x')) {
-    if (exitFunction != NULL)
-      exitFunction(tLev, exitInput, text, (char *)stre); if (lmAssertAtExit == true)
+    if (exitFunction != NULL) {
+      exitFunction(tLev, exitInput, text, (char *)stre);
+    }
+    if (lmAssertAtExit == true) {
       assert(false);  /* exit here, just in case */
+    }
     exit(tLev);
   }
 
@@ -1646,9 +1813,12 @@ LmStatus lmOut(char *text, char type, const char *file, int lineNo, const char *
       if (fds[i].state == Occupied) {
         LmStatus s;
 
-        if (fds[i].type != Fichero)
-          continue; if ((s = lmClear(i, keepLines, lastLines)) != LmsOk)
+        if (fds[i].type != Fichero) {
+          continue;
+        }
+        if ((s = lmClear(i, keepLines, lastLines)) != LmsOk) {
           return s;
+        }
       }
     }
   }
@@ -1763,15 +1933,20 @@ int lmBufferPresent
   char tmp[80];
   char msg[160];
 
-  if (size > 0x800)
-    size = 0x800; if (lmOk(type, type) != LmsOk)
+  if (size > 0x800) {
+    size = 0x800;
+  }
+  if (lmOk(type, type) != LmsOk) {
     return LmsOk;
+  }
 
-  if (size <= 0)
+  if (size <= 0) {
     return LmsBadSize;
+  }
 
-  if ((format != LmfByte) && (format != LmfWord) && (format != LmfLong))
+  if ((format != LmfByte) && (format != LmfWord) && (format != LmfLong)) {
     return LmsBadFormat;
+  }
 
   memset(line, 0, sizeof(line));
 
@@ -1784,8 +1959,10 @@ int lmBufferPresent
   }
 
   while (bIndex < size) {
-    if ((bIndex % 0x10) == 0)
-      snprintf(line, sizeof(line), "%c: %.8x:   ", type, start); switch (format) {
+    if ((bIndex % 0x10) == 0) {
+      snprintf(line, sizeof(line), "%c: %.8x:   ", type, start);
+    }
+    switch (format) {
       case LmfLong:
         if (bIndex + 4 <= size) {
           snprintf(tmp, sizeof(tmp), "%.8x ", *((int *)&buffer[bIndex]));
@@ -1838,9 +2015,11 @@ int lmBufferPresent
     if (((bIndex % 0x10) == 0) || (bIndex >= size)) {
       int len = bIndex - bIndexLast;
 
-      if (bIndex > size)
-        len = size - bIndexLast; asciiToLeft(line, sizeof(line), &buffer[bIndexLast], len,
-                                             format, xx ? 4 : 0);
+      if (bIndex > size) {
+        len = size - bIndexLast;
+      }
+      asciiToLeft(line, sizeof(line), &buffer[bIndexLast], len,
+                  format, xx ? 4 : 0);
 
       start     += 0x10;
       bIndexLast = bIndex;
@@ -1869,8 +2048,10 @@ LmStatus lmReopen(int index) {
 
   fdPos = lseek(fds[index].fd, 0, SEEK_CUR);
 
-  if ((fP = fopen(fds[index].info, "r")) == NULL)
-    return LmsFopen; rewind(fP);
+  if ((fP = fopen(fds[index].info, "r")) == NULL) {
+    return LmsFopen;
+  }
+  rewind(fP);
 
   s = LmsOk;
 
@@ -1920,10 +2101,15 @@ LmStatus lmReopen(int index) {
     }
   }
 
-  if (fd != -1)
-    if (close(fd) == -1)
-      perror("close"); if (fclose(fP) == -1)
-    perror("fclose"); if (s == LmsOk) {
+  if (fd != -1) {
+    if (close(fd) == -1) {
+      perror("close");
+    }
+  }
+  if (fclose(fP) == -1) {
+    perror("fclose");
+  }
+  if (s == LmsOk) {
     close(fds[index].fd);
     rename(tmpName, fds[index].info);
     fds[index].fd = open(fds[index].info, O_RDWR, 0666);
@@ -1955,18 +2141,23 @@ long lmLogLineGet(char *typeP, char *dateP, int *msP, char *progNameP, char *fil
   long ret;
   char *nada;
 
-  if (allP != NULL)
-    *allP = NULL; if (typeP == NULL) {
-    if (fP != NULL)
-      fclose(fP); fP = NULL;
+  if (allP != NULL) {
+    *allP = NULL;
+  }
+  if (typeP == NULL) {
+    if (fP != NULL) {
+      fclose(fP);
+    }
+    fP = NULL;
     return 0;
   }
 
   if (fP == NULL) {
     // printf("opening log file\n");
-    if ((fP = fopen(fds[0].info, "r")) == NULL)
+    if ((fP = fopen(fds[0].info, "r")) == NULL) {
       // printf("error opening log file '%s'\n", fds[0].info);
       return -1;
+    }
 
     nada = fgets(line, 1024, fP);
     nada = fgets(line, 1024, fP);
@@ -1976,8 +2167,9 @@ long lmLogLineGet(char *typeP, char *dateP, int *msP, char *progNameP, char *fil
     }
   } else {
     // printf("seek to %lu\n", offset);
-    if (fseek(fP, offset, SEEK_SET) == -1)
+    if (fseek(fP, offset, SEEK_SET) == -1) {
       goto lmerror;
+    }
   }
 
   if (fgets(line, LINE_MAX, fP) == NULL) {
@@ -1986,43 +2178,70 @@ long lmLogLineGet(char *typeP, char *dateP, int *msP, char *progNameP, char *fil
     return -2;     // EOF
   }
 
-  if (line[strlen(line) - 1] == '\n')
-    line[strlen(line) - 1] = 0; if (allP != NULL)
+  if (line[strlen(line) - 1] == '\n') {
+    line[strlen(line) - 1] = 0;
+  }
+  if (allP != NULL) {
     *allP = strdup(line);  // printf("Got line '%s'\n", line);
-   // M:Thursday 08 Mar 13:40:45 2012(373):samsonWorker-father/WorkerCommand.cpp[784](p.3409)(t.3410) run: Adding RECORD of type M
+  }
+  // M:Thursday 08 Mar 13:40:45 2012(373):samsonWorker-father/WorkerCommand.cpp[784](p.3409)(t.3410) run: Adding RECORD of type M
 
   *typeP = *lineP;
 
   lineP += 2;
-  delimiter = strchr(lineP, '('); if (delimiter == NULL) goto lmerror; *delimiter = 0;
+  delimiter = strchr(lineP, '('); if (delimiter == NULL) {
+    goto lmerror;
+  }
+  *delimiter = 0;
   strcpy(dateP, lineP);
   lineP = delimiter + 1;
 
-  delimiter = strchr(lineP, ')'); if (delimiter == NULL) goto lmerror; *delimiter = 0;
+  delimiter = strchr(lineP, ')'); if (delimiter == NULL) {
+    goto lmerror;
+  }
+  *delimiter = 0;
   *msP = atoi(lineP);
   lineP = delimiter + 2;
 
-  delimiter = strchr(lineP, '/'); if (delimiter == NULL) goto lmerror; *delimiter = 0;
+  delimiter = strchr(lineP, '/'); if (delimiter == NULL) {
+    goto lmerror;
+  }
+  *delimiter = 0;
   strcpy(progNameP, lineP);
   lineP = delimiter + 1;
 
-  delimiter = strchr(lineP, '['); if (delimiter == NULL) goto lmerror; *delimiter = 0;
+  delimiter = strchr(lineP, '['); if (delimiter == NULL) {
+    goto lmerror;
+  }
+  *delimiter = 0;
   strcpy(fileNameP, lineP);
   lineP = delimiter + 1;
 
-  delimiter = strchr(lineP, ']'); if (delimiter == NULL) goto lmerror; *delimiter = 0;
+  delimiter = strchr(lineP, ']'); if (delimiter == NULL) {
+    goto lmerror;
+  }
+  *delimiter = 0;
   *lineNoP = atoi(lineP);
   lineP = delimiter + 4;
 
-  delimiter = strchr(lineP, ')'); if (delimiter == NULL) goto lmerror; *delimiter = 0;
+  delimiter = strchr(lineP, ')'); if (delimiter == NULL) {
+    goto lmerror;
+  }
+  *delimiter = 0;
   *pidP = atoi(lineP);
   lineP = delimiter + 4;
 
-  delimiter = strchr(lineP, ')'); if (delimiter == NULL) goto lmerror; *delimiter = 0;
+  delimiter = strchr(lineP, ')'); if (delimiter == NULL) {
+    goto lmerror;
+  }
+  *delimiter = 0;
   *tidP = atoi(lineP);
   lineP = delimiter + 2;
 
-  delimiter = strchr(lineP, ':'); if (delimiter == NULL) goto lmerror; *delimiter = 0;
+  delimiter = strchr(lineP, ':'); if (delimiter == NULL) {
+    goto lmerror;
+  }
+  *delimiter = 0;
   strcpy(funcNameP, lineP);
   lineP = delimiter + 2;
 
@@ -2071,8 +2290,9 @@ LmStatus lmClear(int index, int keepLines, int lastLines) {
   INIT_CHECK();
   INDEX_CHECK(index);
 
-  if (logLines < (keepLines + lastLines))
+  if (logLines < (keepLines + lastLines)) {
     return LmsOk;
+  }
 
   if ((fP = fopen(fds[index].info, "r")) == NULL) {
     atLines += 1000;
@@ -2087,8 +2307,9 @@ LmStatus lmClear(int index, int keepLines, int lastLines) {
   rewind(fP);
 
   lrV = (LineRemove *)malloc(sizeof(LineRemove) * (logLines + 4));
-  if (lrV == NULL)
+  if (lrV == NULL) {
     return LmsMalloc;
+  }
 
   initialLrv = lrV;
   memset(lrV, 0, sizeof(LineRemove) * (logLines + 4));
@@ -2104,8 +2325,9 @@ LmStatus lmClear(int index, int keepLines, int lastLines) {
     LOG_OUT(("got line %d: '%s'", i, line));
     oldOffset = ftell(fP);
     ++i;
-    if (i > logLines + 4)
+    if (i > logLines + 4) {
       break;
+    }
   }
 
   linesToRemove = logLines - headerLines - keepLines - lastLines;
@@ -2123,8 +2345,9 @@ LmStatus lmClear(int index, int keepLines, int lastLines) {
       if ((lrV[i].remove == false) && (lrV[i].type == order[j])) {
         lrV[i].remove = true;
         LOG_OUT(("Removing line %d", i));
-        if (--linesToRemove <= 0)
+        if (--linesToRemove <= 0) {
           goto Removing;
+        }
       }
     }
     ++j;
@@ -2163,12 +2386,15 @@ LmStatus lmClear(int index, int keepLines, int lastLines) {
       char line[LINE_MAX];
       char *lineP;
 
-      if (fseek(fP, lrV[i].offset, SEEK_SET) != 0)
-        CLEANUP("fseek", LmsFseek); lineP = fgets(line, LINE_MAX, fP);
+      if (fseek(fP, lrV[i].offset, SEEK_SET) != 0) {
+        CLEANUP("fseek", LmsFseek);
+      }
+      lineP = fgets(line, LINE_MAX, fP);
       if (strncmp(line, "Cleared at", 10) != 0) {
         len = strlen(line);
-        if (write(fd, line, len) != len)
+        if (write(fd, line, len) != len) {
           CLEANUP("write", LmsWrite);
+        }
       }
 
       if (newLogLines == 2) {
@@ -2181,8 +2407,9 @@ LmStatus lmClear(int index, int keepLines, int lastLines) {
         strftime(tm, 80, TIME_FORMAT_DEF, &tmP);
 
         snprintf(buf, sizeof(buf), "Cleared at %s\n", tm);
-        if (write(fd, buf, strlen(buf)) != (int)strlen(buf))
+        if (write(fd, buf, strlen(buf)) != (int)strlen(buf)) {
           CLEANUP("write", LmsWrite);
+        }
       }
 
       ++newLogLines;
@@ -2190,9 +2417,11 @@ LmStatus lmClear(int index, int keepLines, int lastLines) {
   }
 
   if (lrV != NULL) {
-    if (lrV == initialLrv)
-      ::free(lrV); else
+    if (lrV == initialLrv) {
+      ::free(lrV);
+    } else {
       LOG_OUT(("ERROR: lrV has changed ... (from 0x%lx to 0x%lx)", initialLrv, lrV));
+    }
   }
 
   fclose(fP);
@@ -2225,8 +2454,9 @@ void lmShowLog(int logFd) {
            fds[logFd].info);
   if (system(com) == 0) {
     chmod("/tmp/xxx", 0700);
-    if (system("/tmp/xxx") != 0)
+    if (system("/tmp/xxx") != 0) {
       printf("error in call to 'system'\n");
+    }
   }
 }
 
@@ -2239,8 +2469,10 @@ void lmExitForced(int c) {
   assert(false);
 #endif
 
-  if (exitFunction != NULL)
-    exitFunction(c, exitInput, (char *)"exit forced", NULL); exit(c);
+  if (exitFunction != NULL) {
+    exitFunction(c, exitInput, (char *)"exit forced", NULL);
+  }
+  exit(c);
 }
 
 /* ****************************************************************************
@@ -2264,8 +2496,10 @@ LmStatus lmOnlyErrors(int index) {
   INIT_CHECK();
   INDEX_CHECK(index);
 
-  if (fds[index].type == Stdout)
-    fds[index].onlyErrorAndVerbose = true; return LmsOk;
+  if (fds[index].type == Stdout) {
+    fds[index].onlyErrorAndVerbose = true;
+  }
+  return LmsOk;
 }
 
 /* ****************************************************************************
@@ -2296,8 +2530,10 @@ const char *lmTraceLevel(int level) {
     case LmtListItemCreate:  return "List Item Create";
   }
 
-  if (userTracelevelName != NULL)
-    userName = userTracelevelName(level); if (userName == NULL) {
+  if (userTracelevelName != NULL) {
+    userName = userTracelevelName(level);
+  }
+  if (userName == NULL) {
     sprintf(name, "trace level %d", level);
     return name;
   }
@@ -2338,17 +2574,29 @@ void lmAddMsgBuf(char *text, char type, const char *file, int line, const char *
   struct logMsg *newMsg, *logP, *lastlogP;
 
   newMsg = (logMsg *)malloc(sizeof(struct logMsg));
-  if (newMsg == NULL)
-    return; memset(newMsg, 0, sizeof(struct logMsg));
+  if (newMsg == NULL) {
+    return;
+  }
+  memset(newMsg, 0, sizeof(struct logMsg));
 
-  if (text)
-    strncpy(newMsg->msg, text, sizeof(newMsg->msg)); if (file)
-    strncpy(newMsg->file, file, sizeof(newMsg->file)); newMsg->line = line;
+  if (text) {
+    strncpy(newMsg->msg, text, sizeof(newMsg->msg));
+  }
+  if (file) {
+    strncpy(newMsg->file, file, sizeof(newMsg->file));
+  }
+  newMsg->line = line;
   newMsg->type = type;
-  if (func)
-    strncpy(newMsg->func, func, sizeof(newMsg->func)); if (stre)
-    strncpy(newMsg->stre, stre, sizeof(newMsg->stre)); if (tLev)
-    newMsg->tLev = tLev; if (logMsgs) {
+  if (func) {
+    strncpy(newMsg->func, func, sizeof(newMsg->func));
+  }
+  if (stre) {
+    strncpy(newMsg->stre, stre, sizeof(newMsg->stre));
+  }
+  if (tLev) {
+    newMsg->tLev = tLev;
+  }
+  if (logMsgs) {
     logP = logMsgs;
     while (logP) {
       lastlogP = logP;
@@ -2387,8 +2635,9 @@ int lmFirstDiskFileDescriptor(void) {
   int ix = 0;
 
   for (ix = 0; ix < FDS_MAX; ix++) {
-    if (fds[ix].type == Fichero)
+    if (fds[ix].type == Fichero) {
       return fds[ix].fd;
+    }
   }
 
   return -1;

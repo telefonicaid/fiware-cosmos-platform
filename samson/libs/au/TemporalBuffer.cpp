@@ -16,7 +16,8 @@ size_t TemporalBuffer::size() {
 }
 
 TemporalBuffer::~TemporalBuffer() {
-  if (data_)
+  if (data_) {
     free(data_);
+  }
 }
 }

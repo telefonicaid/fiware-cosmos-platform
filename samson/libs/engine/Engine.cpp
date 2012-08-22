@@ -34,8 +34,9 @@
 namespace engine {
 std::list<EngineElement *>::iterator EngineElementCollection::_find_pos_in_repeated_elements(EngineElement *e) {
   for (std::list<EngineElement *>::iterator i = repeated_elements.begin(); i != repeated_elements.end(); i++) {
-    if ((*i)->getTimeToTrigger() > e->getTimeToTrigger())
+    if ((*i)->getTimeToTrigger() > e->getTimeToTrigger()) {
       return i;
+    }
   }
 
   return repeated_elements.end();
@@ -92,8 +93,9 @@ void Engine::init() {
 
 void Engine::stop() {
   // Set this flag as true to force main thread to finish
-  if (engine)
+  if (engine) {
     engine->quitting = true;
+  }
 }
 
 void Engine::destroy() {
@@ -127,8 +129,9 @@ void sleep_select(double time) {
   FD_ZERO(&fds);
   int r = select(1, NULL, &fds, NULL, &timeVal);
 
-  if (r != 0)
+  if (r != 0) {
     LM_W(("Select returned %d in sleep_select [ timeval %l %l ]", r, timeVal.tv_sec, timeVal.tv_usec ));
+  }
 }
 
 void Engine::runElement(EngineElement *running_element) {
@@ -143,9 +146,10 @@ void Engine::runElement(EngineElement *running_element) {
     LM_W(("Engine is running an element that has been waiting %d seconds", waiting_time ));
     LM_W(("Engine element to execute now: %s", running_element->str().c_str()));
 
-    if (waiting_time > 100)
+    if (waiting_time > 100) {
       // Print all elements with traces for debuggin...
       engine_element_collection.print_elements();
+    }
   }
 
 
@@ -179,8 +183,9 @@ void Engine::run() {
     counter++;
 
     // Finish this thread if necessary
-    if (quitting)
+    if (quitting) {
       return;
+    }
 
     // Check if there are elements in the list
     if (engine_element_collection.isEmpty()) {
@@ -192,9 +197,10 @@ void Engine::run() {
     size_t num_engine_elements = engine_element_collection.getNumEngineElements();
     LM_T(LmtEngine, ("Number of elements in the engine stack %lu", num_engine_elements ));
 
-    if (num_engine_elements > 10000)
+    if (num_engine_elements > 10000) {
       LM_W(("Execesive number of elements in the engine stack %lu", num_engine_elements ));  // ------------------------------------------------------------------------------------
-     // Try to get the next element in the repeat_elements list
+    }
+    // Try to get the next element in the repeat_elements list
     // if not there , try normal elements...
     // if not, run extra elements and loop again...
     // ------------------------------------------------------------------------------------
@@ -238,8 +244,10 @@ void Engine::run() {
     // If next repeated elements is close, do not sleep
     double t_next_repeated_elements = engine_element_collection.getTimeForNextRepeatedEngineElement();
     LM_T(LmtEngine, ("Engine: Next repeated item in %.2f secs ...", t_next_repeated_elements));
-    if (t_next_repeated_elements < 0.01)
-      continue; activity_monitor.StartActivity("sleep");
+    if (t_next_repeated_elements < 0.01) {
+      continue;
+    }
+    activity_monitor.StartActivity("sleep");
 
     sleep_select(0.1);
 

@@ -60,12 +60,6 @@ typedef struct CommandLineFlag {
 class CommandLine {
 public:
 
-  std::string command;                                                                          // !<< Incoming General command
-  std::map< std::string, CommandLineFlag > flags;       // !<< Map of flags
-  std::vector<std::string> arguments;                                                           // !<< Command line arguments separated in "words"
-
-public:
-
   /**
    * Simple constructor
    */
@@ -85,22 +79,21 @@ public:
    * Parse a command line in the classical C-style way
    */
 
-  void parse(int args, const char *argv[]);
-  void parse(std::string _command);
-
+  void Parse(int args, const char *argv[]);
+  void Parse(std::string _command);
 
   /**
    * Defining flags
    */
 
-  void reset_flags();
+  void ResetFlags();
 
-  void set_flag_boolean(std::string name);
-  void set_flag_int(std::string name, int default_value);
-  void set_flag_string(std::string name, std::string default_value);
-  void set_flag_uint64(std::string name, std::string default_value);
-  void set_flag_uint64(std::string name, size_t default_value);
-  void set_flag_double(std::string name, double default_value);
+  void SetFlagBoolean(std::string name);
+  void SetFlagInt(std::string name, int default_value);
+  void SetFlagString(std::string name, std::string default_value);
+  void SetFlagUint64(std::string name, std::string default_value);
+  void SetFlagUint64(std::string name, size_t default_value);
+  void SetFlagDouble(std::string name, double default_value);
 
   /**
    * Acces information about arguments
@@ -108,40 +101,45 @@ public:
 
   int get_num_arguments();
   std::string get_argument(int index);
-  bool isArgumentValue(int index, std::string value, std::string value2);
-
-  /**
-   * Access to flags
-   */
-
-  std::string getFlagValue(std::string flag_name);
-  std::string getFlagType(std::string flag_name);
 
   /**
    * Specialed access to parametes
    */
 
-  bool get_flag_bool(std::string flag_name);
-  int get_flag_int(std::string flag_name);
-  double get_flag_double(std::string flag_name);
-  std::string get_flag_string(std::string flag_name);
-  size_t get_flag_uint64(std::string flag_name);
+  bool GetFlagBool(std::string flag_name);
+  int GetFlagInt(std::string flag_name);
+  double GetFlagDouble(std::string flag_name);
+  std::string GetFlagString(std::string flag_name);
+  size_t GetFlagUint64(std::string flag_name);
+
+  // Original command+
+  std::string command();
 
 private:
+
+  /**
+   * Access to flags
+   */
+
+  std::string GetFlagValue(std::string flag_name);
+  std::string GetFlagType(std::string flag_name);
 
   /**
    * Functions to transform values
    */
 
-  int getIntValue(std::string value);
-  size_t getUint64Value(std::string value);
-  double getDoubleValue(std::string value);
-  bool getBoolValue(std::string value);
-
+  static int getIntValue(std::string value);
+  static size_t getUint64Value(std::string value);
+  static double getDoubleValue(std::string value);
+  static bool getBoolValue(std::string value);
 
   // Internal function to parse content
-  void clear_values();
-  void parse_tockens(std::vector<std::string> &tockens);
+  void ClearValues();
+  void ParseTockens(std::vector<std::string> &tockens);
+
+  std::string command_;                                                                          // !<< Incoming General command
+  std::map< std::string, CommandLineFlag > flags_;       // !<< Map of flags
+  std::vector<std::string> arguments_;                                                           // !<< Command line arguments separated in "words"
 };
 }
 

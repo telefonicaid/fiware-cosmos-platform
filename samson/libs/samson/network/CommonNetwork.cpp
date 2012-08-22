@@ -15,14 +15,18 @@ void CommonNetwork::set_cluster_information(size_t cluster_information_version,
   au::TokenTaker tt(&token_);
 
   // Not update if we have a newer version of this cluster info
-  if (cluster_information_version != (size_t)-1)
-    if (cluster_information_version_ !=  ((size_t)-1))
-      if (cluster_information_version_ >= cluster_information_version)
+  if (cluster_information_version != (size_t)-1) {
+    if (cluster_information_version_ !=  ((size_t)-1)) {
+      if (cluster_information_version_ >= cluster_information_version) {
         return;
+      }
+    }
+  }
 
   // Remove previous cluster information ( if any )
-  if (cluster_information_)
+  if (cluster_information_) {
     delete cluster_information_;  // keep the new cluster information
+  }
   cluster_information_ = cluster_information;
 
   // Update the version we have of the cluster info
@@ -112,12 +116,13 @@ void CommonNetwork::review_connections() {
     // Get the node identifier associated to this connection ( inspecting the name )
     NodeIdentifier node_identifier(connection_name);
 
-    if (node_identifier.node_type == WorkerNode)
+    if (node_identifier.node_type == WorkerNode) {
       if (!isWorkerIncluded(cluster_information_, node_identifier.id)) {
         LM_T(LmtNetworkConnection, ("Removing connection %s since this worker is not included in the cluster any more"
                                     , connection_name.c_str()));
         Remove(connection_names[i]);
       }
+    }
   }
 
   LM_T(LmtNetworkConnection, ("END Review connections **************************************************" ));
@@ -127,9 +132,11 @@ void CommonNetwork::notify(engine::Notification *notification) {
   if (notification->isName("send_to_all_delilahs")) {
     au::SharedPointer<Packet> packet = notification->dictionary().Get("packet").dynamic_pointer_cast<Packet>();
 
-    if (packet != NULL)
-      SendToAllDelilahs(packet); else
-      LM_W(("Notification send_to_all_delilahs without packet")); return;
+    if (packet != NULL) {
+      SendToAllDelilahs(packet);
+    } else {
+      LM_W(("Notification send_to_all_delilahs without packet"));
+    } return;
   }
 
   review_connections();
@@ -161,8 +168,9 @@ Status CommonNetwork::addWorkerConnection(size_t worker_id, std::string host, in
   std::string name = node_identifier.getCodeName();
 
   // Check if we already have this connection
-  if (NetworkManager::isConnected(name))
+  if (NetworkManager::isConnected(name)) {
     return Error;
+  }
 
   // Init connection
   au::SocketConnection *socket_connection;
@@ -199,8 +207,9 @@ void CommonNetwork::Send(const PacketPointer& packet) {
 
   // Add more info to buffer name for debuggin
   engine::BufferPointer buffer = packet->buffer();
-  if (buffer != NULL)
+  if (buffer != NULL) {
     buffer->addToName(au::str(" [in packet to %s]", packet->to.str().c_str()));  // Set me as from identifier
+  }
   packet->from = node_identifier_;
 
   if (packet->to == node_identifier_) {
@@ -253,8 +262,9 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
     return;
   }
 
-  if (packet->from.id == 0)
+  if (packet->from.id == 0) {
     LM_W(("Strange node identifier 0 in received packet"));  // Schedule the new packet
+  }
   schedule_receive(packet);
 }
 
@@ -283,9 +293,11 @@ au::tables::Table *CommonNetwork::getClusterConnectionsTable() {
       NodeIdentifier ni =  NodeIdentifier(WorkerNode, worker_id);
       std::string connection_name = ni.getCodeName();
 
-      if (ni == node_identifier_)
-        values.push_back("me"); else
-        values.push_back(NetworkManager::getStatusForConnection(connection_name)); table->addRow(values);
+      if (ni == node_identifier_) {
+        values.push_back("me");
+      } else {
+        values.push_back(NetworkManager::getStatusForConnection(connection_name));
+      } table->addRow(values);
     }
   } else {
     table->setTitle("Not cluster defined");
@@ -317,14 +329,17 @@ size_t CommonNetwork::cluster_information_version() {
 }
 
 std::string CommonNetwork::getClusterConnectionStr() {
-  if (!cluster_information_ || ( cluster_information_version_ == (size_t)-1 ))
-    return "Disconnected"; else
+  if (!cluster_information_ || ( cluster_information_version_ == (size_t)-1 )) {
+    return "Disconnected";
+  } else {
     return au::str("%d nodes / v %d", (int)cluster_information_->workers_size(),  (int)cluster_information_version_);
+  }
 }
 
 std::string CommonNetwork::getClusterSetupStr() {
-  if (!cluster_information_ || (cluster_information_version_ == (size_t)-1 ))
+  if (!cluster_information_ || (cluster_information_version_ == (size_t)-1 )) {
     return "Delilah is not connected to any SAMSON cluster\n";
+  }
 
   au::tables::Table table("Worker|Host|Connected");
   table.setTitle(au::str("Cluster setup ( version %lu )", cluster_information_version_));
@@ -340,9 +355,11 @@ std::string CommonNetwork::getClusterSetupStr() {
                                );
     values.push_back(host);
 
-    if (isConnected(NodeIdentifier(WorkerNode, worker_id).getCodeName()))
-      values.push_back("yes"); else
-      values.push_back("no"); table.addRow(values);
+    if (isConnected(NodeIdentifier(WorkerNode, worker_id).getCodeName())) {
+      values.push_back("yes");
+    } else {
+      values.push_back("no");
+    } table.addRow(values);
   }
   return table.str();
 }

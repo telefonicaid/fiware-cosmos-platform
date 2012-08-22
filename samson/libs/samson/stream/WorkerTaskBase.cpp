@@ -27,8 +27,9 @@ WorkerTaskBase::~WorkerTaskBase() {
 }
 
 bool WorkerTaskBase::is_ready() {
-  if (ready_)
+  if (ready_) {
     return true;
+  }
 
   // Check if all the input blocks are in memory
   ready_ = block_list_container_.is_content_in_memory();

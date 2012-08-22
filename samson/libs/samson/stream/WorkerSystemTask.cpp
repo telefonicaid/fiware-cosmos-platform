@@ -28,7 +28,7 @@ namespace samson { namespace stream {
                      concept_ = concept;
 
                      // Environment variables
-                     environment_.set("system.task_id", id);
+                     environment_.Set("system.task_id", id);
                    }
 
                    WorkerSystemTask::~WorkerSystemTask() {
@@ -58,14 +58,16 @@ namespace samson { namespace stream {
                      }
 
                      add(record, "id", get_id(), "left,different");
-                     add(record, "worker_command_id", environment_.get("worker_command_id", "?"), "left,different");
+                     add(record, "worker_command_id", environment_.Get("worker_command_id", "?"), "left,different");
                      add(record, "creation", creation_cronometer_.seconds(), "f=time,different");
                      add(record, "running ", cronometer().seconds(), "f=time,different");
                      add(record, "progress ", progress(), "f=percentadge,different");
 
-                     if (ProcessItem::running())
-                       add(record, "state", "running", "left,different"); else
+                     if (ProcessItem::running()) {
+                       add(record, "state", "running", "left,different");
+                     } else {
                        add(record, "state", task_state(), "left,different");
+                     }
                    }
 
                    // ------------------------------------------------------------------------
@@ -91,8 +93,9 @@ namespace samson { namespace stream {
 
                    // Virtual method from engine::ProcessItem
                    void BlockRequestTask::run() {
-                     if (!block_->is_content_in_memory())
+                     if (!block_->is_content_in_memory()) {
                        LM_X(1, ("Internal error"));  // Send a packet to worker that request this buffer
+                     }
                      PacketPointer packet(new Packet(Message::BlockRequestResponse));
                      packet->set_buffer(block_->buffer());
                      packet->message->set_block_id(block_id_);
@@ -135,11 +138,13 @@ namespace samson { namespace stream {
 
                    // Virtual method from engine::ProcessItem
                    void PopBlockRequestTask::run() {
-                     if (!block_->is_content_in_memory())
+                     if (!block_->is_content_in_memory()) {
                        LM_X(1, ("Internal error"));  // Get kv file for this block
+                     }
                      au::SharedPointer<KVFile> kv_file = block_->getKVFile(error_);
-                     if (error_.IsActivated())
+                     if (error_.IsActivated()) {
                        return;
+                     }
 
                      // Transform to c++ ranges class ( not gpb )
                      KVRanges ranges(ranges_);  // Implicit conversion
@@ -153,17 +158,20 @@ namespace samson { namespace stream {
                      // txt-txt buffers
                      if (kv_file->header().isTxt()) {
                        // If ranges includes
-                       if (ranges.IsOverlapped(block_->getHeader().range))
-                         sent_response(block_->buffer()); else
-                         sent_response(engine::BufferPointer(NULL)); return;
+                       if (ranges.IsOverlapped(block_->getHeader().range)) {
+                         sent_response(block_->buffer());
+                       } else {
+                         sent_response(engine::BufferPointer(NULL));
+                       } return;
                      }
 
 
                      // Compute total size
                      KVInfo info;
                      for (int i = 0; i < KVFILE_NUM_HASHGROUPS; i++) {
-                       if (ranges.Contains(i))
+                       if (ranges.Contains(i)) {
                          info.append(kv_file->info[i]);
+                       }
                      }
 
                      // Build selected packet filtering with ranges_

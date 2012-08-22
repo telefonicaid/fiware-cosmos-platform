@@ -11,12 +11,14 @@ void Object::Release() {
   {
     TokenTaker tt(&token_);
     retain_counter_--;
-    if (retain_counter_ == 0)
+    if (retain_counter_ == 0) {
       run_self_destroy = true;
+    }
   }
 
-  if (run_self_destroy)
+  if (run_self_destroy) {
     delete this;
+  }
 }
 
 void Object::Retain() {

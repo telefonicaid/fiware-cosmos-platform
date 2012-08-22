@@ -49,22 +49,22 @@ SAMSON_ARG_VARS;
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-limit", &show_limit,     "",          PaInt,             PaOpt,                 0,
+  { "-limit", &show_limit,       "",          PaInt,             PaOpt,             0,
     0,
     100000,
     "Limit in the number of records"           },
-  { "-header",&show_header,      "",          PaBool,                PaOpt,                 false,
+  { "-header",&show_header,      "",          PaBool,            PaOpt,             false,
     false,
     true,     "Show only header"      },
-  { "-hg",    &show_hg,          "",          PaBool,                PaOpt,                 false,
+  { "-hg",    &show_hg,          "",          PaBool,            PaOpt,             false,
     false,
     true,
     "Show only hash-group information"         },
-  { "-show_hg",&show_hg_per_kvs,  "",          PaBool,                PaOpt,                 false,
+  { "-show_hg",&show_hg_per_kvs,  "",          PaBool,            PaOpt,             false,
     false,
     true,
     "Show hash-group for each key-value"       },
-  { " ",      file_name,         "",          PaString,              PaReq,                 (long)"null",
+  { " ",      file_name,         "",          PaString,          PaReq,             (long)"null",
     PaNL,
     PaNL,
     "name of the file or directory to scan"    },
@@ -133,8 +133,10 @@ int main(int argC, const char *argV[]) {
     au::ErrorManager error;
     au::SharedPointer<samson::SamsonDataSet> samson_data_set = samson::SamsonDataSet::create(file_name, error);
 
-    if (error.IsActivated())
-      LM_X(1, ( error.GetMessage().c_str())); if (show_header) {
+    if (error.IsActivated()) {
+      LM_X(1, ( error.GetMessage().c_str()));
+    }
+    if (show_header) {
       std::cout << "Total: " << samson_data_set->info().strDetailed() << "\n";
       samson_data_set->printHeaders(std::cout);
       exit(0);

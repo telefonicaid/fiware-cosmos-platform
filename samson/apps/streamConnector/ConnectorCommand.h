@@ -18,14 +18,14 @@ class CommandLine : public au::CommandLine {
 public:
 
   CommandLine(std::string command) {
-    set_flag_boolean("data");
-    parse(command);
+    SetFlagBoolean("data");
+    Parse(command);
   }
 
   bool isDataFlag() {
-    return get_flag_bool("data");
+    return GetFlagBool("data");
   }
 };
 }
 
-#endif // ifndef _H_SAMSON_CONNECTOR_COMMAND
+#endif  // ifndef _H_SAMSON_CONNECTOR_COMMAND

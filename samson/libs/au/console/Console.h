@@ -6,14 +6,14 @@
 #include <string>
 #include <termios.h>                // termios
 
-#include "au/console/ConsoleCode.h"
-#include "au/mutex/Token.h"
-
-#include "ConsoleEscapeSequence.h"
 #include "au/ErrorManager.h"
+#include "au/console/ConsoleCode.h"
+#include "au/console/ConsoleCode.h"
 #include "au/console/ConsoleEntry.h"
+#include "au/console/ConsoleEscapeSequence.h"
 #include "au/log/LogFormatter.h"
 #include "au/log/LogPlugin.h"
+#include "au/mutex/Token.h"
 
 namespace au {
 class Console;
@@ -44,7 +44,7 @@ class Console : public LogPlugin {
 
   // Default method to print logs if added as plugin
   LogFormatter log_formatter;
-  virtual void process_log(Log *log);
+  virtual void process_log(au::SharedPointer<Log> log);
 
 public:
 

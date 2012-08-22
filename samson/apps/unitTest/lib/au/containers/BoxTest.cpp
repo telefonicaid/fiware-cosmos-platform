@@ -1,10 +1,10 @@
 #include "au/containers/Box.h"
 #include "au/containers/SharedPointer.h"
 #include "gtest/gtest.h"
-#include "unitTest/test_common.h"
+#include "unitTest/TestClasses.h"
 
 TEST(au_containers_Box, assignation) {
-  EXPECT_EQ(TestBase::get_num_instances(),
+  EXPECT_EQ(TestBase::num_instances(),
             0) << "Error in number of instances of test class";
 
   {
@@ -18,7 +18,7 @@ TEST(au_containers_Box, assignation) {
     box.Insert(t);
     box.Insert(t2);
 
-    EXPECT_EQ(TestBase::get_num_instances() > 0,
+    EXPECT_EQ(TestBase::num_instances() > 0,
               true) <<
     "Something wrong with the instance counter for test class";
 
@@ -28,7 +28,7 @@ TEST(au_containers_Box, assignation) {
     EXPECT_EQ(box.size(), 2) << "Error in au::Box basic operations";
   }
 
-  EXPECT_EQ(TestBase::get_num_instances(),
+  EXPECT_EQ(TestBase::num_instances(),
             0) << "Error in number of instances of test class";
 }
 

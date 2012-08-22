@@ -35,8 +35,9 @@ au::SharedPointer<SamsonDataSet> SamsonDataSet::create(const std::string& direct
         if (S_ISREG(buf2.st_mode)) {
           au::SharedPointer<SamsonFile> samson_file = SamsonFile::create(localFileName.str(), error);
 
-          if (error.IsActivated())
+          if (error.IsActivated()) {
             return au::SharedPointer<SamsonDataSet>(NULL);
+          }
 
           std::string name = pent->d_name;
           samson_data_set->samson_files.Set(name, samson_file);
@@ -108,9 +109,11 @@ void SamsonDataSet::printContent(size_t limit, bool show_hg, std::ostream &outpu
 
     records += samson_file->printContent((limit == 0) ? 0 : (limit - records ), show_hg, output);
 
-    if (limit > 0)
-      if (records >= limit)
+    if (limit > 0) {
+      if (records >= limit) {
         return;
+      }
+    }
   }
 }
 }

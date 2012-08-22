@@ -85,6 +85,9 @@ public:
       return Operation::unknown;
     }
 
+
+
+
     return o->getType();
   }
 

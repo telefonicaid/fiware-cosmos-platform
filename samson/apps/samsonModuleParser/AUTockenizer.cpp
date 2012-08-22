@@ -38,16 +38,19 @@ std::vector<AUToken> AUTockenizer::removeSpacesAndReturns(std::vector<AUToken> i
 
   for (iter = items.begin(); iter < items.end(); iter++) {
     if (literal) {
-      if ((*iter).str == "\"")
-        literal = false; new_items.push_back(*iter);
+      if ((*iter).str == "\"") {
+        literal = false;
+      }
+      new_items.push_back(*iter);
     } else {
       if ((*iter).str == "\"") {
         literal = true;
         new_items.push_back(*iter);
       } else {
         // Outside literals, we do not have "returns" "spaces" "tabs" "\r"
-        if (!isOneOf((*iter).str, " \t\r\n"))
+        if (!isOneOf((*iter).str, " \t\r\n")) {
           new_items.push_back(*iter);
+        }
       }
     }
   }
@@ -75,9 +78,11 @@ std::vector<AUToken> AUTockenizer::removeComments(std::vector<AUToken> items) {
         new_items.push_back(*iter);                                     // Keep the return
       }
     } else {
-      if ((*iter).str == "#")
-        removing = true; else
+      if ((*iter).str == "#") {
+        removing = true;
+      } else {
         new_items.push_back(*iter);
+      }
     }
   }
 
@@ -94,13 +99,17 @@ std::vector<AUToken> AUTockenizer::removeSpacesAndCommentsAndReturns(std::vector
 
   for (iter = items.begin(); iter < items.end(); iter++) {
     if (literal) {
-      if ((*iter).str == "\"")
-        literal = false; if ((*iter).str == "\n")
+      if ((*iter).str == "\"") {
+        literal = false;
+      }
+      if ((*iter).str == "\n") {
         fprintf(stdout, "samsonModuleParser: Warning, line break inside literal at line:%d\n", (*iter).line);
+      }
       new_items.push_back(*iter);
     } else if (removing) {
-      if ((*iter).str == "\n")
+      if ((*iter).str == "\n") {
         removing = false;
+      }
     } else {
       if ((*iter).str == "\"") {
         literal = true;
@@ -109,8 +118,9 @@ std::vector<AUToken> AUTockenizer::removeSpacesAndCommentsAndReturns(std::vector
         removing = true;
       } else {
         // Outside literals, we do not have "returns" "spaces" "tabs" "\r"
-        if (!isOneOf((*iter).str, " \t\r\n"))
+        if (!isOneOf((*iter).str, " \t\r\n")) {
           new_items.push_back(*iter);
+        }
       }
     }
   }
@@ -148,8 +158,10 @@ std::vector<AUToken> AUTockenizer::tockenize(std::string txt) {
       items.push_back(item);
       // fprintf(stdout, "item:'%s', line:%d, pos:%lu\n", item.str.c_str(), item.line, i);
 
-      if (txt[i] == '\n')
-        nline++; pos = i + 1;
+      if (txt[i] == '\n') {
+        nline++;
+      }
+      pos = i + 1;
     }
   }
 
@@ -169,23 +181,26 @@ std::vector<AUToken> AUTockenizer::tockenize(std::string txt) {
 
 bool AUTockenizer::isOneOf(char c, std::string s) {
   for (size_t i = 0; i < s.size(); i++) {
-    if (s[i] == c)
+    if (s[i] == c) {
       return true;
+    }
   }
 
   return false;
 }
 
 bool AUTockenizer::isOneOf(std::string c_string, std::string s) {
-  if (c_string.size() > 1)
+  if (c_string.size() > 1) {
     return false;
+  }
 
   char c = c_string[0];
 
 
   for (size_t i = 0; i < s.size(); i++) {
-    if (s[i] == c)
+    if (s[i] == c) {
       return true;
+    }
   }
 
   return false;
@@ -243,9 +258,12 @@ int AUTockenizer::searchSetFinishStartingAt(int pos) {
   reference_pos = pos;
   pos++;
   while (number_intern_sets > 0) {
-    if (isCloseSet(pos))
-      number_intern_sets--; else if (isOpenSet(pos))
-      number_intern_sets++; pos++;
+    if (isCloseSet(pos)) {
+      number_intern_sets--;
+    } else if (isOpenSet(pos)) {
+      number_intern_sets++;
+    }
+    pos++;
   }
 
   return (pos - 1);
@@ -278,7 +296,7 @@ std::string AUTockenizer::getLiteralInternalwithBlanks(int pos, int pos2) {
   int prevLine = 0;
 
   for (int i = pos; i <= pos2; i++) {
-    if ((i != pos) && (itemAtPos(i).line != prevLine))
+    if ((i != pos) && (itemAtPos(i).line != prevLine)) {
       if (sepFound == false) {
         fprintf(
           stderr,
@@ -288,6 +306,7 @@ std::string AUTockenizer::getLiteralInternalwithBlanks(int pos, int pos2) {
         fprintf(stderr, "Error at AUTockenizer\n");
         exit(-1);
       }
+    }
     if (itemAtPos(i).str == ";") {
       o << "\n";
       sepFound = true;

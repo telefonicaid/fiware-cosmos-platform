@@ -29,13 +29,19 @@ extern int builtins;
 char *paEnvName(PaiArgument *aP, char *out) {
   bool isbuiltin = ((aP->what & PawBuiltin) == PawBuiltin);
 
-  if (aP->envName == NULL)
-    out[0] = 0; else if (aP->envName[0] == 0)
-    out[0] = 0; else if (aP->envName[0] == '!')
-    strcpy(out, &aP->envName[1]); else if (isbuiltin && (paBuiltinPrefix != NULL) && (paBuiltinPrefix[0] != 0))
-    sprintf(out, "%s%s", paBuiltinPrefix, aP->envName); else if (!isbuiltin && (paPrefix != NULL) && (paPrefix[0] != 0))
-    sprintf(out, "%s%s", paPrefix, aP->envName); else
-    sprintf(out, "%s", aP->envName); return out;
+  if (aP->envName == NULL) {
+    out[0] = 0;
+  } else if (aP->envName[0] == 0) {
+    out[0] = 0;
+  } else if (aP->envName[0] == '!') {
+    strcpy(out, &aP->envName[1]);
+  } else if (isbuiltin && (paBuiltinPrefix != NULL) && (paBuiltinPrefix[0] != 0)) {
+    sprintf(out, "%s%s", paBuiltinPrefix, aP->envName);
+  } else if (!isbuiltin && (paPrefix != NULL) && (paPrefix[0] != 0)) {
+    sprintf(out, "%s%s", paPrefix, aP->envName);
+  } else {
+    sprintf(out, "%s", aP->envName);
+  } return out;
 }
 
 /* ****************************************************************************

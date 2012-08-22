@@ -25,7 +25,7 @@ DiskOperation *DiskOperation::newReadOperation(char *data, std::string fileName,
   o->offset = offset;
   o->addListener(_listenerId);
 
-  o->environment.set("type", "read");
+  o->environment.Set("type", "read");
 
   return o;
 }
@@ -42,7 +42,7 @@ DiskOperation *DiskOperation::newReadOperation(std::string fileName, size_t offs
   o->offset = offset;
   o->addListener(_listenerId);
 
-  o->environment.set("type", "read");
+  o->environment.Set("type", "read");
 
   return o;
 }
@@ -57,7 +57,7 @@ DiskOperation *DiskOperation::newWriteOperation(BufferPointer buffer,  std::stri
   o->offset = 0;
   o->addListener(_listenerId);
 
-  o->environment.set("type", "write");
+  o->environment.Set("type", "write");
 
   return o;
 }
@@ -72,7 +72,7 @@ DiskOperation *DiskOperation::newAppendOperation(BufferPointer buffer,  std::str
   o->offset = 0;
   o->addListener(_listenerId);
 
-  o->environment.set("type", "append");
+  o->environment.Set("type", "append");
 
   return o;
 }
@@ -85,7 +85,7 @@ DiskOperation *DiskOperation::newRemoveOperation(std::string fileName, size_t _l
   o->size = 0;
   o->addListener(_listenerId);
 
-  o->environment.set("type", "remove");
+  o->environment.Set("type", "remove");
 
   return o;
 }
@@ -181,10 +181,14 @@ void DiskOperation::run() {
       setError("Error opening file");
     } else {
       if (size > 0) {
-        if (buffer == NULL)
-          LM_X(1, ("Internal error")); if (fwrite(buffer->getData(), size, 1, file) == 1)
-          fflush(file); else
+        if (buffer == NULL) {
+          LM_X(1, ("Internal error"));
+        }
+        if (fwrite(buffer->getData(), size, 1, file) == 1) {
+          fflush(file);
+        } else {
           setError("Error writing data to the file");
+        }
       }
 
       fclose(file);
@@ -250,8 +254,9 @@ void DiskOperation::run() {
 
     // Remove the file
     int c = ::remove(fileName.c_str());
-    if (c != 0)
+    if (c != 0) {
       setError("Error while removing file");
+    }
   }
 
   LM_T(LmtDisk, ("FINISH DiskManager: Finished with file %s, ready to finishDiskOperation", fileName.c_str()));

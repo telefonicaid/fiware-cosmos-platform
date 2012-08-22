@@ -43,7 +43,7 @@ public:
 
   static std::string getName(std::string host, std::string channel);
   // au::network::PacketReaderInteface<InterChannelPacket>
-  virtual void process_packet(InterChannelPacket *packet);
+  virtual void process_packet(au::SharedPointer<InterChannelPacket> packet);
 
   // Close connection sending an error message to the other endpoint
   void close_connection(std::string error_message);
@@ -80,7 +80,7 @@ class OutputInterChannelConnection
   bool hand_shake_finished;
 
   // List of pending packets from previous connection
-  au::ObjectList<InterChannelPacket> pending_packets;
+  au::Queue<InterChannelPacket> pending_packets;
 
 public:
 
@@ -92,7 +92,7 @@ public:
   void init_hand_shake(std::string target_channel);
 
   // au::network::PacketReaderInteface<InterChannelPacket>
-  virtual void process_packet(InterChannelPacket *packet);
+  virtual void process_packet(au::SharedPointer<InterChannelPacket> packet);
 
 
   // Connection virtual methods

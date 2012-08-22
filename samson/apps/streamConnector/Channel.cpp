@@ -81,10 +81,12 @@ void Channel::add_output(std::string name, std::string output_string, au::ErrorM
   std::vector<std::string> components = au::split(output_string, ':');
 
   if (components[0] == "stdout") {
-    if (!interactive && !run_as_daemon)
-      add(name,  new StdoutItem(this)); else
+    if (!interactive && !run_as_daemon) {
+      add(name,  new StdoutItem(this));
+    } else {
       // Non using stdout in interactive mode
       return;
+    }
   } else if (components[0] == "port") {
     if (components.size() < 2) {
       error->set("Output port without number. Please specifiy port to open (ex port:10000)");
@@ -264,8 +266,9 @@ void Channel::add(std::string name, Adaptor *item) {
   // Mutex protection
   au::TokenTaker tt(&token);
 
-  if (!item)
+  if (!item) {
     return;
+  }
 
   // Set name of this connection
   item->name_ = name;
@@ -304,8 +307,9 @@ void Channel::push(engine::BufferPointer buffer) {
 
   au::map<std::string, Adaptor>::iterator it_items;
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
-    if (it_items->second->getType() == connection_output)
+    if (it_items->second->getType() == connection_output) {
       it_items->second->push(buffer);
+    }
   }
 }
 
@@ -323,8 +327,9 @@ int Channel::getNumOutputItems() {
 
   au::map<std::string, Adaptor>::iterator it_items;
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
-    if (it_items->second->getType() == connection_output)
+    if (it_items->second->getType() == connection_output) {
       total++;
+    }
   }
   return total;
 }
@@ -336,8 +341,9 @@ int Channel::getNumInputItems() {
 
   au::map<std::string, Adaptor>::iterator it_items;
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
-    if (it_items->second->getType() == connection_input)
+    if (it_items->second->getType() == connection_input) {
       total++;
+    }
   }
   return total;
 }
@@ -368,8 +374,9 @@ std::string Channel::getInputsString() {
   au::map<std::string, Adaptor>::iterator it_items;
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
     Adaptor *item = it_items->second;
-    if (item->getType() == connection_input)
+    if (item->getType() == connection_input) {
       output << item->getDescription()  << " ";
+    }
   }
   return output.str();
 }
@@ -388,8 +395,9 @@ std::string Channel::getOutputsString() {
   au::map<std::string, Adaptor>::iterator it_items;
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
     Adaptor *item = it_items->second;
-    if (item->getType() == connection_output)
+    if (item->getType() == connection_output) {
       output << item->getDescription() << " ";
+    }
   }
   return output.str();
 }
@@ -403,17 +411,18 @@ size_t Channel::getOutputConnectionsBufferedSize() {
   for (it_items = items.begin(); it_items != items.end(); it_items++) {
     Adaptor *item = it_items->second;
 
-    if (item->getType() == connection_output)
+    if (item->getType() == connection_output) {
       total += item->getConnectionsBufferedSize();
+    }
   }
   return total;
 }
 
 void Channel::log(std::string type, std::string message) {
-  log(new Log(getName(), type, message));
+  log(au::SharedPointer<Log> (new Log(getName(), type, message)));
 }
 
-void Channel::log(Log *log) {
+void Channel::log(au::SharedPointer<Log> log) {
   connector_->log(log);
 }
 

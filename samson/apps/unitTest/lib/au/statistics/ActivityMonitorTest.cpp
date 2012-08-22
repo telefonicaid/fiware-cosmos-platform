@@ -2,7 +2,7 @@
 
 #include "au/statistics/ActivityMonitor.h"
 #include "gtest/gtest.h"
-#include "unitTest/test_common.h"
+#include "unitTest/TestClasses.h"
 
 TEST(au_statistics_ActivityMonitor, basic) {
   au::statistics::ActivityMonitor activity_monitor;

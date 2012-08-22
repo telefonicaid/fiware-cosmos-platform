@@ -8,33 +8,28 @@
 
 
 namespace au {
-au::Status LogFile::read(std::string file_name, LogFile **logFile) {
+std::vector< au::SharedPointer<Log> > readLogFile(std::string file_name, au::ErrorManager& error) {
+  std::vector< au::SharedPointer<Log> > logs;
   int fd = open(file_name.c_str(), O_RDONLY);
 
   LM_LT(LmtFileDescriptors, ("Open FileDescriptor fd:%d", fd));
-  if (fd < 0)
-    return OpenError;
+  if (fd < 0) {
+    error.set(au::str("Not possible to open file %s", file_name.c_str()));
+    return logs;
+  }
 
   // File descriptor to read logs
   FileDescriptor file_descriptor("reading log file", fd);
 
-  // Create log file
-  *logFile = new LogFile();
-
   while (true) {
-    Log *log = new Log();
-    if (log->read(&file_descriptor))
-      (*logFile)->logs.push_back(log); else
+    au::SharedPointer<Log> log(new Log());
+    if (log->Read(&file_descriptor)) {
+      logs.push_back(log);
+    } else {
       break;
+    }
   }
 
-
-  if ((*logFile)->logs.size() == 0) {
-    delete *logFile;
-    *logFile = NULL;
-    return Error;
-  }
-
-  return OK;
+  return logs;
 }
 }

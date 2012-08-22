@@ -129,8 +129,9 @@ public:
                "ConsoleService: Could not read message from client correctly (%s).Closing connection",
                status(s)));
         socket_connection->Close();
-        if (message)
+        if (message) {
           delete message;
+        }
         return;
       }
 

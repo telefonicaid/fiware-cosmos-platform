@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 
 
-TEST(auStringTest, simple) {
+TEST(au_string, simple) {
   EXPECT_EQ(au::str_tabs(2), "\t\t") << "Error in str_tabs()";
 
   EXPECT_EQ(au::str_time(3661), " 01:01:01") << "Error in str_time less than 1 day()";

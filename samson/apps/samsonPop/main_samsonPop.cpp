@@ -111,10 +111,14 @@ size_t full_read(int fd, char *data, size_t size) {
   while (read_size < size) {
     ssize_t t = read(fd, data + read_size, size - read_size);
 
-    if (t == -1)
-      LM_X(1, ("Error reading input data")); if (t == 0)
-      break; else
+    if (t == -1) {
+      LM_X(1, ("Error reading input data"));
+    }
+    if (t == 0) {
+      break;
+    } else {
       read_size += t;
+    }
   }
 
   return read_size;
@@ -185,11 +189,12 @@ int main(int argC, const char *argV[]) {
 
       delete block;
 
-      if (max_size > 0)
+      if (max_size > 0) {
         if (downloaded_content >= (size_t)max_size) {
           LM_V(("Exit infinite loop because downloaded_content(%d) >= max_size(%d)", downloaded_content, max_size));
           break;
         }
+      }
     } else {
       usleep(100000);
     }

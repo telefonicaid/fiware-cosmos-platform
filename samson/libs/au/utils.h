@@ -6,8 +6,8 @@
 
 
 namespace au {
-int getColumns();
-void clear_line();
+int getTerminalColumns();
+void clearTerminalLine();
 
 // Random 64 bit number
 size_t code64_rand();

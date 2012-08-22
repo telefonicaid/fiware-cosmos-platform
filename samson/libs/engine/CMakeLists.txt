@@ -9,7 +9,6 @@ Notification.h
 NotificationElement.h
 EngineElement.h
 MemoryManager.h
-MemoryRequest.h
 ProcessManager.h
 ProcessItem.h
 ReadFile.h
@@ -28,7 +27,6 @@ Notification.cpp
 NotificationElement.cpp
 EngineElement.cpp
 MemoryManager.cpp
-MemoryRequest.cpp
 ProcessManager.cpp
 ProcessItem.cpp
 ReadFile.cpp

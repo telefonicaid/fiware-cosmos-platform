@@ -37,49 +37,47 @@
 #include "au/mutex/Token.h"
 
 
-namespace au { namespace rate {
-               class Rate {
+namespace au {
+namespace rate {
+class Rate {
 public:
 
-                 // Constructor
-                 Rate(int num_seconds_to_average = 10);
-                 ~Rate();
+  // Constructor
+  Rate(int num_seconds_to_average = 10);
+  ~Rate();
 
-                 // Push new samples
-                 void push(size_t size);
+  // Push new samples
+  void Push(size_t size);
 
-                 // String to visualize this rate
-                 std::string str();
-                 std::string strAccumulatedAndRate();
+  // Get totals
+  size_t hits() const;
+  size_t size() const;
 
-                 // Get totals
-                 size_t getTotalNumberOfHits();
-                 size_t getTotalSize();
+  // Get rates
+  double hit_rate() const;
+  double rate() const;
 
-                 // Get rates
-                 double getRate();
-                 double getHitRate();
+  // String to visualize this rate
+  std::string str();
 
 private:
 
+  void UpdateTime() const;
 
-                 void _update_time();
-                 double _getRate();
-                 double _getHitRate();
+  mutable au::Token token_;   // Mutex protection
 
-                 au::Token token_;  // Mutex protection
+  int num_samples_;   // Number of samples in hits_ and size_ vectors
 
-                 int num_samples_;  // Number of samples in hits_ and size_ vectors
+  size_t total_size_;  // Total number of bytes
+  size_t total_num_;  // Total number of hits
 
-                 size_t total_size_;  // Total number of bytes
-                 size_t total_num_;  // Total number of hits
+  int *hits_;         // Number of hits accumulated in the last "N" seconds
+  double *size_;      // Total size accumulated in the last "N" seconds
 
-                 int *hits_;  // Number of hits accumulated in the last "N" seconds
-                 double *size_;  // Total size accumulated in the last "N" seconds
-
-                 au::Cronometer c;
-                 size_t last_time_correction;
-               };
-               } }  // end of namespace au::rate
+  au::Cronometer c;
+  mutable size_t last_time_correction;
+};
+}
+}                     // end of namespace au::rate
 
 #endif  // ifndef _H_AU_RATE

@@ -28,8 +28,10 @@ std::string ErrorMessage::GetMessage() const {
 std::string ErrorMessage::GetMultiLineMessage() const {
   std::ostringstream output;
 
-  if (item_message == item_error)
-    output << "ERROR: "; for (size_t i = 0; i < contexts_.size(); i++) {
+  if (item_message == item_error) {
+    output << "ERROR: ";
+  }
+  for (size_t i = 0; i < contexts_.size(); i++) {
     output << ">> " << contexts_[i] << "\n";
   }
   output << message_ << "\n";
@@ -67,17 +69,20 @@ void ErrorManager::operator<<(const std::string& error_message) {
 
 bool ErrorManager::IsActivated() const {
   for (size_t i = 0; i < errors_.size(); i++) {
-    if (errors_[i]->type() == ErrorMessage::item_error)
+    if (errors_[i]->type() == ErrorMessage::item_error) {
       return true;
+    }
   }
   return false;
 }
 
 std::string ErrorManager::GetMessage() const {
   // Get one line of the last error
-  if (errors_.size() == 0)
-    return "No errors"; else
+  if (errors_.size() == 0) {
+    return "No errors";
+  } else {
     return errors_.back()->GetMessage();
+  }
 }
 
 std::string ErrorManager::GetCompleteMessage() {

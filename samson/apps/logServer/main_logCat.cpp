@@ -23,33 +23,33 @@ char str_date[1024];
 
 PaArgument paArgs[] =
 {
-  { "-format",        format,                   "",                     PaString,                      PaOpt,
+  { "-format",        format,                   "",                     PaString,                     PaOpt,
     _i DEF_FORMAT,    PaNL,
     PaNL,
     "Log file to scan"                         },
-  { "-pattern",       pattern,                  "",                     PaString,                      PaOpt,
+  { "-pattern",       pattern,                  "",                     PaString,                     PaOpt,
     _i "",     PaNL,            PaNL,
     "Pattern to be found in logs"         },
-  { "-limit",         &limit,                   "",                     PaInt,                         PaOpt,
+  { "-limit",         &limit,                   "",                     PaInt,                        PaOpt,
     10000,     0,               100000000,
     "Max number of logs to be displayed"  },
-  { "-table",         &is_table,                "",                     PaBool,                        PaOpt,
+  { "-table",         &is_table,                "",                     PaBool,                       PaOpt,
     false,     false,           true,                "Show in table format"                      },
-  { "-reverse",       &is_reverse,              "",                     PaBool,                        PaOpt,
+  { "-reverse",       &is_reverse,              "",                     PaBool,                       PaOpt,
     false,     false,           true,
     "Show in reverse temporal order"      },
-  { "-multi_session", &is_reverse,              "",                     PaBool,                        PaOpt,
+  { "-multi_session", &is_reverse,              "",                     PaBool,                       PaOpt,
     false,     false,           true,                "Skip new_session marks"                    },
-  { "-time",          &str_time,                "",                     PaString,                      PaOpt,
+  { "-time",          &str_time,                "",                     PaString,                     PaOpt,
     _i "",     PaNL,            PaNL,
     "Show only logs older that this time" },
-  { "-date",          &str_date,                "",                     PaString,                      PaOpt,
+  { "-date",          &str_date,                "",                     PaString,                     PaOpt,
     _i "",     PaNL,            PaNL,
     "Show only logs older that this date" },
-  { "-type",          type,                     "",                     PaString,                      PaOpt,
+  { "-type",          type,                     "",                     PaString,                     PaOpt,
     _i "",     PaNL,            PaNL,
     "Filter a particular type of logs"    },
-  { " ",              target_file,              "",                     PaString,                      PaReq,
+  { " ",              target_file,              "",                     PaString,                     PaReq,
     _i "",     PaNL,            PaNL,                "Log file to scan"                          },
   PA_END_OF_ARGS
 };
@@ -98,41 +98,40 @@ int main(int argC, const char *argV[]) {
   LM_V(("Using format %s", format));
 
   // Open teh log file
-  au::LogFile *logFile = NULL;
-  au::Status s = au::LogFile::read(target_file, &logFile);
+  au::ErrorManager error;
+  std::vector<au::SharedPointer<au::Log> > logs = au::readLogFile(target_file, error);
 
-  if (s == au::OK) {
-    // Formatter to create table
-    au::TableLogFormatter table_log_formater(format);
-
-    // Setup of the table log formatter
-    table_log_formater.set_pattern(pattern);
-    table_log_formater.set_time(str_time);
-    table_log_formater.set_date(str_date);
-    table_log_formater.set_as_table(is_table);
-    table_log_formater.set_reverse(is_reverse);
-    table_log_formater.set_as_multi_session(is_multi_session);
-    table_log_formater.set_limit(limit);
-
-    au::ErrorManager error;
-    table_log_formater.init(&error);
-
-    if (error.IsActivated())
-      LM_X(1, ("Error: %s", error.GetMessage().c_str())); size_t num_logs = logFile->logs.size();
-    for (size_t i = 0; i <  num_logs; i++) {
-      au::Log *log = logFile->logs[ num_logs - i - 1 ];
-
-      // Add log to the table formatter
-      table_log_formater.add(log);
-
-      // Check if we have enougth
-      if (table_log_formater.enougthRecords())
-        break;
-    }
-
-    // Emit output to the stdout
-    std::cout << table_log_formater.str();
-  } else {
-    LM_X(1, ("Unable to open file %s (%s)", target_file, au::status(s)));
+  if (error.IsActivated()) {
+    LM_X(1, ("ERROR: %s", error.GetMessage().c_str()));  // Formatter to create table
   }
+  au::TableLogFormatter table_log_formater(format);
+
+  // Setup of the table log formatter
+  table_log_formater.set_pattern(pattern);
+  table_log_formater.set_time(str_time);
+  table_log_formater.set_date(str_date);
+  table_log_formater.set_as_table(is_table);
+  table_log_formater.set_reverse(is_reverse);
+  table_log_formater.set_as_multi_session(is_multi_session);
+  table_log_formater.set_limit(limit);
+
+  table_log_formater.init(&error);
+
+  if (error.IsActivated()) {
+    LM_X(1, ("Error: %s", error.GetMessage().c_str()));
+  }
+  size_t num_logs = logs.size();
+  for (size_t i = 0; i <  num_logs; i++) {
+    // Add log to the table formatter
+    table_log_formater.add(logs[ num_logs - i - 1 ]);
+
+    // Check if we have enougth
+    if (table_log_formater.enougthRecords()) {
+      break;
+    }
+  }
+
+  // Emit output to the stdout
+  std::cout << table_log_formater.str();
 }
+

@@ -78,7 +78,7 @@ int main(int argC, const char *argV[]) {
 
   if (fg == false) {
     LM_M(("logServer running in background"));
-    daemonize();
+    Daemonize();
   } else {
     LM_M(("logServer running in foreground"));
   }

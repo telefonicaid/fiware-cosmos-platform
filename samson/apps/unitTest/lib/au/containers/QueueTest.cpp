@@ -1,10 +1,10 @@
 #include "au/containers/Queue.h"
 #include "au/containers/SharedPointer.h"
 #include "gtest/gtest.h"
-#include "unitTest/test_common.h"
+#include "unitTest/TestClasses.h"
 
 TEST(au_containers_Queue, assignation) {
-  EXPECT_EQ(TestBase::get_num_instances(),
+  EXPECT_EQ(TestBase::num_instances(),
             0) << "Error in number of instances of test class";
 
   {
@@ -16,18 +16,18 @@ TEST(au_containers_Queue, assignation) {
     queue.Push(new TestBase(13));
     // Make sure the counter works
 
-    EXPECT_EQ(TestBase::get_num_instances() > 0,
+    EXPECT_EQ(TestBase::num_instances() > 0,
               true) <<
     "Something wrong with the instance counter for test class";
 
 
-    EXPECT_EQ(queue.Pop()->v(), 10) << "Error in au::Queue basic operations";
-    EXPECT_EQ(queue.Pop()->v(), 11) << "Error in au::Queue basic operations";
-    EXPECT_EQ(queue.Pop()->v(), 12) << "Error in au::Queue basic operations";
-    EXPECT_EQ(queue.Pop()->v(), 13) << "Error in au::Queue basic operations";
+    EXPECT_EQ(queue.Pop()->value(), 10) << "Error in au::Queue basic operations";
+    EXPECT_EQ(queue.Pop()->value(), 11) << "Error in au::Queue basic operations";
+    EXPECT_EQ(queue.Pop()->value(), 12) << "Error in au::Queue basic operations";
+    EXPECT_EQ(queue.Pop()->value(), 13) << "Error in au::Queue basic operations";
   }
 
-  EXPECT_EQ(TestBase::get_num_instances(),
+  EXPECT_EQ(TestBase::num_instances(),
             0) << "Error in number of instances of test class";
 }
 

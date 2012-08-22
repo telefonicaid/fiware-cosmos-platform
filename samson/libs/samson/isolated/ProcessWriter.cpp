@@ -149,7 +149,7 @@ void ProcessWriter::internal_emit(int output, int hg, char *data, size_t data_si
     if (new_node >= num_nodes) {
       LM_X(1, ("Internal error"));
     }
-    node[new_node].init();                                 // Init the new node
+    node[new_node].init();                                // Init the new node
     _hgOutput->first_node = new_node;   // Update the HasgGroup structure to point here
     _hgOutput->last_node = new_node;    // Update the HasgGroup structure to point here
     _node = &node[new_node];                              // Point to this one to write
@@ -158,7 +158,7 @@ void ProcessWriter::internal_emit(int output, int hg, char *data, size_t data_si
     if (_hgOutput->last_node >= num_nodes) {
       LM_X(1, ("Internal error"));
     }
-    _node = &node[ _hgOutput->last_node ];                                     // Current write node
+    _node = &node[ _hgOutput->last_node ];                // Current write node
   }
 
   // Fill following nodes...
@@ -173,7 +173,7 @@ void ProcessWriter::internal_emit(int output, int hg, char *data, size_t data_si
       if (new_node > num_nodes) {
         LM_X(1, ("Internal error"));
       }
-      _node = &node[new_node];                                 // Point to this one to write
+      _node = &node[new_node];                                // Point to this one to write
       new_node++;
     }
   }

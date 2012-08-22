@@ -991,20 +991,20 @@ typedef struct RestCheck {
 
 RestCheck restCheck[] =
 {
-  { "POST",   "debug/on",      2,        NULL                                                                                                                                                                 },
-  { "POST",   "debug/off",     2,        NULL                                                                                                                                                                 },
-  { "POST",   "reads/on",      2,        NULL                                                                                                                                                                 },
-  { "POST",   "reads/off",     2,        NULL                                                                                                                                                                 },
-  { "POST",   "writes/on",     2,        NULL                                                                                                                                                                 },
-  { "POST",   "writes/off",    2,        NULL                                                                                                                                                                 },
-  { "GET",    "traces",        1,        NULL                                                                                                                                                                 },
-  { "POST",   "traces/off",    2,        NULL                                                                                                                                                                 },
-  { "POST",   "traces/set",    3,        restTraceCheck                                                                                                                                                       },
-  { "POST",   "traces/add",    3,        restTraceCheck                                                                                                                                                       },
-  { "DELETE", "traces/remove", 3,        restTraceCheck                                                                                                                                                       },
-  { "GET",    "verbose",       1,        NULL                                                                                                                                                                 },
-  { "POST",   "verbose/off",   2,        NULL                                                                                                                                                                 },
-  { "POST",   "verbose/set",   3,        restVerboseCheck                                                                                                                                                     },
+  { "POST",   "debug/on",      2,        NULL                                                                                                                                                                        },
+  { "POST",   "debug/off",     2,        NULL                                                                                                                                                                        },
+  { "POST",   "reads/on",      2,        NULL                                                                                                                                                                        },
+  { "POST",   "reads/off",     2,        NULL                                                                                                                                                                        },
+  { "POST",   "writes/on",     2,        NULL                                                                                                                                                                        },
+  { "POST",   "writes/off",    2,        NULL                                                                                                                                                                        },
+  { "GET",    "traces",        1,        NULL                                                                                                                                                                        },
+  { "POST",   "traces/off",    2,        NULL                                                                                                                                                                        },
+  { "POST",   "traces/set",    3,        restTraceCheck                                                                                                                                                              },
+  { "POST",   "traces/add",    3,        restTraceCheck                                                                                                                                                              },
+  { "DELETE", "traces/remove", 3,        restTraceCheck                                                                                                                                                              },
+  { "GET",    "verbose",       1,        NULL                                                                                                                                                                        },
+  { "POST",   "verbose/off",   2,        NULL                                                                                                                                                                        },
+  { "POST",   "verbose/set",   3,        restVerboseCheck                                                                                                                                                            },
 };
 
 static bool process_logging_check(au::network::RESTServiceCommand *command) {

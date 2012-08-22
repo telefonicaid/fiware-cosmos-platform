@@ -60,7 +60,7 @@ public:
   }
 
   void read(FILE *file, size_t _size) {
-    // Free preivous buffer if any
+    // Free previous buffer if any
     if (v) {
       free(v);
     }
@@ -71,7 +71,13 @@ public:
       LM_X(1, ("Problem reading %lu bytes for structs of size %lu", _size, sizeof(C)));
     }
 
-    v = (C *)malloc(_size * sizeof(C));
+    v = static_cast<C*>(malloc(_size * sizeof(C)));
+    if (v == NULL) {
+      // Error detected when running comscore on a machine with small memory (VM)
+      LM_E(("Error reserving memory for %lu elements of size %lu (total: %lu bytes) for reading a StructCollection from file",
+             _size, sizeof(C), _size * sizeof(C)));
+      exit(-1);
+    }
     max_size = _size;
 
     // Read content from file

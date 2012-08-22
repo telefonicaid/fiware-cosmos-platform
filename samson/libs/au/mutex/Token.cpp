@@ -6,39 +6,34 @@
 #include <sys/syscall.h>
 #include <sys/time.h>           // gettimeofday()
 
-#include "LockDebugger.h"       // LockDebugger
 #include "au/string.h"
+#include "LockDebugger.h"       // LockDebugger
 #include "logMsg/logMsg.h"      // LM_M()
 
-// #define DEBUG_AU_TOKEN
 
 namespace au {
 std::string GetThreadId(pthread_t t) {
   std::ostringstream output;
 
-  unsigned char *base = reinterpret_cast<unsigned char *>(&t);
-
+  unsigned char *base = reinterpret_cast<unsigned char*>(&t);
   for (size_t i = 0; i < sizeof(t); ++i) {
     output << au::str("%02x", base[i]);
   }
   return output.str();
 }
 
-Token::Token(const std::string& name) :
-  name_(name), locked_(false) {
+Token::Token(const std::string& name) : name_(name), locked_(false) {
   // Take the name for debugging
 
   int r_init = pthread_mutex_init(&lock_, 0);
 
-  if (r_init != 0) {
-    LM_X(1, ("pthread_mutex_init for '%s' returned %d", name_.c_str(), r_init ));
-  }
-  int t_init_cond = pthread_cond_init(
-    &block_, NULL);
+  if (r_init != 0)
+    LM_X(1, ("pthread_mutex_init for '%s' returned %d" , name_.c_str() , r_init ));
 
-  if (t_init_cond != 0) {
-    LM_X(1, ("pthread_cond_init for '%s' returned %d", name_.c_str(), r_init ));
-  }
+  int t_init_cond = pthread_cond_init(&block_, NULL);
+
+  if (t_init_cond != 0)
+    LM_X(1, ("pthread_cond_init for '%s' returned %d" , name_.c_str() , r_init ));
 }
 
 Token::~Token() {
@@ -47,11 +42,11 @@ Token::~Token() {
 }
 
 void Token::Retain() {
-  // LM_LM(("Thread [%s] trying to token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_ ));
+  // LM_LM(("Thread [%s] trying to token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_.c_str() ));
 
   if (IsRetainedByMe()) {
     ++counter_;
-    // LM_LM(("token %s was retained by me ( thread [%s] ) . Just updating counter to %d " , name_ , GetThreadId( pthread_self() ).c_str() ,  counter_ ));
+    // LM_LM(("token %s was retained by me ( thread [%s] ) . Just updating counter to %d " , name_.c_str() , GetThreadId( pthread_self() ).c_str() ,  counter_ ));
     return;
   }
 
@@ -62,6 +57,7 @@ void Token::Retain() {
   int ans = pthread_mutex_lock(&lock_);
   if (ans) {
     LM_LE(("Error %d getting mutex  (EINVAL:%d, EFAULT:%d, EDEADLK:%d", ans, EINVAL, EFAULT, EDEADLK));
+    LM_LE(("Token (name:%p): pthread_mutex_lock returned error %d (%p)", name_.c_str(), ans, this));
   }
   pid_t my_own_pid_t = syscall(SYS_gettid);
 
@@ -73,24 +69,21 @@ void Token::Retain() {
   counter_ = 1;
   locked_ = true;
 
-  // LM_LM(("Thread [%s] has retained token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_ ));
+  // LM_LM(("Thread [%s] has retained token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_.c_str() ));
 }
 
 void Token::Release() {
-  // LM_LM(("Thread [%s] trying to releases token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_ ));
+  // LM_LM(("Thread [%s] trying to releases token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_.c_str() ));
 
-  if (!locked_) {
+  if (!locked_)
     LM_LE(("Internal error: Releasing a non-locked au::Token:'%s'", name_.c_str()));
-  }
-  pid_t my_own_pid_t = syscall(
-    SYS_gettid);
-  if (token_owner_thread_id_ != my_own_pid_t) {
-    LM_LE(("Internal error: Releasing an au::Token '%s' not locked by me, owner:%d, me:%d", name_.c_str(),
-           token_owner_thread_id_, my_own_pid_t));
-  }
+    
+  pid_t my_own_pid_t = syscall(SYS_gettid);
+  if (token_owner_thread_id_ != my_own_pid_t)
+    LM_LE(("Internal error: Releasing an au::Token '%s' not locked by me, owner:%d, me:%d", name_.c_str(), token_owner_thread_id_, my_own_pid_t));
   --counter_;
   if (counter_ > 0) {
-    // LM_LM(("Token %s is still locked by thread [%s] with counter %d" , name , GetThreadId( pthread_self() ).c_str() , counter_ ));
+    // LM_LM(("Token %s is still locked by thread [%s] with counter %d" , name_.c_str() , GetThreadId( pthread_self() ).c_str() , counter_ ));
     return;
   }
 
@@ -108,7 +101,7 @@ void Token::Release() {
     LM_LE(("Token %p: pthread_mutex_unlock returned error %d (%p)", name_.c_str(), ans, this));
   }
 
-  // LM_LM(("Thread [%s] completely releases by token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_ ));
+  // LM_LM(("Thread [%s] completely releases by token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_.c_str() ));
 }
 
 void Token::WakeUpAll() {
@@ -124,24 +117,22 @@ void Token::WakeUp() {
 }
 
 void Token::Stop() {
-  // LM_LM(("Thread [%s] is being stopped at token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_ ));
+  // LM_LM(("Thread [%s] is being stopped at token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_.c_str() ));
 
   // You are supposed to be retaining this lock
-  if (!locked_) {
+  if (!locked_)
     LM_LE(("Internal error: Releasing a non-locked au::Token:'%s'", name_.c_str()));
-  }
-  pid_t my_own_pid_t = syscall(
-    SYS_gettid);
-  if (token_owner_thread_id_ != my_own_pid_t) {
-    LM_LE(("Internal error: Stopping an au::Token '%s' not locked by me, owner:%d, me:%d", name_.c_str(),
-           token_owner_thread_id_, my_own_pid_t));
-  }
+    
+  pid_t my_own_pid_t = syscall(SYS_gettid);
+  if (token_owner_thread_id_ != my_own_pid_t)
+    LM_LE(("Internal error: Stopping an au::Token '%s' not locked by me, owner:%d, me:%d",
+            name_.c_str(), token_owner_thread_id_, my_own_pid_t));
   int tmp_counter = counter_;                                                   // Keep counter of retains
   locked_ = false;  // We are temporally releasing this token
 
   // This unlock the mutex and froze the process in the condition
   if (pthread_cond_wait(&block_, &lock_) != 0) {
-    LM_X(1, ("Internal error at au::TokenTaker"));  // LM_LM(("Thread [%s] is back from stopped at token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_ ));
+    LM_X(1, ("Internal error at au::TokenTaker"));  // LM_LM(("Thread [%s] is back from stopped at token %s..." , GetThreadId( pthread_self() ).c_str() ,  name_.c_str() ));
   }
   // Now you are retaining again
   locked_ = true;

@@ -110,11 +110,13 @@ public:
   void autoCompleteQueues(au::ConsoleAutoComplete *info);
 
   virtual void process_escape_sequence(std::string sequence) {
-    if (sequence == "samson")
+    if (sequence == "samson") {
       writeWarningOnConsole("SAMSON's cool ;)");
+    }
 
-    if (sequence == "q")
+    if (sequence == "q") {
       appendToCommand("ls");
+    }
 
     if (sequence == "d") {
       mode = mode_database;

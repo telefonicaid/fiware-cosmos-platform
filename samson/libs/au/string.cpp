@@ -22,8 +22,9 @@ std::string str_tabs(int t) {
 }
 
 std::string str_percentage(double p) {
-  if (p > 1)
+  if (p > 1) {
     return au::str(p);
+  }
 
   char line[2000];
   sprintf(line, "%05.1f%%", p * 100);
@@ -31,9 +32,11 @@ std::string str_percentage(double p) {
 }
 
 std::string str_percentage(double value, double total) {
-  if (total == 0)
-    return str_percentage(0); else
+  if (total == 0) {
+    return str_percentage(0);
+  } else {
     return str_percentage(value / total);
+  }
 }
 
 std::string str_timestamp(time_t t) {
@@ -61,19 +64,29 @@ std::string str_time_simple(size_t seconds) {
   seconds -= 60 * minutes;
 
 
-  if (years > 0)
-    return au::str("%6dy", years); if (days > 100)
-    return au::str("%6dd", days); if (days > 0)
-    return au::str("%2dd%2dh", days, hours); if (hours > 0)
-    return au::str("%2dh%2dm", hours, minutes); if (minutes > 0)
+  if (years > 0) {
+    return au::str("%6dy", years);
+  }
+  if (days > 100) {
+    return au::str("%6dd", days);
+  }
+  if (days > 0) {
+    return au::str("%2dd%2dh", days, hours);
+  }
+  if (hours > 0) {
+    return au::str("%2dh%2dm", hours, minutes);
+  }
+  if (minutes > 0) {
     return au::str("%2dm%2ds", minutes, seconds);
+  }
 
   return au::str("%6ds", seconds);
 }
 
 std::string str_time(size_t seconds) {
-  if (seconds > (3600L * 24L * 265L * 100L))
+  if (seconds > (3600L * 24L * 265L * 100L)) {
     return "   >100y";
+  }
 
   int days = 0;
   while (seconds > (3600 * 24)) {
@@ -87,8 +100,9 @@ std::string str_time(size_t seconds) {
   int hours = minutes / 60;
   minutes -= hours * 60;
 
-  if (days > 0)
+  if (days > 0) {
     return au::str("%02dd %02d:%02d", days, hours, minutes);
+  }
 
   return au::str(" %02d:%02d:%02d", hours, minutes, (int)seconds);
 }
@@ -97,9 +111,13 @@ std::string str_progress_bar(double p, int len) {
   std::ostringstream output;
 
 
-  if (p < 0)
-    p = 0; if (p > 1)
-    p = 1; int pos = len * p;
+  if (p < 0) {
+    p = 0;
+  }
+  if (p > 1) {
+    p = 1;
+  }
+  int pos = len * p;
 
   output << " [ ";
   for (int s = 0; s < pos; s++) {
@@ -117,9 +135,13 @@ std::string str_progress_bar(double p, int len, char c, char c2) {
   std::ostringstream output;
 
 
-  if (p < 0)
-    p = 0; if (p > 1)
-    p = 1; int pos = len * p;
+  if (p < 0) {
+    p = 0;
+  }
+  if (p > 1) {
+    p = 1;
+  }
+  int pos = len * p;
 
   output << " [ ";
   for (int s = 0; s < pos; s++) {
@@ -137,12 +159,21 @@ std::string str_double_progress_bar(double p1, double p2, char c1, char c2, char
   std::ostringstream output;
 
 
-  if (p1 < 0)
-    p1 = 0; if (p1 > 1)
-    p1 = 1; if (p2 < 0)
-    p2 = 0; if (p2 > 1)
-    p2 = 1; if (p2 < p1)
+  if (p1 < 0) {
+    p1 = 0;
+  }
+  if (p1 > 1) {
+    p1 = 1;
+  }
+  if (p2 < 0) {
+    p2 = 0;
+  }
+  if (p2 > 1) {
+    p2 = 1;
+  }
+  if (p2 < p1) {
     p2 = p1;      // no sense
+  }
   int pos1 = (double)len * p1;
   int pos2 = (double)len * p2;
 
@@ -187,8 +218,9 @@ void find_and_replace(std::string &source, const std::string find, std::string r
 std::string getRoot(std::string& path) {
   size_t pos = path.find(".", 0);
 
-  if (pos == std::string::npos)
+  if (pos == std::string::npos) {
     return path;
+  }
 
   return path.substr(0, pos);
 }
@@ -196,8 +228,9 @@ std::string getRoot(std::string& path) {
 std::string getRest(std::string& path) {
   size_t pos = path.find(".", 0);
 
-  if (pos == std::string::npos)
+  if (pos == std::string::npos) {
     return "";
+  }
 
   return path.substr(pos + 1, path.length());
 }
@@ -229,10 +262,13 @@ std::string str_indent(std::string txt, int num_spaces) {
 std::string str(double value, char letter) {
   char line[2000];
 
-  if (value < 10)
-    sprintf(line, "%4.2f%c", value, letter); else if (value < 100)
-    sprintf(line, "%4.1f%c", value, letter); else
-    sprintf(line, "%4.0f%c", value, letter); return std::string(line);
+  if (value < 10) {
+    sprintf(line, "%4.2f%c", value, letter);
+  } else if (value < 100) {
+    sprintf(line, "%4.1f%c", value, letter);
+  } else {
+    sprintf(line, "%4.0f%c", value, letter);
+  } return std::string(line);
 }
 
 std::string str(const char *format, ...) {
@@ -280,10 +316,13 @@ std::string str(Color color, const char *format, ...) {
 std::string str_double(double value, char letter) {
   char line[2000];
 
-  if (value < 10)
-    sprintf(line, " %4.2f%c", value, letter); else if (value < 100)
-    sprintf(line, " %4.1f%c", value, letter); else
-    sprintf(line, " %4.0f%c", value, letter); return std::string(line);
+  if (value < 10) {
+    sprintf(line, " %4.2f%c", value, letter);
+  } else if (value < 100) {
+    sprintf(line, " %4.1f%c", value, letter);
+  } else {
+    sprintf(line, " %4.0f%c", value, letter);
+  } return std::string(line);
 }
 
 std::string str(const std::vector<std::string>& hosts) {
@@ -291,60 +330,72 @@ std::string str(const std::vector<std::string>& hosts) {
 
   for (size_t i = 0; i < hosts.size(); i++) {
     output << hosts[i];
-    if (i != (hosts.size() - 2))
+    if (i != (hosts.size() - 2)) {
       output << " ";
+    }
   }
   return output.str();
 }
 
 std::string str(double value) {
-  if (value == 0)
+  if (value == 0) {
     return "    0 ";
+  }
 
   if (value < 0) {
     std::string tmp = str(-value);
     size_t pos = tmp.find_first_not_of(" ");
-    if ((pos == std::string::npos) || ( pos == 0 ))
+    if ((pos == std::string::npos) || ( pos == 0 )) {
       return "ERROR";
+    }
 
     tmp[pos - 1] = '-';
     return tmp;
   }
 
-  if (value < 0.000000000000001)
+  if (value < 0.000000000000001) {
     return "  EPS ";
-  else if (value < 0.000000000001)
+  } else if (value < 0.000000000001) {
     return au::str_double(value * 1000000000000000.0, 'f');
-  else if (value < 0.000000001)
+  } else if (value < 0.000000001) {
     return au::str_double(value * 1000000000000.0, 'p');
-  else if (value < 0.000001)
+  } else if (value < 0.000001) {
     return au::str_double(value * 1000000000.0, 'n');
-  else if (value < 0.001)
+  } else if (value < 0.001) {
     return au::str_double(value * 1000000.0, 'u');
-  else if (value < 1)
+  } else if (value < 1) {
     return au::str_double(value * 1000.0, 'm');
-  else if (value < 1000)
+  } else if (value < 1000) {
     return au::str_double(value, ' ');
-  else if (value < 1000000)
+  } else if (value < 1000000) {
     return au::str_double(value / 1000.0, 'K');
-  else if (value < 1000000000)
+  } else if (value < 1000000000) {
     return au::str_double(value / 1000000.0, 'M');
+  }
+
+
+
 
 
 
 #ifdef __LP64__
-  else if (value < 1000000000000)
+  else if (value < 1000000000000) {
     return au::str_double(value / 1000000000.0, 'G');
-  else if (value < 1000000000000000)
+  } else if (value < 1000000000000000) {
     return au::str_double(value / 1000000000000.0, 'T');
-  else if (value < 1000000000000000000)
+  } else if (value < 1000000000000000000) {
     return au::str_double(value / 1000000000000000.0, 'P');
+  }
+
+
+
 
 
 
 #endif
-  else
+  else {
     return "  INF ";
+  }
 }
 
 /*
@@ -378,23 +429,26 @@ std::string str(double value, std::string postfix) {
 }
 
 std::string str_detail(size_t value) {
-  if (value < 1000)
+  if (value < 1000) {
     return str(value);
+  }
 
   return str("%lu (%s)", value, au::str(value).c_str());
 }
 
 std::string str_detail(size_t value, std::string postfix) {
-  if (value < 1000)
+  if (value < 1000) {
     return str(value, postfix);
+  }
 
   return str("%lu %s (%s)", value, postfix.c_str(), au::str(value, postfix).c_str());
 }
 
 bool isOneOf(char c, std::string s) {
   for (size_t i = 0; i < s.size(); i++) {
-    if (s[i] == c)
+    if (s[i] == c) {
       return true;
+    }
   }
 
   return false;
@@ -421,8 +475,10 @@ std::vector<std::string> simpleTockenize(std::string txt) {
     }
   }
 
-  if (txt.size() > pos)
-    items.push_back(txt.substr(pos, txt.size() - pos)); return items;
+  if (txt.size() > pos) {
+    items.push_back(txt.substr(pos, txt.size() - pos));
+  }
+  return items;
 }
 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
@@ -430,8 +486,9 @@ std::vector<std::string> &split(const std::string &s, char delim, std::vector<st
   std::string item;
 
   while (std::getline(ss, item, delim)) {
-    if (item.length() > 0)
+    if (item.length() > 0) {
       elems.push_back(item);
+    }
   }
   return elems;
 }
@@ -451,38 +508,52 @@ int get_term_size(int fd, int *x, int *y) {
 #endif
 
 #ifdef TIOCGSIZE
-  if (ioctl(fd, TIOCGSIZE, &win))
+  if (ioctl(fd, TIOCGSIZE, &win)) {
     return 0;
+  }
 
 
-  if (y)
+
+
+
+  if (y) {
     *y = win.ts_lines;
-  if (x)
+  }
+  if (x) {
     *x = win.ts_cols;
+  }
 
 #elif defined TIOCGWINSZ
-  if (ioctl(fd, TIOCGWINSZ, &win))
+  if (ioctl(fd, TIOCGWINSZ, &win)) {
     return 0;
+  }
 
 
-  if (y)
+
+
+
+  if (y) {
     *y = win.ws_row;
-  if (x)
+  }
+  if (x) {
     *x = win.ws_col;
+  }
 
 #else
   {
     const char *s;
     s = getenv("LINES");
-    if (s)
+    if (s) {
       *y = strtol(s, NULL, 10);
-    else
+    } else {
       *y = 25;
+    }
     s = getenv("COLUMNS");
-    if (s)
+    if (s) {
       *x = strtol(s, NULL, 10);
-    else
+    } else {
       *x = 80;
+    }
   }
 #endif  // ifdef TIOCGSIZE
 
@@ -492,9 +563,11 @@ int get_term_size(int fd, int *x, int *y) {
 int getTerminalWidth() {
   int x, y;
 
-  if (get_term_size(0, &x, &y))
-    return x; else
+  if (get_term_size(0, &x, &y)) {
+    return x;
+  } else {
     return 0;
+  }
 }
 
 std::string lineInConsole(char c) {
@@ -554,8 +627,9 @@ const char *laststrstr(const char *source, size_t source_length, const char *tar
     }
 
     /* if the loop above gets to the end of the target string then it must have matched all the characters */
-    if (*tp == '\0')
+    if (*tp == '\0') {
       break;
+    }
   }
   /* If the outer loop finished before getting to the start of the source string then
    * it must have found a matching sub string */
@@ -566,8 +640,9 @@ int getCommonChars(std::string& txt, std::string& txt2) {
   size_t l = std::min(txt.length(), txt2.length());
 
   for (size_t i = 0; i < l; i++) {
-    if (txt[i] != txt2[i])
+    if (txt[i] != txt2[i]) {
       return i;
+    }
   }
   return l;
 }
@@ -580,28 +655,35 @@ bool strings_begin_equal(std::string txt, std::string txt2) {
   size_t l = std::min(txt.length(), txt2.length());
 
   for (size_t i = 0; i < l; i++) {
-    if (txt[i] != txt2[i])
+    if (txt[i] != txt2[i]) {
       return false;
+    }
   }
   return true;
 }
 
 std::string path_from_directory(std::string directory, std::string file) {
-  if (directory.length() == 0)
+  if (directory.length() == 0) {
     return file;
+  }
 
-  if (directory[ directory.length() - 1 ] == '/')
-    return directory + file; else
+  if (directory[ directory.length() - 1 ] == '/') {
+    return directory + file;
+  } else {
     return directory + "/" + file;
+  }
 }
 
 std::string string_in_color(std::string message, std::string color) {
   std::ostringstream output;
 
-  if (( color == "red" ) || ( color == "r" ))
-    output << "\033[1;31m" << message << "\033[0m"; else if ((color == "purple") || (color == "p"))
-    output << "\033[1;35m" << message << "\033[0m"; else
-    output << message; return output.str();
+  if (( color == "red" ) || ( color == "r" )) {
+    output << "\033[1;31m" << message << "\033[0m";
+  } else if ((color == "purple") || (color == "p")) {
+    output << "\033[1;35m" << message << "\033[0m";
+  } else {
+    output << message;
+  } return output.str();
 }
 
 bool string_begins(std::string& str, std::string prefix) {
@@ -609,20 +691,28 @@ bool string_begins(std::string& str, std::string prefix) {
 }
 
 bool string_ends(std::string& str, std::string postfix) {
-  if (postfix.length() > str.length())
-    return false; return str.substr(str.length() - postfix.length()) == postfix;
+  if (postfix.length() > str.length()) {
+    return false;
+  }
+  return str.substr(str.length() - postfix.length()) == postfix;
 }
 
 bool string_begins_and_ends(std::string& str, std::string prefix, std::string postfix) {
-  if (postfix.length() > str.length())
+  if (postfix.length() > str.length()) {
     return false;
+  }
 
-  if (prefix.length() > str.length())
+  if (prefix.length() > str.length()) {
     return false;
+  }
 
-  if (str.substr(0, prefix.length()) != prefix)
-    return false; if (str.substr(str.length() - postfix.length()) != postfix)
-    return false; return true;
+  if (str.substr(0, prefix.length()) != prefix) {
+    return false;
+  }
+  if (str.substr(str.length() - postfix.length()) != postfix) {
+    return false;
+  }
+  return true;
 }
 
 std::string substring_without_prefix_and_posfix(std::string& str, std::string prefix, std::string postfix) {

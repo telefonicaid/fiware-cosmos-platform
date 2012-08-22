@@ -9,15 +9,18 @@ StringComponents::StringComponents() {
 }
 
 StringComponents::~StringComponents() {
-  if (internal_line)
+  if (internal_line) {
     free(internal_line);
+  }
 }
 
-size_t StringComponents::process_line(const char *line, size_t max_length, char separator) {
+size_t StringComponents::ProcessLine(const char *line, size_t max_length, char separator) {
   // Alloc more space if necessary
   if (( max_length + 1 )  > max_size) {
-    if (internal_line)
-      free(internal_line); while (max_size < ( max_length + 1 )) {
+    if (internal_line) {
+      free(internal_line);
+    }
+    while (max_size < ( max_length + 1 )) {
       max_size *= 2;
     }
 
@@ -25,10 +28,10 @@ size_t StringComponents::process_line(const char *line, size_t max_length, char 
     internal_line = (char *)malloc(max_size);
   }
 
-
   components.clear();
-  if (max_length == 0)
+  if (max_length == 0) {
     return 0;
+  }
 
   bool new_component = true;
 
@@ -41,8 +44,9 @@ size_t StringComponents::process_line(const char *line, size_t max_length, char 
     }
 
     // End of line string
-    if (internal_line[i] == '\0')
+    if (internal_line[i] == '\0') {
       return i + 1;
+    }
 
     // End of line string
     if (internal_line[i] == '\n') {

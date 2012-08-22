@@ -16,15 +16,18 @@ int paOptionsNoOf(PaiArgument *paList) {
   int ix   = 0;
   int opts = 0;
 
-  if (paList == NULL)
+  if (paList == NULL) {
     return paBuiltinNoOf();
+  }
 
   PA_M(("Counting args"));
 
   while (paList[ix].type != PaLastArg) {
     PA_M(("arg %d: '%s'", ix, paList[ix].option));
-    if (paList[ix].removed != true)
-      ++opts; ++ix;
+    if (paList[ix].removed != true) {
+      ++opts;
+    }
+    ++ix;
     PA_M(("%d args so far", opts));
   }
 

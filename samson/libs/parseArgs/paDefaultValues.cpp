@@ -38,11 +38,15 @@ int paDefaultValues(PaiArgument *paList) {
   while ((aP = paIterateNext(paList)) != NULL) {
     long long *defP;
 
-    if (aP->def == PaNoDef)
-      continue; aP->from = PafDefault;
-    if (aP->type != PaString)
-      LM_T(LmtPaDefVal, ("setting default value for '%s' (0x%x)", aP->name, (int)aP->def)); else
+    if (aP->def == PaNoDef) {
+      continue;
+    }
+    aP->from = PafDefault;
+    if (aP->type != PaString) {
+      LM_T(LmtPaDefVal, ("setting default value for '%s' (0x%x)", aP->name, (int)aP->def));
+    } else {
       LM_T(LmtPaDefVal, ("setting default value for '%s' (%s)", aP->name, (char *)aP->def));
+    }
     defP = (long long *)&aP->def;
 
     switch (aP->type) {
@@ -60,9 +64,11 @@ int paDefaultValues(PaiArgument *paList) {
 
       case PaString:
         if (aP->def) {
-          if (((char *)aP->def)[0] != 0)
-            if ((char *)aP->varP != (char *)aP->def)
+          if (((char *)aP->def)[0] != 0) {
+            if ((char *)aP->varP != (char *)aP->def) {
               strcpy((char *)aP->varP, (char *)aP->def);
+            }
+          }
         } else {
           ((char *)aP->varP)[0] = 0;
         }
@@ -75,9 +81,11 @@ int paDefaultValues(PaiArgument *paList) {
         continue;
     }
 
-    if (aP->type != PaString)
-      LM_T(LmtPaDefVal, ("default value for '%s' is set", aP->name)); else
+    if (aP->type != PaString) {
+      LM_T(LmtPaDefVal, ("default value for '%s' is set", aP->name));
+    } else {
       LM_T(LmtPaDefVal, ("default value for '%s' is set to '%s'", aP->name, (char *)aP->varP));
+    }
   }
 
   LM_EXIT();

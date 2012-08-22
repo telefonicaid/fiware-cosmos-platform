@@ -2,7 +2,7 @@
 #ifndef _H_INTER_CHANNEL_PACKET
 #define _H_INTER_CHANNEL_PACKET
 
-#include "au/Object.h"
+
 #include "au/Status.h"
 #include "au/network/FileDescriptor.h"
 #include "message.pb.h"
@@ -26,7 +26,7 @@ typedef struct {
   size_t buffer_size;    // Optional buffer size
 } InterChannelPacketHeader;
 
-class InterChannelPacket : public au::Object {
+class InterChannelPacket {
   InterChannelPacketHeader header_;            // Header
   Message *message;                            // GPB Message with additional information
   engine::BufferPointer buffer_;   // Optional buffer with data

@@ -71,8 +71,9 @@ int main(int argC, const char *argV[]) {
   if (strcmp(host, "") != 0) {
     au::ErrorManager error;
     console.Connect(host, &error);           // Connect to the given host
-    if (error.IsActivated())
+    if (error.IsActivated()) {
       LM_X(1, ("Error: %s", error.GetMessage().c_str()));
+    }
   }
 
   if (strcmp(command, "") != 0) {

@@ -18,8 +18,9 @@ RESTService::~RESTService() {
 
 void RESTService::run(SocketConnection *socket_connection,
                       bool *quit) {
-  if (*quit)
+  if (*quit) {
     return;
+  }
 
   au::ErrorManager error;
 

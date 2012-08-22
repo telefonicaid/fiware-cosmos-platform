@@ -11,7 +11,7 @@
 *
 * DESCRIPTION
 *
-*  Class used to parse a string into components in a non-intrusive way
+*  Class used to efficienly parse a string into components in a non-intrusive way
 *  Original string is never modified
 *
 * COPYRIGTH       Copyright 2012 Andreu Urruela. All rights reserved.
@@ -32,23 +32,23 @@
 #include "au/string.h"
 #include "au/xml.h"
 
-
-
-
 namespace au {
 class StringComponents {
-  char *internal_line;
-  size_t max_size;
-
 public:
-
-  // Components of the last split
-  std::vector<char *> components;
 
   StringComponents();
   ~StringComponents();
 
-  size_t process_line(const char *line, size_t max_length, char separator);
+  // Main command to process line
+  size_t ProcessLine(const char *line, size_t max_length, char separator);
+
+  // Components of the last line
+  std::vector<char *> components;
+
+private:
+
+  char *internal_line;
+  size_t max_size;
 };
 }
 

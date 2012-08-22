@@ -109,8 +109,10 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
     }
 
     // Update kvs_index if necessart
-    if (hg != previous_hg)
-      kvs_index[hg] = i; previous_hg = hg;
+    if (hg != previous_hg) {
+      kvs_index[hg] = i;
+    }
+    previous_hg = hg;
 
     // Update total counter ( for final check )
     total_info.append(kvs[i].key_size + kvs[i].value_size, 1);
@@ -185,12 +187,15 @@ size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
       line_begin += line_size + 1;
 
       num_lines++;
-      if (limit > 0)
-        if (num_lines >= limit)
+      if (limit > 0) {
+        if (num_lines >= limit) {
           return num_lines;
+        }
+      }
 
-      if (line_begin >= data_size)
+      if (line_begin >= data_size) {
         return num_lines;
+      }
     }
   }
 
@@ -199,13 +204,16 @@ size_t KVFile::printContent(size_t limit, bool show_hg, std::ostream &output) {
     key_->parse(kvs[i].key);
     value_->parse(kvs[i].value);
 
-    if (show_hg)
+    if (show_hg) {
       output << "[ hg " << key_->hash(KVFILE_NUM_HASHGROUPS) << " ] ";
+    }
     output << key_->str() << " " << value_->str() << std::endl;
 
-    if (limit > 0)
-      if (i >= limit)
+    if (limit > 0) {
+      if (i >= limit) {
         return i;
+      }
+    }
   }
 
   // All records have been printed out

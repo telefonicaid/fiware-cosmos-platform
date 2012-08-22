@@ -45,10 +45,11 @@ namespace samson {
  */
 Delilah::Delilah(std::string connection_type, size_t delilah_id) : token("Delilah_token") {
   // Random identifier for this delilah
-  if (delilah_id == (size_t)-1)
+  if (delilah_id == (size_t)-1) {
     delilah_id_ = au::code64_rand();
-  else
+  } else {
     delilah_id_ = delilah_id;  // Network interface for all the workers ( included in the cluster selected )
+  }
   network = new DelilahNetwork(connection_type, delilah_id_, this);
 
   // we start with process 2 because 0 is no process & 1 is global_update messages
@@ -79,8 +80,10 @@ std::string Delilah::getClusterConnectionSummary() {
 
 bool Delilah::connect(std::string host, au::ErrorManager *error) {
   // Remove all internal state in this delilah....
-  if (isConnected())
-    disconnect(); LM_V(("Connecting to %s", host.c_str()));
+  if (isConnected()) {
+    disconnect();
+  }
+  LM_V(("Connecting to %s", host.c_str()));
 
   // Get host and port
   std::vector<std::string> components = au::split(host, ':');
@@ -103,8 +106,10 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
 
   if (s != au::OK) {
     error->set(au::str("Error creating socket %s", au::status(s)));
-    if (socket_connection)
-      delete socket_connection; return false;
+    if (socket_connection) {
+      delete socket_connection;
+    }
+    return false;
   }
 
   // Special node just to retreive cluster information
@@ -119,8 +124,10 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
 
   if (s != au::OK) {
     error->set(au::str("Error sending hello packet %s", au::status(s)));
-    if (socket_connection)
-      delete socket_connection; return false;
+    if (socket_connection) {
+      delete socket_connection;
+    }
+    return false;
   }
 
   PacketPointer packet(new Packet());
@@ -129,14 +136,18 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
 
   if (s != au::OK) {
     error->set(au::str("Error receiving cluster information %s", au::status(s)));
-    if (socket_connection)
-      delete socket_connection; return false;
+    if (socket_connection) {
+      delete socket_connection;
+    }
+    return false;
   }
 
   if (packet->msgCode != Message::ClusterInfoUpdate) {
     error->set(au::str("Error receiving cluster information. Received %s instead", Message::messageCode(packet->msgCode)));
-    if (socket_connection)
-      delete socket_connection; return false;
+    if (socket_connection) {
+      delete socket_connection;
+    }
+    return false;
   }
 
   // Update cluster indo
@@ -149,8 +160,10 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   cluster_info->CopyFrom(packet->message->cluster_info());
   network->set_cluster_information(cluster_info_version, cluster_info);
 
-  if (socket_connection)
-    delete socket_connection; return true;
+  if (socket_connection) {
+    delete socket_connection;
+  }
+  return true;
 }
 
 void Delilah::disconnect() {
@@ -179,17 +192,18 @@ void Delilah::notify(engine::Notification *notification) {
   }
 
   if (notification->isName(notification_network_diconnected)) {
-    std::string type = notification->environment().get("type", "unknown");
-    size_t id        = notification->environment().get("id", -1);
+    std::string type = notification->environment().Get("type", "unknown");
+    size_t id        = notification->environment().Get("id", -1);
 
     // At the moment only a warning
     showWarningMessage(au::str("Disconnected (%s %lu )", type.c_str(), id));
     return;
   }
 
-  if (notification->isName(notification_disk_operation_request_response))
+  if (notification->isName(notification_disk_operation_request_response)) {
     // Nothing to do here...
     return;
+  }
 
   if (notification->isName("notification_cluster_info_changed")) {
     std::string message = au::str("Cluster setup has changed ( current version %lu )"
@@ -327,8 +341,9 @@ void Delilah::receive(const PacketPointer& packet) {
  */
 void Delilah::notificationSent(size_t id, bool success) {
   // Do something
-  if ((id == 0) || (success == false))
+  if ((id == 0) || (success == false)) {
     return;
+  }
 }
 
 #pragma mark Load data process
@@ -374,8 +389,10 @@ size_t Delilah::AddPopComponent(std::string queue_name, std::string fileName,  b
   PopDelilahComponent *d = new PopDelilahComponent(queue_name, fileName, force_flag, show_flag);
   size_t tmp_id = addComponent(d);
 
-  if (!d->error.IsActivated())
-    d->run(); return tmp_id;
+  if (!d->error.IsActivated()) {
+    d->run();
+  }
+  return tmp_id;
 }
 
 size_t Delilah::push_txt(engine::BufferPointer buffer, const std::string& queue) {
@@ -385,8 +402,9 @@ size_t Delilah::push_txt(engine::BufferPointer buffer, const std::string& queue)
 }
 
 size_t Delilah::push_txt(engine::BufferPointer buffer, const std::vector<std::string>& queues) {
-  if (buffer == NULL)
+  if (buffer == NULL) {
     return (size_t)-1;
+  }
 
   // Create a new buffer containing a header
   size_t new_buffer_size = buffer->getSize() + sizeof(KVHeader);
@@ -432,9 +450,11 @@ void Delilah::cancelComponent(size_t _id) {
 
   DelilahComponent *component = components_.findInMap(_id);
 
-  if (component)
-    component->setComponentFinishedWithError("Canceled by user in delilah console"); else
+  if (component) {
+    component->setComponentFinishedWithError("Canceled by user in delilah console");
+  } else {
     showWarningMessage(au::str("Not possible to cancel delilah process %lu.", _id));
+  }
 }
 
 std::string Delilah::getOutputForComponent(size_t _id) {
@@ -442,8 +462,10 @@ std::string Delilah::getOutputForComponent(size_t _id) {
 
   DelilahComponent *component = components_.findInMap(_id);
 
-  if (!component)
-    return au::str("Delilah component %lu not found", _id); return component->output.str();
+  if (!component) {
+    return au::str("Delilah component %lu not found", _id);
+  }
+  return component->output.str();
 }
 
 void Delilah::setBackgroundComponent(size_t _id) {
@@ -451,9 +473,11 @@ void Delilah::setBackgroundComponent(size_t _id) {
 
   DelilahComponent *component = components_.findInMap(_id);
 
-  if (component)
-    component->set_print_output_at_finish(); else
+  if (component) {
+    component->set_print_output_at_finish();
+  } else {
     showWarningMessage(au::str("Not possible to set delilah process %lu in background.", _id));
+  }
 }
 
 void Delilah::clearComponents() {
@@ -462,14 +486,16 @@ void Delilah::clearComponents() {
   std::vector<size_t> components_to_remove;
 
   for (au::map<size_t, DelilahComponent>::iterator c =  components_.begin(); c != components_.end(); c++) {
-    if (c->second->isComponentFinished())
+    if (c->second->isComponentFinished()) {
       components_to_remove.push_back(c->first);
+    }
   }
 
   for (size_t i = 0; i < components_to_remove.size(); i++) {
     DelilahComponent *component = components_.extractFromMap(components_to_remove[i]);
-    if (component)
+    if (component) {
       delete component;
+    }
   }
 }
 
@@ -485,8 +511,9 @@ void Delilah::clearAllComponents() {
 
   for (size_t i = 0; i < components_to_remove.size(); i++) {
     DelilahComponent *component = components_.extractFromMap(components_to_remove[i]);
-    if (component)
+    if (component) {
       delete component;
+    }
   }
 }
 
@@ -499,8 +526,10 @@ std::string Delilah::getListOfComponents() {
   for (iter = components_.begin(); iter != components_.end(); iter++) {
     DelilahComponent *component = iter->second;
 
-    if (component->hidden)
-      continue; au::StringVector values;
+    if (component->hidden) {
+      continue;
+    }
+    au::StringVector values;
     values.push_back(au::str("%s_%lu", au::code64_str(delilah_id_).c_str(), component->getId()));
     values.push_back(component->getTypeName());
     values.push_back(component->getStatusDescription());
@@ -534,8 +563,9 @@ bool Delilah::isActive(size_t id) {
 
   DelilahComponent *c = components_.findInMap(id);
 
-  if (!c)
+  if (!c) {
     return false;
+  }
 
   return( !c->isComponentFinished());
 }
@@ -546,8 +576,9 @@ bool Delilah::hasError(size_t id) {
   DelilahComponent *c = components_.findInMap(id);
 
   // No process, no error ;)
-  if (!c)
+  if (!c) {
     return false;
+  }
 
   return c->error.IsActivated();
 }
@@ -558,8 +589,9 @@ std::string Delilah::errorMessage(size_t id) {
   DelilahComponent *c = components_.findInMap(id);
 
   // No process, no error ;)
-  if (!c)
+  if (!c) {
     return "Non valid delilah process";
+  }
 
   return c->error.GetMessage();
 }
@@ -569,21 +601,26 @@ std::string Delilah::getDescription(size_t id) {
 
   DelilahComponent *c = components_.findInMap(id);
 
-  if (!c)
-    return "No process with this id"; else
+  if (!c) {
+    return "No process with this id";
+  } else {
     return c->getStatus();
+  }
 }
 
 int Delilah::_receive(const PacketPointer& packet) {
-  if (packet->msgCode != Message::Alert)
-    LM_V(("Unused packet %s", packet->str().c_str())); return 0;
+  if (packet->msgCode != Message::Alert) {
+    LM_V(("Unused packet %s", packet->str().c_str()));
+  }
+  return 0;
 }
 
 // Get information for monitorization
 void Delilah::getInfo(std::ostringstream& output) {
-  if (output != output)
+  if (output != output) {
     LM_E(("sorry, just wanted to avoid a 'strict' warning ..."));  // Engine
-   // engine::Engine::shared()->getInfo( output );
+  }
+  // engine::Engine::shared()->getInfo( output );
 
   // Engine system
   // samson::getInfoEngineSystem(output, network);
@@ -611,19 +648,23 @@ std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {
           struct stat buf2;
           stat(pent->d_name, &buf2);
 
-          if (::fnmatch(pattern.c_str(), pent->d_name, 0) != 0)
-            continue; if (S_ISREG(buf2.st_mode)) {
+          if (::fnmatch(pattern.c_str(), pent->d_name, 0) != 0) {
+            continue;
+          }
+          if (S_ISREG(buf2.st_mode)) {
             size_t size = buf2.st_size;
-            if (!only_queues)
+            if (!only_queues) {
               table.addRow(au::StringVector(pent->d_name, "FILE", au::str(size, "bytes"), "-"));
+            }
           }
           if (S_ISDIR(buf2.st_mode)) {
             au::ErrorManager error;
             au::SharedPointer<SamsonDataSet> samson_data_set = SamsonDataSet::create(pent->d_name, error);
 
             if (error.IsActivated()) {
-              if (!only_queues)
+              if (!only_queues) {
                 table.addRow(au::StringVector(pent->d_name, "DIR", "", ""));
+              }
             } else {
               table.addRow(au::StringVector(pent->d_name
                                             , "SAMSON queue"
@@ -638,9 +679,11 @@ std::string Delilah::getLsLocal(std::string pattern, bool only_queues) {
     closedir(pdir);
   }
 
-  if (only_queues)
-    table.setTitle(au::str("Local queues ( %s )", pattern.c_str())); else
-    table.setTitle(au::str("Local files ( %s )", pattern.c_str())); return table.str();
+  if (only_queues) {
+    table.setTitle(au::str("Local queues ( %s )", pattern.c_str()));
+  } else {
+    table.setTitle(au::str("Local files ( %s )", pattern.c_str()));
+  } return table.str();
 }
 
 DelilahComponent *Delilah::getComponent(size_t id) {

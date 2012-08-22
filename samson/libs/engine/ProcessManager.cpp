@@ -47,21 +47,26 @@ void ProcessManager::stop() {
   LM_V(("ProcessManager stop"));
 
   // Set the maximum number of process to 0 makes all background threads to quit
-  if (processManager)
+  if (processManager) {
     processManager->max_num_procesors_ = 0;
+  }
 }
 
 void ProcessManager::destroy() {
   LM_V(("ProcessManager destroy"));
 
-  if (!processManager)
-    LM_RVE(("attempt to destroy uninitialized process manager")); delete processManager;
+  if (!processManager) {
+    LM_RVE(("attempt to destroy uninitialized process manager"));
+  }
+  delete processManager;
   processManager = NULL;
 }
 
 ProcessManager *ProcessManager::shared() {
-  if (!processManager)
-    LM_X(1, ("ProcessManager not initialiazed")); return processManager;
+  if (!processManager) {
+    LM_X(1, ("ProcessManager not initialiazed"));
+  }
+  return processManager;
 }
 
 ProcessManager::ProcessManager(int max_num_procesors) : token_("engine::ProcessManager") {
@@ -100,7 +105,7 @@ void ProcessManager::Add(au::SharedPointer<ProcessItem> item, size_t listenerId)
   }
 
   // Wake up all background threads if necessary
-  tt.wakeUpAll();
+  tt.WakeUpAll();
 }
 
 void ProcessManager::Cancel(au::SharedPointer<ProcessItem> item) {
@@ -122,7 +127,7 @@ void ProcessManager::Cancel(au::SharedPointer<ProcessItem> item) {
     notification->dictionary().Set("process_item", notification_object);
 
     notification->environment().Add(item->environment());
-    notification->environment().set("error", "Canceled");
+    notification->environment().Set("error", "Canceled");
 
     Engine::shared()->notify(notification);
   }
@@ -157,7 +162,7 @@ void ProcessManager::run_worker() {
       if (item != NULL) {
         running_items_.Insert(item);
       } else {
-        tt.stop();   // Block until main thread wake me up
+        tt.Stop();   // Block until main thread wake me up
         continue;
       }
     }
@@ -192,8 +197,9 @@ void ProcessManager::run_worker() {
     notification->environment().Add(item->environment());
 
     // Extra error environment if necessary
-    if (item->error().IsActivated())
-      notification->environment().set("error", item->error().GetMessage());  // Add the notification to the main engine
+    if (item->error().IsActivated()) {
+      notification->environment().Set("error", item->error().GetMessage());  // Add the notification to the main engine
+    }
     Engine::shared()->notify(notification);
   }
 }

@@ -46,7 +46,7 @@ char file_name[1024];
 
 PaArgument paArgs[] =
 {
-  { " ", file_name, "", PaString, PaReq,            (long)"null",         PaNL,     PaNL,
+  { " ", file_name, "", PaString, PaReq, (long)"null", PaNL, PaNL,
     "name of the file or directory to scan"     },
   PA_END_OF_ARGS
 };
@@ -88,8 +88,9 @@ void consider_directory(std::string directory, au::tables::Table *table) {
   DIR *dp;
   struct dirent *dirp;
 
-  if ((dp  = opendir(directory.c_str())) == NULL)
+  if ((dp  = opendir(directory.c_str())) == NULL) {
     return;
+  }
 
   while ((dirp = readdir(dp)) != NULL) {
     std::string fileName = dirp->d_name;
@@ -133,9 +134,12 @@ int main(int argC, const char *argV[]) {
     exit(-1);
   }
 
-  if (S_ISREG(info.st_mode))
-    consider_file(file_name, &table); else if (S_ISDIR(info.st_mode))
-    consider_directory(file_name, &table); table.setTitle("Module files");
+  if (S_ISREG(info.st_mode)) {
+    consider_file(file_name, &table);
+  } else if (S_ISDIR(info.st_mode)) {
+    consider_directory(file_name, &table);
+  }
+  table.setTitle("Module files");
   std::cout << table.str();
   std::cout << "\n";
 }

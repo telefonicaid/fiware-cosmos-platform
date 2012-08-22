@@ -23,8 +23,10 @@ bool paIsOption(PaiArgument *paList, char *string) {
   LM_ENTRY();
   paIterateInit();
   while ((aP = paIterateNext(paList)) != NULL) {
-    if ((aP->option == NULL) || (aP->option[0] == 0))
-      continue; len = MAX(strlen(aP->option), strlen(string));
+    if ((aP->option == NULL) || (aP->option[0] == 0)) {
+      continue;
+    }
+    len = MAX(strlen(aP->option), strlen(string));
 
     if (strncmp(aP->option, string, len) == 0) {
       LM_EXIT();

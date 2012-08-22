@@ -29,8 +29,9 @@ char *fgetsFromFd(char *str, int line_max_size, int fd) {
     size_t nbytes_to_read = 1;
     ssize_t bytes_read = 0;
 
-    if ((bytes_read = read(fd, (void *)p_str,  nbytes_to_read)) != (ssize_t)nbytes_to_read)
+    if ((bytes_read = read(fd, (void *)p_str,  nbytes_to_read)) != (ssize_t)nbytes_to_read) {
       return NULL;
+    }
 
     if (*p_str == '\n') {
       *(p_str + 1) = '\0';
@@ -65,10 +66,11 @@ void SplitInWords(char *line, std::vector<char *>& words, char separator) {
       pos++;
 
       // To avoid valgrind detected error when checking after the end of the buffer
-      if (!finish)
+      if (!finish) {
         while (line[pos] == ' ') {
           pos++;
         }
+      }
       previous = pos;
     } else {
       pos++;
@@ -199,9 +201,11 @@ time_t GetTimeUTCFromCalendar(struct tm *tm) {
   }
 #endif  /* de ELIMINADO */
 
-  if ((time_t)seconds != (signed)seconds)
-    value = (time_t)-1; else
-    value = (time_t)seconds; return value;
+  if ((time_t)seconds != (signed)seconds) {
+    value = (time_t)-1;
+  } else {
+    value = (time_t)seconds;
+  } return value;
 }
 
 time_t GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(const char *strTimeDate) {
@@ -223,26 +227,40 @@ time_t GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(const char *strTimeDate) {
     tm.tm_mday = Char_to_int(strTimeDate[7]) * 10 + Char_to_int(strTimeDate[8]);
   }
   tm.tm_mon = 12;
-  if (strncmp(p_month, "JAN", strlen("JAN")) == 0)
-    tm.tm_mon = 0; else if (strncmp(p_month, "FEB", strlen("FEB")) == 0)
-    tm.tm_mon = 1; else if (strncmp(p_month, "MAR", strlen("MAR")) == 0)
-    tm.tm_mon = 2; else if (strncmp(p_month, "APR", strlen("APR")) == 0)
-    tm.tm_mon = 3; else if (strncmp(p_month, "MAY", strlen("MAY")) == 0)
-    tm.tm_mon = 4; else if (strncmp(p_month, "JUN", strlen("JUN")) == 0)
-    tm.tm_mon = 5; else if (strncmp(p_month, "JUL", strlen("JUL")) == 0)
-    tm.tm_mon = 6; else if (strncmp(p_month, "AUG", strlen("AUG")) == 0)
-    tm.tm_mon = 7; else if (strncmp(p_month, "SEP", strlen("SEP")) == 0)
-    tm.tm_mon = 8; else if (strncmp(p_month, "OCT", strlen("OCT")) == 0)
-    tm.tm_mon = 9; else if (strncmp(p_month, "NOV", strlen("NOV")) == 0)
-    tm.tm_mon = 10; else if (strncmp(p_month, "DEC", strlen("DEC")) == 0)
-    tm.tm_mon = 11; tm.tm_hour = Char_to_int(strTimeDate[10]) * 10 + Char_to_int(strTimeDate[11]);
+  if (strncmp(p_month, "JAN", strlen("JAN")) == 0) {
+    tm.tm_mon = 0;
+  } else if (strncmp(p_month, "FEB", strlen("FEB")) == 0) {
+    tm.tm_mon = 1;
+  } else if (strncmp(p_month, "MAR", strlen("MAR")) == 0) {
+    tm.tm_mon = 2;
+  } else if (strncmp(p_month, "APR", strlen("APR")) == 0) {
+    tm.tm_mon = 3;
+  } else if (strncmp(p_month, "MAY", strlen("MAY")) == 0) {
+    tm.tm_mon = 4;
+  } else if (strncmp(p_month, "JUN", strlen("JUN")) == 0) {
+    tm.tm_mon = 5;
+  } else if (strncmp(p_month, "JUL", strlen("JUL")) == 0) {
+    tm.tm_mon = 6;
+  } else if (strncmp(p_month, "AUG", strlen("AUG")) == 0) {
+    tm.tm_mon = 7;
+  } else if (strncmp(p_month, "SEP", strlen("SEP")) == 0) {
+    tm.tm_mon = 8;
+  } else if (strncmp(p_month, "OCT", strlen("OCT")) == 0) {
+    tm.tm_mon = 9;
+  } else if (strncmp(p_month, "NOV", strlen("NOV")) == 0) {
+    tm.tm_mon = 10;
+  } else if (strncmp(p_month, "DEC", strlen("DEC")) == 0) {
+    tm.tm_mon = 11;
+  }
+  tm.tm_hour = Char_to_int(strTimeDate[10]) * 10 + Char_to_int(strTimeDate[11]);
   tm.tm_min = Char_to_int(strTimeDate[13]) * 10 + Char_to_int(strTimeDate[14]);
   tm.tm_sec = Char_to_int(strTimeDate[16]) * 10 + Char_to_int(strTimeDate[17]);
 
   // change hour from AM/PM to 24H
   const char *am_pm = &(strTimeDate[26]);
-  if ((strncmp(am_pm, "pm", strlen("pm")) == 0) || (strncmp(am_pm, "PM", strlen("PM")) == 0))
+  if ((strncmp(am_pm, "pm", strlen("pm")) == 0) || (strncmp(am_pm, "PM", strlen("PM")) == 0)) {
     tm.tm_hour += 12;
+  }
 #undef Char_to_int
   value = GetTimeUTCFromCalendar(&tm);
   return value;
@@ -331,12 +349,18 @@ bool LogsDataSet::InitDir() {
   while ((entry = readdir(dir)) != NULL) {
     const char *suff;
 
-    if (entry->d_name[0] == '.')
-      continue; suff = strrchr(entry->d_name, '.');
-    if (suff == NULL)
-      continue; ++suff;
-    if (strcmp(suff, extension_) != 0)
-      continue; ++num_files_;
+    if (entry->d_name[0] == '.') {
+      continue;
+    }
+    suff = strrchr(entry->d_name, '.');
+    if (suff == NULL) {
+      continue;
+    }
+    ++suff;
+    if (strcmp(suff, extension_) != 0) {
+      continue;
+    }
+    ++num_files_;
   }
   LM_V(("Initially found %d files in '%s'", num_files_, dir_path_));
 
@@ -367,20 +391,28 @@ bool LogsDataSet::InitDir() {
     char filename_tmp[256];
     struct stat statBuf;
 
-    if (entry->d_name[0] == '.')
-      continue; suff = strrchr(entry->d_name, '.');
-    if (suff == NULL)
-      continue; ++suff;
-    if (strcmp(suff, extension_) != 0)
-      continue; snprintf(filename_tmp, 256, "%s/%s", dir_path_, entry->d_name);
+    if (entry->d_name[0] == '.') {
+      continue;
+    }
+    suff = strrchr(entry->d_name, '.');
+    if (suff == NULL) {
+      continue;
+    }
+    ++suff;
+    if (strcmp(suff, extension_) != 0) {
+      continue;
+    }
+    snprintf(filename_tmp, 256, "%s/%s", dir_path_, entry->d_name);
 
     if (stat(filename_tmp, &statBuf) == -1) {
       LM_E(("stat(%s): %s", entry->d_name, strerror(errno)));
       continue;
     }
 
-    if (!S_ISREG(statBuf.st_mode))
-      continue; if (strlen(filename_tmp) > sizeof(file_vector_[ix].name)) {
+    if (!S_ISREG(statBuf.st_mode)) {
+      continue;
+    }
+    if (strlen(filename_tmp) > sizeof(file_vector_[ix].name)) {
       LM_E(("File name too long: '%s'", entry->d_name));
       continue;
     }
@@ -449,8 +481,9 @@ bool LogsDataSet::Synchronize(time_t time_init) {
 
     if ((GetLogLineEntry(&log_line, &timestamp)) == false) {
       // LM_W(("Skipping wrong entry in dataset: %s", dataset_->GetQueueName()));
-      if (finished_)
+      if (finished_) {
         return false;
+      }
 
       continue;
     }
@@ -463,8 +496,9 @@ bool LogsDataSet::Synchronize(time_t time_init) {
       free(log_line);
       return true;
     }
-    if (count_skip % 100000000 == 0)
+    if (count_skip % 100000000 == 0) {
       LM_M(("Skipping %s with read_timestamp:%s and first_timestamp:%s", GetQueueName(), time_read_str, time_init_str));
+    }
     free(time_read_str);
     free(log_line);
     count_skip++;
@@ -477,8 +511,10 @@ bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp) {
   char temporal_buffer[LOGSDATASET_LINE_MAX_LENGTH + 1];
 
   for (int file_index = 0; file_index < num_files_; file_index++) {
-    if (file_vector_[file_index].already_read == true)
-      continue; if (file_vector_[file_index].fd == -1) {
+    if (file_vector_[file_index].already_read == true) {
+      continue;
+    }
+    if (file_vector_[file_index].fd == -1) {
       if ((file_vector_[file_index].fp = fopen(file_vector_[file_index].name, "r")) == NULL) {
         LM_E(("Error opening file:'%s' (%d of %d), errno:%s %d", file_vector_[file_index].name, file_index, num_files_,
               strerror(errno),
@@ -524,9 +560,11 @@ bool LogsDataSet::GetLogLineEntry(char **log, time_t *timestamp) {
           temporal_position = timestamp_position_;
         }
 
-        if (timestamp_type_ == 1)
-          *timestamp = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(fields[temporal_position]); else if (timestamp_type_ == 2)
+        if (timestamp_type_ == 1) {
+          *timestamp = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(fields[temporal_position]);
+        } else if (timestamp_type_ == 2) {
           *timestamp = GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[temporal_position]);
+        }
       } else {
         *timestamp = -1;
       }
@@ -554,7 +592,7 @@ bool LogsDataSet::LookAtNextLogLineEntry(char **log, time_t *timestamp) {
       continue;
     }
 
-    if (file_vector_[file_index].fp == NULL)
+    if (file_vector_[file_index].fp == NULL) {
       if ((file_vector_[file_index].fp = fopen(file_vector_[file_index].name, "r")) == NULL) {
         LM_E(("Error opening file:'%s' (%d of %d), errno:%s %d", file_vector_[file_index].name, file_index, num_files_,
               strerror(errno),
@@ -562,6 +600,7 @@ bool LogsDataSet::LookAtNextLogLineEntry(char **log, time_t *timestamp) {
         file_vector_[file_index].already_read = true;
         continue;
       }
+    }
     file_vector_[file_index].fd = fileno(file_vector_[file_index].fp);
 
     size_t bytes_read_acum = 0;
@@ -601,21 +640,26 @@ bool LogsDataSet::LookAtNextLogLineEntry(char **log, time_t *timestamp) {
           temporal_position = timestamp_position_;
         }
 
-        if (timestamp_type_ == 1)
-          *timestamp = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(fields[temporal_position]); else if (timestamp_type_ == 2)
+        if (timestamp_type_ == 1) {
+          *timestamp = GetTimeFromStrTimeDate_YYYY_mm_dd_24H(fields[temporal_position]);
+        } else if (timestamp_type_ == 2) {
           *timestamp = GetTimeFromStrTimeDate_dd_lett_YY_12H_AMPM(fields[temporal_position]);
+        }
       } else {
         *timestamp = -1;
       }
 
-      if ((lseek(file_vector_[file_index].fd, -1 * bytes_read_acum, SEEK_CUR)) == -1)
-        LM_E(("Error rewinding file descriptor for file '%s'", file_vector_[file_index].name)); return true;
+      if ((lseek(file_vector_[file_index].fd, -1 * bytes_read_acum, SEEK_CUR)) == -1) {
+        LM_E(("Error rewinding file descriptor for file '%s'", file_vector_[file_index].name));
+      }
+      return true;
     }
 
     // If it arrives here, the input file has been finished
     // but now, we don't want to jump to another file
-    if ((lseek(file_vector_[file_index].fd, -1 * bytes_read_acum, SEEK_CUR)) == -1)
+    if ((lseek(file_vector_[file_index].fd, -1 * bytes_read_acum, SEEK_CUR)) == -1) {
       LM_E(("Error rewinding file descriptor for file '%s'", file_vector_[file_index].name));
+    }
   }
   LM_W(("End of files in directory '%s' reached after scanning %d valid files", dir_path_, num_files_));
   finished_ = true;

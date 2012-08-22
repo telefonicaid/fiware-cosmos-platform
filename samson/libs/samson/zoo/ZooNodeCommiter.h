@@ -165,8 +165,9 @@ private:
         c_ = c;
 
         // We have received information correctly
-        if (stat_.version > previous_version)
+        if (stat_.version > previous_version) {
           NotificationNewModel(stat_.version, c_);
+        }
         break;
       }
     }

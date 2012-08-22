@@ -36,7 +36,7 @@ WorkerTask::WorkerTask(SamsonWorker *samson_worker
   samson_worker_ = samson_worker;
 
   // Some environment variables
-  environment_.set("system.task_id", id);
+  environment_.Set("system.task_id", id);
   set_process_item_description(stream_operation.operation());
 
   // Set output formats for this operation
@@ -78,15 +78,17 @@ void WorkerTask::fill(samson::gpb::CollectionRecord *record, const Visualization
   }
 
   add(record, "id", get_id(), "left,different");
-  add(record, "worker_command_id", environment_.get("worker_command_id", "?"), "left,different");
+  add(record, "worker_command_id", environment_.Get("worker_command_id", "?"), "left,different");
   add(record, "creation", creation_cronometer_.seconds(), "f=time,different");
   add(record, "running ", cronometer().seconds(), "f=time,different");
   add(record, "progress ", progress(), "f=percentadge,different");
 
-  if (ProcessItem::running())
-    add(record, "state", "running", "left,different"); else
-    add(record, "state", task_state(), "left,different"); add(record, "operation",
-                                                              stream_operation_->operation(), "left,different");
+  if (ProcessItem::running()) {
+    add(record, "state", "running", "left,different");
+  } else {
+    add(record, "state", task_state(), "left,different");
+  } add(record, "operation",
+        stream_operation_->operation(), "left,different");
 
 
   /*
@@ -414,8 +416,9 @@ public:
     // Create the kv_file
     block_reader->kv_file_ = KVFile::create(block->buffer(), error);
 
-    if (error.IsActivated())
+    if (error.IsActivated()) {
       return au::SharedPointer<BlockReader>(NULL);
+    }
 
     return block_reader;
   }
@@ -452,24 +455,32 @@ public:
   }
 
   void AddInputBlocks(BlockRef *block_ref, int channel) {
-    if (( channel < 0 ) || ( channel > ( operation_->getNumInputs() - 1 )))
-      LM_X(1, ("Internal error")); au::ErrorManager error;
+    if (( channel < 0 ) || ( channel > ( operation_->getNumInputs() - 1 ))) {
+      LM_X(1, ("Internal error"));
+    }
+    au::ErrorManager error;
     au::SharedPointer<BlockReader> block_reader = BlockReader::create(block_ref, channel, error);
 
-    if (error.IsActivated())
+    if (error.IsActivated()) {
       // Still not supported how to handle this error nicely
-      LM_X(1, ("Error crearing a block reader: %s", error.GetMessage().c_str())); input_block_readers_.push_back(
+      LM_X(1, ("Error crearing a block reader: %s", error.GetMessage().c_str()));
+    }
+    input_block_readers_.push_back(
       block_reader);
   }
 
   void AddStateBlocks(BlockRef *block_ref, int channel) {
-    if (( channel < 0 ) || ( channel > ( operation_->getNumInputs() - 1 )))
-      LM_X(1, ("Internal error")); au::ErrorManager error;
+    if (( channel < 0 ) || ( channel > ( operation_->getNumInputs() - 1 ))) {
+      LM_X(1, ("Internal error"));
+    }
+    au::ErrorManager error;
     au::SharedPointer<BlockReader> block_reader = BlockReader::create(block_ref, channel, error);
 
-    if (error.IsActivated())
+    if (error.IsActivated()) {
       // Still not supported how to handle this error nicely
-      LM_X(1, ("Error crearing a block reader: %s", error.GetMessage().c_str())); state_block_readers_.push_back(
+      LM_X(1, ("Error crearing a block reader: %s", error.GetMessage().c_str()));
+    }
+    state_block_readers_.push_back(
       block_reader);
   }
 
@@ -501,23 +512,26 @@ public:
                          );
       }  // Add key values for the state
     }
-    if (state_num_kvs_ > 0)
+    if (state_num_kvs_ > 0) {
       for (size_t i = 0; i < state_block_readers_.size(); i++) {
         kvVector_.addKVs(state_block_readers_[i]->channel()
                          , state_block_readers_[i]->kv_file()->info[hg]
                          , state_block_readers_[i]->kv_file()->kvs_for_hg(hg)
                          );
       }
+    }
     return total_kvs;
   }
 
   void sortAndInit() {
-    if (state_num_kvs_ == 0) // No state
-
+    if (state_num_kvs_ == 0) {  // No state
       // LM_M(("Sorting %lu key-values" , input_num_kvs));
-      kvVector_.sort(); else if (input_num_kvs_ > 0)
+      kvVector_.sort();
+    } else if (input_num_kvs_ > 0) {
       // LM_M(("Merge-Sorting %lu / %lu key-values" , input_num_kvs , state_num_kvs));
-      kvVector_.sortAndMerge(input_num_kvs_); kvVector_.init();
+      kvVector_.sortAndMerge(input_num_kvs_);
+    }
+    kvVector_.init();
   }
 
   KVSetStruct *getNext() {
@@ -552,15 +566,16 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
   bool update_only = stream_operation_->has_reduce_update_only() && stream_operation_->reduce_update_only();
   bool reduce_forward = stream_operation_->has_reduce_forward() && stream_operation_->reduce_forward();
 
-  if (update_only)
+  if (update_only) {
     LM_T(LmtReduceOperation, ("Reduce %lu - %s begin.... (update_only)", get_id(), process_item_description().c_str()));
-  else
+  } else {
     LM_T(LmtReduceOperation,
          ("Reduce %lu - %s begin", get_id(),
-          process_item_description().c_str())); LM_T(LmtReduceOperation,
-                                                     ("Reduce %lu - %s KVRange %s", get_id(),
-                                                      process_item_description().c_str(),
-                                                      range_.str().c_str()));
+          process_item_description().c_str()));
+  } LM_T(LmtReduceOperation,
+         ("Reduce %lu - %s KVRange %s", get_id(),
+          process_item_description().c_str(),
+          range_.str().c_str()));
 
   // Handy class to emit traces
   // OperationTraces operation_traces( au::str( "[%lu] reduce %s" , id,  operation_name.c_str() ) , getUniqueBlockInfo().size );
@@ -591,9 +606,11 @@ void WorkerTask::generateKeyValues_reduce(samson::ProcessWriter *writer) {
       // BlockPointer block = block_ref->block();
       // engine::BufferPointer buffer = block->buffer();
 
-      if (!reduce_forward && (i == (operation_->getNumInputs() - 1)))
-        blockreaderCollection.AddStateBlocks(block_ref, i); else
+      if (!reduce_forward && (i == (operation_->getNumInputs() - 1))) {
+        blockreaderCollection.AddStateBlocks(block_ref, i);
+      } else {
         blockreaderCollection.AddInputBlocks(block_ref, i);
+      }
     }
   }
 

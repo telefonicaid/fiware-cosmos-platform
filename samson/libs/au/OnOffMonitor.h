@@ -29,28 +29,31 @@
 namespace au {
 // Class used to monitor a on-off system ( % time in each state )
 class OnOffMonitor {
-  bool on;       // Flag to determine current position
-
-  au::Cronometer cronometer;
-
-  double on_time;
-  double off_time;
-
-  double f;       // Factor for the update
-
 public:
 
-  OnOffMonitor();
+  OnOffMonitor(double time_span = 30);
+  ~OnOffMonitor() {
+  }
 
   // Set state
-  void set_on(bool _on);
+  void Set(bool _on);
 
   // Get on %
-  double getActivity();
+  double activity_percentadge() const;
 
   // Get time for each state
-  double get_on_time();
-  double get_off_time();
+  double on_time() const;
+  double off_time() const;
+
+private:
+
+  au::Cronometer cronometer;   // Cronometer since the last change
+  bool on_;                    // Flag to determine current position
+
+  double on_time_;     // Accumulated time
+  double off_time_;
+
+  double factor_;       // Factor for the update
 };
 }
 

@@ -1,39 +1,41 @@
 
-#include "au/log/LogServerChannel.h"
 #include "au/log/log_server_common.h"
 
 #include "LogServer.h"  // Own interface
 
 namespace au {
-LogServer::LogServer() : au::network::ConsoleService(AU_LOG_SERVER_QUERY_PORT) {
+LogServer::LogServer()
+  : au::network::ConsoleService(AU_LOG_SERVER_QUERY_PORT)
+    , channel(AU_LOG_SERVER_PORT, AU_LOG_SERVER_DIRECTORY) {
   // Init service to receive queries
   Status s = InitService();
 
-  if (s != OK)
+  if (s != OK) {
     LM_X(1, ( "Not possible to open query channel on port %d\n", AU_LOG_SERVER_QUERY_PORT ));  // Init channel to receive binrary logs
+  }
   au::ErrorManager error;
-  channel = new LogServerChannel(AU_LOG_SERVER_PORT, AU_LOG_SERVER_DIRECTORY);
-  channel->initLogServerChannel(&error);
+  channel.initLogServerChannel(&error);
 
-  if (error.IsActivated())
+  if (error.IsActivated()) {
     LM_X(1, ( "Not possible to open channel for logs %s\n", error.GetMessage().c_str()));
+  }
 }
 
 void LogServer::runCommand(std::string command, au::Environment *environment, au::ErrorManager *error) {
   CommandLine cmdLine;
 
-  cmdLine.set_flag_string("format", "TYPE : time : TEXT");    // Format of each log
-  cmdLine.set_flag_int("limit", 0);                           // Max number of logs
-  cmdLine.set_flag_string("pattern", "");                     // Pattern for strings...
-  cmdLine.set_flag_string("time", "");                        // time for logs
-  cmdLine.set_flag_string("date", "");                        // date for logs
-  cmdLine.set_flag_string("type", "");                        // Filter a particular type of events ( L M W ... )
-  cmdLine.set_flag_boolean("multi_session");                  // Skip new_session marks
-  cmdLine.set_flag_boolean("table");
-  cmdLine.set_flag_boolean("reverse");
-  cmdLine.set_flag_boolean("file");
-  cmdLine.set_flag_string("channel", "");
-  cmdLine.parse(command);
+  cmdLine.SetFlagString("format", "TYPE : time : TEXT");    // Format of each log
+  cmdLine.SetFlagInt("limit", 0);                           // Max number of logs
+  cmdLine.SetFlagString("pattern", "");                     // Pattern for strings...
+  cmdLine.SetFlagString("time", "");                        // time for logs
+  cmdLine.SetFlagString("date", "");                        // date for logs
+  cmdLine.SetFlagString("type", "");                        // Filter a particular type of events ( L M W ... )
+  cmdLine.SetFlagBoolean("multi_session");                  // Skip new_session marks
+  cmdLine.SetFlagBoolean("table");
+  cmdLine.SetFlagBoolean("reverse");
+  cmdLine.SetFlagBoolean("file");
+  cmdLine.SetFlagString("channel", "");
+  cmdLine.Parse(command);
 
   if (cmdLine.get_num_arguments() == 0) {
     error->AddError("No command provided\n");
@@ -121,7 +123,7 @@ void LogServer::runCommand(std::string command, au::Environment *environment, au
   }
 
   if (main_command == "new_session") {
-    channel->addNewSession();
+    channel.addNewSession();
     error->AddMessage("OK");
     return;
   }
@@ -136,7 +138,7 @@ void LogServer::runCommand(std::string command, au::Environment *environment, au
 
     output << "\n";
 
-    table = channel->getConnectionsTable();
+    table = channel.getConnectionsTable();
     table->setTitle("Log connections");
     output << table->str();
     delete table;
@@ -146,19 +148,19 @@ void LogServer::runCommand(std::string command, au::Environment *environment, au
 
 
   if (main_command == "info") {
-    error->AddMessage(channel->getInfo());
+    error->AddMessage(channel.getInfo());
     return;
   }
 
   // Show channels
   if (main_command == "show_channels") {
-    error->AddMessage(channel->getChannelsTable(&cmdLine));
+    error->AddMessage(channel.getChannelsTable(&cmdLine));
     return;
   }
 
   // Show logs
   if (main_command == "show") {
-    error->AddMessage(channel->getTable(&cmdLine));
+    error->AddMessage(channel.getTable(&cmdLine));
     return;
   }
 
@@ -179,8 +181,10 @@ void LogServer::autoComplete(ConsoleAutoComplete *info, au::Environment *environ
     info->add("new_session");
   }
 
-  if (info->completingSecondWord("connect"))
-    info->setHelpMessage("Provide hostname where logServer is located..."); if (info->firstWord() == "show") {
+  if (info->completingSecondWord("connect")) {
+    info->setHelpMessage("Provide hostname where logServer is located...");
+  }
+  if (info->firstWord() == "show") {
     std::string message =
       " * show: Show logs on screen\n" \
       "\n \n" \
@@ -199,6 +203,6 @@ void LogServer::autoComplete(ConsoleAutoComplete *info, au::Environment *environ
 }
 
 std::string LogServer::getPrompt(au::Environment *environment) {
-  return au::str("LogServer [%lu logs] >> ", channel->log_container.getSize());
+  return au::str("LogServer [%lu logs] >> ", channel.log_container.size());
 }
 }

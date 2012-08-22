@@ -95,8 +95,9 @@ void SelectTableInformation::add_conditions(std::string txt_conditions) {
 
 bool SelectTableInformation::check(TableRow *row) {
   for (size_t i = 0; i < conditions.size(); i++) {
-    if (!conditions[i].check(row))
+    if (!conditions[i].check(row)) {
       return false;
+    }
   }
   return true;
 }
@@ -118,17 +119,23 @@ int TableCell::compare(std::string v1, std::string v2, TableColumnFormat format)
       double _v1 = strtof(v1.c_str(), (char **)NULL);
       double _v2 = strtof(v2.c_str(), (char **)NULL);
 
-      if (_v1 < _v2)
-        return -1; else if (_v1 > _v2)
-        return 1; else
-        return 0; break;
+      if (_v1 < _v2) {
+        return -1;
+      } else if (_v1 > _v2) {
+        return 1;
+      } else {
+        return 0;
+      } break;
     }
     case format_string:
     {
-      if (v1 < v2)
-        return -1; else if (v1 > v2)
-        return 1; else
-        return 0; break;
+      if (v1 < v2) {
+        return -1;
+      } else if (v1 > v2) {
+        return 1;
+      } else {
+        return 0;
+      } break;
     }
   }
 
@@ -136,8 +143,9 @@ int TableCell::compare(std::string v1, std::string v2, TableColumnFormat format)
 }
 
 int TableCell::compare(TableCell *cell, TableColumnFormat format) {
-  if (values.size() !=  cell->values.size())
+  if (values.size() !=  cell->values.size()) {
     return values.size() - cell->values.size();
+  }
 
   for (size_t i = 0; i < values.size(); i++) {
     std::string v1 = values[i];
@@ -145,8 +153,9 @@ int TableCell::compare(TableCell *cell, TableColumnFormat format) {
 
     int c = compare(v1, v2, format);
 
-    if (c != 0)
+    if (c != 0) {
       return c;
+    }
   }
 
   return 0;
@@ -183,14 +192,18 @@ int TableRow::compare(TableRow *row, std::vector<std::string> &fields) {
     TableCell *cell1 = get(fields[i]);
     TableCell *cell2 = row->get(fields[i]);
 
-    if (cell1 && !cell2)
-      return 1; if (!cell1 && cell2)
+    if (cell1 && !cell2) {
+      return 1;
+    }
+    if (!cell1 && cell2) {
       return -1;
+    }
 
     if (cell1 && cell2) {
       int c = cell1->compare(cell2, format_string);
-      if (c != 0)
+      if (c != 0) {
         return c;
+      }
     }
   }
   return 0;
@@ -199,15 +212,19 @@ int TableRow::compare(TableRow *row, std::vector<std::string> &fields) {
 void TableRow::set(std::string name, std::string value) {
   TableCell *cell = cells.extractFromMap(name);
 
-  if (cell)
-    delete cell; cells.insertInMap(name,  new TableCell(value));
+  if (cell) {
+    delete cell;
+  }
+  cells.insertInMap(name,  new TableCell(value));
 }
 
 void TableRow::set(std::string name, TableCell *cell) {
   TableCell *old_cell = cells.extractFromMap(name);
 
-  if (old_cell)
-    delete old_cell; cells.insertInMap(name,  cell);
+  if (old_cell) {
+    delete old_cell;
+  }
+  cells.insertInMap(name,  cell);
 }
 
 // Get a particular cell
@@ -219,9 +236,11 @@ TableCell *TableRow::get(std::string name) {
 std::string TableRow::getValue(std::string name) {
   TableCell *cell = cells.findInMap(name);
 
-  if (cell)
-    return cell->str(); else
+  if (cell) {
+    return cell->str();
+  } else {
     return "";
+  }
 }
 
 TableRow::Type TableRow::getType() {
@@ -317,20 +336,35 @@ void TableColumn::processModifier(std::string modifier) {
   std::vector<std::string> modifier_components;
   split(modifier, '=', modifier_components);
 
-  if (modifier_components.size() != 2)
+  if (modifier_components.size() != 2) {
     return;
+  }
 
   if (((modifier_components[0] == "format" ) || (modifier_components[0] == "f" ))) {
     std::string str_format = modifier_components[1];
 
-    if (str_format == "string")
-      format = format_string; if (str_format == "uint64")
-      format = format_uint64; if (str_format == "uint")
-      format = format_uint; if (str_format == "double")
-      format = format_double; if (str_format == "per")
-      format = format_percentadge; if (str_format == "time")
-      format = format_time; if (str_format == "timestamp")
-      format = format_timestamp; return;
+    if (str_format == "string") {
+      format = format_string;
+    }
+    if (str_format == "uint64") {
+      format = format_uint64;
+    }
+    if (str_format == "uint") {
+      format = format_uint;
+    }
+    if (str_format == "double") {
+      format = format_double;
+    }
+    if (str_format == "per") {
+      format = format_percentadge;
+    }
+    if (str_format == "time") {
+      format = format_time;
+    }
+    if (str_format == "timestamp") {
+      format = format_timestamp;
+    }
+    return;
   }
 
   if (((modifier_components[0] == "title" ) || (modifier_components[0] == "t" ))) {
@@ -372,11 +406,13 @@ std::string TableColumn::simple_transform(std::string value) {
 }
 
 std::string TableColumn::transform(StringVector& values) {
-  if (values.size() == 0)
+  if (values.size() == 0) {
     return "<no values>";
+  }
 
-  if (values.size() == 1)
+  if (values.size() == 1) {
     return simple_transform(values[0]);
+  }
 
   switch (group) {
     case vector:
@@ -393,11 +429,13 @@ std::string TableColumn::transform(StringVector& values) {
     case different:
     {
       values.RemoveDuplicated();
-      if (values.size() == 1)
+      if (values.size() == 1) {
         return values[0];
+      }
 
-      if (values.size() > 5)
+      if (values.size() > 5) {
         return au::str("[ %lu different values ]", values.size());
+      }
 
       std::ostringstream output;
       output << "[ ";
@@ -520,18 +558,22 @@ Table::~Table() {
 }
 
 std::string Table::getValue(size_t r, size_t c) {
-  if (( r == (size_t)-1) || ( c == (size_t)-1))
+  if (( r == (size_t)-1) || ( c == (size_t)-1)) {
     return "";
+  }
 
-  if (r > rows.size())
+  if (r > rows.size()) {
     return "";
+  }
 
-  if (c > columns.size())
+  if (c > columns.size()) {
     return "";
+  }
 
   TableCell *cell = rows[r]->get(columns[c]->getName());
-  if (!cell)
+  if (!cell) {
     return "";
+  }
 
   // Return aggregated version of the values
   return columns[c]->transform(cell->values);
@@ -543,16 +585,19 @@ std::string Table::getValue(int r, std::string column_name) {
 
 size_t Table::getColumn(std::string title) {
   for (size_t i = 0; i < columns.size(); i++) {
-    if (columns[i]->getName() == title)
+    if (columns[i]->getName() == title) {
       return i;
+    }
   }
 
   return (size_t)-1;
 }
 
 std::string Table::getColumn(size_t pos) {
-  if (pos >= columns.size())
-    return ""; return columns[pos]->getName();
+  if (pos >= columns.size()) {
+    return "";
+  }
+  return columns[pos]->getName();
 }
 
 StringVector Table::getColumnNames() {
@@ -590,8 +635,10 @@ std::string Table::str() {
   int pos = 0;
   while (title.length() > title_length) {
     column_width[pos++]++;
-    if (pos >= (int)column_width.size())
-      pos = 0; title_length++;
+    if (pos >= (int)column_width.size()) {
+      pos = 0;
+    }
+    title_length++;
   }
 
   // Output string
@@ -656,12 +703,15 @@ std::string Table::str_xml() {
 
 
   // Main title...
-  if (title != "")
+  if (title != "") {
     au::xml_simple(output, "title",  title);  // For each record at the input, create an output
+  }
   for (size_t r = 0; r < rows.size(); r++) {
     // Skip separators
-    if (rows[r]->getType() == TableRow::separator)
-      continue; au::xml_open(output, "item");
+    if (rows[r]->getType() == TableRow::separator) {
+      continue;
+    }
+    au::xml_open(output, "item");
 
     for (size_t c = 0; c < columns.size(); c++) {
       au::xml_open(output, "property");
@@ -691,26 +741,31 @@ std::string Table::str_json() {
   output << "{";
 
   // Main title...
-  if (title != "")
+  if (title != "") {
     output << "\"title\":\"" <<  title << "\",";  // For each record at the input, create an output
+  }
   output << "\"items\":[";
   for (size_t r = 0; r < rows.size(); r++) {
     // Skip separators
-    if (rows[r]->getType() == TableRow::separator)
-      continue; output << "{";
+    if (rows[r]->getType() == TableRow::separator) {
+      continue;
+    }
+    output << "{";
     for (size_t c = 0; c < columns.size(); c++) {
       std::string _title = columns[c]->getTitle();
       std::string column = columns[c]->getName();
       std::string _value = getValue(r, c);
       output << "\"" << _title << "\":\"" <<  _value << "\"";
 
-      if (c !=  ( columns.size() - 1 ))
+      if (c !=  ( columns.size() - 1 )) {
         output << ",";
+      }
     }
     output << "}";
 
-    if (r != (rows.size() - 1))
+    if (r != (rows.size() - 1)) {
       output << ",";
+    }
   }
 
   output << "]";     // End of items
@@ -780,8 +835,10 @@ std::string Table::str_html() {
   // Rows
   for (size_t r = 0; r < rows.size(); r++) {
     // Skip separators
-    if (rows[r]->getType() == TableRow::separator)
-      continue; output << "<tr>";
+    if (rows[r]->getType() == TableRow::separator) {
+      continue;
+    }
+    output << "<tr>";
 
     for (size_t c = 0; c < columns.size(); c++) {
       std::string column = columns[c]->getName();
@@ -798,14 +855,17 @@ std::string Table::str_html() {
 }
 
 std::string Table::strFormatted(std::string format) {
-  if (format == "json")
+  if (format == "json") {
     return str_json();
+  }
 
-  if (format == "xml")
+  if (format == "xml") {
     return str_xml();
+  }
 
-  if (format == "html")
+  if (format == "html") {
     return str_html();
+  }
 
   // Default
   return str();
@@ -843,22 +903,26 @@ Table *Table::selectTable(SelectTableInformation *select) {
   }
 
   // Change title if necessary
-  if (select->title != "")
+  if (select->title != "") {
     table->title = select->title;
-  else
+  } else {
     table->title = title;  // Add all filtered rows
+  }
   size_t counter = 0;
   for (size_t r = 0; r < rows.size(); r++) {
     if (select->check(rows[r])) {
-      if (rows[r]->getType() != TableRow::normal)
+      if (rows[r]->getType() != TableRow::normal) {
         continue;     // Skip separators and so...
-       // Duplicate row for the new table
+      }
+      // Duplicate row for the new table
       table->rows.push_back(new TableRow(rows[r]));
 
       counter++;
-      if (select->limit > 0)
-        if (counter >= select->limit)
+      if (select->limit > 0) {
+        if (counter >= select->limit) {
           break;
+        }
+      }
     }
   }
 
@@ -892,8 +956,9 @@ Table *Table::selectTable(SelectTableInformation *select) {
 
         for (size_t r = row_begin; r < row_end; r++) {
           TableCell *cell = table->rows[r]->get(column);
-          if (cell)
+          if (cell) {
             new_cell->addFrom(cell);
+          }
         }
 
         new_row->set(column, new_cell);
@@ -916,8 +981,10 @@ Table *Table::selectTable(SelectTableInformation *select) {
 
 
   // Sort
-  if (select->sort_columns.size() > 0)
-    table->sort(select->sort_columns); return table;
+  if (select->sort_columns.size() > 0) {
+    table->sort(select->sort_columns);
+  }
+  return table;
 }
 
 std::string Table::str(SelectTableInformation *select) {
@@ -946,9 +1013,13 @@ std::string Table::strSortedGroupedAndfiltered(std::string title
     select.sort_columns.push_back(group_field);
   }
 
-  if (sort_field != "")
-    select.sort_columns.push_back(sort_field); if (conditions != "")
-    select.add_conditions(conditions); select.limit = limit;
+  if (sort_field != "") {
+    select.sort_columns.push_back(sort_field);
+  }
+  if (conditions != "") {
+    select.add_conditions(conditions);
+  }
+  select.limit = limit;
 
   return str(&select);
 }
@@ -970,9 +1041,13 @@ Table *Table::selectTable(std::string title
     select.sort_columns.push_back(group_field);
   }
 
-  if (sort_field != "")
-    select.sort_columns.push_back(sort_field); if (conditions != "")
-    select.add_conditions(conditions); select.limit = limit;
+  if (sort_field != "") {
+    select.sort_columns.push_back(sort_field);
+  }
+  if (conditions != "") {
+    select.add_conditions(conditions);
+  }
+  select.limit = limit;
 
   return selectTable(&select);
 }
@@ -1042,8 +1117,9 @@ std::string Table::top_line(std::vector<size_t> &length) {
     }
 
     // Get the formatted output
-    if (c != ( length.size() - 1))
+    if (c != ( length.size() - 1)) {
       output << AU_TABLE_H << AU_TABLE_H << AU_TABLE_H;
+    }
   }
   output << AU_TABLE_H << AU_TABLE_CORNER_RT;
   output << "\n";
@@ -1062,8 +1138,9 @@ std::string Table::top_line2(std::vector<size_t> &length) {
     }
 
     // Get the formatted output
-    if (c != ( length.size() - 1))
+    if (c != ( length.size() - 1)) {
       output << AU_TABLE_H << AU_TABLE_X_HD << AU_TABLE_H;
+    }
   }
   output << AU_TABLE_H << AU_TABLE_X_VL;
   output << "\n";
@@ -1082,8 +1159,9 @@ std::string Table::bottom_line(std::vector<size_t> &length) {
     }
 
     // Get the formatted output
-    if (c != ( length.size() - 1))
+    if (c != ( length.size() - 1)) {
       output << AU_TABLE_H << AU_TABLE_X_HU << AU_TABLE_H;
+    }
   }
   output << AU_TABLE_H << AU_TABLE_CORNER_RB;
   output << "\n";
@@ -1102,8 +1180,9 @@ std::string Table::line(std::vector<size_t> &length) {
     }
 
     // Get the formatted output
-    if (c != ( length.size() - 1))
+    if (c != ( length.size() - 1)) {
       output << AU_TABLE_H << AU_TABLE_X << AU_TABLE_H;
+    }
   }
   output << AU_TABLE_H << AU_TABLE_X_VL;
   output << "\n";
@@ -1157,8 +1236,9 @@ StringVector Table::getValuesFromColumn(std::string name, TableSelectCondition *
   StringVector values;
 
   for (size_t r = 0; r < rows.size(); r++) {
-    if (condition->check(rows[r]))
+    if (condition->check(rows[r])) {
       values.push_back(getValue(r, c));
+    }
   }
   return values;
 }
@@ -1175,8 +1255,9 @@ size_t Table::getMaxWidthForColumn(size_t c) {
     std::string value = getValue(r, c);
 
     size_t _length = value.length();
-    if (_length > column_width)
+    if (_length > column_width) {
       column_width = _length;
+    }
   }
   return column_width;
 }
@@ -1190,8 +1271,9 @@ void Table::addColumn(TableColumn *column) {
 }
 
 std::string Table::getFormatForColumn(size_t c) {
-  if (c >= columns.size())
+  if (c >= columns.size()) {
     return "";
+  }
 
   return columns[c]->field_definition;
 }

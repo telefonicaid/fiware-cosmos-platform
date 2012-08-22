@@ -26,11 +26,15 @@ void SamsonPushBuffer::push(const char *data, size_t size, bool flushing) {
   au::TokenTaker tt(&token_);
 
   // Statistics
-  rate_.push(size);
+  rate_.Push(size);
 
-  if (( size + buffer_->getSize()) > buffer_->getMaxSize())
-    flush(); if (size > 1024 * 1024 * 1024)
-    LM_X(1, ("Non supported size to push %s", au::str(size, "B").c_str())); if (size > buffer_->getSize()) {
+  if (( size + buffer_->getSize()) > buffer_->getMaxSize()) {
+    flush();
+  }
+  if (size > 1024 * 1024 * 1024) {
+    LM_X(1, ("Non supported size to push %s", au::str(size, "B").c_str()));
+  }
+  if (size > buffer_->getSize()) {
     flush();   // Flush current buffer
     // Create another buffer to meet the size
     buffer_ = engine::Buffer::create("SamsonPushBuffer", "push", size);
@@ -40,8 +44,9 @@ void SamsonPushBuffer::push(const char *data, size_t size, bool flushing) {
 
   LM_V(("Accumulated %s in push buffer", au::str(buffer_->getSize(), "B").c_str()));
 
-  if (flushing)
+  if (flushing) {
     flush();
+  }
 }
 
 void SamsonPushBuffer::flush() {

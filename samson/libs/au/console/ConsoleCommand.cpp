@@ -41,9 +41,12 @@ void ConsoleCommand::move_end() {
 
 void ConsoleCommand::move_cursor(int offset) {
   pos += offset;
-  if (pos < 0)
-    pos = 0; if (pos > (int)command.length())
+  if (pos < 0) {
+    pos = 0;
+  }
+  if (pos > (int)command.length()) {
     pos = command.length();
+  }
 }
 
 void ConsoleCommand::delete_word() {
@@ -53,13 +56,18 @@ void ConsoleCommand::delete_word() {
 }
 
 void ConsoleCommand::toogle() {
-  if (command.length() < 2)
-    return; if (pos < 1)
+  if (command.length() < 2) {
     return;
+  }
+  if (pos < 1) {
+    return;
+  }
 
   int pos_toogle = pos;
-  if (pos_toogle >= (int)command.length())
-    pos_toogle = command.length() - 1; char a = command[pos_toogle];
+  if (pos_toogle >= (int)command.length()) {
+    pos_toogle = command.length() - 1;
+  }
+  char a = command[pos_toogle];
   command[pos_toogle] = command[pos_toogle - 1];
   command[pos_toogle - 1] = a;
 

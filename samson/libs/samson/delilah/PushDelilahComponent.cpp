@@ -5,7 +5,6 @@
 #include "au/S.h"
 
 #include "engine/MemoryManager.h"      // samson::MemoryManager
-#include "engine/MemoryRequest.h"
 #include "engine/Notification.h"       // engine::Notification
 
 #include "engine/Buffer.h"             // engine::Buffer
@@ -146,8 +145,8 @@ void PushDelilahComponent::notify(engine::Notification *notification) {
   // Remove confirmed push operations
   if (notification->isName("push_operation_finished")) {
     au::TokenTaker tt(&token);
-    size_t push_id = notification->environment().get("push_id", (size_t)-1);
-    size_t size    = notification->environment().get("size", 0);
+    size_t push_id = notification->environment().Get("push_id", (size_t)-1);
+    size_t size    = notification->environment().Get("size", 0);
     uploaded_size_ += size;
 
     push_ids_.erase(push_id);

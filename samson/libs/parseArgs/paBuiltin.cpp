@@ -249,8 +249,9 @@ extern int paBuiltins;
 int paBuiltinNoOf(void) {
   int ix = 0;
 
-  if (paBuiltins != -1)
+  if (paBuiltins != -1) {
     return paBuiltins;
+  }
 
   PA_M(("Counting builtins"));
 
@@ -313,8 +314,9 @@ PaiArgument *paBuiltinLookup(char *option) {
 
   paIterateInit();
   while ((aP = paIterateNext(NULL)) != NULL) {
-    if (strcmp(aP->option, option) == 0)
+    if (strcmp(aP->option, option) == 0) {
       return aP;
+    }
   }
 
   return NULL;

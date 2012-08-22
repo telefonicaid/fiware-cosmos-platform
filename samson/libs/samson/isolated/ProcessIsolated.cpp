@@ -32,22 +32,33 @@ ProcessIsolated::ProcessIsolated(std::string description, ProcessBaseType _type)
 }
 
 ProcessIsolated::~ProcessIsolated() {
-  if (writer)
-    delete writer; if (txtWriter)
+  if (writer) {
+    delete writer;
+  }
+  if (txtWriter) {
     delete txtWriter;
+  }
 }
 
 // Get the writers to emit key-values
 ProcessWriter *ProcessIsolated::getWriter() {
-  if (type != key_value)
-    LM_X(1, ("Internal error: Not possible to get a writer if type!=key_value")); if (!writer)
-    writer = new ProcessWriter(this); return writer;
+  if (type != key_value) {
+    LM_X(1, ("Internal error: Not possible to get a writer if type!=key_value"));
+  }
+  if (!writer) {
+    writer = new ProcessWriter(this);
+  }
+  return writer;
 }
 
 ProcessTXTWriter *ProcessIsolated::getTXTWriter() {
-  if (type != txt)
-    LM_X(1, ("Internal error: Not possible to get a txtWriter if type!=txt")); if (!txtWriter)
-    txtWriter = new ProcessTXTWriter(this); return txtWriter;
+  if (type != txt) {
+    LM_X(1, ("Internal error: Not possible to get a txtWriter if type!=txt"));
+  }
+  if (!txtWriter) {
+    txtWriter = new ProcessTXTWriter(this);
+  }
+  return txtWriter;
 }
 
 void ProcessIsolated::runCode(int c) {
@@ -99,8 +110,10 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
   size_t size = item->size;
 
   // Make sure everything is correct
-  if (!buffer)
-    LM_X(1, ("Internal error: Missing buffer in ProcessBase")); if (size == 0) {
+  if (!buffer) {
+    LM_X(1, ("Internal error: Missing buffer in ProcessBase"));
+  }
+  if (size == 0) {
     LM_X(1, ("Internal error: Wrong size for ProcessBase"));  // Outputs structures placed at the begining of the buffer
   }
   OutputChannel *channel = (OutputChannel *)buffer;
@@ -121,18 +134,20 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
                                                               , "ProcessIsolated"
                                                               , sizeof(KVHeader) + _channel->info.size);
 
-        if (buffer == NULL)
+        if (buffer == NULL) {
           LM_X(1, ("Internal error: Missing buffer in ProcessBase"));  // Pointer to the header
+        }
         KVHeader *header = (KVHeader *)buffer->getData();
 
         // Initial offset for the buffer to write data
         buffer->skipWrite(sizeof(KVHeader));
 
         // KVFormat format = KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() );
-        if (outputFormats.size() > (size_t)o)
+        if (outputFormats.size() > (size_t)o) {
           header->init(outputFormats[o], _channel->info);
-        else
+        } else {
           header->init(KVFormat("no-used", "no-used"), _channel->info);  // This buffer is not not sended with the buffer
+        }
         KVInfo *info = (KVInfo *)malloc(sizeof(KVInfo) * KVFILE_NUM_HASHGROUPS);
 
         for (int i = 0; i < KVFILE_NUM_HASHGROUPS; i++) {
@@ -146,14 +161,16 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
           uint32 node_id = _hgOutput->first_node;
           while (node_id != KV_NODE_UNASIGNED) {
             bool ans = buffer->write((char *)node[node_id].data, node[node_id].size);
-            if (!ans)
+            if (!ans) {
               LM_X(1, ("Error writing key-values into a temporal Buffer ( size %lu ) ", node[node_id].size ));  // Go to the next node
+            }
             node_id = node[node_id].next;
           }
         }
 
-        if (buffer->getSize() != buffer->getMaxSize())
+        if (buffer->getSize() != buffer->getMaxSize()) {
           LM_X(1, ("Internal error"));                                                                          // Set the hash-group limits of the header
+        }
         header->range.setFrom(info);
 
         // Free buffer of KVInfo ( not not sended with the buffer )
@@ -182,8 +199,10 @@ void ProcessIsolated::flushTXTBuffer(bool finish) {
                                                           , "ProcessIsolated"
                                                           , sizeof(KVHeader) + size);
 
-    if (buffer == NULL)
-      LM_X(1, ("Internal error")); KVHeader *header = (KVHeader *)buffer->getData();
+    if (buffer == NULL) {
+      LM_X(1, ("Internal error"));
+    }
+    KVHeader *header = (KVHeader *)buffer->getData();
     header->initForTxt(size);
 
     // copy the entire buffer to here
@@ -198,13 +217,16 @@ void ProcessIsolated::initProcessItemIsolated() {
   // Init function in the foreground-process
   initProcessIsolated();
 
-  if (error_.IsActivated())
+  if (error_.IsActivated()) {
     return;
+  }
 
   shm_id = engine::SharedMemoryManager::shared()->RetainSharedMemoryArea();
-  if (shm_id != -1)
-    item = engine::SharedMemoryManager::shared()->getSharedMemoryPlatform(shm_id); else
+  if (shm_id != -1) {
+    item = engine::SharedMemoryManager::shared()->getSharedMemoryPlatform(shm_id);
+  } else {
     error_.set(au::str("Error getting shared memory for %s", process_item_description().c_str()));
+  }
 }
 
 void ProcessIsolated::finishProcessItemIsolated() {

@@ -41,7 +41,7 @@ char dictionary_file_name[1024];
 
 PaArgument paArgs[] =
 {
-  { "-dictionary", dictionary_file_name, "", PaString, PaOpt, _i DEFAULT_DICTIONARY_LOCATION,   PaNL,   PaNL,
+  { "-dictionary", dictionary_file_name, "", PaString, PaOpt, _i DEFAULT_DICTIONARY_LOCATION, PaNL, PaNL,
     "Binary Comscore dictionary"    },
   PA_END_OF_ARGS
 };
@@ -81,8 +81,9 @@ int main(int argC, const char *argV[]) {
   while (true) {
     printf("Enter URL> ");
     fflush(stdout);
-    if (scanf("%s", nativeURL) == 0)
+    if (scanf("%s", nativeURL) == 0) {
       LM_W(("Error reading url"));  // Get categories for this URL
+    }
     std::vector<uint> categories = samson_comscore_dictionary.getCategories(nativeURL);
 
     if (categories.size() == 0) {

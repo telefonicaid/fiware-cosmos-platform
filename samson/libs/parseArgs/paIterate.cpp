@@ -35,8 +35,10 @@ void paIterateInit(void) {
 PaiArgument *paIterateNext(PaiArgument *paList) {
   PaiArgument *aP;
 
-  if (builtins == -1)
-    paIterateInit(); PA_M(("builtins == %d (ix == %d)", builtins, ix));
+  if (builtins == -1) {
+    paIterateInit();
+  }
+  PA_M(("builtins == %d (ix == %d)", builtins, ix));
   do {
     if (ix < builtins) {
       aP = &paBuiltin[ix];
@@ -51,8 +53,9 @@ PaiArgument *paIterateNext(PaiArgument *paList) {
     ++ix;
   } while (aP->removed == true);
 
-  if (aP->type == PaLastArg)
+  if (aP->type == PaLastArg) {
     return NULL;
+  }
 
   return aP;
 }

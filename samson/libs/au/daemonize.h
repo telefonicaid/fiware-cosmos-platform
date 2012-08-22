@@ -17,7 +17,7 @@
  *
  * daemonize -
  */
-extern void daemonize(void);
-extern void deamonize_close_all(void);
+extern void Daemonize(void);
+extern void Deamonize_close_all(void);
 
 #endif

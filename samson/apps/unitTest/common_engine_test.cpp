@@ -17,9 +17,13 @@ void init_engine_test() {
   char *env_samson_working = getenv("SAMSON_WORKING");
   char *env_samson_home = getenv("SAMSON_HOME");
 
-  if (env_samson_working)
-    samson_working = env_samson_working; if (env_samson_home)
-    samson_home = env_samson_home; samson::SamsonSetup::init(samson_home, samson_working);           // Load setup and create default directories
+  if (env_samson_working) {
+    samson_working = env_samson_working;
+  }
+  if (env_samson_home) {
+    samson_home = env_samson_home;
+  }
+  samson::SamsonSetup::init(samson_home, samson_working);                                            // Load setup and create default directories
 
 
   engine::Engine::init();

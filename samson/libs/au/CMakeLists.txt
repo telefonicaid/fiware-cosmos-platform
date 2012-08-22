@@ -4,12 +4,9 @@
 # ---------------------------------------------------
 
 SET( MUTEX_FILES
-mutex/Lock.h
-mutex/StopLock.h
 mutex/LockDebugger.h
 mutex/Token.h
 mutex/TokenTaker.h
-mutex/Lock.cpp
 mutex/LockDebugger.cpp
 mutex/Token.cpp
 mutex/TokenTaker.cpp
@@ -35,24 +32,24 @@ log/log_server_common.h
 log/LogCentral.h
 log/LogPlugin.h
 log/Log.h
-log/LogClient.h
 log/LogServer.h
 log/LogServerChannel.h
 log/LogToServer.h
 log/LogFile.h
 log/LogFormatter.h
 log/TableLogFormatter.h
+log/LogContainer.h
 
 log/LogCentral.cpp
 log/LogPlugin.cpp
 log/Log.cpp
-log/LogClient.cpp
 log/LogServer.cpp
 log/LogServerChannel.cpp
 log/LogToServer.cpp
 log/LogFile.cpp
 log/LogFormatter.cpp
 log/TableLogFormatter.cpp
+log/LogContainer.cpp
 )
 
 # ---------------------------------------------------
@@ -162,7 +159,6 @@ string/split.cpp
 
 SET (HEADERS
 S.h
-Object.h
 Status.h
 Singleton.h
 au.pb.h
@@ -204,13 +200,12 @@ daemonize.h
 )
 
 SET (SOURCES
-Object.cpp
 Status.cpp
 au.pb.cc
 TemporalBuffer.cpp
 #charset.cpp
 utils.cpp
-
+Singleton.cpp
 Descriptors.cpp
 gpb.cpp
 CommandLine.cpp

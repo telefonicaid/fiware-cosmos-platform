@@ -72,8 +72,9 @@ void Adaptor::push(engine::BufferPointer buffer) {
        ; it_connections++)
   {
     Connection *connection = it_connections->second;
-    if (connection->getType() == connection_output)
+    if (connection->getType() == connection_output) {
       connection->push(buffer);
+    }
   }
 }
 
@@ -128,8 +129,9 @@ int Adaptor::getNumConnections() {
 }
 
 void Adaptor::set_as_finished() {
-  if (finished)
+  if (finished) {
     return;
+  }
 
   // Log activity
   log("Message", "Set as finished");
@@ -179,10 +181,10 @@ void Adaptor::remove_finished_connections(au::ErrorManager *error) {
 
 // Log system
 void Adaptor::log(std::string type, std::string message) {
-  log(new Log(getFullName(), type, message));
+  log(au::SharedPointer<Log> (new Log(getFullName(), type, message)));
 }
 
-void Adaptor::log(Log *log) {
+void Adaptor::log(au::SharedPointer<Log> log) {
   LogManager *log_manager = au::Singleton<LogManager>::shared();
 
   log_manager->log(log);
@@ -205,7 +207,9 @@ bool Adaptor::accept(InputInterChannelConnection *connection) {
 }
 
 Connection *Adaptor::getFirstConnection() {
-  if (connections.size() == 0)
-    return NULL; return connections.begin()->second;
+  if (connections.size() == 0) {
+    return NULL;
+  }
+  return connections.begin()->second;
 }
 }

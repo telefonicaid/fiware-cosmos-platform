@@ -53,9 +53,13 @@ void paWarningInit(void) {
 void paWarningAdd(PaSeverity severity, char *txt) {
   static int ix    = 0;
 
-  if (ix >= (int)BA_VEC_SIZE(paWarning))
-    ix = 0; if (paWarning[ix].string != NULL)
-    free(paWarning[ix].string); paWarning[ix].string   = strdup(txt);
+  if (ix >= (int)BA_VEC_SIZE(paWarning)) {
+    ix = 0;
+  }
+  if (paWarning[ix].string != NULL) {
+    free(paWarning[ix].string);
+  }
+  paWarning[ix].string   = strdup(txt);
   paWarning[ix].severity = severity;
 
   // LM_W((paWarning[ix].string));

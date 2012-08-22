@@ -68,9 +68,11 @@ int main(int argC, const char *argV[]) {
       counter++;
       pid_t pid = fork();
 
-      if (pid == 0)
-        run_chindren(); else
+      if (pid == 0) {
+        run_chindren();
+      } else {
         pids[i] = pid;
+      }
     }
 
     // Waid for all childrens

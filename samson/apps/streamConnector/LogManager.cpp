@@ -3,7 +3,7 @@
 
 namespace stream_connector {
 Log::Log(std::string name, std::string type, std::string message) {
-  time_ = time(NULL);
+  time_ = ::time(NULL);
   type_ = type;
   name_ = name;
   message_ = message;
@@ -18,25 +18,23 @@ std::string Log::getType() {
 }
 
 void Log::writeOnScreen() {
-  if (type_ == "Warning")
-    LM_W(( getNameAndMessage().c_str())); else if (type_ == "Error")
-    LM_E(( getNameAndMessage().c_str())); else
+  if (type_ == "Warning") {
+    LM_W(( getNameAndMessage().c_str()));
+  } else if (type_ == "Error") {
+    LM_E(( getNameAndMessage().c_str()));
+  } else {
     LM_M(( getNameAndMessage().c_str()));
-}
-
-LogManager::LogManager() : token("LogManager") {
-}
-
-void LogManager::log(Log *l) {
-  au::TokenTaker tt(&token);
-
-  logs.push_back(l);
-
-  while (logs.size() > 1000000) {
-    Log *log = logs.front();
-    delete log;
-    logs.pop_front();
   }
+}
+
+LogManager::LogManager() : token_("LogManager") {
+}
+
+void LogManager::log(au::SharedPointer<Log> log) {
+  au::TokenTaker tt(&token_);
+
+  logs_.Push(log);
+  logs_.LimitToLastItems(1000000);
 }
 
 au::tables::Table *LogManager::getLogsTable(size_t limit) {
@@ -44,18 +42,17 @@ au::tables::Table *LogManager::getLogsTable(size_t limit) {
 
   table->setTitle("Logs");
 
-  au::TokenTaker tt(&token);
-  au::list<Log>::iterator it;
+  au::TokenTaker tt(&token_);
 
-  for (it = logs.begin(); it != logs.end(); it++) {
-    Log *log = *it;
+  std::vector<au::SharedPointer<Log> > logs = logs_.items();
+  for (size_t i = 0; i < logs.size(); i++) {
     au::StringVector values;
-    values.push_back(log->name_);
+    values.push_back(logs[i]->name());
 
-    values.push_back(au::str_timestamp(log->time_));
+    values.push_back(au::str_timestamp(logs[i]->time()));
 
-    values.push_back(log->type_);
-    values.push_back(log->message_);
+    values.push_back(logs[i]->type());
+    values.push_back(logs[i]->message());
 
     table->addRow(values);
   }

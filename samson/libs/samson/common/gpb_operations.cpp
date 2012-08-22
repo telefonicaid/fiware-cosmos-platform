@@ -8,8 +8,9 @@
 namespace samson { namespace gpb {
                    gpb::StreamOperation *getStreamOperation(gpb::Data *data, const std::string& name) {
                      for (int i = 0; i < data->operations_size(); i++) {
-                       if (name == data->operations(i).name())
+                       if (name == data->operations(i).name()) {
                          return data->mutable_operations(i);
+                       }
                      }
                      return NULL;
                    }
@@ -68,8 +69,9 @@ namespace samson { namespace gpb {
                                            const std::string& default_value) {
                      // Search for an existing variable
                      for (int i = 0; i < environment->variable_size(); i++) {
-                       if (environment->variable(i).name() == name)
+                       if (environment->variable(i).name() == name) {
                          return environment->variable(i).name();
+                       }
                      }
                      return default_value;
                    }
@@ -94,9 +96,11 @@ namespace samson { namespace gpb {
                    int getPropertyInt(Environment *environment, const std::string& name, int default_value) {
                      std::string v = getProperty(environment, name, "no-value");
 
-                     if (v == "no_value")
-                       return default_value; else
+                     if (v == "no_value") {
+                       return default_value;
+                     } else {
                        return atoi(v.c_str());
+                     }
                    }
 
                    std::string str(const Environment& environment) {
@@ -110,8 +114,9 @@ namespace samson { namespace gpb {
 
                    bool isWorkerIncluded(ClusterInfo *cluster_information, size_t worker_id) {
                      for (int i = 0; i < cluster_information->workers_size(); i++) {
-                       if (cluster_information->workers(i).worker_id() == worker_id)
+                       if (cluster_information->workers(i).worker_id() == worker_id) {
                          return true;
+                       }
                      }
                      return false;
                    }
@@ -127,11 +132,13 @@ namespace samson { namespace gpb {
                                               au::ErrorManager *error) {
                      Queue *queue = get_queue(data, queue_name, format, error);
 
-                     if (error->IsActivated())
+                     if (error->IsActivated()) {
                        return NULL;
+                     }
 
-                     if (queue)
+                     if (queue) {
                        return queue;
+                     }
 
                      // Create a new one with the rigth format
                      queue = data->add_queue();
@@ -174,8 +181,9 @@ namespace samson { namespace gpb {
 
                    Queue *get_queue(Data *data, const std::string& queue_name) {
                      for (int i = 0; i < data->queue_size(); i++) {
-                       if (data->queue(i).name() == queue_name)
+                       if (data->queue(i).name() == queue_name) {
                          return data->mutable_queue(i);
+                       }
                      }
                      return NULL;
                    }
@@ -221,8 +229,9 @@ namespace samson { namespace gpb {
                      // Get or create this queue
                      gpb::Queue *queue = get_or_create_queue(data, queue_name, format, error);
 
-                     if (error->IsActivated())
+                     if (error->IsActivated()) {
                        return;
+                     }
 
                      // Always add at the end of the vector with a new block reference
                      Block *block = queue->add_blocks();
@@ -248,8 +257,9 @@ namespace samson { namespace gpb {
                      // Get or create this queue
                      gpb::Queue *queue = get_queue(data, queue_name, format, error);
 
-                     if (error->IsActivated())
+                     if (error->IsActivated()) {
                        return;
+                     }
 
                      if (!queue) {
                        error->set(au::str("Queue %s does not exist", queue_name.c_str()));
@@ -305,8 +315,9 @@ namespace samson { namespace gpb {
 
                    Block *get_first_block(Queue *queue, size_t block_id) {
                      for (int i = 0; i < queue->blocks_size(); i++) {
-                       if (queue->blocks(i).block_id() == block_id)
+                       if (queue->blocks(i).block_id() == block_id) {
                          return queue->mutable_blocks(i);
+                       }
                      }
 
                      return NULL;
@@ -332,17 +343,21 @@ namespace samson { namespace gpb {
                      int hg_begin = std::max(hg_begin1, hg_begin2);
                      int hg_end   = std::min(hg_end1, hg_end2);
 
-                     if (hg_begin < hg_end)
-                       return (hg_end - hg_begin); else
+                     if (hg_begin < hg_end) {
+                       return (hg_end - hg_begin);
+                     } else {
                        return 0;
+                     }
                    }
 
                    bool data_exist_queue_connection(gpb::Data *data, const std::string& queue_source,
                                                     const std::string& queue_target) {
                      for (int i = 0; i < data->queue_connections_size(); i++) {
-                       if (data->queue_connections(i).queue_source() == queue_source)
-                         if (data->queue_connections(i).queue_target() == queue_target)
+                       if (data->queue_connections(i).queue_source() == queue_source) {
+                         if (data->queue_connections(i).queue_target() == queue_target) {
                            return true;
+                         }
+                       }
                      }
 
                      return false;
@@ -362,13 +377,14 @@ namespace samson { namespace gpb {
                        data->mutable_queue_connections();
 
                      for (int i = 0; i < queue_connections->size(); i++) {
-                       if (queue_connections->Get(i).queue_source() == queue_source)
+                       if (queue_connections->Get(i).queue_source() == queue_source) {
                          if (queue_connections->Get(i).queue_target() == target_source) {
                            // Remove this element
                            queue_connections->SwapElements(i, queue_connections->size() - 1);
                            queue_connections->RemoveLast();
                            return;
                          }
+                       }
                      }
                    }
 
@@ -376,8 +392,9 @@ namespace samson { namespace gpb {
                      au::StringVector target_queues;
 
                      for (int i = 0; i < data->queue_connections_size(); i++) {
-                       if (data->queue_connections(i).queue_source() == queue_source)
+                       if (data->queue_connections(i).queue_source() == queue_source) {
                          target_queues.push_back(data->queue_connections(i).queue_target());
+                       }
                      }
                      return target_queues;
                    }
@@ -393,9 +410,11 @@ namespace samson { namespace gpb {
 
                        Queue *queue = get_queue(data, queue_name);
 
-                       if (queue)
-                         if (getKVInfoForQueue(*queue).size > 0)
+                       if (queue) {
+                         if (getKVInfoForQueue(*queue).size > 0) {
                            return false;
+                         }
+                       }
                      }
 
                      return true;

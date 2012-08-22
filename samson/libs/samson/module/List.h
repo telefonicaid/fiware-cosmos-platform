@@ -87,6 +87,9 @@ public:
       return NULL;
     }
 
+
+
+
     return *elements.front();
   }
 
@@ -95,6 +98,9 @@ public:
       return NULL;
     }
 
+
+
+
     return *elements.back();
   }
 
@@ -102,6 +108,9 @@ public:
     if (elements.size() == 0) {
       return NULL;
     }
+
+
+
 
     T *t =  elements.front();
     elements.pop_front();
@@ -112,6 +121,9 @@ public:
     if (elements.size() == 0) {
       return NULL;
     }
+
+
+
 
     T *t =  elements.back();
     elements.pop_back();
@@ -312,8 +324,9 @@ public:
     typename std::list<T *>::iterator it_elements;
     for (it_elements = elements.begin(); it_elements != elements.end(); it_elements++) {
       int depth = (*it_elements)->max_depth();
-      if (depth > m_depth)
+      if (depth > m_depth) {
         m_depth = depth;
+      }
     }
     return m_depth + 1;
   }
@@ -330,6 +343,9 @@ public:
     if (elements.size() == 0) {
       return 0;
     }
+
+
+
 
 
     return elements.front()->hash(max_num);
@@ -359,6 +375,9 @@ public:
     if (reuse_elements.size() == 0) {
       return new T();
     }
+
+
+
 
 
     T *t = reuse_elements.front();

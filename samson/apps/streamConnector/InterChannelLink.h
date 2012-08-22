@@ -39,8 +39,8 @@ public:
   ~InterChannelLink();
 
   // Push a packet
-  void push(InterChannelPacket *packet);
-  void push(au::ObjectList<InterChannelPacket> *packets);
+  void push(au::SharedPointer<InterChannelPacket> packet);
+  void push(const au::Queue<InterChannelPacket>& packets);
 
   void close_socket_connection();
   void close_and_stop();
@@ -52,7 +52,7 @@ public:
   std::string host_and_port();
   size_t bufferedSize();
 
-  void extract_pending_packets(au::ObjectList<InterChannelPacket> *packets);
+  void extract_pending_packets(au::Queue<InterChannelPacket>& packets);
 };
 }
 

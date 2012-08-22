@@ -76,8 +76,9 @@ public:
       kill_count++;
       cronometer.Reset();
 
-      if (kill_count > 3)
+      if (kill_count > 3) {
         LM_W(("Background process (pid %d) is not dying after %d kills", pid, kill_count ));
+      }
     }
 
 
@@ -108,8 +109,9 @@ public:
 
     pids.insert(new PidElement(pid));
 
-    if (pids.size() > 20)
+    if (pids.size() > 20) {
       LM_W(("Waiting a high number of background process %d", (int)pids.size()));
+    }
   }
 
   void clear() {
@@ -158,10 +160,11 @@ ProcessItemIsolated::~ProcessItemIsolated() {
 void ProcessItemIsolated::run() {
   LM_T(LmtIsolated, ("Isolated process %s: start ******************************************* ", getStatus().c_str()));
 
-  if (isolated_process_as_tread)
+  if (isolated_process_as_tread) {
     LM_T(LmtIsolated, ("Isolated process %s start in thread mode", getStatus().c_str()));
-  else
+  } else {
     LM_T(LmtIsolated, ("Isolated process %s start in fork mode", getStatus().c_str()));  // Create a couple of pipes to communicate both process
+  }
   if (pipe(pipeFdPair1) != 0) {
     LM_E(("System error: not possible to create pipes when running this process"));
     error_.set("System error: not possible to create pipes when running this process");
@@ -205,8 +208,10 @@ void ProcessItemIsolated::run() {
   } else {
     LM_T(LmtIsolated, ("Isolated process %s: father about to fork", getStatus().c_str()));
     pid = fork();
-    if (pid < 0)
-      LM_X(1, ("Fork return an error")); if (pid == 0) {     // Children running the background process
+    if (pid < 0) {
+      LM_X(1, ("Fork return an error"));
+    }
+    if (pid == 0) {                                          // Children running the background process
       runBackgroundProcessRun();
       LM_T(LmtIsolated,
            (
@@ -305,9 +310,11 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
       LM_T(LmtIsolated,
            ("Isolated process %s: send the continue on pipeFdPair2[1]:%d ", getStatus().c_str(), pipeFdPair2[1] ));
-      if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
+      if (au::writeGPB(pipeFdPair2[1], response) != au::OK) {
         LM_E(("Error sending message to run operation(%d), code(%d),  (pipeFdPair2[1]:%d) ",  operation, response->code(),
-              pipeFdPair2[1])); delete response;
+              pipeFdPair2[1]));
+      }
+      delete response;
 
       // Not finish the process
       return false;
@@ -328,8 +335,9 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
       samson::gpb::MessagePlatformProcess *response = new samson::gpb::MessagePlatformProcess();
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
       LM_T(LmtIsolated, ("Writing reporting message on pipeFdPair2[1]:%d", pipeFdPair2[1]));
-      if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
+      if (au::writeGPB(pipeFdPair2[1], response) != au::OK) {
         LM_E(("Error sending progress report, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
+      }
       delete response;
 
       // Not finish the process
@@ -345,17 +353,20 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
             message->error().c_str()));
 
       // Set the error
-      if (message->has_error())
+      if (message->has_error()) {
         error_.set(message->error());
-      else
+      } else {
         error_.set("Undefined user-defined error");  // Send an ok back, and return
+      }
       samson::gpb::MessagePlatformProcess *response = new samson::gpb::MessagePlatformProcess();
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
       LM_T(LmtIsolated, ("Writing user error on pipeFdPair2[1]:%d", pipeFdPair2[1]));
-      if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
+      if (au::writeGPB(pipeFdPair2[1], response) != au::OK) {
         LM_E(("Error sending user error, code(%d),  (pipeFdPair2[1]:%d), error message:%s ",  response->code(),
               pipeFdPair2[1],
-              error_.GetMessage().c_str())); delete response;
+              error_.GetMessage().c_str()));
+      }
+      delete response;
 
       // It has to finish since the background process has notified the error
       return true;
@@ -378,8 +389,9 @@ bool ProcessItemIsolated::processProcessPlatformMessage(samson::gpb::MessageProc
       samson::gpb::MessagePlatformProcess *response = new samson::gpb::MessagePlatformProcess();
       response->set_code(samson::gpb::MessagePlatformProcess_Code_code_ok);
       LM_T(LmtIsolated, ("Writing finish message on pipeFdPair2[1]:%d", pipeFdPair2[1]));
-      if (au::writeGPB(pipeFdPair2[1], response) != au::OK)
+      if (au::writeGPB(pipeFdPair2[1], response) != au::OK) {
         LM_E(("Error sending finish process, code(%d),  (pipeFdPair2[1]:%d) ",  response->code(), pipeFdPair2[1]));
+      }
       delete response;
 
       // It has to finish since it has received the last message from the background process
@@ -407,8 +419,10 @@ void ProcessItemIsolated::runExchangeMessages() {
       return;       // Problem with this read
     }
 
-    if (!message)
-      LM_X(1, ("Internal error")); if (message->code() != samson::gpb::MessageProcessPlatform_Code_code_begin) {
+    if (!message) {
+      LM_X(1, ("Internal error"));
+    }
+    if (message->code() != samson::gpb::MessageProcessPlatform_Code_code_begin) {
       error_.set(au::str(
                    "Problems starting background process since received code is not the expected 'protocol begin'"));
       return;
@@ -468,8 +482,10 @@ void ProcessItemIsolated::runExchangeMessages() {
       return;
     }
 
-    if (!message)
-      LM_X(1, ("Internal error")); if (processProcessPlatformMessage(message)) {
+    if (!message) {
+      LM_X(1, ("Internal error"));
+    }
+    if (processProcessPlatformMessage(message)) {
       delete message;
       return;
     }
@@ -493,9 +509,11 @@ void ProcessItemIsolated::sendMessageProcessPlatform(samson::gpb::MessageProcess
           au::status(write_ans)));
 
     LM_T(LmtIsolated, ("Error sending message from process to platform write-error %s",  au::status(write_ans)));
-    if (isolated_process_as_tread)
-      return; else
+    if (isolated_process_as_tread) {
+      return;
+    } else {
       _exit(101);
+    }
   }
 
   // Read the response message
@@ -511,17 +529,21 @@ void ProcessItemIsolated::sendMessageProcessPlatform(samson::gpb::MessageProcess
            "Background process did not receive an answer from message with code %d (written on pipeFdPair1[1](%d) to the platform, reading from pipeFdPair2[0](%d). Error code '%s'",
            message->code(), pipeFdPair1[1], pipeFdPair2[0], au::status(read_ans)));
     LM_T(LmtIsolated, ("Error sending message from process to platform read-error '%s'", au::status(read_ans)));
-    if (isolated_process_as_tread)
-      return; else
+    if (isolated_process_as_tread) {
+      return;
+    } else {
       _exit(102);
+    }
   }
 
   // If response code is kill, let's die
   if (response->code() == samson::gpb::MessagePlatformProcess_Code_code_kill) {
     LM_T(LmtIsolated, ("Kill message received in thread-mode!!", write_ans));
-    if (isolated_process_as_tread)
-      return; else
+    if (isolated_process_as_tread) {
+      return;
+    } else {
       _exit(103);
+    }
   }
 
   // Revove response object
@@ -589,10 +611,9 @@ void ProcessItemIsolated::trace(LogLineData *logData) {
 
   delete message;
 #else
-  if (logData == NULL)
+  if (logData == NULL) {
     return;                      // 'strict' ...
-
-
+  }
 #endif  // if 0
 }
 

@@ -56,8 +56,9 @@ au::SharedPointer<SamsonFile> SamsonFile::create(const std::string file_name, au
   // Create File from the buffer
   samson_file->kv_file_ = KVFile::create(buffer, error);
 
-  if (error.IsActivated())
+  if (error.IsActivated()) {
     return au::SharedPointer<SamsonFile>(NULL);
+  }
 
   // Return the newly created samson_file
   return samson_file;
@@ -75,21 +76,25 @@ public:
     data = NULL;
 
     struct stat filestatus;
-    if (stat(fileName.c_str(), &filestatus) != 0)
+    if (stat(fileName.c_str(), &filestatus) != 0) {
       return;
+    }
 
     FILE *file = fopen(fileName.c_str(), "r");
 
     data = (char *)malloc(filestatus.st_size);
 
     nb = fread(data, filestatus.st_size, 1, file);
-    if (nb == 0)
-      LM_W(("No data read from file:'%s'", fileName.c_str())); fclose(file);
+    if (nb == 0) {
+      LM_W(("No data read from file:'%s'", fileName.c_str()));
+    }
+    fclose(file);
   }
 
   SimpleBuffer(size_t size) {
-    if (data)
+    if (data) {
       data = ( char * )malloc(size);
+    }
   }
 
   ~SimpleBuffer() {
@@ -110,8 +115,9 @@ void SamsonFile::printHashGroups(std::ostream &output) {
   }
 
   for (int i = 0; i < KVFILE_NUM_HASHGROUPS; i++) {
-    if (kv_file_->info[i].size > 0)
+    if (kv_file_->info[i].size > 0) {
       output << i << " " << kv_file_->info[i].kvs << " " << kv_file_->info[i].size << "\n";
+    }
   }
 }
 

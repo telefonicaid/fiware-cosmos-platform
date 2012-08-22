@@ -29,43 +29,48 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
 
   // Identify specific flags in the command
   au::CommandLine cmdLine;
-  cmdLine.set_flag_boolean("hidden");
-  cmdLine.set_flag_boolean("save");       // Flag to identify if is necessary to save it locally
-  cmdLine.set_flag_boolean("a");       // Send to all workers
-  cmdLine.set_flag_boolean("connected_workers");      // Flag to run the operation only with connected workers
-  cmdLine.set_flag_uint64("w", (size_t)-1);
-  cmdLine.set_flag_string("group", "");
-  cmdLine.set_flag_string("filter", "");
-  cmdLine.set_flag_string("sort", "");
-  cmdLine.set_flag_uint64("limit", 0);
-  cmdLine.parse(command);
+  cmdLine.SetFlagBoolean("hidden");
+  cmdLine.SetFlagBoolean("save");       // Flag to identify if is necessary to save it locally
+  cmdLine.SetFlagBoolean("a");       // Send to all workers
+  cmdLine.SetFlagBoolean("connected_workers");      // Flag to run the operation only with connected workers
+  cmdLine.SetFlagUint64("w", (size_t)-1);
+  cmdLine.SetFlagString("group", "");
+  cmdLine.SetFlagString("filter", "");
+  cmdLine.SetFlagString("sort", "");
+  cmdLine.SetFlagUint64("limit", 0);
+  cmdLine.Parse(command);
 
-  worker_id         = cmdLine.get_flag_uint64("w");
-  hidden            = cmdLine.get_flag_bool("hidden");
-  save_in_database  = cmdLine.get_flag_bool("save");
-  group_field       = cmdLine.get_flag_string("group");
-  filter_field      = cmdLine.get_flag_string("filter");
-  sort_field        = cmdLine.get_flag_string("sort");
-  connected_workers = cmdLine.get_flag_bool("connected_workers");
-  limit             = cmdLine.get_flag_uint64("limit");
-  send_to_all_workers = cmdLine.get_flag_bool("a");
+  worker_id         = cmdLine.GetFlagUint64("w");
+  hidden            = cmdLine.GetFlagBool("hidden");
+  save_in_database  = cmdLine.GetFlagBool("save");
+  group_field       = cmdLine.GetFlagString("group");
+  filter_field      = cmdLine.GetFlagString("filter");
+  sort_field        = cmdLine.GetFlagString("sort");
+  connected_workers = cmdLine.GetFlagBool("connected_workers");
+  limit             = cmdLine.GetFlagUint64("limit");
+  send_to_all_workers = cmdLine.GetFlagBool("a");
 
-  if (cmdLine.get_num_arguments() > 0)
+  if (cmdLine.get_num_arguments() > 0) {
     main_command = cmdLine.get_argument(0);
+  }
 }
 
 bool WorkerCommandDelilahComponent::sendToAllWorker(const std::string& main_command) {
-  if (main_command == "ls_workers")
+  if (main_command == "ls_workers") {
     return true;
+  }
 
-  if (main_command == "ls_block_distribution")
+  if (main_command == "ls_block_distribution") {
     return true;
+  }
 
-  if (main_command == "ls_block_requests")
+  if (main_command == "ls_block_requests") {
     return true;
+  }
 
-  if (main_command ==  "ls_blocks")
+  if (main_command ==  "ls_blocks") {
     return true;
+  }
 
   return false;
 }
@@ -79,8 +84,9 @@ void WorkerCommandDelilahComponent::run() {
   if ((worker_id == (size_t)-1) && (!send_to_all_workers) && !sendToAllWorker(main_command)) {
     // Get a random worker id
     worker_id = delilah->network->getRandomWorkerId();
-    if (worker_id == (size_t)-1)
+    if (worker_id == (size_t)-1) {
       setComponentFinishedWithError("It seems there is no samson worker up in this cluster");
+    }
   }
 
   if (error.IsActivated()) {
@@ -118,8 +124,10 @@ void WorkerCommandDelilahComponent::run() {
 }
 
 void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
-  if (packet->from.node_type != WorkerNode)
-    LM_X(1, ("Samson protocol error")); size_t worker_id = packet->from.id;
+  if (packet->from.node_type != WorkerNode) {
+    LM_X(1, ("Samson protocol error"));
+  }
+  size_t worker_id = packet->from.id;
 
   if (packet->msgCode == Message::WorkerCommandResponse) {
     if (workers.find(worker_id) == workers.end()) {
@@ -185,20 +193,24 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
       print_content(it->second);
     }
 
-    if (general_error)
-      setComponentFinishedWithError(general_error_message); else
+    if (general_error) {
+      setComponentFinishedWithError(general_error_message);
+    } else {
       setComponentFinished();
+    }
   }
 }
 
 au::tables::Table *WorkerCommandDelilahComponent::getMainTable() {
-  if (collections.size() == 0)
+  if (collections.size() == 0) {
     return NULL;
+  }
 
   gpb::Collection *collection = collections.begin()->second;
 
-  if (collection->record_size() == 0)
+  if (collection->record_size() == 0) {
     return NULL;
+  }
 
   // Get the first one
   return getTable(collection);
@@ -217,8 +229,9 @@ au::tables::Table *WorkerCommandDelilahComponent::getStaticTable(gpb::Collection
       table_definition.append(format);
     }
 
-    if (i != (collection->record(0).item_size() - 1))
+    if (i != (collection->record(0).item_size() - 1)) {
       table_definition.append("|");
+    }
   }
 
   au::tables::Table *table = new au::tables::Table(table_definition);
@@ -252,8 +265,10 @@ au::tables::Table *WorkerCommandDelilahComponent::getTable(gpb::Collection *coll
 
 void WorkerCommandDelilahComponent::print_content(gpb::Collection *collection) {
   if (collection->record_size() == 0) {
-    if (!hidden)
-      delilah->showWarningMessage("No records\n"); return;
+    if (!hidden) {
+      delilah->showWarningMessage("No records\n");
+    }
+    return;
   }
 
   au::tables::Table *table = getTable(collection);
@@ -269,11 +284,12 @@ void WorkerCommandDelilahComponent::print_content(gpb::Collection *collection) {
 
     delilah->database.addTable(table_name, table);
 
-    if (!hidden)
+    if (!hidden) {
       delilah->showWarningMessage(
         au::str("Table %s has been created locally. Type set_database_mode to check content...\n"
                 , table_name.c_str())
         );
+    }
   }
 }
 

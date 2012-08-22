@@ -52,9 +52,13 @@ DiskConnection::DiskConnection(Adaptor *_item
       if (pdir != NULL) {                     // if pdir wasn't initialised correctly
         while ((pent = readdir(pdir))) {      // while there is still something in the directory to list
           if (pent != NULL) {
-            if (strcmp(".", pent->d_name) == 0)
-              continue; if (strcmp("..", pent->d_name) == 0)
-              continue; std::ostringstream localFileName;
+            if (strcmp(".", pent->d_name) == 0) {
+              continue;
+            }
+            if (strcmp("..", pent->d_name) == 0) {
+              continue;
+            }
+            std::ostringstream localFileName;
             localFileName << file_name << "/" << pent->d_name;
 
             // Add to the list of files
@@ -70,8 +74,9 @@ DiskConnection::DiskConnection(Adaptor *_item
   } else {
     // Create directory...
     int s = mkdir(file_name.c_str(), 0755);
-    if (( s != 0 ) && ( errno != EEXIST))
+    if (( s != 0 ) && ( errno != EEXIST)) {
       error.set(au::str("Problems creating directory %s (%s)", file_name.c_str(), strerror(errno)));
+    }
   }
 
   // No file descriptor by default
@@ -85,8 +90,9 @@ DiskConnection::~DiskConnection() {
 }
 
 void DiskConnection::start_connection() {
-  if (thread_running)
+  if (thread_running) {
     return;
+  }
 
   // Flag to indidicate the background thread should return ASAP
   stoping_threads = false;
@@ -113,8 +119,9 @@ void DiskConnection::run_as_output() {
   size_t max_size = 64000000;       // Should be a parameter
 
   while (true) {
-    if (stoping_threads)
+    if (stoping_threads) {
       return;
+    }
 
     // Get the next buffer to be transmitted
     engine::BufferPointer current_buffer = getNextBufferToSent();
@@ -184,8 +191,9 @@ void DiskConnection::run_as_output() {
 
 void DiskConnection::run_as_input() {
   while (true) {
-    if (stoping_threads)
+    if (stoping_threads) {
       return;
+    }
 
     if (file_descriptor) {
       // Still reading from a file...
@@ -204,9 +212,11 @@ void DiskConnection::run_as_input() {
                                       , 300
                                       , &read_size);
 
-        if (c.seconds() < 0.1)
-          input_buffer_size *= 2; else if (c.seconds() > 3)
+        if (c.seconds() < 0.1) {
+          input_buffer_size *= 2;
+        } else if (c.seconds() > 3) {
           input_buffer_size /= 2;
+        }
       }
       // If we have read something...
       if (read_size > 0) {
@@ -242,12 +252,15 @@ void DiskConnection::run_as_input() {
 }
 
 void DiskConnection::run() {
-  if (error.IsActivated())
+  if (error.IsActivated()) {
     return;
+  }
 
-  if (getType() == connection_input)
-    run_as_input(); else
+  if (getType() == connection_input) {
+    run_as_input();
+  } else {
     run_as_output();
+  }
 }
 
 std::string DiskConnection::getStatus() {
@@ -255,17 +268,25 @@ std::string DiskConnection::getStatus() {
   std::ostringstream output;
 
 
-  if (thread_running)
-    output << "Running"; else
-    output << "Stoped"; if (error.IsActivated())
-    output << au::str(" [Error:%s]", error.GetMessage().c_str()); if (getType() == connection_input)
-    output << au::str(" [Buffer:%s]", au::str(input_buffer_size).c_str()); return output.str();
+  if (thread_running) {
+    output << "Running";
+  } else {
+    output << "Stoped";
+  } if (error.IsActivated()) {
+    output << au::str(" [Error:%s]", error.GetMessage().c_str());
+  }
+  if (getType() == connection_input) {
+    output << au::str(" [Buffer:%s]", au::str(input_buffer_size).c_str());
+  }
+  return output.str();
 }
 
 void DiskConnection::review_connection() {
-  if (file_descriptor)
-    set_as_connected(!file_descriptor->IsClosed()); else
+  if (file_descriptor) {
+    set_as_connected(!file_descriptor->IsClosed());
+  } else {
     set_as_connected(true);
+  }
 }
 
 DiskAdaptor::DiskAdaptor(Channel *_channel, ConnectionType _type,  std::string _directory) :

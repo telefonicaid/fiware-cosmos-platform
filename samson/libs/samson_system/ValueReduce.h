@@ -223,7 +223,7 @@ public:
   void init(std::string command) {
     au::CommandLine cmdLine;
 
-    cmdLine.parse(command);
+    cmdLine.Parse(command);
 
     int num = 1;
     if (cmdLine.get_num_arguments() > 1) {
@@ -292,7 +292,7 @@ public:
   void init(std::string command) {
     au::CommandLine cmdLine;
 
-    cmdLine.parse(command);
+    cmdLine.Parse(command);
 
     int num = 1;
     if (cmdLine.get_num_arguments() > 1) {
@@ -426,12 +426,12 @@ public:
   void init(std::string command) {
     au::CommandLine cmdLine;
 
-    cmdLine.set_flag_boolean("emit");
-    cmdLine.set_flag_int("time", 0);
-    cmdLine.parse(command);
+    cmdLine.SetFlagBoolean("emit");
+    cmdLine.SetFlagInt("time", 0);
+    cmdLine.Parse(command);
 
-    time_span = cmdLine.get_flag_int("time");
-    emit = cmdLine.get_flag_bool("emit");
+    time_span = cmdLine.GetFlagInt("time");
+    emit = cmdLine.GetFlagBool("emit");
 
     if (time_span == 0) {
       factor = 1;
@@ -609,10 +609,10 @@ public:
   void init(std::string command) {
     au::CommandLine cmdLine;
 
-    cmdLine.set_flag_int("time", 360);
-    cmdLine.parse(command);
+    cmdLine.SetFlagInt("time", 360);
+    cmdLine.Parse(command);
 
-    time_span = cmdLine.get_flag_int("time");
+    time_span = cmdLine.GetFlagInt("time");
 
     if (time_span == 0) {
       factor = 1;
@@ -648,9 +648,15 @@ public:
       return;
     }
 
+
+
+
     if (key.get_value_from_map("concept") == NULL) {
       return;
     }
+
+
+
 
 
     // Recover state if any
@@ -731,10 +737,10 @@ public:
   void init(std::string command) {
     au::CommandLine cmdLine;
 
-    cmdLine.set_flag_uint64("time_span", 360);
-    cmdLine.parse(command);
+    cmdLine.SetFlagUint64("time_span", 360);
+    cmdLine.Parse(command);
 
-    time_span = cmdLine.get_flag_int("time");
+    time_span = cmdLine.GetFlagInt("time");
 
     if (time_span == 0) {
       factor = 1;
@@ -847,11 +853,14 @@ public:
     // Discover the main command
     au::CommandLine cmdLine;
 
-    cmdLine.parse(command);
+    cmdLine.Parse(command);
 
     if (cmdLine.get_num_arguments() == 0) {
       return NULL;
     }
+
+
+
 
 
     // Main command

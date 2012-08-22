@@ -26,9 +26,11 @@ void ObjectsManager::add(Object *o) {
 
   // Try to register with the provided name if possible
   if (o->engine_name) {
-    if (objects_by_name.extractFromMap(o->engine_name) == NULL)
-      objects_by_name.insertInMap(o->engine_name, o); else
+    if (objects_by_name.extractFromMap(o->engine_name) == NULL) {
+      objects_by_name.insertInMap(o->engine_name, o);
+    } else {
       LM_W(("Not possible to register object with name %s. It was previously used...", o->engine_name));
+    }
   }
 
   // Adding object to the general map by id
@@ -44,8 +46,9 @@ void ObjectsManager::remove(Object *o) {
   objects.extractFromMap(o->engine_id);
 
   // Remove from the vector of objects by name
-  if (o->engine_name)
+  if (o->engine_name) {
     objects_by_name.extractFromMap(o->engine_name);  // Remove from all constants listeners
+  }
   au::map< const char *, IdsCollection, au::strCompare >::iterator c;
   for (c = channels.begin(); c != channels.end(); c++) {
     c->second->remove(o->engine_id);
@@ -72,9 +75,9 @@ void ObjectsManager::objectIdsForChannel(const char *name, std::set<size_t>& ids
 
   IdsCollection *delivery = channels.findInMap(name);
 
-  if (!delivery)
+  if (!delivery) {
     return;     // No ids to be added
-
+  }
   delivery->addTo(ids);
 }
 
@@ -120,8 +123,9 @@ void ObjectsManager::send(Notification *notification, size_t target) {
     o = objects.findInMap(target);
   }
 
-  if (o)
+  if (o) {
     o->notify(notification);
+  }
 }
 
 // Get the object registered with this name

@@ -12,8 +12,9 @@ size_t Uint64Vector::getNumberOfTimes(size_t t) {
   size_t num = 0;
 
   for (size_t i = 0; i < size(); i++) {
-    if ((*this)[i] == t)
+    if ((*this)[i] == t) {
       num++;
+    }
   }
   return num;
 }

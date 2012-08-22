@@ -21,9 +21,10 @@ WorkerNetwork::WorkerNetwork(size_t worker_id
     worker_listener = new au::NetworkListener(this);
     au::Status s = worker_listener->InitNetworkListener(port);
 
-    if (s != au::OK)
+    if (s != au::OK) {
       // Not allow to continue without incoming connections...
       LM_X(1, ("Not possible to open main samson port %d (%s). Probably another worker is running...", port, status(s)));
+    }
   }
 }
 

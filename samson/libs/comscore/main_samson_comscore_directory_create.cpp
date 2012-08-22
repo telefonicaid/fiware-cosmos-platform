@@ -97,8 +97,10 @@ void read_original_categories_file(const char *file_name) {
 
   FILE *file = fopen(file_name, "r");
 
-  if (!file)
-    LM_X(1, ("Error reading file %s to load original categories file", file_name)); char line[10000];
+  if (!file) {
+    LM_X(1, ("Error reading file %s to load original categories file", file_name));
+  }
+  char line[10000];
   char *fields[10];
   size_t num = 0;
 
@@ -116,15 +118,17 @@ void read_original_categories_file(const char *file_name) {
 
     categories.insert(std::pair< uint, std::string >(id, description));
 
-    if ((++num % 100000) == 0)
+    if ((++num % 100000) == 0) {
       LM_M(("Readed %lu records", num));
+    }
   }
 }
 
 bool isPatternIdUsed(size_t id) {
   for (size_t i = 0; i < original_dictionary_entries.size(); i++) {
-    if (original_dictionary_entries[i].id == id)
+    if (original_dictionary_entries[i].id == id) {
       return true;
+    }
   }
   return false;
 }
@@ -134,8 +138,10 @@ void read_original_pattern_to_category_file(const char *file_name) {
 
   FILE *file = fopen(file_name, "r");
 
-  if (!file)
-    LM_X(1, ("Error reading file %s to load original pattern to category file", file_name)); char line[10000];
+  if (!file) {
+    LM_X(1, ("Error reading file %s to load original pattern to category file", file_name));
+  }
+  char line[10000];
   char *fields[10];
   size_t num = 0;
 
@@ -154,11 +160,16 @@ void read_original_pattern_to_category_file(const char *file_name) {
     entry.first  = atoll(fields[0]);
     entry.second = atoll(fields[1]);
 
-    if ((++num % 100000) == 0)
-      LM_M(("Readed %lu records", num)); if (( max_num_entries > 0 ) && ( max_num_entries < 1000 ))
-      if (!isPatternIdUsed(entry.first))
+    if ((++num % 100000) == 0) {
+      LM_M(("Readed %lu records", num));
+    }
+    if (( max_num_entries > 0 ) && ( max_num_entries < 1000 )) {
+      if (!isPatternIdUsed(entry.first)) {
         // LM_M(("Pattern %lu not used...", entry.first));
-        continue; original_pattern_to_category.push_back(entry);
+        continue;
+      }
+    }
+    original_pattern_to_category.push_back(entry);
   }
 
   // Sorting original records
@@ -170,11 +181,15 @@ void read_original_pattern_to_category_file(const char *file_name) {
 void read_original_dictionary_file(const char *file_name, size_t max_num_records = 0) {
   LM_M(("Reading original dictionary file '%s'", file_name ));
 
-  if (max_num_records > 0)
-    LM_M(("Max number records %d", max_num_records )); FILE *file = fopen(file_name, "r");
+  if (max_num_records > 0) {
+    LM_M(("Max number records %d", max_num_records ));
+  }
+  FILE *file = fopen(file_name, "r");
 
-  if (!file)
-    LM_X(1, ("Error reading file %s to load original dictionary file", file_name)); char line[10000];
+  if (!file) {
+    LM_X(1, ("Error reading file %s to load original dictionary file", file_name));
+  }
+  char line[10000];
   char *fields[11];
   size_t num = 0;
 
@@ -226,9 +241,12 @@ void read_original_dictionary_file(const char *file_name, size_t max_num_records
     size_t l = dictionary_entry.path_pattern.length();
 
     if (l > 0) {
-      if (dictionary_entry.path_pattern.substr(0, 1) == "/")
-        dictionary_entry.path_pattern.erase(0, 1); if (dictionary_entry.path_pattern.substr(l - 1, 1) == "/")
+      if (dictionary_entry.path_pattern.substr(0, 1) == "/") {
+        dictionary_entry.path_pattern.erase(0, 1);
+      }
+      if (dictionary_entry.path_pattern.substr(l - 1, 1) == "/") {
         dictionary_entry.path_pattern.erase(l - 1, 1);
+      }
     }
 
     // Push back this entry
@@ -238,10 +256,14 @@ void read_original_dictionary_file(const char *file_name, size_t max_num_records
     num++;
 
     // Max number of records limit
-    if (max_num_records > 0)
-      if (num >= max_num_records)
-        break; if ((++num % 100000) == 0)
+    if (max_num_records > 0) {
+      if (num >= max_num_records) {
+        break;
+      }
+    }
+    if ((++num % 100000) == 0) {
       LM_M(("Readed %lu records", num));
+    }
   }
 
   // Close the file
@@ -278,14 +300,18 @@ int main(int argC, const char *argV[]) {
 
   LM_M(("Adding main dictionary entries"));
   for (size_t i = 0; i < original_dictionary_entries.size(); i++) {
-    if ((i % 100000) == 0)
-      LM_M(("Progress %lu records", i)); samson_comscore_dictionary.push(original_dictionary_entries[i]);
+    if ((i % 100000) == 0) {
+      LM_M(("Progress %lu records", i));
+    }
+    samson_comscore_dictionary.push(original_dictionary_entries[i]);
   }
 
   LM_M(("Adding pattern to dictionary mapping entries"));
   for (size_t i = 0; i < original_pattern_to_category.size(); i++) {
-    if ((i % 100000) == 0)
-      LM_M(("Progress %lu records", i)); samson_comscore_dictionary.push_pattern_to_category(
+    if ((i % 100000) == 0) {
+      LM_M(("Progress %lu records", i));
+    }
+    samson_comscore_dictionary.push_pattern_to_category(
       original_pattern_to_category[i]);
   }
 

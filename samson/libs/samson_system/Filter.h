@@ -101,9 +101,15 @@ public:
     }
 
 
+
+
+
     if (!kv.key->isString()) {
       return;
     }
+
+
+
 
 
     // Set the new key reading json string
@@ -161,6 +167,9 @@ public:
     if (!kv.key) {
       return;
     }
+
+
+
 
 
     // document to parse xml
@@ -317,6 +326,9 @@ public:
       }
 
 
+
+
+
       fields.push_back(source);
     }
 
@@ -448,18 +460,21 @@ public:
     }
 
 
+
+
+
     std::string line = kv.key->get_string();
 
     au::StringComponents string_components;
-    string_components.process_line(line.c_str(), line.length(), separator);
+    string_components.ProcessLine(line.c_str(), line.length(), separator);
 
     keyContainer.value->set_as_vector();
 
-    if (fields.size() == 0)
+    if (fields.size() == 0) {
       for (size_t i = 0; i < string_components.components.size(); i++) {
         keyContainer.value->add_value_to_vector()->set_string(string_components.components[i]);
       }
-    else
+    } else {
       for (size_t i = 0; i < string_components.components.size(); i++) {
         if (i < fields.size()) {
           samson::system::Value *v = keyContainer.value->add_value_to_vector();
@@ -474,6 +489,7 @@ public:
           }
         }
       }
+    }
 
     // Run next filter
     if (next) {
@@ -502,6 +518,9 @@ public:
     if (!kv.key->isString()) {
       return;
     }
+
+
+
 
 
     // Next key-value ready to be emitted
@@ -566,6 +585,9 @@ public:
     }
 
 
+
+
+
     // Next key-value ready to be emitted
     KeyValue next_kv(keyContainer.value, kv.value);
 
@@ -610,6 +632,9 @@ public:
     if (!v) {
       return false;
     }
+
+
+
 
 
     return ( v->get_double() != 0 );
@@ -669,9 +694,15 @@ public:
 
 
 
+
+
+
     if (!value_for_value) {
       return;
     }
+
+
+
 
 
     keyContainer.value->copyFrom(value_for_key);

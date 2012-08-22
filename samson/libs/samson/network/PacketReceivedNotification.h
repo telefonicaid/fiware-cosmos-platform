@@ -1,7 +1,7 @@
 #ifndef _H_PACKET_RECEIVER_NOTIFICATION
 #define _H_PACKET_RECEIVER_NOTIFICATION
 
-#include "au/Object.h"
+
 #include "au/containers/SharedPointer.h"
 
 #include "engine/EngineElement.h"  // samson::EngineElement

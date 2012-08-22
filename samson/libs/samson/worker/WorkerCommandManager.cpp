@@ -74,8 +74,9 @@ samson::gpb::Collection *WorkerCommandManager::getCollectionOfWorkerCommands(con
   au::map< size_t, WorkerCommand >::iterator it;
   for (it = workerCommands.begin(); it != workerCommands.end(); it++) {
     std::string command = it->second->command;
-    if (match(visualization.pattern(), command))
+    if (match(visualization.pattern(), command)) {
       it->second->fill(collection->add_record(), visualization);
+    }
   }
   return collection;
 }

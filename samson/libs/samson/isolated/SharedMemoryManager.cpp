@@ -20,7 +20,6 @@
 #include "SharedMemoryItem.h"   // samson::SharedMemoryItem
 #include "engine/Buffer.h"                       // samson::Buffer
 #include "engine/Engine.h"                       // samson::Engine
-#include "engine/MemoryRequest.h"                // samson::MemoryRequest
 
 
 #include "samson/isolated/SharedMemoryManager.h"  // Own interface
@@ -41,8 +40,10 @@ void SharedMemoryManager::init(int _shared_memory_num_buffers, size_t _shared_me
 }
 
 SharedMemoryManager *SharedMemoryManager::shared() {
-  if (!sharedMemoryManager)
-    LM_X(1, ("SharedMemoryManager was not initialized")); return sharedMemoryManager;
+  if (!sharedMemoryManager) {
+    LM_X(1, ("SharedMemoryManager was not initialized"));
+  }
+  return sharedMemoryManager;
 }
 
 void SharedMemoryManager::destroy() {
@@ -61,8 +62,9 @@ SharedMemoryManager::SharedMemoryManager(int _shared_memory_num_buffers, size_t 
   // Name of the log file to store how to clean up memory
   sharedMemoryIdsFileName = samson::SamsonSetup::shared()->sharedMemoryLogFileName();
 
-  if (shared_memory_size_per_buffer == 0)
+  if (shared_memory_size_per_buffer == 0) {
     LM_X(1, ("Error in setup, invalid value for shared memory size %u", shared_memory_size_per_buffer ));  // Boolean vector showing if a buffer is used
+  }
   shared_memory_used_buffers = (bool *)malloc(shared_memory_num_buffers * sizeof(bool));
 
   for (int i = 0; i < shared_memory_num_buffers; i++) {
@@ -106,8 +108,10 @@ void SharedMemoryManager::remove_previous_shared_areas() {
   int length = fileSize / sizeof(int);
   int *ids = (int *)malloc(length * sizeof(int));
 
-  if (!ids)
-    LM_X(1, ("Malloc returned NULL")); FILE *file = fopen(sharedMemoryIdsFileName.c_str(), "r");
+  if (!ids) {
+    LM_X(1, ("Malloc returned NULL"));
+  }
+  FILE *file = fopen(sharedMemoryIdsFileName.c_str(), "r");
   if (file) {
     if (fread(ids, length * sizeof(int), 1, file) == 1) {
       LM_T(LmtMemory, ("Removing previous memory segments"));
@@ -123,9 +127,11 @@ void SharedMemoryManager::write_current_shared_areas_to_file() {
   FILE *file = fopen(sharedMemoryIdsFileName.c_str(), "w");
 
   if (file) {
-    if (!fwrite(shm_ids, shared_memory_num_buffers * sizeof(int), 1, file) == 1)
+    if (!fwrite(shm_ids, shared_memory_num_buffers * sizeof(int), 1, file) == 1) {
       LM_W(("Not possible to write shared memory segments on file %s. This could be a problem if the app crashes.",
-            sharedMemoryIdsFileName.c_str())); fclose(file);
+            sharedMemoryIdsFileName.c_str()));
+    }
+    fclose(file);
   } else {
     LM_W(("Not possible to write shared memory segments on file %s. This could be a problem if the app crashes.",
           sharedMemoryIdsFileName.c_str()));
@@ -173,9 +179,10 @@ void SharedMemoryManager::removeSharedMemorySegments(int *ids, int length) {
 
   for (int i = 0; i < length; i++) {
     // Remove the shared memory areas
-    if (shmctl(ids[i], IPC_RMID, NULL) == -1)
+    if (shmctl(ids[i], IPC_RMID, NULL) == -1) {
       LM_W((
              "Error trying to release a shared memory buffer Please review shared-memory problems in SAMSON documentation"));
+    }
   }
 }
 
@@ -197,13 +204,16 @@ void SharedMemoryManager::ReleaseSharedMemoryArea(int id) {
   au::TokenTaker tk(&token);
 
 
-  if ((id < 0) || ( id > shared_memory_num_buffers))
-    LM_X(1, ("Releaseing a wrong Shared Memory Id %d", id)); shared_memory_used_buffers[id] = false;
+  if ((id < 0) || ( id > shared_memory_num_buffers)) {
+    LM_X(1, ("Releaseing a wrong Shared Memory Id %d", id));
+  }
+  shared_memory_used_buffers[id] = false;
 }
 
 SharedMemoryItem *SharedMemoryManager::getSharedMemoryPlatform(int i) {
-  if (( i < 0 ) || ( i >= (int)shared_memory_items.size()))
+  if (( i < 0 ) || ( i >= (int)shared_memory_items.size())) {
     return NULL;
+  }
 
   return shared_memory_items[i];
 }
@@ -213,9 +223,11 @@ SharedMemoryItem *SharedMemoryManager::getSharedMemoryChild(int i) {
 }
 
 std::string SharedMemoryManager::str() {
-  if (sharedMemoryManager)
-    return sharedMemoryManager->_str(); else
+  if (sharedMemoryManager) {
+    return sharedMemoryManager->_str();
+  } else {
     return "SharedMemoryManager not initialized";
+  }
 }
 
 std::string SharedMemoryManager::_str() {
@@ -224,8 +236,9 @@ std::string SharedMemoryManager::_str() {
   int used_shared_memory_num_buffers = 0;
 
   for (int i = 0; i < shared_memory_num_buffers; i++) {
-    if (shared_memory_used_buffers[i])
+    if (shared_memory_used_buffers[i]) {
       used_shared_memory_num_buffers++;
+    }
   }
 
   output << au::str("Size: %s Used %d/%d",

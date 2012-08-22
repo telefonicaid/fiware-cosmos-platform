@@ -49,11 +49,12 @@ public:
   void add(std::string name, factoryFunction function) {
     mapFactory::iterator iter =  creationFunctions.find(name);
 
-    if (iter == creationFunctions.end())
+    if (iter == creationFunctions.end()) {
       // There was no previous elements defined with name
       creationFunctions.insert(std::pair<std::string, factoryFunction>(name, function));
-    else
+    } else {
       fprintf(stderr, "Warning: Previous definition of an element with the same name %s\n", name.c_str());
+    }
   }
 
   /* Create a new object of this type */
@@ -129,6 +130,9 @@ public:
     }
 
 
+
+
+
     return iter->second.create(name);
   }
 
@@ -158,6 +162,9 @@ public:
     if (!factory) {
       return false;
     }
+
+
+
 
 
     return factory->check(name);

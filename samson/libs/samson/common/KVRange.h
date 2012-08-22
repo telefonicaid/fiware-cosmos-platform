@@ -64,9 +64,15 @@ struct KVRange {
     }
 
 
+
+
+
     if (range.hg_begin >= hg_end) {
       return KVRange(0, 0);
     }
+
+
+
 
 
 
@@ -194,10 +200,16 @@ public:
         return rc;
       }
 
+
+
+
       int rc2 = remain_ranges_to_remove.SetFromDifference(range, intersection);
       if (rc2) {
         return rc2;
       }
+
+
+
 
 
       // Add remainings
@@ -272,6 +284,9 @@ public:
     if (range_total == 0) {
       return 0;
     }
+
+
+
 
 
     return ((double)range_in / (double)range_total );

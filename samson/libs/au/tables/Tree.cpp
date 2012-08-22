@@ -1,3 +1,4 @@
+#include "Tree.h"    // Own interface
 
 #include <assert.h>
 
@@ -7,8 +8,6 @@
 
 #include "au/tables/pugi.h"
 #include "au/xml.h"
-
-#include "Tree.h"    // Own interface
 
 
 namespace au {

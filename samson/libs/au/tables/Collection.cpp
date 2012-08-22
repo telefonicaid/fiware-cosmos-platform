@@ -1,9 +1,8 @@
 
+#include "Collection.h"  // Own interface
+
 #include <set>
 
-
-
-#include "Collection.h"  // Own interface
 #include "Table.h"
 
 namespace au {

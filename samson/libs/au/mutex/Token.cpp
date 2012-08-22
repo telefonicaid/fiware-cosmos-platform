@@ -12,15 +12,16 @@
 
 namespace au {
   
+
 std::string GetThreadId(pthread_t t) {
-    std::ostringstream output;
-    
-  unsigned char *base = reinterpret_cast<unsigned char*>(&t);
+  std::ostringstream output;
+
+  unsigned char *base = reinterpret_cast<unsigned char*> (&t);
   for (size_t i = 0; i < sizeof(t); ++i) {
-      output << au::str("%02x", base[i]);
-    }
-    return output.str();
+    output << au::str("%02x", base[i]);
   }
+  return output.str();
+}
   
 inline bool Token::IsValidName() const {
   if ((name_ != NULL) && (name_ != (char *) 0xffffffff) &&
@@ -28,27 +29,25 @@ inline bool Token::IsValidName() const {
       ((name_[0] > 'a') && (name_[0] < 'Z')) &&
       ((name_[1] > 'a') && (name_[1] < 'Z'))) {
     return true;
-  }
-  else {
+  } else {
     return false;
   }
 }
     
-Token::Token(const char * name) :
-  name_(name), locked_(false) {
-    
+
+Token::Token(const char * name) : name_(name), locked_(false) {
   // Take the name for debugging
-    
+
   int r_init = pthread_mutex_init(&lock_, 0);
-    
-    if( r_init != 0 )
+
+  if (r_init != 0)
     LM_X(1, ("pthread_mutex_init for '%s' returned %d" , name_ , r_init ));
-    
+
   int t_init_cond = pthread_cond_init(&block_, NULL);
-    
-    if( t_init_cond != 0 )
+
+  if (t_init_cond != 0)
     LM_X(1, ("pthread_cond_init for '%s' returned %d" , name_ , r_init ));
-  }
+}
   
 Token::~Token() {
   pthread_mutex_destroy(&lock_);

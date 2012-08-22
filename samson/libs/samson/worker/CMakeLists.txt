@@ -6,6 +6,7 @@ SET (HEADERS
 	PushManager.h
 	DistributionBlocks.h
 	SamsonWorkerSamples.h
+	SamsonWorkerRest.h
 )
 
 SET (SOURCES
@@ -15,6 +16,7 @@ SET (SOURCES
 	PushManager.cpp
 	DistributionBlocks.cpp
 	SamsonWorkerSamples.cpp
+	SamsonWorkerRest.cpp
 )
 
 # Include directories

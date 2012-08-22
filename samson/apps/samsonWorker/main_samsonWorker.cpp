@@ -79,44 +79,44 @@ bool thread_mode;
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-zk",    zoo_host,      "",           PaString,      PaOpt,              _i "localhost:2181",
+  { "-zk",    zoo_host,      "",           PaString,           PaOpt,         _i "localhost:2181",
     PaNL,
     PaNL,
     "Zookeeper server"                   },
-  { "-log_classic",&log_classic,  "",           PaBool,        PaOpt,              false,
+  { "-log_classic",&log_classic,  "",           PaBool,             PaOpt,         false,
     false,
     true,
     "Classical log file"                 },
-  { "-log_host",log_host,      "",           PaString,      PaOpt,              _i "localhost",
+  { "-log_host",log_host,      "",           PaString,           PaOpt,         _i "localhost",
     PaNL,
     PaNL,     "log server host"                          },
-  { "-log_port",&log_port,     "",           PaInt,         PaOpt,              LOG_PORT,
+  { "-log_port",&log_port,     "",           PaInt,              PaOpt,         LOG_PORT,
     0,
     10000,    "log server port"                          },
-  { "-log_file",log_file,      "",           PaString,      PaOpt,              _i "",
+  { "-log_file",log_file,      "",           PaString,           PaOpt,         _i "",
     PaNL,
     PaNL,     "Local log file"                           },
-  { "-fg",    &fg,           "",           PaBool,        PaOpt,              false,
+  { "-fg",    &fg,           "",           PaBool,             PaOpt,         false,
     false,
     true,
     "don't start as daemon"              },
-  { "-monit", &monit,        "",           PaBool,        PaOpt,              false,
+  { "-monit", &monit,        "",           PaBool,             PaOpt,         false,
     false,
     true,
     "to use with monit"                  },
-  { "-port",  &port,         "",           PaInt,         PaOpt,              SAMSON_WORKER_PORT,
+  { "-port",  &port,         "",           PaInt,              PaOpt,         SAMSON_WORKER_PORT,
     1,
     9999,
     "Port to receive new connections"    },
-  { "-web_port",&web_port,     "",           PaInt,         PaOpt,              SAMSON_WORKER_WEB_PORT,
+  { "-web_port",&web_port,     "",           PaInt,              PaOpt,         SAMSON_WORKER_WEB_PORT,
     1,
     9999,
     "Port to receive web connections"    },
-  { "-valgrind",&valgrind,     "",           PaInt,         PaOpt,              0,
+  { "-valgrind",&valgrind,     "",           PaInt,              PaOpt,         0,
     0,
     20,
     "help valgrind debug process"        },
-  { "-thread_mode",&thread_mode,  "",           PaBool,        PaOpt,              false,
+  { "-thread_mode",&thread_mode,  "",           PaBool,             PaOpt,         false,
     false,
     true,     "thread_mode"                              },
   PA_END_OF_ARGS
@@ -392,7 +392,7 @@ int main(int argC, const char *argV[]) {
 
   // Stop the worker
   if (worker) {
-    worker->stop();  // Wait all threads to finish
+    worker->Stop();  // Wait all threads to finish
   }
   au::ThreadManager::shared()->wait("samsonWorker");
 

@@ -57,11 +57,12 @@ class PushOperation;
 class PushManager;
 }
 
+class SamsonWorkerRest;
+
 class SamsonWorker :
   public NetworkInterfaceReceiver,
   public engine::Object,
-  public au::Console,
-  public au::network::RESTServiceInterface {
+  public au::Console {
   // Initial time stamp for this worker
   au::Cronometer cronometer;
 
@@ -74,14 +75,8 @@ class SamsonWorker :
   // Data model
   DataModel *data_model;
 
-  // Auto-client for REST interface
-  Delilah *delilah;
-
   // REST Service
-  au::network::RESTService *rest_service;
-
-  // Sampler for REST interface
-  SamsonWorkerSamples samson_worker_samples;
+  SamsonWorkerRest *samson_worker_rest;
 
   // Manager of push operations
   samson::worker::PushManager *push_manager;
@@ -98,8 +93,8 @@ class SamsonWorker :
   // Manager of the "Worker commands"
   WorkerCommandManager *workerCommandManager;
 
-  bool status_ready_to_process_;        // Flag to indicate if we are ready to process data
-  std::string status_message_;          // Message why we are not ready
+  bool status_ready_to_process_;          // Flag to indicate if we are ready to process data
+  std::string status_message_;            // Message why we are not ready
 
   // Internal components of samsonWorker
   friend class worker::PushOperation;
@@ -112,6 +107,7 @@ class SamsonWorker :
   friend class stream::WorkerTask;
   friend class DistributionBlockManager;
   friend class BlockRequest;
+  friend class SamsonWorkerRest;
   // friend class stream::BlockRequestTask;
 
 public:
@@ -146,22 +142,12 @@ public:
   // Get a collection with a single record with information for this worker...
   gpb::Collection *getWorkerCollection(const Visualization& visualization);
 
-  // RESTServiceInterface
-  void process(au::SharedPointer< au::network::RESTServiceCommand> command);
-  void process_intern(au::SharedPointer< au::network::RESTServiceCommand> command);
-  void process_delilah_command(std::string delilah_command, au::SharedPointer<au::network::RESTServiceCommand> command);
-  void process_node(au::SharedPointer<au::network::RESTServiceCommand> command);
-  void process_ilogging(au::SharedPointer<au::network::RESTServiceCommand> command);
-  void process_logging(au::SharedPointer<au::network::RESTServiceCommand> command);
-
-  void stop() {
-    // Stop the rest waiting for all connections to finish ( even the thread for the listener )
-    rest_service->StopService();
-  }
-
   WorkerNetwork *network() {
     return network_;
   }
+
+  // Stop all internal services
+  void Stop();
 
 private:
 

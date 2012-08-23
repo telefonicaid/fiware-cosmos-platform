@@ -33,13 +33,17 @@ au::Status InterChannelPacket::read(au::FileDescriptor *fd) {
 
   au::Status s = fd->partRead(&header_, sizeof(header_), "header", 0);
 
-  if (s != au::OK)
+  if (s != au::OK) {
     return s;
+  }
 
   // Reject excesive large packets
-  if (header_.buffer_size > ( 256 * 1024 * 1024 ))
-    return au::Error; if (header_.message_size > ( 256 * 1024 * 1024 ))
+  if (header_.buffer_size > ( 256 * 1024 * 1024 )) {
     return au::Error;
+  }
+  if (header_.message_size > ( 256 * 1024 * 1024 )) {
+    return au::Error;
+  }
 
   // Read the GPB message
   if (header_.message_size != 0) {
@@ -77,8 +81,9 @@ au::Status InterChannelPacket::read(au::FileDescriptor *fd) {
     // Set the correct size for this buffer
     buffer_->setSize(header_.buffer_size);
   }
-  if (s != au::OK)
+  if (s != au::OK) {
     return s;
+  }
 
   // Return OK
   return au::OK;
@@ -86,51 +91,61 @@ au::Status InterChannelPacket::read(au::FileDescriptor *fd) {
 
 void InterChannelPacket::recompute_sizes_in_header() {
   header_.message_size = message->ByteSize();
-  if (buffer_ != NULL)
-    header_.buffer_size = buffer_->getSize(); else
+  if (buffer_ != NULL) {
+    header_.buffer_size = buffer_->getSize();
+  } else {
     header_.buffer_size = 0;
+  }
 }
 
 au::Status InterChannelPacket::write(au::FileDescriptor *fd) {
   // Write a packet to a file descriptor
 
-  if (!is_valid_packet())
+  if (!is_valid_packet()) {
     return au::Error;
+  }
 
   // Recompute size of the mssage in the header
   recompute_sizes_in_header();
 
   au::Status s = fd->partWrite(&header_, sizeof(header_), "header");
-  if (s != au::OK)
+  if (s != au::OK) {
     return s;
+  }
 
   //
   // Sending Google Protocol Buffer
   //
   if (header_.message_size > 0) {
     char *outputVec = (char *)malloc(header_.message_size + 2);
-    if (outputVec == NULL)
+    if (outputVec == NULL) {
       LM_XP(1, ("malloc(%d)", header_.message_size ));
-    if (message->SerializeToArray(outputVec, header_.message_size) == false)
-      LM_X(1, ("SerializeToArray failed")); s = fd->partWrite(outputVec, header_.message_size, "Google Protocol Buffer");
+    }
+    if (message->SerializeToArray(outputVec, header_.message_size) == false) {
+      LM_X(1, ("SerializeToArray failed"));
+    }
+    s = fd->partWrite(outputVec, header_.message_size, "Google Protocol Buffer");
     free(outputVec);
 
-    if (s != au::OK)
+    if (s != au::OK) {
       LM_RE(s, ("partWrite:GoogleProtocolBuffer(): %s", status(s)));
+    }
   }
 
   if (buffer_ != NULL) {
     s = fd->partWrite(buffer_->getData(), buffer_->getSize(), "buffer");
-    if (s != au::OK)
+    if (s != au::OK) {
       return s;
+    }
   }
 
   return au::OK;
 }
 
 bool InterChannelPacket::is_valid_packet() {
-  if (header_.magic_number != InterChannelPacketHeader_magic_number)
+  if (header_.magic_number != InterChannelPacketHeader_magic_number) {
     return false;
+  }
 
   return true;
 }
@@ -160,14 +175,20 @@ std::string InterChannelPacket::str() {
   // Message information
   output << "[ ";
 
-  if (message->has_target_channel())
-    output << "target_channel=" << message->target_channel() << " "; if (message->has_ack())
-    output << "ack=" << message->ack() << " "; output << " ]";
+  if (message->has_target_channel()) {
+    output << "target_channel=" << message->target_channel() << " ";
+  }
+  if (message->has_ack()) {
+    output << "ack=" << message->ack() << " ";
+  }
+  output << " ]";
 
   // Buffer at the end of the message
 
-  if (buffer_ != NULL)
-    output << "[ Buffer " << au::str(buffer_->getSize(), "B") << " ]"; else
-    output << "[ No buffer ]"; return output.str();
+  if (buffer_ != NULL) {
+    output << "[ Buffer " << au::str(buffer_->getSize(), "B") << " ]";
+  } else {
+    output << "[ No buffer ]";
+  } return output.str();
 }
 }

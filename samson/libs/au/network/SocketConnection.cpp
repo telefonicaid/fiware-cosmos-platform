@@ -40,9 +40,11 @@ int SocketConnection::port() {
 }
 
 std::string SocketConnection::host_and_port() {
-  if (port_ != -1)
-    return au::str("%s:%d", host_.c_str(), port_); else
+  if (port_ != -1) {
+    return au::str("%s:%d", host_.c_str(), port_);
+  } else {
     return host_;
+  }
 }
 
 Status SocketConnection::Create(std::string host, int port,
@@ -51,13 +53,15 @@ Status SocketConnection::Create(std::string host, int port,
   struct hostent *hp;
   struct sockaddr_in peer;
 
-  if ((hp = gethostbyname(host.c_str())) == NULL)
+  if ((hp = gethostbyname(host.c_str())) == NULL) {
     return GetHostByNameError;
+  }
 
   // LM_RE(GetHostByNameError, ("gethostbyname(%s): %s", host.c_str() , strerror(errno)));
 
-  if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+  if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
     return SocketError;
+  }
 
   // LM_RE(SocketError, ("socket: %s", strerror(errno)));
 

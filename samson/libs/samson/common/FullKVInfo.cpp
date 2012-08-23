@@ -85,9 +85,13 @@ void FullKVInfo::remove(KVInfo other) {
 }
 
 bool FullKVInfo::fitsInKVInfo() {
-  if (size >= MAX_UINT_32)
-    return false; if (kvs >= MAX_UINT_32)
-    return false; return true;
+  if (size >= MAX_UINT_32) {
+    return false;
+  }
+  if (kvs >= MAX_UINT_32) {
+    return false;
+  }
+  return true;
 }
 
 KVInfo FullKVInfo::getKVInfo() {

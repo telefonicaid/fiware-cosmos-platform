@@ -23,22 +23,25 @@ BlockInfo::BlockInfo() {
 }
 
 double BlockInfo::onMemoryPercentadge() {
-  if (size == 0)
+  if (size == 0) {
     return 0;
+  }
 
   return (double)size_on_memory / (double)size;
 }
 
 double BlockInfo::onDiskPercentadge() {
-  if (size == 0)
+  if (size == 0) {
     return 0;
+  }
 
   return (double)size_on_disk / (double)size;
 }
 
 double BlockInfo::lockedPercentadge() {
-  if (size == 0)
+  if (size == 0) {
     return 0;
+  }
 
   return (double)size_locked / (double)size;
 }
@@ -55,10 +58,13 @@ std::string BlockInfo::str() {
 }
 
 void BlockInfo::push(KVFormat _format) {
-  if (format == KVFormat("*", "*"))
-    format = _format; else if (format != KVFormat("?", "?"))
-    if (format != _format)
+  if (format == KVFormat("*", "*")) {
+    format = _format;
+  } else if (format != KVFormat("?", "?")) {
+    if (format != _format) {
       format = KVFormat("?", "?");
+    }
+  }
 }
 
 void BlockInfo::pushTime(time_t time) {
@@ -68,28 +74,34 @@ void BlockInfo::pushTime(time_t time) {
     return;
   }
 
-  if (time < min_time)
-    min_time = time; if (time > max_time)
+  if (time < min_time) {
+    min_time = time;
+  }
+  if (time > max_time) {
     max_time = time;
+  }
 }
 
 time_t BlockInfo::min_time_diff() {
-  if (min_time == 0)
+  if (min_time == 0) {
     return 0;
+  }
 
   return time(NULL) - min_time;
 }
 
 time_t BlockInfo::max_time_diff() {
-  if (max_time == 0)
+  if (max_time == 0) {
     return 0;
+  }
 
   return time(NULL) - max_time;
 }
 
 double BlockInfo::getOverhead() {
-  if (size == 0)
+  if (size == 0) {
     return 0;
+  }
 
   return (double)( size - info.size  ) / (double)size;
 }
@@ -103,8 +115,9 @@ bool BlockInfo::isContentOnDisk() {
 }
 
 std::string BlockInfo::strShort() {
-  if (num_blocks == 0)
+  if (num_blocks == 0) {
     return "empty";
+  }
 
   return au::str("%3dbs %s %s %c%c"
                  , num_blocks

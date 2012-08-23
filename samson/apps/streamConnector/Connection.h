@@ -73,6 +73,9 @@ public:
     }
 
 
+
+
+
     return c / (c + nc);
   }
 
@@ -186,7 +189,7 @@ public:
 
   // Log system
   void log(std::string type, std::string message);
-  void log(Log *log);
+  void log(au::SharedPointer<Log> log);
 };
 }
 

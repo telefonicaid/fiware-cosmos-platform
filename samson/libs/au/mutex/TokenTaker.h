@@ -23,28 +23,24 @@
 #define _H_AU_TOCKEN_TAKER
 
 #include <pthread.h>             /* pthread_mutex_t                          */
-
-
-
+#include <string>
 
 namespace au {
 class Token;
 
 class TokenTaker {
-  const char *name;
-  Token *token;
-
 public:
 
-  TokenTaker(Token *_token);
-  TokenTaker(Token *_token, const char *name);
+  TokenTaker(Token *_token, const std::string& name = "unknown");
   ~TokenTaker();
 
-  void stop();
-  // void stop( int time_out );
+  void Stop();
+  void WakeUp();
+  void WakeUpAll();
 
-  void wakeUp();
-  void wakeUpAll();
+private:
+  std::string name_;
+  Token *token_;
 };
 }
 

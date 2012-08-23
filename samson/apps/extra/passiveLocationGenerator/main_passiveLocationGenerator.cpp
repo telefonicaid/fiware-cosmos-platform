@@ -32,14 +32,14 @@ size_t get_user_id(size_t pos) {
 int main(int argc, const char *argv[]) {
   au::CommandLine cmd;
 
-  cmd.set_flag_uint64("users", 100000);
-  cmd.set_flag_uint64("num", 0);      // Number of messages
-  cmd.set_flag_boolean("random");        // Generate a message for all users
-  cmd.parse(argc, argv);
+  cmd.SetFlagUint64("users", 100000);
+  cmd.SetFlagUint64("num", 0);      // Number of messages
+  cmd.SetFlagBoolean("random");        // Generate a message for all users
+  cmd.Parse(argc, argv);
 
-  size_t num_users = cmd.get_flag_uint64("users");
-  size_t num       = cmd.get_flag_uint64("num");
-  bool random_user = cmd.get_flag_bool("random");
+  size_t num_users = cmd.GetFlagUint64("users");
+  size_t num       = cmd.GetFlagUint64("num");
+  bool random_user = cmd.GetFlagBool("random");
 
   srand(time(NULL));
 
@@ -88,8 +88,10 @@ int main(int argc, const char *argv[]) {
 
       int cell = 65528;
 
-      if ((time(NULL) % 200) > 100)
-        cell = 65534; snprintf(
+      if ((time(NULL) % 200) > 100) {
+        cell = 65534;
+      }
+      snprintf(
         line, 20000,
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><ns0:AMRReport xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'  xmlns:ns0='http://O2.arcanum.vitria.com'  xsi:schemaLocation='http://O2.arcanum.vitria.com AMR.xsd'>  <SubscriberReport>    <User>      <IMSI>%lu</IMSI>      <PTMSI>FB869371</PTMSI>  <CellID>%d</CellID>   <Paging>      <Location>        <LocationArea>12124</LocationArea>        <RoutingArea>134</RoutingArea>      </Location>    </Paging>  </SubscriberReport>  <Timestamp>2011-07-21T16:07:47</Timestamp></ns0:AMRReport>",
         (unsigned long int)user_id, cell);
@@ -100,11 +102,12 @@ int main(int argc, const char *argv[]) {
       // Emit line to the output
       std::cout << line << "\n";
 
-      if (num > 0)
+      if (num > 0) {
         if (num_messages >= num) {
           fprintf(stderr, "Generated %s messages", au::str(num_messages).c_str());
           exit(0);
         }
+      }
     }
 
     // Detect if we need to sleep....

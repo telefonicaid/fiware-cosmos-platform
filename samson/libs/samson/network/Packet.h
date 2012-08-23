@@ -11,7 +11,6 @@
 
 #include "logMsg/logMsg.h"               // LM_TODO()
 
-#include "au/Object.h"
 #include "au/Status.h"
 #include "au/containers/SharedPointer.h"
 #include "au/network/FileDescriptor.h"

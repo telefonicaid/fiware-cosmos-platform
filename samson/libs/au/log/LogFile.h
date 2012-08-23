@@ -6,21 +6,15 @@
 #include <string>
 #include <vector>
 
+#include "au/ErrorManager.h"
 #include "au/Status.h"
-#include "au/containers/vector.h"
+#include "au/containers/SharedPointer.h"
 
 namespace au {
 class Log;
 
-class LogFile {
-public:
-
-  // Collections of logs from this file
-  au::vector<Log> logs;
-
-  // Read a file
-  static au::Status read(std::string file_name, LogFile **logFile);
-};
+// Read a file of logs
+std::vector< au::SharedPointer<Log> > readLogFile(std::string file_name, au::ErrorManager& error);
 }
 
 #endif

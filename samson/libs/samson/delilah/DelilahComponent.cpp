@@ -78,8 +78,9 @@ bool DelilahComponent::isComponentFinished() {
 
 void DelilahComponent::setComponentFinished() {
   // Only mark as finished once
-  if (component_finished)
+  if (component_finished) {
     return;
+  }
 
   // LM_M(("Set component finish (%s)" , concept.c_str() ));
 
@@ -87,14 +88,17 @@ void DelilahComponent::setComponentFinished() {
   cronometer.Stop();
 
   // Show ourput on screen
-  if (print_output_at_finish)
-    delilah->showMessage(output.str()); delilah->delilahComponentFinishNotification(this);
+  if (print_output_at_finish) {
+    delilah->showMessage(output.str());
+  }
+  delilah->delilahComponentFinishNotification(this);
 }
 
 void DelilahComponent::setComponentFinishedWithError(std::string error_message) {
   // Only mark as finished once
-  if (component_finished)
+  if (component_finished) {
     return;
+  }
 
   component_finished = true;
   cronometer.Stop();

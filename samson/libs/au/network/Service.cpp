@@ -63,8 +63,9 @@ Service::~Service() {
 }
 
 Status Service::InitService() {
-  if (init_)
+  if (init_) {
     return au::Error;
+  }
 
   Status s = listener_.InitNetworkListener(port_);
   return s;
@@ -86,9 +87,11 @@ void Service::StopService() {
 
   // Wait for all items to finish
   while (true) {
-    if (items_.size() == 0)
-      break; else
+    if (items_.size() == 0) {
+      break;
+    } else {
       usleep(100000);
+    }
   }
 
   // Stop the main listener
@@ -103,8 +106,9 @@ void Service::StopService() {
       {
         au::TokenTaker tt(&token_);
         num_items = items_.size();
-        if (num_items == 0)
+        if (num_items == 0) {
           return;
+        }
       }
 
       if (c.seconds() > 1) {
@@ -154,16 +158,16 @@ au::tables::Table *Service::getConnectionsTable() const {
 
     values.push_back(au::str("%lu",
                              (size_t)item->socket_connection_->rate_in().
-                             getTotalSize()));
+                             size()));
     values.push_back(au::str("%lu",
                              (size_t)item->socket_connection_->rate_out().
-                             getTotalSize()));
+                             size()));
     values.push_back(au::str("%lu",
                              (size_t)item->socket_connection_->rate_in().
-                             getRate()));
+                             rate()));
     values.push_back(au::str("%lu",
                              (size_t)item->socket_connection_->rate_out().
-                             getRate()));
+                             rate()));
 
     table->addRow(values);
   }
@@ -184,9 +188,11 @@ void Service::finish(ServiceItem *item) {
 }
 
 std::string Service::GetStringStatus() const {
-  if (listener_.IsNetworkListenerRunning())
-    return au::str("listening on port %d", listener_.port()); else
+  if (listener_.IsNetworkListenerRunning()) {
+    return au::str("listening on port %d", listener_.port());
+  } else {
     return "not listening";
+  }
 }
 }
 }

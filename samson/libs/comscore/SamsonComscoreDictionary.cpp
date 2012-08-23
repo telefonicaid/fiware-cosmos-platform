@@ -29,8 +29,10 @@ URL::URL(std::string url) {
   // Divide domain in core and
   size_t pos2 = std::string::npos;
   size_t tmp_pos = domain.find_last_of(".");
-  if (tmp_pos != std::string::npos)
-    pos2 = domain.find_last_of(".", tmp_pos - 1); if (pos2 == std::string::npos) {
+  if (tmp_pos != std::string::npos) {
+    pos2 = domain.find_last_of(".", tmp_pos - 1);
+  }
+  if (pos2 == std::string::npos) {
     pre_domain = "";
     core_domain = domain;
   } else {
@@ -76,15 +78,17 @@ void SamsonComscoreDictionary::push_category(uint id, std::string category) {
 void SamsonComscoreDictionary::write(const char *file_name) {
   FILE *file = fopen(file_name, "w");
 
-  if (!file)
+  if (!file) {
     LM_X(1, ("Not possible to open file %s to write a SamsonComscoreDictionary", file_name ));  // Prepare & write header
+  }
   header.size_string_collection = string_collection.getSize();
   header.size_struct_collection_dictionary_entries = dictionary_entries.getSize();
   header.size_struct_collection_pattern_to_category = pattern_to_category.getSize();
   header.size_struct_collection_categories = categories.getSize();
 
-  if (fwrite(&header, sizeof(Header), 1, file) != 1)
+  if (fwrite(&header, sizeof(Header), 1, file) != 1) {
     LM_X(1, ("Error writin to file %s to create a SamsonComscoreDictionary", file_name ));
+  }
   LM_M(("Writing file %s with ( String %s ) ( Dictionary %s ) ( Pattern2Category %s ) ( Category2Description %s )"
         , file_name
         , au::str(header.
@@ -118,10 +122,12 @@ void SamsonComscoreDictionary::write(const char *file_name) {
 void SamsonComscoreDictionary::read(const char *file_name) {
   FILE *file = fopen(file_name, "r");
 
-  if (!file)
+  if (!file) {
     LM_X(1, ("Not possible to open file %s to recover SamsonComscoreDictionary", file_name ));
-  if (fread(&header, sizeof( Header ), 1, file) != 1)
+  }
+  if (fread(&header, sizeof( Header ), 1, file) != 1) {
     LM_X(1, ("Error reading %s while recovering SamsonComscoreDictionary", file_name));  // Recover string collection
+  }
   string_collection.read(file, header.size_string_collection);
 
   // Recover dictionary_entries
@@ -177,9 +183,12 @@ uint SamsonComscoreDictionary::find_one_pattern(const char *core_domain) {
   uint begin = 0;
   uint end = dictionary_entries.size;
 
-  if (strcmp(core_domain, get_domain_for_pattern(begin)) == 0)
-    return begin; if (strcmp(core_domain, get_domain_for_pattern(end)) == 0)
+  if (strcmp(core_domain, get_domain_for_pattern(begin)) == 0) {
+    return begin;
+  }
+  if (strcmp(core_domain, get_domain_for_pattern(end)) == 0) {
     return end;
+  }
 
   return find_one_pattern(core_domain, begin, end);
 }
@@ -207,19 +216,23 @@ const char *SamsonComscoreDictionary::get_path_for_pattern(uint pos) {
 
 uint SamsonComscoreDictionary::find_one_pattern(const char *core_domain, uint begin, uint end) {
   // Last interval
-  if (end == begin + 1)
+  if (end == begin + 1) {
     return (uint) - 1;
+  }
 
   uint mid_point = (begin + end) / 2;
 
   int c = strcmp(core_domain, get_domain_for_pattern(mid_point));
 
-  if (c == 0)
+  if (c == 0) {
     return mid_point;
+  }
 
-  if (c < 0)
-    return find_one_pattern(core_domain, begin, mid_point); else
+  if (c < 0) {
+    return find_one_pattern(core_domain, begin, mid_point);
+  } else {
     return find_one_pattern(core_domain, mid_point, end);
+  }
 }
 
 bool SamsonComscoreDictionary::findURLPattern(const char *_url, uint *pattern) {
@@ -230,37 +243,41 @@ bool SamsonComscoreDictionary::findURLPattern(const char *_url, uint *pattern) {
   uint end_pattern;
 
   // Find pattern range to evaluate
-  if (find_pattern_range(url.core_domain.c_str(), &begin_pattern, &end_pattern))
-
+  if (find_pattern_range(url.core_domain.c_str(), &begin_pattern, &end_pattern)) {
     // LM_M(("Domain %s has patterns in the range %d , %d" , url.core_domain.c_str() , begin_pattern, end_pattern ));
 
     for (uint p = begin_pattern; p <= end_pattern; p++) {
       const char *pre_domain_pattern = get_pre_domain_for_pattern(p);
       const char *path_pattern = get_path_for_pattern(p);
 
-      if (match(pre_domain_pattern, url.pre_domain.c_str()))
+      if (match(pre_domain_pattern, url.pre_domain.c_str())) {
         if (match(path_pattern, url.path.c_str())) {
           *pattern = dictionary_entries.v[ p ].id;
           return true;
         }
+      }
     }
+  }
   return false;
 }
 
 std::vector<uint> SamsonComscoreDictionary::getCategories(const char *url) {
   uint pattern;
 
-  if (findURLPattern(url, &pattern))
+  if (findURLPattern(url, &pattern)) {
     return pattern_to_category.find(pattern);
-  else
+  } else {
     return std::vector<uint>();             // Empty vector
+  }
 }
 
 const char *SamsonComscoreDictionary::getCategoryName(uint id) {
   std::vector<uint> s = categories.find(id);
-  if (s.size() != 1)
-    return "Unknown"; else
+  if (s.size() != 1) {
+    return "Unknown";
+  } else {
     return string_collection.get(s[0]);
+  }
 }
 
 size_t SamsonComscoreDictionary::getNumEntries() {
@@ -268,23 +285,31 @@ size_t SamsonComscoreDictionary::getNumEntries() {
 }
 
 size_t SamsonComscoreDictionary::getPatternIdForEnty(size_t i) {
-  if (i > dictionary_entries.size)
-    return 0; return dictionary_entries.v[i].id;
+  if (i > dictionary_entries.size) {
+    return 0;
+  }
+  return dictionary_entries.v[i].id;
 }
 
 const char *SamsonComscoreDictionary::getDomainForEntry(size_t i) {
-  if (i > dictionary_entries.size)
-    return "Unknown"; return string_collection.get(dictionary_entries.v[i].domain);
+  if (i > dictionary_entries.size) {
+    return "Unknown";
+  }
+  return string_collection.get(dictionary_entries.v[i].domain);
 }
 
 const char *SamsonComscoreDictionary::getPreDomainPatternForEntry(size_t i) {
-  if (i > dictionary_entries.size)
-    return "Unknown"; return string_collection.get(dictionary_entries.v[i].pre_domain_pattern);
+  if (i > dictionary_entries.size) {
+    return "Unknown";
+  }
+  return string_collection.get(dictionary_entries.v[i].pre_domain_pattern);
 }
 
 const char *SamsonComscoreDictionary::getPathPatternForEntry(size_t i) {
-  if (i > dictionary_entries.size)
-    return "Unknown"; return string_collection.get(dictionary_entries.v[i].path_pattern);
+  if (i > dictionary_entries.size) {
+    return "Unknown";
+  }
+  return string_collection.get(dictionary_entries.v[i].path_pattern);
 }
 }
 }

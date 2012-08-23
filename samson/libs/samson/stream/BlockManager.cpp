@@ -47,8 +47,10 @@ public:
 BlockManager *blockManager = NULL;
 
 void BlockManager::init() {
-  if (blockManager)
-    LM_X(1, ("Error with init BlockManager (double init)")); blockManager = new BlockManager();
+  if (blockManager) {
+    LM_X(1, ("Error with init BlockManager (double init)"));
+  }
+  blockManager = new BlockManager();
   blockManager->recover_blocks_from_disks();     // Recover blocks from disk
 }
 
@@ -69,8 +71,10 @@ BlockManager::~BlockManager() {
 }
 
 void BlockManager::create_block(size_t block_id, engine::BufferPointer buffer) {
-  if (buffer == NULL)
-    LM_X(1, ("Internal error")); BlockPointer block(new Block(block_id, buffer));
+  if (buffer == NULL) {
+    LM_X(1, ("Internal error"));
+  }
+  BlockPointer block(new Block(block_id, buffer));
 
   // Add this block
   block_ids_.push_back(block_id);
@@ -129,8 +133,9 @@ std::set<size_t> BlockManager::GetPendingBlockIds(const std::set<size_t>& block_
   std::set<size_t> pending_block_ids;
   std::set<size_t>::iterator it;
   for (it = block_ids.begin(); it != block_ids.end(); it++) {
-    if (!blocks_.ContainsKey(*it))
+    if (!blocks_.ContainsKey(*it)) {
       pending_block_ids.insert(*it);
+    }
   }
   return pending_block_ids;
 }
@@ -146,17 +151,19 @@ void BlockManager::destroy() {
 }
 
 BlockManager *BlockManager::shared() {
-  if (!blockManager)
-    LM_X(1, ("Init BlockManager before using it")); return blockManager;
+  if (!blockManager) {
+    LM_X(1, ("Init BlockManager before using it"));
+  }
+  return blockManager;
 }
 
 void BlockManager::notify(engine::Notification *notification) {
   if (notification->isName(notification_review_block_manager)) {
     review();
   } else if (notification->isName(notification_disk_operation_request_response)) {
-    std::string type      = notification->environment().get("type", "-");
-    size_t operation_size = notification->environment().get("operation_size", 0);
-    size_t block_id       = notification->environment().get("block_id", 0);
+    std::string type      = notification->environment().Get("type", "-");
+    size_t operation_size = notification->environment().Get("operation_size", 0);
+    size_t block_id       = notification->environment().Get("block_id", 0);
 
     // Recover the block
     BlockPointer block = blocks_.Get(block_id);
@@ -193,15 +200,19 @@ void BlockManager::review() {
   size_t max_scheduled_read_size = SamsonSetup::shared()->getUInt64("stream.max_scheduled_read_size");
 
   // No schedule new operations until all the previous one have finished
-  if (scheduled_read_size > 0)
-    return; if (scheduled_write_size > 0)
+  if (scheduled_read_size > 0) {
     return;
+  }
+  if (scheduled_write_size > 0) {
+    return;
+  }
 
   LM_T(LmtBlockManager, ("Reviewing block manager"));
 
   // If no blocks, nothing to do...
-  if (blocks_.size() == 0)
+  if (blocks_.size() == 0) {
     return;
+  }
 
   // --------------------------------------------------------------------------------
   // Sort by priorities
@@ -228,9 +239,13 @@ void BlockManager::review() {
     size_t block_id = *b;
     BlockPointer block = blocks_.Get(block_id);
 
-    if (block == NULL)
-      LM_X(1, ("Internal error")); if ((accumulated_memory + block->getSize()) > max_memory)
-      break; accumulated_memory += block->getSize();
+    if (block == NULL) {
+      LM_X(1, ("Internal error"));
+    }
+    if ((accumulated_memory + block->getSize()) > max_memory) {
+      break;
+    }
+    accumulated_memory += block->getSize();
     last_block_id_in_memory = block_id;
   }
 
@@ -250,8 +265,10 @@ void BlockManager::review() {
       BlockPointer block =  blocks_.Get(block_id);
 
       // Stop when arrive to the limit block ( this should be in memory )
-      if (block_id == last_block_id_in_memory)
-        break; if (block->state() == Block::ready) {     // Both on disk and on memory
+      if (block_id == last_block_id_in_memory) {
+        break;
+      }
+      if (block->state() == Block::ready) {              // Both on disk and on memory
         LM_T(LmtBlockManager, ("Free block:'%s'", block->str().c_str()));
 
         // Free block
@@ -282,8 +299,9 @@ void BlockManager::review() {
         LM_T(LmtBlockManager, ("Write block %lu", block->get_block_id()));
 
         // No continue for more writes
-        if (scheduled_write_size >= max_scheduled_write_size)
+        if (scheduled_write_size >= max_scheduled_write_size) {
           break;
+        }
       }
     }
   }
@@ -311,8 +329,9 @@ void BlockManager::review() {
         LM_T(LmtBlockManager, ("Scheduling read for block:'%s'", block->str().c_str()));
 
         // No continue for more writes
-        if (scheduled_read_size > max_scheduled_read_size)
+        if (scheduled_read_size > max_scheduled_read_size) {
           break;
+        }
       }
 
       // No schedule read operations over the block limit
@@ -417,9 +436,10 @@ void BlockManager::recover_blocks_from_disks() {
       struct ::stat info;
       stat(path.c_str(), &info);
 
-      if (S_ISREG(info.st_mode))
+      if (S_ISREG(info.st_mode)) {
         // Trying to recover block from disk....
         create_block_from_disk(path);
+      }
     }
     closedir(dp);
   }
@@ -428,16 +448,18 @@ void BlockManager::recover_blocks_from_disks() {
 void BlockManager::schedule_remove_operation(BlockPointer block) {
   au::SharedPointer< engine::DiskOperation> operation(engine::DiskOperation::newRemoveOperation(
                                                         block->file_name(), getEngineId()));
-  operation->environment.set("block_id", block->get_block_id());
+  operation->environment.Set("block_id", block->get_block_id());
 
   engine::DiskManager::shared()->Add(operation);
 }
 
 void BlockManager::schedule_read_operation(BlockPointer block) {
   // Only make sense if block is only on disk
-  if (block->state() != Block::on_disk)
+  if (block->state() != Block::on_disk) {
     LM_W(("Called schedule_read_operation for a block (%lu) that is in another state %s"
-          , block->get_block_id(), block->str_state().c_str())); if (block->buffer() != NULL) {
+          , block->get_block_id(), block->str_state().c_str()));
+  }
+  if (block->buffer() != NULL) {
     // No problem since previous buffer is auytomatically released in buffer_container
     LM_W(("There is an unused buffer of data in a block with state = on_disk"));  // Allocate a buffer ( it is retained since we are the creators )
   }
@@ -460,8 +482,8 @@ void BlockManager::schedule_read_operation(BlockPointer block) {
                                                                      , getEngineId());
   au::SharedPointer< engine::DiskOperation> operation(o);
 
-  operation->environment.set("block_id", block_id);
-  operation->environment.set("operation_size", size);
+  operation->environment.Set("block_id", block_id);
+  operation->environment.Set("operation_size", size);
   engine::DiskManager::shared()->Add(operation);
 
   scheduled_read_size += size;
@@ -480,15 +502,19 @@ void BlockManager::schedule_write_operation(BlockPointer block) {
   size_t block_id = block->get_block_id();
   size_t size = block->getSize();
 
-  if (block->getHeader().info.size + sizeof(KVHeader)  != size)
-    LM_X(1, ("Internal error: Not valid block")); std::string fileName = block->file_name();
-  if (buffer == NULL)
-    LM_X(1, ("Internal error")); engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer
-                                                                                                     , fileName
-                                                                                                     , getEngineId());
+  if (block->getHeader().info.size + sizeof(KVHeader)  != size) {
+    LM_X(1, ("Internal error: Not valid block"));
+  }
+  std::string fileName = block->file_name();
+  if (buffer == NULL) {
+    LM_X(1, ("Internal error"));
+  }
+  engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer
+                                                                      , fileName
+                                                                      , getEngineId());
   au::SharedPointer<engine::DiskOperation> operation(o);
-  operation->environment.set("block_id", block_id);
-  operation->environment.set("operation_size", size);
+  operation->environment.Set("block_id", block_id);
+  operation->environment.Set("operation_size", size);
 
   engine::DiskManager::shared()->Add(operation);
 

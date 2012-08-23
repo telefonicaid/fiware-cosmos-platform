@@ -64,16 +64,19 @@ std::string EngineElement::getDescription() {
 }
 
 std::string EngineElement::str() {
-  if (type == repeated)
+  if (type == repeated) {
     return au::str(
              "%s [ Engine element to be executed in %02.2f seconds ( repeat every %d secs , repeated %d times )] "
              , description.c_str()
              , getTimeToTrigger()
              , period
              , counter
-             ); else if (type == extra)
-    return au::str("%s [ Engine element EXTRA ]", description.c_str()); else
+             );
+  } else if (type == extra) {
+    return au::str("%s [ Engine element EXTRA ]", description.c_str());
+  } else {
     return au::str("%s [ Engine element ]", description.c_str());
+  }
 }
 
 // get xml information

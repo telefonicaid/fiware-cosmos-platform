@@ -42,16 +42,18 @@ void Descriptors::Add(const std::string& txt) {
 std::string Descriptors::str() {
   std::ostringstream output;
 
+  output << *this;
   return output.str();
 }
 
 std::ostream& operator<<(std::ostream& o, const Descriptors& descriptors) {
   au::map< std::string, DescriptorsCounter>::const_iterator it;
   for (it = descriptors.concepts_.begin(); it != descriptors.concepts_.end(); ) {
-    o << it->second;
+    o << *it->second;
     it++;
-    if (it != descriptors.concepts_.end())
+    if (it != descriptors.concepts_.end()) {
       o << " ";
+    }
   }
   return o;
 }

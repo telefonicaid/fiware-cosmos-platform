@@ -131,8 +131,9 @@ bool DataContainer::parse(AUTockenizer *module_creator,  int begin, int end) {
       addItem(data_type);
     }
     firstFieldInData = false;
-    if (optionalData)
+    if (optionalData) {
       valMask <<= 1;
+    }
   }
 
   if (pos != (end + 1)) {

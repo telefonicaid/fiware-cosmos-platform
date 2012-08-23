@@ -76,6 +76,9 @@ public:
     }
 
 
+
+
+
     if (value_condition->get_double() != 0) {
       return value1->get(kv);
     } else {
@@ -172,6 +175,9 @@ public:
     if (!v1 || !v2) {
       return false;
     }
+
+
+
 
 
     switch (comparisson) {
@@ -285,6 +291,9 @@ public:
     }
 
 
+
+
+
     switch (operation) {
       case sum:       *value_container.value = *v1 + *v2;
         break;
@@ -393,6 +402,9 @@ public:
     }
 
 
+
+
+
     return base_value->get_value_from_vector(index_value->get_double());
   }
 
@@ -419,6 +431,9 @@ public:
     if (!index_value || !base_value) {
       return NULL;
     }
+
+
+
 
 
     std::string key = index_value->get_string();
@@ -495,6 +510,9 @@ public:
       if (!tmp_key || !tmp_value) {
         return NULL;
       }
+
+
+
 
 
       // Prepare the value

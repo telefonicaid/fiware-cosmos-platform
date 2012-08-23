@@ -33,9 +33,12 @@ void ActivityStatistics::Push(ActivityItem *item) {
     max_ = t;
   } else {
     // Update min & max
-    if (t < min_)
-      min_ = t; if (t > max_)
+    if (t < min_) {
+      min_ = t;
+    }
+    if (t > max_) {
       max_ = t;
+    }
   }
 }
 
@@ -60,28 +63,34 @@ size_t ActivityStatistics::counter() const {
 }
 
 double ActivityStatistics::GetAverage() const {
-  if (counter_ == 0)
-    return 0; return total_ / (double)counter_;
+  if (counter_ == 0) {
+    return 0;
+  }
+  return total_ / (double)counter_;
 }
 
 double ActivityStatistics::GetStdDeviation() const {
-  if (counter_ == 0)
+  if (counter_ == 0) {
     return 0;
+  }
 
   double average = GetAverage();
   double tmp = ( total_square_ / (double)counter_ ) - average * average;
-  if (tmp < 0)
-    return 0; return sqrt(tmp);
+  if (tmp < 0) {
+    LM_W(("Error computing std deviation in ActivityStatistics"));
+    return 0;
+  }
+  return sqrt(tmp);
 }
 
-ActivityMonitor::ActivityMonitor(std::string first_activity_name) : token(
-                                                                      "EngineStatistics") {
+ActivityMonitor::ActivityMonitor(const std::string& first_activity_name)
+  : token_("EngineStatistics") {
   current_activty_ = first_activity_name;
   current_activirty_start_time_ = 0;
 }
 
-void ActivityMonitor::StartActivity(std::string activity_name) {
-  au::TokenTaker tt(&token);
+void ActivityMonitor::StartActivity(const std::string& activity_name) {
+  au::TokenTaker tt(&token_);
   double stop_time = cronometer_.seconds();
   double time = stop_time - current_activirty_start_time_;
 
@@ -89,13 +98,12 @@ void ActivityMonitor::StartActivity(std::string activity_name) {
   ActivityItem *activity_item = new ActivityItem(current_activty_, time);
 
   // Inset in the list of last items
-  activity_item->Retain();
   items_.push_back(activity_item);
 
   // Only keep the list of last 100 elements
   while (items_.size() > 100) {
     ActivityItem *tmp_item = items_.extractFront();
-    tmp_item->Release();
+    delete tmp_item;
   }
 
   // Update the associated element statustics
@@ -114,7 +122,7 @@ void ActivityMonitor::StopActivity() {
 }
 
 std::string ActivityMonitor::GetLastItemsTable() const {
-  au::TokenTaker tt(&token);
+  au::TokenTaker tt(&token_);
 
   au::tables::Table table("Item|Time,left,f=double");
 
@@ -127,7 +135,7 @@ std::string ActivityMonitor::GetLastItemsTable() const {
 }
 
 std::string ActivityMonitor::GetElementsTable() const {
-  au::TokenTaker tt(&token);
+  au::TokenTaker tt(&token_);
 
   au::tables::Table table(
     "Element|Num,f=uint64|Total time,f=double|Average,f=double|std dev,f=double|Min,f=double|Max,f=double");
@@ -157,7 +165,7 @@ std::string ActivityMonitor::GetElementsTable() const {
 }
 
 std::string ActivityMonitor::GetCurrentActivity() const {
-  au::TokenTaker tt(&token);
+  au::TokenTaker tt(&token_);
 
   return current_activty_;
 }

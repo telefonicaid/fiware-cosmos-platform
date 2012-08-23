@@ -36,6 +36,20 @@ public:
     list_.push_back(v);
   }
 
+  void Push(const Queue<V>& queue) {
+    std::vector<SharedPointer<V> > items = queue.items();
+    for (size_t i = 0; i < items.size(); i++) {
+      list_.push_back(items[i]);
+    }
+  }
+
+  void PushFront(const Queue<V>& queue) {
+    std::vector<SharedPointer<V> > items = queue.items();
+    for (int i = (int)items.size() - 1; i >= 0; i--) {
+      list_.push_front(items[i]);
+    }
+  }
+
   // Handy function to push newly allocated objects
   void Push(V *v) {
     SharedPointer<V> tmp_v(v);
@@ -68,6 +82,10 @@ public:
     }
   }
 
+  void Clear() {
+    list_.clear();
+  }
+
   // Extract an element from the queue
   bool Contains(const SharedPointer<V>& v) {
     typename std::list< SharedPointer<V> >::iterator iter;
@@ -90,13 +108,19 @@ public:
     }
   }
 
-  size_t size() {
+  void LimitToLastItems(size_t num) {
+    while (list_.size() > num) {
+      list_.pop_front();
+    }
+  }
+
+  size_t size() const {
     return list_.size();
   }
 
-  std::vector< SharedPointer<V> > items() {
+  std::vector< SharedPointer<V> > items() const {
     std::vector< SharedPointer<V> > vector;
-    typename std::list< SharedPointer<V> >::iterator iter;
+    typename std::list< SharedPointer<V> >::const_iterator iter;
     for (iter = list_.begin(); iter != list_.end(); iter++) {
       vector.push_back(*iter);
     }

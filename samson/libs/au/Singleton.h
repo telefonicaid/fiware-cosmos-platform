@@ -1,3 +1,4 @@
+#include <vector>
 
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
@@ -7,8 +8,52 @@
 
 
 namespace au {
+class SingletonBase {
+public:
+  // Destroy the shared object
+  virtual void Destroy() = 0;
+};
+
+class SingletonManager {
+public:
+
+  SingletonManager() {
+  }
+
+  ~SingletonManager() {
+    // Remove all singleton instances
+    DestroySingletons();
+  }
+
+  void DestroySingletons() {
+    for (size_t i = 0; i < singletons_.size(); i++) {
+      singletons_[i]->Destroy();
+    }
+    singletons_.clear();
+  }
+
+  size_t size() {
+    return singletons_.size();
+  }
+
+private:
+
+  void Add(SingletonBase *singleton) {
+    singletons_.push_back(singleton);
+  }
+
+  // Vector of singletons
+  std::vector<SingletonBase *> singletons_;
+
+  template< class C >
+  friend class Singleton;
+};
+
+// Unique instance of the manager
+extern SingletonManager singleton_manager;
+
 template< class C >
-class Singleton {
+class Singleton : public SingletonBase {
 public:
 
   static C *shared() {
@@ -16,8 +61,14 @@ public:
 
     if (!instance_) {
       instance_ = new C();
+      // Add an instance of this Singleton to be able to remove it at the end
+      singleton_manager.Add(new Singleton<C>());
     }
     return instance_;
+  }
+
+  virtual void Destroy() {
+    delete instance_;
   }
 
 private:

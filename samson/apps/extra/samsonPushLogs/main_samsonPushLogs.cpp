@@ -150,8 +150,10 @@ int main(int argC, const char *argV[]) {
   LM_V(("Connecting to %s ...", controller));
 
   samson_client = new samson::SamsonClient("push");
-  if (!samson_client->connect(controller))
-    LM_X(1, ("Not possible to connect with %s", controller )); SamsonPushLogsConnectionsManager manager;
+  if (!samson_client->connect(controller)) {
+    LM_X(1, ("Not possible to connect with %s", controller ));
+  }
+  SamsonPushLogsConnectionsManager manager;
 
 
   std::vector<LogsDataSet *>datasets_vector;
@@ -193,8 +195,9 @@ int main(int argC, const char *argV[]) {
       LogsDataSet *dataset =
         new LogsDataSet(fields[0], fields[1], num_fields, timestamp_position, timestamp_position_alt, timestamp_type,
                         fields[5]);
-      if (dataset->InitDir() == true)
+      if (dataset->InitDir() == true) {
         datasets_vector.push_back(dataset);
+      }
     }
   }
 

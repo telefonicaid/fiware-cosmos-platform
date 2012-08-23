@@ -1,6 +1,21 @@
 SET (SOURCES
     main_UnitTest.cpp
 
+	# Common files for all tests
+	TestClasses.h
+	TestClasses.cpp
+
+	# AU library
+	lib/au/SingletonTest.cpp
+	lib/au/STest.cpp
+	lib/au/DescriptorsTest.cpp
+	lib/au/EnvironmentTest.cpp
+	lib/au/CommandLineTest.cpp
+	lib/au/RateTest.cpp
+	lib/au/CounterCollectionTest.cpp
+	lib/au/StringComponentsTest.cpp
+	lib/au/stringTest.cpp
+
 	# AU CONTAINERS LIBRARY
 	lib/au/containers/SharedPointerTest.cpp
 	lib/au/containers/DictionaryTest.cpp
@@ -16,19 +31,17 @@ SET (SOURCES
 	# AU STATISTICS LIBRARY
     lib/au/statistics/ActivityMonitorTest.cpp
 
+	# AU MUTEX LIBRARY
+    lib/au/mutex/TokenTest.cpp
+    lib/au/mutex/TokenTest2.cpp
+
+	# AU tables library
+	lib/au/tables/TableTest.cpp	
+
+
 	#Common files
 	common_engine_test.h
 	common_engine_test.cpp
-	test_common.h
-	test_common.cpp
-
-	#au lib
-
-	au/CommandLine_test.cpp
-	au/au.cpp
-	au/au_string_test.cpp
-	au/au_Token_test.cpp
-	au/au_Table_test.cpp
 
 	#samson lib
 

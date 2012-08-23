@@ -16,12 +16,14 @@ int TXTFileSet::fill(engine::BufferPointer b) {
   if (finish) {
     return 0;                           // Just in case
   }
-  if (previousBuffer)
+  if (previousBuffer) {
     if (previousBufferSize > 0) {
       bool ans = b->write(previousBuffer, previousBufferSize);
-      if (!ans)
+      if (!ans) {
         LM_X(1, ("Error writing in a TXTFileSet"));
+      }
     }
+  }
   while (b->getAvailableWrite() > 0) {                  // While there is space to fill
     b->write(inputStream);
 
@@ -29,19 +31,21 @@ int TXTFileSet::fill(engine::BufferPointer b) {
     if (inputStream.eof()) {
       inputStream.close();
       openNextFile();
-      if (finish)
+      if (finish) {
         // Information in the header
         return 0;
+      }
     }
   }
 
   // Remove previous buffer ( if any )
-  if (previousBuffer)
+  if (previousBuffer) {
     free(previousBuffer);  // Remove the last chars until a complete line and keep for the next read
-  if (b->removeLastUnfinishedLine(previousBuffer, previousBufferSize) != 0)
+  }
+  if (b->removeLastUnfinishedLine(previousBuffer, previousBufferSize) != 0) {
     return 1;     // Error filling the buffer
-
-   // No error here
+  }
+  // No error here
   return 0;
 }
 }

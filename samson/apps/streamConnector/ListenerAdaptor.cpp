@@ -20,22 +20,26 @@ void newSocketConnection(au::NetworkListener *listener
 
 // Get status of this element
 std::string ListenerAdaptor::getStatus() {
-  if (IsNetworkListenerRunning())
-    return "Listening"; else
+  if (IsNetworkListenerRunning()) {
+    return "Listening";
+  } else {
     return au::str("NOT Listening (%s)", au::status(status_init));
+  }
 }
 
 // Review item: open port if it was not possible in the past...
 void ListenerAdaptor::review_item() {
-  if (!IsNetworkListenerRunning())
+  if (!IsNetworkListenerRunning()) {
     // Init again
     status_init = InitNetworkListener(port);
+  }
 }
 
 void ListenerAdaptor::stop_item() {
   // Stop listener
-  if (IsNetworkListenerRunning())
+  if (IsNetworkListenerRunning()) {
     StopNetworkListener();
+  }
 }
 
 void ListenerAdaptor::newSocketConnection(au::NetworkListener *listener

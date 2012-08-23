@@ -4,7 +4,6 @@
 #include "au/ThreadManager.h"
 
 #include "engine/MemoryManager.h"
-#include "engine/MemoryRequest.h"
 
 #include "xmlparser/xmlParser.h"
 

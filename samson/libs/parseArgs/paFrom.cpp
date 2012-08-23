@@ -60,13 +60,17 @@ char *paFrom(PaiArgument *paList, const char *name) {
 
     paEnvName(aP, envVarName);
 
-    if ((aP->option) && strcmp(aP->option, name) == 0)
-      break; if ((aP->envName) && strcmp(envVarName, name) == 0)
+    if ((aP->option) && strcmp(aP->option, name) == 0) {
       break;
+    }
+    if ((aP->envName) && strcmp(envVarName, name) == 0) {
+      break;
+    }
   }
 
-  if (aP->type == PaLastArg)
+  if (aP->type == PaLastArg) {
     return (char *)"unrecognized option";
+  }
 
   switch (aP->from) {
     case PafError:        return (char *)"error";

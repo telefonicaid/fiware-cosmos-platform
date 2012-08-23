@@ -50,11 +50,15 @@ public:
   DataSet (KVFormat _key_values, std::string _compareKeyFunction, std::string _compareValueFunction) {
     key_values = _key_values;
 
-    if (_compareKeyFunction  == "")
-      compareKeyFunction = "compare"; else
-      compareKeyFunction = _compareKeyFunction; if (_compareValueFunction  == "")
-      compareValueFunction = "compare"; else
+    if (_compareKeyFunction  == "") {
+      compareKeyFunction = "compare";
+    } else {
+      compareKeyFunction = _compareKeyFunction;
+    } if (_compareValueFunction  == "") {
+      compareValueFunction = "compare";
+    } else {
       compareValueFunction = _compareValueFunction;
+    }
   }
 };
 
@@ -150,30 +154,30 @@ public:
 
     // Checking the use of reserved words in the name
     std::string arr_reserved_words[] =
-    { "auto",              "const",           "double",                        "float",
-      "int",               "short",
-      "struct",            "unsigned",        "break",                         "continue",
+    { "auto",             "const",                "double",                        "float",
+      "int",              "short",
+      "struct",           "unsigned",             "break",                         "continue",
       "else",
-      "for",               "long",            "signed",                        "switch",
-      "void",              "case",            "default",                       "enum",
-      "goto",              "register",        "sizeof",                        "typedef",
-      "volatile",          "char",            "do",                            "extern",
-      "if",                "return",          "static",                        "union",
-      "while",             "asm",             "dynamic_cast",                  "namespace",
+      "for",              "long",                 "signed",                        "switch",
+      "void",             "case",                 "default",                       "enum",
+      "goto",             "register",             "sizeof",                        "typedef",
+      "volatile",         "char",                 "do",                            "extern",
+      "if",               "return",               "static",                        "union",
+      "while",            "asm",                  "dynamic_cast",                  "namespace",
       "reinterpret_cast",
-      "try",         "bool",                 "explicit",                  "new",
-      "static_cast", "typeid",               "catch",                     "false",
-      "operator",    "template",             "typename",                  "class",
-      "friend",      "private",              "this",                      "using",
-      "const_cast",  "inline",               "public",                    "throw",
-      "virtual",     "delete",               "mutable",                   "protected",
-      "true",        "wchar_t",              "and",                       "bitand",
-      "compl",       "not_eq",               "or_eq",                     "xor_eq",
-      "and_eq",      "bitor",                "not",                       "or",
-      "xor",         "cin",                  "endl",                      "INT_MIN",
-      "iomanip",     "main",                 "npos",                      "std",
-      "cout",        "include",              "INT_MAX",                   "iostream",
-      "MAX_RAND",     "NULL",
+      "try",              "bool",                 "explicit",                      "new",
+      "static_cast",      "typeid",               "catch",                         "false",
+      "operator",         "template",             "typename",                      "class",
+      "friend",           "private",              "this",                          "using",
+      "const_cast",       "inline",               "public",                        "throw",
+      "virtual",          "delete",               "mutable",                       "protected",
+      "true",             "wchar_t",              "and",                           "bitand",
+      "compl",            "not_eq",               "or_eq",                         "xor_eq",
+      "and_eq",           "bitor",                "not",                           "or",
+      "xor",              "cin",                  "endl",                          "INT_MIN",
+      "iomanip",          "main",                 "npos",                          "std",
+      "cout",             "include",              "INT_MAX",                       "iostream",
+      "MAX_RAND",         "NULL",
       "string" };
 
     std::set<std::string>   reserved_words;
@@ -198,11 +202,12 @@ public:
      *      }
      */
 
-    if (( type == "map" ) || ( type == "reduce" ) || ( type == "parserOut" ) || ( type == "parserOutReduce" ))
+    if (( type == "map" ) || ( type == "reduce" ) || ( type == "parserOut" ) || ( type == "parserOutReduce" )) {
       if (inputs.size() == 0) {
         std::cerr << "samsonModuleParser: Error in operation " << name << ": Operation needs an input\n";
         return false;
       }
+    }
     if (type == "splitter") {
       if (inputs.size() != 0) {
         std::cerr << "samsonModuleParser: Error in operation " << name << ": Operation does not require any input\n";
@@ -245,32 +250,41 @@ public:
   void parse(AUTockenizer *module_creator, int begin, int end);
 
   std::string parentClass() {
-    if (type == "generator")
+    if (type == "generator") {
       return "samson::Generator";
+    }
 
-    if (type == "map")
+    if (type == "map") {
       return "samson::Map";
+    }
 
-    if (type == "reduce")
+    if (type == "reduce") {
       return "samson::Reduce";
+    }
 
-    if (type == "splitter")
+    if (type == "splitter") {
       return "samson::Splitter";
+    }
 
-    if (type == "script")
+    if (type == "script") {
       return "samson::Script";
+    }
 
-    if (type == "parser")
+    if (type == "parser") {
       return "samson::Parser";
+    }
 
-    if (type == "simpleParser")
+    if (type == "simpleParser") {
       return "samson::system::SimpleParser";
+    }
 
-    if (type == "parserOut")
+    if (type == "parserOut") {
       return "samson::ParserOut";
+    }
 
-    if (type == "parserOutReduce")
+    if (type == "parserOutReduce") {
       return "samson::ParserOutReduce";
+    }
 
     fprintf(stderr, "samsonModuleParser: Error: Unknown type of operation in the operation section (%s)\n", type.c_str());
     _exit(1);
@@ -330,8 +344,9 @@ public:
         file << *iter;
       }
     }
-    if (type == "simpleParser")
+    if (type == "simpleParser") {
       file << "#include <samson/modules/system/SimpleParser.h>" << std::endl;
+    }
     file << "\n";
     file << "\n";
 
@@ -410,9 +425,10 @@ public:
         file << "\t\tvoid run( KVSetStruct* inputs , TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
         file << "\t\tvoid finish( TXTWriter *writer )\n\t\t{\n\t\t}\n\n";
       }
-      if (type == "splitter")
+      if (type == "splitter") {
         file <<
         "\t\tint split( char * inData, size_t inLength , bool finished , char ** nextData , SplitterEmitter* emitter )\n\t\t{\n\t\t\treturn 0;\n\t\t}\n\n";
+      }
     }
 
     file << "\n\n";
@@ -517,8 +533,10 @@ public:
                                  std::string infoFile) {
     bool errorDetected = false;
 
-    if (infoFile != infoFile)
-      LM_E(("avoiding a strict warning ...")); if (_inputs.size() != inputs_impl.size()) {
+    if (infoFile != infoFile) {
+      LM_E(("avoiding a strict warning ..."));
+    }
+    if (_inputs.size() != inputs_impl.size()) {
       cerr << ">>> Error in number of inputs to the operation: "  << name << std::endl;
       cerr << ">>>       module declaration: " << _inputs.size() << std::endl;
       cerr << ">>>       .h implementation: " << inputs_impl.size() << std::endl;
@@ -611,8 +629,10 @@ public:
 
       while (found != string::npos) {
         line = info.substr(found_prev, found - found_prev);
-        if ((line.find("input:") != string::npos) || (line.find("output:") != string::npos))
-          cerr << ">>>     //  " << line << std::endl; found_prev = found + 1;
+        if ((line.find("input:") != string::npos) || (line.find("output:") != string::npos)) {
+          cerr << ">>>     //  " << line << std::endl;
+        }
+        found_prev = found + 1;
         found = info.find_first_of("\n", found + 1);
       }
       cerr << ">>> " << std::endl;
@@ -643,28 +663,35 @@ public:
 
       if ((strstr(buffer, INFO_MODULE) != NULL) || (strstr(buffer, INFO_COMMENT) != NULL)) {
         // cout << "Detected header" << std::endl;
-        if (strstr(buffer, INFO_COMMENT) != NULL)
-          info_comment = true; header_info = true;
+        if (strstr(buffer, INFO_COMMENT) != NULL) {
+          info_comment = true;
+        }
+        header_info = true;
       } else if (header_info) {
-        if ((strstr(buffer, END_INFO_MODULE)) || (strstr(buffer, END_INFO_COMMENT) != NULL))
+        if ((strstr(buffer, END_INFO_MODULE)) || (strstr(buffer, END_INFO_COMMENT) != NULL)) {
           // cout << "Detected end of header" << std::endl;
           // cout << "Checking: info'" << info << std::endl;
 
           return checkOperationHeaderItems(inputs, outputs, info, inputs_impl, outputs_impl, infoFile);
+        }
 
         // We create a mini tokenize
         std::vector<AUToken> total_items = AUTockenizer::tockenize(buffer);
 
         std::vector<AUToken> items_impl = AUTockenizer::removeSpacesAndCommentsAndReturns(total_items);
 
-        if (items_impl.size() < 3)
-          continue; unsigned int pos = 0;
+        if (items_impl.size() < 3) {
+          continue;
+        }
+        unsigned int pos = 0;
         std::string option = items_impl[pos++].str;
 
         if (info_comment == false) {
-          if (option != "//")
-            continue; else
+          if (option != "//") {
+            continue;
+          } else {
             option = items_impl[pos++].str;
+          }
         }
 
         if ((option == "input:") || (option == "in")) {

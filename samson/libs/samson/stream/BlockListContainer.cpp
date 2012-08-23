@@ -58,8 +58,9 @@ bool BlockListContainer::is_content_in_memory() {
     for (it_blocks = block_list->blocks.begin(); it_blocks != block_list->blocks.end(); it_blocks++) {
       BlockRef *block_ref = *it_blocks;
       BlockPointer block = block_ref->block();
-      if (!block->is_content_in_memory())
+      if (!block->is_content_in_memory()) {
         return false;
+      }
     }
   }
   return true;

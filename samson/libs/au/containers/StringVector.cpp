@@ -127,8 +127,10 @@ void StringVector::Append(const StringVector& values) {
 }
 
 std::string StringVector::Get(size_t pos) const {
-  if (pos >= size())
-    return ""; return (*this)[pos];
+  if (pos >= size()) {
+    return "";
+  }
+  return (*this)[pos];
 }
 
 void StringVector::RemoveDuplicated() {
@@ -151,8 +153,9 @@ std::string StringVector::str() {
 
   for (size_t i = 0; i < size(); ++i) {
     output << (*this)[i];
-    if (i != ( size() - 1 ))
+    if (i != ( size() - 1 )) {
       output << " ";
+    }
   }
   return output.str();
 }

@@ -15,9 +15,6 @@
 
 
 samson::DelilahConsole *init_delilah_test() {
-  // Make sure this singleton is created just once
-  au::LockDebugger::shared();
-
   // Init samson setup with default values
   samson::SamsonSetup::init("", "");
 
@@ -61,7 +58,7 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole) {
   }
 
   LM_W(("Finishing delilah"));
-  au::LockDebugger::destroy();
+
   LM_W(("Calling to destroy ModulesManager"));
   samson::ModulesManager::destroy("delilah_test");
   engine::ProcessManager::destroy();

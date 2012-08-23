@@ -15,9 +15,11 @@
 PaiArgument *paIxLookup(PaiArgument *paList, int ix) {
   int builtins = paBuiltinNoOf();
 
-  if (ix < builtins)
-    return &paBuiltin[ix]; else if (ix < paOptionsNoOf(paList))
+  if (ix < builtins) {
+    return &paBuiltin[ix];
+  } else if (ix < paOptionsNoOf(paList)) {
     return &paList[ix - builtins];
+  }
 
   return NULL;
 }

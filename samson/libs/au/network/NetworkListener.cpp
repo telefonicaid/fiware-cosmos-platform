@@ -47,8 +47,10 @@ void NetworkListener::StopNetworkListener() {
   }
   // Close the open file descriptor
   int rc = ::close(rFd_);
-  if (rc)
-    LM_W(("Error closing fd %d in network listener over port %d ( rc %d )", rFd_, port_, rc )); rFd_ = -1;
+  if (rc) {
+    LM_W(("Error closing fd %d in network listener over port %d ( rc %d )", rFd_, port_, rc ));
+  }
+  rFd_ = -1;
 
   // Joint the background thread
   void *r;
@@ -59,10 +61,12 @@ void NetworkListener::StopNetworkListener() {
 Status NetworkListener::InitNetworkListener(int port) {
   // If we are running something in background, we do not accept bind to another port
   if (background_thread_running_) {
-    if (port_ != port)
+    if (port_ != port) {
       LM_W((
              "NetworkListener already listening on port %s. Ignoring request to open port %d",
-             port_, port )); return au::Error;
+             port_, port ));
+    }
+    return au::Error;
   }
 
   // Keep port information
@@ -77,8 +81,10 @@ Status NetworkListener::InitNetworkListener(int port) {
     return Error;
   }
 
-  if ((rFd_ = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-    LM_RP(SocketError, ("socket")); fcntl(rFd_, F_SETFD, 1);
+  if ((rFd_ = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+    LM_RP(SocketError, ("socket"));
+  }
+  fcntl(rFd_, F_SETFD, 1);
 
   memset(&sock, 0, sizeof(sock));
   memset(&peer, 0, sizeof(peer));
@@ -141,8 +147,9 @@ void NetworkListener::runNetworkListener() {
   while (true) {
     // this means that stop has been called
     int rFd = rFd_;
-    if (rFd == -1)
+    if (rFd == -1) {
       return;
+    }
 
     // One fd to read connections
     FD_ZERO(&rFds);
@@ -157,20 +164,25 @@ void NetworkListener::runNetworkListener() {
     // Main select to wait new connections
     fds = select(max + 1,  &rFds, NULL, NULL, &tv);
 
-    if ((fds == -1) && (errno == EINTR))
-      continue; if (fds == -1) {
+    if ((fds == -1) && (errno == EINTR)) {
+      continue;
+    }
+    if (fds == -1) {
       return;   // Finish thread since this is an error
     }
-    if (fds == 0)
+    if (fds == 0) {
       // timeout();
-      continue; if (!FD_ISSET(rFd, &rFds)) {
+      continue;
+    }
+    if (!FD_ISSET(rFd, &rFds)) {
       LM_X(1, ("Error in main loop to accept connections"));  // Accept a new connection
     }
     SocketConnection *socket_connection = acceptNewNetworkConnection();
 
     // Notify this new connection
-    if (socket_connection)
+    if (socket_connection) {
       network_listener_interface_->newSocketConnection(this, socket_connection);
+    }
   }
 }
 
@@ -193,11 +205,15 @@ SocketConnection *NetworkListener::acceptNewNetworkConnection(void) {
 
   int rFd = rFd_;
 
-  if (rFd == -1)
-    return NULL; LM_T(LmtNetworkListener, ("Accepting incoming connection"));
-  if ((fd = ::accept(rFd, (struct sockaddr *)&sin, &len)) == -1)
-    LM_RP(NULL, ("accept")); ip2string(sin.sin_addr.s_addr, hostName,
-                                       hostNameLen);
+  if (rFd == -1) {
+    return NULL;
+  }
+  LM_T(LmtNetworkListener, ("Accepting incoming connection"));
+  if ((fd = ::accept(rFd, (struct sockaddr *)&sin, &len)) == -1) {
+    LM_RP(NULL, ("accept"));
+  }
+  ip2string(sin.sin_addr.s_addr, hostName,
+            hostNameLen);
 
   // Create the connection
   SocketConnection *socket_connection = new SocketConnection(fd, hostName, -1);

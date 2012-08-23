@@ -1,6 +1,7 @@
 
 
 #include "LogToServer.h"  // Own interface
+#include "au/containers/SharedPointer.h"
 #include "au/log/LogCentral.h"
 
 namespace au {
@@ -13,7 +14,7 @@ void add_log_plugin(LogPlugin *plugin) {
     fprintf(stderr, "No log_central initialised.\nPlease, init log system before adding plugins\n");
     return;
   }
-  log_central->addPlugin(plugin);
+  log_central->AddPlugin(plugin);
 }
 
 void remove_log_plugin(LogPlugin *plugin) {
@@ -21,7 +22,7 @@ void remove_log_plugin(LogPlugin *plugin) {
     fprintf(stderr, "No log_central initialised.\nPlease, init log system before removing plugins\n");
     return;
   }
-  log_central->removePlugin(plugin);
+  log_central->RemovePlugin(plugin);
 }
 
 void start_log_to_server(std::string log_host, int log_port, std::string local_log_file) {
@@ -47,8 +48,8 @@ void restart_log_to_server(std::string local_log_file) {
   // Only caled in single-thread ( after fork )
   if (log_central) {
     // Keep interesting information
-    std::string log_host = log_central->getHost();
-    int log_port = log_central->getPort();
+    std::string log_host = log_central->host();
+    int log_port = log_central->port();
 
     // Delete the old log central
     delete log_central;
@@ -59,13 +60,16 @@ void restart_log_to_server(std::string local_log_file) {
 }
 
 void set_log_direct_mode(bool flag) {
-  if (log_central)
-    log_central->set_direct_mode(flag);
+  if (log_central) {
+    log_central->SetDirectMode(flag);
+  }
 }
 
 int get_log_fd() {
-  if (log_central)
-    return log_central->getFd(); return -1;
+  if (log_central) {
+    return log_central->getFd();
+  }
+  return -1;
 }
 
 void stop_log_to_server() {
@@ -81,7 +85,7 @@ void set_log_server(std::string log_host, int log_port) {
     return;
   }
 
-  log_central->set_host_and_port(log_host, log_port);
+  log_central->SetLogServer(log_host, log_port);
 }
 
 /* ****************************************************************************
@@ -99,30 +103,37 @@ void logToLogServer(void *vP, char *text, char type, time_t secondsNow, int time
   }
 
   // Create the log to be sent
-  Log *log = new Log();
+  au::SharedPointer<Log> log(new Log());
 
   // Add "string" fields
-  if (progName)
-    log->add_field("progName", progName); if (text)
-    log->add_field("text", text); if (file)
-    log->add_field("file", file); if (fName)
-    log->add_field("fName", fName); if (stre)
-    log->add_field("stre", stre); log->log_data.lineNo      = lineNo;
-  log->log_data.traceLevel  = tLev;
-  log->log_data.type        = type;
-  log->log_data.timezone    = timezone;
-  log->log_data.dst         = dst;
-  log->log_data.pid         = getpid();
+  if (progName) {
+    log->Set("progName", progName);
+  }
+  if (text) {
+    log->Set("text", text);
+  }
+  if (file) {
+    log->Set("file", file);
+  }
+  if (fName) {
+    log->Set("fName", fName);
+  }
+  if (stre) {
+    log->Set("stre", stre);
+  }
+  log->log_data().lineNo      = lineNo;
+  log->log_data().traceLevel  = tLev;
+  log->log_data().type        = type;
+  log->log_data().timezone    = timezone;
+  log->log_data().dst         = dst;
+  log->log_data().pid         = getpid();
   // log.log_data.tid         = gettid();
-  log->log_data.tid         = 0;       // Not possible to obtain this in mac OS. Pending to be fixed
+  log->log_data().tid         = 0;       // Not possible to obtain this in mac OS. Pending to be fixed
 
   // Fill log_data.tv
-  gettimeofday(&log->log_data.tv, NULL);
+  gettimeofday(&log->log_data().tv, NULL);
 
   // Write over the log_server_connection
-  log_central->write(log);
-
-  // Release log
-  log->Release();
+  log_central->Write(log);
 }
 }

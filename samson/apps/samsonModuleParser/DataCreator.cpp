@@ -262,8 +262,9 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
   std::set<std::string> includes;
   for (vector <OperationContainer>::iterator iter = operations.begin(); iter < operations.end(); iter++) {
     OperationContainer op = *iter;
-    if (( op.type == "reduce") || ( op.type == "parserOutReduce"))
+    if (( op.type == "reduce") || ( op.type == "parserOutReduce")) {
       op.getIncludes(includes);
+    }
   }
   for (std::set<std::string>::iterator iter = includes.begin(); iter != includes.end(); iter++) {
     output << *iter;
@@ -327,12 +328,15 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
       op.module << "." << op.name <<
       "\" , samson::Operation::" << op.type << ");" << std::endl;  // Adding input and output of the parser and parserOut
     }
-    if (( op.type == "parser") || (op.type == "simpleParser"))
+    if (( op.type == "parser") || (op.type == "simpleParser")) {
       output << "\t\t\toperation->inputFormats.push_back( samson::KVFormat::format(\"txt\" ,\"txt\") );" << std::endl;
-    if (op.type == "parserOut")
+    }
+    if (op.type == "parserOut") {
       output << "\t\t\toperation->outputFormats.push_back( samson::KVFormat::format(\"txt\" ,\"txt\") );" << std::endl;
-    if (op.type == "parserOutReduce")
+    }
+    if (op.type == "parserOutReduce") {
       output << "\t\t\toperation->outputFormats.push_back( samson::KVFormat::format(\"txt\" ,\"txt\") );" << std::endl;
+    }
     for (size_t i = 0; i < op.inputs.size(); i++) {
       output << "\t\t\toperation->inputFormats.push_back( samson::KVFormat::format(\"" <<
       op.inputs[i].key_values.keyFormat << "\" ,\"" <<
@@ -365,15 +369,19 @@ void ModuleInformation::printMainFile(std::string outputFileName) {
       for (size_t i = 0; i < op.code.length(); i++) {
         if (op.code[i] != '\t') {
           if ((op.code[i] == '\n' ) || (op.code[i] == ';')) {
-            if (command.str().length() > 0)
-              output << "\t\t\toperation->code.push_back(\"" << command.str() <<  "\");\n"; command.str("");
+            if (command.str().length() > 0) {
+              output << "\t\t\toperation->code.push_back(\"" << command.str() <<  "\");\n";
+            }
+            command.str("");
           } else {
             command << op.code[i];
           }
         }
       }
-      if (command.str().length() > 0)
-        output << "\t\t\toperation->code.push_back(\"" << command.str() <<  "\");\n"; output << std::endl;
+      if (command.str().length() > 0) {
+        output << "\t\t\toperation->code.push_back(\"" << command.str() <<  "\");\n";
+      }
+      output << std::endl;
     }
 
     output << "\t\t\tadd( operation ); // Add this operation to the module\n";

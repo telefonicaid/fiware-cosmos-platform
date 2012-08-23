@@ -39,8 +39,9 @@ size_t TreeCollection::getNumTrees() {
 }
 
 TreeItem *TreeCollection::getTree(size_t pos) {
-  if (pos >= trees.size())
+  if (pos >= trees.size()) {
     return NULL;
+  }
 
   return new TreeItem(trees[pos]);
 }
@@ -70,8 +71,9 @@ void TreeCollection::addSpetialTags(TreeItem *tree_item) {
   std::string tag_name = tree_item->getFirstNodeValue("tag_name");
   std::string tag_value = tree_item->getFirstNodeValue("tag_value");
 
-  if (tag_name != "")
+  if (tag_name != "") {
     replaceToAll(tag_name, tag_value);
+  }
 }
 
 #pragma mark TreeItem
@@ -99,14 +101,17 @@ std::string TreeItem::getValue() {
 }
 
 std::string TreeItem::getFirstNodeValue() {
-  if (items.size() == 0)
-    return ""; return items[0]->getValue();
+  if (items.size() == 0) {
+    return "";
+  }
+  return items[0]->getValue();
 }
 
 std::string TreeItem::getFirstNodeValue(std::string node_name) {
   for (size_t i = 0; i < items.size(); i++) {
-    if (items[i]->value == node_name)
+    if (items[i]->value == node_name) {
       return items[i]->getFirstNodeValue();
+    }
   }
 
   return "";
@@ -135,9 +140,11 @@ bool TreeItem::isValue(std::string _value) {
 void TreeItem::replace(std::string property, std::string value) {
   for (size_t i = 0; i < items.size(); i++) {
     if (items[i]->value == property) {
-      if (items[i]->items.size() > 0)
-        items[i]->items[0]->value = value; else
-        items[i]->add(value); return;
+      if (items[i]->items.size() > 0) {
+        items[i]->items[0]->value = value;
+      } else {
+        items[i]->add(value);
+      } return;
     }
   }
 
@@ -152,17 +159,20 @@ size_t TreeItem::getNumItems(std::string name) {
   size_t total = 0;
 
   for (size_t i = 0; i < items.size(); i++) {
-    if (items[i]->value == name)
+    if (items[i]->value == name) {
       total++;
+    }
   }
 
   return total;
 }
 
 void TreeItem::str(std::ostringstream& output, int level, int max_level) {
-  if (max_level > 0)
-    if (level >= max_level)
+  if (max_level > 0) {
+    if (level >= max_level) {
       return;
+    }
+  }
 
   for (int i = 0; i < level; i++) {
     output << " ";
@@ -186,8 +196,9 @@ TreeCollection *TreeItem::selectTrees(SelectTreeInformation *select) {
 
   for (size_t i = 0; i < items.size(); i++) {
     if (compare_strings(select->name, items[i]->value)) {
-      if (select->check(items[i]))
+      if (select->check(items[i])) {
         tree_collection->add(new TreeItem(items[i]));
+      }
     } else if (select->recursevely) {
       TreeCollection *_tree_collection = items[i]->selectTrees(select);
       tree_collection->add(_tree_collection);
@@ -302,8 +313,9 @@ Table *TreeItem::getTable() {
 
 std::string getValueFromTable(Table *table, std::string concept) {
   for (size_t r = 0; r < table->getNumRows(); r++) {
-    if (table->getValue(r, 0) == concept)
+    if (table->getValue(r, 0) == concept) {
       return table->getValue(r, 1);
+    }
   }
   return "";
 }
@@ -330,16 +342,20 @@ Table *TreeItem::getTableFromPath(std::string path) {
 
 bool TreeItem::hasNode(std::string node_name) {
   for (size_t i = 0; i < items.size(); i++) {
-    if (items[i]->value == node_name)
+    if (items[i]->value == node_name) {
       return true;
+    }
   }
   return false;
 }
 
 bool TreeItem::isFinalProperty() {
-  if (items.size() == 1)
-    if (items[0]->items.size() == 0)
-      return true; return false;
+  if (items.size() == 1) {
+    if (items[0]->items.size() == 0) {
+      return true;
+    }
+  }
+  return false;
 }
 
 size_t TreeItem::getTotalNumNodes() {
@@ -356,8 +372,9 @@ size_t TreeItem::getMaxDepth() {
 
   for (size_t i = 0; i < items.size(); i++) {
     size_t tmp_max_depth = items[i]->getMaxDepth();
-    if (tmp_max_depth > max_depth)
+    if (tmp_max_depth > max_depth) {
       max_depth = tmp_max_depth;
+    }
   }
   return max_depth + 1;   // Myself
 }

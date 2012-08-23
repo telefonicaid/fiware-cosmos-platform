@@ -22,31 +22,36 @@ extern "C" void exit(int);
  *
  * daemonize -
  */
-void daemonize(void) {
+void Daemonize(void) {
   pid_t pid;
   pid_t sid;
 
   // already daemon
-  if (getppid() == 1)
+  if (getppid() == 1) {
     return;
+  }
 
   pid = fork();
-  if (pid == -1)
+  if (pid == -1) {
     LM_X(1, ("fork: %s", strerror(errno)));  // Exiting father process
-  if (pid > 0)
+  }
+  if (pid > 0) {
     exit(0);  // Change the file mode mask */
+  }
   umask(0);
 
   // Removing the controlling terminal
   sid = setsid();
-  if (sid == -1)
+  if (sid == -1) {
     LM_X(1, ("setsid: %s", strerror(errno)));  // Change current working directory.
-   // This prevents the current directory from being locked; hence not being able to remove it.
-  if (chdir("/") == -1)
+  }
+  // This prevents the current directory from being locked; hence not being able to remove it.
+  if (chdir("/") == -1) {
     LM_X(1, ("chdir: %s", strerror(errno)));
+  }
 }
 
-void deamonize_close_all(void) {
+void Deamonize_close_all(void) {
   FILE *s;
 
   // Redirect standard files to /dev/null

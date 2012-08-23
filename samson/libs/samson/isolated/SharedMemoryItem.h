@@ -66,10 +66,11 @@ public:
 
   ~SharedMemoryItem() {
     // Detach data if it was previously attached
-    if (data)
+    if (data) {
       if (shmdt(data) == -1) {
         LM_X(1, ("Error calling shmdt"));
       }
+    }
   }
 
   // --------------------------------------------------------------------------------

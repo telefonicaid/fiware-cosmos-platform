@@ -28,24 +28,28 @@ SAMSON_EXTERNAL_VARS;
  */
 
 Status createDirectory(std::string path) {
-  if (mkdir(path.c_str(), 0755) == -1)
+  if (mkdir(path.c_str(), 0755) == -1) {
     if (errno != EEXIST) {
       LM_W(("Error creating directory %s (%s)", path.c_str(), strerror(errno)));
       return Error;
     }
+  }
   return OK;
 }
 
 Status createFullDirectory(std::string path) {
-  if (path.length() == 0)
+  if (path.length() == 0) {
     return Error;
+  }
 
   std::vector<std::string> components;
   au::split(path, '/', components);
 
   std::string accumulated_path;
-  if (path[0] == '/')
-    accumulated_path += "/"; for (size_t i = 0; i < components.size(); i++) {
+  if (path[0] == '/') {
+    accumulated_path += "/";
+  }
+  for (size_t i = 0; i < components.size(); i++) {
     accumulated_path += components[i];
     Status s = createDirectory(accumulated_path);
     if (s != OK) {
@@ -75,28 +79,33 @@ SetupItem::SetupItem(std::string _name, std::string _default_value, std::string 
   description = _description;
   type = _type;
 
-  if (!check_valid(_default_value))
+  if (!check_valid(_default_value)) {
     LM_W(("Default value %s not valid for setup item %s", _default_value.c_str(), _name.c_str()));
+  }
 }
 
 bool SetupItem::setValue(std::string _value) {
-  if (!check_valid(_value))
+  if (!check_valid(_value)) {
     return false;
+  }
 
   value = _value;
   return true;
 }
 
 bool SetupItem::check_valid(std::string _value) {
-  if (type == SetupItem_string)
+  if (type == SetupItem_string) {
     return true;
+  }
 
   if (type == SetupItem_uint64) {
     size_t p  = _value.find_first_not_of("0123456789");
-    if (p == std::string::npos)
-      return true; else
+    if (p == std::string::npos) {
+      return true;
+    } else {
       // LM_W(("'%s' not a number since %lu is not a number char",_value.c_str(),p ));
       return false;
+    }
   }
 
   // Unknown type
@@ -156,21 +165,26 @@ void SetupItemCollection::load(std::string fileName) {
     char line[2000];
     while (fgets(line, sizeof(line), file)) {
       au::CommandLine c;
-      c.parse(line);
+      c.Parse(line);
 
-      if (c.get_num_arguments() == 0)
+      if (c.get_num_arguments() == 0) {
         continue;  // Skip comments
+      }
       std::string mainCommand = c.get_argument(0);
-      if (mainCommand[0] == '#')
-        continue; if (c.get_num_arguments() >= 2) {
+      if (mainCommand[0] == '#') {
+        continue;
+      }
+      if (c.get_num_arguments() >= 2) {
         std::string name = c.get_argument(0);
         std::string value =  c.get_argument(1);
 
         SetupItem *item = items.findInMap(name);
 
-        if (item)
-          item->setValue(value); else
+        if (item) {
+          item->setValue(value);
+        } else {
           LM_W(("Unknown parameter %s found in setup file %s", name.c_str(), fileName.c_str()));
+        }
       }
     }
 
@@ -235,13 +249,17 @@ std::string SetupItemCollection::str() {
 static SamsonSetup *samsonSetup = NULL;
 
 SamsonSetup *SamsonSetup::shared() {
-  if (!samsonSetup)
-    LM_X(1, ("Please, init SamsonSetup with SamsonSetup::init()")); return samsonSetup;
+  if (!samsonSetup) {
+    LM_X(1, ("Please, init SamsonSetup with SamsonSetup::init()"));
+  }
+  return samsonSetup;
 }
 
 void SamsonSetup::destroy() {
-  if (!samsonSetup)
-    LM_RVE(("SamsonSetup not initialized at destructor")); LM_V(("Destroying SamsonSetup"));
+  if (!samsonSetup) {
+    LM_RVE(("SamsonSetup not initialized at destructor"));
+  }
+  LM_V(("Destroying SamsonSetup"));
   delete samsonSetup;
   samsonSetup = NULL;
 }
@@ -265,15 +283,19 @@ SamsonSetup::SamsonSetup(std::string samson_home, std::string samson_working) {
   char *env_samson_home = getenv("SAMSON_HOME");
 
   if (samson_working == "") {
-    if (env_samson_working)
-      samson_working = env_samson_working; else
+    if (env_samson_working) {
+      samson_working = env_samson_working;
+    } else {
       samson_working = SAMSON_WORKING_DEFAULT;
+    }
   }
 
   if (samson_home == "") {
-    if (env_samson_home)
-      samson_home = env_samson_home; else
+    if (env_samson_home) {
+      samson_home = env_samson_home;
+    } else {
       samson_home =  SAMSON_HOME_DEFAULT;
+    }
   }
 
   // Basic directories
@@ -342,8 +364,9 @@ std::string SamsonSetup::blockFileName(size_t block_id) {
 
 bool isNumber(std::string txt) {
   for (size_t i = 0; i < txt.length(); i++) {
-    if (!au::isCharInRange(txt[i], 48, 57))
+    if (!au::isCharInRange(txt[i], 48, 57)) {
       return false;
+    }
   }
   return true;
 }
@@ -351,8 +374,9 @@ bool isNumber(std::string txt) {
 size_t SamsonSetup::blockIdFromFileName(std::string fileName) {
   std::string path = _samson_working + "/blocks/block_";
 
-  if (fileName.substr(0, path.size()) != path)
+  if (fileName.substr(0, path.size()) != path) {
     return false;
+  }
 
   // Take the rest of the name
   std::string res_path = fileName.substr(path.size());
@@ -375,8 +399,9 @@ std::string SamsonSetup::get(std::string name) {
 std::string SamsonSetup::get_default(std::string name) {
   SetupItem *item = items.findInMap(name);
 
-  if (!item)
+  if (!item) {
     return "";
+  }
 
   return item->getDefaultValue();
 }
@@ -394,16 +419,21 @@ int SamsonSetup::getInt(std::string name) {
 }
 
 void SamsonSetup::createWorkingDirectories() {
-  if (createFullDirectory(_samson_working) != OK)
+  if (createFullDirectory(_samson_working) != OK) {
     LM_X(1, ("Error creating directory %s", _samson_working.c_str()));
-  if (createFullDirectory(_samson_working + "/log") != OK)
+  }
+  if (createFullDirectory(_samson_working + "/log") != OK) {
     LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));
-  if (createFullDirectory(_samson_working + "/blocks") != OK)
+  }
+  if (createFullDirectory(_samson_working + "/blocks") != OK) {
     LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));
-  if (createFullDirectory(_samson_working + "/etc") != OK)
+  }
+  if (createFullDirectory(_samson_working + "/etc") != OK) {
     LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));  // Create modules directory
-  if (createFullDirectory(_samson_home + "/modules"))
+  }
+  if (createFullDirectory(_samson_home + "/modules")) {
     LM_X(1, ("Error creating directory at %s", _samson_home.c_str()));
+  }
 }
 
 int SamsonSetup::save() {

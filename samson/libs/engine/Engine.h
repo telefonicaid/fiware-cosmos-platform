@@ -23,7 +23,6 @@
 #include <set>                              // std::set
 #include <string>
 
-#include "au/Object.h"
 #include "au/statistics/ActivityMonitor.h"
 #include "au/tables/Table.h"
 

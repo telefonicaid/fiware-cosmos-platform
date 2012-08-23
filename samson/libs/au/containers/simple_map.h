@@ -88,9 +88,10 @@ public:
     typename std::map<K, V >::iterator iter = std::map<K, V>::find(key);
     typename std::map<K, V >::iterator iter_end = std::map<K, V>::end();
 
-    if (iter == iter_end)
+    if (iter == iter_end) {
       // Make sure to call isInMap before
       LM_X(1, ("Error extracting an element from an au::simple_map without checking first it was included"));
+    }
 
     V v = iter->second;
     std::map<K, V>::erase(iter);

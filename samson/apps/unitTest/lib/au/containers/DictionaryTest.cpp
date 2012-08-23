@@ -1,7 +1,7 @@
 #include "au/containers/Dictionary.h"
 #include "au/containers/SharedPointer.h"
 #include "gtest/gtest.h"
-#include "unitTest/test_common.h"
+#include "unitTest/TestClasses.h"
 
 TEST(au_containers_Dictionary, assignation) {
   au::Dictionary<std::string, TestBase> dictionary;
@@ -10,7 +10,7 @@ TEST(au_containers_Dictionary, assignation) {
   au::SharedPointer<TestBase> p = dictionary.Get("hola");
 
 
-  EXPECT_EQ(p->v(), 10) << "Error in au::Dictionary basic operations";
+  EXPECT_EQ(p->value(), 10) << "Error in au::Dictionary basic operations";
 }
 
 TEST(au_containers_Dictionary, duplication) {
@@ -20,7 +20,7 @@ TEST(au_containers_Dictionary, duplication) {
   dictionary.Set("adios", dictionary.Get("hola"));
 
   au::SharedPointer<TestBase> p = dictionary.Get("hola");
-  EXPECT_EQ(p->v(), 10) << "Error in au::Dictionary basic operations";
+  EXPECT_EQ(p->value(), 10) << "Error in au::Dictionary basic operations";
 
   EXPECT_EQ(dictionary.Get("hola") == dictionary.Get("adios"),
             true) << "Error in au::Dictionary duplication";

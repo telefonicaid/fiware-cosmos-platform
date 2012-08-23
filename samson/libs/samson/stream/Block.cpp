@@ -85,9 +85,11 @@ au::SharedPointer<KVFile> Block::getKVFile(au::ErrorManager& error) {
 
   if (file_ == NULL) {
     // Create the file...
-    if (buffer_ != NULL)
-      file_ = KVFile::create(buffer_, error); else
+    if (buffer_ != NULL) {
+      file_ = KVFile::create(buffer_, error);
+    } else {
       error.set(au::str("No buffer in memory for block %lu", block_id_));
+    }
   }
   return file_;
 }
@@ -107,9 +109,12 @@ void Block::update_sort_information() {
     size_t task_id = block_list->task_id();
     int priority = block_list->task_id();
 
-    if (( min_task_id_ == (size_t)-1) || ( min_task_id_ > task_id ))
-      min_task_id_ = task_id; if (priority > max_priority_)
+    if (( min_task_id_ == (size_t)-1) || ( min_task_id_ > task_id )) {
+      min_task_id_ = task_id;
+    }
+    if (priority > max_priority_) {
       max_priority_ = priority;
+    }
   }
 }
 
@@ -155,13 +160,16 @@ void Block::update(BlockInfo &block_info) {
 
   // Information about sizes
   block_info.size += header.info.size;
-  if (is_content_in_memory())
-    block_info.size_on_memory += header.info.size; if (is_content_in_disk())
+  if (is_content_in_memory()) {
+    block_info.size_on_memory += header.info.size;
+  }
+  if (is_content_in_disk()) {
     block_info.size_on_disk += header.info.size;  /*
                                                    * if( isLockedInMemory() )
                                                    * block_info.size_locked += size;
                                                    */
-   // Key-Value information
+  }
+  // Key-Value information
   block_info.info.append(header.info);
 
   block_info.push(getKVFormat());
@@ -192,17 +200,21 @@ std::string Block::str() {
 
 // Function to check if this block can be removed from block manager ( basically it is not contained anywhere )
 bool Block::canBeRemoved() {
-  if (state_ == reading)
+  if (state_ == reading) {
     return false;
+  }
 
-  if (state_ == writing)
+  if (state_ == writing) {
     return false;
+  }
 
-  if (block_lists_.size() > 0)
+  if (block_lists_.size() > 0) {
     return false;
+  }
 
-  if (block_lists_lock_.size() > 0)
+  if (block_lists_lock_.size() > 0) {
     return false;
+  }
 
   return true;
 }
@@ -220,15 +232,19 @@ size_t Block::getSize() {
 }
 
 size_t Block::getSizeOnMemory() {
-  if (is_content_in_memory())
-    return getSize(); else
+  if (is_content_in_memory()) {
+    return getSize();
+  } else {
     return 0;
+  }
 }
 
 size_t Block::getSizeOnDisk() {
-  if (is_content_in_disk())
-    return getSize(); else
+  if (is_content_in_disk()) {
+    return getSize();
+  } else {
     return 0;
+  }
 }
 
 KVRange Block::getKVRange() {
@@ -265,10 +281,11 @@ void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& vis
   samson::add(record, "locked", is_content_locked_in_memory() ? "yes" : "no", "left,different");
 
   // Next task
-  if (min_task_id_ == (size_t)(-1))
+  if (min_task_id_ == (size_t)(-1)) {
     samson::add(record, "next task", "none", "left,different");
-  else
+  } else {
     samson::add(record, "next task", min_task_id_, "left,different");  // Priority level
+  }
   samson::add(record, "priority", max_priority_, "left,different");
 
   // Time of creation
@@ -305,18 +322,22 @@ std::string Block::str_state() {
   std::ostringstream output;
 
   // Memory status
-  if (is_content_locked_in_memory())
+  if (is_content_locked_in_memory()) {
     output << "L";
-  else if (is_content_in_memory())
+  } else if (is_content_in_memory()) {
     output << "M";
-  else if (state_ == reading)
+  } else if (state_ == reading) {
     output << "R";
-  else
+  } else {
     output << " ";  // Disk status
-  if (is_content_in_disk())
-    output << "D"; else if (state_ == writing)
-    output << "W"; else
-    output << " "; return output.str();
+  }
+  if (is_content_in_disk()) {
+    output << "D";
+  } else if (state_ == writing) {
+    output << "W";
+  } else {
+    output << " ";
+  } return output.str();
 }
 
 // Get the header

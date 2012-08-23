@@ -26,9 +26,12 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
   buffer = item->data;
   size = item->size;
 
-  if (!buffer)
-    LM_X(1, ("Internal error: No buffer in a ProcessWriter")); if (size == 0)
+  if (!buffer) {
+    LM_X(1, ("Internal error: No buffer in a ProcessWriter"));
+  }
+  if (size == 0) {
     LM_X(1, ("Wrong size in a ProcessWriter operation"));  // Number of outputs
+  }
   num_outputs = processIsolated->num_outputs;
   num_hg_divisions = processIsolated->num_hg_divisions;
 
@@ -76,8 +79,9 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
   // Outputs structures placed at the begining of the buffer
   channel = (OutputChannel *)buffer;
 
-  if (size < sizeof(OutputChannel) * num_outputs * num_hg_divisions)
+  if (size < sizeof(OutputChannel) * num_outputs * num_hg_divisions) {
     LM_X(1, ("Wrong size of shared-memory segment (%lu)", size ));  // Buffer starts next
+  }
   node = (NodeBuffer *)( buffer + sizeof(OutputChannel) * num_outputs * num_hg_divisions );
   num_nodes = ( size - (sizeof(OutputChannel) * num_outputs * num_hg_divisions )) / sizeof( NodeBuffer );
 
@@ -88,12 +92,17 @@ ProcessWriter::ProcessWriter(ProcessIsolated *_processIsolated) {
 ProcessWriter::~ProcessWriter() {
   // Free minibuffer used to serialize key-value here
   // Note: If there was an error in the constructor, it may be NULL
-  if (miniBuffer)
-    free(miniBuffer); if (item)
+  if (miniBuffer) {
+    free(miniBuffer);
+  }
+  if (item) {
     delete item;  // Delete key-value hash vector
-   // Note: If there was an error in the constructor, it may be NULL
-  if (keyValueHash)
-    delete[] keyValueHash; if (outputKeyDataInstance) {
+  }
+  // Note: If there was an error in the constructor, it may be NULL
+  if (keyValueHash) {
+    delete[] keyValueHash;
+  }
+  if (outputKeyDataInstance) {
     for (int i = 0; i < num_outputs; i++) {
       delete outputKeyDataInstance[i];
     }
@@ -118,8 +127,9 @@ void ProcessWriter::internal_emit(int output, int hg, char *data, size_t data_si
 
   size_t availableSpace = (num_nodes - new_node) * KV_NODE_SIZE;
 
-  if (_hgOutput->last_node != KV_NODE_UNASIGNED)
+  if (_hgOutput->last_node != KV_NODE_UNASIGNED) {
     availableSpace += node[ _hgOutput->last_node ].availableSpace();  // Check if it will fit
+  }
   if (data_size >= availableSpace) {
     // Process the output buffer and clear to continue
     flushBuffer(false);
@@ -136,15 +146,19 @@ void ProcessWriter::internal_emit(int output, int hg, char *data, size_t data_si
   // Get a pointer to the first node ( or create if not created before )
   NodeBuffer *_node;
   if (_hgOutput->last_node == KV_NODE_UNASIGNED) {
-    if (new_node >= num_nodes)
-      LM_X(1, ("Internal error")); node[new_node].init();  // Init the new node
+    if (new_node >= num_nodes) {
+      LM_X(1, ("Internal error"));
+    }
+    node[new_node].init();                                // Init the new node
     _hgOutput->first_node = new_node;   // Update the HasgGroup structure to point here
     _hgOutput->last_node = new_node;    // Update the HasgGroup structure to point here
     _node = &node[new_node];                              // Point to this one to write
     new_node++;
   } else {
-    if (_hgOutput->last_node >= num_nodes)
-      LM_X(1, ("Internal error")); _node = &node[ _hgOutput->last_node ];      // Current write node
+    if (_hgOutput->last_node >= num_nodes) {
+      LM_X(1, ("Internal error"));
+    }
+    _node = &node[ _hgOutput->last_node ];                // Current write node
   }
 
   // Fill following nodes...
@@ -156,8 +170,10 @@ void ProcessWriter::internal_emit(int output, int hg, char *data, size_t data_si
       _node->setNext(new_node);                               // Set the next in my last node
       node[new_node].init();                                  // Init the new node
       _hgOutput->last_node = new_node;                        // Update the HasgGroup structure to point here
-      if (new_node > num_nodes)
-        LM_X(1, ("Internal error")); _node = &node[new_node];  // Point to this one to write
+      if (new_node > num_nodes) {
+        LM_X(1, ("Internal error"));
+      }
+      _node = &node[new_node];                                // Point to this one to write
       new_node++;
     }
   }
@@ -165,9 +181,10 @@ void ProcessWriter::internal_emit(int output, int hg, char *data, size_t data_si
 
 void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
   // Spetial case for logging...
-  if (output == -1)
+  if (output == -1) {
     output = num_outputs - 1;  // Last channel
-   // Check if DataInstances used for key and value are correct
+  }
+  // Check if DataInstances used for key and value are correct
 
   // output = num_outputs-1 is the trace queue
   if (output > num_outputs) {
@@ -181,8 +198,9 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
     return;
   }
 
-  if (output > num_outputs)
+  if (output > num_outputs) {
     LM_X(1, ("Emiting key-value usign channel %d ( this operation has only %d outputs)", output, num_outputs ));
+  }
   if (key->getHashType() != keyValueHash[output].key_hash) {
     std::ostringstream error_message;
     error_message << "Different hash-type for key at output # " << output << " of num_outputs:" << num_outputs <<
@@ -242,10 +260,11 @@ void ProcessWriter::emit(int output, DataInstance *key, DataInstance *value) {
 
 void ProcessWriter::flushBuffer(bool finish) {
   // Send code to be understoo
-  if (finish)
+  if (finish) {
     processIsolated->sendCode(WORKER_TASK_ITEM_CODE_FLUSH_BUFFER_FINISH);
-  else
+  } else {
     processIsolated->sendCode(WORKER_TASK_ITEM_CODE_FLUSH_BUFFER);  // Clear the buffer
+  }
   clear();
 }
 
@@ -279,8 +298,9 @@ ProcessTXTWriter::ProcessTXTWriter(ProcessIsolated *_workerTaskItem) {
 
 ProcessTXTWriter::~ProcessTXTWriter() {
   // Remove the shared memory segment
-  if (item)
+  if (item) {
     delete item;
+  }
 }
 
 void ProcessTXTWriter::flushBuffer(bool finish) {
@@ -295,8 +315,10 @@ void ProcessTXTWriter::flushBuffer(bool finish) {
 }
 
 void ProcessTXTWriter::emit(const char *_data, size_t _size) {
-  if (*size + _size  > max_size)
-    flushBuffer(false); memcpy(data + (*size), _data, _size);
+  if (*size + _size  > max_size) {
+    flushBuffer(false);
+  }
+  memcpy(data + (*size), _data, _size);
   *size += _size;
 }
 }

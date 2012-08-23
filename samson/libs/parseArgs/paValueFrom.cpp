@@ -29,12 +29,16 @@ PaFrom paValueFrom(char *oName) {
   while ((aP = paIterateNext(paiList)) != NULL) {
     char envVarName[64];
 
-    if (aP->option == NULL)
-      continue; paEnvName(aP, envVarName);
+    if (aP->option == NULL) {
+      continue;
+    }
+    paEnvName(aP, envVarName);
 
-    if (aP->option && (strcmp(oName, aP->option) == 0))
-      return aP->from; else if (aP->envName && (strcmp(oName, envVarName) == 0))
+    if (aP->option && (strcmp(oName, aP->option) == 0)) {
       return aP->from;
+    } else if (aP->envName && (strcmp(oName, envVarName) == 0)) {
+      return aP->from;
+    }
   }
 
   return PafError;

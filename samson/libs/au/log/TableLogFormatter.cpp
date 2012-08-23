@@ -31,9 +31,12 @@ TableLogFormatter::TableLogFormatter(std::string _format) {
 }
 
 TableLogFormatter::~TableLogFormatter() {
-  if (table)
-    delete table; if (log_formatter)
+  if (table) {
+    delete table;
+  }
+  if (log_formatter) {
     delete log_formatter;
+  }
 }
 
 void TableLogFormatter::set_as_table(bool _is_table) {
@@ -73,8 +76,10 @@ void TableLogFormatter::set_limit(int _limit) {
     return;
   }
 
-  if (_limit < 0)
-    limit = 0; limit = _limit;
+  if (_limit < 0) {
+    limit = 0;
+  }
+  limit = _limit;
 }
 
 void TableLogFormatter::set_pattern(std::string _str_pattern) {
@@ -128,8 +133,9 @@ void TableLogFormatter::init(ErrorManager *error) {
 
     std::string table_definition;
     for (size_t i = 0; i < table_fields.size(); i++) {
-      if (table_fields[i].length() > 0)
+      if (table_fields[i].length() > 0) {
         table_definition.append(au::str("%s,left|", table_fields[i].c_str()));
+      }
     }
 
     table = new au::tables::Table(table_definition);
@@ -143,8 +149,9 @@ void TableLogFormatter::init(ErrorManager *error) {
   // Patern restriction
   if (str_pattern != "") {
     pattern = new Pattern(str_pattern, error);
-    if (error->IsActivated())
+    if (error->IsActivated()) {
       return;
+    }
   }
 
   // Time restrictions
@@ -167,8 +174,9 @@ void TableLogFormatter::init(ErrorManager *error) {
     }
 
     if (str_date != "") {
-      if (str_date.length() != 8)
+      if (str_date.length() != 8) {
         error->set("Error: Wrong format for -date. It is -date DD/MM/YY\n");  // DD/MM/YY
+      }
       tm.tm_year = 100 + Char_to_int(str_date[6]) * 10 + Char_to_int(str_date[7]);
       tm.tm_mon  = Char_to_int(str_date[3]) * 10 + Char_to_int(str_date[4]) - 1;
       tm.tm_mday = Char_to_int(str_date[0]) * 10 + Char_to_int(str_date[1]);
@@ -179,64 +187,76 @@ void TableLogFormatter::init(ErrorManager *error) {
   }
 }
 
-bool TableLogFormatter::filter(Log *log) {
+bool TableLogFormatter::filter(au::SharedPointer<Log> log) {
   if (!flag_init) {
     LM_W(("Not possible to filter logs if init has not been called"));
     return false;
   }
 
   // Filter by number of records
-  if (limit > 0)
-    if (num_logs >= limit)
+  if (limit > 0) {
+    if (num_logs >= limit) {
       return false;
+    }
+  }
 
   // Filter by pattern
-  if (pattern)
-    if (!log->match(&pattern->preg))
+  if (pattern) {
+    if (!log->match(&pattern->preg)) {
       return false;
+    }
+  }
 
   // filter by time
-  if (ref_time > 0)
-    if (!log->check_time(ref_time))
+  if (ref_time > 0) {
+    if (!log->log_data().tv.tv_sec <= ref_time) {
       return false;
+    }
+  }
 
   // Check if the type is correct
-  if (str_type != "")
-    if (log->log_data.type != str_type[0])
+  if (str_type != "") {
+    if (log->log_data().type != str_type[0]) {
       return false;
+    }
+  }
 
-  if (channel != "")
-    if (log->get("channel") != channel)
+  if (channel != "") {
+    if (log->Get("channel") != channel) {
       return false;
+    }
+  }
 
   return true;
 }
 
-void TableLogFormatter::add(Log *log) {
+void TableLogFormatter::add(au::SharedPointer<Log> log) {
   if (!flag_init) {
     LM_W(("Not possible to add TableLogFormatter if not init"));
     return;
   }
 
   // Filter logs by different criteria
-  if (!filter(log))
+  if (!filter(log)) {
     return;
+  }
 
   // Detect a new session mark...
-  if (flag_new_session_found)
+  if (flag_new_session_found) {
     return;         // Not add more records if a new session mark has been previously found
-
-  if (!is_multi_session)
-    if (log->is_new_session()) {
+  }
+  if (!is_multi_session) {
+    if (log->IsNewSession()) {
       flag_new_session_found = true;
       return;
     }  // Add the counter of logs
+  }
   num_logs++;
 
   if (is_table) {
     StringVector values;
     for (size_t i = 0; i < table_fields.size(); i++) {
-      values.push_back(log->get(table_fields[i]));
+      values.push_back(log->Get(table_fields[i]));
     }
     table->addRow(values);
   } else {
@@ -248,13 +268,17 @@ void TableLogFormatter::add(Log *log) {
 
 std::string TableLogFormatter::str() {
   if (table) {
-    if (is_reverse)
-      table->reverseRows(); return table->str();
+    if (is_reverse) {
+      table->reverseRows();
+    }
+    return table->str();
   } else {
     std::string lines = output.str();
-    if (is_reverse)
-      return au::reverse_lines(lines); else
+    if (is_reverse) {
+      return au::reverse_lines(lines);
+    } else {
       return lines;
+    }
   }
 }
 }

@@ -1,6 +1,6 @@
 #include "au/containers/SharedPointer.h"
 #include "gtest/gtest.h"
-#include "unitTest/test_common.h"
+#include "unitTest/TestClasses.h"
 
 
 TEST(au_containers_SharedPointer, assignation) {
@@ -8,7 +8,7 @@ TEST(au_containers_SharedPointer, assignation) {
   a = new TestBase(10);
   au::SharedPointer< TestBase > b = a;
 
-  EXPECT_EQ(b->v(), 10) << "Error in au::SharedPointer assignation";
+  EXPECT_EQ(b->value(), 10) << "Error in au::SharedPointer assignation";
 
   EXPECT_EQ(a.reference_count(),
             2) <<  "Error in au::SharedPointer assignation";

@@ -22,8 +22,10 @@
  * newlineStrip -
  */
 static char *newlineStrip(char *s) {
-  if (s[strlen(s) - 1] == '\n')
-    s[strlen(s) - 1] = 0; return s;
+  if (s[strlen(s) - 1] == '\n') {
+    s[strlen(s) - 1] = 0;
+  }
+  return s;
 }
 
 /* ****************************************************************************
@@ -33,8 +35,10 @@ static char *newlineStrip(char *s) {
 static char *commentStrip(char *s, char c) {
   char *tmP;
 
-  if ((tmP = strchr(s, c)) != NULL)
-    *tmP = 0; return s;
+  if ((tmP = strchr(s, c)) != NULL) {
+    *tmP = 0;
+  }
+  return s;
 }
 
 /* ****************************************************************************
@@ -63,16 +67,18 @@ static int dirFind(char *dir, int dirLen) {
     LM_T(LmtPaRcFile, ("checking dir '%s'", paRcFileDir));
     sprintf(dir, "%s", paRcFileDir);
     sprintf(path, "%s/%s", dir, paRcFileName);
-    if (access(path, R_OK) == 0)
+    if (access(path, R_OK) == 0) {
       return 0;
+    }
   }
 
   /* 2. directory of execution */
   if (getcwd(dir, dirLen) != NULL) {
     LM_T(LmtPaRcFile, ("checking dir '%s'", dir));
     sprintf(path, "%s/%s", dir, paRcFileName);
-    if (access(path, R_OK) == 0)
+    if (access(path, R_OK) == 0) {
       return 0;
+    }
   } else {
     LM_W(("getcwd failed"));
   }
@@ -84,8 +90,9 @@ static int dirFind(char *dir, int dirLen) {
 
     strcpy(dir, pwP->pw_dir);
     sprintf(path, "%s/%s", dir, paRcFileName);
-    if (access(path, R_OK) == 0)
+    if (access(path, R_OK) == 0) {
       return 0;
+    }
   } else {
     LM_W(("geteuid or getpwuid failed"));
   }
@@ -95,8 +102,9 @@ static int dirFind(char *dir, int dirLen) {
     LM_T(LmtPaRcFile, ("checking dir '%s'", paGenericRcDir));
     strcpy(dir, paGenericRcDir);
     sprintf(path, "%s/%s", dir, paRcFileName);
-    if (access(path, R_OK) == 0)
+    if (access(path, R_OK) == 0) {
       return 0;
+    }
   }
 
   return -1;
@@ -121,14 +129,18 @@ int paRcFileParse(void) {
     return 0;
   }
 
-  if (dirFind(dir, sizeof(dir)) == 0)
+  if (dirFind(dir, sizeof(dir)) == 0) {
     LM_T(LmtPaRcFile, ("RC file '%s' found in directory '%s'",
-                       paRcFileName, dir)); else
+                       paRcFileName, dir));
+  } else {
     return 0;
+  }
 
   sprintf(path, "%s/%s", dir, paRcFileName);
-  if ((fP = fopen(path, "r")) == NULL)
-    LM_RE(-1, ("error opening RC file '%s': %s", path, strerror(errno))); LM_T(LmtPaRcFile, ("parsing RC file %s", path));
+  if ((fP = fopen(path, "r")) == NULL) {
+    LM_RE(-1, ("error opening RC file '%s': %s", path, strerror(errno)));
+  }
+  LM_T(LmtPaRcFile, ("parsing RC file %s", path));
 
   while (fgets(line, sizeof(line), fP) != NULL) {
     char *delim;
@@ -146,8 +158,10 @@ int paRcFileParse(void) {
     LM_T(LmtPaRcFile, ("got line %d", lineNo));
     baWsStrip(line);
     LM_T(LmtPaRcFile, ("got line %d", lineNo));
-    if (line[0] == 0)
-      continue; LM_T(LmtPaRcFile, ("got line %d", lineNo));
+    if (line[0] == 0) {
+      continue;
+    }
+    LM_T(LmtPaRcFile, ("got line %d", lineNo));
     delim = strchr(line, '=');
     if (delim == NULL) {
       char w[512];

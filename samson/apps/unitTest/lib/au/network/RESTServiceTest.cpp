@@ -3,7 +3,7 @@
 #include "au/network/RESTService.h"
 #include "au/network/RESTServiceCommand.h"
 #include "gtest/gtest.h"
-#include "unitTest/test_common.h"
+#include "unitTest/TestClasses.h"
 
 class RESTServiceInterfaceImpl : public au::network::RESTServiceInterface {
 public:

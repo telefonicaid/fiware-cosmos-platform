@@ -19,8 +19,9 @@ bool is_double(const char *data) {
     int c = data[pos];
     pos++;
 
-    if (c == '\0')
+    if (c == '\0') {
       return true;
+    }
 
     // Dot
     if (c == '.') {
@@ -30,15 +31,15 @@ bool is_double(const char *data) {
 
     // Signs
     if (( c == '-' ) || ( c == '+' )) {
-      if (found_dot)
+      if (found_dot) {
         return false;                 // sign after dot
-
-      if (found_sign)
+      }
+      if (found_sign) {
         return false;                 // Double sign
-
-      if (found_digit)
+      }
+      if (found_digit) {
         return false;                 // Sign after digits
-
+      }
       found_sign = true;
       continue;
     }
@@ -73,16 +74,20 @@ const char *constant_words[] =
 };
 
 int internal_get_constant_word_code(const char *word, int min, int max) {
-  if (max <= (min + 1))
+  if (max <= (min + 1)) {
     return -1;
+  }
 
   int mid = (min + max) / 2;
 
   int c = strcmp(word, constant_words[mid]);
-  if (c == 0)
-    return mid; else if (c > 0)
-    return internal_get_constant_word_code(word, mid, max); else
+  if (c == 0) {
+    return mid;
+  } else if (c > 0) {
+    return internal_get_constant_word_code(word, mid, max);
+  } else {
     return internal_get_constant_word_code(word, min, mid);
+  }
 }
 
 // Find if this word is a constant word ( serialized with 2 bytes )
@@ -90,14 +95,20 @@ int internal_get_constant_word_code(const char *word, int min, int max) {
 int get_constant_word_code(const char *word) {
   int max = sizeof(constant_words) / sizeof(char *);
 
-  if (strcmp(word, constant_words[0]) == 0)
-    return 0; if (strcmp(word, constant_words[max - 1]) == 0)
-    return max - 1; return internal_get_constant_word_code(word, 0, max - 1);
+  if (strcmp(word, constant_words[0]) == 0) {
+    return 0;
+  }
+  if (strcmp(word, constant_words[max - 1]) == 0) {
+    return max - 1;
+  }
+  return internal_get_constant_word_code(word, 0, max - 1);
 }
 
 const char *get_constant_word(int c) {
-  if (( c < 0 ) || (c > 255))
-    return "Unknown"; return constant_words[c];
+  if (( c < 0 ) || (c > 255)) {
+    return "Unknown";
+  }
+  return constant_words[c];
 }
 
 // Parse operations
@@ -782,9 +793,11 @@ int Value::hash_void(int max_num_partitions) {
 }
 
 int Value::hash_number(int max_num_partitions) {
-  if (_value_double >= 0)
-    return ((size_t)_value_double) % max_num_partitions; else
+  if (_value_double >= 0) {
+    return ((size_t)_value_double) % max_num_partitions;
+  } else {
     return ((size_t)-_value_double) % max_num_partitions;
+  }
 }
 
 int Value::hash_string(int max_num_partitions) {
@@ -801,8 +814,10 @@ int Value::hash_string(int max_num_partitions) {
 }
 
 int Value::hash_vector(int max_num_partitions) {
-  if (_value_vector.size() == 0)
-    return 0; return _value_vector[0]->hash(max_num_partitions);
+  if (_value_vector.size() == 0) {
+    return 0;
+  }
+  return _value_vector[0]->hash(max_num_partitions);
 }
 
 int Value::hash_map(int max_num_partitions) {
@@ -875,13 +890,17 @@ const char *Value::getType() {
 }
 
 bool Value::checkTypeStatic(const char *type) {
-  if (strcmp(type, "system.Value") == 0)
-    return true; return false;
+  if (strcmp(type, "system.Value") == 0) {
+    return true;
+  }
+  return false;
 }
 
 bool Value::checkType(const char *type) {
-  if (strcmp(type, "system.Value") == 0)
-    return true; return false;
+  if (strcmp(type, "system.Value") == 0) {
+    return true;
+  }
+  return false;
 }
 
 size_t Value::getHashTypeStatic() {
@@ -893,15 +912,17 @@ size_t Value::getHashType() {
 }
 
 bool Value::checkHashTypeStatic(size_t valType) {
-  if (valType == VALUE_CODE)
+  if (valType == VALUE_CODE) {
     return true;
+  }
 
   return false;
 }
 
 bool Value::checkHashType(size_t valType) {
-  if (valType == VALUE_CODE)
+  if (valType == VALUE_CODE) {
     return true;
+  }
 
   return false;
 }
@@ -1012,8 +1033,9 @@ const Value Value::operator/(const Value &other) const {
 }
 
 inline int Value::compare(const Value& other) const {
-  if (value_type != other.value_type)
+  if (value_type != other.value_type) {
     return value_type - other.value_type;
+  }
 
   // Same type
   switch (value_type) {
@@ -1021,31 +1043,40 @@ inline int Value::compare(const Value& other) const {
       return 0;
 
     case value_number:
-      if (_value_double > other._value_double)
-        return 1; else if (_value_double < other._value_double)
-        return -1; else
+      if (_value_double > other._value_double) {
+        return 1;
+      } else if (_value_double < other._value_double) {
+        return -1;
+      } else {
         return 0;
+      }
 
     case value_string:
     {
-      if (_value_string > other._value_string)
-        return 1; else if (_value_string < other._value_string)
-        return -1; else
+      if (_value_string > other._value_string) {
+        return 1;
+      } else if (_value_string < other._value_string) {
+        return -1;
+      } else {
         return 0;
+      }
     }
 
     case value_vector:
     {
       if (_value_vector.size() != other._value_vector.size()) {
-        if (_value_vector.size() > other._value_vector.size())
-          return 1; else
+        if (_value_vector.size() > other._value_vector.size()) {
+          return 1;
+        } else {
           return -1;
+        }
       }
 
       for (size_t i = 0; i < _value_vector.size(); i++) {
         int c = _value_vector[i]->compare(*other._value_vector[i]);
-        if (c != 0)
+        if (c != 0) {
           return c;
+        }
       }
 
       return 0;               // all the elements are the same.
@@ -1054,9 +1085,11 @@ inline int Value::compare(const Value& other) const {
     case value_map:
     {
       if (_value_map.size() != other._value_map.size()) {
-        if (_value_map.size() > other._value_map.size())
-          return 1; else
+        if (_value_map.size() > other._value_map.size()) {
+          return 1;
+        } else {
           return -1;
+        }
       }
 
       au::map<std::string, Value>::const_iterator it = _value_map.begin();
@@ -1066,14 +1099,18 @@ inline int Value::compare(const Value& other) const {
         // compare the first key
         std::string k = it->first;
         std::string k2 = it2->first;
-        if (k < k2)
-          return -1; if (k > k2)
+        if (k < k2) {
+          return -1;
+        }
+        if (k > k2) {
           return 1;
+        }
 
         // Compare both values
         int c = it->second->compare(*it2->second);
-        if (c != 0)
+        if (c != 0) {
           return c;
+        }
 
         it++;
         it2++;
@@ -1145,8 +1182,9 @@ std::string Value::str() {
       output << "[";
       for (size_t i = 0; i < _value_vector.size(); i++) {
         output << _value_vector[i]->str();
-        if (i != (_value_vector.size() - 1))
+        if (i != (_value_vector.size() - 1)) {
           output << ",";
+        }
       }
       output << "]";
       return output.str();
@@ -1161,8 +1199,9 @@ std::string Value::str() {
         output << "\"" << it->first << "\"" <<  ":";
         output << it->second->str();
         it++;
-        if (it != _value_map.end())
+        if (it != _value_map.end()) {
           output << ",";
+        }
       }
       output << "}";
       return output.str();
@@ -1193,8 +1232,9 @@ void Value::_strJSON(std::ostream &output) {
       for (size_t i = 0; i < _value_vector.size(); ) {
         _value_vector[i]->_strJSON(output);
         i++;
-        if (i != _value_vector.size())
+        if (i != _value_vector.size()) {
           output << ",";
+        }
       }
       output << "]";
       break;
@@ -1203,8 +1243,10 @@ void Value::_strJSON(std::ostream &output) {
       output << "{";
       au::map<std::string, Value>::iterator it;
       for (it = _value_map.begin(); it != _value_map.end(); it++) {
-        if (it != _value_map.begin())
-          output << ","; output << it->first << ":";
+        if (it != _value_map.begin()) {
+          output << ",";
+        }
+        output << it->first << ":";
         it->second->_strJSON(output);
       }
       output << "}";
@@ -1375,14 +1417,17 @@ void Value::vectorize() {
 }
 
 void Value::swap_vector_components(size_t pos, size_t pos2) {
-  if (value_type != value_vector)
+  if (value_type != value_vector) {
     return;
+  }
 
-  if (_value_vector.size() < pos)
+  if (_value_vector.size() < pos) {
     return;
+  }
 
-  if (_value_vector.size() < pos2)
+  if (_value_vector.size() < pos2) {
     return;
+  }
 
   Value *value = _value_vector[pos];
   _value_vector[pos] = _value_vector[pos2];
@@ -1390,11 +1435,13 @@ void Value::swap_vector_components(size_t pos, size_t pos2) {
 }
 
 void Value::pop_back_from_vector() {
-  if (value_type != value_vector)
+  if (value_type != value_vector) {
     return;
+  }
 
-  if (_value_vector.size() == 0)
+  if (_value_vector.size() == 0) {
     return;
+  }
 
   // Reuse the last element and remove it
   reuseInstance(_value_vector[ _value_vector.size() - 1 ]);
@@ -1403,8 +1450,9 @@ void Value::pop_back_from_vector() {
 
 Value *Value::add_value_to_vector() {
   // Just make sure we are in vector mode
-  if (value_type != value_vector)
+  if (value_type != value_vector) {
     set_as_vector();  // Get a new instance of Value and push it to the vector
+  }
   Value *value = getInstance();
   _value_vector.push_back(value);
 
@@ -1415,8 +1463,9 @@ Value *Value::add_value_to_vector() {
 
 Value *Value::add_value_to_vector(size_t pos) {
   // Just make sure we are in vector mode
-  if (value_type != value_vector)
+  if (value_type != value_vector) {
     set_as_vector();  // Get a new instance of Value and push it to the vector
+  }
   Value *value = getInstance();
   _value_vector.insert(_value_vector.begin() + pos, value);
 
@@ -1427,14 +1476,18 @@ Value *Value::add_value_to_vector(size_t pos) {
 
 Value *Value::get_value_from_vector(size_t pos) {
   if (value_type != value_vector) {
-    if (pos == 0)
-      return this; else
+    if (pos == 0) {
+      return this;
+    } else {
       return NULL;
+    }
   }
 
-  if (pos >= _value_vector.size())
-    return NULL; else
+  if (pos >= _value_vector.size()) {
+    return NULL;
+  } else {
     return _value_vector[pos];
+  }
 }
 
 size_t Value::get_vector_size() {
@@ -1450,13 +1503,15 @@ bool Value::isMap() {
 }
 
 bool Value::checkMapValue(const char *key, const char *value) {
-  if (value_type != value_map)
+  if (value_type != value_map) {
     return false;
+  }
 
   std::string _key = key;
   Value *map_value = _value_map.findInMap(_key);
-  if (!map_value)
+  if (!map_value) {
     return false;
+  }
 
   return map_value->isString(value);
 }
@@ -1466,14 +1521,17 @@ void Value::set_as_map() {
 }
 
 size_t Value::get_num_map_values() {
-  if (value_type != value_map)
-    return 0; return _value_map.size();
+  if (value_type != value_map) {
+    return 0;
+  }
+  return _value_map.size();
 }
 
 Value *Value::add_value_to_map(std::string key) {
   // Just make sure we are in vector mode
-  if (value_type != value_map)
+  if (value_type != value_map) {
     set_as_map();  // Get a new instance of Value and push it to the vector
+  }
   Value *value = getInstance();
   _value_map.insertInMap(key, value);
 
@@ -1483,20 +1541,24 @@ Value *Value::add_value_to_map(std::string key) {
 }
 
 Value *Value::get_value_from_map(const char *key) {
-  if (value_type != value_map)
-    return NULL; std::string _key = key;
+  if (value_type != value_map) {
+    return NULL;
+  }
+  std::string _key = key;
   return _value_map.findInMap(_key);
 }
 
 const char *Value::get_string_from_map(const char *key) {
-  if (value_type != value_map)
+  if (value_type != value_map) {
     return NULL;
+  }
 
   std::string _key = key;
   Value *value = _value_map.findInMap(_key);
 
-  if (!value)
+  if (!value) {
     return NULL;
+  }
 
   return value->c_str();
 }
@@ -1504,18 +1566,22 @@ const char *Value::get_string_from_map(const char *key) {
 Value *Value::get_or_add_value_from_map(const char *key) {
   Value *v = get_value_from_map(key);
 
-  if (v)
-    return v; return add_value_to_map(key);
+  if (v) {
+    return v;
+  }
+  return add_value_to_map(key);
 }
 
 size_t Value::get_uint64_from_map(const char *key, size_t default_value) {
-  if (value_type != value_map)
+  if (value_type != value_map) {
     return default_value;
+  }
 
   std::string _key = key;
   Value *v = _value_map.findInMap(_key);
-  if (v)
+  if (v) {
     return v->get_uint64(default_value);
+  }
 
   return default_value;
 }
@@ -1524,8 +1590,9 @@ double Value::get_double_from_map(const char *key, double default_value) {
   std::string _key = key;
   Value *v = _value_map.findInMap(_key);
 
-  if (v)
+  if (v) {
     return v->get_double();
+  }
 
   return default_value;
 }
@@ -1575,15 +1642,16 @@ void Value::convert_to_number() {
 }
 
 void Value::convert_to_string() {
-  if (value_type !=  value_string)
+  if (value_type !=  value_string) {
     set_string(get_string());
+  }
 }
 
 void Value::change_value_type(ValueType new_value_type) {
-  if (value_type == new_value_type)
+  if (value_type == new_value_type) {
     return;             // Nothing to do
-
-   // Rehuse all elements
+  }
+  // Rehuse all elements
   clear();
 
   // Assign the new value_type
@@ -1591,8 +1659,10 @@ void Value::change_value_type(ValueType new_value_type) {
 }
 
 void Value::add_double(double v) {
-  if (value_type != value_number)
-    set_double(v); _value_double += v;
+  if (value_type != value_number) {
+    set_double(v);
+  }
+  _value_double += v;
 }
 
 // ----------------------------------------------------------------------------------------
@@ -1656,21 +1726,27 @@ bool Value::isString() const {
 }
 
 bool Value::isString(const char *str) const {
-  if (value_type ==  value_string)
-    if (_value_string == str)
+  if (value_type ==  value_string) {
+    if (_value_string == str) {
       return true;
+    }
+  }
 
   return false;
 }
 
 size_t Value::get_uint64(size_t default_value) const {
-  if (value_type != value_number)
-    return default_value; return _value_double;
+  if (value_type != value_number) {
+    return default_value;
+  }
+  return _value_double;
 }
 
 double Value::get_double(double default_value) const {
-  if (value_type != value_number)
-    return default_value; return _value_double;
+  if (value_type != value_number) {
+    return default_value;
+  }
+  return _value_double;
 }
 
 std::string Value::get_string() {
@@ -1707,8 +1783,10 @@ std::string Value::get_string() {
 
 // Access to the string char*
 const char *Value::c_str() const {
-  if (value_type != value_string)
-    return NULL; return _value_string.c_str();
+  if (value_type != value_string) {
+    return NULL;
+  }
+  return _value_string.c_str();
 }
 
 void Value::append_string(Value *value) {

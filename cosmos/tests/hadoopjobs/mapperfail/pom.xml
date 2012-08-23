@@ -18,8 +18,8 @@
     <dependencies>
         <dependency>
             <groupId>es.tid.cosmos</groupId>
-            <artifactId>base</artifactId>
-            <version>0.9.1.0-SNAPSHOT</version>
+            <artifactId>cosmos-common</artifactId>
+            <version>${cosmos.common.version}</version>
         </dependency>
     </dependencies>
     <build>

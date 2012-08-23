@@ -71,10 +71,11 @@ public:
       LM_X(1, ("Problem reading %lu bytes for structs of size %lu", _size, sizeof(C)));
     }
 
-    v = static_cast<C*>(malloc(_size * sizeof(C)));
+    v = static_cast<C *>(malloc(_size * sizeof(C)));
     if (v == NULL) {
       // Error detected when running comscore on a machine with small memory (VM)
-      LM_E(("Error reserving memory for %lu elements of size %lu (total: %lu bytes) for reading a StructCollection from file",
+      LM_E((
+             "Error reserving memory for %lu elements of size %lu (total: %lu bytes) for reading a StructCollection from file",
              _size, sizeof(C), _size * sizeof(C)));
       exit(-1);
     }

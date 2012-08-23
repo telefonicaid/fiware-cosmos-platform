@@ -54,11 +54,6 @@ public:
 
   ~ProcessManager();
 
-  static void init(int _num_processes);
-  static void stop();
-  static void destroy();
-  static ProcessManager *shared();
-
   // Generic notification system
   void notify(Notification *notification);
 
@@ -74,6 +69,9 @@ public:
 
 private:
 
+  // Stop backgroudn threads
+  void Stop();
+
   // Method executed by background threads to run tasks
   void run_worker();
 
@@ -88,6 +86,10 @@ private:
 
   int num_procesors_;                       // Number of background workers to perform tasks
   int max_num_procesors_;                   // Maximum number of background processors
+
+  friend class Engine;
+
+  bool stopped_;
 };
 }
 

@@ -60,7 +60,8 @@ BlockManager::BlockManager() {
   scheduled_read_size = 0;
 
   // Maximum amount of memory
-  max_memory = (double)SamsonSetup::shared()->getUInt64("general.memory") * 0.8;    // 60% of memory for block manager
+  size_t total_memory = au::Singleton<SamsonSetup>::shared()->getUInt64("general.memory");
+  max_memory = (double)total_memory * 0.8;    // 60% of memory for block manager
 
   // Notification to review block manager
   listen(notification_review_block_manager);
@@ -196,8 +197,8 @@ void BlockManager::notify(engine::Notification *notification) {
 
 void BlockManager::review() {
   // Get setup parameter to control review of BlockManager...
-  size_t max_scheduled_write_size = SamsonSetup::shared()->getUInt64("stream.max_scheduled_write_size");
-  size_t max_scheduled_read_size = SamsonSetup::shared()->getUInt64("stream.max_scheduled_read_size");
+  size_t max_scheduled_write_size = au::Singleton<SamsonSetup>::shared()->getUInt64("stream.max_scheduled_write_size");
+  size_t max_scheduled_read_size = au::Singleton<SamsonSetup>::shared()->getUInt64("stream.max_scheduled_read_size");
 
   // No schedule new operations until all the previous one have finished
   if (scheduled_read_size > 0) {
@@ -378,8 +379,8 @@ gpb::Collection *BlockManager::getCollectionOfBlocks(const Visualization& visual
 }
 
 void BlockManager::create_block_from_disk(const std::string& fileName) {
-  // std::string fileName =  SamsonSetup::shared()->blockFileName( id );
-  size_t block_id = SamsonSetup::shared()->blockIdFromFileName(fileName);
+  // std::string fileName =  au::Singleton<SamsonSetup>::shared()->blockFileName( id );
+  size_t block_id = au::Singleton<SamsonSetup>::shared()->blockIdFromFileName(fileName);
 
   if (block_id == 0) {
     LM_W(("Not possible to get ids for file %s to recover block", fileName.c_str()));
@@ -422,7 +423,7 @@ void BlockManager::create_block_from_disk(const std::string& fileName) {
 
 void BlockManager::recover_blocks_from_disks() {
   // Recover all the blocks in current blocks directory
-  std::string blocks_dir = SamsonSetup::shared()->blocksDirectory();
+  std::string blocks_dir = au::Singleton<SamsonSetup>::shared()->blocksDirectory();
   DIR *dp;
   struct dirent *dirp;
 
@@ -450,7 +451,7 @@ void BlockManager::schedule_remove_operation(BlockPointer block) {
                                                         block->file_name(), getEngineId()));
   operation->environment.Set("block_id", block->get_block_id());
 
-  engine::DiskManager::shared()->Add(operation);
+  engine::Engine::disk_manager()->Add(operation);
 }
 
 void BlockManager::schedule_read_operation(BlockPointer block) {
@@ -484,7 +485,7 @@ void BlockManager::schedule_read_operation(BlockPointer block) {
 
   operation->environment.Set("block_id", block_id);
   operation->environment.Set("operation_size", size);
-  engine::DiskManager::shared()->Add(operation);
+  engine::Engine::disk_manager()->Add(operation);
 
   scheduled_read_size += size;
 
@@ -516,7 +517,7 @@ void BlockManager::schedule_write_operation(BlockPointer block) {
   operation->environment.Set("block_id", block_id);
   operation->environment.Set("operation_size", size);
 
-  engine::DiskManager::shared()->Add(operation);
+  engine::Engine::disk_manager()->Add(operation);
 
   scheduled_write_size += size;
 

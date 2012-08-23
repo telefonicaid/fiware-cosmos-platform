@@ -26,38 +26,6 @@
 #include "engine/MemoryManager.h"  // Own interface
 
 namespace engine {
-#pragma mark ------------------------------------------------------------------------
-
-// Initialise singleton instance pointer
-MemoryManager *MemoryManager::memoryManager = NULL;
-
-void MemoryManager::destroy() {
-  LM_V(("MemoryManager destroy"));
-
-  if (!memoryManager) {
-    LM_E(("Please, init Memory manager first"));
-  }
-  delete memoryManager;
-  memoryManager = NULL;
-}
-
-void MemoryManager::init(size_t _memory) {
-  LM_VV(("MemoryManager init with %s", au::str(_memory).c_str()));
-  if (memoryManager) {
-    LM_E(("Please, init Memory manager only once"));
-  }
-  memoryManager =  new MemoryManager(_memory);
-}
-
-MemoryManager *MemoryManager::shared() {
-  if (!memoryManager) {
-    LM_E(("Please, init Memory manager before using it, calling memoryManager::init()"));
-  }
-  return memoryManager;
-}
-
-#pragma mark ------------------------------------------------------------------------
-
 MemoryManager::MemoryManager(size_t memory) : token_("Memory Manager") {
   memory_ = memory;      // Total available memory
   used_memory_ = 0;      // No memory used so far

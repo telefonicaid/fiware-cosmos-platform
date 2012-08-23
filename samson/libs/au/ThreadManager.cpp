@@ -8,25 +8,14 @@
 
 
 namespace au {
-std::ostream& operator<<(std::ostream& o, const ThreadInfo& thread_info) {
-  o << std::setw(60) << thread_info.name_ << " " << thread_info.cronometer_;
-  return o;
-}
-
-ThreadManager *thread_manager;
-
-ThreadManager *ThreadManager::shared() {
-  if (!thread_manager) {
-    thread_manager = new ThreadManager();
-  }
-  return thread_manager;
-}
-
 void ThreadManager::wait_all_threads(std::string title) {
-  thread_manager->wait(title);
+  au::Singleton<au::ThreadManager>::shared()->wait(title);
 }
 
 ThreadManager::ThreadManager() : token_("ThreadManager") {
+  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+    threads_[i] = NULL;
+  }
 }
 
 int ThreadManager::addThread(std::string thread_name, pthread_t *__restrict t, const pthread_attr_t *__restrict attr_t,
@@ -46,7 +35,7 @@ int ThreadManager::addThread(std::string thread_name, pthread_t *__restrict t, c
 
   if (s == 0) {
     LM_T(LmtThreadManager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
-    threads_.insertInMap(thread_info->t_, thread_info);
+    AddThreads(thread_info);
   } else {
     LM_W(("Not possible to create thread %s %d ", thread_name.c_str(), s));
     delete thread_info;
@@ -73,7 +62,7 @@ int ThreadManager::addNonDetachedThread(std::string thread_name, pthread_t *__re
 
   if (s == 0) {
     LM_T(LmtThreadManager, ("Thread '%s' created and inserted in map", thread_name.c_str()));
-    threads_.insertInMap(thread_info->t_, thread_info);
+    AddThreads(thread_info);
   } else {
     LM_W(("Not possible to create thread %s %d ", thread_name.c_str(), s));
     delete thread_info;
@@ -87,17 +76,7 @@ void ThreadManager::notify_finish_thread(ThreadInfo *thread_info) {
   au::TokenTaker tt(&token_);
 
   LM_T(LmtThreadManager, ("Thread '%s' extracted from map", thread_info->name_.c_str()));
-
-  if (threads_.extractFromMap(thread_info->t_) == NULL) {
-    LM_X(1, ("Error in ThreadManager"));
-  }
-}
-
-int ThreadManager::getNumThreads() {
-  // Mutex protection
-  au::TokenTaker tt(&token_);
-
-  return threads_.size();
+  RemoveThreads(thread_info);
 }
 
 au::StringVector ThreadManager::getThreadNames() {
@@ -106,29 +85,31 @@ au::StringVector ThreadManager::getThreadNames() {
 
   au::StringVector names;
 
-  au::map< pthread_t, ThreadInfo >::iterator it_threads;
-  for (it_threads = threads_.begin(); it_threads != threads_.end(); it_threads++) {
-    names.push_back(it_threads->second->name_);
+  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+    if (threads_[i] != NULL) {
+      names.push_back(threads_[i]->name_);
+    }
   }
-
   return names;
 }
 
-std::ostream& operator<<(std::ostream& o, ThreadManager& thread_manager) {
+std::string ThreadManager::str() {
   // Mutex protection
-  au::TokenTaker tt(&thread_manager.token_);
+  au::TokenTaker tt(&token_);
+
+
+  std::ostringstream o;
 
   o << "Running threads\n";
   o << "------------------------------------\n";
-  au::map< pthread_t, ThreadInfo >::const_iterator it_threads;
-  for (it_threads = thread_manager.threads_.begin()
-       ; it_threads != thread_manager.threads_.end()
-       ; it_threads++)
-  {
-    o << *it_threads->second << "\n";
+  std::set< ThreadInfo * >::iterator it_threads;
+  for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+    if (threads_[i] != NULL) {
+      o << threads_[i]->name_ << " " << threads_[i]->cronometer_ << "\n";
+    }
   }
 
-  return o;
+  return o.str();
 }
 
 void ThreadManager::wait(std::string title) {
@@ -140,29 +121,15 @@ void ThreadManager::wait(std::string title) {
     {
       au::TokenTaker tt(&token_);
 
-      if (threads_.size() == 0) {
+      if (num_threads() == 0) {
         // std::cerr << "All threads finished\n";
         return;
       }
 
-      if (threads_.size() == 1) {
-        if (threads_.begin()->second->t_ == pthread_self()) {
-          // std::cerr << "All threads finished\n";
-          return;
-        }
-      }
-
       if (cronometer.seconds() > 5) {
         LM_W(("%s: Waiting all threads to finish", title.c_str()));
-        LM_W(("Stll running %d threads", threads_.size()));
-        std::ostringstream str;
-        str << *this;
-        LM_W((str.str().c_str()));
-
-        std::cerr << title << ": Waiting all threads to finish\n";
-        std::cerr << *this << "\n";
-        std::cerr << au::str("Still running %d threads ...\n", threads_.size());
-
+        LM_W(("Stll running %d threads", num_threads()));
+        LM_W((str().c_str()));
         cronometer.Reset();
       }
     }
@@ -176,7 +143,7 @@ void ThreadManager::wait(std::string title) {
 // --------------------------------------------------------------------------------
 
 void *run_ThreadInfo(void *p) {
-  // Detach myself.... noone is waiting for me...
+  // Detach myself.... no one is waiting for me...
   pthread_detach(pthread_self());
 
   ThreadInfo *thread_info = (ThreadInfo *)p;
@@ -187,7 +154,7 @@ void *run_ThreadInfo(void *p) {
   void *ans = thread_info->f_(thread_info->p_);
 
   // Notify my ThreadRunner
-  ThreadManager::shared()->notify_finish_thread(thread_info);
+  au::Singleton<au::ThreadManager>::shared()->notify_finish_thread(thread_info);
 
   LM_VV(("Finished thread %s", thread_info->name_.c_str()));
 
@@ -206,7 +173,7 @@ void *run_NonDetachedThreadInfo(void *p) {
   void *ans = thread_info->f_(thread_info->p_);
 
   // Notify my ThreadRunner
-  ThreadManager::shared()->notify_finish_thread(thread_info);
+  au::Singleton<au::ThreadManager>::shared()->notify_finish_thread(thread_info);
 
   LM_VV(("Finished thread %s", thread_info->name_.c_str()));
 

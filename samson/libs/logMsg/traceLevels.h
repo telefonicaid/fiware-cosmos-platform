@@ -40,12 +40,13 @@ typedef enum TraceLevels {
   LmtEngine                 = 200,       // SamsonEngine
   LmtEngineNotification     = 201,
   LmtEngineTime             = 202,
-  LmtDisk                   = 203,       // disk library
-  LmtMemory                 = 204,       // memory library
-  LmtProcessManager         = 204,
-  LmtBlockManager           = 205,
+  LmtEngineDiskManager      = 203,       // SamsonEngine
+  LmtDisk                   = 204,       // disk library
+  LmtMemory                 = 205,       // memory library
+  LmtProcessManager         = 206,
+  LmtBlockManager           = 207,
 
-  LmtBuffer                 = 206,
+  LmtBuffer                 = 208,
 
   LmtModuleManager          = 210,       // Module Manager component
   LmtThreadManager          = 211,       // Tracking threads in ThreadManager

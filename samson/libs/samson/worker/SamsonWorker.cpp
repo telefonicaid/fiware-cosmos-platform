@@ -54,12 +54,6 @@
 
 #include "samson/worker/SamsonWorker.h"  // Own interfce
 
-#define notification_samson_worker_review  "notification_samson_worker_review"
-#define notification_samson_worker_review2 "notification_samson_worker_review2"
-
-extern int port;                         // Port where samsonWorker is started
-extern int web_port;
-
 namespace samson {
 /* ****************************************************************************
  *
@@ -67,32 +61,9 @@ namespace samson {
  */
 
 SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) {
-  // Connection values
   zoo_host_ = zoo_host;
   port_ = port;
   web_port_ = web_port;
-
-  // Default values
-  zoo_connection_ = NULL;
-  data_model = NULL;
-  network_ = NULL;
-
-  // Connect
-  Connect();
-
-  // Push manager
-  push_manager = new samson::worker::PushManager(this);
-
-  // Init worker command manager
-  workerCommandManager = new WorkerCommandManager(this);
-  LM_T(LmtCleanup, ("Created workerCommandManager: %p", workerCommandManager));
-
-  // Init distribution block
-  distribution_blocks_manager = new DistributionBlockManager(this);
-
-
-  // Init REST service
-  samson_worker_rest = new SamsonWorkerRest(this, web_port);
 
   // Random initialization
   srand(time(NULL));
@@ -103,13 +74,14 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) {
   // Notification to update state
   listen(notification_update_status);
   {
-    int update_period = samson::SamsonSetup::shared()->getInt("general.update_status_period");
+    int update_period = au::Singleton<samson::SamsonSetup>::shared()->getInt("general.update_status_period");
     engine::Notification *notification = new engine::Notification(notification_update_status);
     engine::Engine::shared()->notify(notification, update_period);
   }
 
   {
-    int check_finish_tasks_period = samson::SamsonSetup::shared()->getInt("worker.period_check_finish_tasks");
+    int check_finish_tasks_period = au::Singleton<samson::SamsonSetup>::shared()->getInt(
+      "worker.period_check_finish_tasks");
     engine::Notification *notification = new engine::Notification(notification_samson_worker_check_finish_tasks);
     engine::Engine::shared()->notify(notification, check_finish_tasks_period);
   }
@@ -118,135 +90,131 @@ SamsonWorker::SamsonWorker(std::string zoo_host, int port, int web_port) {
   // Notification with rest commands
   listen("rest_operation_stream_manager");
 
-
-  // General review of worker every second
-  listen(notification_samson_worker_review);
-  {
-    engine::Notification *notification = new engine::Notification(notification_samson_worker_review);
-    engine::Engine::shared()->notify(notification, 1);
-  }
-
-  listen(notification_samson_worker_review2);
-  {
-    engine::Notification *notification = new engine::Notification(notification_samson_worker_review2);
-    engine::Engine::shared()->notify(notification, 5);
-  }
-
   // Cluster setup changes
-  listen("notification_cluster_info_changed");
-
+  listen("notification_cluster_info_changed_in_worker");
 
   // Review notification
   listen("samson_worker_review");
   engine::Engine::shared()->notify_extra(new engine::Notification("samson_worker_review"));
 
-  // Manager of tasks
-  task_manager =  new stream::WorkerTaskManager(this);
-
-  // Init status of this worker
+  // Connect this worker with zoo keeper and create all internal elements
   ResetWorker();
+  Connect();
 }
 
 void SamsonWorker::Connect() {
-  while (true) {
-    // Remove previous connection
-    if (zoo_connection_) {
-      delete zoo_connection_;
-      zoo_connection_ = NULL;
-    }
+  // Reset all components
+  ResetWorker();
 
-    if (network_) {
-      delete network_;
-      network_ = NULL;
-    }
-
-    if (data_model) {
-      delete data_model;
-      data_model = NULL;
-    }
-
-    // Create connection
-    LM_T(LmtClusterSetup, ("Trying to connect with zk at %s", zoo_host_.c_str()));
-    zoo_connection_ = new zoo::Connection(zoo_host_, "samson", "samson");
-
-    int rc = zoo_connection_->WaitUntilConnected(5000);
-    if (rc) {
-      LM_W(("Not possible to connect with zk at %s (%s)"
-            , zoo_host_.c_str()
-            , zoo::str_error(rc).c_str()));
-      continue;
-    }
-
-    // Make sure basic folders are created
-    LM_T(LmtClusterSetup, ("Creating basic folders in zk. Jsut in case I am the first one..."));
-    zoo_connection_->Create("/samson");
-    zoo_connection_->Create("/samson/workers");
-
-    // Main worker controller ( based on zookeeper )
-    worker_controller = new SamsonWorkerController(zoo_connection_, port_, web_port_);
-    rc = worker_controller->init();
-    if (rc) {
-      LM_W(("Error creating worker controller %s", zoo::str_error(rc).c_str()));
-      continue;
-    }
-
-    // Data model
-    data_model = new DataModel(zoo_connection_);
-
-
-    // Recover cluster information for the network segment
-    samson::gpb::ClusterInfo *cluster_info;
-    size_t cluster_info_version;
-    worker_controller->GetClusterInfo(&cluster_info, &cluster_info_version);
-
-    // Dynamic network interface
-    network_ = new WorkerNetwork(worker_controller->worker_id()
-                                 , port
-                                 , this
-                                 , cluster_info
-                                 , cluster_info_version);
-    break;
+  LM_T(LmtClusterSetup, ("Trying to connect with zk at %s", zoo_host_.c_str()));
+  zoo_connection_ = new zoo::Connection(zoo_host_, "samson", "samson");
+  int rc = zoo_connection_->WaitUntilConnected(5000);
+  if (rc) {
+    ResetWorker();
+    status_message_ = au::str("Not possible to connect with zk at %s (%s)"
+                              , zoo_host_.c_str()
+                              , zoo::str_error(rc).c_str());
+    LM_W((status_message_.c_str()));
+    return;
   }
+
+  // Main worker controller ( based on zookeeper connection )
+  worker_controller_ = new SamsonWorkerController(zoo_connection_.shared_object(), port_, web_port_);
+  rc = worker_controller_->init();
+  if (rc) {
+    ResetWorker();
+    status_message_ = au::str("Error creating worker controller %s", zoo::str_error(rc).c_str());
+    LM_W((status_message_.c_str()));
+    return;
+  }
+
+  // Data model
+  data_model_ = new DataModel(zoo_connection_.shared_object());
+
+  // Recover cluster information for the network segment
+  au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
+
+  // Check if I am part of this cluster ( probably not )
+  if (isWorkerIncluded(cluster_info.shared_object(), worker_controller_->worker_id())) {
+    cluster_info.Reset(NULL);
+  }
+
+  // Dynamic network interface with my new id
+  network_ = new WorkerNetwork(worker_controller_->worker_id()
+                               , port_
+                               , this
+                               , cluster_info);
+  // Push manager
+  push_manager_ = new samson::worker::PushManager(this);
+
+  // Init worker command manager
+  workerCommandManager_ = new WorkerCommandManager(this);
+
+  // Init distribution block
+  distribution_blocks_manager_ = new DistributionBlockManager(this);
+
+  // Init REST service
+  samson_worker_rest_ = new SamsonWorkerRest(this, web_port_);
+
+  // Manager of tasks
+  task_manager_ =  new stream::WorkerTaskManager(this);
 }
 
 void SamsonWorker::ResetWorker() {
-  // Remove whatever was schduled in process manager
-  task_manager->reset();
-
   // Reset the status of this worker
-  status_ready_to_process_ = false;
-  status_message_ = "Initializing worker";
-  CheckStatus();
+  ready_ = false;
+  status_message_ = "Initializing worker...";
+
+  // Remove all elemens in this worker
+  zoo_connection_ = NULL;
+  worker_controller_ = NULL;
+  data_model_ = NULL;
+  network_ = NULL;
+  samson_worker_rest_ = NULL;
+  push_manager_ = NULL;
+  distribution_blocks_manager_ = NULL;
+  task_manager_ = NULL;
+  workerCommandManager_ = NULL;
 }
 
-SamsonWorker::~SamsonWorker() {
-  LM_T(LmtCleanup, ("Deleting workerCommandManager: %p", workerCommandManager));
-  delete workerCommandManager;
+void SamsonWorker::Review() {
+  // If not connected, reconnect
+  // Check zoo connection
+  if ((zoo_connection_ == NULL ) || !zoo_connection_->IsConnected()) {
+    LM_W(("ZK is disconnected.... reseting this worker to connect again..."));
+    Connect();
+  }
 
-  if (worker_controller) {
-    delete worker_controller;
-  }
-  if (data_model) {
-    delete data_model;
-  }
-  if (network_) {
-    delete network_;
-  }
-  if (samson_worker_rest) {
-    delete samson_worker_rest;
-  }
-  if (task_manager) {
-    delete task_manager;
-  }
-}
+  if (!ready_ && (data_model_ != NULL) && (worker_controller_ != NULL)) {
+    // Get a list of all the blocks I should have
+    KVRanges hg_ranges = worker_controller_->GetMyKVRanges();
+    std::set<size_t> block_ids = data_model_->get_my_block_ids(hg_ranges);
 
-void SamsonWorker::review() {
-  // Review distribution of blocks
-  distribution_blocks_manager->Review();
+    // Check if all the blocks are contained ( otherwise ask for them )
+    std::set<size_t> pending_block_ids = stream::BlockManager::shared()->GetPendingBlockIds(block_ids);
+    distribution_blocks_manager_->RequestBlocks(pending_block_ids);
 
-  // Review task_manager if we are ready to process data
-  if (status_ready_to_process_) {
-    task_manager->review_stream_operations();
+    if (pending_block_ids.size() == 0) {
+      status_message_ = "ready";
+      ready_ =  true;
+    } else {
+      status_message_ = au::S() << "Pending " << pending_block_ids.size() << " blocks to be collected";
+    }
+  }
+
+  if (ready_) {
+    // Recover information from all the workers in the cluster
+    distribution_blocks_manager_->Review();
+    task_manager_->review_stream_operations();
+
+
+    // Get ids for all the blocks included in the model
+    // and remove in the block manager old blocks not included
+    std::set<size_t> block_ids = data_model_->get_block_ids();
+    stream::BlockManager::shared()->RemoveBlocksNotIncluded(block_ids);
+
+    // Update my worker-node in ZK
+    worker_controller_->UpdateWorkerNode();
   }
 }
 
@@ -296,7 +264,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     }
 
     // Add the task for this request
-    task_manager->add_block_request_task(block_id, worker_id);
+    task_manager_->add_block_request_task(block_id, worker_id);
 
     return;
   }
@@ -338,13 +306,13 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       // Schedule task
       au::SharedPointer<stream::WorkerSystemTask> task;
       task.Reset(new stream::PopBlockRequestTask(this
-                                                 , task_manager->getNewId()
+                                                 , task_manager_->getNewId()
                                                  , block_id
                                                  , ranges
                                                  , delilah_id
                                                  , delilah_component_id
                                                  , pop_id));
-      task_manager->Add(task.static_pointer_cast<stream::WorkerTaskBase>());
+      task_manager_->Add(task.static_pointer_cast<stream::WorkerTaskBase>());
     }
 
     // Send confirmation packet
@@ -369,7 +337,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     }
 
     size_t block_id = packet->message->block_id();
-    distribution_blocks_manager->CreateBlock(packet->buffer(), block_id);
+    distribution_blocks_manager_->CreateBlock(packet->buffer(), block_id);
 
     // Send message back
     PacketPointer p(new Packet(Message::DuplicateBlockResponse));
@@ -388,7 +356,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     size_t block_id = packet->message->block_id();
     size_t worker_id = packet->from.id;
 
-    distribution_blocks_manager->ConfirmBlockDistribution(block_id, worker_id);
+    distribution_blocks_manager_->ConfirmBlockDistribution(block_id, worker_id);
     return;
   }
 
@@ -399,16 +367,16 @@ void SamsonWorker::receive(const PacketPointer& packet) {
   if (msgCode == Message::PushBlockCommit) {
     if (!packet->message->has_push_id()) {
       LM_W(("Received a push block message without the push_id"));
-      return;     // No sense to answer with this error
+      return;       // No sense to answer with this error
     } else if (packet->from.node_type != DelilahNode) {
       LM_W(("Received a push packet from a non delilah connection (%s)"
             , packet->from.str().c_str()));
-      return;     // No sense to answer with this error
+      return;       // No sense to answer with this error
     }
 
     // Use push manager to deal with this type of message
     size_t push_id = packet->message->push_id();
-    push_manager->receive_push_block_commit(packet->from.id, push_id);
+    push_manager_->receive_push_block_commit(packet->from.id, push_id);
     return;
   }
 
@@ -416,23 +384,23 @@ void SamsonWorker::receive(const PacketPointer& packet) {
   if (msgCode == Message::PushBlock) {
     if (!packet->message->has_push_id()) {
       LM_W(("Received a push block message without the push_id"));
-      return;     // No sense to answer with this error
+      return;       // No sense to answer with this error
     }
 
     if (packet->from.node_type != DelilahNode) {
       LM_W(("Received a push packet from a non delilah connection (%s)"
             , packet->from.str().c_str()));
-      return;     // No sense to answer with this error
+      return;       // No sense to answer with this error
     }
 
     if (packet->from.id == 0) {
       LM_W(("Received a push packet from a delilah_id = 0. Rejected" ));
-      return;     // No sense to answer with this error
+      return;       // No sense to answer with this error
     }
 
     if (packet->buffer() == NULL) {
       LM_W(("Received a push block message without a buffer with data"));
-      return;     // No sense to answer with this error
+      return;       // No sense to answer with this error
     }
 
     // Use push manager to deal with this type of message
@@ -442,7 +410,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
       queues.push_back(packet->message->queue(i));
     }
 
-    push_manager->receive_push_block(packet->from.id, push_id, packet->buffer(), queues);
+    push_manager_->receive_push_block(packet->from.id, push_id, packet->buffer(), queues);
     return;
   }
 
@@ -470,18 +438,18 @@ void SamsonWorker::receive(const PacketPointer& packet) {
     p->to = packet->from;
     gpb::Queue *gpb_queue = p->message->mutable_pop_queue_response()->mutable_queue();
     gpb_queue->set_name(original_queue);
-    gpb_queue->set_key_format("?");     // It is necessary to fill this fields
+    gpb_queue->set_key_format("?");       // It is necessary to fill this fields
     gpb_queue->set_value_format("?");
 
 
     // Get a copy of the entire data model
-    au::SharedPointer<gpb::Data> data = data_model->getCurrentModel();
+    au::SharedPointer<gpb::Data> data = data_model_->getCurrentModel();
 
     if (commit_id == static_cast<size_t>(-1)) {
       // Duplicate queue and link
       au::ErrorManager error;
-      data_model->Commit("pop", au::str("add_queue_connection %s %s", original_queue.c_str(),
-                                        pop_queue.c_str()), &error);
+      data_model_->Commit("pop", au::str("add_queue_connection %s %s", original_queue.c_str(),
+                                         pop_queue.c_str()), &error);
 
       if (error.IsActivated()) {
         LM_W(("Internal error with add_queue_connection command in pop request: %s", error.GetMessage().c_str()));
@@ -532,7 +500,7 @@ void SamsonWorker::receive(const PacketPointer& packet) {
                                                      , packet->message->worker_command()
                                                      );
 
-    workerCommandManager->addWorkerCommand(workerCommand);
+    workerCommandManager_->addWorkerCommand(workerCommand);
     return;
   }
 
@@ -542,43 +510,32 @@ void SamsonWorker::receive(const PacketPointer& packet) {
 // Receive notifications
 void SamsonWorker::notify(engine::Notification *notification) {
   if (notification->isName("samson_worker_review")) {
-    review();
+    Review();
     return;
   }
 
-  if (notification->isName("notification_cluster_info_changed")) {
+  if (notification->isName("notification_cluster_info_changed_in_worker")) {
+    // Recover new cluster setup
+    au::SharedPointer<samson::gpb::ClusterInfo> cluster_info = worker_controller_->GetCurrentClusterInfo();
+    LM_W(("Notification NEW CLUSTER SETUP version %lu", cluster_info->version()));
+
+    // If I am not part of this cluster, do not set connections
+    if (!isWorkerIncluded(cluster_info.shared_object(), worker_controller_->worker_id())) {
+      LM_W(("Still not included in cluster info version %lu. Not seting up connections...", cluster_info->version()));
+      return;
+    }
+
     // Change network setup to adapt to the new scenario
-    samson::gpb::ClusterInfo *cluster_info;
-    size_t cluster_info_version;
-    worker_controller->GetClusterInfo(&cluster_info, &cluster_info_version);
-    network_->set_cluster_information(cluster_info_version, cluster_info);
+    network_->set_cluster_information(cluster_info);
 
     // Reset worker manager to adapt to this new situation
-    KVRanges ranges = worker_controller->GetMyKVRanges();
-    task_manager->update_ranges(ranges);
+    KVRanges ranges = worker_controller_->GetMyKVRanges();
+    task_manager_->update_ranges(ranges);
 
     LM_W(("Cluster setup change. Assgined ranges %s", ranges.str().c_str()));
 
     // Reset this worker until all blocks are collected from disk /  rest of the cluster
     ResetWorker();
-    return;
-  }
-
-
-  if (notification->isName(notification_samson_worker_review)) {
-    CheckStatus();
-    return;
-  }
-
-  if (notification->isName(notification_samson_worker_review2)) {
-    // Get ids for all the blocks included in the model
-    // and remove in the block manager old blocks not included
-    std::set<size_t> block_ids = data_model->get_block_ids();
-    stream::BlockManager::shared()->RemoveBlocksNotIncluded(block_ids);
-
-    // Update my worker-node in ZK
-    worker_controller->UpdateWorkerNode();
-
     return;
   }
 
@@ -604,23 +561,31 @@ void SamsonWorker::notify(engine::Notification *notification) {
 
 
   if (notification->isName(notification_update_status)) {
+    if (!ready_) {
+      LM_M(("Status --> not ready"));
+      return;   // Not reporting status since I am not ready
+    }
+
     // Some ancient samson-0.6 useful Status information
     // Collect some information and print status...
-    int num_processes = engine::ProcessManager::shared()->num_used_procesors();
-    int max_processes = engine::ProcessManager::shared()->max_num_procesors();
+    int num_processes = engine::Engine::process_manager()->num_used_procesors();
+    int max_processes = engine::Engine::process_manager()->max_num_procesors();
 
-    size_t used_memory = engine::MemoryManager::shared()->used_memory();
-    size_t max_memory = engine::MemoryManager::shared()->memory();
+    size_t used_memory = engine::Engine::memory_manager()->used_memory();
+    size_t max_memory = engine::Engine::memory_manager()->memory();
 
-    size_t disk_read_rate = (size_t) engine::DiskManager::shared()->get_rate_in();
-    size_t disk_write_rate = (size_t) engine::DiskManager::shared()->get_rate_out();
+    size_t disk_read_rate = (size_t) engine::Engine::disk_manager()->get_rate_in();
+    size_t disk_write_rate = (size_t) engine::Engine::disk_manager()->get_rate_out();
 
-    size_t network_read_rate = (size_t)network_->get_rate_in();
-    size_t network_write_rate = (size_t)network_->get_rate_out();
-
+    size_t network_read_rate = 0;
+    size_t network_write_rate = 0;
+    if (network_ != NULL) {
+      network_read_rate = network_->get_rate_in();
+      network_write_rate = network_->get_rate_out();
+    }
 
     LM_M(("Status (%s) [ P %s M %s D_in %s D_out %s N_in %s N_out %s ]"
-          , au::str_time(cronometer.seconds()).c_str()
+          , au::str_time(cronometer_.seconds()).c_str()
           , au::str_percentage(num_processes, max_processes).c_str()
           , au::str_percentage(used_memory, max_memory).c_str()
           , au::str(disk_read_rate, "Bs").c_str()
@@ -632,8 +597,7 @@ void SamsonWorker::notify(engine::Notification *notification) {
     std::string message = notification->environment().Get("message", "No message coming with trace-notification");
     std::string context = notification->environment().Get("context", "?");
     std::string type    = notification->environment().Get("type", "message");
-
-    sendTrace(type, context, message);
+    network_->SendAlertToAllDelilahs(type, context, message);
   } else {
     LM_W(("SamsonWorker received an unexpected notification %s. Ignoring...", notification->getDescription().c_str()));
   }
@@ -655,15 +619,6 @@ std::string getFormatedElement(std::string name, std::string value, std::string&
 
 std::string getFormatedError(std::string message, std::string& format) {
   return getFormatedElement("error", message, format);
-}
-
-void SamsonWorker::Stop() {
-  // Stop rest interface
-  samson_worker_rest->Stop();
-}
-
-// Get information for monitoring
-void SamsonWorker::getInfo(std::ostringstream& output) {
 }
 
 void SamsonWorker::autoComplete(au::ConsoleAutoComplete *info) {
@@ -699,8 +654,7 @@ void SamsonWorker::evalCommand(std::string command) {
     quitConsole();
   }
   if (main_command == "threads") {
-    const au::ThreadManager& r = *au::ThreadManager::shared();
-    writeOnConsole(au::S(r));
+    writeOnConsole(au::Singleton<au::ThreadManager>::shared()->str());
   }
 
   if (main_command == "show_logs") {
@@ -713,22 +667,22 @@ void SamsonWorker::evalCommand(std::string command) {
   }
 
   if (main_command == "show_engine_current_element") {
-    writeOnConsole(engine::Engine::shared()->get_activity_monitor()->GetCurrentActivity() + "\n");
+    writeOnConsole(engine::Engine::shared()->activity_monitor()->GetCurrentActivity() + "\n");
     return;
   }
 
   if (main_command == "show_engine_statistics") {
-    writeOnConsole(engine::Engine::shared()->get_activity_monitor()->GetElementsTable() + "\n");
+    writeOnConsole(engine::Engine::shared()->activity_monitor()->GetElementsTable() + "\n");
     return;
   }
 
   if (main_command == "show_engine_last_items") {
-    writeOnConsole(engine::Engine::shared()->get_activity_monitor()->GetLastItemsTable() + "\n");
+    writeOnConsole(engine::Engine::shared()->activity_monitor()->GetLastItemsTable() + "\n");
     return;
   }
 
   if (main_command == "show_engine_elements") {
-    writeOnConsole(engine::Engine::shared()->getTableOfEngineElements() + "\n");
+    writeOnConsole(engine::Engine::shared()->GetTableOfEngineElements() + "\n");
     return;
   }
 
@@ -740,29 +694,6 @@ std::string SamsonWorker::getPrompt() {
   return "SamsonWorker> ";
 }
 
-void SamsonWorker::sendTrace(std::string type, std::string context, std::string message) {
-  // Send message to all delilahs
-  std::vector<size_t> delilahs = network_->getDelilahIds();
-
-  for (size_t i = 0; i < delilahs.size(); i++) {
-    PacketPointer p(new Packet(Message::Alert));
-
-    gpb::Alert *alert = p->message->mutable_alert();
-    alert->set_type(type);
-    alert->set_context(context);
-    alert->set_text(message);
-
-    p->message->set_delilah_component_id((size_t)-1);       // This message do not belong to the operation executing it
-
-    // Direction of this paket
-    p->to.node_type = DelilahNode;
-    p->to.id = delilahs[i];
-
-    // Send packet
-    network_->Send(p);
-  }
-}
-
 gpb::Collection *SamsonWorker::getWorkerCollection(const Visualization& visualization) {
   gpb::Collection *collection = new gpb::Collection();
 
@@ -771,34 +702,34 @@ gpb::Collection *SamsonWorker::getWorkerCollection(const Visualization& visualiz
   gpb::CollectionRecord *record = collection->add_record();
 
   if (visualization.get_flag("engine")) {
-    size_t num_elements = engine::Engine::shared()->getNumElementsInEngineStack();
-    double waiting_time = engine::Engine::shared()->getMaxWaitingTimeInEngineStack();
-    size_t num_buffers = engine::MemoryManager::shared()->num_buffers();
+    size_t num_elements = engine::Engine::shared()->GetNumElementsInEngineStack();
+    double waiting_time = engine::Engine::shared()->GetMaxWaitingTimeInEngineStack();
+    size_t num_buffers = engine::Engine::memory_manager()->num_buffers();
     ::samson::add(record, "#buffers in memory", num_buffers, "f=uint64,sum");
     ::samson::add(record, "#elements in engine", num_elements, "f=uint64,sum");
     ::samson::add(record, "Max waiting time", waiting_time, "f=double,different");
   } else if (visualization.get_flag("disk")) {
     // Disk activiry
 
-    ::samson::add(record, "Disk in B/s", engine::DiskManager::shared()->get_rate_in(), "f=uint64,sum");
-    ::samson::add(record, "Disk out B/s", engine::DiskManager::shared()->get_rate_out(), "f=uint64,sum");
+    ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->get_rate_in(), "f=uint64,sum");
+    ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->get_rate_out(), "f=uint64,sum");
 
-    double op_in = engine::DiskManager::shared()->get_rate_operations_in();
-    double op_out = engine::DiskManager::shared()->get_rate_operations_out();
+    double op_in = engine::Engine::disk_manager()->get_rate_operations_in();
+    double op_out = engine::Engine::disk_manager()->get_rate_operations_out();
 
     ::samson::add(record, "Disk in Ops/s", op_in, "f=double , sum");
     ::samson::add(record, "Disk out Ops/s", op_out, "f=double,sum");
 
 
-    double on_time = engine::DiskManager::shared()->on_off_monitor.on_time();
-    double off_time = engine::DiskManager::shared()->on_off_monitor.off_time();
+    double on_time = engine::Engine::disk_manager()->on_off_monitor.on_time();
+    double off_time = engine::Engine::disk_manager()->on_off_monitor.off_time();
     ::samson::add(record, "On time", on_time, "f=double,differet");
     ::samson::add(record, "Off time", off_time, "f=double,differet");
 
     ::samson::add(record, "BM writing",  stream::BlockManager::shared()->get_scheduled_write_size(), "f=uint64,sum");
     ::samson::add(record, "BM reading",  stream::BlockManager::shared()->get_scheduled_read_size(), "f=uint64,sum");
 
-    double usage =  engine::DiskManager::shared()->get_on_off_activity();
+    double usage =  engine::Engine::disk_manager()->get_on_off_activity();
     ::samson::add(record, "Disk usage", au::str_percentage(usage), "differet");
   } else {
     // Add ready flag
@@ -806,16 +737,16 @@ gpb::Collection *SamsonWorker::getWorkerCollection(const Visualization& visualiz
 
     ::samson::add(record, "ZK", zoo_connection_->GetStatusString(), "different,left");
 
-    ::samson::add(record, "Mem used", engine::MemoryManager::shared()->used_memory(), "f=uint64,sum");
-    ::samson::add(record, "Mem total", engine::MemoryManager::shared()->memory(), "f=uint64,sum");
+    ::samson::add(record, "Mem used", engine::Engine::memory_manager()->used_memory(), "f=uint64,sum");
+    ::samson::add(record, "Mem total", engine::Engine::memory_manager()->memory(), "f=uint64,sum");
 
-    ::samson::add(record, "Cores used", engine::ProcessManager::shared()->num_used_procesors(), "f=uint64,sum");
-    ::samson::add(record, "Cores total", engine::ProcessManager::shared()->max_num_procesors(), "f=uint64,sum");
+    ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
+    ::samson::add(record, "Cores total", engine::Engine::process_manager()->max_num_procesors(), "f=uint64,sum");
 
-    ::samson::add(record, "#Disk ops", engine::DiskManager::shared()->getNumOperations(), "f=uint64,sum");
+    ::samson::add(record, "#Disk ops", engine::Engine::disk_manager()->getNumOperations(), "f=uint64,sum");
 
-    ::samson::add(record, "Disk in B/s", engine::DiskManager::shared()->get_rate_in(), "f=uint64,sum");
-    ::samson::add(record, "Disk out B/s", engine::DiskManager::shared()->get_rate_out(), "f=uint64,sum");
+    ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->get_rate_in(), "f=uint64,sum");
+    ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->get_rate_out(), "f=uint64,sum");
 
     ::samson::add(record, "Net in B/s", network_->get_rate_in(), "f=uint64,sum");
     ::samson::add(record, "Net out B/s", network_->get_rate_out(), "f=uint64,sum");
@@ -824,85 +755,34 @@ gpb::Collection *SamsonWorker::getWorkerCollection(const Visualization& visualiz
   return collection;
 }
 
-void SamsonWorkerSamples::take_samples() {
-  int num_processes = engine::ProcessManager::shared()->num_used_procesors();
-  int max_processes = engine::ProcessManager::shared()->max_num_procesors();
-
-  size_t used_memory = engine::MemoryManager::shared()->used_memory();
-  size_t max_memory = engine::MemoryManager::shared()->memory();
-
-  size_t disk_read_rate = (size_t) engine::DiskManager::shared()->get_rate_in();
-  size_t disk_write_rate = (size_t) engine::DiskManager::shared()->get_rate_out();
-
-  size_t network_read_rate = (size_t)samsonWorker_->network_->get_rate_in();
-  size_t network_write_rate = (size_t)samsonWorker_->network_->get_rate_out();
-
-  cpu.push(100.0 *  (double)num_processes / (double)max_processes);
-  memory.push(100.0 * (double)used_memory / (double)max_memory);
-
-  disk_in.push(disk_read_rate / 1000000);
-  disk_out.push(disk_write_rate / 1000000);
-
-  net_in.push(network_read_rate / 1000000);
-  net_out.push(network_write_rate / 1000000);
+au::SharedPointer<zoo::Connection> SamsonWorker::zoo_connection() {
+  return zoo_connection_;
+};
+au::SharedPointer<SamsonWorkerController> SamsonWorker::worker_controller() {
+  return worker_controller_;
+};
+au::SharedPointer<DataModel> SamsonWorker::data_model() {
+  return data_model_;
+};
+au::SharedPointer<WorkerNetwork> SamsonWorker::network() {
+  return network_;
+};
+au::SharedPointer<SamsonWorkerRest> SamsonWorker::samson_worker_rest() {
+  return samson_worker_rest_;
 }
 
-size_t SamsonWorker::get_new_block_id() {
-  while (true) {
-    std::string path_base = "/samson/blocks/b";
-    std::string path = path_base;
-
-    int rc = zoo_connection_->Create(path, ZOO_SEQUENCE | ZOO_EPHEMERAL);
-    if (rc) {
-      // Some error...
-      LM_W(("Error creating node to get a new block id: %s", samson::zoo::str_error(rc).c_str()));
-      continue;
-    } else {
-      // Created blocks
-      size_t block_id = atoll(path.substr(path_base.length()).c_str());
-
-      // Remove node
-      rc = zoo_connection_->Remove(path);
-      if (rc) {
-        LM_W(("Not possible to remove node at %s", path.c_str()));    // Check non zero id generated
-      }
-      if (block_id == 0) {
-        LM_W(("Wrong block_id generated"));
-        continue;
-      }
-
-      return block_id;
-    }
-  }
+au::SharedPointer<samson::worker::PushManager> SamsonWorker::push_manager() {
+  return push_manager_;
 }
 
-void SamsonWorker::CheckStatus() {
-  // Check zoo connection
-  if (!zoo_connection_->IsConnected()) {
-    LM_W(("ZK is disconnected.... reseting this worker to connect again"));
-    Connect();
-  }
+au::SharedPointer<DistributionBlockManager> SamsonWorker::distribution_blocks_manager() {
+  return distribution_blocks_manager_;
+}
 
-  if (status_ready_to_process_) {
-    return;     // Nothing else to check?
-  }
-  // Get a list of all the blocks I should have
-  KVRanges hg_ranges = worker_controller->GetMyKVRanges();
-  std::set<size_t> block_ids = data_model->get_my_block_ids(hg_ranges);
-
-  // Check if all the blocks are contained ( otherwise ask for them )
-  std::set<size_t> pending_block_ids = stream::BlockManager::shared()->GetPendingBlockIds(block_ids);
-
-  if (pending_block_ids.size() == 0) {
-    status_message_ = "ready";
-    status_ready_to_process_ =  true;
-  } else {
-    status_message_ = au::S() << "Pending " << pending_block_ids.size() << " blocks";
-
-    // Recover information from all the workers in the cluster
-    distribution_blocks_manager->RequestBlocks(pending_block_ids);
-
-    return;
-  }
+au::SharedPointer<stream::WorkerTaskManager> SamsonWorker::task_manager() {
+  return task_manager_;
+};
+au::SharedPointer<WorkerCommandManager> SamsonWorker::workerCommandManager() {
+  return workerCommandManager_;
 }
 }

@@ -24,8 +24,7 @@ class CommonNetwork : public NetworkManager, public engine::Object {
   NodeIdentifier node_identifier_;
 
   // Cluster information ( workers to be connected to )
-  gpb::ClusterInfo *cluster_information_;
-  size_t cluster_information_version_;
+  au::SharedPointer<gpb::ClusterInfo> cluster_information_;
 
   // Receiver to be notified about packets
   NetworkInterfaceReceiver *receiver_;
@@ -37,8 +36,7 @@ public:
 
   CommonNetwork(NodeIdentifier my_node_identifier
                 , NetworkInterfaceReceiver *receiver
-                , gpb::ClusterInfo *cluster_information
-                , size_t cluster_information_version) : token_("CommonNetwork") {
+                , au::SharedPointer<gpb::ClusterInfo> cluster_information) : token_("CommonNetwork") {
     // Keep pointer to receiver
     receiver_ = receiver;
 
@@ -48,8 +46,7 @@ public:
     LM_V(("CommonNetwork %s", node_identifier_.str().c_str()));
 
     // No cluster information at the moment
-    cluster_information_         = cluster_information;
-    cluster_information_version_ = cluster_information_version;   // Not initialized
+    cluster_information_ = cluster_information;
 
     // Listen and create notifications for network manager review
     listen("notification_network_manager_review");
@@ -69,7 +66,10 @@ public:
   NodeIdentifier node_identifier();
 
   // Set a new custer information ( if version is really new compared with the other ones )
-  void set_cluster_information(size_t cluster_information_version, gpb::ClusterInfo *cluster_information);
+  void set_cluster_information(au::SharedPointer<gpb::ClusterInfo> cluster_information);
+
+  // Remove previous cluster_info ( deslilah to disconnect )
+  void remove_cluster_information();
 
   // Review connections
   void review_connections();
@@ -115,13 +115,9 @@ public:
     au::TokenTaker tt(&token_);
 
     // If no information, no worker
-    if (!cluster_information_) {
+    if (cluster_information_ == NULL) {
       return -1;
     }
-
-
-
-
 
     // Get list of connected workers
     std::vector<size_t> connected_worker_ids;

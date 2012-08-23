@@ -53,7 +53,7 @@ NetworkConnection::NetworkConnection(NodeIdentifier node_identifier
                                , socket_connection->host_and_port().c_str());
 
     running_t_read = true;
-    au::ThreadManager::shared()->addThread(name, &t_read, NULL, NetworkConnection_readerThread, this);
+    au::Singleton<au::ThreadManager>::shared()->addThread(name, &t_read, NULL, NetworkConnection_readerThread, this);
   }
 
   if (!running_t_write) {
@@ -61,7 +61,7 @@ NetworkConnection::NetworkConnection(NodeIdentifier node_identifier
                                , socket_connection->host_and_port().c_str());
 
     running_t_write = true;
-    au::ThreadManager::shared()->addThread(name, &t_write, NULL, NetworkConnection_writerThread, this);
+    au::Singleton<au::ThreadManager>::shared()->addThread(name, &t_write, NULL, NetworkConnection_writerThread, this);
   }
 }
 

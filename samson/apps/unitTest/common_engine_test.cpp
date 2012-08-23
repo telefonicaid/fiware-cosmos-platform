@@ -23,28 +23,18 @@ void init_engine_test() {
   if (env_samson_home) {
     samson_home = env_samson_home;
   }
-  samson::SamsonSetup::init(samson_home, samson_working);                                            // Load setup and create default directories
 
+  // Load setup and create default directories
+  samson::SamsonSetup *samson_setup = au::Singleton<samson::SamsonSetup>::shared();
+  samson_setup->SetWorkerDirectories(samson_home, samson_working);
 
-  engine::Engine::init();
-  engine::DiskManager::init(1);
-  engine::ProcessManager::init(4);
-  engine::MemoryManager::init(1000000);
+  engine::Engine::InitEngine(4, 1000000, 1);
 }
 
 void close_engine_test() {
-  engine::Engine::stop();                   // Stop engine
-  engine::DiskManager::stop();              // Stop disk manager
-  engine::ProcessManager::stop();           // Stop process manager
+  engine::Engine::DestroyEngine();                   // Stop engine
 
   au::ThreadManager::wait_all_threads("EngineTest");    // Wait all threads to finsih
-
-  engine::DiskManager::destroy();           // Destroy Disk manager
-  engine::MemoryManager::destroy();         // Destroy Memory manager
-  engine::ProcessManager::destroy();        // Destroy Process manager
-  engine::Engine::destroy();                // Destroy Engine
-
-  samson::SamsonSetup::destroy();
 }
 
 samson::SamsonClient *init_samson_client_test() {
@@ -77,7 +67,7 @@ void close_samson_client_test(samson::SamsonClient *samson_client) {
   LM_M(("client disconnected"));
 
   // Stop engine to avoid references to samson_client
-  engine::Engine::stop();
+  engine::Engine::DestroyEngine();
 
   LM_M(("engine  stopped"));
 

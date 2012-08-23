@@ -31,7 +31,6 @@
 TEST(commonTest, MessagesOperations) {
   // Better not to set /opt/samson and /var/samson, so init() can get environment variables
   // samson::SamsonSetup::init("/opt/samson", "/var/samson");
-  samson::SamsonSetup::init("", "");
 
   EXPECT_EQ(samson::filterName("OTTstream.parse_logs", "OTTstream", ""), true) << "Error in filterName positive test";
   EXPECT_EQ(samson::filterName("OTTstream.parse_logs", "system", ""), false) << "Error in filterName negative test";
@@ -39,67 +38,6 @@ TEST(commonTest, MessagesOperations) {
                                "logs"), true) << "Error in filterName positive test";
   EXPECT_EQ(samson::filterName("samson.OTTstream.parse_logs", "samson",
                                "log"), false) << "Error in filterName negative test";
-
-  samson::SamsonSetup::destroy();
-}
-
-
-// Test void SamsonSetup();
-TEST(commonTest, SamsonSetup) {
-  EXPECT_EQ(samson::createDirectory("/tmp/testSamsonSetup"), samson::OK) << "Error in createDirectory test";
-  EXPECT_EQ(samson::createFullDirectory("/tmp/level1/level2/level3/testSamsonSetup"),
-            samson::OK) << "Error in createFullDirectory test";
-  EXPECT_EQ(samson::cannonical_path("/tmp/level1/level2/level3/"),
-            "/tmp/level1/level2/level3") << "Error in cannonical_path test";
-
-  // Better not to set /opt/samson and /var/samson, so init() can get environment variables
-  // samson::SamsonSetup::init("/opt/samson", "/var/samson");
-  samson::SamsonSetup::init("", "");
-
-  EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("isolated.timeout"),
-            "300") << "Error in getValueForParameter for isolated.timeout";
-
-  samson::SamsonSetup::shared()->addItem("unit_test.samsonSetupTest", "initial", "dummy for testing",
-                                         samson::SetupItem_string);
-
-  EXPECT_EQ(samson::SamsonSetup::shared()->isParameterDefined("unit_test.samsonSetupTest"),
-            true) << "Error in isParameterDefined positive test";
-  EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("unit_test.samsonSetupTest"),
-            "initial") << "Error in getValueForParameter for unit_test.samsonSetupTest";
-
-
-  EXPECT_EQ(samson::SamsonSetup::shared()->setValueForParameter("unit_test.samsonSetupTest",
-                                                                "successful"),
-            true) << "Error in setValueForParameter for unit_test.samsonSetupTest";
-  EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("unit_test.samsonSetupTest"),
-            "successful") << "Error in getValueForParameter for unit_test.samsonSetupTest";
-
-  EXPECT_EQ(samson::SamsonSetup::shared()->setValueForParameter("isolated.timeout",
-                                                                "1000"),
-            true) << "Error in setValueForParameter for isolated.timeout";
-  EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("isolated.timeout"),
-            "1000") << "Error in getValueForParameter for isolated.timeout";
-
-  EXPECT_EQ(samson::SamsonSetup::shared()->isParameterDefined("non_existing_entry"),
-            false) << "Error in isParameterDefined for non_existing_entry";
-  EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("non_existing_entry"),
-            "Error") << "Error in getValueForParameter for non_existing_entry";
-
-
-  samson::SamsonSetup::shared()->resetToDefaultValues();
-
-  EXPECT_EQ(samson::SamsonSetup::shared()->isParameterDefined("unit_test.samsonSetupTest"),
-            true) << "Error in isParameterDefined negative test";
-  EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("unit_test.samsonSetupTest"),
-            "initial") << "Error in getValueForParameter for unit_test.samsonSetupTest";
-
-  EXPECT_EQ(samson::SamsonSetup::shared()->getValueForParameter("isolated.timeout"),
-            "300") << "Error in getValueForParameter for isolated.timeout";
-
-  samson::SamsonSetup::shared()->clearCustumValues();
-  EXPECT_EQ(samson::SamsonSetup::shared()->save(), 0) << "Error in save SamsonSetup";
-
-  samson::SamsonSetup::destroy();
 }
 
 

@@ -168,7 +168,7 @@ void SetupItemCollection::load(std::string fileName) {
       c.Parse(line);
 
       if (c.get_num_arguments() == 0) {
-        continue;  // Skip comments
+        continue;    // Skip comments
       }
       std::string mainCommand = c.get_argument(0);
       if (mainCommand[0] == '#') {
@@ -246,62 +246,7 @@ std::string SetupItemCollection::str() {
 
 #pragma mark SamsonSetup
 
-static SamsonSetup *samsonSetup = NULL;
-
-SamsonSetup *SamsonSetup::shared() {
-  if (!samsonSetup) {
-    LM_X(1, ("Please, init SamsonSetup with SamsonSetup::init()"));
-  }
-  return samsonSetup;
-}
-
-void SamsonSetup::destroy() {
-  if (!samsonSetup) {
-    LM_RVE(("SamsonSetup not initialized at destructor"));
-  }
-  LM_V(("Destroying SamsonSetup"));
-  delete samsonSetup;
-  samsonSetup = NULL;
-}
-
-void SamsonSetup::init(std::string samson_home, std::string samson_working) {
-  if (samsonSetup) {
-    LM_W(("Init SamsonSetup twice... ignoring"));
-    return;
-  }
-
-  LM_VV(("Init SamsonSetup"));
-
-  samsonSetup = new SamsonSetup(samson_home, samson_working);
-}
-
-SamsonSetup::SamsonSetup(std::string samson_home, std::string samson_working) {
-  // Init the setup system
-  LM_TODO(("Add the possibility to set particular directories for this..."));
-
-  char *env_samson_working = getenv("SAMSON_WORKING");
-  char *env_samson_home = getenv("SAMSON_HOME");
-
-  if (samson_working == "") {
-    if (env_samson_working) {
-      samson_working = env_samson_working;
-    } else {
-      samson_working = SAMSON_WORKING_DEFAULT;
-    }
-  }
-
-  if (samson_home == "") {
-    if (env_samson_home) {
-      samson_home = env_samson_home;
-    } else {
-      samson_home =  SAMSON_HOME_DEFAULT;
-    }
-  }
-
-  // Basic directories
-  _samson_home = cannonical_path(samson_home);
-  _samson_working = cannonical_path(samson_working);
-
+SamsonSetup::SamsonSetup() {
   // General Platform parameters
   add("general.memory", "10000000000", "Global available memory ", SetupItem_uint64);
   add("general.num_processess", "16", "Number of cores", SetupItem_uint64);
@@ -332,9 +277,50 @@ SamsonSetup::SamsonSetup(std::string samson_home, std::string samson_working) {
   add("stream.max_operation_input_size", "400000000",
       "Maximum input data ( in bytes ) to run an automatic stream processing task",
       SetupItem_uint64);
+}
+
+void SamsonSetup::SetWorkerDirectories(std::string samson_home, std::string samson_working) {
+  char *env_samson_working = getenv("SAMSON_WORKING");
+  char *env_samson_home = getenv("SAMSON_HOME");
+
+  if (samson_working == "") {
+    if (env_samson_working) {
+      samson_working = env_samson_working;
+    } else {
+      samson_working = SAMSON_WORKING_DEFAULT;
+    }
+  }
+
+  if (samson_home == "") {
+    if (env_samson_home) {
+      samson_home = env_samson_home;
+    } else {
+      samson_home =  SAMSON_HOME_DEFAULT;
+    }
+  }
+
+  // Basic directories
+  _samson_home = cannonical_path(samson_home);
+  _samson_working = cannonical_path(samson_working);
 
   // load setup file
   load(setupFileName());
+
+  if (createFullDirectory(_samson_working) != OK) {
+    LM_X(1, ("Error creating directory %s", _samson_working.c_str()));
+  }
+  if (createFullDirectory(_samson_working + "/log") != OK) {
+    LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));
+  }
+  if (createFullDirectory(_samson_working + "/blocks") != OK) {
+    LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));
+  }
+  if (createFullDirectory(_samson_working + "/etc") != OK) {
+    LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));    // Create modules directory
+  }
+  if (createFullDirectory(_samson_home + "/modules")) {
+    LM_X(1, ("Error creating directory at %s", _samson_home.c_str()));
+  }
 }
 
 void SamsonSetup::addItem(std::string _name, std::string _default_value, std::string _description,
@@ -416,24 +402,6 @@ int SamsonSetup::getInt(std::string name) {
   std::string value = getValueForParameter(name);
 
   return atoi(value.c_str());
-}
-
-void SamsonSetup::createWorkingDirectories() {
-  if (createFullDirectory(_samson_working) != OK) {
-    LM_X(1, ("Error creating directory %s", _samson_working.c_str()));
-  }
-  if (createFullDirectory(_samson_working + "/log") != OK) {
-    LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));
-  }
-  if (createFullDirectory(_samson_working + "/blocks") != OK) {
-    LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));
-  }
-  if (createFullDirectory(_samson_working + "/etc") != OK) {
-    LM_X(1, ("Error creating directory at %s", _samson_working.c_str()));  // Create modules directory
-  }
-  if (createFullDirectory(_samson_home + "/modules")) {
-    LM_X(1, ("Error creating directory at %s", _samson_home.c_str()));
-  }
 }
 
 int SamsonSetup::save() {

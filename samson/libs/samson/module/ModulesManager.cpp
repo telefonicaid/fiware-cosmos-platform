@@ -120,7 +120,7 @@ void ModulesManager::reloadModules() {
 }
 
 void ModulesManager::addModules() {
-  addModulesFromDirectory(SamsonSetup::shared()->modulesDirectory());
+  addModulesFromDirectory(au::Singleton<SamsonSetup>::shared()->modulesDirectory());
 }
 
 void ModulesManager::addModulesFromDirectory(std::string dir_name) {

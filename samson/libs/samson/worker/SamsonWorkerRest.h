@@ -20,17 +20,13 @@ class SamsonWorkerRest : public au::network::RESTServiceInterface, engine::Objec
 public:
 
   SamsonWorkerRest(SamsonWorker *samson_worker, int web_port);
-  virtual ~SamsonWorkerRest() {
-  }
+  virtual ~SamsonWorkerRest();
 
   // Receive notifications to take tample
   void notify(engine::Notification *notification);
 
   // au::network::RESTServiceInterface
   void process(au::SharedPointer< au::network::RESTServiceCommand> command);
-
-  // Stop the rest waiting for all connections to finish ( even the thread for the listener )
-  void Stop();
 
 private:
 
@@ -55,4 +51,4 @@ private:
 };
 }
 
-#endif // ifndef _H_SAMSON_WORKER_REST
+#endif  // ifndef _H_SAMSON_WORKER_REST

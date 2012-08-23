@@ -49,7 +49,7 @@ public:
   size_t worker_id();
 
   // Get a copy of the current cluster setup
-  void GetClusterInfo(samson::gpb::ClusterInfo **, size_t *version);
+  au::SharedPointer<samson::gpb::ClusterInfo> GetCurrentClusterInfo();
 
   // Get workers that should have a copy of a block in this range ( I am excluded from the list )
   au::Uint64Set GetWorkerIdsForRange(KVRange range);
@@ -63,6 +63,8 @@ public:
   // Get complete information on how blocks are distributed in the workers
   int GetBlockMap(std::multimap<size_t, size_t>& blocks_map);
 
+  size_t get_new_block_id();
+
 private:
 
   // Get all worker identifiers
@@ -73,7 +75,7 @@ private:
     return au::str("/samson/workers/w%010lu", worker_id);
   }
 
-  std::vector<size_t> get_all_workers_from_cluster_info(samson::gpb::ClusterInfo *cluster_info);
+  std::vector<size_t> get_all_workers_from_cluster_info(au::SharedPointer<samson::gpb::ClusterInfo> cluster_info);
 
   // Main function to check when a watcher is received
   int check();
@@ -82,13 +84,10 @@ private:
   int check_cluster_info();
 
   // Check it if is necessary to redefine the cluster
-  bool is_valid_cluster_info(samson::gpb::ClusterInfo *cluster_info);
+  bool is_valid_cluster_info(au::SharedPointer<samson::gpb::ClusterInfo> cluster_info);
 
   // Create a new cluster info for the current cluster situation
-  int create_cluster_info(samson::gpb::ClusterInfo *cluster_info);
-
-  // Alert that a new cluster_info has been received
-  void alert_new_cluster_info();
+  int create_cluster_info(size_t version);
 
   // Function to get how to access me from the other workers
   std::string get_local_ip();
@@ -104,8 +103,7 @@ private:
   std::string node_worker_;                // zk node name /samson/workers/wXXXXXXXXXX
   samson::gpb::WorkerInfo worker_info_;      // Information about this worker ( cpu, memory, ...)
 
-  samson::gpb::ClusterInfo cluster_info_;    // Information about cluster setup
-  int64_t verion_node_cluster_info_;       // Last version we got about cluster setup
+  au::SharedPointer<samson::gpb::ClusterInfo> cluster_info_;  // Information about cluster setup
 
   // Identifier of this woker in the cluster ( unique in cluster history )
   size_t worker_id_;
@@ -115,6 +113,9 @@ private:
 
   // Mutex protection
   au::Token token_;
+
+  // Cronometer to update worker node
+  au::Cronometer cronomter_update_worker_node_;
 };
 }
 

@@ -51,13 +51,7 @@ namespace engine {
 class MemoryManager {
 public:
 
-  // Note: Constuctor is private to make sure Singleton is used correctly
   ~MemoryManager();
-
-  // Singleton functions
-  static void destroy();
-  static void init(size_t memory);
-  static MemoryManager *shared();
 
   // Register and Unregister buffers to keep track of memory allocated
   void Add(Buffer *buffer);
@@ -77,8 +71,6 @@ private:
   // Constructor is private to make sure singleton is used correctly
   MemoryManager(size_t memory);
 
-  static MemoryManager *memoryManager;         // Singleton Instance pointer
-
   au::Token token_;                            // Mutex protection
 
   size_t used_memory_;                         // Total memory used
@@ -88,6 +80,8 @@ private:
 
   friend class Buffer;                         // Buffer class can call to destoryBuffer
   friend class BufferContainer;                // Buffer container is the only one that can create Buffers directly
+
+  friend class Engine;
 };
 }
 

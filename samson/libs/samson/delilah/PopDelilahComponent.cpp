@@ -270,7 +270,7 @@ void PopDelilahComponent::check() {
 
       au::SharedPointer< engine::DiskOperation> operation(engine::DiskOperation::newWriteOperation(buffer, file_name,
                                                                                                    getEngineId()));
-      engine::DiskManager::shared()->Add(operation);
+      engine::Engine::disk_manager()->Add(operation);
       num_pending_write_operations_++;
     } else {
       // Use delilah interface to report this block

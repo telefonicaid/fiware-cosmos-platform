@@ -164,14 +164,8 @@ int main(int argC, const char *argV[]) {
     Deamonize_close_all();
   }
 
-  // Init samson setup with default values
-  samson::SamsonSetup::init("", "");
-
   // Engine and its associated elements
-  engine::Engine::init();
-  engine::MemoryManager::init(10000000000);
-  engine::DiskManager::init(1);
-  // engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
+  engine::Engine::InitEngine(2, 10000000000, 1);
 
   samson::ModulesManager::init("samsonConnector");               // Init the modules manager
 

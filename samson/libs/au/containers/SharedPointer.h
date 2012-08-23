@@ -48,13 +48,7 @@ template <class C>
 class SharedPointer {
 public:
 
-  SharedPointer() {
-    // Pointing to a newly created element
-    shared_reference_counter_ = new SharedReferenceCounter();
-    c_ = NULL;
-  }
-
-  explicit SharedPointer(C *c) {
+  explicit SharedPointer(C *c = NULL) {
     // Pointing to a newly created element
     shared_reference_counter_ = new SharedReferenceCounter();
     c_ = c;

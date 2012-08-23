@@ -6,8 +6,10 @@
 
 
 TEST(au_Singleton, basic) {
-  TestBase *example = au::Singleton<TestBase>::shared();
+  // Destroy all previous singletons
+  au::singleton_manager.DestroySingletons();
 
+  TestBase *example = au::Singleton<TestBase>::shared();
   example->set_value(10);
 
   // Hopefully pointing to the same variable

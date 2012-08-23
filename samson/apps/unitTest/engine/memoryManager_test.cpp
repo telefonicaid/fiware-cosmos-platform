@@ -30,16 +30,16 @@
  *
  * init_engine_test();
  *
- *  engine::Buffer *buffer = engine::MemoryManager::shared()->createBuffer( "test_buffer" , "test" , 100 );
+ *  engine::Buffer *buffer = engine::Engine::memory_manager()->createBuffer( "test_buffer" , "test" , 100 );
  *  EXPECT_TRUE( buffer != NULL ) << "Buffer was not creatd";
- *  EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 1) << "Memory request was not added";
+ *  EXPECT_EQ(engine::Engine::memory_manager()->num_buffers(), 1) << "Memory request was not added";
  *
  *  EXPECT_TRUE( buffer->getMaxSize() >= 100 ) << "Buffer size is not correct";
  *
  *  // Destroy buffer
  *  buffer->Release();
  *
- *  EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 0) << "Buffer is not removed correctly";
+ *  EXPECT_EQ(engine::Engine::memory_manager()->num_buffers(), 0) << "Buffer is not removed correctly";
  *
  *      close_engine_test();
  *
@@ -50,19 +50,19 @@
  * {
  *      init_engine_test();
  *
- *  EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 0) << "Should be no buffers";
+ *  EXPECT_EQ(engine::Engine::memory_manager()->num_buffers(), 0) << "Should be no buffers";
  *
- *  engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 100  );
- *  EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 1) << "Wrong number of buffers";
+ *  engine::Buffer* buffer1 = engine::Engine::memory_manager()->createBuffer( "buffer1" ,  "test" , 100  );
+ *  EXPECT_EQ(engine::Engine::memory_manager()->num_buffers(), 1) << "Wrong number of buffers";
  *
- *  engine::Buffer* buffer2 = engine::MemoryManager::shared()->createBuffer( "buffer2" ,  "test" , 100  );
- *  EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 2) << "Wrong number of buffers";
+ *  engine::Buffer* buffer2 = engine::Engine::memory_manager()->createBuffer( "buffer2" ,  "test" , 100  );
+ *  EXPECT_EQ(engine::Engine::memory_manager()->num_buffers(), 2) << "Wrong number of buffers";
  *
  *  buffer1->Release();
- *  EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 1) << "Wrong number of buffers";
+ *  EXPECT_EQ(engine::Engine::memory_manager()->num_buffers(), 1) << "Wrong number of buffers";
  *
  *  buffer2->Release();
- *  EXPECT_EQ(engine::MemoryManager::shared()->num_buffers(), 0) << "Wrong number of buffers";
+ *  EXPECT_EQ(engine::Engine::memory_manager()->num_buffers(), 0) << "Wrong number of buffers";
  *
  *      close_engine_test();
  *
@@ -75,23 +75,23 @@
  *
  * init_engine_test();
  *
- *  EXPECT_EQ(engine::MemoryManager::shared()->used_memory(), 0) << "Used memory does not match";
+ *  EXPECT_EQ(engine::Engine::memory_manager()->used_memory(), 0) << "Used memory does not match";
  *
- *  engine::Buffer* buffer1 = engine::MemoryManager::shared()->createBuffer( "buffer1" ,  "test" , 100  );
+ *  engine::Buffer* buffer1 = engine::Engine::memory_manager()->createBuffer( "buffer1" ,  "test" , 100  );
  *
- *  EXPECT_EQ(engine::MemoryManager::shared()->used_memory(), 100) << "Used memory does not match";
+ *  EXPECT_EQ(engine::Engine::memory_manager()->used_memory(), 100) << "Used memory does not match";
  *
- *  engine::Buffer* buffer2 = engine::MemoryManager::shared()->createBuffer( "buffer2" , "test" , 100  );
+ *  engine::Buffer* buffer2 = engine::Engine::memory_manager()->createBuffer( "buffer2" , "test" , 100  );
  *
- *  EXPECT_EQ(engine::MemoryManager::shared()->used_memory(), 200) << "Used memory does not match";
+ *  EXPECT_EQ(engine::Engine::memory_manager()->used_memory(), 200) << "Used memory does not match";
  *
  *  buffer1->Release();
  *
- *  EXPECT_EQ(engine::MemoryManager::shared()->used_memory(), 100) << "Used memory does not match";
+ *  EXPECT_EQ(engine::Engine::memory_manager()->used_memory(), 100) << "Used memory does not match";
  *
  *  buffer2->Release();
  *
- *  EXPECT_EQ(engine::MemoryManager::shared()->used_memory(), 0) << "Used memory does not match";
+ *  EXPECT_EQ(engine::Engine::memory_manager()->used_memory(), 0) << "Used memory does not match";
  *
  *      close_engine_test();
  *

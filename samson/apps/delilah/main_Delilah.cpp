@@ -176,10 +176,8 @@ samson::DelilahConsole *delilahConsole = NULL;
 
 
 void cleanup(void) {
-  // Stop all threads to clean up
-  engine::Engine::stop();
-  engine::DiskManager::stop();
-  engine::ProcessManager::stop();
+  // Stop engine
+  engine::Engine::StopEngine();
 
   /*
    * if( delilahConsole )
@@ -187,7 +185,7 @@ void cleanup(void) {
    */
 
   // Wait all threads to finsih
-  au::ThreadManager::shared()->wait("Delilah");
+  au::Singleton<au::ThreadManager>::shared()->wait("Delilah");
 
   // Clear google protocol buffers library
   google::protobuf::ShutdownProtobufLibrary();
@@ -202,26 +200,14 @@ void cleanup(void) {
   LM_T(LmtCleanup, ("destroying ModulesManager"));
   samson::ModulesManager::destroy("delilah");
 
-  LM_T(LmtCleanup, ("destroying ProcessManager"));
-  engine::ProcessManager::destroy();
-
-  LM_T(LmtCleanup, ("destroying DiskManager"));
-  engine::DiskManager::destroy();
-
-  LM_T(LmtCleanup, ("destroying MemoryManager"));
-  engine::MemoryManager::destroy();
-
-  LM_T(LmtCleanup, ("destroying Engine"));
-  engine::Engine::destroy();
-
-  LM_T(LmtCleanup, ("Shutting down SamsonSetup"));
-  samson::SamsonSetup::destroy();
-
   LM_T(LmtCleanup, ("Calling paConfigCleanup"));
   paConfigCleanup();
   LM_T(LmtCleanup, ("Calling lmCleanProgName"));
   lmCleanProgName();
   LM_T(LmtCleanup, ("Cleanup DONE"));
+
+  // Remove engine
+  engine::Engine::DestroyEngine();
 
   // Stop logging to server
   au::stop_log_to_server();
@@ -308,21 +294,18 @@ int main(int argC, const char *argV[]) {
   lmAux((char *)"father");
   logFd = lmFirstDiskFileDescriptor();
 
-  // Init samson setup with default values
-  samson::SamsonSetup::init("", "");
 
   // Setup parameters from command line
   size_t _memory           = (size_t)memory_gb * (size_t)(1024 * 1024 * 1024);
   size_t _load_buffer_size = (size_t)load_buffer_size_mb * (size_t)(1024 * 1024);
 
-  samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::str("%lu", _memory));
-  samson::SamsonSetup::shared()->setValueForParameter("load.buffer_size",  au::str("%lu", _load_buffer_size));
+  au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("general.memory", au::str("%lu", _memory));
+  au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("load.buffer_size",
+                                                                     au::str("%lu", _load_buffer_size));
 
   // Engine and its associated elements
-  engine::Engine::init();
-  engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
-  engine::DiskManager::init(1);
-  engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
+  int num_cores = au::Singleton<samson::SamsonSetup>::shared()->getInt("general.num_processess");
+  engine::Engine::InitEngine(num_cores,  _memory, 1);
 
   samson::ModulesManager::init("delilah");         // Init the modules manager
 

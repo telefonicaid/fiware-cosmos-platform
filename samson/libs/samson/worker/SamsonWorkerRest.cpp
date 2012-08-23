@@ -29,11 +29,10 @@ SamsonWorkerRest::SamsonWorkerRest(SamsonWorker *samson_worker, int web_port) : 
   }
 }
 
-void SamsonWorkerRest::Stop() {
+SamsonWorkerRest::~SamsonWorkerRest() {
   rest_service->StopService();
   if (delilah) {
     delete delilah;
-    delilah = NULL;
   }
 }
 
@@ -105,13 +104,16 @@ void SamsonWorkerRest::process_intern(au::SharedPointer<au::network::RESTService
   } else if ((path == "/samson/status") && (verb == "GET")) {
     // TBC
   } else if ((path == "/samson/cluster") && (verb == "GET")) {
-    samson::gpb::ClusterInfo *cluster_info;
-    size_t cluster_info_version;
-    samson_worker_->worker_controller->GetClusterInfo(&cluster_info, &cluster_info_version);
+    au::SharedPointer<samson::gpb::ClusterInfo> cluster_info =
+      samson_worker_->worker_controller()->GetCurrentClusterInfo();
 
+    if (cluster_info == NULL) {
+      command->AppendFormatedError("No cluster information found");
+      return;
+    }
 
     au::tables::Table table("worker_id|host|port|port rest|cores|memory,f=uint64");
-    table.setTitle(au::str("Cluster information (v. %lu)", cluster_info_version));
+    table.setTitle(au::str("Cluster information (v. %lu)", cluster_info->version()));
 
     for (int i = 0; i < cluster_info->workers_size(); i++) {
       au::StringVector values;

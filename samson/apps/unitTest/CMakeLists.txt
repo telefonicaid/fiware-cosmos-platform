@@ -38,6 +38,16 @@ SET (SOURCES
 	# AU tables library
 	lib/au/tables/TableTest.cpp	
 
+	# ENGINE library
+	lib/engine/statusTest.cpp
+	lib/engine/EngineTest.cpp
+
+	# SAMSON COMMON LIBRARY
+	lib/samson/common/SamsonSetupTest.cpp 
+
+	# SAMSOM WORKER library
+	lib/samson/worker/SamsonWorkerTest.cpp
+
 
 	#Common files
 	common_engine_test.h

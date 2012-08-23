@@ -43,10 +43,8 @@ protected:
 //          int _shared_memory_num_buffers , size_t _shared_memory_size_per_buffer )
 
 TEST_F(SharedMemoryManagerTest, init) {
-  engine::SharedMemoryManager *sharedMemoryManager = NULL;
-
   engine::SharedMemoryManager::init(1, 64000000);        // Allocate a single 64MB buffer
-  sharedMemoryManager = engine::SharedMemoryManager::shared();
+  engine::SharedMemoryManager *sharedMemoryManager = engine::SharedMemoryManager::shared();
   EXPECT_TRUE(sharedMemoryManager != NULL) << "Error initializing the shared memory segment";
   engine::SharedMemoryManager::destroy();
 }

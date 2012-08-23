@@ -24,13 +24,15 @@ public:
   WorkerNetwork(size_t worker_id
                 , int port
                 , NetworkInterfaceReceiver *receiver
-                , gpb::ClusterInfo *cluster_information
-                , size_t cluster_information_version);
+                , au::SharedPointer<gpb::ClusterInfo> cluster_information);
 
   ~WorkerNetwork();
 
   // Stop background threads
   void stop();
+
+  void SendAlertToAllDelilahs(std::string type, std::string context, std::string message);
+
 
   // NetworkManager interface
   void newSocketConnection(au::NetworkListener *listener, au::SocketConnection *socket_connetion);

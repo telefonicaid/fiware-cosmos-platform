@@ -101,13 +101,13 @@ int main(int argC, const char *argV[]) {
   paParse(paArgs, argC, (char **)argV, 1, false);
 
   // SamsonSetup init
-  samson::SamsonSetup::init(samsonHome, samsonWorking);
-  samson::SamsonSetup::shared()->createWorkingDirectories();      // Create working directories
+  au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samsonHome, samsonWorking);
 
   // Fetch the current SAMSON configuration
-  std::string num_processes_str = samson::SamsonSetup::shared()->getValueForParameter("general.num_processess");
+  std::string num_processes_str = au::Singleton<samson::SamsonSetup>::shared()->getValueForParameter(
+    "general.num_processess");
   num_processes = strtol(num_processes_str.c_str(), NULL, 10);
-  std::string shared_memory_size_per_buffer_str = samson::SamsonSetup::shared()->getValueForParameter(
+  std::string shared_memory_size_per_buffer_str = au::Singleton<samson::SamsonSetup>::shared()->getValueForParameter(
     "general.shared_memory_size_per_buffer");
   shared_memory_size_per_buffer = strtol(shared_memory_size_per_buffer_str.c_str(), NULL, 10);
   samson_required_mem = num_processes * shared_memory_size_per_buffer;

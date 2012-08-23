@@ -239,9 +239,9 @@ int main(int argC, const char *argV[]) {
     rate_stdin.Push(read_bytes);
 
     // Information about current status....
-    size_t memory = engine::MemoryManager::shared()->memory();
-    size_t used_memory = engine::MemoryManager::shared()->used_memory();
-    double memory_usage = engine::MemoryManager::shared()->memory_usage();
+    size_t memory = engine::Engine::memory_manager()->memory();
+    size_t used_memory = engine::Engine::memory_manager()->used_memory();
+    double memory_usage = engine::Engine::memory_manager()->memory_usage();
 
     if (read_bytes == 0) {
       break;

@@ -103,7 +103,7 @@ void BufferListItem::flush_to_disk() {
       engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer_, file_name_,
                                                                           getEngineId());
       au::SharedPointer<engine::DiskOperation> operation(o);
-      engine::DiskManager::shared()->Add(operation);
+      engine::Engine::disk_manager()->Add(operation);
 
       state = writing;
       return;

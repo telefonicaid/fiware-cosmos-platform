@@ -42,35 +42,42 @@ int NetworkListenerInterfaceImpl::num_connections_ = 0;
 
 TEST(au_network_NetworkListener, basic) {
   // No background threads check
-  EXPECT_EQ(0, au::ThreadManager::shared()->getNumThreads());
+  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 
   NetworkListenerInterfaceImpl impl;
   NetworkListenerInterfaceImpl::clear_connections();  // just in case we execute repeated tests
   au::NetworkListener network_listener(&impl);
 
+
+  srand(time(NULL));
+  int port = 14567 + rand() % 100;
+
+
   EXPECT_EQ(au::OK,
-            network_listener.InitNetworkListener(14567)) <<
+            network_listener.InitNetworkListener(port)) <<
   "Error starting au::NetworkListener";
   EXPECT_EQ(0, NetworkListenerInterfaceImpl::num_connections());
-  EXPECT_EQ(14567, network_listener.port());
+  EXPECT_EQ(port, network_listener.port());
   EXPECT_EQ(true, network_listener.IsNetworkListenerRunning());
 
   // Create a socket connection to test reception
   au::SocketConnection *socket_connection;
-  EXPECT_EQ(au::OK,
-            au::SocketConnection::Create("localhost", 14567, &socket_connection));
+  au::Status s =  au::SocketConnection::Create("localhost", port, &socket_connection);
+  EXPECT_EQ(au::OK, s);
 
+  if (s == au::OK) {
+    EXPECT_EQ(au::OK, socket_connection->WriteLine("Hola\n"));
+    char line[1024];
+    EXPECT_EQ(au::OK, socket_connection->ReadLine(line, sizeof(line), 5));
+    EXPECT_EQ(0, strcmp(line, "Hola\n"));
 
-  EXPECT_EQ(au::OK, socket_connection->WriteLine("Hola\n"));
-  char line[1024];
-  EXPECT_EQ(au::OK, socket_connection->ReadLine(line, sizeof(line), 5));
-  EXPECT_EQ(0, strcmp(line, "Hola\n"));
-
-  socket_connection->Close();
-  delete socket_connection;
+    socket_connection->Close();
+    delete socket_connection;
+  }
 
   // Close network listener
   network_listener.StopNetworkListener();
+
   // Compiler complains about EXPECT_EQ(false,), but not for EXPECT_EQ(true,)
   EXPECT_FALSE(network_listener.IsNetworkListenerRunning());
 
@@ -78,5 +85,5 @@ TEST(au_network_NetworkListener, basic) {
   EXPECT_EQ(1, NetworkListenerInterfaceImpl::num_connections());
 
   // No background threads check
-  EXPECT_EQ(0, au::ThreadManager::shared()->getNumThreads());
+  EXPECT_EQ(0, au::Singleton<au::ThreadManager>::shared()->num_threads());
 }

@@ -29,7 +29,7 @@ TEST(diskManagerTest, instantiationTest) {
   init_engine_test();
 
   // call init() and then shared(). Should return a valid one.
-  ASSERT_TRUE(engine::DiskManager::shared() != static_cast<engine::DiskManager *>(NULL))
+  ASSERT_TRUE(engine::Engine::disk_manager() != static_cast<engine::DiskManager *>(NULL))
   << "DiskManager instance should not be null after instantiation";
 
   close_engine_test();
@@ -56,9 +56,9 @@ public:
                                                                                                  "test_filename.txt", 0,
                                                                                                  1,
                                                                                                  0));
-      engine::DiskManager::shared()->Add(operation);
+      engine::Engine::disk_manager()->Add(operation);
 
-      EXPECT_EQ(engine::DiskManager::shared()->getNumOperations(), 1) << "Wrong number of disk operations";
+      EXPECT_EQ(engine::Engine::disk_manager()->getNumOperations(), 1) << "Wrong number of disk operations";
     }
 
     void notify(engine::Notification *notification) {

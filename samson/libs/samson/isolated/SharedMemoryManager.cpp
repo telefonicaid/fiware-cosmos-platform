@@ -60,7 +60,7 @@ SharedMemoryManager::SharedMemoryManager(int _shared_memory_num_buffers, size_t 
   shared_memory_size_per_buffer  = _shared_memory_size_per_buffer;
 
   // Name of the log file to store how to clean up memory
-  sharedMemoryIdsFileName = samson::SamsonSetup::shared()->sharedMemoryLogFileName();
+  sharedMemoryIdsFileName = au::Singleton<samson::SamsonSetup>::shared()->sharedMemoryLogFileName();
 
   if (shared_memory_size_per_buffer == 0) {
     LM_X(1, ("Error in setup, invalid value for shared memory size %u", shared_memory_size_per_buffer ));  // Boolean vector showing if a buffer is used

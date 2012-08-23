@@ -179,7 +179,7 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
 
     au::Cronometer cronometer;
     while (true) {
-      double memory_usage = engine::MemoryManager::shared()->memory_usage();
+      double memory_usage = engine::Engine::memory_manager()->memory_usage();
       if (memory_usage < 0.9) {
         break;
       } else {
@@ -236,7 +236,7 @@ std::string Packet::str() {
       ::
       ClusterInfoUpdate)
   {
-    output << "(ClusterInfoUpdate version " << message->cluster_info_version() << " )";
+    output << "(ClusterInfoUpdate version " << message->cluster_info().version() << " )";
   }
   if (buffer_ != NULL) {
     output << " [ Buffer " << au::str(buffer_->getSize()) << "/" << au::str(buffer_->getMaxSize()) << " ]";

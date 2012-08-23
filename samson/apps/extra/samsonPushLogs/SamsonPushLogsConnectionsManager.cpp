@@ -28,7 +28,9 @@ SamsonPushLogsConnection::SamsonPushLogsConnection(LogsDataSet *dataset, const c
 
   // Create the thread
   pthread_t t;
-  au::ThreadManager::shared()->addThread("SamsonPushLogsConnection", &t, NULL, RunSamsonPushLogsConnection, this);
+  au::Singleton<au::ThreadManager>::shared()->addThread("SamsonPushLogsConnection", &t, NULL,
+                                                        RunSamsonPushLogsConnection,
+                                                        this);
 }
 
 SamsonPushLogsConnection::~SamsonPushLogsConnection() {

@@ -47,19 +47,20 @@ std::string SocketConnection::host_and_port() {
   }
 }
 
-Status SocketConnection::Create(std::string host, int port,
-                                SocketConnection **socket_connection) {
+Status SocketConnection::Create(std::string host, int port, SocketConnection **socket_connection) {
   int fd;
   struct hostent *hp;
   struct sockaddr_in peer;
 
   if ((hp = gethostbyname(host.c_str())) == NULL) {
+    *socket_connection = NULL;
     return GetHostByNameError;
   }
 
   // LM_RE(GetHostByNameError, ("gethostbyname(%s): %s", host.c_str() , strerror(errno)));
 
   if ((fd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+    *socket_connection = NULL;
     return SocketError;
   }
 
@@ -80,11 +81,12 @@ Status SocketConnection::Create(std::string host, int port,
 
   while (1) {
     if (::connect(fd, (struct sockaddr *)&peer, sizeof(peer)) == -1) {
-      usleep(50000);
+      usleep(100000);
       if (tri > retries) {
         ::close(fd);
         // Traces canceled since we are using this to connect to log server
         // LM_T(LmtSocketConnection,("Cannot connect to %s, port %d (even after %d retries)", host.c_str(), port, retries));
+        *socket_connection = NULL;
         return ConnectError;
       }
 

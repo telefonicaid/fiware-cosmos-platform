@@ -37,7 +37,8 @@ StreamConnector::StreamConnector() : token("SamsonConnector::token_channels") {
 
   // Create a thread to review
   pthread_t t;
-  au::ThreadManager::shared()->addThread("SamsonConector:review", &t, NULL, review_samson_connector, this);
+  au::Singleton<au::ThreadManager>::shared()->addThread("SamsonConector:review", &t, NULL, review_samson_connector,
+                                                        this);
 }
 
 void StreamConnector::init_remove_connections_service() {
@@ -383,7 +384,7 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
 
   if (main_command == "threads") {
     std::ostringstream message;
-    message << *au::ThreadManager::shared();
+    message << au::Singleton<au::ThreadManager>::shared()->str();
     error->AddMessage(message.str());
     return;
   }
@@ -480,8 +481,8 @@ void StreamConnector::process_command(std::string command, au::ErrorManager *err
 
   if (main_command == "memory_status") {
     std::string message =  au::str("Used memory %s / %s "
-                                   , au::str(engine::MemoryManager::shared()->used_memory()).c_str()
-                                   , au::str(engine::MemoryManager::shared()->memory()).c_str()
+                                   , au::str(engine::Engine::memory_manager()->used_memory()).c_str()
+                                   , au::str(engine::Engine::memory_manager()->memory()).c_str()
                                    );
     error->AddMessage(message);
     return;

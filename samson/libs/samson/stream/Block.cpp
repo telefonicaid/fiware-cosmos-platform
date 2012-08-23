@@ -119,7 +119,7 @@ void Block::update_sort_information() {
 }
 
 std::string Block::file_name() {
-  return SamsonSetup::shared()->blockFileName(block_id_);
+  return au::Singleton<SamsonSetup>::shared()->blockFileName(block_id_);
 }
 
 // Command over the block

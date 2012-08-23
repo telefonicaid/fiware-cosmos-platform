@@ -517,7 +517,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
   if (mainCommand == "threads") {
     std::ostringstream message;
-    message << *au::ThreadManager::shared();
+    message << au::Singleton<au::ThreadManager>::shared()->str();
     writeOnConsole(message.str());
     return 0;
   }
@@ -930,7 +930,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
    * }
    * // Size of the file
    * size_t file_size = info.st_size;
-   * engine::BufferPointer buffer = engine::MemoryManager::shared()->createBuffer("push_module" , "delilah", file_size );
+   * engine::BufferPointer buffer = engine::Engine::memory_manager()->createBuffer("push_module" , "delilah", file_size );
    * buffer->setSize(file_size);
    *
    * // Load the file
@@ -1085,7 +1085,7 @@ void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::Buffer
   // Disk operation....
   engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer,  fileName, getEngineId());
   au::SharedPointer<engine::DiskOperation> operation(o);
-  engine::DiskManager::shared()->Add(operation);
+  engine::Engine::disk_manager()->Add(operation);
 }
 
 void DelilahConsole::runAsyncCommandAndWait(std::string command) {

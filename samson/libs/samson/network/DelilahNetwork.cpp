@@ -10,7 +10,7 @@
 
 namespace samson {
 DelilahNetwork::DelilahNetwork(std::string connection_type, size_t delilah_id, NetworkInterfaceReceiver *receiver)
-  : CommonNetwork(NodeIdentifier(DelilahNode, delilah_id), receiver, NULL, (size_t) - 1) {
+  : CommonNetwork(NodeIdentifier(DelilahNode, delilah_id), receiver, au::SharedPointer<gpb::ClusterInfo>( NULL )) {
   LM_V(("DelilahNetwork %s", au::code64_str(delilah_id).c_str()));
 
   // Save connection type string  to be send in all hello messages

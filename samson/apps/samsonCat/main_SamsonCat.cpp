@@ -92,11 +92,10 @@ int main(int argC, const char *argV[]) {
   lmAux((char *)"father");
   logFd = lmFirstDiskFileDescriptor();
 
-  engine::MemoryManager::init(1024 * 1024 * 1024);
+  engine::Engine::InitEngine(1, 1024 * 1024 * 1024, 1);
 
-  samson::SamsonSetup::init(samsonHome, samsonWorking);
+  au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samsonHome, samsonWorking);
   samson::ModulesManager::init("samsonCat");
-
 
   struct stat filestatus;
   int error_stat;
@@ -152,6 +151,6 @@ int main(int argC, const char *argV[]) {
     LM_X(1, ("%s is not a file or a directory", file_name));
   }
 
-  engine::MemoryManager::destroy();
+  engine::Engine::DestroyEngine();
 }
 

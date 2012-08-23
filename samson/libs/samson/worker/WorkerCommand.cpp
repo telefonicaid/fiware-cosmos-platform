@@ -52,7 +52,7 @@ public:
   au::ErrorManager error;               // Error management
 
   void compute_ranges(size_t max_size) {
-    int num_cores = SamsonSetup::shared()->getInt("general.num_processess");
+    int num_cores = au::Singleton<SamsonSetup>::shared()->getInt("general.num_processess");
 
     int hg_begin = 0;
     int hg_end = 0;
@@ -334,12 +334,12 @@ void WorkerCommand::runCommand(std::string command, au::ErrorManager *error) {
   // add_queue_connection ( pending )
   // rm_queue_connection ( pending )
 
-  if (samsonWorker->data_model->isValidCommand(main_command)) {
+  if (samsonWorker->data_model()->isValidCommand(main_command)) {
     std::string caller = au::str("Command %s from delilah %s"
                                  , main_command.c_str()
                                  , au::code64_str(delilah_id).c_str());
 
-    samsonWorker->data_model->Commit(caller, command, error);
+    samsonWorker->data_model()->Commit(caller, command, error);
     return;
   }
 
@@ -480,13 +480,13 @@ void WorkerCommand::run() {
    *
    * // Destination file
    * std::string file_name = au::str("%s/lib%s.so"
-   * , SamsonSetup::shared()->modulesDirectory().c_str()
+   * , au::Singleton<SamsonSetup>::shared()->modulesDirectory().c_str()
    * , cmd.get_argument(1).c_str()
    * );
    *
    * engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation(buffer, file_name, getEngineId() );
    * operation->environment.set("push_module", "yes");
-   * engine::DiskManager::shared()->add( operation );
+   * engine::Engine::disk_manager()->add( operation );
    * operation->Release(); // It is now retained by disk manager
    *
    * num_pending_disk_operations++;
@@ -500,7 +500,7 @@ void WorkerCommand::run() {
 
   // Query commands
   if (main_command == "ls") {
-    gpb::Collection *c = samsonWorker->data_model->getCollectionForQueues(visualization);
+    gpb::Collection *c = samsonWorker->data_model()->getCollectionForQueues(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -508,7 +508,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_queue_blocks") {
-    gpb::Collection *c = samsonWorker->data_model->getCollectionForQueuesWithBlocks(visualization);
+    gpb::Collection *c = samsonWorker->data_model()->getCollectionForQueuesWithBlocks(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -516,7 +516,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_data_commits") {
-    gpb::Collection *c =  samsonWorker->data_model->getLastCommitsCollection(visualization);
+    gpb::Collection *c =  samsonWorker->data_model()->getLastCommitsCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -524,7 +524,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_last_tasks") {
-    gpb::Collection *c =  samsonWorker->task_manager->getLastTasksCollection(visualization);
+    gpb::Collection *c =  samsonWorker->task_manager()->getLastTasksCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -533,7 +533,7 @@ void WorkerCommand::run() {
 
 
   if (main_command == "ls_push_operations") {
-    gpb::Collection *c = samsonWorker->push_manager->getCollectionForPushOperations(visualization);
+    gpb::Collection *c = samsonWorker->push_manager()->getCollectionForPushOperations(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -541,7 +541,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_block_distribution") {
-    gpb::Collection *c = samsonWorker->distribution_blocks_manager->GetCollectionForDistributionBlocks(visualization);
+    gpb::Collection *c = samsonWorker->distribution_blocks_manager()->GetCollectionForDistributionBlocks(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -549,7 +549,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_block_requests") {
-    gpb::Collection *c = samsonWorker->distribution_blocks_manager->GetCollectionForBlockRequests(visualization);
+    gpb::Collection *c = samsonWorker->distribution_blocks_manager()->GetCollectionForBlockRequests(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -586,7 +586,7 @@ void WorkerCommand::run() {
 
   if (main_command == "ls_stream_operations") {
     gpb::Collection *c;
-    c = samsonWorker->data_model->getCollectionForStreamOperations(visualization);
+    c = samsonWorker->data_model()->getCollectionForStreamOperations(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -595,7 +595,7 @@ void WorkerCommand::run() {
 
   if (main_command == "ls_batch_operations") {
     gpb::Collection *c;
-    c = samsonWorker->data_model->getCollectionForBatchOperations(visualization);
+    c = samsonWorker->data_model()->getCollectionForBatchOperations(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -605,7 +605,7 @@ void WorkerCommand::run() {
 
   if (main_command == "ps_stream_operations") {
     gpb::Collection *c;
-    c = samsonWorker->task_manager->getCollectionForStreamOperationsInfo(visualization);
+    c = samsonWorker->task_manager()->getCollectionForStreamOperationsInfo(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -614,7 +614,7 @@ void WorkerCommand::run() {
 
 
   if (main_command == "ls_queue_connections") {
-    gpb::Collection *c = samsonWorker->data_model->getCollectionForQueueConnections(visualization);
+    gpb::Collection *c = samsonWorker->data_model()->getCollectionForQueueConnections(visualization);
     c->set_title(command);
     collections.push_back(c);
 
@@ -623,7 +623,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ps_tasks") {
-    gpb::Collection *c = samsonWorker->task_manager->getCollection(visualization);
+    gpb::Collection *c = samsonWorker->task_manager()->getCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -672,7 +672,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ps_workers") {
-    gpb::Collection *c = samsonWorker->workerCommandManager->getCollectionOfWorkerCommands(visualization);
+    gpb::Collection *c = samsonWorker->workerCommandManager()->getCollectionOfWorkerCommands(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -1062,15 +1062,14 @@ void WorkerCommand::run() {
 
     // Send a trace to all delilahs
     if (error) {
-      samsonWorker->sendTrace("error", "delilah", full_message);
+      samsonWorker->network()->SendAlertToAllDelilahs("error", "delilah", full_message);
     } else if (warning) {
-      samsonWorker->sendTrace("warning", "delilah", full_message);
+      samsonWorker->network()->SendAlertToAllDelilahs("warning", "delilah", full_message);
     } else {
-      samsonWorker->sendTrace("message", "delilah", full_message);
+      samsonWorker->network()->SendAlertToAllDelilahs("message", "delilah", full_message);
     } finishWorkerTask();
     return;
   }
-
 
   if (main_command == "defrag") {
     error.set("Unimplemented");
@@ -1093,7 +1092,7 @@ void WorkerCommand::run() {
      * stream::BlockList init_list("defrag_block_list");
      * init_list.copyFrom( queue->list );
      *
-     * size_t input_operation_size = SamsonSetup::shared()->getUInt64("general.memory") / 3;
+     * size_t input_operation_size = au::Singleton<SamsonSetup>::shared()->getUInt64("general.memory") / 3;
      *
      * size_t num_defrag_blocks = init_list.getBlockInfo().size / input_operation_size;
      * if( num_defrag_blocks == 0)
@@ -1184,7 +1183,7 @@ void WorkerCommand::run() {
 
     au::ErrorManager error;
     std::string caller = au::str("run_deliah_%s_%lu", au::code64_str(delilah_id).c_str(), delilah_component_id);
-    samsonWorker->data_model->Commit(caller, command, &error);
+    samsonWorker->data_model()->Commit(caller, command, &error);
 
     if (error.IsActivated()) {
       finishWorkerTaskWithError(error.GetMessage());
@@ -1353,7 +1352,7 @@ gpb::Collection *WorkerCommand::getCollectionOfBuffers(const Visualization& visu
 
   collection->set_name("buffers");
 
-  au::tables::Table table = engine::MemoryManager::shared()->getTableOfBuffers();
+  au::tables::Table table = engine::Engine::memory_manager()->getTableOfBuffers();
 
   // Debug
   // printf("%s\n" , table.str().c_str() );

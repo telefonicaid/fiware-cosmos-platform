@@ -151,14 +151,15 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
   }
 
   // Update cluster indo
-  size_t cluster_info_version = packet->message->cluster_info_version();
+
+  au::SharedPointer<gpb::ClusterInfo> cluster_info(new gpb::ClusterInfo());
+  cluster_info->CopyFrom(packet->message->cluster_info());
+
   LM_V(("ClusterSetup retreived correctly from %s ( version %lu )"
         , host.c_str()
-        , cluster_info_version ));
+        , cluster_info->version()));
 
-  gpb::ClusterInfo *cluster_info = new gpb::ClusterInfo();
-  cluster_info->CopyFrom(packet->message->cluster_info());
-  network->set_cluster_information(cluster_info_version, cluster_info);
+  network->set_cluster_information(cluster_info);
 
   if (socket_connection) {
     delete socket_connection;
@@ -167,10 +168,7 @@ bool Delilah::connect(std::string host, au::ErrorManager *error) {
 }
 
 void Delilah::disconnect() {
-  // Empty cluster to close all connections
-  gpb::ClusterInfo *cluster_info = new gpb::ClusterInfo();
-
-  network->set_cluster_information((size_t)-1, cluster_info);
+  network->remove_cluster_information();
 }
 
 bool Delilah::isConnected() {
@@ -248,24 +246,11 @@ void Delilah::receive(const PacketPointer& packet) {
       return;
     }
 
-    if (!packet->message->has_cluster_info_version()) {
-      LM_W(("Received a cluster info update message without cluster information from connection %s. Ignoring..."
-            , packet->from.str().c_str()));
-      return;
-    }
-
     // Get a copy of the cluster information
-    gpb::ClusterInfo *cluster_info = new gpb::ClusterInfo();
+    au::SharedPointer<gpb::ClusterInfo> cluster_info(new gpb::ClusterInfo());
     cluster_info->CopyFrom(packet->message->cluster_info());
-    size_t cluster_info_version = packet->message->cluster_info_version();
 
-    // Detect if version has changed
-    bool changed_cluster_info = ( cluster_info_version != network->cluster_information_version());
-
-    if (changed_cluster_info) {
-      network->set_cluster_information(cluster_info_version, cluster_info);
-      engine::Engine::shared()->notify(new engine::Notification("notification_cluster_info_changed"));
-    }
+    network->set_cluster_information(cluster_info);
 
     return;
   }

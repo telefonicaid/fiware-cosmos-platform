@@ -103,7 +103,7 @@ void WorkerTask::processOutputBuffer(engine::BufferPointer buffer, int output, i
   KVHeader *header = (KVHeader *)buffer->getData();
 
   // Create a block ( and distribute it )
-  size_t block_id = samson_worker_->distribution_blocks_manager->CreateBlock(buffer);
+  size_t block_id = samson_worker_->distribution_blocks_manager()->CreateBlock(buffer);
   BlockPointer block = BlockManager::shared()->getBlock(block_id);
 
   // Add output to this operation
@@ -115,7 +115,7 @@ void WorkerTask::processOutputTXTBuffer(engine::BufferPointer buffer, bool finis
   KVHeader *header = (KVHeader *)buffer->getData();
 
   // Create a block ( and distribute it )
-  size_t block_id = samson_worker_->distribution_blocks_manager->CreateBlock(buffer);
+  size_t block_id = samson_worker_->distribution_blocks_manager()->CreateBlock(buffer);
   BlockPointer block = BlockManager::shared()->getBlock(block_id);
 
   // Add output to this operation

@@ -30,7 +30,7 @@
 TEST(processManagerTest, instantiationTest) {
   init_engine_test();
 
-  EXPECT_TRUE(engine::ProcessManager::shared() !=
+  EXPECT_TRUE(engine::Engine::process_manager() !=
               static_cast<engine::ProcessManager *>(NULL)) <<
   "ProcessManager instance should not be null after instantiation";
 

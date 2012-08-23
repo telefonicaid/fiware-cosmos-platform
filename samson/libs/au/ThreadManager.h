@@ -27,6 +27,7 @@
 #include <vector>       // std::vector
 
 #include "au/Cronometer.h"
+#include "au/Singleton.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 #include "au/string.h"
@@ -35,6 +36,8 @@
 
 #include "au/containers/StringVector.h"
 #include "au/containers/map.h"
+
+#define AU_MAX_NUM_THREADS 100
 
 namespace au {
 typedef void * (*thread_function)(void *p);
@@ -55,15 +58,13 @@ public:
 
 private:
 
-  friend std::ostream& operator<<(std::ostream& o, const ThreadInfo& thread_info);
-
-  au::Cronometer cronometer_;      // Cronometer for thsi thread
-  std::string name_;               // Name of this thread
-  pthread_t t_;                    // Id of this thread
+  au::Cronometer cronometer_;        // Cronometer for thsi thread
+  std::string name_;                 // Name of this thread
+  pthread_t t_;                      // Id of this thread
 
   // Real thread information to call this thread
-  thread_function f_;              // Function to be executed
-  void *__restrict p_;             // Parameter to be passed
+  thread_function f_;                // Function to be executed
+  void *__restrict p_;               // Parameter to be passed
 
   // Function to run a thread info
   friend void *run_ThreadInfo(void *p);
@@ -77,10 +78,10 @@ private:
 
 class ThreadManager {
   ThreadManager();
+  friend class au::Singleton<au::ThreadManager>;
 
 public:
 
-  static ThreadManager *shared();
   static void wait_all_threads(std::string title);
 
   // Add a thread to the manager
@@ -103,9 +104,6 @@ public:
 
 
 
-  // Get the number of running threads
-  int getNumThreads();
-
   // Get name of all running threads
   au::StringVector getThreadNames();
 
@@ -115,13 +113,45 @@ public:
   // Internal function used to notify that a particular threads has finished
   void notify_finish_thread(ThreadInfo *thread_info);
 
+  int num_threads() {
+    int total = 0;
+
+    for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+      if (threads_[i] != NULL) {
+        total++;
+      }
+    }
+    return total;
+  }
+
+  std::string str();
 
 private:
 
-  friend std::ostream& operator<<(std::ostream& o, ThreadManager& thread_manager);
-
   // "Name" of the running threads
-  au::map< pthread_t, ThreadInfo > threads_;
+  ThreadInfo *threads_[AU_MAX_NUM_THREADS];
+
+  void AddThreads(ThreadInfo *thread_info) {
+    for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+      if (threads_[i] == NULL) {
+        threads_[i] = thread_info;
+        return;
+      }
+    }
+
+    LM_X(1, ("No space for more threads"));
+  }
+
+  void RemoveThreads(ThreadInfo *thread_info) {
+    for (int i = 0; i < AU_MAX_NUM_THREADS; i++) {
+      if (threads_[i] == thread_info) {
+        threads_[i] = NULL;
+        return;
+      }
+    }
+
+    LM_X(1, ("Thread not found"));
+  }
 
   // Mutex protection
   au::Token token_;
@@ -148,28 +178,24 @@ public:
 
   void start_thread() {
     if (pthread_running_) {
-      return;   // Already running
+      return;     // Already running
     }
     // Mark as running
     pthread_running_ = true;
 
     // Run the thread in background
-    au::ThreadManager::shared()->addThread(name_, &t_, NULL, run_Thread, this);
+    au::Singleton<au::ThreadManager>::shared()->addThread(name_, &t_, NULL, run_Thread, this);
   }
 
-  virtual void run() = 0;  // Main function of the thread to be overloaded
+  virtual void run() = 0;    // Main function of the thread to be overloaded
   virtual void cancel_thread() {
-  };                                // Paralel cancel function ( to wake up the thread for instance )
+  };                                  // Paralel cancel function ( to wake up the thread for instance )
 
   void stop_thread() {
     stoping_ = true;
     if (!pthread_running_) {
       return;
     }
-
-
-
-
 
     if (pthread_self() == t_) {
       LM_W(("Not possible to stop a thread from itself"));
@@ -188,10 +214,6 @@ public:
       if (!pthread_running_) {
         return;
       }
-
-
-
-
 
       if (c.seconds() > 2) {
         LM_W(("Too mush time waiting for thread %s", name_.c_str()));
@@ -215,36 +237,9 @@ private:
   std::string name_;
   pthread_t t_;
   bool pthread_running_;
-  bool stoping_;   // Flag to indicate
+  bool stoping_;     // Flag to indicate
 
   friend void *run_Thread(void *p);
-};
-
-//
-// RepeateObjectCallThread
-//
-// Simple thread to repeatelly call a method over an object
-//
-// Example:  RepeateObjectCallThread<A,&A::run> t;
-
-template< class C, void(C::*f) () >
-class RepeateObjectCallThread : public Thread {
-  C *object_;
-
-public:
-
-  RepeateObjectCallThread(C *object) {
-    object_ = object;
-  }
-
-  virtual void run() {
-    while (true) {
-      if (thread_should_quit()) {
-        return;   // Quit this thread when necessary
-      }
-      object_->f();
-    }
-  }
 };
 }
 

@@ -22,8 +22,8 @@
 
 // Test void samson_file();
 TEST(samson_common_SamsonFile, basic) {
-  // Init memory manager for these tests
-  engine::MemoryManager::init(1024 * 1024 * 1024);
+  // Init Engine
+  engine::Engine::InitEngine(1, 1024 * 1024 * 1024, 1);
 
   // Check error is detected in non-exiting files
   // ------------------------------------------------------------
@@ -48,5 +48,5 @@ TEST(samson_common_SamsonFile, basic) {
     EXPECT_EQ(error.GetMessage(), "KVHeader error: wrong magic number") << "Wrong error message";
   }
 
-  engine::MemoryManager::destroy();
+  engine::Engine::DestroyEngine();
 }

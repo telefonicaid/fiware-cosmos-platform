@@ -112,7 +112,7 @@ void WorkerTaskManager::reviewPendingWorkerTasks() {
   // It is not recomended to execute more tasks than cores
   // since memory content of all the operations is locked in memory
 
-  int num_processors      = SamsonSetup::shared()->getInt("general.num_processess");
+  int num_processors      = au::Singleton<SamsonSetup>::shared()->getInt("general.num_processess");
   int num_running_tasks   = running_tasks_.size();
 
   int max_running_operations =  (int)( num_processors );
@@ -167,9 +167,9 @@ bool WorkerTaskManager::runNextWorkerTasksIfNecessary() {
       au::SharedPointer<WorkerSystemTask> system_task = base_task.dynamic_pointer_cast<WorkerSystemTask>();
 
       if (task != NULL) {
-        engine::ProcessManager::shared()->Add(task.static_pointer_cast<engine::ProcessItem>(), getEngineId());
+        engine::Engine::process_manager()->Add(task.static_pointer_cast<engine::ProcessItem>(), getEngineId());
       } else if (system_task != NULL) {
-        engine::ProcessManager::shared()->Add(system_task.static_pointer_cast<engine::ProcessItem>(), getEngineId());
+        engine::Engine::process_manager()->Add(system_task.static_pointer_cast<engine::ProcessItem>(), getEngineId());
       } else {
         LM_X(1, ("WorkerTaskBase cannot be converted to WorkerTask or WorkerSystemTask"));
       } return true;
@@ -226,10 +226,10 @@ samson::gpb::Collection *WorkerTaskManager::getCollection(const ::samson::Visual
 
 void WorkerTaskManager::review_stream_operations() {
   au::ExecesiveTimeAlarm alarm("WorkerTaskManager::reviewStreamOperations");
-  int num_processors = SamsonSetup::shared()->getInt("general.num_processess");
+  int num_processors = au::Singleton<SamsonSetup>::shared()->getInt("general.num_processess");
 
   // Get a copy of data mode
-  au::SharedPointer<gpb::Data> data = samson_worker_->data_model->getCurrentModel();
+  au::SharedPointer<gpb::Data> data = samson_worker_->data_model()->getCurrentModel();
 
   while (true) {
     // Check if enougth tasks have been scheduled
@@ -237,7 +237,7 @@ void WorkerTaskManager::review_stream_operations() {
     if (num_tasks > ( 1.5 * num_processors)) {
       break;  // Check memory status. New tasks are not scheduled if memory usage is too high
     }
-    double memory_usage = engine::MemoryManager::shared()->memory_usage();
+    double memory_usage = engine::Engine::memory_manager()->memory_usage();
     if (memory_usage >= 1.0) {
       LM_W(("Not schedulling new stream-tasks since memory usage is %s >= 100%"
             , au::str_percentage(memory_usage).c_str()));

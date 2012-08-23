@@ -24,7 +24,7 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
   cmd.SetFlagBoolean("forward");
 
   // Number of divisions in state operations
-  cmd.SetFlagInt("divisions", SamsonSetup::shared()->getInt("general.num_processess"));
+  cmd.SetFlagInt("divisions", au::Singleton<SamsonSetup>::shared()->getInt("general.num_processess"));
 
   // Use third party software only for state with new input
   cmd.SetFlagBoolean("update_only");

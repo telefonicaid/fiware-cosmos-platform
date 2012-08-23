@@ -203,8 +203,8 @@ void ProcessItemIsolated::run() {
   if (isolated_process_as_tread) {
     ProcessItemIsolated *tmp = (this);
     pthread_t t;
-    au::ThreadManager::shared()->addThread("ProcessItemIsolated::run"
-                                           , &t, NULL, run_ProcessItemIsolated, tmp);
+    au::Singleton<au::ThreadManager>::shared()->addThread("ProcessItemIsolated::run"
+                                                          , &t, NULL, run_ProcessItemIsolated, tmp);
   } else {
     LM_T(LmtIsolated, ("Isolated process %s: father about to fork", getStatus().c_str()));
     pid = fork();
@@ -462,7 +462,7 @@ void ProcessItemIsolated::runExchangeMessages() {
 
   while (true) {
     // Take the timeout for reading operations from the other site
-    int timeout_setup = SamsonSetup::shared()->getInt("isolated.timeout");
+    int timeout_setup = au::Singleton<SamsonSetup>::shared()->getInt("isolated.timeout");
 
     LM_T(LmtIsolated, ("Isolated process %s: Reading a new message with timeout %d", getStatus().c_str(), timeout_setup));
 

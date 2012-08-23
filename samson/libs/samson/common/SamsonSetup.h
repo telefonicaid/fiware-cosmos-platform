@@ -10,6 +10,7 @@
 #include "logMsg/logMsg.h"
 
 #include "au/Environment.h"  // au::Environment
+#include "au/Singleton.h"
 #include "au/containers/StringVector.h"
 #include "au/containers/map.h"  // au::map
 
@@ -87,16 +88,15 @@ public:
 
 
 class SamsonSetup : public SetupItemCollection {
-  SamsonSetup(std::string samson_home, std::string samson_working);
+  friend class au::Singleton<SamsonSetup>;
+  SamsonSetup();
 
   std::string _samson_home;                 // Home directory for SAMSON system
   std::string _samson_working;              // Working directory for SAMSON system
 
 public:
 
-  static void init(std::string samson_home, std::string samson_working);
-  static void destroy();
-  static SamsonSetup *shared();
+  void SetWorkerDirectories(std::string samson_home, std::string samson_working);
 
   // Used only in unitTests, to have them more complete
   void addItem(std::string _name, std::string _default_value, std::string _description, SamsonAdaptorType type);
@@ -108,25 +108,17 @@ public:
 
   std::string get_default(std::string name);
 
-
   // Get names fo files
   std::string setupFileName();                               // Get the Steup file
   std::string sharedMemoryLogFileName();
   std::string modulesDirectory();
   std::string blocksDirectory();
-
   std::string blockFileName(size_t block_id);
   size_t blockIdFromFileName(std::string fileName);
-
   std::string streamManagerLogFileName();
-
   std::string clusterInformationFileName();
-
   std::vector<std::string> getItemNames();
 
-
-  // Create working directories
-  void createWorkingDirectories();
 
   // Clear values specified manually
   void clearCustumValues();

@@ -66,7 +66,9 @@ void FileDescriptorConnection::connect() {
     // Create the thread
     thread_running_ = true;
     pthread_t t;
-    au::ThreadManager::shared()->addThread("SamsonConnectorConnection", &t, NULL, run_FileDescriptorConnection, this);
+    au::Singleton<au::ThreadManager>::shared()->addThread("SamsonConnectorConnection", &t, NULL,
+                                                          run_FileDescriptorConnection,
+                                                          this);
   }
 }
 

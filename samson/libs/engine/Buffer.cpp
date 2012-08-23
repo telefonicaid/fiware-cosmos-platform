@@ -44,7 +44,7 @@ Buffer::Buffer(const std::string& name, const std::string& type,  size_t max_siz
   }
 
   // Register in the memory manager to track allocated memory
-  MemoryManager::shared()->Add(this);
+  Engine::memory_manager()->Add(this);
 }
 
 au::SharedPointer<Buffer> Buffer::create(const std::string& name, const std::string& type, size_t max_size) {
@@ -56,7 +56,7 @@ au::SharedPointer<Buffer> Buffer::create(const std::string& name, const std::str
 
 Buffer::~Buffer() {
   // Unregister in the memory manager
-  MemoryManager::shared()->Remove(this);
+  Engine::memory_manager()->Remove(this);
 
   // Free allocated data
   if (data_) {

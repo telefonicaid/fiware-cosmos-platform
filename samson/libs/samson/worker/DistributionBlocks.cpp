@@ -34,7 +34,7 @@ void DistributionBlock::confirm_worker(size_t worker_id) {
 
 void DistributionBlock::review() {
   // Get the list of workers where this block should be replicated
-  au::Uint64Set worker_ids = samsonWorker_->worker_controller->GetWorkerIdsForRange(header.range);
+  au::Uint64Set worker_ids = samsonWorker_->worker_controller()->GetWorkerIdsForRange(header.range);
 
   au::Uint64Vector non_included_worker_ids = worker_ids.non_intersection(worker_ids_).getVector();
 
@@ -127,7 +127,12 @@ size_t DistributionBlockManager::CreateBlock(engine::BufferPointer buffer, size_
   }
 
   // Get a new block id
-  block_id = samson_worker_->get_new_block_id();
+  block_id = samson_worker_->worker_controller()->get_new_block_id();
+
+  // Detect error creating block
+  if (block_id == (size_t)-1) {
+    return block_id;
+  }
 
   // Insert in the local BlockManager
   stream::BlockManager::shared()->create_block(block_id, buffer);
@@ -173,7 +178,7 @@ std::vector<size_t> get_workers_for_block_id(const std::multimap<size_t, size_t>
 void DistributionBlockManager::RequestBlocks(const std::set<size_t>& pending_block_ids) {
   // Get a complete information of block distribution
   std::multimap<size_t, size_t> blocks_map;
-  int rc = samson_worker_->worker_controller->GetBlockMap(blocks_map);
+  int rc = samson_worker_->worker_controller()->GetBlockMap(blocks_map);
 
   if (rc) {
     LM_W(("Not possible to request missing blocks %s", zoo::str_error(rc).c_str()));

@@ -47,15 +47,10 @@ class Notification;
 
 
 class DiskManager {
-  DiskManager(int _num_disk_operations);
+  DiskManager(int max_num_disk_operations);
 
 public:
 
-  // Singleton implementation
-  static void init(int _num_disk_operations);
-  static void stop();
-  static void destroy();
-  static DiskManager *shared();
   ~DiskManager();
 
   void Add(const au::SharedPointer< ::engine::DiskOperation>& operation);                               // Add a disk operation to be executed in the background
@@ -76,8 +71,13 @@ public:
   double get_rate_operations_out();
   double get_on_off_activity();
   int getNumOperations();
+  int max_num_disk_operations();
+
 
 private:
+
+  // Stop background threads
+  void Stop();
 
   // Notification that a disk operation has finished
   void finishDiskOperation(const au::SharedPointer< ::engine::DiskOperation >& operation);
@@ -85,14 +85,8 @@ private:
   // Auxiliar function to get the next operation ( NULL if no more disk operations )
   au::SharedPointer< ::engine::DiskOperation > getNextDiskOperation();
 
-  void add_worker();
-  bool check_quit_worker();
-
-  int get_num_disk_manager_workers();
+  int num_disk_manager_workers();
   void createThreads();
-
-  // Singleton instance
-  static DiskManager *diskManager;
 
   // File manager ( containing all the open files )
   ReadFileManager fileManager;
@@ -101,8 +95,8 @@ private:
   au::Token token;
 
   bool quitting;                                  // Flag to indicate background processes to quit
-  int num_disk_operations;                        // Number of paralell disk operations allowed
-  int num_disk_manager_workers;                   // Number of parallel workers for Disk operations
+  int max_num_disk_operations_;                   // Number of paralell disk operations allowed
+  int num_disk_manager_workers_;                  // Number of parallel workers for Disk operations
 
   au::Queue<DiskOperation> pending_operations;    // Queue with pending operations
   au::Box<DiskOperation>   running_operations;    // Box of running operations
@@ -117,6 +111,7 @@ public:
   au::OnOffMonitor on_off_monitor;
 
   friend class DiskOperation;
+  friend class Engine;
 };
 }
 

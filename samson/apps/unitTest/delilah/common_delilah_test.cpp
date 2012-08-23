@@ -16,12 +16,12 @@
 
 samson::DelilahConsole *init_delilah_test() {
   // Init samson setup with default values
-  samson::SamsonSetup::init("", "");
+  samson::SamsonSetup *samson_setup = au::Singleton<samson::SamsonSetup>::shared();
 
-  engine::Engine::init();
-  engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
-  engine::DiskManager::init(1);
-  engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
+  size_t memory = samson_setup->getUInt64("general.memory");
+  int num_cores = samson_setup->getInt("general.num_processess");
+
+  engine::Engine::InitEngine(num_cores, memory, 1);
 
   samson::ModulesManager::init("delilah_test");           // Init the modules manager
 
@@ -35,10 +35,7 @@ samson::DelilahConsole *init_delilah_test() {
 }
 
 void close_delilah_test(samson::DelilahConsole *delilahConsole) {
-  engine::Engine::stop();                    // Stop engine
-  engine::DiskManager::stop();               // Stop disk manager
-  engine::ProcessManager::stop();            // Stop process manager
-
+  engine::Engine::StopEngine();
 
   if (delilahConsole) {
     LM_M(("delilahConsole->stop()"));
@@ -47,7 +44,7 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole) {
 
   // Wait all threads to finish
   LM_M(("From close_delilah_test, waiting all threads to finish"));
-  au::ThreadManager::shared()->wait("Delilah test");
+  au::Singleton<au::ThreadManager>::shared()->wait("Delilah test");
 
   // Clear google protocol buffers library
   // google::protobuf::ShutdownProtobufLibrary();
@@ -57,15 +54,12 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole) {
     delilahConsole = NULL;
   }
 
+  engine::Engine::DestroyEngine();
+
   LM_W(("Finishing delilah"));
 
   LM_W(("Calling to destroy ModulesManager"));
   samson::ModulesManager::destroy("delilah_test");
-  engine::ProcessManager::destroy();
-  engine::DiskManager::destroy();
-  engine::MemoryManager::destroy();
-  engine::Engine::destroy();
-  samson::SamsonSetup::destroy();
   lmCleanProgName();
 }
 

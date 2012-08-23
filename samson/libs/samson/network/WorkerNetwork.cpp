@@ -9,12 +9,10 @@ namespace samson {
 WorkerNetwork::WorkerNetwork(size_t worker_id
                              , int port
                              , NetworkInterfaceReceiver *receiver
-                             , gpb::ClusterInfo *cluster_information
-                             , size_t cluster_information_version)
+                             , au::SharedPointer<gpb::ClusterInfo> cluster_information)
   : CommonNetwork(NodeIdentifier(WorkerNode, worker_id)
                   , receiver
-                  , cluster_information
-                  , cluster_information_version) {
+                  , cluster_information) {
   // Add listener for incoming connections
   // ----------------------------------------------------------------------------
   {
@@ -49,6 +47,13 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
     LM_X(1, ("New connections from an unknown listener"));
     socket_connection->Close();
     delete socket_connection;
+  }
+
+  if (cluster_information_version() == -1) {  // Still not part of any cluster..
+    LM_W(("Connection rejected since I am still not part of any cluster..."));
+    socket_connection->Close();
+    delete socket_connection;
+    return;
   }
 
   // Read hello message synchronously
@@ -117,5 +122,20 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
 
   // Add connnection for this node identifier
   AddConnection(new_node_identifier, socket_connection);
+}
+
+void WorkerNetwork::SendAlertToAllDelilahs(std::string type, std::string context, std::string message) {
+  PacketPointer p(new Packet(Message::Alert));
+  gpb::Alert *alert = p->message->mutable_alert();
+
+  alert->set_type(type);
+  alert->set_context(context);
+  alert->set_text(message);
+
+  // This message do not belong to any delilah operation
+  p->message->set_delilah_component_id((size_t)-1);
+
+  // Send packet
+  SendToAllDelilahs(p);
 }
 }

@@ -95,17 +95,17 @@ void SamsonClient::general_init(size_t memory, size_t load_buffer_size) {
   if (env_samson_home) {
     samson_home = env_samson_home;  // Init setup
   }
-  samson::SamsonSetup::init(samson_home, samson_working);
+
+  au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samson_home, samson_working);
 
   // Change the values for this parameters
-  samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::str("%lu", memory));
-  samson::SamsonSetup::shared()->setValueForParameter("load.buffer_size",  au::str("%lu", load_buffer_size));
+  au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("general.memory", au::str("%lu", memory));
+  au::Singleton<samson::SamsonSetup>::shared()->setValueForParameter("load.buffer_size",
+                                                                     au::str("%lu", load_buffer_size));
 
   // Init Engine, DiskManager, ProcessManager and Memory manager
-  engine::Engine::init();
-  engine::DiskManager::init(1);
-  engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
-  engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
+  int num_cores = au::Singleton<samson::SamsonSetup>::shared()->getInt("general.num_processess");
+  engine::Engine::InitEngine(num_cores, memory, 1);
 
   // Init the modules manager
   LM_T(LmtModuleManager, ("Starting ModulesManager from SamsonClient::general_init()"));
@@ -113,21 +113,14 @@ void SamsonClient::general_init(size_t memory, size_t load_buffer_size) {
 }
 
 void SamsonClient::general_close() {
-  engine::Engine::stop();
-  engine::DiskManager::stop();
-  engine::ProcessManager::stop();
-
   // Wait all threads to finish
-  au::ThreadManager::shared()->wait("SamsonClient");
+  au::Singleton<au::ThreadManager>::shared()->wait("SamsonClient");
 
-  engine::MemoryManager::destroy();
-  LM_T(LmtModuleManager, ("destroying ModulesManager from SAMSONClient::general_close()"));
+  // Close modules manager
   samson::ModulesManager::destroy("samsonClient");
-  samson::SamsonSetup::destroy();
 
-  engine::DiskManager::destroy();
-  engine::ProcessManager::destroy();
-  engine::Engine::destroy();
+  // Close engine
+  engine::Engine::DestroyEngine();
 }
 
 void SamsonClient::receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer) {

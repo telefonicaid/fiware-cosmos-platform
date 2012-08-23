@@ -10,37 +10,37 @@
 #include "CommonNetwork.h"  // Own interface
 
 namespace samson {
-void CommonNetwork::set_cluster_information(size_t cluster_information_version,
-                                            gpb::ClusterInfo *cluster_information) {
+void CommonNetwork::remove_cluster_information() {
+  cluster_information_.Reset(NULL);
+  review_connections();
+}
+
+void CommonNetwork::set_cluster_information(au::SharedPointer<gpb::ClusterInfo> cluster_information) {
   au::TokenTaker tt(&token_);
 
+  if (cluster_information == NULL) {
+    return;
+  }
+
   // Not update if we have a newer version of this cluster info
-  if (cluster_information_version != (size_t)-1) {
-    if (cluster_information_version_ !=  ((size_t)-1)) {
-      if (cluster_information_version_ >= cluster_information_version) {
-        return;
-      }
+  if (cluster_information_ !=  NULL) {
+    if (cluster_information_->version() >= cluster_information->version()) {
+      return;
     }
   }
 
-  // Remove previous cluster information ( if any )
-  if (cluster_information_) {
-    delete cluster_information_;  // keep the new cluster information
-  }
+  // Replace intern cluster information
+  engine::Engine::shared()->notify(new engine::Notification("notification_cluster_info_changed"));
   cluster_information_ = cluster_information;
-
-  // Update the version we have of the cluster info
-  cluster_information_version_ = cluster_information_version;
 
   // If I am a worker, update all my delilah connections
   if (node_identifier_.node_type == WorkerNode) {
     PacketPointer ci_packet(new Packet(Message::ClusterInfoUpdate));
-    ci_packet->message->set_cluster_info_version(cluster_information_version_);
     ci_packet->message->mutable_cluster_info()->CopyFrom(*cluster_information_);
     ci_packet->from = node_identifier_;
 
     LM_T(LmtNetworkConnection, ("Sending cluster info version %lu update packages to all delilahs",
-                                cluster_information_version_ ));
+                                cluster_information_->version()));
 
     SendToAllDelilahs(ci_packet);
   }
@@ -56,10 +56,10 @@ void CommonNetwork::review_connections() {
   LM_T(LmtNetworkConnection, ("Review connections ( me = %s ) ******************************************"
                               , node_identifier_.str().c_str()));
 
-  NetworkManager::Review();                           // Check pending packets to be removed after 1 minute disconnected
+  NetworkManager::Review();                             // Check pending packets to be removed after 1 minute disconnected
 
   // Check workers to be connected to
-  if (!cluster_information_) {
+  if (cluster_information_ == NULL) {
     LM_T(LmtNetworkConnection, ("No cluster information available. Not possible to review connections"));
     return;
   }
@@ -117,7 +117,7 @@ void CommonNetwork::review_connections() {
     NodeIdentifier node_identifier(connection_name);
 
     if (node_identifier.node_type == WorkerNode) {
-      if (!isWorkerIncluded(cluster_information_, node_identifier.id)) {
+      if (!isWorkerIncluded(cluster_information_.shared_object(), node_identifier.id)) {
         LM_T(LmtNetworkConnection, ("Removing connection %s since this worker is not included in the cluster any more"
                                     , connection_name.c_str()));
         Remove(connection_names[i]);
@@ -179,7 +179,7 @@ Status CommonNetwork::addWorkerConnection(size_t worker_id, std::string host, in
   // If there is an error, just return the error
   if (s != au::OK) {
     LM_W(("Not possible to connect with %s:%d (%s)", host.c_str(), port, au::status(s)));
-    return Error;   // Generic error
+    return Error;     // Generic error
   }
 
   // Sync send hello message
@@ -208,7 +208,7 @@ void CommonNetwork::Send(const PacketPointer& packet) {
   // Add more info to buffer name for debuggin
   engine::BufferPointer buffer = packet->buffer();
   if (buffer != NULL) {
-    buffer->addToName(au::str(" [in packet to %s]", packet->to.str().c_str()));  // Set me as from identifier
+    buffer->addToName(au::str(" [in packet to %s]", packet->to.str().c_str()));    // Set me as from identifier
   }
   packet->from = node_identifier_;
 
@@ -241,7 +241,7 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
 
   if (packet->msgCode == Message::Hello) {
     LM_W(("Received a hello packet once connection is identified. Ignoring..."));
-    return;   // Ignore hello message here
+    return;     // Ignore hello message here
   }
 
   if (packet->msgCode == Message::ClusterInfoUpdate) {
@@ -250,7 +250,7 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
             , connection->node_identifier().str().c_str()));
       connection->Close();
       return;
-    }  // This is managed as a normal message in delilah
+    }    // This is managed as a normal message in delilah
   }
   // Check we do now receive messages from unidenfitied node elements
   if (connection->node_identifier().node_type == UnknownNode) {
@@ -263,7 +263,7 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
   }
 
   if (packet->from.id == 0) {
-    LM_W(("Strange node identifier 0 in received packet"));  // Schedule the new packet
+    LM_W(("Strange node identifier 0 in received packet"));    // Schedule the new packet
   }
   schedule_receive(packet);
 }
@@ -277,7 +277,7 @@ au::tables::Table *CommonNetwork::getClusterConnectionsTable() {
 
   au::tables::Table *table = new au::tables::Table(au::StringVector("Worker", "Host", "Status"));
 
-  if (cluster_information_) {
+  if (cluster_information_ != NULL) {
     table->setTitle("Cluster");
 
     for (int i = 0; i < cluster_information_->workers_size(); i++) {
@@ -325,24 +325,27 @@ void CommonNetwork::schedule_receive(PacketPointer packet) {
 }
 
 size_t CommonNetwork::cluster_information_version() {
-  return cluster_information_version_;
+  if (cluster_information_ == NULL) {
+    return (size_t)-1;
+  }
+  return cluster_information_->version();
 }
 
 std::string CommonNetwork::getClusterConnectionStr() {
-  if (!cluster_information_ || ( cluster_information_version_ == (size_t)-1 )) {
+  if (cluster_information_ == NULL) {
     return "Disconnected";
   } else {
-    return au::str("%d nodes / v %d", (int)cluster_information_->workers_size(),  (int)cluster_information_version_);
+    return au::str("%d nodes / v %d", (int)cluster_information_->workers_size(),  (int)cluster_information_->version());
   }
 }
 
 std::string CommonNetwork::getClusterSetupStr() {
-  if (!cluster_information_ || (cluster_information_version_ == (size_t)-1 )) {
+  if (cluster_information_ == NULL) {
     return "Delilah is not connected to any SAMSON cluster\n";
   }
 
   au::tables::Table table("Worker|Host|Connected");
-  table.setTitle(au::str("Cluster setup ( version %lu )", cluster_information_version_));
+  table.setTitle(au::str("Cluster setup ( version %lu )", cluster_information_->version()));
   for (int i = 0; i < cluster_information_->workers_size(); i++) {
     size_t worker_id = cluster_information_->workers(i).worker_id();
 
@@ -398,7 +401,6 @@ PacketPointer CommonNetwork::getClusterInfoPacket() {
   // Update cluster information to delilah....
   PacketPointer ci_packet(new Packet(Message::ClusterInfoUpdate));
 
-  ci_packet->message->set_cluster_info_version(cluster_information_version_);
   ci_packet->message->mutable_cluster_info()->CopyFrom(*cluster_information_);
   return ci_packet;
 }

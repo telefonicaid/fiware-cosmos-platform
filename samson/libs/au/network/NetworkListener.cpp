@@ -34,6 +34,8 @@ NetworkListener::NetworkListener(
 
   // Thread to indicate if we are really listening connections
   background_thread_running_ = false;
+  background_thread_finished_ = false;
+  return_code_ = NULL;
 }
 
 NetworkListener::~NetworkListener() {
@@ -45,6 +47,8 @@ void NetworkListener::StopNetworkListener() {
   if (!background_thread_running_) {
     return;   // Nothing to do
   }
+  background_thread_running_ = false;
+
   // Close the open file descriptor
   int rc = ::close(rFd_);
   if (rc) {
@@ -53,19 +57,15 @@ void NetworkListener::StopNetworkListener() {
   rFd_ = -1;
 
   // Joint the background thread
-  void *r;
   LM_LW(( "Joining background thread of listener on port %d to finish\n", port_ ));
-  pthread_join(t, &r);
+  if (!return_code_) {  // Still pending to be collected
+    pthread_join(t, &return_code_);
+  }
 }
 
 Status NetworkListener::InitNetworkListener(int port) {
-  // If we are running something in background, we do not accept bind to another port
-  if (background_thread_running_) {
-    if (port_ != port) {
-      LM_W((
-             "NetworkListener already listening on port %s. Ignoring request to open port %d",
-             port_, port ));
-    }
+  if (port_ != -1) {
+    LM_W(("NetworkListener previously initialized with port %d. Ignoring...", port_));
     return au::Error;
   }
 
@@ -84,7 +84,8 @@ Status NetworkListener::InitNetworkListener(int port) {
   if ((rFd_ = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
     LM_RP(SocketError, ("socket"));
   }
-  fcntl(rFd_, F_SETFD, 1);
+
+  // fcntl(rFd_, F_SETFD, 1);
 
   memset(&sock, 0, sizeof(sock));
   memset(&peer, 0, sizeof(peer));
@@ -112,31 +113,29 @@ Status NetworkListener::InitNetworkListener(int port) {
 
   // Create thread
   LM_T(LmtCleanup, ("Creating a thread"));
-  au::ThreadManager::shared()->addNonDetachedThread(au::str(
-                                                      "NetworkListener on port %d",
-                                                      port)
-                                                    , &t
-                                                    , NULL
-                                                    , NetworkListener_run
-                                                    , this);
-
-  background_thread_running_ = true;
-
-  return OK;
+  std::string name = au::str("NetworkListener on port %d", port);
+  int s = au::Singleton<au::ThreadManager>::shared()->addNonDetachedThread(name
+                                                                           , &t
+                                                                           , NULL
+                                                                           , NetworkListener_run
+                                                                           , this);
+  if (s == 0) {
+    background_thread_running_ = true;
+    return OK;
+  } else {
+    return au::Error;
+  }
 }
 
 void *NetworkListener_run(void *p) {
   NetworkListener *network_listener = (NetworkListener *)p;
+  void *ans = network_listener->runNetworkListener();
 
-  network_listener->runNetworkListener();
-  network_listener->background_thread_running_ = false;
-  return NULL;
+  network_listener->background_thread_finished_ = true;  // Flag to indicate that we are over
+  return ans;
 }
 
-void NetworkListener::runNetworkListener() {
-  if (rFd_ == -1) {
-    return;   // It was closed before running
-  }
+void *NetworkListener::runNetworkListener() {
   fd_set rFds;
   int max;
   struct timeval tv;
@@ -148,7 +147,7 @@ void NetworkListener::runNetworkListener() {
     // this means that stop has been called
     int rFd = rFd_;
     if (rFd == -1) {
-      return;
+      return (void *)"rFd_ == -1";
     }
 
     // One fd to read connections
@@ -168,7 +167,18 @@ void NetworkListener::runNetworkListener() {
       continue;
     }
     if (fds == -1) {
-      return;   // Finish thread since this is an error
+      continue;  // We wil continue until rFd_ == -1
+      /*
+       * switch (errno) {
+       * case EAGAIN:return (void*)"EAGAIN";
+       * case EBADF:return (void*)"EBADF";
+       * case EINTR:return (void*)"EINTR";
+       * case EINVAL:return (void*)"EINVAL";
+       * default:
+       *  return (void*)"select == -1";   // Finish thread since there is a problem with fd
+       *  break;
+       * }
+       */
     }
     if (fds == 0) {
       // timeout();
@@ -227,5 +237,20 @@ bool NetworkListener::IsNetworkListenerRunning() const {
 
 int NetworkListener::port() const {
   return port_;
+}
+
+void *NetworkListener::background_thread_return_code() {
+  if (!background_thread_running_) {
+    return return_code_;
+  }
+
+  if (!return_code_) {
+    if (background_thread_finished_) {
+      // Recover the background code
+      pthread_join(t, &return_code_);
+    }
+  }
+
+  return return_code_;
 }
 }

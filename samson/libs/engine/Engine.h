@@ -47,6 +47,9 @@ namespace engine {
 class EngineElement;
 class ProcessItem;
 class DiskOperation;
+class DiskManager;
+class ProcessManager;
+class MemoryManager;
 class Notification;
 
 // ---------------------------------------------------
@@ -58,11 +61,61 @@ class Notification;
 
 
 class Engine {
-  // Common engine instance
-  static Engine *engine;
+public:
+
+  ~Engine();
+
+  // Static methods to init and close engine ( all included )
+  static void InitEngine(int num_cores, size_t memory, int num_disk_operations);
+  static void StopEngine();
+  static void DestroyEngine();
+
+  static Engine *shared();
+  static DiskManager *disk_manager();
+  static MemoryManager *memory_manager();
+  static ProcessManager *process_manager();
+
+  // Function to add a simple foreground tasks
+  void add(EngineElement *element);
+
+  // Methods to add notifictions
+  void notify(Notification *notification);
+  void notify(Notification *notification, int seconds);   // Repeated notification
+  void notify_extra(Notification *notification);
+
+  // Get an object by its registry names
+  Object *objectByName(const char *name);
+
+  // Debug information
+  int GetNumElementsInEngineStack();
+  double GetMaxWaitingTimeInEngineStack();
+  std::string GetTableOfEngineElements();      // Get information about current elements in engine
+  au::statistics::ActivityMonitor *activity_monitor();      // Return activity monitor to print some statistics
+
+private:
+
+  // Private constructor ( see Init static method )
+  Engine();
+
+  // Stop backgroudn threads
+  void Stop();
+
+  // Methods only executed from the thread-creation-functions ( never use directly )
+  void run();
+
+  // Methods to register and unregister objects
+  void register_object(Object *object);
+  void register_object_for_channel(Object *object, const char *channel);
+  void unregister_object(Object *object);
+
+  // Really sent a notification to the targets
+  void send(Notification *notification);
+
+  // Run a particular engine element
+  void runElement(EngineElement *running_element);
 
   // Statistics
-  au::statistics::ActivityMonitor activity_monitor;
+  au::statistics::ActivityMonitor activity_monitor_;
 
   // Collection of items
   EngineElementCollection engine_element_collection;
@@ -73,90 +126,22 @@ class Engine {
   // Counter of EngineElement processed
   size_t counter;
 
-  // Thread to run the engine in background ( if necessary )
-  pthread_t t;
+  pthread_t thread_id_;       // Thread to run the engine in background ( if necessary )
+  bool running_thread_;       // Flag to indicate that background thread is running
+  bool quitting_thread_;      // Flag to indicate to the backgroudn thread to quit
 
-public:
+  au::Cronometer uptime;                              // Total up time
+  double last_uptime_mark;                            // Last mark used to spent time
 
-  bool quitting;                                    // Flag used to indicate to threads that engine will finish
-  bool running_thread;                              // Flag to indicate that background thread is running
-
-private:
-
-  Engine();
-
-public:
-
-  au::Cronometer uptime;                            // Total up time
-  double last_uptime_mark;                          // Last mark used to spent time
-
-  ~Engine();
-
-  static void destroy();
-  static void init();
-  static void stop();
-  static Engine *shared();
-
-public:
-
-  // Methods only executed from the thread-creation-functions ( never use directly )
-  void run();
-
-
-public:
-
-  // get xml information
-  void getInfo(std::ostringstream& output);
-
-private:
+  // Common engine instance
+  static Engine *engine_;
+  static MemoryManager *memory_manager_;
+  static DiskManager *disk_manager_;
+  static ProcessManager *process_manager_;
 
   friend class Object;
-
-  // Functions to register objects ( general and for a particular notification )
-  void register_object(Object *object);
-  void register_object_for_channel(Object *object, const char *channel);
-
-  // Generic method to unregister an object
-  void unregister_object(Object *object);
-
-public:
-
-  // Add a notification
-  void notify(Notification *notification);
-  void notify_extra(Notification *notification);
-  void notify(Notification *notification, int seconds);       // Repeated notification
-
-  // Function to add a simple foreground tasks
-  void add(EngineElement *element);
-
-  // Get an object by its registry names
-  Object *objectByName(const char *name);
-
-  // Info functions
-  int getNumElementsInEngineStack();
-  double getMaxWaitingTimeInEngineStack();
-
-  // Return activity monitor to print some statistics
-  au::statistics::ActivityMonitor *get_activity_monitor() {
-    return &activity_monitor;
-  }
-
-  // Get information about current elements in engine
-  std::string getTableOfEngineElements() {
-    return engine_element_collection.getTableOfEngineElements();
-  }
-
-private:
-
   friend class NotificationElement;
-
-  // Run a particular notification
-  // Only executed from friend class "NotificationElement"
-  void send(Notification *notification);
-
-  // Run a particular engine element
-  void runElement(EngineElement *running_element);
+  friend void *runEngineBackground(void *);   // Backgrount function
 };
 }
-
 #endif  // ifndef _H_SAMSON_ENGINE

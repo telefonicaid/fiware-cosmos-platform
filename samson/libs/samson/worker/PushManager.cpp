@@ -88,7 +88,7 @@ void PushOperation::commit() {
                                , au::code64_str(delilah_id_).c_str()
                                , push_id_);
 
-  samson_worker_->data_model->Commit(caller, command, &error);
+  samson_worker_->data_model()->Commit(caller, command, &error);
 
   if (error.IsActivated()) {
     LM_W(("Error commiting to data model in push operation: %s", error.GetMessage().c_str()));                     // Send a commit response message to delilah
@@ -138,7 +138,7 @@ void PushManager::receive_push_block(size_t delilah_id
   }
 
   // Modify incomming buffer to assign only one hg
-  KVRanges ranges = samson_worker_->worker_controller->GetMyKVRanges();
+  KVRanges ranges = samson_worker_->worker_controller()->GetMyKVRanges();
   int hg = ranges.RandomHashGroup();
 
   KVHeader *header = (KVHeader *)buffer->getData();
@@ -151,8 +151,12 @@ void PushManager::receive_push_block(size_t delilah_id
 
 
   // Create a new block in this worker ( and start distribution process )
-  size_t block_id   = samson_worker_->distribution_blocks_manager->CreateBlock(buffer);
+  size_t block_id   = samson_worker_->distribution_blocks_manager()->CreateBlock(buffer);
 
+  if (block_id == (size_t)-1) {
+    LM_W(("Error creating block in a push operation ( block_id -1 )"));
+    return;
+  }
 
   // Check valid header
   if (buffer->getSize() < sizeof(KVHeader)) {

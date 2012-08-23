@@ -30,7 +30,8 @@ SamsonPushConnection::SamsonPushConnection(au::SocketConnection *_socket_conneti
 
   // Create the thread
   pthread_t t;
-  au::ThreadManager::shared()->addThread("SamsonPushConnection", &t, NULL, run_SamsonPushConnection, this);
+  au::Singleton<au::ThreadManager>::shared()->addThread("SamsonPushConnection", &t, NULL, run_SamsonPushConnection,
+                                                        this);
 }
 
 SamsonPushConnection::~SamsonPushConnection() {

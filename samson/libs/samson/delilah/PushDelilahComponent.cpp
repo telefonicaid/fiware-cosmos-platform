@@ -80,7 +80,8 @@ std::string PushDelilahComponent::getShortDescription() {
 void PushDelilahComponent::run() {
   pthread_t t;
 
-  au::ThreadManager::shared()->addThread("PushDelilahComponent", &t, NULL, run_PushDelilahComponent, this);
+  au::Singleton<au::ThreadManager>::shared()->addThread("PushDelilahComponent", &t, NULL, run_PushDelilahComponent,
+                                                        this);
 }
 
 void PushDelilahComponent::run_in_background() {
@@ -103,7 +104,7 @@ void PushDelilahComponent::run_in_background() {
     // Wait until memory is available
     au::Cronometer cronometer;
     current_status_ = "Waiting until used memory is under 70%";
-    while (engine::MemoryManager::shared()->memory_usage() > 0.7) {
+    while (engine::Engine::memory_manager()->memory_usage() > 0.7) {
       usleep(100000);
     }
 

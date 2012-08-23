@@ -56,7 +56,6 @@
 SAMSON_ARG_VARS;
 
 bool fg;
-bool monit;
 int valgrind;
 int port;
 int web_port;
@@ -79,44 +78,40 @@ bool thread_mode;
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-zk",    zoo_host,      "",           PaString,           PaOpt,         _i "localhost:2181",
+  { "-zk",    zoo_host, "",           PaString,           PaOpt,              _i "localhost:2181",
     PaNL,
     PaNL,
     "Zookeeper server"                   },
-  { "-log_classic",&log_classic,  "",           PaBool,             PaOpt,         false,
+  { "-log_classic",&log_classic, "",       PaBool,             PaOpt,              false,
     false,
     true,
     "Classical log file"                 },
-  { "-log_host",log_host,      "",           PaString,           PaOpt,         _i "localhost",
+  { "-log_host",log_host, "",           PaString,           PaOpt,              _i "localhost",
     PaNL,
     PaNL,     "log server host"                          },
-  { "-log_port",&log_port,     "",           PaInt,              PaOpt,         LOG_PORT,
+  { "-log_port",&log_port, "",          PaInt,              PaOpt,              LOG_PORT,
     0,
     10000,    "log server port"                          },
-  { "-log_file",log_file,      "",           PaString,           PaOpt,         _i "",
+  { "-log_file",log_file, "",           PaString,           PaOpt,              _i "",
     PaNL,
     PaNL,     "Local log file"                           },
-  { "-fg",    &fg,           "",           PaBool,             PaOpt,         false,
+  { "-fg",    &fg,      "",           PaBool,             PaOpt,              false,
     false,
     true,
     "don't start as daemon"              },
-  { "-monit", &monit,        "",           PaBool,             PaOpt,         false,
-    false,
-    true,
-    "to use with monit"                  },
-  { "-port",  &port,         "",           PaInt,              PaOpt,         SAMSON_WORKER_PORT,
+  { "-port",  &port,    "",           PaInt,              PaOpt,              SAMSON_WORKER_PORT,
     1,
     9999,
     "Port to receive new connections"    },
-  { "-web_port",&web_port,     "",           PaInt,              PaOpt,         SAMSON_WORKER_WEB_PORT,
+  { "-web_port",&web_port, "",          PaInt,              PaOpt,              SAMSON_WORKER_WEB_PORT,
     1,
     9999,
     "Port to receive web connections"    },
-  { "-valgrind",&valgrind,     "",           PaInt,              PaOpt,         0,
+  { "-valgrind",&valgrind, "",          PaInt,              PaOpt,              0,
     0,
     20,
     "help valgrind debug process"        },
-  { "-thread_mode",&thread_mode,  "",           PaBool,             PaOpt,         false,
+  { "-thread_mode",&thread_mode, "",       PaBool,             PaOpt,              false,
     false,
     true,     "thread_mode"                              },
   PA_END_OF_ARGS
@@ -283,7 +278,9 @@ int main(int argC, const char *argV[]) {
   if (signal(SIGTERM, captureSIGTERM) == SIG_ERR) {
     LM_W(("SIGTERM cannot be handled"));  // Init basic setup stuff (necessary for memory check)
   }
-  samson::SamsonSetup::init(samsonHome, samsonWorking);      // Load setup and create default directories
+
+  // Set directories and load setup file
+  au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samsonHome, samsonWorking);
 
   valgrindExit(2);
 
@@ -291,7 +288,7 @@ int main(int argC, const char *argV[]) {
   if (samson::MemoryCheck() == false) {
     LM_X(1, ("Insufficient memory configured. Check %s/samsonWorkerLog for more information.", paLogDir));
   }
-  if ((fg == false) && (monit == false)) {
+  if (fg == false) {
     Daemonize();
   }
   valgrindExit(3);
@@ -314,39 +311,20 @@ int main(int argC, const char *argV[]) {
 
   // ------------------------------------------------------
 
-  if (monit) {
-    LM_M(("monit test - I stay here ..."));
-    while (1) {
-      sleep(1);
-    }
-  }
-
-  // Make sure this singleton is created just once
-  LM_D(("createWorkingDirectories"));
-  samson::SamsonSetup::shared()->createWorkingDirectories();
-
   valgrindExit(4);
-  LM_D(("engine::Engine::init"));
-  engine::Engine::init();
+
+  // Recover values for the engine
+  size_t memory = au::Singleton<samson::SamsonSetup>::shared()->getUInt64("general.memory");
+  int num_processors = au::Singleton<samson::SamsonSetup>::shared()->getInt("general.num_processess");
 
   valgrindExit(5);
   LM_D(("engine::SharedMemoryManager::init"));
-  engine::SharedMemoryManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess")
-                                    , samson::SamsonSetup::shared()->getUInt64("general.shared_memory_size_per_buffer")
-                                    );  // VALGRIND complains ...
-  smManager = engine::SharedMemoryManager::shared();
+  size_t shared_memory_size = au::Singleton<samson::SamsonSetup>::shared()->getUInt64(
+    "general.shared_memory_size_per_buffer");
+  engine::SharedMemoryManager::init(num_processors, shared_memory_size);
 
-  valgrindExit(6);
-  LM_D(("engine::DiskManager::init"));
-  engine::DiskManager::init(1);
-
-  valgrindExit(7);
-  LM_D(("engine::ProcessManager::init"));
-  engine::ProcessManager::init(samson::SamsonSetup::shared()->getInt("general.num_processess"));
-
-  valgrindExit(8);
-  LM_D(("engine::MemoryManager::init"));
-  engine::MemoryManager::init(samson::SamsonSetup::shared()->getUInt64("general.memory"));
+  // Global init of engine
+  engine::Engine::InitEngine(num_processors, memory, 1);
 
   valgrindExit(9);
   LM_D(("samson::ModulesManager::init"));
@@ -384,17 +362,10 @@ int main(int argC, const char *argV[]) {
   // Run worker console ( -fg is activated )
   worker->runConsole();
 
-  // Stop all threads to clean up
-  // ---------------------------------------------------------------------------
-  engine::Engine::stop();
-  engine::DiskManager::stop();
-  engine::ProcessManager::stop();
+  // Stop engine to clean up
+  engine::Engine::StopEngine();
 
-  // Stop the worker
-  if (worker) {
-    worker->Stop();  // Wait all threads to finish
-  }
-  au::ThreadManager::shared()->wait("samsonWorker");
+  au::Singleton<au::ThreadManager>::shared()->wait("samsonWorker");
 
   // Shutdown all GPB stuff
   google::protobuf::ShutdownProtobufLibrary();
@@ -419,20 +390,8 @@ int main(int argC, const char *argV[]) {
   LM_T(LmtCleanup, ("destroying ModulesManager"));
   samson::ModulesManager::destroy("samsonWorker");
 
-  LM_T(LmtCleanup, ("destroying ProcessManager"));
-  engine::ProcessManager::destroy();
-
-  LM_T(LmtCleanup, ("destroying DiskManager"));
-  engine::DiskManager::destroy();
-
-  LM_T(LmtCleanup, ("destroying MemoryManager"));
-  engine::MemoryManager::destroy();
-
   LM_T(LmtCleanup, ("destroying Engine"));
-  engine::Engine::destroy();
-
-  LM_T(LmtCleanup, ("Shutting down SamsonSetup"));
-  samson::SamsonSetup::destroy();
+  engine::Engine::DestroyEngine();
 
   LM_T(LmtCleanup, ("Calling paConfigCleanup"));
   paConfigCleanup();

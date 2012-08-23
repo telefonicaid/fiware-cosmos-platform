@@ -9,6 +9,7 @@
 #include <time.h>
 
 #include "au/Descriptors.h"        // au::Descriptors
+#include "au/Singleton.h"
 #include "au/ThreadManager.h"
 #include "au/containers/SharedPointer.h"
 #include "au/mutex/TokenTaker.h"   // au::TokenTake
@@ -30,52 +31,36 @@ void *ProcessManager_run_worker(void *p) {
   return NULL;
 }
 
-// Initialise singleton instance pointer
-ProcessManager *ProcessManager::processManager = NULL;
-
-void ProcessManager::init(int _num_processes) {
-  LM_V(("ProcessManager init with %d processes",  _num_processes ));
-
-  if (processManager) {
-    LM_W(("Please, init processManager only once.Ignoring..."));
-    return;
-  }
-  processManager = new ProcessManager(_num_processes);
-}
-
-void ProcessManager::stop() {
-  LM_V(("ProcessManager stop"));
-
-  // Set the maximum number of process to 0 makes all background threads to quit
-  if (processManager) {
-    processManager->max_num_procesors_ = 0;
-  }
-}
-
-void ProcessManager::destroy() {
-  LM_V(("ProcessManager destroy"));
-
-  if (!processManager) {
-    LM_RVE(("attempt to destroy uninitialized process manager"));
-  }
-  delete processManager;
-  processManager = NULL;
-}
-
-ProcessManager *ProcessManager::shared() {
-  if (!processManager) {
-    LM_X(1, ("ProcessManager not initialiazed"));
-  }
-  return processManager;
-}
-
 ProcessManager::ProcessManager(int max_num_procesors) : token_("engine::ProcessManager") {
+  stopped_ = false;
+
   // Defined maximum number of background threads
   num_procesors_ = 0;
   max_num_procesors_ = max_num_procesors;
 }
 
 ProcessManager::~ProcessManager() {
+}
+
+void ProcessManager::Stop() {
+  {
+    au::TokenTaker tt(&token_);
+    items_.Clear();
+  }
+  stopped_ = true;   // Flag to notify all backgroudn process to finish
+
+  // Wait all background workers
+  au::Cronometer cronometer;
+  while (true) {
+    if (num_procesors_ == 0) {
+      return;
+    }
+    usleep(100000);
+    if (cronometer.seconds() > 1) {
+      cronometer.Reset();
+      LM_W(("Waiting for background threads of engine::ProcessManager"));
+    }
+  }
 }
 
 void ProcessManager::notify(Notification *notification) {
@@ -94,14 +79,16 @@ void ProcessManager::Add(au::SharedPointer<ProcessItem> item, size_t listenerId)
   items_.Push(item);
 
   // Check number of background processors
-  while (num_procesors_ < max_num_procesors_) {
-    pthread_t t;
-    au::ThreadManager::shared()->addThread("background_worker"
-                                           , &t
-                                           , 0
-                                           , ProcessManager_run_worker
-                                           , this);
-    num_procesors_++;
+  if (!stopped_) {
+    while (num_procesors_ < max_num_procesors_) {
+      pthread_t t;
+      au::Singleton<au::ThreadManager>::shared()->addThread("background_worker"
+                                                            , &t
+                                                            , 0
+                                                            , ProcessManager_run_worker
+                                                            , this);
+      num_procesors_++;
+    }
   }
 
   // Wake up all background threads if necessary
@@ -148,7 +135,7 @@ void ProcessManager::run_worker() {
     // Check if too many background workers are running
     {
       au::TokenTaker tt(&token_);
-      if (num_procesors_ > max_num_procesors_) {
+      if (stopped_ || (num_procesors_ > max_num_procesors_)) {
         num_procesors_--;
         return;
       }

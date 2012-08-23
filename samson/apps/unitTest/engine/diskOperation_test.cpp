@@ -40,7 +40,7 @@
  * {
  *  init_engine_test();
  *
- *  engine::Buffer* buffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test" , 15 );
+ *  engine::Buffer* buffer = engine::Engine::memory_manager()->createBuffer( "buffer1" , "test" , 15 );
  *  engine::DiskOperation* operation = engine::DiskOperation::newWriteOperation( buffer , "test_data/test_data.txt" , 2 );
  *  buffer->Release();
  *
@@ -55,7 +55,7 @@
  * {
  *  init_engine_test();
  *
- *  engine::Buffer* buffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test",  15 );
+ *  engine::Buffer* buffer = engine::Engine::memory_manager()->createBuffer( "buffer1" , "test",  15 );
  *  engine::DiskOperation* operation = engine::DiskOperation::newAppendOperation( buffer , "test_filename.txt" , 2 );
  *  buffer->Release();
  *
@@ -97,7 +97,7 @@
  *  init_engine_test();
  *
  *  char charBuffer[1024*1024];
- *  engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test",  15 );
+ *  engine::Buffer* engineBuffer = engine::Engine::memory_manager()->createBuffer( "buffer1" , "test",  15 );
  *
  *  engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 6, 2 );
  *  engine::DiskOperation* operation2 = engine::DiskOperation::newWriteOperation( engineBuffer , "test_filename.txt" , 2 );
@@ -120,7 +120,7 @@
  *  init_engine_test();
  *
  *  char charBuffer[1024*1024];
- *  engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" , "test", 15 );
+ *  engine::Buffer* engineBuffer = engine::Engine::memory_manager()->createBuffer( "buffer1" , "test", 15 );
  *
  *  engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 6, 2 );
  *  engine::DiskOperation* operation2 = engine::DiskOperation::newWriteOperation( engineBuffer , "test_filename.txt" , 2 );
@@ -145,7 +145,7 @@
  *  init_engine_test();
  *
  *  char charBuffer[1024*1024];
- *  engine::Buffer* engineBuffer = engine::MemoryManager::shared()->createBuffer( "buffer1" ,"test",  15 );
+ *  engine::Buffer* engineBuffer = engine::Engine::memory_manager()->createBuffer( "buffer1" ,"test",  15 );
  *
  *  engine::DiskOperation* operation1 = engine::DiskOperation::newReadOperation( charBuffer , "test_filename.txt" , 3 , 5, 2 );
  *  engine::DiskOperation* operation2 = engine::DiskOperation::newWriteOperation( engineBuffer , "test_filename.txt" , 2 );

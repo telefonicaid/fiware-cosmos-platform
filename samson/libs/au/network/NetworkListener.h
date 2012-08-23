@@ -50,10 +50,13 @@ public:
   // Accesorts
   int port() const;
 
+  // Return code of the background thread ( only used in test )
+  void *background_thread_return_code();
+
 private:
 
   // Main function to run in background
-  void runNetworkListener();
+  void *runNetworkListener();
 
   SocketConnection *acceptNewNetworkConnection(void);
 
@@ -71,6 +74,10 @@ private:
 
   // Flag indicating if the background thread is running ( to joint at destructor )
   bool background_thread_running_;
+  bool background_thread_finished_;
+
+  // Code returned by bacground thread
+  void *return_code_;
 
   // Background thread function
   friend void *NetworkListener_run(void *p);

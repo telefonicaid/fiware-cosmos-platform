@@ -100,7 +100,7 @@ void DiskConnection::start_connection() {
   // Create the background thread
   thread_running = true;
   pthread_t t;
-  au::ThreadManager::shared()->addThread("DiskConnection", &t, NULL, run_DiskConnection, this);
+  au::Singleton<au::ThreadManager>::shared()->addThread("DiskConnection", &t, NULL, run_DiskConnection, this);
 }
 
 void DiskConnection::stop_connection() {

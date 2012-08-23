@@ -69,6 +69,7 @@ public:
 
   virtual void Destroy() {
     delete instance_;
+    instance_ = NULL;
   }
 
 private:
@@ -78,7 +79,7 @@ private:
 };
 
 // Static members
-template <class C> C * Singleton<C>::instance_;
+template <class C> C * Singleton<C>::instance_ = NULL;
 template <class C> au::Token Singleton<C>::token_("singleton");
 }  // end of au namesapce
 

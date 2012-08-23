@@ -47,12 +47,12 @@ public class ParseCdrMapper extends Mapper<LongWritable, Text, LongWritable,
                 context.getConfiguration());
         this.separator = conf.getDataSeparator();
         this.dateParser = new DateParser(conf.getDataDateFormat());
-        this.startDate = parseOptionalDate(conf.getDataStartDate());
-        this.endDate = parseOptionalDate(conf.getDataEndDate());
+        this.startDate = this.parseOptionalDate(conf.getDataStartDate());
+        this.endDate = this.parseOptionalDate(conf.getDataEndDate());
     }
 
     private BaseProtocol.Date parseOptionalDate(String input) {
-        if (input.trim().isEmpty()) {
+        if (input == null || input.trim().isEmpty()) {
             return null;
         }
         return this.dateParser.parse(input);

@@ -5,9 +5,7 @@
 #include <string>
 #include <vector>
 
-#include <stdio.h>
 #include <sys/ioctl.h>
-
 
 #include "string.h"     // Own definitions
 
@@ -373,11 +371,6 @@ std::string str(double value) {
     return au::str_double(value / 1000000.0, 'M');
   }
 
-
-
-
-
-
 #ifdef __LP64__
   else if (value < 1000000000000) {
     return au::str_double(value / 1000000000.0, 'G');
@@ -387,12 +380,7 @@ std::string str(double value) {
     return au::str_double(value / 1000000000000000.0, 'P');
   }
 
-
-
-
-
-
-#endif
+#endif //__LP64__
   else {
     return "  INF ";
   }
@@ -636,6 +624,142 @@ const char *laststrstr(const char *source, size_t source_length, const char *tar
   return (sp < source) ? NULL : sp;
 }
 
+// Similar to strnstr(), but limits the length of the pattern to be searched
+// and assumes that text string is null terminated
+const char *strnstr_limitpattern(const char *text, const char *pattern, const size_t max_length) {
+  char cpat, ctxt;
+  size_t len;
+
+  // Check for an empty pattern
+  if ((cpat = *pattern++) != '\0') {
+    len = strlen(text);
+    do {
+      // Locate the beginning of a possible match
+      do {
+        if ((len-- < max_length) || (ctxt = *text++) == '\0') {
+          return ((const char *) NULL);
+        }
+      } while (ctxt != cpat);
+    } while (strncmp(text, pattern, max_length - 1) != 0);
+    text--;
+  }
+  return (text);
+}
+
+// match a string against a simple pattern with wildcard characters meaning
+// any sequence of characters
+// Could be done with regexp library, but it is too much powerful (and slow)
+bool MatchPatterns(const char *inputString, const char *pattern, const char wildcard) {
+  const char *p_input;
+  const char *p_pattern;
+  char *p_wildcard;
+  const char *p_match;
+  bool first_wildcard = false;
+
+  // First, lets skip trivial situations
+  if (inputString == NULL) {
+    return false;
+  }
+
+  if (*inputString == '\0') {
+    return false;
+  }
+
+  if (pattern == NULL) {
+    return false;
+  }
+
+  if (*pattern == '\0') {
+    return false;
+  }
+
+  p_input = inputString;
+  p_match = p_input;
+  p_pattern = pattern;
+  if (p_pattern[0] == wildcard) {
+    first_wildcard = true;
+  }
+
+  while ((p_wildcard = strchr((char *) p_pattern, wildcard)) != NULL) {
+    // First locate the next wildcard
+    size_t len_pattern = p_wildcard - p_pattern;
+
+    // and check the current portion of inputString against the fix section in the pattern
+    if (first_wildcard == false) {
+      if (strncmp(p_input, p_pattern, len_pattern) != 0) {
+        return false;
+      }
+      first_wildcard = true;
+    } else
+      if (len_pattern > 0) {
+        if ((p_match = strnstr_limitpattern(p_input, p_pattern, len_pattern)) == NULL) {
+
+          return false;
+        }
+      }
+    p_input = p_match + len_pattern;
+    p_pattern = p_wildcard + 1;
+    if (*p_pattern == '\0') {
+      return true;
+    }
+  }
+
+  // processing the last portion of the pattern
+  // (or all of it, if there was no wildcard)
+  if (first_wildcard == false) {
+    if (strcmp(p_input, p_pattern) != 0) {
+      return false;
+    }
+  } else
+    if (strlen(p_pattern) > 0) {
+      if (((p_match = strstr(p_input, p_pattern)) == NULL) || (*(p_match + strlen(p_pattern))) != '\0') {
+
+        return false;
+      }
+    }
+  return true;
+}
+
+void SplitInWords(char *line, std::vector<char*>& words, char separator) {
+  size_t pos = 0;
+  size_t previous = 0;
+
+  bool finish = false;
+
+  // Clear words vector
+  words.clear();
+
+  while (!finish) {
+
+    if ((line[pos] == separator) || (line[pos] == '\0')) {
+      if ((line[pos] == '\0') || (line[pos] == '\n'))
+        finish = true;
+
+      // Artificial termination of string
+      line[pos] = '\0';
+
+      // Add the found word
+      words.push_back(&line[previous]);
+
+      // Point to the next words
+      // Jumps blank spaces
+      pos++;
+
+      // To avoid valgrind detected error when checking after the end of the buffer
+      //            if (!finish)
+      //            {
+      //                while (line[pos] == ' ')
+      //                {
+      //                    pos++;
+      //                }
+      //            }
+      previous = pos;
+    } else
+      pos++;
+  }
+}
+
+
 int getCommonChars(std::string& txt, std::string& txt2) {
   size_t l = std::min(txt.length(), txt2.length());
 
@@ -716,7 +840,7 @@ bool string_begins_and_ends(std::string& str, std::string prefix, std::string po
 }
 
 std::string substring_without_prefix_and_posfix(std::string& str, std::string prefix, std::string postfix) {
-  return str.substr(prefix.length(),  str.length() - prefix.length() - postfix.length());
+  return str.substr(prefix.length(), str.length() - prefix.length() - postfix.length());
 }
 
 std::string reverse_lines(std::string& txt) {
@@ -739,5 +863,18 @@ std::string reverse_lines(std::string& txt) {
   }
   return output.str();
 }
+
+int HashString(const std::string& str, const int max_num_partitions) {
+  static const size_t InitialFNV = 2166136261U;
+  static const size_t FNVMultiple = 16777619;
+
+  size_t hash = InitialFNV;
+  for (size_t i = 0; i < str.length(); i++) {
+    hash = hash ^ (str[i]);
+    hash = hash * FNVMultiple;
+  }
+  return hash % max_num_partitions;
+}
+
 }
 

@@ -63,6 +63,7 @@ std::string str_double_progress_bar(double p1, double p2, char c1, char c2, char
 std::vector<std::string> simpleTockenize(std::string txt);
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
 std::vector<std::string> split(const std::string &s, char delim);
+void SplitInWords( char *line , std::vector<char*>& words , char separator );
 
 
 // Old functions to be reviews
@@ -106,6 +107,12 @@ std::string lineInConsole(char c);
 const char *laststrstr(const char *source, const char *target);
 const char *laststrstr(const char *source, size_t source_length, const char *target);
 
+// Extract substrings (patterns) from a line
+const char *strnstr_limitpattern(const char *text, const char *pattern, const size_t max_length);
+
+// Check simple regular expressions in string
+bool matchPatterns (const char *inputString, const char *pattern, const char wildcard);
+
 // Get common number of chars
 int getCommonChars(std::string& txt, std::string& txt2);
 
@@ -136,7 +143,12 @@ std::string substring_without_prefix_and_posfix(std::string& str, std::string pr
 
 // Reverse order of lines
 std::string reverse_lines(std::string& txt);
+
+
+// hash function (same as the method in system::String and system::Value
+int HashString(std::string str, int max_num_partitions);
+
 }
 
 
-#endif  // ifndef _H_AU_STRING
+#endif

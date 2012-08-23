@@ -1,3 +1,28 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            file
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            August 2012
+ *
+ * DESCRIPTION
+ *
+ *  File manipulation methods
+ *
+ */
 
 #include <dirent.h>
 #include <sstream>          // std::ostringstream
@@ -5,6 +30,8 @@
 #include <string.h>         // strchr
 #include <string>
 #include <sys/stat.h>   // stat(.)
+#include <unistd.h>         /* rmdir() */
+#include <vector>
 
 #include "au/file.h"        // Own interface
 #include "au/string.h"
@@ -13,11 +40,10 @@ namespace au {
 size_t sizeOfFile(std::string fileName) {
   struct ::stat info;
 
-  if (stat(fileName.c_str(), &info) == 0) {
+    if (stat(fileName.c_str(), &info) == 0)
     return info.st_size;
-  } else {
+    else
     return 0;
-  }
 }
 
 bool isDirectory(std::string fileName) {
@@ -38,9 +64,8 @@ void removeDirectory(std::string fileName, au::ErrorManager & error) {
   if (isRegularFile(fileName)) {
     // Just remove
     int s = remove(fileName.c_str());
-    if (s != 0) {
+      if (s != 0)
       error.set("Not possible to remove file " + fileName);
-    }
     return;
   }
 
@@ -56,12 +81,10 @@ void removeDirectory(std::string fileName, au::ErrorManager & error) {
   if (pdir != NULL) {  // if pdir wasn't initialised correctly
     while ((pent = readdir(pdir))) {    // while there is still something in the directory to list
       if (pent != NULL) {
-        if (strcmp(".", pent->d_name) == 0) {
+          if (strcmp(".", pent->d_name) == 0)
           continue;
-        }
-        if (strcmp("..", pent->d_name) == 0) {
+          if (strcmp("..", pent->d_name) == 0)
           continue;
-        }
         std::ostringstream localFileName;
         localFileName << fileName << "/" << pent->d_name;
 
@@ -74,9 +97,8 @@ void removeDirectory(std::string fileName, au::ErrorManager & error) {
 
   // Remove the directory properly
   int s = rmdir(fileName.c_str());
-  if (s != 0) {
+    if (s != 0)
     error.set(au::str("Not possible to remove directory %s", fileName.c_str()));
-  }
 }
 
 std::string path_remove_last_component(std::string path) {
@@ -85,9 +107,8 @@ std::string path_remove_last_component(std::string path) {
   if (pos == std::string::npos) {
     return "";
   } else {
-    if (pos == 0) {
+      if (pos == 0)
       return "/";
-    }
 
     return path.substr(0, pos);
   }
@@ -102,12 +123,10 @@ std::vector<std::string> getRegularFilesFromDirectory(std::string directory) {
   if (pdir != NULL) {  // if pdir wasn't initialised correctly
     while ((pent = readdir(pdir))) {    // while there is still something in the directory to list
       if (pent != NULL) {
-        if (strcmp(".", pent->d_name) == 0) {
+          if (strcmp(".", pent->d_name) == 0)
           continue;
-        }
-        if (strcmp("..", pent->d_name) == 0) {
+          if (strcmp("..", pent->d_name) == 0)
           continue;
-        }
         std::ostringstream localFileName;
         localFileName << directory << "/" << pent->d_name;
 
@@ -123,47 +142,41 @@ std::vector<std::string> getRegularFilesFromDirectory(std::string directory) {
 }
 
 std::string get_directory_from_path(std::string path) {
-  if (( path == "" ) || ( path == "." ) || ( path == "./" )) {
+    if (( path == "") || ( path == ".") || ( path == "./"))
     return "./";
-  }
 
-  if (path == "/") {
+    if (path == "/")
     return path;
-  }
 
   // Remove the last part of the path
   size_t pos = path.find_last_of('/');
 
   if (path[0] == '/') {
-    if (pos != 0) {
+      if (pos != 0)
       return path.substr(0, pos + 1);
-    } else {
+      else
       return "/";
-    }
   }
 
   if (path[0] == '.') {
-    if (pos == std::string::npos) {
+      if (pos == std::string::npos)
       return "./";
-    } else {
+      else
       return path.substr(0, pos + 1);
-    }
   }
 
-  if (pos == std::string::npos) {
+    if (pos == std::string::npos)
     return "./";
-  } else {
+    else
     return "./" + path.substr(0, pos + 1);
-  }
 }
 
 Status createDirectory(std::string path) {
-  if (mkdir(path.c_str(), 0755) == -1) {
+  if (mkdir(path.c_str(), 0755) == -1)
     if (errno != EEXIST) {
       LM_W(("Error creating directory %s (%s)", path.c_str(), strerror(errno)));
       return Error;
     }
-  }
   return OK;
 }
 

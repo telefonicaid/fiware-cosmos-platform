@@ -1,7 +1,17 @@
 
-/* ****************************************************************************
+/*
+ * Telefónica Digital - Product Development and Innovation
 *
-* FILE            ThreadController
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            ThreadManager
 *
 * AUTHOR          Andreu Urruela
 *
@@ -12,18 +22,18 @@
 * DESCRIPTION
 *
 *  Classes to controll current threads working for this app.
-*
-* COPYRIGTH       Copyright 2011 Andreu Urruela. All rights reserved.
-*
-* ****************************************************************************/
+ */
 
-#ifndef _H_AU_THREAD_CONTROLLER
-#define _H_AU_THREAD_CONTROLLER
+#ifndef SAMSON_LIBS_AU_THREADMANAGER_H_
+#define SAMSON_LIBS_AU_THREADMANAGER_H_
+
+#include <pthread.h>
+#include <unistd.h>
 
 #include <list>         // std::list
 #include <map>          // std::map
-#include <pthread.h>
 #include <set>          // std::set
+#include <string>       //  std::string
 #include <vector>       // std::vector
 
 #include "au/Cronometer.h"
@@ -140,7 +150,7 @@ void *run_Thread(void *p);
 class Thread {
 public:
 
-  Thread(const std::string& name) {
+  explicit Thread(const std::string& name) {
     name_ = name;
     stoping_ = false;
     pthread_running_ = false;
@@ -233,7 +243,7 @@ class RepeateObjectCallThread : public Thread {
 
 public:
 
-  RepeateObjectCallThread(C *object) {
+    explicit RepeateObjectCallThread(C *object) {
     object_ = object;
   }
 
@@ -248,4 +258,4 @@ public:
 };
 }
 
-#endif  // ifndef _H_AU_THREAD_CONTROLLER
+#endif  // SAMSON_LIBS_AU_THREADMANAGER_H_

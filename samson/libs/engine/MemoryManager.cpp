@@ -1,5 +1,15 @@
-/* ****************************************************************************
+/*
+ * Telefónica Digital - Product Development and Innovation
  *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
  * FILE                     MemoryManager.cpp
  *
  * AUTHOR                   Andreu Urruela
@@ -8,6 +18,11 @@
  *
  */
 
+#include <unistd.h>                 // usleep
+
+#include <set>                      // std::set
+#include <sstream>                  // std::stringstream
+#include <string>                   // std::string
 #include "logMsg/logMsg.h"         // LM_*
 #include "logMsg/traceLevels.h"
 
@@ -16,7 +31,6 @@
 
 #include "engine/Buffer.h"         // samson::Buffer
 
-#include <sstream>                 // std::stringstream
 
 #include "engine/DiskManager.h"    // enigne::DiskManager
 #include "engine/Engine.h"         // engine::Engine

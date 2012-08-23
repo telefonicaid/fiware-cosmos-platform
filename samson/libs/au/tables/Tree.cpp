@@ -1,6 +1,32 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
+ * FILE            Tree
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            August 2012
+ *
+ * DESCRIPTION
+ *
+ *  Tree manipulation methods
+ */
+
 #include "Tree.h"    // Own interface
 
 #include <assert.h>
+#include <string>       // std::string
 
 #include "Collection.h"
 #include "Select.h"
@@ -400,7 +426,7 @@ TreeItem *TreeItem::getTreeFromXML(std::string &data) {
   // Parser the xml document into "doc"
   std::istringstream is_xml_document(output.str());
 
-  doc.load(is_xml_document);
+  pugi::xml_parse_result result = doc.load(is_xml_document);
 
   // Create a tree based on the document we have just scanned
   return pugi::treeItemFromDocument(doc);

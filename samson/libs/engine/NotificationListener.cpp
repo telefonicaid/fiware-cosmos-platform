@@ -28,7 +28,7 @@ NotificationListener::~NotificationListener() {
 
 void NotificationListener::notify(Notification *notification) {
   LM_W(("Notification %s not handled since it has not been overwritted method notify",
-        notification->getDescription().c_str()));
+        notification->GetDescription().c_str()));
 }
 
 void NotificationListener::listen(const char *notification_name) {

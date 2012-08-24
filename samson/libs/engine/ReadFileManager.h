@@ -27,15 +27,19 @@ namespace engine {
 class ReadFile;
 
 class ReadFileManager {
-  au::ListMap<std::string, ReadFile> read_files;
-  int max_open_files;
 
 public:
 
   ReadFileManager();
   ~ReadFileManager();
 
-  ReadFile *getReadFile(std::string fileName);
+  ReadFile *GetReadFile( const std::string& file_name );
+
+private:
+  
+  au::ListMap<std::string, ReadFile> read_files_;
+  int max_open_files_;
+
 };
 }
 

@@ -13,8 +13,8 @@ void SamsonWorkerSamples::take_samples() {
   size_t used_memory = engine::Engine::memory_manager()->used_memory();
   size_t max_memory = engine::Engine::memory_manager()->memory();
 
-  size_t disk_read_rate = (size_t) engine::Engine::disk_manager()->get_rate_in();
-  size_t disk_write_rate = (size_t) engine::Engine::disk_manager()->get_rate_out();
+  size_t disk_read_rate = (size_t) engine::Engine::disk_manager()->rate_in();
+  size_t disk_write_rate = (size_t) engine::Engine::disk_manager()->rate_out();
 
   size_t network_read_rate = (size_t)samsonWorker_->network()->get_rate_in();
   size_t network_write_rate = (size_t)samsonWorker_->network()->get_rate_out();

@@ -68,8 +68,7 @@ public:
 
 private:
 
-  // Constructor is private to make sure singleton is used correctly
-  MemoryManager(size_t memory);
+  MemoryManager(size_t memory);  // Constructor is private ( see Engine::InitEngine() )
 
   au::Token token_;                            // Mutex protection
 

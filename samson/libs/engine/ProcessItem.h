@@ -55,33 +55,28 @@ public:
   // Constructor with priority
   ProcessItem(int _priority = 5);
   virtual ~ProcessItem();
-
-  // Status management
-  std::string getStatus();
-
+  
   // What to do when processor is available
   virtual void run() = 0;
 
-  // Get description of this process item
-  std::string getDescription();
-
-  // Check status of this process item
-  bool running();
-
   // Add additional listsners
-  void addListenerId(size_t _listenerId);
+  void AddListener(size_t _listenerId);
+  
+  // Accessorts
+  std::set<size_t> listeners() const;
+  std::string process_item_description() const;
+  std::string process_item_current_task_description() const;
+  std::string process_item_status() const;  // Status management
+  bool running()const;  // Check status of this process item
+  double progress()const; // Get progress of this task
 
+  //Debug string
+  std::string str() const;
+
+  
   // Methods to indicate that we are starting running this process
   void StartCronometer();
   void StopCronometer();
-
-  // Access listsners
-  std::set<size_t> listeners();
-
-  std::string process_item_description();
-  std::string process_item_current_task_description();
-
-  double progress();
 
   au::Environment& environment();
   au::ErrorManager& error();

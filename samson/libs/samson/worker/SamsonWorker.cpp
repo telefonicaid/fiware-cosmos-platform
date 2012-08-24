@@ -574,8 +574,8 @@ void SamsonWorker::notify(engine::Notification *notification) {
     size_t used_memory = engine::Engine::memory_manager()->used_memory();
     size_t max_memory = engine::Engine::memory_manager()->memory();
 
-    size_t disk_read_rate = (size_t) engine::Engine::disk_manager()->get_rate_in();
-    size_t disk_write_rate = (size_t) engine::Engine::disk_manager()->get_rate_out();
+    size_t disk_read_rate = (size_t) engine::Engine::disk_manager()->rate_in();
+    size_t disk_write_rate = (size_t) engine::Engine::disk_manager()->rate_out();
 
     size_t network_read_rate = 0;
     size_t network_write_rate = 0;
@@ -599,7 +599,7 @@ void SamsonWorker::notify(engine::Notification *notification) {
     std::string type    = notification->environment().Get("type", "message");
     network_->SendAlertToAllDelilahs(type, context, message);
   } else {
-    LM_W(("SamsonWorker received an unexpected notification %s. Ignoring...", notification->getDescription().c_str()));
+    LM_W(("SamsonWorker received an unexpected notification %s. Ignoring...", notification->GetDescription().c_str()));
   }
 }
 
@@ -711,25 +711,25 @@ gpb::Collection *SamsonWorker::getWorkerCollection(const Visualization& visualiz
   } else if (visualization.get_flag("disk")) {
     // Disk activiry
 
-    ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->get_rate_in(), "f=uint64,sum");
-    ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->get_rate_out(), "f=uint64,sum");
+    ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->rate_in(), "f=uint64,sum");
+    ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->rate_out(), "f=uint64,sum");
 
-    double op_in = engine::Engine::disk_manager()->get_rate_operations_in();
-    double op_out = engine::Engine::disk_manager()->get_rate_operations_out();
+    double op_in = engine::Engine::disk_manager()->rate_operations_in();
+    double op_out = engine::Engine::disk_manager()->rate_operations_out();
 
     ::samson::add(record, "Disk in Ops/s", op_in, "f=double , sum");
     ::samson::add(record, "Disk out Ops/s", op_out, "f=double,sum");
 
 
-    double on_time = engine::Engine::disk_manager()->on_off_monitor.on_time();
-    double off_time = engine::Engine::disk_manager()->on_off_monitor.off_time();
+    double on_time = engine::Engine::disk_manager()->on_time();
+    double off_time = engine::Engine::disk_manager()->off_time();
     ::samson::add(record, "On time", on_time, "f=double,differet");
     ::samson::add(record, "Off time", off_time, "f=double,differet");
 
     ::samson::add(record, "BM writing",  stream::BlockManager::shared()->get_scheduled_write_size(), "f=uint64,sum");
     ::samson::add(record, "BM reading",  stream::BlockManager::shared()->get_scheduled_read_size(), "f=uint64,sum");
 
-    double usage =  engine::Engine::disk_manager()->get_on_off_activity();
+    double usage =  engine::Engine::disk_manager()->on_off_activity();
     ::samson::add(record, "Disk usage", au::str_percentage(usage), "differet");
   } else {
     // Add ready flag
@@ -743,10 +743,10 @@ gpb::Collection *SamsonWorker::getWorkerCollection(const Visualization& visualiz
     ::samson::add(record, "Cores used", engine::Engine::process_manager()->num_used_procesors(), "f=uint64,sum");
     ::samson::add(record, "Cores total", engine::Engine::process_manager()->max_num_procesors(), "f=uint64,sum");
 
-    ::samson::add(record, "#Disk ops", engine::Engine::disk_manager()->getNumOperations(), "f=uint64,sum");
+    ::samson::add(record, "#Disk ops", engine::Engine::disk_manager()->num_disk_operations(), "f=uint64,sum");
 
-    ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->get_rate_in(), "f=uint64,sum");
-    ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->get_rate_out(), "f=uint64,sum");
+    ::samson::add(record, "Disk in B/s", engine::Engine::disk_manager()->rate_in(), "f=uint64,sum");
+    ::samson::add(record, "Disk out B/s", engine::Engine::disk_manager()->rate_out(), "f=uint64,sum");
 
     ::samson::add(record, "Net in B/s", network_->get_rate_in(), "f=uint64,sum");
     ::samson::add(record, "Net out B/s", network_->get_rate_out(), "f=uint64,sum");

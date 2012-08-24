@@ -65,7 +65,7 @@ void ProcessManager::Stop() {
 
 void ProcessManager::notify(Notification *notification) {
   LM_X(1,
-       ("Wrong notification at ProcessManager [Listener %lu] %s", engine_id(), notification->getDescription().c_str()));
+       ("Wrong notification at ProcessManager [Listener %lu] %s", engine_id(), notification->GetDescription().c_str()));
 }
 
 void ProcessManager::Add(au::SharedPointer<ProcessItem> item, size_t listenerId) {
@@ -73,7 +73,7 @@ void ProcessManager::Add(au::SharedPointer<ProcessItem> item, size_t listenerId)
   au::TokenTaker tt(&token_);
 
   // We make sure items always come at least one listener id
-  item->addListenerId(listenerId);
+  item->AddListener(listenerId);
 
   // Insert in the list of items
   items_.Push(item);

@@ -35,11 +35,44 @@
 #include "au/Cronometer.h"
 #include "au/string.h"                  // au::Format
 
-
-
 namespace engine {
 class EngineElement {
   
+public:
+
+  explicit EngineElement(std::string name );  // Constructor for single task or extra tasks
+  EngineElement(std::string name, int seconds);    // Constructor for repeated task
+  virtual ~EngineElement() {};  // Virtual destructor necessary to destory children-classes correctly
+
+  virtual void run() = 0; // Run method to execute
+
+  // Set as an extra element ( to be executed when nothing else has to be executed )
+  void SetAsExtra();
+  
+  // Reschedule action once executed ( for repeated )
+  void Reschedule();
+
+  // Check type of element
+  bool IsRepeated()const;
+  bool IsExtra()const;
+  bool IsNormal()const;
+
+  // Recover name
+  std::string name()const;
+  double period()const;
+
+  // Accesorts
+  std::string description()const;
+  void set_description( const std::string& description );
+  std::string short_description()const;
+  void set_short_description( const std::string& description );
+  
+  // Debug string
+  std::string str();
+
+  // Get time to be executed ( in repeated task )
+  double GetTimeToTrigger();
+  double GetWaitingTime();
 private:
   
   typedef enum {
@@ -47,84 +80,21 @@ private:
     repeated,      // Repeated periodically
     extra,         // Executed when nothing else is necessary to be executed before
   } Type;
-
-
-  // Name of the element ( to do some statistics over it )
-  std::string name_;
-
-  // Type of element
-  Type type;
+  
+  std::string name_;  // Name of the element ( to do some statistics over it )
+  Type type_;      // Type of element
 
   // Fields in repeated type
   // ------------------------------------------------
-  int counter;                                  // Number of times this element has been executed ( only in repeated )
-  int period;                                   // Period of the execution
+  int counter_;                                  // Number of times this element has been executed ( only in repeated )
+  int period_;                                   // Period of the execution
+  
+  au::Cronometer cronometer_;                    // Cronometer since creation or last execution
+  
+  std::string description_;                      // String for easy debugging
+  std::string short_description_;                 // Short description
 
-  au::Cronometer cronometer;                    // Cronometer since creation or last execution
-
-protected:
-
-  std::string description;                      // String for easy debugging
-  std::string shortDescription;                 // Short description
-
-public:
-
-  virtual void run() = 0;                       // Run method to execute
-
-  // Constructor for inmediate action or repeated actions
-  explicit EngineElement(std::string name);
-  EngineElement(std::string name, int seconds);
-
-
-  // Set as an extra element ( to be executed when nothing else has to be executed )
-  void set_as_extra() {
-    type = extra;
-  }
-
-  // Virtual destructor necessary to destory children-classes correctly
-  virtual ~EngineElement() {
-  };
-
-  // Reschedule action once executed ( for repeated )
-  void Reschedule();
-
-  // Check type of element
-  bool isRepeated();
-  bool isExtra();
-  bool isNormal();
-
-  // Recover name
-  std::string getName();
-
-  // Get a description string for debuggin
-  std::string getDescription();
-  std::string str();
-
-  // Get time to be executed ( in repeated task )
-  double getTimeToTrigger();
-  double getWaitingTime();
-  double getPeriod();
-
-  // get xml information
-  void getInfo(std::ostringstream& output);
 };
 
-// Class used only to test the automatic cancelation works
-
-class EngineElementSleepTest : public EngineElement {
-public:
-
-  EngineElementSleepTest() : EngineElement("sleep", 10) {
-    description = au::str("Sleep element just to sleep %d seconds", 10);
-    shortDescription = description;
-  }
-
-  virtual void run() {
-    LM_M(("Running EngineElementSleepTest for 60 seconds..."));
-    sleep(60);          // Test the program exit
-    LM_M(("End of Running EngineElementSleepTest for 60 seconds..."));
-  }
-};
 }
-
 #endif  // SAMSON_LIBS_ENGINE_ENGINEELEMENT_H_

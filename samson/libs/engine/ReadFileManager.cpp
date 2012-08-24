@@ -7,43 +7,38 @@
 namespace engine {
 ReadFileManager::ReadFileManager() {
   // Default number of open files
-  max_open_files = 100;
+  max_open_files_ = 100;
 }
 
 ReadFileManager::~ReadFileManager() {
-  read_files.clearListMap();
+  read_files_.clearListMap();
 }
 
-ReadFile *ReadFileManager::getReadFile(std::string fileName) {
-  ReadFile *f = read_files.extractFromMap(fileName);
+ReadFile *ReadFileManager::GetReadFile(const std::string& file_name) {
+  // Recover ReadFile for this filename
+  ReadFile *f = read_files_.extractFromMap( file_name );
 
   // Remove non-valid ReadFiles
-  if (f && !f->isValid()) {
+  if (f && !f->IsValid()) {
     delete f;
     f = NULL;
   }
 
   if (!f) {
-    f = new ReadFile(fileName);  // Insert at front ( remove the last used at the  back )
+    f = new ReadFile(file_name);
   }
-  read_files.insertAtFront(fileName, f);
+  
+  // Insert at front ( make sure most recent are at front )
+  read_files_.insertAtFront(file_name, f);
 
   // Remove old File descriptors if necessary
-  while ((int)read_files.size() > max_open_files) {
-    ReadFile *rf = read_files.extractFromBack();
-
-    LM_T(LmtIsolated,
-         (
-           "For file:'%s'(%d), Maximum number of opened files reached: read_files.size()(%d) > max_open_files:(%d), closing rf:%d",
-           fileName.c_str(), fileno(f->file), read_files.size(), max_open_files, fileno(rf->file)));
-
+  while ((int)read_files_.size() > max_open_files_ )
+  {
+    ReadFile *rf = read_files_.extractFromBack();
+    
     if (rf == f) {
-      LM_X(1,
-           ("Internal error closing extra descriptors when trying to read '%s': rf(%d) == f(%d)", fileName.c_str(),
-            fileno(rf->file),
-            fileno(f->file)));
+      LM_X(1,("Internal error"));
     }
-    rf->close();
     delete rf;
   }
 

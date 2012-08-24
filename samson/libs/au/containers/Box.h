@@ -62,7 +62,7 @@ public:
     return  ( items_.find(v) != items_.end());
   }
 
-  size_t size() {
+  size_t size() const {
     return items_.size();
   }
 

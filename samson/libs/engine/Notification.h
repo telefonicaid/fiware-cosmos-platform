@@ -61,8 +61,8 @@ public:
   const std::set<size_t>& targets();
 
   // Get a string for debug
-  std::string getDescription();
-  std::string getShortDescription();
+  std::string GetDescription();
+  std::string GetShortDescription();
 
 private:
 

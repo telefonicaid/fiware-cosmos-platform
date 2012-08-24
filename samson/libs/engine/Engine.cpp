@@ -119,13 +119,13 @@ void Engine::Stop() {
 }
 
 void Engine::RunElement(EngineElement *running_element) {
-  activity_monitor_.StartActivity(running_element->getName());
+  activity_monitor_.StartActivity(running_element->name());
 
   // Execute the item selected as running_element
   LM_T(LmtEngineTime, ("[START] Engine:  executing %s", running_element->str().c_str()));
 
   // Print traces for debugging strange situations
-  int waiting_time = running_element->getWaitingTime();
+  int waiting_time = running_element->GetWaitingTime();
   if (waiting_time > 10) {
     LM_W(("Engine is running an element that has been waiting %d seconds", waiting_time ));
     LM_W(("Engine element to execute now: %s", running_element->str().c_str()));
@@ -279,7 +279,7 @@ void Engine::notify_extra(Notification *notification) {
   // Push a notification element with the notification
   NotificationElement *notification_element = new NotificationElement(notification);
 
-  notification_element->set_as_extra();
+  notification_element->SetAsExtra();
   Add(notification_element);
 }
 

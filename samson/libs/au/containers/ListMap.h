@@ -51,7 +51,7 @@ public:
 
   // Insert elements
 
-  V *insertAtFront(K& key, V *value) {
+  V *insertAtFront(const K& key, V *value) {
     V *tmp =  extractFromMap(key);
 
     map.insert(std::pair<K, V *>(key, value));
@@ -62,7 +62,7 @@ public:
     return tmp;
   }
 
-  V *insertAtBack(K& key, V *value) {
+  V *insertAtBack(const K& key, V *value) {
     V *tmp =  extractFromMap(key);
 
     map.insert(std::pair<K, V *>(key, value));
@@ -196,7 +196,7 @@ public:
    * Return if it really existed
    */
 
-  V *extractFromMap(K& key) {
+  V *extractFromMap(const K& key) {
     typename std::map<K, V * >::iterator iter = map.find(key);
 
     if (iter == map.end()) {

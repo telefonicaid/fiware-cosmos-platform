@@ -54,7 +54,7 @@ TEST(engine_DiskManager, addTest) {
                                                                                                  0));
       engine::Engine::disk_manager()->Add(operation);
 
-      EXPECT_EQ(engine::Engine::disk_manager()->getNumOperations(), 1) << "Wrong number of disk operations";
+      EXPECT_EQ(engine::Engine::disk_manager()->num_disk_operations(), 1) << "Wrong number of disk operations";
     }
 
     void notify(engine::Notification *notification) {

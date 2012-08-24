@@ -6,99 +6,103 @@
 
 namespace engine {
 EngineElement::EngineElement(std::string name) {
-  // Keep tha name of this element
-  name_ = name;
-
-  // Flag to indicate that this element will be executed just once
-  type = normal;
-
-  description = "Engine element to be executed once";
-  shortDescription = "Engine element to be executed once";
+  name_ = name;    // Keep tha name of this element
+  type_ = normal;  // Flag to indicate that this element will be executed just once
+  description_ = "Engine element to be executed once";
+  short_description_ = "Engine element to be executed once";
 }
 
 EngineElement::EngineElement(std::string name, int seconds) {
-  // Keep tha name of this element
-  name_ = name;
-
-  type = repeated;
-  period = seconds;
-  counter = 0;
+  name_ = name;  // Keep tha name of this element
+  type_ = repeated;
+  period_ = seconds;
+  counter_ = 0;
 
   std::ostringstream txt;
   txt << "Engine element repeated every " << seconds  << " seconds";
-  description = txt.str();
-  shortDescription = txt.str();
+  description_ = txt.str();
+  short_description_ = txt.str();
 }
 
 // Reschedule action once executed
 
-void EngineElement::Reschedule() {
-  // Reset cronometer
-  cronometer.Reset();
+  void EngineElement::SetAsExtra() {
+    type_ = extra;
+  }
 
+void EngineElement::Reschedule() {
+  
+  // Reset cronometer
+  cronometer_.Reset();
   // Increse the counter to get an idea of the number of times a repeated task is executed
-  counter++;
+  counter_++;
 }
 
-double EngineElement::getTimeToTrigger() {
+double EngineElement::GetTimeToTrigger() {
   // Time for the next execution
-  if (type == repeated) {
-    double t = cronometer.seconds();
-    LM_T(LmtEngineTime, ("getTimeToTrigger: Period %d Cronometer: %f", period, t ));
-    return period - t;
+  if (type_ == repeated) {
+    double t = cronometer_.seconds();
+    LM_T(LmtEngineTime, ("getTimeToTrigger: Period %d Cronometer: %f", period_, t ));
+    return period_ - t;
   }
   return 0;
 }
 
-double EngineElement::getPeriod() {
-  return period;
+double EngineElement::period()const {
+  return period_;
 }
 
-double EngineElement::getWaitingTime() {
+double EngineElement::GetWaitingTime() {
   // Time for the next execution
-  return cronometer.seconds();
+  return cronometer_.seconds();
 }
 
-std::string EngineElement::getDescription() {
-  return description;
+std::string EngineElement::description()const {
+  return description_;
 }
 
+  std::string EngineElement::short_description()const {
+    return short_description_;
+  }
+
+  void EngineElement::set_description( const std::string& description )
+  {
+    description_ = description;
+  }
+  void EngineElement::set_short_description( const std::string& short_description )
+  {
+    short_description_ = short_description;
+  }
+  
 std::string EngineElement::str() {
-  if (type == repeated) {
+  if (type_ == repeated) {
     return au::str(
              "%s [ Engine element to be executed in %02.2f seconds ( repeat every %d secs , repeated %d times )] "
-             , description.c_str()
-             , getTimeToTrigger()
-             , period
-             , counter
+             , description_.c_str()
+             , GetTimeToTrigger()
+             , period_
+             , counter_
              );
-  } else if (type == extra) {
-    return au::str("%s [ Engine element EXTRA ]", description.c_str());
+  } else if (type_ == extra) {
+    return au::str("%s [ Engine element EXTRA ]", description_.c_str());
   } else {
-    return au::str("%s [ Engine element ]", description.c_str());
+    return au::str("%s [ Engine element ]", description_.c_str());
   }
 }
 
-// get xml information
-void EngineElement::getInfo(std::ostringstream& output) {
-  au::xml_open(output, "engine_element");
-  au::xml_simple(output, "description", str());
-  au::xml_close(output, "engine_element");
-}
-
-std::string EngineElement::getName() {
+std::string EngineElement::name() const {
   return name_;
 }
 
-bool EngineElement::isRepeated() {
-  return (type == repeated);
+bool EngineElement::IsRepeated() const {
+  return (type_ == repeated);
 }
 
-bool EngineElement::isExtra() {
-  return (type == extra);
+bool EngineElement::IsExtra()const {
+  return (type_ == extra);
 }
 
-bool EngineElement::isNormal() {
-  return (type == normal);
+bool EngineElement::IsNormal() const{
+  return (type_ == normal);
 }
 }

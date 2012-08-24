@@ -24,9 +24,9 @@ namespace engine {
     // Insert an element in the rigth queue
     LM_T(LmtEngine, ("Adding Engineelement: %s", element->str().c_str()));
     
-    if (element->isRepeated()) {
+    if (element->IsRepeated()) {
       repeated_elements_.insert( FindPositionForRepeatedEngineElement(element),  element);
-    } else if (element->isExtra()) {
+    } else if (element->IsExtra()) {
       extra_elements_.push_back(element);
     } else {
       normal_elements_.push_back(element);
@@ -57,7 +57,7 @@ namespace engine {
       return NULL;
     }
     
-    double t_sleep = repeated_elements_.front()->getTimeToTrigger();
+    double t_sleep = repeated_elements_.front()->GetTimeToTrigger();
     
     // If ready to be executed....
     if (t_sleep < 0.01) {
@@ -90,7 +90,7 @@ namespace engine {
       return 0;
     }
     
-    double t_sleep = repeated_elements_.front()->getTimeToTrigger();
+    double t_sleep = repeated_elements_.front()->GetTimeToTrigger();
     
     // If ready to be executed....
     if (t_sleep < 0) {
@@ -125,10 +125,10 @@ namespace engine {
       
       au::StringVector values;
       values.push_back("Repeat");
-      values.push_back(au::str("%.12f", element->getWaitingTime()));
-      values.push_back(au::str("%.12f", element->getPeriod()));
+      values.push_back(au::str("%.12f", element->GetWaitingTime()));
+      values.push_back(au::str("%.12f", element->period()));
       // values.push_back(element->getName());
-      values.push_back(element->getDescription());
+      values.push_back(element->description());
       table.addRow(values);
     }
     
@@ -137,10 +137,10 @@ namespace engine {
       
       au::StringVector values;
       values.push_back("Normal");
-      values.push_back(au::str("%.12f", element->getWaitingTime()));
+      values.push_back(au::str("%.12f", element->GetWaitingTime()));
       values.push_back("X");
       // values.push_back(element->getName());
-      values.push_back(element->getDescription());
+      values.push_back(element->description());
       table.addRow(values);
     }
     
@@ -149,10 +149,10 @@ namespace engine {
       
       au::StringVector values;
       values.push_back("Extra");
-      values.push_back(au::str("%.12f", element->getWaitingTime()));
+      values.push_back(au::str("%.12f", element->GetWaitingTime()));
       values.push_back("X");
       // values.push_back(element->getName());
-      values.push_back(element->getDescription());
+      values.push_back(element->description());
       table.addRow(values);
     }
     
@@ -182,7 +182,7 @@ namespace engine {
   }
   std::list<EngineElement *>::iterator EngineElementCollection::FindPositionForRepeatedEngineElement(EngineElement *e) {
     for (std::list<EngineElement *>::iterator i = repeated_elements_.begin(); i != repeated_elements_.end(); i++) {
-      if ((*i)->getTimeToTrigger() > e->getTimeToTrigger()) {
+      if ((*i)->GetTimeToTrigger() > e->GetTimeToTrigger()) {
         return i;
       }
     }
@@ -209,6 +209,6 @@ namespace engine {
     }
     
     EngineElement *last_element =  normal_elements_.back();
-    return last_element->getWaitingTime();
+    return last_element->GetWaitingTime();
   }
 }

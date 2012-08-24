@@ -20,20 +20,20 @@
 TEST(engine_ReadFile, openTest) {
   engine::ReadFile file1("badfile");
 
-  EXPECT_TRUE(file1.isValid() == false);
+  EXPECT_TRUE(file1.IsValid() == false);
 
   engine::ReadFile file2("test_data/testdata.txt");
-  EXPECT_TRUE(file2.isValid());
+  EXPECT_TRUE(file2.IsValid());
 }
 
 // Test int read( char * read_buffer , size_t size );
 TEST(readfileTest, readTest) {
   engine::ReadFile file("test_data/testdata.txt");
 
-  ASSERT_TRUE(file.isValid());
-  if (file.isValid()) {
+  ASSERT_TRUE(file.IsValid());
+  if (file.IsValid()) {
     char data[10];
-    file.read(data, 5);
+    file.Read(data, 5);
     data[5] = '\0';
     EXPECT_EQ(strcmp(data, "01234"), 0);
   }
@@ -43,17 +43,17 @@ TEST(readfileTest, readTest) {
 TEST(engine_ReadFile, seekTest) {
   engine::ReadFile file("test_data/testdata.txt");
 
-  ASSERT_TRUE(file.isValid());
-  if (file.isValid()) {
+  ASSERT_TRUE(file.IsValid());
+  if (file.IsValid()) {
     char data[10];
-    file.seek(2);
-    file.read(data, 5);
+    file.Seek(2);
+    file.Read(data, 5);
     data[5] = '\0';
     EXPECT_EQ(strcmp(data, "23456"), 0);
   }
 
   engine::ReadFile fileBad("badfile");
-  EXPECT_EQ(fileBad.seek(2), 1) << "Trying to seek a bad file should return 1";
+  EXPECT_EQ(fileBad.Seek(2), 1) << "Trying to seek a bad file should return 1";
 }
 
 // Test bool isValid();
@@ -61,14 +61,14 @@ TEST(engine_ReadFile, seekTest) {
 TEST(engine_ReadFile, closeTest) {
   engine::ReadFile file1("badfile");
 
-  EXPECT_TRUE(file1.isValid() == false);
+  EXPECT_TRUE(file1.IsValid() == false);
 
   engine::ReadFile file2("test_data/testdata.txt");
-  ASSERT_TRUE(file2.isValid());
+  ASSERT_TRUE(file2.IsValid());
 
-  if (file2.isValid()) {
-    file2.close();
-    EXPECT_TRUE(file2.isValid() == false);
+  if (file2.IsValid()) {
+    file2.Close();
+    EXPECT_FALSE(file2.IsValid());
   }
 }
 

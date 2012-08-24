@@ -4,33 +4,31 @@
 #include "logMsg/logMsg.h"         // LM_M ...
 
 namespace engine {
-ReadFile::ReadFile(std::string _fileName) {
-  fileName = _fileName;
-  file = fopen(fileName.c_str(), "r");
-  offset = 0;
+ReadFile::ReadFile(const std::string& file_name) {
+  file_name_ = file_name;
+  file_ = fopen(file_name_.c_str(), "r");
+  offset_ = 0;
 }
 
-int ReadFile::seek(size_t _offset) {
-  if (!file) {
+  ReadFile::~ReadFile()
+  {
+    Close();
+  }
+
+int ReadFile::Seek(size_t offset) {
+  if (!file_) {
     return 1;
   }
 
-  if (offset == _offset) {
+  if (offset_ == offset) {
     return 0;       // Correct... just do not move
   }
-#if 0
-  // Get a warning to be aware of this seeks if it is too large
-  if (llabs(_offset - offset) > 100000) {
-    LM_W(("Seeking file %s from %lu to %lu", fileName.c_str(), offset, _offset));
-  }
-
-#endif
 
   // Set the current offset
-  offset = _offset;
+  offset_ = offset;
 
-  if (fseek(file, offset, SEEK_SET) != 0) {
-    close();
+  if (fseek(file_, offset, SEEK_SET) != 0) {
+    Close();
     return 3;
   }
 
@@ -38,28 +36,38 @@ int ReadFile::seek(size_t _offset) {
   return 0;
 }
 
-int ReadFile::read(char *read_buffer, size_t size) {
+int ReadFile::Read(char *read_buffer, size_t size) {
   if (size == 0) {
     return 0;
   }
 
-  if (fread(read_buffer, size, 1, file) == 1) {
-    offset += size;     // Move the offser according to the read bytes
+  if (fread(read_buffer, size, 1, file_) == 1) {
+    offset_ += size;     // Move the offser according to the read bytes
     return 0;
   } else {
     return 1;       // Error at reading
   }
 }
 
-bool ReadFile::isValid() {
-  return (file != NULL);
+bool ReadFile::IsValid() const {
+  return (file_ != NULL);
 }
 
-void ReadFile::close() {
-  if (file) {
-    fclose(file);
-    file = NULL;
-    offset = 0;
+void ReadFile::Close() {
+  if (file_) {
+    fclose(file_);
+    file_ = NULL;
+    offset_ = 0;
   }
 }
+  
+  std::string ReadFile::file_name() const
+  {
+    return file_name_;
+  }
+  size_t ReadFile::offset() const
+  {
+    return offset_;
+  }
+
 }

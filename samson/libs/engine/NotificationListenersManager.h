@@ -76,6 +76,9 @@ public:
   // Send a notification
   void Send(Notification *notification);
 
+  // Recover ids for a particular channel
+  std::set<size_t> GetEndgineIdsForChannel(const char *name);
+
 private:
 
   // Get the collections of ids for a particular channel
@@ -84,8 +87,6 @@ private:
   // Internal funciton to send a notification to a particular target-objetc ( if exist )
   void Send(Notification *notification, size_t target);
 
-  // Recover ids for a particular channel
-  std::set<size_t> GetEndgineIdsForChannel(const char *name);
 
   // Internal variable to create new objects
   size_t engine_id_;

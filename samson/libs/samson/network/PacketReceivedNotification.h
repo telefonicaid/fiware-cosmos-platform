@@ -35,8 +35,8 @@ public:
     std::ostringstream txt;
     txt << "PacketReceivedNotification: ";
     txt << " Packet: " << packet_->str() << "";
-    description = txt.str();
-    shortDescription = "Packet";
+    set_description( txt.str() );
+    set_short_description( "Packet" );
   }
 
   void run() {

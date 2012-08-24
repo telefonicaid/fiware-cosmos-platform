@@ -44,7 +44,7 @@ SET (SOURCES
 	lib/engine/BufferTest.cpp
     lib/engine/DiskOperationTest.cpp        
 	lib/engine/MemoryManagerTest.cpp        
-	lib/engine/ProcessItem.cpp              
+	lib/engine/ProcessItemTest.cpp              
 	lib/engine/ReadFileTest.cpp
 	lib/engine/DiskManagerTest.cpp          
 	lib/engine/EngineTest.cpp               

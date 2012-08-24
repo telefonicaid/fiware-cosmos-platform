@@ -200,53 +200,24 @@ void DiskOperation::run() {
     LM_T(LmtDisk, ("DiskManager: Opening file %s to read", fileName.c_str()));
 
     // Get the Read file from the Manager
-    ReadFile *rf = diskManager->fileManager.getReadFile(fileName);
+    ReadFile *rf = diskManager->fileManager_.GetReadFile(fileName);
 
-    if (!rf->isValid()) {
+    if (!rf->IsValid()) {
       LM_E(("Internal error: Not valid read file %s", fileName.c_str()));
       setError("Internal error: Not valid read file");
     } else {
-      if (rf->seek(offset)) {
+      if (rf->Seek(offset)) {
         LM_E(("Error while seeking data from file %s", fileName.c_str()));
         setError(au::str("Error while seeking data from file %s", fileName.c_str()));
       }
 
 
-      if (rf->read(read_buffer, size)) {
+      if (rf->Read(read_buffer, size)) {
         LM_E(("Error while reading data from file %s", fileName.c_str()));
         setError(au::str("Error while reading data from file %s", fileName.c_str()));
       }
     }
 
-    // When to close rf ?
-    rf->close();
-
-#if 0
-    LM_T(LmtDisk, ("DiskManager: Opening file %s to read", fileName.c_str()));
-
-    FILE *file = fopen(fileName.c_str(), "r");
-    if (!file) {
-      setError("Error opening file");
-    } else {
-      if (fseek(file, offset, SEEK_SET) != 0) {
-        setError("Error in fseek operation");
-      } else {
-        if (size > 0) {
-          if (fread(read_buffer, size, 1, file) == 1) {
-            gettimeofday(&stop, NULL);
-            LM_TODO(("Fix statistics using Engine"));
-            operation_time = DiskStatistics::timevaldiff(&start, &stop);
-          } else {
-            setError("Error while reading data from file");
-          }
-        } else {
-          operation_time = 0;
-        }
-      }
-
-      fclose(file);
-    }
-#endif  // if 0
   }
 
   if (type == DiskOperation::remove) {

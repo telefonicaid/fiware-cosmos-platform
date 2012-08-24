@@ -47,17 +47,16 @@ class Notification;
 
 
 class DiskManager {
-  DiskManager(int max_num_disk_operations);
-
+  
 public:
 
   ~DiskManager();
 
-  void Add(const au::SharedPointer< ::engine::DiskOperation>& operation);                               // Add a disk operation to be executed in the background
-  void Cancel(const au::SharedPointer< ::engine::DiskOperation>& operation);                            // Cancel a disk operation already included
-
-  // Setup the maimum number of paralel operations to be executed
-  void setNumOperations(int _num_disk_operations);
+  // Add a disk operation to be executed in the background
+  void Add(const au::SharedPointer< ::engine::DiskOperation>& operation);
+  
+  // Cancel a disk operation already included
+  void Cancel(const au::SharedPointer< ::engine::DiskOperation>& operation);
 
   // Main function for the background worker
   // It is public only to be called form the thread-creation function
@@ -65,50 +64,54 @@ public:
   void run_worker();
 
   // Get information
-  size_t get_rate_in();
-  size_t get_rate_out();
-  double get_rate_operations_in();
-  double get_rate_operations_out();
-  double get_on_off_activity();
-  int getNumOperations();
-  int max_num_disk_operations();
-
+  size_t rate_in() const;
+  size_t rate_out() const;
+  double rate_operations_in() const;
+  double rate_operations_out() const;
+  double on_off_activity() const;
+  double on_time() const;
+  double off_time() const;
+  int num_disk_operations() const;
+  int max_num_disk_operations() const;
+  void set_max_num_disk_operations( int _num_disk_operations);  // Setup the maimum number of paralel operations to be executed
+  int num_disk_manager_workers() const; // Get the number of workers running on the background
 
 private:
+
+  // Private constructor ( see engine::Engine::InitEngine() )
+  DiskManager(int max_num_disk_operations);
 
   // Stop background threads
   void Stop();
 
   // Notification that a disk operation has finished
-  void finishDiskOperation(const au::SharedPointer< ::engine::DiskOperation >& operation);
+  void FinishDiskOperation(const au::SharedPointer< ::engine::DiskOperation >& operation);
 
   // Auxiliar function to get the next operation ( NULL if no more disk operations )
   au::SharedPointer< ::engine::DiskOperation > getNextDiskOperation();
 
-  int num_disk_manager_workers();
-  void createThreads();
-
-  // File manager ( containing all the open files )
-  ReadFileManager fileManager;
+  // Create thresds
+  void CreateThreads();
 
   // Disk Operations
-  au::Token token;
+  mutable au::Token token_;
+  
+  // File manager ( containing all the open files for read operations )
+  ReadFileManager fileManager_;
 
-  bool quitting;                                  // Flag to indicate background processes to quit
+  bool quitting_;                                  // Flag to indicate background processes to quit
   int max_num_disk_operations_;                   // Number of paralell disk operations allowed
   int num_disk_manager_workers_;                  // Number of parallel workers for Disk operations
 
-  au::Queue<DiskOperation> pending_operations;    // Queue with pending operations
-  au::Box<DiskOperation>   running_operations;    // Box of running operations
+  au::Queue<DiskOperation> pending_operations_;    // Queue with pending operations
+  au::Box<DiskOperation>   running_operations_;    // Box of running operations
 
   // Information about rate and activity
-  au::rate::Rate rate_in;
-  au::rate::Rate rate_out;
+  au::rate::Rate rate_in_;
+  au::rate::Rate rate_out_;
 
-public:
-  // To be fixed to private
-
-  au::OnOffMonitor on_off_monitor;
+  // Monitor to count how much time we are on
+  au::OnOffMonitor on_off_monitor_;
 
   friend class DiskOperation;
   friend class Engine;

@@ -24,7 +24,7 @@ ProcessItem::ProcessItem(int _priority) {
 ProcessItem::~ProcessItem() {
 }
 
-std::string ProcessItem::getStatus() {
+std::string ProcessItem::process_item_status() const {
   int p = progress_ * 100.0;
   std::ostringstream o;
 
@@ -37,23 +37,29 @@ std::string ProcessItem::getStatus() {
     o << "Queued";
   } o << " : " << priority_;
 
-  o << std::string(" : ") << process_item_current_task_description_;
+  if( process_item_current_task_description_.length()>0)
+    o << std::string(" : ") << process_item_current_task_description_;
 
   return o.str();
 }
 
-std::string ProcessItem::getDescription() {
+std::string ProcessItem::str() const {
   return au::str("Process Item '%s' Status: %s"
                  , process_item_description_.c_str()
-                 , getStatus().c_str()
+                 , process_item_status().c_str()
                  );
 }
+  
+  std::string ProcessItem::process_item_description() const{
+    return process_item_description_;
+  }
 
-void ProcessItem::addListenerId(size_t _listenerId) {
+
+void ProcessItem::AddListener(size_t _listenerId) {
   listeners_.insert(_listenerId);
 }
 
-bool ProcessItem::running() {
+bool ProcessItem::running() const {
   return running_;
 }
 
@@ -67,15 +73,12 @@ void ProcessItem::StopCronometer() {
   cronometer_.Stop();
 }
 
-std::set<size_t> ProcessItem::listeners() {
+std::set<size_t> ProcessItem::listeners() const {
   return listeners_;
 }
 
-std::string ProcessItem::process_item_description() {
-  return process_item_description_;
-}
 
-std::string ProcessItem::process_item_current_task_description() {
+std::string ProcessItem::process_item_current_task_description() const {
   return process_item_current_task_description_;
 }
 
@@ -100,7 +103,7 @@ void ProcessItem::set_progress(double p) {
   progress_ = p;
 }
 
-double ProcessItem::progress() {
+double ProcessItem::progress() const {
   return progress_;
 }
 

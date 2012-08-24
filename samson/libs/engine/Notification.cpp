@@ -46,7 +46,7 @@ const std::set<size_t>& Notification::targets() {
   return targets_;
 }
 
-std::string Notification::getDescription() {
+std::string Notification::GetDescription() {
   std::ostringstream output;
 
   output << name_ << " [ Notification " << name_ << " ";
@@ -60,7 +60,7 @@ std::string Notification::getDescription() {
   return output.str();
 }
 
-std::string Notification::getShortDescription() {
+std::string Notification::GetShortDescription() {
   return au::str("[ Not: %s ]", name_);
 }
 }

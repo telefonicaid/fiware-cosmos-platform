@@ -16,10 +16,10 @@
  *
  * AUTHOR: Andreu Urruela
  */
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <iostream>
 #include <string>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
 
 #include "logMsg/logMsg.h"

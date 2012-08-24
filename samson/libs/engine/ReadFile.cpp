@@ -10,10 +10,9 @@ ReadFile::ReadFile(const std::string& file_name) {
   offset_ = 0;
 }
 
-  ReadFile::~ReadFile()
-  {
-    Close();
-  }
+ReadFile::~ReadFile() {
+  Close();
+}
 
 int ReadFile::Seek(size_t offset) {
   if (!file_) {
@@ -60,14 +59,12 @@ void ReadFile::Close() {
     offset_ = 0;
   }
 }
-  
-  std::string ReadFile::file_name() const
-  {
-    return file_name_;
-  }
-  size_t ReadFile::offset() const
-  {
-    return offset_;
-  }
 
+std::string ReadFile::file_name() const {
+  return file_name_;
+}
+
+size_t ReadFile::offset() const {
+  return offset_;
+}
 }

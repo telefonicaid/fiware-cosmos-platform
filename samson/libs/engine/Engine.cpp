@@ -90,15 +90,16 @@ void *runEngineBackground(void *e) {
 }
 
 Engine::Engine() {
-
   // Add a simple periodic element to not die inmediatelly
   EngineElement *element = new NotificationElement(new Notification("alive"), 10);
+
   engine_element_collection_.Add(element);
 
   LM_T(LmtEngine, ("Running engine in background..."));
   quitting_thread_ = false;
   if (au::Singleton<au::ThreadManager>::shared()->addNonDetachedThread("Engine", &thread_id_, 0, runEngineBackground,
-                                                                       NULL) == 0) {
+                                                                       NULL) == 0)
+  {
     running_thread_ = true;
   } else {
     running_thread_ = false;
@@ -293,7 +294,6 @@ void Engine::Add(EngineElement *element) {
   // Add a new item in the engine_element_collection
   engine_element_collection_.Add(element);
 }
-
 
 std::string Engine::GetTableOfEngineElements() {
   return engine_element_collection_.GetTableOfEngineElements();

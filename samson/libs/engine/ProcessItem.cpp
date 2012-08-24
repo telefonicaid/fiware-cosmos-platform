@@ -37,8 +37,9 @@ std::string ProcessItem::process_item_status() const {
     o << "Queued";
   } o << " : " << priority_;
 
-  if( process_item_current_task_description_.length()>0)
+  if (process_item_current_task_description_.length() > 0) {
     o << std::string(" : ") << process_item_current_task_description_;
+  }
 
   return o.str();
 }
@@ -49,11 +50,10 @@ std::string ProcessItem::str() const {
                  , process_item_status().c_str()
                  );
 }
-  
-  std::string ProcessItem::process_item_description() const{
-    return process_item_description_;
-  }
 
+std::string ProcessItem::process_item_description() const {
+  return process_item_description_;
+}
 
 void ProcessItem::AddListener(size_t _listenerId) {
   listeners_.insert(_listenerId);
@@ -76,7 +76,6 @@ void ProcessItem::StopCronometer() {
 std::set<size_t> ProcessItem::listeners() const {
   return listeners_;
 }
-
 
 std::string ProcessItem::process_item_current_task_description() const {
   return process_item_current_task_description_;

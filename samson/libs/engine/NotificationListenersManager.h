@@ -59,7 +59,6 @@ public:
  **/
 
 class NotificationListenersManager {
-
 public:
 
   NotificationListenersManager();
@@ -90,17 +89,15 @@ private:
 
   // Internal variable to create new objects
   size_t engine_id_;
-  
+
   // Map of all the objects by id
   au::map < size_t, NotificationListener > objects_;
-  
+
   // Map of ids object per notification channel
   au::map< const char *, IdsCollection, au::strCompare > channels_;
-  
+
   // Mutex protection
   au::Token token_;
-
-  
 };
 }
 

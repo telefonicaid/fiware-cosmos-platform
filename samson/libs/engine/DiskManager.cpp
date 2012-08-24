@@ -74,7 +74,6 @@ DiskManager::~DiskManager() {
 }
 
 void DiskManager::Stop() {
-  
   // Flag to indicate background threads to finish
   quitting_ = true;
 
@@ -109,7 +108,6 @@ void DiskManager::Cancel(const au::SharedPointer<engine::DiskOperation>& operati
 
   // If it is still in the pending queue
   if (pending_operations_.Contains(operation)) {
-    
     // Operation is still retained at least by the argument provided
     pending_operations_.ExtractAll(operation);
 
@@ -216,9 +214,10 @@ void DiskManager::run_worker() {
   }
 }
 
-int DiskManager::num_disk_operations()const {
+int DiskManager::num_disk_operations() const {
   // Mutex protection
   au::TokenTaker tt(&token_);
+
   return pending_operations_.size() + running_operations_.size();
 }
 
@@ -242,35 +241,39 @@ size_t DiskManager::rate_in() const {
 size_t DiskManager::rate_out() const {
   // Mutex protection
   au::TokenTaker tt(&token_);
+
   return rate_out_.rate();
 }
 
 double DiskManager::rate_operations_in() const {
   // Mutex protection
   au::TokenTaker tt(&token_);
+
   return rate_in_.hit_rate();
 }
 
 double DiskManager::rate_operations_out() const {
   // Mutex protection
   au::TokenTaker tt(&token_);
+
   return rate_out_.hit_rate();
 }
 
 double DiskManager::on_off_activity() const {
   // Mutex protection
   au::TokenTaker tt(&token_);
+
   return on_off_monitor_.activity_percentadge();
 }
-  double DiskManager::on_time() const
-  {
-    return on_off_monitor_.on_time();
-  }
-  double DiskManager::off_time() const
-  {
-    return on_off_monitor_.off_time();
-  }
-  
+
+double DiskManager::on_time() const {
+  return on_off_monitor_.on_time();
+}
+
+double DiskManager::off_time() const {
+  return on_off_monitor_.off_time();
+}
+
 int DiskManager::max_num_disk_operations() const {
   return max_num_disk_operations_;
 }

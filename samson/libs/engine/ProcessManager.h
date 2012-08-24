@@ -16,21 +16,21 @@
 #ifndef _H_SAMSON_PROCESS_MANAGER
 #define _H_SAMSON_PROCESS_MANAGER
 
-#include <iostream>                 // std::cout
+#include <iostream>                      // std::cout
 #include <list>
 #include <pthread.h>
-#include <set>                      // std::set
+#include <set>                           // std::set
 #include <string>
 
 #include "au/containers/Box.h"
 #include "au/containers/Queue.h"
-#include "au/mutex/Token.h"         // au::Token
+#include "au/mutex/Token.h"              // au::Token
 
 
 #include "engine/Engine.h"     // engine::Engine
 #include "engine/MemoryManager.h"   // engine::MemoryManager
 #include "engine/NotificationListener.h"     // engine::EngineNotification
-#include "engine/NotificationListener.h"          // engine::NotificationListener
+#include "engine/NotificationListener.h" // engine::NotificationListener
 
 #define notification_process_request_response "notification_process_request_response"
 

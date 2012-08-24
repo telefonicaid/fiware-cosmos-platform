@@ -44,12 +44,14 @@ void NotificationListenersManager::Remove(NotificationListener *o) {
 
 void NotificationListenersManager::AddToChannel(NotificationListener *o, const char *name) {
   au::TokenTaker tt(&token_);
+
   LM_T(LmtEngineNotification, ("Add object %lu to channel %s", o->engine_id_, name ));
   GetListenersForChannel(name)->add(o->engine_id_);
 }
 
 void NotificationListenersManager::RemoveFromChannel(NotificationListener *o, const char *name) {
   au::TokenTaker tt(&token_);
+
   LM_T(LmtEngineNotification, ("Remove object %lu to channel %s", o->engine_id_, name ));
   GetListenersForChannel(name)->remove(o->engine_id_);
 }
@@ -57,17 +59,19 @@ void NotificationListenersManager::RemoveFromChannel(NotificationListener *o, co
 // Get the collections of ids for a particular channel
 std::set<size_t> NotificationListenersManager::GetEndgineIdsForChannel(const char *name) {
   au::TokenTaker tt(&token_);
+
   std::set<size_t> ids;
   IdsCollection *delivery = channels_.findInMap(name);
-  if (delivery)
+  if (delivery) {
     delivery->addTo(ids);
+  }
   return ids;
 }
 
 // Get the collections of ids for a particular channel
 IdsCollection *NotificationListenersManager::GetListenersForChannel(const char *name) {
-  
   IdsCollection *delivery = channels_.findInMap(name);
+
   if (!delivery) {
     delivery = new IdsCollection();
     channels_.insertInMap(name, delivery);
@@ -77,7 +81,7 @@ IdsCollection *NotificationListenersManager::GetListenersForChannel(const char *
 
 void NotificationListenersManager::Send(Notification *notification) {
   // Get list of objects that should be notified because they are listening the channel
-  std::set<size_t> ids = GetEndgineIdsForChannel( notification->name() );
+  std::set<size_t> ids = GetEndgineIdsForChannel(notification->name());
 
   // Add objects that should be notified directly...
   std::set<size_t>::const_iterator t;
@@ -93,8 +97,8 @@ void NotificationListenersManager::Send(Notification *notification) {
 
 // Run a notification in an object
 void NotificationListenersManager::Send(Notification *notification, size_t target) {
-  
   NotificationListener *o = NULL;
+
   {
     au::TokenTaker tt(&token_);
     o = objects_.findInMap(target);
@@ -104,5 +108,4 @@ void NotificationListenersManager::Send(Notification *notification, size_t targe
     o->notify(notification);
   }
 }
-
 }

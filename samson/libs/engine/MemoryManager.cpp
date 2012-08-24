@@ -18,13 +18,13 @@
  *
  */
 
-#include <unistd.h>                 // usleep
+#include <unistd.h>                // usleep
 
-#include <set>                      // std::set
-#include <sstream>                  // std::stringstream
-#include <string>                   // std::string
 #include "logMsg/logMsg.h"         // LM_*
 #include "logMsg/traceLevels.h"
+#include <set>                     // std::set
+#include <sstream>                 // std::stringstream
+#include <string>                  // std::string
 
 #include "au/mutex/TokenTaker.h"   // au::TokenTaker
 #include "au/xml.h"                // au::xml...

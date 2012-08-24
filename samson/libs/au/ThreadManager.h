@@ -1,7 +1,7 @@
 
 /*
  * Telefónica Digital - Product Development and Innovation
-*
+ *
  * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
  * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
@@ -12,16 +12,16 @@
 
 /*
  * FILE            ThreadManager
-*
-* AUTHOR          Andreu Urruela
-*
-* PROJECT         au library
-*
-* DATE            Septembre 2011
-*
-* DESCRIPTION
-*
-*  Classes to controll current threads working for this app.
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *  Classes to controll current threads working for this app.
  */
 
 #ifndef SAMSON_LIBS_AU_THREADMANAGER_H_

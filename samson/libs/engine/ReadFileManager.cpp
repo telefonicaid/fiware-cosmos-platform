@@ -16,7 +16,7 @@ ReadFileManager::~ReadFileManager() {
 
 ReadFile *ReadFileManager::GetReadFile(const std::string& file_name) {
   // Recover ReadFile for this filename
-  ReadFile *f = read_files_.extractFromMap( file_name );
+  ReadFile *f = read_files_.extractFromMap(file_name);
 
   // Remove non-valid ReadFiles
   if (f && !f->IsValid()) {
@@ -27,17 +27,16 @@ ReadFile *ReadFileManager::GetReadFile(const std::string& file_name) {
   if (!f) {
     f = new ReadFile(file_name);
   }
-  
+
   // Insert at front ( make sure most recent are at front )
   read_files_.insertAtFront(file_name, f);
 
   // Remove old File descriptors if necessary
-  while ((int)read_files_.size() > max_open_files_ )
-  {
+  while ((int)read_files_.size() > max_open_files_) {
     ReadFile *rf = read_files_.extractFromBack();
-    
+
     if (rf == f) {
-      LM_X(1,("Internal error"));
+      LM_X(1, ("Internal error"));
     }
     delete rf;
   }

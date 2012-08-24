@@ -126,7 +126,7 @@ private:
   au::SharedPointer<samson::worker::PushManager> push_manager_;  // Manager of push operations
   au::SharedPointer<DistributionBlockManager> distribution_blocks_manager_;     // Map of blocks recently created
   au::SharedPointer<stream::WorkerTaskManager> task_manager_;    // Manager for tasks
-  au::SharedPointer<WorkerCommandManager> workerCommandManager_; // Manager of the "Worker commands"
+  au::SharedPointer<WorkerCommandManager> workerCommandManager_;  // Manager of the "Worker commands"
 
   bool ready_;                                                   // Flag to indicate if this worker is ready
   std::string status_message_;       // Message why we are not ready

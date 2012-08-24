@@ -462,7 +462,7 @@ public:
 
         // Forgetting factor
         size_t time_diff = t - value.get_value_from_vector(1)->get_double();
-                        total = total * pow( factor  , static_cast<int>(time_diff) );
+        total = total * pow(factor, static_cast<int>(time_diff));
       }
 
       double tmp =  value.get_double();
@@ -628,7 +628,7 @@ public:
     size_t time_diff = current_time - value->get_value_from_map("timestamp")->get_double();
     system::Value *counter_value = value->get_value_from_map("counter");
     double previous_counter = counter_value->get_double();
-                double counter = previous_counter * pow( factor  , static_cast<int>(time_diff) );
+    double counter = previous_counter * pow(factor, static_cast<int>(time_diff));
 
     counter_value->set_double(counter);
   }
@@ -756,7 +756,7 @@ public:
     size_t time_diff = current_time - value->get_value_from_map("timestamp")->get_double();
     system::Value *counter_value = value->get_value_from_map("counter");
 
-                counter_value->set_double( counter_value->get_double() * pow( factor  , static_cast<int>(time_diff) ) );
+    counter_value->set_double(counter_value->get_double() * pow(factor, static_cast<int>(time_diff)));
   }
 
   void run(samson::KVSetStruct *inputs, samson::KVWriter *writer) {

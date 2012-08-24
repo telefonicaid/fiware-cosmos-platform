@@ -27,7 +27,6 @@ class Notification;
  */
 
 class NotificationListener {
-
 public:
 
   // Constructor & Destructor
@@ -40,19 +39,18 @@ public:
 protected:
 
   // Start listening a particular notification
-  void listen( const char *notification_name );
+  void listen(const char *notification_name);
 
   // Method to receive a particular notification
   virtual void notify(Notification *notification);
-  
+
 private:
-  
+
   // Unique identifier of this listener
   size_t engine_id_;
-  
+
   // Class the managers this objects
   friend class NotificationListenersManager;
-  
 };
 }
 

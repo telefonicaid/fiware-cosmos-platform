@@ -27,7 +27,7 @@
 #include "samson/common/samson.pb.h"
 
 #include "engine/DiskOperation.h"                   // engine::DiskOperation
-#include "engine/NotificationListener.h"                          // engien::EngineListener
+#include "engine/NotificationListener.h"            // engien::EngineListener
 
 #include "engine/ProcessItem.h"
 

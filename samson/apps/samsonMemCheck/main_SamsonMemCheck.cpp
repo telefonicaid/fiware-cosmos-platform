@@ -63,10 +63,11 @@ PaArgument paArgs[] = {
 
 
 
-int main(int argc, const char* argv[]) {
+int main(int argc, const char *argv[]) {
   paConfig("usage and exit on any warning", reinterpret_cast<void *>(true));
   paConfig("log to screen",                 reinterpret_cast<const char *>("only errors"));
-  paConfig("log file line format",          reinterpret_cast<const char *>("TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT"));
+  paConfig("log file line format",
+           reinterpret_cast<const char *>("TYPE:DATE:EXEC-AUX/FILE[LINE](p.PID)(t.TID) FUNC: TEXT"));
   paConfig("screen line format",            reinterpret_cast<const char *>("TYPE@TIME  EXEC: TEXT"));
   paConfig("log to file",                   reinterpret_cast<void *>(true));
 
@@ -75,7 +76,8 @@ int main(int argc, const char* argv[]) {
   au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samsonHome, samsonWorking);            // Load setup and create default directories
 
   // Check to see if the current memory configuration is ok or not
-  if (samson::MemoryCheck() == false)
+  if (samson::MemoryCheck() == false) {
     LM_X(1, ("Insufficient memory configured. Check %s/samsonWorkerLog for more information."));
+  }
 }
 

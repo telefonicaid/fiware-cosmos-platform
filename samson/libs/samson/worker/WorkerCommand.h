@@ -19,7 +19,7 @@
 #include "au/containers/vector.h"
 #include "au/string.h"                      // au::Format
 
-#include "engine/NotificationListener.h"                  // engine::NotificationListener
+#include "engine/NotificationListener.h"    // engine::NotificationListener
 
 #include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"        // network::...
@@ -29,7 +29,7 @@
 #include "samson/stream/WorkerTaskManager.h"  // samson::stream::WorkerTaskManager
 
 #include "engine/Buffer.h"                  // engine::Buffer
-#include "engine/NotificationListener.h"                  // engine::NotificationListener
+#include "engine/NotificationListener.h"    // engine::NotificationListener
 
 
 namespace samson {

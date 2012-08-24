@@ -3,7 +3,7 @@
 #include "Engine.h"                 // register_object
 #include "engine/Notification.h"    // engine::Notification
 
-#include "NotificationListener.h"                 // Own interface
+#include "NotificationListener.h"   // Own interface
 
 namespace engine {
 size_t NotificationListener::engine_id() {
@@ -11,7 +11,6 @@ size_t NotificationListener::engine_id() {
 }
 
 NotificationListener::NotificationListener() {
-
   // Add myself as an engine_objects receiving my id
   Engine::shared()->AddListener(this);
 
@@ -19,7 +18,6 @@ NotificationListener::NotificationListener() {
     LM_X(1, ("Wrong notification listener id"));
   }
 }
-
 
 NotificationListener::~NotificationListener() {
   // Unregister this object

@@ -1,4 +1,5 @@
 SET (SOURCES
+
     main_UnitTest.cpp
 
 	# Common files for all tests
@@ -91,6 +92,7 @@ SET (SOURCES
 
 	#samon/isolated library
 	samson/isolated/SharedMemoryManager_test.cpp
+
 )
 
 
@@ -114,20 +116,20 @@ SET (STATIC_LIBS
      engine
      protobuf
      pthread
-     samsonNetwork
-     samsonStream
      samsonModule
      samsonWorkerLib
+     samsonStream
+     samsonNetwork
+     samsonZoo
      samsonCommon
-	 samsonZoo
-	 zookeeper_mt
-	 samson_comscore
-	 samson_system
-	 samsonClient
-	 samsonIsolated
+     zookeeper_mt
+     samson_comscore
+     samson_system
+     samsonClient
+     samsonIsolated
      au
      xmlmarkup
-     xmlparser	
+     xmlparser  
      curses
      dl
      ${COMMON_SAMSON_LIBS}

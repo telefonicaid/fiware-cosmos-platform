@@ -28,15 +28,14 @@
 
 
 TEST(engine_ProcessManager, instantiationTest) {
-
   init_engine_test();
 
-  engine::ProcessManager* process_manager = engine::Engine::process_manager();
-  
-  EXPECT_TRUE( process_manager != NULL ) << "ProcessManager instance should not be null after instantiation";
+  engine::ProcessManager *process_manager = engine::Engine::process_manager();
+
+  EXPECT_TRUE(process_manager != NULL) << "ProcessManager instance should not be null after instantiation";
   EXPECT_EQ(4, process_manager->max_num_procesors());
   EXPECT_EQ(0, process_manager->num_used_procesors());
-  
+
   close_engine_test();
 }
 

@@ -47,14 +47,13 @@ class Notification;
 
 
 class DiskManager {
-  
 public:
 
   ~DiskManager();
 
   // Add a disk operation to be executed in the background
   void Add(const au::SharedPointer< ::engine::DiskOperation>& operation);
-  
+
   // Cancel a disk operation already included
   void Cancel(const au::SharedPointer< ::engine::DiskOperation>& operation);
 
@@ -73,8 +72,8 @@ public:
   double off_time() const;
   int num_disk_operations() const;
   int max_num_disk_operations() const;
-  void set_max_num_disk_operations( int _num_disk_operations);  // Setup the maimum number of paralel operations to be executed
-  int num_disk_manager_workers() const; // Get the number of workers running on the background
+  void set_max_num_disk_operations(int _num_disk_operations);  // Setup the maimum number of paralel operations to be executed
+  int num_disk_manager_workers() const;  // Get the number of workers running on the background
 
 private:
 
@@ -95,11 +94,11 @@ private:
 
   // Disk Operations
   mutable au::Token token_;
-  
+
   // File manager ( containing all the open files for read operations )
   ReadFileManager fileManager_;
 
-  bool quitting_;                                  // Flag to indicate background processes to quit
+  bool quitting_;                                 // Flag to indicate background processes to quit
   int max_num_disk_operations_;                   // Number of paralell disk operations allowed
   int num_disk_manager_workers_;                  // Number of parallel workers for Disk operations
 

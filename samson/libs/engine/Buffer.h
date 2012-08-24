@@ -18,15 +18,15 @@
 #ifndef _ENGINE_BUFFER_H_
 #define _ENGINE_BUFFER_H_
 
-#include <cstdlib>                      // malloc, ...
-#include <cstring>                      // size_t
-#include <fstream>                      // std::ifstream
+#include <cstdlib>                       // malloc, ...
+#include <cstring>                       // size_t
+#include <fstream>                       // std::ifstream
 
 #include "au/containers/SharedPointer.h"
 #include "au/mutex/Token.h"
 #include "engine/Notification.h"
-#include "engine/NotificationListener.h"              // engine::EngineNotificationObject
-#include "engine/SimpleBuffer.h"        // engine::SimpleBuffer
+#include "engine/NotificationListener.h" // engine::EngineNotificationObject
+#include "engine/SimpleBuffer.h"         // engine::SimpleBuffer
 
 namespace engine {
 /**

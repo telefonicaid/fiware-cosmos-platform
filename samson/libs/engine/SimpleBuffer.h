@@ -21,9 +21,7 @@
  */
 
 namespace engine {
-
 class SimpleBuffer {
-
 public:
 
   SimpleBuffer() {
@@ -47,13 +45,11 @@ public:
   size_t size() {
     return size_;
   }
-  
+
 private:
-  
+
   char *data_;
   size_t size_;
-
-  
 };
 }
 

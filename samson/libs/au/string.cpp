@@ -380,7 +380,7 @@ std::string str(double value) {
     return au::str_double(value / 1000000000000000.0, 'P');
   }
 
-#endif //__LP64__
+#endif  // __LP64__
   else {
     return "  INF ";
   }
@@ -637,7 +637,7 @@ const char *strnstr_limitpattern(const char *text, const char *pattern, const si
       // Locate the beginning of a possible match
       do {
         if ((len-- < max_length) || (ctxt = *text++) == '\0') {
-          return ((const char *) NULL);
+          return ((const char *)NULL);
         }
       } while (ctxt != cpat);
     } while (strncmp(text, pattern, max_length - 1) != 0);
@@ -680,7 +680,7 @@ bool MatchPatterns(const char *inputString, const char *pattern, const char wild
     first_wildcard = true;
   }
 
-  while ((p_wildcard = strchr((char *) p_pattern, wildcard)) != NULL) {
+  while ((p_wildcard = strchr((char *)p_pattern, wildcard)) != NULL) {
     // First locate the next wildcard
     size_t len_pattern = p_wildcard - p_pattern;
 
@@ -691,12 +691,11 @@ bool MatchPatterns(const char *inputString, const char *pattern, const char wild
       }
       first_wildcard = true;
     } else
-      if (len_pattern > 0) {
-        if ((p_match = strnstr_limitpattern(p_input, p_pattern, len_pattern)) == NULL) {
-
-          return false;
-        }
+    if (len_pattern > 0) {
+      if ((p_match = strnstr_limitpattern(p_input, p_pattern, len_pattern)) == NULL) {
+        return false;
       }
+    }
     p_input = p_match + len_pattern;
     p_pattern = p_wildcard + 1;
     if (*p_pattern == '\0') {
@@ -711,16 +710,15 @@ bool MatchPatterns(const char *inputString, const char *pattern, const char wild
       return false;
     }
   } else
-    if (strlen(p_pattern) > 0) {
-      if (((p_match = strstr(p_input, p_pattern)) == NULL) || (*(p_match + strlen(p_pattern))) != '\0') {
-
-        return false;
-      }
+  if (strlen(p_pattern) > 0) {
+    if (((p_match = strstr(p_input, p_pattern)) == NULL) || (*(p_match + strlen(p_pattern))) != '\0') {
+      return false;
     }
+  }
   return true;
 }
 
-void SplitInWords(char *line, std::vector<char*>& words, char separator) {
+void SplitInWords(char *line, std::vector<char *>& words, char separator) {
   size_t pos = 0;
   size_t previous = 0;
 
@@ -730,10 +728,10 @@ void SplitInWords(char *line, std::vector<char*>& words, char separator) {
   words.clear();
 
   while (!finish) {
-
     if ((line[pos] == separator) || (line[pos] == '\0')) {
-      if ((line[pos] == '\0') || (line[pos] == '\n'))
+      if ((line[pos] == '\0') || (line[pos] == '\n')) {
         finish = true;
+      }
 
       // Artificial termination of string
       line[pos] = '\0';
@@ -754,11 +752,11 @@ void SplitInWords(char *line, std::vector<char*>& words, char separator) {
       //                }
       //            }
       previous = pos;
-    } else
+    } else {
       pos++;
+    }
   }
 }
-
 
 int getCommonChars(std::string& txt, std::string& txt2) {
   size_t l = std::min(txt.length(), txt2.length());
@@ -869,12 +867,12 @@ int HashString(const std::string& str, const int max_num_partitions) {
   static const size_t FNVMultiple = 16777619;
 
   size_t hash = InitialFNV;
+
   for (size_t i = 0; i < str.length(); i++) {
     hash = hash ^ (str[i]);
     hash = hash * FNVMultiple;
   }
   return hash % max_num_partitions;
 }
-
 }
 

@@ -16,27 +16,27 @@
 #ifndef _H_SAMSON_ENGINE
 #define _H_SAMSON_ENGINE
 
-#include <iostream>                         // std::cout
+#include <iostream>                              // std::cout
 #include <list>
 #include <math.h>
 #include <pthread.h>
-#include <set>                              // std::set
+#include <set>                                   // std::set
 #include <string>
 
 #include "au/statistics/ActivityMonitor.h"
 #include "au/tables/Table.h"
 
-#include "au/Cronometer.h"                  // au::Cronometer
-#include "au/containers/list.h"             // au::list
-#include "au/mutex/Token.h"                 // au::Token
+#include "au/Cronometer.h"                       // au::Cronometer
+#include "au/containers/list.h"                  // au::list
+#include "au/mutex/Token.h"                      // au::Token
 // NAMESPACE_BEGIN & }
 #include "au/containers/vector.h"
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 
 #include "engine/EngineElementCollection.h"
-#include "engine/NotificationListener.h"                  // engine::EngineNotification
-#include "engine/NotificationListenersManager.h"          // engine::NotificationListenersManager
+#include "engine/NotificationListener.h"         // engine::EngineNotification
+#include "engine/NotificationListenersManager.h" // engine::NotificationListenersManager
 
 
 namespace au {
@@ -114,7 +114,7 @@ private:
   static MemoryManager *memory_manager_;
   static DiskManager *disk_manager_;
   static ProcessManager *process_manager_;
-  
+
   // Collection of Engine Elements to be executed
   EngineElementCollection engine_element_collection_;
 

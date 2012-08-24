@@ -204,8 +204,9 @@ void TableLogFormatter::init(ErrorManager *error) {
     }
 
     if (str_date != "") {
-      if (str_date.length() != 8)
+      if (str_date.length() != 8) {
         error->set("Error: Wrong format for -date. It is -date DD/MM/YY\n");
+      }
 
       // DD/MM/YY
       tm.tm_year = 100 + Char_to_int(str_date[6]) * 10 + Char_to_int(str_date[7]);
@@ -273,14 +274,16 @@ void TableLogFormatter::add(au::SharedPointer<Log> log) {
   }
 
   // Detect a new session mark...
-  if (flag_new_session_found)
+  if (flag_new_session_found) {
     // Not add more records if a new session mark has been previously found
     return;
+  }
 
-  if (!is_multi_session)
+  if (!is_multi_session) {
     if (log->IsNewSession()) {
-    flag_new_session_found = true;
-    return;
+      flag_new_session_found = true;
+      return;
+    }
   }
   // Add the counter of logs
   num_logs++;

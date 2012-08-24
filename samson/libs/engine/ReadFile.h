@@ -23,9 +23,8 @@
 
 namespace engine {
 class ReadFile {
-
 public:
-  
+
   ReadFile(const std::string& file_Name);
   ~ReadFile();
 
@@ -33,17 +32,16 @@ public:
   int Read(char *read_buffer, size_t size);
   bool IsValid() const;
   void Close();
-  
-  //Accessorts
-  std::string file_name()const;
+
+  // Accessorts
+  std::string file_name() const;
   size_t offset() const;
-  
+
 private:
-  
+
   std::string file_name_;     // Filename
   size_t offset_;             // Offset positiong while reading the file
   FILE *file_;                // File pointer to access this file
-
 };
 }
 

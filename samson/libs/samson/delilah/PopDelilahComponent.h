@@ -10,13 +10,13 @@
 
 #include "au/CounterCollection.h"   // au::CounterCollection
 #include "au/Cronometer.h"      // au::Cronometer
-#include "au/Descriptors.h"         // au::CounterCollection
+#include "au/Descriptors.h"              // au::CounterCollection
 #include "au/ErrorManager.h"  // au::ErrorManager
 #include "au/string.h"  // au::Format
 
 #include "engine/DiskManager.h"     // engine::DiskManager
-#include "engine/Engine.h"          // engine::NotificationListener
-#include "engine/NotificationListener.h"          // engine::NotificationListener
+#include "engine/Engine.h"               // engine::NotificationListener
+#include "engine/NotificationListener.h" // engine::NotificationListener
 
 #include "samson/common/samson.pb.h"  // samson::network
 

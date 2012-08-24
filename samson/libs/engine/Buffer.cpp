@@ -64,7 +64,7 @@ Buffer::~Buffer() {
   }
 }
 
-std::string Buffer::str()  const{
+std::string Buffer::str()  const {
   return au::str("[ Buffer (%s / %s) Size: %lu/%lu Read_offset %lu ]"
                  , name_.c_str(), type_.c_str(), size_, max_size_, size_, offset_);
 }

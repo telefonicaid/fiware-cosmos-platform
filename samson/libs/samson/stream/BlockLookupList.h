@@ -16,7 +16,7 @@
 #include "samson/common/samson.pb.h"
 
 #include "engine/DiskOperation.h"                   // engine::DiskOperation
-#include "engine/NotificationListener.h"                          // engien::EngineListener
+#include "engine/NotificationListener.h"            // engien::EngineListener
 
 #include "engine/ProcessItem.h"
 
@@ -27,35 +27,36 @@
 #include <set>
 
 namespace samson {
-  namespace stream {
-                   class BlockList;
+namespace stream {
+class BlockList;
 
-                   typedef struct BlockLookupRecord {
-                     char *keyP;
-                     size_t keyS;
-                   } BlockLookupRecord;
+typedef struct BlockLookupRecord {
+  char *keyP;
+  size_t keyS;
+} BlockLookupRecord;
 
-                   typedef struct BlockHashLookupRecord {
-                     size_t startIx;
-                     size_t endIx;
-                   } BlockHashLookupRecord;
+typedef struct BlockHashLookupRecord {
+  size_t startIx;
+  size_t endIx;
+} BlockHashLookupRecord;
 
-                   class Block;
-                   class BlockLookupList {
-                     BlockLookupRecord *head;
-                     size_t size;
-                     BlockHashLookupRecord *hashInfo;
-                     KVFormat kvFormat;
+class Block;
+class BlockLookupList {
+  BlockLookupRecord *head;
+  size_t size;
+  BlockHashLookupRecord *hashInfo;
+  KVFormat kvFormat;
 
 public:
 
-                     au::ErrorManager error;
+  au::ErrorManager error;
 
-                     BlockLookupList(Block *_block);
-                     ~BlockLookupList();
+  BlockLookupList(Block *_block);
+  ~BlockLookupList();
 
-                     std::string lookup(const char *key, std::string outputFormat);
-                   };
-                   } }
+  std::string lookup(const char *key, std::string outputFormat);
+};
+}
+}
 
 #endif  // ifndef _H_BLOCK_LOOKUPLIST

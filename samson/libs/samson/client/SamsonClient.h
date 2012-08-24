@@ -22,22 +22,22 @@
 // We need to undef the macro "emit" because Qt library was setting it to empty string
 #undef emit
 
-#include <pthread.h>                /* pthread*/
+#include <pthread.h>                     /* pthread*/
 #include <string>       // std::string
 #include <vector>       // std::vector
 
 #include "samson/common/ports.h"
 
-#include "au/Cronometer.h"          // au::Cro
-#include "au/Rate.h"                // au::rate::Rate
+#include "au/Cronometer.h"               // au::Cro
+#include "au/Rate.h"                     // au::rate::Rate
 #include "au/containers/list.h"     // au::list
 #include "au/containers/map.h"      // au::map
-#include "au/mutex/Token.h"         // au::Token
+#include "au/mutex/Token.h"              // au::Token
 #include "au/mutex/TokenTaker.h"    // au::TokenTaker
 
-#include "engine/Buffer.h"          // engine::Buffer
+#include "engine/Buffer.h"               // engine::Buffer
 #include "engine/MemoryManager.h"   // engine::MemoryManager
-#include "engine/NotificationListener.h"          // engine::NotificationListener
+#include "engine/NotificationListener.h" // engine::NotificationListener
 
 #include "samson/common/coding.h"
 #include "samson/delilah/Delilah.h"  // samson::Delilah

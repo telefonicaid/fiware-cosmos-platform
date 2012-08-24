@@ -26,12 +26,11 @@ EngineElement::EngineElement(std::string name, int seconds) {
 
 // Reschedule action once executed
 
-  void EngineElement::SetAsExtra() {
-    type_ = extra;
-  }
+void EngineElement::SetAsExtra() {
+  type_ = extra;
+}
 
 void EngineElement::Reschedule() {
-  
   // Reset cronometer
   cronometer_.Reset();
   // Increse the counter to get an idea of the number of times a repeated task is executed
@@ -48,7 +47,7 @@ double EngineElement::GetTimeToTrigger() {
   return 0;
 }
 
-double EngineElement::period()const {
+double EngineElement::period() const {
   return period_;
 }
 
@@ -57,23 +56,22 @@ double EngineElement::GetWaitingTime() {
   return cronometer_.seconds();
 }
 
-std::string EngineElement::description()const {
+std::string EngineElement::description() const {
   return description_;
 }
 
-  std::string EngineElement::short_description()const {
-    return short_description_;
-  }
+std::string EngineElement::short_description() const {
+  return short_description_;
+}
 
-  void EngineElement::set_description( const std::string& description )
-  {
-    description_ = description;
-  }
-  void EngineElement::set_short_description( const std::string& short_description )
-  {
-    short_description_ = short_description;
-  }
-  
+void EngineElement::set_description(const std::string& description) {
+  description_ = description;
+}
+
+void EngineElement::set_short_description(const std::string& short_description) {
+  short_description_ = short_description;
+}
+
 std::string EngineElement::str() {
   if (type_ == repeated) {
     return au::str(
@@ -98,11 +96,11 @@ bool EngineElement::IsRepeated() const {
   return (type_ == repeated);
 }
 
-bool EngineElement::IsExtra()const {
+bool EngineElement::IsExtra() const {
   return (type_ == extra);
 }
 
-bool EngineElement::IsNormal() const{
+bool EngineElement::IsNormal() const {
   return (type_ == normal);
 }
 }

@@ -217,7 +217,6 @@ void DiskOperation::run() {
         setError(au::str("Error while reading data from file %s", fileName.c_str()));
       }
     }
-
   }
 
   if (type == DiskOperation::remove) {

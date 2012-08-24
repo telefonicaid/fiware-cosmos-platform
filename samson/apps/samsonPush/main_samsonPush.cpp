@@ -46,8 +46,8 @@ int max_rate;                       // Max rate
 int port;
 
 static const char *manShortDescription =
-"samsonPush is a easy-to-use client to send data to a particular queue in a "
-"SAMSON system. Just push data into the standard input\n";
+  "samsonPush is a easy-to-use client to send data to a particular queue in a "
+  "SAMSON system. Just push data into the standard input\n";
 
 static const char *manSynopsis =
   "[-help] [-node str_samson_node] [-port_node int_port] [-timeout int_t] [-buffer_size int_size] [-breaker_sequence str_pattern] [-lines bool] queue\n";
@@ -144,7 +144,7 @@ void receive_data_from_port() {
 samson::SamsonClient *samson_client;
 
 
-int main( int argc , const char* argv[] ) {
+int main(int argc, const char *argv[]) {
   paConfig("usage and exit on any warning", (void *)true);
 
   paConfig("log to screen",                 (void *)true);
@@ -154,7 +154,7 @@ int main( int argc , const char* argv[] ) {
   paConfig("man synopsis",          (void *)manSynopsis);
 
   // Parse input arguments
-  paParse(paArgs, argc, (char**) argv, 1, false);
+  paParse(paArgs, argc, (char **)argv, 1, false);
   logFd = lmFirstDiskFileDescriptor();
 
   // Random initialization

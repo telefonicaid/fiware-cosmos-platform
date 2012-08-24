@@ -26,7 +26,6 @@
 
 // Test DiskManager's instantiation
 TEST(engine_DiskManager, instantiationTest) {
-  
   init_engine_test();
 
   // call init() and then shared(). Should return a valid one.
@@ -42,12 +41,14 @@ TEST(engine_DiskManager, addTest) {
 
   class A : public engine::NotificationListener {
     au::Token token;
-  public:
+public:
     A() : token("Test A") {
     }
+
     void test() {
       au::TokenTaker tt(&token);
       char buffer[1024 * 1024];
+
       au::SharedPointer<engine::DiskOperation> operation(engine::DiskOperation::newReadOperation(buffer,
                                                                                                  "test_filename.txt", 0,
                                                                                                  1,

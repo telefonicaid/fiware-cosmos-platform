@@ -26,7 +26,7 @@
 
 #include "engine/Buffer.h"
 #include "engine/MemoryManager.h"
-#include "engine/NotificationListener.h"                   // engine::NotificationListener
+#include "engine/NotificationListener.h"     // engine::NotificationListener
 
 #include "samson/common/Macros.h"            // EXIT, ...
 #include "samson/common/samson.pb.h"         // samson::network::..

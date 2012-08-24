@@ -21,7 +21,6 @@
 
 
 TEST(engine_NotificationListener, engine_idTest) {
-  
   init_engine_test();
 
   engine::NotificationListener *object1 = new engine::NotificationListener();

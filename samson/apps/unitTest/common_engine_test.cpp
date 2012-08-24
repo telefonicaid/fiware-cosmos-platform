@@ -11,9 +11,7 @@
 
 #include "samson/client/SamsonClient.h"
 
-void init_engine_test()
-{
-
+void init_engine_test() {
   std::string samson_home    = SAMSON_HOME_DEFAULT;
   std::string samson_working = SAMSON_WORKING_DEFAULT;
   char *env_samson_working = getenv("SAMSON_WORKING");

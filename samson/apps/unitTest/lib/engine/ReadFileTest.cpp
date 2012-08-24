@@ -12,9 +12,9 @@
  *
  */
 
-#include <stdlib.h>  // for MAX_PATH
-#include "gtest/gtest.h"
 #include "engine/ReadFile.h"
+#include "gtest/gtest.h"
+#include <stdlib.h>  // for MAX_PATH
 
 // Test ReadFile( std::string _fileName );
 TEST(engine_ReadFile, openTest) {

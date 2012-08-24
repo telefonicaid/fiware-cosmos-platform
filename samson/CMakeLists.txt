@@ -52,7 +52,7 @@ IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     if (${CMAKE_CXX_COMPILER} MATCHES "/usr/bin/g\+\+")
         MESSAGE( "Using clang C++ compiler" )
         set( CMAKE_C_COMPILER "clang++" )
-    else
+    else (NOT ${CMAKE_CXX_COMPILER} MATCHES "/usr/bin/g\+\+")
         MESSAGE ("Using ${CMAKE_CXX_COMPILER} as our C++ compiler")
     endif (${CMAKE_CXX_COMPILER} MATCHES "/usr/bin/g\+\+")
 

@@ -11,7 +11,7 @@ TEST(samson_worker_SamsonWorker, basic) {
 
 
   // Init engine
-  engine::Engine::InitEngine(4, 10 * 1000000000, 1);
+  engine::Engine::InitEngine(4, 10000000, 1);
 
   // Create a worker
   samson::SamsonWorker *worker = new samson::SamsonWorker("no_zk_host", 9000, 9001);

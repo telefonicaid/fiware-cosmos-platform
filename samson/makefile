@@ -32,8 +32,11 @@ ifndef CPU_COUNT
 	OS=$(shell uname -s)
 	ifeq ($(OS),Darwin)
 		CPU_COUNT:=$(shell sysctl hw.ncpu | cut -f 2 -d" ")
-	else
+	endif
+	ifeq ($(OS),Linux)
 		CPU_COUNT:=$(shell cat /proc/cpuinfo | grep processor | wc -l)
+	else
+		CPU_COUNT=1
 	endif
 endif
 
@@ -227,7 +230,7 @@ test_report:
 	lcov -r coverage/samson.info "/opt/local/include/google/*" -o coverage/samson.info
 	genhtml -o coverage coverage/samson.info
 
-run_coverage: install_coverage test_init test_coverage test_teardown test_report
+run_coverage: install_coverage test_coverage test_report
 
 # There is a problem with coverage tool for mac.. please do use this output a mac environment
 
@@ -302,7 +305,8 @@ test_coverage:
 	cp apps/unitTest/delilah/words_input.txt /tmp/dir_test
 	# To configure DART_TIMEOUT to 400 instead of 1500. 
 	sed 's/1500/400/' BUILD_COVERAGE/DartConfiguration.tcl > /tmp/DartConfiguration.tcl; mv /tmp/DartConfiguration.tcl BUILD_COVERAGE/DartConfiguration.tcl
-	make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" TEST_VERBOSE=1 || true
+	# Disable functional testing until we can sort out zookeeper
+	#make test -C BUILD_COVERAGE ARGS="-D ExperimentalTest" TEST_VERBOSE=1 || true
 	# Trying to clean up the shared memory
 	bash -x scripts/lib_shared_memory.scr || true
 	# Enable core dumps for any potential SEGVs

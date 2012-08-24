@@ -9,6 +9,7 @@
 
 #include <samson/module/samson.h>
 #include <samson/modules/system/UInt.h>
+#include <unistd.h>
 
 
 namespace samson{

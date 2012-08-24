@@ -10,6 +10,20 @@
  * All rights reserved.
  */
 
+/*
+ * FILE            ThreadManager
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            Septembre 2011
+ *
+ * DESCRIPTION
+ *
+ *  Classes to controll current threads working for this app.
+ */
+
 #include <fcntl.h>              // F_SETFD
 #include <netdb.h>
 #include <sys/socket.h>
@@ -87,16 +101,16 @@ Status NetworkListener::InitNetworkListener(int port) {
 
   // fcntl(rFd_, F_SETFD, 1);
 
-  memset(&sock, 0, sizeof(sock));
-  memset(&peer, 0, sizeof(peer));
+  memset(reinterpret_cast<char *>(&sock), 0, sizeof(sock));
+  memset(reinterpret_cast<char *>(&peer), 0, sizeof(peer));
 
   sock.sin_family      = AF_INET;
   sock.sin_addr.s_addr = INADDR_ANY;
   sock.sin_port        = htons(port);
 
-  setsockopt(rFd_, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse));
+  setsockopt(rFd_, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char *>(&reuse), sizeof(reuse));
 
-  if (bind(rFd_, (struct sockaddr *)&sock, sizeof(struct sockaddr_in)) == -1) {
+  if (bind(rFd_, reinterpret_cast<struct sockaddr *>(&sock), sizeof(struct sockaddr_in)) == -1) {
     ::close(rFd_);
     rFd_ = -1;
     // LM_RP(BindError, ("bind to port %d: %s", port, strerror(errno)));
@@ -128,7 +142,7 @@ Status NetworkListener::InitNetworkListener(int port) {
 }
 
 void *NetworkListener_run(void *p) {
-  NetworkListener *network_listener = (NetworkListener *)p;
+  NetworkListener *network_listener = reinterpret_cast<NetworkListener *>(p);
   void *ans = network_listener->runNetworkListener();
 
   network_listener->background_thread_finished_ = true;  // Flag to indicate that we are over
@@ -211,7 +225,7 @@ SocketConnection *NetworkListener::acceptNewNetworkConnection(void) {
   unsigned int len         = sizeof(sin);
   int hostNameLen = sizeof(hostName);
 
-  memset((char *)&sin, 0, len);
+  memset(reinterpret_cast<char *>(&sin), 0, len);
 
   int rFd = rFd_;
 

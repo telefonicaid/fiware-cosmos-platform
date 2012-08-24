@@ -43,6 +43,10 @@ IF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DLINUX")
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
+# Disable unused but set variables - GCC 4.7+
+IF (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
+ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
 
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 
@@ -93,10 +97,9 @@ endif (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 #
 
 include_directories("/opt/local/include")
-include_directories("/usr/include")
 include_directories("/usr/local/include")
+include_directories("/usr/include")
 include_directories("/usr/local/include/json")
-include_directories("/usr/local/include/c-client-src")
 include_directories("/usr/include/json")
 
 #
@@ -106,6 +109,9 @@ include_directories("/usr/include/json")
 link_directories("/opt/local/lib")
 link_directories("/usr/local/lib")
 link_directories("/usr/lib64")
+if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
+link_directories("/usr/local/lib/amd64")
+endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
 
 # ---------------------------------------------------------
 # External dependency checks

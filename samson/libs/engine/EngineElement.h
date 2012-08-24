@@ -1,8 +1,16 @@
 
-/* ****************************************************************************
+/*
+ * Telefónica Digital - Product Development and Innovation
 *
-* FILE            EngineElement
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
 *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
+
+/*
 * AUTHOR          Andreu Urruela
 *
 * DATE            July 2011
@@ -11,11 +19,12 @@
 *
 * Element defining a simple foreground task to be executed in the main thread
 * This is the basic elements of the Engine library and can be scheduled using engine::Engine::shared()->add( . )
-*
-* ****************************************************************************/
+ */
 
-#ifndef _H_ENGINE_ELEMENT
-#define _H_ENGINE_ELEMENT
+#ifndef SAMSON_LIBS_ENGINE_ENGINEELEMENT_H_
+#define SAMSON_LIBS_ENGINE_ENGINEELEMENT_H_
+
+#include <unistd.h>             // sleep
 
 #include <sstream>                      // std::ostringstream
 #include <string>
@@ -23,9 +32,9 @@
 #include "logMsg/logMsg.h"              // Lmt
 #include "logMsg/traceLevels.h"         // LmtEngine
 
+#include "au/Cronometer.h"
 #include "au/string.h"                  // au::Format
 
-#include "au/Cronometer.h"
 
 
 namespace engine {
@@ -63,7 +72,7 @@ public:
   virtual void run() = 0;                       // Run method to execute
 
   // Constructor for inmediate action or repeated actions
-  EngineElement(std::string name);
+  explicit EngineElement(std::string name);
   EngineElement(std::string name, int seconds);
 
 
@@ -118,4 +127,4 @@ public:
 };
 }
 
-#endif  // ifndef _H_ENGINE_ELEMENT
+#endif  // SAMSON_LIBS_ENGINE_ENGINEELEMENT_H_

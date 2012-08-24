@@ -58,7 +58,7 @@ TEST(au_network_NetworkListener, basic) {
   "Error starting au::NetworkListener";
   EXPECT_EQ(0, NetworkListenerInterfaceImpl::num_connections());
   EXPECT_EQ(port, network_listener.port());
-  EXPECT_EQ(true, network_listener.IsNetworkListenerRunning());
+  EXPECT_TRUE( network_listener.IsNetworkListenerRunning());
 
   // Create a socket connection to test reception
   au::SocketConnection *socket_connection;

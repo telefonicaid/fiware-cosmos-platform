@@ -1,9 +1,39 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
-#include "TableLogFormatter.h"  // Own interface
+/*
+ * FILE            TableLogFormatter
+ *
+ * AUTHOR          Andreu Urruela
+ *
+ * PROJECT         au library
+ *
+ * DATE            August 2012
+ *
+ * DESCRIPTION
+ */
+
+#include "./TableLogFormatter.h"  // Own interface
 #include "au/log/Log.h"
 #include "au/log/LogFormatter.h"
+#include <string>               // std::string
 
 #define Char_to_int(x) ((x) - 48)
+
+/* Map timelocal() to mktime() since the latter is compatible with the former,
+ * which does not exist on Solaris.
+ */
+#if defined(__sun__)
+#define timelocal(x)   mktime(x)
+#endif  /* __sun__ */
 
 namespace au {
 TableLogFormatter::TableLogFormatter(std::string _format) {
@@ -174,9 +204,10 @@ void TableLogFormatter::init(ErrorManager *error) {
     }
 
     if (str_date != "") {
-      if (str_date.length() != 8) {
-        error->set("Error: Wrong format for -date. It is -date DD/MM/YY\n");  // DD/MM/YY
-      }
+      if (str_date.length() != 8)
+        error->set("Error: Wrong format for -date. It is -date DD/MM/YY\n");
+
+      // DD/MM/YY
       tm.tm_year = 100 + Char_to_int(str_date[6]) * 10 + Char_to_int(str_date[7]);
       tm.tm_mon  = Char_to_int(str_date[3]) * 10 + Char_to_int(str_date[4]) - 1;
       tm.tm_mday = Char_to_int(str_date[0]) * 10 + Char_to_int(str_date[1]);
@@ -209,7 +240,7 @@ bool TableLogFormatter::filter(au::SharedPointer<Log> log) {
 
   // filter by time
   if (ref_time > 0) {
-    if (!log->log_data().tv.tv_sec <= ref_time) {
+    if (!(log->log_data().tv.tv_sec <= ref_time)) {
       return false;
     }
   }
@@ -242,15 +273,16 @@ void TableLogFormatter::add(au::SharedPointer<Log> log) {
   }
 
   // Detect a new session mark...
-  if (flag_new_session_found) {
-    return;         // Not add more records if a new session mark has been previously found
-  }
-  if (!is_multi_session) {
+  if (flag_new_session_found)
+    // Not add more records if a new session mark has been previously found
+    return;
+
+  if (!is_multi_session)
     if (log->IsNewSession()) {
-      flag_new_session_found = true;
-      return;
-    }  // Add the counter of logs
+    flag_new_session_found = true;
+    return;
   }
+  // Add the counter of logs
   num_logs++;
 
   if (is_table) {

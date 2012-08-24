@@ -77,7 +77,7 @@ public:
       LM_E((
              "Error reserving memory for %lu elements of size %lu (total: %lu bytes) for reading a StructCollection from file",
              _size, sizeof(C), _size * sizeof(C)));
-      exit(-1);
+      exit(1);
     }
     max_size = _size;
 

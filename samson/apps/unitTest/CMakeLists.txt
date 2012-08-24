@@ -49,8 +49,17 @@ SET (SOURCES
 	lib/engine/DiskManagerTest.cpp          
 	lib/engine/EngineTest.cpp               
 	lib/engine/NotificationListenerTest.cpp 
+	lib/engine/NotificationListenersManagerTest.cpp
 	lib/engine/ProcessManagerTest.cpp       
 	lib/engine/statusTest.cpp
+	lib/engine/SimpleBufferTest.cpp
+	lib/engine/EngineElementCollectionTest.cpp
+	lib/engine/NotificationTest.cpp
+	lib/engine/NotificationElementTest.cpp
+	lib/engine/EngineElementTest.cpp
+	lib/engine/ReadFileManagerTest.cpp
+
+
 
 	# SAMSON COMMON LIBRARY
 	lib/samson/common/SamsonSetupTest.cpp 

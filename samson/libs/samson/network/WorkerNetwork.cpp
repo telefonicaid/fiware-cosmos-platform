@@ -49,7 +49,7 @@ void WorkerNetwork::newSocketConnection(au::NetworkListener *listener, au::Socke
     delete socket_connection;
   }
 
-  if (cluster_information_version() == -1) {  // Still not part of any cluster..
+  if (cluster_information_version() == (size_t)-1) {  // Still not part of any cluster..
     LM_W(("Connection rejected since I am still not part of any cluster..."));
     socket_connection->Close();
     delete socket_connection;

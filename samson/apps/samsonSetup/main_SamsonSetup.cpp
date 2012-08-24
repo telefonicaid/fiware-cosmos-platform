@@ -1,7 +1,25 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 
-#include <iostream>
+/*
+ * samsonSetup
+ *
+ * Console interface for configuring a SAMSON node
+ *
+ * AUTHOR: Andreu Urruela
+ */
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <iostream>
+#include <string>
 #include <unistd.h>
 
 #include "logMsg/logMsg.h"
@@ -38,8 +56,7 @@ int port;
  * parse arguments
  */
 
-PaArgument paArgs[] =
-{
+PaArgument paArgs[] = {
   SAMSON_ARGS,
   { "-show",  &show, "", PaBool, PaOpt, false, false, true, "Show current options"                    },
   PA_END_OF_ARGS
@@ -104,7 +121,7 @@ public:
     }
   }
 
-  // !< function to process a command instroduced by user
+  // function to process a command instroduced by user
   void evalCommand(std::string command) {
     au::CommandLine cmd;
 
@@ -145,15 +162,15 @@ public:
 
 #ifdef LINUX
     if (main_command == "auto_configure") {
-      long int kernel_shmmax = 0;
+      samson_sysctl_t kernel_shmmax = 0;
       const char *KERNEL_SHMMAX = "/proc/sys/kernel/shmmax";
 
       // Determine how much memory we have access to
-      long long int physical_ram = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE);
+      int64_t physical_ram = sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE);
       // Determine how many CPUs we have
       short int no_cpus = sysconf(_SC_NPROCESSORS_ONLN);
       // Fetch the current max shared memory segment size
-      samson::sysctl_value((char *)KERNEL_SHMMAX, &kernel_shmmax);
+      samson::sysctl_value(const_cast<char *>(KERNEL_SHMMAX), &kernel_shmmax);
 
       samson::SamsonSetup::shared()->resetToDefaultValues();
       samson::SamsonSetup::shared()->setValueForParameter("general.memory", au::str("%lld", physical_ram));

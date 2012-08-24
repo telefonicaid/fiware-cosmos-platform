@@ -1,3 +1,13 @@
+/*
+ * Telefónica Digital - Product Development and Innovation
+ *
+ * THIS CODE AND INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND,
+ * EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE.
+ *
+ * Copyright (c) Telefónica Investigación y Desarrollo S.A.U.
+ * All rights reserved.
+ */
 /* ****************************************************************************
  *
  * FILE            logMsg.c - log message source file
@@ -44,13 +54,20 @@
 #include <malloc.h>             /* free                                      */
 #endif
 
-#include "logMsg/time.h"  //
+#if defined(__sun__)
+#include <thread.h>             /* thr_self()                                */
+#endif  /* __sun__ */
+
+#include <assert.h>
 #include <ctype.h>              /* isprint                                   */
 #include <fcntl.h>              /* O_RDWR, O_TRUNC, O_CREAT                  */
 #include <sys/stat.h>           /* fstat, S_IFDIR                            */
 #include <sys/time.h>           /* gettimeofday                              */
 #include <sys/timeb.h>          /* timeb, ftime, ...                         */
 #include <time.h>               /* time, gmtime_r, ...                       */
+#include <string>               /* std::string                               */
+
+#include "logMsg/time.h"
 
 // We have a problem of cross-dependency between au and logMsg
 // We have solved it by putting au library twice in the CMakeLists.txt files,
@@ -304,7 +321,7 @@ char *lmProgName(char *pn, int levels, bool pid, const char *extra) {
   if (pid == true) {
     char pid[8];
     strncat(pName, "_", sizeof(pName) - 1);
-    sprintf(pid, "%d", (int)getpid());
+    sprintf(pid, "%d", static_cast<int>(getpid()));
     strncat(pName, pid, sizeof(pName) - 1);
   }
 
@@ -527,8 +544,7 @@ static void traceFix(char *levelFormat, unsigned int way) {
  #endif
 
 /* How many days come before each month (0-12).  */
-const unsigned short int __mon_yday[2][13] =
-{
+const unsigned short int __mon_yday[2][13] = {
   /* Normal years.  */
   { 0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 },
   /* Leap years.  */
@@ -562,9 +578,9 @@ time_t year_seconds[MAX_YEAR_SECONDS] = {
 
 struct tm *gmtime_r_samson(time_t *t, tm *tp) {
   // extracted from __offtime implementation
-  long int offset = 0;
+  int64_t offset = 0;
 
-  long int days, rem, y;
+  int8_t days, rem, y;
   const unsigned short int *ip;
 
 #define     SECS_PER_HOUR (60 * 60)
@@ -597,7 +613,7 @@ struct tm *gmtime_r_samson(time_t *t, tm *tp) {
 
   while (days < 0 || days >= (__isleap(y) ? 366 : 365)) {
     /* Guess a corrected year, assuming 365 days per year.  */
-    long int yg = y + days / 365 - (days % 365 < 0);
+    int64_t yg = y + days / 365 - (days % 365 < 0);
 
     /* Adjust DAYS and Y to match the guessed year.  */
     days -= ((yg - y) * 365
@@ -618,7 +634,7 @@ struct tm *gmtime_r_samson(time_t *t, tm *tp) {
 
   tp->tm_yday = days;
   ip = __mon_yday[__isleap(y)];
-  for (y = 11; days < (long int)ip[y]; --y) {
+  for (y = 11; days < (int64_t)ip[y]; --y) {
     continue;
   }
   days -= ip[y];
@@ -643,10 +659,10 @@ static char *dateGet(int index, char *line, int lineSize) {
   if (strcmp(fds[index].timeFormat, "UNIX") == 0) {
     char secs[32];
 
-    sprintf(secs, "%ds", (int)secondsNow);
+    sprintf(secs, "%ds", static_cast<int>(secondsNow));
     strncpy(line, secs, lineSize);
   } else if (strcmp(fds[index].timeFormat, "DIFF") == 0) {
-    int tm = (int)secondsNow - (int)secondsAtStart;
+    int tm = static_cast<int>(secondsNow) - static_cast<int>(secondsAtStart);
     int days;
     int hours;
     int mins;
@@ -686,20 +702,21 @@ static char *timeGet(int index, char *line, int lineSize) {
   if (strcmp(fds[index].timeFormat, "UNIX") == 0) {
     char secs[32];
 
-    sprintf(secs, "%ds", (int)secondsNow);
+    sprintf(secs, "%ds", static_cast<int>(secondsNow));
     strncpy(line, secs, lineSize);
   } else {
-    int tm = (int)secondsNow - (int)secondsAtStart;
+    int tm = static_cast<int>(secondsNow) - static_cast<int>(secondsAtStart);
     int days;
     int hours;
     int mins;
     int secs;
 
-    if (strcmp(fds[index].timeFormat, "DIFF") == 0) {
-      tm = (int)secondsNow - (int)secondsAtStart;
-    } else {
-      tm = (int)secondsNow;
-    } secs  = tm % 60;
+    if (strcmp(fds[index].timeFormat, "DIFF") == 0)
+      tm = static_cast<int>(secondsNow) - static_cast<int>(secondsAtStart);
+    else
+      tm = static_cast<int>(secondsNow);
+
+    secs  = tm % 60;
     tm    = tm / 60;
     mins  = tm % 60;
     tm    = tm / 60;
@@ -732,7 +749,7 @@ static char *timeStampGet(char *line) {
 
   gettimeofday(&tv, NULL);
 
-  snprintf(line, LINE_MAX, "timestamp: %d.%.6d secs\n", (int)tv.tv_sec, (int)tv.tv_usec);
+  snprintf(line, LINE_MAX, "timestamp: %d.%.6d secs\n", static_cast<int>(tv.tv_sec), static_cast<int>(tv.tv_usec));
 
   return line;
 }
@@ -806,36 +823,41 @@ static char *lmLineFix
 
   fLen = strlen(format);
   while (fi < fLen) {
+#if defined(__sun__)
+    thread_t tid;
+
+    tid = thr_self();
+#else
     pid_t tid;
 
     tid = syscall(SYS_gettid);
-    if (strncmp(&format[fi], "TYPE", 4) == 0) {
+#endif  /* __sun__ */
+    if (strncmp(&format[fi], "TYPE", 4) == 0)
       CHAR_ADD((type == 'P') ? 'E' : type, 4);
-    } else if (strncmp(&format[fi], "PID", 3) == 0) {
-      INT_ADD((int)getpid(), 3);
-    } else if (strncmp(&format[fi], "DATE", 4) == 0) {
+    else if (strncmp(&format[fi], "PID", 3) == 0)
+      INT_ADD(static_cast<int>(getpid()), 3);
+    else if (strncmp(&format[fi], "DATE", 4) == 0)
       STRING_ADD(dateGet(index, xin, sizeof(xin)), 4);
-    } else if (strncmp(&format[fi], "TIME", 4) == 0) {
+    else if (strncmp(&format[fi], "TIME", 4) == 0)
       STRING_ADD(timeGet(index, xin, sizeof(xin)), 4);
-    } else if (strncmp(&format[fi], "TID", 3) == 0) {
-      INT_ADD((int)tid, 3);
-    } else if (strncmp(&format[fi], "EXEC", 4) == 0) {
+    else if (strncmp(&format[fi], "TID", 3) == 0)
+      INT_ADD(static_cast<int>(tid), 3);
+    else if (strncmp(&format[fi], "EXEC", 4) == 0)
       STRING_ADD(progName, 4);
-    } else if (strncmp(&format[fi], "AUX", 3) == 0) {
+    else if (strncmp(&format[fi], "AUX", 3) == 0)
       STRING_ADD(aux, 3);
-    } else if (strncmp(&format[fi], "FILE", 4) == 0) {
+    else if (strncmp(&format[fi], "FILE", 4) == 0)
       STRING_ADD(file, 4);
-    } else if (strncmp(&format[fi], "LINE", 4) == 0) {
+    else if (strncmp(&format[fi], "LINE", 4) == 0)
       INT_ADD(lineNo, 4);
-    } else if (strncmp(&format[fi], "TLEV", 4) == 0) {
+    else if (strncmp(&format[fi], "TLEV", 4) == 0)
       TLEV_ADD(type, tLev);
-    } else if (strncmp(&format[fi], "TEXT", 4) == 0) {
+    else if (strncmp(&format[fi], "TEXT", 4) == 0)
       STRING_ADD("%s", 4);
-    } else if (strncmp(&format[fi], "FUNC", 4) == 0) {
+    else if (strncmp(&format[fi], "FUNC", 4) == 0)
       STRING_ADD(fName, 4);
-    } else {                     /* just a normal character */
+    else /* just a normal character */
       CHAR_ADD(format[fi], 1);
-    }
   }
 
   if ((type == 'T') && (fdP->traceShow == true)) {
@@ -922,13 +944,13 @@ static void asciiToLeft
   }
 
   for (i = 0; i < size; i++) {
-    if (buffer[i] == 0x25) {
+    if (buffer[i] == 0x25)
       strncpy(tmp, ".", sizeof(tmp));
-    } else if (isprint((int)buffer[i])) {
+    else if (isprint(static_cast<int>(buffer[i])))
       snprintf(tmp, sizeof(tmp), "%c", buffer[i]);
-    } else {
+    else
       strncpy(tmp, ".", sizeof(tmp));
-    } strncat(line, tmp, lineLen - 1);
+    strncat(line, tmp, lineLen - 1);
   }
 }
 
@@ -1073,9 +1095,8 @@ LmStatus lmTraceSet(const char *levelFormat) {
 
   subLevels(tLevel, 0, TRACE_LEVELS - 1);
 
-  if (levelFormat != NULL) {
-    traceFix((char *)levelFormat, ADD);
-  }
+  if (levelFormat != NULL)
+    traceFix(const_cast<char *>(levelFormat), ADD);
   return LmsOk;
 }
 
@@ -1089,7 +1110,7 @@ LmStatus lmTraceSet(const char *levelFormat) {
 LmStatus lmTraceAdd(const char *levelFormat) {
   INIT_CHECK();
 
-  traceFix((char *)levelFormat, ADD);
+  traceFix(const_cast<char *>(levelFormat), ADD);
 
   return LmsOk;
 }
@@ -1114,7 +1135,7 @@ void lmTraceLevelSet(unsigned int level, bool onOff) {
  * See traceFix
  */
 LmStatus lmTraceSub(const char *levelFormat) {
-  traceFix((char *)levelFormat, SUB);
+  traceFix(const_cast<char *>(levelFormat), SUB);
 
   return LmsOk;
 }
@@ -1353,7 +1374,8 @@ LmStatus lmFormat(int index, char *f) {
     strncpy(fds[index].format, FORMAT_DEF, sizeof(fds[index].format));
   } else {
     strncpy(fds[index].format, f, sizeof(fds[index].format));
-  } return LmsOk;
+  } 
+  return LmsOk;
 }
 
 /* ****************************************************************************
@@ -1369,7 +1391,8 @@ LmStatus lmTimeFormat(int index, char *f) {
     strncpy(fds[index].timeFormat, TIME_FORMAT_DEF, sizeof(fds[index].timeFormat));
   } else {
     strncpy(fds[index].timeFormat, f, sizeof(fds[index].timeFormat));
-  } return LmsOk;
+  } 
+  return LmsOk;
 }
 
 /* ****************************************************************************
@@ -1426,7 +1449,8 @@ LmStatus lmTraceAtEnd(int index, char *start, char *end) {
       strncpy(fds[index].tMarkEnd, TME_DEF, sizeof(fds[index].tMarkEnd));
     } else {
       strncpy(fds[index].tMarkEnd, end, sizeof(fds[index].tMarkEnd));
-    } fds[index].traceShow  = true;
+    } 
+    fds[index].traceShow  = true;
   }
 
   return LmsOk;
@@ -1470,7 +1494,7 @@ char *lmTextGet(const char *format, ...) {
   // if ((nl = strchr(vmsg, '\n')) != NULL)
   // *nl = 0;
 
-  allocedString = (char *)strdup(vmsg);
+  allocedString = static_cast<char *>(strdup(vmsg));
 
   return allocedString;
 }
@@ -1593,7 +1617,8 @@ LmStatus lmFdRegister(int fd, const char *format, const char *timeFormat, const 
   } else {
     strncpy(fds[index].timeFormat, timeFormat,
             sizeof(fds[index].timeFormat));
-  } strncpy(fds[index].info, info, sizeof(fds[index].info));
+  } 
+  strncpy(fds[index].info, info, sizeof(fds[index].info));
 
   if (indexP) {
     *indexP = index;
@@ -1643,7 +1668,7 @@ LmStatus lmPathRegister(const char *path, const char *format, const char *timeFo
 
   STRING_CHECK(format, F_LEN);
 
-  if (isdir((char *)path) == true) {
+  if (isdir(const_cast<char *>(path)) == true) {
     // Goyo. If progName (argv[0] is a complete (or relative, but with directories) path, perhaps we don't want all of it
     char *leaf_path = strrchr(progName, '/');
     if (leaf_path == NULL) {
@@ -1706,12 +1731,12 @@ LmStatus lmOut(char *text, char type, const char *file, int lineNo, const char *
   char format[FORMAT_LEN + 1];
   char *tmP;
 
-  tmP = strrchr((char *)file, '/');
-  if (tmP != NULL) {
+  tmP = strrchr(const_cast<char *>(file), '/');
+  if (tmP != NULL)
     file = &tmP[1];
-  }
+
   if (inSigHandler && (type != 'X' || type != 'x')) {
-    lmAddMsgBuf(text, type, file, lineNo, fName, tLev, (char *)stre);
+    lmAddMsgBuf(text, type, file, lineNo, fName, tLev, const_cast<char *>(stre));
     return LmsOk;
   }
 
@@ -1760,8 +1785,7 @@ LmStatus lmOut(char *text, char type, const char *file, int lineNo, const char *
         continue;
       }
       if ((strlen(format) + strlen(text) + strlen(line)) > LINE_MAX) {
-        snprintf(line, sizeof(line), "%s\n%c",
-                 "LM ERROR: LINE TOO LONG", 0);
+        snprintf(line, sizeof(line), "%s\n%c", "LM ERROR: LINE TOO LONG", 0);
       } else {
         snprintf(line, sizeof(line), format, text);
       }
@@ -1789,20 +1813,20 @@ LmStatus lmOut(char *text, char type, const char *file, int lineNo, const char *
     if (warningFunction != NULL) {
       fprintf(stderr, "Calling warningFunction (at %p)\n", &warningFunction);
 
-      warningFunction(warningInput, text, (char *)stre);
+      warningFunction(warningInput, text, const_cast<char *>(stre));
       fprintf(stderr, "warningFunction done\n");
     }
   } else if ((type == 'E') || (type == 'P')) {
-    if (errorFunction != NULL) {
-      errorFunction(errorInput, text, (char *)stre);
-    }
+    if (errorFunction != NULL)
+      errorFunction(errorInput, text, const_cast<char *>(stre));
   } else if ((type == 'X') || (type == 'x')) {
-    if (exitFunction != NULL) {
-      exitFunction(tLev, exitInput, text, (char *)stre);
-    }
-    if (lmAssertAtExit == true) {
-      assert(false);  /* exit here, just in case */
-    }
+    if (exitFunction != NULL)
+      exitFunction(tLev, exitInput, text, const_cast<char *>(stre));
+
+    if (lmAssertAtExit == true)
+      assert(false);
+
+    /* exit here, just in case */
     exit(tLev);
   }
 
@@ -1927,7 +1951,7 @@ int lmBufferPresent
   int bIndex     = 0;
   int bIndexLast = 0;
   int xx         = 0;
-  char *buffer     = (char *)bufP;
+  char *buffer     = static_cast<char *>(bufP);
   int start      = 0;
   char line[160];
   char tmp[80];
@@ -2056,7 +2080,7 @@ LmStatus lmReopen(int index) {
   s = LmsOk;
 
   snprintf(tmpName, sizeof(tmpName), "%s_%d",
-           fds[index].info, (int)getpid());
+           fds[index].info, static_cast<int>(getpid()));
 
   if ((fd = open(tmpName, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
     lseek(fds[index].fd, fdPos, SEEK_SET);
@@ -2085,7 +2109,7 @@ LmStatus lmReopen(int index) {
       strftime(tm, 80, TIME_FORMAT_DEF, &tmP);
 
       snprintf(buf, sizeof(buf), "Cleared at %s  (a reopen ...)\n", tm);
-      if (write(fd, buf, strlen(buf)) != (int)strlen(buf)) {
+      if (write(fd, buf, strlen(buf)) != static_cast<int>(strlen(buf))) {
         s = LmsWrite;
         break;
       }
@@ -2178,12 +2202,12 @@ long lmLogLineGet(char *typeP, char *dateP, int *msP, char *progNameP, char *fil
     return -2;     // EOF
   }
 
-  if (line[strlen(line) - 1] == '\n') {
+  if (line[strlen(line) - 1] == '\n')
     line[strlen(line) - 1] = 0;
-  }
-  if (allP != NULL) {
-    *allP = strdup(line);  // printf("Got line '%s'\n", line);
-  }
+  if (allP != NULL)
+    *allP = strdup(line);
+
+  // printf("Got line '%s'\n", line);
   // M:Thursday 08 Mar 13:40:45 2012(373):samsonWorker-father/WorkerCommand.cpp[784](p.3409)(t.3410) run: Adding RECORD of type M
 
   *typeP = *lineP;
@@ -2251,7 +2275,7 @@ long lmLogLineGet(char *typeP, char *dateP, int *msP, char *progNameP, char *fil
   // printf("Line parsed - returning %lu\n", ret);
   return ret;
 
- lmerror:
+lmerror:
   fclose(fP);
   fP = NULL;
   // printf("Error in line: %s", lineP);
@@ -2279,7 +2303,7 @@ LmStatus lmClear(int index, int keepLines, int lastLines) {
   FILE *fP;
   int oldOffset;
   int linesToRemove;
-  char *order       = (char *)"rwbRTdtDVFMWEPBXh";
+  char *order       = const_cast<char *>("rwbRTdtDVFMWEPBXh");
   int newLogLines = 0;
   int fdPos;
   char tmpName[512];
@@ -2358,12 +2382,12 @@ LmStatus lmClear(int index, int keepLines, int lastLines) {
   fdPos = ftell(fP);
   rewind(fP);
   snprintf(tmpName, sizeof(tmpName), "%s_%d", fds[index].info,
-           (int)getpid());
+           static_cast<int>(getpid()));
   if ((fd = open(tmpName, O_WRONLY | O_CREAT | O_TRUNC, 0666)) == -1) {
     perror("open");
     fclose(fP);
     lseek(fds[index].fd, fdPos, SEEK_SET);
-    ::free((char *)lrV);
+    ::free(reinterpret_cast<char *>(lrV));
     return LmsOpen;
   }
 
@@ -2469,9 +2493,8 @@ void lmExitForced(int c) {
   assert(false);
 #endif
 
-  if (exitFunction != NULL) {
-    exitFunction(c, exitInput, (char *)"exit forced", NULL);
-  }
+  if (exitFunction != NULL)
+    exitFunction(c, exitInput, const_cast<char *>("exit forced"), NULL);
   exit(c);
 }
 
@@ -2621,7 +2644,7 @@ void lmPrintMsgBuf() {
 
   while (logMsgs) {
     logP = logMsgs;
-    lmOut(logP->msg, logP->type, logP->file, logP->line, (char *)logP->func, logP->tLev, logP->stre);
+    lmOut(logP->msg, logP->type, logP->file, logP->line, static_cast<char *>(logP->func), logP->tLev, logP->stre);
     logMsgs = logP->next;
     ::free(logP);
   }

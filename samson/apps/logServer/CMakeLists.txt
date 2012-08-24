@@ -1,3 +1,6 @@
+if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
+    set (SOLARIS_LIBS "-lsocket -lnsl")
+endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
 
 SET( STATIC_LIBS
 	 pa
@@ -6,6 +9,7 @@ SET( STATIC_LIBS
 au
 	 protobuf
      pthread
+     ${SOLARIS_LIBS}
 )
 
 # Include directories

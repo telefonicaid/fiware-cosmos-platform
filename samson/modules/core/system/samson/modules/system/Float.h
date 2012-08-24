@@ -7,6 +7,7 @@
 #define _H_SAMSON_system_Float
 
 #include <samson/modules/system/FixedLengthDataInstance.h>
+#include <cmath>
 
 namespace samson{
 namespace system{
@@ -24,7 +25,7 @@ public:
 
 	int hash(int max_num_partitions)
 	{
-		return abs((int) 1000*value) % max_num_partitions;
+		return fmod(abs((int) 1000*value), max_num_partitions);
 	}
 
 	void setFromString(const char *_data)

@@ -1,96 +1,96 @@
 SET (SOURCES
-    main_UnitTest.cpp
+  main_UnitTest.cpp
 
-	# Common files for all tests
-	TestClasses.h
-	TestClasses.cpp
+  # Common files for all tests
+  TestClasses.h
+  TestClasses.cpp
 
-	# AU library
-	lib/au/SingletonTest.cpp
-	lib/au/STest.cpp
-	lib/au/DescriptorsTest.cpp
-	lib/au/EnvironmentTest.cpp
-	lib/au/CommandLineTest.cpp
-	lib/au/RateTest.cpp
-	lib/au/CounterCollectionTest.cpp
-	lib/au/StringComponentsTest.cpp
-	lib/au/stringTest.cpp
-	lib/au/TokenizerTest.cpp
+  # AU library
+  lib/au/SingletonTest.cpp
+  lib/au/STest.cpp
+  lib/au/DescriptorsTest.cpp
+  lib/au/EnvironmentTest.cpp
+  lib/au/CommandLineTest.cpp
+  lib/au/RateTest.cpp
+  lib/au/CounterCollectionTest.cpp
+  lib/au/StringComponentsTest.cpp
+  lib/au/stringTest.cpp
+  lib/au/TokenizerTest.cpp
 
-	# AU CONTAINERS LIBRARY
-	lib/au/containers/SharedPointerTest.cpp
-	lib/au/containers/DictionaryTest.cpp
-	lib/au/containers/QueueTest.cpp
-	lib/au/containers/BoxTest.cpp
-	lib/au/containers/StringVectorTest.cpp
+  # AU CONTAINERS LIBRARY
+  lib/au/containers/SharedPointerTest.cpp
+  lib/au/containers/DictionaryTest.cpp
+  lib/au/containers/QueueTest.cpp
+  lib/au/containers/BoxTest.cpp
+  lib/au/containers/StringVectorTest.cpp
 
-	# AU NETWORK LIBRARY
-	lib/au/network/FileDescriptorTest.cpp
-	lib/au/network/NetworkListenerTest.cpp
-	lib/au/network/RESTServiceTest.cpp
+  # AU NETWORK LIBRARY
+  lib/au/network/FileDescriptorTest.cpp
+  lib/au/network/NetworkListenerTest.cpp
+  lib/au/network/RESTServiceTest.cpp
 
-	# AU STATISTICS LIBRARY
-    lib/au/statistics/ActivityMonitorTest.cpp
+  # AU STATISTICS LIBRARY
+  lib/au/statistics/ActivityMonitorTest.cpp
 
-	# AU MUTEX LIBRARY
-    lib/au/mutex/TokenTest.cpp
+  # AU MUTEX LIBRARY
+  lib/au/mutex/TokenTest.cpp
 
-	# AU tables library
-	lib/au/tables/TableTest.cpp	
+  # AU tables library
+  lib/au/tables/TableTest.cpp  
 
-	# ENGINE library
-	lib/engine/statusTest.cpp
-	lib/engine/EngineTest.cpp
-	lib/engine/BufferTest.cpp
-    lib/engine/DiskOperationTest.cpp        
-	lib/engine/MemoryManagerTest.cpp        
-	lib/engine/ProcessItem.cpp              
-	lib/engine/ReadFileTest.cpp
-	lib/engine/DiskManagerTest.cpp          
-	lib/engine/EngineTest.cpp               
-	lib/engine/NotificationListenerTest.cpp 
-	lib/engine/NotificationListenersManagerTest.cpp
-	lib/engine/ProcessManagerTest.cpp       
-	lib/engine/statusTest.cpp
-	lib/engine/SimpleBufferTest.cpp
-	lib/engine/EngineElementCollectionTest.cpp
-	lib/engine/NotificationTest.cpp
-	lib/engine/NotificationElementTest.cpp
-	lib/engine/EngineElementTest.cpp
-	lib/engine/ReadFileManagerTest.cpp
+  # ENGINE library
+  lib/engine/statusTest.cpp
+  lib/engine/EngineTest.cpp
+  lib/engine/BufferTest.cpp
+  lib/engine/DiskOperationTest.cpp        
+  lib/engine/MemoryManagerTest.cpp        
+  lib/engine/ProcessItem.cpp              
+  lib/engine/ReadFileTest.cpp
+  lib/engine/DiskManagerTest.cpp          
+  lib/engine/EngineTest.cpp               
+  lib/engine/NotificationListenerTest.cpp 
+  lib/engine/NotificationListenersManagerTest.cpp
+  lib/engine/ProcessManagerTest.cpp       
+  lib/engine/statusTest.cpp
+  lib/engine/SimpleBufferTest.cpp
+  lib/engine/EngineElementCollectionTest.cpp
+  lib/engine/NotificationTest.cpp
+  lib/engine/NotificationElementTest.cpp
+  lib/engine/EngineElementTest.cpp
+  lib/engine/ReadFileManagerTest.cpp
 
 
 
-	# SAMSON COMMON LIBRARY
-	lib/samson/common/SamsonSetupTest.cpp 
-	lib/samson/common/SamsonFileTest.cpp
+  # SAMSON COMMON LIBRARY
+  lib/samson/common/SamsonSetupTest.cpp 
+  lib/samson/common/SamsonFileTest.cpp
 
-	# SAMSOM WORKER library
-	lib/samson/worker/SamsonWorkerTest.cpp
+  # SAMSOM WORKER library
+  lib/samson/worker/SamsonWorkerTest.cpp
 
-	#Common files
-	common_engine_test.h
-	common_engine_test.cpp
+  #Common files
+  common_engine_test.h
+  common_engine_test.cpp
 
-	#samson_system lib
-	samson_system/samson_system.cpp
+  #samson_system lib
+  samson_system/samson_system.cpp
 
-	#comscore library
-	comscore/comscore.cpp
-	
-	#common library
-	common/common_test.cpp
+  #comscore library
+  comscore/comscore.cpp
+  
+  #common library
+  common/common_test.cpp
 
-	#delilah library
-	delilah/common_delilah_test.h
-	delilah/common_delilah_test.cpp
-	delilah/delilahConsole_test.cpp
-	
-	#samson/client library
-	samson/client/SamsonClient_test.cpp
+  #delilah library
+  delilah/common_delilah_test.h
+  delilah/common_delilah_test.cpp
+  delilah/delilahConsole_test.cpp
+  
+  #samson/client library
+  samson/client/SamsonClient_test.cpp
 
-	#samon/isolated library
-	samson/isolated/SharedMemoryManager_test.cpp
+  #samon/isolated library
+  samson/isolated/SharedMemoryManager_test.cpp
 )
 
 
@@ -114,20 +114,20 @@ SET (STATIC_LIBS
      engine
      protobuf
      pthread
-     samsonNetwork
-     samsonStream
      samsonModule
      samsonWorkerLib
+     samsonStream
+     samsonNetwork
+     samsonZoo
      samsonCommon
-	 samsonZoo
-	 zookeeper_mt
-	 samson_comscore
-	 samson_system
-	 samsonClient
-	 samsonIsolated
+     zookeeper_mt
+     samson_comscore
+     samson_system
+     samsonClient
+     samsonIsolated
      au
      xmlmarkup
-     xmlparser	
+     xmlparser  
      curses
      dl
      ${COMMON_SAMSON_LIBS}

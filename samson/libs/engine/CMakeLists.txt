@@ -1,6 +1,6 @@
 SET (HEADERS
-Object.h
-ObjectsManager.h
+NotificationListener.h
+NotificationListenersManager.h
 Buffer.h
 SimpleBuffer.h
 EngineElementCollection.h
@@ -18,8 +18,8 @@ DiskOperation.h
 )
 
 SET (SOURCES
-Object.cpp
-ObjectsManager.cpp
+NotificationListener.cpp
+NotificationListenersManager.cpp
 Buffer.cpp
 EngineElementCollection.cpp
 Engine.cpp

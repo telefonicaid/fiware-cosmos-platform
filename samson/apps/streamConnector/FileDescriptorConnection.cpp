@@ -115,7 +115,7 @@ void FileDescriptorConnection::run_as_output() {
     engine::BufferPointer buffer = getNextBufferToSent();
 
     if (buffer != NULL) {
-      au::Status s = file_descriptor_->partWrite(buffer->getData(), buffer->getSize(), "samsonConnectorConnection");
+      au::Status s = file_descriptor_->partWrite(buffer->data(), buffer->size(), "samsonConnectorConnection");
 
       if (s != au::OK) {
         return;             // Just quit
@@ -133,7 +133,7 @@ void FileDescriptorConnection::run_as_input() {
     if (!file_descriptor_) {
       LM_X(1, ("Internal error"));  // Get a buffer
     }
-    engine::BufferPointer buffer = engine::Buffer::create("stdin"
+    engine::BufferPointer buffer = engine::Buffer::Create("stdin"
                                                           , "connector"
                                                           , input_buffer_size);
 
@@ -142,7 +142,7 @@ void FileDescriptorConnection::run_as_input() {
     au::Status s;
     {
       au::Cronometer c;
-      s = file_descriptor_->partRead(buffer->getData()
+      s = file_descriptor_->partRead(buffer->data()
                                      , input_buffer_size
                                      , "read connector connections"
                                      , 300
@@ -157,7 +157,7 @@ void FileDescriptorConnection::run_as_input() {
     // If we have read something...
     if (read_size > 0) {
       // Push input buffer
-      buffer->setSize(read_size);
+      buffer->set_size(read_size);
       pushInputBuffer(buffer);
     }
 

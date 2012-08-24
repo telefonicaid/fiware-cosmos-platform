@@ -4,7 +4,7 @@
 
 #include "au/string.h"      // au::Format
 
-#include "Object.h"         // engine::Object
+#include "NotificationListener.h"         // engine::NotificationListener
 
 #include "Notification.h"   // Own interface
 

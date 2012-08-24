@@ -6,7 +6,7 @@
 
 #include "engine/Engine.h"
 #include "engine/Notification.h"
-#include "engine/Object.h"
+#include "engine/NotificationListener.h"
 
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/gpb_operations.h"

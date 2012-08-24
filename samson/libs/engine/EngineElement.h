@@ -30,6 +30,9 @@
 
 namespace engine {
 class EngineElement {
+  
+private:
+  
   typedef enum {
     normal,        // Executed once
     repeated,      // Repeated periodically

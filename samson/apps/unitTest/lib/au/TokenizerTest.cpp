@@ -2,7 +2,7 @@
 #include "gtest/gtest.h"
 
 
-TEST(auTokenTest, simple) {
+TEST(au_Tokenizer, simple) {
   au::token::Token token("test_token", au::token::Token::normal, 0);
   au::token::Token token_op("*", au::token::Token::literal, 1);
   au::token::Token token_num("+3.27", au::token::Token::literal, 2);

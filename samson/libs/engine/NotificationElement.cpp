@@ -1,7 +1,7 @@
 
 #include "engine/Engine.h"             // engine::Engine
 #include "engine/Notification.h"       // engine::Notification
-#include "engine/Object.h"             // engine::EngineNotification
+#include "engine/NotificationListener.h"             // engine::EngineNotification
 
 #include "engine/NotificationElement.h"      // Own interface
 
@@ -27,6 +27,6 @@ NotificationElement::NotificationElement(Notification *notification, int seconds
 
 void NotificationElement::run() {
   LM_T(LmtEngineNotification, ("Running notification %s", notification_->getDescription().c_str()));
-  Engine::shared()->send(notification_);
+  Engine::shared()->Send(notification_);
 }
 }

@@ -484,7 +484,7 @@ void WorkerCommand::run() {
    * , cmd.get_argument(1).c_str()
    * );
    *
-   * engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation(buffer, file_name, getEngineId() );
+   * engine::DiskOperation *operation = engine::DiskOperation::newWriteOperation(buffer, file_name, engine_id() );
    * operation->environment.set("push_module", "yes");
    * engine::Engine::disk_manager()->add( operation );
    * operation->Release(); // It is now retained by disk manager
@@ -1123,7 +1123,7 @@ void WorkerCommand::run() {
      * tmp->setWorkingSize();
      *
      * // Add me as listener and increase the number of operations to run
-     * tmp->addListenerId( getEngineId() );
+     * tmp->addListenerId( engine_id() );
      * num_pending_processes++;
      *
      * tmp->environment.set("worker_command_id", worker_command_id);

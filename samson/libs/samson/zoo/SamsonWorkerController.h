@@ -7,7 +7,7 @@
 
 #include "engine/Engine.h"
 #include "engine/Notification.h"
-#include "engine/Object.h"
+#include "engine/NotificationListener.h"
 
 #include "samson/common/SamsonSetup.h"
 #include "samson/common/gpb_operations.h"
@@ -32,7 +32,7 @@
 // ------------------------------------------------------------------
 
 namespace samson {
-class SamsonWorkerController : public engine::Object, public samson::zoo::ConnectionWatcherInterface {
+class SamsonWorkerController : public engine::NotificationListener, public samson::zoo::ConnectionWatcherInterface {
 public:
 
   SamsonWorkerController(zoo::Connection *zoo_connection, int port, int port_web);

@@ -15,7 +15,7 @@
 #include "engine/Buffer.h"                       // engine::Buffer
 #include "engine/Engine.h"                       // engine::Engine
 #include "engine/MemoryManager.h"                // MemoryManager
-#include "engine/Object.h"
+#include "engine/NotificationListener.h"
 
 #include "samson/network/ClusterNodeType.h"
 

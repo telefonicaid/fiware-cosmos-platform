@@ -26,7 +26,7 @@
 
 #include "engine/Buffer.h"
 #include "engine/MemoryManager.h"
-#include "engine/Object.h"                   // engine::Object
+#include "engine/NotificationListener.h"                   // engine::NotificationListener
 
 #include "samson/common/Macros.h"            // EXIT, ...
 #include "samson/common/samson.pb.h"         // samson::network::..
@@ -64,7 +64,7 @@ public:
  * Main class for the samson client element
  */
 
-class Delilah : public engine::Object, public DelilahBase, public NetworkInterfaceReceiver {
+class Delilah : public engine::NotificationListener, public DelilahBase, public NetworkInterfaceReceiver {
   // Random identifier for this delilah
   size_t delilah_id_;
 

@@ -17,7 +17,7 @@
 #include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"
 
-#include "engine/Object.h"
+#include "engine/NotificationListener.h"
 
 namespace samson {
 class SamsonWorker;
@@ -26,7 +26,7 @@ class Info;
 class WorkerCommand;
 
 // Manager of WorkerCommand elements
-class WorkerCommandManager : public engine::Object {
+class WorkerCommandManager : public engine::NotificationListener {
   // Pointer to the global samson worker
   SamsonWorker *samsonWorker;
 

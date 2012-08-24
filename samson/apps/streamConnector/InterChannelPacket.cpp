@@ -72,14 +72,14 @@ au::Status InterChannelPacket::read(au::FileDescriptor *fd) {
 
   // Create buffer and read it
   if (header_.buffer_size > 0) {
-    buffer_ = engine::Buffer::create("InterChannelPacket", "streamConnector", header_.buffer_size);
-    s = fd->partRead(buffer_->getData()
+    buffer_ = engine::Buffer::Create("InterChannelPacket", "streamConnector", header_.buffer_size);
+    s = fd->partRead(buffer_->data()
                      , header_.buffer_size
                      , "data"
                      , 0);
 
     // Set the correct size for this buffer
-    buffer_->setSize(header_.buffer_size);
+    buffer_->set_size(header_.buffer_size);
   }
   if (s != au::OK) {
     return s;
@@ -92,7 +92,7 @@ au::Status InterChannelPacket::read(au::FileDescriptor *fd) {
 void InterChannelPacket::recompute_sizes_in_header() {
   header_.message_size = message->ByteSize();
   if (buffer_ != NULL) {
-    header_.buffer_size = buffer_->getSize();
+    header_.buffer_size = buffer_->size();
   } else {
     header_.buffer_size = 0;
   }
@@ -133,7 +133,7 @@ au::Status InterChannelPacket::write(au::FileDescriptor *fd) {
   }
 
   if (buffer_ != NULL) {
-    s = fd->partWrite(buffer_->getData(), buffer_->getSize(), "buffer");
+    s = fd->partWrite(buffer_->data(), buffer_->size(), "buffer");
     if (s != au::OK) {
       return s;
     }
@@ -186,7 +186,7 @@ std::string InterChannelPacket::str() {
   // Buffer at the end of the message
 
   if (buffer_ != NULL) {
-    output << "[ Buffer " << au::str(buffer_->getSize(), "B") << " ]";
+    output << "[ Buffer " << au::str(buffer_->size(), "B") << " ]";
   } else {
     output << "[ No buffer ]";
   } return output.str();

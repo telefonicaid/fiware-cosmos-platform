@@ -9,14 +9,14 @@
 
 #include "au/network/RESTService.h"
 #include "au/network/RESTServiceCommand.h"
-#include "engine/Object.h"
+#include "engine/NotificationListener.h"
 #include "samson/delilah/Delilah.h"
 #include "samson/worker/SamsonWorkerSamples.h"
 
 #define notification_samson_worker_take_sample "notification_samson_worker_take_sample"
 
 namespace samson {
-class SamsonWorkerRest : public au::network::RESTServiceInterface, engine::Object {
+class SamsonWorkerRest : public au::network::RESTServiceInterface, engine::NotificationListener {
 public:
 
   SamsonWorkerRest(SamsonWorker *samson_worker, int web_port);

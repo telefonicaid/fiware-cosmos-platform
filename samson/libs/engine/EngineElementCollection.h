@@ -16,8 +16,8 @@
 #include "au/mutex/Token.h"
 #include "au/mutex/TokenTaker.h"
 
-#include "engine/Object.h"                  // engine::EngineNotification
-#include "engine/ObjectsManager.h"          // engine::ObjectsManager
+#include "engine/NotificationListener.h"                  // engine::EngineNotification
+#include "engine/NotificationListenersManager.h"          // engine::NotificationListenersManager
 
 
 namespace au {
@@ -38,47 +38,50 @@ class Notification;
 // ---------------------------------------------------
 
 class EngineElementCollection {
-  // Elements of the samson engine to be repeated periodically
-  au::list<EngineElement> repeated_elements;
-
-  // General fifo elements of the SAMSON Engine
-  au::list<EngineElement> normal_elements;
-
-  // Elements to be executed when nothing else has to be executed
-  au::vector<EngineElement> extra_elements;
-
-  // Token to protect this list of elements
-  au::Token token;
-
 
 public:
 
   EngineElementCollection();
   ~EngineElementCollection();
 
-  void add(EngineElement *element);
+  // Unique method to add elements
+  void Add(EngineElement *element);
 
-  EngineElement *getNextRepeatedEngineElement();
-  EngineElement *getNextNormalEngineElement();
-  std::vector<EngineElement *> getExtraElements();
+  // Get next elements to be processed
+  EngineElement *NextRepeatedEngineElement();
+  EngineElement *NextNormalEngineElement();
+  std::vector<EngineElement *> ExtraElements();
 
-  double getTimeForNextRepeatedEngineElement();
+  double TimeForNextRepeatedEngineElement();
 
-  bool isEmpty();
+  bool IsEmpty();
 
-  size_t getNumEngineElements();
-  size_t getNumNormalEngineElements();
+  size_t GetNumEngineElements();
+  size_t GetNumNormalEngineElements();
+  size_t GetMaxWaitingTimeInEngineStack();
 
-  size_t getMaxWaitingTimeInEngineStack();
+  std::string GetTableOfEngineElements();
 
-  void print_elements();
-
-  std::string getTableOfEngineElements();
+  // Debug method to log all elements
+  void PrintElements();
 
 private:
 
   // Find the position in the list to inser a new element
-  std::list<EngineElement *>::iterator _find_pos_in_repeated_elements(EngineElement *e);
+  std::list<EngineElement *>::iterator FindPositionForRepeatedEngineElement(EngineElement *e);
+  
+  // Elements of the samson engine to be repeated periodically
+  au::list<EngineElement> repeated_elements_;
+  
+  // General fifo elements of the SAMSON Engine
+  au::list<EngineElement> normal_elements_;
+  
+  // Elements to be executed when nothing else has to be executed
+  au::vector<EngineElement> extra_elements_;
+  
+  // Token to protect this list of elements
+  au::Token token_;
+  
 };
 }
 

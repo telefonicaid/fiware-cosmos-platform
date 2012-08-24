@@ -37,7 +37,7 @@ DiskOperation *DiskOperation::newReadOperation(std::string fileName, size_t offs
 
   o->fileName = fileName;
   o->type = DiskOperation::read;
-  o->read_buffer = simpleBuffer.getData();
+  o->read_buffer = simpleBuffer.data();
   o->size = size;
   o->offset = offset;
   o->addListener(_listenerId);
@@ -53,7 +53,7 @@ DiskOperation *DiskOperation::newWriteOperation(BufferPointer buffer,  std::stri
   o->fileName = fileName;
   o->type = DiskOperation::write;
   o->buffer = buffer;
-  o->size = buffer->getSize();
+  o->size = buffer->size();
   o->offset = 0;
   o->addListener(_listenerId);
 
@@ -68,7 +68,7 @@ DiskOperation *DiskOperation::newAppendOperation(BufferPointer buffer,  std::str
   o->fileName = fileName;
   o->type = DiskOperation::append;
   o->buffer = buffer;
-  o->size = buffer->getSize();
+  o->size = buffer->size();
   o->offset = 0;
   o->addListener(_listenerId);
 
@@ -159,7 +159,7 @@ void DiskOperation::run() {
       setError("Error opening file");
     } else {
       if (size > 0) {
-        if (fwrite(buffer->getData(), size, 1, file) == 1) {
+        if (fwrite(buffer->data(), size, 1, file) == 1) {
           fflush(file);
         } else {
           LM_E(("Error writing data to file, fileName:%s, errno:%d", fileName.c_str(), errno));
@@ -184,7 +184,7 @@ void DiskOperation::run() {
         if (buffer == NULL) {
           LM_X(1, ("Internal error"));
         }
-        if (fwrite(buffer->getData(), size, 1, file) == 1) {
+        if (fwrite(buffer->data(), size, 1, file) == 1) {
           fflush(file);
         } else {
           setError("Error writing data to the file");

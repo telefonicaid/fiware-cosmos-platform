@@ -25,7 +25,8 @@
 #include "unitTest/common_engine_test.h"
 
 // Test DiskManager's instantiation
-TEST(diskManagerTest, instantiationTest) {
+TEST(engine_DiskManager, instantiationTest) {
+  
   init_engine_test();
 
   // call init() and then shared(). Should return a valid one.
@@ -36,22 +37,17 @@ TEST(diskManagerTest, instantiationTest) {
 }
 
 // test void add( DiskOperation *operation )
-TEST(diskManagerTest, addTest) {
+TEST(engine_DiskManager, addTest) {
   init_engine_test();
 
-  class A : public engine::Object {
+  class A : public engine::NotificationListener {
     au::Token token;
-
-public:
-
+  public:
     A() : token("Test A") {
     }
-
     void test() {
       au::TokenTaker tt(&token);
-
       char buffer[1024 * 1024];
-
       au::SharedPointer<engine::DiskOperation> operation(engine::DiskOperation::newReadOperation(buffer,
                                                                                                  "test_filename.txt", 0,
                                                                                                  1,

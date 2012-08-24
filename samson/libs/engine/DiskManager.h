@@ -33,7 +33,7 @@
 
 #include "engine/Engine.h"
 #include "engine/MemoryManager.h"   // engine::MemoryManager
-#include "engine/Object.h"     // engine::EngineNotification
+#include "engine/NotificationListener.h"     // engine::EngineNotification
 
 #include "engine/ReadFileManager.h"  // engine::ReadFileManager
 

@@ -8,9 +8,9 @@
 *
 * DESCRIPTION
 *
-* Object is the top class element in the engine libreary
+* NotificationListener is the base class for any object that should receive notification from engine
 *      It can receive notifications
-*      It can be used as argument in a notification
+*      It can listen notifications channels
 *
 * ****************************************************************************/
 
@@ -26,34 +26,33 @@ class Notification;
  * Base class for any element in the engine library to receive notifications
  */
 
-class Object {
-  // Class the managers this objects
-  friend class ObjectsManager;
-
-  // Unique identifier of this listener
-  size_t engine_id;
-
-  // Unique name
-  const char *engine_name;
+class NotificationListener {
 
 public:
 
-  Object();                                  // Simple constructor ( object has an id )
-  Object(const char *engine_name);           // Object can be accessed by this name anywhere
-  virtual ~Object();                         // Destructor. ( virtual destructor is mandatory for generic remov
+  // Constructor & Destructor
+  NotificationListener();
+  virtual ~NotificationListener();
 
-public:
-
-  // Get my id as listener
-  size_t getEngineId();
+  // Accesors
+  size_t engine_id();
 
 protected:
 
   // Start listening a particular notification
-  void listen(const char *notification_name);
+  void listen( const char *notification_name );
 
   // Method to receive a particular notification
   virtual void notify(Notification *notification);
+  
+private:
+  
+  // Unique identifier of this listener
+  size_t engine_id_;
+  
+  // Class the managers this objects
+  friend class NotificationListenersManager;
+  
 };
 }
 

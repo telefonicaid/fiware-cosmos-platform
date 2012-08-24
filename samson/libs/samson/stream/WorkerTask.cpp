@@ -100,7 +100,7 @@ void WorkerTask::fill(samson::gpb::CollectionRecord *record, const Visualization
 
 void WorkerTask::processOutputBuffer(engine::BufferPointer buffer, int output, int hg_division, bool finish) {
   // Information for generated block
-  KVHeader *header = (KVHeader *)buffer->getData();
+  KVHeader *header = (KVHeader *)buffer->data();
 
   // Create a block ( and distribute it )
   size_t block_id = samson_worker_->distribution_blocks_manager()->CreateBlock(buffer);
@@ -112,7 +112,7 @@ void WorkerTask::processOutputBuffer(engine::BufferPointer buffer, int output, i
 
 void WorkerTask::processOutputTXTBuffer(engine::BufferPointer buffer, bool finish) {
   // Information for generated block
-  KVHeader *header = (KVHeader *)buffer->getData();
+  KVHeader *header = (KVHeader *)buffer->data();
 
   // Create a block ( and distribute it )
   size_t block_id = samson_worker_->distribution_blocks_manager()->CreateBlock(buffer);
@@ -158,7 +158,7 @@ void WorkerTask::sendBufferToQueue(engine::BufferPointer buffer, int outputWorke
    * packet->message->set_delilah_component_id( 0 );
    *
    * network::PushBlock* pb =  packet->message->mutable_push_block();
-   * pb->set_size( buffer->getSize() );
+   * pb->set_size( buffer->size() );
    *
    * std::vector<std::string> queue_names = au::split( queue_name , ',' );
    * for ( size_t i = 0 ; i < queue_names.size() ; i++)
@@ -358,7 +358,7 @@ void WorkerTask::generateKeyValues_map(samson::ProcessWriter *writer) {
     engine::BufferPointer buffer = block->buffer();
 
     // Check header for valid block
-    KVHeader *header = (KVHeader *)buffer->getData();
+    KVHeader *header = (KVHeader *)buffer->data();
     if (!header->check()) {
       setUserError(("Not valid header in block refernce"));
       return;
@@ -722,11 +722,11 @@ void WorkerTask::generateKeyValues_parser(samson::ProcessWriter *writer) {
     engine::BufferPointer buffer = block->buffer();
 
     // Pointer to the internal data in the buffer
-    char *data = buffer->getData() + sizeof( KVHeader );
-    size_t size = buffer->getSize() - sizeof( KVHeader );
+    char *data = buffer->data() + sizeof( KVHeader );
+    size_t size = buffer->size() - sizeof( KVHeader );
 
     // Trace
-    operation_traces.trace_block(buffer->getSize());
+    operation_traces.trace_block(buffer->size());
 
     // Run parser with this data
     parser->run(data, size,  writer);

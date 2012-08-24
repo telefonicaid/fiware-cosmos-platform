@@ -25,7 +25,7 @@
 #include "au/containers/SharedPointer.h"
 #include "au/mutex/Token.h"
 #include "engine/Notification.h"
-#include "engine/Object.h"              // engine::EngineNotificationObject
+#include "engine/NotificationListener.h"              // engine::EngineNotificationObject
 #include "engine/SimpleBuffer.h"        // engine::SimpleBuffer
 
 namespace engine {
@@ -38,75 +38,71 @@ class Buffer : public NotificationObject {
 
 public:
 
-  static au::SharedPointer<Buffer> create(const std::string& name, const std::string& type, size_t max_size);
+  static au::SharedPointer<Buffer> Create(const std::string& name, const std::string& type, size_t max_size);
   ~Buffer();
 
   // Get the maximum size of the buffer
-  size_t getMaxSize();
+  size_t max_size() const;
 
   // Get used size of this buffer ( not necessary the maximum )
-  size_t getSize();
+  size_t size()  const;
+  void set_size(size_t size);
 
   // Get internal name for debuggin
-  std::string getName();
+  std::string name() const;
 
   // Get internal type for debuggin
-  std::string getType();
+  std::string type() const;
 
   // Get a description of the buffer ( debugging )
-  std::string str();
+  std::string str() const;
 
   // Set internal name and type for debuggin
-  void setNameAndType(std::string name, std::string type);
+  void set_name_and_type(std::string name, std::string type);
 
-  // Add string to the internal name
-  void addToName(std::string description);
+  // Add string to the internal name ( considered an accessor )
+  void add_to_name(std::string description);
 
   // Write content to this buffer
-  bool write(const char *input_buffer, size_t input_size);
+  bool Write(const char *input_buffer, size_t input_size);
 
   // Skip some space without writing anything ( usefull to fix-size headers )
-  bool skipWrite(size_t size);
+  bool SkipWrite(size_t size);
 
   // Write on the buffer the maximum possible ammount of data
-  void write(std::ifstream &inputStream);
+  void Write(std::ifstream &inputStream);
 
   // Get available space to write with "write call"
-  size_t getAvailableWrite();
+  size_t GetAvailableSizeToWrite() const;
 
   // Reading content from the buffer
   // ------------------------------------------
 
   // Skip some space without reading
-  size_t skipRead(size_t size);
+  size_t SkipRead(size_t size);
 
   // Read command
-  size_t read(char *output_buffer, size_t output_size);
+  size_t Read(char *output_buffer, size_t output_size);
 
   // Get pending bytes to be read
-  size_t getSizePendingRead();
+  size_t GetAvailableSizeToRead() const;
 
   // Manual manipulation of data
   // ------------------------------------------
 
-  // Get a pointer to the data full space ( not related with write calls )
-  char *getData();
-
-  // Set used size manually
-  void setSize(size_t size);
+  char *data();
 
   // Interface with SimpleBuffer ( simplified view of the internal buffer )
   // ------------------------------------------
 
-  SimpleBuffer getSimpleBuffer();
-  SimpleBuffer getSimpleBufferAtOffset(size_t offset);
+  SimpleBuffer GetSimpleBuffer();
+  SimpleBuffer GetSimpleBufferAtOffset(size_t offset);
 
   // Spetial functions
   // ------------------------------------------
 
   // Remove the last characters of an unfinished line and put them in buffer.
-  int removeLastUnfinishedLine(char *& buffer, size_t& buffer_size);
-
+  int RemoveLastUnfinishedLine(char *& buffer, size_t& buffer_size);
 
 private:
 
@@ -119,7 +115,7 @@ private:
   /**
    * Current size used in this buffer
    * This is the one that should be used when transmitting the buffer across the network
-   * This variable is updated with calls to "write" or set manually in setSize
+   * This variable is updated with calls to "write" or set manually in set_size
    */
 
   size_t size_;

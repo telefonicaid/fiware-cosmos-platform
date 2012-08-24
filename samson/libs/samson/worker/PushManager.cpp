@@ -24,7 +24,7 @@ PushOperation::PushOperation(SamsonWorker *samson_worker
   }
 
   // Copy the header of this block ( for keep information )
-  memcpy(&header, buffer->getData(), sizeof( KVHeader));
+  memcpy(&header, buffer->data(), sizeof( KVHeader));
 
   // Receive notifications when a block has been correctly distributed
   listen("notification_block_correctly_distributed");
@@ -141,7 +141,7 @@ void PushManager::receive_push_block(size_t delilah_id
   KVRanges ranges = samson_worker_->worker_controller()->GetMyKVRanges();
   int hg = ranges.RandomHashGroup();
 
-  KVHeader *header = (KVHeader *)buffer->getData();
+  KVHeader *header = (KVHeader *)buffer->data();
   if (!header->isTxt() || !header->check() || !header->range.isValid()) {
     LM_W(("Push message with a non-valid buffer.Ignoring..."));
     return;
@@ -159,7 +159,7 @@ void PushManager::receive_push_block(size_t delilah_id
   }
 
   // Check valid header
-  if (buffer->getSize() < sizeof(KVHeader)) {
+  if (buffer->size() < sizeof(KVHeader)) {
     LM_W(("Push message with a non-valid buffer.Ignoring..."));
     return;
   }

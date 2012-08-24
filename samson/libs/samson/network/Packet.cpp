@@ -65,7 +65,7 @@ au::Status Packet::write(au::FileDescriptor *fd, size_t *size) {
 
   header.code        = msgCode;
   header.gbufLen     = message->ByteSize();
-  header.kvDataLen   = (buffer_ != NULL) ? buffer_->getSize() : 0;
+  header.kvDataLen   = (buffer_ != NULL) ? buffer_->size() : 0;
 
   // Set magic number
   header.setMagicNumber();
@@ -107,12 +107,12 @@ au::Status Packet::write(au::FileDescriptor *fd, size_t *size) {
   }
 
   if (buffer_ != 0) {
-    s = fd->partWrite(buffer_->getData(), buffer_->getSize(), "KV data");
+    s = fd->partWrite(buffer_->data(), buffer_->size(), "KV data");
     if (s != au::OK) {
-      LM_RE(s, ("partWrite returned %d and not the expected %d", s, buffer_->getSize()));
+      LM_RE(s, ("partWrite returned %d and not the expected %d", s, buffer_->size()));
     }
     if (size) {
-      *size += buffer_->getSize();
+      *size += buffer_->size();
     }
   }
 
@@ -191,9 +191,9 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
       }
     }
 
-    buffer_ = engine::Buffer::create(buffer_name, "network", header.kvDataLen);
+    buffer_ = engine::Buffer::Create(buffer_name, "network", header.kvDataLen);
 
-    char *kvBuf  = buffer_->getData();
+    char *kvBuf  = buffer_->data();
     s = fd->partRead(kvBuf, header.kvDataLen, "Key-Value Data", 300);
 
     if (s != au::OK) {
@@ -204,7 +204,7 @@ au::Status Packet::read(au::FileDescriptor *fd, size_t *size) {
     if (size) {
       *size += header.kvDataLen;
     }
-    buffer_->setSize(header.kvDataLen);
+    buffer_->set_size(header.kvDataLen);
   }
 
   return au::OK;
@@ -239,7 +239,7 @@ std::string Packet::str() {
     output << "(ClusterInfoUpdate version " << message->cluster_info().version() << " )";
   }
   if (buffer_ != NULL) {
-    output << " [ Buffer " << au::str(buffer_->getSize()) << "/" << au::str(buffer_->getMaxSize()) << " ]";
+    output << " [ Buffer " << au::str(buffer_->size()) << "/" << au::str(buffer_->max_size()) << " ]";
   }
   return output.str();
 }
@@ -248,7 +248,7 @@ size_t Packet::getSize() {
   size_t total = 0;
 
   if (buffer_ != NULL) {
-    total += buffer_->getSize();
+    total += buffer_->size();
   }
   total += message->ByteSize();
 

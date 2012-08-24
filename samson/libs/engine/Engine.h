@@ -35,8 +35,9 @@
 #include "au/mutex/TokenTaker.h"
 
 #include "engine/EngineElementCollection.h"
-#include "engine/Object.h"                  // engine::EngineNotification
-#include "engine/ObjectsManager.h"          // engine::ObjectsManager
+#include "engine/NotificationListener.h"                  // engine::EngineNotification
+#include "engine/NotificationListenersManager.h"          // engine::NotificationListenersManager
+
 
 namespace au {
 class Error;
@@ -70,21 +71,19 @@ public:
   static void StopEngine();
   static void DestroyEngine();
 
+  // Accessorts to main components
   static Engine *shared();
   static DiskManager *disk_manager();
   static MemoryManager *memory_manager();
   static ProcessManager *process_manager();
 
-  // Function to add a simple foreground tasks
-  void add(EngineElement *element);
+  // Function to add a simple foreground tasks to this runloop
+  void Add(EngineElement *element);
 
   // Methods to add notifictions
   void notify(Notification *notification);
   void notify(Notification *notification, int seconds);   // Repeated notification
   void notify_extra(Notification *notification);
-
-  // Get an object by its registry names
-  Object *objectByName(const char *name);
 
   // Debug information
   int GetNumElementsInEngineStack();
@@ -94,52 +93,47 @@ public:
 
 private:
 
-  // Private constructor ( see Init static method )
-  Engine();
+  Engine();     // Private constructor ( see Init static method )
+  void Stop();  // Stop backgroudn threads
 
-  // Stop backgroudn threads
-  void Stop();
+  void RunMainLoop();  // Run main loop ( in a separate thread )
 
-  // Methods only executed from the thread-creation-functions ( never use directly )
-  void run();
+  // Methods to register and unregister listsners ( used from class NotificationListener )
+  void AddListener(NotificationListener *object);
+  void AddListenerToChannel(NotificationListener *object, const char *channel);
+  void RemoveListener(NotificationListener *object);
 
-  // Methods to register and unregister objects
-  void register_object(Object *object);
-  void register_object_for_channel(Object *object, const char *channel);
-  void unregister_object(Object *object);
-
-  // Really sent a notification to the targets
-  void send(Notification *notification);
+  // Really sent a notification to required targets
+  void Send(Notification *notification);
 
   // Run a particular engine element
-  void runElement(EngineElement *running_element);
-
-  // Statistics
-  au::statistics::ActivityMonitor activity_monitor_;
-
-  // Collection of items
-  EngineElementCollection engine_element_collection;
-
-  // Management of all objects
-  ObjectsManager objectsManager;
-
-  // Counter of EngineElement processed
-  size_t counter;
-
-  pthread_t thread_id_;       // Thread to run the engine in background ( if necessary )
-  bool running_thread_;       // Flag to indicate that background thread is running
-  bool quitting_thread_;      // Flag to indicate to the backgroudn thread to quit
-
-  au::Cronometer uptime;                              // Total up time
-  double last_uptime_mark;                            // Last mark used to spent time
+  void RunElement(EngineElement *running_element);
 
   // Common engine instance
   static Engine *engine_;
   static MemoryManager *memory_manager_;
   static DiskManager *disk_manager_;
   static ProcessManager *process_manager_;
+  
+  // Collection of Engine Elements to be executed
+  EngineElementCollection engine_element_collection_;
 
-  friend class Object;
+  // Management of listeners for notifications
+  NotificationListenersManager notification_listeners_manager_;
+
+  // Statistics
+  au::statistics::ActivityMonitor activity_monitor_;
+
+  // Internal counter for debuggin
+  size_t counter_;
+
+  pthread_t thread_id_;       // Thread to run the engine in background ( if necessary )
+  bool running_thread_;       // Flag to indicate that background thread is running
+  bool quitting_thread_;      // Flag to indicate to the backgroudn thread to quit
+
+  au::Cronometer uptime_;                              // Total up time
+
+  friend class NotificationListener;
   friend class NotificationElement;
   friend void *runEngineBackground(void *);   // Backgrount function
 };

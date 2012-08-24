@@ -109,10 +109,10 @@ void PushDelilahComponent::run_in_background() {
     }
 
     // Create a buffer to be filled
-    engine::BufferPointer buffer = engine::Buffer::create("PushDelilahComponent", "push", 64 * 1024 * 1024);
+    engine::BufferPointer buffer = engine::Buffer::Create("PushDelilahComponent", "push", 64 * 1024 * 1024);
 
     // Skip KVHeader to write the header at the end
-    buffer->skipWrite(sizeof(KVHeader));
+    buffer->SkipWrite(sizeof(KVHeader));
 
     // Full the buffer with the content from the files
     current_status_ = au::S() <<  "Filling a new buffer " << buffer->str();
@@ -122,11 +122,11 @@ void PushDelilahComponent::run_in_background() {
     }
 
     // Set the header
-    KVHeader *header = (KVHeader *)buffer->getData();
-    header->initForTxt(buffer->getSize() - sizeof(KVHeader));
+    KVHeader *header = (KVHeader *)buffer->data();
+    header->initForTxt(buffer->size() - sizeof(KVHeader));
 
     // Get the size to update the total process info
-    sent_size_ += buffer->getSize();
+    sent_size_ += buffer->size();
 
     // Add this buffer to be pushed by delilah
     current_status_ = au::S() <<  "Pushing block " << buffer->str() << " using delilah component ";

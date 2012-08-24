@@ -14,8 +14,8 @@
 #include "au/string.h"               // au::Format
 
 #include "engine/DiskManager.h"     // engine::DiskManager
-#include "engine/Engine.h"           // engine::Object
-#include "engine/Object.h"           // engine::Object
+#include "engine/Engine.h"           // engine::NotificationListener
+#include "engine/NotificationListener.h"           // engine::NotificationListener
 
 #include "samson/common/samson.pb.h"  // samson::network
 
@@ -31,7 +31,7 @@ class Buffer;
 
 
 // All the information related with a load process
-class PushDelilahComponent : public DelilahComponent, engine::Object {
+class PushDelilahComponent : public DelilahComponent, engine::NotificationListener {
 public:
 
   // Constructor
@@ -41,7 +41,7 @@ public:
   // Function to start running
   void run();
 
-  // engine::Object
+  // engine::NotificationListener
   virtual void notify(engine::Notification *notification);
 
   // Function to receive packets

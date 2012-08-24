@@ -34,7 +34,7 @@
  *  EXPECT_TRUE( buffer != NULL ) << "Buffer was not creatd";
  *  EXPECT_EQ(engine::Engine::memory_manager()->num_buffers(), 1) << "Memory request was not added";
  *
- *  EXPECT_TRUE( buffer->getMaxSize() >= 100 ) << "Buffer size is not correct";
+ *  EXPECT_TRUE( buffer->max_size() >= 100 ) << "Buffer size is not correct";
  *
  *  // Destroy buffer
  *  buffer->Release();

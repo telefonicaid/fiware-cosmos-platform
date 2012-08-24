@@ -22,8 +22,8 @@
 #include "au/string.h"                      // au::Format
 
 #include "engine/Buffer.h"                  // engine::Buffer
-#include "engine/Object.h"                  // engine::Object
-#include "engine/Object.h"                  // engine::Object
+#include "engine/NotificationListener.h"                  // engine::NotificationListener
+#include "engine/NotificationListener.h"                  // engine::NotificationListener
 
 #include "samson/common/EnvironmentOperations.h"
 #include "samson/common/NotificationMessages.h"

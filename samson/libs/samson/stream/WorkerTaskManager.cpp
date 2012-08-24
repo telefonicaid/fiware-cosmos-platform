@@ -167,9 +167,9 @@ bool WorkerTaskManager::runNextWorkerTasksIfNecessary() {
       au::SharedPointer<WorkerSystemTask> system_task = base_task.dynamic_pointer_cast<WorkerSystemTask>();
 
       if (task != NULL) {
-        engine::Engine::process_manager()->Add(task.static_pointer_cast<engine::ProcessItem>(), getEngineId());
+        engine::Engine::process_manager()->Add(task.static_pointer_cast<engine::ProcessItem>(), engine_id());
       } else if (system_task != NULL) {
-        engine::Engine::process_manager()->Add(system_task.static_pointer_cast<engine::ProcessItem>(), getEngineId());
+        engine::Engine::process_manager()->Add(system_task.static_pointer_cast<engine::ProcessItem>(), engine_id());
       } else {
         LM_X(1, ("WorkerTaskBase cannot be converted to WorkerTask or WorkerSystemTask"));
       } return true;

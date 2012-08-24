@@ -52,7 +52,7 @@ void BufferProcessor::emit(char *data, size_t length) {
   // If not possible to write in the current buffer, just flush content
   {
     if (output_buffer_ != NULL) {
-      if (output_buffer_->getSize() + length > output_buffer_->getMaxSize()) {
+      if (output_buffer_->size() + length > output_buffer_->max_size()) {
         flushOutputBuffer();
       }
     }
@@ -61,14 +61,14 @@ void BufferProcessor::emit(char *data, size_t length) {
   // Recover buffer to write output
   if (output_buffer_ == NULL) {
     size_t output_buffer_size = std::max(length, (size_t)64000000 - sizeof(samson::KVHeader));       // Minimum 64Mbytes buffer
-    output_buffer_ = engine::Buffer::create("output_splitter", "connector", output_buffer_size);
+    output_buffer_ = engine::Buffer::Create("output_splitter", "connector", output_buffer_size);
   }
 
   // Write in the buffer
-  if (!output_buffer_->write(data, length)) {
+  if (!output_buffer_->Write(data, length)) {
     LM_X(1, ("Internal error"));
   }
-  if (output_buffer_->getSize() == output_buffer_->getMaxSize()) {
+  if (output_buffer_->size() == output_buffer_->max_size()) {
     flushOutputBuffer();
   }
 }
@@ -135,10 +135,10 @@ void BufferProcessor::push(engine::BufferPointer input_buffer) {
   }
 
   size_t pos_in_input_buffer = 0;   // Readed so far
-  while (pos_in_input_buffer < input_buffer->getSize()) {
-    size_t copy_size = std::min(max_size - size, input_buffer->getSize() - pos_in_input_buffer);
+  while (pos_in_input_buffer < input_buffer->size()) {
+    size_t copy_size = std::min(max_size - size, input_buffer->size() - pos_in_input_buffer);
 
-    memcpy(buffer + size, input_buffer->getData() + pos_in_input_buffer, copy_size);
+    memcpy(buffer + size, input_buffer->data() + pos_in_input_buffer, copy_size);
     size += copy_size;
     pos_in_input_buffer += copy_size;
 

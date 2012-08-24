@@ -47,7 +47,7 @@ Buffer::Buffer(const std::string& name, const std::string& type,  size_t max_siz
   Engine::memory_manager()->Add(this);
 }
 
-au::SharedPointer<Buffer> Buffer::create(const std::string& name, const std::string& type, size_t max_size) {
+au::SharedPointer<Buffer> Buffer::Create(const std::string& name, const std::string& type, size_t max_size) {
   if (max_size > 1024 * 1024 * 1024) {
     LM_X(1, ("Excesive size for buffer %s", au::str(max_size).c_str()));
   }
@@ -64,9 +64,9 @@ Buffer::~Buffer() {
   }
 }
 
-std::string Buffer::str() {
-  return au::str("[ Buffer (%s / %s) Size: %lu/%lu Read_offset %lu (%p) ]"
-                 , name_.c_str(), type_.c_str(), size_, max_size_, size_, offset_, this);
+std::string Buffer::str()  const{
+  return au::str("[ Buffer (%s / %s) Size: %lu/%lu Read_offset %lu ]"
+                 , name_.c_str(), type_.c_str(), size_, max_size_, size_, offset_);
 }
 
 /**
@@ -75,7 +75,7 @@ std::string Buffer::str() {
  * So, it never try to write less than input_size bytes
  */
 
-bool Buffer::write(const char *input_buffer, size_t input_size) {
+bool Buffer::Write(const char *input_buffer, size_t input_size) {
   if (size_ + input_size > max_size_) {
     return false;
   }
@@ -86,7 +86,7 @@ bool Buffer::write(const char *input_buffer, size_t input_size) {
   return true;
 }
 
-bool Buffer::skipWrite(size_t size) {
+bool Buffer::SkipWrite(size_t size) {
   if (size_ + size <= max_size_) {
     size_ += size;
     return true;
@@ -95,7 +95,7 @@ bool Buffer::skipWrite(size_t size) {
   }
 }
 
-size_t Buffer::skipRead(size_t size) {
+size_t Buffer::SkipRead(size_t size) {
   if (offset_ + size > max_size_) {
     size = (max_size_ - offset_);       // Max offset
   }
@@ -107,7 +107,7 @@ size_t Buffer::skipRead(size_t size) {
  * Write on the buffer the maximum possible ammount of data
  */
 
-void Buffer::write(std::ifstream &inputStream) {
+void Buffer::Write(std::ifstream &inputStream) {
   inputStream.read(data_ + size_, max_size_ - size_);
   size_ += inputStream.gcount();
 }
@@ -117,14 +117,14 @@ void Buffer::write(std::ifstream &inputStream) {
  * Remove the size of this set of characters
  */
 
-int Buffer::removeLastUnfinishedLine(char *& buffer, size_t& buffer_size) {
+int Buffer::RemoveLastUnfinishedLine(char *& buffer, size_t& buffer_size) {
   size_t last_line_size = 0;
 
-  while (( last_line_size < getSize()) && (data_[size_ - last_line_size - 1] != '\n' )) {
+  while (( last_line_size < size_) && (data_[size_ - last_line_size - 1] != '\n' )) {
     last_line_size++;
   }
 
-  if (last_line_size == getSize()) {
+  if (last_line_size == size_) {
     return 1;     // Error... not final line found in the buffer
   }
   buffer = (char *)malloc(last_line_size);
@@ -142,7 +142,7 @@ int Buffer::removeLastUnfinishedLine(char *& buffer, size_t& buffer_size) {
  * Read content of the buffer in a continuous way
  */
 
-size_t Buffer::read(char *output_buffer, size_t output_size) {
+size_t Buffer::Read(char *output_buffer, size_t output_size) {
   size_t read_size = output_size;
 
   if (read_size > ( size_ - offset_ )) {
@@ -157,56 +157,56 @@ size_t Buffer::read(char *output_buffer, size_t output_size) {
  * Auxilir functions to work directly with the content
  */
 
-size_t Buffer::getSizePendingRead() {
+size_t Buffer::GetAvailableSizeToRead() const {
   return size_ - offset_;
 }
 
-size_t Buffer::getAvailableWrite() {
+size_t Buffer::GetAvailableSizeToWrite() const {
   return max_size_ - size_;
 }
 
-char *Buffer::getData() {
+char *Buffer::data() {
   return data_;
 }
 
-size_t Buffer::getMaxSize() {
+size_t Buffer::max_size() const {
   return max_size_;
 }
 
-size_t Buffer::getSize() {
+size_t Buffer::size() const {
   return size_;
 }
 
-void Buffer::setSize(size_t size) {
+void Buffer::set_size(size_t size) {
   if (size <= max_size_) {
     size_ = size;
   }
 }
 
-SimpleBuffer Buffer::getSimpleBuffer() {
+SimpleBuffer Buffer::GetSimpleBuffer() {
   return SimpleBuffer(data_, max_size_);
 }
 
-SimpleBuffer Buffer::getSimpleBufferAtOffset(size_t offset) {
+SimpleBuffer Buffer::GetSimpleBufferAtOffset(size_t offset) {
   return SimpleBuffer(data_ + offset, max_size_ - offset);
 }
 
-void Buffer::setNameAndType(std::string name, std::string type) {
+void Buffer::set_name_and_type(std::string name, std::string type) {
   name_ = name;
   type_ = type;
 }
 
-void Buffer::addToName(std::string description) {
+void Buffer::add_to_name(std::string description) {
   name_.append(description);
 }
 
 // Get internal name for debuggin
-std::string Buffer::getName() {
+std::string Buffer::name() const {
   return name_;
 }
 
 // Get internal type for debuggin
-std::string Buffer::getType() {
+std::string Buffer::type() const {
   return type_;
 }
 }

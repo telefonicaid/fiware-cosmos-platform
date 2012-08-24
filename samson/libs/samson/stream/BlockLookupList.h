@@ -16,7 +16,7 @@
 #include "samson/common/samson.pb.h"
 
 #include "engine/DiskOperation.h"                   // engine::DiskOperation
-#include "engine/Object.h"                          // engien::EngineListener
+#include "engine/NotificationListener.h"                          // engien::EngineListener
 
 #include "engine/ProcessItem.h"
 
@@ -26,7 +26,8 @@
 
 #include <set>
 
-namespace samson { namespace stream {
+namespace samson {
+  namespace stream {
                    class BlockList;
 
                    typedef struct BlockLookupRecord {

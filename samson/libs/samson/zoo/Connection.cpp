@@ -177,10 +177,10 @@ int Connection::Get(const std::string& path, engine::BufferPointer buffer) {
     return rc;
   }
 
-  int buffer_len = buffer->getMaxSize();
-  rc = Get(path, buffer->getData(), &buffer_len, NULL);
+  int buffer_len = buffer->max_size();
+  rc = Get(path, buffer->data(), &buffer_len, NULL);
   if (!rc) {
-    buffer->setSize(buffer_len);                     // Set the real size
+    buffer->set_size(buffer_len);                     // Set the real size
   }
   return rc;
 }
@@ -312,10 +312,10 @@ int Connection::Create(const std::string& path, int flags, const char *value, in
 }
 
 int Connection::Create(std::string& path, int flags, engine::BufferPointer buffer) {
-  if (buffer != NULL || (buffer->getSize() == 0)) {
+  if (buffer != NULL || (buffer->size() == 0)) {
     return Create(path, flags, NULL, 0);
   } else {
-    return Create(path, flags, buffer->getData(), buffer->getSize());
+    return Create(path, flags, buffer->data(), buffer->size());
   }
 }
 

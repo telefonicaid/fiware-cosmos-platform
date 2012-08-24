@@ -8,8 +8,8 @@
 #include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"
 
-#include "engine/Object.h"  // engien::EngineListener
-#include "engine/Object.h"              // engine::Object
+#include "engine/NotificationListener.h"  // engien::EngineListener
+#include "engine/NotificationListener.h"              // engine::NotificationListener
 
 #include <vector>
 
@@ -22,7 +22,7 @@ class BlockList;
  */
 
 
-class BlockManager : public engine::Object {
+class BlockManager : public engine::NotificationListener {
   BlockManager();                     // Private constructor for singleton implementation
   ~BlockManager();
 

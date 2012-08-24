@@ -208,7 +208,7 @@ void CommonNetwork::Send(const PacketPointer& packet) {
   // Add more info to buffer name for debuggin
   engine::BufferPointer buffer = packet->buffer();
   if (buffer != NULL) {
-    buffer->addToName(au::str(" [in packet to %s]", packet->to.str().c_str()));    // Set me as from identifier
+    buffer->add_to_name(au::str(" [in packet to %s]", packet->to.str().c_str()));    // Set me as from identifier
   }
   packet->from = node_identifier_;
 
@@ -321,7 +321,7 @@ size_t CommonNetwork::get_rate_out() {
 void CommonNetwork::schedule_receive(PacketPointer packet) {
   // Using the engine to call the packet receiver asynchronously in a unique thread form
   LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet type %s ", messageCode(packet->msgCode)));
-  engine::Engine::shared()->add(new PacketReceivedNotification(receiver_, packet));
+  engine::Engine::shared()->Add(new PacketReceivedNotification(receiver_, packet));
 }
 
 size_t CommonNetwork::cluster_information_version() {

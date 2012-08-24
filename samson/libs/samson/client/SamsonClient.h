@@ -37,7 +37,7 @@
 
 #include "engine/Buffer.h"          // engine::Buffer
 #include "engine/MemoryManager.h"   // engine::MemoryManager
-#include "engine/Object.h"          // engine::Object
+#include "engine/NotificationListener.h"          // engine::NotificationListener
 
 #include "samson/common/coding.h"
 #include "samson/delilah/Delilah.h"  // samson::Delilah

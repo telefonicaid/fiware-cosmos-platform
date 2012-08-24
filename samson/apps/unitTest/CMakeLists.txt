@@ -15,6 +15,7 @@ SET (SOURCES
 	lib/au/CounterCollectionTest.cpp
 	lib/au/StringComponentsTest.cpp
 	lib/au/stringTest.cpp
+	lib/au/TokenizerTest.cpp
 
 	# AU CONTAINERS LIBRARY
 	lib/au/containers/SharedPointerTest.cpp
@@ -33,7 +34,6 @@ SET (SOURCES
 
 	# AU MUTEX LIBRARY
     lib/au/mutex/TokenTest.cpp
-    lib/au/mutex/TokenTest2.cpp
 
 	# AU tables library
 	lib/au/tables/TableTest.cpp	
@@ -41,32 +41,27 @@ SET (SOURCES
 	# ENGINE library
 	lib/engine/statusTest.cpp
 	lib/engine/EngineTest.cpp
+	lib/engine/BufferTest.cpp
+    lib/engine/DiskOperationTest.cpp        
+	lib/engine/MemoryManagerTest.cpp        
+	lib/engine/ProcessItem.cpp              
+	lib/engine/ReadFileTest.cpp
+	lib/engine/DiskManagerTest.cpp          
+	lib/engine/EngineTest.cpp               
+	lib/engine/NotificationListenerTest.cpp 
+	lib/engine/ProcessManagerTest.cpp       
+	lib/engine/statusTest.cpp
 
 	# SAMSON COMMON LIBRARY
 	lib/samson/common/SamsonSetupTest.cpp 
+	lib/samson/common/SamsonFileTest.cpp
 
 	# SAMSOM WORKER library
 	lib/samson/worker/SamsonWorkerTest.cpp
 
-
 	#Common files
 	common_engine_test.h
 	common_engine_test.cpp
-
-	#samson lib
-
-	samson/common/SamsonFileTest.cpp
-
-    #engine
-    engine/object_test.cpp
-    engine/engine_test.cpp
-    engine/memoryManager_test.cpp
-    engine/diskOperation_test.cpp
-    engine/diskManager_test.cpp
-	engine/processManager_test.cpp
-    engine/processItem_test.cpp
-    engine/buffer_test.cpp
-    engine/readFile_test.cpp
 
 	#samson_system lib
 	samson_system/samson_system.cpp

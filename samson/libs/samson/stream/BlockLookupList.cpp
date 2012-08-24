@@ -25,9 +25,10 @@
 
 #include "BlockLookupList.h"  // Own interface
 
-namespace samson { namespace stream {
+namespace samson {
+  namespace stream {
                    BlockLookupList::BlockLookupList(Block *block) {
-                     char *data = block->buffer()->getData();
+                     char *data = block->buffer()->data();
 
                      // Vector of KVInfo per hash-group
                      KVInfo *kvInfoV  = createKVInfoVector(data, &error);

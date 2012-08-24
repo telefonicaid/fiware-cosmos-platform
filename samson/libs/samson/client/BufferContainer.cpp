@@ -10,7 +10,7 @@ void BufferContainer::Push(const std::string& queue_name, engine::BufferPointer 
     return;
   }
 
-  if (buffer->getSize() == 0) {
+  if (buffer->size() == 0) {
     return;
   }
 

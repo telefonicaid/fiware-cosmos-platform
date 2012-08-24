@@ -931,11 +931,11 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
    * // Size of the file
    * size_t file_size = info.st_size;
    * engine::BufferPointer buffer = engine::Engine::memory_manager()->createBuffer("push_module" , "delilah", file_size );
-   * buffer->setSize(file_size);
+   * buffer->set_size(file_size);
    *
    * // Load the file
    * FILE* file = fopen( file_name.c_str(), "r");
-   * if( fread(buffer->getData(), file_size, 1, file) != 1 )
+   * if( fread(buffer->data(), file_size, 1, file) != 1 )
    *  LM_W(("Errro reading file %s" , file_name.c_str() ));
    * fclose(file);
    *
@@ -1050,7 +1050,7 @@ void DelilahConsole::delilahComponentFinishNotification(DelilahComponent *compon
 
 void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer) {
   size_t counter = stream_out_queue_counters.appendAndGetCounterFor(queue);
-  size_t packet_size = buffer->getSize();
+  size_t packet_size = buffer->size();
 
   std::string directory_name = au::str("stream_out_%s", queue.c_str());
 
@@ -1083,7 +1083,7 @@ void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::Buffer
 
 
   // Disk operation....
-  engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer,  fileName, getEngineId());
+  engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer,  fileName, engine_id());
   au::SharedPointer<engine::DiskOperation> operation(o);
   engine::Engine::disk_manager()->Add(operation);
 }

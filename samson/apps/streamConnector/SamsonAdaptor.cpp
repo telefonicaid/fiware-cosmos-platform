@@ -93,7 +93,7 @@ void SamsonConnection::push(engine::BufferPointer buffer) {
     return;         // Nothing to do if we are input
   }
   // Report manually size ( not we are overloading Connection class )
-  report_output_size(buffer->getSize());
+  report_output_size(buffer->size());
 
   // Push this block directly to the SAMSON client
   client_->push(buffer, queue_);
@@ -102,14 +102,14 @@ void SamsonConnection::push(engine::BufferPointer buffer) {
 // Overwriteen method of SamsonClient
 void SamsonConnection::receive_buffer_from_queue(std::string queue, engine::BufferPointer buffer) {
   // Transformation of buffer
-  samson::KVHeader *header = (samson::KVHeader *)buffer->getData();
+  samson::KVHeader *header = (samson::KVHeader *)buffer->data();
 
   if (header->isTxt()) {
     // Push the new buffer
     pushInputBuffer(buffer);
   } else {
     LM_W(("Received a binary buffer %s from %s. Still not implemented how to process this"
-          , au::str(buffer->getSize(), "B").c_str(), getFullName().c_str()));
+          , au::str(buffer->size(), "B").c_str(), getFullName().c_str()));
   }
 }
 

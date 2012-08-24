@@ -22,7 +22,7 @@
 
 #include "engine/Buffer.h"      // engine::Buffer
 
-#include "engine/Object.h"           // engine::Object
+#include "engine/NotificationListener.h"           // engine::NotificationListener
 
 #include "samson/common/KVFile.h"
 #include "samson/common/coding.h"    // FullKVInfo

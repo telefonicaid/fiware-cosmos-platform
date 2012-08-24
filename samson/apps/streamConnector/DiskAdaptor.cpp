@@ -132,7 +132,7 @@ void DiskConnection::run_as_output() {
     }
 
     // Size of the block
-    size_t current_size = current_buffer->getSize();
+    size_t current_size = current_buffer->size();
 
     if (current_size > max_size) {
       error.set(au::str("Received a block with size %s. Max file size %s."
@@ -175,12 +175,12 @@ void DiskConnection::run_as_output() {
     }
 
     // Write to disk
-    au::Status s = file_descriptor->partWrite(current_buffer->getData(),
-                                              current_buffer->getSize(), "samsonConnectorConnection");
+    au::Status s = file_descriptor->partWrite(current_buffer->data(),
+                                              current_buffer->size(), "samsonConnectorConnection");
 
     if (s != au::OK) {
       error.set(au::str("Not possible to write buffer with %s to file %s"
-                        , au::str(current_buffer->getSize()).c_str()
+                        , au::str(current_buffer->size()).c_str()
                         , current_file_name.c_str()));
       return;
     }
@@ -197,7 +197,7 @@ void DiskConnection::run_as_input() {
 
     if (file_descriptor) {
       // Still reading from a file...
-      engine::BufferPointer buffer = engine::Buffer::create("stdin"
+      engine::BufferPointer buffer = engine::Buffer::Create("stdin"
                                                             , "connector"
                                                             , input_buffer_size);
 
@@ -206,7 +206,7 @@ void DiskConnection::run_as_input() {
       au::Status s;
       {
         au::Cronometer c;
-        s = file_descriptor->partRead(buffer->getData()
+        s = file_descriptor->partRead(buffer->data()
                                       , input_buffer_size
                                       , "read connector connections"
                                       , 300
@@ -221,7 +221,7 @@ void DiskConnection::run_as_input() {
       // If we have read something...
       if (read_size > 0) {
         // Set the buffer size
-        buffer->setSize(read_size);
+        buffer->set_size(read_size);
         pushInputBuffer(buffer);
       }
 

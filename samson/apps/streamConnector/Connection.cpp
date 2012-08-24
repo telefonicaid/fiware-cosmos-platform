@@ -61,7 +61,7 @@ engine::BufferPointer Connection::getNextBufferToSent() {
   engine::BufferPointer buffer = output_buffer_list->pop();
 
   if (buffer != NULL) {
-    report_output_size(buffer->getSize());
+    report_output_size(buffer->size());
   }
   return buffer;
 }
@@ -72,7 +72,7 @@ void Connection::pushInputBuffer(engine::BufferPointer buffer) {
   }
 
   // Report input block
-  report_input_size(buffer->getSize());
+  report_input_size(buffer->size());
 
   if (item->channel->getSplitter() == "") {
     item->channel->push(buffer);

@@ -129,7 +129,7 @@ void SamsonClient::receive_buffer_from_queue(std::string queue, engine::BufferPo
 }
 
 size_t SamsonClient::push(engine::BufferPointer buffer, const std::string& queue) {
-  LM_V(("SamsonClient: Pushing buffer %s to %lu queues", au::str(buffer->getSize()).c_str(), queue.size()));
+  LM_V(("SamsonClient: Pushing buffer %s to %lu queues", au::str(buffer->size()).c_str(), queue.size()));
 
   std::vector<std::string> queues;
   queues.push_back(queue);
@@ -141,7 +141,7 @@ size_t SamsonClient::push(engine::BufferPointer buffer, const std::vector<std::s
     return 0;
   }
 
-  push_rate.Push(buffer->getSize());     // Update statistics
+  push_rate.Push(buffer->size());     // Update statistics
   return delilah_->push_txt(buffer, queues);
 }
 

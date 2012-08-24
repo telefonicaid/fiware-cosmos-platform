@@ -11,7 +11,9 @@
 
 #include "samson/client/SamsonClient.h"
 
-void init_engine_test() {
+void init_engine_test()
+{
+
   std::string samson_home    = SAMSON_HOME_DEFAULT;
   std::string samson_working = SAMSON_WORKING_DEFAULT;
   char *env_samson_working = getenv("SAMSON_WORKING");
@@ -27,13 +29,11 @@ void init_engine_test() {
   // Load setup and create default directories
   samson::SamsonSetup *samson_setup = au::Singleton<samson::SamsonSetup>::shared();
   samson_setup->SetWorkerDirectories(samson_home, samson_working);
-
   engine::Engine::InitEngine(4, 1000000, 1);
 }
 
 void close_engine_test() {
-  engine::Engine::DestroyEngine();                   // Stop engine
-
+  engine::Engine::DestroyEngine();                      // Destroy engine
   au::ThreadManager::wait_all_threads("EngineTest");    // Wait all threads to finsih
 }
 

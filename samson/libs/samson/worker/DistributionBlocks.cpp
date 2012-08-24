@@ -18,7 +18,7 @@ DistributionBlock::DistributionBlock(SamsonWorker *samsonWorker, size_t block_id
   buffer_ = buffer;
 
   // Get a copy of the header
-  memcpy(&header, buffer->getData(), sizeof(KVHeader));
+  memcpy(&header, buffer->data(), sizeof(KVHeader));
 
   // First review to include necessary workers
   review();

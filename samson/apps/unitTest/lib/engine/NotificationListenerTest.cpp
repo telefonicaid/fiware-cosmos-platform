@@ -15,22 +15,22 @@
 #include "gtest/gtest.h"
 
 #include "engine/Engine.h"
-#include "engine/Object.h"
+#include "engine/NotificationListener.h"
 
 #include "unitTest/common_engine_test.h"
 
-// Tests size_t getEngineId();
-TEST(objecttest, getEngineIdTest) {
+TEST(engine_NotificationListener, engine_idTest) {
+  
   init_engine_test();
 
-  engine::Object *object1 = new engine::Object("engine");
-  engine::Object *object2 = new engine::Object();
-  engine::Object *object3 = new engine::Object();
+  engine::NotificationListener *object1 = new engine::NotificationListener();
+  engine::NotificationListener *object2 = new engine::NotificationListener();
+  engine::NotificationListener *object3 = new engine::NotificationListener();
 
-  // getEngineId() should return a non zero value, different for each onject
-  size_t id1 = object1->getEngineId();
-  size_t id2 = object2->getEngineId();
-  size_t id3 = object3->getEngineId();
+  // engine_id() should return a non zero value, different for each onject
+  size_t id1 = object1->engine_id();
+  size_t id2 = object2->engine_id();
+  size_t id3 = object3->engine_id();
 
   EXPECT_TRUE(id1 != 0);
   EXPECT_TRUE(id1 != id2);

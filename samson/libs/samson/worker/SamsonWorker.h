@@ -63,7 +63,7 @@ class SamsonWorkerRest;
 
 class SamsonWorker :
   public NetworkInterfaceReceiver,
-  public engine::Object,
+  public engine::NotificationListener,
   public au::Console {
 public:
 

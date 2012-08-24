@@ -40,7 +40,7 @@ Block::Block(size_t block_id, engine::BufferPointer buffer) : token_lookupList("
   block_id_ = block_id;
 
   // Get a copy of the header
-  memcpy(&header, buffer->getData(), sizeof(KVHeader));
+  memcpy(&header, buffer->data(), sizeof(KVHeader));
 
   // No lookup list by default
   lookupList = NULL;

@@ -20,7 +20,7 @@ namespace stream_connector {
 //
 // ------------------------------------------------------------------------------------
 
-class BufferListItem : public engine::Object {
+class BufferListItem : public engine::NotificationListener {
   engine::BufferPointer buffer_;      // Buffer if it is on memory
   std::string file_name_;                         // Full name of the file if it is necessary to persist on disk
 

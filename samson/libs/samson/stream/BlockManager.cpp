@@ -448,7 +448,7 @@ void BlockManager::recover_blocks_from_disks() {
 
 void BlockManager::schedule_remove_operation(BlockPointer block) {
   au::SharedPointer< engine::DiskOperation> operation(engine::DiskOperation::newRemoveOperation(
-                                                        block->file_name(), getEngineId()));
+                                                        block->file_name(), engine_id()));
   operation->environment.Set("block_id", block->get_block_id());
 
   engine::Engine::disk_manager()->Add(operation);
@@ -469,8 +469,8 @@ void BlockManager::schedule_read_operation(BlockPointer block) {
   size_t size = block->getSize();
 
   // Alloc the buffer for the read operation
-  block->buffer_ = engine::Buffer::create(buffer_title, "block", size);
-  block->buffer_->setSize(size);
+  block->buffer_ = engine::Buffer::Create(buffer_title, "block", size);
+  block->buffer_->set_size(size);
 
   // Read operation over this buffer
   std::string fileName = block->file_name();
@@ -479,8 +479,8 @@ void BlockManager::schedule_read_operation(BlockPointer block) {
   engine::DiskOperation *o = engine::DiskOperation::newReadOperation(fileName
                                                                      , 0
                                                                      , size
-                                                                     , block->buffer()->getSimpleBuffer()
-                                                                     , getEngineId());
+                                                                     , block->buffer()->GetSimpleBuffer()
+                                                                     , engine_id());
   au::SharedPointer< engine::DiskOperation> operation(o);
 
   operation->environment.Set("block_id", block_id);
@@ -512,7 +512,7 @@ void BlockManager::schedule_write_operation(BlockPointer block) {
   }
   engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer
                                                                       , fileName
-                                                                      , getEngineId());
+                                                                      , engine_id());
   au::SharedPointer<engine::DiskOperation> operation(o);
   operation->environment.Set("block_id", block_id);
   operation->environment.Set("operation_size", size);

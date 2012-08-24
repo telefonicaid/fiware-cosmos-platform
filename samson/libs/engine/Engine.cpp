@@ -85,16 +85,15 @@ void Engine::DestroyEngine() {
 }
 
 void *runEngineBackground(void *e) {
-  Engine::shared()->run();
+  Engine::shared()->RunMainLoop();
   return e;
 }
 
 Engine::Engine() {
-  last_uptime_mark = 0;               // Uptime mark used to count time for different activites
 
   // Add a simple periodic element to not die inmediatelly
   EngineElement *element = new NotificationElement(new Notification("alive"), 10);
-  engine_element_collection.add(element);
+  engine_element_collection_.Add(element);
 
   LM_T(LmtEngine, ("Running engine in background..."));
   quitting_thread_ = false;
@@ -119,7 +118,7 @@ void Engine::Stop() {
   }
 }
 
-void Engine::runElement(EngineElement *running_element) {
+void Engine::RunElement(EngineElement *running_element) {
   activity_monitor_.StartActivity(running_element->getName());
 
   // Execute the item selected as running_element
@@ -133,7 +132,7 @@ void Engine::runElement(EngineElement *running_element) {
 
     if (waiting_time > 100) {
       // Print all elements with traces for debuggin...
-      engine_element_collection.print_elements();
+      engine_element_collection_.PrintElements();
     }
   }
 
@@ -158,14 +157,14 @@ void Engine::runElement(EngineElement *running_element) {
   activity_monitor_.StartActivity("engine_management");
 }
 
-void Engine::run() {
+void Engine::RunMainLoop() {
   LM_T(LmtEngine, ("Engine run"));
 
-  counter = 0;                // Init the counter to elements managed by this run-time
+  counter_ = 0;                // Init the counter to elements managed by this run-time
 
   while (true) {
     // Keep a total counter of loops
-    counter++;
+    counter_++;
 
     // Finish this thread if necessary
     if (quitting_thread_) {
@@ -173,13 +172,13 @@ void Engine::run() {
     }
 
     // Check if there are elements in the list
-    if (engine_element_collection.isEmpty()) {
+    if (engine_element_collection_.IsEmpty()) {
       LM_T(LmtEngine, ("SamsonEngine: No more elements to process in the engine. Quitting ..."));
       return;
     }
 
     // Warning if we have a lot of elements in the engine stack
-    size_t num_engine_elements = engine_element_collection.getNumEngineElements();
+    size_t num_engine_elements = engine_element_collection_.GetNumEngineElements();
     LM_T(LmtEngine, ("Number of elements in the engine stack %lu", num_engine_elements ));
 
     if (num_engine_elements > 10000) {
@@ -192,34 +191,34 @@ void Engine::run() {
 
 
     // Try if next repeated element is ready to be executed
-    EngineElement *element = engine_element_collection.getNextRepeatedEngineElement();
+    EngineElement *element = engine_element_collection_.NextRepeatedEngineElement();
     if (element) {
-      runElement(element);
+      RunElement(element);
       element->Reschedule();         // Reschedule this item
-      add(element);
+      Add(element);
       continue;
     }
 
     // Try next normal item
-    element = engine_element_collection.getNextNormalEngineElement();
+    element = engine_element_collection_.NextNormalEngineElement();
     if (element) {
-      runElement(element);
+      RunElement(element);
       delete element;         // Remove this normal element
       continue;
     }
 
     // Get a vector with all extra elements to be executed
-    std::vector<EngineElement *> extra_elements = engine_element_collection.getExtraElements();
+    std::vector<EngineElement *> extra_elements = engine_element_collection_.ExtraElements();
 
     // Run all the elements
     for (size_t i = 0; i < extra_elements.size(); i++) {
       EngineElement *element = extra_elements[i];
-      runElement(element);
+      RunElement(element);
       element->Reschedule();         // reinit internal counters...
     }
 
     // If normal elements to be executed, do not sleep
-    size_t num_normal_elements =  engine_element_collection.getNumNormalEngineElements();
+    size_t num_normal_elements =  engine_element_collection_.GetNumNormalEngineElements();
     if (num_normal_elements > 0) {
       LM_T(LmtEngine, ("Do not sleep since it seems there are %lu elements in the engine",
                        num_normal_elements));
@@ -227,7 +226,7 @@ void Engine::run() {
     }
 
     // If next repeated elements is close, do not sleep
-    double t_next_repeated_elements = engine_element_collection.getTimeForNextRepeatedEngineElement();
+    double t_next_repeated_elements = engine_element_collection_.TimeForNextRepeatedEngineElement();
     LM_T(LmtEngine, ("Engine: Next repeated item in %.2f secs ...", t_next_repeated_elements));
     if (t_next_repeated_elements < 0.01) {
       continue;
@@ -241,39 +240,39 @@ void Engine::run() {
 }
 
 int Engine::GetNumElementsInEngineStack() {
-  return engine_element_collection.getNumEngineElements();
+  return engine_element_collection_.GetNumEngineElements();
 }
 
 double Engine::GetMaxWaitingTimeInEngineStack() {
-  return engine_element_collection.getMaxWaitingTimeInEngineStack();
+  return engine_element_collection_.GetMaxWaitingTimeInEngineStack();
 }
 
 #pragma mark ----
 
 // Functions to register objects ( general and for a particular notification )
-void Engine::register_object(Object *object) {
-  objectsManager.add(object);
+void Engine::AddListener(NotificationListener *object) {
+  notification_listeners_manager_.Add(object);
 }
 
-void Engine::register_object_for_channel(Object *object, const char *channel) {
-  objectsManager.add(object, channel);
+void Engine::AddListenerToChannel(NotificationListener *object, const char *channel) {
+  notification_listeners_manager_.AddToChannel(object, channel);
 }
 
 // Generic method to unregister an object
-void Engine::unregister_object(Object *object) {
-  objectsManager.remove(object);
+void Engine::RemoveListener(NotificationListener *object) {
+  notification_listeners_manager_.Remove(object);
 }
 
 // Run a particular notification
 // Only executed from friend class "NotificationElement"
-void Engine::send(Notification *notification) {
-  objectsManager.send(notification);
+void Engine::Send(Notification *notification) {
+  notification_listeners_manager_.Send(notification);
 }
 
 // Add a notification
 void Engine::notify(Notification *notification) {
   // Push a notification element with the notification
-  add(new NotificationElement(notification));
+  Add(new NotificationElement(notification));
 }
 
 void Engine::notify_extra(Notification *notification) {
@@ -281,37 +280,23 @@ void Engine::notify_extra(Notification *notification) {
   NotificationElement *notification_element = new NotificationElement(notification);
 
   notification_element->set_as_extra();
-  add(notification_element);
+  Add(notification_element);
 }
 
 void Engine::notify(Notification *notification, int seconds) {
   // Push a notification element with the notification ( in this case with periodic time )
-  add(new NotificationElement(notification, seconds));
+  Add(new NotificationElement(notification, seconds));
 }
 
 // Function to add a simple foreground tasks
-void Engine::add(EngineElement *element) {
+void Engine::Add(EngineElement *element) {
   // Add a new item in the engine_element_collection
-  engine_element_collection.add(element);
+  engine_element_collection_.Add(element);
 }
 
-// Get an object by its registry names
-Object *Engine::objectByName(const char *name) {
-  return objectsManager.objectByName(name);
-}
-
-std::list<EngineElement *>::iterator EngineElementCollection::_find_pos_in_repeated_elements(EngineElement *e) {
-  for (std::list<EngineElement *>::iterator i = repeated_elements.begin(); i != repeated_elements.end(); i++) {
-    if ((*i)->getTimeToTrigger() > e->getTimeToTrigger()) {
-      return i;
-    }
-  }
-
-  return repeated_elements.end();
-}
 
 std::string Engine::GetTableOfEngineElements() {
-  return engine_element_collection.getTableOfEngineElements();
+  return engine_element_collection_.GetTableOfEngineElements();
 }
 
 au::statistics::ActivityMonitor *Engine::activity_monitor() {

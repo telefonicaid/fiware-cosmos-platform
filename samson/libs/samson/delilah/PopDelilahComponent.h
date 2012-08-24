@@ -15,8 +15,8 @@
 #include "au/string.h"  // au::Format
 
 #include "engine/DiskManager.h"     // engine::DiskManager
-#include "engine/Engine.h"          // engine::Object
-#include "engine/Object.h"          // engine::Object
+#include "engine/Engine.h"          // engine::NotificationListener
+#include "engine/NotificationListener.h"          // engine::NotificationListener
 
 #include "samson/common/samson.pb.h"  // samson::network
 
@@ -105,7 +105,7 @@ private:
   PopDelilahComponent *pop_delilah_component_;
 };
 
-class PopDelilahComponent : public DelilahComponent, public engine::Object {
+class PopDelilahComponent : public DelilahComponent, public engine::NotificationListener {
 public:
 
   PopDelilahComponent(std::string _queue, std::string _fileName, bool force_flag, bool show_flag);

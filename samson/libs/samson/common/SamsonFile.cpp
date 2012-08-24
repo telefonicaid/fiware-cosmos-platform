@@ -36,8 +36,8 @@ au::SharedPointer<SamsonFile> SamsonFile::create(const std::string file_name, au
 
   // Getting a buffer for this file
   std::string name = au::str("Samson file %s", file_name.c_str());
-  engine::BufferPointer buffer = engine::Buffer::create(name, "samson_file", file_size);
-  buffer->setSize(file_size);
+  engine::BufferPointer buffer = engine::Buffer::Create(name, "samson_file", file_size);
+  buffer->set_size(file_size);
 
   // Read content of this file
   FILE *file = fopen(file_name.c_str(), "r");
@@ -46,7 +46,7 @@ au::SharedPointer<SamsonFile> SamsonFile::create(const std::string file_name, au
     return au::SharedPointer<SamsonFile>(NULL);
   }
 
-  if (fread(buffer->getData(), file_size, 1, file) != 1) {
+  if (fread(buffer->data(), file_size, 1, file) != 1) {
     error.set(au::str("Error reading file %s (%s)", file_name.c_str(), strerror(errno)));
     return au::SharedPointer<SamsonFile>(NULL);
   }

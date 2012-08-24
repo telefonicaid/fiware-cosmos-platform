@@ -33,7 +33,7 @@ public:
     buffer_ = buffer;
 
     // Header if always at the begining of the buffer
-    header = (KVHeader *)buffer->getData();
+    header = (KVHeader *)buffer->data();
 
     // Check header
     if (!header->check()) {
@@ -48,13 +48,13 @@ public:
 
     if (format.isTxt()) {
       expected_size =   (size_t)( sizeof(samson::KVHeader)  + header->info.size );
-      data = buffer->getData() + sizeof(samson::KVHeader);
+      data = buffer->data() + sizeof(samson::KVHeader);
     } else {
       expected_size =   (size_t)( sizeof(samson::KVHeader) + header->info.size );
-      data = buffer->getData() + sizeof(samson::KVHeader);
+      data = buffer->data() + sizeof(samson::KVHeader);
     }
 
-    if (expected_size != buffer->getSize()) {
+    if (expected_size != buffer->size()) {
       error.set("Wrong file format");
     }
 
@@ -78,11 +78,11 @@ public:
   }
 
   size_t bufferSize() {
-    return buffer_->getSize();
+    return buffer_->size();
   }
 
   size_t getTXTBufferSize() {
-    return buffer_->getSize() - sizeof( samson::KVHeader );
+    return buffer_->size() - sizeof( samson::KVHeader );
   }
 
   char *getData() {

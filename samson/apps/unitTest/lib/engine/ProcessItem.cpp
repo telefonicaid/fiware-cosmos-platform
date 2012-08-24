@@ -33,13 +33,7 @@ public:
   }
 };
 
-#include "xmlparser/xmlParser.h"
-
-
-// Test std::string getStatus();
-// Test std::string getDescription();
-// Test bool isRunning();
-TEST(processItemTest, getStatusTest) {
+TEST(engine_ProcessItem, general) {
   init_engine_test();
 
   ProcessItemExample item;

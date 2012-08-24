@@ -176,18 +176,18 @@ namespace samson { namespace stream {
 
                      // Build selected packet filtering with ranges_
                      size_t buffer_size = sizeof(KVHeader) + info.size;
-                     engine::BufferPointer buffer(engine::Buffer::create("test", "example", buffer_size));
-                     buffer->setSize(buffer_size);
+                     engine::BufferPointer buffer(engine::Buffer::Create("test", "example", buffer_size));
+                     buffer->set_size(buffer_size);
 
                      // Copy header
                      KVHeader header = block_->getHeader();
                      header.info = info;  // Replaces with new info
-                     memcpy(buffer->getData(), &header, sizeof(KVHeader));
+                     memcpy(buffer->data(), &header, sizeof(KVHeader));
 
                      // Copy content for each hash-group
 
                      char *source_data = kv_file->data;
-                     char *target_data = buffer->getData() + sizeof(KVHeader);
+                     char *target_data = buffer->data() + sizeof(KVHeader);
 
                      for (int i = 0; i < KVFILE_NUM_HASHGROUPS; i++) {
                        size_t size = kv_file->info[i].size;

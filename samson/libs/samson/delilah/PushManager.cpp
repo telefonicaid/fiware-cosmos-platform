@@ -182,7 +182,7 @@ void PushManager::reset(size_t push_id) {
 
 size_t PushManager::push(engine::BufferPointer buffer, const std::vector<std::string>& queues) {
   LM_V(("PushManager: pushing buffer %s to %lu queues ( delilah %s )"
-        , au::str(buffer->getSize()).c_str()
+        , au::str(buffer->size()).c_str()
         , queues.size()
         , au::code64_str(delilah_->get_delilah_id()).c_str()
         ));

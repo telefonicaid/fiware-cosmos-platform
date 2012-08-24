@@ -4,7 +4,7 @@
 #ifndef _H_SAMSON_COMMON_NETWORK
 #define _H_SAMSON_COMMON_NETWORK
 
-#include "engine/Object.h"
+#include "engine/NotificationListener.h"
 
 #include "au/network/NetworkListener.h"
 
@@ -19,7 +19,7 @@
 #include "samson/network/PacketReceivedNotification.h"
 
 namespace samson {
-class CommonNetwork : public NetworkManager, public engine::Object {
+class CommonNetwork : public NetworkManager, public engine::NotificationListener {
   // My identifier in the cluster
   NodeIdentifier node_identifier_;
 

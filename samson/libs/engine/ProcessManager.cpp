@@ -65,7 +65,7 @@ void ProcessManager::Stop() {
 
 void ProcessManager::notify(Notification *notification) {
   LM_X(1,
-       ("Wrong notification at ProcessManager [Listener %lu] %s", getEngineId(), notification->getDescription().c_str()));
+       ("Wrong notification at ProcessManager [Listener %lu] %s", engine_id(), notification->getDescription().c_str()));
 }
 
 void ProcessManager::Add(au::SharedPointer<ProcessItem> item, size_t listenerId) {

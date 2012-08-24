@@ -20,21 +20,21 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
     return au::SharedPointer<KVFile>(NULL);
   }
 
-  if (buffer->getSize() < sizeof(KVHeader)) {
-    error.set(au::str("Incorrect buffer size (%lu) < header size ", buffer->getSize()));
+  if (buffer->size() < sizeof(KVHeader)) {
+    error.set(au::str("Incorrect buffer size (%lu) < header size ", buffer->size()));
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // Copy & check header of this packet
-  memcpy(&kv_file->header_, buffer->getData(), sizeof(KVHeader));
+  memcpy(&kv_file->header_, buffer->data(), sizeof(KVHeader));
   if (!kv_file->header_.check()) {
     error.set("KVHeader error: wrong magic number");
     return au::SharedPointer<KVFile>(NULL);
   }
 
   // General pointer to data
-  kv_file->data = buffer->getData() + sizeof(KVHeader);
-  kv_file->data_size = buffer->getSize() - sizeof(KVHeader);
+  kv_file->data = buffer->data() + sizeof(KVHeader);
+  kv_file->data_size = buffer->size() - sizeof(KVHeader);
 
 
   // If txt content
@@ -80,7 +80,7 @@ au::SharedPointer<KVFile> KVFile::create(engine::BufferPointer buffer, au::Error
   }
 
   // Point to the initial point of data content
-  char *data = buffer->getData() + sizeof(KVHeader);
+  char *data = buffer->data() + sizeof(KVHeader);
   size_t offset = 0;
   int previous_hg = -1;
   KVInfo total_info;

@@ -7,7 +7,7 @@
 #include "au/containers/Dictionary.h"
 #include "au/containers/Queue.h"
 
-#include "engine/Object.h"  // engine::Object
+#include "engine/NotificationListener.h"  // engine::NotificationListener
 
 #include "samson/module/ModulesManager.h"
 #include "samson/module/Operation.h"
@@ -69,7 +69,7 @@ struct WorkerTaskLog {
 };
 
 
-class WorkerTaskManager : public ::engine::Object {
+class WorkerTaskManager : public ::engine::NotificationListener {
   size_t id_;                                                // Id of the current task
 
   au::Queue< WorkerTaskBase > pending_tasks_;                // List of pending task to be executed

@@ -113,7 +113,7 @@ std::string PopDelilahComponent::getExtraStatus() {
     if (item->buffer() == NULL) {
       values.Push("-");
     } else {
-      values.Push(au::str(item->buffer()->getSize()));
+      values.Push(au::str(item->buffer()->size()));
     } table.addRow(values);
   }
 
@@ -269,7 +269,7 @@ void PopDelilahComponent::check() {
                                       , item->pop_id());
 
       au::SharedPointer< engine::DiskOperation> operation(engine::DiskOperation::newWriteOperation(buffer, file_name,
-                                                                                                   getEngineId()));
+                                                                                                   engine_id()));
       engine::Engine::disk_manager()->Add(operation);
       num_pending_write_operations_++;
     } else {

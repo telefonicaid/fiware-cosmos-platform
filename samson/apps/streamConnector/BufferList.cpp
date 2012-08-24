@@ -8,9 +8,9 @@ BufferListItem::BufferListItem(engine::BufferPointer buffer, const std::string& 
   buffer_ = buffer;
   file_name_ = file_name;
 
-  buffer_size = buffer->getSize();
-  buffer_name = buffer->getName();
-  buffer_type = buffer->getType();
+  buffer_size = buffer->size();
+  buffer_name = buffer->name();
+  buffer_type = buffer->type();
 
   // Initial state
   state = on_memory;
@@ -101,7 +101,7 @@ void BufferListItem::flush_to_disk() {
         LM_X(1, ("Internal error"));
       }
       engine::DiskOperation *o = engine::DiskOperation::newWriteOperation(buffer_, file_name_,
-                                                                          getEngineId());
+                                                                          engine_id());
       au::SharedPointer<engine::DiskOperation> operation(o);
       engine::Engine::disk_manager()->Add(operation);
 
@@ -122,9 +122,9 @@ void BufferListItem::load_from_disk() {
     {
       // Squedule reading
       // Create the buffer
-      buffer_ = engine::Buffer::create(buffer_name, buffer_type, buffer_size);
+      buffer_ = engine::Buffer::Create(buffer_name, buffer_type, buffer_size);
 
-      engine::DiskOperation::newReadOperation(buffer_->getData(), file_name_, 0, buffer_size, getEngineId());
+      engine::DiskOperation::newReadOperation(buffer_->data(), file_name_, 0, buffer_size, engine_id());
 
       state = reading;
       return;

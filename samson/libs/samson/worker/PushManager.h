@@ -3,7 +3,7 @@
 
 
 #include "engine/Notification.h"
-#include "engine/Object.h"
+#include "engine/NotificationListener.h"
 #include "samson/common/KVHeader.h"
 #include "samson/common/Visualitzation.h"
 #include <string>
@@ -21,7 +21,7 @@ namespace worker {
 // Push operation: operation to add a buffer to a queue
 //
 
-class PushOperation : public engine::Object {
+class PushOperation : public engine::NotificationListener {
 public:
 
   PushOperation(SamsonWorker *samson_worker
@@ -31,7 +31,7 @@ public:
                 , engine::BufferPointer buffer
                 , const std::vector<std::string>& queues);
 
-  // engine::Object
+  // engine::NotificationListener
   virtual void notify(engine::Notification *notification);
 
   // Commit message from delilah

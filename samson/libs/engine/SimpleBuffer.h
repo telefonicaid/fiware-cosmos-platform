@@ -16,42 +16,44 @@
 #ifndef _H_SIMPLE_BUFFER
 #define _H_SIMPLE_BUFFER
 
-#include <cstdlib>                      // malloc, ...
-#include <cstring>                      // size_t
-#include <fstream>                      // std::ifstream
-
-namespace engine {
 /**
  * Simple class to specify an allocated space in memory
  */
 
+namespace engine {
+
 class SimpleBuffer {
-  char *_data;
-  size_t _size;
 
 public:
 
   SimpleBuffer() {
-    _data = NULL;
-    _size = 0;
+    data_ = NULL;
+    size_ = 0;
   }
 
   SimpleBuffer(char *data, size_t size) {
-    _data = data;
-    _size = size;
+    data_ = data;
+    size_ = size;
   }
 
   bool checkSize(size_t size) {
-    return ( _size >= size );
+    return ( size_ >= size );
   }
 
-  char *getData() {
-    return _data;
+  char *data() {
+    return data_;
   }
 
-  size_t getSize() {
-    return _size;
+  size_t size() {
+    return size_;
   }
+  
+private:
+  
+  char *data_;
+  size_t size_;
+
+  
 };
 }
 

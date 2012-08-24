@@ -19,7 +19,7 @@
 #include "au/containers/vector.h"
 #include "au/string.h"                      // au::Format
 
-#include "engine/Object.h"                  // engine::Object
+#include "engine/NotificationListener.h"                  // engine::NotificationListener
 
 #include "samson/common/Visualitzation.h"
 #include "samson/common/samson.pb.h"        // network::...
@@ -29,7 +29,7 @@
 #include "samson/stream/WorkerTaskManager.h"  // samson::stream::WorkerTaskManager
 
 #include "engine/Buffer.h"                  // engine::Buffer
-#include "engine/Object.h"                  // engine::Object
+#include "engine/NotificationListener.h"                  // engine::NotificationListener
 
 
 namespace samson {
@@ -47,7 +47,7 @@ class StreamOperationBase;
 // Worker Tasks is an action working on this worker
 // It is basically a set of individual queue-tasks
 
-class WorkerCommand : public engine::Object {
+class WorkerCommand : public engine::NotificationListener {
   std::string worker_command_id;       // Unique identifier ( used to associate all items associated with this worker_command )
 
   bool notify_finish;                                               // Flag to mark if it is necessary to notify when finish

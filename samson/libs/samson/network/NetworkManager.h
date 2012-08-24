@@ -12,7 +12,7 @@
 
 #include "engine/Engine.h"
 #include "engine/Notification.h"
-#include "engine/Object.h"
+#include "engine/NotificationListener.h"
 
 #include "au/network/NetworkListener.h"
 #include "samson/network/Packet.h"

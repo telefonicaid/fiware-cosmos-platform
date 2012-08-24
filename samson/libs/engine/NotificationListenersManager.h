@@ -26,7 +26,7 @@
 
 
 namespace engine {
-class Object;
+class NotificationListener;
 class Notification;
 
 // IdsCollection: collection of ids to send notifications
@@ -54,55 +54,52 @@ public:
 
 /**
  *
- * Global class to manage all the objects controlled by "Engine"
+ * Global class to manage all notifications listeners
  *
  **/
 
-class ObjectsManager {
-  // Internal variable to create new objects
-  size_t engine_id;
-
-  // Map of all the objects by id
-  au::map < size_t, Object > objects;
-
-  // Map of ids object per notification channel
-  au::map< const char *, IdsCollection, au::strCompare > channels;
-
-  // Map of objects by name
-  au::map< const char *, Object, au::strCompare > objects_by_name;
-
-  // Mutex protection
-  au::Token token;
+class NotificationListenersManager {
 
 public:
 
-  ObjectsManager();
-  ~ObjectsManager();
+  NotificationListenersManager();
+  ~NotificationListenersManager();
 
   // Add and remove Objects
-  void add(Object *o);
-  void remove(Object *o);
+  void Add(NotificationListener *o);
+  void Remove(NotificationListener *o);
 
   // Add and remove objects to channels
-  void add(Object *o, const char *name);
-  void remove(Object *o, const char *name);
+  void AddToChannel(NotificationListener *o, const char *name);
+  void RemoveFromChannel(NotificationListener *o, const char *name);
 
   // Send a notification
-  void send(Notification *notification);
-
-  // Get the object registered with this name
-  Object *objectByName(const char *name);
-
-  // Recover ids for a particular channel
-  void objectIdsForChannel(const char *name, std::set<size_t>& ids);
+  void Send(Notification *notification);
 
 private:
 
   // Get the collections of ids for a particular channel
-  IdsCollection *get(const char *name);
+  IdsCollection *GetListenersForChannel(const char *name);
 
   // Internal funciton to send a notification to a particular target-objetc ( if exist )
-  void send(Notification *notification, size_t target);
+  void Send(Notification *notification, size_t target);
+
+  // Recover ids for a particular channel
+  std::set<size_t> GetEndgineIdsForChannel(const char *name);
+
+  // Internal variable to create new objects
+  size_t engine_id_;
+  
+  // Map of all the objects by id
+  au::map < size_t, NotificationListener > objects_;
+  
+  // Map of ids object per notification channel
+  au::map< const char *, IdsCollection, au::strCompare > channels_;
+  
+  // Mutex protection
+  au::Token token_;
+
+  
 };
 }
 

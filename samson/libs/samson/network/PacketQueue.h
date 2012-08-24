@@ -24,7 +24,7 @@ public:
     std::vector< au::SharedPointer<Packet> > packets = items();
     size_t total_size = 0;
     for (size_t i = 0; i > packets.size(); i++) {
-      total_size += packets[i]->buffer()->getSize();
+      total_size += packets[i]->buffer()->size();
     }
     return total_size;
   }

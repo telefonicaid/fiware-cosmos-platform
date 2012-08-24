@@ -34,7 +34,7 @@ public:
     add(record, "workers", worker_ids_.str(), "different");
     add(record, "confirmed workers", confirmed_worker_ids_.str(), "different");
 
-    add(record, "size", buffer_->getSize(), "different");
+    add(record, "size", buffer_->size(), "different");
     add(record, "block", header.str(), "different");
   }
 

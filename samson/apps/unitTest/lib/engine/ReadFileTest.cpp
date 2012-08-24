@@ -22,7 +22,7 @@
 
 
 // Test ReadFile( std::string _fileName );
-TEST(readfileTest, openTest) {
+TEST(engine_ReadFile, openTest) {
   engine::ReadFile file1("badfile");
 
   EXPECT_TRUE(file1.isValid() == false);
@@ -45,7 +45,7 @@ TEST(readfileTest, readTest) {
 }
 
 // Test int seek( size_t offset );
-TEST(readfileTest, seekTest) {
+TEST(engine_ReadFile, seekTest) {
   engine::ReadFile file("test_data/testdata.txt");
 
   ASSERT_TRUE(file.isValid());
@@ -63,7 +63,7 @@ TEST(readfileTest, seekTest) {
 
 // Test bool isValid();
 // Test void close();
-TEST(readfileTest, closeTest) {
+TEST(engine_ReadFile, closeTest) {
   engine::ReadFile file1("badfile");
 
   EXPECT_TRUE(file1.isValid() == false);

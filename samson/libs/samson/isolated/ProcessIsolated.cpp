@@ -130,17 +130,17 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
       OutputChannel *_channel = &channel[ o * num_hg_divisions + s ];
 
       if (_channel->info.size > 0) {
-        engine::BufferPointer buffer = engine::Buffer::create("Output of " + processItemIsolated_description
+        engine::BufferPointer buffer = engine::Buffer::Create("Output of " + processItemIsolated_description
                                                               , "ProcessIsolated"
                                                               , sizeof(KVHeader) + _channel->info.size);
 
         if (buffer == NULL) {
           LM_X(1, ("Internal error: Missing buffer in ProcessBase"));  // Pointer to the header
         }
-        KVHeader *header = (KVHeader *)buffer->getData();
+        KVHeader *header = (KVHeader *)buffer->data();
 
         // Initial offset for the buffer to write data
-        buffer->skipWrite(sizeof(KVHeader));
+        buffer->SkipWrite(sizeof(KVHeader));
 
         // KVFormat format = KVFormat( output_queue.format().keyformat() , output_queue.format().valueformat() );
         if (outputFormats.size() > (size_t)o) {
@@ -160,7 +160,7 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
           // Write data followign nodes
           uint32 node_id = _hgOutput->first_node;
           while (node_id != KV_NODE_UNASIGNED) {
-            bool ans = buffer->write((char *)node[node_id].data, node[node_id].size);
+            bool ans = buffer->Write((char *)node[node_id].data, node[node_id].size);
             if (!ans) {
               LM_X(1, ("Error writing key-values into a temporal Buffer ( size %lu ) ", node[node_id].size ));  // Go to the next node
             }
@@ -168,7 +168,7 @@ void ProcessIsolated::flushKVBuffer(bool finish) {
           }
         }
 
-        if (buffer->getSize() != buffer->getMaxSize()) {
+        if (buffer->size() != buffer->max_size()) {
           LM_X(1, ("Internal error"));                                                                          // Set the hash-group limits of the header
         }
         header->range.setFrom(info);
@@ -195,19 +195,19 @@ void ProcessIsolated::flushTXTBuffer(bool finish) {
 #pragma mark ---
 
   if (size > 0) {
-    engine::BufferPointer buffer = engine::Buffer::create("Output of " + processItemIsolated_description
+    engine::BufferPointer buffer = engine::Buffer::Create("Output of " + processItemIsolated_description
                                                           , "ProcessIsolated"
                                                           , sizeof(KVHeader) + size);
 
     if (buffer == NULL) {
       LM_X(1, ("Internal error"));
     }
-    KVHeader *header = (KVHeader *)buffer->getData();
+    KVHeader *header = (KVHeader *)buffer->data();
     header->initForTxt(size);
 
     // copy the entire buffer to here
-    memcpy(buffer->getData() + sizeof( KVHeader ), data, size);
-    buffer->setSize(sizeof(KVHeader) + size);
+    memcpy(buffer->data() + sizeof( KVHeader ), data, size);
+    buffer->set_size(sizeof(KVHeader) + size);
 
     processOutputTXTBuffer(buffer, finish);
   }

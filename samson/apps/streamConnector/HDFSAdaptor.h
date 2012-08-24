@@ -39,7 +39,7 @@ public:
       engine::BufferPointer buffer = getNextBufferToSent();
 
       if (buffer != NULL) {
-        LM_W(("Sending buffer of %s", au::str(buffer->getSize(), "B").c_str()));
+        LM_W(("Sending buffer of %s", au::str(buffer->size(), "B").c_str()));
       } else {
         break;
       }

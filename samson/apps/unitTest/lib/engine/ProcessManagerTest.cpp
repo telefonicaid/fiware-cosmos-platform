@@ -27,7 +27,8 @@
 
 
 
-TEST(processManagerTest, instantiationTest) {
+TEST(engine_ProcessManager, instantiationTest) {
+
   init_engine_test();
 
   EXPECT_TRUE(engine::Engine::process_manager() !=

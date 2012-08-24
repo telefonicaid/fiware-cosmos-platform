@@ -36,7 +36,7 @@ MemoryManager::~MemoryManager() {
 
 void MemoryManager::Add(Buffer *buffer) {
   buffers_.insert(buffer);
-  used_memory_ += buffer->getMaxSize();      // Increse the internal counter of memory
+  used_memory_ += buffer->max_size();      // Increse the internal counter of memory
   if (used_memory_ > 3 * memory_) {
     LM_X(1, ("Too much memory allocated"));
   }
@@ -44,7 +44,7 @@ void MemoryManager::Add(Buffer *buffer) {
 
 void MemoryManager::Remove(Buffer *buffer) {
   buffers_.erase(buffer);
-  used_memory_ -= buffer->getMaxSize();
+  used_memory_ -= buffer->max_size();
 }
 
 size_t MemoryManager::memory() {
@@ -75,9 +75,9 @@ au::tables::Table MemoryManager::getTableOfBuffers() {
     Buffer *buffer = *it_buffers;
     au::StringVector values;
 
-    values.push_back(buffer->getType());
-    values.push_back(buffer->getName());
-    values.push_back(au::str("%lu", buffer->getSize()));
+    values.push_back(buffer->type());
+    values.push_back(buffer->name());
+    values.push_back(au::str("%lu", buffer->size()));
 
     table.addRow(values);
   }

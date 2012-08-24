@@ -29,8 +29,8 @@
 
 #include "engine/Engine.h"     // engine::Engine
 #include "engine/MemoryManager.h"   // engine::MemoryManager
-#include "engine/Object.h"     // engine::EngineNotification
-#include "engine/Object.h"          // engine::Object
+#include "engine/NotificationListener.h"     // engine::EngineNotification
+#include "engine/NotificationListener.h"          // engine::NotificationListener
 
 #define notification_process_request_response "notification_process_request_response"
 
@@ -44,7 +44,7 @@ class Notification;
  * Class to manage background jobs
  */
 
-class ProcessManager : engine::Object {
+class ProcessManager : engine::NotificationListener {
   static ProcessManager *processManager;    // Singleton Instance pointer
 
   // Private constructor to be a singleton

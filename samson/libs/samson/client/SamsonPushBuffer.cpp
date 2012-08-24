@@ -15,7 +15,7 @@ SamsonPushBuffer::SamsonPushBuffer(SamsonClient *client, std::string queue) : to
   queue_ = queue;
 
   // Init buffer
-  buffer_ = engine::Buffer::create("SamsonPushBuffer", "push", 64 * 1024 * 1024);
+  buffer_ = engine::Buffer::Create("SamsonPushBuffer", "push", 64 * 1024 * 1024);
 }
 
 SamsonPushBuffer::~SamsonPushBuffer() {
@@ -28,21 +28,21 @@ void SamsonPushBuffer::push(const char *data, size_t size, bool flushing) {
   // Statistics
   rate_.Push(size);
 
-  if (( size + buffer_->getSize()) > buffer_->getMaxSize()) {
+  if (( size + buffer_->size()) > buffer_->max_size()) {
     flush();
   }
   if (size > 1024 * 1024 * 1024) {
     LM_X(1, ("Non supported size to push %s", au::str(size, "B").c_str()));
   }
-  if (size > buffer_->getSize()) {
+  if (size > buffer_->size()) {
     flush();   // Flush current buffer
     // Create another buffer to meet the size
-    buffer_ = engine::Buffer::create("SamsonPushBuffer", "push", size);
+    buffer_ = engine::Buffer::Create("SamsonPushBuffer", "push", size);
   }
 
-  buffer_->write(data, size);
+  buffer_->Write(data, size);
 
-  LM_V(("Accumulated %s in push buffer", au::str(buffer_->getSize(), "B").c_str()));
+  LM_V(("Accumulated %s in push buffer", au::str(buffer_->size(), "B").c_str()));
 
   if (flushing) {
     flush();
@@ -53,16 +53,16 @@ void SamsonPushBuffer::flush() {
   au::TokenTaker tt(&token_);
 
 
-  if (buffer_->getSize() > 0) {
+  if (buffer_->size() > 0) {
     // Push to the client
     LM_V(("SamsonPushBuffer: Pushing a bufer %s to SAMSON queue %s"
-          , au::str(buffer_->getSize()).c_str()
+          , au::str(buffer_->size()).c_str()
           , queue_.c_str()));
 
     samson_client_->push(buffer_, queue_);
 
     // Create a new buffer to continue
-    buffer_ = engine::Buffer::create("SamsonPushBuffer", "push", 64 * 1024 * 1024);
+    buffer_ = engine::Buffer::Create("SamsonPushBuffer", "push", 64 * 1024 * 1024);
   } else {
     LM_V(("Not flishing since no data accumulated in push_buffer "));
   }

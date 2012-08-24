@@ -1,0 +1,13 @@
+test/**/*.sh
+test/**/*.out
+test/**/*.expect
+*.patch
+*.diff
+*~
+*.old
+*.orig
+*.rej
+*_base.h
+BUILD_*
+*.pb.cc
+*.pb.h

@@ -13,6 +13,9 @@
 *
 * ****************************************************************************/
 
+#include <cstring>
+#include <string>
+
 #ifndef _H_SIMPLE_BUFFER
 #define _H_SIMPLE_BUFFER
 

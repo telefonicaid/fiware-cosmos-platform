@@ -34,7 +34,7 @@ typedef unsigned long int samson_sysctl_t;
 
 namespace samson
 {
-    void sysctl_value(char *param_name, samson_sysctl_t *param_value);
-bool MemoryCheck();
+  void sysctl_value(char *param_name, samson_sysctl_t *param_value);
+  bool MemoryCheck();
 }
 #endif  // ifndef MEMORY_CHECK_H

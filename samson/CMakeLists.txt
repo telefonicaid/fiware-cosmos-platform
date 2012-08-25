@@ -33,28 +33,20 @@ IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     ADD_DEFINITIONS(-DOSX)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DOSX")
 
-    # To get code coverage on OS X we use C lang
-    # however hard coding the C/CXX compiler to be
-    # clang/clang++ prevents us from using other compilers
-    # By default if CC or CXX is not set we use clang/clang++
-    # to override this set CC or CXX to something other than
-    # /usr/bin/gcc or /usr/bin/g++
+	# Several compilers are used in mac environment
+	#
+	# gcc 4.2  : Default in current Lion version
+	# clang    : Usefull for code-coverage
+	# gcc 4.7  : from mac ports
+
+    # By default if CC or CXX are set to default gcc 4.2
+    # to override this set CC or CXX to something other than /usr/bin/gcc or /usr/bin/g++
     #
     # e.g. CC=gcc-mp-4.7 CXX=g++-mp-4.7 make .....
+    # e.g. CC=clang  CXX=clang++ make .....
 
-    if (${CMAKE_C_COMPILER} MATCHES "/usr/bin/gcc")
-        MESSAGE( "Using clang C compiler" )
-        set( CMAKE_C_COMPILER "clang" )
-    else (NOT ${CMAKE_C_COMPILER} MATCHES "/usr/bin/gcc")
-        MESSAGE ("Using ${CMAKE_C_COMPILER} as our C compiler")
-    endif (${CMAKE_C_COMPILER} MATCHES "/usr/bin/gcc")
-
-    if (${CMAKE_CXX_COMPILER} MATCHES "/usr/bin/g\+\+")
-        MESSAGE( "Using clang C++ compiler" )
-        set( CMAKE_C_COMPILER "clang++" )
-    else (NOT ${CMAKE_CXX_COMPILER} MATCHES "/usr/bin/g\+\+")
-        MESSAGE ("Using ${CMAKE_CXX_COMPILER} as our C++ compiler")
-    endif (${CMAKE_CXX_COMPILER} MATCHES "/usr/bin/g\+\+")
+	MESSAGE ("Using ${CMAKE_C_COMPILER} as our C compiler")
+	MESSAGE ("Using ${CMAKE_CXX_COMPILER} as our C++ compiler")
 
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
@@ -67,6 +59,14 @@ ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 IF (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-but-set-variable")
 ENDIF (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
+
+# ---------------------------------------------------------------------------
+#
+# DEBUG
+#
+# RELEASE
+#
+# ---------------------------------------------------------------------------
 
 if (CMAKE_BUILD_TYPE STREQUAL DEBUG)
 

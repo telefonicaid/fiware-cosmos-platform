@@ -30,11 +30,11 @@ TEST(bufferTest, basic) {
   init_engine_test();
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
-    EXPECT_EQ(0, buffer1->size());
-    EXPECT_EQ(15, buffer1->max_size());
+    EXPECT_EQ(0ULL, buffer1->size());
+    EXPECT_EQ(15ULL, buffer1->max_size());
 
     buffer1->set_size(10);
-    EXPECT_EQ(10, buffer1->size()) << "Error in set_size()";
+    EXPECT_EQ(10ULL, buffer1->size()) << "Error in set_size()";
 
     buffer1->set_size(5);
 
@@ -58,7 +58,7 @@ TEST(bufferTest, writeTest) {
     char data[21] = "01234567890123456789";
     buffer1->Write(data, 10);
 
-    EXPECT_EQ(10, buffer1->size()) << "wrong size after writing";
+    EXPECT_EQ(10ULL, buffer1->size()) << "wrong size after writing";
 
     char readChar;
     buffer1->Read(&readChar, 1);
@@ -100,7 +100,7 @@ TEST(bufferTest, ifstreamWriteTest) {
     "Error opening test file test_data/testdata.txt at execution path. Copy it from the source directory.";
     buffer1->Write(file);
 
-    EXPECT_EQ(buffer1->size(), 15);
+    EXPECT_EQ(buffer1->size(), 15ULL);
 
     char readBuffer[16];
     buffer1->Read(readBuffer, 15);
@@ -119,7 +119,7 @@ TEST(bufferTest, getAvailableWriteTest) {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     char data[21] = "01234567890123456789";
     buffer1->Write(data, 10);
-    EXPECT_EQ(5, buffer1->GetAvailableSizeToWrite());
+    EXPECT_EQ(5ULL, buffer1->GetAvailableSizeToWrite());
   }
   close_engine_test();
 }
@@ -166,7 +166,7 @@ TEST(bufferTest, getSizePendingReadTest) {
     buffer1->Write(data, 10);
     char readBuffer[5];
     buffer1->Read(readBuffer, 4);
-    EXPECT_EQ(buffer1->GetAvailableSizeToRead(), 6) << "Wrong pending read size";
+    EXPECT_EQ(buffer1->GetAvailableSizeToRead(), 6ULL) << "Wrong pending read size";
   }
   close_engine_test();
 }
@@ -193,7 +193,7 @@ TEST(bufferTest, set_sizeTest) {
   {
     engine::BufferPointer buffer1 = engine::Buffer::Create("buffer1",  "test", 15);
     buffer1->set_size(1);
-    EXPECT_EQ(buffer1->size(), 1) << "Used size was not set correctly";
+    EXPECT_EQ(buffer1->size(), 1ULL) << "Used size was not set correctly";
     char data[21] = "01234567890123456789";
     buffer1->Write(data, 10);
     char readBuffer[12];
@@ -261,7 +261,7 @@ TEST(bufferTest, removeLastUnfinishedLineTest) {
     buffer1->RemoveLastUnfinishedLine(readBuffer, bufferSize);
     // Check that data in the result buffer is okay
     EXPECT_EQ(strcmp(readBuffer, "012"), 0) << "removeLastUnfinishedLine() returned wrong data in buffer";
-    EXPECT_EQ(bufferSize, 5) << "removeLastUnfinishedLine() returned wrong buffer size";
+    EXPECT_EQ(bufferSize, 5ULL) << "removeLastUnfinishedLine() returned wrong buffer size";
 
     // Check that the original buffer's data has been correctly modified
     char readBuffer2[15];
@@ -269,7 +269,7 @@ TEST(bufferTest, removeLastUnfinishedLineTest) {
     readBuffer2[buffer1->size()] = '\0';
 
     EXPECT_EQ(strcmp(readBuffer2, "0123\n0123\n"), 0) << "Wrong data in buffer after removeLastUnfinishedLine call";
-    EXPECT_EQ(buffer1->size(), 10) << "Wrong buffer size after removeLastUnfinishedLine call";
+    EXPECT_EQ(buffer1->size(), 10ULL) << "Wrong buffer size after removeLastUnfinishedLine call";
 
     if (readBuffer != NULL) {
       free(readBuffer);

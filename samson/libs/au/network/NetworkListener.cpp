@@ -155,7 +155,6 @@ void *NetworkListener::runNetworkListener() {
   struct timeval tv;
 
   int fds;
-  int eps;
 
   while (true) {
     // this means that stop has been called
@@ -166,7 +165,6 @@ void *NetworkListener::runNetworkListener() {
 
     // One fd to read connections
     FD_ZERO(&rFds);
-    eps = 1;
     max = rFd;
     FD_SET(rFd, &rFds);
 

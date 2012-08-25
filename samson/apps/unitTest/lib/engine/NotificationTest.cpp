@@ -13,14 +13,14 @@ TEST(engine_Notification, engine_idTest) {
   notification.AddEngineListener(2);
   notification.AddEngineListener(3);
 
-  EXPECT_EQ(2,  notification.targets().size());
+  EXPECT_EQ(2ULL,  notification.targets().size());
 
   std::set<size_t> additional_targets;
   additional_targets.insert(2);
   additional_targets.insert(4);
   notification.AddEngineListeners(additional_targets);
 
-  EXPECT_EQ(3,  notification.targets().size());
+  EXPECT_EQ(3ULL,  notification.targets().size());
 
   EXPECT_EQ("notification_name [ Notification notification_name Targets: (2 3 4 ) {} ]", notification.GetDescription());
   EXPECT_EQ("[ Not: notification_name ]", notification.GetShortDescription());

@@ -21,7 +21,7 @@ TEST(engine_NotificationListenersManager, engine_idTest) {
 
     std::set<size_t> ids = listener_manager.GetEndgineIdsForChannel("channel_name");
 
-    EXPECT_EQ(2, ids.size());
+    EXPECT_EQ(2ULL, ids.size());
     EXPECT_FALSE(ids.find(listener.engine_id()) == ids.end());
     EXPECT_FALSE(ids.find(listener2.engine_id()) == ids.end());
     EXPECT_TRUE(ids.find(listener3.engine_id()) == ids.end());

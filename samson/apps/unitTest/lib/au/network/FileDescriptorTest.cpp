@@ -11,10 +11,8 @@ TEST(au_network_FileDescriptor, basic) {
             true) << "Error in FileDescriptor";
   EXPECT_EQ(file_descriptor.fd(), -1) << "Error in FileDescriptor";
 
-  EXPECT_EQ(file_descriptor.rate_in().size(),
-            0) << "Error in FileDescriptor";
-  EXPECT_EQ(file_descriptor.rate_out().size(),
-            0) << "Error in FileDescriptor";
+  EXPECT_EQ((size_t)0,file_descriptor.rate_in().size()) << "Error in FileDescriptor";
+  EXPECT_EQ((size_t)0,file_descriptor.rate_out().size()) << "Error in FileDescriptor";
 
   EXPECT_EQ(file_descriptor.IsClosed(), true) << "Error in FileDescriptor";
 }

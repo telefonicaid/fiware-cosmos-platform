@@ -377,13 +377,15 @@ reset:
 	rm -Rf BUILD_RELEASE
 	rm -Rf BUILD_RELEASE_ALL
 	rm -Rf BUILD_COVERAGE
-	rm -Rf xcode_proj
 	rm -f libs/common/samson.pb.*
 	rm -f libs/data/data.pb.*
 	rm -Rf /usr/local/include/samson || true
 	rm -f testing/module_test/Module.*
 	rm -f /etc/init/samson.conf || true
 	rm -f /etc/profile.d/samson.sh || true
+
+reset_xcode:
+	rm -Rf xcode_proj
 
 cleansvn: 
 	for file in `svn status | grep ? | awk '{print $$2}'`; do rm -rf $$file; done
@@ -530,3 +532,12 @@ uncrustify:
 	uncrustify -c scripts/uncrustify.cfg --replace --no-backup $$(find apps -name *.cpp)
 	uncrustify -c scripts/uncrustify.cfg --replace --no-backup $$(find apps -name *.h)
 	rm -f $$(find . -name *.uncrustify)
+
+
+
+# Handy targets for mac compilation
+di_47:
+	CC=gcc-mp-4.7 CXX=g++-mp-4.7 make di
+
+di_clang:
+	CC=clang CXX=clang++ make di

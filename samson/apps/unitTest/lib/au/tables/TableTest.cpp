@@ -100,7 +100,7 @@ TEST(au_Table, simple) {
 
   au::tables::Table new_table(table);
   EXPECT_EQ(new_table.getValue(1, 1), "val2") << "Error in Table.getValue";
-  EXPECT_EQ(new_table.getColumn("Value"), 1) << "Error in Table.getColumn";
+  EXPECT_EQ((size_t)1,new_table.getColumn("Value")) << "Error in Table.getColumn";
   EXPECT_EQ(new_table.getColumn("Non_Existing"), static_cast<size_t>(-1)) << "Error in Table.getColumn";
   EXPECT_EQ(new_table.getColumn(1), "Value") << "Error in Table.getColumn";
   EXPECT_EQ(new_table.getColumn(10), "") << "Error in Table.getColumn";

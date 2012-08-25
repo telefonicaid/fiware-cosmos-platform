@@ -13,6 +13,6 @@ TEST(au_Descriptors, basic) {
   descriptors.Add("Adios");
   descriptors.Add("Adios");
 
-  EXPECT_EQ(2, descriptors.size());
+  EXPECT_EQ((size_t)2, descriptors.size());
   EXPECT_EQ("3 X Adios 2 X Hola", descriptors.str());
 }

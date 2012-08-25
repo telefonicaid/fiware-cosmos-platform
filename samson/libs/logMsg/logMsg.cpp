@@ -2418,12 +2418,11 @@ LmStatus lmClear(int index, int keepLines, int lastLines) {
   for (i = 0; i < logLines; i++) {
     if (lrV[i].remove == false) {
       char line[LINE_MAX];
-      char *lineP;
 
       if (fseek(fP, lrV[i].offset, SEEK_SET) != 0) {
         CLEANUP("fseek", LmsFseek);
       }
-      lineP = fgets(line, LINE_MAX, fP);
+      fgets(line, LINE_MAX, fP);
       if (strncmp(line, "Cleared at", 10) != 0) {
         len = strlen(line);
         if (write(fd, line, len) != len) {

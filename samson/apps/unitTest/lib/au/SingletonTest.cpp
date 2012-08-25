@@ -20,7 +20,7 @@ TEST(au_Singleton, basic) {
   EXPECT_EQ(1, TestBase::num_instances());
 
   // Check number of singleton in manager
-  EXPECT_EQ(1, au::singleton_manager.size());
+  EXPECT_EQ((size_t)1, au::singleton_manager.size());
 
   // Unique call to remove all singletons
   au::singleton_manager.DestroySingletons();
@@ -29,5 +29,5 @@ TEST(au_Singleton, basic) {
   EXPECT_EQ(0, TestBase::num_instances());
 
   // Check number of singleton in manager
-  EXPECT_EQ(0, au::singleton_manager.size());
+  EXPECT_EQ((size_t)0, au::singleton_manager.size());
 }

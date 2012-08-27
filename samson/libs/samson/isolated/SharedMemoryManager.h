@@ -34,10 +34,10 @@ class SharedMemoryItem;
 class SharedMemoryManager;
 
 class SharedMemoryManager {
-  au::Token token;                           // Token to protect this instance and memoryRequests
+  au::Token token;                           // Token to protect this instance
 
   // Shared memory management
-  size_t shared_memory_size_per_buffer;      // Shared memory used in eery buffer
+  size_t shared_memory_size_per_buffer;      // Shared memory used in every buffer
   int shared_memory_num_buffers;             // Number of shared memory buffers to create
   bool *shared_memory_used_buffers;          // Bool vector showing if a particular shared memory buffer is used
   int *shm_ids;                              // Vector containing all the shared memory identifiers

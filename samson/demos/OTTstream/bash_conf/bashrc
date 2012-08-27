@@ -92,7 +92,7 @@ function psAll()
 for machine in `echo $SAMSON_CLUSTER`
 do
    echo ${machine}
-   ssh ${machine} "ps -l -u samson061 | grep -v grep | egrep 'samsonWorker|delilah|logServer|logClient|samsonPush|samsonPop|samsonConnector'"
+   ssh ${machine} "ps -l -u samson061 | grep -v grep | egrep 'samsonWorker|delilah|logServer|logClient|samsonPush|samsonPop|streamConnector'"
 done
 
 function samsonResetAllDebug()

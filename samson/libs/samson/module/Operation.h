@@ -483,7 +483,7 @@ public:
  * \class Splitter
  *
  * A splitter is a generic operation that can be defined to customize the way the platform breaks input data blocks before being transfered to other systems
- * It is used inside samsonConnector to break down streams of data or run small transformations
+ * It is used inside streamConnector to break down streams of data or run small transformations
  */
 
 class SplitterEmitter {

@@ -176,7 +176,7 @@ void DiskConnection::run_as_output() {
 
     // Write to disk
     au::Status s = file_descriptor->partWrite(current_buffer->data(),
-                                              current_buffer->size(), "samsonConnectorConnection");
+                                              current_buffer->size(), "streamConnectorConnection");
 
     if (s != au::OK) {
       error.set(au::str("Not possible to write buffer with %s to file %s"

@@ -13,9 +13,6 @@
 #include "common.h"
 
 namespace stream_connector {
-class SamsonConnectorConnection;
-class SamsonConnector;
-
 
 class DiskConnection : public Connection {
   std::string file_name;                     // Name of a file or directory
@@ -28,7 +25,7 @@ class DiskConnection : public Connection {
   au::ErrorManager error;                    // Error
 
 
-  // Varialbe length input size
+  // Variable length input size
   size_t input_buffer_size;
 
 public:

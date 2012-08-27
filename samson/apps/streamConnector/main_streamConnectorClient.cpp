@@ -25,7 +25,7 @@
 char command[1024];
 char host[1024];
 
-static const char *manShortDescription = "samsonConnectorClient is the client for samsonConnector";
+static const char *manShortDescription = "streamConnectorClient is the client for streamConnector";
 static const char *manSynopsis = "";
 
 int default_buffer_size = 64 * 1024 * 1024 - sizeof(samson::KVHeader);
@@ -41,7 +41,7 @@ PaArgument paArgs[] =
   { "-port", &sc_console_port, "",             PaInt,                PaOpt,                SC_CONSOLE_PORT,
     1,
     9999,
-    "Port for console connections in samsonConnector"    },
+    "Port for console connections in streamConnector"    },
   { "-c",    command,          "",             PaString,             PaOpt,                _i "",
     PaNL,
     PaNL,                "Single command to execute" },

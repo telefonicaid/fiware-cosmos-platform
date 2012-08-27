@@ -12,8 +12,6 @@ class ListenerAdaptor : public Adaptor, public au::NetworkListener, public au::N
   // Port to open to accept connections
   int port;
 
-  friend class SamsonConnector;
-
   au::Status status_init;
 
 public:

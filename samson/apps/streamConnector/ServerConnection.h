@@ -14,7 +14,6 @@
 namespace stream_connector {
 class Channel;
 class SocketConnection;
-class SamsonConnector;
 
 class ConnectionConnection : public FileDescriptorConnection {
   // Information to reconnect when possible

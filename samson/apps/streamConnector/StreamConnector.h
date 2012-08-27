@@ -85,7 +85,7 @@ class StreamConnector : public au::Console
   au::Token token;
 
 
-  // List of channels in this samsonConnector
+  // List of channels in this streamConnector
   au::map<std::string, Channel> channels_;
 
   // General environment

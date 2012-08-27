@@ -58,7 +58,7 @@ void FileDescriptorConnection::connect() {
 
   // Update the counter of connections
   num_connections_++;
-  cronometer_reconnection_.Reset();       // Start cronometer to do not restart inmediatelly
+  cronometer_reconnection_.Reset();       // Start chronometer to do not restart immediately
 
   // Get file descriptor and start background thread
   file_descriptor_ = getFileDescriptor();
@@ -66,7 +66,7 @@ void FileDescriptorConnection::connect() {
     // Create the thread
     thread_running_ = true;
     pthread_t t;
-    au::Singleton<au::ThreadManager>::shared()->addThread("SamsonConnectorConnection", &t, NULL,
+    au::Singleton<au::ThreadManager>::shared()->addThread("StreamConnectorConnection", &t, NULL,
                                                           run_FileDescriptorConnection,
                                                           this);
   }
@@ -92,7 +92,7 @@ void FileDescriptorConnection::review_connection() {
     return;
   }
 
-  // If we are disconnected, wait until thread finish and delte it to reconnect
+  // If we are disconnected, wait until thread finish and delete it to reconnect
   if (file_descriptor_->IsClosed()) {
     set_as_connected(false);
     if (thread_running_) {  // Still waiting for the threads to finish
@@ -115,7 +115,7 @@ void FileDescriptorConnection::run_as_output() {
     engine::BufferPointer buffer = getNextBufferToSent();
 
     if (buffer != NULL) {
-      au::Status s = file_descriptor_->partWrite(buffer->data(), buffer->size(), "samsonConnectorConnection");
+      au::Status s = file_descriptor_->partWrite(buffer->data(), buffer->size(), "streamConnectorConnection");
 
       if (s != au::OK) {
         return;             // Just quit

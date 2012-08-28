@@ -29,10 +29,10 @@ public class CellsCatalogueTest {
 
     @Test
     public void testLoadAndfilter() throws IOException {
-        String text = "334305|2221436242|12|34|56|78\n"
-                + "334306|2221436242|12|34|56|78\n"
-                + "334307|2221436242|12|34|56|78\n"
-                + "334305|2221436242|12|34|56|78";
+        String text = "334305|2221436242|12|34|56.1|78.2\n"
+                + "334306|2221436242|12|34|56.3|78.4\n"
+                + "334307|2221436242|12|34|56|78.6\n"
+                + "334305|2221436242|12|34|56.7|78";
         List<Cell> cells = CellsCatalogue.load(new StringReader(text), "|");
         assertNotNull(cells);
         assertEquals(4, cells.size());

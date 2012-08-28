@@ -30,8 +30,8 @@ public class CellParser extends Parser {
                 .setBts(parseLong())
                 .setGeoloc1(parseInt())
                 .setGeoloc2(parseInt())
-                .setPosx(parseInt())
-                .setPosy(parseInt())
+                .setPosx(parseDouble())
+                .setPosy(parseDouble())
                 .build();
         } catch (Exception ex) {
             throw new IllegalArgumentException("Failed to parse: " + this.line,

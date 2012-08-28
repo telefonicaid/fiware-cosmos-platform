@@ -13,23 +13,33 @@ package es.tid.cosmos.platform.injection.server;
 
 import java.net.URI;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.junit.Before;
 import org.junit.Test;
 
+import es.tid.cosmos.base.util.Logger;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+
 /**
  * HadoopFileSystemViewTest
  *
  * @author logc
- * @since 15/05/12
  */
-public class HadoopFileSystemViewTest {
+public class HadoopFileSystemViewTest extends BaseSftpTest {
+
+    private static final org.apache.log4j.Logger LOGGER =
+            Logger.get(HadoopFileSystemView.class);
+
     private String userName;
     private Configuration conf;
     private HadoopFileSystemView hadoopFileSystemView;
+
+    public HadoopFileSystemViewTest() {
+        super(LOGGER);
+    }
 
     @Before
     public void setUp() throws Exception {

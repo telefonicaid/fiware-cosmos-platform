@@ -47,7 +47,7 @@ public class BorrarGetBtsComareaMapperTest extends ConfiguredTest {
         List<Pair<LongWritable, TypedProtobufWritable<Bts>>> res =
                 this.driver
                         .withInput(new LongWritable(1L),
-                                   new Text("17360|17360|711.86|6673"))
+                                   new Text("17360|711.86|6673"))
                         .run();
         assertNotNull(res);
         assertEquals(1, res.size());
@@ -61,7 +61,7 @@ public class BorrarGetBtsComareaMapperTest extends ConfiguredTest {
     public void testInvalidLine() throws IOException {
         this.driver
                 .withInput(new LongWritable(1L),
-                           new Text("17360|17360|711.86|blah"))
+                           new Text("17360|711.86|blah"))
                 .runTest();
     }
 }

@@ -34,7 +34,7 @@ def install_cdh_repo(config):
     with ctx.hide('stdout'):
         cdh_repo = config["cdh_version_repo"].split("/")[-1]
         run('rm -rf /tmp/hadoop-*')
-        run('wget %s' % config["cdh_version_repo"])
+        run('wget {0}'.format(config["cdh_version_repo"]))
         run('rpm -Uvh --force %s' % cdh_repo)
         run('rm -f ' + cdh_repo)
         if not files.exists('/etc/pki/rpm-gpg/RPM-GPG-KEY-cloudera'):

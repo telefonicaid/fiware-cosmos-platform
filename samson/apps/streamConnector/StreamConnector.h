@@ -84,7 +84,6 @@ class StreamConnector : public au::Console
   // Mutex protection for streamConnector( REST / Console / Review / ... )
   au::Token token;
 
-
   // List of channels in this samsonConnector
   au::map<std::string, Channel> channels_;
 

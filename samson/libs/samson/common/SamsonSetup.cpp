@@ -340,6 +340,10 @@ std::string SamsonSetup::modulesDirectory() {
   return _samson_home + "/modules";
 }
 
+std::string SamsonSetup::worker_modules_directory() {
+  return _samson_working + "/modules_worker";
+}
+
 std::string SamsonSetup::blocksDirectory() {
   return _samson_working + "/blocks";
 }

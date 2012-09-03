@@ -57,6 +57,13 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
   // Get main command
   std::string main_command = cmd.get_argument(0);
 
+  if (main_command == "clear_modules") {
+    // Remove queue .modules
+    au::ErrorManager error2;  // we are not interested in this error
+    PerformCommit(data, "rm .modules", version, &error2);
+    return;
+  }
+
   if (main_command == "remove_all_stream_operations") {
     reset_stream_operations(data.shared_object());
     return;
@@ -349,6 +356,7 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
                  , item->format()
                  , item->range()
                  , item->info()
+                 , version
                  , error);
 
         if (error->IsActivated()) {
@@ -414,6 +422,7 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
     if (!queue) {
       return;   // nothing to do
     }
+    queue->set_version(version);  // Update version where this queue was updated
     KVFormat format(queue->key_format(), queue->value_format());
     samson::gpb::Queue *target_queue = get_or_create_queue(data.shared_object(), cmd.get_argument(2), format, error);
 
@@ -439,6 +448,10 @@ void DataModel::PerformCommit(au::SharedPointer<gpb::Data> data, std::string com
 }
 
 bool DataModel::isValidCommand(const std::string& main_command) {
+  if (main_command == "clear_modules") {
+    return true;
+  }
+
   if (main_command == "add") {
     return true;
   }

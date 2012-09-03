@@ -31,6 +31,7 @@ int getPropertyInt(Environment *environment, const std::string& property, int de
 
 // Operation over gpb::ClusterInfo
 bool isWorkerIncluded(ClusterInfo *cluster_information, size_t worker_id);
+size_t GetNumKVRanges(ClusterInfo *cluster_information, size_t worker_id);
 
 // Operations over DataModel
 void reset_data(Data *data);
@@ -62,6 +63,7 @@ void rm_block(Data *data
               , KVFormat format
               , ::samson::KVRange range
               , ::samson::KVInfo info
+              , int version
               , au::ErrorManager *error);
 
 

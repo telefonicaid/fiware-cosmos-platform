@@ -26,7 +26,7 @@ BufferProcessor::BufferProcessor(Channel *_channel) {
   splitter = NULL;
 
   if (splitter_name != "") {
-    samson::Operation *operation = samson::ModulesManager::shared()->getOperation(splitter_name);
+    samson::Operation *operation = au::Singleton<samson::ModulesManager>::shared()->getOperation(splitter_name);
 
     if (!operation || ( operation->getType() != samson::Operation::splitter )) {
       LM_W(("Non valid splitter %s. Not using any splitter", splitter_name.c_str()));

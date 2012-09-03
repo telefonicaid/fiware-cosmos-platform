@@ -32,11 +32,11 @@
 #include "samson/network/Packet.h"            // samson::Packet
 
 #include "samson/common/SamsonDataSet.h"       // samson::SamsonDataSet
+#include "samson/delilah/DataSource.h"
 #include "samson/delilah/Delilah.h"           // Own interfce
 #include "samson/delilah/DelilahConsole.h"      // samson::DelilahConsole
 #include "samson/delilah/PopDelilahComponent.h"
 #include "samson/delilah/PushDelilahComponent.h"
-#include "samson/delilah/TXTFileSet.h"
 
 namespace samson {
 /* ****************************************************************************
@@ -50,7 +50,7 @@ Delilah::Delilah(std::string connection_type, size_t delilah_id) : token("Delila
   } else {
     delilah_id_ = delilah_id;  // Network interface for all the workers ( included in the cluster selected )
   }
-  network = new DelilahNetwork(connection_type, delilah_id_, this);
+  network = new DelilahNetwork(connection_type, delilah_id_);
 
   // we start with process 2 because 0 is no process & 1 is global_update messages
   id = 2;
@@ -62,6 +62,7 @@ Delilah::Delilah(std::string connection_type, size_t delilah_id) : token("Delila
   listen(notification_network_diconnected);
   listen("notification_cluster_info_changed");
   listen("delilah_components_review");
+  listen(notification_packet_received);
 
   // Review components
   engine::Engine::shared()->notify(new engine::Notification("delilah_components_review"), 1);
@@ -177,6 +178,15 @@ bool Delilah::isConnected() {
 }
 
 void Delilah::notify(engine::Notification *notification) {
+  if (notification->isName(notification_packet_received)) {
+    au::SharedPointer<Packet> packet = notification->dictionary().Get("packet").dynamic_pointer_cast<Packet>();
+    if (packet == NULL) {
+      LM_W(("Received a notification to receive a packet without a packet"));
+    }
+    receive(packet);
+    return;
+  }
+
   if (notification->isName("delilah_components_review")) {
     // Review all co
 
@@ -294,14 +304,13 @@ void Delilah::receive(const PacketPointer& packet) {
     size_t worker_id = packet->from.id;
     size_t push_id = packet->message->push_id();
 
+    // Redirect this message to push_manager
+    au::ErrorManager error;
     if (packet->message->has_error()) {
-      // General error ... cancel push item
-      push_manager->reset(push_id);
-      return;
+      error.set(packet->message->error().message());
     }
 
-    // Redirect this message to push_manager
-    push_manager->receive(msgCode, worker_id, push_id);
+    push_manager->receive(msgCode, worker_id, push_id, error);
     return;
   }
 
@@ -339,35 +348,47 @@ void Delilah::notificationSent(size_t id, bool success) {
  * pushData -
  */
 
-size_t Delilah::add_push_component(std::vector<std::string> fileNames, const std::vector<std::string>& queues) {
-  // Data source with this files
-  TXTFileSet *txtFileSet = new TXTFileSet(fileNames);
+size_t Delilah::add_push_component(const std::vector<std::string>&file_names, const std::vector<std::string>& queues) {
+  // Data source with these files
+  AgregatedFilesDataSource *data_source = new AgregatedFilesDataSource(file_names);
 
-  if (txtFileSet->getTotalSize() == 0) {
+  if (data_source->getTotalSize() == 0) {
     std::ostringstream message;
 
-    if (fileNames.size() == 0) {
+    if (file_names.size() == 0) {
       message << "No valid files provided";
     } else {
       message << "No content at ";
-      for (size_t i = 0; i < fileNames.size(); i++) {
-        message << fileNames[i] << " ";
+      for (size_t i = 0; i < file_names.size(); i++) {
+        message << file_names[i] << " ";
       }
     }
     showErrorMessage(message.str());
     return 0;
   }
 
-  return add_push_component(txtFileSet, queues);
+  return add_push_component(data_source, queues);
 }
 
-size_t Delilah::add_push_component(DataSource *data_source, const std::vector<std::string>& queues) {
+size_t Delilah::add_push_component(DataSource *data_source, const std::vector<std::string>& queues, bool modules) {
   PushDelilahComponent *d = new PushDelilahComponent(data_source, queues);
 
+  if (modules) {
+    d->SetUploadModule();
+  }
   size_t tmp_id = addComponent(d);
-
   d->run();
   return tmp_id;
+}
+
+size_t Delilah::add_push_module_component(const std::vector<std::string>& file_names) {
+  // Spetial one-buffer data source
+  IndividualFilesDataSources *data_source = new IndividualFilesDataSources(file_names);
+
+  std::vector<std::string> queues;
+  queues.push_back(".modules");
+
+  return add_push_component(data_source, queues, true);
 }
 
 size_t Delilah::AddPopComponent(std::string queue_name, std::string fileName,  bool force_flag, bool show_flag) {
@@ -394,11 +415,11 @@ size_t Delilah::push_txt(engine::BufferPointer buffer, const std::vector<std::st
   // Create a new buffer containing a header
   size_t new_buffer_size = buffer->size() + sizeof(KVHeader);
   engine::BufferPointer new_buffer = engine::Buffer::Create("push_txt", "push", new_buffer_size);
-  new_buffer->set_size(new_buffer_size);
+  // new_buffer->set_size(new_buffer_size);
 
   // Set the header
   KVHeader *header = (KVHeader *)new_buffer->data();
-  header->initForTxt(buffer->size());
+  header->InitForTxt(buffer->size());
   new_buffer->SkipWrite(sizeof(KVHeader));
 
   // Copy content of the original buffer
@@ -409,7 +430,7 @@ size_t Delilah::push_txt(engine::BufferPointer buffer, const std::vector<std::st
 
 size_t Delilah::push(engine::BufferPointer buffer, const std::vector<std::string>& queues) {
   // Insert int the push manager
-  return push_manager->push(buffer, queues);
+  return push_manager->Push(buffer, queues);
 }
 
 size_t Delilah::get_num_push_items() {
@@ -611,7 +632,7 @@ void Delilah::getInfo(std::ostringstream& output) {
   // samson::getInfoEngineSystem(output, network);
 
   // Modules manager
-  // ModulesManager::shared()->getInfo( output );
+  // au::Singleton<ModulesManager>::shared()->getInfo( output );
 
   // Network
   // network->getInfo( output , "main" );

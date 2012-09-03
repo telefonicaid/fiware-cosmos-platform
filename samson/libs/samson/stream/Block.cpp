@@ -48,6 +48,9 @@ Block::Block(size_t block_id, engine::BufferPointer buffer) : token_lookupList("
   // First idea of sort information
   update_sort_information();
 
+  // Temporal flag
+  temporal_ = true;  // By default we consider blocks are temporal
+
   LM_T(LmtBlockManager, ("Block created from buffer: %s", str().c_str()));
 }
 
@@ -66,6 +69,9 @@ Block::Block(size_t block_id, KVHeader *_header) : token_lookupList("token_looku
 
   // First idea of sort information
   update_sort_information();
+
+  // reading from file, we consider blocks non-temporal
+  temporal_ = false;
 
   // Put cronometer to 1 hour before to remove blocks not included in the data model rigth now
   cronometer.AddOffset(-24 * 60 * 60);
@@ -107,7 +113,7 @@ void Block::update_sort_information() {
     BlockList *block_list = *it;
 
     size_t task_id = block_list->task_id();
-    int priority = block_list->task_id();
+    int priority = block_list->priority();
 
     if (( min_task_id_ == (size_t)-1) || ( min_task_id_ > task_id )) {
       min_task_id_ = task_id;
@@ -267,8 +273,19 @@ size_t Block::getTime() {
   return header.time;
 }
 
+size_t Block::worker_id() {
+  return header.worker_id;
+}
+
 void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& visualization) {
   samson::add(record, "block_id", block_id_, "left,different");
+  samson::add(record, "origin_worker_id", header.worker_id, "left,different");
+
+  if (temporal_) {
+    samson::add(record, "tmp", "Y", "left,different");
+  } else {
+    samson::add(record, "tmp", "N", "left,different");
+  }
 
   samson::add(record, "size", getSize(), "f=uint64,sum");
 
@@ -277,6 +294,9 @@ void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& vis
   samson::add(record, "KVInfo", getKVInfo().str(), "left,different");
 
   samson::add(record, "state", str_state(), "left,different");
+
+  // Time of creation
+  samson::add(record, "created", au::S(cronometer).str(), "left,different");
 
   samson::add(record, "locked", is_content_locked_in_memory() ? "yes" : "no", "left,different");
 
@@ -287,9 +307,6 @@ void Block::fill(samson::gpb::CollectionRecord *record, const Visualization& vis
     samson::add(record, "next task", min_task_id_, "left,different");  // Priority level
   }
   samson::add(record, "priority", max_priority_, "left,different");
-
-  // Time of creation
-  samson::add(record, "created", au::S(cronometer).str(), "left,different");
 }
 
 // au::Token token_lookupList;
@@ -403,6 +420,14 @@ engine::BufferPointer Block::buffer() {
 
 size_t Block::creation_time() {
   return cronometer.seconds();
+}
+
+bool Block::temporal() {
+  return temporal_;
+}
+
+void Block::set_no_temporal() {
+  temporal_ = false;
 }
 }
 }

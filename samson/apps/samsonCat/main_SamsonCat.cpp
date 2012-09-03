@@ -95,7 +95,9 @@ int main(int argC, const char *argV[]) {
   engine::Engine::InitEngine(1, 1024 * 1024 * 1024, 1);
 
   au::Singleton<samson::SamsonSetup>::shared()->SetWorkerDirectories(samsonHome, samsonWorking);
-  samson::ModulesManager::init("samsonCat");
+
+  // Load modules
+  au::Singleton<samson::ModulesManager>::shared()->addModulesFromDefaultDirectory();
 
   struct stat filestatus;
   int error_stat;

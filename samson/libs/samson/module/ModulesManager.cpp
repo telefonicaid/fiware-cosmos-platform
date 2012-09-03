@@ -29,12 +29,8 @@
 #include <samson/module/samsonVersion.h>   /* SAMSON_VERSION                           */
 
 namespace samson {
-static ModulesManager *modulesManager = NULL;
-
-ModulesManager::ModulesManager(std::string calling_module) : token_modules("ModulesManager") {
-  LM_T(LmtModuleManager, ("Creating ModulesManager by owner:%s", calling_module.c_str()));
-  owner_ = calling_module;
-  reloadModules();
+ModulesManager::ModulesManager() : token_modules("ModulesManager") {
+  LM_T(LmtModuleManager, ("Creating ModulesManager"));
 }
 
 ModulesManager::~ModulesManager() {
@@ -52,75 +48,15 @@ void ModulesManager::clearModulesManager() {
   closeHandlers();
 }
 
+void ModulesManager::addModulesFromDefaultDirectory() {
+  addModulesFromDirectory(au::Singleton<SamsonSetup>::shared()->modulesDirectory());
+}
+
 void ModulesManager::closeHandlers() {
   for (size_t i = 0; i < handlers.size(); i++) {
     dlclose(handlers[i]);
   }
   handlers.clear();
-}
-
-void ModulesManager::destroy(std::string calling_module) {
-  if (!modulesManager) {
-    LM_RVE(("Attempt to destroy a non-initialized Modules Manager"));
-  }
-  if (calling_module !=
-      modulesManager->get_owner())
-  {
-    LM_T(LmtModuleManager,
-         ("Trying to destroy ModulesManager from a different owner(%s) than created(%s)", calling_module.c_str(),
-          modulesManager->get_owner().c_str()));
-    return;
-  }
-  LM_T(LmtModuleManager, ("Destroying ModulesManager by %s", calling_module.c_str()));
-  delete modulesManager;
-
-  modulesManager = NULL;
-}
-
-void ModulesManager::init(std::string calling_module) {
-  LM_T(LmtModuleManager, ("ModulesManager::init() called"));
-  if (modulesManager) {
-    LM_W(("Error initializing ModulesManager twice (already from:%s), ignoring calling_module:%s",
-          modulesManager->get_owner().c_str(),
-          calling_module.c_str()));
-    return;
-  }
-
-  LM_VV(("Init ModulesManager"));
-  modulesManager = new ModulesManager(calling_module);
-  LM_T(LmtModuleManager, ("ModulesManager created by %s", calling_module.c_str()));
-}
-
-ModulesManager *ModulesManager::shared() {
-  if (!modulesManager) {
-    LM_X(1, ("ModulesManager not initialized"));
-  }
-  return modulesManager;
-}
-
-std::string ModulesManager::getModuleFileName(std::string module_name) {
-  au::TokenTaker tt(&token_modules, "ModulesManager::reloadModules");
-  Module *module = modules.findInMap(module_name);
-
-  if (!module) {
-    return "";
-  }
-
-  return module->file_name;
-}
-
-void ModulesManager::reloadModules() {
-  LM_T(LmtModuleManager, ("Reloading modules"));
-
-  // Clear all previous modules
-  clearModulesManager();
-
-  // Add modules again
-  addModules();
-}
-
-void ModulesManager::addModules() {
-  addModulesFromDirectory(au::Singleton<SamsonSetup>::shared()->modulesDirectory());
 }
 
 void ModulesManager::addModulesFromDirectory(std::string dir_name) {
@@ -261,14 +197,6 @@ Status ModulesManager::loadModule(std::string path, Module **module, std::string
   *version_string = fv();
 
   return OK;
-}
-
-void ModulesManager::getInfo(std::ostringstream& output) {
-  au::TokenTaker tt(&token_modules);                    // !< General lock for modules access
-
-  au::xml_open(output, "modules_manager");
-  au::xml_iterate_map(output, "modules", modules);
-  au::xml_close(output, "modules_manager");
 }
 
 samson::gpb::Collection *ModulesManager::getModulesCollection(const Visualization& visualitzation) {

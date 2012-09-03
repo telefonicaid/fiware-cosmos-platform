@@ -15,14 +15,14 @@
 
 #include "engine/DiskManager.h"     // engine::DiskManager
 #include "engine/Engine.h"               // engine::NotificationListener
-#include "engine/NotificationListener.h" // engine::NotificationListener
+#include "engine/NotificationListener.h"  // engine::NotificationListener
 
 #include "samson/common/samson.pb.h"  // samson::network
 
 #include "DelilahComponent.h"            // samson::DelilahComponent
 #include "samson/delilah/Delilah.h"  // samson::Delilah
 
-#include "TXTFileSet.h"                  // samson::TXTFileSet
+#include "DataSource.h"                  // samson::TXTFileSet
 
 
 namespace samson {
@@ -48,11 +48,15 @@ public:
   void receive(const PacketPointer& packet) {
   }                                                           // No packet is received here any more
 
-  // Function to get the status
-  std::string getStatus();
+  // Virtual methods of DelilahComponent
+  virtual std::string getStatus();
+  virtual std::string getExtraStatus();
 
   // Virtual in DelilahComponent
   std::string getShortDescription();
+
+  // Indicate that we are updaloading modules
+  void SetUploadModule();
 
 private:
 
@@ -74,6 +78,8 @@ private:
   au::Cronometer cronometer;
 
   au::Token token;   // Mutex protection
+
+  bool uploading_module_;  // Flag to indicate that we are uploading a module
 
   // Friend function executed by backgrount thread
   friend  void *run_PushDelilahComponent(void *p);

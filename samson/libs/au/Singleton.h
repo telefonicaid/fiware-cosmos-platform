@@ -72,6 +72,15 @@ public:
     instance_ = NULL;
   }
 
+  static void DestroySingleton() {
+    au::TokenTaker tt(&token_);
+
+    if (!instance_) {
+      delete instance_;
+      instance_ = NULL;
+    }
+  }
+
 private:
 
   static au::Token token_;

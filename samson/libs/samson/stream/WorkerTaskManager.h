@@ -25,37 +25,6 @@ class SamsonWorker;
 namespace stream {
 class StreamOperationInfo;
 
-struct IdRange {
-  size_t id;
-  KVRange range;
-
-  IdRange(size_t _id, const KVRange& _range) {
-    id = _id;
-    range = _range;
-  }
-
-  inline bool operator <(const IdRange &id_range) const {
-    if (id < id_range.id) {
-      return true;
-    }
-
-
-
-
-
-    if (id > id_range.id) {
-      return false;
-    }
-
-
-
-
-
-    return ( range.hg_begin < id_range.range.hg_begin );
-  }
-};
-
-
 // Logs for debugging
 
 struct WorkerTaskLog {
@@ -70,32 +39,16 @@ struct WorkerTaskLog {
 
 
 class WorkerTaskManager : public ::engine::NotificationListener {
-  size_t id_;                                                // Id of the current task
-
-  au::Queue< WorkerTaskBase > pending_tasks_;                // List of pending task to be executed
-  au::Dictionary< size_t, WorkerTaskBase > running_tasks_;       // Map of running tasks
-
-  // Information about execution of current stream operations
-  au::map<IdRange, StreamOperationInfo > stream_operations_info_;
-
-  // Pointer to samson worker
-  SamsonWorker *samson_worker_;
-
-  // Ranges I should process
-  std::vector<KVRange> ranges_;
-
-  // Log of last tasks...
-  std::list<WorkerTaskLog> last_tasks_;
-
 public:
 
   WorkerTaskManager(SamsonWorker *samson_worker);
 
-  size_t getNewId();
+  void Add(au::SharedPointer<WorkerTaskBase> task);  // Add new task to the manager
 
-  void Add(au::SharedPointer<WorkerTaskBase> task);
+  size_t getNewId();  // Get identifier for a new task
 
-  void add_block_request_task(size_t block_id, size_t worker_id);
+  // Add a system task to distribute a particular block to a set of workers
+  void AddBlockDistributionTask(size_t block_id, const std::vector<size_t>& worker_ids);
 
   // Review schedules tasks
   void reviewPendingWorkerTasks();
@@ -108,10 +61,7 @@ public:
   void notify(engine::Notification *notification);
 
   // Reset all the content of this manager
-  void reset();
-
-  // Update ranges ( this removes all current running operations )
-  void update_ranges(const KVRanges& ranges);
+  void Reset();
 
   // Get a collection for monitoring
   samson::gpb::Collection *getCollection(const ::samson::Visualization& visualization);
@@ -123,6 +73,21 @@ public:
 
   // Get collection to list in delilah
   gpb::Collection *getCollectionForStreamOperationsInfo(const ::samson::Visualization& visualization);
+
+private:
+
+  size_t id_;                                                      // Id of the current task
+  au::Queue< WorkerTaskBase > pending_tasks_;                      // List of pending task to be executed
+  au::Dictionary< size_t, WorkerTaskBase > running_tasks_;         // Map of running tasks
+
+  // Information about execution of current stream operations
+  au::map<std::string, StreamOperationInfo > stream_operations_info_;
+
+  // Pointer to samson worker
+  SamsonWorker *samson_worker_;
+
+  // Log of last tasks...
+  std::list<WorkerTaskLog> last_tasks_;
 };
 }
 }

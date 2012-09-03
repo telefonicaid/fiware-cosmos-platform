@@ -16,8 +16,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
       );
 
   add("ls_connections", "management", "Show status of all connections in the cluster");
-  add_bool_option("ls_connections", "-a", "Show content in all workers");
   add_uint64_option("ls_connections", "-w", 0, "Specify a particular worker");
+  add_tag("ls_connections", "send_to_all_workers");
 
   add("ls_local_connections", "management",
       "Show status of all connections of this delilah ( typically to all workers of the SAMSON cluster )");
@@ -26,8 +26,7 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   // ------------------------------------------------------------------
 
   add("connect", "delilah", "Connect to a SAMSON system");
-  add_string_option("connect", "-host", "localhost",
-                    "host or hosts of SAMSON nodes to connect (host:port host:port ...)");
+  add_mandatory_string_argument("connect", "host", "SAMSON node/s to connect (\"host:port host:port..\")");
   add_string_option("connect", "-digest", "", "Username and password used to connect to this SAMSON cluster");
 
   add("disconnect", "delilah", "Disconnect from a SAMSON system");
@@ -158,19 +157,25 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("threads", "debug", "Show current threads in this delilah");
 
   add("ls_blocks", "debug", "Show a list of data blocks managed by SAMSON nodes");
-  add_uint64_option("ls_blocks", "-w", (size_t)-1);
+  add_uint64_option("ls_blocks", "-w", (size_t)-1, "Specify a worker to request the list of blocks");
+  add_tag("ls_blocks", "send_to_all_workers");
 
   add("ls_queue_blocks", "debug", "Show detailed list of the blocks included in every queue");
 
-  add("ls_buffers", "debug", "Show the list of data buffers managed in a SAMSON cluster. This is a debug tool",
-      "ls_buffers");
+  add("ls_buffers", "debug", "Show the list of data buffers managed in a SAMSON cluster. This is a debug tool");
+  add_tag("ls_buffers", "send_to_all_workers");
 
-  add("ls_block_distribution", "debug", "Show current bloc distribution operations in SAMSON nodes");
+  add("ls_distribution_operations", "debug", "Show current bloc distribution operations in SAMSON nodes");
+  add_tag("ls_distribution_operations", "send_to_all_workers");
+
   add("ls_block_requests", "debug", "Show current block requests operations in SAMSON nodes");
+  add_tag("ls_block_requests", "send_to_all_workers");
 
-  add("ls_data_commits", "debug", "Show last 100 commits on data model.");
+  add("ls_last_data_commits", "debug", "Show last 100 commits on data model.");
+  add_tag("ls_last_data_commits", "send_to_all_workers");
 
   add("ls_last_tasks", "debug", "Show last 100 tasks sqcheduled in workers");
+  add_tag("ls_last_tasks", "send_to_all_workers");
 
   // MODULES
   // ------------------------------------------------------------------
@@ -186,13 +191,11 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add("ls_datas", "modules", "Shows a list of available data-types.");
   add_string_argument("ls_datas", "pattern", "*", "Filter data-types with this pattern (* system.* ... )");
 
-  add("reload_modules", "modules",
-      "Reload modules in all workers");
+  add("push_module", "modules", "Push a module to the cluster.");
+  add_mandatory_string_argument("push_module", "file", "Local file or directory")->set_options_group("#file");
 
-  add("push_module", "modules",
-      "Push a module to the cluster. The module has to be compatible with hardware architecture",
-      "push_module <module_file>"
-      );
+  add("clear_modules", "modules", "Remove all previously updateled modules");
+
 
   // STREAM
   // ------------------------------------------------------------------
@@ -216,6 +219,8 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("ps_stream_operations", "-properties", "Information about properties of each stream opertion");
   add_bool_option("ps_stream_operations", "-data", "Show input and output data processed of each operation");
   add_bool_option("ps_stream_operations", "-rates", "Show input and output data rates of each operation");
+  add_uint64_option("ps_stream_operations", "-w", (size_t)-1, "Selected worker");
+  add_tag("ps_stream_operations", "send_to_all_workers");
 
   add("add_stream_operation", "stream", "Add a new stream operation to the current SAMSON cluster",
       "A stream operation is an operation that is automatically executed to transform data readed from one queue\n"
@@ -263,11 +268,15 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("ls_queue_connections", "-a", "Show hiden items as well ( used internally by the platform )");
 
   add("ps_tasks", "stream", "Get a list of current stream tasks currently running in all workers");
-  add_bool_option("ps_tasks", "-data", "Get detailed informaiton of input/output data");
+  add_uint64_option("ps_tasks", "-w", (size_t)-1, "Specify worker to request list of tasks");
+  add_bool_option("ps_tasks", "-data", "Get detailed information of input/output data");
+  add_bool_option("ps_tasks", "-blocks", "Get detailed information of input/output blocks");
+  add_tag("ps_tasks", "send_to_all_workers");
 
   add("ls_workers", "stream", "Get a list of current workers");
   add_bool_option("ls_workers", "-engine", "Show details about underlying engines at worker nodes");
   add_bool_option("ls_workers", "-disk", "Show details about underlying engines at worker nodes");
+  add_tag("ls_workers", "send_to_all_workers");
 
   add("init_stream", "stream",
       "Execute am initialization script to setup some automatic stream operations",
@@ -311,14 +320,10 @@ DelilahCommandCatalogue::DelilahCommandCatalogue() {
   add_bool_option("pop", "-force", "Delete local directory if it exists");
   add_bool_option("pop", "-show", "Show first lines of the content once downloaded");
 
-  add("ls_push_operations", "push&pop",
-      "Show local list of push pending operations",
-      "ls_push_operations");
+  add("ls_push_operations", "push&pop", "Show local list of push pending operations");
+  add_tag("ls_push_operations", "send_to_all_workers");
 
-  add("ls_local_push_operations", "push&pop",
-      "Show list of pending push operations on SAMSON workers",
-      "ls_push_operations");
-
+  add("ls_local_push_operations", "push&pop", "Show list of pending push items");
 
   add("connect_to_queue", "push&pop", "Connect to a queue to receive live data from a SAMSON cluster");
   add_mandatory_string_argument("connect_to_queue", "queue", "Source queue ( see ls command )");

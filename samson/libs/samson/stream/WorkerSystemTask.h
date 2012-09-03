@@ -42,7 +42,7 @@ class WorkerSystemTask : public engine::ProcessItem, public WorkerTaskBase {
 public:
 
   // Constructor
-  WorkerSystemTask(size_t id, std::string concept);
+  WorkerSystemTask(size_t id, const std::string& name, const std::string& concept);
   ~WorkerSystemTask();
 
   // Virtual methods from WorkerTaskBase
@@ -53,32 +53,38 @@ public:
 };
 
 
-class BlockRequestTask : public WorkerSystemTask {
+class BlockDistributionTask : public WorkerSystemTask {
 public:
 
-  BlockRequestTask(SamsonWorker *samson_worker, size_t id, size_t block_id, size_t worker_id);
+  BlockDistributionTask(size_t id, size_t block_id, const std::vector<size_t>& worker_ids);
 
   // Virtual method from engine::ProcessItem
   virtual void run();
 
   // Virtual method of WorkerTaskBase
   virtual std::string str() {
-    return au::str("Task %lu: Request for block %lu from worker %lu", get_id(), block_id_, worker_id_);
+    std::ostringstream output;
+
+    output << au::str("Task %lu: Distributing block %lu to workers ", get_id(), block_id_);
+    output << au::str(worker_ids_);
+    return output.str();
   }
 
 private:
 
-  SamsonWorker *samson_worker_;
+  static std::string concept(size_t block_id, const std::vector<size_t>& worker_ids) {
+    return au::str("block request task for block %lu to workers %s", block_id, au::str(worker_ids).c_str());
+  }
+
   size_t block_id_;
-  size_t worker_id_;
+  std::vector<size_t> worker_ids_;
   BlockPointer block_;
 };
 
 class PopBlockRequestTask : public WorkerSystemTask {
 public:
 
-  PopBlockRequestTask(SamsonWorker *samson_worker
-                      , size_t id
+  PopBlockRequestTask(size_t id
                       , size_t block_id
                       , const gpb::KVRanges& ranges
                       , size_t delialh_id
@@ -101,10 +107,12 @@ public:
 
 private:
 
+  static std::string concept(size_t block_id, size_t delilah_id) {
+    return au::str("block pop request task for block %lu ( delilah %lu )", block_id, delilah_id);
+  }
 
   void sent_response(engine::BufferPointer buffer);
 
-  SamsonWorker *samson_worker_;
   size_t block_id_;
   gpb::KVRanges ranges_;
   BlockPointer block_;

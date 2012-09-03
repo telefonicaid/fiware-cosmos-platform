@@ -5,11 +5,27 @@
 #include "au/network/NetworkListener.h"
 #include "au/network/SocketConnection.h"
 #include "samson/network/NetworkConnection.h"
-#include "samson/network/NetworkConnection.h"
 
 #include "CommonNetwork.h"  // Own interface
 
 namespace samson {
+CommonNetwork::CommonNetwork(NodeIdentifier my_node_identifier) : token_("CommonNetwork") {
+  // Identify myself
+  node_identifier_ = my_node_identifier;
+
+  LM_V(("CommonNetwork %s", node_identifier_.str().c_str()));
+
+  // No cluster information at the moment
+  cluster_information_ = NULL;
+
+  // Listen and create notifications for network manager review
+  listen("notification_network_manager_review");
+  engine::Engine::shared()->notify(new engine::Notification("notification_network_manager_review"), 1);
+
+  listen("send_to_all_delilahs");      // Listen notification to send packets
+  listen(notification_send_packet);    // Listen to send packet
+}
+
 void CommonNetwork::remove_cluster_information() {
   cluster_information_.Reset(NULL);
   review_connections();
@@ -56,7 +72,7 @@ void CommonNetwork::review_connections() {
   LM_T(LmtNetworkConnection, ("Review connections ( me = %s ) ******************************************"
                               , node_identifier_.str().c_str()));
 
-  NetworkManager::Review();                             // Check pending packets to be removed after 1 minute disconnected
+  NetworkManager::Review();                               // Check pending packets to be removed after 1 minute disconnected
 
   // Check workers to be connected to
   if (cluster_information_ == NULL) {
@@ -129,6 +145,18 @@ void CommonNetwork::review_connections() {
 }
 
 void CommonNetwork::notify(engine::Notification *notification) {
+  if (notification->isName(notification_send_packet)) {
+    au::SharedPointer<Packet> packet = notification->dictionary().Get("packet").dynamic_pointer_cast<Packet>();
+
+    if (packet == NULL) {
+      LM_W(("Notification notification_send_packet without packet"));
+      return;
+    }
+
+    // Send real packet
+    Send(packet);
+  }
+
   if (notification->isName("send_to_all_delilahs")) {
     au::SharedPointer<Packet> packet = notification->dictionary().Get("packet").dynamic_pointer_cast<Packet>();
 
@@ -179,7 +207,7 @@ Status CommonNetwork::addWorkerConnection(size_t worker_id, std::string host, in
   // If there is an error, just return the error
   if (s != au::OK) {
     LM_W(("Not possible to connect with %s:%d (%s)", host.c_str(), port, au::status(s)));
-    return Error;     // Generic error
+    return Error;       // Generic error
   }
 
   // Sync send hello message
@@ -208,7 +236,7 @@ void CommonNetwork::Send(const PacketPointer& packet) {
   // Add more info to buffer name for debuggin
   engine::BufferPointer buffer = packet->buffer();
   if (buffer != NULL) {
-    buffer->add_to_name(au::str(" [in packet to %s]", packet->to.str().c_str()));    // Set me as from identifier
+    buffer->add_to_name(au::str(" [in packet to %s]", packet->to.str().c_str()));      // Set me as from identifier
   }
   packet->from = node_identifier_;
 
@@ -241,7 +269,7 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
 
   if (packet->msgCode == Message::Hello) {
     LM_W(("Received a hello packet once connection is identified. Ignoring..."));
-    return;     // Ignore hello message here
+    return;       // Ignore hello message here
   }
 
   if (packet->msgCode == Message::ClusterInfoUpdate) {
@@ -250,7 +278,7 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
             , connection->node_identifier().str().c_str()));
       connection->Close();
       return;
-    }    // This is managed as a normal message in delilah
+    }      // This is managed as a normal message in delilah
   }
   // Check we do now receive messages from unidenfitied node elements
   if (connection->node_identifier().node_type == UnknownNode) {
@@ -263,7 +291,7 @@ void CommonNetwork::receive(NetworkConnection *connection, const PacketPointer& 
   }
 
   if (packet->from.id == 0) {
-    LM_W(("Strange node identifier 0 in received packet"));    // Schedule the new packet
+    LM_W(("Strange node identifier 0 in received packet"));      // Schedule the new packet
   }
   schedule_receive(packet);
 }
@@ -319,9 +347,11 @@ size_t CommonNetwork::get_rate_out() {
 }
 
 void CommonNetwork::schedule_receive(PacketPointer packet) {
-  // Using the engine to call the packet receiver asynchronously in a unique thread form
-  LM_T(LmtNetworkInterface, ("NETWORK_INTERFACE Received packet type %s ", messageCode(packet->msgCode)));
-  engine::Engine::shared()->Add(new PacketReceivedNotification(receiver_, packet));
+  // Create a notification containing the packet we have just received
+  engine::Notification *notification = new engine::Notification(notification_packet_received);
+
+  notification->dictionary().Set("packet", packet.static_pointer_cast<engine::NotificationObject>());
+  engine::Engine::shared()->notify(notification);
 }
 
 size_t CommonNetwork::cluster_information_version() {

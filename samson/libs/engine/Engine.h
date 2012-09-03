@@ -36,7 +36,7 @@
 
 #include "engine/EngineElementCollection.h"
 #include "engine/NotificationListener.h"         // engine::EngineNotification
-#include "engine/NotificationListenersManager.h" // engine::NotificationListenersManager
+#include "engine/NotificationListenersManager.h"  // engine::NotificationListenersManager
 
 
 namespace au {
@@ -137,5 +137,10 @@ private:
   friend class NotificationElement;
   friend void *runEngineBackground(void *);   // Backgrount function
 };
+
+// Handy methods to add notifications
+void notify(const char *notification_name);
+void notify(const char *notification_name, double period);
+void notify_extra(const char *notification_name);
 }
 #endif  // ifndef _H_SAMSON_ENGINE

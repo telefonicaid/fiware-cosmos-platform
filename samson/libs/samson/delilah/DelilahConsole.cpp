@@ -93,17 +93,17 @@ DelilahConsole::DelilahConsole(size_t delilah_id) : Delilah("console",
   show_alerts = false;
   verbose = true;
 
-  mode = mode_normal;   // Normal mode by default
+  mode = mode_normal;     // Normal mode by default
 
   // Schedule a notification to review repeat-tasks
   engine::Engine::shared()->notify(new engine::Notification(notification_delilah_review_repeat_tasks), 1);
 
   // Cool stuff
   addEspaceSequence("samson");
-  addEspaceSequence("q");      // ls
-  addEspaceSequence("d");      // Database mode...
-  addEspaceSequence("l");      // logs mode...
-  addEspaceSequence("n");      // normal mode...
+  addEspaceSequence("q");        // ls
+  addEspaceSequence("d");        // Database mode...
+  addEspaceSequence("l");        // logs mode...
+  addEspaceSequence("n");        // normal mode...
 
   // By default no save traces
   trace_file = NULL;
@@ -166,7 +166,7 @@ void DelilahConsole::evalCommand(std::string command) {
           cancelComponent(_delilah_id);
           return;
         } else if (entry.isChar('b')) {
-          refresh();   // Refresh console
+          refresh();     // Refresh console
           return;
         }
       }
@@ -227,7 +227,7 @@ void DelilahConsole::autoCompleteQueueWithFormat(
 void DelilahConsole::autoCompleteQueueForOperation(au::ConsoleAutoComplete *info, std::string operation_name,
                                                    int argument_pos) {
   // Search in the operations
-  Operation *operation = ModulesManager::shared()->getOperation(operation_name);
+  Operation *operation = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
 
   if (!operation) {
     return;
@@ -365,7 +365,7 @@ size_t DelilahConsole::runAsyncCommand(std::string command) {
   au::console::CommandInstance *command_instance = delilah_command_catalogue.parse(command, &error);
 
   if (error.IsActivated()) {
-    write(&error);     // Write errors and messages
+    write(&error);       // Write errors and messages
     return 0;
   }
 
@@ -400,7 +400,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   if (mode == mode_logs) {
     au::ErrorManager error;
     log_client.evalCommand(command_instance->command_line(), &error);
-    write(&error);     // Console method to write all the answers
+    write(&error);       // Console method to write all the answers
     return 0;
   }
 
@@ -415,7 +415,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     // Disconnect first from whatever cluster I am connected to...
     disconnect();
 
-    std::string host = command_instance->get_string_option("host");
+    std::string host = command_instance->get_string_argument("host");
     std::vector<std::string> hosts = au::split(host, ' ');
 
     if (hosts.size() == 0) {
@@ -468,8 +468,10 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     return 0;
   }
 
-  if (mainCommand == "reload_modules") {
-    ModulesManager::shared()->reloadModules();
+  if (mainCommand == "reload_modules_local") {
+    au::Singleton<ModulesManager>::shared()->clearModulesManager();
+    au::Singleton<ModulesManager>::shared()->addModulesFromDefaultDirectory();
+
     writeWarningOnConsole("Modules at delilah client have been reloaded.");
   }
 
@@ -511,7 +513,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "quit") {
-    Console::quitConsole();     // Quit the console
+    Console::quitConsole();       // Quit the console
     return 0;
   }
 
@@ -563,7 +565,7 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
   }
 
   if (mainCommand == "ls_local_connections") {
-    samson::Visualization v;   // No visualization options here
+    samson::Visualization v;     // No visualization options here
     au::tables::Table *table = WorkerCommandDelilahComponent::getStaticTable(network->getConnectionsCollection(v));
     writeOnConsole(table->str());
     delete table;
@@ -706,9 +708,9 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
 
 
         if (component->isComponentFinished()) {
-          table.addRow(au::StringVector("Status", "Finished"));
+          table.addRow(au::StringVector("Finished", "Yes"));
         } else {
-          table.addRow(au::StringVector("Status", "Running " + au::str_time(component->cronometer.seconds())));
+          table.addRow(au::StringVector("Finished", "No. Running " + au::str_time(component->cronometer.seconds())));
         }
         if (component->error.IsActivated()) {
           table.addRow(au::StringVector("Error", component->error.GetMessage()));
@@ -735,66 +737,48 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     return 0;
   }
 
+  if (mainCommand == "push_module") {
+    std::string file_name = command_instance->get_string_argument("file");
+
+    au::ErrorManager error;
+    std::vector<std::string> file_names = au::GetListOfFiles(file_name, error);
+    if (error.IsActivated()) {
+      write(&error);
+      return -1;
+    }
+
+    return add_push_module_component(file_names);
+  }
+
   if (mainCommand == "push") {
-    std::string file = command_instance->get_string_argument("file");
+    std::string file_name = command_instance->get_string_argument("file");
     std::string queue = command_instance->get_string_argument("queue");
 
 
-    std::vector<std::string> fileNames;
-    struct stat buf;
-    int rc = stat(file.c_str(), &buf);
-
-    if (rc) {
-      writeErrorOnConsole(au::str("%s is not a valid local file or dir ", file.c_str()));
-      return 0;
-    }
-
-    if (S_ISREG(buf.st_mode)) {
-      if (verbose) {
-        std::ostringstream message;
-        message << "Including regular file " << file << " with " <<  au::str((size_t)buf.st_size) << " Bytes\n";
-        showMessage(message.str());
-      }
-
-      fileNames.push_back(file);
-    } else if (S_ISDIR(buf.st_mode)) {
-      if (verbose) {
-        std::ostringstream message;
-        message << "Including directory " << file << "\n";
-        writeOnConsole(message.str());
-      }
-
-      {
-        // first off, we need to create a pointer to a directory
-        DIR *pdir = opendir(file.c_str());    // "." will refer to the current directory
-        struct dirent *pent = NULL;
-        if (pdir != NULL) {  // if pdir wasn't initialised correctly
-          while ((pent = readdir(pdir))) {  // while there is still something in the directory to list
-            if (pent != NULL) {
-              std::ostringstream localFileName;
-              localFileName << file << "/" << pent->d_name;
-
-              struct stat buf2;
-              stat(localFileName.str().c_str(), &buf2);
-
-              if (S_ISREG(buf2.st_mode)) {
-                fileNames.push_back(localFileName.str());
-              }
-            }
-          }
-          // finally, let's close the directory
-          closedir(pdir);
-        }
-      }
-    } else {
-      writeErrorOnConsole(au::str("%s is not a valid local file or dir ", file.c_str()));
-      return 0;
+    au::ErrorManager error;
+    std::vector<std::string> file_names = au::GetListOfFiles(file_name, error);
+    if (error.IsActivated()) {
+      write(&error);
+      return -1;
     }
 
     // Get provided queues
     std::vector<std::string> queues = au::split(queue, ' ');
 
-    size_t id = add_push_component(fileNames, queues);
+    // Check queue names
+    for (size_t i = 0; i < queues.size(); i++) {
+      if (queues[i].size() == 0) {
+        writeErrorOnConsole("Invalid queue");
+        return -1;
+      }
+
+      if (queues[i][0] == '.') {
+        writeErrorOnConsole("Invalid queue. Name can not start with a dot (.)");
+        return -1;
+      }
+    }
+
+    size_t id = add_push_component(file_names, queues);
     return id;
   }
 
@@ -908,46 +892,6 @@ size_t DelilahConsole::runAsyncCommand(au::console::CommandInstance *command_ins
     return 0;
   }
 
-  /*
-   *
-   * if( mainCommand == "push_module" )
-   * {
-   *
-   * if( commandLine.get_num_arguments() < 3 )
-   * {
-   *  writeErrorOnConsole( "Usage: push_module <file> <module_name>");
-   *  return 0;
-   * }
-   *
-   * std::string file_name = commandLine.get_argument(1);
-   * std::string module_name = commandLine.get_argument(2);
-   *
-   * struct ::stat info;
-   * if( stat(file_name.c_str(), &info) != 0 )
-   * {
-   *  writeErrorOnConsole( au::str("Error reading file %s (%s)" , file_name.c_str() , strerror(errno) ) );
-   *  return 0;
-   * }
-   * // Size of the file
-   * size_t file_size = info.st_size;
-   * engine::BufferPointer buffer = engine::Engine::memory_manager()->createBuffer("push_module" , "delilah", file_size );
-   * buffer->set_size(file_size);
-   *
-   * // Load the file
-   * FILE* file = fopen( file_name.c_str(), "r");
-   * if( fread(buffer->data(), file_size, 1, file) != 1 )
-   *  LM_W(("Errro reading file %s" , file_name.c_str() ));
-   * fclose(file);
-   *
-   * size_t tmp_id = sendWorkerCommand( au::str("push_module %s" , module_name.c_str() ) , buffer );
-   *
-   * // Release the buffer we have just created
-   * buffer->Release();
-   *
-   * return tmp_id;
-   * }
-   */
-
   // By default, it is considered a worker command
   return sendWorkerCommand(command_instance->command_line());
 
@@ -1009,7 +953,7 @@ int DelilahConsole::_receive(const PacketPointer& packet) {
 
 void DelilahConsole::delilahComponentStartNotification(DelilahComponent *component) {
   if (component->hidden) {
-    return;   // No notification for hidden processes
+    return;     // No notification for hidden processes
   }
   if (verbose) {
     std::ostringstream o;
@@ -1026,7 +970,7 @@ void DelilahConsole::delilahComponentStartNotification(DelilahComponent *compone
 
 void DelilahConsole::delilahComponentFinishNotification(DelilahComponent *component) {
   if (component->hidden) {
-    return;   // No notification for hidden processes
+    return;     // No notification for hidden processes
   }
   if (verbose) {
     if (!component->error.IsActivated()) {
@@ -1067,7 +1011,7 @@ void DelilahConsole::receive_buffer_from_queue(std::string queue, engine::Buffer
 
   if (verbose) {
     // Show the first line or key-value
-    SamsonClientBlock samson_client_block(buffer);      // Not remove buffer at destrutor
+    SamsonClientBlock samson_client_block(buffer);        // Not remove buffer at destrutor
 
     std::ostringstream output;
     output << "====================================================================\n";
@@ -1093,7 +1037,7 @@ void DelilahConsole::runAsyncCommandAndWait(std::string command) {
   size_t tmp_id = runAsyncCommand(command);
 
   if (tmp_id == 0) {
-    return;   // Sync command
+    return;     // Sync command
   }
   while (true) {
     if (!isActive(tmp_id)) {

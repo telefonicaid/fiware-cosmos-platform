@@ -10,10 +10,8 @@ TEST(au_containers_SharedPointer, assignation) {
 
   EXPECT_EQ(b->value(), 10) << "Error in au::SharedPointer assignation";
 
-  EXPECT_EQ(a.reference_count(),
-            2) <<  "Error in au::SharedPointer assignation";
-  EXPECT_EQ(b.reference_count(),
-            2) <<  "Error in au::SharedPointer assignation";
+  EXPECT_EQ(2, a.reference_count()) <<  "Error in au::SharedPointer assignation";
+  EXPECT_EQ(2, b.reference_count()) <<  "Error in au::SharedPointer assignation";
 }
 
 TEST(au_containers_SharedPointer, operators) {
@@ -27,8 +25,7 @@ TEST(au_containers_SharedPointer, operators) {
   TestBase& cc = *c;
 
   EXPECT_EQ(&aa == &bb, true) << "Error in au::SharedPointer operator *";
-  EXPECT_EQ(a.shared_object() == b.shared_object(),
-            true) << "Error in au::SharedPointer::shared_object() ";
+  EXPECT_EQ(a.shared_object() == b.shared_object(), true) << "Error in au::SharedPointer::shared_object() ";
   EXPECT_EQ(a == b, true) << "Error in au::SharedPointer operator == ";
   EXPECT_EQ(a != b, false) << "Error in au::SharedPointer operator != ";
 
@@ -69,3 +66,40 @@ TEST(au_containers_SharedPointer, dynamic_castings) {
             true) << "Error in au::SharedPointer dynamic casting (2)";
   EXPECT_EQ(a == c, false) << "Error in au::SharedPointer dynamic casting (3)";
 }
+
+class TestSharedPointerReturnFunction {
+public:
+
+  TestSharedPointerReturnFunction(au::SharedPointer< TestBase > a) {
+    a_ = a;
+  }
+
+  au::SharedPointer< TestBase > a() {
+    return a_;
+  }
+
+private:
+
+  au::SharedPointer< TestBase > a_;
+};
+
+TEST(au_containers_SharedPointer, return_function) {
+  EXPECT_EQ(0, TestBase::num_instances());
+
+  // Create one
+  au::SharedPointer< TestBase > a(new TestBase(10));
+
+  TestSharedPointerReturnFunction *test = new TestSharedPointerReturnFunction(a);
+  a = NULL;
+
+  EXPECT_EQ(1, TestBase::num_instances());
+
+  // Use with temporal shared pointer
+  test->a()->set_value(4);
+
+  EXPECT_EQ(1, TestBase::num_instances());
+  delete test;
+
+  EXPECT_EQ(0, TestBase::num_instances());
+}
+

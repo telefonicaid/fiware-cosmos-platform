@@ -14,7 +14,6 @@
 #include "samson/common/samson.pb.h"
 #include "samson/zoo/CommitCommand.h"
 #include "samson/zoo/Connection.h"
-#include "samson/zoo/ConnectionWatcherInterface.h"
 #include "samson/zoo/common.h"
 
 #include "samson/common/MessagesOperations.h"
@@ -47,7 +46,7 @@ struct CommitRecord {
 };
 
 template<class C>   // C is suppoused to be a gpb message class
-class ZooNodeCommiter : public samson::zoo::ConnectionWatcherInterface {
+class ZooNodeCommiter : public engine::NotificationListener {
 public:
 
   // Constructor & destructors
@@ -80,11 +79,11 @@ public:
     return c_;
   }
 
-  // virtual method of samson::zoo::ConnectionWatcherInterface
-  virtual void watcher(zoo::Connection *connection, int type, int state, const char *path) {
-    au::TokenTaker tt(&token_);               // Mutex protection
+  // virtual method of engine::NotificationListener
+  virtual void notify(engine::Notification *notification) {
+    au::TokenTaker tt(&token_);                 // Mutex protection
 
-    GetDataFromZooNode();                     // Recover data from zk
+    GetDataFromZooNode();                       // Recover data from zk
   };
 
   // Commit a new commit_command
@@ -141,36 +140,37 @@ public:
 
 private:
 
-  void GetDataFromZooNode() {
+  int GetDataFromZooNode() {
     // New candidate for data
     au::SharedPointer<C> c(new C());
 
-    // Get a first version of the data model
-    while (true) {
-      int rc = 0;
-      int previous_version = stat_.version;
-      {
-        // Mutex protection
-        au::TokenTaker tt(&token_);
-        rc = zoo_connection_->Get(path_.c_str(), this, c.shared_object(), &stat_);
-      }
-
-      if (rc) {
-        LM_W(("Not possible to get node %s from zk: %s"
-              , path_.c_str()
-              , samson::zoo::str_error(rc).c_str()));
-        sleep(1);
-      } else {
-        // Keep this new data model
-        c_ = c;
-
-        // We have received information correctly
-        if (stat_.version > previous_version) {
-          NotificationNewModel(stat_.version, c_);
-        }
-        break;
-      }
+    int rc = zoo_connection_->WaitUntilConnected(5000);
+    if (rc) {
+      return rc;
     }
+
+    int previous_version = stat_.version;
+    {
+      au::TokenTaker tt(&token_);      // Mutex protection
+      rc = zoo_connection_->Get(path_.c_str(), engine_id(), c.shared_object(), &stat_);
+    }
+
+    if (rc) {
+      LM_W(("Not possible to get node %s from zk: %s"
+            , path_.c_str()
+            , samson::zoo::str_error(rc).c_str()));
+      return rc;
+    }
+
+    // Keep this new data model
+    c_ = c;
+
+    // Check if we have a new version now...
+    if (stat_.version > previous_version) {
+      NotificationNewModel(stat_.version, c_);
+    }
+
+    return 0;  // Everything ok
   }
 
   void InternCommit(std::string commit_command, au::ErrorManager *error) {
@@ -181,12 +181,13 @@ private:
 
     while (true) {
       trial++;
+      int rc = GetDataFromZooNode();  // Get data from zk
+      if (rc) {
+        error->set(au::str("Error with ZK: %s", zoo::str_error(rc).c_str()));
+        return;
+      }
 
-      // Get data from zk
-      GetDataFromZooNode();
-
-      // Real changes on data model
-      PerformCommit(c_, commit_command, stat_.version, error);
+      PerformCommit(c_, commit_command, stat_.version, error);      // Real changes on data model
 
       if (error->IsActivated()) {
         GetDataFromZooNode();    // Model is recovered from zk to make sure it is not affected
@@ -194,22 +195,21 @@ private:
       }
 
       // Try to commit
-      int rc = zoo_connection_->Set(path_.c_str(), c_.shared_object(),  stat_.version);
+      rc = zoo_connection_->Set(path_.c_str(), c_.shared_object(),  stat_.version);
 
       if (rc == ZBADVERSION) {
         // Wrong vertion ( this means another commit was accepted first )
         LM_W(("Wrong version of zk path %s (%lu)",  path_.c_str(), stat_.version ));
-        GetDataFromZooNode();
-        continue;
+        continue;  // Loop to load again data model and commit
       }
 
       if (rc) {
-        LM_W(("Unexpected error updating node %s: %s ", path_.c_str(), zoo::str_error(rc).c_str()));
-        usleep(100000);
-        continue;
-      } else {
-        break;
+        error->set(au::str("Error with ZK: %s ", zoo::str_error(rc).c_str()));
+        return;
       }
+
+      // Operation is commited correctly
+      break;
     }
 
     // Recover data from zk to get the last version

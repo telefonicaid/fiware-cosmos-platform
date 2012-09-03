@@ -22,10 +22,11 @@
 #include <cstring>                       // size_t
 #include <fstream>                       // std::ifstream
 
+#include "au/ErrorManager.h"
 #include "au/containers/SharedPointer.h"
 #include "au/mutex/Token.h"
 #include "engine/Notification.h"
-#include "engine/NotificationListener.h" // engine::EngineNotificationObject
+#include "engine/NotificationListener.h"  // engine::EngineNotificationObject
 #include "engine/SimpleBuffer.h"         // engine::SimpleBuffer
 
 namespace engine {
@@ -103,6 +104,9 @@ public:
 
   // Remove the last characters of an unfinished line and put them in buffer.
   int RemoveLastUnfinishedLine(char *& buffer, size_t& buffer_size);
+
+  // Read a file and write to this buffer
+  void WriteFile(const std::string& file_name, au::ErrorManager& error);
 
 private:
 

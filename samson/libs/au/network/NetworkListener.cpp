@@ -71,7 +71,7 @@ void NetworkListener::StopNetworkListener() {
   rFd_ = -1;
 
   // Joint the background thread
-  LM_LW(( "Joining background thread of listener on port %d to finish\n", port_ ));
+  // LM_LW(( "Joining background thread of listener on port %d to finish\n", port_ ));
   if (!return_code_) {  // Still pending to be collected
     pthread_join(t, &return_code_);
   }
@@ -99,7 +99,7 @@ Status NetworkListener::InitNetworkListener(int port) {
     LM_RP(SocketError, ("socket"));
   }
 
-  // fcntl(rFd_, F_SETFD, 1);
+  fcntl(rFd_, F_SETFD, 1);
 
   memset(reinterpret_cast<char *>(&sock), 0, sizeof(sock));
   memset(reinterpret_cast<char *>(&peer), 0, sizeof(peer));

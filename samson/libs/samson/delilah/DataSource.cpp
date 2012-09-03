@@ -7,31 +7,31 @@
 #include "samson/network/Message.h"                                     // samson::Message
 #include "samson/network/Packet.h"                                      // samson::Packet
 
-#include "TXTFileSet.h"  // Own interface
+#include "DataSource.h"  // Own interface
 
 namespace samson {
-int TXTFileSet::fill(engine::BufferPointer b) {
+int AgregatedFilesDataSource::fill(engine::BufferPointer b) {
   // First the header
 
-  if (finish) {
+  if (finish_) {
     return 0;                           // Just in case
   }
-  if (previousBuffer) {
-    if (previousBufferSize > 0) {
-      bool ans = b->Write(previousBuffer, previousBufferSize);
+  if (previous_buffer_) {
+    if (previous_buffer_size_ > 0) {
+      bool ans = b->Write(previous_buffer_, previous_buffer_size_);
       if (!ans) {
         LM_X(1, ("Error writing in a TXTFileSet"));
       }
     }
   }
   while (b->GetAvailableSizeToWrite() > 0) {                  // While there is space to fill
-    b->Write(inputStream);
+    b->Write(current_input_stream_);
 
     // Open the next file if necessary
-    if (inputStream.eof()) {
-      inputStream.close();
-      openNextFile();
-      if (finish) {
+    if (current_input_stream_.eof()) {
+      current_input_stream_.close();
+      OpenNextFile();
+      if (finish_) {
         // Information in the header
         return 0;
       }
@@ -39,10 +39,10 @@ int TXTFileSet::fill(engine::BufferPointer b) {
   }
 
   // Remove previous buffer ( if any )
-  if (previousBuffer) {
-    free(previousBuffer);  // Remove the last chars until a complete line and keep for the next read
+  if (previous_buffer_) {
+    free(previous_buffer_);  // Remove the last chars until a complete line and keep for the next read
   }
-  if (b->RemoveLastUnfinishedLine(previousBuffer, previousBufferSize) != 0) {
+  if (b->RemoveLastUnfinishedLine(previous_buffer_, previous_buffer_size_) != 0) {
     return 1;     // Error filling the buffer
   }
   // No error here

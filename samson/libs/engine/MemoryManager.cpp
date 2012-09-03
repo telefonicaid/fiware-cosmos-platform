@@ -49,6 +49,8 @@ MemoryManager::~MemoryManager() {
 }
 
 void MemoryManager::Add(Buffer *buffer) {
+  au::TokenTaker tt(&token_);
+
   buffers_.insert(buffer);
   used_memory_ += buffer->max_size();      // Increse the internal counter of memory
   if (used_memory_ > 3 * memory_) {
@@ -57,6 +59,8 @@ void MemoryManager::Add(Buffer *buffer) {
 }
 
 void MemoryManager::Remove(Buffer *buffer) {
+  au::TokenTaker tt(&token_);
+
   buffers_.erase(buffer);
   used_memory_ -= buffer->max_size();
 }

@@ -29,7 +29,11 @@ public:
     return total_size;
   }
 
-  size_t seconds() {
+  void ResetInactivityCronometer() {
+    cronometer_.Reset();
+  }
+
+  size_t inactivity_time() {
     return cronometer_.seconds();
   }
 
@@ -39,10 +43,6 @@ private:
 };
 
 class MultiPacketQueue {
-  // Pending packets ( only used while disconnected )
-  au::map< std::string, PacketQueue > packet_queues;
-  au::Token token_packet_queues;
-
 public:
 
   MultiPacketQueue() : token_packet_queues("token_packet_queues") {
@@ -52,16 +52,27 @@ public:
     packet_queues.clearMap();
   }
 
+  // Push a packet for a node
   void Push(const au::SharedPointer<Packet>& packet);
+
+  // Recover and remove a paquet for a node
   au::SharedPointer<Packet> Front(const NodeIdentifier& node_identifier);
   void Pop(const NodeIdentifier& node_identifier);
+
+  // Remove all pending packets
   void Clear();
 
   // Get a descriptive table with current status of all the queues
   au::tables::Table *getPendingPacketsTable();
 
   // Check old messages to be removes
-  void check();
+  void RemoveOldConnections(const std::set<std::string> current_connections);
+
+private:
+
+  // Pending packets for all nodes
+  au::map< std::string, PacketQueue > packet_queues;
+  au::Token token_packet_queues;
 };
 }
 

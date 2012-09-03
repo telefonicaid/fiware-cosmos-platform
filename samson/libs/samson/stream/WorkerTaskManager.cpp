@@ -50,9 +50,9 @@ void WorkerTaskManager::Add(au::SharedPointer<WorkerTaskBase> task) {
   reviewPendingWorkerTasks();
 }
 
-void WorkerTaskManager::add_block_request_task(size_t block_id, size_t worker_id) {
+void WorkerTaskManager::AddBlockDistributionTask(size_t block_id, const std::vector<size_t>& worker_ids) {
   // Add a new block request task...
-  au::SharedPointer<WorkerSystemTask> task(new BlockRequestTask(samson_worker_, getNewId(), block_id, worker_id));
+  au::SharedPointer<WorkerSystemTask> task(new BlockDistributionTask(getNewId(), block_id, worker_ids));
   Add(task.static_pointer_cast<WorkerTaskBase>());
 }
 
@@ -179,8 +179,27 @@ bool WorkerTaskManager::runNextWorkerTasksIfNecessary() {
   return false;
 }
 
-void WorkerTaskManager::reset() {
+void WorkerTaskManager::Reset() {
   stream_operations_info_.clearMap();
+
+  // Remove running task...
+  std::vector<size_t> pending_tasks_ids = running_tasks_.getKeysVector();
+  for (size_t i = 0; i < pending_tasks_ids.size(); i++) {
+    size_t task_id = pending_tasks_ids[i];
+    au::SharedPointer<WorkerTaskBase> task = running_tasks_.Get(task_id);
+    if (task->name() != "block_distribution") {
+      running_tasks_.Extract(task_id);
+    }
+  }
+
+  // Remove pending task (except block_request )
+  std::vector<au::SharedPointer<WorkerTaskBase> > pending_task = pending_tasks_.items();
+  pending_tasks_.Clear();
+  for (size_t i = 0; i < pending_task.size(); i++) {
+    if (pending_task[i]->name() == "block_distrbution") {
+      pending_tasks_.Push(pending_task[i]);
+    }
+  }
 }
 
 samson::gpb::Collection *WorkerTaskManager::getLastTasksCollection(const ::samson::Visualization& visualization) {
@@ -228,15 +247,27 @@ void WorkerTaskManager::review_stream_operations() {
   au::ExecesiveTimeAlarm alarm("WorkerTaskManager::reviewStreamOperations");
   int num_processors = au::Singleton<SamsonSetup>::shared()->getInt("general.num_processess");
 
-  // Get a copy of data mode
-  au::SharedPointer<gpb::Data> data = samson_worker_->data_model()->getCurrentModel();
 
+  // If I have no information about ranges, do nothing...
+  if (samson_worker_->worker_controller() == NULL) {
+    Reset();
+    return;  // Nothing to do here
+  }
+
+  // Set of stream operations-ranges executed in this iteration
+  std::set<std::string> keys;
+
+  // Get my ranges
+  std::vector<KVRange> ranges = samson_worker_->worker_controller()->GetMyKVRanges();
+
+  // Schedule tasks until we got 1.5 times the number of cores
   while (true) {
-    // Check if enougth tasks have been scheduled
     size_t num_tasks = get_num_tasks();
-    if (num_tasks > ( 1.5 * num_processors)) {
-      break;  // Check memory status. New tasks are not scheduled if memory usage is too high
+    if (num_tasks > ( 1.5 * num_processors)) {     // Check if enougth tasks have been scheduled
+      break;
     }
+
+    // Check memory status. New tasks are not scheduled if memory usage is too high
     double memory_usage = engine::Engine::memory_manager()->memory_usage();
     if (memory_usage >= 1.0) {
       LM_W(("Not schedulling new stream-tasks since memory usage is %s >= 100%"
@@ -244,9 +275,12 @@ void WorkerTaskManager::review_stream_operations() {
       break;
     }
 
+    // Get a copy of data mode
+    au::SharedPointer<gpb::Data> data = samson_worker_->data_model()->getCurrentModel();
+
     // Find the most urgent stream operation to be processed
     size_t max_priority_rank = 0;
-    StreamOperationInfo *max_priority_stream_operation_info = NULL;
+    std::string max_key;
 
     // Review all stream operations
     for (int s = 0; s < data->operations_size(); s++) {
@@ -255,34 +289,38 @@ void WorkerTaskManager::review_stream_operations() {
       // Get the identifier of this stream operation
       size_t stream_operation_id = stream_operation.stream_operation_id();
 
-      for (size_t r = 0; r < ranges_.size(); r++) {
+      for (size_t r = 0; r < ranges.size(); r++) {
         // Get the range we are considering
-        KVRange range = ranges_[r];
+        KVRange range = ranges[r];
 
         // Index in the map of StreamOperationInfo elements
-        IdRange id_range = IdRange(stream_operation_id, range);
+        std::string key = au::str("%lu_%s", stream_operation_id, range.str().c_str());
 
         // Recover information for this stream operation
-        StreamOperationInfo *stream_operation_info = stream_operations_info_.findInMap(id_range);
+        StreamOperationInfo *stream_operation_info = stream_operations_info_.findInMap(key);
         if (!stream_operation_info) {
           stream_operation_info = new StreamOperationInfo(samson_worker_
                                                           , stream_operation_id
                                                           , range
                                                           , stream_operation);
 
-          stream_operations_info_.insertInMap(id_range, stream_operation_info);
+          stream_operations_info_.insertInMap(key, stream_operation_info);
         }
 
-        // Review tasks to be executed
-        stream_operation_info->review(data.shared_object());
+        if (stream_operation_info->worker_task() != NULL) {
+          stream_operation_info->review();          // Review if this task finished...
+        } else
+        if (keys.find(key) == keys.end()) {  // If not considerd before
+          // Recompute the priority rank
+          // Compute the priority parameter based on data accumulated here
+          stream_operation_info->RecomputePriorityRank(data.shared_object());
+          size_t priority_rank = stream_operation_info->priority_rank();
 
-        // Compute the priority parameter based on data accumulated here
-        size_t priority_rank = stream_operation_info->priority_rank();
-
-        // Keep reference to the maximum priority
-        if (( priority_rank > 0 ) && (priority_rank > max_priority_rank )) {
-          max_priority_rank = priority_rank;
-          max_priority_stream_operation_info = stream_operation_info;
+          // Keep reference to the maximum priority
+          if (( priority_rank > 0 ) && (priority_rank > max_priority_rank )) {
+            max_priority_rank = priority_rank;
+            max_key = key;
+          }
         }
       }
     }
@@ -293,8 +331,12 @@ void WorkerTaskManager::review_stream_operations() {
     }
 
     // Schedule next task
-    if (max_priority_stream_operation_info) {
-      au::SharedPointer<WorkerTask>  queue_task =  max_priority_stream_operation_info->schedule_new_task(id_++);
+    if (max_priority_rank > 0) {
+      // Group of executed keys...
+      keys.insert(max_key);
+      StreamOperationInfo *max_priority_stream_operation_info = stream_operations_info_.findInMap(max_key);
+      au::SharedPointer<WorkerTask>  queue_task =  max_priority_stream_operation_info->schedule_new_task(
+        id_++, data.shared_object());
       if (queue_task == NULL) {
         LM_X(1, ("Internal error"));
       }
@@ -312,12 +354,5 @@ gpb::Collection *WorkerTaskManager::getCollectionForStreamOperationsInfo(const :
 }
 
 // Update ranges ( this removes all current running operations )
-void WorkerTaskManager::update_ranges(const KVRanges& ranges) {
-  // Replace currect ranges
-  ranges_ = ranges;
-
-  // Reset all the operations
-  reset();
-}
 }
 }

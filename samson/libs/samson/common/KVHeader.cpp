@@ -5,8 +5,9 @@
 #include "KVHeader.h"  // Own interface
 
 namespace samson {
-void KVHeader::init(KVFormat format, KVInfo _info) {            // Complete init function
+void KVHeader::Init(KVFormat format, KVInfo _info) {            // Complete init function
   magic_number =  4652783;
+  worker_id = (size_t)-1;
 
   setFormat(format);
   setInfo(_info);
@@ -18,8 +19,24 @@ void KVHeader::init(KVFormat format, KVInfo _info) {            // Complete init
   time = ::time(NULL);
 }
 
-void KVHeader::initForTxt(size_t size) {
+void KVHeader::InitForModule(size_t size) {
   magic_number =  4652783;
+  worker_id = (size_t)-1;
+  setFormat(KVFormat("module", "module"));
+
+  // Full range to make sure it is in all workers
+  range.set(0, KVFILE_NUM_HASHGROUPS);
+
+  info.kvs = 0;    // In txt data-sets there are not "key-values"
+  info.size = size;
+
+  // Current time-stamp
+  time = ::time(NULL);
+}
+
+void KVHeader::InitForTxt(size_t size) {
+  magic_number =  4652783;
+  worker_id = (size_t)-1;
   setFormat(KVFormat("txt", "txt"));
 
   // Random hash-group
@@ -35,6 +52,10 @@ void KVHeader::initForTxt(size_t size) {
 
 bool KVHeader::isTxt() {
   return getKVFormat().isEqual(KVFormat("txt", "txt"));
+}
+
+bool KVHeader::isModule() {
+  return getKVFormat().isEqual(KVFormat("module", "module"));
 }
 
 bool KVHeader::check_size(size_t total_size) {

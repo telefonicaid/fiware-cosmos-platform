@@ -2,8 +2,9 @@
 #include <memory>
 
 #include "Connection.h"  // Own interface
-#include "ConnectionWatcherInterface.h"
 #include "au/TemporalBuffer.h"
+#include "engine/Engine.h"
+#include "engine/Notification.h"
 #include "samson/zoo/common.h"
 
 namespace samson {
@@ -18,24 +19,6 @@ Connection::Connection(const std::string& host
 
 Connection::Connection() : token_("zoo::Connection") {
   handler_ = NULL;
-}
-
-void Connection::RegisterWatcher(ConnectionWatcherInterface *w) {
-  au::TokenTaker tt(&token_);
-
-  connection_watchers_.insert(w);
-}
-
-void Connection::UnregisterWatcher(ConnectionWatcherInterface *w) {
-  au::TokenTaker tt(&token_);
-
-  connection_watchers_.erase(w);
-}
-
-bool Connection::IsWatcherRegistered(ConnectionWatcherInterface *w) {
-  au::TokenTaker tt(&token_);
-
-  return ( connection_watchers_.find(w) != connection_watchers_.end());
 }
 
 Connection::~Connection() {
@@ -78,6 +61,9 @@ int Connection::Set(const std::string& path, ::google::protobuf::Message *value,
   au::TemporalBuffer buffer(size);
 
   if (!value->SerializeToArray(buffer.data(), size)) {
+    std::string message = value->InitializationErrorString();
+    LM_X(1, ("GPB Serialitzation error for node %s: %s", path.c_str(), message.c_str()));
+
     return ZC_ERROR_GPB;
   }
 
@@ -86,7 +72,7 @@ int Connection::Set(const std::string& path, ::google::protobuf::Message *value,
 }
 
 int Connection::Get(const std::string& path
-                    , ConnectionWatcherInterface *watcher
+                    , size_t engine_id
                     , char *buffer
                     , int *buffer_len
                     , struct Stat *stat) {
@@ -94,29 +80,26 @@ int Connection::Get(const std::string& path
 
   // Get without the buffer is just an exists call
   if (buffer == NULL) {
-    return Exists(path, watcher, stat);
+    return Exists(path, engine_id, stat);
   }
-
-  // Make sure this watcher is registered as active
-  RegisterWatcher(watcher);
 
 
   return zoo_wget(handler_
                   , path.c_str()
                   , static_watcher
-                  , get_new_watcher_caller(watcher)
+                  , (void *)engine_id
                   , buffer
                   , buffer_len
                   , stat);
 }
 
 int Connection::Get(const std::string& path
-                    , ConnectionWatcherInterface *watcher
+                    , size_t engine_id
                     , std::string& value
                     , struct Stat *stat) {
   char line[1024];
   int length = sizeof(line) / sizeof(char) - 1;
-  int rc = Get(path, watcher, line, &length, stat);
+  int rc = Get(path, engine_id, line, &length, stat);
 
   if (rc) {
     return rc;
@@ -128,12 +111,22 @@ int Connection::Get(const std::string& path
 }
 
 int Connection::Get(const std::string& path
-                    , ConnectionWatcherInterface *watcher
+                    , size_t engine_id
                     , ::google::protobuf::Message *value
-                    , struct Stat *stat
-                    , int buffer_size) {
+                    , struct Stat *stat) {
+  // Check the size of the buffer
+  struct Stat exist_stat;
+  int rc = Exists(path, &exist_stat);
+
+  if (rc) {
+    return rc;
+  }
+
+  int buffer_size = exist_stat.dataLength;
   au::TemporalBuffer buffer(buffer_size);
-  int rc = Get(path, watcher, buffer.data(), &buffer_size, stat);
+
+  // Get data
+  rc = Get(path, engine_id, buffer.data(), &buffer_size, stat);
 
   if (rc) {
     return rc;
@@ -185,9 +178,20 @@ int Connection::Get(const std::string& path, engine::BufferPointer buffer) {
   return rc;
 }
 
-int Connection::Get(const std::string& path, ::google::protobuf::Message *value, int buffer_size) {
+int Connection::Get(const std::string& path, ::google::protobuf::Message *value) {
+  // Check the size of the buffer
+  struct Stat exist_stat;
+  int rc = Exists(path, &exist_stat);
+
+  if (rc) {
+    return rc;
+  }
+
+  int buffer_size = exist_stat.dataLength;
   au::TemporalBuffer buffer(buffer_size);
-  int rc = Get(path, buffer.data(), &buffer_size);
+
+  // Get data
+  rc = Get(path, buffer.data(), &buffer_size);
 
   if (rc) {
     return rc;
@@ -197,6 +201,8 @@ int Connection::Get(const std::string& path, ::google::protobuf::Message *value,
   if (r) {
     return 0;                     // OK
   } else {
+    std::string message = value->InitializationErrorString();
+    LM_X(1, ("GPB Serialitzation error for node %s: %s", path.c_str(), message.c_str()));
     return ZC_ERROR_GPB;
   }
 }
@@ -208,17 +214,15 @@ int Connection::Exists(const std::string& path, struct Stat *stat) {
   return zoo_exists(handler_, path.c_str(), 0, stat);
 }
 
-int Connection::Exists(const std::string& path, ConnectionWatcherInterface *watcher,
+int Connection::Exists(const std::string& path, size_t engine_id,
                        struct Stat *stat) {
   au::TokenTaker tt(&token_);
-
-  RegisterWatcher(watcher);
 
   // We are interested in getting stat(
   return zoo_wexists(handler_
                      , path.c_str()
                      , static_watcher
-                     , get_new_watcher_caller(watcher)
+                     , (void *)engine_id
                      , stat);
 }
 
@@ -280,15 +284,17 @@ void Connection::static_watcher(zhandle_t *zzh,
       || (type == ZOO_CHANGED_EVENT )
       || (type == ZOO_CHILD_EVENT ))
   {
-    // ConnectionWatcherInterfaceCaller* caller = (ConnectionWatcherInterfaceCaller*)watcherCtx;
-    ConnectionWatcherInterfaceCaller *caller =
-      static_cast<ConnectionWatcherInterfaceCaller *>( watcherCtx );
+    // Recover engine_id using context
+    size_t engine_id = (size_t)watcherCtx;
 
-    // Check if this watcher is in the list of active watchers
-    if (caller->connection->IsWatcherRegistered(caller->connection_wacher)) {
-      caller->connection_wacher->watcher(caller->connection, type, state, path);
-    }
-    free(caller);
+    engine::Notification *notification = new engine::Notification(notification_zoo_watcher);
+    notification->AddEngineListener(engine_id);
+    notification->environment().Set("path", path);
+    notification->environment().Set("state", state);
+    notification->environment().Set("type", type);
+
+    // Schedule this notification
+    engine::Engine::shared()->notify(notification);
     return;
   }
 
@@ -470,15 +476,8 @@ std::string Connection::GetStatusString() {
   return au::str("Unknown (%d)", rc);
 }
 
-Connection::ConnectionWatcherInterfaceCaller *Connection::get_new_watcher_caller(
-  ConnectionWatcherInterface *watcher) {
-  Connection::ConnectionWatcherInterfaceCaller *caller = \
-    (ConnectionWatcherInterfaceCaller *)malloc(sizeof(ConnectionWatcherInterfaceCaller));
-
-  caller->connection = this;
-  caller->connection_wacher = watcher;
-
-  return caller;
+double Connection::GetConnectionTime() {
+  return cronometer_.seconds();
 }
 }
 }

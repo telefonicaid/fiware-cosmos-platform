@@ -14,6 +14,7 @@
 #include "logMsg/logMsg.h"      // lmInit, LM_*
 #include "logMsg/traceLevels.h"  // Trace Levels
 
+#include "au/file.h"
 #include "au/string.h"          // au::Format
 #include "au/xml.h"             // au::xml...
 
@@ -208,5 +209,32 @@ std::string Buffer::name() const {
 // Get internal type for debuggin
 std::string Buffer::type() const {
   return type_;
+}
+
+void Buffer::WriteFile(const std::string& file_name, au::ErrorManager& error) {
+  size_t file_size = au::sizeOfFile(file_name);
+
+  if (GetAvailableSizeToWrite() < file_size) {
+    error.set(au::str("Not enougth space in buffer to read file %s (%s)"
+                      , file_name.c_str(), au::str(file_size).c_str()));
+    return;
+  }
+
+  FILE *file = fopen(file_name.c_str(), "r");
+  if (!file) {
+    error.set(au::str("No possible of open file %s", file_name.c_str()));
+    return;
+  }
+
+  if (file_size > 0) {
+    size_t n = fread(data_ + size_, file_size, 1, file);
+    if (n != 1) {
+      error.set("Error reading");
+    } else {
+      size_ += file_size;
+    }
+  }
+
+  fclose(file);
 }
 }

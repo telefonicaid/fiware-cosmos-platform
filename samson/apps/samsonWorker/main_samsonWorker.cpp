@@ -78,40 +78,40 @@ bool thread_mode;
 PaArgument paArgs[] =
 {
   SAMSON_ARGS,
-  { "-zk",    zoo_host,      "",      PaString,           PaOpt,              _i "localhost:2181",
+  { "-zk",    zoo_host,      "",           PaString,      PaOpt,              _i "localhost:2181",
     PaNL,
     PaNL,
     "Zookeeper server"                   },
-  { "-log_classic",&log_classic,  "",      PaBool,             PaOpt,              false,
+  { "-log_classic",&log_classic,  "",           PaBool,        PaOpt,              false,
     false,
     true,
     "Classical log file"                 },
-  { "-log_host",log_host,      "",      PaString,           PaOpt,              _i "localhost",
+  { "-log_host",log_host,      "",           PaString,      PaOpt,              _i "localhost",
     PaNL,
     PaNL,     "log server host"                          },
-  { "-log_port",&log_port,     "",      PaInt,              PaOpt,              LOG_PORT,
+  { "-log_port",&log_port,     "",           PaInt,         PaOpt,              LOG_PORT,
     0,
     10000,    "log server port"                          },
-  { "-log_file",log_file,      "",      PaString,           PaOpt,              _i "",
+  { "-log_file",log_file,      "",           PaString,      PaOpt,              _i "",
     PaNL,
     PaNL,     "Local log file"                           },
-  { "-fg",    &fg,           "",      PaBool,             PaOpt,              false,
+  { "-fg",    &fg,           "",           PaBool,        PaOpt,              false,
     false,
     true,
     "don't start as daemon"              },
-  { "-port",  &port,         "",      PaInt,              PaOpt,              SAMSON_WORKER_PORT,
+  { "-port",  &port,         "",           PaInt,         PaOpt,              SAMSON_WORKER_PORT,
     1,
     9999,
     "Port to receive new connections"    },
-  { "-web_port",&web_port,     "",      PaInt,              PaOpt,              SAMSON_WORKER_WEB_PORT,
+  { "-web_port",&web_port,     "",           PaInt,         PaOpt,              SAMSON_WORKER_WEB_PORT,
     1,
     9999,
     "Port to receive web connections"    },
-  { "-valgrind",&valgrind,     "",      PaInt,              PaOpt,              0,
+  { "-valgrind",&valgrind,     "",           PaInt,         PaOpt,              0,
     0,
     20,
     "help valgrind debug process"        },
-  { "-thread_mode",&thread_mode,  "",      PaBool,             PaOpt,              false,
+  { "-thread_mode",&thread_mode,  "",           PaBool,        PaOpt,              false,
     false,
     true,     "thread_mode"                              },
   PA_END_OF_ARGS
@@ -233,6 +233,7 @@ int main(int argC, const char *argV[]) {
   paConfig("man reportingbugs",                 (void *)manReportingBugs);
   paConfig("man copyright",                     (void *)manCopyright);
   paConfig("man version",                       (void *)manVersion);
+  paConfig("screen line format",            (void *)"TYPE: TEXT");
 
   const char *extra = paIsSetSoGet(argC, (char **)argV, "-port");
   paParse(paArgs, argC, (char **)argV, 1, false, extra);
@@ -328,7 +329,6 @@ int main(int argC, const char *argV[]) {
 
   valgrindExit(9);
   LM_D(("samson::ModulesManager::init"));
-  samson::ModulesManager::init("samsonWorker");
 
   valgrindExit(10);
   LM_D(("samson::stream::BlockManager::init"));
@@ -388,7 +388,6 @@ int main(int argC, const char *argV[]) {
   samson::stream::BlockManager::destroy();
 
   LM_T(LmtCleanup, ("destroying ModulesManager"));
-  samson::ModulesManager::destroy("samsonWorker");
 
   LM_T(LmtCleanup, ("destroying Engine"));
   engine::Engine::DestroyEngine();

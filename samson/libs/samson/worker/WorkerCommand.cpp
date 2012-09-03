@@ -16,7 +16,6 @@
 
 #include "samson/network/Packet.h"                      // samson::Packet
 
-#include "samson/worker/PushManager.h"
 #include "samson/worker/SamsonWorker.h"
 
 #include "samson/stream/BlockList.h"
@@ -240,7 +239,7 @@ void WorkerCommand::runCommand(std::string command, au::ErrorManager *error) {
       operation_name  = cmd.get_argument(1);
     }
 
-    Operation *op = ModulesManager::shared()->getOperation(operation_name);
+    Operation *op = au::Singleton<ModulesManager>::shared()->getOperation(operation_name);
     if (!op) {
       error->set(au::str("Unknown operation:'%s' in command arguments to init_stream", operation_name.c_str()));
       return;
@@ -314,12 +313,6 @@ void WorkerCommand::runCommand(std::string command, au::ErrorManager *error) {
       au::set_log_server(host, port);
       return;
     }
-  }
-
-  if (main_command == "reload_modules") {
-    // Spetial operation to reload modules
-    ModulesManager::shared()->reloadModules();
-    return;
   }
 
   // Command over data model
@@ -515,7 +508,7 @@ void WorkerCommand::run() {
     return;
   }
 
-  if (main_command == "ls_data_commits") {
+  if (main_command == "ls_last_data_commits") {
     gpb::Collection *c =  samsonWorker->data_model()->getLastCommitsCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
@@ -533,15 +526,15 @@ void WorkerCommand::run() {
 
 
   if (main_command == "ls_push_operations") {
-    gpb::Collection *c = samsonWorker->push_manager()->getCollectionForPushOperations(visualization);
+    gpb::Collection *c = samsonWorker->worker_block_manager()->getCollectionForPushOperations(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
     return;
   }
 
-  if (main_command == "ls_block_distribution") {
-    gpb::Collection *c = samsonWorker->distribution_blocks_manager()->GetCollectionForDistributionBlocks(visualization);
+  if (main_command == "ls_distribution_operations") {
+    gpb::Collection *c = samsonWorker->worker_block_manager()->GetCollectionForDistributionOperations(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -549,7 +542,7 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_block_requests") {
-    gpb::Collection *c = samsonWorker->distribution_blocks_manager()->GetCollectionForBlockRequests(visualization);
+    gpb::Collection *c = samsonWorker->worker_block_manager()->GetCollectionForBlockRequests(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -640,21 +633,21 @@ void WorkerCommand::run() {
   }
 
   if (main_command == "ls_modules") {
-    gpb::Collection *c = ModulesManager::shared()->getModulesCollection(visualization);
+    gpb::Collection *c = au::Singleton<ModulesManager>::shared()->getModulesCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
     return;
   }
   if (main_command == "ls_operations") {
-    gpb::Collection *c = ModulesManager::shared()->getOperationsCollection(visualization);
+    gpb::Collection *c = au::Singleton<ModulesManager>::shared()->getOperationsCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
     return;
   }
   if (main_command == "ls_datas") {
-    gpb::Collection *c = ModulesManager::shared()->getDatasCollection(visualization);
+    gpb::Collection *c = au::Singleton<ModulesManager>::shared()->getDatasCollection(visualization);
     c->set_title(command);
     collections.push_back(c);
     finishWorkerTask();
@@ -1296,18 +1289,6 @@ void WorkerCommand::notify(engine::Notification *notification) {
 
     if (notification->environment().IsSet("error")) {
       error.set(notification->environment().Get("error", "no_error"));
-    }
-    checkFinish();
-    return;
-  }
-
-  if (notification->isName(notification_disk_operation_request_response)) {
-    num_pending_disk_operations--;
-    if (notification->environment().IsSet("error")) {
-      error.set(notification->environment().Get("error", "no_error"));  // In case of push module, just reload modules
-    }
-    if (notification->environment().Get("push_module", "no") == "yes") {
-      ModulesManager::shared()->reloadModules();
     }
     checkFinish();
     return;

@@ -69,8 +69,8 @@ BlockLookupList::BlockLookupList(Block *block) {
   unsigned int offset              = 0;
   unsigned int noOfKvs             = 0;
   char *kvsStart            = data + sizeof(KVHeader);
-  Data *keyData             = ModulesManager::shared()->getData(kvFormat.keyFormat);
-  Data *valueData           = ModulesManager::shared()->getData(kvFormat.valueFormat);
+  Data *keyData             = au::Singleton<ModulesManager>::shared()->getData(kvFormat.keyFormat);
+  Data *valueData           = au::Singleton<ModulesManager>::shared()->getData(kvFormat.valueFormat);
   DataInstance *keyDataInstance     = (DataInstance *)keyData->getInstance();
   DataInstance *valueDataInstance   = (DataInstance *)valueData->getInstance();
   int maxEntries          = 0;
@@ -162,7 +162,7 @@ std::string BlockLookupList::lookup(const char *key, std::string outputFormat) {
   int keySize;
   int testKeySize;
   char keyName[1024];
-  Data *keyData             = ModulesManager::shared()->getData(kvFormat.keyFormat);
+  Data *keyData             = au::Singleton<ModulesManager>::shared()->getData(kvFormat.keyFormat);
   DataInstance *keyDataInstance     = (DataInstance *)keyData->getInstance();
   int compare;
 
@@ -191,7 +191,7 @@ std::string BlockLookupList::lookup(const char *key, std::string outputFormat) {
     if (compare == 0) {
       testKeySize = keyDataInstance->parse(head[testIx].keyP);
 
-      Data *valueData          = ModulesManager::shared()->getData(kvFormat.valueFormat);
+      Data *valueData          = au::Singleton<ModulesManager>::shared()->getData(kvFormat.valueFormat);
       char *valueP             = (char *)((size_t)head[testIx].keyP + testKeySize);
       DataInstance *valueDataInstance  = (DataInstance *)valueData->getInstance();
 
@@ -245,7 +245,7 @@ std::string BlockLookupList::lookup(const char *key, std::string outputFormat) {
       startIx = testIx + 1;
     } testIx = (endIx - startIx) / 2 + startIx;
 
-    if (startIx > endIx) {                     // Not found
+    if (startIx > endIx) {                 // Not found
       if (outputFormat == "xml") {
         return au::xml_simple("error", au::str("Key %s not found", key));
       } else {

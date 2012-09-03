@@ -23,7 +23,6 @@ samson::DelilahConsole *init_delilah_test() {
 
   engine::Engine::InitEngine(num_cores, memory, 1);
 
-  samson::ModulesManager::init("delilah_test");           // Init the modules manager
 
   // Create a DelilahConsole once network is ready
   samson::DelilahConsole *delilahConsole = new samson::DelilahConsole();
@@ -59,7 +58,6 @@ void close_delilah_test(samson::DelilahConsole *delilahConsole) {
   LM_W(("Finishing delilah"));
 
   LM_W(("Calling to destroy ModulesManager"));
-  samson::ModulesManager::destroy("delilah_test");
   lmCleanProgName();
 }
 

@@ -198,8 +198,7 @@ void SamsonWorkerRest::process_intern(au::SharedPointer<au::network::RESTService
     if (components == 3) {
       filter = command->path_components()[2];
     }
-    process_delilah_command(au::str("ls_stream_operations %s -group name",
-                                    filter.c_str()), command);
+    process_delilah_command(au::str("ls_stream_operations %s -group name", filter.c_str()), command);
   } else if (main_command == "workers") {
     if (command->command() != "GET") {
       command->AppendFormatedError(404, au::str("bad VERB for command"));

@@ -6,6 +6,7 @@
 
 #include "engine/Buffer.h"                       // engine::Buffer
 
+#include "DelilahCommandCatalogue.h"
 #include "DelilahComponent.h"
 #include "WorkerCommandDelilahComponent.h"      // Own interface
 #include "samson/common/EnvironmentOperations.h"  // copyEnviroment()
@@ -27,11 +28,23 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
 
   setConcept(command);        // The command is the description itself
 
-  // Identify specific flags in the command
+  DelilahCommandCatalogue catalogue;
+
+  au::ErrorManager error;
+  command_instance_ = catalogue.parse(command, &error);
+
+  send_to_all_workers = command_instance_->command()->tag("send_to_all_workers");
+
+  if (error.IsActivated()) {
+    setComponentFinishedWithError(error.GetMessage());
+    return;
+  }
+
+
+  // Old parsing stuff
   au::CommandLine cmdLine;
   cmdLine.SetFlagBoolean("hidden");
   cmdLine.SetFlagBoolean("save");       // Flag to identify if is necessary to save it locally
-  cmdLine.SetFlagBoolean("a");       // Send to all workers
   cmdLine.SetFlagBoolean("connected_workers");      // Flag to run the operation only with connected workers
   cmdLine.SetFlagUint64("w", (size_t)-1);
   cmdLine.SetFlagString("group", "");
@@ -48,55 +61,42 @@ WorkerCommandDelilahComponent::WorkerCommandDelilahComponent(std::string _comman
   sort_field        = cmdLine.GetFlagString("sort");
   connected_workers = cmdLine.GetFlagBool("connected_workers");
   limit             = cmdLine.GetFlagUint64("limit");
-  send_to_all_workers = cmdLine.GetFlagBool("a");
+
 
   if (cmdLine.get_num_arguments() > 0) {
     main_command = cmdLine.get_argument(0);
   }
-}
 
-bool WorkerCommandDelilahComponent::sendToAllWorker(const std::string& main_command) {
-  if (main_command == "ls_workers") {
-    return true;
+  // The ls_blocks command, always group by block_id
+  if (main_command == "ls_blocks") {
+    group_field = "block_id";
   }
-
-  if (main_command == "ls_block_distribution") {
-    return true;
-  }
-
-  if (main_command == "ls_block_requests") {
-    return true;
-  }
-
-  if (main_command ==  "ls_blocks") {
-    return true;
-  }
-
-  return false;
 }
 
 WorkerCommandDelilahComponent::~WorkerCommandDelilahComponent() {
   responses.clearMap();
   collections.clearMap();
+  if (command_instance_) {
+    delete command_instance_;
+  }
 }
 
 void WorkerCommandDelilahComponent::run() {
-  if ((worker_id == (size_t)-1) && (!send_to_all_workers) && !sendToAllWorker(main_command)) {
-    // Get a random worker id
+  // Get a random worker id to send the command (excep command that requires all workers involved )
+  if ((worker_id == (size_t)-1) && (!send_to_all_workers)) {
     worker_id = delilah->network->getRandomWorkerId();
     if (worker_id == (size_t)-1) {
       setComponentFinishedWithError("It seems there is no samson worker up in this cluster");
     }
   }
 
+  // Errors during contructor or selecting worker
   if (error.IsActivated()) {
-    // Errors during contructor
     setComponentFinished();
     return;
   }
 
   if (!delilah->isConnected()) {
-    LM_W(("this delilah is not connected to any cluster", concept.c_str()));
     setComponentFinishedWithError("This delilah is not connected to any SAMSON cluster");
     return;
   }
@@ -115,11 +115,10 @@ void WorkerCommandDelilahComponent::run() {
 
   if (worker_id != (size_t)-1) {
     p->to = NodeIdentifier(WorkerNode, worker_id);
-    delilah->network->Send(p);
     workers.insert(worker_id);
+    delilah->network->Send(p);
   } else {
-    // Send to all workers
-    delilah->network->SendToAllWorkers(p, workers);
+    delilah->network->SendToAllWorkers(p, workers);    // Send to all workers
   }
 }
 
@@ -131,13 +130,12 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
 
   if (packet->msgCode == Message::WorkerCommandResponse) {
     if (workers.find(worker_id) == workers.end()) {
-      setComponentFinishedWithError(au::str(
-                                      "WorkerCommandResponse received from worker %lu not involved in this operation"));
+      LM_W(("WorkerCommandResponse received from worker %lu not involved in this operation. Ignoring...", worker_id));
       return;
     }
 
     if (responses.findInMap(worker_id) != NULL) {
-      setComponentFinishedWithError(au::str("Duplicated WorkerCommandResponse received from worker %lu"));
+      LM_W(("Duplicated WorkerCommandResponse received from worker %lu.Ignoring...", worker_id));
       return;
     }
 
@@ -164,8 +162,10 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
     for (int j = 0; j < packet->message->collection(i).record_size(); j++) {
       gpb::CollectionRecord *record = collection->add_record();
 
-      // Add always worker_id
-      ::samson::add(record, "worker_id", worker_id, "different");
+      // Add worker_id if multiple workers are involved in the message
+      if (workers.size() > 1) {
+        ::samson::add(record, "worker_id", worker_id, "different");
+      }
 
       // Add all elements in the sent collection item
       for (int k = 0; k < packet->message->collection(i).record(j).item_size(); k++) {
@@ -181,8 +181,8 @@ void WorkerCommandDelilahComponent::receive(const PacketPointer& packet) {
     for (it_responses = responses.begin(); it_responses != responses.end(); it_responses++) {
       size_t worker_id = it_responses->first;
       WorkerResponese *response = it_responses->second;
-      if (response->error.IsActivated()) {
-        general_error_message.append(au::str("[Worker %lu] ", worker_id) + response->error.GetMessage() + "\n");
+      if (response->error().IsActivated()) {
+        general_error_message.append(au::str("[Worker %lu] ", worker_id) + response->error().GetMessage() + "\n");
         general_error = true;
       }
     }
@@ -294,6 +294,27 @@ void WorkerCommandDelilahComponent::print_content(gpb::Collection *collection) {
 }
 
 std::string WorkerCommandDelilahComponent::getStatus() {
+  std::ostringstream output;
+
+  output << "Command sent to workers [";
+  std::set<size_t>::iterator it;
+  for (it = workers.begin(); it != workers.end(); it++) {
+    output << *it  << " ";
+  }
+  output << "] ";
+
+  output << "Responses received from workers [";
+  au::map<size_t, WorkerResponese >::iterator it_responses;
+  for (it_responses = responses.begin(); it_responses != responses.end(); it_responses++) {
+    output << it_responses->first << " ";
+  }
+
+  output << "]";
+
+  return output.str();
+}
+
+std::string WorkerCommandDelilahComponent::getExtraStatus() {
   au::tables::Table table("Worker,left|Status,left|Message,left");
 
   std::set<size_t>::iterator it;
@@ -308,9 +329,9 @@ std::string WorkerCommandDelilahComponent::getStatus() {
       values.push_back("Pending");
       values.push_back("");
     } else {
-      if (response->error.IsActivated()) {
+      if (response->error().IsActivated()) {
         values.push_back("Error");
-        values.push_back(response->error.GetMessage());
+        values.push_back(response->error().GetMessage());
       } else {
         values.push_back("Finish");
         values.push_back("OK");

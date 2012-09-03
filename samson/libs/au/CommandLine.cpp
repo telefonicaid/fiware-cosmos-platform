@@ -289,7 +289,10 @@ size_t CommandLine::GetFlagUint64(std::string flag_name) {
     return 0;
   }
 
-  return getUint64Value(GetFlagValue(flag_name));
+  std::string value = GetFlagValue(flag_name);
+  size_t n = getUint64Value(value);
+
+  return n;
 }
 
 /**
@@ -311,7 +314,9 @@ size_t CommandLine::getUint64Value(std::string value) {
     value = value.substr(0, value.size() - 1);
   }
 
-  return base * atoi(value.c_str());
+  size_t num = strtoull(value.c_str(), NULL, 10);
+
+  return base * num;
 }
 
 double CommandLine::getDoubleValue(std::string value) {

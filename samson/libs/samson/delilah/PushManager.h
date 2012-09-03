@@ -12,6 +12,32 @@ class Delilah;
 class Packet;
 
 class PushItem {
+public:
+
+  PushItem(Delilah *delilah, size_t item_id, engine::BufferPointer buffer, const std::vector<std::string>& queues);
+
+  void Review();                // Review this item ( send again if worker is down....
+  bool IsFinished();            // Is completed
+  bool IsReadyForCommit();      // Is ready for commit opertation
+  void ResetPushItem();         // Reest this push operation
+
+  // Accessors
+  size_t push_id();
+  size_t time();
+  size_t size();
+
+  // Messages recevied form workers
+  void receive(Message::MessageCode mdgCode, size_t worker_id, au::ErrorManager& error);
+
+  // Send commit message ( only in ready_for_commit state )
+  void SendCommit();
+
+  // Get a description of current status
+  std::string str();
+  std::string str_buffer_info();
+
+private:
+
   typedef enum {
     init,
     waiting_push_confirmation,
@@ -31,101 +57,42 @@ class PushItem {
   au::Cronometer cronometer_;       // Time since I send packet
 
   // Internal state
-  PushItemState state;
+  PushItemState state_;
 
   // Pointer to delilah client to send packets and check for workers
   Delilah *delilah_;
 
   friend class PushManager;
-
-public:
-
-  PushItem(Delilah *delilah, size_t item_id, engine::BufferPointer buffer, const std::vector<std::string>& queues);
-
-  bool isFinished();
-  bool isReadyForCommit();
-
-  void review();
-
-  // Reset push item
-  void reset();
-
-  // Messages recevied form workers
-  void receive(Message::MessageCode mdgCode, size_t worker_id);
-
-  // Send commit message ( only in ready_for_commit state )
-  void send_commit();
-
-  // Get identifier
-  size_t get_push_id() {
-    return push_id_;
-  }
-
-  // Get a description of current status
-  std::string str() {
-    switch (state) {
-      case init: return "Uninitialized";
-
-      case waiting_push_confirmation: return au::str("Waiting distribution confirmation from worker %lu", worker_id_);
-
-      case ready_for_commit: return "Ready for commit";
-
-      case waiting_commig_confirmation: return au::str("Waiting commit confirmation from worker %lu", worker_id_);
-
-      case completed: return "Finalized";
-    }
-
-    return "Error";
-  }
-
-  size_t get_time() {
-    return cronometer_.seconds();
-  }
-
-  std::string str_buffer_info() {
-    if (buffer_ != NULL) {
-      return au::str(buffer_->size(), "B");
-    } else {
-      return "No buffer";
-    }
-  }
-
-  size_t size() {
-    if (buffer_ != NULL) {
-      return buffer_->size();
-    } else {
-      return 0;
-    }
-  }
 };
 
-
 class PushManager {
-  au::map<size_t, PushItem> items_;    // Items currently uploading to the cluster
-  size_t item_id_;                     // Next identifier for a push item
-  Delilah *delilah_;                   // Pointer to delilah to send and receive packets
-
 public:
 
   PushManager(Delilah *delilah);
 
   // Main function to push data to SAMSON
-  size_t push(engine::BufferPointer buffer, const std::vector<std::string>& queues);
+  size_t Push(engine::BufferPointer buffer, const std::vector<std::string>& queues);
+
+  // Reset all elements
+  void ResetAllItems();
 
   // Receive this packet from worker
-  void receive(Message::MessageCode mdgCode, size_t worker_id, size_t push_id);
-
-  // Reset a particular push_id element
-  void reset(size_t push_id);
+  void receive(Message::MessageCode mdgCode, size_t worker_id, size_t push_id, au::ErrorManager& error);
 
   // General review function
-  void review();
+  void Review();
 
   // Get table of collections
   au::tables::Table *getTableOfItems();
 
   // Get the number of pushing elments
   size_t get_num_items();
+
+public:
+
+  au::map<size_t, PushItem> items_;               // Items currently uploading to the cluster
+  size_t item_id_;                                // Next identifier for a push item
+  Delilah *delilah_;                              // Pointer to delilah to send and receive packets
 };
 }  // end of namespace samson
 

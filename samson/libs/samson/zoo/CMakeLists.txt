@@ -1,6 +1,5 @@
 SET (HEADERS
 	Connection.h
-	ConnectionWatcherInterface.h
 	ZooNodeCommiter.h
 	SamsonWorkerController.h
 	DataModel.h

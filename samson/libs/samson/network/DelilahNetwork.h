@@ -18,7 +18,7 @@ class DelilahNetwork : public CommonNetwork {
 public:
 
   // Constructor & Destructor
-  DelilahNetwork(std::string _connection_type, size_t delilah_id, NetworkInterfaceReceiver *receiver);
+  DelilahNetwork(std::string _connection_type, size_t delilah_id);
   ~DelilahNetwork() {
   }
 };

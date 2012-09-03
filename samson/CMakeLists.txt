@@ -122,6 +122,8 @@ include_directories("/usr/local/include")
 include_directories("/usr/include")
 include_directories("/usr/local/include/json")
 include_directories("/usr/include/json")
+include_directories("/usr/include/x86_64-linux-gnu") # Ubuntu 12.04
+include_directories("/usr/local/include/c-client-src")
 
 #
 # Library directories
@@ -130,6 +132,8 @@ include_directories("/usr/include/json")
 link_directories("/opt/local/lib")
 link_directories("/usr/local/lib")
 link_directories("/usr/lib64")
+link_directories("/usr/lib/x86_64-linux-gnu") # Ubuntu 12.04
+
 if (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
 link_directories("/usr/local/lib/amd64")
 endif (${CMAKE_SYSTEM_NAME} MATCHES "SunOS")
@@ -190,3 +194,5 @@ if (error EQUAL 0)
 else ()
     MESSAGE("cmake: NOT OK")
 endif (error EQUAL 0)
+
+

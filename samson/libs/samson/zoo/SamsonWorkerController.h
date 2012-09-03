@@ -14,7 +14,6 @@
 #include "samson/common/samson.pb.h"
 #include "samson/zoo/CommitCommand.h"
 #include "samson/zoo/Connection.h"
-#include "samson/zoo/ConnectionWatcherInterface.h"
 
 
 #include "samson/common/MessagesOperations.h"
@@ -32,7 +31,7 @@
 // ------------------------------------------------------------------
 
 namespace samson {
-class SamsonWorkerController : public engine::NotificationListener, public samson::zoo::ConnectionWatcherInterface {
+class SamsonWorkerController : public engine::NotificationListener {
 public:
 
   SamsonWorkerController(zoo::Connection *zoo_connection, int port, int port_web);
@@ -42,8 +41,8 @@ public:
   // Function to init everything with this connection( error code returned if not possible )
   int init();
 
-  // virtual method in samson::zoo::ConnectionWatcherInterface
-  virtual void watcher(zoo::Connection *connection, int type, int state, const char *path);
+  // virtual method in engine::NotificationListener
+  virtual void notify(engine::Notification *notification);
 
   // Get my worker id
   size_t worker_id();
@@ -54,15 +53,23 @@ public:
   // Get workers that should have a copy of a block in this range ( I am excluded from the list )
   au::Uint64Set GetWorkerIdsForRange(KVRange range);
 
+  // Get all the workers identifiers
+  std::set<size_t> GetWorkerIds();
+
   // Get ranges this worker should process
-  KVRanges GetMyKVRanges();
+  KVRanges GetMyKVRanges();    // Where I am responsible
+  KVRanges GetAllMyKVRanges();  // Where I am responsible or replica
 
   // Update worker-node with information about me
-  int UpdateWorkerNode();
+  int UpdateWorkerNode(bool worker_ready);
+
+  // Check if all the elements in the cluster are ready
+  bool IsClusterReady();
 
   // Get complete information on how blocks are distributed in the workers
   int GetBlockMap(std::multimap<size_t, size_t>& blocks_map);
 
+  // Get a new identifier for a block
   size_t get_new_block_id();
 
 private:

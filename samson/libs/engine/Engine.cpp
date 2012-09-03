@@ -330,4 +330,16 @@ ProcessManager *Engine::process_manager() {
   }
   return process_manager_;
 }
+
+void notify(const char *notification_name) {
+  Engine::shared()->notify(new Notification(notification_name));
+}
+
+void notify(const char *notification_name, double period) {
+  Engine::shared()->notify(new Notification(notification_name), period);
+}
+
+void notify_extra(const char *notification_name) {
+  Engine::shared()->notify_extra(new Notification(notification_name));
+}
 }

@@ -30,7 +30,7 @@
 #include "engine/Engine.h"     // engine::Engine
 #include "engine/MemoryManager.h"   // engine::MemoryManager
 #include "engine/NotificationListener.h"     // engine::EngineNotification
-#include "engine/NotificationListener.h" // engine::NotificationListener
+#include "engine/NotificationListener.h"  // engine::NotificationListener
 
 #define notification_process_request_response "notification_process_request_response"
 

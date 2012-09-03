@@ -5,59 +5,59 @@
  */
 #include "samson/network/Message.h"            // Own interface
 
-namespace samson { namespace Message {
-                   /* ****************************************************************************
-                    *
-                    * messageCode -
-                    */
+namespace samson {
+namespace Message {
+/* ****************************************************************************
+ *
+ * messageCode -
+ */
 
-                   const char *messageCode(MessageCode code) {
-                     switch (code) {
-                       case Hello:                            return "Hello";
+const char *messageCode(MessageCode code) {
+  switch (code) {
+    case Hello:                            return "Hello";
 
-                       case StatusReport:                     return "StatusReport";
+    case StatusReport:                     return "StatusReport";
 
-                       case Alert:                            return "Alert";
+    case Alert:                            return "Alert";
 
-                       case ClusterInfoUpdate:                return "ClusterInfoUpdate";
+    case ClusterInfoUpdate:                return "ClusterInfoUpdate";
 
-                       case PushBlock:                        return "PushBlock";
+    case PushBlock:                        return "PushBlock";
 
-                       case PushBlockResponse:                return "PushBlockResponse";
+    case PushBlockResponse:                return "PushBlockResponse";
 
-                       case PushBlockCommit:                  return "PushBlockCommit";
+    case PushBlockCommit:                  return "PushBlockCommit";
 
-                       case PushBlockCommitResponse:          return "PushBlockCommitRensponse";
+    case PushBlockCommitResponse:          return "PushBlockCommitRensponse";
 
-                       case PopQueue:                         return "PopQueue";
+    case PopQueue:                         return "PopQueue";
 
-                       case PopQueueResponse:                 return "PopQueueResponse";
+    case PopQueueResponse:                 return "PopQueueResponse";
 
-                       case PopBlockRequest:                  return "PopBlockRequest";
+    case PopBlockRequest:                  return "PopBlockRequest";
 
-                       case PopBlockRequestConfirmation:      return "PopBlockRequestConfirmation";
+    case PopBlockRequestConfirmation:      return "PopBlockRequestConfirmation";
 
-                       case PopBlockRequestResponse:          return "PopBlockRequestResponse";
+    case PopBlockRequestResponse:          return "PopBlockRequestResponse";
 
-                       case DuplicateBlock:                   return "DuplicateBlock";
+    case BlockDistribution:                return "BlockDistribution";
 
-                       case DuplicateBlockResponse:           return "DuplicateBlockResponse";
+    case BlockDistributionResponse:        return "BlockDistributionResponse";
 
-                       case BlockRequest:                     return "BlockRequest";
+    case BlockRequest:                     return "BlockRequest";
 
-                       case BlockRequestResponse:             return "BlockRequestResponse";
+    case StreamOutQueue:                   return "StreamOutQueue";
 
-                       case StreamOutQueue:                   return "StreamOutQueue";
+    case WorkerCommand:                    return "WorkerCommand";
 
-                       case WorkerCommand:                    return "WorkerCommand";
+    case WorkerCommandResponse:            return "WorkerCommandResponse";
 
-                       case WorkerCommandResponse:            return "WorkerCommandResponse";
+    case Message:                          return "Message";
 
-                       case Message:                          return "Message";
+    case Unknown:                          return "Unknown";
+  }
 
-                       case Unknown:                          return "Unknown";
-                     }
-
-                     return (char *)"Unknown";
-                   }
-                   } }
+  return (char *)"Unknown";
+}
+}
+}

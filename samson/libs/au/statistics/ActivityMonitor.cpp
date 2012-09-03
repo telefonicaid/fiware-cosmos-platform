@@ -5,7 +5,8 @@
 
 namespace au {
 namespace statistics {
-ActivityStatistics::ActivityStatistics() {
+ActivityStatistics::ActivityStatistics(const std::string& name) {
+  name_ = name;
   total_ = 0;
   total_square_ = 0;
   last_ = 0;
@@ -14,12 +15,9 @@ ActivityStatistics::ActivityStatistics() {
   counter_ = 0;
 }
 
-void ActivityStatistics::Push(ActivityItem *item) {
-  // Get the time of this item
-  double t = item->time();
-
-  if (t < 0) {
-    LM_W(("Reported negative time (%d) for item %s", t,  item->name().c_str()));
+void ActivityStatistics::Push(double t) {
+  if (time < 0) {
+    LM_W(("Reported negative time (%d) for item %s", t,  name_.c_str()));
     return;
   }
 
@@ -94,22 +92,20 @@ void ActivityMonitor::StartActivity(const std::string& activity_name) {
   double stop_time = cronometer_.seconds();
   double time = stop_time - current_activirty_start_time_;
 
-  // Create an item for this
-  ActivityItem *activity_item = new ActivityItem(current_activty_, time);
-
   // Inset in the list of last items
-  items_.push_back(activity_item);
-
-  // Only keep the list of last 100 elements
-  while (items_.size() > 100) {
-    ActivityItem *tmp_item = items_.extractFront();
-    delete tmp_item;
-  }
+  /*
+   * items_.push_back( new ActivityItem(current_activty_, time) );
+   * // Only keep the list of last 100 elements
+   * while (items_.size() > 100) {
+   * ActivityItem *tmp_item = items_.extractFront();
+   * delete tmp_item;
+   * }
+   */
 
   // Update the associated element statustics
-  ActivityStatistics *activity_estatistics = elements_.findOrCreate(
-    activity_item->name());
-  activity_estatistics->Push(activity_item);
+  ActivityStatistics *activity_estatistics = elements_.findOrCreate(activity_name, activity_name);
+
+  activity_estatistics->Push(time);
 
   // Change the name of the current activty
   current_activirty_start_time_ = stop_time;
@@ -128,8 +124,7 @@ std::string ActivityMonitor::GetLastItemsTable() const {
 
   au::list<ActivityItem>::const_iterator it;
   for (it = items_.begin(); it != items_.end(); it++) {
-    table.addRow(au::StringVector((*it)->name(),
-                                  au::str("%.12f", (*it)->time()).c_str()));
+    table.addRow(au::StringVector((*it)->name(), au::str("%.12f", (*it)->time()).c_str()));
   }
   return table.str();
 }

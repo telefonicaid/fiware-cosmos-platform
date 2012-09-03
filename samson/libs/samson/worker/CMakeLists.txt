@@ -3,8 +3,9 @@ SET (HEADERS
 	WorkerCommandManager.h
 	WorkerCommand.h
 	SamsonWorker.h
-	PushManager.h
-	DistributionBlocks.h
+	WorkerBlockManager.h
+	PushOperation.h
+	DistributionOperation.h
 	SamsonWorkerSamples.h
 	SamsonWorkerRest.h
 )
@@ -13,8 +14,9 @@ SET (SOURCES
 	WorkerCommandManager.cpp
 	WorkerCommand.cpp
 	SamsonWorker.cpp
-	PushManager.cpp
-	DistributionBlocks.cpp
+	WorkerBlockManager.cpp
+	PushOperation.cpp
+	DistributionOperation.cpp
 	SamsonWorkerSamples.cpp
 	SamsonWorkerRest.cpp
 )

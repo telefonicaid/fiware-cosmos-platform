@@ -12,8 +12,9 @@ namespace samson {
 //
 // ----------------------------------------------------
 
-PushItem::PushItem(Delilah *delilah, size_t push_id, engine::BufferPointer buffer,
-                   const std::vector<std::string>& queues) {
+PushItem::PushItem(Delilah *delilah, size_t push_id
+                   , engine::BufferPointer buffer
+                   , const std::vector<std::string>& queues) {
   // Keep a pointer to delilah
   delilah_ = delilah;
 
@@ -29,23 +30,25 @@ PushItem::PushItem(Delilah *delilah, size_t push_id, engine::BufferPointer buffe
   }
 
   // Default state
-  state = init;
+  state_ = init;
 }
 
-bool PushItem::isFinished() {
-  return ( state == completed );
+bool PushItem::IsFinished() {
+  return ( state_ == completed );
 }
 
-bool PushItem::isReadyForCommit() {
-  return (state == ready_for_commit );
+bool PushItem::IsReadyForCommit() {
+  return (state_ == ready_for_commit );
 }
 
-void PushItem::review() {
-  if (state == init) {
-    // Get a random worker id to push content
-    worker_id_ = delilah_->network->getRandomWorkerId();
+void PushItem::Review() {
+  if (state_ == completed) {
+    return;   // Nothing to do
+  }
+  if (state_ == init) {
+    worker_id_ = delilah_->network->getRandomWorkerId();        // Get a random worker id to push content
     if (worker_id_ == (size_t)-1) {
-      return;   // no worker available...
+      return;     // no worker available...
     }
     cronometer_.Reset();
 
@@ -61,78 +64,105 @@ void PushItem::review() {
     // Send packet and wait for the answer
     delilah_->network->Send(packet);
 
-
     // Change state to waiting push confirmation
-    state = waiting_push_confirmation;
+    state_ = waiting_push_confirmation;
+
     return;
   }
 
   // Check if my worker is away and come back to init state if so
-  if (!delilah_->network->isValidWorkerId(worker_id_)) {
-    LM_W(("Worker %lu is part of the cluster anymore. Reseting push operation", worker_id_ ));
-    state = init;
+  if (!delilah_->network->IsWorkerConnected(worker_id_)) {
+    LM_W(("We are not connected to worker %lu anymore. Reseting push operation...", worker_id_ ));
+    state_ = init;
     return;
+  }
+
+  // Is worker is not part of the cluster
+  if (!delilah_->network->IsWorkerInCluster(worker_id_)) {
+    LM_W(("Worker %lu is not part of the cluster anymore. Reseting push operation...", worker_id_ ));
+    state_ = init;
+    return;
+  }
+
+
+  if (cronometer_.seconds() > 30) {
+    LM_W(("[%lu] Push item timeout 30 seconds. Reseting...", push_id_ ));
+    // Reset by time
+    state_ = init;
   }
 }
 
-void PushItem::reset() {
-  if (state == completed) {
+void PushItem::ResetPushItem() {
+  if (state_ == completed) {
     return;
   }
-  state = init;
+  LM_W(("[%lu] Reset Push item", push_id_ ));
+  state_ = init;
 }
 
 // A Push response has been received from worker
-void PushItem::receive(Message::MessageCode msgCode, size_t worker_id) {
+void PushItem::receive(Message::MessageCode msgCode, size_t worker_id, au::ErrorManager& error) {
   if (worker_id != worker_id_) {
-    LM_W(("Received message %s from worker %lu in a push item while my worker id is %lu. Ignoring..."
+    LM_W(("Push[%lu] Received message %s from worker %lu in a push item while my worker id is %lu. Ignoring..."
+          , push_id_
           , Message::messageCode(msgCode)
           , worker_id
           , worker_id_ ));
     return;
   }
 
-  if (state == init) {
-    LM_W(("Received message %s in a push item while in init mode. Ignoring...", Message::messageCode(msgCode)));
+
+  if (error.IsActivated()) {
+    LM_W(("Push[%lu] Error received in a push operation %s.Reseting...", push_id_, error.GetMessage().c_str()));
+    ResetPushItem();
     return;
   }
 
-  if (state == waiting_push_confirmation) {
+  if (state_ == init) {
+    LM_W(("Push[%lu] Received message %s in a push item while in init mode. Ignoring...", push_id_,
+          Message::messageCode(msgCode)));
+    return;
+  }
+
+  if (state_ == waiting_push_confirmation) {
     if (msgCode != Message::PushBlockResponse) {
-      LM_W(("Recieved wrong message (%s) from worker while waiting for distribution confirmation"
+      LM_W(("Push[%lu] Recieved wrong message (%s) from worker while waiting for distribution confirmation"
+            , push_id_
             , Message::messageCode(msgCode)));
-      state = init;
+      state_ = init;
       return;
     }
 
     // Change state to ready for commit
-    state = ready_for_commit;
+    state_ = ready_for_commit;
 
     return;
   }
 
-  if (state == ready_for_commit) {
-    LM_W(("Recieved wrong message (%s) from worker while being ready for commit"
+  if (state_ == ready_for_commit) {
+    LM_W(("Push[%lu] Recieved wrong message (%s) from worker while being ´ready for commit´"
+          , push_id_
           , Message::messageCode(msgCode)));
-    state = init;
+    state_ = init;
     return;
   }
 
-  if (state == waiting_commig_confirmation) {
+  if (state_ == waiting_commig_confirmation) {
     if (msgCode != Message::PushBlockCommitResponse) {
-      LM_W(("Recieved wrong message (%s) from worker while waiting for distribution confirmation"
+      LM_W(("Push[%lu] Recieved wrong message (%s) from worker while waiting for commit confirmation"
+            , push_id_
             , Message::messageCode(msgCode)));
-      state = init;
+      state_ = init;
       return;
     }
 
     // Change state to completed
-    state = completed;
+    state_ = completed;
   }
 }
 
-void PushItem::send_commit() {
-  if (state != ready_for_commit) {
+void PushItem::SendCommit() {
+  if (state_ != ready_for_commit) {
     return;
   }
 
@@ -144,7 +174,49 @@ void PushItem::send_commit() {
 
   delilah_->network->Send(packet);
 
-  state = waiting_commig_confirmation;
+  state_ = waiting_commig_confirmation;
+}
+
+size_t PushItem::push_id() {
+  return push_id_;
+}
+
+size_t PushItem::time() {
+  return cronometer_.seconds();
+}
+
+size_t PushItem::size() {
+  if (buffer_ != NULL) {
+    return buffer_->size();
+  } else {
+    return 0;
+  }
+}
+
+std::string PushItem::str() {
+  switch (state_) {
+    case init: return au::str("[%lu] Uninitialized", push_id_);
+
+    case waiting_push_confirmation: return au::str("[%lu] Waiting distribution confirmation from worker %lu"
+                                                   , push_id_, worker_id_);
+
+    case ready_for_commit: return "[%lu] Ready for commit";
+
+    case waiting_commig_confirmation: return au::str("[%lu] Waiting commit confirmation from worker %lu"
+                                                     , push_id_, worker_id_);
+
+    case completed: return au::str("[%lu] Finalized", push_id_);
+  }
+
+  return "Error";
+}
+
+std::string PushItem::str_buffer_info() {
+  if (buffer_ != NULL) {
+    return au::str(buffer_->size(), "B");
+  } else {
+    return "No buffer";
+  }
 }
 
 // ----------------------------------------------------
@@ -158,29 +230,19 @@ PushManager::PushManager(Delilah *delilah) {
   item_id_ = 1;
 }
 
-void PushManager::receive(Message::MessageCode msgCode, size_t worker_id, size_t push_id) {
-  // Review push_items to deliver this message correctly...
+void PushManager::receive(Message::MessageCode msgCode, size_t worker_id, size_t push_id, au::ErrorManager& error) {
   PushItem *item = items_.findInMap(push_id);
 
   if (item) {
-    item->receive(msgCode, worker_id);
+    item->receive(msgCode, worker_id, error);
   } else {
-    LM_W(("PushBlock response associated with an item (%lu) not found.", push_id ));  // Comit ready push operations and remove old connections
+    LM_W(("PushBlock response associated with an item (%lu) not found.", push_id ));    // Comit ready push operations and remove old connections
   }
-  review();
+
+  Review();
 }
 
-void PushManager::reset(size_t push_id) {
-  PushItem *item = items_.findInMap(push_id);
-
-  if (item) {
-    item->reset();
-  } else {
-    LM_W(("Canceling non-existing push operation with push_id = %lu", push_id ));
-  }
-}
-
-size_t PushManager::push(engine::BufferPointer buffer, const std::vector<std::string>& queues) {
+size_t PushManager::Push(engine::BufferPointer buffer, const std::vector<std::string>& queues) {
   LM_V(("PushManager: pushing buffer %s to %lu queues ( delilah %s )"
         , au::str(buffer->size()).c_str()
         , queues.size()
@@ -192,27 +254,28 @@ size_t PushManager::push(engine::BufferPointer buffer, const std::vector<std::st
   items_.insertInMap(item_id, item);
 
   // First review to send packet to the server
-  item->review();
+  item->Review();
 
   return item_id;
 }
 
-void PushManager::review() {
-  // Review and remove finished
+void PushManager::Review() {
   au::map<size_t, PushItem>::iterator it;
-  for (it = items_.begin(); it != items_.end(); it++) {
+  for (it = items_.begin(); it != items_.end(); ) {      // Review and remove finished items
     PushItem *item = it->second;
+    item->Review();     // Review item
 
-    item->review();   // Review item
-
-    if (item->isFinished()) {
+    if (item->IsFinished()) {
       // Notification to inform that this push_id has finished
       engine::Notification *notification  = new engine::Notification("push_operation_finished");
       notification->environment().Set("push_id", it->first);
       notification->environment().Set("size",  item->size());
       engine::Engine::shared()->notify(notification);
 
-      items_.erase(it);
+      items_.erase(it++);
+      delete item;   // Remove item itself
+    } else {
+      ++it;
     }
   }
 
@@ -220,11 +283,19 @@ void PushManager::review() {
   for (it = items_.begin(); it != items_.end(); it++) {
     PushItem *item = it->second;
 
-    if (item->isReadyForCommit()) {
-      item->send_commit();
+    if (item->IsReadyForCommit()) {
+      item->SendCommit();
     } else {
       break;
     }
+  }
+}
+
+void PushManager::ResetAllItems() {
+  au::map<size_t, PushItem>::iterator it;
+  for (it = items_.begin(); it != items_.end(); it++) {
+    PushItem *item = it->second;
+    item->ResetPushItem();
   }
 }
 
@@ -238,10 +309,10 @@ au::tables::Table *PushManager::getTableOfItems() {
     PushItem *item = it->second;
 
     au::StringVector values;
-    values.Push(item->get_push_id());
+    values.Push(item->push_id());
     values.Push(item->str_buffer_info());
     values.Push(item->worker_id_);
-    values.Push(au::str_time(item->get_time()));
+    values.Push(au::str_time(item->time()));
     values.Push(item->str());
 
     table->addRow(values);

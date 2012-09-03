@@ -198,7 +198,6 @@ void cleanup(void) {
   }
 
   LM_T(LmtCleanup, ("destroying ModulesManager"));
-  samson::ModulesManager::destroy("delilah");
 
   LM_T(LmtCleanup, ("Calling paConfigCleanup"));
   paConfigCleanup();
@@ -307,8 +306,8 @@ int main(int argC, const char *argV[]) {
   int num_cores = au::Singleton<samson::SamsonSetup>::shared()->getInt("general.num_processess");
   engine::Engine::InitEngine(num_cores,  _memory, 1);
 
-  samson::ModulesManager::init("delilah");         // Init the modules manager
-
+// Load modules
+  au::Singleton<samson::ModulesManager>::shared()->addModulesFromDefaultDirectory();
 
   // Create a DelilahControler once network is ready
   delilahConsole = new samson::DelilahConsole(delilah_random_code);

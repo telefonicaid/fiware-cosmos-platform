@@ -604,6 +604,7 @@ std::string SamsonWorker::str_state() {
 
       break;
   }
+  return "Unknown";
 }
 
 // Receive notifications
